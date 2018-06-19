@@ -38,6 +38,7 @@ class TestEventHandler : public EventHandler {
   void set_handler_name(const std::string& handler_name) {
     handler_name_ = handler_name;
   }
+  const std::string& handler_name() const { return handler_name_; }
 
   // EventHandler overrides:
   void OnKeyEvent(KeyEvent* event) override;

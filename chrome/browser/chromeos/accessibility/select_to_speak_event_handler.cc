@@ -49,9 +49,6 @@ gfx::PointF GetScreenLocationFromEvent(const ui::LocatedEvent& event) {
 const ui::KeyboardCode kSpeakSelectionKey = ui::VKEY_S;
 
 SelectToSpeakEventHandler::SelectToSpeakEventHandler() {
-  // Add this to the root level EventTarget so that it is called first.
-  // TODO(katie): instead of using the root level EventTarget, just add this
-  // handler to ash::Shell::Get()->GetPrimaryRootWindow().
   if (aura::Env::GetInstanceDontCreate())
     aura::Env::GetInstanceDontCreate()->AddPreTargetHandler(
         this, ui::EventTarget::Priority::kAccessibility);

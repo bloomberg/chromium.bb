@@ -76,27 +76,89 @@ TEST(EventTargetTest, HandlerOrderingComplex) {
 
   // Adding a new system or accessibility handler will insert it before others
   // of its type. Adding a new default handler puts it at the end of the list,
-  // but this will change in a later patch set.
+  // for historical reasons. Re-arranging default handlers causes test failures
+  // in many unittests and may also cause real-life bugs, so for now default
+  // still is at the end of the list.
   target.AddPreTargetHandler(&system_handler_3, EventTarget::Priority::kSystem);
-  target.AddPreTargetHandler(&default_handler_2,
+  target.AddPreTargetHandler(&default_handler_1,
                              EventTarget::Priority::kDefault);
   target.AddPreTargetHandler(&system_handler_2, EventTarget::Priority::kSystem);
   target.AddPreTargetHandler(&a11y_handler_2,
                              EventTarget::Priority::kAccessibility);
   target.AddPreTargetHandler(&system_handler_1, EventTarget::Priority::kSystem);
-  target.AddPreTargetHandler(&default_handler_1,
+  target.AddPreTargetHandler(&default_handler_2,
                              EventTarget::Priority::kDefault);
   target.AddPreTargetHandler(&a11y_handler_1,
                              EventTarget::Priority::kAccessibility);
   list = test_api.GetPreTargetHandlers();
+
   ASSERT_EQ(7u, list.size());
   EXPECT_EQ(list[0], &a11y_handler_1);
   EXPECT_EQ(list[1], &a11y_handler_2);
   EXPECT_EQ(list[2], &system_handler_1);
   EXPECT_EQ(list[3], &system_handler_2);
   EXPECT_EQ(list[4], &system_handler_3);
-  EXPECT_EQ(list[5], &default_handler_2);
+  EXPECT_EQ(list[5], &default_handler_1);
+  EXPECT_EQ(list[6], &default_handler_2);
+}
+
+TEST(EventTargetTest, HandlerOrderingAcrossEventTargets) {
+  // Child needs to be a unique pointer so that TestEventTarget::AddChild works.
+  std::unique_ptr<test::TestEventTarget> child =
+      std::make_unique<test::TestEventTarget>();
+  test::TestEventTarget parent;
+  test::TestEventHandler default_handler_1;
+  test::TestEventHandler default_handler_2;
+  test::TestEventHandler default_handler_3;
+  test::TestEventHandler system_handler_1;
+  test::TestEventHandler system_handler_2;
+  test::TestEventHandler system_handler_3;
+  test::TestEventHandler a11y_handler_1;
+  test::TestEventHandler a11y_handler_2;
+  test::TestEventHandler a11y_handler_3;
+
+  // Parent handlers should be called before children handlers.
+  parent.AddPreTargetHandler(&default_handler_1,
+                             EventTarget::Priority::kDefault);
+  parent.AddPreTargetHandler(&system_handler_2, EventTarget::Priority::kSystem);
+  parent.AddPreTargetHandler(&a11y_handler_2,
+                             EventTarget::Priority::kAccessibility);
+
+  child->AddPreTargetHandler(&default_handler_3,
+                             EventTarget::Priority::kDefault);
+  child->AddPreTargetHandler(&a11y_handler_3,
+                             EventTarget::Priority::kAccessibility);
+  child->AddPreTargetHandler(&system_handler_3, EventTarget::Priority::kSystem);
+
+  parent.AddPreTargetHandler(&system_handler_1, EventTarget::Priority::kSystem);
+  parent.AddPreTargetHandler(&default_handler_2,
+                             EventTarget::Priority::kDefault);
+  parent.AddPreTargetHandler(&a11y_handler_1,
+                             EventTarget::Priority::kAccessibility);
+
+  // Connect the parent and child in a EventTargetTestAPI.
+  EventTargetTestApi test_api(child.get());
+  parent.AddChild(std::move(child));
+
+  EventHandlerList list;
+  list = test_api.GetPreTargetHandlers();
+
+  ASSERT_EQ(9u, list.size());
+  // Parent handlers are called before child handlers, so a11y_handler_1 and
+  // 2 should be called before a11y_handler3, and similarly all the system and
+  // default handlers added to the parent should be called before those added
+  // to the child.
+  // In addition, all a11y handlers should be called before all system handlers,
+  // which should be called before all default handlers.
+  EXPECT_EQ(list[0], &a11y_handler_1);
+  EXPECT_EQ(list[1], &a11y_handler_2);
+  EXPECT_EQ(list[2], &a11y_handler_3);
+  EXPECT_EQ(list[3], &system_handler_1);
+  EXPECT_EQ(list[4], &system_handler_2);
+  EXPECT_EQ(list[5], &system_handler_3);
   EXPECT_EQ(list[6], &default_handler_1);
+  EXPECT_EQ(list[7], &default_handler_2);
+  EXPECT_EQ(list[8], &default_handler_3);
 }
 
 }  // namespace
