@@ -404,6 +404,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            VirtualKeyboardFocusEnsureCaretInRect);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            HitTestRegionListSubmitted);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           DiscardDelegatedFramesWithMemoryPressure);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,
                            KeyboardObserverDestroyed);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
@@ -429,6 +431,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            WebContentsViewReparent);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
                            TakeFallbackContent);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+                           DiscardDelegatedFrames);
 
   class WindowObserver;
   friend class WindowObserver;

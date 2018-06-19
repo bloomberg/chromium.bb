@@ -197,44 +197,22 @@ TEST_F(RenderWidgetHostViewChildFrameTest, VisibilityTest) {
   ASSERT_FALSE(view_->IsShowing());
 }
 
-// Verify that SubmitCompositorFrame behavior is correct when a delegated
-// frame is received from a renderer process.
-TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
-  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
-  // https://crbug.com/844469
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      !features::IsAshInBrowserProcess()) {
-    return;
-  }
-
+// Verify that RenderWidgetHostViewChildFrame passes the child's SurfaceId to
+// FrameConnectorDelegate to be sent to the embedding renderer.
+TEST_F(RenderWidgetHostViewChildFrameTest, PassesSurfaceId) {
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
   float scale_factor = 1.f;
-  viz::LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
 
   view_->SetSize(view_size);
   view_->Show();
 
-  view_->SubmitCompositorFrame(
-      local_surface_id,
-      CreateDelegatedFrame(scale_factor, view_size, view_rect), base::nullopt);
+  viz::SurfaceId surface_id(view_->GetFrameSinkId(),
+                            view_->GetLocalSurfaceId());
+  viz::SurfaceInfo surface_info(surface_id, scale_factor, view_size);
+  view_->OnFirstSurfaceActivation(surface_info);
 
-  viz::SurfaceId id = GetSurfaceId();
-  if (id.is_valid()) {
-#if !defined(OS_ANDROID)
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    viz::SurfaceManager* manager = factory->GetContextFactoryPrivate()
-                                       ->GetFrameSinkManager()
-                                       ->surface_manager();
-    viz::Surface* surface = manager->GetSurfaceForId(id);
-    EXPECT_TRUE(surface);
-#endif
-
-    // Surface ID should have been passed to FrameConnectorDelegate to
-    // be sent to the embedding renderer.
-    EXPECT_EQ(viz::SurfaceInfo(id, scale_factor, view_size),
-              test_frame_connector_->last_surface_info_);
-  }
+  EXPECT_EQ(surface_info, test_frame_connector_->last_surface_info_);
 }
 
 // Tests that the viewport intersection rect is dispatched to the RenderWidget
