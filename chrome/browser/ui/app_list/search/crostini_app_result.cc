@@ -34,11 +34,6 @@ void CrostiniAppResult::Open(int event_flags) {
   ChromeLauncherController::instance()->ActivateApp(
       id(), ash::LAUNCH_FROM_APP_LIST_SEARCH, event_flags,
       controller()->GetAppListDisplayId());
-
-  // Manually dismiss the app list as it can take several seconds for apps to
-  // launch.
-  if (!controller()->IsHomeLauncherEnabledInTabletMode())
-    controller()->DismissView();
 }
 
 void CrostiniAppResult::GetContextMenuModel(GetMenuModelCallback callback) {

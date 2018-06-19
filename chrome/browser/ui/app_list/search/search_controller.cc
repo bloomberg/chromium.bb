@@ -13,14 +13,17 @@
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 
 namespace app_list {
 
-SearchController::SearchController(AppListModelUpdater* model_updater)
-    : mixer_(std::make_unique<Mixer>(model_updater)) {}
+SearchController::SearchController(AppListModelUpdater* model_updater,
+                                   AppListControllerDelegate* list_controller)
+    : mixer_(std::make_unique<Mixer>(model_updater)),
+      list_controller_(list_controller) {}
 
 SearchController::~SearchController() {}
 
@@ -42,6 +45,11 @@ void SearchController::OpenResult(ChromeSearchResult* result, int event_flags) {
     return;
 
   result->Open(event_flags);
+
+  // Launching apps can take some time. It looks nicer to dismiss the app list.
+  // Do not close app list for home launcher.
+  if (!list_controller_->IsHomeLauncherEnabledInTabletMode())
+    list_controller_->DismissView();
 }
 
 void SearchController::InvokeResultAction(ChromeSearchResult* result,

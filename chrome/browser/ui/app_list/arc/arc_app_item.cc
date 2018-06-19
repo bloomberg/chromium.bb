@@ -54,15 +54,10 @@ void ArcAppItem::Activate(int event_flags) {
                       GetController()->GetAppListDisplayId())) {
     return;
   }
-
-  // Manually close app_list view because focus is not changed on ARC app start,
-  // and current view remains active. Do not close app list for home launcher.
-  if (!GetController()->IsHomeLauncherEnabledInTabletMode())
-    GetController()->DismissView();
 }
 
 void ArcAppItem::ExecuteLaunchCommand(int event_flags) {
-  Activate(event_flags);
+  PerformActivate(event_flags);
 }
 
 void ArcAppItem::SetName(const std::string& name) {

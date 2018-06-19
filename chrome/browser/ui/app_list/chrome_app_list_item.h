@@ -84,6 +84,9 @@ class ChromeAppListItem {
   void SetChromeName(const std::string& name);
   void SetChromePosition(const syncer::StringOrdinal& position);
 
+  // Call |Activate()| and dismiss launcher if necessary.
+  void PerformActivate(int event_flags);
+
   // Activates (opens) the item. Does nothing by default.
   virtual void Activate(int event_flags);
 

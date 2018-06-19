@@ -61,7 +61,7 @@ std::unique_ptr<SearchController> CreateSearchController(
     AppListModelUpdater* model_updater,
     AppListControllerDelegate* list_controller) {
   std::unique_ptr<SearchController> controller =
-      std::make_unique<SearchController>(model_updater);
+      std::make_unique<SearchController>(model_updater, list_controller);
 
   // Add mixer groups. There are four main groups: answer card, apps, webstore
   // and omnibox. Each group has a "soft" maximum number of results. However, if
