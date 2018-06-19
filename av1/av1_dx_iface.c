@@ -180,27 +180,20 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
                                                 aom_codec_stream_info_t *si,
                                                 int *is_intra_only) {
   int intra_only_flag = 0;
+  int got_sequence_header = 0;
+  int found_keyframe = 0;
 
   if (data + data_sz <= data || data_sz < 1) return AOM_CODEC_INVALID_PARAM;
 
   si->w = 0;
   si->h = 0;
-  si->is_kf = 0;
-
-  // TODO(tomfinegan): This function needs Sequence and Frame Header OBUs to
-  // operate properly. At present it hard codes the values to 1 for the keyframe
-  // and intra only flags, and assumes the data being parsed is a Sequence
-  // Header OBU.
-  // NOTE(david.barker): In addition, this code currently requires the video
-  // stream to begin with an optional OBU_TEMPORAL_DELIMITER followed by an
-  // OBU_SEQUENCE_HEADER.
-  intra_only_flag = 1;
-  si->is_kf = 1;
+  si->is_kf = 0;  // is_kf indicates whether the current packet contains a RAP
 
   ObuHeader obu_header;
   memset(&obu_header, 0, sizeof(obu_header));
   size_t payload_size = 0;
   size_t bytes_read = 0;
+  int reduced_still_picture_hdr = 0;
   aom_codec_err_t status = aom_read_obu_header_and_size(
       data, data_sz, si->is_annexb, &obu_header, &payload_size, &bytes_read);
   if (status != AOM_CODEC_OK) return status;
@@ -217,35 +210,65 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
         data, data_sz, si->is_annexb, &obu_header, &payload_size, &bytes_read);
     if (status != AOM_CODEC_OK) return status;
   }
+  while (1) {
+    data += bytes_read;
+    data_sz -= bytes_read;
+    const uint8_t *payload_start = data;
+    // Check that the selected OBU is a sequence header
+    if (obu_header.type == OBU_SEQUENCE_HEADER) {
+      // Sanity check on sequence header size
+      if (data_sz < 2) return AOM_CODEC_CORRUPT_FRAME;
+      // Read a few values from the sequence header payload
+      struct aom_read_bit_buffer rb = { data, data + data_sz, 0, NULL, NULL };
 
-  // Check that the selected OBU is a sequence header
-  if (obu_header.type != OBU_SEQUENCE_HEADER) return AOM_CODEC_UNSUP_BITSTREAM;
+      av1_read_profile(&rb);  // profile
+      const int still_picture = aom_rb_read_bit(&rb);
+      reduced_still_picture_hdr = aom_rb_read_bit(&rb);
 
-  // Read a few values from the sequence header payload
-  data += bytes_read;
-  data_sz -= bytes_read;
-  struct aom_read_bit_buffer rb = { data, data + data_sz, 0, NULL, NULL };
+      if (!still_picture && reduced_still_picture_hdr) {
+        return AOM_CODEC_UNSUP_BITSTREAM;
+      }
 
-  av1_read_profile(&rb);  // profile
-  const int still_picture = aom_rb_read_bit(&rb);
-  const int reduced_still_picture_hdr = aom_rb_read_bit(&rb);
+      if (parse_operating_points(&rb, reduced_still_picture_hdr, si) !=
+          AOM_CODEC_OK) {
+        return AOM_CODEC_ERROR;
+      }
 
-  if (!still_picture && reduced_still_picture_hdr) {
-    return AOM_CODEC_UNSUP_BITSTREAM;
+      int num_bits_width = aom_rb_read_literal(&rb, 4) + 1;
+      int num_bits_height = aom_rb_read_literal(&rb, 4) + 1;
+      int max_frame_width = aom_rb_read_literal(&rb, num_bits_width) + 1;
+      int max_frame_height = aom_rb_read_literal(&rb, num_bits_height) + 1;
+      si->w = max_frame_width;
+      si->h = max_frame_height;
+      got_sequence_header = 1;
+    } else if (obu_header.type == OBU_FRAME_HEADER ||
+               obu_header.type == OBU_FRAME) {
+      if (got_sequence_header && reduced_still_picture_hdr) {
+        found_keyframe = 1;
+        break;
+      } else {
+        // make sure we have enough bits to get the frame type out
+        if (data_sz < 1) return AOM_CODEC_CORRUPT_FRAME;
+        struct aom_read_bit_buffer rb = { data, data + data_sz, 0, NULL, NULL };
+        const int show_existing_frame = aom_rb_read_bit(&rb);
+        if (!show_existing_frame) {
+          const FRAME_TYPE frame_type = (FRAME_TYPE)aom_rb_read_literal(&rb, 2);
+          if (frame_type == KEY_FRAME) {
+            found_keyframe = 1;
+            break;  // Stop here as no further OBUs will change the outcome.
+          }
+        }
+      }
+    }
+    // skip past any unread OBU header data
+    data = payload_start + payload_size;
+    data_sz -= payload_size;
+    if (data_sz <= 0) break;  // exit if we're out of OBUs
+    status = aom_read_obu_header_and_size(
+        data, data_sz, si->is_annexb, &obu_header, &payload_size, &bytes_read);
+    if (status != AOM_CODEC_OK) return status;
   }
-
-  if (parse_operating_points(&rb, reduced_still_picture_hdr, si) !=
-      AOM_CODEC_OK) {
-    return AOM_CODEC_ERROR;
-  }
-
-  int num_bits_width = aom_rb_read_literal(&rb, 4) + 1;
-  int num_bits_height = aom_rb_read_literal(&rb, 4) + 1;
-  int max_frame_width = aom_rb_read_literal(&rb, num_bits_width) + 1;
-  int max_frame_height = aom_rb_read_literal(&rb, num_bits_height) + 1;
-  si->w = max_frame_width;
-  si->h = max_frame_height;
-
+  if (got_sequence_header && found_keyframe) si->is_kf = 1;
   if (is_intra_only != NULL) *is_intra_only = intra_only_flag;
   return AOM_CODEC_OK;
 }
