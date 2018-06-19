@@ -67,6 +67,7 @@ transitions to **Fixed**.
 close. Make sure to read bug comments where developer might point out that it
 needs more CLs, et c. Wait 24 hours before closing ClusterFuzz bugs, to give
 ClusterFuzz a chance to close it automatically.
+  * [Starting point](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=Type%3D%22Bug-Security%22+%22Change-Id:%22)
 * Look at open security bug reports and check that progress is occurring.
 * Generally keep an eye on all bug traffic in case anything needs action or
 replying to.
