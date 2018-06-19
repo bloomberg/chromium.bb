@@ -32,10 +32,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableHandshakeHandler {
   FidoCableHandshakeHandler(FidoCableDevice* device,
                             base::span<const uint8_t, 8> nonce,
                             base::span<const uint8_t, 32> session_pre_key);
-  ~FidoCableHandshakeHandler();
+  virtual ~FidoCableHandshakeHandler();
 
-  void InitiateCableHandshake(FidoDevice::DeviceCallback callback);
-  bool ValidateAuthenticatorHandshakeMessage(
+  virtual void InitiateCableHandshake(FidoDevice::DeviceCallback callback);
+  virtual bool ValidateAuthenticatorHandshakeMessage(
       base::span<const uint8_t> response);
 
  private:

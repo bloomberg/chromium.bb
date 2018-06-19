@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/fido/fido_ble_connection.h"
@@ -16,22 +15,12 @@
 
 namespace device {
 
-namespace switches {
-constexpr char kEnableCableEncryption[] = "enable-cable-encryption";
-}  // namespace switches
-
 namespace {
 
 // Maximum size of EncryptionData::read_sequence_num or
 // EncryptionData::write_sequence_num allowed. If we encounter
 // counter larger than |kMaxCounter| FidoCableDevice should error out.
 constexpr size_t kMaxCounter = (1 << 24) - 1;
-
-// static
-bool IsEncryptionEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kEnableCableEncryption);
-}
 
 base::Optional<std::vector<uint8_t>> ConstructEncryptionNonce(
     base::span<const uint8_t> nonce,
@@ -49,17 +38,20 @@ base::Optional<std::vector<uint8_t>> ConstructEncryptionNonce(
 }
 
 bool EncryptOutgoingMessage(
-    const FidoCableDevice::EncryptionData& encryption_data,
+    const base::Optional<FidoCableDevice::EncryptionData>& encryption_data,
     std::vector<uint8_t>* message_to_encrypt) {
+  if (!encryption_data)
+    return false;
+
   const auto nonce = ConstructEncryptionNonce(
-      encryption_data.nonce, true /* is_sender_client */,
-      encryption_data.write_sequence_num);
+      encryption_data->nonce, true /* is_sender_client */,
+      encryption_data->write_sequence_num);
   if (!nonce)
     return false;
 
-  DCHECK_EQ(nonce->size(), encryption_data.aes_key.NonceLength());
+  DCHECK_EQ(nonce->size(), encryption_data->aes_key.NonceLength());
   std::string ciphertext;
-  bool encryption_success = encryption_data.aes_key.Seal(
+  bool encryption_success = encryption_data->aes_key.Seal(
       fido_parsing_utils::ConvertToStringPiece(*message_to_encrypt),
       fido_parsing_utils::ConvertToStringPiece(*nonce),
       std::string(1, base::strict_cast<uint8_t>(FidoBleDeviceCommand::kMsg)),
@@ -131,23 +123,14 @@ FidoCableDevice::~FidoCableDevice() = default;
 
 void FidoCableDevice::DeviceTransact(std::vector<uint8_t> command,
                                      DeviceCallback callback) {
-  if (!encryption_data_) {
+  if (!EncryptOutgoingMessage(encryption_data_, &command)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     state_ = State::kDeviceError;
     return;
-  }
-
-  if (IsEncryptionEnabled()) {
-    if (!EncryptOutgoingMessage(*encryption_data_, &command)) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      state_ = State::kDeviceError;
-      return;
     }
 
     ++encryption_data_->write_sequence_num;
-  }
 
   AddToPendingFrames(FidoBleDeviceCommand::kMsg, std::move(command),
                      std::move(callback));
@@ -159,8 +142,7 @@ void FidoCableDevice::OnResponseFrame(FrameCallback callback,
   ResetTransaction();
   state_ = frame ? State::kReady : State::kDeviceError;
 
-  if (IsEncryptionEnabled() && frame &&
-      frame->command() != FidoBleDeviceCommand::kControl) {
+  if (frame && frame->command() != FidoBleDeviceCommand::kControl) {
     if (!DecryptIncomingMessage(encryption_data_, &frame.value())) {
       state_ = State::kDeviceError;
       frame = base::nullopt;

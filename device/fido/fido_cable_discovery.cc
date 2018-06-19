@@ -19,6 +19,7 @@
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/fido/fido_ble_uuids.h"
 #include "device/fido/fido_cable_device.h"
+#include "device/fido/fido_cable_handshake_handler.h"
 #include "device/fido/fido_parsing_utils.h"
 
 namespace device {
@@ -122,11 +123,11 @@ FidoCableDiscovery::CableDiscoveryData::CableDiscoveryData(
     uint8_t version,
     const EidArray& client_eid,
     const EidArray& authenticator_eid,
-    const SessionKeyArray& session_key)
+    const SessionPreKeyArray& session_pre_key)
     : version(version),
       client_eid(client_eid),
       authenticator_eid(authenticator_eid),
-      session_key(session_key) {}
+      session_pre_key(session_pre_key) {}
 
 FidoCableDiscovery::CableDiscoveryData::CableDiscoveryData(
     const CableDiscoveryData& data) = default;
@@ -146,6 +147,15 @@ FidoCableDiscovery::FidoCableDiscovery(
 FidoCableDiscovery::~FidoCableDiscovery() {
   for (auto advertisement : advertisements_)
     advertisement.second->Unregister(base::DoNothing(), base::DoNothing());
+}
+
+std::unique_ptr<FidoCableHandshakeHandler>
+FidoCableDiscovery::CreateHandshakeHandler(
+    FidoCableDevice* device,
+    base::span<const uint8_t, kSessionPreKeySize> session_pre_key,
+    base::span<const uint8_t, 8> nonce) {
+  return std::make_unique<FidoCableHandshakeHandler>(device, nonce,
+                                                     session_pre_key);
 }
 
 void FidoCableDiscovery::DeviceAdded(BluetoothAdapter* adapter,
@@ -254,11 +264,42 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
       found_cable_device_data->client_eid, 0, &nonce);
   if (!extract_success)
     return;
+
   auto cable_device = std::make_unique<FidoCableDevice>(device->GetAddress());
-  cable_device->SetEncryptionData(
-      std::string(found_cable_device_data->session_key.begin(),
-                  found_cable_device_data->session_key.end()),
-      nonce);
+  // At most one handshake messages should be exchanged for each Cable device.
+  if (!base::ContainsKey(cable_handshake_handlers_, cable_device->GetId())) {
+    ConductEncryptionHandshake(std::move(cable_device),
+                               found_cable_device_data->session_pre_key, nonce);
+  }
+}
+
+void FidoCableDiscovery::ConductEncryptionHandshake(
+    std::unique_ptr<FidoCableDevice> cable_device,
+    base::span<const uint8_t, kSessionPreKeySize> session_pre_key,
+    base::span<const uint8_t, 8> nonce) {
+  auto handshake_handler =
+      CreateHandshakeHandler(cable_device.get(), session_pre_key, nonce);
+  auto* const handshake_handler_ptr = handshake_handler.get();
+  cable_handshake_handlers_.emplace(cable_device->GetId(),
+                                    std::move(handshake_handler));
+
+  handshake_handler_ptr->InitiateCableHandshake(
+      base::BindOnce(&FidoCableDiscovery::ValidateAuthenticatorHandshakeMessage,
+                     weak_factory_.GetWeakPtr(), std::move(cable_device),
+                     handshake_handler_ptr));
+}
+
+void FidoCableDiscovery::ValidateAuthenticatorHandshakeMessage(
+    std::unique_ptr<FidoCableDevice> cable_device,
+    FidoCableHandshakeHandler* handshake_handler,
+    base::Optional<std::vector<uint8_t>> handshake_response) {
+  if (!handshake_response)
+    return;
+
+  if (!handshake_handler->ValidateAuthenticatorHandshakeMessage(
+          *handshake_response))
+    return;
+
   AddDevice(std::move(cable_device));
 }
 
