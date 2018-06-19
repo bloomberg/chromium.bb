@@ -489,7 +489,6 @@ typedef struct InterModeSearchState {
   int num_available_refs;
   int64_t dist_refs[REF_FRAMES];
   int dist_order_refs[REF_FRAMES];
-  uint32_t mode_skip_mask[REF_FRAMES];
   int64_t mode_threshold[MAX_MODES];
   PREDICTION_MODE best_intra_mode;
   int64_t best_intra_rd;
@@ -9447,6 +9446,8 @@ static void set_params_rd_pick_inter_mode(
   int min_pred_mv_sad = INT_MAX;
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame)
     min_pred_mv_sad = AOMMIN(min_pred_mv_sad, x->pred_mv_sad[ref_frame]);
+
+  memset(mode_skip_mask, 0, REF_FRAMES * sizeof(*mode_skip_mask));
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame])) {
       // Skip checking missing references in both single and compound reference
@@ -9666,8 +9667,6 @@ static void init_inter_mode_search_state(InterModeSearchState *search_state,
   memset(search_state->dist_order_refs, -1,
          sizeof(search_state->dist_order_refs));
 
-  av1_zero(search_state->mode_skip_mask);
-
   for (int i = 0; i <= LAST_NEW_MV_INDEX; ++i)
     search_state->mode_threshold[i] = 0;
   const int *const rd_threshes = cpi->rd.threshes[segment_id][bsize];
@@ -9698,11 +9697,9 @@ static void init_inter_mode_search_state(InterModeSearchState *search_state,
       search_state->modelled_rd[i][ref_frame] = INT64_MAX;
 }
 
-static int inter_mode_search_order_independent_skip(const AV1_COMP *cpi,
-                                                    const MACROBLOCK *x,
-                                                    BLOCK_SIZE bsize,
-                                                    int mode_index, int mi_row,
-                                                    int mi_col) {
+static int inter_mode_search_order_independent_skip(
+    const AV1_COMP *cpi, const MACROBLOCK *x, BLOCK_SIZE bsize, int mode_index,
+    int mi_row, int mi_col, uint32_t *mode_skip_mask) {
   const SPEED_FEATURES *const sf = &cpi->sf;
   const AV1_COMMON *const cm = &cpi->common;
   const struct segmentation *const seg = &cm->seg;
@@ -9811,6 +9808,10 @@ static int inter_mode_search_order_independent_skip(const AV1_COMP *cpi,
          get_relative_dist(cm, ref_offsets[1], cm->frame_offset) > 0))
       return 1;
   }
+
+  if (mode_skip_mask[ref_frame[0]] & (1 << this_mode)) {
+    return 1;
+  }
   return 0;
 }
 
@@ -9860,6 +9861,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   int *mode_map = tile_data->mode_map[bsize];
   const int rows = block_size_high[bsize];
   const int cols = block_size_wide[bsize];
+  uint32_t mode_skip_mask[REF_FRAMES];
 
   InterModeSearchState search_state;
   init_inter_mode_search_state(&search_state, cpi, tile_data, x, bsize,
@@ -9880,7 +9882,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   // init params, set frame modes, speed features
   set_params_rd_pick_inter_mode(
       cpi, x, &args, bsize, mi_row, mi_col, search_state.ref_frame_skip_mask,
-      search_state.mode_skip_mask, ref_costs_single, ref_costs_comp, yv12_mb);
+      mode_skip_mask, ref_costs_single, ref_costs_comp, yv12_mb);
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
   int64_t best_est_rd = INT64_MAX;
@@ -9905,8 +9907,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     x->skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
 
-    if (inter_mode_search_order_independent_skip(cpi, x, bsize, mode_index,
-                                                 mi_row, mi_col))
+    if (inter_mode_search_order_independent_skip(
+            cpi, x, bsize, mode_index, mi_row, mi_col, mode_skip_mask))
       continue;
 
     if (ref_frame == INTRA_FRAME) {
@@ -9930,8 +9932,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         (search_state.ref_frame_skip_mask[1] &
          (1 << AOMMAX(0, second_ref_frame))))
       continue;
-
-    if (search_state.mode_skip_mask[ref_frame] & (1 << this_mode)) continue;
 
     if (search_state.best_rd < search_state.mode_threshold[mode_index])
       continue;
