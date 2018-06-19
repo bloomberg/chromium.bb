@@ -53,7 +53,7 @@ void SimpleThread::StartAsync() {
                                                &thread_, options_.priority)
           : PlatformThread::CreateNonJoinableWithPriority(
                 options_.stack_size, this, options_.priority);
-  DCHECK(success);
+  CHECK(success);
 }
 
 PlatformThreadId SimpleThread::tid() {
