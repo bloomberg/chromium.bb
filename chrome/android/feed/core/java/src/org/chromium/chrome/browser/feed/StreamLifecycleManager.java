@@ -11,6 +11,7 @@ import com.google.android.libraries.feed.api.stream.Stream;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -160,7 +161,7 @@ class StreamLifecycleManager implements ApplicationStatus.ActivityStateListener 
 
     /** Calls {@link Stream#onHide()}. */
     private void hide() {
-        if (mStreamState == HIDDEN || mStreamState == DESTROYED) return;
+        if (mStreamState == HIDDEN || mStreamState == CREATED || mStreamState == DESTROYED) return;
 
         deactivate();
         mStreamState = HIDDEN;
@@ -179,5 +180,10 @@ class StreamLifecycleManager implements ApplicationStatus.ActivityStateListener 
         mTab.removeObserver(mTabObserver);
         ApplicationStatus.unregisterActivityStateListener(this);
         mStream.onDestroy();
+    }
+
+    @VisibleForTesting
+    TabObserver getTabObserverForTesting() {
+        return mTabObserver;
     }
 }
