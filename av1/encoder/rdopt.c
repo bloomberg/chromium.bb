@@ -484,7 +484,6 @@ typedef struct InterModeSearchState {
   int best_mode_skippable;
   int best_skip2;
   int best_mode_index;
-  uint16_t ref_frame_skip_mask[2];
   int skip_intra_modes;
   int num_available_refs;
   int64_t dist_refs[REF_FRAMES];
@@ -9447,6 +9446,9 @@ static void set_params_rd_pick_inter_mode(
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame)
     min_pred_mv_sad = AOMMIN(min_pred_mv_sad, x->pred_mv_sad[ref_frame]);
 
+  for (int i = 0; i < 2; ++i) {
+    ref_frame_skip_mask[i] = 0;
+  }
   memset(mode_skip_mask, 0, REF_FRAMES * sizeof(*mode_skip_mask));
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame])) {
@@ -9658,7 +9660,6 @@ static void init_inter_mode_search_state(InterModeSearchState *search_state,
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = xd->mi[0];
   const unsigned char segment_id = mbmi->segment_id;
-  av1_zero(search_state->ref_frame_skip_mask);
 
   search_state->skip_intra_modes = 0;
 
@@ -9699,7 +9700,8 @@ static void init_inter_mode_search_state(InterModeSearchState *search_state,
 
 static int inter_mode_search_order_independent_skip(
     const AV1_COMP *cpi, const MACROBLOCK *x, BLOCK_SIZE bsize, int mode_index,
-    int mi_row, int mi_col, uint32_t *mode_skip_mask) {
+    int mi_row, int mi_col, uint32_t *mode_skip_mask,
+    uint16_t *ref_frame_skip_mask) {
   const SPEED_FEATURES *const sf = &cpi->sf;
   const AV1_COMMON *const cm = &cpi->common;
   const struct segmentation *const seg = &cm->seg;
@@ -9812,6 +9814,12 @@ static int inter_mode_search_order_independent_skip(
   if (mode_skip_mask[ref_frame[0]] & (1 << this_mode)) {
     return 1;
   }
+
+  if ((ref_frame_skip_mask[0] & (1 << ref_frame[0])) &&
+      (ref_frame_skip_mask[1] & (1 << AOMMAX(0, ref_frame[1])))) {
+    return 1;
+  }
+
   return 0;
 }
 
@@ -9862,6 +9870,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   const int rows = block_size_high[bsize];
   const int cols = block_size_wide[bsize];
   uint32_t mode_skip_mask[REF_FRAMES];
+  uint16_t ref_frame_skip_mask[2];
 
   InterModeSearchState search_state;
   init_inter_mode_search_state(&search_state, cpi, tile_data, x, bsize,
@@ -9880,9 +9889,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   av1_invalid_rd_stats(rd_cost);
 
   // init params, set frame modes, speed features
-  set_params_rd_pick_inter_mode(
-      cpi, x, &args, bsize, mi_row, mi_col, search_state.ref_frame_skip_mask,
-      mode_skip_mask, ref_costs_single, ref_costs_comp, yv12_mb);
+  set_params_rd_pick_inter_mode(cpi, x, &args, bsize, mi_row, mi_col,
+                                ref_frame_skip_mask, mode_skip_mask,
+                                ref_costs_single, ref_costs_comp, yv12_mb);
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
   int64_t best_est_rd = INT64_MAX;
@@ -9907,8 +9916,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     x->skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
 
-    if (inter_mode_search_order_independent_skip(
-            cpi, x, bsize, mode_index, mi_row, mi_col, mode_skip_mask))
+    if (inter_mode_search_order_independent_skip(cpi, x, bsize, mode_index,
+                                                 mi_row, mi_col, mode_skip_mask,
+                                                 ref_frame_skip_mask))
       continue;
 
     if (ref_frame == INTRA_FRAME) {
@@ -9927,11 +9937,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         }
       }
     }
-
-    if ((search_state.ref_frame_skip_mask[0] & (1 << ref_frame)) &&
-        (search_state.ref_frame_skip_mask[1] &
-         (1 << AOMMAX(0, second_ref_frame))))
-      continue;
 
     if (search_state.best_rd < search_state.mode_threshold[mode_index])
       continue;
