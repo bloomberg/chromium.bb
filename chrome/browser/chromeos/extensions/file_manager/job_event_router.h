@@ -99,7 +99,7 @@ class JobEventRouter : public drive::JobListObserver {
   int64_t num_total_bytes_;
 
   // Thread checker.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
