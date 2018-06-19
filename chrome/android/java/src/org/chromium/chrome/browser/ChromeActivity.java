@@ -2468,7 +2468,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     private void clearToolbarResourceCache() {
         ControlContainer controlContainer = (ControlContainer) findViewById(R.id.control_container);
-        controlContainer.getToolbarResourceAdapter().dropCachedBitmap();
+        if (controlContainer != null) {
+            controlContainer.getToolbarResourceAdapter().dropCachedBitmap();
+        }
     }
 
     @Override
