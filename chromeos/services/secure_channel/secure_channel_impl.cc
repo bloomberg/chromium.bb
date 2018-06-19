@@ -12,10 +12,14 @@
 #include "base/stl_util.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/active_connection_manager_impl.h"
+#include "chromeos/services/secure_channel/ble_connection_manager_impl.h"
+#include "chromeos/services/secure_channel/ble_service_data_helper_impl.h"
 #include "chromeos/services/secure_channel/client_connection_parameters_impl.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/pending_connection_manager_impl.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/authenticated_channel.h"
+#include "chromeos/services/secure_channel/timer_factory_impl.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 
 namespace chromeos {
 
@@ -40,8 +44,9 @@ void SecureChannelImpl::Factory::SetFactoryForTesting(Factory* test_factory) {
 
 SecureChannelImpl::Factory::~Factory() = default;
 
-std::unique_ptr<SecureChannelBase> SecureChannelImpl::Factory::BuildInstance() {
-  return base::WrapUnique(new SecureChannelImpl());
+std::unique_ptr<mojom::SecureChannel> SecureChannelImpl::Factory::BuildInstance(
+    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) {
+  return base::WrapUnique(new SecureChannelImpl(bluetooth_adapter));
 }
 
 SecureChannelImpl::ConnectionRequestWaitingForDisconnection::
@@ -64,17 +69,26 @@ SecureChannelImpl::ConnectionRequestWaitingForDisconnection::operator=(
 SecureChannelImpl::ConnectionRequestWaitingForDisconnection::
     ~ConnectionRequestWaitingForDisconnection() = default;
 
-SecureChannelImpl::SecureChannelImpl()
-    : active_connection_manager_(
-          ActiveConnectionManagerImpl::Factory::Get()->BuildInstance(
-              this /* delegate */)),
+SecureChannelImpl::SecureChannelImpl(
+    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter)
+    : timer_factory_(TimerFactoryImpl::Factory::Get()->BuildInstance()),
+      remote_device_cache_(
+          cryptauth::RemoteDeviceCache::Factory::Get()->BuildInstance()),
+      ble_service_data_helper_(
+          BleServiceDataHelperImpl::Factory::Get()->BuildInstance(
+              remote_device_cache_.get())),
+      ble_connection_manager_(
+          BleConnectionManagerImpl::Factory::Get()->BuildInstance(
+              bluetooth_adapter,
+              ble_service_data_helper_.get(),
+              timer_factory_.get())),
       pending_connection_manager_(
           PendingConnectionManagerImpl::Factory::Get()->BuildInstance(
               this /* delegate */,
-              // TODO(khorimoto): Pass the actual BleConnectionManager here.
-              nullptr /* ble_connection_manager */)),
-      remote_device_cache_(
-          cryptauth::RemoteDeviceCache::Factory::Get()->BuildInstance()) {}
+              ble_connection_manager_.get())),
+      active_connection_manager_(
+          ActiveConnectionManagerImpl::Factory::Get()->BuildInstance(
+              this /* delegate */)) {}
 
 SecureChannelImpl::~SecureChannelImpl() = default;
 

@@ -17,12 +17,19 @@
 #include "chromeos/services/secure_channel/pending_connection_manager.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
-#include "chromeos/services/secure_channel/secure_channel_base.h"
 #include "components/cryptauth/remote_device_cache.h"
+
+namespace device {
+class BluetoothAdapter;
+}  // namespace device
 
 namespace chromeos {
 
 namespace secure_channel {
+
+class BleConnectionManager;
+class BleServiceDataHelper;
+class TimerFactory;
 
 // Concrete SecureChannelImpl implementation, which contains three pieces:
 // (1) PendingConnectionManager: Attempts to create connections to remote
@@ -30,7 +37,7 @@ namespace secure_channel {
 // (2) ActiveConnectionManager: Maintains connections to remote devices, sharing
 //     a single connection with multiple clients when appropriate.
 // (3) RemoteDeviceCache: Caches devices within this service.
-class SecureChannelImpl : public SecureChannelBase,
+class SecureChannelImpl : public mojom::SecureChannel,
                           public ActiveConnectionManager::Delegate,
                           public PendingConnectionManager::Delegate {
  public:
@@ -39,7 +46,8 @@ class SecureChannelImpl : public SecureChannelBase,
     static Factory* Get();
     static void SetFactoryForTesting(Factory* test_factory);
     virtual ~Factory();
-    virtual std::unique_ptr<SecureChannelBase> BuildInstance();
+    virtual std::unique_ptr<mojom::SecureChannel> BuildInstance(
+        scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
 
    private:
     static Factory* test_factory_;
@@ -48,7 +56,7 @@ class SecureChannelImpl : public SecureChannelBase,
   ~SecureChannelImpl() override;
 
  private:
-  SecureChannelImpl();
+  SecureChannelImpl(scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
 
   enum class InvalidRemoteDeviceReason { kInvalidPublicKey, kInvalidPsk };
 
@@ -135,9 +143,12 @@ class SecureChannelImpl : public SecureChannelBase,
       ApiFunctionName api_fn_name,
       const cryptauth::RemoteDevice& device);
 
-  std::unique_ptr<ActiveConnectionManager> active_connection_manager_;
-  std::unique_ptr<PendingConnectionManager> pending_connection_manager_;
+  std::unique_ptr<TimerFactory> timer_factory_;
   std::unique_ptr<cryptauth::RemoteDeviceCache> remote_device_cache_;
+  std::unique_ptr<BleServiceDataHelper> ble_service_data_helper_;
+  std::unique_ptr<BleConnectionManager> ble_connection_manager_;
+  std::unique_ptr<PendingConnectionManager> pending_connection_manager_;
+  std::unique_ptr<ActiveConnectionManager> active_connection_manager_;
 
   base::flat_map<ConnectionDetails,
                  std::vector<ConnectionRequestWaitingForDisconnection>>

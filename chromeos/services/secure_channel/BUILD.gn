@@ -95,6 +95,8 @@ static_library("secure_channel") {
     "secure_channel_disconnector_impl.h",
     "secure_channel_impl.cc",
     "secure_channel_impl.h",
+    "secure_channel_initializer.cc",
+    "secure_channel_initializer.h",
     "secure_channel_service.cc",
     "secure_channel_service.h",
     "shared_resource_scheduler.cc",

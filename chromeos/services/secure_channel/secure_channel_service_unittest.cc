@@ -11,20 +11,30 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/test_simple_task_runner.h"
 #include "chromeos/services/secure_channel/active_connection_manager_impl.h"
+#include "chromeos/services/secure_channel/ble_connection_manager_impl.h"
+#include "chromeos/services/secure_channel/ble_service_data_helper_impl.h"
 #include "chromeos/services/secure_channel/client_connection_parameters_impl.h"
 #include "chromeos/services/secure_channel/fake_active_connection_manager.h"
+#include "chromeos/services/secure_channel/fake_ble_connection_manager.h"
+#include "chromeos/services/secure_channel/fake_ble_service_data_helper.h"
 #include "chromeos/services/secure_channel/fake_client_connection_parameters.h"
 #include "chromeos/services/secure_channel/fake_connection_delegate.h"
 #include "chromeos/services/secure_channel/fake_pending_connection_manager.h"
+#include "chromeos/services/secure_channel/fake_timer_factory.h"
 #include "chromeos/services/secure_channel/pending_connection_manager_impl.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/fake_authenticated_channel.h"
 #include "chromeos/services/secure_channel/public/mojom/constants.mojom.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
+#include "chromeos/services/secure_channel/secure_channel_initializer.h"
 #include "chromeos/services/secure_channel/secure_channel_service.h"
+#include "chromeos/services/secure_channel/timer_factory_impl.h"
 #include "components/cryptauth/remote_device_cache.h"
 #include "components/cryptauth/remote_device_test_util.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,6 +46,155 @@ namespace {
 
 const size_t kNumTestDevices = 6;
 
+class FakeTimerFactoryFactory : public TimerFactoryImpl::Factory {
+ public:
+  FakeTimerFactoryFactory() = default;
+  ~FakeTimerFactoryFactory() override = default;
+
+  FakeTimerFactory* instance() { return instance_; }
+
+ private:
+  // TimerFactoryImpl::Factory:
+  std::unique_ptr<TimerFactory> BuildInstance() override {
+    EXPECT_FALSE(instance_);
+    auto instance = std::make_unique<FakeTimerFactory>();
+    instance_ = instance.get();
+    return instance;
+  }
+
+  FakeTimerFactory* instance_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeTimerFactoryFactory);
+};
+
+class TestRemoteDeviceCacheFactory
+    : public cryptauth::RemoteDeviceCache::Factory {
+ public:
+  TestRemoteDeviceCacheFactory() = default;
+  ~TestRemoteDeviceCacheFactory() override = default;
+
+  cryptauth::RemoteDeviceCache* instance() { return instance_; }
+
+ private:
+  // cryptauth::RemoteDeviceCache::Factory:
+  std::unique_ptr<cryptauth::RemoteDeviceCache> BuildInstance() override {
+    EXPECT_FALSE(instance_);
+    auto instance = cryptauth::RemoteDeviceCache::Factory::BuildInstance();
+    instance_ = instance.get();
+    return instance;
+  }
+
+  cryptauth::RemoteDeviceCache* instance_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(TestRemoteDeviceCacheFactory);
+};
+
+class FakeBleServiceDataHelperFactory
+    : public BleServiceDataHelperImpl::Factory {
+ public:
+  FakeBleServiceDataHelperFactory(
+      TestRemoteDeviceCacheFactory* test_remote_device_cache_factory)
+      : test_remote_device_cache_factory_(test_remote_device_cache_factory) {}
+
+  ~FakeBleServiceDataHelperFactory() override = default;
+
+  FakeBleServiceDataHelper* instance() { return instance_; }
+
+ private:
+  // BleServiceDataHelperImpl::Factory:
+  std::unique_ptr<BleServiceDataHelper> BuildInstance(
+      cryptauth::RemoteDeviceCache* remote_device_cache) override {
+    EXPECT_FALSE(instance_);
+    EXPECT_EQ(test_remote_device_cache_factory_->instance(),
+              remote_device_cache);
+
+    auto instance = std::make_unique<FakeBleServiceDataHelper>();
+    instance_ = instance.get();
+    return instance;
+  }
+
+  TestRemoteDeviceCacheFactory* test_remote_device_cache_factory_;
+
+  FakeBleServiceDataHelper* instance_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeBleServiceDataHelperFactory);
+};
+
+class FakeBleConnectionManagerFactory
+    : public BleConnectionManagerImpl::Factory {
+ public:
+  FakeBleConnectionManagerFactory(
+      device::BluetoothAdapter* expected_bluetooth_adapter,
+      FakeBleServiceDataHelperFactory* fake_ble_service_data_helper_factory,
+      FakeTimerFactoryFactory* fake_timer_factory_factory)
+      : expected_bluetooth_adapter_(expected_bluetooth_adapter),
+        fake_ble_service_data_helper_factory_(
+            fake_ble_service_data_helper_factory),
+        fake_timer_factory_factory_(fake_timer_factory_factory) {}
+
+  ~FakeBleConnectionManagerFactory() override = default;
+
+  FakeBleConnectionManager* instance() { return instance_; }
+
+ private:
+  // BleConnectionManagerImpl::Factory:
+  std::unique_ptr<BleConnectionManager> BuildInstance(
+      scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
+      BleServiceDataHelper* ble_service_data_helper,
+      TimerFactory* timer_factory) override {
+    EXPECT_FALSE(instance_);
+    EXPECT_EQ(expected_bluetooth_adapter_, bluetooth_adapter.get());
+    EXPECT_EQ(fake_ble_service_data_helper_factory_->instance(),
+              ble_service_data_helper);
+    EXPECT_EQ(fake_timer_factory_factory_->instance(), timer_factory);
+
+    auto instance = std::make_unique<FakeBleConnectionManager>();
+    instance_ = instance.get();
+    return instance;
+  }
+
+  device::BluetoothAdapter* expected_bluetooth_adapter_;
+  FakeBleServiceDataHelperFactory* fake_ble_service_data_helper_factory_;
+  FakeTimerFactoryFactory* fake_timer_factory_factory_;
+
+  FakeBleConnectionManager* instance_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeBleConnectionManagerFactory);
+};
+
+class FakePendingConnectionManagerFactory
+    : public PendingConnectionManagerImpl::Factory {
+ public:
+  FakePendingConnectionManagerFactory(
+      FakeBleConnectionManagerFactory* fake_ble_connection_manager_factory)
+      : fake_ble_connection_manager_factory_(
+            fake_ble_connection_manager_factory) {}
+
+  ~FakePendingConnectionManagerFactory() override = default;
+
+  FakePendingConnectionManager* instance() { return instance_; }
+
+ private:
+  // PendingConnectionManagerImpl::Factory:
+  std::unique_ptr<PendingConnectionManager> BuildInstance(
+      PendingConnectionManager::Delegate* delegate,
+      BleConnectionManager* ble_connection_manager) override {
+    EXPECT_FALSE(instance_);
+    EXPECT_EQ(fake_ble_connection_manager_factory_->instance(),
+              ble_connection_manager);
+
+    auto instance = std::make_unique<FakePendingConnectionManager>(delegate);
+    instance_ = instance.get();
+    return instance;
+  }
+
+  FakeBleConnectionManagerFactory* fake_ble_connection_manager_factory_;
+
+  FakePendingConnectionManager* instance_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(FakePendingConnectionManagerFactory);
+};
+
 class FakeActiveConnectionManagerFactory
     : public ActiveConnectionManagerImpl::Factory {
  public:
@@ -45,6 +204,7 @@ class FakeActiveConnectionManagerFactory
   FakeActiveConnectionManager* instance() { return instance_; }
 
  private:
+  // ActiveConnectionManagerImpl::Factory:
   std::unique_ptr<ActiveConnectionManager> BuildInstance(
       ActiveConnectionManager::Delegate* delegate) override {
     EXPECT_FALSE(instance_);
@@ -58,29 +218,31 @@ class FakeActiveConnectionManagerFactory
   DISALLOW_COPY_AND_ASSIGN(FakeActiveConnectionManagerFactory);
 };
 
-class FakePendingConnectionManagerFactory
-    : public PendingConnectionManagerImpl::Factory {
+class TestSecureChannelInitializerFactory
+    : public SecureChannelInitializer::Factory {
  public:
-  FakePendingConnectionManagerFactory() = default;
-  ~FakePendingConnectionManagerFactory() override = default;
+  TestSecureChannelInitializerFactory(
+      scoped_refptr<base::TestSimpleTaskRunner> test_task_runner)
+      : test_task_runner_(test_task_runner) {}
 
-  FakePendingConnectionManager* instance() { return instance_; }
+  ~TestSecureChannelInitializerFactory() override = default;
 
  private:
-  std::unique_ptr<PendingConnectionManager> BuildInstance(
-      PendingConnectionManager::Delegate* delegate,
-      BleConnectionManager* ble_connection_manager) override {
-    // TODO(khorimoto): Verify that |ble_connection_manager| is correctly passed
-    // to this factory.
+  // SecureChannelInitializer::Factory:
+  std::unique_ptr<SecureChannelBase> BuildInstance(
+      scoped_refptr<base::TaskRunner> task_runner) override {
     EXPECT_FALSE(instance_);
-    auto instance = std::make_unique<FakePendingConnectionManager>(delegate);
+    auto instance =
+        SecureChannelInitializer::Factory::BuildInstance(test_task_runner_);
     instance_ = instance.get();
     return instance;
   }
 
-  FakePendingConnectionManager* instance_ = nullptr;
+  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakePendingConnectionManagerFactory);
+  SecureChannelBase* instance_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSecureChannelInitializerFactory);
 };
 
 class FakeClientConnectionParametersFactory
@@ -109,6 +271,7 @@ class FakeClientConnectionParametersFactory
   }
 
  private:
+  // ClientConnectionParametersImpl::Factory:
   std::unique_ptr<ClientConnectionParameters> BuildInstance(
       const std::string& feature,
       mojom::ConnectionDelegatePtr connection_delegate_ptr) override {
@@ -145,27 +308,6 @@ class FakeClientConnectionParametersFactory
   DISALLOW_COPY_AND_ASSIGN(FakeClientConnectionParametersFactory);
 };
 
-class TestRemoteDeviceCacheFactory
-    : public cryptauth::RemoteDeviceCache::Factory {
- public:
-  TestRemoteDeviceCacheFactory() = default;
-  ~TestRemoteDeviceCacheFactory() override = default;
-
-  cryptauth::RemoteDeviceCache* instance() { return instance_; }
-
- private:
-  std::unique_ptr<cryptauth::RemoteDeviceCache> BuildInstance() override {
-    EXPECT_FALSE(instance_);
-    auto instance = cryptauth::RemoteDeviceCache::Factory::BuildInstance();
-    instance_ = instance.get();
-    return instance;
-  }
-
-  cryptauth::RemoteDeviceCache* instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRemoteDeviceCacheFactory);
-};
-
 }  // namespace
 
 class SecureChannelServiceTest : public testing::Test {
@@ -177,25 +319,55 @@ class SecureChannelServiceTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    fake_active_connection_manager_factory_ =
-        std::make_unique<FakeActiveConnectionManagerFactory>();
-    ActiveConnectionManagerImpl::Factory::SetFactoryForTesting(
-        fake_active_connection_manager_factory_.get());
+    mock_adapter_ =
+        base::MakeRefCounted<testing::NiceMock<device::MockBluetoothAdapter>>();
+    device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
 
-    fake_pending_connection_manager_factory_ =
-        std::make_unique<FakePendingConnectionManagerFactory>();
-    PendingConnectionManagerImpl::Factory::SetFactoryForTesting(
-        fake_pending_connection_manager_factory_.get());
+    test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
 
-    fake_client_connection_parameters_factory_ =
-        std::make_unique<FakeClientConnectionParametersFactory>();
-    ClientConnectionParametersImpl::Factory::SetFactoryForTesting(
-        fake_client_connection_parameters_factory_.get());
+    fake_timer_factory_factory_ = std::make_unique<FakeTimerFactoryFactory>();
+    TimerFactoryImpl::Factory::SetFactoryForTesting(
+        fake_timer_factory_factory_.get());
 
     test_remote_device_cache_factory_ =
         std::make_unique<TestRemoteDeviceCacheFactory>();
     cryptauth::RemoteDeviceCache::Factory::SetFactoryForTesting(
         test_remote_device_cache_factory_.get());
+
+    fake_ble_service_data_helper_factory_ =
+        std::make_unique<FakeBleServiceDataHelperFactory>(
+            test_remote_device_cache_factory_.get());
+    BleServiceDataHelperImpl::Factory::SetFactoryForTesting(
+        fake_ble_service_data_helper_factory_.get());
+
+    fake_ble_connection_manager_factory_ =
+        std::make_unique<FakeBleConnectionManagerFactory>(
+            mock_adapter_.get(), fake_ble_service_data_helper_factory_.get(),
+            fake_timer_factory_factory_.get());
+    BleConnectionManagerImpl::Factory::SetFactoryForTesting(
+        fake_ble_connection_manager_factory_.get());
+
+    fake_pending_connection_manager_factory_ =
+        std::make_unique<FakePendingConnectionManagerFactory>(
+            fake_ble_connection_manager_factory_.get());
+    PendingConnectionManagerImpl::Factory::SetFactoryForTesting(
+        fake_pending_connection_manager_factory_.get());
+
+    fake_active_connection_manager_factory_ =
+        std::make_unique<FakeActiveConnectionManagerFactory>();
+    ActiveConnectionManagerImpl::Factory::SetFactoryForTesting(
+        fake_active_connection_manager_factory_.get());
+
+    test_secure_channel_initializer_factory_ =
+        std::make_unique<TestSecureChannelInitializerFactory>(
+            test_task_runner_);
+    SecureChannelInitializer::Factory::SetFactoryForTesting(
+        test_secure_channel_initializer_factory_.get());
+
+    fake_client_connection_parameters_factory_ =
+        std::make_unique<FakeClientConnectionParametersFactory>();
+    ClientConnectionParametersImpl::Factory::SetFactoryForTesting(
+        fake_client_connection_parameters_factory_.get());
 
     connector_factory_ =
         service_manager::TestConnectorFactory::CreateForUniqueService(
@@ -206,10 +378,34 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   void TearDown() override {
-    ActiveConnectionManagerImpl::Factory::SetFactoryForTesting(nullptr);
-    PendingConnectionManagerImpl::Factory::SetFactoryForTesting(nullptr);
-    ClientConnectionParametersImpl::Factory::SetFactoryForTesting(nullptr);
+    TimerFactoryImpl::Factory::SetFactoryForTesting(nullptr);
     cryptauth::RemoteDeviceCache::Factory::SetFactoryForTesting(nullptr);
+    BleServiceDataHelperImpl::Factory::SetFactoryForTesting(nullptr);
+    BleConnectionManagerImpl::Factory::SetFactoryForTesting(nullptr);
+    PendingConnectionManagerImpl::Factory::SetFactoryForTesting(nullptr);
+    ActiveConnectionManagerImpl::Factory::SetFactoryForTesting(nullptr);
+    SecureChannelInitializer::Factory::SetFactoryForTesting(nullptr);
+    ClientConnectionParametersImpl::Factory::SetFactoryForTesting(nullptr);
+  }
+
+  void CallListenForConnectionFromDeviceAndVerifyInitializationNotComplete(
+      const cryptauth::RemoteDevice& device_to_connect,
+      const cryptauth::RemoteDevice& local_device,
+      const std::string& feature,
+      ConnectionPriority connection_priority) {
+    AttemptConnectionPreInitialization(device_to_connect, local_device, feature,
+                                       connection_priority,
+                                       true /* is_listener */);
+  }
+
+  void CallInitiateConnectionToDeviceAndVerifyInitializationNotComplete(
+      const cryptauth::RemoteDevice& device_to_connect,
+      const cryptauth::RemoteDevice& local_device,
+      const std::string& feature,
+      ConnectionPriority connection_priority) {
+    AttemptConnectionPreInitialization(device_to_connect, local_device, feature,
+                                       connection_priority,
+                                       false /* is_listener */);
   }
 
   void CallListenForConnectionFromDeviceAndVerifyRejection(
@@ -223,7 +419,7 @@ class SecureChannelServiceTest : public testing::Test {
         expected_failure_reason, true /* is_listener */);
   }
 
-  void CallInitiateConnectionFromDeviceAndVerifyRejection(
+  void CallInitiateConnectionToDeviceAndVerifyRejection(
       const cryptauth::RemoteDevice& device_to_connect,
       const cryptauth::RemoteDevice& local_device,
       const std::string& feature,
@@ -244,7 +440,7 @@ class SecureChannelServiceTest : public testing::Test {
                                                 true /* is_listener */);
   }
 
-  void CallInitiateConnectionFromDeviceAndVerifyPendingConnection(
+  void CallInitiateConnectionToDeviceAndVerifyPendingConnection(
       const cryptauth::RemoteDevice& device_to_connect,
       const cryptauth::RemoteDevice& local_device,
       const std::string& feature,
@@ -264,7 +460,7 @@ class SecureChannelServiceTest : public testing::Test {
                                                true /* is_listener */);
   }
 
-  void CallInitiateConnectionFromDeviceAndVerifyActiveConnection(
+  void CallInitiateConnectionToDeviceAndVerifyActiveConnection(
       const cryptauth::RemoteDevice& device_to_connect,
       const cryptauth::RemoteDevice& local_device,
       const std::string& feature,
@@ -286,7 +482,7 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   base::UnguessableToken
-  CallInitiateConnectionFromDeviceAndVerifyStillDisconnecting(
+  CallInitiateConnectionToDeviceAndVerifyStillDisconnecting(
       const cryptauth::RemoteDevice& device_to_connect,
       const cryptauth::RemoteDevice& local_device,
       const std::string& feature,
@@ -350,13 +546,18 @@ class SecureChannelServiceTest : public testing::Test {
     if (pending_metadata_list.empty())
       return;
 
+    size_t num_handled_requests_start_index =
+        fake_pending_connection_manager()->handled_requests().size() -
+        pending_metadata_list.size();
+
     for (size_t i = 0; i < pending_metadata_list.size(); ++i) {
       VerifyHandledRequest(
           DeviceIdPair(device_id, std::get<1>(pending_metadata_list[i])),
           std::get<0>(pending_metadata_list[i]),
           std::get<2>(pending_metadata_list[i]),
           std::get<3>(pending_metadata_list[i]),
-          connection_details.connection_medium(), i);
+          connection_details.connection_medium(),
+          num_handled_requests_start_index + i);
     }
   }
 
@@ -365,6 +566,28 @@ class SecureChannelServiceTest : public testing::Test {
         ->id_to_active_client_parameters_map()
         .at(request_id)
         ->CancelClientRequest();
+  }
+
+  void FinishInitialization() {
+    // The PendingConnectionManager should not have yet been created.
+    EXPECT_FALSE(fake_pending_connection_manager());
+
+    // The service is not expected to start up until at least one API call is
+    // made on its interface.
+    CallInitiateConnectionToDeviceAndVerifyInitializationNotComplete(
+        test_devices()[4], test_devices()[5], "feature",
+        ConnectionPriority::kLow);
+    CallListenForConnectionFromDeviceAndVerifyInitializationNotComplete(
+        test_devices()[4], test_devices()[5], "feature",
+        ConnectionPriority::kLow);
+
+    EXPECT_TRUE(test_task_runner_->HasPendingTask());
+    test_task_runner_->RunUntilIdle();
+
+    // The PendingConnectionManager should have been created, and all pending
+    // requests should have been passed to it.
+    EXPECT_EQ(num_queued_requests_before_initialization_,
+              fake_pending_connection_manager()->handled_requests().size());
   }
 
   const cryptauth::RemoteDeviceList& test_devices() { return test_devices_; }
@@ -487,8 +710,9 @@ class SecureChannelServiceTest : public testing::Test {
       ConnectionPriority connection_priority,
       mojom::ConnectionAttemptFailureReason expected_failure_reason,
       bool is_listener) {
-    auto id = AttemptConnection(device_to_connect, local_device, feature,
-                                connection_priority, is_listener);
+    auto id = AttemptConnectionPostInitialization(
+        device_to_connect, local_device, feature, connection_priority,
+        is_listener);
     EXPECT_EQ(expected_failure_reason, GetFailureReasonForRequest(id));
   }
 
@@ -508,8 +732,9 @@ class SecureChannelServiceTest : public testing::Test {
       const std::string& feature,
       ConnectionPriority connection_priority,
       bool is_listener) {
-    auto id = AttemptConnection(device_to_connect, local_device, feature,
-                                connection_priority, is_listener);
+    auto id = AttemptConnectionPostInitialization(
+        device_to_connect, local_device, feature, connection_priority,
+        is_listener);
 
     // |device_to_connect| should be in the cache.
     EXPECT_TRUE(cryptauth::IsSameDevice(device_to_connect,
@@ -524,7 +749,7 @@ class SecureChannelServiceTest : public testing::Test {
     return id;
   }
 
-  base::UnguessableToken AttemptConnection(
+  base::UnguessableToken AttemptConnectionPostInitialization(
       const cryptauth::RemoteDevice& device_to_connect,
       const cryptauth::RemoteDevice& local_device,
       const std::string& feature,
@@ -533,6 +758,46 @@ class SecureChannelServiceTest : public testing::Test {
     base::UnguessableToken last_id_before_call =
         fake_client_connection_parameters_factory_->last_created_instance_id();
 
+    AttemptConnection(device_to_connect, local_device, feature,
+                      connection_priority, is_listener);
+
+    base::UnguessableToken id_generated_by_call =
+        fake_client_connection_parameters_factory_->last_created_instance_id();
+
+    // The request should have caused a FakeClientConnectionParameters to be
+    // created.
+    EXPECT_NE(last_id_before_call, id_generated_by_call);
+
+    return id_generated_by_call;
+  }
+
+  void AttemptConnectionPreInitialization(
+      const cryptauth::RemoteDevice& device_to_connect,
+      const cryptauth::RemoteDevice& local_device,
+      const std::string& feature,
+      ConnectionPriority connection_priority,
+      bool is_listener) {
+    // Should not have been any ClientConnectionParameters before the attempt.
+    EXPECT_TRUE(
+        fake_client_connection_parameters_factory_->last_created_instance_id()
+            .is_empty());
+
+    AttemptConnection(device_to_connect, local_device, feature,
+                      connection_priority, is_listener);
+
+    // Should still not have been any after the attempt.
+    EXPECT_TRUE(
+        fake_client_connection_parameters_factory_->last_created_instance_id()
+            .is_empty());
+
+    ++num_queued_requests_before_initialization_;
+  }
+
+  void AttemptConnection(const cryptauth::RemoteDevice& device_to_connect,
+                         const cryptauth::RemoteDevice& local_device,
+                         const std::string& feature,
+                         ConnectionPriority connection_priority,
+                         bool is_listener) {
     FakeConnectionDelegate fake_connection_delegate;
 
     if (is_listener) {
@@ -544,16 +809,8 @@ class SecureChannelServiceTest : public testing::Test {
           device_to_connect, local_device, feature, connection_priority,
           fake_connection_delegate.GenerateInterfacePtr());
     }
+
     secure_channel_ptr_.FlushForTesting();
-
-    base::UnguessableToken id_generated_by_call =
-        fake_client_connection_parameters_factory_->last_created_instance_id();
-
-    // The request should have caused a FakeClientConnectionParameters to be
-    // created.
-    EXPECT_NE(last_id_before_call, id_generated_by_call);
-
-    return id_generated_by_call;
   }
 
   FakeActiveConnectionManager* fake_active_connection_manager() {
@@ -571,14 +828,24 @@ class SecureChannelServiceTest : public testing::Test {
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
   const cryptauth::RemoteDeviceList test_devices_;
 
-  std::unique_ptr<FakeActiveConnectionManagerFactory>
-      fake_active_connection_manager_factory_;
-  std::unique_ptr<FakePendingConnectionManagerFactory>
-      fake_pending_connection_manager_factory_;
-  std::unique_ptr<FakeClientConnectionParametersFactory>
-      fake_client_connection_parameters_factory_;
+  scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
+  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
+
+  std::unique_ptr<FakeTimerFactoryFactory> fake_timer_factory_factory_;
   std::unique_ptr<TestRemoteDeviceCacheFactory>
       test_remote_device_cache_factory_;
+  std::unique_ptr<FakeBleServiceDataHelperFactory>
+      fake_ble_service_data_helper_factory_;
+  std::unique_ptr<FakeBleConnectionManagerFactory>
+      fake_ble_connection_manager_factory_;
+  std::unique_ptr<FakePendingConnectionManagerFactory>
+      fake_pending_connection_manager_factory_;
+  std::unique_ptr<FakeActiveConnectionManagerFactory>
+      fake_active_connection_manager_factory_;
+  std::unique_ptr<TestSecureChannelInitializerFactory>
+      test_secure_channel_initializer_factory_;
+  std::unique_ptr<FakeClientConnectionParametersFactory>
+      fake_client_connection_parameters_factory_;
 
   // Stores metadata which is expected to be pending when a connection attempt
   // is made while an ongoing connection is in the process of disconnecting.
@@ -589,6 +856,8 @@ class SecureChannelServiceTest : public testing::Test {
                                         ConnectionPriority>>>
       disconnecting_details_to_requests_map_;
 
+  size_t num_queued_requests_before_initialization_ = 0u;
+
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
 
@@ -598,6 +867,8 @@ class SecureChannelServiceTest : public testing::Test {
 };
 
 TEST_F(SecureChannelServiceTest, ListenForConnection_MissingPublicKey) {
+  FinishInitialization();
+
   cryptauth::RemoteDevice device_to_connect = test_devices()[0];
   device_to_connect.public_key.clear();
 
@@ -607,15 +878,19 @@ TEST_F(SecureChannelServiceTest, ListenForConnection_MissingPublicKey) {
 }
 
 TEST_F(SecureChannelServiceTest, InitiateConnection_MissingPublicKey) {
+  FinishInitialization();
+
   cryptauth::RemoteDevice device_to_connect = test_devices()[0];
   device_to_connect.public_key.clear();
 
-  CallInitiateConnectionFromDeviceAndVerifyRejection(
+  CallInitiateConnectionToDeviceAndVerifyRejection(
       device_to_connect, test_devices()[1], "feature", ConnectionPriority::kLow,
       mojom::ConnectionAttemptFailureReason::REMOTE_DEVICE_INVALID_PUBLIC_KEY);
 }
 
 TEST_F(SecureChannelServiceTest, ListenForConnection_MissingPsk) {
+  FinishInitialization();
+
   cryptauth::RemoteDevice device_to_connect = test_devices()[0];
   device_to_connect.persistent_symmetric_key.clear();
 
@@ -625,16 +900,20 @@ TEST_F(SecureChannelServiceTest, ListenForConnection_MissingPsk) {
 }
 
 TEST_F(SecureChannelServiceTest, InitiateConnection_MissingPsk) {
+  FinishInitialization();
+
   cryptauth::RemoteDevice device_to_connect = test_devices()[0];
   device_to_connect.persistent_symmetric_key.clear();
 
-  CallInitiateConnectionFromDeviceAndVerifyRejection(
+  CallInitiateConnectionToDeviceAndVerifyRejection(
       device_to_connect, test_devices()[1], "feature", ConnectionPriority::kLow,
       mojom::ConnectionAttemptFailureReason::REMOTE_DEVICE_INVALID_PSK);
 }
 
 TEST_F(SecureChannelServiceTest,
        ListenForConnection_MissingLocalDevicePublicKey) {
+  FinishInitialization();
+
   cryptauth::RemoteDevice local_device = test_devices()[1];
   local_device.public_key.clear();
 
@@ -645,15 +924,19 @@ TEST_F(SecureChannelServiceTest,
 
 TEST_F(SecureChannelServiceTest,
        InitiateConnection_MissingLocalDevicePublicKey) {
+  FinishInitialization();
+
   cryptauth::RemoteDevice local_device = test_devices()[1];
   local_device.public_key.clear();
 
-  CallInitiateConnectionFromDeviceAndVerifyRejection(
+  CallInitiateConnectionToDeviceAndVerifyRejection(
       test_devices()[0], local_device, "feature", ConnectionPriority::kLow,
       mojom::ConnectionAttemptFailureReason::LOCAL_DEVICE_INVALID_PUBLIC_KEY);
 }
 
 TEST_F(SecureChannelServiceTest, ListenForConnection_MissingLocalDevicePsk) {
+  FinishInitialization();
+
   cryptauth::RemoteDevice local_device = test_devices()[1];
   local_device.persistent_symmetric_key.clear();
 
@@ -663,15 +946,19 @@ TEST_F(SecureChannelServiceTest, ListenForConnection_MissingLocalDevicePsk) {
 }
 
 TEST_F(SecureChannelServiceTest, InitiateConnection_MissingLocalDevicePsk) {
+  FinishInitialization();
+
   cryptauth::RemoteDevice local_device = test_devices()[1];
   local_device.persistent_symmetric_key.clear();
 
-  CallInitiateConnectionFromDeviceAndVerifyRejection(
+  CallInitiateConnectionToDeviceAndVerifyRejection(
       test_devices()[0], local_device, "feature", ConnectionPriority::kLow,
       mojom::ConnectionAttemptFailureReason::LOCAL_DEVICE_INVALID_PSK);
 }
 
 TEST_F(SecureChannelServiceTest, ListenForConnection_OneDevice) {
+  FinishInitialization();
+
   CallListenForConnectionFromDeviceAndVerifyPendingConnection(
       test_devices()[0], test_devices()[1], "feature",
       ConnectionPriority::kLow);
@@ -681,7 +968,9 @@ TEST_F(SecureChannelServiceTest, ListenForConnection_OneDevice) {
 }
 
 TEST_F(SecureChannelServiceTest, InitiateConnection_OneDevice) {
-  CallInitiateConnectionFromDeviceAndVerifyPendingConnection(
+  FinishInitialization();
+
+  CallInitiateConnectionToDeviceAndVerifyPendingConnection(
       test_devices()[0], test_devices()[1], "feature",
       ConnectionPriority::kLow);
   SimulateSuccessfulConnection(test_devices()[0].GetDeviceId());
@@ -691,6 +980,8 @@ TEST_F(SecureChannelServiceTest, InitiateConnection_OneDevice) {
 
 TEST_F(SecureChannelServiceTest,
        ListenForConnection_OneDevice_RequestSpecificLocalDevice) {
+  FinishInitialization();
+
   CallListenForConnectionFromDeviceAndVerifyPendingConnection(
       test_devices()[0], test_devices()[1], "feature",
       ConnectionPriority::kLow);
@@ -701,7 +992,9 @@ TEST_F(SecureChannelServiceTest,
 
 TEST_F(SecureChannelServiceTest,
        InitiateConnection_OneDevice_RequestSpecificLocalDevice) {
-  CallInitiateConnectionFromDeviceAndVerifyPendingConnection(
+  FinishInitialization();
+
+  CallInitiateConnectionToDeviceAndVerifyPendingConnection(
       test_devices()[0], test_devices()[1], "feature",
       ConnectionPriority::kLow);
   SimulateSuccessfulConnection(test_devices()[0].GetDeviceId());
@@ -710,11 +1003,13 @@ TEST_F(SecureChannelServiceTest,
 }
 
 TEST_F(SecureChannelServiceTest, OneDevice_TwoConnectionRequests) {
+  FinishInitialization();
+
   // Two pending connection requests for the same device.
   CallListenForConnectionFromDeviceAndVerifyPendingConnection(
       test_devices()[0], test_devices()[1], "feature1",
       ConnectionPriority::kLow);
-  CallInitiateConnectionFromDeviceAndVerifyPendingConnection(
+  CallInitiateConnectionToDeviceAndVerifyPendingConnection(
       test_devices()[0], test_devices()[1], "feature2",
       ConnectionPriority::kMedium);
 
@@ -725,6 +1020,8 @@ TEST_F(SecureChannelServiceTest, OneDevice_TwoConnectionRequests) {
 
 TEST_F(SecureChannelServiceTest,
        OneDevice_TwoConnectionRequests_OneAfterConnection) {
+  FinishInitialization();
+
   // First request is successful.
   CallListenForConnectionFromDeviceAndVerifyPendingConnection(
       test_devices()[0], test_devices()[1], "feature1",
@@ -732,7 +1029,7 @@ TEST_F(SecureChannelServiceTest,
   SimulateSuccessfulConnection(test_devices()[0].GetDeviceId());
 
   // Second request is added to the existing channel.
-  CallInitiateConnectionFromDeviceAndVerifyActiveConnection(
+  CallInitiateConnectionToDeviceAndVerifyActiveConnection(
       test_devices()[0], test_devices()[1], "feature2",
       ConnectionPriority::kMedium);
 
@@ -742,6 +1039,8 @@ TEST_F(SecureChannelServiceTest,
 
 TEST_F(SecureChannelServiceTest,
        OneDevice_TwoConnectionRequests_OneWhileDisconnecting) {
+  FinishInitialization();
+
   // First request is successful.
   CallListenForConnectionFromDeviceAndVerifyPendingConnection(
       test_devices()[0], test_devices()[1], "feature1",
@@ -752,7 +1051,7 @@ TEST_F(SecureChannelServiceTest,
   SimulateConnectionStartingDisconnecting(test_devices()[0].GetDeviceId());
 
   // Second request is added before disconnecting is complete.
-  CallInitiateConnectionFromDeviceAndVerifyStillDisconnecting(
+  CallInitiateConnectionToDeviceAndVerifyStillDisconnecting(
       test_devices()[0], test_devices()[1], "feature2",
       ConnectionPriority::kMedium);
 
@@ -769,6 +1068,8 @@ TEST_F(SecureChannelServiceTest,
 
 TEST_F(SecureChannelServiceTest,
        OneDevice_TwoConnectionRequests_OneWhileDisconnecting_Canceled) {
+  FinishInitialization();
+
   // First request is successful.
   CallListenForConnectionFromDeviceAndVerifyPendingConnection(
       test_devices()[0], test_devices()[1], "feature1",
@@ -780,7 +1081,7 @@ TEST_F(SecureChannelServiceTest,
 
   // Second request is added before disconnecting is complete, but the request
   // is canceled before the disconnection completes.
-  auto id = CallInitiateConnectionFromDeviceAndVerifyStillDisconnecting(
+  auto id = CallInitiateConnectionToDeviceAndVerifyStillDisconnecting(
       test_devices()[0], test_devices()[1], "feature2",
       ConnectionPriority::kMedium);
   CancelPendingRequest(id);
@@ -791,23 +1092,25 @@ TEST_F(SecureChannelServiceTest,
 }
 
 TEST_F(SecureChannelServiceTest, ThreeDevices) {
+  FinishInitialization();
+
   // Two requests for each device.
   CallListenForConnectionFromDeviceAndVerifyPendingConnection(
       test_devices()[0], test_devices()[1], "feature1",
       ConnectionPriority::kLow);
-  CallInitiateConnectionFromDeviceAndVerifyPendingConnection(
+  CallInitiateConnectionToDeviceAndVerifyPendingConnection(
       test_devices()[0], test_devices()[1], "feature2",
       ConnectionPriority::kMedium);
   CallListenForConnectionFromDeviceAndVerifyPendingConnection(
       test_devices()[2], test_devices()[1], "feature3",
       ConnectionPriority::kHigh);
-  CallInitiateConnectionFromDeviceAndVerifyPendingConnection(
+  CallInitiateConnectionToDeviceAndVerifyPendingConnection(
       test_devices()[2], test_devices()[1], "feature4",
       ConnectionPriority::kLow);
   CallListenForConnectionFromDeviceAndVerifyPendingConnection(
       test_devices()[3], test_devices()[1], "feature5",
       ConnectionPriority::kMedium);
-  CallInitiateConnectionFromDeviceAndVerifyPendingConnection(
+  CallInitiateConnectionToDeviceAndVerifyPendingConnection(
       test_devices()[3], test_devices()[1], "feature6",
       ConnectionPriority::kHigh);
 
