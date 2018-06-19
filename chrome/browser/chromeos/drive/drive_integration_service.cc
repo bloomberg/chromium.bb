@@ -326,6 +326,7 @@ DriveIntegrationService::DriveIntegrationService(
       cache_root_directory_(!test_cache_root.empty()
                                 ? test_cache_root
                                 : util::GetCacheRootPath(profile)),
+      preference_watcher_(preference_watcher),
       drivefs_holder_(
           base::FeatureList::IsEnabled(kDriveFs)
               ? std::make_unique<DriveFsHolder>(
@@ -343,6 +344,17 @@ DriveIntegrationService::DriveIntegrationService(
   blocking_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::WithBaseSyncPrimitives()});
+
+  if (preference_watcher_)
+    preference_watcher->set_integration_service(this);
+
+  if (drivefs_holder_) {
+    delete test_drive_service;
+    delete test_file_system;
+    state_ = INITIALIZED;
+    SetEnabled(drive::util::IsDriveEnabledForProfile(profile));
+    return;
+  }
 
   ProfileOAuth2TokenService* oauth_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
@@ -392,11 +404,6 @@ DriveIntegrationService::DriveIntegrationService(
   download_handler_.reset(new DownloadHandler(file_system()));
   debug_info_collector_.reset(new DebugInfoCollector(
       resource_metadata_.get(), file_system(), blocking_task_runner_.get()));
-
-  if (preference_watcher) {
-    preference_watcher_.reset(preference_watcher);
-    preference_watcher->set_integration_service(this);
-  }
 
   SetEnabled(drive::util::IsDriveEnabledForProfile(profile));
 }
@@ -530,7 +537,8 @@ void DriveIntegrationService::ClearCacheAndRemountFileSystem(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  if (state_ != INITIALIZED) {
+  // TODO(crbug.com/845393): Implement for DriveFS.
+  if (state_ != INITIALIZED || drivefs_holder_) {
     callback.Run(false);
     return;
   }
@@ -614,7 +622,8 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!mount_point_name_.empty()) {
-    job_list()->CancelAllJobs();
+    if (!drivefs_holder_)
+      job_list()->CancelAllJobs();
 
     for (auto& observer : observers_)
       observer.OnFileSystemBeingUnmounted();
