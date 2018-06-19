@@ -232,7 +232,7 @@ class FileBrowserHandlerExtensionTest : public extensions::ExtensionApiTest {
 };
 
 const std::vector<TestCase>* FileBrowserHandlerExtensionTest::test_cases_ =
-    NULL;
+    nullptr;
 size_t FileBrowserHandlerExtensionTest::current_test_case_ = 0;
 
 // End to end test that verifies that fileBrowserHandler.selectFile works as
@@ -303,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, EndToEnd) {
   run_loop.Run();
   EXPECT_EQ(kExpectedContents, contents);
 
-  SetTestCases(NULL);
+  SetTestCases(nullptr);
 }
 
 // Tests that verifies the fileBrowserHandlerInternal.selectFile function fails

@@ -277,7 +277,7 @@ class SingleEntryPropertiesGetterForDrive {
         local_path_(local_path),
         running_profile_(profile),
         properties_(new EntryProperties),
-        file_owner_profile_(NULL),
+        file_owner_profile_(nullptr),
         weak_ptr_factory_(this) {
     DCHECK(!callback_.is_null());
     DCHECK(profile);

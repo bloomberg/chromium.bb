@@ -186,7 +186,7 @@ void FileSelectorImpl::SelectFile(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&FileSelectorImpl::FileSelectionCanceled,
-                       base::Unretained(this), static_cast<void*>(NULL)));
+                       base::Unretained(this), static_cast<void*>(nullptr)));
   }
 }
 
@@ -215,13 +215,11 @@ bool FileSelectorImpl::StartSelectFile(
   allowed_file_info.allowed_paths =
       ui::SelectFileDialog::FileTypeInfo::ANY_PATH;
 
-  dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
-                      base::string16() /* dialog title*/,
-                      suggested_name,
-                      &allowed_file_info,
-                      0 /* file type index */,
-                      std::string() /* default file extension */,
-                      browser->window()->GetNativeWindow(), NULL /* params */);
+  dialog_->SelectFile(
+      ui::SelectFileDialog::SELECT_SAVEAS_FILE,
+      base::string16() /* dialog title*/, suggested_name, &allowed_file_info,
+      0 /* file type index */, std::string() /* default file extension */,
+      browser->window()->GetNativeWindow(), nullptr /* params */);
 
   return dialog_->IsRunning(browser->window()->GetNativeWindow());
 }
@@ -252,7 +250,7 @@ void FileSelectorImpl::SendResponse(bool success,
   // We don't want to send multiple responses.
   if (function_.get())
     function_->OnFilePathSelected(success, selected_path);
-  function_ = NULL;
+  function_ = nullptr;
 }
 
 // FileSelectorFactory implementation.

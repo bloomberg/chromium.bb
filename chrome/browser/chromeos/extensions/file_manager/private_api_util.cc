@@ -402,7 +402,7 @@ void SetupProfileFileAccessPermissions(int render_view_process_id,
 drive::EventLogger* GetLogger(Profile* profile) {
   drive::DriveIntegrationService* service =
       drive::DriveIntegrationServiceFactory::FindForProfile(profile);
-  return service ? service->event_logger() : NULL;
+  return service ? service->event_logger() : nullptr;
 }
 
 }  // namespace util
