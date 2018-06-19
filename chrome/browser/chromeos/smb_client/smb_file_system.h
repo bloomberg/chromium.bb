@@ -17,6 +17,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/chromeos/file_system_provider/abort_callback.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
@@ -198,6 +199,7 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
 
   void HandleRequestReadDirectoryCallback(
       storage::AsyncFileUtil::ReadDirectoryCallback callback,
+      const base::ElapsedTimer& metrics_timer,
       smbprovider::ErrorType error,
       const smbprovider::DirectoryEntryListProto& entries) const;
 
