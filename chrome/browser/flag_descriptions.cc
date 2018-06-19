@@ -963,6 +963,12 @@ const char kJavascriptHarmonyShippingDescription[] =
     "conflict with the latest JavaScript features. This flag allows disabling "
     "support of those features for compatibility with such pages.";
 
+const char kJustInTimeServiceWorkerPaymentAppName[] =
+    "Just-in-time service worker payment app";
+const char kJustInTimeServiceWorkerPaymentAppDescription[] =
+    "Allow crawling just-in-time service worker payment app when there is no "
+    "installed service worker payment app for a payment request.";
+
 const char kKeepAliveRendererForKeepaliveRequestsName[] =
     "Keep a renderer alive for keepalive fetch requests";
 const char kKeepAliveRendererForKeepaliveRequestsDescription[] =

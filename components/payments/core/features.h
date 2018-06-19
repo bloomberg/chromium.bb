@@ -31,6 +31,9 @@ extern const base::Feature kWebPaymentsModifiers;
 // with a single URL based payment app and no other info requested.
 extern const base::Feature kWebPaymentsSingleAppUiSkip;
 
+// Used to control whether allow crawling just-in-time installable payment app.
+extern const base::Feature kWebPaymentsJustInTimePaymentApp;
+
 }  // namespace features
 }  // namespace payments
 

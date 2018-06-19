@@ -17,6 +17,7 @@
 #include "components/payments/content/manifest_verifier.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
+#include "components/payments/core/features.h"
 #include "components/payments/core/payment_manifest_downloader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -111,7 +112,9 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
     cache_ = cache;
     verifier_ = std::make_unique<ManifestVerifier>(
         web_contents, downloader_.get(), parser_.get(), cache_.get());
-    if (may_crawl_for_installable_payment_apps) {
+    if (may_crawl_for_installable_payment_apps &&
+        base::FeatureList::IsEnabled(
+            features::kWebPaymentsJustInTimePaymentApp)) {
       // Construct crawler in constructor to allow it observe the web_contents.
       crawler_ = std::make_unique<InstallablePaymentAppCrawler>(
           web_contents, downloader_.get(), parser_.get(), cache_.get());
