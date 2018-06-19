@@ -846,6 +846,8 @@ void MediaSource::ScheduleEvent(const AtomicString& event_name) {
   DCHECK(async_event_queue_);
 
   Event* event = Event::Create(event_name);
+  event->SetTarget(this);
+
   async_event_queue_->EnqueueEvent(FROM_HERE, event);
 }
 
