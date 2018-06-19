@@ -33,6 +33,42 @@ class MockTimer : public Timer {
   scoped_refptr<TestSimpleTaskRunner> test_task_runner_;
 };
 
+// See MockTimer's comment. Prefer using ScopedTaskEnvironment::MOCK_TIME.
+class MockOneShotTimer : public OneShotTimer {
+ public:
+  MockOneShotTimer();
+  ~MockOneShotTimer() override;
+
+  // Testing method.
+  void Fire();
+
+ private:
+  // Timer implementation.
+  // MockOneShotTimer doesn't support SetTaskRunner. Do not use this.
+  void SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner) override;
+
+  SimpleTestTickClock clock_;
+  scoped_refptr<TestSimpleTaskRunner> test_task_runner_;
+};
+
+// See MockTimer's comment. Prefer using ScopedTaskEnvironment::MOCK_TIME.
+class MockRepeatingTimer : public RepeatingTimer {
+ public:
+  MockRepeatingTimer();
+  ~MockRepeatingTimer() override;
+
+  // Testing method.
+  void Fire();
+
+ private:
+  // Timer implementation.
+  // MockRepeatingTimer doesn't support SetTaskRunner. Do not use this.
+  void SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner) override;
+
+  SimpleTestTickClock clock_;
+  scoped_refptr<TestSimpleTaskRunner> test_task_runner_;
+};
+
 }  // namespace base
 
 #endif  // BASE_TIMER_MOCK_TIMER_H_
