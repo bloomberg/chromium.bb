@@ -44,7 +44,6 @@ class ClientChannelImpl : public ClientChannel, public mojom::MessageReceiver {
       base::OnceCallback<void(mojom::ConnectionMetadata)> callback) override;
   void PerformSendMessage(const std::string& payload,
                           base::OnceClosure on_sent_callback) override;
-  void PerformDisconnection() override;
 
   // MessageReceiver:
   void OnMessageReceived(const std::string& message) override;

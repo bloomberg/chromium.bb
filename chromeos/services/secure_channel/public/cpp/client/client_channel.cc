@@ -35,12 +35,6 @@ bool ClientChannel::SendMessage(const std::string& payload,
   return true;
 }
 
-void ClientChannel::Disconnect() {
-  // Clients should not attempt to disconnect an already-disconnected channel.
-  DCHECK(!is_disconnected_);
-  PerformDisconnection();
-}
-
 void ClientChannel::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }

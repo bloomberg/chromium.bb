@@ -25,10 +25,6 @@ void FakeClientChannel::PerformSendMessage(const std::string& payload,
       std::make_pair(payload, std::move(on_sent_callback)));
 }
 
-void FakeClientChannel::PerformDisconnection() {
-  NotifyDisconnected();
-}
-
 }  // namespace secure_channel
 
 }  // namespace chromeos

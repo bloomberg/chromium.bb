@@ -72,12 +72,6 @@ void ClientChannelImpl::PerformSendMessage(const std::string& payload,
   channel_->SendMessage(payload, std::move(on_sent_callback));
 }
 
-void ClientChannelImpl::PerformDisconnection() {
-  channel_.reset();
-  binding_.Close();
-  NotifyDisconnected();
-}
-
 void ClientChannelImpl::OnChannelDisconnected(
     uint32_t disconnection_reason,
     const std::string& disconnection_description) {
@@ -86,7 +80,9 @@ void ClientChannelImpl::OnChannelDisconnected(
                << disconnection_description;
   }
 
-  PerformDisconnection();
+  channel_.reset();
+  binding_.Close();
+  NotifyDisconnected();
 }
 
 void ClientChannelImpl::FlushForTesting() {

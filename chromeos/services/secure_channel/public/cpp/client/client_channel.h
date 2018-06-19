@@ -19,6 +19,9 @@ namespace secure_channel {
 // A full-duplex communication channel which is guaranteed to be authenticated
 // (i.e., the two sides of the channel both belong to the same underlying user).
 // All messages sent and received over the channel are encrypted.
+//
+// If clients wish to disconnect the channel, they simply need to delete the
+// object.
 class ClientChannel {
  public:
   class Observer {
@@ -40,11 +43,6 @@ class ClientChannel {
   bool SendMessage(const std::string& payload,
                    base::OnceClosure on_sent_callback);
 
-  // Disconnects this channel. Note that disconnection is an asynchronous
-  // operation; observers will be notified when disconnection completes via the
-  // OnDisconnected() callback.
-  void Disconnect();
-
   bool is_disconnected() const { return is_disconnected_; }
 
   void AddObserver(Observer* observer);
@@ -61,11 +59,6 @@ class ClientChannel {
 
   virtual void PerformGetConnectionMetadata(
       base::OnceCallback<void(mojom::ConnectionMetadata)> callback) = 0;
-
-  // Performs the actual logic of disconnecting. By the time this function is
-  // called, it has already been confirmed that the channel is still indeed
-  // connected.
-  virtual void PerformDisconnection() = 0;
 
   void NotifyDisconnected();
   void NotifyMessageReceived(const std::string& payload);

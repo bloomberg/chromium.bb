@@ -38,7 +38,6 @@ class FakeClientChannel : public ClientChannel {
       base::OnceCallback<void(mojom::ConnectionMetadata)> callback) override;
   void PerformSendMessage(const std::string& payload,
                           base::OnceClosure on_sent_callback) override;
-  void PerformDisconnection() override;
 
   mojom::ConnectionMetadata connection_metadata_;
   std::vector<std::pair<std::string, base::OnceClosure>> sent_messages_;
