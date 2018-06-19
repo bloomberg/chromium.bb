@@ -6,9 +6,8 @@
 #define UI_OZONE_PLATFORM_SCENIC_SCENIC_WINDOW_MANAGER_H_
 
 #include <stdint.h>
-#include <memory>
 
-#include <fuchsia/ui/views_v1/cpp/fidl.h>
+#include <memory>
 
 #include "base/containers/id_map.h"
 #include "base/macros.h"
@@ -33,12 +32,6 @@ class OZONE_EXPORT ScenicWindowManager {
   ScenicWindowManager();
   ~ScenicWindowManager();
 
-  // ViewManager and Scenic services that are used by ScenicWindow. Both
-  // interfaces are initialized lazily on the first call and they don't change
-  // afterwards. ScenicWindowManager keeps the ownership.
-  fuchsia::ui::views_v1::ViewManager* GetViewManager();
-  fuchsia::ui::scenic::Scenic* GetScenic();
-
   // Called by ScenicWindow when a new window instance is created. Returns
   // window ID for the |window|.
   int32_t AddWindow(ScenicWindow* window);
@@ -50,9 +43,6 @@ class OZONE_EXPORT ScenicWindowManager {
 
  private:
   base::IDMap<ScenicWindow*> windows_;
-
-  fuchsia::ui::views_v1::ViewManagerPtr view_manager_;
-  fuchsia::ui::scenic::ScenicPtr scenic_;
 
   DISALLOW_COPY_AND_ASSIGN(ScenicWindowManager);
 };

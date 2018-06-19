@@ -7,13 +7,8 @@
 
 #include <string>
 
-#include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-
-#if defined(OS_FUCHSIA)
-#include <fuchsia/ui/views_v1_token/cpp/fidl.h>
-#endif
 
 namespace ui {
 
@@ -26,11 +21,6 @@ enum PlatformWindowType {
 // Initial properties which are passed to PlatformWindow to be initialized
 // with a desired set of properties.
 struct PlatformWindowInitProperties {
-  PlatformWindowInitProperties();
-  PlatformWindowInitProperties(PlatformWindowInitProperties&& props);
-
-  ~PlatformWindowInitProperties();
-
   // Tells desired PlatformWindow type. It can be popup, menu or anything else.
   PlatformWindowType type = PlatformWindowType::PLATFORM_WINDOW_TYPE_WINDOW;
   // Sets the desired initial bounds. Can be empty.
@@ -38,11 +28,6 @@ struct PlatformWindowInitProperties {
   // Tells PlatformWindow which native widget its parent holds. It is usually
   // used to find a parent from internal list of PlatformWindows.
   gfx::AcceleratedWidget parent_widget = gfx::kNullAcceleratedWidget;
-
-#if defined(OS_FUCHSIA)
-  fidl::InterfaceRequest<fuchsia::ui::views_v1_token::ViewOwner>
-      view_owner_request;
-#endif
 };
 
 }  // namespace ui

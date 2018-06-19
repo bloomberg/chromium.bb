@@ -75,7 +75,7 @@ void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
   ui::PlatformWindowInitProperties properties =
       ConvertWidgetInitParamsToInitProperties(params);
 
-  CreateAndSetPlatformWindow(std::move(properties));
+  CreateAndSetPlatformWindow(properties);
   CreateCompositor(viz::FrameSinkId(), params.force_software_compositing);
   aura::WindowTreeHost::OnAcceleratedWidgetAvailable();
   InitHost();
