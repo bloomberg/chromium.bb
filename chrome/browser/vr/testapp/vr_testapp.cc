@@ -105,7 +105,7 @@ class AppWindow : public ui::PlatformWindowDelegate {
     ui::PlatformWindowInitProperties properties;
     properties.bounds = gfx::Rect(1024, 768);
     platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
-        this, properties);
+        this, std::move(properties));
     platform_window_->Show();
 
     // Supply an empty cursor to override and hide the default system pointer.
