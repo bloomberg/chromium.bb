@@ -673,6 +673,10 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       itemTypeSelected == ItemTypeSessionTabData) {
     [self loadFaviconForCell:cell indexPath:indexPath];
   }
+  // ItemTypeOtherDevicesNoSessions should not be selectable.
+  if (itemTypeSelected == ItemTypeOtherDevicesNoSessions) {
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+  }
 
   return cell;
 }

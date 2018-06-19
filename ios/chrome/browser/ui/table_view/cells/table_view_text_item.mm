@@ -36,15 +36,17 @@
   cell.textLabel.text = self.text;
   cell.textLabel.backgroundColor = styler.tableViewBackgroundColor;
   // This item's text color takes precedence over the global styler.
-  if (self.textColor)
+  // TODO(crbug.com/854249): redo the logic for this convoluted if clause.
+  if (self.textColor == TextItemColorBlack ||
+      self.textColor == TextItemColorLightGrey) {
     cell.textLabel.textColor = UIColorFromRGB(self.textColor);
-  else if (styler.cellTitleColor)
+  } else if (styler.cellTitleColor) {
     cell.textLabel.textColor = styler.cellTitleColor;
-  else
+  } else {
     cell.textLabel.textColor = UIColorFromRGB(TextItemColorLightGrey);
+  }
   cell.textLabel.textAlignment =
       self.textAlignment ? self.textAlignment : NSTextAlignmentLeft;
-  cell.selectionStyle = UITableViewCellSelectionStyleNone;
 }
 
 @end
@@ -53,6 +55,7 @@
 
 @implementation TableViewTextCell
 @synthesize textLabel = _textLabel;
+@synthesize checked = _checked;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
@@ -74,18 +77,32 @@
       [_textLabel.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
                          constant:kTableViewHorizontalSpacing],
-      [_textLabel.topAnchor
-          constraintEqualToAnchor:self.contentView.topAnchor
-                         constant:kTableViewLabelVerticalSpacing],
+      [_textLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor
+                                           constant:kTableViewVerticalSpacing],
       [_textLabel.bottomAnchor
           constraintEqualToAnchor:self.contentView.bottomAnchor
-                         constant:-kTableViewLabelVerticalSpacing],
+                         constant:-kTableViewVerticalSpacing],
       [_textLabel.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
                          constant:-kTableViewHorizontalSpacing]
     ]];
   }
   return self;
+}
+
+- (void)setChecked:(BOOL)checked {
+  if (checked) {
+    self.accessoryView = [[UIImageView alloc]
+        initWithImage:[UIImage imageNamed:@"bookmark_blue_check"]];
+  } else {
+    self.accessoryView = nil;
+  }
+  _checked = checked;
+}
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  self.checked = NO;
 }
 
 @end

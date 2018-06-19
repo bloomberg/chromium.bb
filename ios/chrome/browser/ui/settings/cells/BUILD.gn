@@ -28,6 +28,8 @@ source_set("cells") {
     "password_details_item.mm",
     "sync_switch_item.h",
     "sync_switch_item.mm",
+    "table_view_clear_browsing_data_item.h",
+    "table_view_clear_browsing_data_item.mm",
     "text_and_error_item.h",
     "text_and_error_item.mm",
     "version_item.h",
@@ -42,6 +44,8 @@ source_set("cells") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/table_view:styler",
+    "//ios/chrome/browser/ui/table_view/cells",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ui/base",
   ]

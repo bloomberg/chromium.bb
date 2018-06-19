@@ -37,6 +37,8 @@
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_item.h"
+#import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -110,14 +112,16 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
 - (void)loadModel:(ListModel*)model {
   // Time range section.
-  if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+  // Only implementing new UI for kListTypeCollectionView.
+  if (experimental_flags::IsNewClearBrowsingDataUIEnabled() &&
+      self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
     [model addSectionWithIdentifier:SectionIdentifierTimeRange];
     [model addItem:[self timeRangeItem]
         toSectionWithIdentifier:SectionIdentifierTimeRange];
   }
 
   [self addClearBrowsingDataItemsToModel:model];
-
+  [self addClearDataButtonToModel:model];
   [self addSyncProfileItemsToModel:model];
 }
 
@@ -165,12 +169,6 @@ const int kMaxTimesHistoryNoticeShown = 1;
                          prefName:browsing_data::prefs::kDeleteFormData];
   [model addItem:autofillItem
       toSectionWithIdentifier:SectionIdentifierDataTypes];
-
-  // Clear Browsing Data button.
-  [model addSectionWithIdentifier:SectionIdentifierClearBrowsingDataButton];
-  ListItem* clearButtonItem = [self clearButtonItem];
-  [model addItem:clearButtonItem
-      toSectionWithIdentifier:SectionIdentifierClearBrowsingDataButton];
 }
 
 - (NSString*)counterTextFromResult:
@@ -243,6 +241,14 @@ const int kMaxTimesHistoryNoticeShown = 1;
   return alertController;
 }
 
+- (void)addClearDataButtonToModel:(ListModel*)model {
+  // Clear Browsing Data button.
+  ListItem* clearButtonItem = [self clearButtonItem];
+  [model addSectionWithIdentifier:SectionIdentifierClearBrowsingDataButton];
+  [model addItem:clearButtonItem
+      toSectionWithIdentifier:SectionIdentifierClearBrowsingDataButton];
+}
+
 // Add footers about user's account data.
 - (void)addSyncProfileItemsToModel:(ListModel*)model {
   // Google Account footer.
@@ -312,6 +318,11 @@ const int kMaxTimesHistoryNoticeShown = 1;
     collectionClearButtonItem.accessibilityTraits |= UIAccessibilityTraitButton;
     collectionClearButtonItem.textColor = [[MDCPalette cr_redPalette] tint500];
     clearButtonItem = collectionClearButtonItem;
+  } else {
+    // TODO(crbug.com/853402): Implement using TableviewTextButtonItem.
+    TableViewTextItem* tableViewDummyItem = [[TableViewTextItem alloc]
+        initWithType:ItemTypeClearBrowsingDataButton];
+    clearButtonItem = tableViewDummyItem;
   }
   return clearButtonItem;
 }
@@ -336,6 +347,8 @@ const int kMaxTimesHistoryNoticeShown = 1;
             }));
   }
   ListItem* clearDataItem;
+  // Create a ClearBrowsingDataItem for a CollectionView model and a
+  // TableViewClearBrowsingDataItem for a TableView model.
   if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
     ClearBrowsingDataItem* collectionClearDataItem =
         [[ClearBrowsingDataItem alloc] initWithType:itemType
@@ -359,6 +372,15 @@ const int kMaxTimesHistoryNoticeShown = 1;
           l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
     }
     clearDataItem = collectionClearDataItem;
+  } else {
+    TableViewClearBrowsingDataItem* tableViewClearDataItem =
+        [[TableViewClearBrowsingDataItem alloc] initWithType:itemType];
+    tableViewClearDataItem.text = l10n_util::GetNSString(titleMessageID);
+    tableViewClearDataItem.checked = prefs->GetBoolean(prefName);
+    tableViewClearDataItem.accessibilityIdentifier =
+        [self accessibilityIdentifierFromItemType:itemType];
+    tableViewClearDataItem.dataTypeMask = mask;
+    clearDataItem = tableViewClearDataItem;
   }
   return clearDataItem;
 }
@@ -382,6 +404,11 @@ const int kMaxTimesHistoryNoticeShown = 1;
                          ->GetClearBrowsingDataAccountActivityImage();
     collectionFooterItem.image = image;
     footerItem = collectionFooterItem;
+  } else {
+    // TODO(crbug.com/853402): Implement using TableviewLinkTextItem.
+    TableViewTextItem* dummyItem =
+        [[TableViewTextItem alloc] initWithType:ItemTypeFooterGoogleAccount];
+    footerItem = dummyItem;
   }
   return footerItem;
 }
@@ -433,6 +460,11 @@ const int kMaxTimesHistoryNoticeShown = 1;
     collectionFooterItem.linkDelegate = self.linkDelegate;
     collectionFooterItem.image = image;
     footerItem = collectionFooterItem;
+  } else {
+    // TODO(crbug.com/853402): Implement using TableviewLinkTextItem.
+    TableViewTextItem* dummyItem =
+        [[TableViewTextItem alloc] initWithType:itemType];
+    footerItem = dummyItem;
   }
 
   return footerItem;
