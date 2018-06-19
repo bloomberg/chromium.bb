@@ -18,8 +18,8 @@ namespace blink {
 
 namespace {
 
-// Field trial name.
-const char kResourceLoadSchedulerTrial[] = "ResourceLoadScheduler";
+// Field trial name for throttling.
+const char kResourceLoadThrottlingTrial[] = "ResourceLoadScheduler";
 
 // Field trial parameter names.
 // Note: bg_limit is supported on m61+, but bg_sub_limit is only on m63+.
@@ -95,7 +95,7 @@ size_t GetOutstandingThrottledLimit(FetchContext* context) {
     return ResourceLoadScheduler::kOutstandingUnlimited;
 
   uint32_t main_frame_limit = GetFieldTrialUint32Param(
-      kResourceLoadSchedulerTrial, kOutstandingLimitForBackgroundMainFrameName,
+      kResourceLoadThrottlingTrial, kOutstandingLimitForBackgroundMainFrameName,
       kOutstandingLimitForBackgroundFrameDefault);
   if (context->IsMainFrame())
     return main_frame_limit;
@@ -103,7 +103,7 @@ size_t GetOutstandingThrottledLimit(FetchContext* context) {
   // We do not have a fixed default limit for sub-frames, but use the limit for
   // the main frame so that it works as how previous versions that haven't
   // consider sub-frames' specific limit work.
-  return GetFieldTrialUint32Param(kResourceLoadSchedulerTrial,
+  return GetFieldTrialUint32Param(kResourceLoadThrottlingTrial,
                                   kOutstandingLimitForBackgroundSubFrameName,
                                   main_frame_limit);
 }
@@ -112,6 +112,10 @@ int TakeWholeKilobytes(int64_t& bytes) {
   int kilobytes = bytes / 1024;
   bytes %= 1024;
   return kilobytes;
+}
+
+bool IsResourceLoadThrottlingEnabled() {
+  return RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled();
 }
 
 }  // namespace
@@ -574,18 +578,25 @@ void ResourceLoadScheduler::OnNetworkQuiet() {
 
 bool ResourceLoadScheduler::IsThrottablePriority(
     ResourceLoadPriority priority) const {
-  if (RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled()) {
-    // If this scheduler is throttled by the associated FrameScheduler,
-    // consider every prioritiy as throttlable.
-    const auto state = frame_scheduler_lifecycle_state_;
-    if (state == scheduler::SchedulingLifecycleState::kHidden ||
-        state == scheduler::SchedulingLifecycleState::kThrottled ||
-        state == scheduler::SchedulingLifecycleState::kStopped) {
+  const bool throttable = priority < ResourceLoadPriority::kHigh;
+
+  // Also takes the lifecycle state of the associated FrameScheduler
+  // into account to determine if the request should be throttled
+  // regardless of the priority.
+  switch (frame_scheduler_lifecycle_state_) {
+    case scheduler::SchedulingLifecycleState::kNotThrottled:
+      return throttable;
+    case scheduler::SchedulingLifecycleState::kHidden:
+    case scheduler::SchedulingLifecycleState::kThrottled:
+      if (IsResourceLoadThrottlingEnabled())
+        return true;
+      return throttable;
+    case scheduler::SchedulingLifecycleState::kStopped:
       return true;
-    }
   }
 
-  return priority < ResourceLoadPriority::kHigh;
+  NOTREACHED() << static_cast<int>(frame_scheduler_lifecycle_state_);
+  return throttable;
 }
 
 void ResourceLoadScheduler::OnLifecycleStateChanged(
@@ -671,8 +682,7 @@ size_t ResourceLoadScheduler::GetOutstandingLimit() const {
     case scheduler::SchedulingLifecycleState::kNotThrottled:
       break;
     case scheduler::SchedulingLifecycleState::kStopped:
-      if (RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled())
-        limit = 0;
+      limit = 0;
       break;
   }
 
