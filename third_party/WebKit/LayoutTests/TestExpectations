@@ -4008,6 +4008,8 @@ crbug.com/718155 media/video-controls-fullscreen-iframe-not-allowed.html [ Failu
 crbug.com/718155 virtual/video-surface-layer/media/video-controls-fullscreen-iframe-not-allowed.html [ Failure ]
 crbug.com/718155 virtual/android/fullscreen/full-screen-iframe-not-allowed.html [ Failure ]
 crbug.com/718155 virtual/android/fullscreen/full-screen-restrictions.html [ Failure Timeout ]
+crbug.com/718155 virtual/user-activation-v2/fullscreen/full-screen-iframe-not-allowed.html [ Failure ]
+crbug.com/718155 virtual/user-activation-v2/fullscreen/full-screen-restrictions.html [ Failure Timeout ]
 
 # Feature Policy changes same-origin allowpaymentrequest behaviour, tests need updating
 crbug.com/718155 payments/payment-request-in-iframe.html [ Failure ]

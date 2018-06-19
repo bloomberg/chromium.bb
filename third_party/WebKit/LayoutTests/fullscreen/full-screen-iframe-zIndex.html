@@ -7,7 +7,10 @@
             function init() {
                 var iframe = document.getElementById('block1');
                 var element = iframe.contentDocument.documentElement;
-                waitForEventAndEnd(element, 'webkitfullscreenchange');
+                if (!internals.runtimeFlags.userActivationV2Enabled)
+                    waitForEventAndEnd(element, 'webkitfullscreenchange');
+                else
+                    waitForEventAndEnd(element, 'webkitfullscreenerror');
                 runWithKeyDown(goFullScreen);
             }
 
@@ -39,7 +42,7 @@
         </style>
     </head>
     <body onload="init()">
-        <div>This tests that an element with a positive z-index appears behind the full screen element.
+        <div>This tests that an element with a positive z-index appears behind the full screen iframe element.
              After entering full screen mode, the whole screen should be white.
              Click <button onclick="goFullScreen()">go full screen</button> to run the test.</div>
         <div id="block2"></div>
