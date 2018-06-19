@@ -31,10 +31,10 @@ FileDownloader::FileDownloader(
     const base::FilePath& path,
     bool overwrite,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const DownloadFinishedCallback& callback,
+    DownloadFinishedCallback callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : url_loader_factory_(url_loader_factory),
-      callback_(callback),
+      callback_(std::move(callback)),
       local_path_(path),
       weak_ptr_factory_(this) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -75,7 +75,7 @@ void FileDownloader::OnSimpleDownloadComplete(base::FilePath response_path) {
                     << " while trying to download "
                     << simple_url_loader_->GetFinalURL().spec();
     }
-    callback_.Run(FAILED);
+    std::move(callback_).Run(FAILED);
     return;
   }
 
@@ -91,7 +91,7 @@ void FileDownloader::OnSimpleDownloadComplete(base::FilePath response_path) {
 
 void FileDownloader::OnFileExistsCheckDone(bool exists) {
   if (exists) {
-    callback_.Run(EXISTS);
+    std::move(callback_).Run(EXISTS);
   } else {
     simple_url_loader_->DownloadToTempFile(
         url_loader_factory_.get(),
@@ -106,5 +106,5 @@ void FileDownloader::OnFileMoveDone(bool success) {
                   << local_path_.LossyDisplayName();
   }
 
-  callback_.Run(success ? DOWNLOADED : FAILED);
+  std::move(callback_).Run(success ? DOWNLOADED : FAILED);
 }

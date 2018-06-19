@@ -663,8 +663,8 @@ void SupervisedUserService::OnBlacklistFileChecked(const base::FilePath& path,
                      ->GetURLLoaderFactoryForBrowserProcess();
   blacklist_downloader_.reset(new FileDownloader(
       url, path, false, std::move(factory),
-      base::Bind(&SupervisedUserService::OnBlacklistDownloadDone,
-                 base::Unretained(this), path),
+      base::BindOnce(&SupervisedUserService::OnBlacklistDownloadDone,
+                     base::Unretained(this), path),
       traffic_annotation));
 }
 
