@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/frame/frame_header.h"
+#include "ash/public/cpp/ash_constants.h"
 #include "base/compiler_specific.h"  // override
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -27,8 +28,12 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader {
 
   void SetThemeColor(SkColor theme_color);
 
-  SkColor active_frame_color_for_testing() { return active_frame_color_; }
-  SkColor inactive_frame_color_for_testing() { return inactive_frame_color_; }
+  SkColor active_frame_color_for_testing() {
+    return active_frame_color_.target_color();
+  }
+  SkColor inactive_frame_color_for_testing() {
+    return inactive_frame_color_.target_color();
+  }
 
  protected:
   // FrameHeader:
@@ -47,8 +52,34 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader {
   void SetFrameColorsImpl(SkColor active_frame_color,
                           SkColor inactive_frame_color);
 
-  SkColor active_frame_color_;
-  SkColor inactive_frame_color_;
+  gfx::SlideAnimation* GetAnimationForActiveFrameColorForTest();
+  SkColor GetActiveFrameColorForPaintForTest();
+
+  // A utility class to animate color value.
+  class ColorAnimator {
+   public:
+    explicit ColorAnimator(gfx::AnimationDelegate* delegate);
+    ~ColorAnimator();
+
+    void SetTargetColor(SkColor target);
+    SkColor target_color() const { return target_color_; };
+    SkColor GetCurrentColor();
+    float get_value() const { return animation_.GetCurrentValue(); }
+
+    gfx::SlideAnimation* animation() { return &animation_; }
+
+   private:
+    gfx::SlideAnimation animation_;
+    SkColor start_color_ = kDefaultFrameColor;
+    SkColor target_color_ = kDefaultFrameColor;
+    ;
+    SkColor current_color_ = kDefaultFrameColor;
+
+    DISALLOW_COPY_AND_ASSIGN(ColorAnimator);
+  };
+
+  ColorAnimator active_frame_color_;
+  ColorAnimator inactive_frame_color_;
 
   int width_in_pixels_ = -1;
 

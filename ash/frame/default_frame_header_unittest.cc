@@ -10,6 +10,8 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ui/gfx/animation/animation_test_api.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -69,7 +71,6 @@ TEST_F(DefaultFrameHeaderTest, FrameColors) {
 
   DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
                                   &container);
-
   // Check frame color is sensitive to mode.
   SkColor active = SkColorSetRGB(70, 70, 70);
   SkColor inactive = SkColorSetRGB(200, 200, 200);
@@ -78,6 +79,48 @@ TEST_F(DefaultFrameHeaderTest, FrameColors) {
   EXPECT_EQ(active, frame_header.GetCurrentFrameColor());
   frame_header.mode_ = FrameHeader::MODE_INACTIVE;
   EXPECT_EQ(inactive, frame_header.GetCurrentFrameColor());
+  EXPECT_EQ(active, frame_header.GetActiveFrameColorForPaintForTest());
+
+  // Update to the new value which has no blue, which should animate.
+  frame_header.mode_ = FrameHeader::MODE_ACTIVE;
+  SkColor new_active = SkColorSetRGB(70, 70, 0);
+  frame_header.SetFrameColors(new_active, SK_ColorBLACK);
+
+  gfx::SlideAnimation* animation =
+      frame_header.GetAnimationForActiveFrameColorForTest();
+  gfx::AnimationTestApi test_api(animation);
+
+  // animate half way through.
+  base::TimeTicks now = base::TimeTicks::Now();
+  test_api.SetStartTime(now);
+  test_api.Step(now + base::TimeDelta::FromMilliseconds(120));
+
+  // GetCurrentFrameColor should return the target color.
+  EXPECT_EQ(new_active, frame_header.GetCurrentFrameColor());
+
+  // The color used for paint should be somewhere between 0 and 70.
+  SkColor new_active_for_paint =
+      frame_header.GetActiveFrameColorForPaintForTest();
+  EXPECT_NE(new_active, new_active_for_paint);
+  EXPECT_EQ(53u, SkColorGetB(new_active_for_paint));
+
+  // Now update to the new value which is full blue.
+  SkColor new_new_active = SkColorSetRGB(70, 70, 255);
+  frame_header.SetFrameColors(new_new_active, SK_ColorBLACK);
+
+  now = base::TimeTicks::Now();
+  test_api.SetStartTime(now);
+  test_api.Step(now + base::TimeDelta::FromMilliseconds(20));
+
+  // Again, GetCurrentFrameColor should return the target color.
+  EXPECT_EQ(new_new_active, frame_header.GetCurrentFrameColor());
+
+  // The start value should be the previous paint color, so it should be
+  // near 53.
+  SkColor new_new_active_for_paint =
+      frame_header.GetActiveFrameColorForPaintForTest();
+  EXPECT_NE(new_active_for_paint, new_new_active_for_paint);
+  EXPECT_EQ(54u, SkColorGetB(new_new_active_for_paint));
 }
 
 }  // namespace ash

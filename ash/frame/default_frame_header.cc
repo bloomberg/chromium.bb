@@ -27,8 +27,10 @@ using views::Widget;
 namespace {
 
 // Color for the window title text.
-const SkColor kTitleTextColor = SkColorSetRGB(40, 40, 40);
-const SkColor kLightTitleTextColor = SK_ColorWHITE;
+constexpr SkColor kTitleTextColor = SkColorSetRGB(40, 40, 40);
+constexpr SkColor kLightTitleTextColor = SK_ColorWHITE;
+// This is 2x of the slide ainmation duration.
+constexpr int kColorUpdateDurationMs = 240;
 
 // Tiles an image into an area, rounding the top corners.
 void TileRoundRect(gfx::Canvas* canvas,
@@ -54,6 +56,35 @@ void TileRoundRect(gfx::Canvas* canvas,
 
 namespace ash {
 
+DefaultFrameHeader::ColorAnimator::ColorAnimator(
+    gfx::AnimationDelegate* delegate)
+    : animation_(delegate) {
+  animation_.SetSlideDuration(kColorUpdateDurationMs);
+  animation_.SetTweenType(gfx::Tween::EASE_IN);
+  animation_.Reset(1);
+}
+
+DefaultFrameHeader::ColorAnimator::ColorAnimator::~ColorAnimator() = default;
+
+void DefaultFrameHeader::ColorAnimator::SetTargetColor(SkColor target) {
+  target_color_ = target;
+  start_color_ = current_color_;
+  if (current_color_ == kDefaultFrameColor) {
+    // Changing from default should be set immediately.
+    current_color_ = target_color_;
+    animation_.Reset(1);
+  } else {
+    animation_.Reset(0);
+  }
+  animation_.Show();
+}
+
+SkColor DefaultFrameHeader::ColorAnimator::GetCurrentColor() {
+  current_color_ = color_utils::AlphaBlend(
+      target_color_, start_color_, animation_.CurrentValueBetween(0, 255));
+  return current_color_;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultFrameHeader, public:
 
@@ -62,8 +93,8 @@ DefaultFrameHeader::DefaultFrameHeader(
     views::View* header_view,
     FrameCaptionButtonContainerView* caption_button_container)
     : FrameHeader(target_widget, header_view),
-      active_frame_color_(kDefaultFrameColor),
-      inactive_frame_color_(kDefaultFrameColor) {
+      active_frame_color_(this),
+      inactive_frame_color_(this) {
   DCHECK(caption_button_container);
   SetCaptionButtonContainer(caption_button_container);
 }
@@ -93,8 +124,9 @@ void DefaultFrameHeader::DoPaintHeader(gfx::Canvas* canvas) {
 
   cc::PaintFlags flags;
   int active_alpha = activation_animation().CurrentValueBetween(0, 255);
-  flags.setColor(color_utils::AlphaBlend(active_frame_color_,
-                                         inactive_frame_color_, active_alpha));
+  flags.setColor(color_utils::AlphaBlend(
+      active_frame_color_.GetCurrentColor(),
+      inactive_frame_color_.GetCurrentColor(), active_alpha));
   flags.setAntiAlias(true);
   if (width_in_pixels_ > 0) {
     canvas->Save();
@@ -131,12 +163,12 @@ SkColor DefaultFrameHeader::GetTitleColor() const {
 void DefaultFrameHeader::SetFrameColorsImpl(SkColor active_frame_color,
                                             SkColor inactive_frame_color) {
   bool updated = false;
-  if (active_frame_color_ != active_frame_color) {
-    active_frame_color_ = active_frame_color;
+  if (active_frame_color_.target_color() != active_frame_color) {
+    active_frame_color_.SetTargetColor(active_frame_color);
     updated = true;
   }
-  if (inactive_frame_color_ != inactive_frame_color) {
-    inactive_frame_color_ = inactive_frame_color;
+  if (inactive_frame_color_.target_color() != inactive_frame_color) {
+    inactive_frame_color_.SetTargetColor(inactive_frame_color);
     updated = true;
   }
 
@@ -147,7 +179,17 @@ void DefaultFrameHeader::SetFrameColorsImpl(SkColor active_frame_color,
 }
 
 SkColor DefaultFrameHeader::GetCurrentFrameColor() const {
-  return mode() == MODE_ACTIVE ? active_frame_color_ : inactive_frame_color_;
+  return mode() == MODE_ACTIVE ? active_frame_color_.target_color()
+                               : inactive_frame_color_.target_color();
+}
+
+gfx::SlideAnimation*
+DefaultFrameHeader::GetAnimationForActiveFrameColorForTest() {
+  return active_frame_color_.animation();
+}
+
+SkColor DefaultFrameHeader::GetActiveFrameColorForPaintForTest() {
+  return active_frame_color_.GetCurrentColor();
 }
 
 }  // namespace ash
