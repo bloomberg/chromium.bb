@@ -321,6 +321,13 @@ const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
 const base::Feature kExternalClearKeyForTesting{
     "ExternalClearKeyForTesting", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables hardware secure decryption if supported by hardware and CDM.
+// TODO(xhwang): Currently this is only used for development of new features.
+// Apply this to Android and ChromeOS as well where hardware secure decryption
+// is already available.
+const base::Feature kHardwareSecureDecryption{
+    "HardwareSecureDecryption", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables low-delay video rendering in media pipeline on "live" stream.
 const base::Feature kLowDelayVideoRenderingOnLiveStream{
     "low-delay-video-rendering-on-live-stream",
