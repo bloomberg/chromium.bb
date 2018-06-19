@@ -2890,12 +2890,6 @@ are declared in build/common.gypi.
         <message name="IDS_CERTIFICATE_MANAGER_TITLE" desc="String to be displayed in the title bar of the certificate manager dialog">
           Certificate manager
         </message>
-        <message name="IDS_CERT_MANAGER_PKCS12_FILES" desc="The label in the file selector dialog for PKCS #12 file type.">
-          PKCS #12 Files
-        </message>
-        <message name="IDS_CERT_MANAGER_PKCS12_EXPORT_ERROR_TITLE" desc="The title in the error dialog for PKCS #12 file export errors.">
-          PKCS #12 Export Error
-        </message>
         <message name="IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT" desc="A format used to create label for hardware-backed keys.">
           <ph name="KEY_NAME">$1<ex>John Doe</ex></ph> (<ph name="DEVICE">$2<ex>hardware-backed</ex></ph>)
         </message>
@@ -2904,15 +2898,6 @@ are declared in build/common.gypi.
         </message>
         <message name="IDS_CERT_MANAGER_EXTENSION_PROVIDED_FORMAT" desc="Format used for showing extension provided certificates.">
           <ph name="CERTIFICATE_NAME">$1<ex>Example Certificate</ex></ph> (extension provided)
-        </message>
-      </if>
-
-      <if expr="chromeos">
-        <message name="IDS_CERT_MANAGER_KEY_FORMAT_LONG" desc="A longer format for keys in the wifi / vpn config dialogs.">
-          <ph name="ISSUED_BY">$1<ex>Google Inc</ex></ph> [<ph name="ISSUED_TO">$2<ex>John Doe</ex></ph>]
-        </message>
-        <message name="IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT_LONG" desc="A longer format for hardware-backed keys in the wifi / vpn config dialogs.">
-          <ph name="ISSUED_BY">$1<ex>Google Inc</ex></ph> [<ph name="ISSUED_TO">$2<ex>John Doe</ex></ph>] (<ph name="DEVICE">$3<ex>hardware-backed</ex></ph>)
         </message>
       </if>
 
