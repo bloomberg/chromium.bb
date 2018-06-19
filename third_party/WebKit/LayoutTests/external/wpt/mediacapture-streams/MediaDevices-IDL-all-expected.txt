@@ -3,13 +3,6 @@ Found 137 tests; 129 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Partial interface NavigatorUserMedia: original interface defined
 PASS Partial interface MediaDevices: original interface defined
-PASS Navigator interface: attribute mediaDevices
-PASS Unscopable handled correctly for mediaDevices property on Navigator
-PASS Navigator interface: operation getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback)
-PASS Unscopable handled correctly for getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback) on Navigator
-PASS Navigator interface: navigator must inherit property "mediaDevices" with the proper type
-PASS Navigator interface: navigator must inherit property "getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback)" with the proper type
-PASS Navigator interface: calling getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback) on navigator with too few arguments must throw TypeError
 PASS MediaStream interface: existence and properties of interface object
 PASS MediaStream interface object length
 PASS MediaStream interface object name
@@ -137,5 +130,12 @@ PASS InputDeviceInfo interface: existence and properties of interface prototype 
 PASS InputDeviceInfo interface: existence and properties of interface prototype object's @@unscopables property
 PASS InputDeviceInfo interface: operation getCapabilities()
 PASS Unscopable handled correctly for getCapabilities() on InputDeviceInfo
+PASS Navigator interface: attribute mediaDevices
+PASS Unscopable handled correctly for mediaDevices property on Navigator
+PASS Navigator interface: operation getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback)
+PASS Unscopable handled correctly for getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback) on Navigator
+PASS Navigator interface: navigator must inherit property "mediaDevices" with the proper type
+PASS Navigator interface: navigator must inherit property "getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback)" with the proper type
+PASS Navigator interface: calling getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback) on navigator with too few arguments must throw TypeError
 Harness: the test ran to completion.
 
