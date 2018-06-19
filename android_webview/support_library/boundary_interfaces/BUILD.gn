@@ -33,4 +33,8 @@ android_library("boundary_interface_java") {
   # We can't use ANY deps here, the support library should be able to build
   # these interfaces without any other chromium dependencies.
   deps = []
+
+  # This is to verify the boundary interfaces compile and lint correctly against
+  # the minSdkVersion of the webkit support library module.
+  android_manifest_for_lint = "AndroidManifest.xml"
 }
