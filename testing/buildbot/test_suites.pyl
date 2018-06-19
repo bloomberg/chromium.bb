@@ -2266,6 +2266,7 @@
      'surface_sync_content_browsertests': {
       'args': [
         '--enable-surface-synchronization',
+	'--test-launcher-filter-file=../../testing/buildbot/filters/surface_sync.content_browsertests.filter',
       ],
       'swarming': {
         'shards': 2,
@@ -2275,19 +2276,12 @@
     'viz_content_browsertests': {
       'args': [
         '--enable-features=VizDisplayCompositor',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_browsertests.filter',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/viz.android.content_browsertests.filter',
       ],
       'swarming': {
         'shards': 2,
       },
       'test': 'content_browsertests',
-    },
-    'viz_content_unittests': {
-      'args': [
-        '--enable-features=VizDisplayCompositor',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_unittests.filter',
-      ],
-      'test': 'content_unittests',
     },
   },
 
