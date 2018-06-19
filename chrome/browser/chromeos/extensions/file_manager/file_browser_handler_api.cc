@@ -365,7 +365,7 @@ void FileBrowserHandlerInternalSelectFileFunction::Respond(
   // If the file was selected, add 'entry' object which will be later used to
   // create a FileEntry instance for the selected file.
   if (success && entry_definition.error == base::File::FILE_OK) {
-    result->entry.reset(new FileEntryInfo());
+    result->entry = std::make_unique<FileEntryInfo>();
     // TODO(mtomasz): Make the response fields consistent with other files.
     result->entry->file_system_name = entry_definition.file_system_name;
     result->entry->file_system_root = entry_definition.file_system_root_url;

@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -371,11 +372,9 @@ bool FileManagerPrivateRequestWebStoreAccessTokenFunction::RunAsync() {
 
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(GetProfile());
-  auth_service_.reset(new google_apis::AuthService(
-      oauth_service,
-      signin_manager->GetAuthenticatedAccountId(),
-      url_request_context_getter,
-      scopes));
+  auth_service_ = std::make_unique<google_apis::AuthService>(
+      oauth_service, signin_manager->GetAuthenticatedAccountId(),
+      url_request_context_getter, scopes);
   auth_service_->StartAuthentication(base::Bind(
       &FileManagerPrivateRequestWebStoreAccessTokenFunction::
           OnAccessTokenFetched,
@@ -812,7 +811,7 @@ void FileManagerPrivateInternalGetCustomActionsFunction::OnCompleted(
   for (const auto& action : actions) {
     Action item;
     item.id = action.id;
-    item.title.reset(new std::string(action.title));
+    item.title = std::make_unique<std::string>(action.title);
     items.push_back(std::move(item));
   }
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/job_event_router.h"
 
 #include <cmath>
+#include <memory>
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -86,7 +87,7 @@ void JobEventRouter::ScheduleDriveFileTransferEvent(
     bool immediate) {
   const bool no_pending_task = !pending_job_info_;
 
-  pending_job_info_.reset(new drive::JobInfo(job_info));
+  pending_job_info_ = std::make_unique<drive::JobInfo>(job_info);
   pending_state_ = state;
 
   if (immediate) {

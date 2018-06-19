@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -617,12 +618,13 @@ void EventRouter::OnCopyCompleted(int copy_id,
   if (error == base::File::FILE_OK) {
     // Send success event.
     status.type = file_manager_private::COPY_PROGRESS_STATUS_TYPE_SUCCESS;
-    status.source_url.reset(new std::string(source_url.spec()));
-    status.destination_url.reset(new std::string(destination_url.spec()));
+    status.source_url = std::make_unique<std::string>(source_url.spec());
+    status.destination_url =
+        std::make_unique<std::string>(destination_url.spec());
   } else {
     // Send error event.
     status.type = file_manager_private::COPY_PROGRESS_STATUS_TYPE_ERROR;
-    status.error.reset(new std::string(FileErrorToErrorName(error)));
+    status.error = std::make_unique<std::string>(FileErrorToErrorName(error));
   }
 
   BroadcastEvent(profile_,
@@ -641,15 +643,16 @@ void EventRouter::OnCopyProgress(
 
   file_manager_private::CopyProgressStatus status;
   status.type = CopyProgressTypeToCopyProgressStatusType(type);
-  status.source_url.reset(new std::string(source_url.spec()));
+  status.source_url = std::make_unique<std::string>(source_url.spec());
   if (type == storage::FileSystemOperation::END_COPY_ENTRY ||
       type == storage::FileSystemOperation::ERROR_COPY_ENTRY)
-    status.destination_url.reset(new std::string(destination_url.spec()));
+    status.destination_url =
+        std::make_unique<std::string>(destination_url.spec());
   if (type == storage::FileSystemOperation::ERROR_COPY_ENTRY)
-    status.error.reset(
-        new std::string(FileErrorToErrorName(base::File::FILE_ERROR_FAILED)));
+    status.error = std::make_unique<std::string>(
+        FileErrorToErrorName(base::File::FILE_ERROR_FAILED));
   if (type == storage::FileSystemOperation::PROGRESS)
-    status.size.reset(new double(size));
+    status.size = std::make_unique<double>(size);
 
   // Discard error progress since current JS code cannot handle this properly.
   // TODO(yawano): Remove this after JS side is implemented correctly.
@@ -910,8 +913,8 @@ void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
 
   // Detailed information is available.
   if (list.get()) {
-    event.changed_files.reset(
-        new std::vector<file_manager_private::FileChange>());
+    event.changed_files =
+        std::make_unique<std::vector<file_manager_private::FileChange>>();
 
     if (list->map().empty())
       return;
