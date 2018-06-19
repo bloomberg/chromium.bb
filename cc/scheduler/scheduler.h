@@ -174,7 +174,7 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
 
   viz::BeginFrameAck CurrentBeginFrameAckForActiveTree() const;
 
-  void ClearHistoryOnNavigation();
+  void ClearHistory();
 
  protected:
   // Virtual for testing.

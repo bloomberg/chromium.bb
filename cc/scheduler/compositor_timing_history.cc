@@ -965,9 +965,8 @@ void CompositorTimingHistory::SetTreePriority(TreePriority priority) {
   tree_priority_ = priority;
 }
 
-void CompositorTimingHistory::ClearHistoryOnNavigation() {
-  TRACE_EVENT0("cc,benchmark",
-               "CompositorTimingHistory::ClearHistoryOnNavigation");
+void CompositorTimingHistory::ClearHistory() {
+  TRACE_EVENT0("cc,benchmark", "CompositorTimingHistory::ClearHistory");
 
   begin_main_frame_queue_duration_history_.Clear();
   begin_main_frame_queue_duration_critical_history_.Clear();

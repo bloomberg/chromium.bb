@@ -2460,6 +2460,7 @@ void RenderWidget::DidNavigate() {
   if (!compositor_)
     return;
   compositor_->SetContentSourceId(current_content_source_id_);
+  compositor_->ClearCachesOnNextCommit();
 }
 
 blink::WebWidget* RenderWidget::GetWebWidget() const {

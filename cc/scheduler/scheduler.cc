@@ -968,10 +968,10 @@ viz::BeginFrameAck Scheduler::CurrentBeginFrameAckForActiveTree() const {
                             begin_main_frame_args_.sequence_number, true);
 }
 
-void Scheduler::ClearHistoryOnNavigation() {
+void Scheduler::ClearHistory() {
   // Ensure we reset decisions based on history from the previous navigation.
   state_machine_.SetSkipNextBeginMainFrameToReduceLatency(false);
-  compositor_timing_history_->ClearHistoryOnNavigation();
+  compositor_timing_history_->ClearHistory();
   ProcessScheduledActions();
 }
 

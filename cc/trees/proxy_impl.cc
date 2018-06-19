@@ -729,10 +729,10 @@ void ProxyImpl::SetURLForUkm(const GURL& url) {
   host_impl_->ukm_manager()->SetSourceURL(url);
 }
 
-void ProxyImpl::ClearHistoryOnNavigation() {
+void ProxyImpl::ClearHistory() {
   DCHECK(IsImplThread());
   DCHECK(IsMainThreadBlocked());
-  scheduler_->ClearHistoryOnNavigation();
+  scheduler_->ClearHistory();
 }
 
 void ProxyImpl::SetRenderFrameObserver(

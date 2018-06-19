@@ -340,6 +340,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void SetContentSourceId(uint32_t);
   uint32_t content_source_id() const { return content_source_id_; }
 
+  // Clears image caches and resets the scheduling history for the content
+  // produced by this host so far.
+  void ClearCachesOnNextCommit();
+
   // If this LayerTreeHost needs a valid viz::LocalSurfaceId then commits will
   // be deferred until a valid viz::LocalSurfaceId is provided.
   void SetLocalSurfaceIdFromParent(
@@ -651,6 +655,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   int raster_color_space_id_ = -1;
   gfx::ColorSpace raster_color_space_;
 
+  bool clear_caches_on_next_commit_ = false;
   uint32_t content_source_id_;
   viz::LocalSurfaceId local_surface_id_from_parent_;
   // Used to detect surface invariant violations.
