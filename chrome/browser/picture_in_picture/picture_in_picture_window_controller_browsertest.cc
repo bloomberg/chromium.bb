@@ -615,8 +615,16 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 }
 
 // Same as above for a cross-origin iframe.
+// Flaky on windows: crbug/854349
+#if defined(OS_WIN)
+#define MAYBE_CrossOriginFrameEnterLeaveCloseWindow \
+  DISABLED_CrossOriginFrameEnterLeaveCloseWindow
+#else
+#define MAYBE_CrossOriginFrameEnterLeaveCloseWindow \
+  CrossOriginFrameEnterLeaveCloseWindow
+#endif
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       CrossOriginFrameEnterLeaveCloseWindow) {
+                       MAYBE_CrossOriginFrameEnterLeaveCloseWindow) {
   GURL embed_url = embedded_test_server()->GetURL(
       "a.com", "/media/picture-in-picture/iframe-content.html");
   GURL main_url = embedded_test_server()->GetURL(
