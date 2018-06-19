@@ -6,19 +6,10 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
-
-static double g_current_time = 1000.0;
-
-static void AdvanceClock(double seconds) {
-  g_current_time += seconds;
-}
-
-static double MockTimeFunction() {
-  return g_current_time;
-}
 
 // Checks for the initial state of UserGestureIndicator.
 TEST(UserGestureIndicatorTest, InitialState) {
@@ -120,7 +111,7 @@ TEST(UserGestureIndicatorTest, MultipleGesturesWithTheSameToken) {
 }
 
 TEST(UserGestureIndicatorTest, Timeouts) {
-  TimeFunction previous = SetTimeFunctionsForTesting(MockTimeFunction);
+  WTF::ScopedMockClock clock;
 
   {
     // Token times out after 1 second.
@@ -128,9 +119,9 @@ TEST(UserGestureIndicatorTest, Timeouts) {
         Frame::NotifyUserActivation(nullptr);
     scoped_refptr<UserGestureToken> token = user_gesture_scope->CurrentToken();
     EXPECT_TRUE(token->HasGestures());
-    AdvanceClock(0.75);
+    clock.Advance(TimeDelta::FromSecondsD(0.75));
     EXPECT_TRUE(token->HasGestures());
-    AdvanceClock(0.75);
+    clock.Advance(TimeDelta::FromSecondsD(0.75));
     EXPECT_FALSE(token->HasGestures());
   }
 
@@ -143,20 +134,18 @@ TEST(UserGestureIndicatorTest, Timeouts) {
           Frame::NotifyUserActivation(nullptr);
       token = user_gesture_scope->CurrentToken();
       EXPECT_TRUE(token->HasGestures());
-      AdvanceClock(0.75);
+      clock.Advance(TimeDelta::FromSecondsD(0.75));
       EXPECT_TRUE(token->HasGestures());
     }
 
     {
       UserGestureIndicator user_gesture_scope(token.get());
-      AdvanceClock(0.75);
+      clock.Advance(TimeDelta::FromSecondsD(0.75));
       EXPECT_TRUE(token->HasGestures());
-      AdvanceClock(0.75);
+      clock.Advance(TimeDelta::FromSecondsD(0.75));
       EXPECT_FALSE(token->HasGestures());
     }
   }
-
-  SetTimeFunctionsForTesting(previous);
 }
 
 }  // namespace blink

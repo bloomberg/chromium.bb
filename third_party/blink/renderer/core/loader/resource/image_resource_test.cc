@@ -1903,8 +1903,6 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   EXPECT_TRUE(image_resource->GetContent()->GetImage()->IsBitmapImage());
   EXPECT_EQ(50, image_resource->GetContent()->GetImage()->width());
   EXPECT_EQ(50, image_resource->GetContent()->GetImage()->height());
-
-  WTF::SetTimeFunctionsForTesting(nullptr);
 }
 
 TEST(ImageResourceTest, DeferredInvalidation) {

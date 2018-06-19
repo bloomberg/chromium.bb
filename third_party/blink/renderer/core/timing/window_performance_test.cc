@@ -3,46 +3,28 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_double_or_performance_measure_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/platform/bindings/exception_state.h"
-
-#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 
 namespace blink {
 
-static const int kTimeOrigin = 500;
-
 namespace {
 
-class FakeTimer {
- public:
-  FakeTimer(double init_time) {
-    g_mock_time = init_time;
-    original_time_function_ =
-        WTF::SetTimeFunctionsForTesting(GetMockTimeInSeconds);
-  }
-
-  ~FakeTimer() { WTF::SetTimeFunctionsForTesting(original_time_function_); }
-
-  static double GetMockTimeInSeconds() { return g_mock_time; }
-
-  void AdvanceTimer(double duration) { g_mock_time += duration; }
-
- private:
-  TimeFunction original_time_function_;
-  static double g_mock_time;
-};
-
-double FakeTimer::g_mock_time = 1000.;
+TimeTicks GetTimeOrigin() {
+  return TimeTicks() + TimeDelta::FromSeconds(500);
+}
 
 }  // namespace
 
@@ -53,7 +35,7 @@ class WindowPerformanceTest : public testing::Test {
     page_holder_->GetDocument().SetURL(KURL("https://example.com"));
     performance_ =
         WindowPerformance::Create(page_holder_->GetDocument().domWindow());
-    performance_->time_origin_ = TimeTicksFromSeconds(kTimeOrigin);
+    performance_->time_origin_ = GetTimeOrigin();
 
     // Create another dummy page holder and pretend this is the iframe.
     another_page_holder_ = DummyPageHolder::Create(IntSize(400, 300));
@@ -204,15 +186,16 @@ TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
 // order. (http://crbug.com/767560)
 TEST_F(WindowPerformanceTest, EnsureEntryListOrder) {
   V8TestingScope scope;
-  FakeTimer timer(kTimeOrigin);
+  WTF::ScopedMockClock clock;
+  clock.Advance(GetTimeOrigin() - TimeTicks());
 
   DummyExceptionStateForTesting exception_state;
-  timer.AdvanceTimer(2);
+  clock.Advance(TimeDelta::FromSeconds(2));
   for (int i = 0; i < 8; i++) {
     performance_->mark(scope.GetScriptState(), String::Number(i),
                        exception_state);
   }
-  timer.AdvanceTimer(2);
+  clock.Advance(TimeDelta::FromSeconds(2));
   for (int i = 8; i < 17; i++) {
     performance_->mark(scope.GetScriptState(), String::Number(i),
                        exception_state);
@@ -233,12 +216,12 @@ TEST_F(WindowPerformanceTest, EventTimingBeforeOnLoad) {
   ScopedEventTimingForTest event_timing(true);
   EXPECT_TRUE(page_holder_->GetFrame().Loader().GetDocumentLoader());
 
-  TimeTicks start_time = TimeTicksFromSeconds(kTimeOrigin + 1.1);
-  TimeTicks processing_start = TimeTicksFromSeconds(kTimeOrigin + 3.3);
-  TimeTicks processing_end = TimeTicksFromSeconds(kTimeOrigin + 3.8);
+  TimeTicks start_time = GetTimeOrigin() + TimeDelta::FromSecondsD(1.1);
+  TimeTicks processing_start = GetTimeOrigin() + TimeDelta::FromSecondsD(3.3);
+  TimeTicks processing_end = GetTimeOrigin() + TimeDelta::FromSecondsD(3.8);
   performance_->RegisterEventTiming("click", start_time, processing_start,
                                     processing_end, false);
-  TimeTicks swap_time = TimeTicksFromSeconds(kTimeOrigin + 6.0);
+  TimeTicks swap_time = GetTimeOrigin() + TimeDelta::FromSecondsD(6.0);
   SimulateSwapPromise(swap_time);
   EXPECT_EQ(1u, performance_->getEntriesByName("click", "event").size());
   performance_->clearEventTimings();
@@ -267,18 +250,22 @@ TEST_F(WindowPerformanceTest, EventTimingBeforeOnLoad) {
 TEST_F(WindowPerformanceTest, EventTimingDuration) {
   ScopedEventTimingForTest event_timing(true);
 
-  TimeTicks start_time = TimeTicksFromSeconds(kTimeOrigin + 1.0);
-  TimeTicks processing_start = TimeTicksFromSeconds(kTimeOrigin + 1.001);
-  TimeTicks processing_end = TimeTicksFromSeconds(kTimeOrigin + 1.002);
+  TimeTicks start_time = GetTimeOrigin() + TimeDelta::FromMilliseconds(1000);
+  TimeTicks processing_start =
+      GetTimeOrigin() + TimeDelta::FromMilliseconds(1001);
+  TimeTicks processing_end =
+      GetTimeOrigin() + TimeDelta::FromMilliseconds(1002);
   performance_->RegisterEventTiming("click", start_time, processing_start,
                                     processing_end, false);
-  TimeTicks short_swap_time = TimeTicksFromSeconds(kTimeOrigin + 1.003);
+  TimeTicks short_swap_time =
+      GetTimeOrigin() + TimeDelta::FromMilliseconds(1003);
   SimulateSwapPromise(short_swap_time);
   EXPECT_EQ(0u, performance_->getEntriesByName("click", "event").size());
 
   performance_->RegisterEventTiming("click", start_time, processing_start,
                                     processing_end, true);
-  TimeTicks long_swap_time = TimeTicksFromSeconds(kTimeOrigin + 1.1);
+  TimeTicks long_swap_time =
+      GetTimeOrigin() + TimeDelta::FromMilliseconds(1100);
   SimulateSwapPromise(long_swap_time);
   EXPECT_EQ(1u, performance_->getEntriesByName("click", "event").size());
 
@@ -296,14 +283,14 @@ TEST_F(WindowPerformanceTest, MultipleEventsSameSwap) {
 
   size_t num_events = 10;
   for (size_t i = 0; i < num_events; ++i) {
-    TimeTicks start_time = TimeTicksFromSeconds(kTimeOrigin + i);
-    TimeTicks processing_start = TimeTicksFromSeconds(kTimeOrigin + i + 0.1);
-    TimeTicks processing_end = TimeTicksFromSeconds(kTimeOrigin + i + 0.2);
+    TimeTicks start_time = GetTimeOrigin() + TimeDelta::FromSeconds(i);
+    TimeTicks processing_start = start_time + TimeDelta::FromMilliseconds(100);
+    TimeTicks processing_end = start_time + TimeDelta::FromMilliseconds(200);
     performance_->RegisterEventTiming("click", start_time, processing_start,
                                       processing_end, false);
     EXPECT_EQ(0u, performance_->getEntriesByName("click", "event").size());
   }
-  TimeTicks swap_time = TimeTicksFromSeconds(kTimeOrigin + num_events);
+  TimeTicks swap_time = GetTimeOrigin() + TimeDelta::FromSeconds(num_events);
   SimulateSwapPromise(swap_time);
   EXPECT_EQ(num_events,
             performance_->getEntriesByName("click", "event").size());
