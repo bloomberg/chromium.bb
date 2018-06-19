@@ -43,7 +43,7 @@ class CONTENT_EXPORT MediaStreamVideoWebRtcSink : public MediaStreamVideoSink {
     return video_track_.get();
   }
 
-  rtc::Optional<bool> SourceNeedsDenoisingForTesting() const;
+  absl::optional<bool> SourceNeedsDenoisingForTesting() const;
 
  protected:
   // Implementation of MediaStreamSink.

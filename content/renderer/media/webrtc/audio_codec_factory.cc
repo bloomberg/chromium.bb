@@ -28,7 +28,7 @@ namespace {
 template <typename T>
 struct NotAdvertisedEncoder {
   using Config = typename T::Config;
-  static rtc::Optional<Config> SdpToConfig(
+  static absl::optional<Config> SdpToConfig(
       const webrtc::SdpAudioFormat& audio_format) {
     return T::SdpToConfig(audio_format);
   }
@@ -42,7 +42,7 @@ struct NotAdvertisedEncoder {
   static std::unique_ptr<webrtc::AudioEncoder> MakeAudioEncoder(
       const Config& config,
       int payload_type,
-      rtc::Optional<webrtc::AudioCodecPairId> codec_pair_id) {
+      absl::optional<webrtc::AudioCodecPairId> codec_pair_id) {
     return T::MakeAudioEncoder(config, payload_type, codec_pair_id);
   }
 };
@@ -51,7 +51,7 @@ struct NotAdvertisedEncoder {
 template <typename T>
 struct NotAdvertisedDecoder {
   using Config = typename T::Config;
-  static rtc::Optional<Config> SdpToConfig(
+  static absl::optional<Config> SdpToConfig(
       const webrtc::SdpAudioFormat& audio_format) {
     return T::SdpToConfig(audio_format);
   }
@@ -61,7 +61,7 @@ struct NotAdvertisedDecoder {
   }
   static std::unique_ptr<webrtc::AudioDecoder> MakeAudioDecoder(
       const Config& config,
-      rtc::Optional<webrtc::AudioCodecPairId> codec_pair_id) {
+      absl::optional<webrtc::AudioCodecPairId> codec_pair_id) {
     return T::MakeAudioDecoder(config, codec_pair_id);
   }
 };

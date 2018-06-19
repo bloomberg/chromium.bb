@@ -28,8 +28,8 @@ namespace content {
 
 namespace {
 
-rtc::Optional<bool> ToRtcOptionalBool(const base::Optional<bool>& value) {
-  return value ? rtc::Optional<bool>(*value) : rtc::Optional<bool>();
+absl::optional<bool> ToAbslOptionalBool(const base::Optional<bool>& value) {
+  return value ? absl::optional<bool>(*value) : absl::nullopt;
 }
 
 }  // namespace
@@ -39,7 +39,7 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSource
  public:
   WebRtcVideoSource(WebRtcVideoCapturerAdapter* capture_adapter,
                     bool is_screencast,
-                    rtc::Optional<bool> needs_denoising)
+                    absl::optional<bool> needs_denoising)
       : VideoTrackSource(false),
         capture_adapter_(capture_adapter),
         is_screencast_(is_screencast),
@@ -50,7 +50,7 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSource
   }
 
   bool is_screencast() const override { return is_screencast_; }
-  rtc::Optional<bool> needs_denoising() const override {
+  absl::optional<bool> needs_denoising() const override {
     return needs_denoising_;
   }
 
@@ -62,7 +62,7 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSource
  private:
   std::unique_ptr<WebRtcVideoCapturerAdapter> const capture_adapter_;
   const bool is_screencast_;
-  const rtc::Optional<bool> needs_denoising_;
+  const absl::optional<bool> needs_denoising_;
 };
 
 namespace {
@@ -274,8 +274,8 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
       MediaStreamVideoTrack::GetVideoTrack(track);
   DCHECK(video_track);
 
-  rtc::Optional<bool> needs_denoising =
-      ToRtcOptionalBool(video_track->noise_reduction());
+  absl::optional<bool> needs_denoising =
+      ToAbslOptionalBool(video_track->noise_reduction());
 
   bool is_screencast = video_track->is_screencast();
   base::Optional<double> min_frame_rate = video_track->min_frame_rate();
@@ -369,8 +369,8 @@ void MediaStreamVideoWebRtcSink::RequestRefreshFrame() {
   content::RequestRefreshFrameFromVideoTrack(connected_track());
 }
 
-rtc::Optional<bool> MediaStreamVideoWebRtcSink::SourceNeedsDenoisingForTesting()
-    const {
+absl::optional<bool>
+MediaStreamVideoWebRtcSink::SourceNeedsDenoisingForTesting() const {
   return video_source_->needs_denoising();
 }
 

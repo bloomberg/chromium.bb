@@ -10,7 +10,6 @@
 #include "third_party/blink/public/platform/web_rtc_certificate.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_key_params.h"
-#include "third_party/webrtc/api/optional.h"
 
 namespace content {
 
@@ -38,12 +37,6 @@ class RTCCertificateGenerator : public blink::WebRTCCertificateGenerator {
       blink::WebString pem_certificate) override;
 
  private:
-  void generateCertificateWithOptionalExpiration(
-      const blink::WebRTCKeyParams& key_params,
-      const rtc::Optional<uint64_t>& expires_ms,
-      std::unique_ptr<blink::WebRTCCertificateCallback> observer,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-
   DISALLOW_COPY_AND_ASSIGN(RTCCertificateGenerator);
 };
 

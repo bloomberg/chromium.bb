@@ -315,7 +315,7 @@ void CopyConstraintsIntoRtcConfiguration(
           constraints,
           &blink::WebMediaTrackConstraintSet::goog_screencast_min_bitrate,
           &rate)) {
-    configuration->screencast_min_bitrate = rtc::Optional<int>(rate);
+    configuration->screencast_min_bitrate = rate;
   }
   configuration->combined_audio_video_bwe = ConstraintToOptional(
       constraints,

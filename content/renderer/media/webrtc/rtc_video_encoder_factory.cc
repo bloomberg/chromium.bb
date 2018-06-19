@@ -73,7 +73,7 @@ base::Optional<cricket::VideoCodec> VEAToWebRTCCodec(
       const int fps = profile.max_framerate_numerator;
       DCHECK_EQ(1u, profile.max_framerate_denominator);
 
-      const rtc::Optional<webrtc::H264::Level> h264_level =
+      const absl::optional<webrtc::H264::Level> h264_level =
           webrtc::H264::SupportedLevel(width * height, fps);
       const webrtc::H264::ProfileLevelId profile_level_id(
           h264_profile, h264_level.value_or(webrtc::H264::kLevel1));
