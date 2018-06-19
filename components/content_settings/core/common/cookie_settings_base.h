@@ -30,6 +30,13 @@ class CookieSettingsBase {
       const std::string& domain,
       bool is_https) const;
 
+  // Returns true if the page identified by (|url|, |first_party_url|) is
+  // allowed to access (i.e., read or write) cookies.
+  //
+  // This may be called on any thread.
+  bool IsCookieAccessAllowed(const GURL& url,
+                             const GURL& first_party_url) const;
+
   // A helper for applying third party cookie blocking rules.
   virtual void GetCookieSetting(const GURL& url,
                                 const GURL& first_party_url,

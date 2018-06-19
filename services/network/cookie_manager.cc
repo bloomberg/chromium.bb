@@ -207,6 +207,10 @@ void CookieManager::SetForceKeepSessionState() {
   cookie_store_->SetForceKeepSessionState();
 }
 
+void CookieManager::BlockThirdPartyCookies(bool block) {
+  cookie_settings_.set_block_third_party_cookies(block);
+}
+
 CookieDeletionInfo DeletionFilterToInfo(mojom::CookieDeletionFilterPtr filter) {
   CookieDeletionInfo delete_info;
 

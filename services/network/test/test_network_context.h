@@ -97,7 +97,6 @@ class TestNetworkContext : public mojom::NetworkContext {
                        const url::Origin& origin,
                        mojom::AuthenticationHandlerPtr auth_handler) override {}
   void CreateNetLogExporter(mojom::NetLogExporterRequest exporter) override {}
-  void BlockThirdPartyCookies(bool block) override {}
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,

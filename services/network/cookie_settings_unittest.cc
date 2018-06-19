@@ -45,6 +45,9 @@ TEST(CookieSettingsTest, GetCookieSettingMustMatchBothPatterns) {
   ContentSetting setting;
   settings.GetCookieSetting(GURL(kURL), GURL(kURL), nullptr, &setting);
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+
+  settings.GetCookieSetting(GURL(kURL), GURL(kOtherURL), nullptr, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 }
 
 TEST(CookieSettingsTest, GetCookieSettingGetsFirstSetting) {
@@ -55,6 +58,36 @@ TEST(CookieSettingsTest, GetCookieSettingGetsFirstSetting) {
   ContentSetting setting;
   settings.GetCookieSetting(GURL(kURL), GURL(kURL), nullptr, &setting);
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+}
+
+TEST(CookieSettingsTest, GetCookieSettingDontBlockThirdParty) {
+  CookieSettings settings;
+  settings.set_content_settings(
+      {CreateSetting("*", "*", CONTENT_SETTING_ALLOW)});
+  settings.set_block_third_party_cookies(false);
+  ContentSetting setting;
+  settings.GetCookieSetting(GURL(kURL), GURL(kOtherURL), nullptr, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+}
+
+TEST(CookieSettingsTest, GetCookieSettingBlockThirdParty) {
+  CookieSettings settings;
+  settings.set_content_settings(
+      {CreateSetting("*", "*", CONTENT_SETTING_ALLOW)});
+  settings.set_block_third_party_cookies(true);
+  ContentSetting setting;
+  settings.GetCookieSetting(GURL(kURL), GURL(kOtherURL), nullptr, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+}
+
+TEST(CookieSettingsTest, GetCookieSettingDontBlockThirdPartyWithException) {
+  CookieSettings settings;
+  settings.set_content_settings(
+      {CreateSetting(kURL, kOtherURL, CONTENT_SETTING_ALLOW)});
+  settings.set_block_third_party_cookies(true);
+  ContentSetting setting;
+  settings.GetCookieSetting(GURL(kURL), GURL(kOtherURL), nullptr, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
 }
 
 TEST(CookieSettingsTest, CreateDeleteCookieOnExitPredicateNoSettings) {

@@ -47,13 +47,6 @@ class CookieSettings : public CookieSettingsBase,
   // This may be called on any thread.
   ContentSetting GetDefaultCookieSetting(std::string* provider_id) const;
 
-  // Returns true if the page identified by (|url|, |first_party_url|) is
-  // allowed to access (i.e., read or write) cookies.
-  //
-  // This may be called on any thread.
-  bool IsCookieAccessAllowed(const GURL& url,
-                             const GURL& first_party_url) const;
-
   // Returns true if the cookie set by a page identified by |url| should be
   // session only. Querying this only makes sense if |IsCookieAccessAllowed|
   // has returned true.

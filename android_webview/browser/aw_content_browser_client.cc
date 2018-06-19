@@ -343,11 +343,9 @@ bool AwContentBrowserClient::AllowSetCookie(const GURL& url,
                                             const net::CanonicalCookie& cookie,
                                             content::ResourceContext* context,
                                             int render_process_id,
-                                            int render_frame_id,
-                                            const net::CookieOptions& options) {
+                                            int render_frame_id) {
   return AwCookieAccessPolicy::GetInstance()->AllowSetCookie(
-      url, first_party, cookie, context, render_process_id, render_frame_id,
-      options);
+      url, first_party, cookie, context, render_process_id, render_frame_id);
 }
 
 void AwContentBrowserClient::AllowWorkerFileSystem(

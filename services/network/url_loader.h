@@ -99,7 +99,31 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   net::LoadState GetLoadStateForTesting() const;
 
+  uint32_t GetRenderFrameId() const;
+  uint32_t GetProcessId() const;
+
+  // Gets the URLLoader associated with this request.
+  static URLLoader* ForRequest(const net::URLRequest& request);
+
+  static const void* const kUserDataKey;
+
  private:
+  // This class is used to set the URLLoader as user data on a URLRequest. This
+  // is used instead of URLLoader directly because SetUserData requires a
+  // std::unique_ptr. This is safe because URLLoader owns the URLRequest, so is
+  // guaranteed to outlive it.
+  class UnownedPointer : public base::SupportsUserData::Data {
+   public:
+    explicit UnownedPointer(URLLoader* pointer) : pointer_(pointer) {}
+
+    URLLoader* get() const { return pointer_; }
+
+   private:
+    URLLoader* const pointer_;
+
+    DISALLOW_COPY_AND_ASSIGN(UnownedPointer);
+  };
+
   void ReadMore();
   void DidRead(int num_bytes, bool completed_synchronously);
   void NotifyCompleted(int error_code);

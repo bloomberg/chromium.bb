@@ -219,4 +219,7 @@ interface CookieManager {
 
   // Instructs the cookie store to not discard session only cookies on shutdown.
   SetForceKeepSessionState();
+
+  // Enables/Disables blocking of third-party cookies.
+  BlockThirdPartyCookies(bool block);
 };

@@ -43,6 +43,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
 
   ~CookieManager() override;
 
+  const CookieSettings& cookie_settings() const { return cookie_settings_; }
+
   // Bind a cookie request to this object.  Mojo messages
   // coming through the associated pipe will be served by this object.
   void AddRequest(mojom::CookieManagerRequest request);
@@ -79,6 +81,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
 
   void FlushCookieStore(FlushCookieStoreCallback callback) override;
   void SetForceKeepSessionState() override;
+  void BlockThirdPartyCookies(bool block) override;
 
  private:
   // State associated with a CookieChangeListener.

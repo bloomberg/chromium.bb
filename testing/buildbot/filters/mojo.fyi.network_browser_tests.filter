@@ -225,12 +225,7 @@
 
 # Need support for blocking cookies via content settings:
 # https://crbug.com/789632.
--CookieSettingsTest.AllowCookiesUsingExceptions/3
--CookieSettingsTest.BlockCookiesUsingExceptions/3
 -CookieSettingsTest.BlockCookies/3
--ContentSettingsTest.AllowCookiesForASessionUsingExceptions
--ContentSettingsTest.RedirectCrossOrigin
--ContentSettingsTest.RedirectLoopCookies
 
 # https://crbug.com/853256
 -ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked

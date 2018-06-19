@@ -113,7 +113,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   ResourceScheduler* resource_scheduler() { return resource_scheduler_.get(); }
 
-  bool block_third_party_cookies() const { return block_third_party_cookies_; }
+  CookieManager* cookie_manager() { return cookie_manager_.get(); }
 
   // Creates a URLLoaderFactory with a ResourceSchedulerClient specified. This
   // is used to reuse the existing ResourceSchedulerClient for cloned
@@ -185,7 +185,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                        const url::Origin& origin,
                        mojom::AuthenticationHandlerPtr auth_handler) override;
   void CreateNetLogExporter(mojom::NetLogExporterRequest request) override;
-  void BlockThirdPartyCookies(bool block) override;
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,
@@ -270,8 +269,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // TODO(yhirano): Consult with switches::kDisableResourceScheduler.
   constexpr static bool enable_resource_scheduler_ = true;
-
-  bool block_third_party_cookies_ = false;
 
   // Pointed to by the TransportSecurityState (owned by the
   // URLRequestContext), and must be disconnected from it before it's destroyed.

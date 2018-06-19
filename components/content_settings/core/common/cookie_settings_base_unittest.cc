@@ -99,6 +99,24 @@ TEST(CookieSettingsBaseTest, ShouldNotDeleteNoDomainMatch) {
       {CreateSetting(CONTENT_SETTING_SESSION_ONLY)}, "other.com", false));
 }
 
+TEST(CookieSettingsBaseTest, CookieAccessNotAllowedWithBlockedSetting) {
+  CallbackCookieSettings settings(
+      base::BindRepeating([](const GURL&) { return CONTENT_SETTING_BLOCK; }));
+  EXPECT_FALSE(settings.IsCookieAccessAllowed(GURL(), GURL()));
+}
+
+TEST(CookieSettingsBaseTest, CookieAccessAllowedWithAllowSetting) {
+  CallbackCookieSettings settings(
+      base::BindRepeating([](const GURL&) { return CONTENT_SETTING_ALLOW; }));
+  EXPECT_TRUE(settings.IsCookieAccessAllowed(GURL(), GURL()));
+}
+
+TEST(CookieSettingsBaseTest, CookieAccessAllowedWithSessionOnlySetting) {
+  CallbackCookieSettings settings(base::BindRepeating(
+      [](const GURL&) { return CONTENT_SETTING_SESSION_ONLY; }));
+  EXPECT_TRUE(settings.IsCookieAccessAllowed(GURL(), GURL()));
+}
+
 TEST(CookieSettingsBaseTest, IsValidSetting) {
   EXPECT_FALSE(CookieSettingsBase::IsValidSetting(CONTENT_SETTING_DEFAULT));
   EXPECT_FALSE(CookieSettingsBase::IsValidSetting(CONTENT_SETTING_ASK));

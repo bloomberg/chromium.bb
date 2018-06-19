@@ -1825,6 +1825,22 @@ class TestAuthNetworkServiceClient : public mojom::NetworkServiceClient {
                              OnSSLCertificateErrorCallback response) override {
     NOTREACHED();
   }
+  void OnCookiesRead(int process_id,
+                     int routing_id,
+                     const GURL& url,
+                     const GURL& first_party_url,
+                     const net::CookieList& cookie_list,
+                     bool blocked_by_policy) override {
+    NOTREACHED();
+  }
+  void OnCookieChange(int process_id,
+                      int routing_id,
+                      const GURL& url,
+                      const GURL& first_party_url,
+                      const net::CanonicalCookie& cookie,
+                      bool blocked_by_policy) override {
+    NOTREACHED();
+  }
 
   void OnFileUploadRequested(uint32_t process_id,
                              bool async,
