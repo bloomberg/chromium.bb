@@ -28,11 +28,16 @@ class SyncedTabDelegate {
 
   // Methods from TabContents.
   virtual SessionID GetWindowId() const = 0;
+  // Tab identifier: two tabs with the same ID (even across browser restarts)
+  // will be considered identical. Tab/session restore may or may not be able
+  // to restore this value, which means the opposite is not true: having
+  // distinct IDs does not imply they are distinct tabs.
   virtual SessionID GetSessionId() const = 0;
   virtual bool IsBeingDestroyed() const = 0;
 
   // Get the tab id of the tab responsible for opening this tab, if applicable.
   // Returns an invalid ID if no such tab relationship is known.
+  // TODO(mastiz): Rename to GetSourceTabSessionId().
   virtual SessionID GetSourceTabID() const = 0;
 
   // Method derived from extensions TabHelper.
@@ -56,8 +61,6 @@ class SyncedTabDelegate {
   GetBlockedNavigations() const = 0;
 
   // Session sync related methods.
-  virtual int GetSyncId() const = 0;
-  virtual void SetSyncId(int sync_id) = 0;
   virtual bool ShouldSync(SyncSessionsClient* sessions_client) = 0;
 
   // Whether this tab is a placeholder tab. On some platforms, tabs can be

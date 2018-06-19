@@ -20,9 +20,10 @@ class TestSyncedTabDelegate : public TabContentsSyncedTabDelegate {
 
   SessionID GetWindowId() const override { return SessionID::InvalidValue(); }
   SessionID GetSessionId() const override { return SessionID::InvalidValue(); }
+  SessionID GetSourceTabID() const override {
+    return SessionID::InvalidValue();
+  }
   bool IsPlaceholderTab() const override { return false; }
-  int GetSyncId() const override { return -1; }
-  void SetSyncId(int sync_id) override {}
 };
 
 class TabContentsSyncedTabDelegateTest

@@ -16,8 +16,9 @@ namespace browser_sync {
 class SyncedTabDelegate;
 }
 
-// A BrowserSyncedWindowDelegate is the Browser-based implementation of
-// SyncedWindowDelegate.
+// A BrowserSyncedWindowDelegate is the desktop implementation for
+// SyncedWindowDelegate, representing the window corresponding to |browser|,
+// and listing all its tabs.
 class BrowserSyncedWindowDelegate : public sync_sessions::SyncedWindowDelegate {
  public:
   explicit BrowserSyncedWindowDelegate(Browser* browser);

@@ -31,7 +31,6 @@ import java.nio.channels.FileChannel;
 public class TabStateUnitTest {
     private static final byte[] CONTENTS_STATE_BYTES = new byte[] {1, 2, 3};
     private static final long TIMESTAMP = 10L;
-    private static final long SYNC_ID = 3;
     private static final int PARENT_ID = 1;
     private static final int VERSION = 2;
     private static final int THEME_COLOR = 4;
@@ -62,7 +61,6 @@ public class TabStateUnitTest {
             state.contentsState.setVersion(VERSION);
             state.timestampMillis = TIMESTAMP;
             state.parentId = PARENT_ID;
-            state.syncId = SYNC_ID;
             state.themeColor = THEME_COLOR;
             state.shouldPreserve = SHOULD_PRESERVE;
             state.openerAppId = OPENER_APP_ID;
@@ -77,7 +75,6 @@ public class TabStateUnitTest {
         assertEquals(PARENT_ID, state.parentId);
         assertEquals(OPENER_APP_ID, state.openerAppId);
         assertEquals(VERSION, state.contentsState.version());
-        assertEquals(SYNC_ID, state.syncId);
         assertEquals(SHOULD_PRESERVE, state.shouldPreserve);
         assertEquals(THEME_COLOR, state.getThemeColor());
         assertEquals(CONTENTS_STATE_BYTES.length, state.contentsState.buffer().remaining());

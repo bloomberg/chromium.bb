@@ -5,13 +5,12 @@
 #include "chrome/browser/ui/sync/browser_synced_tab_delegate.h"
 
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "components/sync_sessions/tab_node_pool.h"
+#include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(BrowserSyncedTabDelegate);
 
 BrowserSyncedTabDelegate::BrowserSyncedTabDelegate(
-    content::WebContents* web_contents)
-    : sync_id_(sync_sessions::TabNodePool::kInvalidTabNodeID) {
+    content::WebContents* web_contents) {
   SetWebContents(web_contents);
 }
 
@@ -25,14 +24,13 @@ SessionID BrowserSyncedTabDelegate::GetSessionId() const {
   return SessionTabHelper::FromWebContents(web_contents())->session_id();
 }
 
+SessionID BrowserSyncedTabDelegate::GetSourceTabID() const {
+  const sync_sessions::SyncSessionsRouterTabHelper* helper =
+      sync_sessions::SyncSessionsRouterTabHelper::FromWebContents(
+          web_contents());
+  return helper->source_tab_id();
+}
+
 bool BrowserSyncedTabDelegate::IsPlaceholderTab() const {
   return false;
-}
-
-int BrowserSyncedTabDelegate::GetSyncId() const {
-  return sync_id_;
-}
-
-void BrowserSyncedTabDelegate::SetSyncId(int sync_id) {
-  sync_id_ = sync_id;
 }

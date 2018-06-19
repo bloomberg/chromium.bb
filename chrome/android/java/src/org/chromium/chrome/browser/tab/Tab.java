@@ -102,7 +102,6 @@ import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
-import org.chromium.components.sync.SyncConstants;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.GestureListenerManager;
@@ -193,9 +192,6 @@ public class Tab
 
     /** Controls overscroll pull-to-refresh behavior for this tab. */
     private SwipeRefreshHandler mSwipeRefreshHandler;
-
-    /** The sync id of the Tab if session sync is enabled. */
-    private int mSyncId = SyncConstants.INVALID_TAB_NODE_ID;
 
     /** {@link ContentViewCore} showing the current page, or {@code null} if the tab is frozen. */
     private ContentViewCore mContentViewCore;
@@ -669,7 +665,6 @@ public class Tab
         assert state != null;
         mAppAssociatedWith = state.openerAppId;
         mFrozenContentsState = state.contentsState;
-        mSyncId = (int) state.syncId;
         mShouldPreserve = state.shouldPreserve;
         mTimestampMillis = state.timestampMillis;
         mUrl = state.getVirtualUrlFromState();
@@ -928,7 +923,6 @@ public class Tab
         tabState.openerAppId = mAppAssociatedWith;
         tabState.parentId = mParentId;
         tabState.shouldPreserve = mShouldPreserve;
-        tabState.syncId = mSyncId;
         tabState.timestampMillis = mTimestampMillis;
         tabState.themeColor = getThemeColor();
         return tabState;
@@ -1193,22 +1187,6 @@ public class Tab
     // TODO(tedchoc): Remove this and transition all clients to use ToolbarModel directly.
     public int getSecurityLevel() {
         return SecurityStateModel.getSecurityLevelForWebContents(getWebContents());
-    }
-
-    /**
-     * @return The sync id of the tab if session sync is enabled, {@code 0} otherwise.
-     */
-    @CalledByNative
-    private int getSyncId() {
-        return mSyncId;
-    }
-
-    /**
-     * @param syncId The sync id of the tab if session sync is enabled.
-     */
-    @CalledByNative
-    private void setSyncId(int syncId) {
-        mSyncId = syncId;
     }
 
     /**
@@ -1848,15 +1826,15 @@ public class Tab
 
             mDownloadDelegate = new ChromeDownloadDelegate(mThemedApplicationContext, this);
 
-            WebContents parentWebContents = null;
-            if (getParentId() != INVALID_TAB_ID) {
-                Tab parentTab = getTabModelSelector().getTabById(getParentId());
-                if (parentTab != null && parentTab.isIncognito() == isIncognito()) {
-                    parentWebContents = parentTab.getWebContents();
+            int parentId = getParentId();
+            if (parentId != INVALID_TAB_ID) {
+                Tab parentTab = getTabModelSelector().getTabById(parentId);
+                if (parentTab != null && parentTab.isIncognito() != isIncognito()) {
+                    parentId = INVALID_TAB_ID;
                 }
             }
 
-            initWebContents(mWebContents, parentWebContents);
+            initWebContents(mWebContents, parentId);
 
             // In the case where restoring a Tab or showing a prerendered one we already have a
             // valid infobar container, no need to recreate one.
@@ -1908,10 +1886,10 @@ public class Tab
         }
     }
 
-    private void initWebContents(WebContents webContents, WebContents parentWebContents) {
+    private void initWebContents(WebContents webContents, int parentTabId) {
         assert mNativeTabAndroid != 0;
-        nativeInitWebContents(mNativeTabAndroid, mIncognito, mIsDetached, webContents,
-                parentWebContents, mWebContentsDelegate,
+        nativeInitWebContents(mNativeTabAndroid, mIncognito, mIsDetached, webContents, parentTabId,
+                mWebContentsDelegate,
                 new TabContextMenuPopulator(
                         mDelegateFactory.createContextMenuPopulator(this), this));
 
@@ -3520,7 +3498,7 @@ public class Tab
     private native void nativeInit();
     private native void nativeDestroy(long nativeTabAndroid);
     private native void nativeInitWebContents(long nativeTabAndroid, boolean incognito,
-            boolean isBackgroundTab, WebContents webContents, WebContents parentWebContents,
+            boolean isBackgroundTab, WebContents webContents, int parentTabId,
             TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);
     private native void nativeUpdateDelegates(long nativeTabAndroid,
             TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);

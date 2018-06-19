@@ -21,13 +21,10 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.TabState;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
-import org.chromium.components.sync.SyncConstants;
 import org.chromium.components.sync.protocol.EntitySpecifics;
 import org.chromium.components.sync.protocol.SessionHeader;
 import org.chromium.components.sync.protocol.SessionSpecifics;
@@ -204,31 +201,6 @@ public class OpenTabsTest {
         deleteServerTabsForClient(FAKE_CLIENT);
         SyncTestUtil.triggerSync();
         waitForLocalTabsForClient(FAKE_CLIENT);
-    }
-
-    // Test
-    @Test
-    @LargeTest
-    @Feature({"Sync"})
-    public void testTabGetsValidSyncId() throws Exception {
-        final Tab tab = mSyncTestRule.loadUrlInNewTab(URL);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            TabState state = tab.getState();
-            Assert.assertFalse(state.syncId == SyncConstants.INVALID_TAB_NODE_ID);
-        });
-    }
-
-    // Test
-    @Test
-    @LargeTest
-    @Feature({"Sync"})
-    public void testIncognitoTabGetsInvalidSyncId() throws Exception {
-        final Tab tab = mSyncTestRule.loadUrlInNewTab(URL, /*incognito=*/true);
-
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            TabState state = tab.getState();
-            Assert.assertEquals(state.syncId, SyncConstants.INVALID_TAB_NODE_ID);
-        });
     }
 
     private String makeSessionTag() {

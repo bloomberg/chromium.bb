@@ -448,16 +448,16 @@ TEST_F(LocalSessionEventHandlerImplTest, AssociateCustomTab) {
 
   // In the current session, all we have is a custom tab.
   AddWindow(kWindowId3, sync_pb::SessionWindow_BrowserType_TYPE_CUSTOM_TAB);
-  AddTab(kWindowId3, kFoo1, kTabId3)->SetSyncId(kCustomTabNodeId);
+  AddTab(kWindowId3, kFoo1, kTabId2);
 
   auto mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
   EXPECT_CALL(*mock_batch, Put(Pointee(MatchesTab(kSessionTag, kWindowId3,
-                                                  kTabId3, kCustomTabNodeId,
+                                                  kTabId2, kCustomTabNodeId,
                                                   /*urls=*/{kFoo1}))));
   EXPECT_CALL(*mock_batch,
               Put(Pointee(MatchesHeader(kSessionTag,
                                         {kWindowId1, kWindowId2, kWindowId3},
-                                        {kTabId1, kTabId3}))));
+                                        {kTabId1, kTabId2}))));
   EXPECT_CALL(*mock_batch, Commit());
 
   EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())
@@ -469,32 +469,7 @@ TEST_F(LocalSessionEventHandlerImplTest, AssociateCustomTab) {
               MatchesSyncedSession(kSessionTag,
                                    {{kWindowId1, std::vector<int>{kTabId1}},
                                     {kWindowId2, std::vector<int>()},
-                                    {kWindowId3, std::vector<int>{kTabId3}}}));
-}
-
-// Tests that calling initial association during construction handles the case
-// where only a subset of tabs (and not the first) have a sync ID.
-TEST_F(LocalSessionEventHandlerImplTest, AssociateTabsWhenOnlySomeHaveNodeIds) {
-  const int kTabNodeId = 0;
-
-  AddWindow(kWindowId1);
-  AddTab(kWindowId1, kFoo1, kTabId1);
-  AddTab(kWindowId1, kBar1, kTabId2)->SetSyncId(kTabNodeId);
-
-  auto mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
-  EXPECT_CALL(*mock_batch, Put(Pointee(MatchesHeader(_, _, _))));
-  EXPECT_CALL(*mock_batch,
-              Put(Pointee(MatchesTab(_, _, kTabId1, /*tab_node_id=*/1,
-                                     /*urls=*/_))));
-  EXPECT_CALL(*mock_batch,
-              Put(Pointee(MatchesTab(_, _, kTabId2,
-                                     /*tab_node_id=*/kTabNodeId, /*urls=*/_))));
-  EXPECT_CALL(*mock_batch, Commit());
-
-  EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())
-      .WillOnce(Return(ByMove(std::move(mock_batch))));
-
-  InitHandler();
+                                    {kWindowId3, std::vector<int>{kTabId2}}}));
 }
 
 TEST_F(LocalSessionEventHandlerImplTest, PropagateNewNavigation) {
@@ -627,10 +602,9 @@ TEST_F(LocalSessionEventHandlerImplTest,
 
   AddWindow(kWindowId1, sync_pb::SessionWindow_BrowserType_TYPE_CUSTOM_TAB);
   TestSyncedTabDelegate* tab1 = AddTab(kWindowId1, kFoo1, kTabId1);
-  tab1->SetSyncId(kTabNodeId1);
 
   AddWindow(kWindowId2, sync_pb::SessionWindow_BrowserType_TYPE_CUSTOM_TAB);
-  AddTab(kWindowId2, kBar1, kTabId2)->SetSyncId(kTabNodeId2);
+  AddTab(kWindowId2, kBar1, kTabId2);
 
   InitHandler();
 
@@ -650,23 +624,6 @@ TEST_F(LocalSessionEventHandlerImplTest,
       .WillOnce(Return(ByMove(std::move(update_mock_batch))));
 
   tab1->Navigate(kBaz1);
-}
-
-TEST_F(LocalSessionEventHandlerImplTest,
-       PreferPlaceholderTabsWhenResolvingSyncIdConflict) {
-  const int kConflictingSyncId = 7;
-  // Set up a window with two tabs: one regular and one placeholder.
-  TestSyncedWindowDelegate* window = AddWindow(kWindowId1);
-  TestSyncedTabDelegate* regular_tab = AddTab(kWindowId1, kFoo1, kTabId1);
-  regular_tab->SetSyncId(kConflictingSyncId);
-  PlaceholderTabDelegate placeholder_tab(
-      SessionID::FromSerializedValue(kTabId2), kConflictingSyncId);
-  window->OverrideTabAt(1, &placeholder_tab);
-
-  InitHandler();
-
-  EXPECT_EQ(kConflictingSyncId, placeholder_tab.GetSyncId());
-  EXPECT_NE(kConflictingSyncId, regular_tab->GetSyncId());
 }
 
 }  // namespace

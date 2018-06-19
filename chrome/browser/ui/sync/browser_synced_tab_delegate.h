@@ -14,8 +14,8 @@ namespace content {
 class WebContents;
 }
 
-// A BrowserSyncedTabDelegate is the Browser-based implementation of
-// SyncedTabDelegate.
+// A BrowserSyncedTabDelegate is the desktop implementation for
+// SyncedTabDelegate, which essentially reads session IDs from SessionTabHelper.
 class BrowserSyncedTabDelegate
     : public TabContentsSyncedTabDelegate,
       public content::WebContentsUserData<BrowserSyncedTabDelegate> {
@@ -25,15 +25,12 @@ class BrowserSyncedTabDelegate
   // SyncedTabDelegate:
   SessionID GetWindowId() const override;
   SessionID GetSessionId() const override;
+  SessionID GetSourceTabID() const override;
   bool IsPlaceholderTab() const override;
-  int GetSyncId() const override;
-  void SetSyncId(int sync_id) override;
 
  private:
   explicit BrowserSyncedTabDelegate(content::WebContents* web_contents);
   friend class content::WebContentsUserData<BrowserSyncedTabDelegate>;
-
-  int sync_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserSyncedTabDelegate);
 };

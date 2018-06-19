@@ -32,18 +32,18 @@ class SyncedTabDelegateAndroid : public TabContentsSyncedTabDelegate {
   // SyncedTabDelegate:
   SessionID GetWindowId() const override;
   SessionID GetSessionId() const override;
+  SessionID GetSourceTabID() const override;
   bool IsPlaceholderTab() const override;
-  int GetSyncId() const override;
-  void SetSyncId(int sync_id) override;
 
   // Set the web contents for this tab and handles source tab ID initialization.
-  void SetWebContents(content::WebContents* web_contents,
-                      content::WebContents* source_web_contents);
+  void SetWebContents(content::WebContents* web_contents, int source_tab_id);
+
   // Set web contents to null.
   void ResetWebContents();
 
  private:
   TabAndroid* tab_android_;
+  SessionID source_tab_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncedTabDelegateAndroid);
 };

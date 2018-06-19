@@ -6,7 +6,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
 #include "chrome/common/buildflags.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sync_sessions/sync_sessions_client.h"
@@ -151,13 +150,6 @@ bool TabContentsSyncedTabDelegate::ShouldSync(
       return true;
   }
   return false;
-}
-
-SessionID TabContentsSyncedTabDelegate::GetSourceTabID() const {
-  sync_sessions::SyncSessionsRouterTabHelper* helper =
-      sync_sessions::SyncSessionsRouterTabHelper::FromWebContents(
-          web_contents_);
-  return helper->source_tab_id();
 }
 
 const content::WebContents* TabContentsSyncedTabDelegate::web_contents() const {

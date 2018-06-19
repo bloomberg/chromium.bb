@@ -40,7 +40,6 @@ class TabContentsSyncedTabDelegate : public sync_sessions::SyncedTabDelegate {
   const std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>*
   GetBlockedNavigations() const override;
   bool ShouldSync(sync_sessions::SyncSessionsClient* sessions_client) override;
-  SessionID GetSourceTabID() const override;
 
  protected:
   const content::WebContents* web_contents() const;
