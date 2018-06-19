@@ -22,12 +22,12 @@ import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
 /**
- * The controller for the bottom toolbar. This class handles all interactions that the bottom
+ * The coordinator for the bottom toolbar. This class handles all interactions that the bottom
  * toolbar has with the outside world. This class has two primary components, an Android view that
  * handles user actions and a composited texture that draws when the controls are being scrolled
  * off-screen. The Android version does not draw unless the controls offset is 0.
  */
-public class BottomToolbarController {
+public class BottomToolbarCoordinator {
     /** The mediator that handles events from outside the bottom toolbar. */
     private final BottomToolbarMediator mMediator;
 
@@ -41,12 +41,12 @@ public class BottomToolbarController {
     private final ViewResourceAdapter mViewResourceAdapter;
 
     /**
-     * Build the controller that manages the bottom toolbar.
+     * Build the coordinator that manages the bottom toolbar.
      * @param fullscreenManager A {@link ChromeFullscreenManager} to update the bottom controls
      *                          height for the renderer.
      * @param root The root {@link ViewGroup} for locating the vies to inflate.
      */
-    public BottomToolbarController(ChromeFullscreenManager fullscreenManager, ViewGroup root) {
+    public BottomToolbarCoordinator(ChromeFullscreenManager fullscreenManager, ViewGroup root) {
         BottomToolbarModel model = new BottomToolbarModel();
         mMediator = new BottomToolbarMediator(model, fullscreenManager, root.getResources());
 

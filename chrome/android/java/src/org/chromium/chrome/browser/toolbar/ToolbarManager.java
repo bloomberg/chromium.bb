@@ -126,7 +126,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private final ToolbarLayout mToolbar;
     private final ToolbarControlContainer mControlContainer;
 
-    private BottomToolbarController mBottomToolbarController;
+    private BottomToolbarCoordinator mBottomToolbarCoordinator;
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorObserver mTabModelSelectorObserver;
     private TabModelObserver mTabModelObserver;
@@ -600,7 +600,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      */
     public void enableBottomToolbar() {
         if (FeatureUtilities.isBottomToolbarEnabled()) {
-            mBottomToolbarController = new BottomToolbarController(
+            mBottomToolbarCoordinator = new BottomToolbarCoordinator(
                     mActivity.getFullscreenManager(), mActivity.findViewById(R.id.coordinator));
         }
     }
@@ -707,10 +707,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             mLayoutManager.addSceneChangeObserver(mSceneChangeObserver);
         }
 
-        if (mBottomToolbarController != null) {
+        if (mBottomToolbarCoordinator != null) {
             final OnClickListener searchAcceleratorListener = v -> setUrlBarFocus(true);
             final OnClickListener homeButtonListener = v -> openHomepage();
-            mBottomToolbarController.initializeWithNative(
+            mBottomToolbarCoordinator.initializeWithNative(
                     mActivity.getCompositorViewHolder().getResourceManager(),
                     mActivity.getCompositorViewHolder().getLayoutManager(), tabSwitcherClickHandler,
                     searchAcceleratorListener, homeButtonListener, mAppMenuButtonHelper,
@@ -727,8 +727,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      */
     public void showAppMenuUpdateBadge() {
         mToolbar.showAppMenuUpdateBadge();
-        if (mBottomToolbarController != null) {
-            mBottomToolbarController.showAppMenuUpdateBadge();
+        if (mBottomToolbarCoordinator != null) {
+            mBottomToolbarCoordinator.showAppMenuUpdateBadge();
         }
     }
 
@@ -738,8 +738,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      */
     public void removeAppMenuUpdateBadge(boolean animate) {
         mToolbar.removeAppMenuUpdateBadge(animate);
-        if (mBottomToolbarController != null) {
-            mBottomToolbarController.removeAppMenuUpdateBadge();
+        if (mBottomToolbarCoordinator != null) {
+            mBottomToolbarCoordinator.removeAppMenuUpdateBadge();
         }
     }
 
@@ -748,8 +748,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * TODO(amaralp): Only the top or bottom menu should be visible.
      */
     public boolean isShowingAppMenuUpdateBadge() {
-        if (mBottomToolbarController != null
-                && mBottomToolbarController.isShowingAppMenuUpdateBadge()) {
+        if (mBottomToolbarCoordinator != null
+                && mBottomToolbarCoordinator.isShowingAppMenuUpdateBadge()) {
             return true;
         }
         return mToolbar.isShowingAppMenuUpdateBadge();
@@ -853,9 +853,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             mLayoutManager = null;
         }
 
-        if (mBottomToolbarController != null) {
-            mBottomToolbarController.destroy();
-            mBottomToolbarController = null;
+        if (mBottomToolbarCoordinator != null) {
+            mBottomToolbarCoordinator.destroy();
+            mBottomToolbarCoordinator = null;
         }
 
         mLocationBar.removeUrlFocusChangeListener(this);
