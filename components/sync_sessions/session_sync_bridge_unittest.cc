@@ -1384,6 +1384,20 @@ TEST_F(SessionSyncBridgeTest, ShouldIgnoreLocalSessionDeletionFromUI) {
               NotNull());
 }
 
+// Verifies that receiving an empty update list does not broadcast a foreign
+// session change via the corresponding callback.
+TEST_F(SessionSyncBridgeTest, ShouldNotBroadcastUpdatesIfEmpty) {
+  InitializeBridge();
+  StartSyncing();
+
+  EXPECT_CALL(mock_foreign_sessions_updated_callback(), Run()).Times(0);
+
+  // Mimic receiving an empty list of remote updates.
+  sync_pb::ModelTypeState state;
+  state.set_initial_sync_done(true);
+  real_processor()->OnUpdateReceived(state, {});
+}
+
 TEST_F(SessionSyncBridgeTest, ShouldDoGarbageCollection) {
   // We construct two identical sessions, one modified recently, one modified
   // more than |kStaleSessionThreshold| ago (14 days ago).
