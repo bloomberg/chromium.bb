@@ -20,7 +20,7 @@ void MockSettingsObserver::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
-    std::string resource_identifier) {
+    const std::string& resource_identifier) {
   const ContentSettingsDetails details(
       primary_pattern, secondary_pattern, content_type, resource_identifier);
   OnContentSettingsChanged(map_,

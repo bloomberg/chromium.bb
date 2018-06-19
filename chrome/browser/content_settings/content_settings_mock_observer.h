@@ -22,7 +22,8 @@ class MockObserver : public Observer {
                void(const ContentSettingsPattern& primary_pattern,
                     const ContentSettingsPattern& secondary_pattern,
                     ContentSettingsType content_type,
-                    std::string resource_identifier));
+                    const std::string& resource_identifier));
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockObserver);
 };

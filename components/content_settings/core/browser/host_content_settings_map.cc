@@ -662,7 +662,7 @@ void HostContentSettingsMap::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
-    std::string resource_identifier) {
+    const std::string& resource_identifier) {
   for (content_settings::Observer& observer : observers_) {
     observer.OnContentSettingChanged(primary_pattern, secondary_pattern,
                                      content_type, resource_identifier);
