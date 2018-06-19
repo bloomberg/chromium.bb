@@ -2,6 +2,7 @@ include_rules = [
   "+components/data_use_measurement/core",
   "+components/security_interstitials/content",
   "+components/security_interstitials/core",
+  "+components/sync/protocol",
   "+content/public/browser",
   "+content/public/common",
   "+google_apis",

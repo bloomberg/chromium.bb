@@ -42,6 +42,7 @@
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/safe_browsing/triggers/trigger_throttler.h"
+#include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -510,9 +511,6 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseDetectedEvent(
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!IsEventLoggingEnabled())
-    return;
-
   syncer::UserEventService* user_event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(profile_);
   if (!user_event_service)
@@ -541,7 +539,11 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseDetectedEvent(
       status->set_safe_browsing_reporting_population(SafeBrowsingStatus::SCOUT);
       break;
   }
-  user_event_service->RecordUserEvent(std::move(specifics));
+
+  WebUIInfoSingleton::GetInstance()->AddToPGEvents(*specifics);
+
+  if (IsEventLoggingEnabled())
+    user_event_service->RecordUserEvent(std::move(specifics));
 }
 
 void ChromePasswordProtectionService::LogPasswordReuseDialogInteraction(

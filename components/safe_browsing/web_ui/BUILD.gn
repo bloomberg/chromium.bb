@@ -21,6 +21,7 @@ static_library("web_ui") {
     "//components/safe_browsing/common:safe_browsing_prefs",
     "//components/safe_browsing/db:v4_local_database_manager",
     "//components/strings:components_strings_grit",
+    "//components/sync/protocol:protocol",
     "//components/user_prefs:user_prefs",
     "//content/public/browser",
     "//net",
