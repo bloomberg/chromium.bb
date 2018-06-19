@@ -212,9 +212,16 @@ void NewTabButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 std::unique_ptr<views::InkDropRipple> NewTabButton::CreateInkDropRipple()
     const {
   return std::make_unique<views::FloodFillInkDropRipple>(
-      GetVisibleBounds().size(), gfx::Insets(),
+      GetContentsBounds().size(), gfx::Insets(),
       GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
       ink_drop_visible_opacity());
+}
+
+std::unique_ptr<views::InkDropHighlight> NewTabButton::CreateInkDropHighlight()
+    const {
+  const gfx::Rect bounds = GetContentsBounds();
+  return CreateDefaultInkDropHighlight(
+      gfx::RectF(GetMirroredRect(bounds)).CenterPoint(), bounds.size());
 }
 
 void NewTabButton::NotifyClick(const ui::Event& event) {
