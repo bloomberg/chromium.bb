@@ -38,22 +38,18 @@
       }
 
       .command-entry {
-        align-items: start;
+        align-items: center;
         display: flex;
-        /* Makes top/bottom spacing of each row more even, while leaving
-           space for cr-input error message in between rows. */
-        margin-bottom: -8px;
-        padding-top: 16px;
+        height: var(--cr-section-min-height);
       }
 
       .command-name {
-        /* Align with cr-input by matching the field's top padding. */
         flex: 1;
-        margin-top: 6px;
       }
 
       .command-entry .md-select {
-        /* TODO(scottchen): line-height needs adjustment to fix large fonts. */
+        /* TODO(scottchen): line-height needs adjustment to fix large fonts,
+         * same for paper-input. */
         -webkit-margin-start: var(--cr-section-padding);
         line-height: 22px;
       }

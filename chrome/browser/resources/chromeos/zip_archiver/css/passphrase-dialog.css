@@ -2,7 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-cr-input,
+input,
 paper-button {
   -webkit-app-region: no-drag;
 }
@@ -22,7 +22,6 @@ paper-button {
 }
 
 #input {
-  --cr-input-error-display: none;
   font-family: inherit;
   font-size: 13px;
   font-weight: inherit;
@@ -54,6 +53,13 @@ paper-button {
 
 #buttons paper-button:focus:not(:active) {
   box-shadow: 0 0 0 2px rgba(51, 103, 214, 0.5);
+}
+
+paper-input-container {
+  --paper-input-container-focus-color: rgb(51, 103, 214);
+  --paper-input-container-underline-focus: {
+    height: 1px;
+  }
 }
 
 #acceptButton {

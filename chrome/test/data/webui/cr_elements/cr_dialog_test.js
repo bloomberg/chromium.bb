@@ -129,12 +129,12 @@ suite('cr-dialog', function() {
     assertTrue(clicked);
   });
 
-  test('enter keys from cr-inputs (only) are processed', function() {
+  test('enter keys from paper-inputs (only) are processed', function() {
     document.body.innerHTML = `
       <cr-dialog>
         <div slot="title">title</div>
         <div slot="body">
-          <cr-input></cr-input>
+          <paper-input></paper-input>
           <foobar></foobar>
           <button class="action-button">active</button>
         </div>
@@ -142,7 +142,7 @@ suite('cr-dialog', function() {
 
     const dialog = document.body.querySelector('cr-dialog');
 
-    const inputElement = document.body.querySelector('cr-input');
+    const inputElement = document.body.querySelector('paper-input');
     const otherElement = document.body.querySelector('foobar');
     const actionButton = document.body.querySelector('.action-button');
     assertTrue(!!inputElement);
