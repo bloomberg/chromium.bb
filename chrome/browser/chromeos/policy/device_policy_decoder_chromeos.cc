@@ -16,6 +16,7 @@
 #include "base/syslog_logging.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/device_autoupdate_time_restrictions_proto_parser.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_proto_parser.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
@@ -671,6 +672,17 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                     std::make_unique<base::Value>(container.p2p_enabled()),
                     nullptr);
+    }
+
+    if (container.disallowed_time_intervals_size()) {
+      auto update_time_restrictions_policy =
+          AutoUpdateDisallowedTimeIntervalsToValue(container);
+      if (update_time_restrictions_policy) {
+        policies->Set(key::kDeviceAutoUpdateTimeRestrictions,
+                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_CLOUD,
+                      std::move(update_time_restrictions_policy), nullptr);
+      }
     }
   }
 

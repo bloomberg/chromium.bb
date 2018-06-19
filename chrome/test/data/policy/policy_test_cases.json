@@ -3746,6 +3746,10 @@
     "pref_mappings": [{ "pref": "contextual_suggestions.enabled" }]
   },
 
+  "DeviceAutoUpdateTimeRestrictions": {
+    "os": ["chromeos"],
+    "test_policy": {"UpdateTimeRestrictions": [{"start" : {"day_of_week" : 3, "time": 15150000}, "end": {"day_of_week" : 4, "time": 15112000}}, {"start": {"day_of_week": 1, "time": 15151000}, "end": {"day_of_week": 1, "time": 15451000}}]}
+  },
 
   "----- Chrome Frame policies -------------------------------------------": {},
 
