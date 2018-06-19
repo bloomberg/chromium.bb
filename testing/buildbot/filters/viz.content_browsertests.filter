@@ -11,9 +11,6 @@
 -SitePerProcessHitTestBrowserTest.CrossProcessMouseCapture*
 -SitePerProcessHitTestBrowserTest.TouchpadPinchOverOOPIF*
 
-# /2 Variant does not handle overlapping surfaces: https://crbug.com/846798
--SitePerProcessHitTestBrowserTest.HitTestStaleDataDeletedView*
-
 ### Mac
 # BrowserSideFlingBrowserTest timing out https://crbug.com/842325
 -BrowserSideFlingBrowserTest.AutoscrollFling
