@@ -38,6 +38,14 @@ bool CookieSettingsBase::ShouldDeleteCookieOnExit(
   return setting == CONTENT_SETTING_SESSION_ONLY || matches_session_only_rule;
 }
 
+bool CookieSettingsBase::IsCookieAccessAllowed(
+    const GURL& url,
+    const GURL& first_party_url) const {
+  ContentSetting setting;
+  GetCookieSetting(url, first_party_url, nullptr, &setting);
+  return IsAllowed(setting);
+}
+
 // static
 bool CookieSettingsBase::IsValidSetting(ContentSetting setting) {
   return (setting == CONTENT_SETTING_ALLOW ||

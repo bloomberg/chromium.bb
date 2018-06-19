@@ -33,10 +33,6 @@ namespace content {
 class NavigationHandle;
 }
 
-namespace net {
-class CookieOptions;
-}
-
 namespace url {
 class Origin;
 }  // namespace url
@@ -121,7 +117,6 @@ class TabSpecificContentSettings
       const GURL& url,
       const GURL& first_party_url,
       const net::CanonicalCookie& cookie,
-      const net::CookieOptions& options,
       bool blocked_by_policy);
 
   // Called when a specific Web database in the current page was accessed. If
@@ -336,7 +331,6 @@ class TabSpecificContentSettings
   void OnCookieChange(const GURL& url,
                       const GURL& first_party_url,
                       const net::CanonicalCookie& cookie,
-                      const net::CookieOptions& options,
                       bool blocked_by_policy);
   void OnFileSystemAccessed(const GURL& url,
                             bool blocked_by_policy);

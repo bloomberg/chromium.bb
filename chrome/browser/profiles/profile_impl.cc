@@ -1423,8 +1423,8 @@ void ProfileImpl::UpdateBlockThirdPartyCookies() {
       this, base::Bind(
                 [](bool block_third_party_cookies,
                    content::StoragePartition* partition) {
-                  partition->GetNetworkContext()->BlockThirdPartyCookies(
-                      block_third_party_cookies);
+                  partition->GetCookieManagerForBrowserProcess()
+                      ->BlockThirdPartyCookies(block_third_party_cookies);
                 },
                 block_third_party_cookies));
 }
@@ -1443,15 +1443,14 @@ void ProfileImpl::OnContentSettingChanged(
   HostContentSettingsMapFactory::GetForProfile(this)->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
   content::BrowserContext::ForEachStoragePartition(
-      this, base::BindRepeating(
-                [](const ContentSettingsForOneType& settings,
-                   content::StoragePartition* partition) {
-                  network::mojom::CookieManagerPtr cookie_manager;
-                  partition->GetNetworkContext()->GetCookieManager(
-                      mojo::MakeRequest(&cookie_manager));
-                  cookie_manager->SetContentSettings(settings);
-                },
-                std::move(settings)));
+      this,
+      base::BindRepeating(
+          [](const ContentSettingsForOneType& settings,
+             content::StoragePartition* partition) {
+            partition->GetCookieManagerForBrowserProcess()->SetContentSettings(
+                settings);
+          },
+          std::move(settings)));
 }
 
 // Gets the media cache parameters from the command line. |cache_path| will be

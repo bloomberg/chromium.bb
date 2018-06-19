@@ -669,10 +669,6 @@ void NetworkContext::CreateNetLogExporter(
                                         std::move(request));
 }
 
-void NetworkContext::BlockThirdPartyCookies(bool block) {
-  block_third_party_cookies_ = block;
-}
-
 void NetworkContext::AddHSTSForTesting(const std::string& host,
                                        base::Time expiry,
                                        bool include_subdomains,

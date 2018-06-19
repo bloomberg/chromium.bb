@@ -338,9 +338,8 @@ INSTANTIATE_TEST_CASE_P(
 // website(s) only for a session when all others are blocked.
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest,
                        PRE_AllowCookiesForASessionUsingExceptions) {
-  // NOTE: don't use test_server here, since we need the port to be the same
-  // across the restart.
-  GURL url = URLRequestMockHTTPJob::GetMockUrl("setcookie.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/setcookie.html");
   content_settings::CookieSettings* settings =
       CookieSettingsFactory::GetForProfile(browser()->profile()).get();
   settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
@@ -355,7 +354,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest,
 
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest,
                        AllowCookiesForASessionUsingExceptions) {
-  GURL url = URLRequestMockHTTPJob::GetMockUrl("setcookie.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/setcookie.html");
+  // Cookies are shared between ports, so this will get cookies set in PRE.
   ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
 }
 

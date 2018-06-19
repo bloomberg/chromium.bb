@@ -6,11 +6,12 @@ module network.mojom;
 
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
+import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_context.mojom";
-import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/signed_tree_head.mojom";
+import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
@@ -95,6 +96,17 @@ interface NetworkServiceClient {
                         bool async,
                         array<mojo_base.mojom.FilePath> file_paths) =>
                         (int32 net_error, array<mojo_base.mojom.File> files);
+
+  // Called when an attempt has been made to set |cookie|.
+  OnCookieChange(
+      int32 process_id, int32 routing_id, url.mojom.Url url,
+      url.mojom.Url frame_url, CanonicalCookie cookie, bool blocked_by_policy);
+
+  // Called when an attempt has been made to read the cookies in |cookie_list|.
+  OnCookiesRead(
+      int32 process_id, int32 routing_id, url.mojom.Url url,
+      url.mojom.Url frame_url, array<CanonicalCookie> cookie_list,
+      bool blocked_by_policy);
 };
 
 // An HTTPS server to send DNS queries to, per the DNS Queries over HTTPS spec.

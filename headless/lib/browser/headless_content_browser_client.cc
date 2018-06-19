@@ -341,8 +341,7 @@ bool HeadlessContentBrowserClient::AllowSetCookie(
     const net::CanonicalCookie& cookie,
     content::ResourceContext* context,
     int render_process_id,
-    int render_frame_id,
-    const net::CookieOptions& options) {
+    int render_frame_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   LockedPtr<HeadlessBrowserContextImpl> browser_context =
       browser_->GetBrowserContextForRenderFrame(render_process_id,

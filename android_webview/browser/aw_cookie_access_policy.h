@@ -16,10 +16,6 @@ namespace content {
 class ResourceContext;
 }
 
-namespace net {
-class CookieOptions;
-}
-
 class GURL;
 
 namespace android_webview {
@@ -65,8 +61,7 @@ class AwCookieAccessPolicy {
                       const net::CanonicalCookie& cookie,
                       content::ResourceContext* context,
                       int render_process_id,
-                      int render_frame_id,
-                      const net::CookieOptions& options);
+                      int render_frame_id);
 
  private:
   friend struct base::LazyInstanceTraitsBase<AwCookieAccessPolicy>;

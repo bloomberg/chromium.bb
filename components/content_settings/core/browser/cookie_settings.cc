@@ -41,13 +41,6 @@ ContentSetting CookieSettings::GetDefaultCookieSetting(
       CONTENT_SETTINGS_TYPE_COOKIES, provider_id);
 }
 
-bool CookieSettings::IsCookieAccessAllowed(const GURL& url,
-                                           const GURL& first_party_url) const {
-  ContentSetting setting;
-  GetCookieSetting(url, first_party_url, nullptr, &setting);
-  return IsAllowed(setting);
-}
-
 bool CookieSettings::IsCookieSessionOnly(const GURL& origin) const {
   ContentSetting setting;
   GetCookieSetting(origin, origin, nullptr, &setting);

@@ -115,7 +115,7 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   std::unique_ptr<net::CanonicalCookie> cookie(
       net::CanonicalCookie::Create(origin, "A=B", base::Time::Now(), options));
   ASSERT_TRUE(cookie);
-  content_settings->OnCookieChange(origin, origin, *cookie, options, false);
+  content_settings->OnCookieChange(origin, origin, *cookie, false);
   content_setting_image_model->UpdateFromWebContents(web_contents());
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_TRUE(HasIcon(*content_setting_image_model));

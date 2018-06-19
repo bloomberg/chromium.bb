@@ -337,6 +337,9 @@ URLLoader::URLLoader(
   url_request_->SetExtraRequestHeaders(request.headers);
   url_request_->set_upgrade_if_insecure(request.upgrade_if_insecure);
 
+  url_request_->SetUserData(kUserDataKey,
+                            std::make_unique<UnownedPointer>(this));
+
   // Resolve elements from request_body and prepare upload data.
   if (request.request_body.get()) {
     scoped_refptr<base::SequencedTaskRunner> task_runner =
@@ -393,6 +396,9 @@ URLLoader::~URLLoader() {
   if (keepalive_ && keepalive_statistics_recorder_)
     keepalive_statistics_recorder_->OnLoadFinished(factory_params_->process_id);
 }
+
+// static
+const void* const URLLoader::kUserDataKey = &URLLoader::kUserDataKey;
 
 void URLLoader::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
@@ -777,6 +783,23 @@ net::LoadState URLLoader::GetLoadStateForTesting() const {
   if (!url_request_)
     return net::LOAD_STATE_IDLE;
   return url_request_->GetLoadState().state;
+}
+
+uint32_t URLLoader::GetRenderFrameId() const {
+  return render_frame_id_;
+}
+
+uint32_t URLLoader::GetProcessId() const {
+  return factory_params_->process_id;
+}
+
+// static
+URLLoader* URLLoader::ForRequest(const net::URLRequest& request) {
+  auto* pointer =
+      static_cast<UnownedPointer*>(request.GetUserData(kUserDataKey));
+  if (!pointer)
+    return nullptr;
+  return pointer->get();
 }
 
 void URLLoader::OnAuthCredentials(

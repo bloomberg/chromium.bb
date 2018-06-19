@@ -274,10 +274,23 @@ bool ContentBrowserClient::AllowSetCookie(const GURL& url,
                                           const net::CanonicalCookie& cookie,
                                           ResourceContext* context,
                                           int render_process_id,
-                                          int render_frame_id,
-                                          const net::CookieOptions& options) {
+                                          int render_frame_id) {
   return true;
 }
+
+void ContentBrowserClient::OnCookiesRead(int process_id,
+                                         int routing_id,
+                                         const GURL& url,
+                                         const GURL& first_party_url,
+                                         const net::CookieList& cookie_list,
+                                         bool blocked_by_policy) {}
+
+void ContentBrowserClient::OnCookieChange(int process_id,
+                                          int routing_id,
+                                          const GURL& url,
+                                          const GURL& first_party_url,
+                                          const net::CanonicalCookie& cookie,
+                                          bool blocked_by_policy) {}
 
 void ContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,

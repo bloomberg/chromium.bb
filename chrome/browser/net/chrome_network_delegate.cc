@@ -436,7 +436,7 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&TabSpecificContentSettings::CookieChanged,
                        info->GetWebContentsGetterForRequest(), request.url(),
-                       request.site_for_cookies(), cookie, *options, !allow));
+                       request.site_for_cookies(), cookie, !allow));
   }
 
   return allow;

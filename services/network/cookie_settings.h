@@ -25,6 +25,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
     content_settings_ = content_settings;
   }
 
+  void set_block_third_party_cookies(bool block_third_party_cookies) {
+    block_third_party_cookies_ = block_third_party_cookies;
+  }
+
   // Returns a predicate that takes the domain of a cookie and a bool whether
   // the cookie is secure and returns true if the cookie should be deleted on
   // exit.
@@ -42,6 +46,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
   bool HasSessionOnlyOrigins() const;
 
   ContentSettingsForOneType content_settings_;
+  bool block_third_party_cookies_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CookieSettings);
 };

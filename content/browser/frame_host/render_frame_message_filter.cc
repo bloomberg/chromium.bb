@@ -502,7 +502,7 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
 
   if (!GetContentClient()->browser()->AllowSetCookie(
           url, site_for_cookies, *cookie, resource_context_, render_process_id_,
-          render_frame_id, options))
+          render_frame_id))
     return;
 
   net::URLRequestContext* context = GetRequestContextForURL(url);

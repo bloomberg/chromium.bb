@@ -1259,7 +1259,7 @@ void BlinkTestController::OnBlockThirdPartyCookies(bool block) {
     ShellBrowserContext* browser_context =
         ShellContentBrowserClient::Get()->browser_context();
     browser_context->GetDefaultStoragePartition(browser_context)
-        ->GetNetworkContext()
+        ->GetCookieManagerForBrowserProcess()
         ->BlockThirdPartyCookies(block);
   } else {
     BrowserThread::PostTask(

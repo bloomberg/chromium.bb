@@ -864,9 +864,12 @@ bool GetDataSaverEnabledPref(const PrefService* prefs) {
 }
 
 WebContents* GetWebContents(int render_process_id, int render_frame_id) {
-  RenderFrameHost* rfh =
-      RenderFrameHost::FromID(render_process_id, render_frame_id);
-  return WebContents::FromRenderFrameHost(rfh);
+  if (render_process_id) {
+    RenderFrameHost* rfh =
+        RenderFrameHost::FromID(render_process_id, render_frame_id);
+    return WebContents::FromRenderFrameHost(rfh);
+  }
+  return WebContents::FromFrameTreeNodeId(render_frame_id);
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -2244,13 +2247,9 @@ bool ChromeContentBrowserClient::AllowGetCookie(
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   bool allow =
       io_data->GetCookieSettings()->IsCookieAccessAllowed(url, first_party);
+  OnCookiesRead(render_process_id, render_frame_id, url, first_party,
+                cookie_list, !allow);
 
-  base::Callback<content::WebContents*(void)> wc_getter =
-      base::Bind(&GetWebContents, render_process_id, render_frame_id);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&TabSpecificContentSettings::CookiesRead, wc_getter, url,
-                     first_party, cookie_list, !allow));
   return allow;
 }
 
@@ -2260,21 +2259,46 @@ bool ChromeContentBrowserClient::AllowSetCookie(
     const net::CanonicalCookie& cookie,
     content::ResourceContext* context,
     int render_process_id,
-    int render_frame_id,
-    const net::CookieOptions& options) {
+    int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   content_settings::CookieSettings* cookie_settings =
       io_data->GetCookieSettings();
   bool allow = cookie_settings->IsCookieAccessAllowed(url, first_party);
 
-  base::Callback<content::WebContents*(void)> wc_getter =
-      base::Bind(&GetWebContents, render_process_id, render_frame_id);
+  OnCookieChange(render_process_id, render_frame_id, url, first_party, cookie,
+                 !allow);
+  return allow;
+}
+
+void ChromeContentBrowserClient::OnCookiesRead(
+    int process_id,
+    int routing_id,
+    const GURL& url,
+    const GURL& first_party_url,
+    const net::CookieList& cookie_list,
+    bool blocked_by_policy) {
+  base::RepeatingCallback<content::WebContents*(void)> wc_getter =
+      base::BindRepeating(&GetWebContents, process_id, routing_id);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&TabSpecificContentSettings::CookiesRead, wc_getter, url,
+                     first_party_url, cookie_list, blocked_by_policy));
+}
+
+void ChromeContentBrowserClient::OnCookieChange(
+    int process_id,
+    int routing_id,
+    const GURL& url,
+    const GURL& first_party_url,
+    const net::CanonicalCookie& cookie,
+    bool blocked_by_policy) {
+  base::RepeatingCallback<content::WebContents*(void)> wc_getter =
+      base::BindRepeating(&GetWebContents, process_id, routing_id);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&TabSpecificContentSettings::CookieChanged, wc_getter, url,
-                     first_party, cookie, options, !allow));
-  return allow;
+                     first_party_url, cookie, blocked_by_policy));
 }
 
 void ChromeContentBrowserClient::AllowWorkerFileSystem(

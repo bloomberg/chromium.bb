@@ -95,7 +95,6 @@ class AuthCredentials;
 class ClientCertIdentity;
 using ClientCertIdentityList = std::vector<std::unique_ptr<ClientCertIdentity>>;
 class ClientCertStore;
-class CookieOptions;
 class HttpRequestHeaders;
 class NetLog;
 class SSLCertRequestInfo;
@@ -484,8 +483,24 @@ class CONTENT_EXPORT ContentBrowserClient {
                               const net::CanonicalCookie& cookie,
                               ResourceContext* context,
                               int render_process_id,
-                              int render_frame_id,
-                              const net::CookieOptions& options);
+                              int render_frame_id);
+
+  // Notifies the embedder that an attempt has been made to read the cookies in
+  // |cookie_list|.
+  virtual void OnCookiesRead(int process_id,
+                             int routing_id,
+                             const GURL& url,
+                             const GURL& first_party_url,
+                             const net::CookieList& cookie_list,
+                             bool blocked_by_policy);
+
+  // Notifies the embedder that an attempt has been made to set |cookie|.
+  virtual void OnCookieChange(int process_id,
+                              int routing_id,
+                              const GURL& url,
+                              const GURL& first_party_url,
+                              const net::CanonicalCookie& cookie,
+                              bool blocked_by_policy);
 
   // Allow the embedder to control if access to file system by a shared worker
   // is allowed.
