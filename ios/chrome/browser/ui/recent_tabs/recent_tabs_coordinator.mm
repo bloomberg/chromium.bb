@@ -65,7 +65,7 @@
   self.mediator = [[RecentTabsMediator alloc] init];
   self.mediator.browserState = self.browserState;
   // Set the consumer first before calling [self.mediator initObservers] and
-  // then [self.mediator reloadSessions].
+  // then [self.mediator configureConsumer].
   self.mediator.consumer = recentTabsTableViewController;
   // TODO(crbug.com/845636) : Currently, the image data source must be set
   // before the mediator starts updating its consumer. Fix this so that order of
@@ -73,7 +73,7 @@
   recentTabsTableViewController.imageDataSource = self.mediator;
   recentTabsTableViewController.delegate = self.mediator;
   [self.mediator initObservers];
-  [self.mediator reloadSessions];
+  [self.mediator configureConsumer];
 
   // Present RecentTabsNavigationController.
   self.recentTabsNavigationController = [[TableViewNavigationController alloc]

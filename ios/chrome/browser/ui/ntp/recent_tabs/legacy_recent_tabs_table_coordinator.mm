@@ -53,7 +53,7 @@
 - (void)start {
   _tableViewController.handsetCommandHandler = self.handsetCommandHandler;
   [self.mediator initObservers];
-  [self.mediator reloadSessions];
+  [self.mediator configureConsumer];
 }
 
 - (void)stop {
