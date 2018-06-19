@@ -221,8 +221,11 @@ LayoutRect PaintLayerClipper::LocalClipRect(
     CalculateBackgroundClipRectWithGeometryMapper(
         context, layer_.GetLayoutObject().FirstFragment(), kRespectOverflowClip,
         clip_rect);
-    LayoutRect premapped_rect = clip_rect.Rect();
 
+    if (clip_rect.IsInfinite())
+      return clip_rect.Rect();
+
+    LayoutRect premapped_rect = clip_rect.Rect();
     // The rect now needs to be transformed to the local space of this
     // PaintLayer.
     // TODO(chrishtr): not correct for fragmentation.
@@ -251,14 +254,13 @@ LayoutRect PaintLayerClipper::LocalClipRect(
 
   LayoutRect layer_bounds;
   ClipRect background_rect, foreground_rect;
-  CalculateRects(context, nullptr, LayoutRect(LayoutRect::InfiniteIntRect()),
-                 layer_bounds, background_rect, foreground_rect);
+  CalculateRects(context, nullptr, nullptr, layer_bounds, background_rect,
+                 foreground_rect);
+
+  if (background_rect.IsInfinite())
+    return background_rect.Rect();
 
   LayoutRect clip_rect = background_rect.Rect();
-  // TODO(chrishtr): avoid converting to IntRect and back.
-  if (clip_rect == LayoutRect(LayoutRect::InfiniteIntRect()))
-    return clip_rect;
-
   LayoutPoint clipping_root_offset;
   layer_.ConvertToLayerCoords(&clipping_root_layer, clipping_root_offset);
   clip_rect.MoveBy(-clipping_root_offset);
@@ -269,7 +271,7 @@ LayoutRect PaintLayerClipper::LocalClipRect(
 void PaintLayerClipper::CalculateRectsWithGeometryMapper(
     const ClipRectsContext& context,
     const FragmentData& fragment_data,
-    const LayoutRect& paint_dirty_rect,
+    const LayoutRect* paint_dirty_rect,
     LayoutRect& layer_bounds,
     ClipRect& background_rect,
     ClipRect& foreground_rect,
@@ -329,7 +331,9 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
 
   CalculateBackgroundClipRectWithGeometryMapper(
       context, fragment_data, kRespectOverflowClip, background_rect);
-  background_rect.Intersect(paint_dirty_rect);
+
+  if (paint_dirty_rect)
+    background_rect.Intersect(*paint_dirty_rect);
 
   if (ShouldClipOverflow(context)) {
     LayoutBoxModelObject& layout_object = layer_.GetLayoutObject();
@@ -348,7 +352,7 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
 void PaintLayerClipper::CalculateRects(
     const ClipRectsContext& context,
     const FragmentData* fragment_data,
-    const LayoutRect& paint_dirty_rect,
+    const LayoutRect* paint_dirty_rect,
     LayoutRect& layer_bounds,
     ClipRect& background_rect,
     ClipRect& foreground_rect,
@@ -374,10 +378,9 @@ void PaintLayerClipper::CalculateRects(
   if (!is_clipping_root && layer_.Parent()) {
     CalculateBackgroundClipRect(context, background_rect);
     background_rect.Move(context.sub_pixel_accumulation);
-    background_rect.Intersect(paint_dirty_rect);
-  } else {
-    background_rect = paint_dirty_rect;
   }
+  if (paint_dirty_rect)
+    background_rect.Intersect(*paint_dirty_rect);
 
   foreground_rect = background_rect;
 
@@ -530,10 +533,12 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
     output.SetRect(clipped_rect_in_root_layer_space);
   }
 
-  // TODO(chrishtr): generalize to multiple fragments.
-  output.MoveBy(
-      -context.root_layer->GetLayoutObject().FirstFragment().PaintOffset());
-  output.Move(context.sub_pixel_accumulation);
+  if (!output.IsInfinite()) {
+    // TODO(chrishtr): generalize to multiple fragments.
+    output.MoveBy(
+        -context.root_layer->GetLayoutObject().FirstFragment().PaintOffset());
+    output.Move(context.sub_pixel_accumulation);
+  }
 }
 
 void PaintLayerClipper::InitializeCommonClipRectState(

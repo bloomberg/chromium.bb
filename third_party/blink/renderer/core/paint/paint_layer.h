@@ -907,7 +907,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void AppendSingleFragmentIgnoringPagination(
       PaintLayerFragments&,
       const PaintLayer* root_layer,
-      const LayoutRect& dirty_rect,
+      const LayoutRect* dirty_rect,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
       ShouldRespectOverflowClipType = kRespectOverflowClip,
       const LayoutPoint* offset_from_root = nullptr,
@@ -916,7 +916,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void CollectFragments(
       PaintLayerFragments&,
       const PaintLayer* root_layer,
-      const LayoutRect& dirty_rect,
+      const LayoutRect* dirty_rect,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
       ShouldRespectOverflowClipType = kRespectOverflowClip,
       const LayoutPoint* offset_from_root = nullptr,
@@ -1091,11 +1091,20 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void SetLastChild(PaintLayer* last) { last_ = last; }
 
   void UpdateHasSelfPaintingLayerDescendant() const;
+
+  struct HitTestRecursionData {
+    const LayoutRect& rect;
+    // Whether location.Intersects(rect) returns true.
+    const HitTestLocation& location;
+    const bool intersects_location;
+    HitTestRecursionData(const LayoutRect& rect_arg,
+                         const HitTestLocation& location_arg);
+  };
+
   PaintLayer* HitTestLayer(PaintLayer* root_layer,
                            PaintLayer* container_layer,
                            HitTestResult&,
-                           const LayoutRect& hit_test_rect,
-                           const HitTestLocation&,
+                           const HitTestRecursionData& recursion_data,
                            bool applied_transform,
                            const HitTestingTransformState* = nullptr,
                            double* z_offset = nullptr);
@@ -1103,8 +1112,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       PaintLayer* root_layer,
       PaintLayer* container_layer,
       HitTestResult&,
-      const LayoutRect& hit_test_rect,
-      const HitTestLocation&,
+      const HitTestRecursionData& recursion_data,
       const HitTestingTransformState* = nullptr,
       double* z_offset = nullptr,
       const LayoutPoint& translation_offset = LayoutPoint());
@@ -1112,8 +1120,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       ChildrenIteration,
       PaintLayer* root_layer,
       HitTestResult&,
-      const LayoutRect& hit_test_rect,
-      const HitTestLocation&,
+      const HitTestRecursionData& recursion_data,
       const HitTestingTransformState*,
       double* z_offset_for_descendants,
       double* z_offset,
@@ -1123,8 +1130,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   scoped_refptr<HitTestingTransformState> CreateLocalTransformState(
       PaintLayer* root_layer,
       PaintLayer* container_layer,
-      const LayoutRect& hit_test_rect,
-      const HitTestLocation&,
+      const HitTestRecursionData& recursion_data,
       const HitTestingTransformState* container_transform_state,
       const LayoutPoint& translation_offset = LayoutPoint()) const;
 
@@ -1142,8 +1148,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       PaintLayer* root_layer,
       PaintLayer* container_layer,
       HitTestResult&,
-      const LayoutRect& hit_test_rect,
-      const HitTestLocation&,
+      const HitTestRecursionData&,
       const HitTestingTransformState*,
       double* z_offset,
       ShouldRespectOverflowClipType);

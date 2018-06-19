@@ -188,9 +188,11 @@ class CORE_EXPORT PaintLayerClipper {
   // include subpixel accumualation. Otherwise it is set to the offset from
   // |layer_| to |root_layer|, plus |context.sub_pixel_accumuation|.
   // |fragment_data| is only used in kUseGeometryMapper mode.
+  // If |paint_dirty_rect| is provided, intersects |background_rect|
+  // and |foreground_rect| with it.
   void CalculateRects(const ClipRectsContext&,
                       const FragmentData*,
-                      const LayoutRect& paint_dirty_rect,
+                      const LayoutRect* paint_dirty_rect,
                       LayoutRect& layer_bounds,
                       ClipRect& background_rect,
                       ClipRect& foreground_rect,
@@ -227,7 +229,7 @@ class CORE_EXPORT PaintLayerClipper {
   ALWAYS_INLINE void CalculateRectsWithGeometryMapper(
       const ClipRectsContext&,
       const FragmentData&,
-      const LayoutRect& paint_dirty_rect,
+      const LayoutRect* paint_dirty_rect,
       LayoutRect& layer_bounds,
       ClipRect& background_rect,
       ClipRect& foreground_rect,
