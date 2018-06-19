@@ -166,12 +166,6 @@ TEST_F(SecureChannelClientChannelImplTest, TestReceiveMessage) {
   EXPECT_EQ("payload", fake_observer_->received_messages()[0]);
 }
 
-TEST_F(SecureChannelClientChannelImplTest, TestDisconnectByClient) {
-  client_channel_->Disconnect();
-
-  VerifyChannelDisconnected();
-}
-
 TEST_F(SecureChannelClientChannelImplTest, TestDisconnectRemotely) {
   fake_channel_->DisconnectGeneratedPtr();
 
