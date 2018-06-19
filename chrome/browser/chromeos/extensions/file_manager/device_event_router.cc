@@ -42,12 +42,12 @@ void DeviceEventRouter::Startup() {
 }
 
 void DeviceEventRouter::StartupDelayed() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   is_starting_up_ = false;
 }
 
 void DeviceEventRouter::OnDeviceAdded(const std::string& device_path) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   SetDeviceState(device_path, DEVICE_STATE_USUAL);
   if (IsExternalStorageDisabled()) {
@@ -58,7 +58,7 @@ void DeviceEventRouter::OnDeviceAdded(const std::string& device_path) {
 }
 
 void DeviceEventRouter::OnDeviceRemoved(const std::string& device_path) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   SetDeviceState(device_path, DEVICE_STATE_USUAL);
   OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_REMOVED, device_path);
 }
@@ -71,7 +71,7 @@ void DeviceEventRouter::OnDiskAdded(
 
 void DeviceEventRouter::OnDiskRemoved(
     const chromeos::disks::DiskMountManager::Disk& disk) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (is_resuming_ || is_starting_up_)
     return;
@@ -87,7 +87,7 @@ void DeviceEventRouter::OnDiskRemoved(
 
 void DeviceEventRouter::OnVolumeMounted(chromeos::MountError error_code,
                                         const Volume& volume) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const std::string& device_path = volume.system_path_prefix().AsUTF8Unsafe();
   SetDeviceState(device_path, DEVICE_STATE_USUAL);
@@ -100,7 +100,7 @@ void DeviceEventRouter::OnVolumeUnmounted(chromeos::MountError error_code,
 
 void DeviceEventRouter::OnFormatStarted(const std::string& device_path,
                                         bool success) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (success) {
     OnDeviceEvent(file_manager_private::DEVICE_EVENT_TYPE_FORMAT_START,
@@ -113,7 +113,7 @@ void DeviceEventRouter::OnFormatStarted(const std::string& device_path,
 
 void DeviceEventRouter::OnFormatCompleted(const std::string& device_path,
                                           bool success) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   OnDeviceEvent(success ? file_manager_private::DEVICE_EVENT_TYPE_FORMAT_SUCCESS
                         : file_manager_private::DEVICE_EVENT_TYPE_FORMAT_FAIL,
@@ -122,7 +122,7 @@ void DeviceEventRouter::OnFormatCompleted(const std::string& device_path,
 
 void DeviceEventRouter::OnRenameStarted(const std::string& device_path,
                                         bool success) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   OnDeviceEvent(success ? file_manager_private::DEVICE_EVENT_TYPE_RENAME_START
                         : file_manager_private::DEVICE_EVENT_TYPE_RENAME_FAIL,
@@ -131,7 +131,7 @@ void DeviceEventRouter::OnRenameStarted(const std::string& device_path,
 
 void DeviceEventRouter::OnRenameCompleted(const std::string& device_path,
                                           bool success) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   OnDeviceEvent(success ? file_manager_private::DEVICE_EVENT_TYPE_RENAME_SUCCESS
                         : file_manager_private::DEVICE_EVENT_TYPE_RENAME_FAIL,
@@ -140,12 +140,12 @@ void DeviceEventRouter::OnRenameCompleted(const std::string& device_path,
 
 void DeviceEventRouter::SuspendImminent(
     power_manager::SuspendImminent::Reason reason) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   is_resuming_ = true;
 }
 
 void DeviceEventRouter::SuspendDone(const base::TimeDelta& sleep_duration) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&DeviceEventRouter::SuspendDoneDelayed,
@@ -154,7 +154,7 @@ void DeviceEventRouter::SuspendDone(const base::TimeDelta& sleep_duration) {
 }
 
 void DeviceEventRouter::SuspendDoneDelayed() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   is_resuming_ = false;
 }
 

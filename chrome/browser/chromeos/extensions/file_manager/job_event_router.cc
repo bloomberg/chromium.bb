@@ -32,7 +32,7 @@ void JobEventRouter::OnJobAdded(const drive::JobInfo& job_info) {
 }
 
 void JobEventRouter::OnJobUpdated(const drive::JobInfo& job_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!drive::IsActiveFileTransferJobInfo(job_info))
     return;
 
@@ -47,7 +47,7 @@ void JobEventRouter::OnJobUpdated(const drive::JobInfo& job_info) {
 
 void JobEventRouter::OnJobDone(const drive::JobInfo& job_info,
                                drive::FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!drive::IsActiveFileTransferJobInfo(job_info))
     return;
 
