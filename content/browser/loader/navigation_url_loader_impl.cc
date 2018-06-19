@@ -431,7 +431,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           upload_file_system_context, *request_info,
           std::move(navigation_ui_data_), std::move(url_loader_client),
           std::move(url_loader), service_worker_navigation_handle_core,
-          appcache_handle_core, options, &global_request_id_);
+          appcache_handle_core, options, global_request_id_);
     }
 
     // TODO(arthursonzogni): Detect when the ResourceDispatcherHost didn't
@@ -459,6 +459,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     web_contents_getter_ = base::BindRepeating(
         &GetWebContentsFromFrameTreeNodeID, frame_tree_node_id_);
     navigation_ui_data_ = std::move(navigation_ui_data);
+    // The ResourceDispatcherHostImpl can be null in unit tests.
+    ResourceDispatcherHostImpl* rph = ResourceDispatcherHostImpl::Get();
+    if (rph)
+      global_request_id_ = rph->MakeGlobalRequestID();
+
     default_request_handler_factory_ = base::BindRepeating(
         &URLLoaderRequestController::
             CreateDefaultRequestHandlerForNonNetworkService,
@@ -523,9 +528,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     interceptors_.push_back(std::move(service_worker_interceptor));
 
-    // TODO(shimazu): Make sure we have a consistent global id for the
-    // navigation request.
-    global_request_id_ = MakeGlobalRequestID();
     Restart();
   }
 

@@ -1538,7 +1538,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
     ServiceWorkerNavigationHandleCore* service_worker_handle_core,
     AppCacheNavigationHandleCore* appcache_handle_core,
     uint32_t url_loader_options,
-    GlobalRequestID* global_request_id) {
+    const GlobalRequestID& global_request_id) {
   // PlzNavigate: BeginNavigationRequest currently should only be used for the
   // browser-side navigations project.
   CHECK(IsBrowserSideNavigationEnabled());
@@ -1656,7 +1656,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       -1,  // route_id
       info.frame_tree_node_id,
       ChildProcessHost::kInvalidUniqueID,  // plugin_child_id
-      MakeRequestID(),
+      global_request_id.request_id,
       -1,  // request_data.render_frame_id,
       info.is_main_frame, resource_type, info.common_params.transition,
       false,  // is download
@@ -1684,8 +1684,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
-
-  *global_request_id = extra_info->GetGlobalRequestID();
 
   if (new_request->url().SchemeIs(url::kBlobScheme)) {
     // Hang on to a reference to ensure the blob is not released prior
@@ -1947,6 +1945,10 @@ void ResourceDispatcherHostImpl::BeginURLRequest(
 int ResourceDispatcherHostImpl::MakeRequestID() {
   DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
   return --request_id_;
+}
+
+GlobalRequestID ResourceDispatcherHostImpl::MakeGlobalRequestID() {
+  return GlobalRequestID(ChildProcessHost::kInvalidUniqueID, MakeRequestID());
 }
 
 void ResourceDispatcherHostImpl::CancelRequestFromRenderer(
