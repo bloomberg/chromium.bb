@@ -33,6 +33,7 @@ source_set("scenic") {
     "//third_party/fuchsia-sdk:views_v1_token",
     "//ui/base",
     "//ui/display/manager",
+    "//ui/events:dom_keycode_converter",
     "//ui/events/ozone:events_ozone_layout",
     "//ui/gfx/geometry",
     "//ui/ozone:ozone_base",
