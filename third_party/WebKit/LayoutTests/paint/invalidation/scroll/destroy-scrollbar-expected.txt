@@ -33,14 +33,6 @@
     {
       "object": "LayoutBlockFlow (positioned) DIV",
       "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='content'",
-      "reason": "geometry"
     }
   ]
 }

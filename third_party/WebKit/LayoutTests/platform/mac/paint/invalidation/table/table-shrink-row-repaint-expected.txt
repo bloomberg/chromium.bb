@@ -245,10 +245,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "geometry"
     },
@@ -262,10 +258,6 @@
     },
     {
       "object": "InlineTextBox '2'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "geometry"
     },
     {
@@ -285,10 +277,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "geometry"
     },
@@ -302,10 +290,6 @@
     },
     {
       "object": "InlineTextBox '4'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "geometry"
     },
     {
@@ -325,10 +309,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "geometry"
     },
@@ -342,10 +322,6 @@
     },
     {
       "object": "InlineTextBox '6'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "geometry"
     },
     {
@@ -365,10 +341,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "geometry"
     },
@@ -382,10 +354,6 @@
     },
     {
       "object": "InlineTextBox '8'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "geometry"
     },
     {
@@ -405,10 +373,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "geometry"
     },
@@ -422,10 +386,6 @@
     },
     {
       "object": "InlineTextBox '10'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "geometry"
     },
     {
@@ -445,10 +405,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "geometry"
     },
@@ -462,10 +418,6 @@
     },
     {
       "object": "InlineTextBox '12'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "geometry"
     },
     {

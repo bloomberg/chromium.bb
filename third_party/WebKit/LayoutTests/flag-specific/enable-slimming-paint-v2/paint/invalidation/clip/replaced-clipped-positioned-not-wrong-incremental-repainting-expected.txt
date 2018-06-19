@@ -21,10 +21,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow (relative positioned) DIV id='shiftMe'",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBlockFlow (relative positioned) (floating) DIV class='imgContainer'",
       "reason": "geometry"
     },
@@ -34,10 +30,6 @@
     },
     {
       "object": "LayoutImage IMG",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
       "reason": "geometry"
     }
   ]

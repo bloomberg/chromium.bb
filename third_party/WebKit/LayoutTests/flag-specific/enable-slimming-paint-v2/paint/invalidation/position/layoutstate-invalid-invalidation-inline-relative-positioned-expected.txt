@@ -45,10 +45,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBlockFlow DIV",
       "reason": "geometry"
     },
@@ -62,10 +58,6 @@
     },
     {
       "object": "InlineTextBox 'x'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
       "reason": "geometry"
     }
   ]

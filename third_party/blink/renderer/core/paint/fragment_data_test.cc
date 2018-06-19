@@ -12,31 +12,23 @@ class FragmentDataTest : public RenderingTest {
   bool HasRareData(const FragmentData& data) { return !!data.rare_data_; }
 };
 
-TEST_F(FragmentDataTest, LocationInBackingAndSelectionVisualRect) {
+TEST_F(FragmentDataTest, SelectionVisualRect) {
   FragmentData fragment;
 
-  // Default LocationInBacking and SelectionVisualRect should not create
-  // RareData.
+  // Default SelectionVisualRect should not create RareData.
   fragment.SetVisualRect(LayoutRect(10, 20, 30, 400));
-  fragment.SetLocationInBacking(LayoutPoint(10, 20));
   fragment.SetSelectionVisualRect(LayoutRect());
   EXPECT_FALSE(HasRareData(fragment));
-  EXPECT_EQ(LayoutPoint(10, 20), fragment.LocationInBacking());
   EXPECT_EQ(LayoutRect(), fragment.SelectionVisualRect());
 
-  // Non-Default LocationInBacking and SelectionVisualRect create RareData.
-  fragment.SetLocationInBacking(LayoutPoint(20, 30));
+  // Non-Default SelectionVisualRect creates RareData.
   fragment.SetSelectionVisualRect(LayoutRect(1, 2, 3, 4));
   EXPECT_TRUE(HasRareData(fragment));
-  EXPECT_EQ(LayoutPoint(20, 30), fragment.LocationInBacking());
   EXPECT_EQ(LayoutRect(1, 2, 3, 4), fragment.SelectionVisualRect());
 
-  // PaintProperties should store default LocationInBacking and
-  // SelectionVisualRect once it's created.
-  fragment.SetLocationInBacking(LayoutPoint(10, 20));
+  // PaintProperties should store default SelectionVisualRect once it's created.
   fragment.SetSelectionVisualRect(LayoutRect());
   EXPECT_TRUE(HasRareData(fragment));
-  EXPECT_EQ(LayoutPoint(10, 20), fragment.LocationInBacking());
   EXPECT_EQ(LayoutRect(), fragment.SelectionVisualRect());
 }
 

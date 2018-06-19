@@ -1626,6 +1626,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
       object_, fragment_data_, full_context_.is_actually_needed);
 #endif
 
+  context_.old_paint_offset = fragment_data_.PaintOffset();
   UpdatePaintOffset();
   UpdateForPaintOffsetTranslation(paint_offset_translation);
 
@@ -1634,20 +1635,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     // the entire subtree on paint offset changes.
     full_context_.force_subtree_update = true;
 
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      // TODO(wangxianzhu): Move this logic into PaintInvalidator.
-      if (RoundedIntPoint(fragment_data_.PaintOffset()) ==
-          RoundedIntPoint(context_.current.paint_offset)) {
-        // Most paintings are pixel-snapped so subpixel change of paint offset
-        // is unlikely to cause full invalidation. Let the object's paint
-        // invalidator determine the right invalidation.
-        object_.GetMutableForPainting().SetMayNeedPaintInvalidation();
-      } else {
-        object_.GetMutableForPainting().SetShouldDoFullPaintInvalidation(
-            PaintInvalidationReason::kGeometry);
-      }
-    }
-
+    object_.GetMutableForPainting().SetMayNeedPaintInvalidation();
     fragment_data_.SetPaintOffset(context_.current.paint_offset);
     fragment_data_.InvalidateClipPathCache();
   }

@@ -63,14 +63,13 @@ class FindVisualRectNeedingUpdateScopeBase {
  protected:
   FindVisualRectNeedingUpdateScopeBase(const LayoutObject& object,
                                        const PaintInvalidatorContext& context,
-                                       const LayoutRect& old_visual_rect,
-                                       bool is_actually_needed)
+                                       const LayoutRect& old_visual_rect)
       : object_(object),
         context_(context),
         old_visual_rect_(old_visual_rect),
         needed_visual_rect_update_(context.NeedsVisualRectUpdate(object)) {
     if (needed_visual_rect_update_) {
-      DCHECK(is_actually_needed);
+      DCHECK(context.tree_builder_context_actually_needed_);
       return;
     }
     context.force_visual_rect_update_for_checking_ = true;
@@ -125,11 +124,7 @@ class FindVisualRectNeedingUpdateScope : FindVisualRectNeedingUpdateScopeBase {
                                    // Must be a reference to a rect that
                                    // outlives this scope.
                                    const LayoutRect& new_visual_rect)
-      : FindVisualRectNeedingUpdateScopeBase(
-            object,
-            context,
-            old_visual_rect,
-            context.tree_builder_context_actually_needed_),
+      : FindVisualRectNeedingUpdateScopeBase(object, context, old_visual_rect),
         new_visual_rect_ref_(new_visual_rect) {}
 
   ~FindVisualRectNeedingUpdateScope() { CheckVisualRect(new_visual_rect_ref_); }
@@ -144,42 +139,18 @@ class FindObjectVisualRectNeedingUpdateScope
  public:
   FindObjectVisualRectNeedingUpdateScope(const LayoutObject& object,
                                          const FragmentData& fragment_data,
-                                         const PaintInvalidatorContext& context,
-                                         bool is_actually_needed)
+                                         const PaintInvalidatorContext& context)
       : FindVisualRectNeedingUpdateScopeBase(object,
                                              context,
-                                             fragment_data.VisualRect(),
-                                             is_actually_needed),
-        fragment_data_(fragment_data),
-        old_location_(context.old_location) {}
+                                             fragment_data.VisualRect()),
+        fragment_data_(fragment_data) {}
 
   ~FindObjectVisualRectNeedingUpdateScope() {
     CheckVisualRect(fragment_data_.VisualRect());
-    CheckLocation();
-  }
-
-  void CheckLocation() {
-    if (needed_visual_rect_update_)
-      return;
-    LayoutPoint new_location = fragment_data_.LocationInBacking();
-    // Location of LayoutText and non-root SVG is location of the visual rect
-    // which have been checked above.
-    DCHECK(object_.IsText() || object_.IsSVGChild() ||
-           new_location == old_location_ ||
-           object_.EnclosingLayer()->SubtreeIsInvisible() ||
-           // See checkVisualRect for the issue of approximation.
-           LayoutRect(-1, -1, 2, 2)
-               .Contains(LayoutRect(LayoutPoint(new_location - old_location_),
-                                    LayoutSize())))
-        << "Location changed without needing update"
-        << " object=" << object_.DebugName()
-        << " old=" << old_location_.ToString()
-        << " new=" << new_location.ToString();
   }
 
  private:
   const FragmentData& fragment_data_;
-  LayoutPoint old_location_;
 };
 
 }  // namespace blink

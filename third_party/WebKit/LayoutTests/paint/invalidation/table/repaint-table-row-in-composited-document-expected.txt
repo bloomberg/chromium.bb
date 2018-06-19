@@ -36,10 +36,6 @@
       "reason": "incremental"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "geometry"
     },

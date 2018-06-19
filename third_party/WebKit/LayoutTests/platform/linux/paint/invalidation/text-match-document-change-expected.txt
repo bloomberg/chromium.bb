@@ -60,10 +60,6 @@
     {
       "object": "InlineTextBox 'After change'",
       "reason": "appeared"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "geometry"
     }
   ]
 }

@@ -32,10 +32,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV id='s'",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBlockFlow (floating) DIV",
       "reason": "geometry"
     }

@@ -20,10 +20,6 @@
       "reason": "style change"
     },
     {
-      "object": "LayoutTableSection TBODY",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableRow TR",
       "reason": "style change"
     },

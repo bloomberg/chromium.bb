@@ -28,11 +28,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutMultiColumnFlowThread (anonymous)",
-      "reason": "geometry"
+      "reason": "incremental"
     },
     {
       "object": "RootInlineBox",
-      "reason": "geometry"
+      "reason": "incremental"
     },
     {
       "object": "LayoutMultiColumnFlowThread (anonymous)",
@@ -52,11 +52,11 @@
     },
     {
       "object": "LayoutMultiColumnFlowThread (anonymous)",
-      "reason": "geometry"
+      "reason": "appeared"
     },
     {
       "object": "RootInlineBox",
-      "reason": "geometry"
+      "reason": "appeared"
     },
     {
       "object": "LayoutBR BR",

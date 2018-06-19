@@ -81,10 +81,6 @@
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
       "reason": "compositing update"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
     }
   ]
 }

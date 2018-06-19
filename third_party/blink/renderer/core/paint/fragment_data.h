@@ -39,6 +39,8 @@ class CORE_EXPORT FragmentData {
   // The visual rect computed by the latest paint invalidation.
   // This rect does *not* account for composited scrolling. See LayoutObject::
   // AdjustVisualRectForCompositedScrolling().
+  // It's location may be different from PaintOffset when there is visual (ink)
+  // overflow to the top and/or the left.
   LayoutRect VisualRect() const { return visual_rect_; }
   void SetVisualRect(const LayoutRect& rect) { visual_rect_ = rect; }
 
@@ -53,17 +55,6 @@ class CORE_EXPORT FragmentData {
     return rare_data_ ? rare_data_->layer.get() : nullptr;
   }
   void SetLayer(std::unique_ptr<PaintLayer>);
-
-  // See PaintInvalidatorContext::old_location for details. This will be removed
-  // for SPv2.
-  LayoutPoint LocationInBacking() const {
-    return rare_data_ ? rare_data_->location_in_backing
-                      : visual_rect_.Location();
-  }
-  void SetLocationInBacking(const LayoutPoint& location) {
-    if (rare_data_ || location != visual_rect_.Location())
-      EnsureRareData().location_in_backing = location;
-  }
 
   // Visual rect of the selection on this object, in the same coordinate space
   // as DisplayItemClient::VisualRect().
@@ -230,14 +221,13 @@ class CORE_EXPORT FragmentData {
     USING_FAST_MALLOC(RareData);
 
    public:
-    RareData(const LayoutPoint& location_in_backing);
+    RareData();
     ~RareData();
 
     // The following data fields are not fragment specific. Placed here just to
     // avoid separate data structure for them.
     std::unique_ptr<PaintLayer> layer;
     UniqueObjectId unique_id;
-    LayoutPoint location_in_backing;
     LayoutRect selection_visual_rect;
     LayoutRect partial_invalidation_local_rect;
     LayoutRect partial_invalidation_visual_rect;

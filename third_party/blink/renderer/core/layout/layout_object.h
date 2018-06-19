@@ -208,8 +208,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                  public DisplayItemClient {
   friend class LayoutObjectChildList;
   FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest, MutableForPaintingClearPaintFlags);
-  FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest,
-                           LocationInBackingAndSelectionVisualRect);
   friend class VisualRectMappingTest;
 
  public:
@@ -1938,8 +1936,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                              canStartElementOnCompositorEffectSPv2);
     FRIEND_TEST_ALL_PREFIXES(PrePaintTreeWalkTest, ClipRects);
     FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest, VisualRect);
-    FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest,
-                             LocationInBackingAndSelectionVisualRect);
     FRIEND_TEST_ALL_PREFIXES(BoxPaintInvalidatorTest,
                              ComputePaintInvalidationReasonBasic);
 

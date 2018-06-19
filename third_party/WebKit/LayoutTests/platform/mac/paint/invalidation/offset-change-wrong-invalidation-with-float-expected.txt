@@ -58,14 +58,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutListItem LI",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutListMarker (anonymous)",
       "reason": "geometry"
     }

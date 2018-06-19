@@ -105,19 +105,7 @@
       "reason": "disappeared"
     },
     {
-      "object": "LayoutTableSection TBODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD class='red half'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "geometry"
     },
     {
@@ -133,39 +121,15 @@
       "reason": "disappeared"
     },
     {
-      "object": "LayoutTableSection TBODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD class='red half'",
       "reason": "geometry"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD class='green half'",
       "reason": "geometry"
     },
     {
-      "object": "LayoutTableSection TBODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD class='green half'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "geometry"
     },
     {
@@ -174,10 +138,6 @@
     },
     {
       "object": "LayoutTable TABLE",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableSection TBODY",
       "reason": "geometry"
     },
     {

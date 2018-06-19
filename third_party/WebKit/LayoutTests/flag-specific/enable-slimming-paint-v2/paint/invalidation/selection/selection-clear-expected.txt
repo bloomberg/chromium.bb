@@ -60,11 +60,11 @@
     },
     {
       "object": "LayoutBR BR",
-      "reason": "geometry"
+      "reason": "selection"
     },
     {
       "object": "InlineTextBox '\n'",
-      "reason": "geometry"
+      "reason": "selection"
     }
   ]
 }

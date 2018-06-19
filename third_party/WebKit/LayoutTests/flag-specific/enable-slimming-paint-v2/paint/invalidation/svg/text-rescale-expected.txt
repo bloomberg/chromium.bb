@@ -98,11 +98,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "geometry"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGViewportContainer svg",
-      "reason": "geometry"
+      "reason": "appeared"
     },
     {
       "object": "LayoutSVGText text",

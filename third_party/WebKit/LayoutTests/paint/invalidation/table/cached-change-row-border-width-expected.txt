@@ -36,10 +36,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutTableSection TBODY",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableRow TR id='row'",
       "reason": "style change"
     },

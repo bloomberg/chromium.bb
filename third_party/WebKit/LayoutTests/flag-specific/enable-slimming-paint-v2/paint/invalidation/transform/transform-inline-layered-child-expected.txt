@@ -110,7 +110,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "geometry"
+      "reason": "appeared"
     }
   ]
 }
