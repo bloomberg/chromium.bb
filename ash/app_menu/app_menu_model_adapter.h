@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_PUBLIC_CPP_APP_MENU_MODEL_ADAPTER_H_
-#define ASH_PUBLIC_CPP_APP_MENU_MODEL_ADAPTER_H_
+#ifndef ASH_APP_MENU_APP_MENU_MODEL_ADAPTER_H_
+#define ASH_APP_MENU_APP_MENU_MODEL_ADAPTER_H_
 
 #include <memory>
 #include <string>
 
-#include "ash/public/cpp/ash_public_export.h"
+#include "ash/app_menu/app_menu_export.h"
 #include "base/callback.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -26,7 +26,9 @@ class View;
 
 namespace ash {
 
-class ASH_PUBLIC_EXPORT AppMenuModelAdapter : public views::MenuModelAdapter {
+class NotificationMenuController;
+
+class APP_MENU_EXPORT AppMenuModelAdapter : public views::MenuModelAdapter {
  public:
   AppMenuModelAdapter(const std::string& app_id,
                       std::unique_ptr<ui::SimpleMenuModel> model,
@@ -69,6 +71,10 @@ class ASH_PUBLIC_EXPORT AppMenuModelAdapter : public views::MenuModelAdapter {
   // The list of items which will be shown in the menu.
   std::unique_ptr<ui::SimpleMenuModel> model_;
 
+  // Responsible for adding the container MenuItemView to the parent
+  // MenuItemView, and adding NOTIFICATION_CONTAINER to the model.
+  std::unique_ptr<NotificationMenuController> notification_menu_controller_;
+
   // The view showing a context menu. This can be either a ShelfView,
   // ShelfButton, or AppListItemView. Not owned.
   views::View* const menu_owner_;
@@ -94,4 +100,4 @@ class ASH_PUBLIC_EXPORT AppMenuModelAdapter : public views::MenuModelAdapter {
 
 }  // namespace ash
 
-#endif  // ASH_PUBLIC_CPP_APP_MENU_MODEL_ADAPTER_H_
+#endif  // ASH_APP_MENU_APP_MENU_MODEL_ADAPTER_H_

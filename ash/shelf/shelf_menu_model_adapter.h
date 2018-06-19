@@ -5,8 +5,8 @@
 #ifndef ASH_SHELF_SHELF_MENU_MODEL_ADAPTER_H_
 #define ASH_SHELF_SHELF_MENU_MODEL_ADAPTER_H_
 
+#include "ash/app_menu/app_menu_model_adapter.h"
 #include "ash/ash_export.h"
-#include "ash/public/cpp/app_menu_model_adapter.h"
 
 namespace ash {
 

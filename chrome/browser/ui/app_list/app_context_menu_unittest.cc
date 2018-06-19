@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "ash/public/cpp/app_menu_constants.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -691,6 +692,7 @@ TEST_P(AppContextMenuTest, ArcMenuStickyItem) {
 TEST_F(AppContextMenuTest, CommandIdsMatchEnumsForHistograms) {
   // Tests that CommandId enums are not changed as the values are used in
   // histograms.
+  EXPECT_EQ(9, app_list::AppContextMenu::NOTIFICATION_CONTAINER);
   EXPECT_EQ(100, app_list::AppContextMenu::LAUNCH_NEW);
   EXPECT_EQ(101, app_list::AppContextMenu::TOGGLE_PIN);
   EXPECT_EQ(102, app_list::AppContextMenu::SHOW_APP_INFO);
@@ -722,4 +724,13 @@ TEST_P(AppContextMenuTest, InternalAppMenu) {
     ValidateItemState(menu.get(), 0,
                       MenuState(app_list::AppContextMenu::TOGGLE_PIN));
   }
+}
+
+// Tests that app_list::AppContextMenu::NOTIFICATION_CONTAINER matches
+// ash::NOTIFICATION_CONTAINER.
+TEST_F(AppContextMenuTest, CommandIdEquivalence) {
+  // TODO(newcomer): Remove this test when NOTIFICATION_CONTAINER and other
+  // command ids are consolidated.
+  EXPECT_EQ(static_cast<int>(app_list::AppContextMenu::NOTIFICATION_CONTAINER),
+            static_cast<int>(ash::NOTIFICATION_CONTAINER));
 }

@@ -30,6 +30,8 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
   // to ensure stability of the enum and update the ChromeOSUICommands enum
   // listing in tools/metrics/histograms/enums.xml.
   enum CommandId {
+    // This must match ash::CommandId::NOTIFICATION_CONTAINER.
+    NOTIFICATION_CONTAINER = 9,
     LAUNCH_NEW = 100,
     TOGGLE_PIN = 101,
     SHOW_APP_INFO = 102,

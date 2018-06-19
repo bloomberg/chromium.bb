@@ -33,6 +33,8 @@ class LauncherContextMenu : public ui::SimpleMenuModel::Delegate {
     LAUNCH_TYPE_WINDOW = 6,
     MENU_NEW_WINDOW = 7,
     MENU_NEW_INCOGNITO_WINDOW = 8,
+    // This must match ash::CommandId::NOTIFICATION_CONTAINER.
+    NOTIFICATION_CONTAINER = 9,
     // Range of command ids reserved for launching app shortcuts from context
     // menu for Android app. Must overlap with AppContextMenu::CommandId.
     LAUNCH_APP_SHORTCUT_FIRST = 1000,

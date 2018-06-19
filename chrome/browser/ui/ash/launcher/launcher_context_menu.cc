@@ -177,6 +177,12 @@ void LauncherContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
     menu_model->AddCheckItemWithStringId(type, string_id);
     return;
   }
+  // NOTIFICATION_CONTAINER is added by NotificationMenuController.
+  if (type == NOTIFICATION_CONTAINER) {
+    NOTREACHED()
+        << "NOTIFICATION_CONTAINER is added by NotificationMenuController.";
+    return;
+  }
   menu_model->AddItemWithStringId(type, string_id);
 }
 
@@ -205,6 +211,10 @@ const gfx::VectorIcon& LauncherContextMenu::GetMenuItemVectorIcon(
     case LAUNCH_TYPE_FULLSCREEN:
     case LAUNCH_TYPE_WINDOW:
       // Check items use a default icon in touchable and default context menus.
+      return blank;
+    case NOTIFICATION_CONTAINER:
+      NOTREACHED() << "NOTIFICATION_CONTAINER does not have an icon, and it is "
+                      "added to the model by NotificationMenuController.";
       return blank;
     case LAUNCH_APP_SHORTCUT_FIRST:
     case LAUNCH_APP_SHORTCUT_LAST:

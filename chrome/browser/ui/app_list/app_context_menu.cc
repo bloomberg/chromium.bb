@@ -117,6 +117,11 @@ void AppContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
     menu_model->AddCheckItemWithStringId(command_id, string_id);
     return;
   }
+  if (command_id == NOTIFICATION_CONTAINER) {
+    NOTREACHED()
+        << "NOTIFICATION_CONTAINER is added by NotificationMenuController.";
+    return;
+  }
   menu_model->AddItemWithStringId(command_id, string_id);
 }
 
@@ -153,6 +158,10 @@ const gfx::VectorIcon& AppContextMenu::GetMenuItemVectorIcon(
     case USE_LAUNCH_TYPE_FULLSCREEN:
     case USE_LAUNCH_TYPE_WINDOW:
       // Check items use the default icon.
+      return blank;
+    case NOTIFICATION_CONTAINER:
+      NOTREACHED() << "NOTIFICATION_CONTAINER does not have an icon, and it is "
+                      "added to the model by NotificationMenuController.";
       return blank;
     default:
       NOTREACHED();
