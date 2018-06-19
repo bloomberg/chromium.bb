@@ -17,10 +17,10 @@
 
 namespace ui {
 
-enum PlatformWindowType {
-  PLATFORM_WINDOW_TYPE_WINDOW,
-  PLATFORM_WINDOW_TYPE_POPUP,
-  PLATFORM_WINDOW_TYPE_MENU,
+enum class PlatformWindowType {
+  kWindow,
+  kPopup,
+  kMenu,
 };
 
 // Initial properties which are passed to PlatformWindow to be initialized
@@ -32,7 +32,7 @@ struct PlatformWindowInitProperties {
   ~PlatformWindowInitProperties();
 
   // Tells desired PlatformWindow type. It can be popup, menu or anything else.
-  PlatformWindowType type = PlatformWindowType::PLATFORM_WINDOW_TYPE_WINDOW;
+  PlatformWindowType type = PlatformWindowType::kWindow;
   // Sets the desired initial bounds. Can be empty.
   gfx::Rect bounds;
   // Tells PlatformWindow which native widget its parent holds. It is usually
