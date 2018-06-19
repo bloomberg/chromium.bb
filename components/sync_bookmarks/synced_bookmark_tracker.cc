@@ -129,6 +129,11 @@ SyncedBookmarkTracker::BuildBookmarkModelMetadata() const {
   return model_metadata;
 }
 
+bool SyncedBookmarkTracker::HasLocalChanges() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 std::size_t SyncedBookmarkTracker::TrackedEntitiesCountForTest() const {
   return sync_id_to_entities_map_.size();
 }

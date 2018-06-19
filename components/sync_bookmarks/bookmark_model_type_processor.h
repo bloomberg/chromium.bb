@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -25,6 +26,8 @@ class BookmarkNode;
 }
 
 namespace sync_bookmarks {
+
+class BookmarkModelObserverImpl;
 
 class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
                                    public syncer::ModelTypeControllerDelegate {
@@ -127,6 +130,11 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   // If preconditions are met, inform sync that we are ready to connect.
   void ConnectIfReady();
 
+  // Nudges worker if there are any local entities to be committed. Should only
+  // be called after initial sync is done and processor is tracking sync
+  // entities.
+  void NudgeForCommitIfNeeded();
+
   // Stores the start callback in between OnSyncStarting() and
   // DecodeSyncMetadata().
   StartCallback start_callback_;
@@ -153,11 +161,12 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   // useful in tests.
   std::unique_ptr<syncer::CommitQueue> worker_;
 
-  // Keeps the mapping between server ids and bookmarks nodes. It also caches
-  // the metadata upon a local change until the commit configration is received.
-  // It is constructed and set during DecodeSyncMetadata(), which is called
-  // during startup, as part of the bookmark-loading process.
+  // Keeps the mapping between server ids and bookmarks nodes together with sync
+  // metadata. It is constructed and set during DecodeSyncMetadata(), which is
+  // called during startup, as part of the bookmark-loading process.
   std::unique_ptr<SyncedBookmarkTracker> bookmark_tracker_;
+
+  std::unique_ptr<BookmarkModelObserverImpl> bookmark_model_observer_;
 
   base::WeakPtrFactory<BookmarkModelTypeProcessor> weak_ptr_factory_;
 

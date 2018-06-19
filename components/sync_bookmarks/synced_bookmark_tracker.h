@@ -98,6 +98,9 @@ class SyncedBookmarkTracker {
 
   sync_pb::BookmarkModelMetadata BuildBookmarkModelMetadata() const;
 
+  // Returns true if there are any local entities to be committed.
+  bool HasLocalChanges() const;
+
   // Returns number of tracked entities. Used only in test.
   std::size_t TrackedEntitiesCountForTest() const;
 
