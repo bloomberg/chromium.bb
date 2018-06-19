@@ -530,7 +530,8 @@ class ArcBluetoothBridge
   // or return false if the advertisement map is full.
   bool GetAdvertisementHandle(int32_t* adv_handle);
 
-  void SendDevice(const device::BluetoothDevice* device) const;
+  void SendDevice(const device::BluetoothDevice* device,
+                  bool include_cached_device) const;
 
   // Shows a pairing dialog to handle incoming pairing requests.
   // Returns the pairing delegate of the dialog UI.
