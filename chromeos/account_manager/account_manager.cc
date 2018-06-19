@@ -4,6 +4,7 @@
 
 #include "chromeos/account_manager/account_manager.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,7 +15,12 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
 namespace chromeos {
@@ -88,6 +94,57 @@ std::vector<AccountManager::AccountKey> GetAccountKeys(
 
 }  // namespace
 
+class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
+ public:
+  GaiaTokenRevocationRequest(
+      net::URLRequestContextGetter* request_context,
+      AccountManager::DelayNetworkCallRunner delay_network_call_runner,
+      const std::string& refresh_token,
+      base::WeakPtr<AccountManager> account_manager)
+      : account_manager_(account_manager),
+        refresh_token_(refresh_token),
+        weak_factory_(this) {
+    DCHECK(!refresh_token_.empty());
+    gaia_auth_fetcher_ = std::make_unique<GaiaAuthFetcher>(
+        this, GaiaConstants::kChromeOSSource, request_context);
+    base::RepeatingClosure start_revoke_token = base::BindRepeating(
+        &GaiaTokenRevocationRequest::Start, weak_factory_.GetWeakPtr());
+    delay_network_call_runner.Run(start_revoke_token);
+  }
+
+  ~GaiaTokenRevocationRequest() override = default;
+
+  // GaiaAuthConsumer overrides.
+  void OnOAuth2RevokeTokenCompleted(TokenRevocationStatus status) override {
+    VLOG(1) << "GaiaTokenRevocationRequest::OnOAuth2RevokeTokenCompleted";
+    // We cannot call |AccountManager::DeletePendingTokenRevocationRequest|
+    // directly because it will immediately start deleting |this|, before the
+    // method has had a chance to return.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AccountManager::DeletePendingTokenRevocationRequest,
+                       account_manager_, this));
+  }
+
+ private:
+  // Starts the actual work of sending a network request to revoke a token.
+  void Start() { gaia_auth_fetcher_->StartRevokeOAuth2Token(refresh_token_); }
+
+  // A weak pointer to |AccountManager|. The only purpose is to signal
+  // the completion of work through
+  // |AccountManager::DeletePendingTokenRevocationRequest|.
+  base::WeakPtr<AccountManager> account_manager_;
+
+  // Does the actual work of revoking a token.
+  std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
+
+  // Refresh token to be revoked from GAIA.
+  std::string refresh_token_;
+
+  base::WeakPtrFactory<GaiaTokenRevocationRequest> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(GaiaTokenRevocationRequest);
+};
+
 bool AccountManager::AccountKey::IsValid() const {
   return !id.empty() &&
          account_type != account_manager::AccountType::ACCOUNT_TYPE_UNSPECIFIED;
@@ -111,14 +168,20 @@ AccountManager::Observer::~Observer() = default;
 
 AccountManager::AccountManager() : weak_factory_(this) {}
 
-void AccountManager::Initialize(const base::FilePath& home_dir) {
-  Initialize(home_dir, base::CreateSequencedTaskRunnerWithTraits(
-                           {base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
-                            base::MayBlock()}));
+void AccountManager::Initialize(
+    const base::FilePath& home_dir,
+    net::URLRequestContextGetter* request_context,
+    DelayNetworkCallRunner delay_network_call_runner) {
+  Initialize(
+      home_dir, request_context, std::move(delay_network_call_runner),
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()}));
 }
 
 void AccountManager::Initialize(
     const base::FilePath& home_dir,
+    net::URLRequestContextGetter* request_context,
+    DelayNetworkCallRunner delay_network_call_runner,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   VLOG(1) << "AccountManager::Initialize";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -133,6 +196,8 @@ void AccountManager::Initialize(
   }
 
   init_state_ = InitializationState::kInProgress;
+  request_context_ = request_context;
+  delay_network_call_runner_ = std::move(delay_network_call_runner);
   task_runner_ = task_runner;
   writer_ = std::make_unique<base::ImportantFileWriter>(
       home_dir.Append(kTokensFileName), task_runner_);
@@ -211,9 +276,21 @@ void AccountManager::RemoveAccountInternal(const AccountKey& account_key) {
     return;
   }
 
+  const std::string token = std::move(it->second);
   tokens_.erase(it);
   PersistTokensAsync();
   NotifyAccountRemovalObservers(account_key);
+
+  // Revoke the token iff it is a GAIA account and the token is not empty.
+  // Stored tokens can be empty for accounts recently migrated to
+  // AccountManager, for which we do not have LSTs yet. These accounts require
+  // re-authentication from the user, but are in a valid state (and hence don't
+  // do a DCHECK here for |!token.empty()|).
+  if (account_key.account_type ==
+          account_manager::AccountType::ACCOUNT_TYPE_GAIA &&
+      !token.empty()) {
+    RevokeGaiaTokenOnServer(token);
+  }
 }
 
 void AccountManager::UpsertToken(const AccountKey& account_key,
@@ -274,6 +351,11 @@ void AccountManager::RemoveObserver(AccountManager::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+net::URLRequestContextGetter* AccountManager::GetUrlRequestContext() {
+  DCHECK(request_context_);
+  return request_context_;
+}
+
 std::unique_ptr<OAuth2AccessTokenFetcher>
 AccountManager::CreateAccessTokenFetcher(
     const AccountKey& account_key,
@@ -295,6 +377,29 @@ bool AccountManager::IsTokenAvailable(const AccountKey& account_key) const {
 
   auto it = tokens_.find(account_key);
   return it != tokens_.end() && !it->second.empty();
+}
+
+void AccountManager::RevokeGaiaTokenOnServer(const std::string& refresh_token) {
+  pending_token_revocation_requests_.emplace_back(
+      std::make_unique<GaiaTokenRevocationRequest>(
+          GetUrlRequestContext(), delay_network_call_runner_, refresh_token,
+          weak_factory_.GetWeakPtr()));
+}
+
+void AccountManager::DeletePendingTokenRevocationRequest(
+    GaiaTokenRevocationRequest* request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto it = std::find_if(
+      pending_token_revocation_requests_.begin(),
+      pending_token_revocation_requests_.end(),
+      [&request](
+          const std::unique_ptr<GaiaTokenRevocationRequest>& pending_request)
+          -> bool { return pending_request.get() == request; });
+
+  if (it != pending_token_revocation_requests_.end()) {
+    pending_token_revocation_requests_.erase(it);
+  }
 }
 
 CHROMEOS_EXPORT std::ostream& operator<<(
