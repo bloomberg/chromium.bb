@@ -277,36 +277,19 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetPasswordExceptionList) {
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, ImportPasswords) {
   EXPECT_FALSE(importPasswordsWasTriggered());
   EXPECT_TRUE(RunPasswordsSubtest("importPasswords")) << message_;
-
-  // TODO(crbug.com/177163): Extension subtests are currently skipped on
-  // Windows, which leads to the import passwords function never being
-  // triggered, causing the test to fail, so the check is currently skipped in
-  // this case.
-  if (!ExtensionApiTest::ExtensionSubtestsAreSkipped()) {
-    EXPECT_TRUE(importPasswordsWasTriggered());
-  }
+  EXPECT_TRUE(importPasswordsWasTriggered());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, ExportPasswords) {
   EXPECT_FALSE(exportPasswordsWasTriggered());
   EXPECT_TRUE(RunPasswordsSubtest("exportPasswords")) << message_;
-
-  // TODO(crbug.com/177163): Extension subtests are currently skipped on
-  // Windows, which leads to the import passwords function never being
-  // triggered, causing the test to fail, so the check is currently skipped in
-  // this case.
-  if (!ExtensionApiTest::ExtensionSubtestsAreSkipped()) {
-    EXPECT_TRUE(exportPasswordsWasTriggered());
-  }
+  EXPECT_TRUE(exportPasswordsWasTriggered());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, CancelExportPasswords) {
   EXPECT_FALSE(cancelExportPasswordsWasTriggered());
   EXPECT_TRUE(RunPasswordsSubtest("cancelExportPasswords")) << message_;
-
-  if (!ExtensionApiTest::ExtensionSubtestsAreSkipped()) {
-    EXPECT_TRUE(cancelExportPasswordsWasTriggered());
-  }
+  EXPECT_TRUE(cancelExportPasswordsWasTriggered());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RequestExportProgressStatus) {
