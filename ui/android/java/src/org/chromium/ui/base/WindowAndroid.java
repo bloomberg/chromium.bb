@@ -46,7 +46,7 @@ import java.util.HashSet;
  * The window base class that has the minimum functionality.
  */
 @JNINamespace("ui")
-public class WindowAndroid {
+public class WindowAndroid implements AndroidPermissionDelegate {
     private static final String TAG = "WindowAndroid";
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -265,14 +265,6 @@ public class WindowAndroid {
     }
 
     /**
-     * @return the delegate to interact with the android permissions system, or null if not
-     *         available
-     */
-    public AndroidPermissionDelegate getAndroidPermissionDelegate() {
-        return mPermissionDelegate;
-    }
-
-    /**
      * Set the delegate that will handle android permissions requests.
      */
     @VisibleForTesting
@@ -377,6 +369,7 @@ public class WindowAndroid {
      * @return Whether access to the permission is granted.
      */
     @CalledByNative
+    @Override
     public final boolean hasPermission(String permission) {
         if (mPermissionDelegate != null) return mPermissionDelegate.hasPermission(permission);
 
@@ -398,6 +391,7 @@ public class WindowAndroid {
      * @return Whether the requesting the permission is allowed.
      */
     @CalledByNative
+    @Override
     public final boolean canRequestPermission(String permission) {
         if (mPermissionDelegate != null) {
             return mPermissionDelegate.canRequestPermission(permission);
@@ -416,6 +410,7 @@ public class WindowAndroid {
      * @param permission The permission name.
      * @return Whether the permission is revoked by policy and the user has no ability to change it.
      */
+    @Override
     public final boolean isPermissionRevokedByPolicy(String permission) {
         if (mPermissionDelegate != null) {
             return mPermissionDelegate.isPermissionRevokedByPolicy(permission);
@@ -433,6 +428,7 @@ public class WindowAndroid {
      * @param permissions The list of permissions to request access to.
      * @param callback The callback to be notified whether the permissions were granted.
      */
+    @Override
     public final void requestPermissions(String[] permissions, PermissionCallback callback) {
         if (mPermissionDelegate != null) {
             mPermissionDelegate.requestPermissions(permissions, callback);
@@ -441,6 +437,16 @@ public class WindowAndroid {
 
         Log.w(TAG, "Cannot request permissions as the context is not an Activity");
         assert false : "Failed to request permissions using a WindowAndroid without an Activity";
+    }
+
+    @Override
+    public boolean handlePermissionResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        if (mPermissionDelegate != null) {
+            return mPermissionDelegate.handlePermissionResult(
+                    requestCode, permissions, grantResults);
+        }
+        return false;
     }
 
     /**

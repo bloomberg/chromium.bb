@@ -107,7 +107,7 @@ public class ActivityAndroidPermissionDelegate implements AndroidPermissionDeleg
     }
 
     @Override
-    public void onRequestPermissionsResult(
+    public boolean handlePermissionResult(
             int requestCode, String[] permissions, int[] grantResults) {
         Activity activity = mActivity.get();
         assert activity != null;
@@ -120,8 +120,9 @@ public class ActivityAndroidPermissionDelegate implements AndroidPermissionDeleg
 
         PermissionCallback callback = mOutstandingPermissionRequests.get(requestCode);
         mOutstandingPermissionRequests.delete(requestCode);
-        if (callback == null) return;
+        if (callback == null) return false;
         callback.onRequestPermissionsResult(permissions, grantResults);
+        return true;
     }
 
     protected void logUMAOnRequestPermissionDenied(String permission) {}

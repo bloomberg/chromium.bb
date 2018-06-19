@@ -197,8 +197,10 @@ public class PermissionUpdateInfobarTest {
         }
 
         @Override
-        public void onRequestPermissionsResult(
-                int requestCode, String[] permissions, int[] grantResults) {}
+        public boolean handlePermissionResult(
+                int requestCode, String[] permissions, int[] grantResults) {
+            return false;
+        }
     }
 
 }

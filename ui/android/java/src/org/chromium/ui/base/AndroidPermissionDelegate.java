@@ -45,10 +45,11 @@ public interface AndroidPermissionDelegate {
     void requestPermissions(String[] permissions, PermissionCallback callback);
 
     /**
-     * Callback for the result from requesting permissions.
+     * Handle the result from requesting permissions.
      * @param requestCode The request code passed in requestPermissions.
      * @param permissions The list of requested permissions.
      * @param grantResults The grant results for the corresponding permissions.
+     * @return True if the result was handled.
      */
-    void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
+    boolean handlePermissionResult(int requestCode, String[] permissions, int[] grantResults);
 }
