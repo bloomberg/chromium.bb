@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 
 /**
- * All of the state for the bottom toolbar, updated by the {@link BottomToolbarController}.
+ * All of the state for the bottom toolbar, updated by the {@link BottomToolbarCoordinator}.
  */
 public class BottomToolbarModel extends PropertyModel {
     /** The Y offset of the view in px. */
