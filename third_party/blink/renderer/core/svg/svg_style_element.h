@@ -58,7 +58,6 @@ class SVGStyleElement final : public SVGElement, public StyleElement {
 
   void ParseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
-  void DidNotifySubtreeInsertionsToDocument() override;
   void RemovedFrom(ContainerNode*) override;
   void ChildrenChanged(const ChildrenChange&) override;
 
