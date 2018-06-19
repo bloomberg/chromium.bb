@@ -13,11 +13,11 @@ namespace {
 // Media data source that reads data from a blob in browser process.
 class BlobMediaDataSource : public chrome::mojom::MediaDataSource {
  public:
-  BlobMediaDataSource(chrome::mojom::MediaDataSourcePtr* interface,
+  BlobMediaDataSource(chrome::mojom::MediaDataSourcePtr* interface_ptr,
                       content::BrowserContext* browser_context,
                       const std::string& blob_uuid,
                       BlobDataSourceFactory::MediaDataCallback callback)
-      : binding_(this, mojo::MakeRequest(interface)),
+      : binding_(this, mojo::MakeRequest(interface_ptr)),
         browser_context_(browser_context),
         blob_uuid_(blob_uuid),
         callback_(callback),

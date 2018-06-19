@@ -37,7 +37,7 @@ class NativeMessagingHostManifest {
 
   const std::string& name() const { return name_; }
   const std::string& description() const { return description_; }
-  HostInterface interface() const { return interface_; }
+  HostInterface host_interface() const { return interface_; }
   const base::FilePath& path() const { return path_; }
   const URLPatternSet& allowed_origins() const { return allowed_origins_; }
 
