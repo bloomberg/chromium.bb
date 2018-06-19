@@ -120,10 +120,6 @@ class LifecycleUnit {
   // successful.
   virtual bool Load() = 0;
 
-  // Request that the LifecycleUnit be frozen, return true if the request is
-  // successfully sent.
-  virtual bool Freeze() = 0;
-
   // Returns the estimated number of kilobytes that would be freed if this
   // LifecycleUnit was discarded.
   //
@@ -153,6 +149,13 @@ class LifecycleUnit {
   // (ie, the page is already discarded).
   virtual bool CanDiscard(DiscardReason reason,
                           DecisionDetails* decision_details) const = 0;
+
+  // Request that the LifecycleUnit be frozen, return true if the request is
+  // successfully sent.
+  virtual bool Freeze() = 0;
+
+  // Unfreezes this LifecycleUnit. Returns true on success.
+  virtual bool Unfreeze() = 0;
 
   // Discards this LifecycleUnit.
   //
