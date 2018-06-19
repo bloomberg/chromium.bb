@@ -2722,7 +2722,6 @@ test("unit_tests") {
   configs += [ "//build/config:precompiled_headers" ]
 
   data_deps = [
-    "//testing/buildbot/filters:unit_tests_filters",
     "//chrome/test/data/media/engagement/preload:generate_preload_list",
     "//chrome/test/data/media/engagement/preload:test_data",
   ]

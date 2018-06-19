@@ -4135,9 +4135,6 @@
         "test": "boringssl_ssl_tests"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/browser_tests_cros_asan.filter"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
@@ -4147,8 +4144,7 @@
       {
         "args": [
           "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.browser_tests.filter",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/browser_tests_cros_asan.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.browser_tests.filter"
         ],
         "name": "viz_browser_tests",
         "swarming": {
@@ -4532,9 +4528,6 @@
         "test": "ui_touch_selection_unittests"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/unit_tests_cros_asan.filter"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
