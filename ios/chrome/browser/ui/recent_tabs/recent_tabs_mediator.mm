@@ -30,7 +30,7 @@ const CGFloat kFaviconWidthHeight = 24;
 const CGFloat kFaviconMinWidthHeight = 16;
 }  // namespace
 
-@interface RecentTabsMediator () {
+@interface RecentTabsMediator ()<SyncedSessionsObserver> {
   std::unique_ptr<synced_sessions::SyncedSessionsObserverBridge>
       _syncedSessionsObserver;
   std::unique_ptr<recent_tabs::ClosedTabsObserverBridge> _closedTabsObserver;
@@ -47,8 +47,6 @@ const CGFloat kFaviconMinWidthHeight = 16;
 - (BOOL)isSyncCompleted;
 // Reload the panel.
 - (void)refreshSessionsView;
-// Force a contact to the sync server to reload remote sessions.
-- (void)reloadSessionsData;
 
 @end
 
@@ -88,10 +86,13 @@ const CGFloat kFaviconMinWidthHeight = 16;
   }
 }
 
+- (void)configureConsumer {
+  [self refreshSessionsView];
+}
+
 #pragma mark - SyncedSessionsObserver
 
 - (void)reloadSessions {
-  [self reloadSessionsData];
   [self refreshSessionsView];
 }
 
@@ -166,13 +167,6 @@ const CGFloat kFaviconMinWidthHeight = 16;
 
 - (BOOL)isSyncCompleted {
   return _syncedSessionsObserver->IsFirstSyncCycleCompleted();
-}
-
-- (void)reloadSessionsData {
-  const syncer::ModelTypeSet types(syncer::SESSIONS);
-  // Requests a sync refresh of the sessions for the current profile.
-  ProfileSyncServiceFactory::GetForBrowserState(_browserState)
-      ->TriggerRefresh(types);
 }
 
 #pragma mark - RecentTabsTableViewControllerDelegate

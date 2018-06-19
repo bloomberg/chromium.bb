@@ -26,15 +26,8 @@ class ChromeBrowserState;
 // accordingly.
 @interface RecentTabsMediator
     : NSObject<ClosedTabsObserving,
-               RecentTabsImageDataSource,
-               SyncedSessionsObserver,
-               LegacyRecentTabsTableViewControllerDelegate>
-
-// Starts observing the he user's signed-in and chrome-sync states.
-- (void)initObservers;
-
-// Disconnects the mediator from all observers.
-- (void)disconnect;
+               LegacyRecentTabsTableViewControllerDelegate,
+               RecentTabsImageDataSource>
 
 // The consumer for this object. This can change during the lifetime of this
 // object and may be nil.
@@ -42,6 +35,17 @@ class ChromeBrowserState;
 
 // The coordinator's BrowserState.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+
+// Starts observing the he user's signed-in and chrome-sync states.
+- (void)initObservers;
+
+// Disconnects the mediator from all observers.
+- (void)disconnect;
+
+// Configures the consumer with current data. Intended to be called immediately
+// after initialization.
+- (void)configureConsumer;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_RECENT_TABS_RECENT_TABS_MEDIATOR_H_
