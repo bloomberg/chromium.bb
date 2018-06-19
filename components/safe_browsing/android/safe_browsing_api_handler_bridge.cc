@@ -46,12 +46,6 @@ void ReportUmaResult(safe_browsing::UmaRemoteCallResult result) {
                             safe_browsing::UMA_STATUS_MAX_VALUE);
 }
 
-void ReportInternalErrorStatusCode(
-    safe_browsing::InternalErrorStatusCode code) {
-  UMA_HISTOGRAM_ENUMERATION("SB2.RemoteCall.InternalErrorStatusCode", code,
-                            safe_browsing::IESC_MAX_VALUE);
-}
-
 // Convert a SBThreatType to a Java threat type.  We only support a few.
 int SBThreatTypeToJavaThreatType(const SBThreatType& sb_threat_type) {
   switch (sb_threat_type) {
@@ -98,8 +92,7 @@ void JNI_SafeBrowsingApiBridge_OnUrlCheckDone(
     jlong callback_id,
     jint result_status,
     const JavaParamRef<jstring>& metadata,
-    jlong check_delta,
-    jint internal_error_status_code) {
+    jlong check_delta) {
   DCHECK(callback_id);
   UMA_HISTOGRAM_COUNTS_10M("SB2.RemoteCall.CheckDelta", check_delta);
 
@@ -125,8 +118,6 @@ void JNI_SafeBrowsingApiBridge_OnUrlCheckDone(
     } else {
       DCHECK_EQ(result_status, RESULT_STATUS_INTERNAL_ERROR);
       ReportUmaResult(UMA_STATUS_INTERNAL_ERROR);
-      ReportInternalErrorStatusCode(
-          static_cast<InternalErrorStatusCode>(internal_error_status_code));
     }
     RunCallbackOnIOThread(std::move(callback), SB_THREAT_TYPE_SAFE,
                           ThreatMetadata());

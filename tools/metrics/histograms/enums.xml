@@ -21926,6 +21926,11 @@ Called by update_net_error_codes.py.-->
   <int value="17" label="SIGN_IN_FAILED"/>
   <int value="18" label="SERVICE_UPDATING"/>
   <int value="1500" label="DRIVE_EXTERNAL_STORAGE_REQUIRED"/>
+  <int value="12000" label="SAFE_BROWSING_UNSUPPORTED_THREAT_TYPES"/>
+  <int value="12001" label="SAFE_BROWSING_MISSING_API_KEY"/>
+  <int value="12002" label="SAFE_BROWSING_API_NOT_AVAILABLE"/>
+  <int value="12006" label="UNSUPPORTED_SDK_VERSION"/>
+  <int value="12009" label="SAFE_BROWSING_API_NOT_INITIALIZED"/>
 </enum>
 
 <enum name="GooglePlayServicesErrorHandlerAction">
@@ -40601,14 +40606,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="17" label="MISMATCH_PREFIX_SET_CHECKSUM"/>
   <int value="18" label="MISMATCH_BLOOM_FILTER_CHECKSUM"/>
   <int value="19" label="BLOOM_MISS_PREFIX_HIT"/>
-</enum>
-
-<enum name="SB2RemoteCallInternalErrorStatusCode">
-  <int value="0" label="UNEXPECTED"/>
-  <int value="1" label="UNSUPPORTED_THREAT_TYPES"/>
-  <int value="2" label="MISSING_API_KEY"/>
-  <int value="3" label="API_NOT_AVAILABLE"/>
-  <int value="4" label="API_NOT_INITIALIZED"/>
 </enum>
 
 <enum name="SB2RemoteCallResult">
