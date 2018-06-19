@@ -64,6 +64,13 @@ void OobeUIDialogDelegate::Show(bool closable_by_esc) {
   dialog_widget_->Show();
 }
 
+void OobeUIDialogDelegate::ShowFullScreen() {
+  const gfx::Size& size =
+      display::Screen::GetScreen()->GetPrimaryDisplay().size();
+  SetSize(size.width(), size.height());
+  Show(false /*closable_by_esc*/);
+}
+
 void OobeUIDialogDelegate::Hide() {
   if (dialog_widget_)
     dialog_widget_->Hide();

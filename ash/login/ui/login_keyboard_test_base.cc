@@ -5,6 +5,7 @@
 #include "ash/login/ui/login_keyboard_test_base.h"
 
 #include "ash/login/login_screen_controller.h"
+#include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/root_window_controller.h"

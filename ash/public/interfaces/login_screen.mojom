@@ -6,6 +6,7 @@ module ash.mojom;
 
 import "ash/public/interfaces/user_info.mojom";
 import "ash/public/interfaces/login_user_info.mojom";
+import "ash/public/interfaces/kiosk_app_info.mojom";
 import "chromeos/components/proximity_auth/public/interfaces/auth_type.mojom";
 import "components/account_id/interfaces/account_id.mojom";
 import "mojo/public/mojom/base/string16.mojom";
@@ -125,6 +126,9 @@ interface LoginScreen {
   // Set the fingerprint unlock state for user with |account_id|.
   SetFingerprintUnlockState(signin.mojom.AccountId account_id,
                             FingerprintUnlockState state);
+
+  // Update the kiosk app data for the login screen.
+  SetKioskApps(array<KioskAppInfo> kiosk_apps);
 };
 
 // Allows ash lock screen to control a client (e.g. Chrome browser). Requests
@@ -216,4 +220,7 @@ interface LoginScreenClient {
 
   // Request to show a feedback report dialog in chrome.
   ShowFeedback();
+
+  // Launch the specific kiosk app.
+  LaunchKioskApp(string app_id);
 };

@@ -83,6 +83,7 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   void RequestPublicSessionKeyboardLayouts(const AccountId& account_id,
                                            const std::string& locale) override;
   void ShowFeedback() override;
+  void LaunchKioskApp(const std::string& app_id) override;
 
  private:
   void SetPublicSessionKeyboardLayout(

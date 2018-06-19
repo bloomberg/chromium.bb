@@ -5,10 +5,13 @@
 #include "ash/login/login_screen_controller.h"
 
 #include "ash/login/ui/lock_screen.h"
+#include "ash/login/ui/lock_window.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "base/debug/alias.h"
@@ -389,6 +392,17 @@ void LoginScreenController::SetFingerprintUnlockState(
     mojom::FingerprintUnlockState state) {
   if (DataDispatcher())
     DataDispatcher()->SetFingerprintUnlockState(account_id, state);
+}
+
+void LoginScreenController::SetKioskApps(
+    std::vector<mojom::KioskAppInfoPtr> kiosk_apps) {
+  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
+      ->shelf_widget()
+      ->SetLoginKioskApps(std::move(kiosk_apps));
+}
+
+void LoginScreenController::LaunchKioskApp(const std::string& app_id) {
+  login_screen_client_->LaunchKioskApp(app_id);
 }
 
 void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,

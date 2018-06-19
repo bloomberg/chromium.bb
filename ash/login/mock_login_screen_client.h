@@ -5,6 +5,7 @@
 #ifndef ASH_LOGIN_MOCK_LOGIN_SCREEN_CLIENT_H_
 #define ASH_LOGIN_MOCK_LOGIN_SCREEN_CLIENT_H_
 
+#include "ash/public/interfaces/kiosk_app_info.mojom.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -67,6 +68,7 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
   MOCK_METHOD2(RequestPublicSessionKeyboardLayouts,
                void(const AccountId& account_id, const std::string& locale));
   MOCK_METHOD0(ShowFeedback, void());
+  MOCK_METHOD1(LaunchKioskApp, void(const std::string& app_id));
 
  private:
   bool authenticate_user_callback_result_ = true;

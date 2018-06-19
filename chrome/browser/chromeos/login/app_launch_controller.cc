@@ -166,12 +166,17 @@ void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
   RecordKioskLaunchUMA(is_auto_launch);
 
   // Ensure WebUILoginView is enabled so that bailout shortcut key works.
-  host_->GetWebUILoginView()->SetUIEnabled(true);
+  WebUILoginView* webui = host_->GetWebUILoginView();
+  if (webui) {
+    webui->SetUIEnabled(true);
 
-  webui_visible_ = host_->GetWebUILoginView()->webui_visible();
-  if (!webui_visible_) {
-    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                   content::NotificationService::AllSources());
+    login_screen_visible_ = webui->webui_visible();
+    if (!login_screen_visible_) {
+      registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+                     content::NotificationService::AllSources());
+    }
+  } else {
+    login_screen_visible_ = true;
   }
   launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
 
@@ -268,8 +273,8 @@ void AppLaunchController::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE, type);
-  DCHECK(!webui_visible_);
-  webui_visible_ = true;
+  DCHECK(!login_screen_visible_);
+  login_screen_visible_ = true;
   launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
   if (launcher_ready_)
     OnReadyToLaunch();
@@ -482,7 +487,7 @@ void AppLaunchController::OnReadyToLaunch() {
   if (network_config_requested_)
     return;
 
-  if (!webui_visible_)
+  if (!login_screen_visible_)
     return;
 
   if (splash_wait_timer_.IsRunning())

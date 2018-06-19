@@ -129,7 +129,7 @@ class AppLaunchController : public AppLaunchSplashScreenView::Delegate,
   std::unique_ptr<AppWindowWatcher> app_window_watcher_;
 
   content::NotificationRegistrar registrar_;
-  bool webui_visible_ = false;
+  bool login_screen_visible_ = false;
   bool launcher_ready_ = false;
 
   // A timer to ensure the app splash is shown for a minimum amount of time.
