@@ -6,6 +6,26 @@
 # See https://crbug.com/769401
 
 # Uncategorized timeouts or test failures.
+-ExtensionDisabledGlobalErrorTest.HigherPermissionsFromSync
+-ExtensionDisabledGlobalErrorTest.RemoteInstall
+-ExtensionStorageMonitorTest.HostedAppTemporaryFilesystem
+-ExtensionUnloadBrowserTest.UnloadWithContentScripts
+-ProcessManagerBrowserTest.NestedURLNavigationsToExtensionAllowed
+-ProxySettingsApiTest.ProxyEventsInvalidProxy
+-RegisterProtocolHandlerBrowserTest.CustomHandler
+-SecurityStateTabHelperTest.DefaultSecurityLevelOnFilesystemUrl/0
+-SecurityStateTabHelperTest.DefaultSecurityLevelOnFilesystemUrl/1
+-SecurityStateTabHelperTest.DefaultSecurityLevelOnSecureFilesystemUrl/0
+-SecurityStateTabHelperTest.DefaultSecurityLevelOnSecureFilesystemUrl/1
+-SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
+-WebstoreInstallerBrowserTest.SimultaneousInstall
+-WebViewTest.WebViewInBackgroundPage
+
+# A large number of Cloud Print files use URLFetchers.
+# A few of the bugs:
+# https://crbug.com/844950
+# https://crbug.com/844951
+# https://crbug.com/844952
 -CloudPolicyManagerTest.Register
 -CloudPolicyManagerTest.RegisterFailsWithRetries
 -CloudPolicyManagerTest.RegisterWithRetry
@@ -15,7 +35,29 @@
 -ComponentCloudPolicyTest.InstallNewExtension
 -ComponentCloudPolicyTest.SignOutAndBackIn
 -ComponentCloudPolicyTest.UpdateExtensionPolicy
+-KeyRotationComponentCloudPolicyTest.Basic
+-MachineLevelUserCloudPolicyEnrollmentTest.Test/2
+-MachineLevelUserCloudPolicyEnrollmentTest.Test/3
+-MachineLevelUserCloudPolicyServiceIntegrationTestInstance/MachineLevelUserCloudPolicyServiceIntegrationTest.ChromeDesktopReport/0
+-MachineLevelUserCloudPolicyServiceIntegrationTestInstance/MachineLevelUserCloudPolicyServiceIntegrationTest.Registration/0
+
+# These tests uses net::URLRequestFilter (through TestRequestInterceptor) to
+# mock out network responses. Unclear if the code being tested uses
+# SimpleURLLoader or URLFetcher.
 -ComponentUpdaterPolicyTest.EnabledComponentUpdates
+-PolicyTest.ExtensionInstallBlacklistSharedModules
+-PolicyTest.ExtensionInstallForcelist
+-PolicyTest.ExtensionInstallForcelist_DefaultedUpdateUrl
+-PolicyTest.ExtensionMinimumVersionForceInstalled
+-PolicyTest.ExtensionMinimumVersionRequired
+-PolicyTest.ExtensionMinimumVersionRequiredAlt
+-PolicyTest.ExtensionRecommendedInstallationMode
+-PolicyUpdateServiceTest.Backoff
+-PolicyUpdateServiceTest.FailedUpdateRetries
+-PolicyUpdateServiceTest.PolicyCorruptedOnStartup
+
+# components/policy/core/common/cloud/device_management_service.cc still uses URLFetcher.
+# https://crbug.com/844950
 -DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.ApiAuthCodeFetch/0
 -DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.ApiAuthCodeFetch/1
 -DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.AppInstallReport/0
@@ -28,112 +70,40 @@
 -DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.Registration/1
 -DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.Unregistration/0
 -DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.Unregistration/1
--DisabledSignInIsolationBrowserTest.SyntheticTrial
+
+# Domain Reliability has yet to be hookup to the NetworkService.
+# https://crbug.com/853251
 -DomainReliabilityBrowserTest.Upload
--EnabledSignInIsolationBrowserTest.SyntheticTrial
--ExtensionDisabledGlobalErrorTest.HigherPermissionsFromSync
--ExtensionDisabledGlobalErrorTest.RemoteInstall
+
+# extensions/browser/updater/extension_downloader.cc still uses URLFetcher.
+# https://crbug.com/844928
 -ExtensionManagementTest.AutoUpdate
 -ExtensionManagementTest.AutoUpdateDisabledExtensions
 -ExtensionManagementTest.ExternalPolicyRefresh
 -ExtensionManagementTest.ExternalUrlUpdate
 -ExtensionManagementTest.PolicyOverridesUserInstall
--ExtensionStorageMonitorTest.HostedAppTemporaryFilesystem
--ExtensionUnloadBrowserTest.UnloadWithContentScripts
+
+# components/image_fetcher/core/image_fetcher_impl.cc still uses URLFetcher.
+# https://crbug.com/843205
 -ImageFetcherImplBrowserTest.MultipleFetch
 -ImageFetcherImplBrowserTest.NormalFetch
--KeyRotationComponentCloudPolicyTest.Basic
--MachineLevelUserCloudPolicyEnrollmentTest.Test/2
--MachineLevelUserCloudPolicyEnrollmentTest.Test/3
--MachineLevelUserCloudPolicyServiceIntegrationTestInstance/MachineLevelUserCloudPolicyServiceIntegrationTest.ChromeDesktopReport/0
--MachineLevelUserCloudPolicyServiceIntegrationTestInstance/MachineLevelUserCloudPolicyServiceIntegrationTest.Registration/0
+
+# components/payments/core/payment_manifest_downloader.cc still uses
+# URLFetcher.
+# https://crbug.com/853778
 -ManifestVerifierBrowserTest.BobPayHandlerCanUseMethodThatSupportsAllOrigins
 -ManifestVerifierBrowserTest.Handler404CanUseMethodThatSupportsAllOrigins
 -ManifestVerifierBrowserTest.OneSupportedOrigin
 -ManifestVerifierBrowserTest.ThreeTypesOfMethods
--MediaGalleriesPlatformAppBrowserTest.GetMetadata
--NetworkTimePolicyTest.NetworkTimeQueriesDisabled/0
--NetworkTimePolicyTest.NetworkTimeQueriesDisabled/1
--NewlibPackagedAppTest.SuccessfulLoad
--OutOfProcessPPAPITest.HostResolver
--OutOfProcessPPAPITest.HostResolverPrivate_Resolve
--OutOfProcessPPAPITest.HostResolverPrivate_ResolveIPv4
--OutOfProcessPPAPITest.TCPServerSocketPrivate
--OutOfProcessPPAPITest.TCPSocket
--OutOfProcessPPAPITest.TCPSocketPrivate
--OutOfProcessPPAPITest.TCPSocketPrivateTrusted
--OutOfProcessPPAPITest.UDPSocket_Broadcast
--OutOfProcessPPAPITest.UDPSocket_Multicast
--OutOfProcessPPAPITest.UDPSocket_ParallelSend
--OutOfProcessPPAPITest.UDPSocket_ReadWrite
--OutOfProcessPPAPITest.UDPSocket_SetOption
--OutOfProcessPPAPITest.UDPSocket_SetOption_1_0
--OutOfProcessPPAPITest.UDPSocket_SetOption_1_1
--OutOfProcessPPAPITest.UDPSocketPrivate_Connect
--PolicyTest.ExtensionInstallBlacklistSharedModules
--PolicyTest.ExtensionInstallForcelist
--PolicyTest.ExtensionInstallForcelist_DefaultedUpdateUrl
--PolicyTest.ExtensionMinimumVersionForceInstalled
--PolicyTest.ExtensionMinimumVersionRequired
--PolicyTest.ExtensionMinimumVersionRequiredAlt
--PolicyTest.ExtensionRecommendedInstallationMode
--PolicyUpdateServiceTest.Backoff
--PolicyUpdateServiceTest.FailedUpdateRetries
--PolicyUpdateServiceTest.PolicyCorruptedOnStartup
--PPAPINaClGLibcTest.UDPSocket_Broadcast
--PPAPINaClGLibcTest.UDPSocket_Multicast
--PPAPINaClGLibcTest.UDPSocket_ParallelSend
--PPAPINaClGLibcTest.UDPSocket_ReadWrite
--PPAPINaClGLibcTest.UDPSocket_SetOption
--PPAPINaClGLibcTest.UDPSocket_SetOption_1_0
--PPAPINaClGLibcTest.UDPSocket_SetOption_1_1
--PPAPINaClNewlibTest.HostResolver
--PPAPINaClNewlibTest.HostResolverPrivate_Resolve
--PPAPINaClNewlibTest.HostResolverPrivate_ResolveIPv4
--PPAPINaClNewlibTest.NetAddressPrivate
--PPAPINaClNewlibTest.TCPServerSocketPrivate
--PPAPINaClNewlibTest.TCPSocket
--PPAPINaClNewlibTest.TCPSocketPrivate
--PPAPINaClNewlibTest.UDPSocket_Broadcast
--PPAPINaClNewlibTest.UDPSocket_Multicast
--PPAPINaClNewlibTest.UDPSocket_ParallelSend
--PPAPINaClNewlibTest.UDPSocket_ReadWrite
--PPAPINaClNewlibTest.UDPSocket_SetOption
--PPAPINaClNewlibTest.UDPSocket_SetOption_1_0
--PPAPINaClNewlibTest.UDPSocket_SetOption_1_1
--PPAPINaClNewlibTest.UDPSocketPrivate_Connect
--PPAPINaClPNaClNonSfiTest.HostResolver
--PPAPINaClPNaClNonSfiTest.HostResolverPrivate_Resolve
--PPAPINaClPNaClNonSfiTest.HostResolverPrivate_ResolveIPv4
--PPAPINaClPNaClNonSfiTest.NetAddressPrivate
--PPAPINaClPNaClNonSfiTest.TCPServerSocketPrivate
--PPAPINaClPNaClNonSfiTest.TCPSocket
--PPAPINaClPNaClNonSfiTest.TCPSocketPrivate
--PPAPINaClPNaClNonSfiTest.UDPSocket_Broadcast
--PPAPINaClPNaClNonSfiTest.UDPSocket_Multicast
--PPAPINaClPNaClNonSfiTest.UDPSocket_ParallelSend
--PPAPINaClPNaClNonSfiTest.UDPSocket_ReadWrite
--PPAPINaClPNaClNonSfiTest.UDPSocket_SetOption
--PPAPINaClPNaClNonSfiTest.UDPSocket_SetOption_1_0
--PPAPINaClPNaClNonSfiTest.UDPSocket_SetOption_1_1
--PPAPINaClPNaClNonSfiTest.UDPSocketPrivate_Connect
--PreviewsOptimizationGuideBrowserTest.NoScriptPreviewsEnabledByWhitelist
--ProcessManagerBrowserTest.NestedURLNavigationsToExtensionAllowed
--ProfileBrowserTest.SeparateMediaCache
--ProfileBrowserTest.URLFetcherUsingMainContextDuringIncognitoTeardown
--ProfileBrowserTest.URLFetcherUsingMainContextDuringShutdown
--ProfileBrowserTest.URLFetcherUsingMediaContextDuringShutdown
--ProfileWithoutMediaCacheBrowserTest.NoSeparateMediaCache
--ProxySettingsApiTest.ProxyEventsInvalidProxy
--RegisterProtocolHandlerBrowserTest.CustomHandler
--SecurityStateTabHelperTest.DefaultSecurityLevelOnFilesystemUrl/0
--SecurityStateTabHelperTest.DefaultSecurityLevelOnFilesystemUrl/1
--SecurityStateTabHelperTest.DefaultSecurityLevelOnSecureFilesystemUrl/0
--SecurityStateTabHelperTest.DefaultSecurityLevelOnSecureFilesystemUrl/1
 -ServiceWorkerPaymentAppFactoryBrowserTest.AllOringsSupported
 -ServiceWorkerPaymentAppFactoryBrowserTest.SupportedOrigin
 -ServiceWorkerPaymentAppFactoryBrowserTest.TwoAppsDifferentMethods
 -ServiceWorkerPaymentAppFactoryBrowserTest.TwoAppsSameMethod
+
+# NetworkTime still uses URLFetcher.
+# https://crbug.com/844939
+-NetworkTimePolicyTest.NetworkTimeQueriesDisabled/0
+-NetworkTimePolicyTest.NetworkTimeQueriesDisabled/1
 -SSLNetworkTimeBrowserTest.CloseTabBeforeNetworkFetchCompletes/0
 -SSLNetworkTimeBrowserTest.CloseTabBeforeNetworkFetchCompletes/1
 -SSLNetworkTimeBrowserTest.NavigateAwayBeforeTimeoutExpires/0
@@ -148,13 +118,85 @@
 -SSLNetworkTimeBrowserTest.TimeoutExpiresBeforeFetchCompletes/1
 -SSLUITest.TestBadHTTPSDownload/0
 -SSLUITest.TestBadHTTPSDownload/1
--SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
+
+# These try to resolver host names using ResourceContext, using the old
+# in-process HostResolver API. Neither works when the network service is
+# enabled, so they'll need to be moved over to a new API.
+# https://crubug.com/821021
+-OutOfProcessPPAPITest.TCPServerSocketPrivate
+-OutOfProcessPPAPITest.TCPSocket
+-OutOfProcessPPAPITest.TCPSocketPrivate
+-OutOfProcessPPAPITest.TCPSocketPrivateTrusted
+-PPAPINaClNewlibTest.TCPServerSocketPrivate
+-PPAPINaClNewlibTest.TCPSocket
+-PPAPINaClNewlibTest.TCPSocketPrivate
+-PPAPINaClPNaClNonSfiTest.TCPServerSocketPrivate
+-PPAPINaClPNaClNonSfiTest.TCPSocket
+-PPAPINaClPNaClNonSfiTest.TCPSocketPrivate
+
+# Uncategorized PPAPI timeouts or test failures.
+-OutOfProcessPPAPITest.HostResolver
+-OutOfProcessPPAPITest.HostResolverPrivate_Resolve
+-OutOfProcessPPAPITest.HostResolverPrivate_ResolveIPv4
+-OutOfProcessPPAPITest.UDPSocket_Broadcast
+-OutOfProcessPPAPITest.UDPSocket_Multicast
+-OutOfProcessPPAPITest.UDPSocket_ParallelSend
+-OutOfProcessPPAPITest.UDPSocket_ReadWrite
+-OutOfProcessPPAPITest.UDPSocket_SetOption
+-OutOfProcessPPAPITest.UDPSocket_SetOption_1_0
+-OutOfProcessPPAPITest.UDPSocket_SetOption_1_1
+-OutOfProcessPPAPITest.UDPSocketPrivate_Connect
+-PPAPINaClGLibcTest.UDPSocket_Broadcast
+-PPAPINaClGLibcTest.UDPSocket_Multicast
+-PPAPINaClGLibcTest.UDPSocket_ParallelSend
+-PPAPINaClGLibcTest.UDPSocket_ReadWrite
+-PPAPINaClGLibcTest.UDPSocket_SetOption
+-PPAPINaClGLibcTest.UDPSocket_SetOption_1_0
+-PPAPINaClGLibcTest.UDPSocket_SetOption_1_1
+-PPAPINaClNewlibTest.HostResolver
+-PPAPINaClNewlibTest.HostResolverPrivate_Resolve
+-PPAPINaClNewlibTest.HostResolverPrivate_ResolveIPv4
+-PPAPINaClNewlibTest.NetAddressPrivate
+-PPAPINaClNewlibTest.UDPSocket_Broadcast
+-PPAPINaClNewlibTest.UDPSocket_Multicast
+-PPAPINaClNewlibTest.UDPSocket_ParallelSend
+-PPAPINaClNewlibTest.UDPSocket_ReadWrite
+-PPAPINaClNewlibTest.UDPSocket_SetOption
+-PPAPINaClNewlibTest.UDPSocket_SetOption_1_0
+-PPAPINaClNewlibTest.UDPSocket_SetOption_1_1
+-PPAPINaClNewlibTest.UDPSocketPrivate_Connect
+-PPAPINaClPNaClNonSfiTest.HostResolver
+-PPAPINaClPNaClNonSfiTest.HostResolverPrivate_Resolve
+-PPAPINaClPNaClNonSfiTest.HostResolverPrivate_ResolveIPv4
+-PPAPINaClPNaClNonSfiTest.NetAddressPrivate
+-PPAPINaClPNaClNonSfiTest.UDPSocket_Broadcast
+-PPAPINaClPNaClNonSfiTest.UDPSocket_Multicast
+-PPAPINaClPNaClNonSfiTest.UDPSocket_ParallelSend
+-PPAPINaClPNaClNonSfiTest.UDPSocket_ReadWrite
+-PPAPINaClPNaClNonSfiTest.UDPSocket_SetOption
+-PPAPINaClPNaClNonSfiTest.UDPSocket_SetOption_1_0
+-PPAPINaClPNaClNonSfiTest.UDPSocket_SetOption_1_1
+-PPAPINaClPNaClNonSfiTest.UDPSocketPrivate_Connect
+
+# These tests use URLFetchers directly.
+# https://crbug.com/853798
+-ProfileBrowserTest.SeparateMediaCache
+-ProfileBrowserTest.URLFetcherUsingMainContextDuringIncognitoTeardown
+-ProfileBrowserTest.URLFetcherUsingMainContextDuringShutdown
+-ProfileBrowserTest.URLFetcherUsingMediaContextDuringShutdown
+-ProfileWithoutMediaCacheBrowserTest.NoSeparateMediaCache
+
+# components/update_client/ still uses URLFetcher.
+# https://crbug.com/844973
 -UpdateServiceTest.NoUpdate
 -UpdateServiceTest.PolicyCorrupted
 -UpdateServiceTest.SuccessfulUpdate
 -UpdateServiceTest.TwoUpdateCheckErrors
 -UpdateServiceTest.UpdateCheckError
--WebstoreInstallerBrowserTest.SimultaneousInstall
+
+# extensions\browser\guest_view\web_view\web_ui\web_ui_url_fetcher.cc uses a
+# URLFetcher to fetch chrome:// URLs.
+# https://crbug.com/844927
 -WebUIWebViewBrowserTest.AddAndRemoveContentScripts
 -WebUIWebViewBrowserTest.AddContentScript
 -WebUIWebViewBrowserTest.AddContentScriptsWithNewWindowAPI
@@ -162,7 +204,6 @@
 -WebUIWebViewBrowserTest.AddMultiContentScripts
 -WebUIWebViewBrowserTest.ContentScriptExistsAsLongAsWebViewTagExists
 -WebUIWebViewBrowserTest.ExecuteScriptCodeFromFile
--WebViewTest.WebViewInBackgroundPage
 
 # about:net-internals should be largely removed before shipping the network
 # service.
