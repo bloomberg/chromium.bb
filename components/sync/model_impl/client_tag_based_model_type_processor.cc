@@ -62,8 +62,9 @@ ClientTagBasedModelTypeProcessor::ClientTagBasedModelTypeProcessor(
       bridge_(nullptr),
       dump_stack_(dump_stack),
       commit_only_(commit_only),
-      weak_ptr_factory_(this) {
-  ResetState();
+      weak_ptr_factory_for_controller_(this),
+      weak_ptr_factory_for_worker_(this) {
+  ResetState(CLEAR_METADATA);
 }
 
 ClientTagBasedModelTypeProcessor::~ClientTagBasedModelTypeProcessor() {
@@ -151,7 +152,7 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
     activation_response->model_type_state = model_type_state_;
     activation_response->type_processor =
         std::make_unique<ModelTypeProcessorProxy>(
-            weak_ptr_factory_.GetWeakPtr(),
+            weak_ptr_factory_for_worker_.GetWeakPtr(),
             base::ThreadTaskRunnerHandle::Get());
     std::move(start_callback_).Run(std::move(activation_response));
   }
@@ -164,35 +165,58 @@ bool ClientTagBasedModelTypeProcessor::IsConnected() const {
   return !!worker_;
 }
 
-void ClientTagBasedModelTypeProcessor::DisableSync() {
+void ClientTagBasedModelTypeProcessor::OnSyncStopping(
+    SyncStopMetadataFate metadata_fate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Disabling sync for a type never happens before the model is ready to sync.
   DCHECK(model_ready_to_sync_);
 
-  std::unique_ptr<MetadataChangeList> change_list =
-      bridge_->CreateMetadataChangeList();
-  for (const auto& kv : entities_) {
-    change_list->ClearMetadata(kv.second->storage_key());
-  }
-  change_list->ClearModelTypeState();
-
-  const ModelTypeSyncBridge::DisableSyncResponse response =
-      bridge_->ApplyDisableSyncChanges(std::move(change_list));
-
-  // Reset all the internal state of the processor.
-  ResetState();
-
-  switch (response) {
-    case ModelTypeSyncBridge::DisableSyncResponse::kModelStillReadyToSync:
-      // The model is still ready to sync (with the same |bridge_|) - replay the
-      // initialization.
-      ModelReadyToSync(std::make_unique<MetadataBatch>());
+  switch (metadata_fate) {
+    case KEEP_METADATA: {
+      switch (bridge_->ApplyStopSyncChanges(
+          /*delete_metadata_change_list=*/nullptr)) {
+        case ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync:
+          // The model is still ready to sync (with the same |bridge_|) and same
+          // sync metadata.
+          ResetState(KEEP_METADATA);
+          break;
+        case ModelTypeSyncBridge::StopSyncResponse::kModelNoLongerReadyToSync:
+          // Model not ready to sync, so wait until the bridge calls
+          // ModelReadyToSync(), and meanwhile throw away all metadata.
+          ResetState(CLEAR_METADATA);
+          break;
+      }
       break;
-    case ModelTypeSyncBridge::DisableSyncResponse::kModelNoLongerReadyToSync:
-      // Model not ready to sync, so wait until the bridge calls
-      // ModelReadyToSync().
-      model_ready_to_sync_ = false;
+    }
+
+    case CLEAR_METADATA: {
+      // Clear persisted metadata.
+      std::unique_ptr<MetadataChangeList> change_list =
+          bridge_->CreateMetadataChangeList();
+      for (const auto& kv : entities_) {
+        change_list->ClearMetadata(kv.second->storage_key());
+      }
+      change_list->ClearModelTypeState();
+
+      const ModelTypeSyncBridge::StopSyncResponse response =
+          bridge_->ApplyStopSyncChanges(std::move(change_list));
+
+      // Reset all the internal state of the processor.
+      ResetState(CLEAR_METADATA);
+
+      switch (response) {
+        case ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync:
+          // The model is still ready to sync (with the same |bridge_|) - replay
+          // the initialization.
+          ModelReadyToSync(std::make_unique<MetadataBatch>());
+          break;
+        case ModelTypeSyncBridge::StopSyncResponse::kModelNoLongerReadyToSync:
+          // Model not ready to sync, so wait until the bridge calls
+          // ModelReadyToSync().
+          break;
+      }
       break;
+    }
   }
 }
 
@@ -226,7 +250,7 @@ void ClientTagBasedModelTypeProcessor::ReportError(const ModelError& error) {
 
 base::WeakPtr<ModelTypeControllerDelegate>
 ClientTagBasedModelTypeProcessor::GetControllerDelegateOnUIThread() {
-  return weak_ptr_factory_.GetWeakPtr();
+  return weak_ptr_factory_for_controller_.GetWeakPtr();
 }
 
 void ClientTagBasedModelTypeProcessor::ConnectSync(
@@ -244,7 +268,7 @@ void ClientTagBasedModelTypeProcessor::DisconnectSync() {
   DCHECK(IsConnected());
 
   DVLOG(1) << "Disconnecting sync for " << ModelTypeToString(type_);
-  weak_ptr_factory_.InvalidateWeakPtrs();
+  weak_ptr_factory_for_worker_.InvalidateWeakPtrs();
   worker_.reset();
 
   for (const auto& kv : entities_) {
@@ -402,7 +426,7 @@ void ClientTagBasedModelTypeProcessor::GetLocalChanges(
         std::move(entities_requiring_data),
         base::BindRepeating(
             &ClientTagBasedModelTypeProcessor::OnPendingDataLoaded,
-            weak_ptr_factory_.GetWeakPtr(), max_entries, callback));
+            weak_ptr_factory_for_worker_.GetWeakPtr(), max_entries, callback));
   } else {
     // All commit data can be availbale in memory for those entries passed in
     // the .put() method.
@@ -1024,21 +1048,29 @@ void ClientTagBasedModelTypeProcessor::RemoveEntity(
   entities_.erase(entity->metadata().client_tag_hash());
 }
 
-void ClientTagBasedModelTypeProcessor::ResetState() {
+void ClientTagBasedModelTypeProcessor::ResetState(
+    SyncStopMetadataFate metadata_fate) {
   // This should reset all mutable fields (except for |bridge_|).
   worker_.reset();
   model_error_.reset();
-  model_ready_to_sync_ = false;
-  entities_.clear();
-  storage_key_to_tag_hash_.clear();
-  model_type_state_ = sync_pb::ModelTypeState();
   start_callback_ = StartCallback();
   error_handler_ = ModelErrorHandler();
   cached_gc_directive_version_ = 0;
   cached_gc_directive_aged_out_day_ = base::Time::FromDoubleT(0);
 
+  switch (metadata_fate) {
+    case KEEP_METADATA:
+      break;
+    case CLEAR_METADATA:
+      model_ready_to_sync_ = false;
+      entities_.clear();
+      storage_key_to_tag_hash_.clear();
+      model_type_state_ = sync_pb::ModelTypeState();
+      break;
+  }
+
   // Do not let any delayed callbacks to be called.
-  weak_ptr_factory_.InvalidateWeakPtrs();
+  weak_ptr_factory_for_worker_.InvalidateWeakPtrs();
 }
 
 void ClientTagBasedModelTypeProcessor::GetAllNodesForDebugging(
@@ -1047,7 +1079,7 @@ void ClientTagBasedModelTypeProcessor::GetAllNodesForDebugging(
     return;
   bridge_->GetAllDataForDebugging(base::BindOnce(
       &ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging,
-      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      weak_ptr_factory_for_worker_.GetWeakPtr(), std::move(callback)));
 }
 
 void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(

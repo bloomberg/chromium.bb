@@ -24,7 +24,8 @@ void FakeModelTypeControllerDelegate::OnSyncStarting(
   }
 }
 
-void FakeModelTypeControllerDelegate::DisableSync() {}
+void FakeModelTypeControllerDelegate::OnSyncStopping(
+    SyncStopMetadataFate metadata_fate) {}
 
 void FakeModelTypeControllerDelegate::GetAllNodesForDebugging(
     ModelTypeControllerDelegate::AllNodesCallback callback) {

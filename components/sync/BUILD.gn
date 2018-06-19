@@ -63,6 +63,7 @@ jumbo_static_library("sync") {
     "base/stop_source.h",
     "base/sync_prefs.cc",
     "base/sync_prefs.h",
+    "base/sync_stop_metadata_fate.h",
     "base/syncer_error.cc",
     "base/syncer_error.h",
     "base/system_encryptor.cc",

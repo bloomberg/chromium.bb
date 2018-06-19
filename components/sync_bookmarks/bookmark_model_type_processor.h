@@ -48,7 +48,7 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   // ModelTypeControllerDelegate implementation.
   void OnSyncStarting(const syncer::DataTypeActivationRequest& request,
                       StartCallback start_callback) override;
-  void DisableSync() override;
+  void OnSyncStopping(syncer::SyncStopMetadataFate metadata_fate) override;
   void GetAllNodesForDebugging(AllNodesCallback callback) override;
   void GetStatusCountersForDebugging(StatusCountersCallback callback) override;
   void RecordMemoryUsageHistogram() override;

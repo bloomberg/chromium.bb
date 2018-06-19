@@ -73,7 +73,7 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
-  DisableSyncResponse ApplyDisableSyncChanges(
+  StopSyncResponse ApplyStopSyncChanges(
       std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list)
       override;
 

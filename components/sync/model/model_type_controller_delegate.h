@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/sync_stop_metadata_fate.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/model/model_error.h"
@@ -40,9 +41,9 @@ class ModelTypeControllerDelegate {
                               StartCallback callback) = 0;
 
   // Indicates that we no longer want to do any sync-related things for this
-  // data type. Severs all ties to the sync thread, deletes all local sync
-  // metadata, and then destroys the change processor.
-  virtual void DisableSync() = 0;
+  // data type. Severs all ties to the sync thread, and depending on
+  // |metadata_fate|, might delete all local sync metadata.
+  virtual void OnSyncStopping(SyncStopMetadataFate metadata_fate) = 0;
 
   // Returns a ListValue representing all nodes for the type to |callback|.
   // Used for populating nodes in Sync Node Browser of chrome://sync-internals.

@@ -135,35 +135,38 @@ void ConsentSyncBridgeImpl::OnSyncStarting() {
 #if !defined(OS_IOS)  // https://crbug.com/834042
   DCHECK(!authenticated_account_id_callback_.Run().empty());
 #endif  // !defined(OS_IOS)
-  bool was_sync_started = is_sync_starting_or_started_;
+  DCHECK(!is_sync_starting_or_started_);
+
   is_sync_starting_or_started_ = true;
-  if (store_ && change_processor()->IsTrackingMetadata() && !was_sync_started) {
+  if (store_ && change_processor()->IsTrackingMetadata()) {
     ReadAllDataAndResubmit();
   }
 }
 
-ModelTypeSyncBridge::DisableSyncResponse
-ConsentSyncBridgeImpl::ApplyDisableSyncChanges(
+ModelTypeSyncBridge::StopSyncResponse
+ConsentSyncBridgeImpl::ApplyStopSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
-  // Sync can only be disabled after initialization.
+  // Sync can only be stopped after initialization.
   DCHECK(deferred_consents_while_initializing_.empty());
 
   is_sync_starting_or_started_ = false;
 
-  // Preserve all consents in the store, but delete their metadata, because it
-  // may become invalid when the sync is reenabled. It is important to report
-  // all user consents, thus, they are persisted for some time even after
-  // signout. We will try to resubmit these consents once the sync is enabled
-  // again. This may lead to same consent being submitted multiple times, but
-  // this is allowed.
-  std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
-  batch->TakeMetadataChangesFrom(std::move(delete_metadata_change_list));
+  if (delete_metadata_change_list) {
+    // Preserve all consents in the store, but delete their metadata, because it
+    // may become invalid when the sync is reenabled. It is important to report
+    // all user consents, thus, they are persisted for some time even after
+    // signout. We will try to resubmit these consents once the sync is enabled
+    // again. This may lead to same consent being submitted multiple times, but
+    // this is allowed.
+    std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+    batch->TakeMetadataChangesFrom(std::move(delete_metadata_change_list));
 
-  store_->CommitWriteBatch(
-      std::move(batch),
-      base::BindOnce(&ConsentSyncBridgeImpl::OnCommit, base::AsWeakPtr(this)));
+    store_->CommitWriteBatch(std::move(batch),
+                             base::BindOnce(&ConsentSyncBridgeImpl::OnCommit,
+                                            base::AsWeakPtr(this)));
+  }
 
-  return DisableSyncResponse::kModelStillReadyToSync;
+  return StopSyncResponse::kModelStillReadyToSync;
 }
 
 void ConsentSyncBridgeImpl::ReadAllDataAndResubmit() {

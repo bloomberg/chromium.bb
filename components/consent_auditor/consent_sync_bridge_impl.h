@@ -43,7 +43,7 @@ class ConsentSyncBridgeImpl : public ConsentSyncBridge,
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const EntityData& entity_data) override;
   std::string GetStorageKey(const EntityData& entity_data) override;
-  DisableSyncResponse ApplyDisableSyncChanges(
+  StopSyncResponse ApplyStopSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list) override;
 
   // ConsentSyncBridge implementation.

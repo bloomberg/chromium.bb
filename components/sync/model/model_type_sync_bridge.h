@@ -37,7 +37,7 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
   using DataCallback = base::OnceCallback<void(std::unique_ptr<DataBatch>)>;
   using StorageKeyList = std::vector<std::string>;
 
-  enum class DisableSyncResponse {
+  enum class StopSyncResponse {
     kModelStillReadyToSync,
     kModelNoLongerReadyToSync
   };
@@ -135,10 +135,12 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
       const EntityData& remote_data) const;
 
   // Similar to ApplySyncChanges() but called by the processor when sync
-  // is in the process of being disabled. |delete_metadata_change_list| contains
-  // a change list to remove all metadata that the processor knows about, but
-  // the bridge may decide to implement deletion by other means.
-  virtual DisableSyncResponse ApplyDisableSyncChanges(
+  // is in the process of being stopped. If |delete_metadata_change_list| is not
+  // null, it indicates that sync metadata must be deleted (i.e. the datatype
+  // was disabled), and |*delete_metadata_change_list| contains a change list to
+  // remove all metadata that the processor knows about (the bridge may decide
+  // to implement deletion by other means).
+  virtual StopSyncResponse ApplyStopSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list);
 
   // Needs to be informed about any model change occurring via Delete() and

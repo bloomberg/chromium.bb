@@ -158,28 +158,31 @@ void UserEventSyncBridge::OnSyncStarting() {
 #if !defined(OS_IOS)  // https://crbug.com/834042
   DCHECK(!GetAuthenticatedAccountId().empty());
 #endif  // !defined(OS_IOS)
-  bool was_sync_started = is_sync_starting_or_started_;
+  DCHECK(!is_sync_starting_or_started_);
+
   is_sync_starting_or_started_ = true;
-  if (store_ && change_processor()->IsTrackingMetadata() && !was_sync_started) {
+  if (store_ && change_processor()->IsTrackingMetadata()) {
     ReadAllDataAndResubmit();
   }
 }
 
-ModelTypeSyncBridge::DisableSyncResponse
-UserEventSyncBridge::ApplyDisableSyncChanges(
+ModelTypeSyncBridge::StopSyncResponse UserEventSyncBridge::ApplyStopSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
-  // Sync can only be disabled after initialization.
+  // Sync can only be stopped after initialization.
   DCHECK(deferred_user_events_while_initializing_.empty());
 
   is_sync_starting_or_started_ = false;
 
-  // Delete everything except user consents. With DICE the signout may happen
-  // frequently. It is important to report all user consents, thus, they are
-  // persisted for some time even after signout.
-  store_->ReadAllData(base::BindOnce(
-      &UserEventSyncBridge::OnReadAllDataToDelete, base::AsWeakPtr(this),
-      std::move(delete_metadata_change_list)));
-  return DisableSyncResponse::kModelStillReadyToSync;
+  if (delete_metadata_change_list) {
+    // Delete everything except user consents. With DICE the signout may happen
+    // frequently. It is important to report all user consents, thus, they are
+    // persisted for some time even after signout.
+    store_->ReadAllData(base::BindOnce(
+        &UserEventSyncBridge::OnReadAllDataToDelete, base::AsWeakPtr(this),
+        std::move(delete_metadata_change_list)));
+  }
+
+  return StopSyncResponse::kModelStillReadyToSync;
 }
 
 void UserEventSyncBridge::OnReadAllDataToDelete(
