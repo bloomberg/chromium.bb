@@ -44,9 +44,11 @@ const uint32_t MessageTransferOperation::kMaxGattConnectionAttemptsPerDevice =
 MessageTransferOperation::MessageTransferOperation(
     const cryptauth::RemoteDeviceRefList& devices_to_connect,
     secure_channel::ConnectionPriority connection_priority,
+    device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     BleConnectionManager* connection_manager)
     : remote_devices_(RemoveDuplicatesFromVector(devices_to_connect)),
+      device_sync_client_(device_sync_client),
       secure_channel_client_(secure_channel_client),
       connection_manager_(connection_manager),
       connection_priority_(connection_priority),

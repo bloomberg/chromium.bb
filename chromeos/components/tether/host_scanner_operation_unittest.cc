@@ -19,6 +19,7 @@
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "chromeos/components/tether/proto_test_util.h"
+#include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "components/cryptauth/remote_device_test_util.h"
@@ -133,6 +134,8 @@ class HostScannerOperationTest : public testing::Test {
         test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(5)) {}
 
   void SetUp() override {
+    fake_device_sync_client_ =
+        std::make_unique<device_sync::FakeDeviceSyncClient>();
     fake_secure_channel_client_ =
         std::make_unique<secure_channel::FakeSecureChannelClient>();
     fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
@@ -147,8 +150,8 @@ class HostScannerOperationTest : public testing::Test {
   void ConstructOperation(
       const cryptauth::RemoteDeviceRefList& remote_devices) {
     operation_ = base::WrapUnique(new HostScannerOperation(
-        remote_devices, fake_secure_channel_client_.get(),
-        fake_ble_connection_manager_.get(),
+        remote_devices, fake_device_sync_client_.get(),
+        fake_secure_channel_client_.get(), fake_ble_connection_manager_.get(),
         test_host_scan_device_prioritizer_.get(),
         mock_tether_host_response_recorder_.get(),
         fake_connection_preserver_.get()));
@@ -261,6 +264,7 @@ class HostScannerOperationTest : public testing::Test {
   const std::string tether_availability_request_string_;
   const cryptauth::RemoteDeviceRefList test_devices_;
 
+  std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::SecureChannelClient>
       fake_secure_channel_client_;
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;

@@ -17,6 +17,10 @@
 
 namespace chromeos {
 
+namespace device_sync {
+class DeviceSyncClient;
+}  // namespace device_sync
+
 namespace secure_channel {
 class SecureChannelClient;
 }  // namespace secure_channel
@@ -34,6 +38,7 @@ class KeepAliveScheduler : public ActiveHost::Observer,
                            public KeepAliveOperation::Observer {
  public:
   KeepAliveScheduler(
+      device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       ActiveHost* active_host,
       BleConnectionManager* connection_manager,
@@ -54,6 +59,7 @@ class KeepAliveScheduler : public ActiveHost::Observer,
   friend class KeepAliveSchedulerTest;
 
   KeepAliveScheduler(
+      device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       ActiveHost* active_host,
       BleConnectionManager* connection_manager,
@@ -65,6 +71,7 @@ class KeepAliveScheduler : public ActiveHost::Observer,
 
   static const uint32_t kKeepAliveIntervalMinutes;
 
+  device_sync::DeviceSyncClient* device_sync_client_;
   secure_channel::SecureChannelClient* secure_channel_client_;
   ActiveHost* active_host_;
   BleConnectionManager* connection_manager_;

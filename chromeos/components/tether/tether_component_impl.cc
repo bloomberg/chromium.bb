@@ -165,6 +165,7 @@ TetherComponentImpl::TetherComponentImpl(
               network_connect,
               network_connection_handler,
               session_manager,
+              device_sync_client,
               secure_channel_client)),
       crash_recovery_manager_(CrashRecoveryManagerImpl::Factory::NewInstance(
           network_state_handler,

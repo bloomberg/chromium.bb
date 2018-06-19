@@ -17,6 +17,10 @@
 
 namespace chromeos {
 
+namespace device_sync {
+class DeviceSyncClient;
+}  // namespace device_sync
+
 namespace secure_channel {
 class SecureChannelClient;
 }  // namespace secure_channel
@@ -39,6 +43,7 @@ class HostScannerOperation : public MessageTransferOperation {
    public:
     static std::unique_ptr<HostScannerOperation> NewInstance(
         const cryptauth::RemoteDeviceRefList& devices_to_connect,
+        device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         BleConnectionManager* connection_manager,
         HostScanDevicePrioritizer* host_scan_device_prioritizer,
@@ -50,6 +55,7 @@ class HostScannerOperation : public MessageTransferOperation {
    protected:
     virtual std::unique_ptr<HostScannerOperation> BuildInstance(
         const cryptauth::RemoteDeviceRefList& devices_to_connect,
+        device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         BleConnectionManager* connection_manager,
         HostScanDevicePrioritizer* host_scan_device_prioritizer,
@@ -95,6 +101,7 @@ class HostScannerOperation : public MessageTransferOperation {
  protected:
   HostScannerOperation(
       const cryptauth::RemoteDeviceRefList& devices_to_connect,
+      device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       BleConnectionManager* connection_manager,
       HostScanDevicePrioritizer* host_scan_device_prioritizer,
