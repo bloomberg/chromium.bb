@@ -1733,7 +1733,7 @@
                         'piman+watch@chromium.org'],
     'autofill': ['anthonyvd+autofillwatch@chromium.org',
                  'dlkumar+autofillwatch@google.com',
-                 'ftirelo+autofillwatch@chromium.org'
+                 'ftirelo+autofillwatch@chromium.org',
                  'mathp+autofillwatch@chromium.org',
                  'rogerm+autofillwatch@chromium.org',
                  'rouslan+autofill@chromium.org',
