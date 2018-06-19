@@ -2,7 +2,7 @@ This is a testharness.js-based test.
 PASS createDataChannel with no argument should throw TypeError
 PASS createDataChannel with closed connection should throw InvalidStateError
 FAIL createDataChannel attribute default values assert_equals: expected (object) null but got (undefined) undefined
-FAIL createDataChannel with provided parameters should initialize attributes to provided values assert_equals: expected (object) null but got (undefined) undefined
+FAIL createDataChannel with provided parameters should initialize attributes to provided values Failed to execute 'createDataChannel' on 'RTCPeerConnection': RTCDataChannel is not supported
 PASS createDataChannel with label "foo" should succeed
 PASS createDataChannel with label null should succeed
 PASS createDataChannel with label undefined should succeed
@@ -14,7 +14,7 @@ PASS createDataChannel with maxRetransmits 0 should succeed
 FAIL createDataChannel with both maxPacketLifeTime and maxRetransmits should throw SyntaxError assert_throws: function "() => pc.createDataChannel('', {
     maxPacketLifeTime: 0,
     maxRetransmits: 0
-  })" did not throw
+  })" threw object "NotSupportedError: Failed to execute 'createDataChannel' on 'RTCPeerConnection': RTCDataChannel is not supported" ("NotSupportedError") expected object "TypeError" ("TypeError")
 PASS createDataChannel with protocol "foo" should succeed
 PASS createDataChannel with protocol null should succeed
 PASS createDataChannel with protocol undefined should succeed

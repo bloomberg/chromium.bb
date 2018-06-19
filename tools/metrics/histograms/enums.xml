@@ -19025,6 +19025,9 @@ Called by update_net_error_codes.py.-->
   <int value="2475" label="MediaElementSourceOnOfflineContext"/>
   <int value="2476" label="MediaStreamDestinationOnOfflineContext"/>
   <int value="2477" label="MediaStreamSourceOnOfflineContext"/>
+  <int value="2478" label="RTCDataChannelInitMaxRetransmitTime"/>
+  <int value="2479"
+      label="RTCPeerConnectionCreateDataChannelMaxPacketLifeTime"/>
 </enum>
 
 <enum name="FeedbackSource">

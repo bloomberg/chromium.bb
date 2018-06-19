@@ -586,6 +586,11 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "Creating a MediaStreamAudioSourceNode on an OfflineAudioContext",
               kM70, "5258622686724096")};
 
+    case WebFeature::kRTCDataChannelInitMaxRetransmitTime:
+      return {"RTCDataChannelInitMaxRetransmitTime", kM70,
+              ReplacedWillBeRemoved("maxRetransmitTime", "maxPacketLifeTime",
+                                    kM70, "5198350873788416")};
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", kUnknown, ""};
