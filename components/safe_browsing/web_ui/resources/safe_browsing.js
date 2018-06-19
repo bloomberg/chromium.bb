@@ -39,6 +39,16 @@ cr.define('safe_browsing', function() {
     cr.addWebUIListener('sent-csbrr-update', function(result) {
       addSentCSBRRsInfo(result);
     });
+
+    cr.sendWithPromise('getPGEvents', [])
+        .then(
+            (pgEvents) => {
+              pgEvents.forEach(function (pgEvent) {
+                addPGEvent(pgEvent);
+              })});
+    cr.addWebUIListener('sent-pg-event', function(result) {
+      addPGEvent(result);
+    });
   }
 
   function addExperiments(result) {
@@ -88,6 +98,13 @@ cr.define('safe_browsing', function() {
       appendChildWithInnerText(logDiv, result);
   }
 
+  function addPGEvent(result) {
+    var logDiv = $('pg-event-log');
+    var eventFormatted = "[" + (new Date(result['time'])).toLocaleString() +
+        "] " + result['message'];
+    appendChildWithInnerText(logDiv, eventFormatted);
+  }
+
   function appendChildWithInnerText(logDiv, text) {
     if (!logDiv)
       return;
@@ -99,6 +116,7 @@ cr.define('safe_browsing', function() {
   return {
     addSentCSBRRsInfo: addSentCSBRRsInfo,
     addSentClientDownloadRequestsInfo: addSentClientDownloadRequestsInfo,
+    addPGEvent: addPGEvent,
     initialize: initialize,
   };
 });

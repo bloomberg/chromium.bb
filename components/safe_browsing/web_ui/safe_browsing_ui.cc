@@ -76,6 +76,21 @@ void WebUIInfoSingleton::ClearCSBRRsSent() {
       csbrrs_sent_);
 }
 
+void WebUIInfoSingleton::AddToPGEvents(
+    const sync_pb::UserEventSpecifics& event) {
+  if (webui_instances_.empty())
+    return;
+
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyPGEventJsListener(event);
+
+  pg_event_log_.push_back(event);
+}
+
+void WebUIInfoSingleton::ClearPGEvents() {
+  std::vector<sync_pb::UserEventSpecifics>().swap(pg_event_log_);
+}
+
 void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   webui_instances_.push_back(webui);
 }
@@ -87,6 +102,7 @@ void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   if (webui_instances_.empty()) {
     ClearCSBRRsSent();
     ClearClientDownloadRequestsSent();
+    ClearPGEvents();
   }
 }
 
@@ -322,6 +338,35 @@ std::string SerializeCSBRR(const ClientSafeBrowsingReportRequest& report) {
   return report_request_serialized;
 }
 
+base::DictionaryValue SerializePGEvent(
+    const sync_pb::UserEventSpecifics& event) {
+  base::DictionaryValue result;
+
+  base::Time timestamp = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(event.event_time_usec()));
+  result.SetDouble("time", timestamp.ToJsTime());
+
+  base::DictionaryValue event_dict;
+
+  sync_pb::UserEventSpecifics::GaiaPasswordReuse reuse =
+      event.gaia_password_reuse_event();
+  if (reuse.has_reuse_detected()) {
+    event_dict.SetPath({"reuse_detected", "status", "enabled"},
+                       base::Value(reuse.reuse_detected().status().enabled()));
+    event_dict.SetPath({"reuse_detected", "status", "reporting_population"},
+                       base::Value(reuse.reuse_detected()
+                                       .status()
+                                       .safe_browsing_reporting_population()));
+  }
+
+  std::string event_serialized;
+  JSONStringValueSerializer serializer(&event_serialized);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(event_dict);
+  result.SetString("message", event_serialized);
+  return result;
+}
+
 }  // namespace
 
 SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
@@ -444,6 +489,21 @@ void SafeBrowsingUIHandler::GetSentCSBRRs(const base::ListValue* args) {
   ResolveJavascriptCallback(base::Value(callback_id), sent_reports);
 }
 
+void SafeBrowsingUIHandler::GetPGEvents(const base::ListValue* args) {
+  const std::vector<sync_pb::UserEventSpecifics>& events =
+      WebUIInfoSingleton::GetInstance()->pg_event_log();
+
+  base::ListValue events_sent;
+
+  for (const sync_pb::UserEventSpecifics& event : events)
+    events_sent.GetList().push_back(SerializePGEvent(event));
+
+  AllowJavascript();
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+  ResolveJavascriptCallback(base::Value(callback_id), events_sent);
+}
+
 void SafeBrowsingUIHandler::NotifyClientDownloadRequestJsListener(
     ClientDownloadRequest* client_download_request) {
   AllowJavascript();
@@ -456,6 +516,12 @@ void SafeBrowsingUIHandler::NotifyCSBRRJsListener(
     ClientSafeBrowsingReportRequest* csbrr) {
   AllowJavascript();
   FireWebUIListener("sent-csbrr-update", base::Value(SerializeCSBRR(*csbrr)));
+}
+
+void SafeBrowsingUIHandler::NotifyPGEventJsListener(
+    const sync_pb::UserEventSpecifics& event) {
+  AllowJavascript();
+  FireWebUIListener("sent-pg-event", SerializePGEvent(event));
 }
 
 void SafeBrowsingUIHandler::RegisterMessages() {
@@ -478,6 +544,9 @@ void SafeBrowsingUIHandler::RegisterMessages() {
       "getSentCSBRRs",
       base::BindRepeating(&SafeBrowsingUIHandler::GetSentCSBRRs,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getPGEvents", base::BindRepeating(&SafeBrowsingUIHandler::GetPGEvents,
+                                         base::Unretained(this)));
 }
 
 }  // namespace safe_browsing

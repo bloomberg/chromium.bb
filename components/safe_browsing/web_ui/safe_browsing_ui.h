@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing/proto/webui.pb.h"
+#include "components/sync/protocol/user_event_specifics.pb.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -45,6 +46,10 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   // open chrome://safe-browsing tab was opened.
   void GetSentCSBRRs(const base::ListValue* args);
 
+  // Get the PhishGuard events that have been collected since the oldest
+  // currently open chrome://safe-browsing tab was opened.
+  void GetPGEvents(const base::ListValue* args);
+
   // Register callbacks for WebUI messages.
   void RegisterMessages() override;
 
@@ -59,6 +64,10 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   // Get the new ThreatDetails messages sent from ThreatDetails when a ping is
   // sent, while one or more WebUI tabs are opened.
   void NotifyCSBRRJsListener(ClientSafeBrowsingReportRequest* csbrr);
+
+  // Called when any new PhishGuard events are sent while one or more WebUI tabs
+  // are open.
+  void NotifyPGEventJsListener(const sync_pb::UserEventSpecifics& event);
 
   content::BrowserContext* browser_context_;
   // List that keeps all the WebUI listener objects.
@@ -95,6 +104,13 @@ class WebUIInfoSingleton {
   // Clear the list of the sent ClientSafeBrowsingReportRequest messages.
   void ClearCSBRRsSent();
 
+  // Add the new message in |pg_event_log_| and send it to all the open
+  // chrome://safe-browsing tabs.
+  void AddToPGEvents(const sync_pb::UserEventSpecifics& event);
+
+  // Clear the list of sent PhishGuard events.
+  void ClearPGEvents();
+
   // Register the new WebUI listener object.
   void RegisterWebUIInstance(SafeBrowsingUIHandler* webui);
 
@@ -121,6 +137,10 @@ class WebUIInfoSingleton {
     return webui_instances_;
   }
 
+  const std::vector<sync_pb::UserEventSpecifics>& pg_event_log() const {
+    return pg_event_log_;
+  }
+
  private:
   WebUIInfoSingleton();
   ~WebUIInfoSingleton();
@@ -139,6 +159,10 @@ class WebUIInfoSingleton {
   // "ClientSafeBrowsingReportRequest" cannot be const, due to being used by
   // functions that call AllowJavascript(), which is not marked const.
   std::vector<std::unique_ptr<ClientSafeBrowsingReportRequest>> csbrrs_sent_;
+
+  // List of PhishGuard events sent since the oldest currently open
+  // chrome://safe-browsing tab was opened.
+  std::vector<sync_pb::UserEventSpecifics> pg_event_log_;
 
   // List of WebUI listener objects. "SafeBrowsingUIHandler*" cannot be const,
   // due to being used by functions that call AllowJavascript(), which is not
