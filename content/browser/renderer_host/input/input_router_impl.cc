@@ -144,13 +144,6 @@ void InputRouterImpl::SendGestureEvent(
     return;
   }
 
-  // If a gesture event is bubbled from a child frame to the main frame, then
-  // the main frame may not have |allowed_touch_action_| set, in this case we
-  // set it to Auto.
-  // TODO(https://crbug.com/841270): Correct the behavior of scroll bubbling
-  // across an iframe.
-  if (gesture_event.event.is_bubbled_from_child_frame)
-    touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
   if (touch_action_filter_.FilterGestureEvent(&gesture_event.event) ==
       FilterGestureEventResult::kFilterGestureEventFiltered) {
     disposition_handler_->OnGestureEventAck(gesture_event,
@@ -614,6 +607,10 @@ void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
   touch_action_filter_.OnHasTouchEventHandlers(has_handlers);
   touch_event_queue_.OnHasTouchEventHandlers(has_handlers);
   client_->OnHasTouchEventHandlers(has_handlers);
+}
+
+void InputRouterImpl::ForceSetTouchActionAuto() {
+  touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
 }
 
 void InputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {

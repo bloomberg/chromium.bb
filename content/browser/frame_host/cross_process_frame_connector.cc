@@ -272,7 +272,9 @@ void CrossProcessFrameConnector::BubbleScrollEvent(
   const gfx::PointF root_point =
       view_->TransformPointToRootCoordSpaceF(event.PositionInWidget());
   resent_gesture_event.SetPositionInWidget(root_point);
-  resent_gesture_event.is_bubbled_from_child_frame = true;
+  // When a gesture event is bubbled to the parent frame, set the allowed touch
+  // action of the parent frame to Auto so that this gesture event is allowed.
+  parent_view->host()->input_router()->ForceSetTouchActionAuto();
 
   if (view_->wheel_scroll_latching_enabled()) {
     if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {

@@ -85,6 +85,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void StopFling() override;
   bool FlingCancellationIsDeferred() override;
   void OnSetTouchAction(cc::TouchAction touch_action) override;
+  void ForceSetTouchActionAuto() override;
 
   // InputHandlerHost impl
   void CancelTouchTimeout() override;

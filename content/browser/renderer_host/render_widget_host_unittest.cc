@@ -136,6 +136,7 @@ class MockInputRouter : public InputRouter {
   void StopFling() override {}
   bool FlingCancellationIsDeferred() override { return false; }
   void OnSetTouchAction(cc::TouchAction touch_action) override {}
+  void ForceSetTouchActionAuto() override {}
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override {
