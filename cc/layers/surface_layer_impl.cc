@@ -127,12 +127,8 @@ viz::SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
   if (visible_quad_rect.IsEmpty())
     return nullptr;
 
-  // If a |common_shared_quad_state| is provided then use that. Otherwise,
-  // allocate a new SharedQuadState. Assign the new SharedQuadState to
-  // *|common_shared_quad_state| so that it may be reused by another emitted
-  // viz::SurfaceDrawQuad.
   viz::SharedQuadState* shared_quad_state =
-    shared_quad_state = render_pass->CreateAndAppendSharedQuadState();
+      render_pass->CreateAndAppendSharedQuadState();
 
   PopulateScaledSharedQuadState(shared_quad_state, device_scale_factor,
                                 device_scale_factor, contents_opaque());
