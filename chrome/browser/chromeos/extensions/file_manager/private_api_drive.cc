@@ -81,6 +81,22 @@ const char kDriveConnectionReasonNoService[] = "no_service";
 // thumbnail. Given that we support hdpi devices, maximum dimension is 360.
 const int kFileManagerMaximumThumbnailDimension = 360;
 
+std::unique_ptr<std::string> GetShareUrlFromAlternateUrl(
+    const GURL& alternate_url) {
+  // Set |share_url| to a modified version of |alternate_url| that opens the
+  // sharing dialog for files and folders (add ?userstoinvite="" to the URL).
+  // TODO(sashab): Add an endpoint to the Drive API that generates this URL,
+  // instead of manually modifying it here.
+  GURL::Replacements replacements;
+  std::string new_query =
+      (alternate_url.has_query() ? alternate_url.query() + "&" : "") +
+      "userstoinvite=%22%22";
+  replacements.SetQueryStr(new_query);
+
+  return std::make_unique<std::string>(
+      alternate_url.ReplaceComponents(replacements).spec());
+}
+
 // Copies properties from |entry_proto| to |properties|. |shared_with_me| is
 // given from the running profile.
 void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
@@ -101,19 +117,8 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
   if (entry_proto.has_alternate_url()) {
     properties->alternate_url.reset(
         new std::string(entry_proto.alternate_url()));
-
-    // Set |share_url| to a modified version of |alternate_url| that opens the
-    // sharing dialog for files and folders (add ?userstoinvite="" to the URL).
-    // TODO(sashab): Add an endpoint to the Drive API that generates this URL,
-    // instead of manually modifying it here.
-    GURL share_url = GURL(entry_proto.alternate_url());
-    GURL::Replacements replacements;
-    std::string new_query =
-        (share_url.has_query() ? share_url.query() + "&" : "") +
-        "userstoinvite=%22%22";
-    replacements.SetQueryStr(new_query);
-    properties->share_url.reset(
-        new std::string(share_url.ReplaceComponents(replacements).spec()));
+    properties->share_url =
+        GetShareUrlFromAlternateUrl(GURL(entry_proto.alternate_url()));
   }
 
   if (entry_proto.has_file_specific_info()) {
@@ -695,6 +700,8 @@ class SingleEntryPropertiesGetterForDriveFs {
     if (!metadata->alternate_url.empty()) {
       properties_->alternate_url =
           std::make_unique<std::string>(std::move(metadata->alternate_url));
+      properties_->share_url =
+          GetShareUrlFromAlternateUrl(GURL(*properties_->alternate_url));
     }
     if (metadata->image_metadata) {
       if (metadata->image_metadata->height) {
