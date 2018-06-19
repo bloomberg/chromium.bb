@@ -32,6 +32,9 @@ class FileChange {
   class Change {
    public:
     Change(ChangeType change, FileType file_type);
+    Change(ChangeType change,
+           FileType file_type,
+           const std::string& team_drive_id);
 
     bool IsAddOrUpdate() const { return change_ == CHANGE_TYPE_ADD_OR_UPDATE; }
     bool IsDelete() const { return change_ == CHANGE_TYPE_DELETE; }
@@ -42,16 +45,20 @@ class FileChange {
 
     ChangeType change() const { return change_; }
     FileType file_type() const { return file_type_; }
+    const std::string& team_drive_id() const { return team_drive_id_; }
 
     std::string DebugString() const;
 
     bool operator==(const Change& that) const {
-      return change() == that.change() && file_type() == that.file_type();
+      return change() == that.change() && file_type() == that.file_type() &&
+             team_drive_id() == that.team_drive_id();
     }
 
    private:
     ChangeType change_;
     FileType file_type_;
+    // The team drive id, will be empty if the change is not a team drive root.
+    std::string team_drive_id_;
   };
 
   class ChangeList {
