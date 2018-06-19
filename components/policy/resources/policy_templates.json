@@ -12241,7 +12241,52 @@
 
       If this setting is set to false, suggestions will not be fetched or displayed.''',
     },
-
+    {
+      'name': 'DeviceAutoUpdateTimeRestrictions',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          '$ref': 'WeeklyTimeIntervals'
+        }
+      },
+      'supported_on': ['chrome_os:69-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': [
+        {
+          'start': {
+            'day_of_week': 'TUESDAY',
+            'time': 15150000
+          },
+          'end': {
+            'day_of_week': 'WEDNESDAY',
+            'time': 15251000
+          }
+        },
+        {
+          'start': {
+            'day_of_week': 'FRIDAY',
+            'time': 15213000
+          },
+          'end': {
+            'day_of_week': 'FRIDAY',
+            'time': 15410000
+          }
+        }
+      ],
+      'id': 453,
+      'caption': '''Update Time Restrictions''',
+      'tags': [],
+      'desc': '''This policy controls the time frames during which the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> device is not allowed to check for updates automatically.
+      When this policy is set to a non-empty list of time intervals:
+      Devices will not be able to check for updates automatically during the specified time intervals. Devices that require a rollback or are below the minimum <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version will not be affected by this policy due to potential security issues. Furthermore, this policy will not block update checks requested by users or administrators.
+      When this policy is unset or contains no time intervals:
+      No automatic update checks will be blocked by this policy, but they may be blocked by other policies.''',
+    }
   ],
 
   'messages': {
@@ -12383,5 +12428,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 452
+  'highest_id_currently_used': 453
 }
