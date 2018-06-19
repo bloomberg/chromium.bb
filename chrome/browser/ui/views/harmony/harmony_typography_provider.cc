@@ -74,9 +74,9 @@ SkColor GetHarmonyTextColorForNonStandardNativeTheme(
       color_id = ui::NativeTheme::kColorId_LinkEnabled;
       break;
     case STYLE_RED:
-      return inverted_scheme ? gfx::kGoogleRed300 : gfx::kGoogleRed700;
+      return inverted_scheme ? gfx::kGoogleRed300 : gfx::kGoogleRed600;
     case STYLE_GREEN:
-      return inverted_scheme ? gfx::kGoogleGreen300 : gfx::kGoogleGreen700;
+      return inverted_scheme ? gfx::kGoogleGreen300 : gfx::kGoogleGreen600;
   }
   return theme.GetSystemColor(color_id);
 }
