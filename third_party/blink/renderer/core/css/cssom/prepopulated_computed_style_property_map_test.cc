@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -38,13 +39,13 @@ TEST_F(PrepopulatedComputedStylePropertyMapTest, NativePropertyAccessors) {
       {CSSPropertyColor, CSSPropertyAlignItems});
   Vector<AtomicString> empty_custom_properties;
 
+  GetDocument().View()->UpdateAllLifecyclePhases();
   Node* node = PageNode();
-  const ComputedStyle& style = *node->EnsureComputedStyle();
 
   PrepopulatedComputedStylePropertyMap* map =
-      new PrepopulatedComputedStylePropertyMap(GetDocument(), style, node,
-                                               native_properties,
-                                               empty_custom_properties);
+      new PrepopulatedComputedStylePropertyMap(
+          GetDocument(), node->ComputedStyleRef(), node, native_properties,
+          empty_custom_properties);
 
   DummyExceptionStateForTesting exception_state;
 
@@ -74,13 +75,13 @@ TEST_F(PrepopulatedComputedStylePropertyMapTest, CustomPropertyAccessors) {
   Vector<CSSPropertyID> empty_native_properties;
   Vector<AtomicString> custom_properties({"--foo", "--bar"});
 
+  GetDocument().View()->UpdateAllLifecyclePhases();
   Node* node = PageNode();
-  const ComputedStyle& style = *node->EnsureComputedStyle();
 
   PrepopulatedComputedStylePropertyMap* map =
-      new PrepopulatedComputedStylePropertyMap(GetDocument(), style, node,
-                                               empty_native_properties,
-                                               custom_properties);
+      new PrepopulatedComputedStylePropertyMap(
+          GetDocument(), node->ComputedStyleRef(), node,
+          empty_native_properties, custom_properties);
 
   DummyExceptionStateForTesting exception_state;
 

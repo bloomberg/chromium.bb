@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -45,6 +46,7 @@ class CSSVariableResolverTest : public PageTestBase {
         "<div>"
         "  <div id=target></div>"
         "</div>");
+    GetDocument().View()->UpdateAllLifecyclePhases();
   }
 };
 
@@ -54,9 +56,8 @@ TEST_F(CSSVariableResolverTest, ParseEnvVariable_Missing_NestedVar) {
   // Check that the element has the background color provided by the
   // nested variable.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kMainBgTestColor,
-            target->EnsureComputedStyle()->VisitedDependentColor(
-                GetCSSPropertyBackgroundColor()));
+  EXPECT_EQ(kMainBgTestColor, target->ComputedStyleRef().VisitedDependentColor(
+                                  GetCSSPropertyBackgroundColor()));
 }
 
 TEST_F(CSSVariableResolverTest, ParseEnvVariable_Missing_NestedVar_Fallback) {
@@ -65,7 +66,7 @@ TEST_F(CSSVariableResolverTest, ParseEnvVariable_Missing_NestedVar_Fallback) {
   // Check that the element has the fallback background color.
   Element* target = GetDocument().getElementById("target");
   EXPECT_EQ(kFallbackTestColor,
-            target->EnsureComputedStyle()->VisitedDependentColor(
+            target->ComputedStyleRef().VisitedDependentColor(
                 GetCSSPropertyBackgroundColor()));
 }
 
@@ -75,7 +76,7 @@ TEST_F(CSSVariableResolverTest, ParseEnvVariable_Missing_WithFallback) {
   // Check that the element has the fallback background color.
   Element* target = GetDocument().getElementById("target");
   EXPECT_EQ(kFallbackTestColor,
-            target->EnsureComputedStyle()->VisitedDependentColor(
+            target->ComputedStyleRef().VisitedDependentColor(
                 GetCSSPropertyBackgroundColor()));
 }
 
@@ -84,7 +85,7 @@ TEST_F(CSSVariableResolverTest, ParseEnvVariable_Valid) {
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kTestColor, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kTestColor, target->ComputedStyleRef().VisitedDependentColor(
                             GetCSSPropertyBackgroundColor()));
 }
 
@@ -93,7 +94,7 @@ TEST_F(CSSVariableResolverTest, ParseEnvVariable_Valid_WithFallback) {
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kTestColor, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kTestColor, target->ComputedStyleRef().VisitedDependentColor(
                             GetCSSPropertyBackgroundColor()));
 }
 
@@ -102,9 +103,8 @@ TEST_F(CSSVariableResolverTest, ParseEnvVariable_WhenNested) {
 
   // Check that the element has the background color provided by var().
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kMainBgTestColor,
-            target->EnsureComputedStyle()->VisitedDependentColor(
-                GetCSSPropertyBackgroundColor()));
+  EXPECT_EQ(kMainBgTestColor, target->ComputedStyleRef().VisitedDependentColor(
+                                  GetCSSPropertyBackgroundColor()));
 }
 
 TEST_F(CSSVariableResolverTest, ParseEnvVariable_WhenNested_WillFallback) {
@@ -112,7 +112,7 @@ TEST_F(CSSVariableResolverTest, ParseEnvVariable_WhenNested_WillFallback) {
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kTestColor, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kTestColor, target->ComputedStyleRef().VisitedDependentColor(
                             GetCSSPropertyBackgroundColor()));
 }
 
