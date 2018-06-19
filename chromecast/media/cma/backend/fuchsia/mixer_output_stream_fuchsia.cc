@@ -4,10 +4,11 @@
 
 #include "chromecast/media/cma/backend/fuchsia/mixer_output_stream_fuchsia.h"
 
-#include <media/audio.h>
+#include <fuchsia/media/cpp/fidl.h>
 #include <zircon/syscalls.h>
 
 #include "base/command_line.h"
+#include "base/fuchsia/component_context.h"
 #include "base/time/time.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "media/base/audio_sample_types.h"
@@ -17,10 +18,10 @@
 namespace chromecast {
 namespace media {
 
-// |buffer_size| passed to media_client library when initializing audio output
-// stream. Current implementation ignores this parameter, so the value doesn't
-// make much difference. StreamMixer by default writes chunks of 768 frames.
-constexpr int kDefaultPeriodSize = 768;
+// Target period between Write() calls. It's used to calculate the value
+// returned from OptimalWriteFramesCount().
+constexpr base::TimeDelta kTargetWritePeriod =
+    base::TimeDelta::FromMilliseconds(10);
 
 // Same value as in MixerOutputStreamAlsa. Currently this value is used to
 // simulate blocking Write() similar to ALSA's behavior, see comments in
@@ -32,44 +33,39 @@ std::unique_ptr<MixerOutputStream> MixerOutputStream::Create() {
   return std::make_unique<MixerOutputStreamFuchsia>();
 }
 
-MixerOutputStreamFuchsia::MixerOutputStreamFuchsia() {}
-
-MixerOutputStreamFuchsia::~MixerOutputStreamFuchsia() {
-  if (manager_)
-    fuchsia_audio_manager_free(manager_);
-}
+MixerOutputStreamFuchsia::MixerOutputStreamFuchsia() = default;
+MixerOutputStreamFuchsia::~MixerOutputStreamFuchsia() = default;
 
 bool MixerOutputStreamFuchsia::Start(int requested_sample_rate, int channels) {
-  DCHECK(!stream_);
-
-  if (!manager_)
-    manager_ = fuchsia_audio_manager_create();
-
-  DCHECK(manager_);
-
-  fuchsia_audio_parameters fuchsia_params;
-  fuchsia_params.sample_rate = requested_sample_rate;
-  fuchsia_params.num_channels = channels;
-  fuchsia_params.buffer_size = kDefaultPeriodSize;
-
-  int result = fuchsia_audio_manager_create_output_stream(
-      manager_, nullptr, &fuchsia_params, &stream_);
-  if (result < 0) {
-    LOG(ERROR) << "Failed to open audio output, error code: " << result;
-    DCHECK(!stream_);
-    return false;
-  }
-
-  if (!UpdatePresentationDelay()) {
-    fuchsia_audio_output_stream_free(stream_);
-    stream_ = nullptr;
-    return false;
-  }
+  DCHECK(!audio_renderer_);
+  DCHECK(reference_time_.is_null());
 
   sample_rate_ = requested_sample_rate;
   channels_ = channels;
+  target_packet_size_ = ::media::AudioTimestampHelper::TimeToFrames(
+      kTargetWritePeriod, sample_rate_);
 
-  started_time_ = base::TimeTicks();
+  // Connect |audio_renderer_|.
+  fuchsia::media::AudioPtr audio_server =
+      base::fuchsia::ComponentContext::GetDefault()
+          ->ConnectToService<fuchsia::media::Audio>();
+  audio_server->CreateRendererV2(audio_renderer_.NewRequest());
+  audio_renderer_.set_error_handler(
+      fit::bind_member(this, &MixerOutputStreamFuchsia::OnRendererError));
+
+  // Configure the renderer.
+  fuchsia::media::AudioPcmFormat format;
+  format.sample_format = fuchsia::media::AudioSampleFormat::FLOAT;
+  format.channels = channels_;
+  format.frames_per_second = sample_rate_;
+  audio_renderer_->SetPcmFormat(std::move(format));
+
+  // Use number of samples to specify media position.
+  audio_renderer_->SetPtsUnits(sample_rate_, 1);
+
+  audio_renderer_->EnableMinLeadTimeEvents(true);
+  audio_renderer_.events().OnMinLeadTimeChanged =
+      fit::bind_member(this, &MixerOutputStreamFuchsia::OnMinLeadTimeChanged);
 
   return true;
 }
@@ -80,104 +76,143 @@ int MixerOutputStreamFuchsia::GetSampleRate() {
 
 MediaPipelineBackend::AudioDecoder::RenderingDelay
 MixerOutputStreamFuchsia::GetRenderingDelay() {
-  base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeDelta delay =
-      base::TimeDelta::FromMicroseconds(presentation_delay_ns_ / 1000);
-  if (!started_time_.is_null()) {
-    base::TimeTicks stream_time = GetCurrentStreamTime();
-    if (stream_time > now)
-      delay += stream_time - now;
-  }
+  if (reference_time_.is_null())
+    return MediaPipelineBackend::AudioDecoder::RenderingDelay();
 
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta delay = GetCurrentStreamTime() - now;
   return MediaPipelineBackend::AudioDecoder::RenderingDelay(
       /*delay_microseconds=*/delay.InMicroseconds(),
       /*timestamp_microseconds=*/(now - base::TimeTicks()).InMicroseconds());
 }
 
 int MixerOutputStreamFuchsia::OptimalWriteFramesCount() {
-  return kDefaultPeriodSize;
+  return target_packet_size_;
 }
 
 bool MixerOutputStreamFuchsia::Write(const float* data,
                                      int data_size,
                                      bool* out_playback_interrupted) {
-  if (!stream_)
+  if (!audio_renderer_)
     return false;
 
-  DCHECK(data_size % channels_ == 0);
+  DCHECK_EQ(data_size % channels_, 0);
 
-  do {
-    zx_time_t presentation_time = FUCHSIA_AUDIO_NO_TIMESTAMP;
-    if (started_time_.is_null()) {
-      // Presentation time (PTS) needs to be specified only for the first frame
-      // after stream is started or restarted. Mixer will calculate PTS for all
-      // following frames. 1us is added to account for the time passed between
-      // zx_clock_get() and fuchsia_audio_output_stream_write().
-      zx_time_t zx_now = zx_clock_get(ZX_CLOCK_MONOTONIC);
-      presentation_time = zx_now + presentation_delay_ns_ + ZX_USEC(1);
-      started_time_ = base::TimeTicks::FromZxTime(zx_now);
-      stream_position_samples_ = 0;
-    }
-    int result = fuchsia_audio_output_stream_write(
-        stream_, const_cast<float*>(data), data_size, presentation_time);
-    if (result == ZX_ERR_IO_MISSED_DEADLINE) {
-      LOG(ERROR) << "MixerOutputStreamFuchsia::PumpSamples() missed deadline, "
-                    "resetting PTS.";
-      if (!UpdatePresentationDelay()) {
-        return false;
-      }
-      started_time_ = base::TimeTicks();
-      *out_playback_interrupted = true;
-    } else if (result != ZX_OK) {
-      LOG(ERROR) << "fuchsia_audio_output_stream_write() returned " << result;
-      return false;
-    }
+  // Allocate payload buffer if necessary.
+  if (!payload_buffer_.mapped_size() && !InitializePayloadBuffer())
+    return false;
 
-  } while (started_time_.is_null());
+  // If Write() was called for the current playback position then assume that
+  // playback was interrupted.
+  auto now = base::TimeTicks::Now();
+  bool playback_interrupted = !reference_time_.is_null() &&
+                              now >= (GetCurrentStreamTime() - min_lead_time_);
+  if (out_playback_interrupted)
+    *out_playback_interrupted = playback_interrupted;
 
+  // Reset playback position if playback was interrupted.
+  if (playback_interrupted)
+    reference_time_ = base::TimeTicks();
+
+  size_t packet_size = data_size * sizeof(float);
+  if (payload_buffer_pos_ + packet_size > payload_buffer_.mapped_size()) {
+    payload_buffer_pos_ = 0;
+  }
+
+  DCHECK_LE(payload_buffer_pos_ + data_size, payload_buffer_.mapped_size());
+  memcpy(reinterpret_cast<uint8_t*>(payload_buffer_.memory()) +
+             payload_buffer_pos_,
+         data, packet_size);
+
+  // Send a new packet.
+  fuchsia::media::AudioPacket packet;
+  packet.timestamp = stream_position_samples_;
+  packet.payload_offset = payload_buffer_pos_;
+  packet.payload_size = packet_size;
+  packet.flags = 0;
+  audio_renderer_->SendPacketNoReply(std::move(packet));
+
+  // Update stream position.
   int frames = data_size / channels_;
   stream_position_samples_ += frames;
+  payload_buffer_pos_ += packet_size;
 
-  // Block the thread to limit amount of buffered data. Currently
-  // MixerOutputStreamAlsa uses blocking Write() and StreamMixer relies on that
-  // behavior. Sleep() below replicates the same behavior on Fuchsia.
-  // TODO(sergeyu): Refactor StreamMixer to work with non-blocking Write().
-  base::TimeDelta max_buffer_duration =
-      ::media::AudioTimestampHelper::FramesToTime(kMaxOutputBufferSizeFrames,
-                                                  sample_rate_);
-  base::TimeDelta current_buffer_duration =
-      GetCurrentStreamTime() - base::TimeTicks::Now();
-  if (current_buffer_duration > max_buffer_duration)
-    base::PlatformThread::Sleep(current_buffer_duration - max_buffer_duration);
+  if (reference_time_.is_null()) {
+    reference_time_ = now + min_lead_time_;
+    audio_renderer_->PlayNoReply(reference_time_.ToZxTime(),
+                                 stream_position_samples_ - frames);
+  } else {
+    // Block the thread to limit amount of buffered data. Currently
+    // MixerOutputStreamAlsa uses blocking Write() and StreamMixer relies on
+    // that behavior. Sleep() below replicates the same behavior on Fuchsia.
+    // TODO(sergeyu): Refactor StreamMixer to work with non-blocking Write().
+    base::TimeDelta max_buffer_duration =
+        ::media::AudioTimestampHelper::FramesToTime(kMaxOutputBufferSizeFrames,
+                                                    sample_rate_);
+    base::TimeDelta current_buffer_duration =
+        GetCurrentStreamTime() - min_lead_time_ - now;
+    if (current_buffer_duration > max_buffer_duration) {
+      base::PlatformThread::Sleep(current_buffer_duration -
+                                  max_buffer_duration);
+    }
+  }
 
   return true;
 }
 
 void MixerOutputStreamFuchsia::Stop() {
-  started_time_ = base::TimeTicks();
-
-  if (stream_) {
-    fuchsia_audio_output_stream_free(stream_);
-    stream_ = nullptr;
-  }
+  reference_time_ = base::TimeTicks();
+  audio_renderer_.Unbind();
 }
 
-bool MixerOutputStreamFuchsia::UpdatePresentationDelay() {
-  int result = fuchsia_audio_output_stream_get_min_delay(
-      stream_, &presentation_delay_ns_);
-  if (result != ZX_OK) {
-    LOG(ERROR) << "fuchsia_audio_output_stream_get_min_delay() failed: "
-               << result;
+size_t MixerOutputStreamFuchsia::GetMinBufferSize() {
+  // Ensure that |payload_buffer_| fits enough packets to cover |min_lead_time_|
+  // and kMaxOutputBufferSizeFrames plus one extra packet.
+  int min_packets = (::media::AudioTimestampHelper::TimeToFrames(min_lead_time_,
+                                                                 sample_rate_) +
+                     kMaxOutputBufferSizeFrames + target_packet_size_ - 1) /
+                        target_packet_size_ +
+                    1;
+  return min_packets * target_packet_size_ * channels_ * sizeof(float);
+}
+
+bool MixerOutputStreamFuchsia::InitializePayloadBuffer() {
+  size_t buffer_size = GetMinBufferSize();
+  if (!payload_buffer_.CreateAndMapAnonymous(buffer_size)) {
+    LOG(WARNING) << "Failed to allocate VMO of size " << buffer_size;
     return false;
   }
+
+  payload_buffer_pos_ = 0;
+  audio_renderer_->SetPayloadBuffer(
+      zx::vmo(payload_buffer_.handle().Duplicate().GetHandle()));
 
   return true;
 }
 
 base::TimeTicks MixerOutputStreamFuchsia::GetCurrentStreamTime() {
-  DCHECK(!started_time_.is_null());
-  return started_time_ + ::media::AudioTimestampHelper::FramesToTime(
-                             stream_position_samples_, sample_rate_);
+  DCHECK(!reference_time_.is_null());
+  return reference_time_ + ::media::AudioTimestampHelper::FramesToTime(
+                               stream_position_samples_, sample_rate_);
+}
+
+void MixerOutputStreamFuchsia::OnRendererError() {
+  LOG(WARNING) << "AudioRenderer has failed.";
+  Stop();
+}
+
+void MixerOutputStreamFuchsia::OnMinLeadTimeChanged(int64_t min_lead_time) {
+  min_lead_time_ = base::TimeDelta::FromNanoseconds(min_lead_time);
+
+  // When min_lead_time_ increases we may need to reallocate |payload_buffer_|.
+  // Code below just unmaps the current buffer. The new buffer will be allocated
+  // lated in PumpSamples(). This is necessary because VMO allocation may fail
+  // and it's not possible to report that error here - OnMinLeadTimeChanged()
+  // may be invoked before Start().
+  if (payload_buffer_.mapped_size() > 0 &&
+      GetMinBufferSize() > payload_buffer_.mapped_size()) {
+    payload_buffer_.Unmap();
+  }
 }
 
 }  // namespace media
