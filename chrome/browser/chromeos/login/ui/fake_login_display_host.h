@@ -23,7 +23,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   ~FakeLoginDisplayHost() override;
 
   // chromeos::LoginDisplayHost:
-  LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate) override;
+  LoginDisplay* GetLoginDisplay() override;
   gfx::NativeWindow GetNativeWindow() const override;
   OobeUI* GetOobeUI() const override;
   WebUILoginView* GetWebUILoginView() const override;

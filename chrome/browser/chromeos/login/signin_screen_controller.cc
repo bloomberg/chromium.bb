@@ -16,9 +16,7 @@ namespace chromeos {
 
 SignInScreenController* SignInScreenController::instance_ = nullptr;
 
-SignInScreenController::SignInScreenController(
-    OobeUI* oobe_ui,
-    LoginDisplay::Delegate* login_display_delegate)
+SignInScreenController::SignInScreenController(OobeUI* oobe_ui)
     : oobe_ui_(oobe_ui), gaia_screen_(new GaiaScreen()) {
   DCHECK(!instance_);
   instance_ = this;
@@ -26,7 +24,6 @@ SignInScreenController::SignInScreenController(
   gaia_screen_->set_view(oobe_ui_->GetGaiaScreenView());
   std::string display_type = oobe_ui->display_type();
   user_selection_screen_.reset(new ChromeUserSelectionScreen(display_type));
-  user_selection_screen_->SetLoginDisplayDelegate(login_display_delegate);
 
   user_board_view_ = oobe_ui_->GetUserBoardView()->GetWeakPtr();
   user_selection_screen_->SetView(user_board_view_.get());

@@ -49,7 +49,7 @@ class CloudPolicySettings;
 namespace chromeos {
 
 class CrosSettings;
-class LoginDisplayHost;
+class LoginDisplay;
 class OAuth2TokenInitializer;
 
 namespace login {
@@ -139,13 +139,6 @@ class ExistingUserController
     auth_status_consumer_ = consumer;
   }
 
-  // Returns the LoginDisplay created and owned by this controller.
-  // Used for testing.
-  LoginDisplay* login_display() { return login_display_.get(); }
-
-  // Returns the LoginDisplayHost for this controller.
-  LoginDisplayHost* login_display_host() { return host_; }
-
   // Returns value of LoginPerformer::auth_mode() (cached if performer is
   // destroyed).
   LoginPerformer::AuthorizationMode auth_mode() const;
@@ -161,6 +154,9 @@ class ExistingUserController
   friend class MockLoginPerformerDelegate;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
+
+  // Login UI implementation instance.
+  LoginDisplay* GetLoginDisplay();
 
   void LoginAsGuest();
   void LoginAsPublicSession(const UserContext& user_context);
@@ -215,9 +211,6 @@ class ExistingUserController
 
   // Shows "enable developer features" screen.
   void ShowEnableDebuggingScreen();
-
-  // Shows demo mode setup screen.
-  void ShowDemoModeSetupScreen();
 
   // Shows kiosk feature enable screen.
   void ShowKioskEnableScreen();
@@ -354,9 +347,6 @@ class ExistingUserController
 
   // OOBE/login display host.
   LoginDisplayHost* host_;
-
-  // Login UI implementation instance.
-  std::unique_ptr<LoginDisplay> login_display_;
 
   // Number of login attempts. Used to show help link when > 1 unsuccessful
   // logins for the same user.
