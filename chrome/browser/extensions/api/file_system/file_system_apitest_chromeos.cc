@@ -81,9 +81,9 @@ class ScopedAddListenerObserver : public EventRouter::Observer {
   ScopedAddListenerObserver(Profile* profile,
                             const std::string& event_name,
                             const std::string& extension_id,
-                            const base::Closure& callback)
+                            base::OnceClosure callback)
       : extension_id_(extension_id),
-        callback_(callback),
+        callback_(std::move(callback)),
         event_router_(EventRouter::EventRouter::Get(profile)) {
     DCHECK(profile);
     event_router_->RegisterObserver(this, event_name);
@@ -99,13 +99,13 @@ class ScopedAddListenerObserver : public EventRouter::Observer {
     if (details.extension_id != extension_id_ || !callback_)
       return;
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::ResetAndReturn(&callback_));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback_));
   }
 
  private:
   const std::string extension_id_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
   EventRouter* const event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedAddListenerObserver);
@@ -511,8 +511,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
   ScopedAddListenerObserver observer(
       profile(), extensions::api::file_system::OnVolumeListChanged::kEventName,
       kTestingExtensionId,
-      base::Bind(&FileSystemApiTestForRequestFileSystem::MountFakeVolume,
-                 base::Unretained(this)));
+      base::BindOnce(&FileSystemApiTestForRequestFileSystem::MountFakeVolume,
+                     base::Unretained(this)));
 
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/on_volume_list_changed"))
       << message_;
