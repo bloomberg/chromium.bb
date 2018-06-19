@@ -7,10 +7,6 @@ help to the user when setup steps are necessary.  This document covers several
 different ways we might discover printers, and how they integrate into the
 printing flows.
 
-Note that this doc is, at present, a design for the future instead of a
-description of the status quo.  For up-to-date information on the implementation
-refer to http://crbug.com/742487.
-
 ## Categorizing printers
 The fact that CUPS supports many printing modalities means that we have a
 mishmash of ways we could print.  Within ChromeOS, we divide CUPS printers into
