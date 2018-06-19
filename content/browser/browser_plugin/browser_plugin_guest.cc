@@ -87,7 +87,6 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
     : WebContentsObserver(web_contents),
       owner_web_contents_(nullptr),
       attached_(false),
-      has_attached_since_surface_set_(false),
       browser_plugin_instance_id_(browser_plugin::kInstanceIDNone),
       focused_(false),
       mouse_locked_(false),
@@ -409,7 +408,6 @@ void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
 
 void BrowserPluginGuest::SetChildFrameSurface(
     const viz::SurfaceInfo& surface_info) {
-  has_attached_since_surface_set_ = false;
   if (features::IsAshInBrowserProcess()) {
     SendMessageToEmbedder(
         std::make_unique<BrowserPluginMsg_SetChildFrameSurface>(
@@ -796,7 +794,6 @@ void BrowserPluginGuest::OnWillAttachComplete(
   InitInternal(params, embedder_web_contents);
 
   attached_ = true;
-  has_attached_since_surface_set_ = true;
   SendQueuedMessages();
 
   delegate_->DidAttach(GetGuestProxyRoutingID());
