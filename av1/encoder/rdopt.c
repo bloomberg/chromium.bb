@@ -9820,6 +9820,9 @@ static int inter_mode_search_order_independent_skip(
     return 1;
   }
 
+  if (skip_repeated_mv(cm, x, this_mode, ref_frame)) {
+    return 1;
+  }
   return 0;
 }
 
@@ -9976,13 +9979,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           if (conditional_skipintra(this_mode, search_state.best_intra_mode))
             continue;
         }
-      }
-    }
-
-    {
-      const MV_REFERENCE_FRAME ref_frames[2] = { ref_frame, second_ref_frame };
-      if (skip_repeated_mv(cm, x, this_mode, ref_frames)) {
-        continue;
       }
     }
 
