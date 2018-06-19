@@ -46,6 +46,10 @@ class MusViewsDelegate : public ViewsDelegate {
 
 }  // namespace
 
+AuraInit::InitParams::InitParams() : resource_file("views_mus_resources.pak") {}
+
+AuraInit::InitParams::~InitParams() = default;
+
 AuraInit::AuraInit() {
   if (!ViewsDelegate::GetInstance())
     views_delegate_ = std::make_unique<MusViewsDelegate>();
@@ -53,71 +57,53 @@ AuraInit::AuraInit() {
 
 AuraInit::~AuraInit() = default;
 
-std::unique_ptr<AuraInit> AuraInit::Create(
-    service_manager::Connector* connector,
-    const service_manager::Identity& identity,
-    const std::string& resource_file,
-    const std::string& resource_file_200,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    Mode mode,
-    bool register_path_provider) {
+// static
+std::unique_ptr<AuraInit> AuraInit::Create(const InitParams& params) {
+  // Using 'new' to access a non-public constructor. go/totw/134
   std::unique_ptr<AuraInit> aura_init = base::WrapUnique(new AuraInit());
-  if (!aura_init->Init(connector, identity, resource_file, resource_file_200,
-                       io_task_runner, mode, register_path_provider)) {
+  if (!aura_init->Init(params))
     aura_init.reset();
-  }
   return aura_init;
 }
 
-bool AuraInit::Init(service_manager::Connector* connector,
-                    const service_manager::Identity& identity,
-                    const std::string& resource_file,
-                    const std::string& resource_file_200,
-                    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-                    Mode mode,
-                    bool register_path_provider) {
+bool AuraInit::Init(const InitParams& params) {
   env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
 
-  if (mode == Mode::AURA_MUS || mode == Mode::AURA_MUS2) {
-    MusClient::InitParams params;
-    params.connector = connector;
-    params.identity = identity;
-    params.io_task_runner = io_task_runner;
-    params.wtc_config = mode == Mode::AURA_MUS2
-                            ? aura::WindowTreeClient::Config::kMus2
-                            : aura::WindowTreeClient::Config::kMash;
-    params.create_wm_state = true;
-    mus_client_ = std::make_unique<MusClient>(params);
+  if (params.mode == Mode::AURA_MUS || params.mode == Mode::AURA_MUS2) {
+    MusClient::InitParams mus_params;
+    mus_params.connector = params.connector;
+    mus_params.identity = params.identity;
+    mus_params.io_task_runner = params.io_task_runner;
+    mus_params.wtc_config = params.mode == Mode::AURA_MUS2
+                                ? aura::WindowTreeClient::Config::kMus2
+                                : aura::WindowTreeClient::Config::kMash;
+    mus_params.create_wm_state = true;
+    mus_client_ = std::make_unique<MusClient>(mus_params);
   }
   // MaterialDesignController may have initialized already (such as happens
   // in the utility process).
   if (!ui::MaterialDesignController::is_mode_initialized())
     ui::MaterialDesignController::Initialize();
-  if (!InitializeResources(connector, resource_file, resource_file_200,
-                           register_path_provider)) {
+  if (!InitializeResources(params))
     return false;
-  }
 
   ui::InitializeInputMethodForTesting();
   return true;
 }
 
-bool AuraInit::InitializeResources(service_manager::Connector* connector,
-                                   const std::string& resource_file,
-                                   const std::string& resource_file_200,
-                                   bool register_path_provider) {
+bool AuraInit::InitializeResources(const InitParams& params) {
   // Resources may have already been initialized (e.g. when chrome with mash is
   // used to launch the current app).
   if (ui::ResourceBundle::HasSharedInstance())
     return true;
 
-  std::set<std::string> resource_paths({resource_file});
-  if (!resource_file_200.empty())
-    resource_paths.insert(resource_file_200);
+  std::set<std::string> resource_paths({params.resource_file});
+  if (!params.resource_file_200.empty())
+    resource_paths.insert(params.resource_file_200);
 
   catalog::ResourceLoader loader;
   filesystem::mojom::DirectoryPtr directory;
-  connector->BindInterface(catalog::mojom::kServiceName, &directory);
+  params.connector->BindInterface(catalog::mojom::kServiceName, &directory);
   // TODO(jonross): if this proves useful in resolving the crash of
   // mash_unittests then switch AuraInit to have an Init method, returning a
   // bool for success. Then update all callsites to use this to determine the
@@ -127,17 +113,17 @@ bool AuraInit::InitializeResources(service_manager::Connector* connector,
   // Calling services will shutdown ServiceContext as appropriate.
   if (!loader.OpenFiles(std::move(directory), resource_paths))
     return false;
-  if (register_path_provider)
+  if (params.register_path_provider)
     ui::RegisterPathProvider();
-  base::File pak_file = loader.TakeFile(resource_file);
+  base::File pak_file = loader.TakeFile(params.resource_file);
   base::File pak_file_2 = pak_file.Duplicate();
   ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
       std::move(pak_file), base::MemoryMappedFile::Region::kWholeFile);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
       std::move(pak_file_2), ui::SCALE_FACTOR_100P);
-  if (!resource_file_200.empty())
+  if (!params.resource_file_200.empty())
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
-        loader.TakeFile(resource_file_200), ui::SCALE_FACTOR_200P);
+        loader.TakeFile(params.resource_file_200), ui::SCALE_FACTOR_200P);
   return true;
 }
 
