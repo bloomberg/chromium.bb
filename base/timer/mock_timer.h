@@ -5,35 +5,32 @@
 #ifndef BASE_TIMER_MOCK_TIMER_H_
 #define BASE_TIMER_MOCK_TIMER_H_
 
+#include "base/test/simple_test_tick_clock.h"
 #include "base/timer/timer.h"
 
 namespace base {
 
-class BASE_EXPORT MockTimer : public Timer {
+class TestSimpleTaskRunner;
+
+// A mock implementation of base::Timer which requires being explicitly
+// Fire()'d.
+// Prefer using ScopedTaskEnvironment::MOCK_TIME + FastForward*() to this when
+// possible
+class MockTimer : public Timer {
  public:
   MockTimer(bool retain_user_task, bool is_repeating);
-  MockTimer(const Location& posted_from,
-            TimeDelta delay,
-            const base::Closure& user_task,
-            bool is_repeating);
   ~MockTimer() override;
 
-  // base::Timer implementation.
-  bool IsRunning() const override;
-  base::TimeDelta GetCurrentDelay() const override;
-  void Start(const Location& posted_from,
-             base::TimeDelta delay,
-             const base::Closure& user_task) override;
-  void Stop() override;
-  void Reset() override;
-
-  // Testing methods.
+  // Testing method.
   void Fire();
 
  private:
-  base::Closure user_task_;
-  TimeDelta delay_;
-  bool is_running_;
+  // Timer implementation.
+  // MockTimer doesn't support SetTaskRunner. Do not use this.
+  void SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner) override;
+
+  SimpleTestTickClock clock_;
+  scoped_refptr<TestSimpleTaskRunner> test_task_runner_;
 };
 
 }  // namespace base

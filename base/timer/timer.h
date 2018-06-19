@@ -106,17 +106,17 @@ class BASE_EXPORT Timer {
   virtual ~Timer();
 
   // Returns true if the timer is running (i.e., not stopped).
-  virtual bool IsRunning() const;
+  bool IsRunning() const;
 
   // Returns the current delay for this timer.
-  virtual TimeDelta GetCurrentDelay() const;
+  TimeDelta GetCurrentDelay() const;
 
   // Set the task runner on which the task should be scheduled. This method can
   // only be called before any tasks have been scheduled. If |task_runner| runs
   // tasks on a different sequence than the sequence owning this Timer,
   // |user_task_| will be posted to it when the Timer fires (note that this
   // means |user_task_| can run after ~Timer() and should support that).
-  void SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner);
+  virtual void SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner);
 
   // Start the timer to run at the given |delay| from now. If the timer is
   // already running, it will be replaced to call the given |user_task|.
@@ -164,9 +164,6 @@ class BASE_EXPORT Timer {
   void set_is_running(bool running) { is_running_ = running; }
 
   const Location& posted_from() const { return posted_from_; }
-  bool retain_user_task() const { return retain_user_task_; }
-  bool is_repeating() const { return is_repeating_; }
-  bool is_running() const { return is_running_; }
 
  private:
   friend class BaseTimerTaskInternal;

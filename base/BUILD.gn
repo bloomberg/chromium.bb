@@ -941,8 +941,6 @@ jumbo_component("base") {
     "timer/elapsed_timer.h",
     "timer/hi_res_timer_manager.h",
     "timer/hi_res_timer_manager_win.cc",
-    "timer/mock_timer.cc",
-    "timer/mock_timer.h",
     "timer/timer.cc",
     "timer/timer.h",
     "trace_event/auto_open_close_event.cc",

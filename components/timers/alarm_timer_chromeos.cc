@@ -33,7 +33,7 @@ SimpleAlarmTimer::~SimpleAlarmTimer() {
 void SimpleAlarmTimer::Stop() {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
 
-  if (!base::Timer::is_running())
+  if (!IsRunning())
     return;
 
   if (!CanWakeFromSuspend()) {
