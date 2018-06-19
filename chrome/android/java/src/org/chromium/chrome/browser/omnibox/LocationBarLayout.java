@@ -2016,6 +2016,16 @@ public class LocationBarLayout
         }
     }
 
+    @Override
+    public void setScrim(FadingBackgroundView scrim) {
+        mFadingView = scrim;
+
+        // In some cases, users can start chrome and immediately start tapping the omnibox. In that
+        // case, the omnibox will focus, but there is no scrim. This checks if the scrim needs to
+        // be visible and updates it accordingly.
+        updateFadingBackgroundView(isUrlBarFocused(), true);
+    }
+
     /**
      * Update the fading background view that shows when the omnibox is focused. If Chrome Home is
      * enabled, this method is a no-op.
@@ -2024,22 +2034,16 @@ public class LocationBarLayout
      *                        scrim.
      */
     protected void updateFadingBackgroundView(boolean visible, boolean ignoreNtpChecks) {
-        if (mFadingView == null) {
-            // Some uses of the location bar do not have a tab backing them (like SearchActivity).
-            if (getCurrentTab() == null || getCurrentTab().getActivity() == null) return;
-            mFadingView = getCurrentTab().getActivity().getFadingBackgroundView();
-        }
+        if (mFadingView == null) return;
         NewTabPage ntp = mToolbarDataProvider.getNewTabPageForCurrentTab();
         boolean locationBarShownInNTP = ntp != null && ntp.isLocationBarShownInNTP();
 
-        if (mFadingView != null) {
-            if (visible && (!locationBarShownInNTP || ignoreNtpChecks)) {
-                // If the location bar is shown in the NTP, the toolbar will eventually trigger a
-                // fade in.
-                mFadingView.showFadingOverlay(mScrimParams);
-            } else {
-                mFadingView.hideFadingOverlay(!locationBarShownInNTP);
-            }
+        if (visible && (!locationBarShownInNTP || ignoreNtpChecks)) {
+            // If the location bar is shown in the NTP, the toolbar will eventually trigger a
+            // fade in.
+            mFadingView.showFadingOverlay(mScrimParams);
+        } else {
+            mFadingView.hideFadingOverlay(!locationBarShownInNTP);
         }
     }
 
