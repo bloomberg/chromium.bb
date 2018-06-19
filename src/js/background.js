@@ -45,49 +45,45 @@ camera.bg.TOPBAR_COLOR = "#1E2023";
  * Creates the window. Note, that only one window at once is supported.
  */
 camera.bg.create = function() {
-  var maximized = false;
-  var fullscreen = false;
-  chrome.storage.local.get(['maximized', 'fullscreen'], function(result) {
-    if (!chrome.runtime.lastError) {
-      if (result.maximized)
-        maximized = result.maximized;
-      if (result.fullscreen)
-        fullscreen = result.fullscreen;
-    }
-  });
-
-  // The height will be later calculated to match video aspect ratio once the
-  // stream is available.
-  var initialHeight = Math.round(
-      camera.bg.MIN_WIDTH / camera.bg.INITIAL_ASPECT_RATIO);
-
-  chrome.app.window.create('views/main.html', {
-    id: 'main',
-    frame: {
-      color: camera.bg.TOPBAR_COLOR
-    },
-    hidden: true,  // Will be shown from main.js once loaded.
-    innerBounds: {
-      width: camera.bg.MIN_WIDTH,
-      height: initialHeight,
-      minWidth: camera.bg.MIN_WIDTH,
-      left: Math.round((window.screen.availWidth - camera.bg.MIN_WIDTH) / 2),
-      top: Math.round((window.screen.availHeight - initialHeight) / 2),
-    },
-  }, function(inAppWindow) {
-    // Temporary workaround for crbug.com/452737.
-    // 'state' option in CreateWindowOptions is ignored when a window is
-    // launched with 'hidden' option, so we maintain window state manually here.
-    if (maximized)
-      inAppWindow.maximize();
-    if (fullscreen)
-      inAppWindow.fullscreen();
-    inAppWindow.onClosed.addListener(function() {
-      chrome.storage.local.set({maximized: inAppWindow.isMaximized()});
-      chrome.storage.local.set({fullscreen: inAppWindow.isFullscreen()});
+  new Promise(resolve => {
+    chrome.storage.local.get(
+        {maximized: false, fullscreen: false}, function(values) {
+      resolve(values.maximized || values.fullscreen);
     });
-    inAppWindow.aspectRatio = camera.bg.INITIAL_ASPECT_RATIO;
-    camera.bg.appWindow = inAppWindow;
+  }).then(maximized => {
+    // The height will be later calculated to match video aspect ratio once the
+    // stream is available.
+    var initialHeight = Math.round(
+        camera.bg.MIN_WIDTH / camera.bg.INITIAL_ASPECT_RATIO);
+
+    chrome.app.window.create('views/main.html', {
+      id: 'main',
+      frame: {
+        color: camera.bg.TOPBAR_COLOR
+      },
+      hidden: true,  // Will be shown from main.js once loaded.
+      innerBounds: {
+        width: camera.bg.MIN_WIDTH,
+        height: initialHeight,
+        minWidth: camera.bg.MIN_WIDTH,
+        left: Math.round((window.screen.availWidth - camera.bg.MIN_WIDTH) / 2),
+        top: Math.round((window.screen.availHeight - initialHeight) / 2),
+      },
+    }, function(inAppWindow) {
+      // Temporary workaround for crbug.com/452737.
+      // 'state' option in CreateWindowOptions is ignored when a window is
+      // launched with 'hidden' option, so we maintain window state manually here.
+      // Don't launch in fullscreen mode as the topbar might not work as expected.
+      if (maximized)
+        inAppWindow.maximize();
+
+      inAppWindow.onClosed.addListener(function() {
+        chrome.storage.local.set({maximized: inAppWindow.isMaximized()});
+        chrome.storage.local.set({fullscreen: inAppWindow.isFullscreen()});
+      });
+      inAppWindow.aspectRatio = camera.bg.INITIAL_ASPECT_RATIO;
+      camera.bg.appWindow = inAppWindow;
+    });
   });
 };
 
