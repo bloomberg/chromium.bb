@@ -21,6 +21,3 @@ class ScreenshotSyncExpectations(GpuTestExpectations):
                bug=639489)
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
-    # This is only flaky on the Viz config. Unsure how to filter for viz.
-    self.Flaky('ScreenshotSync_GPURasterWithCanvas', ['win', 'intel'],
-               bug=853762)
