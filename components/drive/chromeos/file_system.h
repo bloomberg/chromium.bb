@@ -186,6 +186,7 @@ class FileSystem : public FileSystemInterface,
   // Used to propagate events from ChangeListLoader.
   void OnDirectoryReloaded(const base::FilePath& directory_path) override;
   void OnFileChanged(const FileChange& changed_files) override;
+  void OnTeamDrivesChanged(const FileChange& changed_team_drives) override;
   void OnLoadFromServerComplete() override;
   void OnInitialLoadComplete() override;
 

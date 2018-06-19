@@ -910,6 +910,33 @@ void FileSystem::OnFileChanged(const FileChange& changed_files) {
     observer.OnFileChanged(changed_files);
 }
 
+void FileSystem::OnTeamDrivesChanged(const FileChange& changed_team_drives) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  for (const auto& entry : changed_team_drives.map()) {
+    for (const auto& change : entry.second.list()) {
+      DCHECK(!change.team_drive_id().empty());
+      if (change.IsDelete()) {
+        const auto it =
+            team_drive_change_list_loaders_.find(change.team_drive_id());
+        DCHECK(it != team_drive_change_list_loaders_.end());
+        team_drive_change_list_loaders_.erase(it);
+      } else if (change.IsAddOrUpdate()) {
+        DCHECK(team_drive_change_list_loaders_.count(change.team_drive_id()) ==
+               0);
+        auto loader = std::make_unique<internal::TeamDriveChangeListLoader>(
+            change.team_drive_id(), entry.first, logger_,
+            blocking_task_runner_.get(), resource_metadata_, scheduler_,
+            loader_controller_.get());
+        loader->AddChangeListLoaderObserver(this);
+        loader->LoadIfNeeded(base::DoNothing());
+        team_drive_change_list_loaders_.emplace(change.team_drive_id(),
+                                                std::move(loader));
+      }
+    }
+  }
+}
+
 void FileSystem::OnLoadFromServerComplete() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   sync_client_->StartCheckingExistingPinnedFiles();
