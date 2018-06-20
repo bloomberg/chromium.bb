@@ -53,8 +53,14 @@ class ResetPasswordHandlerImpl : public mojom::ResetPasswordHandler {
     safe_browsing::ChromePasswordProtectionService* service = safe_browsing::
         ChromePasswordProtectionService::GetPasswordProtectionService(profile);
     if (service) {
+      // Uses |REUSED_PASSWORD_TYPE_UNKNOWN| as a default value.
+      // ChromePasswordProtectionService::OnUserAction(..) will figure it out
+      // what type password it is based on user state.
       service->OnUserAction(
-          web_contents_, safe_browsing::PasswordProtectionService::INTERSTITIAL,
+          web_contents_,
+          safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
+              REUSED_PASSWORD_TYPE_UNKNOWN,
+          safe_browsing::PasswordProtectionService::INTERSTITIAL,
           safe_browsing::PasswordProtectionService::CHANGE_PASSWORD);
     }
   }

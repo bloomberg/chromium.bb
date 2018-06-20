@@ -104,6 +104,7 @@ void ShowFirstRunBubbleViews(Browser* browser);
 void ShowPasswordReuseWarningDialog(
     content::WebContents* web_contents,
     safe_browsing::ChromePasswordProtectionService* service,
+    safe_browsing::ReusedPasswordType password_type,
     safe_browsing::OnWarningDone done_callback);
 
 }  // namespace chrome

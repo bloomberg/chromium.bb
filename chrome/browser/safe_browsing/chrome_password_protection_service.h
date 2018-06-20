@@ -45,6 +45,7 @@ using url::Origin;
 void ShowPasswordReuseModalWarningDialog(
     content::WebContents* web_contents,
     ChromePasswordProtectionService* service,
+    ReusedPasswordType password_type,
     OnWarningDone done_callback);
 
 // Called by ChromeContentBrowserClient to create a
@@ -92,7 +93,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // Called by SecurityStateTabHelper to determine if page info bubble should
   // show password reuse warning.
   static bool ShouldShowPasswordReusePageInfoBubble(
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      ReusedPasswordType password_type);
 
   // Called by ChromeWebUIControllerFactory class to determine if Chrome should
   // show chrome://reset-password page.
@@ -102,12 +104,14 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                         const std::string& verdict_token,
                         ReusedPasswordType password_type) override;
 
-  void ShowInterstitial(content::WebContents* web_contens) override;
+  void ShowInterstitial(content::WebContents* web_contens,
+                        ReusedPasswordType password_type) override;
 
   // Called when user interacts with password protection UIs.
   void OnUserAction(content::WebContents* web_contents,
+                    ReusedPasswordType password_type,
                     PasswordProtectionService::WarningUIType ui_type,
-                    PasswordProtectionService::WarningAction action) override;
+                    PasswordProtectionService::WarningAction action);
 
   // Called during the construction of Observer subclass.
   virtual void AddObserver(Observer* observer);
@@ -118,7 +122,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // Starts collecting threat details if user has extended reporting enabled and
   // is not in incognito mode.
   void MaybeStartThreatDetailsCollection(content::WebContents* web_contents,
-                                         const std::string& token);
+                                         const std::string& token,
+                                         ReusedPasswordType password_type);
 
   // Sends threat details if user has extended reporting enabled and is not in
   // incognito mode.
@@ -162,12 +167,12 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // Gets the detailed warning text that should show in the modal warning dialog
   // and page info bubble.
-  base::string16 GetWarningDetailText();
+  base::string16 GetWarningDetailText(ReusedPasswordType password_type) const;
 
   // If password protection trigger is configured via enterprise policy, gets
   // the name of the organization that owns the enterprise policy. Otherwise,
   // returns an empty string.
-  std::string GetOrganizationName();
+  std::string GetOrganizationName() const;
 
   // Triggers "safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected"
   // extension API for enterprise reporting.
@@ -231,10 +236,12 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   void HandleUserActionOnModalWarning(
       content::WebContents* web_contents,
+      ReusedPasswordType password_type,
       PasswordProtectionService::WarningAction action);
 
   void HandleUserActionOnPageInfo(
       content::WebContents* web_contents,
+      ReusedPasswordType password_type,
       PasswordProtectionService::WarningAction action);
 
   void HandleUserActionOnSettings(
@@ -311,9 +318,12 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       sync_pb::UserEventSpecifics::GaiaPasswordReuse::
           PasswordReuseDialogInteraction::InteractionResult interaction_result);
 
-  void OnModalWarningShown(content::WebContents* web_contents,
-                           const std::string& verdict_token,
-                           ReusedPasswordType password_type);
+  void OnModalWarningShownForSignInPassword(content::WebContents* web_contents,
+                                            const std::string& verdict_token);
+
+  void OnModalWarningShownForEnterprisePassword(
+      content::WebContents* web_contents,
+      const std::string& verdict_token);
 
   // Constructor used for tests only.
   ChromePasswordProtectionService(

@@ -56,6 +56,15 @@ extern const char kProtectedPasswordEntryRequestOutcomeHistogram[];
 extern const char kSyncPasswordWarningDialogHistogram[];
 extern const char kSyncPasswordPageInfoHistogram[];
 extern const char kSyncPasswordChromeSettingsHistogram[];
+extern const char kSyncPasswordInterstitialHistogram[];
+extern const char kEnterprisePasswordEntryRequestOutcomeHistogram[];
+extern const char kEnterprisePasswordWarningDialogHistogram[];
+extern const char kEnterprisePasswordPageInfoHistogram[];
+extern const char kEnterprisePasswordInterstitialHistogram[];
+extern const char kGSuiteSyncPasswordEntryRequestOutcomeHistogram[];
+extern const char kGSuiteSyncPasswordWarningDialogHistogram[];
+extern const char kGSuiteSyncPasswordPageInfoHistogram[];
+extern const char kGSuiteSyncPasswordInterstitialHistogram[];
 
 using ReusedPasswordType =
     LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType;
@@ -197,8 +206,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // (6) Its hostname is a dotless domain.
   static bool CanGetReputationOfURL(const GURL& url);
 
-  // Records user action to corresponding UMA histograms.
-  void RecordWarningAction(WarningUIType ui_type, WarningAction action);
+  // Records user action on warnings to corresponding UMA histograms.
+  void RecordWarningAction(WarningUIType ui_type,
+                           WarningAction action,
+                           ReusedPasswordType password_type);
 
   // If we want to show password reuse modal warning.
   bool ShouldShowModalWarning(
@@ -213,20 +224,16 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                                 ReusedPasswordType reused_password_type) = 0;
 
   // Shows chrome://reset-password interstitial.
-  virtual void ShowInterstitial(content::WebContents* web_contens) = 0;
-
-  // Called when user interacts with warning UIs.
-  virtual void OnUserAction(content::WebContents* web_contents,
-                            WarningUIType ui_type,
-                            WarningAction action) = 0;
+  virtual void ShowInterstitial(content::WebContents* web_contens,
+                                ReusedPasswordType password_type) = 0;
 
   virtual void UpdateSecurityState(safe_browsing::SBThreatType threat_type,
                                    content::WebContents* web_contents) = 0;
 
   // Log the |reason| to several UMA metrics, depending on the value
-  // of |matches_sync_password|.
-  static void LogPasswordEntryRequestOutcome(RequestOutcome reason,
-                                             bool matches_sync_password);
+  // of |password_type|.
+  void LogPasswordEntryRequestOutcome(RequestOutcome reason,
+                                      ReusedPasswordType password_type);
 
   // If user has clicked through any Safe Browsing interstitial on this given
   // |web_contents|.
@@ -285,10 +292,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // and if Safe Browsing can compute reputation of |main_frame_url| (e.g.
   // Safe Browsing is not able to compute reputation of a private IP or
   // a local host). Update |reason| if sending ping is not allowed.
-  // |matches_sync_password| is used for UMA metric recording.
+  // |password_type| is used for UMA metric recording.
   bool CanSendPing(LoginReputationClientRequest::TriggerType trigger_type,
                    const GURL& main_frame_url,
-                   bool matches_sync_password,
+                   ReusedPasswordType password_type,
                    RequestOutcome* reason);
 
   // Called by a PasswordProtectionRequest instance when it finishes to remove
@@ -427,10 +434,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const LoginReputationClientResponse* verdict,
       const base::Time& receive_time);
 
-  static void RecordNoPingingReason(
+  void RecordNoPingingReason(
       LoginReputationClientRequest::TriggerType trigger_type,
       RequestOutcome reason,
-      bool matches_sync_password);
+      ReusedPasswordType password_type);
 
   // Number of verdict stored for this profile for password on focus pings.
   int stored_verdict_count_password_on_focus_;

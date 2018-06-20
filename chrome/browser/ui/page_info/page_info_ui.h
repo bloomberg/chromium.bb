@@ -221,7 +221,8 @@ class PageInfoUI {
 #if defined(SAFE_BROWSING_DB_LOCAL)
   // Creates security description for password reuse case.
   virtual std::unique_ptr<PageInfoUI::SecurityDescription>
-  CreateSecurityDescriptionForPasswordReuse() const = 0;
+  CreateSecurityDescriptionForPasswordReuse(
+      bool is_enterprise_password) const = 0;
 #endif
 };
 

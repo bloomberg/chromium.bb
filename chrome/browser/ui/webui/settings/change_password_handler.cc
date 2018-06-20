@@ -54,6 +54,8 @@ void ChangePasswordHandler::HandleInitialize(const base::ListValue* args) {
 void ChangePasswordHandler::HandleChangePassword(const base::ListValue* args) {
   service_->OnUserAction(
       web_ui()->GetWebContents(),
+      safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
+          SIGN_IN_PASSWORD,
       safe_browsing::PasswordProtectionService::CHROME_SETTINGS,
       safe_browsing::PasswordProtectionService::CHANGE_PASSWORD);
 }

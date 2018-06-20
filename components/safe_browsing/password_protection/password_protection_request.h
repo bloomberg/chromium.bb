@@ -28,6 +28,8 @@ extern const char kPasswordOnFocusVerdictHistogram[];
 extern const char kAnyPasswordEntryVerdictHistogram[];
 extern const char kSyncPasswordEntryVerdictHistogram[];
 extern const char kProtectedPasswordEntryVerdictHistogram[];
+extern const char kEnterprisePasswordEntryVerdictHistogram[];
+extern const char kGSuiteSyncPasswordEntryVerdictHistogram[];
 
 // A request for checking if an unfamiliar login form or a password reuse event
 // is safe. PasswordProtectionRequest objects are owned by

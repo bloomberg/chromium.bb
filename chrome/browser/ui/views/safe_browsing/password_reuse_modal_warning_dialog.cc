@@ -31,9 +31,10 @@ constexpr int kIconSize = 20;
 void ShowPasswordReuseModalWarningDialog(
     content::WebContents* web_contents,
     ChromePasswordProtectionService* service,
+    ReusedPasswordType password_type,
     OnWarningDone done_callback) {
   PasswordReuseModalWarningDialog* dialog = new PasswordReuseModalWarningDialog(
-      web_contents, service, std::move(done_callback));
+      web_contents, service, password_type, std::move(done_callback));
   constrained_window::CreateBrowserModalDialogViews(
       dialog, web_contents->GetTopLevelNativeWindow())
       ->Show();
@@ -43,6 +44,7 @@ void ShowPasswordReuseModalWarningDialog(
 PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
     content::WebContents* web_contents,
     ChromePasswordProtectionService* service,
+    ReusedPasswordType password_type,
     OnWarningDone done_callback)
     : content::WebContentsObserver(web_contents),
       done_callback_(std::move(done_callback)),
@@ -59,7 +61,7 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
 
   views::Label* message_body_label = new views::Label(
       service_
-          ? service_->GetWarningDetailText()
+          ? service_->GetWarningDetailText(password_type)
           : l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS));
   message_body_label->SetMultiLine(true);
   message_body_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

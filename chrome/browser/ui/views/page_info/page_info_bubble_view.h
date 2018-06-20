@@ -137,7 +137,8 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
 #if defined(SAFE_BROWSING_DB_LOCAL)
   std::unique_ptr<PageInfoUI::SecurityDescription>
-  CreateSecurityDescriptionForPasswordReuse() const override;
+  CreateSecurityDescriptionForPasswordReuse(
+      bool is_enterprise_password) const override;
 #endif
 
   // Creates the contents of the |site_settings_view_|. The ownership of the
