@@ -18,17 +18,18 @@ namespace media_router {
 
 namespace {
 
-MediaRouterActionController* GetActionController(WebContents* web_contents) {
+MediaRouterUIService* GetMediaRouterUIService(WebContents* web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   // TODO(crbug.com/826091): Move MRUIService to c/b/ui/media_router/.
-  return MediaRouterUIService::Get(profile)->action_controller();
+  return MediaRouterUIService::Get(profile);
 }
 
 }  // namespace
 
-MediaRouterDialogControllerImplBase::~MediaRouterDialogControllerImplBase() =
-    default;
+MediaRouterDialogControllerImplBase::~MediaRouterDialogControllerImplBase() {
+  media_router_ui_service_->RemoveObserver(this);
+}
 
 void MediaRouterDialogControllerImplBase::SetMediaRouterAction(
     const base::WeakPtr<MediaRouterAction>& action) {
@@ -36,18 +37,22 @@ void MediaRouterDialogControllerImplBase::SetMediaRouterAction(
 }
 
 void MediaRouterDialogControllerImplBase::CreateMediaRouterDialog() {
-  // The |action_controller_| must be notified after |action_| to avoid a UI
+  if (!GetActionController())
+    return;
+
+  // The |GetActionController_| must be notified after |action_| to avoid a UI
   // bug in which the drop shadow is drawn in an incorrect position.
   if (action_)
     action_->OnDialogShown();
-  action_controller_->OnDialogShown();
+  GetActionController()->OnDialogShown();
 }
 
 void MediaRouterDialogControllerImplBase::Reset() {
   if (IsShowingMediaRouterDialog()) {
     if (action_)
       action_->OnDialogHidden();
-    action_controller_->OnDialogHidden();
+    if (GetActionController())
+      GetActionController()->OnDialogHidden();
   }
   MediaRouterDialogController::Reset();
 }
@@ -55,8 +60,9 @@ void MediaRouterDialogControllerImplBase::Reset() {
 MediaRouterDialogControllerImplBase::MediaRouterDialogControllerImplBase(
     WebContents* web_contents)
     : MediaRouterDialogController(web_contents),
-      action_controller_(GetActionController(web_contents)) {
-  DCHECK(action_controller_);
+      media_router_ui_service_(GetMediaRouterUIService(web_contents)) {
+  DCHECK(media_router_ui_service_);
+  media_router_ui_service_->AddObserver(this);
 }
 
 void MediaRouterDialogControllerImplBase::InitializeMediaRouterUI(
@@ -70,6 +76,16 @@ void MediaRouterDialogControllerImplBase::InitializeMediaRouterUI(
     media_router_ui->InitWithStartPresentationContext(
         initiator(), delegate, std::move(start_presentation_context));
   }
+}
+
+void MediaRouterDialogControllerImplBase::OnServiceDisabled() {
+  CloseMediaRouterDialog();
+  Reset();
+}
+
+MediaRouterActionController*
+MediaRouterDialogControllerImplBase::GetActionController() {
+  return media_router_ui_service_->action_controller();
 }
 
 }  // namespace media_router

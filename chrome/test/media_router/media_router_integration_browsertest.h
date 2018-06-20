@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/test/media_router/media_router_base_browsertest.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 
@@ -31,6 +32,7 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
  protected:
   // InProcessBrowserTest Overrides
   void TearDownOnMainThread() override;
+  void SetUpInProcessBrowserTestFixture() override;
 
   // MediaRouterBaseBrowserTest Overrides
   void ParseCommandLine() override;
@@ -208,6 +210,9 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // same tab.
   void RunReconnectSessionSameTabTest();
 
+  // Sets whether media router is enabled.
+  void SetEnableMediaRouter(bool enable);
+
   std::string receiver() const { return receiver_; }
 
   // Enabled features
@@ -222,6 +227,7 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
       base::FilePath::StringPieceType relative_path) const;
 
   std::unique_ptr<content::TestNavigationObserver> test_navigation_observer_;
+  policy::MockConfigurationPolicyProvider provider_;
 
   // Fields
   std::string receiver_;

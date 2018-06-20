@@ -27,6 +27,8 @@
 #include "chrome/common/media_router/issue.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/policy_constants.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -182,6 +184,13 @@ MediaRouterIntegrationBrowserTest::~MediaRouterIntegrationBrowserTest() {
 void MediaRouterIntegrationBrowserTest::TearDownOnMainThread() {
   MediaRouterBaseBrowserTest::TearDownOnMainThread();
   test_navigation_observer_.reset();
+}
+
+void MediaRouterIntegrationBrowserTest::SetUpInProcessBrowserTestFixture() {
+  MediaRouterBaseBrowserTest::SetUpInProcessBrowserTestFixture();
+  EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
+      .WillRepeatedly(testing::Return(true));
+  policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 }
 
 void MediaRouterIntegrationBrowserTest::ExecuteJavaScriptAPI(
@@ -681,6 +690,16 @@ void MediaRouterIntegrationBrowserTest::RunReconnectSessionTest() {
   ASSERT_EQ(session_id, reconnected_session_id);
 
   ExecuteJavaScriptAPI(web_contents, kTerminateSessionScript);
+}
+
+void MediaRouterIntegrationBrowserTest::SetEnableMediaRouter(bool enable) {
+  policy::PolicyMap policy;
+  policy.Set(policy::key::kEnableMediaRouter, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>(enable), nullptr);
+  provider_.UpdateChromePolicy(policy);
+  base::RunLoop loop;
+  loop.RunUntilIdle();
 }
 
 void MediaRouterIntegrationBrowserTest::RunReconnectSessionSameTabTest() {

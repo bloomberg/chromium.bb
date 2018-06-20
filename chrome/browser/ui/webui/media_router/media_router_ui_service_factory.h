@@ -28,7 +28,9 @@ class MediaRouterUIServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct base::DefaultSingletonTraits<MediaRouterUIServiceFactory>;
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUIServiceFactoryUnitTest, CreateService);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUIServiceFactoryUnitTest,
-                           DoNotCreateServiceWhenDisabled);
+                           DoNotCreateActionControllerWhenDisabled);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUIServiceFactoryUnitTest,
+                           DisablingMediaRouting);
 
   MediaRouterUIServiceFactory();
   ~MediaRouterUIServiceFactory() override;
