@@ -21,6 +21,7 @@ aggregate_vector_icons("omnibox_vector_icons") {
 
   icons = [
     "answer_currency.icon",
+    "answer_default.icon",
     "answer_dictionary.icon",
     "answer_finance.icon",
     "answer_sunrise.icon",
