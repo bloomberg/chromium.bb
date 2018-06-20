@@ -26,9 +26,9 @@ class DemoSetupController
    public:
     virtual ~Delegate() = default;
 
-    // Called when the setup flow finished with error. |message| contains
-    // the error message to describe the error details.
-    virtual void OnSetupError(const std::string& message) = 0;
+    // Called when the setup flow finished with error. |fatal| is true if the
+    // error isn't recoverable and needs powerwash.
+    virtual void OnSetupError(bool fatal) = 0;
 
     // Called when the setup flow finished successfully.
     virtual void OnSetupSuccess() = 0;
@@ -68,7 +68,7 @@ class DemoSetupController
   void OnDeviceLocalAccountPolicyLoaded(base::Optional<std::string> blob);
 
   // Finish the flow with an error message.
-  void SetupFailed(const std::string& message);
+  void SetupFailed(const std::string& message, bool fatal);
 
   // Clears the internal state.
   void Reset();

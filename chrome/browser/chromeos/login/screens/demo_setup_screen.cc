@@ -61,9 +61,8 @@ void DemoSetupScreen::OnUserAction(const std::string& action_id) {
   }
 }
 
-void DemoSetupScreen::OnSetupError(const std::string& message) {
-  LOG(ERROR) << "Failure on setting up demo mode: " << message;
-  // TODO(mukai): show the error messages on screen.
+void DemoSetupScreen::OnSetupError(bool fatal) {
+  // TODO(mukai): propagate |fatal| information and change the error message.
 }
 
 void DemoSetupScreen::OnSetupSuccess() {

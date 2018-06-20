@@ -30,9 +30,10 @@ class MockDemoSetupControllerDelegate : public DemoSetupController::Delegate {
       : run_loop_(std::make_unique<base::RunLoop>()) {}
   ~MockDemoSetupControllerDelegate() override = default;
 
-  void OnSetupError(const std::string&) override {
+  void OnSetupError(bool fatal) override {
     EXPECT_FALSE(succeeded_.has_value());
     succeeded_ = false;
+    fatal_ = fatal;
     run_loop_->Quit();
   }
 
@@ -50,6 +51,9 @@ class MockDemoSetupControllerDelegate : public DemoSetupController::Delegate {
     return succeeded_.has_value() && succeeded_.value() == expected;
   }
 
+  // Returns true if it receives a fatal error.
+  bool IsErrorFatal() const { return fatal_; }
+
   void Reset() {
     succeeded_.reset();
     run_loop_ = std::make_unique<base::RunLoop>();
@@ -57,6 +61,7 @@ class MockDemoSetupControllerDelegate : public DemoSetupController::Delegate {
 
  private:
   base::Optional<bool> succeeded_;
+  bool fatal_ = false;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDemoSetupControllerDelegate);
@@ -202,6 +207,7 @@ TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyLoadFailure) {
   tested_controller_->EnrollOffline(
       base::FilePath(FILE_PATH_LITERAL("/no/such/path")));
   EXPECT_TRUE(delegate_->WaitResult(false));
+  EXPECT_FALSE(delegate_->IsErrorFatal());
 }
 
 TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyStoreFailed) {
@@ -218,6 +224,7 @@ TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyStoreFailed) {
 
   tested_controller_->EnrollOffline(temp_dir.GetPath());
   EXPECT_TRUE(delegate_->WaitResult(false));
+  EXPECT_TRUE(delegate_->IsErrorFatal());
 }
 
 TEST_F(DemoSetupControllerTest, OfflineInvalidDeviceLocalAccountPolicyBlob) {
@@ -229,6 +236,7 @@ TEST_F(DemoSetupControllerTest, OfflineInvalidDeviceLocalAccountPolicyBlob) {
 
   tested_controller_->EnrollOffline(temp_dir.GetPath());
   EXPECT_TRUE(delegate_->WaitResult(false));
+  EXPECT_TRUE(delegate_->IsErrorFatal());
 }
 
 TEST_F(DemoSetupControllerTest, OfflineError) {
@@ -244,6 +252,7 @@ TEST_F(DemoSetupControllerTest, OfflineError) {
 
   tested_controller_->EnrollOffline(temp_dir.GetPath());
   EXPECT_TRUE(delegate_->WaitResult(false));
+  EXPECT_FALSE(delegate_->IsErrorFatal());
 }
 
 TEST_F(DemoSetupControllerTest, OnlineSuccess) {
@@ -260,6 +269,7 @@ TEST_F(DemoSetupControllerTest, OnlineError) {
 
   tested_controller_->EnrollOnline();
   EXPECT_TRUE(delegate_->WaitResult(false));
+  EXPECT_FALSE(delegate_->IsErrorFatal());
 }
 
 TEST_F(DemoSetupControllerTest, EnrollTwice) {
@@ -268,6 +278,7 @@ TEST_F(DemoSetupControllerTest, EnrollTwice) {
 
   tested_controller_->EnrollOnline();
   EXPECT_TRUE(delegate_->WaitResult(false));
+  EXPECT_FALSE(delegate_->IsErrorFatal());
 
   delegate_->Reset();
 

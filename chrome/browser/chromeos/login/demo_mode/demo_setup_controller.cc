@@ -135,7 +135,7 @@ void DemoSetupController::OnOfflinePolicyFilesExisted(std::string* message,
   DCHECK(!policy_dir_.empty());
 
   if (!ok) {
-    SetupFailed(*message);
+    SetupFailed(*message, false);
     return;
   }
 
@@ -155,16 +155,18 @@ void DemoSetupController::OnAuthError(const GoogleServiceAuthError& error) {
 
 void DemoSetupController::OnEnrollmentError(policy::EnrollmentStatus status) {
   // TODO(mukai): improve the message details.
-  SetupFailed(base::StringPrintf(
-      "EnrollmentError: status: %d client_status: %d store_status: %d "
-      "validation_status: %d lock_status: %d",
-      status.status(), status.client_status(), status.store_status(),
-      status.validation_status(), status.lock_status()));
+  SetupFailed(
+      base::StringPrintf(
+          "EnrollmentError: status: %d client_status: %d store_status: %d "
+          "validation_status: %d lock_status: %d",
+          status.status(), status.client_status(), status.store_status(),
+          status.validation_status(), status.lock_status()),
+      false);
 }
 
 void DemoSetupController::OnOtherError(
     EnterpriseEnrollmentHelper::OtherError error) {
-  SetupFailed(base::StringPrintf("Other error: %d", error));
+  SetupFailed(base::StringPrintf("Other error: %d", error), false);
 }
 
 void DemoSetupController::OnDeviceEnrolled(
@@ -213,13 +215,13 @@ void DemoSetupController::OnDeviceLocalAccountPolicyLoaded(
   if (!blob.has_value()) {
     // This is very unlikely to happen since the file existence is already
     // checked as CheckOfflinePolicyFilesExist.
-    SetupFailed("Policy file for the device local account not found");
+    SetupFailed("Policy file for the device local account not found", true);
     return;
   }
 
   enterprise_management::PolicyFetchResponse policy;
   if (!policy.ParseFromString(blob.value())) {
-    SetupFailed("Error parsing local account policy blob.");
+    SetupFailed("Error parsing local account policy blob.", true);
     return;
   }
 
@@ -227,7 +229,7 @@ void DemoSetupController::OnDeviceLocalAccountPolicyLoaded(
   enterprise_management::PolicyData policy_data;
   if (policy.policy_data().empty() ||
       !policy_data.ParseFromString(policy.policy_data())) {
-    SetupFailed("Error parsing local account policy data.");
+    SetupFailed("Error parsing local account policy data.", true);
     return;
   }
 
@@ -239,16 +241,17 @@ void DemoSetupController::OnDeviceLocalAccountPolicyLoaded(
   }
 
   if (!device_local_account_policy_store_) {
-    SetupFailed("Can't find the store for the local account policy.");
+    SetupFailed("Can't find the store for the local account policy.", true);
     return;
   }
   device_local_account_policy_store_->AddObserver(this);
   device_local_account_policy_store_->Store(policy);
 }
 
-void DemoSetupController::SetupFailed(const std::string& message) {
+void DemoSetupController::SetupFailed(const std::string& message, bool fatal) {
   Reset();
-  delegate_->OnSetupError(message);
+  LOG(ERROR) << message << " fatal=" << fatal;
+  delegate_->OnSetupError(fatal);
 }
 
 void DemoSetupController::Reset() {
@@ -272,8 +275,7 @@ void DemoSetupController::OnStoreLoaded(policy::CloudPolicyStore* store) {
 
 void DemoSetupController::OnStoreError(policy::CloudPolicyStore* store) {
   DCHECK_EQ(store, device_local_account_policy_store_);
-  Reset();
-  delegate_->OnSetupError("Failed to store the local account policy");
+  SetupFailed("Failed to store the local account policy", true);
 }
 
 }  //  namespace chromeos
