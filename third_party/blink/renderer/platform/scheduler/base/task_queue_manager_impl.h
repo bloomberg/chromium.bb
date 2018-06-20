@@ -30,7 +30,7 @@
 #include "base/task/sequence_manager/thread_controller.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/platform/scheduler/base/graceful_queue_shutdown_helper.h"
-#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 

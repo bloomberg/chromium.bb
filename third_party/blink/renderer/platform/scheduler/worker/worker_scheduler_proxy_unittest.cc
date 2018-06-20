@@ -78,7 +78,7 @@ class WebThreadImplForWorkerSchedulerForTest
   std::unique_ptr<NonMainThreadSchedulerImpl> CreateNonMainThreadScheduler()
       override {
     auto scheduler = std::make_unique<WorkerThreadSchedulerForTest>(
-        base::sequence_manager::SequenceManager::CreateOnCurrentThread(),
+        base::sequence_manager::CreateSequenceManagerOnCurrentThread(),
         worker_scheduler_proxy(), throtting_state_changed_);
     scheduler_ = scheduler.get();
     worker_scheduler_ = std::make_unique<scheduler::WorkerScheduler>(

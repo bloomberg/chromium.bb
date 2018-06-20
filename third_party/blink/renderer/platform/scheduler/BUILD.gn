@@ -12,7 +12,7 @@ blink_platform_sources("scheduler") {
     "base/graceful_queue_shutdown_helper.h",
     "base/real_time_domain.cc",
     "base/real_time_domain.h",
-    "base/sequence_manager.h",
+    "base/sequence_manager_forward.h",
     "base/task_queue.cc",
     "base/task_queue_forward.h",
     "base/task_queue_impl.cc",

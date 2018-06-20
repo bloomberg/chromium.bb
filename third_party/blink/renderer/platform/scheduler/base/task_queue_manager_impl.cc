@@ -50,8 +50,7 @@ void SweepCanceledDelayedTasksInQueue(
 
 }  // namespace
 
-// static
-std::unique_ptr<SequenceManager> SequenceManager::CreateOnCurrentThread() {
+std::unique_ptr<SequenceManager> CreateSequenceManagerOnCurrentThread() {
   return TaskQueueManagerImpl::CreateOnCurrentThread();
 }
 
