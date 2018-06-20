@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/dom/trustedtypes/trusted_url.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
