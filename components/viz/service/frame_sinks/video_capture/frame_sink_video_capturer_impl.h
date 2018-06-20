@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 
 #include "base/macros.h"
@@ -17,7 +18,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
-#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/frame_sinks/video_capture/capturable_frame_sink.h"
@@ -37,8 +37,8 @@ class Size;
 
 namespace viz {
 
-class FrameSinkVideoCapturerManager;
 class CopyOutputResult;
+class FrameSinkVideoCapturerManager;
 
 // Captures the frames of a CompositorFrameSink's surface as a video stream. See
 // mojom for usage details.
@@ -100,7 +100,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
                                 const gfx::Size& max_size,
                                 bool use_fixed_aspect_ratio) final;
   void SetAutoThrottlingEnabled(bool enabled) final;
-  void ChangeTarget(const FrameSinkId& frame_sink_id) final;
+  void ChangeTarget(const base::Optional<FrameSinkId>& frame_sink_id) final;
   void Start(mojom::FrameSinkVideoConsumerPtr consumer) final;
   void Stop() final;
   void RequestRefreshFrame() final;
@@ -174,8 +174,8 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // |content_rect| region of a [possibly letterboxed] video |frame|.
   void DidCopyFrame(int64_t frame_number,
                     OracleFrameNumber oracle_frame_number,
-                    scoped_refptr<media::VideoFrame> frame,
                     const gfx::Rect& content_rect,
+                    scoped_refptr<media::VideoFrame> frame,
                     std::unique_ptr<CopyOutputResult> result);
 
   // Places the frame in the |delivery_queue_| and calls MaybeDeliverFrame(),
@@ -183,16 +183,16 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // completed, but unsuccessful capture.
   void DidCaptureFrame(int64_t frame_number,
                        OracleFrameNumber oracle_frame_number,
-                       scoped_refptr<media::VideoFrame> frame,
-                       const gfx::Rect& content_rect);
+                       const gfx::Rect& content_rect,
+                       scoped_refptr<media::VideoFrame> frame);
 
   // Delivers a |frame| to the consumer, if the VideoCaptureOracle allows
   // it. |frame| can be null to indicate a completed, but unsuccessful capture.
   // In this case, some state will be updated, but nothing will be sent to the
   // consumer.
   void MaybeDeliverFrame(OracleFrameNumber oracle_frame_number,
-                         scoped_refptr<media::VideoFrame> frame,
-                         const gfx::Rect& content_rect);
+                         const gfx::Rect& content_rect,
+                         scoped_refptr<media::VideoFrame> frame);
 
   // For ARGB format, ensures that every dimension of |size| is positive. For
   // I420 format, ensures that every dimension is even and at least 2.
@@ -262,12 +262,12 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   struct CapturedFrame {
     int64_t frame_number;
     OracleFrameNumber oracle_frame_number;
-    scoped_refptr<media::VideoFrame> frame;
     gfx::Rect content_rect;
+    scoped_refptr<media::VideoFrame> frame;
     CapturedFrame(int64_t frame_number,
                   OracleFrameNumber oracle_frame_number,
-                  scoped_refptr<media::VideoFrame> frame,
-                  const gfx::Rect& content_rect);
+                  const gfx::Rect& content_rect,
+                  scoped_refptr<media::VideoFrame> frame);
     CapturedFrame(const CapturedFrame& other);
     ~CapturedFrame();
     bool operator<(const CapturedFrame& other) const;

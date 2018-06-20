@@ -46,11 +46,6 @@ interface FrameSinkVideoConsumer {
                   gfx.mojom.Rect content_rect,
                   FrameSinkVideoConsumerFrameCallbacks callbacks);
 
-  // Indicates the video capture target (a frame sink) has gone away. A consumer
-  // should use this to determine whether to change to a different target or
-  // shutdown.
-  OnTargetLost(FrameSinkId frame_sink_id);
-
   // Indicates that OnFrameCaptured() will not be called again, an end-of-stream
   // signal.
   OnStopped();
@@ -119,8 +114,9 @@ interface FrameSinkVideoCapturer {
   SetAutoThrottlingEnabled(bool enabled);
 
   // Targets a different compositor frame sink. This may be called anytime,
-  // before or after Start().
-  ChangeTarget(FrameSinkId frame_sink_id);
+  // before or after Start(). If the argument is null, capture will suspend
+  // until a new frame sink target is set.
+  ChangeTarget(FrameSinkId? frame_sink_id);
 
   // Starts emitting video frames to the given |consumer|.
   Start(FrameSinkVideoConsumer consumer);

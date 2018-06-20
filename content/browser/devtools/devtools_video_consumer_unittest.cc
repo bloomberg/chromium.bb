@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/message_loop/message_loop.h"
 #include "content/browser/devtools/devtools_video_consumer.h"
@@ -71,8 +72,9 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
                     bool use_fixed_aspect_ratio));
   // This is never called.
   MOCK_METHOD1(SetAutoThrottlingEnabled, void(bool));
-  void ChangeTarget(const viz::FrameSinkId& frame_sink_id) final {
-    frame_sink_id_ = frame_sink_id;
+  void ChangeTarget(
+      const base::Optional<viz::FrameSinkId>& frame_sink_id) final {
+    frame_sink_id_ = frame_sink_id ? *frame_sink_id : viz::FrameSinkId();
     MockChangeTarget(frame_sink_id_);
   }
   MOCK_METHOD1(MockChangeTarget, void(const viz::FrameSinkId& frame_sink_id));

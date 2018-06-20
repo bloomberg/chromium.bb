@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_MEDIA_CAPTURE_FRAME_SINK_VIDEO_CAPTURE_DEVICE_H_
 
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -76,7 +78,6 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
       const gfx::Rect& update_rect,
       const gfx::Rect& content_rect,
       viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) final;
-  void OnTargetLost(const viz::FrameSinkId& frame_sink_id) final;
   void OnStopped() final;
 
   // These are called to notify when the capture target has changed or was
@@ -147,8 +148,8 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
 
     ConsumptionState();
     ~ConsumptionState();
-    ConsumptionState(ConsumptionState&& other);
-    ConsumptionState& operator=(ConsumptionState&& other);
+    ConsumptionState(ConsumptionState&& other) noexcept;
+    ConsumptionState& operator=(ConsumptionState&& other) noexcept;
   };
   std::vector<ConsumptionState> slots_;
 

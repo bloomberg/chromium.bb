@@ -4,6 +4,8 @@
 
 #include "content/browser/media/capture/lame_window_capturer_chromeos.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -99,7 +101,7 @@ void LameWindowCapturerChromeOS::SetAutoThrottlingEnabled(bool enabled) {
 }
 
 void LameWindowCapturerChromeOS::ChangeTarget(
-    const viz::FrameSinkId& frame_sink_id) {
+    const base::Optional<viz::FrameSinkId>& frame_sink_id) {
   // The LameWindowCapturerChromeOS does not capture from compositor frame
   // sinks.
 }

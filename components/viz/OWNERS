@@ -13,7 +13,7 @@ piman@chromium.org
 vmpstr@chromium.org
 weiliangc@chromium.org
 
-# CopyOutputRequests/Results
+# CopyOutputRequests/Results and FrameSinkVideoCapture
 miu@chromium.org
 
 # renderers (GL/Skia/Software)

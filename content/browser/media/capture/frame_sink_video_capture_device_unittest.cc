@@ -91,7 +91,12 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
                     const gfx::Size& max_size,
                     bool use_fixed_aspect_ratio));
   MOCK_METHOD1(SetAutoThrottlingEnabled, void(bool));
-  MOCK_METHOD1(ChangeTarget, void(const viz::FrameSinkId& frame_sink_id));
+  void ChangeTarget(
+      const base::Optional<viz::FrameSinkId>& frame_sink_id) final {
+    DCHECK_NOT_ON_DEVICE_THREAD();
+    MockChangeTarget(frame_sink_id ? *frame_sink_id : viz::FrameSinkId());
+  }
+  MOCK_METHOD1(MockChangeTarget, void(const viz::FrameSinkId& frame_sink_id));
   void Start(viz::mojom::FrameSinkVideoConsumerPtr consumer) final {
     DCHECK_NOT_ON_DEVICE_THREAD();
     consumer_ = std::move(consumer);
@@ -310,7 +315,7 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
     EXPECT_CALL(capturer_,
                 SetResolutionConstraints(kResolution, kResolution, _));
     constexpr viz::FrameSinkId frame_sink_id(1, 1);
-    EXPECT_CALL(capturer_, ChangeTarget(frame_sink_id));
+    EXPECT_CALL(capturer_, MockChangeTarget(frame_sink_id));
     EXPECT_CALL(capturer_, MockStart(NotNull()));
 
     EXPECT_FALSE(capturer_.is_bound());
@@ -555,6 +560,7 @@ TEST_F(FrameSinkVideoCaptureDeviceTest, ShutsDownOnFatalError) {
   // consumption, unbind the capturer, log an error with the VideoFrameReceiver,
   // and destroy the VideoFrameReceiver.
   {
+    EXPECT_CALL(capturer_, MockChangeTarget(viz::FrameSinkId()));
     EXPECT_CALL(capturer_, MockStop());
     POST_DEVICE_METHOD_CALL0(OnTargetPermanentlyLost);
     WAIT_FOR_DEVICE_TASKS();

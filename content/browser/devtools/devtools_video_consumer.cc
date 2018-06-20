@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/devtools_video_consumer.h"
 
+#include <utility>
+
 #include "cc/paint/skia_paint_canvas.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_impl.h"
@@ -73,8 +75,12 @@ void DevToolsVideoConsumer::StopCapture() {
 void DevToolsVideoConsumer::SetFrameSinkId(
     const viz::FrameSinkId& frame_sink_id) {
   frame_sink_id_ = frame_sink_id;
-  if (capturer_)
-    capturer_->ChangeTarget(frame_sink_id_);
+  if (capturer_) {
+    if (frame_sink_id_.is_valid())
+      capturer_->ChangeTarget(frame_sink_id_);
+    else
+      capturer_->ChangeTarget(base::nullopt);
+  }
 }
 
 void DevToolsVideoConsumer::SetMinCapturePeriod(
@@ -104,7 +110,8 @@ void DevToolsVideoConsumer::InnerStartCapture(
   capturer_->SetMinSizeChangePeriod(kDefaultMinPeriod);
   capturer_->SetResolutionConstraints(min_frame_size_, max_frame_size_,
                                       kDefaultUseFixedAspectRatio);
-  capturer_->ChangeTarget(frame_sink_id_);
+  if (frame_sink_id_.is_valid())
+    capturer_->ChangeTarget(frame_sink_id_);
 
   capturer_->Start(this);
 }
@@ -151,9 +158,6 @@ void DevToolsVideoConsumer::OnFrameCaptured(
 
   callback_.Run(std::move(frame));
 }
-
-void DevToolsVideoConsumer::OnTargetLost(
-    const viz::FrameSinkId& frame_sink_id) {}
 
 void DevToolsVideoConsumer::OnStopped() {}
 
