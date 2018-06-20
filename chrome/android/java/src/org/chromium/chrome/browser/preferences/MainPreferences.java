@@ -35,7 +35,9 @@ import java.util.Map;
  */
 public class MainPreferences extends PreferenceFragment
         implements SigninManager.SignInStateObserver, TemplateUrlService.LoadListener {
+    public static final String PREF_ACCOUNT_SECTION = "account_section";
     public static final String PREF_SIGN_IN = "sign_in";
+    public static final String PREF_SYNC_AND_SERVICES = "sync_and_services";
     public static final String PREF_AUTOFILL_SETTINGS = "autofill_settings";
     public static final String PREF_SEARCH_ENGINE = "search_engine";
     public static final String PREF_SAVED_PASSWORDS = "saved_passwords";
@@ -93,8 +95,14 @@ public class MainPreferences extends PreferenceFragment
 
     private void createPreferences() {
         PreferenceUtils.addPreferencesFromResource(this, R.xml.main_preferences);
-
         cachePreferences();
+
+        // Remove UnifiedConsent preferences if the feature isn't enabled.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+            getPreferenceScreen().removePreference(findPreference(PREF_ACCOUNT_SECTION));
+            getPreferenceScreen().removePreference(findPreference(PREF_SYNC_AND_SERVICES));
+        }
+
         setManagedPreferenceDelegateForPreference(PREF_SEARCH_ENGINE);
         setManagedPreferenceDelegateForPreference(PREF_AUTOFILL_SETTINGS);
         setManagedPreferenceDelegateForPreference(PREF_SAVED_PASSWORDS);

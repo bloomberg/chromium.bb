@@ -15,6 +15,7 @@ import android.view.View;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
@@ -171,7 +172,11 @@ public class SignInPreference
     private void setupGenericPromo() {
         setLayoutResource(R.layout.account_management_account_row);
         setTitle(R.string.sign_in_to_chrome);
-        setSummary(R.string.sign_in_to_chrome_summary);
+
+        boolean unifiedConsent = ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT);
+        setSummary(
+                unifiedConsent ? R.string.signin_pref_summary : R.string.sign_in_to_chrome_summary);
+
         setFragment(null);
         setIcon(AppCompatResources.getDrawable(getContext(), R.drawable.logo_avatar_anonymous));
         setWidgetLayoutResource(0);
