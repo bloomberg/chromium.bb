@@ -8,6 +8,7 @@
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/transform.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ash {
 
@@ -15,7 +16,8 @@ AshWindowTreeHostMirroringUnified::AshWindowTreeHostMirroringUnified(
     const gfx::Rect& initial_bounds,
     int64_t mirroring_display_id,
     AshWindowTreeHostMirroringDelegate* delegate)
-    : AshWindowTreeHostPlatform(initial_bounds),
+    : AshWindowTreeHostPlatform(
+          ui::PlatformWindowInitProperties{initial_bounds}),
       mirroring_display_id_(mirroring_display_id),
       delegate_(delegate) {
   DCHECK(delegate_);

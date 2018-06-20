@@ -13,6 +13,7 @@
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace extensions {
 
@@ -30,8 +31,9 @@ TEST_F(ShellScreenTest, ShellScreen) {
   EXPECT_EQ("640x480", screen.GetPrimaryDisplay().size().ToString());
 
   // Tests that reshaping the host window reshapes the display.
-  std::unique_ptr<aura::WindowTreeHost> host(aura::WindowTreeHost::Create(
-      gfx::Rect(screen.GetPrimaryDisplay().GetSizeInPixel())));
+  std::unique_ptr<aura::WindowTreeHost> host =
+      aura::WindowTreeHost::Create(ui::PlatformWindowInitProperties{
+          gfx::Rect(screen.GetPrimaryDisplay().GetSizeInPixel())});
   host->AddObserver(&screen);
   host->InitHost();
   EXPECT_TRUE(host->window());

@@ -73,6 +73,7 @@ cast_source_set("graphics") {
       "//ui/compositor",
       "//ui/display",
       "//ui/gfx/geometry",
+      "//ui/platform_window",
     ]
   }
 }
@@ -116,6 +117,7 @@ if (use_aura && !is_cast_audio_only) {
       "//ui/events:test_support",
       "//ui/gfx",
       "//ui/gl:test_support",
+      "//ui/platform_window",
       "//ui/views",
       "//ui/wm",
     ]

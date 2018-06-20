@@ -18,6 +18,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/wm/core/capture_controller.h"
 
 namespace wm {
@@ -58,7 +59,8 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
     AuraTestBase::SetUp();
     capture_controller_.reset(new ScopedCaptureClient(root_window()));
 
-    second_host_.reset(aura::WindowTreeHost::Create(gfx::Rect(0, 0, 800, 600)));
+    second_host_ = aura::WindowTreeHost::Create(
+        ui::PlatformWindowInitProperties{gfx::Rect(0, 0, 800, 600)});
     second_host_->InitHost();
     second_host_->window()->Show();
     second_host_->SetBoundsInPixels(gfx::Rect(800, 600));

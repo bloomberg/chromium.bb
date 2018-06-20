@@ -40,17 +40,15 @@
 namespace aura {
 
 // static
-WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
-  return new WindowTreeHostPlatform(bounds);
+std::unique_ptr<WindowTreeHost> WindowTreeHost::Create(
+    ui::PlatformWindowInitProperties properties) {
+  return std::make_unique<WindowTreeHostPlatform>(std::move(properties));
 }
 
-WindowTreeHostPlatform::WindowTreeHostPlatform(const gfx::Rect& bounds)
-    : WindowTreeHostPlatform() {
-  bounds_ = bounds;
+WindowTreeHostPlatform::WindowTreeHostPlatform(
+    ui::PlatformWindowInitProperties properties) {
+  bounds_ = properties.bounds;
   CreateCompositor();
-
-  ui::PlatformWindowInitProperties properties;
-  properties.bounds = bounds_;
   CreateAndSetPlatformWindow(std::move(properties));
 }
 

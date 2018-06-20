@@ -31,7 +31,7 @@ class WindowPort;
 class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
                                            public ui::PlatformWindowDelegate {
  public:
-  explicit WindowTreeHostPlatform(const gfx::Rect& bounds);
+  explicit WindowTreeHostPlatform(ui::PlatformWindowInitProperties properties);
   ~WindowTreeHostPlatform() override;
 
   // WindowTreeHost:

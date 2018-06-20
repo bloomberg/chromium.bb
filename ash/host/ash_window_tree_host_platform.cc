@@ -28,13 +28,15 @@
 #include "ui/platform_window/mojo/ime_type_converters.h"
 #include "ui/platform_window/platform_ime_controller.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/platform_window/text_input_state.h"
 
 namespace ash {
 
 AshWindowTreeHostPlatform::AshWindowTreeHostPlatform(
-    const gfx::Rect& initial_bounds)
-    : aura::WindowTreeHostPlatform(initial_bounds), transformer_helper_(this) {
+    ui::PlatformWindowInitProperties properties)
+    : aura::WindowTreeHostPlatform(std::move(properties)),
+      transformer_helper_(this) {
   transformer_helper_.Init();
   InitInputMethodIfNecessary();
 }

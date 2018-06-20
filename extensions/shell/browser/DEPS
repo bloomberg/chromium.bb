@@ -41,6 +41,7 @@ include_rules = [
   "+ui/chromeos",
   "+ui/display",
   "+ui/ozone/public",
+  "+ui/platform_window",
   "+ui/views",
   "+ui/wm",
 

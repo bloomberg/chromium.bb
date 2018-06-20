@@ -313,6 +313,7 @@ jumbo_static_library("test_support") {
     "//ui/events:test_support",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/platform_window",
     "//ui/wm",
   ]
 
@@ -416,6 +417,7 @@ test("aura_unittests") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl:test_support",
+    "//ui/platform_window",
     "//ui/platform_window/stub",
     "//ui/wm",
   ]

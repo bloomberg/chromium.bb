@@ -40,6 +40,7 @@ enum class DomCode;
 class EventSink;
 class InputMethod;
 class ViewProp;
+struct PlatformWindowInitProperties;
 }
 
 namespace aura {
@@ -63,8 +64,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
  public:
   ~WindowTreeHost() override;
 
-  // Creates a new WindowTreeHost. The caller owns the returned value.
-  static WindowTreeHost* Create(const gfx::Rect& bounds_in_pixels);
+  // Creates a new WindowTreeHost with the specified |properties|.
+  static std::unique_ptr<WindowTreeHost> Create(
+      ui::PlatformWindowInitProperties properties);
 
   // Returns the WindowTreeHost for the specified accelerated widget, or NULL
   // if there is none associated.

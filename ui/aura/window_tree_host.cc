@@ -38,6 +38,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/icc_profile.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace aura {
 

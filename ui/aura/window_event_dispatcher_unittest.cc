@@ -47,6 +47,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace aura {
 namespace {
@@ -174,8 +175,8 @@ TEST_P(WindowEventDispatcherTest, RepostEvent) {
 // Check that we correctly track whether any touch devices are down in response
 // to touch press and release events with two WindowTreeHost.
 TEST_P(WindowEventDispatcherTest, TouchDownState) {
-  std::unique_ptr<WindowTreeHost> second_host(
-      WindowTreeHost::Create(gfx::Rect(20, 30, 100, 50)));
+  std::unique_ptr<WindowTreeHost> second_host = WindowTreeHost::Create(
+      ui::PlatformWindowInitProperties{gfx::Rect(20, 30, 100, 50)});
   second_host->InitHost();
   second_host->window()->Show();
 
@@ -1705,7 +1706,10 @@ TEST_P(WindowEventDispatcherTest, DeleteWindowDuringMouseMovedDispatch) {
 TEST_P(WindowEventDispatcherTest, DeleteDispatcherDuringPreDispatch) {
   // Create a host for the window hierarchy. This host will be destroyed later
   // on.
-  WindowTreeHost* host = WindowTreeHost::Create(gfx::Rect(0, 0, 100, 100));
+  WindowTreeHost* host =
+      WindowTreeHost::Create(
+          ui::PlatformWindowInitProperties{gfx::Rect(0, 0, 100, 100)})
+          .release();
   host->InitHost();
   host->window()->Show();
 
@@ -1782,8 +1786,8 @@ TEST_P(WindowEventDispatcherTest, ValidRootDuringDestruction) {
   ValidRootDuringDestructionWindowObserver observer(&got_destroying,
                                                     &has_valid_root);
   {
-    std::unique_ptr<WindowTreeHost> host(
-        WindowTreeHost::Create(gfx::Rect(0, 0, 100, 100)));
+    std::unique_ptr<WindowTreeHost> host = WindowTreeHost::Create(
+        ui::PlatformWindowInitProperties{gfx::Rect(0, 0, 100, 100)});
     host->InitHost();
     host->window()->Show();
     // Owned by WindowEventDispatcher.
@@ -1890,7 +1894,9 @@ class DeleteHostFromHeldMouseEventDelegate
 // we don't crash.
 TEST_P(WindowEventDispatcherTest, DeleteHostFromHeldMouseEvent) {
   // Should be deleted by |delegate|.
-  WindowTreeHost* h2 = WindowTreeHost::Create(gfx::Rect(0, 0, 100, 100));
+  WindowTreeHost* h2 = WindowTreeHost::Create(ui::PlatformWindowInitProperties{
+                                                  gfx::Rect(0, 0, 100, 100)})
+                           .release();
   h2->InitHost();
   h2->window()->Show();
   DeleteHostFromHeldMouseEventDelegate delegate(h2);
@@ -2528,8 +2534,8 @@ class MoveWindowHandler : public ui::EventHandler {
 // event being dispatched is moved to a different dispatcher in response to an
 // event in the inner loop.
 TEST_P(WindowEventDispatcherTest, NestedEventDispatchTargetMoved) {
-  std::unique_ptr<WindowTreeHost> second_host(
-      WindowTreeHost::Create(gfx::Rect(20, 30, 100, 50)));
+  std::unique_ptr<WindowTreeHost> second_host = WindowTreeHost::Create(
+      ui::PlatformWindowInitProperties{gfx::Rect(20, 30, 100, 50)});
   second_host->InitHost();
   second_host->window()->Show();
   Window* second_root = second_host->window();
@@ -2591,8 +2597,8 @@ TEST_P(WindowEventDispatcherTest,
       &delegate, 123, gfx::Rect(20, 10, 10, 20), root_window()));
   window->Show();
 
-  std::unique_ptr<WindowTreeHost> second_host(
-      WindowTreeHost::Create(gfx::Rect(20, 30, 100, 50)));
+  std::unique_ptr<WindowTreeHost> second_host = WindowTreeHost::Create(
+      ui::PlatformWindowInitProperties{gfx::Rect(20, 30, 100, 50)});
   second_host->InitHost();
   second_host->window()->Show();
   WindowEventDispatcher* second_dispatcher = second_host->dispatcher();
@@ -2632,8 +2638,8 @@ TEST_P(WindowEventDispatcherTest,
 
 TEST_P(WindowEventDispatcherTest,
        RedirectedEventToDifferentDispatcherLocation) {
-  std::unique_ptr<WindowTreeHost> second_host(
-      WindowTreeHost::Create(gfx::Rect(20, 30, 100, 50)));
+  std::unique_ptr<WindowTreeHost> second_host = WindowTreeHost::Create(
+      ui::PlatformWindowInitProperties{gfx::Rect(20, 30, 100, 50)});
   second_host->InitHost();
   second_host->window()->Show();
   client::SetCaptureClient(second_host->window(),

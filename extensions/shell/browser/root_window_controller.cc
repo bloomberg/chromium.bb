@@ -15,6 +15,7 @@
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/wm/core/default_screen_position_client.h"
 
 namespace extensions {
@@ -102,8 +103,9 @@ RootWindowController::RootWindowController(
       screen_position_client_(std::make_unique<ScreenPositionClient>()) {
   DCHECK(desktop_delegate_);
   DCHECK(browser_context_);
-  host_.reset(aura::WindowTreeHost::Create(bounds));
 
+  host_ =
+      aura::WindowTreeHost::Create(ui::PlatformWindowInitProperties{bounds});
   host_->InitHost();
   host_->window()->Show();
 

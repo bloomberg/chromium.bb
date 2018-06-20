@@ -306,6 +306,7 @@ static_library("content_shell_lib") {
     "//ui/gfx/ipc/geometry",
     "//ui/gfx/ipc/skia",
     "//ui/gl",
+    "//ui/platform_window",
     "//url",
     "//v8",
   ]

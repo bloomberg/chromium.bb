@@ -18,6 +18,7 @@
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/wm/core/default_screen_position_client.h"
 
 namespace chromecast {
@@ -98,7 +99,8 @@ ui::EventTarget* CastEventIgnorer::FindNextBestTarget(
 
 CastWindowTreeHost::CastWindowTreeHost(bool enable_input,
                                        const gfx::Rect& bounds)
-    : WindowTreeHostPlatform(bounds), enable_input_(enable_input) {
+    : WindowTreeHostPlatform(ui::PlatformWindowInitProperties{bounds}),
+      enable_input_(enable_input) {
   if (!enable_input) {
     window()->SetEventTargeter(
         std::unique_ptr<ui::EventTargeter>(new CastEventIgnorer));

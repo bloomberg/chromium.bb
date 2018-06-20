@@ -26,6 +26,7 @@ include_rules = [
 
   # The content_shell for aura must work with the views and aura
   "+ui/aura",
+  "+ui/platform_window",
   "+ui/views",
 
   # Content Shell can depend on more components than content/, since:
