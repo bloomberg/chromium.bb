@@ -16,10 +16,12 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Handles the drag touch events on AppMenu that start from the menu button.
@@ -158,7 +160,8 @@ class AppMenuDragHelper {
             mAppMenu.dismiss();
             return true;
         } else if (eventActionMasked == MotionEvent.ACTION_UP) {
-            nativeRecordAppMenuTouchDuration(timeSinceDown);
+            RecordHistogram.recordTimesHistogram(
+                    "WrenchMenu.TouchDuration", timeSinceDown, TimeUnit.MILLISECONDS);
         }
 
         mIsSingleTapCanceled |= timeSinceDown > mTapTimeout;
@@ -295,6 +298,4 @@ class AppMenuDragHelper {
         mScreenVisibleRect.offset(mScreenVisiblePoint[0], mScreenVisiblePoint[1]);
         return mScreenVisibleRect;
     }
-
-    private static native void nativeRecordAppMenuTouchDuration(long timeMs);
 }
