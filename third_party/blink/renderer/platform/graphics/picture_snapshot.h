@@ -60,9 +60,9 @@ class PLATFORM_EXPORT PictureSnapshot : public RefCounted<PictureSnapshot> {
 
   PictureSnapshot(sk_sp<const SkPicture>);
 
-  std::unique_ptr<Vector<char>> Replay(unsigned from_step = 0,
-                                       unsigned to_step = 0,
-                                       double scale = 1.0) const;
+  Vector<char> Replay(unsigned from_step = 0,
+                      unsigned to_step = 0,
+                      double scale = 1.0) const;
   Vector<Vector<TimeDelta>> Profile(unsigned min_iterations,
                                     TimeDelta min_duration,
                                     const FloatRect* clip_rect) const;
