@@ -84,9 +84,6 @@ constexpr int kExtraLeftPaddingToBalanceCloseButtonPadding = 2;
 // transitioning a tab from normal to pinned tab.
 constexpr int kPinnedTabExtraWidthToRenderAsNormal = 30;
 
-// How opaque to make the hover state (out of 1).
-constexpr float kHoverOpacity = 0.33;
-
 // Opacity of the active tab background painted over inactive selected tabs.
 constexpr float kSelectedTabOpacity = 0.3;
 
@@ -421,6 +418,21 @@ gfx::Path GetBorderPath(float scale,
     path.transform(SkMatrix::MakeScale(1.f / scale));
 
   return path;
+}
+
+float Lerp(float v0, float v1, float t) {
+  return v0 + (v1 - v0) * t;
+}
+
+// Produces lerp parameter from a range and value within the range, then uses
+// it to Lerp from v0 to v1.
+float LerpFromRange(float v0,
+                    float v1,
+                    float range_start,
+                    float range_end,
+                    float value_in_range) {
+  const float t = (value_in_range - range_start) / (range_end - range_start);
+  return Lerp(v0, v1, t);
 }
 
 }  // namespace
@@ -1483,14 +1495,24 @@ bool Tab::ShouldRenderAsNormalTab() const {
 
 float Tab::GetThrobValue() const {
   const bool is_selected = IsSelected();
-  float val = is_selected ? kSelectedTabOpacity : 0;
-  const float offset =
-      is_selected ? (kSelectedTabThrobScale * kHoverOpacity) : kHoverOpacity;
+  double val = is_selected ? kSelectedTabOpacity : 0;
+
+  // Wrapping in closure to only compute offset when needed (animate or hover).
+  const auto offset = [=] {
+    // Opacity boost varies on tab width.
+    constexpr float kHoverOpacityMin = 0.5f;
+    constexpr float kHoverOpacityMax = 0.65f;
+    const float hoverOpacity = LerpFromRange(
+        kHoverOpacityMin, kHoverOpacityMax, float{GetStandardSize().width()},
+        float{GetMinimumInactiveSize().width()}, float{bounds().width()});
+    return is_selected ? (kSelectedTabThrobScale * hoverOpacity) : hoverOpacity;
+  };
 
   if (pulse_animation_.is_animating())
-    val += pulse_animation_.GetCurrentValue() * offset;
+    val += pulse_animation_.GetCurrentValue() * offset();
   else if (hover_controller_.ShouldDraw())
-    val += hover_controller_.GetAnimationValue() * offset;
+    val += hover_controller_.GetAnimationValue() * offset();
+
   return val;
 }
 
