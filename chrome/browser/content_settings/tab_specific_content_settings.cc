@@ -759,15 +759,11 @@ void TabSpecificContentSettings::OnContentSettingChanged(
     const std::string& resource_identifier) {
   const ContentSettingsDetails details(
       primary_pattern, secondary_pattern, content_type, resource_identifier);
-  const NavigationController& controller = web_contents()->GetController();
-  NavigationEntry* entry = controller.GetVisibleEntry();
-  GURL entry_url;
-  if (entry)
-    entry_url = entry->GetURL();
+  const GURL& visible_url = web_contents()->GetVisibleURL();
   if (details.update_all() ||
-      // The visible NavigationEntry is the URL in the URL field of a tab.
+      // The visible URL is the URL in the URL field of a tab.
       // Currently this should be matched by the |primary_pattern|.
-      details.primary_pattern().Matches(entry_url)) {
+      details.primary_pattern().Matches(visible_url)) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     const HostContentSettingsMap* map =
