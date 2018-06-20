@@ -72,7 +72,7 @@ namespace fakeApi {
 """
 
 # The output we expect from our fake idl file.
-expected_output = ("""// Copyright %s The Chromium Authors. All rights reserved.
+fake_idl_output = ("""// Copyright %s The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,7 +126,7 @@ class JsExternGeneratorTest(unittest.TestCase):
   def testBasic(self):
     namespace = self._GetNamespace(fake_idl, 'fake_api.idl')
     self.assertMultiLineEqual(
-        expected_output,
+        fake_idl_output,
         JsInterfaceGenerator().Generate(namespace).Render())
 
 
