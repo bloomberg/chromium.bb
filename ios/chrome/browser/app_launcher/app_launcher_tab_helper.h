@@ -9,7 +9,7 @@
 #import "ios/web/public/web_state/web_state_user_data.h"
 
 @protocol AppLauncherTabHelperDelegate;
-@class ExternalAppsLaunchPolicyDecider;
+@class AppLauncherAbuseDetector;
 class GURL;
 
 // A tab helper that handles requests to launch another application.
@@ -23,7 +23,7 @@ class AppLauncherTabHelper
   // |delegate| can launch applications and present UI and is not retained by
   // TabHelper.
   static void CreateForWebState(web::WebState* web_state,
-                                ExternalAppsLaunchPolicyDecider* policy_decider,
+                                AppLauncherAbuseDetector* abuse_detector,
                                 id<AppLauncherTabHelperDelegate> delegate);
 
   // Requests to open the application with |url|.
@@ -43,11 +43,11 @@ class AppLauncherTabHelper
   // Constructor for AppLauncherTabHelper. |policy_decider| provides policy for
   // launching apps. |delegate| can launch applications and present UI and is
   // not retained by TabHelper.
-  AppLauncherTabHelper(ExternalAppsLaunchPolicyDecider* policy_decider,
+  AppLauncherTabHelper(AppLauncherAbuseDetector* policy_decider,
                        id<AppLauncherTabHelperDelegate> delegate);
 
   // Used to check for repeated launches and provide policy for launching apps.
-  ExternalAppsLaunchPolicyDecider* policy_decider_ = nil;
+  AppLauncherAbuseDetector* abuse_detector_ = nil;
 
   // Used to launch apps and present UI.
   __weak id<AppLauncherTabHelperDelegate> delegate_ = nil;

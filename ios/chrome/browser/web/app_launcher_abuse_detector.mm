@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/web/external_apps_launch_policy_decider.h"
+#import "ios/chrome/browser/web/app_launcher_abuse_detector.h"
 
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/web/external_app_launching_state.h"
+#import "ios/chrome/browser/web/app_launching_state.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -14,20 +14,19 @@
 
 const int kMaxAllowedConsecutiveExternalAppLaunches = 2;
 
-@interface ExternalAppsLaunchPolicyDecider ()
+@interface AppLauncherAbuseDetector ()
 // Maps between external application redirection key and state.
 // the key is a space separated combination of the absolute string for the
 // original source URL, and the scheme of the external Application URL.
 @property(nonatomic, strong)
-    NSMutableDictionary<NSString*, ExternalAppLaunchingState*>*
-        appLaunchingStates;
+    NSMutableDictionary<NSString*, AppLaunchingState*>* appLaunchingStates;
 // Generates key for |appURL| and |sourceURL| to be used to retrieve state from
 // |appLaunchingStates|.
 + (NSString*)stateKeyForAppURL:(const GURL&)appURL
                      sourceURL:(const GURL&)sourceURL;
 @end
 
-@implementation ExternalAppsLaunchPolicyDecider
+@implementation AppLauncherAbuseDetector
 
 @synthesize appLaunchingStates = _appLaunchingStates;
 
@@ -50,18 +49,18 @@ const int kMaxAllowedConsecutiveExternalAppLaunches = 2;
                      fromSourcePageURL:(const GURL&)sourcePageURL {
   NSString* key = [[self class] stateKeyForAppURL:gURL sourceURL:sourcePageURL];
   if (!_appLaunchingStates[key])
-    _appLaunchingStates[key] = [[ExternalAppLaunchingState alloc] init];
+    _appLaunchingStates[key] = [[AppLaunchingState alloc] init];
   [_appLaunchingStates[key] updateWithLaunchRequest];
 }
 
 - (ExternalAppLaunchPolicy)launchPolicyForURL:(const GURL&)gURL
                             fromSourcePageURL:(const GURL&)sourcePageURL {
   NSString* key = [[self class] stateKeyForAppURL:gURL sourceURL:sourcePageURL];
-  // Don't block apps that are not registered with the policy decider.
+  // Don't block apps that are not registered with the abuse detector.
   if (!_appLaunchingStates[key])
     return ExternalAppLaunchPolicyAllow;
 
-  ExternalAppLaunchingState* state = _appLaunchingStates[key];
+  AppLaunchingState* state = _appLaunchingStates[key];
   if ([state isAppLaunchingBlocked])
     return ExternalAppLaunchPolicyBlock;
 

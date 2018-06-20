@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_WEB_EXTERNAL_APPS_LAUNCH_POLICY_DECIDER_H_
-#define IOS_CHROME_BROWSER_WEB_EXTERNAL_APPS_LAUNCH_POLICY_DECIDER_H_
+#ifndef IOS_CHROME_BROWSER_WEB_APP_LAUNCHER_ABUSE_DETECTOR_H_
+#define IOS_CHROME_BROWSER_WEB_APP_LAUNCHER_ABUSE_DETECTOR_H_
 
 #import <Foundation/Foundation.h>
 
@@ -28,7 +28,7 @@ extern const int kMaxAllowedConsecutiveExternalAppLaunches;
 // application launching.
 // Each key is a space separated combination of the absloute string for the
 // original source URL, and the scheme of the external Application URL.
-@interface ExternalAppsLaunchPolicyDecider : NSObject
+@interface AppLauncherAbuseDetector : NSObject
 
 // Updates the state for external application |gURL| and |sourcePageURL| with a
 // new app launch request.
@@ -46,4 +46,4 @@ extern const int kMaxAllowedConsecutiveExternalAppLaunches;
            fromSourcePageURL:(const GURL&)sourcePageURL;
 @end
 
-#endif  // IOS_CHROME_BROWSER_WEB_EXTERNAL_APPS_LAUNCH_POLICY_DECIDER_H_
+#endif  // IOS_CHROME_BROWSER_WEB_APP_LAUNCHER_ABUSE_DETECTOR_H_
