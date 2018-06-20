@@ -288,19 +288,8 @@ class CookieStoreManagerTest
     return registration_id;
   }
 
-  // Simplified helper for SetCanonicalCookie.
-  //
-  // Creates a CanonicalCookie that is not secure, not http-only,
-  // and not restricted to first parties. Returns false if creation fails.
-  bool SetSessionCookie(const char* name,
-                        const char* value,
-                        const char* domain,
-                        const char* path) {
-    net::CanonicalCookie cookie(
-        name, value, domain, path, base::Time(), base::Time(), base::Time(),
-        /* secure = */ false,
-        /* httponly = */ false, net::CookieSameSite::NO_RESTRICTION,
-        net::COOKIE_PRIORITY_DEFAULT);
+  // Synchronous helper for CookieManager::SetCanonicalCookie.
+  bool SetCanonicalCookie(const net::CanonicalCookie& cookie) {
     base::RunLoop run_loop;
     bool success = false;
     cookie_manager_->SetCanonicalCookie(
@@ -313,6 +302,21 @@ class CookieStoreManagerTest
             &run_loop, &success));
     run_loop.Run();
     return success;
+  }
+
+  // Simplified helper for SetCanonicalCookie.
+  //
+  // Creates a CanonicalCookie that is not secure, not http-only,
+  // and not restricted to first parties. Returns false if creation fails.
+  bool SetSessionCookie(const char* name,
+                        const char* value,
+                        const char* domain,
+                        const char* path) {
+    return SetCanonicalCookie(net::CanonicalCookie(
+        name, value, domain, path, base::Time(), base::Time(), base::Time(),
+        /* secure = */ false,
+        /* httponly = */ false, net::CookieSameSite::NO_RESTRICTION,
+        net::COOKIE_PRIORITY_DEFAULT));
   }
 
   bool reset_context_during_test() const { return GetParam(); }
@@ -820,6 +824,58 @@ TEST_P(CookieStoreManagerTest, CookieChangeUrl) {
   EXPECT_EQ("cookie-value-4", worker_test_helper_->changes()[0].first.Value());
   EXPECT_EQ("example.com", worker_test_helper_->changes()[0].first.Domain());
   EXPECT_EQ("/a", worker_test_helper_->changes()[0].first.Path());
+  EXPECT_EQ(::network::mojom::CookieChangeCause::INSERTED,
+            worker_test_helper_->changes()[0].second);
+}
+
+TEST_P(CookieStoreManagerTest, HttpOnlyCookieChange) {
+  std::vector<CookieStoreSync::Subscriptions> batches;
+  batches.emplace_back();
+
+  CookieStoreSync::Subscriptions& subscriptions = batches.back();
+  subscriptions.emplace_back(blink::mojom::CookieChangeSubscription::New());
+  subscriptions.back()->name = "";
+  subscriptions.back()->match_type =
+      ::network::mojom::CookieMatchType::STARTS_WITH;
+  subscriptions.back()->url = GURL(kExampleScope);
+
+  worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
+                                                 example_service_ptr_.get());
+  int64_t registration_id =
+      RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
+  ASSERT_NE(registration_id, kInvalidRegistrationId);
+
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
+      example_service_->GetSubscriptions(registration_id);
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  ASSERT_EQ(1u, all_subscriptions_opt.value().size());
+
+  if (reset_context_during_test())
+    ResetServiceWorkerContext();
+
+  ASSERT_TRUE(SetCanonicalCookie(net::CanonicalCookie(
+      "cookie-name-1", "cookie-value-1", "example.com", "/", base::Time(),
+      base::Time(), base::Time(),
+      /* secure = */ false,
+      /* httponly = */ true, net::CookieSameSite::NO_RESTRICTION,
+      net::COOKIE_PRIORITY_DEFAULT)));
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(0u, worker_test_helper_->changes().size());
+
+  worker_test_helper_->changes().clear();
+  ASSERT_TRUE(SetCanonicalCookie(net::CanonicalCookie(
+      "cookie-name-2", "cookie-value-2", "example.com", "/", base::Time(),
+      base::Time(), base::Time(),
+      /* secure = */ false,
+      /* httponly = */ false, net::CookieSameSite::NO_RESTRICTION,
+      net::COOKIE_PRIORITY_DEFAULT)));
+  thread_bundle_.RunUntilIdle();
+
+  ASSERT_EQ(1u, worker_test_helper_->changes().size());
+  EXPECT_EQ("cookie-name-2", worker_test_helper_->changes()[0].first.Name());
+  EXPECT_EQ("cookie-value-2", worker_test_helper_->changes()[0].first.Value());
+  EXPECT_EQ("example.com", worker_test_helper_->changes()[0].first.Domain());
+  EXPECT_EQ("/", worker_test_helper_->changes()[0].first.Path());
   EXPECT_EQ(::network::mojom::CookieChangeCause::INSERTED,
             worker_test_helper_->changes()[0].second);
 }
