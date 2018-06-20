@@ -12,6 +12,8 @@ static_library("multidevice_setup") {
   sources = [
     "account_status_change_delegate_notifier.cc",
     "account_status_change_delegate_notifier.h",
+    "account_status_change_delegate_notifier_impl.cc",
+    "account_status_change_delegate_notifier_impl.h",
     "multidevice_setup_impl.cc",
     "multidevice_setup_impl.h",
     "multidevice_setup_service.cc",
@@ -45,12 +47,9 @@ static_library("test_support") {
   sources = [
     "fake_account_status_change_delegate.cc",
     "fake_account_status_change_delegate.h",
+    "fake_account_status_change_delegate_notifier.h",
     "fake_setup_flow_completion_recorder.cc",
     "fake_setup_flow_completion_recorder.h",
-  ]
-
-  public_deps = [
-    ":multidevice_setup",
   ]
 
   deps = [
@@ -66,7 +65,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "account_status_change_delegate_notifier_unittest.cc",
+    "account_status_change_delegate_notifier_impl_unittest.cc",
     "multidevice_setup_service_unittest.cc",
     "setup_flow_completion_recorder_impl_unittest.cc",
   ]
