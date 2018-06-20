@@ -1877,6 +1877,18 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
   TransformToGvrMat(head_pose, &mat);
   bool is_webvr_frame = frame_index >= 0;
   {
+    std::unique_ptr<ScopedGpuTrace> browser_gpu_trace;
+    if (gl::GLFence::IsGpuFenceSupported() && !is_webvr_frame) {
+      // This fence instance is created for the tracing side effect. Insert it
+      // before GVR submit. Then replace the previous instance below after GVR
+      // submit completes, at which point the previous fence (if any) should be
+      // complete. Doing this in two steps avoids a race condition - a fence
+      // that was inserted after Submit may not be complete yet when the next
+      // Submit finishes.
+      browser_gpu_trace = std::make_unique<ScopedGpuTrace>(
+          "gpu", "VrShellGl::PostSubmitDrawOnGpu");
+    }
+
     TRACE_EVENT0("gpu", "VrShellGl::SubmitToGvr");
     base::TimeTicks submit_start = base::TimeTicks::Now();
     acquired_frame_.Submit(viewport_list_, mat);
@@ -1884,13 +1896,11 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
     webvr_submit_time_.AddSample(submit_done - submit_start);
     CHECK(!acquired_frame_);
 
-    if (gl::GLFence::IsGpuFenceSupported() && !is_webvr_frame) {
-      // This instance is created for the tracing side effect. Create a new
-      // instance here to replace previous instace will record trace for
-      // previous instance and start a new trace for the new instance.
+    if (browser_gpu_trace) {
+      // Replacing the previous instance will record the trace result for
+      // the previous instance.
       DCHECK(!gpu_trace_ || gpu_trace_->fence()->HasCompleted());
-      gpu_trace_ = std::make_unique<ScopedGpuTrace>(
-          "gpu", "VrShellGl::PostSubmitDrawOnGpu");
+      gpu_trace_ = std::move(browser_gpu_trace);
     }
   }
 
