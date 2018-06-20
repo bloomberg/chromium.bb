@@ -51,8 +51,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/interfaces/constants.mojom.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "content/public/common/content_switches.h"
+#include "ui/base/ui_base_features.h"
 #else  // defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.h"
 #endif  // defined(OS_CHROMEOS)
@@ -156,7 +156,7 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
 
 #if defined(OS_CHROMEOS)
   // Start up the window service and the ash system UI service.
-  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+  if (!features::IsAshInBrowserProcess()) {
     connection->GetConnector()->StartService(
         service_manager::Identity(ui::mojom::kServiceName));
     connection->GetConnector()->StartService(
@@ -165,7 +165,7 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
 #endif
 
 #if defined(OS_CHROMEOS)
-  if (chromeos::GetAshConfig() != ash::Config::MASH)
+  if (features::IsAshInBrowserProcess())
     return;
 #endif
 

@@ -10,27 +10,23 @@
 #include "ash/public/interfaces/event_properties.mojom.h"
 #include "ash/shell.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
 namespace ash_util {
 
 bool ShouldOpenAshOnStartup() {
-  return !IsRunningInMash();
-}
-
-bool IsRunningInMash() {
-  return chromeos::GetAshConfig() == ash::Config::MASH;
+  return features::IsAshInBrowserProcess();
 }
 
 bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator) {
   // When running in mash the browser doesn't handle ash accelerators.
-  if (IsRunningInMash())
+  if (!features::IsAshInBrowserProcess())
     return false;
 
   return ash::Shell::Get()->accelerator_controller()->IsDeprecated(accelerator);
@@ -47,7 +43,7 @@ void SetupWidgetInitParamsForContainer(views::Widget::InitParams* params,
   DCHECK_GE(container_id, ash::kShellWindowId_MinContainer);
   DCHECK_LE(container_id, ash::kShellWindowId_MaxContainer);
 
-  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+  if (!features::IsAshInBrowserProcess()) {
     using ui::mojom::WindowManager;
     params->mus_properties[WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(container_id);

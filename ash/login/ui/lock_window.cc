@@ -11,7 +11,7 @@
 
 namespace ash {
 
-LockWindow::LockWindow(Config config) {
+LockWindow::LockWindow() {
   ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(nullptr);
 
   views::Widget::InitParams params(

@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/candidate_window.h"
@@ -25,6 +24,7 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/text_input_flags.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/events/event.h"
@@ -218,7 +218,7 @@ bool InputMethodEngine::IsActive() const {
 void InputMethodEngine::HideInputView() {
   // TODO(mash): Support virtual keyboard under MASH. There is no
   // KeyboardController in the browser process under MASH.
-  if (!ash_util::IsRunningInMash()) {
+  if (features::IsAshInBrowserProcess()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->enabled()) {
       keyboard_controller->HideKeyboardByUser();
@@ -232,7 +232,7 @@ void InputMethodEngine::EnableInputView() {
       ->EnableInputView();
   // TODO(mash): Support virtual keyboard under MASH. There is no
   // KeyboardController in the browser process under MASH.
-  if (!ash_util::IsRunningInMash()) {
+  if (features::IsAshInBrowserProcess()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->enabled())
       keyboard_controller->Reload();

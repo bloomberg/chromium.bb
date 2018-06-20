@@ -30,7 +30,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -41,6 +40,7 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "net/base/network_change_notifier.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/keyboard/keyboard_util.h"
 
 namespace chromeos {
@@ -320,7 +320,7 @@ void AppLaunchController::OnProfileLoaded(Profile* profile) {
   profile_->InitChromeOSPreferences();
 
   // Reset virtual keyboard to use IME engines in app profile early.
-  if (!ash_util::IsRunningInMash()) {
+  if (features::IsAshInBrowserProcess()) {
     if (keyboard::IsKeyboardEnabled())
       ash::Shell::Get()->EnableKeyboard();
   } else {

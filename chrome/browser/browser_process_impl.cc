@@ -145,9 +145,7 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/ash_util.h"
-#else
+#if !defined(OS_CHROMEOS)
 #include "ui/message_center/message_center.h"
 #endif
 

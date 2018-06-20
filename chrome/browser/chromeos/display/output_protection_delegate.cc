@@ -6,9 +6,9 @@
 
 #include "chrome/browser/chromeos/display/output_protection_controller_ash.h"
 #include "chrome/browser/chromeos/display/output_protection_controller_mus.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
@@ -99,7 +99,7 @@ bool OutputProtectionDelegate::InitializeControllerIfNecessary() {
   if (!window)
     return false;
 
-  if (ash_util::IsRunningInMash())
+  if (!features::IsAshInBrowserProcess())
     controller_ = std::make_unique<OutputProtectionControllerMus>();
   else
     controller_ = std::make_unique<OutputProtectionControllerAsh>();

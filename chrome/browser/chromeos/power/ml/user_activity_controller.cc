@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/power/ml/user_activity_controller.h"
 
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/devicetype.h"
@@ -12,6 +11,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/env.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 
 namespace chromeos {
@@ -22,7 +22,7 @@ UserActivityController::UserActivityController() {
   // TODO(jiameng): video detector below doesn't work with MASH. Temporary
   // solution is to disable logging if we're under MASH env.
   if (chromeos::GetDeviceType() != chromeos::DeviceType::kChromebook ||
-      chromeos::GetAshConfig() == ash::Config::MASH)
+      !features::IsAshInBrowserProcess())
     return;
 
   chromeos::PowerManagerClient* power_manager_client =

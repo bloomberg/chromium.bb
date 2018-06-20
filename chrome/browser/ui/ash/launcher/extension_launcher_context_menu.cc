@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"

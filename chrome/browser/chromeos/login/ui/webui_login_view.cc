@@ -38,7 +38,6 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
@@ -61,6 +60,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "extensions/browser/view_type_utils.h"
 #include "third_party/blink/public/platform/web_input_event.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -126,7 +126,7 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
     : settings_(settings) {
   // TODO(mash): Support virtual keyboard under MASH. There is no
   // KeyboardController in the browser process under MASH.
-  if (!ash_util::IsRunningInMash()) {
+  if (features::IsAshInBrowserProcess()) {
     keyboard::KeyboardController::Get()->AddObserver(this);
   } else {
     NOTIMPLEMENTED();
@@ -191,7 +191,7 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
       kAccelSendFeedback;
 
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i) {
-    if (!ash_util::IsRunningInMash()) {
+    if (features::IsAshInBrowserProcess()) {
       // To make reset accelerator work while system tray is open, register it
       // at accelerator controller.
       ash::Shell::Get()->accelerator_controller()->Register({i->first}, this);
@@ -203,7 +203,7 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
     }
   }
 
-  if (!ash_util::IsRunningInMash())
+  if (features::IsAshInBrowserProcess())
     ash::Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
 }
 
@@ -211,7 +211,7 @@ WebUILoginView::~WebUILoginView() {
   for (auto& observer : observer_list_)
     observer.OnHostDestroying();
 
-  if (!ash_util::IsRunningInMash()) {
+  if (features::IsAshInBrowserProcess()) {
     ash::Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(
         this);
     ash::Shell::Get()->accelerator_controller()->UnregisterAll(this);
@@ -353,7 +353,7 @@ void WebUILoginView::LoadURL(const GURL& url) {
   web_view()->RequestFocus();
 
   // There is no Shell instance while running in mash.
-  if (ash_util::IsRunningInMash())
+  if (!features::IsAshInBrowserProcess())
     return;
 }
 
@@ -581,7 +581,7 @@ void WebUILoginView::OnFocusLeavingSystemTray(bool reverse) {
 bool WebUILoginView::MoveFocusToSystemTray(bool reverse) {
   // Focus is accepted, but the Ash system tray is not available in Mash, so
   // exit early.
-  if (ash_util::IsRunningInMash())
+  if (!features::IsAshInBrowserProcess())
     return true;
 
   // The old system tray is not available when UnifiedSystemTray is enabled.

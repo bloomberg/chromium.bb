@@ -9,7 +9,6 @@
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
@@ -25,6 +24,7 @@
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
@@ -159,7 +159,7 @@ void ImmersiveModeControllerAsh::OnFindBarVisibleBoundsChanged(
 
 bool ImmersiveModeControllerAsh::ShouldStayImmersiveAfterExitingFullscreen() {
   // TODO(crbug.com/760811): Support tablet mode in mash.
-  if (ash_util::IsRunningInMash())
+  if (!features::IsAshInBrowserProcess())
     return false;
 
   return !browser_view_->IsBrowserTypeNormal() &&
@@ -177,7 +177,7 @@ void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
     return;
 
   // TODO(crbug.com/760811): Support tablet mode in mash.
-  if (ash_util::IsRunningInMash() ||
+  if (!features::IsAshInBrowserProcess() ||
       !TabletModeClient::Get()->tablet_mode_enabled()) {
     return;
   }
@@ -197,7 +197,7 @@ void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {
   observers_enabled_ = enable;
 
   aura::Window* native_window = browser_view_->GetNativeWindow();
-  aura::Window* target_window = ash_util::IsRunningInMash()
+  aura::Window* target_window = !features::IsAshInBrowserProcess()
                                     ? native_window->GetRootWindow()
                                     : native_window;
 
@@ -223,7 +223,7 @@ void ImmersiveModeControllerAsh::LayoutBrowserRootView() {
 }
 
 void ImmersiveModeControllerAsh::CreateMashRevealWidget() {
-  if (!ash_util::IsRunningInMash())
+  if (features::IsAshInBrowserProcess())
     return;
 
   DCHECK(!mash_reveal_widget_);

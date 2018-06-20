@@ -73,7 +73,7 @@ void LockScreen::Show(ScreenType type) {
   CHECK(!instance_);
   instance_ = new LockScreen(type);
 
-  instance_->window_ = new LockWindow(Shell::GetAshConfig());
+  instance_->window_ = new LockWindow();
   instance_->window_->SetBounds(
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
 

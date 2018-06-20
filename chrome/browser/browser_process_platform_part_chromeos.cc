@@ -12,7 +12,6 @@
 #include "base/time/tick_clock.h"
 #include "chrome/browser/ash_service_registry.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/chrome_service_name.h"
 #include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
@@ -46,6 +45,7 @@
 #include "services/ui/public/cpp/input_devices/input_device_controller.h"
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
+#include "ui/base/ui_base_features.h"
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()
     : created_profile_helper_(false),
@@ -200,10 +200,9 @@ void BrowserProcessPlatformPart::DestroySystemClock() {
 ui::InputDeviceControllerClient*
 BrowserProcessPlatformPart::GetInputDeviceControllerClient() {
   if (!input_device_controller_client_) {
-    const std::string service_name =
-        chromeos::GetAshConfig() == ash::Config::CLASSIC
-            ? chromeos::kChromeServiceName
-            : ui::mojom::kServiceName;
+    const std::string service_name = features::IsAshInBrowserProcess()
+                                         ? chromeos::kChromeServiceName
+                                         : ui::mojom::kServiceName;
     input_device_controller_client_ =
         std::make_unique<ui::InputDeviceControllerClient>(
             content::ServiceManagerConnection::GetForProcess()->GetConnector(),

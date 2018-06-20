@@ -44,7 +44,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolution_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_virtual_file_request_service_provider_delegate.h"
@@ -317,7 +316,7 @@ class DBusServices {
         DBusThreadManager::Get()->GetSystemBus(),
         chromeos::DBusThreadManager::Get()->IsUsingFakes());
 
-    if (GetAshConfig() != ash::Config::MASH) {
+    if (features::IsAshInBrowserProcess()) {
       // In Mash, power policy is sent to powerd by ash.
       PowerPolicyController::Initialize(
           DBusThreadManager::Get()->GetPowerManagerClient());
@@ -425,7 +424,7 @@ class DBusServices {
     vm_applications_service_.reset();
     drive_file_stream_service_.reset();
     PowerDataCollector::Shutdown();
-    if (GetAshConfig() != ash::Config::MASH)
+    if (features::IsAshInBrowserProcess())
       PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
     bluez::BluezDBusManager::Shutdown();
@@ -742,7 +741,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   AccessibilityManager::Initialize();
 
-  if (chromeos::GetAshConfig() != ash::Config::MASH) {
+  if (features::IsAshInBrowserProcess()) {
     // Initialize magnification manager before ash tray is created. And this
     // must be placed after UserManager::SessionStarted();
     // TODO(sad): These components expects the ash::Shell instance to be
@@ -1006,7 +1005,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   spoken_feedback_event_rewriter_delegate_ =
       std::make_unique<SpokenFeedbackEventRewriterDelegate>();
 
-  if (chromeos::GetAshConfig() != ash::Config::MASH) {
+  if (features::IsAshInBrowserProcess()) {
     // TODO(mash): Support EventRewriterController; see crbug.com/647781
     ash::EventRewriterController* event_rewriter_controller =
         ash::Shell::Get()->event_rewriter_controller();
@@ -1088,7 +1087,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();
 
-  if (chromeos::GetAshConfig() != ash::Config::MASH)
+  if (features::IsAshInBrowserProcess())
     MagnificationManager::Shutdown();
 
   media::SoundsManager::Shutdown();
@@ -1136,7 +1135,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun().
   arc_service_launcher_.reset();
 
-  if (chromeos::GetAshConfig() != ash::Config::MASH)
+  if (features::IsAshInBrowserProcess())
     AccessibilityManager::Shutdown();
 
   input_method::Shutdown();

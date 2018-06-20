@@ -4,14 +4,12 @@
 
 #include <string>
 
-#include "ash/public/cpp/config.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -31,6 +29,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "rlz/buildflags/buildflags.h"
+#include "ui/base/ui_base_features.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "base/task_scheduler/post_task.h"
@@ -80,7 +79,7 @@ class LoginUtilsTest : public OobeBaseTest {
 
 // Exercises login, like the desktopui_MashLogin Chrome OS autotest.
 IN_PROC_BROWSER_TEST_F(LoginUtilsTest, MashLogin) {
-  if (GetAshConfig() != ash::Config::MASH)
+  if (features::IsAshInBrowserProcess())
     return;
 
   WaitForSigninScreen();

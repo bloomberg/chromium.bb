@@ -6,11 +6,9 @@
 
 #include <stddef.h>
 
-#include "ash/public/cpp/config.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -34,6 +32,7 @@
 #include "ash/shell.h"           // nogncheck
 #include "ash/wm/window_util.h"  // nogncheck
 #include "components/session_manager/core/session_manager.h"
+#include "ui/base/ui_base_features.h"
 #endif
 
 using content::BrowserContext;
@@ -89,7 +88,7 @@ void AutomationManagerAura::Enable(BrowserContext* context) {
   views::AXAuraObjCache::GetInstance()->SetDelegate(this);
 
 #if defined(OS_CHROMEOS)
-  if (chromeos::GetAshConfig() != ash::Config::MASH) {
+  if (features::IsAshInBrowserProcess()) {
     aura::Window* active_window = ash::wm::GetActiveWindow();
     if (active_window) {
       views::AXAuraObjWrapper* focus =

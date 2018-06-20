@@ -9,7 +9,7 @@
 
 class PrefRegistrySimple;
 
-// Initializes and destroys the ash::Shell for ash::Config::CLASSIC.
+// Initializes and destroys the ash::Shell when Ash is running in process.
 class AshShellInit {
  public:
   AshShellInit();

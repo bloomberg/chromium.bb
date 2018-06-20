@@ -75,7 +75,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
@@ -99,6 +98,7 @@
 #include "chromeos/account_manager/account_manager_factory.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_util.h"
+#include "ui/base/ui_base_features.h"
 #else  // !defined(OS_CHROMEOS)
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
@@ -312,7 +312,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("havePlayStoreApp", arc::IsPlayStoreAvailable());
 
   // TODO(mash): Support Chrome power settings in Mash. crbug.com/644348
-  bool enable_power_settings = !ash_util::IsRunningInMash();
+  bool enable_power_settings = features::IsAshInBrowserProcess();
   html_source->AddBoolean("enablePowerSettings", enable_power_settings);
   if (enable_power_settings) {
     AddSettingsPageUIHandler(std::make_unique<chromeos::settings::PowerHandler>(

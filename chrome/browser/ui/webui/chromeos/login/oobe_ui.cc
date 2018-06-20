@@ -29,7 +29,6 @@
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
@@ -86,6 +85,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/display/display.h"
 #include "ui/events/devices/input_device.h"
@@ -392,7 +392,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   // TODO(felixe): Display iteration and primary display selection not supported
   // in Mash. See http://crbug.com/720917.
-  if (!ash_util::IsRunningInMash() && IsRemoraRequisitioned())
+  if (features::IsAshInBrowserProcess() && IsRemoraRequisitioned())
     oobe_display_chooser_ = std::make_unique<OobeDisplayChooser>();
 }
 

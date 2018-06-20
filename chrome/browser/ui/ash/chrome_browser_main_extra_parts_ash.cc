@@ -16,7 +16,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -64,6 +63,7 @@
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/user_activity_forwarder.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/views/mus/mus_client.h"
 
@@ -141,7 +141,7 @@ ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {}
 
 void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
-  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+  if (!features::IsAshInBrowserProcess()) {
     // ash::Shell will not be created because ash is running out-of-process.
     ash::Shell::SetIsBrowserProcessWithMash();
     DCHECK(views::MusClient::Exists());
@@ -164,7 +164,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       std::make_unique<NetworkConnectDelegateChromeOS>();
   chromeos::NetworkConnect::Initialize(network_connect_delegate_.get());
 
-  if (chromeos::GetAshConfig() != ash::Config::MASH) {
+  if (features::IsAshInBrowserProcess()) {
     ash_shell_init_ = std::make_unique<AshShellInit>();
   } else {
     immersive_context_ = std::make_unique<ImmersiveContextMus>();
@@ -232,7 +232,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
-  if (chromeos::GetAshConfig() == ash::Config::MASH)
+  if (!features::IsAshInBrowserProcess())
     chrome_shell_content_state_ = std::make_unique<ChromeShellContentState>();
 
   cast_config_client_media_router_ =
@@ -253,7 +253,7 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   }
 
   // TODO(mash): Port TabScrubber.
-  if (chromeos::GetAshConfig() != ash::Config::MASH) {
+  if (features::IsAshInBrowserProcess()) {
     // Initialize TabScrubber after the Ash Shell has been initialized.
     TabScrubber::GetInstance();
   }

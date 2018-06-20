@@ -7,8 +7,8 @@
 #include <memory>
 
 // This file is only instantiated in classic ash/mus. It is never used in mash.
-// See native_browser_frame_factory_chromeos.cc switches on GetAshConfig().
-#include "ash/public/cpp/config.h"
+// See native_browser_frame_factory_chromeos.cc switches on
+// features::IsAshInBrowserProcess().
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/shell.h"                     // mash-ok
@@ -18,13 +18,13 @@
 #include "ash/wm/window_util.h"            // mash-ok
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/view.h"
 
 namespace {
@@ -63,7 +63,7 @@ BrowserFrameAsh::BrowserFrameAsh(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
     : views::NativeWidgetAura(browser_frame),
       browser_view_(browser_view) {
-  DCHECK_NE(chromeos::GetAshConfig(), ash::Config::MASH);
+  DCHECK(features::IsAshInBrowserProcess());
   GetNativeWindow()->SetName("BrowserFrameAsh");
   Browser* browser = browser_view->browser();
   ash::wm::WindowState* window_state =

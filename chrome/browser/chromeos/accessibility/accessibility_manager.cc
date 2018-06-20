@@ -38,7 +38,6 @@
 #include "chrome/browser/chromeos/accessibility/select_to_speak_event_handler.h"
 #include "chrome/browser/chromeos/accessibility/switch_access_event_handler.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
@@ -81,6 +80,7 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "url/gurl.h"
@@ -320,7 +320,7 @@ void AccessibilityManager::UpdateAlwaysShowMenuFromPref() {
     return;
 
   // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
-  if (GetAshConfig() == ash::Config::MASH)
+  if (!features::IsAshInBrowserProcess())
     return;
 
   // Update system tray menu visibility.
@@ -860,7 +860,7 @@ void AccessibilityManager::InputMethodChanged(
     bool show_message) {
   // Sticky keys is implemented only in ash.
   // TODO(dpolukhin): support Athena, crbug.com/408733.
-  if (GetAshConfig() != ash::Config::MASH) {
+  if (features::IsAshInBrowserProcess()) {
     ash::Shell::Get()->sticky_keys_controller()->SetModifiersEnabled(
         manager->IsISOLevel5ShiftUsedByCurrentInputMethod(),
         manager->IsAltGrUsedByCurrentInputMethod());
@@ -999,7 +999,7 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
   callback_list_.Notify(details);
 
   // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
-  if (GetAshConfig() == ash::Config::MASH)
+  if (!features::IsAshInBrowserProcess())
     return;
 
   if (details.notification_type == ACCESSIBILITY_TOGGLE_DICTATION) {

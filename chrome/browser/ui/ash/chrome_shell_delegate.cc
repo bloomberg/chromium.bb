@@ -17,7 +17,6 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -39,6 +38,7 @@
 #include "content/public/common/url_constants.h"
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "url/url_constants.h"
 
 using chromeos::AccessibilityManager;
@@ -104,7 +104,7 @@ bool ChromeShellDelegate::CanShowWindowForUser(aura::Window* window) const {
 
 void ChromeShellDelegate::PreInit() {
   // TODO: port to mash. http://crbug.com/678949.
-  if (chromeos::GetAshConfig() == ash::Config::MASH)
+  if (!features::IsAshInBrowserProcess())
     return;
 
   // Object owns itself and deletes itself in OnWindowTreeHostManagerShutdown().

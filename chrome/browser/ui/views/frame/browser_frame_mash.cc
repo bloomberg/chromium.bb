@@ -8,13 +8,11 @@
 
 #include <memory>
 
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/public/interfaces/window_style.mojom.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_frame_ash.h"
@@ -25,6 +23,7 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/window_manager_frame_values.h"
@@ -36,7 +35,7 @@ BrowserFrameMash::BrowserFrameMash(BrowserFrame* browser_frame,
       browser_view_(browser_view) {
   DCHECK(browser_frame_);
   DCHECK(browser_view_);
-  DCHECK_EQ(chromeos::GetAshConfig(), ash::Config::MASH);
+  DCHECK(!features::IsAshInBrowserProcess());
 }
 
 BrowserFrameMash::~BrowserFrameMash() {}

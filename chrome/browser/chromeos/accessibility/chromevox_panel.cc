@@ -9,7 +9,6 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -19,6 +18,7 @@
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/webview/webview.h"
@@ -109,7 +109,7 @@ ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context)
   // TODO(jamescook|fsamuel): Fix this. It causes a white flash when opening the
   // window. The underlying problem is FrameToken plumbing, see
   // ui::ws::ServerWindow::OnFrameTokenChanged. https://crbug.com/771331
-  if (chromeos::GetAshConfig() == ash::Config::MASH)
+  if (!features::IsAshInBrowserProcess())
     widget_->Show();
 }
 

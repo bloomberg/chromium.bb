@@ -33,7 +33,6 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/system/version_loader.h"
 #include "content/public/common/service_manager_connection.h"

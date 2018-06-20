@@ -10,13 +10,13 @@
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/process_type.h"
+#include "ui/base/ui_base_features.h"
 
 using content::BrowserChildProcessHostIterator;
 using content::BrowserThread;
@@ -53,7 +53,7 @@ using ChromeContentBrowserClientMashTest = InProcessBrowserTest;
 // Verifies that mash service child processes use in-process breakpad crash
 // dumping.
 IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientMashTest, CrashReporter) {
-  if (chromeos::GetAshConfig() != ash::Config::MASH)
+  if (features::IsAshInBrowserProcess())
     return;
 
   // Child process management lives on the IO thread.

@@ -31,7 +31,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"

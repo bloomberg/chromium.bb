@@ -37,7 +37,6 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
@@ -113,6 +112,7 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/color_analysis.h"
@@ -329,7 +329,7 @@ SigninScreenHandler::SigninScreenHandler(
   WallpaperControllerClient::Get()->AddObserver(std::move(ptr_info));
   // TODO(tbarzic): This is needed for login UI - remove it when login switches
   // to views implementation (or otherwise, make it work under mash).
-  if (GetAshConfig() != ash::Config::MASH)
+  if (features::IsAshInBrowserProcess())
     detachable_base_observer_.Add(ash::Shell::Get()->detachable_base_handler());
 }
 
@@ -1747,7 +1747,7 @@ void SigninScreenHandler::OnDetachableBaseRequiresUpdateChanged(
     bool requires_update) {}
 
 void SigninScreenHandler::UpdateDetachableBaseChangedError() {
-  if (GetAshConfig() == ash::Config::MASH)
+  if (!features::IsAshInBrowserProcess())
     return;
 
   auto pairing_status =

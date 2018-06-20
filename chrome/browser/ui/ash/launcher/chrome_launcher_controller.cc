@@ -21,7 +21,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -35,7 +34,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_icon_loader.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
@@ -79,6 +77,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -554,7 +553,7 @@ void ChromeLauncherController::ActiveUserChanged(
   // user.
   RestoreUnpinnedRunningApplicationOrder(user_email);
   // TODO(crbug.com/557406): Fix this interaction pattern in Mash.
-  if (!ash_util::IsRunningInMash()) {
+  if (features::IsAshInBrowserProcess()) {
     // Force on-screen keyboard to reset.
     if (keyboard::IsKeyboardEnabled())
       ash::Shell::Get()->EnableKeyboard();
@@ -1005,7 +1004,7 @@ void ChromeLauncherController::SetVirtualKeyboardBehaviorFromPrefs() {
                : keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED);
   }
   // TODO(crbug.com/557406): Fix this interaction pattern in Mash.
-  if (!ash_util::IsRunningInMash()) {
+  if (features::IsAshInBrowserProcess()) {
     const bool is_enabled = keyboard::IsKeyboardEnabled();
     if (was_enabled && !is_enabled)
       ash::Shell::Get()->DisableKeyboard();
