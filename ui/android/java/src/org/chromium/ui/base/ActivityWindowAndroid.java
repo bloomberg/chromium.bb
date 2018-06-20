@@ -33,6 +33,8 @@ public class ActivityWindowAndroid
 
     private int mNextRequestCode;
 
+    private boolean mListenToActivityState;
+
     /**
      * Creates an Activity-specific WindowAndroid with associated intent functionality.
      * TODO(jdduke): Remove this overload when all callsites have been updated to
@@ -54,6 +56,7 @@ public class ActivityWindowAndroid
         if (activity == null) {
             throw new IllegalArgumentException("Context is not and does not wrap an Activity");
         }
+        mListenToActivityState = listenToActivityState;
         if (listenToActivityState) {
             ApplicationStatus.registerStateListenerForActivity(this, activity);
         }
@@ -178,6 +181,13 @@ public class ActivityWindowAndroid
         } else if (newState == ActivityState.RESUMED) {
             onActivityResumed();
         }
+    }
+
+    @Override
+    @ActivityState
+    public int getActivityState() {
+        return mListenToActivityState ? ApplicationStatus.getStateForActivity(getActivity().get())
+                                      : super.getActivityState();
     }
 
     @Override
