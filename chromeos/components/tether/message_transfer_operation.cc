@@ -18,6 +18,8 @@ namespace tether {
 
 namespace {
 
+const char kTetherFeature[] = "magic_tether";
+
 cryptauth::RemoteDeviceRefList RemoveDuplicatesFromVector(
     const cryptauth::RemoteDeviceRefList& remote_devices) {
   cryptauth::RemoteDeviceRefList updated_remote_devices;
@@ -148,7 +150,7 @@ void MessageTransferOperation::Initialize() {
               this, remote_device,
               secure_channel_client_->ListenForConnectionFromDevice(
                   remote_device, *device_sync_client_->GetLocalDeviceMetadata(),
-                  "tether", connection_priority_));
+                  kTetherFeature, connection_priority_));
     } else {
       connection_manager_->RegisterRemoteDevice(
           remote_device.GetDeviceId(), request_id_, connection_priority_);
