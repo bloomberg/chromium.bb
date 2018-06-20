@@ -52,8 +52,16 @@ class MediaRouterViewsUI : public MediaRouterUIBase,
                               const MediaRoute* route,
                               const base::Optional<Issue>& issue);
 
+  // MediaRouterFileDialogDelegate:
+  void FileDialogFileSelected(const ui::SelectedFileInfo& file_info) override;
+  void FileDialogSelectionFailed(const IssueInfo& issue) override;
+
   // Contains up-to-date data to show in the dialog.
   CastDialogModel model_;
+
+  // This value is set when the user opens a file picker, and used when a file
+  // is selected and casting starts.
+  base::Optional<MediaSink::Id> local_file_sink_id_;
 
   // Observers for dialog model updates.
   base::ObserverList<CastDialogController::Observer> observers_;

@@ -44,8 +44,13 @@ void MediaRouterViewsUI::RemoveObserver(
 
 void MediaRouterViewsUI::StartCasting(const std::string& sink_id,
                                       MediaCastMode cast_mode) {
-  CreateRoute(sink_id, cast_mode);
-  UpdateSinks();
+  if (cast_mode == LOCAL_FILE) {
+    local_file_sink_id_ = sink_id;
+    OpenFileDialog();
+  } else {
+    CreateRoute(sink_id, cast_mode);
+    UpdateSinks();
+  }
 }
 
 void MediaRouterViewsUI::StopCasting(const std::string& route_id) {
@@ -129,6 +134,17 @@ void MediaRouterViewsUI::OnIssue(const Issue& issue) {
 void MediaRouterViewsUI::OnIssueCleared() {
   issue_ = base::nullopt;
   UpdateSinks();
+}
+
+void MediaRouterViewsUI::FileDialogFileSelected(
+    const ui::SelectedFileInfo& file_info) {
+  CreateRoute(local_file_sink_id_.value(), LOCAL_FILE);
+  local_file_sink_id_.reset();
+}
+
+void MediaRouterViewsUI::FileDialogSelectionFailed(const IssueInfo& issue) {
+  MediaRouterUIBase::FileDialogSelectionFailed(issue);
+  local_file_sink_id_.reset();
 }
 
 }  // namespace media_router
