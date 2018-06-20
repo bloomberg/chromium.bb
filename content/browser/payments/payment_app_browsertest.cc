@@ -275,10 +275,10 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, CanMakePayment) {
   EXPECT_EQ("https://example.com/", PopConsoleString() /* topOrigin */);
   EXPECT_EQ("https://example.com/",
             PopConsoleString() /* paymentRequestOrigin */);
-  EXPECT_EQ("[{\"supportedMethods\":[\"basic-card\"]}]",
+  EXPECT_EQ("[{\"supportedMethods\":\"basic-card\"}]",
             PopConsoleString() /* methodData */);
   EXPECT_EQ(
-      "[{\"additionalDisplayItems\":[],\"supportedMethods\":[\"basic-card\"],"
+      "[{\"additionalDisplayItems\":[],\"supportedMethods\":\"basic-card\","
       "\"total\":{\"amount\":{\"currency\":\"USD\","
       "\"value\":\"55\"},\"label\":\"\",\"pending\":false}}"
       "]",
@@ -320,14 +320,14 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppInvocation) {
   EXPECT_EQ("https://example.com/",
             PopConsoleString() /* paymentRequestOrigin */);
   EXPECT_EQ("payment-request-id", PopConsoleString() /* paymentRequestId */);
-  EXPECT_EQ("[{\"supportedMethods\":[\"basic-card\"]}]",
+  EXPECT_EQ("[{\"supportedMethods\":\"basic-card\"}]",
             PopConsoleString() /* methodData */);
   EXPECT_EQ(
       "{\"currency\":\"USD\","
       "\"value\":\"55\"}",
       PopConsoleString() /* total */);
   EXPECT_EQ(
-      "[{\"additionalDisplayItems\":[],\"supportedMethods\":[\"basic-card\"],"
+      "[{\"additionalDisplayItems\":[],\"supportedMethods\":\"basic-card\","
       "\"total\":{\"amount\":{\"currency\":\"USD\","
       "\"value\":\"55\"},\"label\":\"\",\"pending\":false}}"
       "]",
@@ -357,13 +357,13 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppOpenWindowFailed) {
   EXPECT_EQ("https://example.com/",
             PopConsoleString() /* paymentRequestOrigin */);
   EXPECT_EQ("payment-request-id", PopConsoleString() /* paymentRequestId */);
-  EXPECT_EQ("[{\"supportedMethods\":[\"https://bobpay.com\"]}]",
+  EXPECT_EQ("[{\"supportedMethods\":\"https://bobpay.com\"}]",
             PopConsoleString() /* methodData */);
   EXPECT_EQ("{\"currency\":\"USD\",\"value\":\"55\"}",
             PopConsoleString() /* total */);
   EXPECT_EQ(
-      "[{\"additionalDisplayItems\":[],\"supportedMethods\":[\"https://"
-      "bobpay.com\"],"
+      "[{\"additionalDisplayItems\":[],\"supportedMethods\":\"https://"
+      "bobpay.com\","
       "\"total\":{\"amount\":{\"currency\":\"USD\","
       "\"value\":\"55\"},\"label\":\"\",\"pending\":false}}"
       "]",

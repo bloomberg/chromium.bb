@@ -294,9 +294,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
   NavigateTo("/payment_request_payment_method_identifier_test.html");
   InvokePaymentRequestWithJs(
       "buyHelper([{"
-      "  supportedMethods: ['mastercard'],"
+      "  supportedMethods: 'mastercard',"
       "}, {"
-      "  supportedMethods: ['basic-card']"
+      "  supportedMethods: 'basic-card'"
       "}]);");
 
   std::vector<PaymentRequest*> requests =
@@ -324,7 +324,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
   NavigateTo("/payment_request_payment_method_identifier_test.html");
   InvokePaymentRequestWithJs(
       "buyHelper([{"
-      "  supportedMethods: ['visa', 'basic-card']"
+      "  supportedMethods: 'visa'"
+      "}, {"
+      "  supportedMethods: 'basic-card'"
       "}]);");
 
   std::vector<PaymentRequest*> requests =
@@ -352,9 +354,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
   NavigateTo("/payment_request_payment_method_identifier_test.html");
   InvokePaymentRequestWithJs(
       "buyHelper([{"
-      "  supportedMethods: ['mastercard', 'visa']"
+      "  supportedMethods: 'mastercard'"
       "}, {"
-      "  supportedMethods: ['basic-card'],"
+      "  supportedMethods: 'visa'"
+      "}, {"
+      "  supportedMethods: 'basic-card',"
       "  data: {"
       "    supportedNetworks: ['visa', 'mastercard', 'jcb'],"
       "  }"
@@ -377,9 +381,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest, Url_Valid) {
   NavigateTo("/payment_request_payment_method_identifier_test.html");
   InvokePaymentRequestWithJs(
       "buyHelper([{"
-      "  supportedMethods: ['https://bobpay.xyz']"
+      "  supportedMethods: 'https://bobpay.xyz'"
       "}, {"
-      "  supportedMethods: ['basic-card']"
+      "  supportedMethods: 'basic-card'"
       "}]);");
 
   std::vector<PaymentRequest*> requests =
@@ -398,11 +402,17 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
   NavigateTo("/payment_request_payment_method_identifier_test.html");
   InvokePaymentRequestWithJs(
       "buyHelper([{"
-      "  supportedMethods: ['https://bobpay.xyz', 'https://bobpay.xyz']"
+      "  supportedMethods: 'https://bobpay.xyz'"
       "}, {"
-      "  supportedMethods: ['mastercard', 'visa', 'https://alicepay.com']"
+      "  supportedMethods: 'https://bobpay.xyz'"
       "}, {"
-      "  supportedMethods: ['basic-card'],"
+      "  supportedMethods: 'mastercard'"
+      "}, {"
+      "  supportedMethods: 'visa'"
+      "}, {"
+      "  supportedMethods: 'https://alicepay.com'"
+      "}, {"
+      "  supportedMethods: 'basic-card',"
       "  data: {"
       "    supportedNetworks: ['visa', 'mastercard', 'jcb'],"
       "  }"

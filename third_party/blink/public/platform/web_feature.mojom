@@ -1598,7 +1598,6 @@ enum WebFeature {
   kARIAValueNowAttribute = 2117,
   kARIAValueTextAttribute = 2118,
   kV8LabeledExpressionStatement = 2119,
-  kPaymentRequestSupportedMethodsArray = 2120,
   kNavigatorDeviceMemory = 2121,
   kFixedWidthTableDistributionChanged = 2122,
   kWebkitBoxLayout = 2123,

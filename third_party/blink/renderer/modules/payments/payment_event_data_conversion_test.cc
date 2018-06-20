@@ -24,8 +24,7 @@ static WebPaymentCurrencyAmount CreateWebPaymentCurrencyAmountForTest() {
 
 static WebPaymentMethodData CreateWebPaymentMethodDataForTest() {
   WebPaymentMethodData web_method_data;
-  WebString method = WebString::FromUTF8("foo");
-  web_method_data.supported_methods = WebVector<WebString>(&method, 1);
+  web_method_data.supported_method = "foo";
   web_method_data.stringified_data = "{\"merchantId\":\"12345\"}";
   return web_method_data;
 }
@@ -69,17 +68,8 @@ TEST(PaymentEventDataConversionTest, ToCanMakePaymentEventData) {
 
   ASSERT_TRUE(data.hasMethodData());
   ASSERT_EQ(1UL, data.methodData().size());
-  ASSERT_TRUE(data.methodData().front().hasSupportedMethods());
-  ASSERT_EQ(1UL, data.methodData()
-                     .front()
-                     .supportedMethods()
-                     .GetAsStringSequence()
-                     .size());
-  ASSERT_EQ("foo", data.methodData()
-                       .front()
-                       .supportedMethods()
-                       .GetAsStringSequence()
-                       .front());
+  ASSERT_TRUE(data.methodData().front().hasSupportedMethod());
+  ASSERT_EQ("foo", data.methodData().front().supportedMethod());
   ASSERT_TRUE(data.methodData().front().hasData());
   ASSERT_TRUE(data.methodData().front().data().IsObject());
   String stringified_data = ToBlinkString<String>(
@@ -110,17 +100,8 @@ TEST(PaymentEventDataConversionTest, ToPaymentRequestEventData) {
 
   ASSERT_TRUE(data.hasMethodData());
   ASSERT_EQ(1UL, data.methodData().size());
-  ASSERT_TRUE(data.methodData().front().hasSupportedMethods());
-  ASSERT_EQ(1UL, data.methodData()
-                     .front()
-                     .supportedMethods()
-                     .GetAsStringSequence()
-                     .size());
-  ASSERT_EQ("foo", data.methodData()
-                       .front()
-                       .supportedMethods()
-                       .GetAsStringSequence()
-                       .front());
+  ASSERT_TRUE(data.methodData().front().hasSupportedMethod());
+  ASSERT_EQ("foo", data.methodData().front().supportedMethod());
   ASSERT_TRUE(data.methodData().front().hasData());
   ASSERT_TRUE(data.methodData().front().data().IsObject());
   String stringified_data = ToBlinkString<String>(

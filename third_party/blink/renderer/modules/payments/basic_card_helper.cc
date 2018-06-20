@@ -84,9 +84,9 @@ void BasicCardHelper::ParseBasiccardData(
   }
 }
 
-bool BasicCardHelper::ContainsNetworkNames(const Vector<String>& input) {
+bool BasicCardHelper::IsNetworkName(const String& input) {
   for (size_t i = 0; i < arraysize(kBasicCardNetworks); ++i) {
-    if (input.Contains(kBasicCardNetworks[i].name)) {
+    if (input == kBasicCardNetworks[i].name) {
       return true;
     }
   }
