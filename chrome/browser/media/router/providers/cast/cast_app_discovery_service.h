@@ -114,14 +114,9 @@ class CastAppDiscoveryServiceImpl : public CastAppDiscoveryService,
   // associated with |source|.
   void MaybeRemoveSinkQueryEntry(const CastMediaSource& source);
 
-  // Returns true if |sink| supports |source|, based on both app availability
-  // and required capabilities.
-  bool SinkSupportsSource(const MediaSinkInternal& sink,
-                          const CastMediaSource& source) const;
-
-  // Returns a list of sinks that supports |source|.
-  std::vector<MediaSinkInternal> GetAvailableSinks(
-      const CastMediaSource& source) const;
+  // Gets a list of sinks corresponding to |sink_ids|.
+  std::vector<MediaSinkInternal> GetSinksByIds(
+      const base::flat_set<MediaSink::Id>& sink_ids) const;
 
   // Registered sink queries and their associated callbacks.
   base::flat_map<MediaSource::Id, std::unique_ptr<SinkQueryCallbackList>>
