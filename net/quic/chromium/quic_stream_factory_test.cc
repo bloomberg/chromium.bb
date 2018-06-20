@@ -3600,19 +3600,38 @@ TEST_P(QuicStreamFactoryTest,
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNoNewNetwork) {
-  InitializeConnectionMigrationTest({kDefaultNetworkForTests});
+// This test verifies that session attempts connection migration with signals
+// delivered in the following order (no alternate network is available):
+// - path degrading is detected: session attempts connection migration but no
+//   alternate network is available, session caches path degrading signal in
+//   connection and stays on the original network.
+// - original network backs up, request is served in the orignal network,
+//   session is not marked as going away.
+TEST_P(QuicStreamFactoryTest, MigrateOnPathDegradingWithNoNewNetwork) {
+  InitializeConnectionMigrationV2Test({kDefaultNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockQuicData socket_data;
-  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
-  socket_data.AddWrite(
-      SYNCHRONOUS,
-      client_maker_.MakeRstPacket(2, true, GetNthClientInitiatedStreamId(0),
-                                  quic::QUIC_STREAM_CANCELLED));
-  socket_data.AddSocketDataToFactory(socket_factory_.get());
+  MockQuicData quic_data;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  quic_data.AddWrite(SYNCHRONOUS,
+                     ConstructInitialSettingsPacket(1, &header_stream_offset));
+  quic_data.AddWrite(SYNCHRONOUS, ConstructGetRequestPacket(
+                                      2, GetNthClientInitiatedStreamId(0), true,
+                                      true, &header_stream_offset));
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause for path degrading signal.
+
+  // The rest of the data will still flow in the original socket as there is no
+  // new network after path degrading.
+  quic_data.AddRead(
+      ASYNC, ConstructOkResponsePacket(1, GetNthClientInitiatedStreamId(0),
+                                       false, false));
+  quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeAckAndRstPacket(
+                         3, false, GetNthClientInitiatedStreamId(0),
+                         quic::QUIC_STREAM_CANCELLED, 1, 1, 1, true));
+  quic_data.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -3627,9 +3646,11 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNoNewNetwork) {
 
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = url_;
   request_info.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
-  EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
                                          net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
@@ -3637,23 +3658,33 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNoNewNetwork) {
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
 
-  // Trigger connection migration. Since there are no networks
-  // to migrate to, this should cause session to be continue but be marked as
-  // going away.
-  session->OnPathDegrading();
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
 
-  // Run the message loop so that data queued in the new socket is read by the
-  // packet reader.
-  base::RunLoop().RunUntilIdle();
+  // Trigger connection migration on path degrading. Since there are no networks
+  // to migrate to, the session will remain on the original network, not marked
+  // as going away.
+  session->connection()->OnPathDegradingTimeout();
+  EXPECT_TRUE(session->connection()->IsPathDegrading());
+
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+  EXPECT_EQ(ERR_IO_PENDING, stream->ReadResponseHeaders(callback_.callback()));
+
+  // Resume so that rest of the data will flow in the original socket.
+  quic_data.Resume();
 
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
   EXPECT_EQ(1u, session->GetNumActiveStreams());
 
   stream.reset();
-
-  EXPECT_TRUE(socket_data.AllReadDataConsumed());
-  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
