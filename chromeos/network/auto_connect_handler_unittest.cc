@@ -17,11 +17,13 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/network/client_cert_resolver.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_profile_handler.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_test.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_nss_types.h"
@@ -282,10 +284,11 @@ namespace {
 
 const char* kConfigUnmanagedSharedConnected =
     "{ \"GUID\": \"wifi0\", \"Type\": \"wifi\", \"State\": \"online\", "
-    "  \"Security\": \"wpa\" }";
+    "  \"Security\": \"wpa\", \"Profile\": \"/profile/default\" }";
 const char* kConfigManagedSharedConnectable =
     "{ \"GUID\": \"wifi1\", \"Type\": \"wifi\", \"State\": \"idle\", "
-    "  \"Connectable\": true, \"Security\": \"wpa\" }";
+    "  \"Connectable\": true, \"Security\": \"wpa\", \"Profile\": "
+    "\"/profile/default\" }";
 
 const char* kPolicy =
     "[ { \"GUID\": \"wifi1\","
@@ -553,6 +556,48 @@ TEST_F(AutoConnectHandlerTest, ManualConnectAbortsReconnectAfterLogin) {
               true);                    // load as user policy
   EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
   EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_EQ(0, test_observer_->num_auto_connect_events());
+}
+
+TEST_F(AutoConnectHandlerTest, DisconnectFromBlacklistedNetwork) {
+  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
+  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
+
+  LoginToRegularUser();
+  StartCertLoader();
+  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_TRUE(DBusThreadManager::Get()
+                  ->GetShillProfileClient()
+                  ->GetTestInterface()
+                  ->HasService("wifi0"));
+
+  // Apply a device policy, which blocks wifi0. No disconnects should occur
+  // since we wait for both device & user policy before possibly disconnecting.
+  base::Value::ListStorage blacklist;
+  blacklist.push_back(base::Value("7769666930"));  // hex(wifi0) = 7769666930
+  base::DictionaryValue global_config;
+  global_config.SetKey(::onc::global_network_config::kBlacklistedHexSSIDs,
+                       base::Value(blacklist));
+  SetupPolicy(std::string(), global_config, false /* load as device policy */);
+  EXPECT_EQ(shill::kStateOnline, GetServiceState("wifi0"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_TRUE(DBusThreadManager::Get()
+                  ->GetShillProfileClient()
+                  ->GetTestInterface()
+                  ->HasService("wifi0"));
+
+  // Apply an empty user policy (no whitelist for wifi0). Connection to wifi0
+  // should be disconnected due to being blacklisted.
+  SetupPolicy(std::string(), base::DictionaryValue(),
+              true /* load as user policy */);
+  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi0"));
+  EXPECT_EQ(shill::kStateIdle, GetServiceState("wifi1"));
+  EXPECT_FALSE(DBusThreadManager::Get()
+                   ->GetShillProfileClient()
+                   ->GetTestInterface()
+                   ->HasService("wifi0"));
+
   EXPECT_EQ(0, test_observer_->num_auto_connect_events());
 }
 

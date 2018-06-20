@@ -98,6 +98,11 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
       const std::string& profile_path,
       onc::ONCSource* onc_source) const override;
 
+  bool IsNetworkBlockedByPolicy(const std::string& type,
+                                const std::string& guid,
+                                const std::string& profile_path,
+                                const std::string& hex_ssid) const override;
+
   // NetworkProfileObserver overrides
   void OnProfileAdded(const NetworkProfile& profile) override;
   void OnProfileRemoved(const NetworkProfile& profile) override;

@@ -158,6 +158,16 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
       const std::string& profile_path,
       ::onc::ONCSource* onc_source) const = 0;
 
+  // Returns true if the provided network is blocked by policy. This can occur,
+  // by either 'BlacklistedHexSSIDs' or 'AllowOnlyPolicyNetworksToConnect',
+  // which are both specified in ONC's global configuration. Both policies only
+  // apply to WiFi networks and can be bypassed by providing a network
+  // configuration with an ONC policy.
+  virtual bool IsNetworkBlockedByPolicy(const std::string& type,
+                                        const std::string& guid,
+                                        const std::string& profile_path,
+                                        const std::string& hex_ssid) const = 0;
+
  private:
   DISALLOW_ASSIGN(ManagedNetworkConfigurationHandler);
 };

@@ -113,6 +113,13 @@ class FakeManagedNetworkConfigurationHandler
     NOTIMPLEMENTED();
     return nullptr;
   }
+  bool IsNetworkBlockedByPolicy(const std::string& type,
+                                const std::string& guid,
+                                const std::string& profile_path,
+                                const std::string& hex_ssid) const override {
+    NOTIMPLEMENTED();
+    return false;
+  }
 
   bool create_configuration_called() const {
     return create_configuration_called_;
