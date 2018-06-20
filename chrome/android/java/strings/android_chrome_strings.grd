@@ -278,12 +278,21 @@ CHAR-LIMIT guidelines:
         Sites
       </message>
 
-      <!-- Sign-in preference -->
+      <!-- Sign-in, sync and personalization preferences -->
+      <message name="IDS_PREFS_SECTION_ACCOUNT" desc="Title for the group of account-related entries in Settings. [CHAR-LIMIT=32]">
+        Account
+      </message>
       <message name="IDS_SIGN_IN_TO_CHROME" desc="Title for the button to sign in to Chrome using one's Google account. [CHAR-LIMIT=27]">
         Sign in to Chrome
       </message>
+      <message name="IDS_PREFS_SYNC_AND_SERVICES" desc="Title for Settings section to manage data collection for Sync and Google services. [CHAR-LIMIT=32]">
+        Sync and Google services
+      </message>
       <message name="IDS_SIGN_IN_TO_CHROME_SUMMARY" desc="Summary for the button to sign in to Chrome, explaining benefits of signing in.">
         Sign in to get your bookmarks, history, passwords, and other settings on all your devices
+      </message>
+      <message name="IDS_SIGNIN_PREF_SUMMARY" desc="Summary for the entry in Settings to sign in to Chrome, explaining benefits of signing in.">
+        Sync and personalize across devices
       </message>
       <message name="IDS_SIGN_IN_TO_CHROME_DISABLED_SUMMARY" desc="A descriptive line of text that appears under the 'Sign in to Chrome' option, in Chrome Settings on Android. The text explains why 'Sign in to Chrome' is disabled. 'Administrator' refers to the IT administrator of the company/organization that owns the user’s device.">
           Disabled by the administrator of this device
