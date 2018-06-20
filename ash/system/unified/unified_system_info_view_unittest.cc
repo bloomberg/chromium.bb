@@ -9,6 +9,8 @@
 #include "ash/shell.h"
 #include "ash/system/model/enterprise_domain_model.h"
 #include "ash/system/model/system_tray_model.h"
+#include "ash/system/unified/unified_system_tray_controller.h"
+#include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
 
 namespace ash {
@@ -20,11 +22,15 @@ class UnifiedSystemInfoViewTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    info_view_ = std::make_unique<UnifiedSystemInfoView>();
+    model_ = std::make_unique<UnifiedSystemTrayModel>();
+    controller_ = std::make_unique<UnifiedSystemTrayController>(model_.get());
+    info_view_ = std::make_unique<UnifiedSystemInfoView>(controller_.get());
   }
 
   void TearDown() override {
     info_view_.reset();
+    controller_.reset();
+    model_.reset();
     AshTestBase::TearDown();
   }
 
@@ -32,6 +38,8 @@ class UnifiedSystemInfoViewTest : public AshTestBase {
   UnifiedSystemInfoView* info_view() { return info_view_.get(); }
 
  private:
+  std::unique_ptr<UnifiedSystemTrayModel> model_;
+  std::unique_ptr<UnifiedSystemTrayController> controller_;
   std::unique_ptr<UnifiedSystemInfoView> info_view_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemInfoViewTest);
@@ -68,13 +76,17 @@ TEST_F(UnifiedSystemInfoViewTest, EnterpriseManagedVisibleForActiveDirectory) {
 using UnifiedSystemInfoViewNoSessionTest = NoSessionAshTestBase;
 
 TEST_F(UnifiedSystemInfoViewNoSessionTest, SupervisedVisible) {
-  std::unique_ptr<UnifiedSystemInfoView> info_view_;
+  std::unique_ptr<UnifiedSystemTrayModel> model_ =
+      std::make_unique<UnifiedSystemTrayModel>();
+  std::unique_ptr<UnifiedSystemTrayController> controller_ =
+      std::make_unique<UnifiedSystemTrayController>(model_.get());
 
   SessionController* session = Shell::Get()->session_controller();
   ASSERT_FALSE(session->IsActiveUserSessionStarted());
 
   // Before login the supervised user view is invisible.
-  info_view_ = std::make_unique<UnifiedSystemInfoView>();
+  std::unique_ptr<UnifiedSystemInfoView> info_view_;
+  info_view_ = std::make_unique<UnifiedSystemInfoView>(controller_.get());
   EXPECT_FALSE(info_view_->supervised_->visible());
   info_view_.reset();
 
@@ -88,7 +100,7 @@ TEST_F(UnifiedSystemInfoViewNoSessionTest, SupervisedVisible) {
   session->UpdateUserSession(std::move(user_session));
 
   // Now the supervised user view is visible.
-  info_view_ = std::make_unique<UnifiedSystemInfoView>();
+  info_view_ = std::make_unique<UnifiedSystemInfoView>(controller_.get());
   ASSERT_TRUE(info_view_->supervised_->visible());
 }
 

@@ -127,7 +127,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
       top_shortcuts_view_(new TopShortcutsView(controller_)),
       feature_pods_container_(new FeaturePodsContainerView(initially_expanded)),
       sliders_container_(new UnifiedSlidersContainerView(initially_expanded)),
-      system_info_view_(new UnifiedSystemInfoView()),
+      system_info_view_(new UnifiedSystemInfoView(controller_)),
       system_tray_container_(new SystemTrayContainer()),
       detailed_view_container_(new DetailedViewContainer()),
       interacted_by_tap_recorder_(

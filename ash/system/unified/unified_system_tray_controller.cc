@@ -18,6 +18,8 @@
 #include "ash/system/cast/unified_cast_detailed_view_controller.h"
 #include "ash/system/ime/ime_feature_pod_controller.h"
 #include "ash/system/ime/unified_ime_detailed_view_controller.h"
+#include "ash/system/model/clock_model.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_feature_pod_controller.h"
 #include "ash/system/network/unified_network_detailed_view_controller.h"
 #include "ash/system/network/unified_vpn_detailed_view_controller.h"
@@ -127,6 +129,15 @@ void UnifiedSystemTrayController::HandlePowerAction() {
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_SHUT_DOWN);
   Shell::Get()->lock_state_controller()->RequestShutdown(
       ShutdownReason::TRAY_SHUT_DOWN_BUTTON);
+}
+
+void UnifiedSystemTrayController::HandleOpenDateTimeSettingsAction() {
+  if (Shell::Get()->system_tray_model()->clock()->can_set_time()) {
+    Shell::Get()->system_tray_model()->clock()->ShowSetTimeDialog();
+  } else {
+    Shell::Get()->system_tray_model()->clock()->ShowDateSettings();
+  }
+  CloseBubble();
 }
 
 void UnifiedSystemTrayController::ToggleExpanded() {
