@@ -26,7 +26,6 @@
 #include "remoting/protocol/webrtc_video_stream.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
-#include "third_party/webrtc/api/test/fakeconstraints.h"
 
 namespace remoting {
 namespace protocol {
