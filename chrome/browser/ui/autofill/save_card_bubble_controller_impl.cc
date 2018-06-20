@@ -134,7 +134,7 @@ void SaveCardBubbleControllerImpl::ReshowBubble() {
 }
 
 bool SaveCardBubbleControllerImpl::IsIconVisible() const {
-  return !upload_save_card_callback_.is_null() &&
+  return !upload_save_card_callback_.is_null() ||
          !local_save_card_callback_.is_null();
 }
 
