@@ -3947,6 +3947,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'meowth-release': {
           'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
       },
+
+      'nocturne-release': {
+          'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
+      },
       # --- end from here ---
 
       'betty-release':
