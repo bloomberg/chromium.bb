@@ -275,4 +275,9 @@
 # supported in mash. crbug/834775
 -DisplayPrefsBrowserTest.*
 
+# Picture-in-Picture does not work with mash because VideoSurfaceLayer is
+# disabled.
+# https://crbug.com/827327
+-PictureInPictureWindowControllerBrowserTest.*
+
 # See comment at top of file regarding adding test exclusions.
