@@ -22,14 +22,16 @@ class CrosMultiTabStory(page_module.Page):
     super(CrosMultiTabStory, self).__init__(
         shared_page_state_class=shared_page_state.SharedPageState,
         page_set=story_set, name=self.NAME, url=self.URL)
+    # cros_remote is the DUT IP or None if running locally.
     self._cros_remote = cros_remote
     self._tabset_repeat = tabset_repeat
     self._pause_after_creation = pause_after_creation
 
   def RunNavigateSteps(self, action_runner):
     """Opening tabs and waiting for them to load."""
-    if not self._cros_remote:
-      raise ValueError('Must specify --remote=DUT_IP to run this test.')
+    if not self._cros_remote and not py_utils.IsRunningOnCrosDevice():
+      raise ValueError('Must specify --remote=DUT_IP to run this test, '
+                       'or run it on CrOS locally.')
 
     # As this story may run for a long time, adjusting screen off time to
     # avoid screen off.
