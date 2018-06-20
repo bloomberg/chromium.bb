@@ -143,7 +143,8 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   void OnFocusTabScoreAdjustmentTimeout();
 
   // Kills a process after getting all info of tabs and apps.
-  void LowMemoryKillImpl(DiscardReason reason,
+  void LowMemoryKillImpl(base::TimeTicks start_time,
+                         DiscardReason reason,
                          std::vector<arc::ArcProcess> arc_processes);
 
   // Sets a newly focused tab the highest priority process if it wasn't.

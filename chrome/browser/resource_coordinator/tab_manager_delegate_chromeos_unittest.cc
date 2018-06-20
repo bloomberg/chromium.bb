@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/test_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
@@ -326,7 +327,8 @@ TEST_F(TabManagerDelegateTest, DoNotKillRecentlyKilledArcProcesses) {
 
   memory_stat->SetTargetMemoryToFreeKB(250000);
   memory_stat->SetProcessPss(30, 10000);
-  tab_manager_delegate.LowMemoryKillImpl(DiscardReason::kUrgent,
+  tab_manager_delegate.LowMemoryKillImpl(base::TimeTicks::Now(),
+                                         DiscardReason::kUrgent,
                                          std::move(arc_processes));
 
   auto killed_arc_processes = tab_manager_delegate.GetKilledArcProcesses();
@@ -397,7 +399,8 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   memory_stat->SetProcessPss(20, 30000);
   memory_stat->SetProcessPss(10, 100000);
 
-  tab_manager_delegate.LowMemoryKillImpl(DiscardReason::kProactive,
+  tab_manager_delegate.LowMemoryKillImpl(base::TimeTicks::Now(),
+                                         DiscardReason::kProactive,
                                          std::move(arc_processes));
 
   auto killed_arc_processes = tab_manager_delegate.GetKilledArcProcesses();
