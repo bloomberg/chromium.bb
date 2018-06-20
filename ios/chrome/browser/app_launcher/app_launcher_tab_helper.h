@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_APP_LAUNCHER_APP_LAUNCHER_TAB_HELPER_H_
 
 #include "base/macros.h"
+#import "ios/web/public/web_state/web_state_policy_decider.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
 @protocol AppLauncherTabHelperDelegate;
@@ -14,7 +15,8 @@ class GURL;
 
 // A tab helper that handles requests to launch another application.
 class AppLauncherTabHelper
-    : public web::WebStateUserData<AppLauncherTabHelper> {
+    : public web::WebStatePolicyDecider,
+      public web::WebStateUserData<AppLauncherTabHelper> {
  public:
   ~AppLauncherTabHelper() override;
 
@@ -39,11 +41,17 @@ class AppLauncherTabHelper
                           const GURL& source_page_url,
                           bool link_tapped);
 
+  // web::WebStatePolicyDecider implementation
+  bool ShouldAllowRequest(
+      NSURLRequest* request,
+      const web::WebStatePolicyDecider::RequestInfo& request_info) override;
+
  private:
-  // Constructor for AppLauncherTabHelper. |policy_decider| provides policy for
+  // Constructor for AppLauncherTabHelper. |abuse_detector| provides policy for
   // launching apps. |delegate| can launch applications and present UI and is
   // not retained by TabHelper.
-  AppLauncherTabHelper(AppLauncherAbuseDetector* policy_decider,
+  AppLauncherTabHelper(web::WebState* web_state,
+                       AppLauncherAbuseDetector* abuse_detector,
                        id<AppLauncherTabHelperDelegate> delegate);
 
   // Used to check for repeated launches and provide policy for launching apps.

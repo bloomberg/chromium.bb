@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/compiler_specific.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
 #import "ios/chrome/browser/web/app_launcher_abuse_detector.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -76,6 +77,17 @@ class AppLauncherTabHelperTest : public PlatformTest {
     tab_helper_ = AppLauncherTabHelper::FromWebState(&web_state_);
   }
 
+  bool VerifyRequestAllowed(NSString* url_string,
+                            bool target_frame_is_main,
+                            bool has_user_gesture) WARN_UNUSED_RESULT {
+    NSURL* url = [NSURL URLWithString:url_string];
+    web::WebStatePolicyDecider::RequestInfo request_info(
+        ui::PageTransition::PAGE_TRANSITION_LINK, target_frame_is_main,
+        has_user_gesture);
+    return tab_helper_->ShouldAllowRequest([NSURLRequest requestWithURL:url],
+                                           request_info);
+  }
+
   web::TestWebState web_state_;
   FakeAppLauncherAbuseDetector* abuse_detector_ = nil;
   FakeAppLauncherTabHelperDelegate* delegate_ = nil;
@@ -134,4 +146,34 @@ TEST_F(AppLauncherTabHelperTest, ValidUrlPromptUserRejects) {
   tab_helper_->RequestToLaunchApp(GURL("valid://1234"), GURL::EmptyGURL(),
                                   false);
   EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+}
+
+// Tests that ShouldAllowRequest only allows requests for App Urls in main
+// frame, or iframe when there was a recent user interaction.
+TEST_F(AppLauncherTabHelperTest, ShouldAllowRequestWithAppUrl) {
+  NSString* url_string = @"itms-apps://itunes.apple.com/us/app/appname/id123";
+  EXPECT_TRUE(VerifyRequestAllowed(url_string, /*target_frame_is_main=*/true,
+                                   /*has_user_gesture=*/false));
+  EXPECT_TRUE(VerifyRequestAllowed(url_string, /*target_frame_is_main=*/true,
+                                   /*has_user_gesture=*/true));
+  EXPECT_FALSE(VerifyRequestAllowed(url_string, /*target_frame_is_main=*/false,
+                                    /*has_user_gesture=*/false));
+  EXPECT_TRUE(VerifyRequestAllowed(url_string, /*target_frame_is_main=*/false,
+                                   /*has_user_gesture=*/true));
+}
+
+// Tests that ShouldAllowRequest always allows requests for non App Urls.
+TEST_F(AppLauncherTabHelperTest, ShouldAllowRequestWithNonAppUrl) {
+  EXPECT_TRUE(VerifyRequestAllowed(
+      @"http://itunes.apple.com/us/app/appname/id123",
+      /*target_frame_is_main=*/true, /*has_user_gesture=*/false));
+  EXPECT_TRUE(VerifyRequestAllowed(@"file://a/b/c",
+                                   /*target_frame_is_main=*/true,
+                                   /*has_user_gesture=*/true));
+  EXPECT_TRUE(VerifyRequestAllowed(@"about://test",
+                                   /*target_frame_is_main=*/false,
+                                   /*has_user_gesture=*/false));
+  EXPECT_TRUE(VerifyRequestAllowed(@"data://test",
+                                   /*target_frame_is_main=*/false,
+                                   /*has_user_gesture=*/true));
 }

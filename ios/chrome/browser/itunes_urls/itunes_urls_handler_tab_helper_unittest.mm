@@ -43,7 +43,8 @@ class ITunesUrlsHandlerTabHelperTest : public PlatformTest {
     fake_launcher_.launchedProductID = nil;
     fake_launcher_.launchedProductParams = nil;
     web::WebStatePolicyDecider::RequestInfo request_info(
-        ui::PageTransition::PAGE_TRANSITION_LINK, main_frame);
+        ui::PageTransition::PAGE_TRANSITION_LINK, main_frame,
+        /*has_user_gesture=*/false);
     bool request_allowed = web_state_.ShouldAllowRequest(
         [NSURLRequest requestWithURL:[NSURL URLWithString:url_string]],
         request_info);

@@ -192,15 +192,6 @@ typedef base::MRUCache<web::CertHostPair, CertVerificationError>
 // stored errors is not expected to be high.
 const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 
-// States for external URL requests. This enum is used in UMA and
-// entries should not be re-ordered or deleted.
-enum ExternalURLRequestStatus {
-  MAIN_FRAME_ALLOWED = 0,
-  SUBFRAME_ALLOWED,
-  SUBFRAME_BLOCKED,
-  NUM_EXTERNAL_URL_REQUEST_STATUS
-};
-
 // Utility function for getting the source of NSErrors received by WKWebViews.
 WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   DCHECK(error);
@@ -3701,29 +3692,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (BOOL)shouldOpenExternalURLForNavigationAction:(WKNavigationAction*)action {
-  ExternalURLRequestStatus requestStatus = NUM_EXTERNAL_URL_REQUEST_STATUS;
-  if ([self isMainFrameNavigationAction:action]) {
-    requestStatus = MAIN_FRAME_ALLOWED;
-  } else {
-    // If the request's main document URL differs from that at the time of the
-    // last user interaction, then the page has changed since the user last
-    // interacted.
-    BOOL userInteractedWithRequestMainFrame =
-        [self userClickedRecently] &&
-        net::GURLWithNSURL(action.request.mainDocumentURL) ==
-            _lastUserInteraction->main_document_url;
-    // Prevent subframe requests from opening an external URL if the user has
-    // not interacted with the request's main frame.
-    requestStatus = userInteractedWithRequestMainFrame ? SUBFRAME_ALLOWED
-                                                       : SUBFRAME_BLOCKED;
-  }
-  DCHECK_NE(requestStatus, NUM_EXTERNAL_URL_REQUEST_STATUS);
-  UMA_HISTOGRAM_ENUMERATION("WebController.ExternalURLRequestBlocking",
-                            requestStatus, NUM_EXTERNAL_URL_REQUEST_STATUS);
-  if (requestStatus == SUBFRAME_BLOCKED) {
-    return NO;
-  }
-
   GURL requestURL = net::GURLWithNSURL(action.request.URL);
   return [_delegate respondsToSelector:@selector(webController:
                                            shouldOpenExternalURL:)] &&
@@ -4339,8 +4307,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   ui::PageTransition transition =
       [self pageTransitionFromNavigationType:action.navigationType];
+  BOOL userInteractedWithRequestMainFrame =
+      [self userClickedRecently] &&
+      net::GURLWithNSURL(action.request.mainDocumentURL) ==
+          _lastUserInteraction->main_document_url;
+
   web::WebStatePolicyDecider::RequestInfo requestInfo(
-      transition, isMainFrameNavigationAction);
+      transition, [self isMainFrameNavigationAction:action],
+      userInteractedWithRequestMainFrame);
   BOOL allowLoad =
       self.webStateImpl->ShouldAllowRequest(action.request, requestInfo);
   if (!allowLoad && action.targetFrame.mainFrame) {
