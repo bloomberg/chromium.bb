@@ -100,6 +100,8 @@ class COMPOSITOR_EXPORT ContextFactoryObserver {
 // This is privileged interface to the compositor. It is a global object.
 class COMPOSITOR_EXPORT ContextFactoryPrivate {
  public:
+  virtual ~ContextFactoryPrivate() {}
+
   // Creates a reflector that copies the content of the |mirrored_compositor|
   // onto |mirroring_layer|.
   virtual std::unique_ptr<Reflector> CreateReflector(

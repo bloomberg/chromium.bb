@@ -2157,10 +2157,6 @@ jumbo_source_set("browser") {
       "android/tracing_controller_android.h",
       "android/web_contents_observer_proxy.cc",
       "android/web_contents_observer_proxy.h",
-      "compositor/external_begin_frame_controller_client_impl.cc",
-      "compositor/external_begin_frame_controller_client_impl.h",
-      "compositor/in_process_display_client.cc",
-      "compositor/in_process_display_client.h",
       "frame_host/render_frame_host_android.cc",
       "frame_host/render_frame_host_android.h",
       "media/capture/screen_capture_device_android.cc",
@@ -2216,6 +2212,7 @@ jumbo_source_set("browser") {
       "//ui/accessibility/mojom",
       "//ui/android",
       "//ui/compositor",
+      "//ui/compositor/host",
     ]
     defines += [
       "APPCACHE_USE_SIMPLE_CACHE",
@@ -2342,8 +2339,6 @@ jumbo_source_set("browser") {
     sources += [
       "compositor/browser_compositor_output_surface.cc",
       "compositor/browser_compositor_output_surface.h",
-      "compositor/external_begin_frame_controller_client_impl.cc",
-      "compositor/external_begin_frame_controller_client_impl.h",
       "compositor/gpu_browser_compositor_output_surface.cc",
       "compositor/gpu_browser_compositor_output_surface.h",
       "compositor/gpu_output_surface_mac.cc",
@@ -2354,8 +2349,6 @@ jumbo_source_set("browser") {
       "compositor/gpu_surfaceless_browser_compositor_output_surface.h",
       "compositor/image_transport_factory.cc",
       "compositor/image_transport_factory.h",
-      "compositor/in_process_display_client.cc",
-      "compositor/in_process_display_client.h",
       "compositor/offscreen_browser_compositor_output_surface.cc",
       "compositor/offscreen_browser_compositor_output_surface.h",
       "compositor/owned_mailbox.cc",
@@ -2394,6 +2387,7 @@ jumbo_source_set("browser") {
     deps += [
       "//components/viz/service",
       "//ui/compositor",
+      "//ui/compositor/host",
     ]
   }
 

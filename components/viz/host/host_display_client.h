@@ -2,36 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_IN_PROCESS_DISPLAY_CLIENT_H_
-#define CONTENT_BROWSER_COMPOSITOR_IN_PROCESS_DISPLAY_CLIENT_H_
+#ifndef COMPONENTS_VIZ_HOST_HOST_DISPLAY_CLIENT_H_
+#define COMPONENTS_VIZ_HOST_HOST_DISPLAY_CLIENT_H_
 
 #include <memory>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "components/viz/host/viz_host_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace viz {
+
 class LayeredWindowUpdaterImpl;
-}
 
-namespace content {
-
-// A DisplayClient that can be used to display received
-// gfx::CALayerParams in a CALayer tree in this process.
-class InProcessDisplayClient : public viz::mojom::DisplayClient {
+// mojom::DisplayClient implementation that relays calls to platform specific
+// functions.
+class VIZ_HOST_EXPORT HostDisplayClient : public mojom::DisplayClient {
  public:
-  explicit InProcessDisplayClient(gfx::AcceleratedWidget widget);
-  ~InProcessDisplayClient() override;
+  explicit HostDisplayClient(gfx::AcceleratedWidget widget);
+  ~HostDisplayClient() override;
 
-  viz::mojom::DisplayClientPtr GetBoundPtr(
+  mojom::DisplayClientPtr GetBoundPtr(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
-  // viz::mojom::DisplayClient implementation:
+  // mojom::DisplayClient implementation:
   void DidSwapAfterSnapshotRequestReceived(
       const std::vector<ui::LatencyInfo>& latency_info) override;
 
@@ -42,19 +42,21 @@ class InProcessDisplayClient : public viz::mojom::DisplayClient {
 
 #if defined(OS_WIN)
   void CreateLayeredWindowUpdater(
-      viz::mojom::LayeredWindowUpdaterRequest request) override;
+      mojom::LayeredWindowUpdaterRequest request) override;
 #endif
 
-  mojo::Binding<viz::mojom::DisplayClient> binding_;
+  mojo::Binding<mojom::DisplayClient> binding_;
 #if defined(OS_MACOSX) || defined(OS_WIN)
   gfx::AcceleratedWidget widget_;
 #endif
 
 #if defined(OS_WIN)
-  std::unique_ptr<viz::LayeredWindowUpdaterImpl> layered_window_updater_;
+  std::unique_ptr<LayeredWindowUpdaterImpl> layered_window_updater_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(HostDisplayClient);
 };
 
-}  // namespace content
+}  // namespace viz
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_IN_PROCESS_DISPLAY_CLIENT_H_
+#endif  // COMPONENTS_VIZ_HOST_HOST_DISPLAY_CLIENT_H_

@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_EXTERNAL_BEGIN_FRAME_CONTROLLER_CLIENT_IMPL_H_
-#define CONTENT_BROWSER_COMPOSITOR_EXTERNAL_BEGIN_FRAME_CONTROLLER_CLIENT_IMPL_H_
+#ifndef UI_COMPOSITOR_HOST_EXTERNAL_BEGIN_FRAME_CONTROLLER_CLIENT_IMPL_H_
+#define UI_COMPOSITOR_HOST_EXTERNAL_BEGIN_FRAME_CONTROLLER_CLIENT_IMPL_H_
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/privileged/interfaces/compositing/external_begin_frame_controller.mojom.h"
 
 namespace ui {
-class ExternalBeginFrameClient;
-}  // namespace ui
 
-namespace content {
+class ExternalBeginFrameClient;
 
 // ExternalBeginFrameControllerClient implementation that notifies an
 // ExternalBeginFrameClient about BeginFrame events.
@@ -41,6 +39,6 @@ class ExternalBeginFrameControllerClientImpl
   viz::mojom::ExternalBeginFrameControllerAssociatedPtr controller_;
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_GPU_PROCESS_TRANSPORT_FACTORY_H_
+#endif  // UI_COMPOSITOR_HOST_EXTERNAL_BEGIN_FRAME_CONTROLLER_CLIENT_IMPL_H_

@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/in_process_display_client.h"
-
-#include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "components/viz/host/host_display_client.h"
 
 #if defined(OS_MACOSX)
 #include "ui/accelerated_widget_mac/ca_layer_frame_sink.h"
@@ -18,29 +16,29 @@
 #include "ui/base/win/internal_constants.h"
 #endif
 
-namespace content {
+namespace viz {
 
-InProcessDisplayClient::InProcessDisplayClient(gfx::AcceleratedWidget widget)
+HostDisplayClient::HostDisplayClient(gfx::AcceleratedWidget widget)
     : binding_(this) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
   widget_ = widget;
 #endif
 }
 
-InProcessDisplayClient::~InProcessDisplayClient() = default;
+HostDisplayClient::~HostDisplayClient() = default;
 
-viz::mojom::DisplayClientPtr InProcessDisplayClient::GetBoundPtr(
+mojom::DisplayClientPtr HostDisplayClient::GetBoundPtr(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  viz::mojom::DisplayClientPtr ptr;
+  mojom::DisplayClientPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr), task_runner);
   return ptr;
 }
 
-void InProcessDisplayClient::DidSwapAfterSnapshotRequestReceived(
+void HostDisplayClient::DidSwapAfterSnapshotRequestReceived(
     const std::vector<ui::LatencyInfo>& latency_info) {}
 
 #if defined(OS_MACOSX)
-void InProcessDisplayClient::OnDisplayReceivedCALayerParams(
+void HostDisplayClient::OnDisplayReceivedCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {
   ui::CALayerFrameSink* ca_layer_frame_sink =
       ui::CALayerFrameSink::FromAcceleratedWidget(widget_);
@@ -52,16 +50,16 @@ void InProcessDisplayClient::OnDisplayReceivedCALayerParams(
 #endif
 
 #if defined(OS_WIN)
-void InProcessDisplayClient::CreateLayeredWindowUpdater(
-    viz::mojom::LayeredWindowUpdaterRequest request) {
-  if (!viz::NeedsToUseLayerWindow(widget_)) {
+void HostDisplayClient::CreateLayeredWindowUpdater(
+    mojom::LayeredWindowUpdaterRequest request) {
+  if (!NeedsToUseLayerWindow(widget_)) {
     DLOG(ERROR) << "HWND shouldn't be using a layered window";
     return;
   }
 
-  layered_window_updater_ = std::make_unique<viz::LayeredWindowUpdaterImpl>(
-      widget_, std::move(request));
+  layered_window_updater_ =
+      std::make_unique<LayeredWindowUpdaterImpl>(widget_, std::move(request));
 }
 #endif
 
-}  // namespace content
+}  // namespace viz

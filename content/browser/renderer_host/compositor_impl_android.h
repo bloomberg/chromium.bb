@@ -43,18 +43,21 @@ class Layer;
 class LayerTreeHost;
 }
 
+namespace ui {
+class ExternalBeginFrameControllerClientImpl;
+}
+
 namespace viz {
 class Display;
 class FrameSinkId;
 class FrameSinkManagerImpl;
+class HostDisplayClient;
 class HostFrameSinkManager;
 class OutputSurface;
 }
 
 namespace content {
 class CompositorClient;
-class InProcessDisplayClient;
-class ExternalBeginFrameControllerClientImpl;
 
 // -----------------------------------------------------------------------------
 // Browser-side compositor that manages a tree of content and UI layers.
@@ -263,10 +266,10 @@ class CONTENT_EXPORT CompositorImpl
 
   // Viz-specific members for communicating with the display.
   viz::mojom::DisplayPrivateAssociatedPtr display_private_;
-  std::unique_ptr<InProcessDisplayClient> display_client_;
+  std::unique_ptr<viz::HostDisplayClient> display_client_;
 
   // Viz-specific member which manages sending begin frames to the Viz process.
-  std::unique_ptr<ExternalBeginFrameControllerClientImpl>
+  std::unique_ptr<ui::ExternalBeginFrameControllerClientImpl>
       external_begin_frame_controller_client_;
 
   // Test-only. Called when we are notified of a swap.

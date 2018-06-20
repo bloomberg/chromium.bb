@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/external_begin_frame_controller_client_impl.h"
+#include "ui/compositor/host/external_begin_frame_controller_client_impl.h"
 
 #include "ui/compositor/compositor.h"
 
-namespace content {
+namespace ui {
 
 ExternalBeginFrameControllerClientImpl::ExternalBeginFrameControllerClientImpl(
     ui::ExternalBeginFrameClient* client)
@@ -42,4 +42,4 @@ void ExternalBeginFrameControllerClientImpl::OnDisplayDidFinishFrame(
   client_->OnDisplayDidFinishFrame(ack);
 }
 
-}  // namespace content
+}  // namespace ui
