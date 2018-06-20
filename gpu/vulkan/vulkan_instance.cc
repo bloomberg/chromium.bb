@@ -289,8 +289,11 @@ void VulkanInstance::Destroy() {
     vkDestroyDebugReportCallbackEXT(vk_instance_, warning_callback_, nullptr);
   }
 #endif
-  vulkan_function_pointers->vkDestroyInstance(vk_instance_, nullptr);
-  base::UnloadNativeLibrary(vulkan_function_pointers->vulkan_loader_library_);
+  if (vk_instance_ != VK_NULL_HANDLE) {
+    vulkan_function_pointers->vkDestroyInstance(vk_instance_, nullptr);
+  }
+  if (vulkan_function_pointers->vulkan_loader_library_)
+    base::UnloadNativeLibrary(vulkan_function_pointers->vulkan_loader_library_);
   vulkan_function_pointers->vulkan_loader_library_ = nullptr;
   vk_instance_ = VK_NULL_HANDLE;
 }
