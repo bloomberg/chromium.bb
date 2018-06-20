@@ -10,7 +10,7 @@
 
 <script>
   function validateEntries() {
-    const entriesByName = performance.getEntriesByName('click');
+    const entriesByName = performance.getEntriesByName('click', 'event');
     const entriesByType = performance.getEntriesByType('event');
     const allEntries = performance.getEntries();
     assert_equals(entriesByName.length, 1, 'event-timing entry should be retrievable by getEntriesByName');

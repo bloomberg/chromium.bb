@@ -105,10 +105,13 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   void ReportEventTimings(WebLayerTreeView::SwapResult result,
                           TimeTicks timestamp);
 
+  void DispatchFirstInputTiming(PerformanceEventTiming* entry);
+
   // PerformanceEventTiming entries that have not been added yet: the event
   // dispatch has been completed but the swap promise used to determine
   // |duration| has not been resolved.
   HeapVector<Member<PerformanceEventTiming>> event_timings_;
+  Member<PerformanceEventTiming> first_pointer_down_event_timing_;
   mutable Member<PerformanceNavigation> navigation_;
   mutable Member<PerformanceTiming> timing_;
 };

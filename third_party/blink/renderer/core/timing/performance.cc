@@ -135,6 +135,8 @@ PerformanceEntryVector Performance::getEntries() {
 
   entries.AppendVector(resource_timing_buffer_);
   entries.AppendVector(event_timing_buffer_);
+  if (first_input_timing_)
+    entries.push_back(first_input_timing_);
   if (!navigation_timing_)
     navigation_timing_ = CreateNavigationTimingInstance();
   // This extra checking is needed when WorkerPerformance
@@ -171,6 +173,10 @@ PerformanceEntryVector Performance::getEntriesByType(const String& entry_type) {
     case PerformanceEntry::kEvent:
       for (const auto& event : event_timing_buffer_)
         entries.push_back(event);
+      break;
+    case PerformanceEntry::kFirstInput:
+      if (first_input_timing_)
+        entries.push_back(first_input_timing_);
       break;
     case PerformanceEntry::kNavigation:
       if (!navigation_timing_)
@@ -239,6 +245,11 @@ PerformanceEntryVector Performance::getEntriesByName(const String& name,
       if (event->name() == name)
         entries.push_back(event);
     }
+  }
+
+  if (entry_type.IsNull() || type == PerformanceEntry::kFirstInput) {
+    if (first_input_timing_ && first_input_timing_->name() == name)
+      entries.push_back(first_input_timing_);
   }
 
   if (entry_type.IsNull() || type == PerformanceEntry::kNavigation) {
@@ -870,6 +881,7 @@ void Performance::Trace(blink::Visitor* visitor) {
   visitor->Trace(user_timing_);
   visitor->Trace(first_paint_timing_);
   visitor->Trace(first_contentful_paint_timing_);
+  visitor->Trace(first_input_timing_);
   visitor->Trace(observers_);
   visitor->Trace(active_observers_);
   visitor->Trace(suspended_observers_);

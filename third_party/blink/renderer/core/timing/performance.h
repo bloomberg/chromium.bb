@@ -258,6 +258,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   Member<UserTiming> user_timing_;
   Member<PerformanceEntry> first_paint_timing_;
   Member<PerformanceEntry> first_contentful_paint_timing_;
+  Member<PerformanceEventTiming> first_input_timing_;
 
   TimeTicks time_origin_;
 

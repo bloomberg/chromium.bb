@@ -207,6 +207,7 @@ void WindowPerformance::BuildJSONValue(V8ObjectBuilder& builder) const {
 
 void WindowPerformance::Trace(blink::Visitor* visitor) {
   visitor->Trace(event_timings_);
+  visitor->Trace(first_pointer_down_event_timing_);
   visitor->Trace(navigation_);
   visitor->Trace(timing_);
   Performance::Trace(visitor);
@@ -349,13 +350,27 @@ void WindowPerformance::RegisterEventTiming(String event_type,
 
 void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
                                            TimeTicks timestamp) {
+  DCHECK(OriginTrials::eventTimingEnabled(GetExecutionContext()));
+
   DOMHighResTimeStamp end_time = MonotonicTimeToDOMHighResTimeStamp(timestamp);
   for (const auto& entry : event_timings_) {
     int duration_in_ms = std::ceil((end_time - entry->startTime()) / 8) * 8;
+    entry->SetDuration(duration_in_ms);
+    if (!first_input_timing_) {
+      if (entry->name() == "pointerdown") {
+        first_pointer_down_event_timing_ =
+            PerformanceEventTiming::CreateFirstInputTiming(entry);
+      } else if (entry->name() == "pointerup") {
+        DispatchFirstInputTiming(first_pointer_down_event_timing_);
+      } else if (entry->name() == "click" || entry->name() == "keydown" ||
+                 entry->name() == "mousedown") {
+        DispatchFirstInputTiming(
+            PerformanceEventTiming::CreateFirstInputTiming(entry));
+      }
+    }
     if (duration_in_ms <= kEventTimingDurationThresholdInMs)
       continue;
 
-    entry->SetDuration(duration_in_ms);
     if (ObservingEventTimingEntries())
       NotifyObserversOfEntry(*entry);
 
@@ -363,6 +378,21 @@ void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
       AddEventTimingBuffer(*entry);
   }
   event_timings_.clear();
+}
+
+void WindowPerformance::DispatchFirstInputTiming(
+    PerformanceEventTiming* entry) {
+  DCHECK(OriginTrials::eventTimingEnabled(GetExecutionContext()));
+
+  if (!entry)
+    return;
+  DCHECK_EQ("firstInput", entry->entryType());
+  if (HasObserverFor(PerformanceEntry::kFirstInput))
+    NotifyObserversOfEntry(*entry);
+
+  DCHECK(!first_input_timing_);
+  if (ShouldBufferEventTiming())
+    first_input_timing_ = entry;
 }
 
 }  // namespace blink

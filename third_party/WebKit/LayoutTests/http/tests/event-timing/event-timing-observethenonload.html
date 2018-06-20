@@ -23,7 +23,7 @@
         "onload should be later than entry's start time.");
     assert_greater_than(entry.processingStart, timeAfterFirstClick,
         "The entry's processing start should be later than timeAfterFirstClick.");
-    verifyClickEvent(entry);
+    verifyClickEvent(entry, true);
   }
 
   function verifyObserverEntries(observedEntries) {
@@ -79,7 +79,7 @@
       const bufferPromise = clickAndBlockMain('button').then(wait);
       Promise.all([observerPromise, bufferPromise]).then((results) => {
         t.step(verifyObserverEntries.bind(null, results[0]));
-        t.step(verifyBuffer.bind(null, performance.getEntriesByName('click')));
+        t.step(verifyBuffer.bind(null, performance.getEntriesByName('click', 'event')));
         t.done();
       });
     });

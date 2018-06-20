@@ -10,7 +10,7 @@ namespace blink {
 
 // static
 PerformanceEventTiming* PerformanceEventTiming::Create(
-    const String& type,
+    const String& event_type,
     DOMHighResTimeStamp start_time,
     DOMHighResTimeStamp processing_start,
     DOMHighResTimeStamp processing_end,
@@ -18,17 +18,29 @@ PerformanceEventTiming* PerformanceEventTiming::Create(
   // TODO(npm): enable this DCHECK once https://crbug.com/852846 is fixed.
   // DCHECK_LE(start_time, processing_start);
   DCHECK_LE(processing_start, processing_end);
-  return new PerformanceEventTiming(type, start_time, processing_start,
-                                    processing_end, cancelable);
+  return new PerformanceEventTiming(event_type, "event", start_time,
+                                    processing_start, processing_end,
+                                    cancelable);
+}
+
+// static
+PerformanceEventTiming* PerformanceEventTiming::CreateFirstInputTiming(
+    PerformanceEventTiming* entry) {
+  PerformanceEventTiming* first_input = new PerformanceEventTiming(
+      entry->name(), "firstInput", entry->startTime(), entry->processingStart(),
+      entry->processingEnd(), entry->cancelable());
+  first_input->SetDuration(entry->duration());
+  return first_input;
 }
 
 PerformanceEventTiming::PerformanceEventTiming(
-    const String& type,
+    const String& event_type,
+    const String& entry_type,
     DOMHighResTimeStamp start_time,
     DOMHighResTimeStamp processing_start,
     DOMHighResTimeStamp processing_end,
     bool cancelable)
-    : PerformanceEntry(type, "event", start_time, 0.0),
+    : PerformanceEntry(event_type, entry_type, start_time, 0.0),
       processing_start_(processing_start),
       processing_end_(processing_end),
       cancelable_(cancelable) {}
@@ -44,7 +56,8 @@ DOMHighResTimeStamp PerformanceEventTiming::processingEnd() const {
 }
 
 void PerformanceEventTiming::SetDuration(double duration) {
-  DCHECK_LE(0, duration);
+  // TODO(npm): enable this DCHECK once https://crbug.com/852846 is fixed.
+  // DCHECK_LE(0, duration);
   duration_ = duration;
 }
 

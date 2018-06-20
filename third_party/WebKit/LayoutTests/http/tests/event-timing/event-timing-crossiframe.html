@@ -21,14 +21,14 @@
   let processingStartMin;
 
   function validateEntries() {
-    const entries = performance.getEntriesByName('click');
+    const entries = performance.getEntriesByName('click', 'event');
     const onloadTime = performance.timing.loadEventStart - performance.timeOrigin;
 
     assert_equals(entries.length, 1,
       "Observer of main frames should only capture main-frame event-timing entries."
     );
     const entry = entries[0];
-    verifyClickEvent(entry);
+    verifyClickEvent(entry, true);
 
     assert_greater_than(entry.processingStart, processingStartMin,
         "The entry's processing start should be later than processingStartMin.");

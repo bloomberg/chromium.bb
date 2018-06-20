@@ -15,7 +15,7 @@ registration are lost
 
   function verifyBufferAndObserverEntries(observedEntries) {
     // Verify buffer entries
-    const bufferedEntries = performance.getEntriesByName('click');
+    const bufferedEntries = performance.getEntriesByName('click', 'event');
     const bufferedEntriesBeforeObserver = bufferedEntries.filter(e => e.startTime <
       observerStart);
     assert_equals(bufferedEntries.length, 0,

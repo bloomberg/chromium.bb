@@ -91,6 +91,8 @@ PerformanceEntry::EntryType PerformanceEntry::ToEntryTypeEnum(
     return kPaint;
   if (entry_type == "event")
     return kEvent;
+  if (entry_type == "firstInput")
+    return kFirstInput;
   return kInvalid;
 }
 

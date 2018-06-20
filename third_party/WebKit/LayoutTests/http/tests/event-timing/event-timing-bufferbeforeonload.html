@@ -23,7 +23,7 @@
   }
 
   function validateEntries() {
-    const entries = performance.getEntriesByName('click');
+    const entries = performance.getEntriesByName('click', 'event');
     const onloadTime = performance.timing.loadEventStart - performance.timeOrigin;
 
     const entriesBeforeOnload = entries.filter(
@@ -31,7 +31,7 @@
     assert_equals(entriesBeforeOnload.length, 1,
         "Long latency events before onload should be buffered.");
     const entry = entriesBeforeOnload[0];
-    verifyClickEvent(entry);
+    verifyClickEvent(entry, true);
 
     assert_greater_than(entry.processingStart, processingStartMin,
         "The entry should be processed later than processingStartMin.");

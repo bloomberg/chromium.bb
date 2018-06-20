@@ -31,11 +31,7 @@ TimeTicks GetTimeOrigin() {
 class WindowPerformanceTest : public testing::Test {
  protected:
   void SetUp() override {
-    page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-    page_holder_->GetDocument().SetURL(KURL("https://example.com"));
-    performance_ =
-        WindowPerformance::Create(page_holder_->GetDocument().domWindow());
-    performance_->time_origin_ = GetTimeOrigin();
+    ResetPerformance();
 
     // Create another dummy page holder and pretend this is the iframe.
     another_page_holder_ = DummyPageHolder::Create(IntSize(400, 300));
@@ -86,6 +82,14 @@ class WindowPerformanceTest : public testing::Test {
     return WindowPerformance::SanitizedAttribution(
                context, has_multiple_contexts, observer_frame)
         .first;
+  }
+
+  void ResetPerformance() {
+    page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+    page_holder_->GetDocument().SetURL(KURL("https://example.com"));
+    performance_ =
+        WindowPerformance::Create(page_holder_->GetDocument().domWindow());
+    performance_->time_origin_ = GetTimeOrigin();
   }
 
   Persistent<WindowPerformance> performance_;
@@ -294,6 +298,65 @@ TEST_F(WindowPerformanceTest, MultipleEventsSameSwap) {
   SimulateSwapPromise(swap_time);
   EXPECT_EQ(num_events,
             performance_->getEntriesByName("click", "event").size());
+}
+
+// Test for existence of 'firstInput' given different types of first events.
+TEST_F(WindowPerformanceTest, FirstInput) {
+  struct {
+    String event_type;
+    bool should_report;
+  } inputs[] = {{"click", true},     {"keydown", true},
+                {"keypress", false}, {"pointerdown", false},
+                {"mousedown", true}, {"mousemove", false},
+                {"mouseover", false}};
+  for (const auto& input : inputs) {
+    // firstInput does not have a |duration| threshold so use close values.
+    performance_->RegisterEventTiming(
+        input.event_type, GetTimeOrigin(),
+        GetTimeOrigin() + TimeDelta::FromMilliseconds(1),
+        GetTimeOrigin() + TimeDelta::FromMilliseconds(2), false);
+    SimulateSwapPromise(GetTimeOrigin() + TimeDelta::FromMilliseconds(3));
+    PerformanceEntryVector firstInputs =
+        performance_->getEntriesByType("firstInput");
+    EXPECT_GE(1u, firstInputs.size());
+    EXPECT_EQ(input.should_report, firstInputs.size() == 1u);
+    ResetPerformance();
+  }
+}
+
+// Test that the 'firstInput' is populated after some irrelevant events are
+// ignored.
+TEST_F(WindowPerformanceTest, FirstInputAfterIgnored) {
+  String several_events[] = {"mousemove", "mouseover", "mousedown"};
+  for (const auto& event : several_events) {
+    performance_->RegisterEventTiming(
+        event, GetTimeOrigin(),
+        GetTimeOrigin() + TimeDelta::FromMilliseconds(1),
+        GetTimeOrigin() + TimeDelta::FromMilliseconds(2), false);
+  }
+  SimulateSwapPromise(GetTimeOrigin() + TimeDelta::FromMilliseconds(3));
+  ASSERT_EQ(1u, performance_->getEntriesByType("firstInput").size());
+  EXPECT_EQ("mousedown",
+            performance_->getEntriesByType("firstInput")[0]->name());
+}
+
+// Test that pointerdown followed by pointerup works as a 'firstInput'.
+TEST_F(WindowPerformanceTest, FirstPointerUp) {
+  TimeTicks start_time = GetTimeOrigin();
+  TimeTicks processing_start = GetTimeOrigin() + TimeDelta::FromMilliseconds(1);
+  TimeTicks processing_end = GetTimeOrigin() + TimeDelta::FromMilliseconds(2);
+  TimeTicks swap_time = GetTimeOrigin() + TimeDelta::FromMilliseconds(3);
+  performance_->RegisterEventTiming("pointerdown", start_time, processing_start,
+                                    processing_end, false);
+  SimulateSwapPromise(swap_time);
+  EXPECT_EQ(0u, performance_->getEntriesByType("firstInput").size());
+  performance_->RegisterEventTiming("pointerup", start_time, processing_start,
+                                    processing_end, false);
+  SimulateSwapPromise(swap_time);
+  EXPECT_EQ(1u, performance_->getEntriesByType("firstInput").size());
+  // The name of the entry should be "pointerdown".
+  EXPECT_EQ(1u,
+            performance_->getEntriesByName("pointerdown", "firstInput").size());
 }
 
 }  // namespace blink
