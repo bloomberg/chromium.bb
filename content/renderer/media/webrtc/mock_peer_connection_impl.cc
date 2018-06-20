@@ -95,8 +95,6 @@ class MockStreamCollection : public webrtc::StreamCollectionInterface {
 
 class MockDtmfSender : public DtmfSenderInterface {
  public:
-  explicit MockDtmfSender(AudioTrackInterface* track)
-      : track_(track), observer_(nullptr), duration_(0), inter_tone_gap_(0) {}
   void RegisterObserver(DtmfSenderObserverInterface* observer) override {
     observer_ = observer;
   }
@@ -110,20 +108,15 @@ class MockDtmfSender : public DtmfSenderInterface {
     inter_tone_gap_ = inter_tone_gap;
     return true;
   }
-  const AudioTrackInterface* track() const override { return track_.get(); }
   std::string tones() const override { return tones_; }
   int duration() const override { return duration_; }
   int inter_tone_gap() const override { return inter_tone_gap_; }
 
- protected:
-  ~MockDtmfSender() override {}
-
  private:
-  rtc::scoped_refptr<AudioTrackInterface> track_;
-  DtmfSenderObserverInterface* observer_;
+  DtmfSenderObserverInterface* observer_ = nullptr;
   std::string tones_;
-  int duration_;
-  int inter_tone_gap_;
+  int duration_ = 0;
+  int inter_tone_gap_ = 0;
 };
 
 FakeRtpSender::FakeRtpSender(
@@ -175,8 +168,7 @@ webrtc::RTCError FakeRtpSender::SetParameters(
 
 rtc::scoped_refptr<webrtc::DtmfSenderInterface> FakeRtpSender::GetDtmfSender()
     const {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return new rtc::RefCountedObject<MockDtmfSender>();
 }
 
 FakeRtpReceiver::FakeRtpReceiver(
@@ -316,14 +308,6 @@ bool MockPeerConnectionImpl::RemoveTrack(webrtc::RtpSenderInterface* sender) {
       local_streams_->RemoveStream(stream);
   }
   return true;
-}
-
-rtc::scoped_refptr<DtmfSenderInterface>
-MockPeerConnectionImpl::CreateDtmfSender(AudioTrackInterface* track) {
-  if (!track) {
-    return nullptr;
-  }
-  return new rtc::RefCountedObject<MockDtmfSender>(track);
 }
 
 std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>>
