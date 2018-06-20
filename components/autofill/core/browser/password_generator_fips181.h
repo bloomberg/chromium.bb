@@ -37,6 +37,15 @@ class PasswordGeneratorFips181 {
   // Not thread safe.
   std::string Generate() const;
 
+  // This method allows to substitute a replacement for the fips181 method
+  // gen_pron_pass, used by the generator to generate the password. This is
+  // useful in tests, for providing a deterministic generator.
+  static void SetGeneratorForTest(int (*generator)(char* word,
+                                                   char* hypenated_word,
+                                                   unsigned short minlen,
+                                                   unsigned short maxlen,
+                                                   unsigned int pass_mode));
+
  private:
   // Unit test also need to access |kDefaultPasswordLength|.
   static const int kDefaultPasswordLength;
