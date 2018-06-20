@@ -102,7 +102,8 @@ ModuleInfoData CreateSignedLoadedModuleInfoData() {
 
 }  // namespace
 
-class IncompatibleApplicationsUpdaterTest : public testing::Test {
+class IncompatibleApplicationsUpdaterTest : public testing::Test,
+                                            public ModuleDatabaseEventSource {
  protected:
   IncompatibleApplicationsUpdaterTest()
       : dll1_(kDllPath1),
@@ -141,11 +142,16 @@ class IncompatibleApplicationsUpdaterTest : public testing::Test {
     }
   }
 
-  CertificateInfo& exe_certificate_info() { return exe_certificate_info_; }
-  MockModuleListFilter& module_list_filter() { return module_list_filter_; }
-  MockInstalledApplications& installed_applications() {
-    return installed_applications_;
+  std::unique_ptr<IncompatibleApplicationsUpdater>
+  CreateIncompatibleApplicationsUpdater() {
+    return std::make_unique<IncompatibleApplicationsUpdater>(
+        this, exe_certificate_info_, module_list_filter_,
+        installed_applications_);
   }
+
+  // ModuleDatabaseEventSource:
+  void AddObserver(ModuleDatabaseObserver* observer) override {}
+  void RemoveObserver(ModuleDatabaseObserver* observer) override {}
 
   const base::FilePath dll1_;
   const base::FilePath dll2_;
@@ -173,9 +179,7 @@ TEST_F(IncompatibleApplicationsUpdaterTest, EmptyCache) {
 // registered installed applications.
 TEST_F(IncompatibleApplicationsUpdaterTest, NoIncompatibleApplications) {
   auto incompatible_applications_updater =
-      std::make_unique<IncompatibleApplicationsUpdater>(
-          exe_certificate_info(), module_list_filter(),
-          installed_applications());
+      CreateIncompatibleApplicationsUpdater();
 
   // Simulate some arbitrary module loading into the process.
   incompatible_applications_updater->OnNewModuleFound(
@@ -190,9 +194,7 @@ TEST_F(IncompatibleApplicationsUpdaterTest, OneIncompatibility) {
   AddIncompatibleApplication(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
 
   auto incompatible_applications_updater =
-      std::make_unique<IncompatibleApplicationsUpdater>(
-          exe_certificate_info(), module_list_filter(),
-          installed_applications());
+      CreateIncompatibleApplicationsUpdater();
 
   // Simulate the module loading into the process.
   incompatible_applications_updater->OnNewModuleFound(
@@ -211,9 +213,7 @@ TEST_F(IncompatibleApplicationsUpdaterTest, SameModuleMultipleApplications) {
   AddIncompatibleApplication(dll1_, L"Bar", Option::ADD_REGISTRY_ENTRY);
 
   auto incompatible_applications_updater =
-      std::make_unique<IncompatibleApplicationsUpdater>(
-          exe_certificate_info(), module_list_filter(),
-          installed_applications());
+      CreateIncompatibleApplicationsUpdater();
 
   // Simulate the module loading into the process.
   incompatible_applications_updater->OnNewModuleFound(
@@ -232,9 +232,7 @@ TEST_F(IncompatibleApplicationsUpdaterTest,
   AddIncompatibleApplication(dll2_, L"Bar", Option::ADD_REGISTRY_ENTRY);
 
   auto incompatible_applications_updater =
-      std::make_unique<IncompatibleApplicationsUpdater>(
-          exe_certificate_info(), module_list_filter(),
-          installed_applications());
+      CreateIncompatibleApplicationsUpdater();
 
   // Simulate the module loading into the process.
   incompatible_applications_updater->OnNewModuleFound(
@@ -262,9 +260,7 @@ TEST_F(IncompatibleApplicationsUpdaterTest, PersistsThroughRestarts) {
   AddIncompatibleApplication(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
 
   auto incompatible_applications_updater =
-      std::make_unique<IncompatibleApplicationsUpdater>(
-          exe_certificate_info(), module_list_filter(),
-          installed_applications());
+      CreateIncompatibleApplicationsUpdater();
 
   // Simulate the module loading into the process.
   incompatible_applications_updater->OnNewModuleFound(
@@ -285,9 +281,7 @@ TEST_F(IncompatibleApplicationsUpdaterTest, StaleEntriesRemoved) {
   AddIncompatibleApplication(dll2_, L"Bar", Option::NO_REGISTRY_ENTRY);
 
   auto incompatible_applications_updater =
-      std::make_unique<IncompatibleApplicationsUpdater>(
-          exe_certificate_info(), module_list_filter(),
-          installed_applications());
+      CreateIncompatibleApplicationsUpdater();
 
   // Simulate the modules loading into the process.
   incompatible_applications_updater->OnNewModuleFound(
@@ -309,9 +303,7 @@ TEST_F(IncompatibleApplicationsUpdaterTest,
   AddIncompatibleApplication(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
 
   auto incompatible_applications_updater =
-      std::make_unique<IncompatibleApplicationsUpdater>(
-          exe_certificate_info(), module_list_filter(),
-          installed_applications());
+      CreateIncompatibleApplicationsUpdater();
 
   // Simulate the module loading into the process.
   incompatible_applications_updater->OnNewModuleFound(
@@ -332,9 +324,7 @@ TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreRegisteredModules) {
                              Option::ADD_REGISTRY_ENTRY);
 
   auto incompatible_applications_updater =
-      std::make_unique<IncompatibleApplicationsUpdater>(
-          exe_certificate_info(), module_list_filter(),
-          installed_applications());
+      CreateIncompatibleApplicationsUpdater();
 
   // Set the respective bit for registered modules.
   auto module_data1 = CreateLoadedModuleInfoData();

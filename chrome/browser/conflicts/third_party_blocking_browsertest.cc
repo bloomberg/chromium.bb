@@ -13,7 +13,6 @@
 #include "base/scoped_native_library.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_reg_util_win.h"
-#include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_util_win.h"
 #include "chrome/browser/conflicts/module_database_win.h"

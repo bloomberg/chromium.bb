@@ -89,10 +89,12 @@ ModuleBlacklistCacheUpdater::CacheUpdateResult UpdateModuleBlacklistCache(
 constexpr base::TimeDelta ModuleBlacklistCacheUpdater::kUpdateTimerDuration;
 
 ModuleBlacklistCacheUpdater::ModuleBlacklistCacheUpdater(
+    ModuleDatabaseEventSource* module_database_event_source,
     const CertificateInfo& exe_certificate_info,
     const ModuleListFilter& module_list_filter,
     OnCacheUpdatedCallback on_cache_updated_callback)
-    : exe_certificate_info_(exe_certificate_info),
+    : module_database_event_source_(module_database_event_source),
+      exe_certificate_info_(exe_certificate_info),
       module_list_filter_(module_list_filter),
       on_cache_updated_callback_(std::move(on_cache_updated_callback)),
       background_sequence_(base::CreateSequencedTaskRunnerWithTraits(
@@ -108,9 +110,13 @@ ModuleBlacklistCacheUpdater::ModuleBlacklistCacheUpdater(
              base::Bind(&ModuleBlacklistCacheUpdater::OnTimerExpired,
                         base::Unretained(this)),
              false /* is_repeating */),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  module_database_event_source_->AddObserver(this);
+}
 
-ModuleBlacklistCacheUpdater::~ModuleBlacklistCacheUpdater() = default;
+ModuleBlacklistCacheUpdater::~ModuleBlacklistCacheUpdater() {
+  module_database_event_source_->RemoveObserver(this);
+}
 
 // static
 bool ModuleBlacklistCacheUpdater::IsThirdPartyModuleBlockingEnabled() {

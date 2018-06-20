@@ -42,6 +42,7 @@ class IncompatibleApplicationsUpdater : public ModuleDatabaseObserver {
   // Creates an instance of the updater.
   // The parameters must outlive the lifetime of this class.
   IncompatibleApplicationsUpdater(
+      ModuleDatabaseEventSource* module_database_event_source,
       const CertificateInfo& exe_certificate_info,
       const ModuleListFilter& module_list_filter,
       const InstalledApplications& installed_applications);
@@ -67,10 +68,10 @@ class IncompatibleApplicationsUpdater : public ModuleDatabaseObserver {
   void OnModuleDatabaseIdle() override;
 
  private:
+  ModuleDatabaseEventSource* const module_database_event_source_;
+
   const CertificateInfo& exe_certificate_info_;
-
   const ModuleListFilter& module_list_filter_;
-
   const InstalledApplications& installed_applications_;
 
   // Temporarily holds incompatible applications that were recently found.

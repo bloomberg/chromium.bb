@@ -11,14 +11,9 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
+#include "base/macros.h"
 #include "components/component_updater/component_installer.h"
-
-namespace base {
-class FilePath;
-}  // namespace base
-
-// Will receive notifications about a new module list being available.
-class ThirdPartyConflictsManager;
 
 namespace component_updater {
 
@@ -29,19 +24,14 @@ class ComponentUpdateService;
 // chrome/browser/conflicts/proto/module_list.proto
 //
 // Notifications of a new version of the module list are sent to the
-// ThirdPartyConflictsManager.
+// ThirdPartyConflictsManager instance in the ModuleDatabase, if it exists.
 class ThirdPartyModuleListComponentInstallerPolicy
     : public ComponentInstallerPolicy {
  public:
-  // The |manager| will be notified each time a new module list is available,
-  // including once every startup when a component is already installed.
-  explicit ThirdPartyModuleListComponentInstallerPolicy(
-      ThirdPartyConflictsManager* manager);
+  ThirdPartyModuleListComponentInstallerPolicy();
   ~ThirdPartyModuleListComponentInstallerPolicy() override;
 
  private:
-  friend class ThirdPartyModuleListComponentInstallerPolicyTest;
-
   // ComponentInstallerPolicy implementation.
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
@@ -63,15 +53,11 @@ class ThirdPartyModuleListComponentInstallerPolicy
   // Returns the path to the proto file for the given |install_dir|.
   static base::FilePath GetModuleListPath(const base::FilePath& install_dir);
 
-  // The manager is not owned by this class, so the code creating it is
-  // expected to ensure the manager lives as long as this class does. Typically
-  // the manager provided will be a global singleton.
-  ThirdPartyConflictsManager* manager_;
-
   DISALLOW_COPY_AND_ASSIGN(ThirdPartyModuleListComponentInstallerPolicy);
 };
 
-void RegisterThirdPartyModuleListComponent(ComponentUpdateService* cus);
+void RegisterThirdPartyModuleListComponent(
+    ComponentUpdateService* component_update_service);
 
 }  // namespace component_updater
 

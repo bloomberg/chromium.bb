@@ -39,7 +39,7 @@ class FilePath;
 // This is effectively a singleton, but doesn't use base::Singleton. The intent
 // is for the object to be created when Chrome is single-threaded, and for it
 // be set as the process-wide singleton via SetInstance.
-class ModuleDatabase {
+class ModuleDatabase : public ModuleDatabaseEventSource {
  public:
   // Structures for maintaining information about modules.
   using ModuleMap = std::map<ModuleInfoKey, ModuleInfoData>;
@@ -55,7 +55,7 @@ class ModuleDatabase {
   // otherwise noted. For calls from other contexts this task runner is used to
   // bounce the call when appropriate.
   explicit ModuleDatabase(scoped_refptr<base::SequencedTaskRunner> task_runner);
-  ~ModuleDatabase();
+  ~ModuleDatabase() override;
 
   // Retrieves the singleton global instance of the ModuleDatabase.
   static ModuleDatabase* GetInstance();
@@ -108,8 +108,10 @@ class ModuleDatabase {
   // OnModuleDatabaseIdle() will also be invoked.
   // Must be called in the same sequence as |task_runner_|, and all
   // notifications will be sent on that same task runner.
-  void AddObserver(ModuleDatabaseObserver* observer);
-  void RemoveObserver(ModuleDatabaseObserver* observer);
+  //
+  // ModuleDatabaseEventSource:
+  void AddObserver(ModuleDatabaseObserver* observer) override;
+  void RemoveObserver(ModuleDatabaseObserver* observer) override;
 
   // Raises the priority of module inspection tasks to ensure the
   // ModuleDatabase becomes idle ASAP.
@@ -122,10 +124,11 @@ class ModuleDatabase {
   // administrative policy.
   static bool IsThirdPartyBlockingPolicyEnabled();
 
-  // Accessor for the third party conflicts manager. This is exposed so that the
-  // manager can be wired up to the ThirdPartyModuleListComponentInstaller.
+  // Accessor for the third party conflicts manager.
   // Returns null if both the tracking of incompatible applications and the
   // blocking of third-party modules are disabled.
+  // Do not hold a pointer to the manager because it can be destroyed if the
+  // ThirdPartyBlocking policy is disabled.
   ThirdPartyConflictsManager* third_party_conflicts_manager() {
     return third_party_conflicts_manager_.get();
   }
