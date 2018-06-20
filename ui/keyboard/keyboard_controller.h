@@ -88,6 +88,10 @@ class KEYBOARD_EXPORT KeyboardController
   // KeyboardController.
   aura::Window* GetContainerWindow();
 
+  // Returns the KeyboardUI contents window, or null if the keyboard contents
+  // window has not been created yet.
+  aura::Window* GetContentsWindow();
+
   // Returns the root window that this keyboard controller is attached to, or
   // null if the keyboard has not been attached to any root window.
   aura::Window* GetRootWindow();

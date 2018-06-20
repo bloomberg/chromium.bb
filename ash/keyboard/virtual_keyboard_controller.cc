@@ -146,12 +146,13 @@ void VirtualKeyboardController::MoveKeyboardToDisplay(
 
   TRACE_EVENT0("vk", "MoveKeyboardToDisplay");
 
-  aura::Window* container =
-      keyboard::KeyboardController::Get()->GetContainerWindow();
-  DCHECK(container);
+  aura::Window* keyboard_window =
+      keyboard::KeyboardController::Get()->GetContentsWindow();
+  DCHECK(keyboard_window);
+
   const display::Screen* screen = display::Screen::GetScreen();
   const display::Display current_display =
-      screen->GetDisplayNearestWindow(container);
+      screen->GetDisplayNearestWindow(keyboard_window);
 
   if (display.id() != current_display.id())
     MoveKeyboardToDisplayInternal(display);
@@ -162,15 +163,15 @@ void VirtualKeyboardController::MoveKeyboardToTouchableDisplay() {
 
   TRACE_EVENT0("vk", "MoveKeyboardToTouchableDisplay");
 
-  aura::Window* container =
-      keyboard::KeyboardController::Get()->GetContainerWindow();
-  DCHECK(container != nullptr);
+  aura::Window* keyboard_window =
+      keyboard::KeyboardController::Get()->GetContentsWindow();
+  DCHECK(keyboard_window);
 
   const display::Screen* screen = display::Screen::GetScreen();
   const display::Display current_display =
-      screen->GetDisplayNearestWindow(container);
+      screen->GetDisplayNearestWindow(keyboard_window);
 
-  if (wm::GetFocusedWindow() != nullptr) {
+  if (wm::GetFocusedWindow()) {
     // Move the virtual keyboard to the focused display if that display has
     // touch capability or keyboard is locked
     const display::Display focused_display =
