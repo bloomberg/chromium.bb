@@ -135,6 +135,22 @@ function windowOpener(windowId, url) {
 }
 
 /**
+ * Sets up the event handlers for the given |anchorElement|.
+ * @param {HTMLElement} anchorElement The <a> html element.
+ * @param {string} url The destination URL for the link.
+ */
+function setupLinkHandlers(anchorElement, url) {
+  anchorElement.onclick = function(e) {
+    e.preventDefault();
+    window.open(url, '_blank');
+  };
+
+  anchorElement.onauxclick = function(e) {
+    e.preventDefault();
+  };
+}
+
+/**
  * Opens a new window with chrome://slow_trace, downloading performance data.
  */
 function openSlowTraceWindow() {
@@ -402,10 +418,12 @@ function initialize() {
         loadTimeData.data = strings;
         i18nTemplate.process(document, loadTimeData);
 
-        if ($('sys-info-url')) {
+        var sysInfoUrlElement = $('sys-info-url');
+        if (sysInfoUrlElement) {
           // Opens a new window showing the full anonymized system+app
           // information.
-          $('sys-info-url').onclick = function() {
+          sysInfoUrlElement.onclick = function(e) {
+            e.preventDefault();
             var win = chrome.app.window.get(SYSINFO_WINDOW_ID);
             if (win) {
               win.show();
@@ -440,29 +458,37 @@ function initialize() {
                   };
                 });
           };
+
+          sysInfoUrlElement.onauxclick = function(e) {
+            e.preventDefault();
+          };
         }
-        if ($('histograms-url')) {
+
+        var histogramUrlElement = $('histograms-url');
+        if (histogramUrlElement) {
           // Opens a new window showing the histogram metrics.
-          $('histograms-url').onclick =
+          histogramUrlElement.onclick =
               windowOpener(STATS_WINDOW_ID, 'chrome://histograms');
-        }
 
-        if ($('legal-help-page-url')) {
-          $('legal-help-page-url').onclick = function() {
-            window.open(FEEDBACK_LEGAL_HELP_URL, '_blank');
+          histogramUrlElement.onauxclick = function(e) {
+            e.preventDefault();
           };
         }
 
-        if ($('privacy-policy-url')) {
-          $('privacy-policy-url').onclick = function() {
-            window.open(FEEDBACK_PRIVACY_POLICY_URL, '_blank');
-          };
+        var legalHelpPageUrlElement = $('legal-help-page-url');
+        if (legalHelpPageUrlElement)
+          setupLinkHandlers(legalHelpPageUrlElement, FEEDBACK_LEGAL_HELP_URL);
+
+        var privacyPolicyUrlElement = $('privacy-policy-url');
+        if (privacyPolicyUrlElement) {
+          setupLinkHandlers(
+              privacyPolicyUrlElement, FEEDBACK_PRIVACY_POLICY_URL);
         }
 
-        if ($('terms-of-service-url')) {
-          $('terms-of-service-url').onclick = function() {
-            window.open(FEEDBACK_TERM_OF_SERVICE_URL, '_blank');
-          };
+        var termsOfServiceUrlElement = $('terms-of-service-url');
+        if (termsOfServiceUrlElement) {
+          setupLinkHandlers(
+              termsOfServiceUrlElement, FEEDBACK_TERM_OF_SERVICE_URL);
         }
 
         // Make sure our focus starts on the description field.
