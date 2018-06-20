@@ -164,6 +164,7 @@ public abstract class BaseMediaRouteProvider
         }
     }
 
+    // Migrated to CafMediaRouteProvider. See https://crbug.com/711860.
     @Override
     public void createRoute(String sourceId, String sinkId, String presentationId, String origin,
             int tabId, boolean isIncognito, int nativeRequestId) {
