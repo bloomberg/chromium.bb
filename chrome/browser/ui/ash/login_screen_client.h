@@ -75,6 +75,7 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   void ShowGaiaSignin(
       bool can_close,
       const base::Optional<AccountId>& prefilled_account) override;
+  void ShowResetScreen() override;
   void OnRemoveUserWarningShown() override;
   void RemoveUser(const AccountId& account_id) override;
   void LaunchPublicSession(const AccountId& account_id,
