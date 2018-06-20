@@ -2818,6 +2818,10 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-002.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/infrastructure/server/order-of-metas.any.worker.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-001.tentative.html [ Failure ]
+crbug.com/626703 external/wpt/infrastructure/server/order-of-metas.any.sharedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/payment-request/PaymentMethodChangeEvent/methodName-attribute.https.html [ Timeout ]
 crbug.com/626703 external/wpt/payment-request/PaymentMethodChangeEvent/methodDetails-attribute.https.html [ Timeout ]
 crbug.com/626703 external/wpt/screen-orientation/orientation-reading.html [ Timeout ]

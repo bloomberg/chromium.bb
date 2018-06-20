@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL order of scripts assert_array_equals: value is undefined, expected array
+Harness: the test ran to completion.
+
