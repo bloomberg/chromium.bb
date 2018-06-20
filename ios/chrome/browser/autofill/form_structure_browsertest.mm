@@ -172,7 +172,7 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
       AutofillDriverIOS::FromWebState(web_state())->autofill_manager();
   ASSERT_NE(nullptr, autofill_manager);
   const std::vector<std::unique_ptr<FormStructure>>& forms =
-      autofill_manager->form_structures_;
+      autofill_manager->form_structures();
   *output = FormStructureBrowserTest::FormStructuresToString(forms);
 }
 

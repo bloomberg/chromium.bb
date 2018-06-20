@@ -23,6 +23,7 @@ namespace autofill {
 
 struct FormData;
 struct FormFieldData;
+class FormStructure;
 
 // This class defines the interface should be implemented by autofill
 // implementation in browser side to interact with AutofillDriver.
@@ -100,12 +101,20 @@ class AutofillHandler {
   virtual void SelectFieldOptionsDidChange(const FormData& form) = 0;
 
   // Resets cache.
-  virtual void Reset() = 0;
+  virtual void Reset();
 
   // Send the form |data| to renderer for the specified |action|.
   void SendFormDataToRenderer(int query_id,
                               AutofillDriver::RendererFormDataAction action,
                               const FormData& data);
+
+  // Returns the number of forms this Autofill handler is aware of.
+  size_t NumFormsDetected() const { return form_structures_.size(); }
+
+  // Returns the present form structures seen by Autofill handler.
+  const std::vector<std::unique_ptr<FormStructure>>& form_structures() {
+    return form_structures_;
+  }
 
  protected:
   AutofillHandler(AutofillDriver* driver);
@@ -139,7 +148,27 @@ class AutofillHandler {
 
   AutofillDriver* driver() { return driver_; }
 
+  // Fills |form_structure| cached element corresponding to |form|.
+  // Returns false if the cached element was not found.
+  bool FindCachedForm(const FormData& form,
+                      FormStructure** form_structure) const WARN_UNUSED_RESULT;
+
+  std::vector<std::unique_ptr<FormStructure>>* mutable_form_structures() {
+    return &form_structures_;
+  }
+
+  // Parses the |form| with the server data retrieved from the |cached_form|
+  // (if any), and writes it to the |parse_form_structure|. Adds the
+  // |parse_form_structure| to the |form_structures_|. Returns true if the form
+  // is parsed.
+  bool ParseForm(const FormData& form,
+                 const FormStructure* cached_form,
+                 FormStructure** parsed_form_structure);
+
  private:
+  // Our copy of the form data.
+  std::vector<std::unique_ptr<FormStructure>> form_structures_;
+
   // Provides driver-level context to the shared code of the component. Must
   // outlive this object.
   AutofillDriver* driver_;

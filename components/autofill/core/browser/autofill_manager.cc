@@ -65,7 +65,6 @@
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
-#include "components/autofill/core/common/signatures_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
@@ -88,10 +87,6 @@ const int kCreditCardSigninPromoImpressionLimit = 3;
 namespace {
 
 const size_t kMaxRecentFormSignaturesToRemember = 3;
-
-// Set a conservative upper bound on the number of forms we are willing to
-// cache, simply to prevent unbounded memory consumption.
-const size_t kMaxFormCacheSize = 100;
 
 // Time to wait, in ms, after a dynamic form change before triggering a refill.
 // This is used for sites that change multiple things consecutively.
@@ -932,11 +927,6 @@ bool AutofillManager::IsShowingUnmaskPrompt() {
   return full_card_request_ && full_card_request_->IsGettingFullCard();
 }
 
-const std::vector<std::unique_ptr<FormStructure>>&
-AutofillManager::GetFormStructures() {
-  return form_structures_;
-}
-
 payments::FullCardRequest* AutofillManager::GetOrCreateFullCardRequest() {
   if (!full_card_request_) {
     full_card_request_.reset(new payments::FullCardRequest(
@@ -973,7 +963,7 @@ void AutofillManager::SelectFieldOptionsDidChange(const FormData& form) {
   FormStructure* cached_form = nullptr;
   ignore_result(FindCachedForm(form, &cached_form));
 
-  if (!ParseForm(form, cached_form, &form_structure))
+  if (!ParseFormInternal(form, cached_form, &form_structure))
     return;
 
   if (ShouldTriggerRefill(*form_structure))
@@ -988,7 +978,7 @@ void AutofillManager::OnLoadedServerPredictions(
   // the end of the list (and reverse the resulting pointer vector).
   std::vector<FormStructure*> queried_forms;
   for (const std::string& signature : base::Reversed(form_signatures)) {
-    for (auto& cur_form : base::Reversed(form_structures_)) {
+    for (auto& cur_form : base::Reversed(form_structures())) {
       if (cur_form->FormSignatureAsStr() == signature) {
         queried_forms.push_back(cur_form.get());
         break;
@@ -1129,7 +1119,7 @@ void AutofillManager::Reset() {
   // save a card is shown after page navigation.
   ProcessPendingFormForUpload();
   DCHECK(!pending_form_data_);
-  form_structures_.clear();
+  AutofillHandler::Reset();
   form_interactions_ukm_logger_.reset(
       new AutofillMetrics::FormInteractionsUkmLogger(
           client_->GetUkmRecorder()));
@@ -1429,35 +1419,6 @@ std::unique_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
   return submitted_form;
 }
 
-bool AutofillManager::FindCachedForm(const FormData& form,
-                                     FormStructure** form_structure) const {
-  // Find the FormStructure that corresponds to |form|.
-  // Scan backward through the cached |form_structures_|, as updated versions of
-  // forms are added to the back of the list, whereas original versions of these
-  // forms might appear toward the beginning of the list.  The communication
-  // protocol with the crowdsourcing server does not permit us to discard the
-  // original versions of the forms.
-  *form_structure = nullptr;
-  const auto& form_signature = autofill::CalculateFormSignature(form);
-  for (auto& cur_form : base::Reversed(form_structures_)) {
-    if (cur_form->form_signature() == form_signature || *cur_form == form) {
-      *form_structure = cur_form.get();
-
-      // The same form might be cached with multiple field counts: in some
-      // cases, non-autofillable fields are filtered out, whereas in other cases
-      // they are not.  To avoid thrashing the cache, keep scanning until we
-      // find a cached version with the same number of fields, if there is one.
-      if (cur_form->field_count() == form.fields.size())
-        break;
-    }
-  }
-
-  if (!(*form_structure))
-    return false;
-
-  return true;
-}
-
 bool AutofillManager::GetCachedFormAndField(const FormData& form,
                                             const FormFieldData& field,
                                             FormStructure** form_structure,
@@ -1536,7 +1497,7 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
   // Note: We _must not_ remove the original version of the cached form from
   // the list of |form_structures_|. Otherwise, we break parsing of the
   // crowdsourcing server's response to our query.
-  if (!ParseForm(live_form, cached_form, updated_form))
+  if (!ParseFormInternal(live_form, cached_form, updated_form))
     return false;
 
   // Annotate the updated form with its predicted types.
@@ -1625,7 +1586,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     const auto parse_form_start_time = TimeTicks::Now();
 
     FormStructure* form_structure = nullptr;
-    if (!ParseForm(form, /*cached_form=*/nullptr, &form_structure))
+    if (!ParseFormInternal(form, /*cached_form=*/nullptr, &form_structure))
       continue;
     DCHECK(form_structure);
 
@@ -1681,7 +1642,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   // prompt for credit card assisted filling. Upon accepting the infobar, the
   // form will automatically be filled with the user's information through this
   // class' FillCreditCardForm().
-  if (autofill_assistant_.CanShowCreditCardAssist(form_structures_)) {
+  if (autofill_assistant_.CanShowCreditCardAssist(form_structures())) {
     const std::vector<CreditCard*> cards =
         personal_data_->GetCreditCardsToSuggest(
             client_->AreServerCardsSupported());
@@ -1704,37 +1665,16 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   }
 }
 
-bool AutofillManager::ParseForm(const FormData& form,
-                                const FormStructure* cached_form,
-                                FormStructure** parsed_form_structure) {
-  DCHECK(parsed_form_structure);
-  if (form_structures_.size() >= kMaxFormCacheSize)
-    return false;
-
-  auto form_structure = std::make_unique<FormStructure>(form);
-  form_structure->ParseFieldTypesFromAutocompleteAttributes();
-  if (!form_structure->ShouldBeParsed()) {
-    return false;
+bool AutofillManager::ParseFormInternal(const FormData& form,
+                                        const FormStructure* cached_form,
+                                        FormStructure** parsed_form_structure) {
+  if (ParseForm(form, cached_form, parsed_form_structure)) {
+    (*parsed_form_structure)
+        ->DetermineHeuristicTypes(client_->GetUkmRecorder(),
+                                  client_->GetUkmSourceId());
+    return true;
   }
-
-  if (cached_form) {
-    // We need to keep the server data if available. We need to use them while
-    // determining the heuristics.
-    form_structure->RetrieveFromCache(*cached_form,
-                                      /*apply_is_autofilled=*/true,
-                                      /*only_server_and_autofill_state=*/true);
-  }
-
-  // Ownership is transferred to |form_structures_| which maintains it until
-  // the manager is Reset() or destroyed. It is safe to use references below
-  // as long as receivers don't take ownership.
-  form_structure->set_form_parsed_timestamp(TimeTicks::Now());
-  form_structures_.push_back(std::move(form_structure));
-  *parsed_form_structure = form_structures_.back().get();
-  (*parsed_form_structure)
-      ->DetermineHeuristicTypes(client_->GetUkmRecorder(),
-                                client_->GetUkmSourceId());
-  return true;
+  return false;
 }
 
 int AutofillManager::BackendIDToInt(const std::string& backend_id) const {

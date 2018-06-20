@@ -29,7 +29,6 @@
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/field_filler.h"
 #include "components/autofill/core/browser/form_data_importer.h"
-#include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -136,9 +135,6 @@ class AutofillManager : public AutofillHandler,
   // Returns true when the Payments card unmask prompt is being displayed.
   bool IsShowingUnmaskPrompt();
 
-  // Returns the present form structures seen by Autofill manager.
-  const std::vector<std::unique_ptr<FormStructure>>& GetFormStructures();
-
   AutofillClient* client() { return client_; }
 
   AutofillDownloadManager* download_manager() {
@@ -206,9 +202,6 @@ class AutofillManager : public AutofillHandler,
   // to be uploadable. Exposed for testing.
   bool ShouldUploadForm(const FormStructure& form);
 
-  // Returns the number of forms this Autofill Manager is aware of.
-  size_t NumFormsDetected() const { return form_structures_.size(); }
-
  protected:
   // Test code should prefer to use this constructor.
   AutofillManager(AutofillDriver* driver,
@@ -266,10 +259,6 @@ class AutofillManager : public AutofillHandler,
   void OnSelectControlDidChangeImpl(const FormData& form,
                                     const FormFieldData& field,
                                     const gfx::RectF& bounding_box) override;
-
-  std::vector<std::unique_ptr<FormStructure>>* form_structures() {
-    return &form_structures_;
-  }
 
   AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger() {
     return form_interactions_ukm_logger_.get();
@@ -337,6 +326,10 @@ class AutofillManager : public AutofillHandler,
     bool section_has_autofilled_field = false;
     SuppressReason suppress_reason = SuppressReason::kNotSuppressed;
   };
+
+  bool ParseFormInternal(const FormData& form,
+                         const FormStructure* cached_form,
+                         FormStructure** parsed_form_structure);
 
   // AutofillDownloadManager::Observer:
   void OnLoadedServerPredictions(
@@ -412,11 +405,6 @@ class AutofillManager : public AutofillHandler,
   // or personal data.
   std::unique_ptr<FormStructure> ValidateSubmittedForm(const FormData& form);
 
-  // Fills |form_structure| cached element corresponding to |form|.
-  // Returns false if the cached element was not found.
-  bool FindCachedForm(const FormData& form,
-                      FormStructure** form_structure) const WARN_UNUSED_RESULT;
-
   // Fills |form_structure| and |autofill_field| with the cached elements
   // corresponding to |form| and |field|.  This might have the side-effect of
   // updating the cache.  Returns false if the |form| is not autofillable, or if
@@ -463,14 +451,6 @@ class AutofillManager : public AutofillHandler,
 
   // Parses the forms using heuristic matching and querying the Autofill server.
   void ParseForms(const std::vector<FormData>& forms);
-
-  // Parses the |form| with the server data retrieved from the |cached_form|
-  // (if any), and writes it to the |parse_form_structure|. Adds the
-  // |parse_form_structure| to the |form_structures_|. Returns true if the form
-  // is parsed.
-  bool ParseForm(const FormData& form,
-                 const FormStructure* cached_form,
-                 FormStructure** parsed_form_structure);
 
   // If |initial_interaction_timestamp_| is unset or is set to a later time than
   // |interaction_timestamp|, updates the cached timestamp.  The latter check is
@@ -598,9 +578,6 @@ class AutofillManager : public AutofillHandler,
   // When the user first interacted with a potentially fillable form on this
   // page.
   base::TimeTicks initial_interaction_timestamp_;
-
-  // Our copy of the form data.
-  std::vector<std::unique_ptr<FormStructure>> form_structures_;
 
   // A copy of the currently interacted form data.
   std::unique_ptr<FormData> pending_form_data_;
