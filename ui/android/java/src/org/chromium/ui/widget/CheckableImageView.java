@@ -33,6 +33,7 @@ public class CheckableImageView extends AppCompatImageView implements Checkable 
 
     @Override
     public void setImageDrawable(@Nullable Drawable drawable) {
+        if (drawable == getDrawable()) return;
         super.setImageDrawable(drawable);
         refreshDrawableState();
     }
