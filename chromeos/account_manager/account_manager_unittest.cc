@@ -198,16 +198,16 @@ TEST_F(AccountManagerTest, ObserversAreNotifiedOnTokenUpdate) {
 
 TEST_F(AccountManagerTest, ObserversAreNotNotifiedIfTokenIsNotUpdated) {
   auto observer = std::make_unique<AccountManagerObserver>();
-  const std::string& kToken = "123";
+  const std::string token = "123";
   EXPECT_FALSE(observer->is_token_upserted_callback_called_);
 
   account_manager_->AddObserver(observer.get());
-  account_manager_->UpsertToken(kAccountKey_, kToken);
+  account_manager_->UpsertToken(kAccountKey_, token);
   scoped_task_environment_.RunUntilIdle();
 
   // Observers should not be called when token is not updated.
   observer->is_token_upserted_callback_called_ = false;
-  account_manager_->UpsertToken(kAccountKey_, kToken);
+  account_manager_->UpsertToken(kAccountKey_, token);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(observer->is_token_upserted_callback_called_);
 
@@ -249,18 +249,19 @@ TEST_F(AccountManagerTest, ObserversAreNotifiedOnAccountRemoval) {
   account_manager_->RemoveObserver(observer.get());
 }
 
-TEST_F(AccountManagerTest, TokenRevocationIsAttemptedForGaiaAccounts) {
-  const std::string kToken = "123";
+TEST_F(AccountManagerTest, TokenRevocationIsAttemptedForGaiaAccountRemovals) {
+  const std::string token = "123";
   ResetAndInitializeAccountManager();
-  EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(kToken));
+  EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(token));
 
-  account_manager_->UpsertToken(kAccountKey_, kToken);
+  account_manager_->UpsertToken(kAccountKey_, token);
   scoped_task_environment_.RunUntilIdle();
 
   account_manager_->RemoveAccount(kAccountKey_);
 }
 
-TEST_F(AccountManagerTest, TokenRevocationIsNotAttemptedForNonGaiaAccounts) {
+TEST_F(AccountManagerTest,
+       TokenRevocationIsNotAttemptedForNonGaiaAccountRemovals) {
   ResetAndInitializeAccountManager();
   EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(_)).Times(0);
 
@@ -272,7 +273,7 @@ TEST_F(AccountManagerTest, TokenRevocationIsNotAttemptedForNonGaiaAccounts) {
   account_manager_->RemoveAccount(adAccountKey);
 }
 
-TEST_F(AccountManagerTest, TokenRevocationIsNotAttemptedForEmptyTokens) {
+TEST_F(AccountManagerTest, TokenRevocationIsNotAttemptedForEmptyTokenRemovals) {
   ResetAndInitializeAccountManager();
   EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(_)).Times(0);
 
@@ -280,6 +281,20 @@ TEST_F(AccountManagerTest, TokenRevocationIsNotAttemptedForEmptyTokens) {
   scoped_task_environment_.RunUntilIdle();
 
   account_manager_->RemoveAccount(kAccountKey_);
+}
+
+TEST_F(AccountManagerTest, OldTokenIsRevokedOnTokenUpdate) {
+  const std::string old_token = "123";
+  const std::string new_token = "456";
+  ResetAndInitializeAccountManager();
+  // Only 1 token should be revoked.
+  EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(old_token))
+      .Times(1);
+  account_manager_->UpsertToken(kAccountKey_, old_token);
+
+  // Update the token.
+  account_manager_->UpsertToken(kAccountKey_, new_token);
+  scoped_task_environment_.RunUntilIdle();
 }
 
 }  // namespace chromeos
