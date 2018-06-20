@@ -23,7 +23,7 @@ bool StructTraits<mojo_base::mojom::FileDataView, base::File>::Read(
       MOJO_RESULT_OK) {
     return false;
   }
-  *file = base::File(platform_handle);
+  *file = base::File(platform_handle, data.async());
   return true;
 }
 

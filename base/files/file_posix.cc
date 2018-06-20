@@ -395,10 +395,7 @@ File File::Duplicate() const {
   if (other_fd == -1)
     return File(File::GetLastFileError());
 
-  File other(other_fd);
-  if (async())
-    other.async_ = true;
-  return other;
+  return File(other_fd, async());
 }
 
 // Static.

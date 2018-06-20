@@ -814,8 +814,7 @@ TEST_F(FileStreamTest, AsyncFlagMismatch) {
   // handle but with the async flag set to true.
   uint32_t flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
   base::File file(temp_file_path(), flags);
-  base::File lying_file =
-      base::File::CreateForAsyncHandle(file.TakePlatformFile());
+  base::File lying_file(file.TakePlatformFile(), true);
   ASSERT_TRUE(lying_file.IsValid());
 
   FileStream stream(std::move(lying_file), base::ThreadTaskRunnerHandle::Get());

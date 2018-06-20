@@ -153,8 +153,13 @@ class BASE_EXPORT File {
   // |path| contains path traversal ('..') components.
   File(const FilePath& path, uint32_t flags);
 
-  // Takes ownership of |platform_file|.
+  // Takes ownership of |platform_file| and sets async to false.
   explicit File(PlatformFile platform_file);
+
+  // Takes ownership of |platform_file| and sets async to the given value.
+  // This constructor exists because on Windows you can't check if platform_file
+  // is async or not.
+  File(PlatformFile platform_file, bool async);
 
   // Creates an object with a specific error_details code.
   explicit File(Error error_details);
@@ -162,9 +167,6 @@ class BASE_EXPORT File {
   File(File&& other);
 
   ~File();
-
-  // Takes ownership of |platform_file|.
-  static File CreateForAsyncHandle(PlatformFile platform_file);
 
   File& operator=(File&& other);
 
