@@ -470,6 +470,11 @@ const base::Feature kWebAssemblyStreaming{"WebAssemblyStreaming",
 const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable WebAssembly threads.
+// https://github.com/WebAssembly/threads
+const base::Feature kWebAssemblyThreads{"WebAssemblyThreads",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable WebAssembly trap handler.
 const base::Feature kWebAssemblyTrapHandler{"WebAssemblyTrapHandler",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

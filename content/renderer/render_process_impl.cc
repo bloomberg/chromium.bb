@@ -138,8 +138,6 @@ RenderProcessImpl::RenderProcessImpl(
                      "--harmony-import-meta");
   SetV8FlagIfFeature(features::kAsmJsToWebAssembly, "--validate-asm");
   SetV8FlagIfNotFeature(features::kAsmJsToWebAssembly, "--no-validate-asm");
-  SetV8FlagIfNotFeature(features::kWebAssembly,
-                        "--wasm-disable-structured-cloning");
 
   SetV8FlagIfFeature(features::kV8Orinoco, "--no-single-threaded-gc");
   SetV8FlagIfNotFeature(features::kV8Orinoco, "--single-threaded-gc");
@@ -150,10 +148,21 @@ RenderProcessImpl::RenderProcessImpl(
   SetV8FlagIfFeature(features::kWebAssemblyBaseline, "--wasm-tier-up");
   SetV8FlagIfNotFeature(features::kWebAssemblyBaseline, "--no-wasm-tier-up");
 
-  SetV8FlagIfFeature(features::kSharedArrayBuffer,
-                     "--harmony-sharedarraybuffer");
-  SetV8FlagIfNotFeature(features::kSharedArrayBuffer,
-                        "--no-harmony-sharedarraybuffer");
+  if (base::FeatureList::IsEnabled(features::kWebAssemblyThreads)) {
+    constexpr char kFlags[] =
+        "--harmony-sharedarraybuffer "
+        "--no-wasm-disable-structured-cloning "
+        "--experimental-wasm-threads";
+
+    v8::V8::SetFlagsFromString(kFlags, sizeof(kFlags));
+  } else {
+    SetV8FlagIfNotFeature(features::kWebAssembly,
+                          "--wasm-disable-structured-cloning");
+    SetV8FlagIfFeature(features::kSharedArrayBuffer,
+                       "--harmony-sharedarraybuffer");
+    SetV8FlagIfNotFeature(features::kSharedArrayBuffer,
+                          "--no-harmony-sharedarraybuffer");
+  }
 
   SetV8FlagIfNotFeature(features::kWebAssemblyTrapHandler,
                         "--no-wasm-trap-handler");
