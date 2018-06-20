@@ -7,6 +7,7 @@
 
 import io
 import os
+import signal
 import stat
 import subprocess
 import sys
@@ -181,6 +182,7 @@ def run_command_with_output(argv, stdoutfile, env=None, cwd=None):
       reader:
     process = subprocess.Popen(argv, env=env, cwd=cwd, stdout=writer,
         stderr=subprocess.STDOUT)
+    forward_signals([process])
     while process.poll() is None:
       sys.stdout.write(reader.read())
       time.sleep(0.1)
@@ -188,6 +190,28 @@ def run_command_with_output(argv, stdoutfile, env=None, cwd=None):
     sys.stdout.write(reader.read())
     print('Command %r returned exit code %d' % (argv, process.returncode))
     return process.returncode
+
+
+def forward_signals(procs):
+  """Forwards unix's SIGTERM or win's CTRL_BREAK_EVENT to the given processes.
+
+  This plays nicely with swarming's timeout handling. See also
+  https://chromium.googlesource.com/infra/luci/luci-py/+/master/appengine/swarming/doc/Bot.md#graceful-termination_aka-the-sigterm-and-sigkill-dance
+
+  Args:
+      procs: A list of subprocess.Popen objects representing child processes.
+  """
+  assert all(isinstance(p, subprocess.Popen) for p in procs)
+  def _sig_handler(sig, _):
+    for p in procs:
+      if sig == signal.SIGBREAK:
+        p.send_signal(signal.CTRL_BREAK_EVENT)
+      else:
+        p.send_signal(sig)
+  if sys.platform == 'win32':
+    signal.signal(signal.SIGBREAK, _sig_handler)
+  else:
+    signal.signal(signal.SIGTERM, _sig_handler)
 
 
 def run_executable(cmd, env, stdoutfile=None):
@@ -260,13 +284,16 @@ def run_executable(cmd, env, stdoutfile=None):
           get_sanitizer_symbolize_command(executable_path=cmd[0]),
           env=env, stdin=p1.stdout)
       p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+      forward_signals([p1, p2])
       p1.wait()
       p2.wait()
       # Also feed the out-of-band JSON output to the symbolizer script.
       symbolize_snippets_in_json(cmd, env)
       return p1.returncode
     else:
-      return subprocess.call(cmd, env=env)
+      p = subprocess.Popen(cmd, env=env)
+      forward_signals([p])
+      return p.wait()
   except OSError:
     print >> sys.stderr, 'Failed to start %s' % cmd
     raise
