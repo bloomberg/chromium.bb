@@ -72,15 +72,6 @@ class ChromeSyncClient : public syncer::SyncClient {
       std::vector<const syncer::DeviceInfoTracker*>* trackers);
 
  private:
-  // Register data types which are enabled on desktop platforms only.
-  void RegisterDesktopDataTypes(
-      syncer::ModelTypeSet disabled_types,
-      syncer::DataTypeController::TypeVector* controllers);
-
-  // Register data types which are enabled on Android platforms only.
-  void RegisterAndroidDataTypes(
-      syncer::DataTypeController::TypeVector* controllers);
-
   Profile* const profile_;
 
   // The sync api component factory in use by this client.
