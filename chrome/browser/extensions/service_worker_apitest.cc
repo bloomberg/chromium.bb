@@ -42,10 +42,12 @@
 #include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/service_worker_test_helpers.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/common/value_builder.h"
 #include "extensions/test/background_page_watcher.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -296,6 +298,83 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, Basic) {
   content::WebContents* new_web_contents = AddTab(browser(), url);
   EXPECT_TRUE(new_web_contents);
   EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
+}
+
+// Class that dispatches "test.onMessage" event to |extension_id| right after a
+// listener to the event is added from the extension's Service Worker.
+class EarlyWorkerMessageSender : public EventRouter::Observer {
+ public:
+  EarlyWorkerMessageSender(content::BrowserContext* browser_context,
+                           const ExtensionId& extension_id)
+      : browser_context_(browser_context),
+        event_router_(EventRouter::EventRouter::Get(browser_context_)),
+        extension_id_(extension_id),
+        listener_("PASS", false) {
+    DCHECK(browser_context_);
+    listener_.set_failure_message("FAIL");
+    event_router_->RegisterObserver(this, kTestOnMessageEventName);
+  }
+
+  ~EarlyWorkerMessageSender() override {
+    event_router_->UnregisterObserver(this);
+  }
+
+  // EventRouter::Observer:
+  void OnListenerAdded(const EventListenerInfo& details) override {
+    if (did_dispatch_event_ || extension_id_ != details.extension_id)
+      return;
+    const bool is_lazy_listener = details.browser_context == nullptr;
+    if (is_lazy_listener) {
+      // Wait for the non-lazy listener as we want to exercise the code to
+      // dispatch the event right after the Service Worker registration is
+      // completing.
+      return;
+    }
+    DispatchEvent();
+    did_dispatch_event_ = true;
+  }
+
+  bool SendAndWait() { return listener_.WaitUntilSatisfied(); }
+
+ private:
+  static constexpr const char* const kTestOnMessageEventName = "test.onMessage";
+
+  void DispatchEvent() {
+    std::unique_ptr<base::ListValue> event_args =
+        ListBuilder()
+            .Append(DictionaryBuilder()
+                        .Set("data", "hello")
+                        .Set("lastMessage", true)
+                        .Build())
+            .Build();
+    auto event = std::make_unique<Event>(
+        events::TEST_ON_MESSAGE, std::string(kTestOnMessageEventName),
+        std::move(event_args), browser_context_);
+    EventRouter::Get(browser_context_)
+        ->DispatchEventToExtension(extension_id_, std::move(event));
+  }
+
+  content::BrowserContext* const browser_context_ = nullptr;
+  EventRouter* const event_router_ = nullptr;
+  const ExtensionId extension_id_;
+  ExtensionTestMessageListener listener_;
+  bool did_dispatch_event_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(EarlyWorkerMessageSender);
+};
+
+// Tests that extension event dispatch works correctly right after extension
+// installation registers its Service Worker.
+// Regression test for: https://crbug.com/850792.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, EarlyEventDispatch) {
+  const ExtensionId kId("pkplfbidichfdicaijlchgnapepdginl");
+  EarlyWorkerMessageSender sender(profile(), kId);
+  // pkplfbidichfdicaijlchgnapepdginl
+  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/worker_based_background/early_event_dispatch"));
+  CHECK(extension);
+  EXPECT_EQ(kId, extension->id());
+  EXPECT_TRUE(sender.SendAndWait());
 }
 
 class ServiceWorkerBackgroundSyncTest : public ServiceWorkerTest {
