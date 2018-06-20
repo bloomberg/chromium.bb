@@ -77,13 +77,8 @@ void StatusAreaWidget::Initialize() {
   select_to_speak_tray_ = std::make_unique<SelectToSpeakTray>(shelf_);
   status_area_widget_delegate_->AddChildView(select_to_speak_tray_.get());
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableExperimentalAccessibilityFeatures)) {
-    // Dictation is currently only available behind the experimental
-    // accessibility features flag.
-    dictation_button_tray_ = std::make_unique<DictationButtonTray>(shelf_);
-    status_area_widget_delegate_->AddChildView(dictation_button_tray_.get());
-  }
+  dictation_button_tray_ = std::make_unique<DictationButtonTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(dictation_button_tray_.get());
 
   logout_button_tray_ = std::make_unique<LogoutButtonTray>(shelf_);
   status_area_widget_delegate_->AddChildView(logout_button_tray_.get());

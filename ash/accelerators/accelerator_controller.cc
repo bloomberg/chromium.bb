@@ -785,7 +785,7 @@ void HandleToggleCapsLock() {
 }
 
 bool CanHandleToggleDictation() {
-  return chromeos::switches::AreExperimentalAccessibilityFeaturesEnabled();
+  return Shell::Get()->accessibility_controller()->IsDictationEnabled();
 }
 
 void HandleToggleDictation() {

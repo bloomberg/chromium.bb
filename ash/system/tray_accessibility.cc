@@ -230,14 +230,11 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SELECT_TO_SPEAK),
       select_to_speak_enabled_);
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableExperimentalAccessibilityFeatures)) {
-    dictation_enabled_ = controller->IsDictationEnabled();
-    dictation_view_ = AddScrollListCheckableItem(
-        kDictationOffIcon,  // Need to get Chrome UI Review to comment on this
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION),
-        dictation_enabled_);
-  }
+  dictation_enabled_ = controller->IsDictationEnabled();
+  dictation_view_ = AddScrollListCheckableItem(
+      kDictationOffIcon,
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION),
+      dictation_enabled_);
 
   high_contrast_enabled_ = controller->IsHighContrastEnabled();
   high_contrast_view_ = AddScrollListCheckableItem(

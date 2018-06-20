@@ -403,10 +403,6 @@ bool AccessibilityController::IsCursorHighlightEnabled() const {
 void AccessibilityController::SetDictationEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableExperimentalAccessibilityFeatures)) {
-    return;
-  }
 
   active_user_prefs_->SetBoolean(prefs::kAccessibilityDictationEnabled,
                                  enabled);

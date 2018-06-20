@@ -310,9 +310,6 @@
     <message name="IDS_SETTINGS_ACCESSIBILITY_FOCUS_HIGHLIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to highlight the focused object to make it easier to see.">
       Highlight the object with keyboard focus when it changes
     </message>
-    <message name="IDS_SETTINGS_ACCESSIBILITY_KEYBOARD_HEADING" desc="In the settings tab, the heading above settings related to the keyboard.">
-      Keyboard
-    </message>
     <message name="IDS_SETTINGS_ACCESSIBILITY_KEYBOARD_AND_TEXT_INPUT_HEADING" desc="In the settings tab, the heading above settings related to the keyboard and other text input.">
       Keyboard and text input
     </message>
