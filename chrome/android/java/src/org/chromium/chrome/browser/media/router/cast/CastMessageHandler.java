@@ -14,6 +14,7 @@ import org.json.JSONObject;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.media.router.ClientRecord;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
