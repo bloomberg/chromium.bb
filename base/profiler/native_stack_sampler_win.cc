@@ -4,8 +4,9 @@
 
 #include "base/profiler/native_stack_sampler.h"
 
-#include <objbase.h>
 #include <windows.h>
+
+#include <objbase.h>
 #include <stddef.h>
 #include <winternl.h>
 
