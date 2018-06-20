@@ -26,8 +26,12 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   DCHECK(!NeedMinMaxSize(ConstraintSpace(), Style()))
       << "Don't support that yet";
 
-  LayoutUnit container_logical_width = ComputeInlineSizeForFragment(
-      ConstraintSpace(), Style(), /* MinMaxSize */ base::nullopt);
+  LayoutUnit flex_container_border_box_inline_size =
+      ComputeInlineSizeForFragment(ConstraintSpace(), Style(),
+                                   /* MinMaxSize */ base::nullopt);
+  LayoutUnit flex_container_content_inline_size =
+      flex_container_border_box_inline_size -
+      CalculateBorderScrollbarPadding(ConstraintSpace(), Node()).InlineSum();
 
   Vector<FlexItem> flex_items;
   for (NGLayoutInputNode child = Node().FirstChild(); child;
@@ -47,11 +51,11 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         child.ComputeMinMaxSize(ConstraintSpace().GetWritingMode(), zero_input);
 
     NGConstraintSpaceBuilder space_builder(ConstraintSpace());
-    // TODO(dgrogan): Set the percentage size also, which is possibly same as
-    // container_logical_width. Also change NGSizeIndefinite to container size
-    // if it's definite.
+    // TODO(dgrogan): Set the percentage size also, which is possibly
+    // flex_container_content_inline_size. Also change NGSizeIndefinite to
+    // container size if it's definite.
     space_builder.SetAvailableSize(
-        NGLogicalSize{container_logical_width, NGSizeIndefinite});
+        NGLogicalSize{flex_container_content_inline_size, NGSizeIndefinite});
     scoped_refptr<NGConstraintSpace> child_space =
         space_builder.ToConstraintSpace(child.Style().GetWritingMode());
 
@@ -95,15 +99,18 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     flex_items.back().ng_input_node = child;
   }
 
-  FlexLayoutAlgorithm algorithm(&Style(), container_logical_width, flex_items);
+  FlexLayoutAlgorithm algorithm(&Style(), flex_container_content_inline_size,
+                                flex_items);
 
   NGBoxStrut borders_scrollbar_padding =
       CalculateBorderScrollbarPadding(ConstraintSpace(), Node());
   LayoutUnit main_axis_offset = borders_scrollbar_padding.InlineSum();
   LayoutUnit cross_axis_offset = borders_scrollbar_padding.BlockSum();
   FlexLine* line;
-  while ((line = algorithm.ComputeNextFlexLine(container_logical_width))) {
-    line->SetContainerMainInnerSize(container_logical_width);
+  while ((line = algorithm.ComputeNextFlexLine(
+              flex_container_content_inline_size))) {
+    // TODO(dgrogan): This parameter is more complicated for columns.
+    line->SetContainerMainInnerSize(flex_container_content_inline_size);
     line->FreezeInflexibleItems();
     while (!line->ResolveFlexibleLengths()) {
       continue;
@@ -122,6 +129,9 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
           flex_item.ng_input_node.Layout(*child_space, nullptr /*break token*/);
       flex_item.cross_axis_size =
           flex_item.layout_result->PhysicalFragment()->Size().height;
+      // TODO(dgrogan): Port logic from
+      // LayoutFlexibleBox::CrossAxisIntrinsicExtentForChild?
+      flex_item.cross_axis_intrinsic_size = flex_item.cross_axis_size;
     }
     // cross_axis_offset is updated in each iteration of the loop, for passing
     // in to the next iteration.
@@ -137,6 +147,13 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     // TODO(dgrogan): For column flex containers, keep track of tallest flex
     // line and pass to ComputeBlockSizeForFragment as content_size.
   }
+  LayoutUnit intrinsic_block_content_size = cross_axis_offset;
+  LayoutUnit intrinsic_block_size =
+      intrinsic_block_content_size + borders_scrollbar_padding.BlockSum();
+  LayoutUnit block_size = ComputeBlockSizeForFragment(
+      ConstraintSpace(), Style(), intrinsic_block_size);
+  container_builder_.SetBlockSize(block_size);
+  container_builder_.SetInlineSize(flex_container_border_box_inline_size);
   return container_builder_.ToBoxFragment();
 }
 

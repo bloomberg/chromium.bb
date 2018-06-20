@@ -274,7 +274,7 @@ class FlexLayoutAlgorithm {
   bool IsMultiline() const { return style_->FlexWrap() != EFlexWrap::kNowrap; }
 
   const ComputedStyle* style_;
-  LayoutUnit line_break_length_;
+  const LayoutUnit line_break_length_;
   Vector<FlexItem>& all_items_;
   Vector<FlexLine> flex_lines_;
   size_t next_item_index_;
