@@ -162,7 +162,7 @@ GURL AddApiKeyToUrl(const GURL& url) {
   GURL new_url = url;
 #if defined(USE_GOOGLE_API_KEYS)
   std::string api_key = google_apis::GetAPIKey();
-  if (google_apis::HasKeysConfigured() && !api_key.empty()) {
+  if (google_apis::HasAPIKeyConfigured() && !api_key.empty()) {
     new_url = net::AppendOrReplaceQueryParameter(url, kApiKeyName, api_key);
   }
 #endif

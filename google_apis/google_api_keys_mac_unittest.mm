@@ -87,7 +87,8 @@ TEST_F(GoogleAPIKeysTest, OverrideSomeKeysUsingInfoPlist) {
   [[[mock_bundle stub] andReturn:nil] objectForInfoDictionaryKey:[OCMArg any]];
   base::mac::SetOverrideFrameworkBundle(mock_bundle);
 
-  EXPECT_TRUE(testcase::HasKeysConfigured());
+  EXPECT_TRUE(testcase::HasAPIKeyConfigured());
+  EXPECT_TRUE(testcase::HasOAuthClientConfigured());
 
   // Once the keys have been configured, the bundle isn't used anymore.
   base::mac::SetOverrideFrameworkBundle(nil);
