@@ -176,21 +176,21 @@ IntRect RootFrameViewport::VisibleContentRect(
       VisualViewport().VisibleContentRect(scrollbar_inclusion).Size());
 }
 
-LayoutRect RootFrameViewport::VisibleScrollSnapportRect() const {
-  // The current viewport is the one that excludes the scrollbars so
-  // we intersect the visual viewport with the scrollbar-excluded frameView
-  // content rect. However, we don't use visibleContentRect directly since it
+LayoutRect RootFrameViewport::VisibleScrollSnapportRect(
+    IncludeScrollbarsInRect scrollbar_inclusion) const {
+  // The effective viewport is the intersection of the visual viewport with the
+  // layout viewport. However, we don't use visibleContentRect directly since it
   // floors the scroll offset. Instead, we use ScrollAnimatorBase::currentOffset
   // and construct a LayoutRect from that.
   LayoutRect frame_rect_in_content = LayoutRect(
       FloatPoint(LayoutViewport().GetScrollAnimator().CurrentOffset()),
-      FloatSize(LayoutViewport().VisibleContentRect().Size()));
-  LayoutRect visual_rect_in_content =
-      LayoutRect(FloatPoint(ScrollOffsetFromScrollAnimators()),
-                 FloatSize(VisualViewport().VisibleContentRect().Size()));
+      FloatSize(
+          LayoutViewport().VisibleContentRect(scrollbar_inclusion).Size()));
+  LayoutRect visual_rect_in_content = LayoutRect(
+      FloatPoint(ScrollOffsetFromScrollAnimators()),
+      FloatSize(
+          VisualViewport().VisibleContentRect(scrollbar_inclusion).Size()));
 
-  // Intersect layout and visual rects to exclude the scrollbar from the view
-  // rect.
   LayoutRect visible_scroll_snapport =
       Intersection(visual_rect_in_content, frame_rect_in_content);
   if (!LayoutViewport().GetLayoutBox())

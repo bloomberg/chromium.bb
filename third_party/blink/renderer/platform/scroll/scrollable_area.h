@@ -249,8 +249,9 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // container for the scroll snap areas when calculating snap positions. It's
   // the box's scrollport contracted by its scroll-padding.
   // https://drafts.csswg.org/css-scroll-snap-1/#scroll-padding
-  virtual LayoutRect VisibleScrollSnapportRect() const {
-    return LayoutRect(VisibleContentRect());
+  virtual LayoutRect VisibleScrollSnapportRect(
+      IncludeScrollbarsInRect scrollbar_inclusion = kExcludeScrollbars) const {
+    return LayoutRect(VisibleContentRect(scrollbar_inclusion));
   }
 
   virtual IntPoint LastKnownMousePosition() const { return IntPoint(); }

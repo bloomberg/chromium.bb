@@ -3946,10 +3946,11 @@ IntRect LocalFrameView::VisibleContentRect(
                  VisibleContentSize(scrollbar_inclusion));
 }
 
-LayoutRect LocalFrameView::VisibleScrollSnapportRect() const {
+LayoutRect LocalFrameView::VisibleScrollSnapportRect(
+    IncludeScrollbarsInRect scrollbar_inclusion) const {
   const ComputedStyle* style = GetLayoutBox()->Style();
   LayoutRect visible_content_rect = LayoutRect(
-      FloatPoint(scroll_offset_), VisibleContentSize(kExcludeScrollbars));
+      FloatPoint(scroll_offset_), VisibleContentSize(scrollbar_inclusion));
   LayoutRectOutsets padding(
       MinimumValueForLength(style->ScrollPaddingTop(),
                             visible_content_rect.Height()),

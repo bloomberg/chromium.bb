@@ -663,9 +663,14 @@ int ScrollableArea::LineStep(ScrollbarOrientation) const {
 }
 
 int ScrollableArea::PageStep(ScrollbarOrientation orientation) const {
-  IntRect visible_rect = VisibleContentRect(kIncludeScrollbars);
-  int length = (orientation == kHorizontalScrollbar) ? visible_rect.Width()
-                                                     : visible_rect.Height();
+  // Paging scroll operations should take scroll-padding into account [1]. So we
+  // use the snapport rect to calculate the page step instead of the visible
+  // rect.
+  // [1] https://drafts.csswg.org/css-scroll-snap/#scroll-padding
+  IntSize snapport_size =
+      VisibleScrollSnapportRect(kIncludeScrollbars).PixelSnappedSize();
+  int length = (orientation == kHorizontalScrollbar) ? snapport_size.Width()
+                                                     : snapport_size.Height();
   int min_page_step =
       static_cast<float>(length) * MinFractionToStepWhenPaging();
   int page_step = std::max(min_page_step, length - MaxOverlapBetweenPages());
