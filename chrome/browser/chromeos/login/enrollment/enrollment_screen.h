@@ -89,6 +89,7 @@ class EnrollmentScreen
 
   // ActiveDirectoryJoinDelegate implementation:
   void JoinDomain(const std::string& dm_token,
+                  const std::string& domain_join_config,
                   OnDomainJoinedCallback on_joined_callback) override;
 
   // Used for testing.

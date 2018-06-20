@@ -13,12 +13,21 @@
   MACHINE_NAME_INVALID: 1,
   MACHINE_NAME_TOO_LONG: 2,
   BAD_USERNAME: 3,
-  BAD_PASSWORD: 4,
+  BAD_AUTH_PASSWORD: 4,
+  BAD_UNLOCK_PASSWORD: 5,
 };
+
+var DEFAULT_ENCRYPTION_TYPES = 'strong';
 
 /** @typedef {Iterable<{value: string, title: string, selected: boolean,
  *                      subtitle: string}>} */
 var EncryptionSelectListType;
+
+/** @typedef {{name: string, ad_username: ?string, ad_password: ?string,
+ *             computer_ou: ?string, encryption_types: ?string,
+ *             computer_name_validation_regex: ?string}}
+ */
+var JoinConfigType;
 
 Polymer({
   is: 'offline-ad-login',
@@ -32,6 +41,10 @@ Polymer({
      * Whether the screen is for domain join.
      */
     isDomainJoin: {type: Boolean, value: false},
+    /**
+     * Whether the unlock option should be shown.
+     */
+    unlockPasswordStep: {type: Boolean, value: false},
     /**
      * The kerberos realm (AD Domain), the machine is part of.
      */
@@ -73,6 +86,12 @@ Polymer({
    * */
   defaultEncryption: String,
 
+  /**
+   * List of domain join configuration options.
+   * @private {!Array<JoinConfigType>|undefined}
+   */
+  joinConfigOptions_: undefined,
+
   /** @private */
   realmChanged_: function() {
     this.adWelcomeMessage =
@@ -100,6 +119,8 @@ Polymer({
         this.$.encryptionList, list, this.onEncryptionSelected_.bind(this));
     this.defaultEncryption = /** @type {!string} */ (getSelectedValue(list));
     this.onEncryptionSelected_(this.defaultEncryption);
+    this.machineNameError =
+        loadTimeData.getString('adJoinErrorMachineNameInvalid');
   },
 
   focus: function() {
@@ -122,7 +143,6 @@ Polymer({
       user = user.replace(this.userRealm, '');
     this.$.userInput.value = user || '';
     this.$.machineNameInput.value = machineName || '';
-    this.$.passwordInput.value = '';
     this.focus();
   },
 
@@ -130,9 +150,7 @@ Polymer({
    * @param {ACTIVE_DIRECTORY_ERROR_STATE} error_state
    */
   setInvalid: function(error_state) {
-    this.$.machineNameInput.isInvalid = false;
-    this.$.userInput.isInvalid = false;
-    this.$.passwordInput.isInvalid = false;
+    this.resetValidity_();
     switch (error_state) {
       case ACTIVE_DIRECTORY_ERROR_STATE.NONE:
         break;
@@ -149,10 +167,34 @@ Polymer({
       case ACTIVE_DIRECTORY_ERROR_STATE.BAD_USERNAME:
         this.$.userInput.isInvalid = true;
         break;
-      case ACTIVE_DIRECTORY_ERROR_STATE.BAD_PASSWORD:
+      case ACTIVE_DIRECTORY_ERROR_STATE.BAD_AUTH_PASSWORD:
         this.$.passwordInput.isInvalid = true;
         break;
+      case ACTIVE_DIRECTORY_ERROR_STATE.BAD_UNLOCK_PASSWORD:
+        this.$.unlockPasswordInput.isInvalid = true;
+        break;
     }
+  },
+
+  /**
+   * @param {Array<JoinConfigType>} options
+   */
+  setJoinConfigurationOptions: function(options) {
+    this.$.backToUnlockButton.hidden = true;
+    if (!options || options.length < 1) {
+      this.$.joinConfig.hidden = true;
+      return;
+    }
+    this.joinConfigOptions_ = options;
+    var selectList = [];
+    for (var i = 0; i < options.length; ++i) {
+      selectList.push({title: options[i].name, value: i});
+    }
+    setupSelect(
+        this.$.joinConfigSelect, selectList,
+        this.onJoinConfigSelected_.bind(this));
+    this.onJoinConfigSelected_(this.$.joinConfigSelect.value);
+    this.$.joinConfig.hidden = false;
   },
 
   /** @private */
@@ -173,8 +215,7 @@ Polymer({
       'password': this.$.passwordInput.value
     };
     if (this.isDomainJoin)
-      msg['encryption_types'] = parseInt(this.$.encryptionList.value, 10);
-    this.$.passwordInput.value = '';
+      msg['encryption_types'] = this.$.encryptionList.value;
     this.fire('authCompleted', msg);
   },
 
@@ -211,6 +252,25 @@ Polymer({
     this.$$('#gaiaCard').classList.remove('full-disabled');
   },
 
+  /** @private */
+  onUnlockPasswordEntered_: function() {
+    var msg = {
+      'unlock_password': this.$.unlockPasswordInput.value,
+    };
+    this.fire('unlockPasswordEntered', msg);
+  },
+
+  /** @private */
+  onSkipClicked_: function() {
+    this.$.backToUnlockButton.hidden = false;
+    this.unlockPasswordStep = false;
+  },
+
+  /** @private */
+  onBackToUnlock_: function() {
+    this.unlockPasswordStep = true;
+  },
+
   /**
    * @private
    * @param {!string} value
@@ -219,5 +279,44 @@ Polymer({
     this.$.encryptionSubtitle.innerHTML =
         this.encryptionValueToSubtitleMap[value];
     this.$.encryptionWarningIcon.hidden = (value == this.defaultEncryption);
+  },
+
+  /** @private */
+  onJoinConfigSelected_: function(value) {
+    this.resetValidity_();
+    var option = this.joinConfigOptions_[value];
+    this.$.userInput.value = option['ad_username'] || '';
+    this.$.passwordInput.value = option['ad_password'] || '';
+    this.$.orgUnitInput.value = option['computer_ou'] || '';
+
+    var encryptionTypes =
+        option['encryption_types'] || DEFAULT_ENCRYPTION_TYPES;
+    if (!(encryptionTypes in this.encryptionValueToSubtitleMap)) {
+      encryptionTypes = DEFAULT_ENCRYPTION_TYPES;
+    }
+    this.$.encryptionList.value = encryptionTypes;
+    this.onEncryptionSelected_(encryptionTypes);
+
+    var pattern = option['computer_name_validation_regex'];
+    this.$.machineNameInput.pattern = pattern;
+    if (pattern) {
+      this.$.machineNameInput.label = loadTimeData.getStringF(
+          'oauthEnrollAdMachineNameInputRegex', pattern);
+      this.machineNameError = loadTimeData.getStringF(
+          'adJoinErrorMachineNameDoesntMatchRegex', pattern);
+    } else {
+      this.$.machineNameInput.label =
+          loadTimeData.getString('oauthEnrollAdMachineNameInput');
+      this.machineNameError =
+          loadTimeData.getString('adJoinErrorMachineNameInvalid');
+    }
+  },
+
+  /** @private */
+  resetValidity_: function() {
+    this.$.machineNameInput.isInvalid = false;
+    this.$.userInput.isInvalid = false;
+    this.$.passwordInput.isInvalid = false;
+    this.$.unlockPasswordInput.isInvalid = false;
   },
 });

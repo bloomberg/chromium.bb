@@ -19,6 +19,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 #include "components/policy/policy_export.h"
@@ -310,6 +311,9 @@ class POLICY_EXPORT CloudPolicyClient {
 
   const std::string& dm_token() const { return dm_token_; }
   const std::string& client_id() const { return client_id_; }
+  const base::DictionaryValue* configuration_seed() const {
+    return configuration_seed_.get();
+  };
 
   // The device mode as received in the registration request.
   DeviceMode device_mode() const { return device_mode_; }
@@ -466,6 +470,7 @@ class POLICY_EXPORT CloudPolicyClient {
   std::vector<std::string> state_keys_to_upload_;
 
   std::string dm_token_;
+  std::unique_ptr<base::DictionaryValue> configuration_seed_;
   DeviceMode device_mode_ = DEVICE_MODE_NOT_SET;
   std::string client_id_;
   base::Time last_policy_timestamp_;

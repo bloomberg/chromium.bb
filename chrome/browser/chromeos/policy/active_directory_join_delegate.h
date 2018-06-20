@@ -24,8 +24,10 @@ class ActiveDirectoryJoinDelegate {
  public:
   ActiveDirectoryJoinDelegate() = default;
   // Start the Active Directory domain join flow. |dm_token| will be stored in
-  // the device policy.
+  // the device policy. |domain_join_config| could be used to streamline the
+  // flow.
   virtual void JoinDomain(const std::string& dm_token,
+                          const std::string& domain_join_config,
                           OnDomainJoinedCallback on_joined_callback) = 0;
 
  protected:

@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/guid.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
@@ -734,6 +735,13 @@ void CloudPolicyClient::OnRegisterCompleted(
   status_ = status;
   if (status == DM_STATUS_SUCCESS) {
     dm_token_ = response.register_response().device_management_token();
+    if (response.register_response().has_configuration_seed()) {
+      configuration_seed_ = base::DictionaryValue::From(base::JSONReader::Read(
+          response.register_response().configuration_seed(),
+          base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS));
+      if (!configuration_seed_)
+        LOG(ERROR) << "Failed to parse configuration seed";
+    }
     DVLOG(1) << "Client registration complete - DMToken = " << dm_token_;
 
     // Device mode is only relevant for device policy really, it's the

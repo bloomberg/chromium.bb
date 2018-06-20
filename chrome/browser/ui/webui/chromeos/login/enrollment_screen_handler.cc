@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"
@@ -114,15 +115,18 @@ std::string GetEnterpriseDisplayDomain() {
 }
 
 constexpr struct {
+  const char* id;
   int title_id;
   int subtitle_id;
   authpolicy::KerberosEncryptionTypes encryption_types;
 } kEncryptionTypes[] = {
-    {IDS_AD_ENCRYPTION_STRONG_TITLE, IDS_AD_ENCRYPTION_STRONG_SUBTITLE,
+    {"strong", IDS_AD_ENCRYPTION_STRONG_TITLE,
+     IDS_AD_ENCRYPTION_STRONG_SUBTITLE,
      authpolicy::KerberosEncryptionTypes::ENC_TYPES_STRONG},
-    {IDS_AD_ENCRYPTION_ALL_TITLE, IDS_AD_ENCRYPTION_ALL_SUBTITLE,
+    {"all", IDS_AD_ENCRYPTION_ALL_TITLE, IDS_AD_ENCRYPTION_ALL_SUBTITLE,
      authpolicy::KerberosEncryptionTypes::ENC_TYPES_ALL},
-    {IDS_AD_ENCRYPTION_LEGACY_TITLE, IDS_AD_ENCRYPTION_LEGACY_SUBTITLE,
+    {"legacy", IDS_AD_ENCRYPTION_LEGACY_TITLE,
+     IDS_AD_ENCRYPTION_LEGACY_SUBTITLE,
      authpolicy::KerberosEncryptionTypes::ENC_TYPES_LEGACY}};
 
 std::unique_ptr<base::ListValue> GetEncryptionTypesList() {
@@ -136,12 +140,22 @@ std::unique_ptr<base::ListValue> GetEncryptionTypesList() {
     enc_option->SetKey(
         "subtitle",
         base::Value(l10n_util::GetStringUTF16(enc_types.subtitle_id)));
-    enc_option->SetKey("value", base::Value(enc_types.encryption_types));
+    enc_option->SetKey("value", base::Value(enc_types.id));
     enc_option->SetKey(
         "selected", base::Value(default_types == enc_types.encryption_types));
     encryption_list->Append(std::move(enc_option));
   }
   return encryption_list;
+}
+
+authpolicy::KerberosEncryptionTypes TranslateEncryptionTypesString(
+    const std::string& string_id) {
+  for (const auto& enc_types : kEncryptionTypes) {
+    if (enc_types.id == string_id)
+      return enc_types.encryption_types;
+  }
+  NOTREACHED();
+  return authpolicy::KerberosEncryptionTypes::ENC_TYPES_STRONG;
 }
 
 }  // namespace
@@ -178,6 +192,8 @@ void EnrollmentScreenHandler::RegisterMessages() {
               &EnrollmentScreenHandler::HandleCompleteLogin);
   AddCallback("oauthEnrollAdCompleteLogin",
               &EnrollmentScreenHandler::HandleAdCompleteLogin);
+  AddCallback("oauthEnrollAdUnlockConfiguration",
+              &EnrollmentScreenHandler::HandleAdUnlockConfiguration);
   AddCallback("oauthEnrollRetry",
               &EnrollmentScreenHandler::HandleRetry);
   AddCallback("frameLoadingCompleted",
@@ -223,14 +239,21 @@ void EnrollmentScreenHandler::ShowLicenseTypeSelectionScreen(
 }
 
 void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
+    const std::string& domain_join_config,
     const std::string& machine_name,
     const std::string& username,
     authpolicy::ErrorType error) {
   observe_network_failure_ = false;
+  if (!domain_join_config.empty()) {
+    active_directory_domain_join_config_ = domain_join_config;
+    show_unlock_password_ = true;
+  }
   switch (error) {
     case authpolicy::ERROR_NONE: {
-      CallJS("invalidateAd", machine_name, username,
-             static_cast<int>(ActiveDirectoryErrorState::NONE));
+      CallJS("setAdJoinParams", std::string() /* machineName */,
+             std::string() /* userName */,
+             static_cast<int>(ActiveDirectoryErrorState::NONE),
+             show_unlock_password_);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     }
@@ -240,31 +263,34 @@ void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
       return;
     case authpolicy::ERROR_PARSE_UPN_FAILED:
     case authpolicy::ERROR_BAD_USER_NAME:
-      CallJS("invalidateAd", machine_name, username,
-             static_cast<int>(ActiveDirectoryErrorState::BAD_USERNAME));
+      CallJS("setAdJoinParams", machine_name, username,
+             static_cast<int>(ActiveDirectoryErrorState::BAD_USERNAME),
+             show_unlock_password_);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_BAD_PASSWORD:
-      CallJS("invalidateAd", machine_name, username,
-             static_cast<int>(ActiveDirectoryErrorState::BAD_PASSWORD));
+      CallJS("setAdJoinParams", machine_name, username,
+             static_cast<int>(ActiveDirectoryErrorState::BAD_AUTH_PASSWORD),
+             show_unlock_password_);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_MACHINE_NAME_TOO_LONG:
-      CallJS(
-          "invalidateAd", machine_name, username,
-          static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_TOO_LONG));
+      CallJS("setAdJoinParams", machine_name, username,
+             static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_TOO_LONG),
+             show_unlock_password_);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_INVALID_MACHINE_NAME:
-      CallJS("invalidateAd", machine_name, username,
-             static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_INVALID));
+      CallJS("setAdJoinParams", machine_name, username,
+             static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_INVALID),
+             show_unlock_password_);
       ShowStep(kEnrollmentStepAdJoin);
       return;
     case authpolicy::ERROR_PASSWORD_EXPIRED:
       ShowError(IDS_AD_PASSWORD_EXPIRED, true);
       return;
     case authpolicy::ERROR_JOIN_ACCESS_DENIED:
-      ShowError(IDS_AD_USER_DENIED_TO_JOIN_MACHINE, true);
+      ShowError(IDS_AD_USER_DENIED_TO_JOIN_DEVICE, true);
       return;
     case authpolicy::ERROR_USER_HIT_JOIN_QUOTA:
       ShowError(IDS_AD_USER_HIT_JOIN_QUOTA, true);
@@ -516,17 +542,25 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   builder->Add("oauthEnrollWorking", IDS_ENTERPRISE_ENROLLMENT_WORKING_MESSAGE);
   // Do not use AddF for this string as it will be rendered by the JS code.
   builder->Add("oauthEnrollAbeSuccess", IDS_ENTERPRISE_ENROLLMENT_ABE_SUCCESS);
-  builder->Add("oauthEnrollAdMachineNameInput",
-               IDS_AD_MACHINE_NAME_INPUT_LABEL);
+  builder->Add("oauthEnrollAdMachineNameInput", IDS_AD_DEVICE_NAME_INPUT_LABEL);
+  builder->Add("oauthEnrollAdMachineNameInputRegex",
+               IDS_AD_DEVICE_NAME_REGEX_INPUT_LABEL);
   builder->Add("oauthEnrollAdDomainJoinWelcomeMessage",
                IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE);
   builder->Add("adEnrollmentLoginUsername", IDS_AD_ENROLLMENT_LOGIN_USER);
   builder->Add("adLoginInvalidUsername", IDS_AD_INVALID_USERNAME);
   builder->Add("adLoginPassword", IDS_AD_LOGIN_PASSWORD);
   builder->Add("adLoginInvalidPassword", IDS_AD_INVALID_PASSWORD);
-  builder->Add("adJoinErrorMachineNameInvalid", IDS_AD_MACHINENAME_INVALID);
-  builder->Add("adJoinErrorMachineNameTooLong", IDS_AD_MACHINENAME_TOO_LONG);
+  builder->Add("adJoinErrorMachineNameInvalid", IDS_AD_DEVICE_NAME_INVALID);
+  builder->Add("adJoinErrorMachineNameTooLong", IDS_AD_DEVICE_NAME_TOO_LONG);
+  builder->Add("adJoinErrorMachineNameDoesntMatchRegex",
+               IDS_AD_DEVICE_NAME_DOESNT_MATCH_REGEX);
   builder->Add("adJoinMoreOptions", IDS_AD_MORE_OPTIONS_BUTTON);
+  builder->Add("adUnlockConfig", IDS_AD_UNLOCK_CONFIG);
+  builder->Add("adUnlockButton", IDS_AD_UNLOCK_CONFIG_UNLOCK_BUTTON);
+  builder->Add("adUnlockPassword", IDS_AD_UNLOCK_CONFIG_PASSWORD);
+  builder->Add("adUnlockIncorrectPassword", IDS_AD_UNLOCK_INCORRECT_PASSWORD);
+  builder->Add("adUnlockPasswordSkip", IDS_AD_UNLOCK_PASSWORD_SKIP);
   builder->Add("adJoinOrgUnit", IDS_AD_ORG_UNIT_HINT);
   builder->Add("adJoinCancel", IDS_AD_CANCEL_BUTTON);
   builder->Add("adJoinConfirm", IDS_AD_CONFIRM_BUTTON);
@@ -543,6 +577,7 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   builder->Add("licenseCountTemplate",
                IDS_ENTERPRISE_ENROLLMENT_LICENSES_REMAINING_TEMPLATE);
   builder->Add("selectEncryption", IDS_AD_ENCRYPTION_SELECTION_SELECT);
+  builder->Add("selectConfiguration", IDS_AD_CONFIG_SELECTION_SELECT);
 }
 
 void EnrollmentScreenHandler::GetAdditionalParameters(
@@ -557,6 +592,33 @@ bool EnrollmentScreenHandler::IsOnEnrollmentScreen() const {
 bool EnrollmentScreenHandler::IsEnrollmentScreenHiddenByError() const {
   return (GetCurrentScreen() == OobeScreen::SCREEN_ERROR_MESSAGE &&
           error_screen_->GetParentScreen() == kScreenId);
+}
+
+void EnrollmentScreenHandler::OnAdConfigurationUnlocked(
+    std::string unlocked_data) {
+  if (unlocked_data.empty()) {
+    CallJS("setAdJoinParams", std::string() /* machineName */,
+           std::string() /* userName */,
+           static_cast<int>(ActiveDirectoryErrorState::BAD_UNLOCK_PASSWORD),
+           show_unlock_password_);
+    return;
+  }
+  std::unique_ptr<base::ListValue> options =
+      base::ListValue::From(base::JSONReader::Read(
+          unlocked_data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS));
+  if (!options) {
+    ShowError(IDS_AD_JOIN_CONFIG_NOT_PARSED, true);
+    show_unlock_password_ = false;
+    CallJS("setAdJoinConfiguration", base::ListValue());
+    return;
+  }
+  base::DictionaryValue custom;
+  custom.SetKey(
+      "name",
+      base::Value(l10n_util::GetStringUTF8(IDS_AD_CONFIG_SELECTION_CUSTOM)));
+  options->GetList().push_back(std::move(custom));
+  show_unlock_password_ = false;
+  CallJS("setAdJoinConfiguration", *options);
 }
 
 void EnrollmentScreenHandler::UpdateState(NetworkError::ErrorReason reason) {
@@ -682,13 +744,22 @@ void EnrollmentScreenHandler::HandleCompleteLogin(
 void EnrollmentScreenHandler::HandleAdCompleteLogin(
     const std::string& machine_name,
     const std::string& distinguished_name,
-    int encryption_types,
+    const std::string& encryption_types,
     const std::string& user_name,
     const std::string& password) {
   observe_network_failure_ = false;
   DCHECK(controller_);
   controller_->OnActiveDirectoryCredsProvided(
-      machine_name, distinguished_name, encryption_types, user_name, password);
+      machine_name, distinguished_name,
+      TranslateEncryptionTypesString(encryption_types), user_name, password);
+}
+
+void EnrollmentScreenHandler::HandleAdUnlockConfiguration(
+    const std::string& password) {
+  AuthPolicyLoginHelper::DecryptConfiguration(
+      active_directory_domain_join_config_, password,
+      base::BindOnce(&EnrollmentScreenHandler::OnAdConfigurationUnlocked,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnrollmentScreenHandler::HandleRetry() {

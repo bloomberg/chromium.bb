@@ -32,7 +32,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       'setAvailableLicenseTypes',
       'showAttributePromptStep',
       'showAttestationBasedEnrollmentSuccess',
-      'invalidateAd',
+      'setAdJoinParams',
+      'setAdJoinConfiguration',
     ],
 
     /**
@@ -138,6 +139,11 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
           e.detail.machinename, e.detail.distinguished_name,
           e.detail.encryption_types, e.detail.username, e.detail.password
         ]);
+      }.bind(this));
+      this.offlineAdUi_.addEventListener('unlockPasswordEntered', function(e) {
+        this.offlineAdUi_.disabled = true;
+        chrome.send(
+            'oauthEnrollAdUnlockConfiguration', [e.detail.unlock_password]);
       }.bind(this));
 
       this.authenticator_.addEventListener(
@@ -427,10 +433,30 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.updateControlsState();
     },
 
-    invalidateAd: function(machineName, user, errorState) {
+    /**
+     * Sets Active Directory join screen params.
+     * @param {string} machineName
+     * @param {string} userName
+     * @param {ACTIVE_DIRECTORY_ERROR_STATE} errorState
+     * @param {boolean} showUnlockConfig true if there is an encrypted
+     * configuration (and not unlocked yet).
+     */
+    setAdJoinParams: function(
+        machineName, userName, errorState, showUnlockConfig) {
       this.offlineAdUi_.disabled = false;
-      this.offlineAdUi_.setUser(user, machineName);
+      this.offlineAdUi_.setUser(userName, machineName);
       this.offlineAdUi_.setInvalid(errorState);
+      this.offlineAdUi_.unlockPasswordStep = showUnlockConfig;
+    },
+
+    /**
+     * Sets Active Directory join screen with the unlocked configuration.
+     * @param {Array<JoinConfigType>} options
+     */
+    setAdJoinConfiguration: function(options) {
+      this.offlineAdUi_.disabled = false;
+      this.offlineAdUi_.unlockPasswordStep = false;
+      this.offlineAdUi_.setJoinConfigurationOptions(options);
     },
 
     /**
