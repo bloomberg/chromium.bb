@@ -322,7 +322,7 @@ const base::Feature kImprovedRecoveryComponent{
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 // A feature that controls whether Chrome warns about incompatible applications.
 const base::Feature kIncompatibleApplicationsWarning{
-    "IncompatibleApplicationsWarning", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IncompatibleApplicationsWarning", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if !defined(OS_ANDROID)
