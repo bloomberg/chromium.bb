@@ -11,6 +11,7 @@
 #include "chrome/browser/thumbnails/thumbnail_service.h"
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
@@ -19,12 +20,10 @@
 // StartDataRequest.
 const char kUrlDelimiter[] = "?fb=";
 
-// Set ThumbnailService now as Profile isn't thread safe.
 ThumbnailSource::ThumbnailSource(Profile* profile, bool capture_thumbnails)
     : thumbnail_service_(ThumbnailServiceFactory::GetForProfile(profile)),
       capture_thumbnails_(capture_thumbnails),
-      image_data_fetcher_(profile->GetRequestContext()),
-      weak_ptr_factory_(this) {}
+      image_data_fetcher_(profile->GetRequestContext()) {}
 
 ThumbnailSource::~ThumbnailSource() = default;
 
@@ -37,6 +36,7 @@ void ThumbnailSource::StartDataRequest(
     const std::string& path,
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   GURL page_url;
   GURL fallback_thumbnail_url;
   ExtractPageAndThumbnailUrls(path, &page_url, &fallback_thumbnail_url);
@@ -97,20 +97,9 @@ void ThumbnailSource::StartDataRequest(
 std::string ThumbnailSource::GetMimeType(const std::string&) const {
   // We need to explicitly return a mime type, otherwise if the user tries to
   // drag the image they get no extension.
-  // TODO(treib): This isn't correct for remote thumbnails (in
-  // SendFetchedUrlImage), which are usually jpeg.
+  // NOTE:  This isn't correct for remote thumbnails (in SendFetchedUrlImage),
+  // which are usually jpeg. However it seems to work fine.
   return "image/png";
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-ThumbnailSource::TaskRunnerForRequestPath(const std::string& path) const {
-  // TopSites can be accessed from the IO thread. Otherwise, the URLs should be
-  // accessed on the UI thread.
-  // TODO(treib): |thumbnail_service_| is assumed to be non-null in other
-  // places, so probably this check isn't necessary?
-  return thumbnail_service_.get()
-             ? nullptr
-             : content::URLDataSource::TaskRunnerForRequestPath(path);
 }
 
 bool ThumbnailSource::AllowCaching() const {
