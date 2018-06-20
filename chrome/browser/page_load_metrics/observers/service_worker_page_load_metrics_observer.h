@@ -16,6 +16,7 @@ extern const char kHistogramServiceWorkerParseStart[];
 extern const char kBackgroundHistogramServiceWorkerParseStart[];
 extern const char kHistogramServiceWorkerParseStartForwardBack[];
 extern const char kHistogramServiceWorkerParseStartForwardBackNoStore[];
+extern const char kHistogramServiceWorkerFirstPaint[];
 extern const char kHistogramServiceWorkerFirstContentfulPaint[];
 extern const char kBackgroundHistogramServiceWorkerFirstContentfulPaint[];
 extern const char kHistogramServiceWorkerFirstContentfulPaintForwardBack[];
@@ -66,6 +67,9 @@ class ServiceWorkerPageLoadMetricsObserver
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
   void OnParseStart(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnFirstPaintInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnFirstContentfulPaintInPage(
