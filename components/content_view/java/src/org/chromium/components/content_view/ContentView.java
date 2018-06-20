@@ -35,7 +35,7 @@ import org.chromium.ui.base.EventForwarder;
  * the various {@link View} functionality to it.
  */
 public class ContentView
-        extends FrameLayout implements ContentViewCore.InternalAccessDelegate, SmartClipProvider {
+        extends FrameLayout implements ViewEventSink.InternalAccessDelegate, SmartClipProvider {
     private static final String TAG = "cr.ContentView";
 
     // Default value to signal that the ContentView's size need not be overridden.
@@ -321,7 +321,7 @@ public class ContentView
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    //              Start Implementation of ContentViewCore.InternalAccessDelegate               //
+    //              Start Implementation of ViewEventSink.InternalAccessDelegate                 //
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
@@ -340,7 +340,7 @@ public class ContentView
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    //                End Implementation of ContentViewCore.InternalAccessDelegate               //
+    //                End Implementation of ViewEventSink.InternalAccessDelegate                 //
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     private static class ContentViewApi23 extends ContentView {

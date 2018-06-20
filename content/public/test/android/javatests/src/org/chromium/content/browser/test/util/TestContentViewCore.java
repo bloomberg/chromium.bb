@@ -7,7 +7,6 @@ package org.chromium.content.browser.test.util;
 import android.content.Context;
 
 import org.chromium.content_public.browser.ContentViewCore;
-import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegate;
 
 /**
  * A dummy {@link ContentViewCore} implementation that can be overriden by tests
@@ -15,9 +14,6 @@ import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegat
  */
 public class TestContentViewCore implements ContentViewCore {
     public TestContentViewCore(Context context, String productVersion) {}
-
-    @Override
-    public void setContainerViewInternals(InternalAccessDelegate internalDispatcher) {}
 
     @Override
     public void destroy() {}
