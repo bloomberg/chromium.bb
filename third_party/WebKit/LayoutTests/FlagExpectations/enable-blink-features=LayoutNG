@@ -304,6 +304,7 @@ crbug.com/591099 external/wpt/css/css-writing-modes/text-orientation-script-001a
 crbug.com/591099 external/wpt/css/css-writing-modes/text-orientation-script-001c.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/vertical-alignment-003.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/vertical-alignment-009.xht [ Pass ]
+crbug.com/851075 external/wpt/css/cssom-view/elementFromPoint-mixed-font-sizes.html [ Failure ]
 crbug.com/591099 external/wpt/css/geometry/interfaces.worker.html [ Pass ]
 crbug.com/591099 external/wpt/css/selectors/focus-within-004.html [ Pass ]
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-abspos-child-002.html [ Pass ]
