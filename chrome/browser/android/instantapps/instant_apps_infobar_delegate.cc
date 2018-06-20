@@ -16,6 +16,22 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/InstantAppsInfoBarDelegate_jni.h"
+#include "ui/base/page_transition_types.h"
+
+namespace {
+
+bool PageTransitionInitiatedByUser(
+    content::NavigationHandle* navigation_handle) {
+  auto page_transition = navigation_handle->GetPageTransition();
+  return navigation_handle->HasUserGesture() ||
+         (page_transition & ui::PAGE_TRANSITION_FORWARD_BACK) ||
+         (page_transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) ||
+         (page_transition & ui::PAGE_TRANSITION_HOME_PAGE) ||
+         ui::PageTransitionCoreTypeIs(page_transition,
+                                      ui::PAGE_TRANSITION_TYPED);
+}
+
+}  // namespace
 
 InstantAppsInfoBarDelegate::~InstantAppsInfoBarDelegate() {}
 
@@ -39,7 +55,7 @@ InstantAppsInfoBarDelegate::InstantAppsInfoBarDelegate(
     bool instant_app_is_default)
     : content::WebContentsObserver(web_contents),
       url_(url),
-      has_navigated_away_from_launch_url_(false),
+      user_navigated_away_from_launch_url_(false),
       instant_app_is_default_(instant_app_is_default) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_delegate_.Reset(Java_InstantAppsInfoBarDelegate_create(env));
@@ -90,9 +106,11 @@ void InstantAppsInfoBarDelegate::InfoBarDismissed() {
 
 void InstantAppsInfoBarDelegate::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!GURL(url_).EqualsIgnoringRef(
+  if (!user_navigated_away_from_launch_url_ &&
+      !GURL(url_).EqualsIgnoringRef(
           navigation_handle->GetWebContents()->GetURL())) {
-    has_navigated_away_from_launch_url_ = true;
+    user_navigated_away_from_launch_url_ =
+        PageTransitionInitiatedByUser(navigation_handle);
   }
 }
 
@@ -105,7 +123,7 @@ void InstantAppsInfoBarDelegate::DidFinishNavigation(
 
 bool InstantAppsInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
-  return has_navigated_away_from_launch_url_ &&
+  return user_navigated_away_from_launch_url_ &&
          ConfirmInfoBarDelegate::ShouldExpire(details);
 }
 
