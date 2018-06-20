@@ -276,8 +276,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD),
       virtual_keyboard_enabled_);
 
-  scroll_content()->AddChildView(
-      TrayPopupUtils::CreateListSubHeaderSeparator());
+  scroll_content()->AddChildView(CreateListSubHeaderSeparator());
 
   AddScrollListSubHeader(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_ADDITIONAL_SETTINGS);
 

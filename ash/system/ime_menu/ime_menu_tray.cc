@@ -271,6 +271,9 @@ class ImeMenuListView : public ImeListView, public DetailedViewDelegate {
   bool IsOverflowIndicatorEnabled() const override { return true; }
   TriView* CreateTitleRow(int string_id) override { return nullptr; }
   views::View* CreateTitleSeparator() override { return nullptr; }
+  void ShowStickyHeaderSeparator(views::View* view,
+                                 bool show_separator) override {}
+  views::Separator* CreateListSubHeaderSeparator() override { return nullptr; }
   HoverHighlightView* CreateScrollListItem(
       ViewClickListener* listener,
       const gfx::VectorIcon& icon,

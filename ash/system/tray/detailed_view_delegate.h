@@ -19,6 +19,7 @@ class NativeTheme;
 namespace views {
 class Button;
 class ButtonListener;
+class Separator;
 class View;
 }  // namespace views
 
@@ -56,6 +57,15 @@ class DetailedViewDelegate {
   // Return the separator used between the title row and the contents. Caller
   // takes ownership of the returned view.
   virtual views::View* CreateTitleSeparator() = 0;
+
+  // Configure a |view| to have a visible separator below.
+  virtual void ShowStickyHeaderSeparator(views::View* view,
+                                         bool show_separator) = 0;
+
+  // Create a horizontal separator line to be drawn between rows in a detailed
+  // view above the sub-header rows. Caller takes ownership of the returned
+  // view.
+  virtual views::Separator* CreateListSubHeaderSeparator() = 0;
 
   // Return a targetable row containing |icon| and |text|. Caller takes
   // ownership of the returned view.
