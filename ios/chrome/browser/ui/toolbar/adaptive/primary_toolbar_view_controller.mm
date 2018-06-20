@@ -135,6 +135,8 @@
       (kAdaptiveToolbarHeight - 2 * kAdaptiveLocationBarVerticalMargin -
        kToolbarHeightFullscreen) *
           progress);
+  self.view.locationBarBottomConstraint.constant =
+      -AlignValueToPixel(kAdaptiveLocationBarVerticalMargin * progress);
   self.view.locationBarContainer.backgroundColor =
       [self.buttonFactory.toolbarConfiguration
           locationBarBackgroundColorWithVisibility:alphaValue];
