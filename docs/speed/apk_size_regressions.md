@@ -168,7 +168,7 @@ to show a diff of ELF symbols.
 
 ## Step 1: Check work queue daily
 
- * Bugs requiring sheriffs to take a look at are labeled `Performance-Sheriff` and `Performance-Size`.
+ * Bugs requiring sheriffs to take a look at are labeled `Performance-Sheriff` and `Performance-Size` [here](https://bugs.chromium.org/p/chromium/issues/list?q=label:Performance-Sheriff%20label:Performance-Size&sort=-modified).
  * After resolving the bug by finding an owner or debugging or commenting, remove the `Performance-Sheriff` label.
 
 ## Step 2: Check alerts regularly
