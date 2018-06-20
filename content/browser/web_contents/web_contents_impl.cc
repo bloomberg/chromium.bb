@@ -1603,10 +1603,6 @@ base::TimeTicks WebContentsImpl::GetLastActiveTime() const {
   return last_active_time_;
 }
 
-void WebContentsImpl::SetLastActiveTime(base::TimeTicks last_active_time) {
-  last_active_time_ = last_active_time;
-}
-
 void WebContentsImpl::WasShown() {
   controller_.SetActive(true);
 
@@ -1878,6 +1874,9 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   // it should be hidden.
   visibility_ =
       params.initially_hidden ? Visibility::HIDDEN : Visibility::VISIBLE;
+
+  if (!params.last_active_time.is_null())
+    last_active_time_ = params.last_active_time;
 
   // The routing ids must either all be set or all be unset.
   DCHECK((params.routing_id == MSG_ROUTING_NONE &&

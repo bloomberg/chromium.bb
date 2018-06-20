@@ -359,7 +359,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void NotifyNavigationStateChanged(InvalidateTypes changed_flags) override;
   void OnAudioStateChanged() override;
   base::TimeTicks GetLastActiveTime() const override;
-  void SetLastActiveTime(base::TimeTicks last_active_time) override;
   void WasShown() override;
   void WasHidden() override;
   void WasOccluded() override;

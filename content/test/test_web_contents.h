@@ -152,6 +152,8 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   void SetPageImportanceSignals(PageImportanceSignals signals) override;
 
+  void SetLastActiveTime(base::TimeTicks last_active_time) override;
+
  protected:
   // The deprecated WebContentsTester still needs to subclass this.
   explicit TestWebContents(BrowserContext* browser_context);

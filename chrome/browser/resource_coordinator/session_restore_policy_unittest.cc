@@ -7,6 +7,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
@@ -99,12 +100,12 @@ class SessionRestorePolicyTest : public ChromeRenderViewHostTestHarness {
     contents2_ = CreateTestWebContents();
     contents3_ = CreateTestWebContents();
 
-    contents1_->SetLastActiveTime(clock_.NowTicks() -
-                                  base::TimeDelta::FromHours(1));
-    contents2_->SetLastActiveTime(clock_.NowTicks() -
-                                  base::TimeDelta::FromHours(2));
-    contents3_->SetLastActiveTime(clock_.NowTicks() -
-                                  base::TimeDelta::FromHours(3));
+    content::WebContentsTester::For(contents1_.get())
+        ->SetLastActiveTime(clock_.NowTicks() - base::TimeDelta::FromHours(1));
+    content::WebContentsTester::For(contents2_.get())
+        ->SetLastActiveTime(clock_.NowTicks() - base::TimeDelta::FromHours(2));
+    content::WebContentsTester::For(contents3_.get())
+        ->SetLastActiveTime(clock_.NowTicks() - base::TimeDelta::FromHours(3));
   }
 
   void TearDown() override {

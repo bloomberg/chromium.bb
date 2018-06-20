@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_contents_factory.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -280,8 +281,8 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
     contents->GetController().Restore(
         0, content::RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
     // Create a last active time in the past.
-    contents->SetLastActiveTime(base::TimeTicks::Now() -
-                                base::TimeDelta::FromMinutes(1));
+    content::WebContentsTester::For(contents)->SetLastActiveTime(
+        base::TimeTicks::Now() - base::TimeDelta::FromMinutes(1));
     // TabLoadTracker needs the resource_coordinator WebContentsData to be
     // initialized.
     ResourceCoordinatorTabHelper::CreateForWebContents(contents);

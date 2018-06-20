@@ -47,6 +47,7 @@ std::unique_ptr<WebContents> CreateRestoredTab(
     int selected_navigation,
     const std::string& extension_app_id,
     bool from_last_session,
+    base::TimeTicks last_active_time,
     content::SessionStorageNamespace* session_storage_namespace,
     const std::string& user_agent_override,
     bool initially_hidden,
@@ -65,6 +66,7 @@ std::unique_ptr<WebContents> CreateRestoredTab(
   create_params.initially_hidden = initially_hidden;
   create_params.desired_renderer_state =
       WebContents::CreateParams::kNoRendererProcess;
+  create_params.last_active_time = last_active_time;
   WebContents* base_web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   if (base_web_contents) {
@@ -102,13 +104,14 @@ WebContents* AddRestoredTab(
     bool select,
     bool pin,
     bool from_last_session,
+    base::TimeTicks last_active_time,
     content::SessionStorageNamespace* session_storage_namespace,
     const std::string& user_agent_override,
     bool from_session_restore) {
   std::unique_ptr<WebContents> web_contents = CreateRestoredTab(
       browser, navigations, selected_navigation, extension_app_id,
-      from_last_session, session_storage_namespace, user_agent_override,
-      !select, from_session_restore);
+      from_last_session, last_active_time, session_storage_namespace,
+      user_agent_override, !select, from_session_restore);
 
   int add_types = select ? TabStripModel::ADD_ACTIVE
                          : TabStripModel::ADD_NONE;
@@ -155,8 +158,8 @@ WebContents* ReplaceRestoredTab(
     bool from_session_restore) {
   std::unique_ptr<WebContents> web_contents = CreateRestoredTab(
       browser, navigations, selected_navigation, extension_app_id,
-      from_last_session, session_storage_namespace, user_agent_override, false,
-      from_session_restore);
+      from_last_session, base::TimeTicks(), session_storage_namespace,
+      user_agent_override, false, from_session_restore);
   WebContents* raw_web_contents = web_contents.get();
 
   // ReplaceWebContentsAt won't animate in the restoration, so manually do the
