@@ -336,6 +336,18 @@ std::string JoinStringRange(const std::vector<const char*>& strings,
 
 }  // namespace
 
+bool Validator::IsInDevicePolicy(base::DictionaryValue* result,
+                                 const std::string& field_name) {
+  if (result->HasKey(field_name)) {
+    if (onc_source_ != ::onc::ONC_SOURCE_DEVICE_POLICY) {
+      error_or_warning_found_ = true;
+      LOG(ERROR) << field_name << " only allowed in device policy.";
+      return false;
+    }
+  }
+  return true;
+}
+
 bool Validator::IsValidValue(const std::string& field_value,
                              const std::vector<const char*>& valid_values) {
   for (const char* it : valid_values) {
@@ -910,28 +922,12 @@ bool Validator::ValidateGlobalNetworkConfiguration(
   using namespace ::onc::global_network_config;
   using namespace ::onc::network_config;
 
-  // Validate kDisableNetworkTypes field.
-  const base::ListValue* disabled_network_types = NULL;
-  if (result->GetListWithoutPathExpansion(kDisableNetworkTypes,
-                                          &disabled_network_types)) {
-    // The kDisableNetworkTypes field is only allowed in device policy.
-    if (!disabled_network_types->empty() &&
-        onc_source_ != ::onc::ONC_SOURCE_DEVICE_POLICY) {
-      error_or_warning_found_ = true;
-      LOG(ERROR) << "Disabled network types only allowed in device policy.";
-      return false;
-    }
-  }
-
-  if (result->HasKey(kAllowOnlyPolicyNetworksToConnect)) {
-    // The kAllowOnlyPolicyNetworksToConnect field is only allowed in device
-    // policy.
-    if (onc_source_ != ::onc::ONC_SOURCE_DEVICE_POLICY) {
-      error_or_warning_found_ = true;
-      LOG(ERROR)
-          << "AllowOnlyPolicyNetworksToConnect only allowed in device policy.";
-      return false;
-    }
+  // Validate that kDisableNetworkTypes, kAllowOnlyPolicyNetworksToConnect and
+  // kBlacklistedHexSSIDs are only allowed in device policy.
+  if (!IsInDevicePolicy(result, kDisableNetworkTypes) ||
+      !IsInDevicePolicy(result, kAllowOnlyPolicyNetworksToConnect) ||
+      !IsInDevicePolicy(result, kBlacklistedHexSSIDs)) {
+    return false;
   }
 
   // Ensure the list contains only legitimate network type identifiers.

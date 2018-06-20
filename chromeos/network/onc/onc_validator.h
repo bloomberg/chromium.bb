@@ -176,6 +176,10 @@ class CHROMEOS_EXPORT Validator : public Mapper {
 
   bool IsValidValue(const std::string& field_value,
                     const std::vector<const char*>& valid_values);
+
+  bool IsInDevicePolicy(base::DictionaryValue* result,
+                        const std::string& field_name);
+
   bool FieldExistsAndHasNoValidValue(
       const base::DictionaryValue& object,
       const std::string& field_name,

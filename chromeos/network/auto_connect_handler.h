@@ -88,6 +88,12 @@ class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
   // manually connected unmanaged networks on every policy update.
   void DisconnectIfPolicyRequires();
 
+  // Disconnects from all currently connected/connecting blacklisted WiFis. Also
+  // removes the corresponding network configuration for all blacklisted
+  // networks to prevent Shill from re-connecting to them (e.g. during
+  // ConnectToBestService).
+  void DisconnectAndRemoveBlacklistedNetworks();
+
   // Disconnects from all currently connected/connecting unmanaged WiFis.
   // When |remove_configuration|==true, we also remove the corresponding network
   // configuration for all unmanaged networks from Shill.

@@ -53,8 +53,8 @@ const char NetworkConnectionHandler::kErrorConnectCanceled[] =
     "connect-canceled";
 const char NetworkConnectionHandler::kErrorCertLoadTimeout[] =
     "cert-load-timeout";
-const char NetworkConnectionHandler::kErrorUnmanagedNetwork[] =
-    "unmanaged-network";
+const char NetworkConnectionHandler::kErrorBlockedByPolicy[] =
+    "blocked-by-policy";
 const char NetworkConnectionHandler::kErrorActivateFailed[] = "activate-failed";
 const char NetworkConnectionHandler::kErrorEnabledOrDisabledWhenNotAvailable[] =
     "not-available";

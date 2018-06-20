@@ -355,7 +355,7 @@ TEST_F(NetworkConnectionHandlerImplTest,
 }
 
 TEST_F(NetworkConnectionHandlerImplTest,
-       NetworkConnectionHandlerConnectProhibited) {
+       NetworkConnectionHandlerConnectBlockedByManagedOnly) {
   EXPECT_FALSE(ConfigureService(kConfigConnectable).empty());
   base::DictionaryValue global_config;
   global_config.SetKey(
@@ -364,10 +364,35 @@ TEST_F(NetworkConnectionHandlerImplTest,
   SetupPolicy("[]", global_config, false /* load as device policy */);
   LoginToRegularUser();
   Connect(kWifi0);
-  EXPECT_EQ(NetworkConnectionHandler::kErrorUnmanagedNetwork,
+  EXPECT_EQ(NetworkConnectionHandler::kErrorBlockedByPolicy,
             GetResultAndReset());
 
   SetupPolicy(kPolicyWifi0, global_config, false /* load as device policy */);
+  Connect(kWifi0);
+  EXPECT_EQ(kSuccessResult, GetResultAndReset());
+}
+
+TEST_F(NetworkConnectionHandlerImplTest,
+       NetworkConnectionHandlerConnectBlockedByBlacklist) {
+  EXPECT_FALSE(ConfigureService(kConfigConnectable).empty());
+
+  // Set a device policy which blocks wifi0.
+  base::Value::ListStorage blacklist;
+  blacklist.push_back(base::Value("7769666930"));  // hex(wifi0) = 7769666930
+  base::DictionaryValue global_config;
+  global_config.SetKey(::onc::global_network_config::kBlacklistedHexSSIDs,
+                       base::Value(blacklist));
+  SetupPolicy("[]", global_config, false /* load as device policy */);
+
+  LoginToRegularUser();
+
+  Connect(kWifi0);
+  EXPECT_EQ(NetworkConnectionHandler::kErrorBlockedByPolicy,
+            GetResultAndReset());
+
+  // Set a user policy, which configures wifi0 (==whitelisted).
+  SetupPolicy(kPolicyWifi0, base::DictionaryValue(),
+              true /* load as user policy */);
   Connect(kWifi0);
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
 }

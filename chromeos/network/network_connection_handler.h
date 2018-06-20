@@ -88,8 +88,8 @@ class CHROMEOS_EXPORT NetworkConnectionHandler {
   // Certificate load timed out.
   static const char kErrorCertLoadTimeout[];
 
-  // Trying to configure an unmanaged network but policy prohibits that
-  static const char kErrorUnmanagedNetwork[];
+  // Trying to configure a network that is blocked by policy.
+  static const char kErrorBlockedByPolicy[];
 
   // Network activation failed.
   static const char kErrorActivateFailed[];
