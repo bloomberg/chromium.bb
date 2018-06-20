@@ -6,6 +6,8 @@
 
 namespace prefs {
 
+const char kUnifiedConsentGiven[] = "unified_consent_given";
+
 const char kUrlKeyedAnonymizedDataCollectionEnabled[] =
     "url_keyed_anonymized_data_collection.enabled";
 

@@ -24,36 +24,42 @@
     </style>
     <settings-toggle-button pref="{{prefs.alternate_error_pages.enabled}}"
         label="$i18n{linkDoctorPref}"
-        sub-label="$i18n{linkDoctorPrefDesc}">
+        sub-label="$i18n{linkDoctorPrefDesc}"
+        disabled="[[unifiedConsentGiven]]">
     </settings-toggle-button>
     <settings-toggle-button hidden="[[!pageVisibility.searchPrediction]]"
         pref="{{prefs.search.suggest_enabled}}"
         label="$i18n{searchSuggestPref}"
-        sub-label="$i18n{searchSuggestPrefDesc}">
+        sub-label="$i18n{searchSuggestPrefDesc}"
+        disabled="[[unifiedConsentGiven]]">
     </settings-toggle-button>
     <settings-toggle-button id="safeBrowsingExtendedReportingControl"
         pref="[[safeBrowsingExtendedReportingPref_]]"
         label="$i18n{safeBrowsingEnableExtendedReporting}"
         sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
         on-settings-boolean-control-change="onSberChange_"
-        no-set-pref>
+        no-set-pref
+        disabled="[[unifiedConsentGiven]]">
     </settings-toggle-button>
     <settings-toggle-button hidden="[[!pageVisibility.networkPrediction]]"
         pref="{{prefs.net.network_prediction_options}}"
         label="$i18n{networkPredictionEnabled}"
         sub-label="$i18n{networkPredictionEnabledDesc}"
-        numeric-unchecked-value="[[networkPredictionEnum_.NEVER]]">
+        numeric-unchecked-value="[[networkPredictionEnum_.NEVER]]"
+        disabled="[[unifiedConsentGiven]]">
     </settings-toggle-button>
     <settings-toggle-button pref="{{prefs.safebrowsing.enabled}}"
         label="$i18n{safeBrowsingEnableProtection}"
-        sub-label="$i18n{safeBrowsingEnableProtectionDesc}">
+        sub-label="$i18n{safeBrowsingEnableProtectionDesc}"
+        disabled="[[unifiedConsentGiven]]">
     </settings-toggle-button>
 <if expr="_google_chrome">
     <template is="dom-if" if="[[!unifiedConsentEnabled]]">
       <settings-toggle-button id="spellCheckControl"
           pref="{{prefs.spellcheck.use_spelling_service}}"
           label="$i18n{spellingPref}"
-          sub-label="$i18n{spellingDescription}">
+          sub-label="$i18n{spellingDescription}"
+          disabled="[[unifiedConsentGiven]]">
       </settings-toggle-button>
     </template>
     <template is="dom-if" if="[[unifiedConsentEnabled]]">
@@ -64,21 +70,24 @@
             $i18nRaw{spellingDescription}
           </div>
         </div>
-        <cr-toggle checked="[[prefs.spellcheck.use_spelling_service]]" disabled>
+        <cr-toggle checked="[[prefs.spellcheck.use_spelling_service]]"
+            disabled="[[unifiedConsentGiven]]">
         </cr-toggle>
       </div>
     </template>
 <if expr="chromeos">
     <settings-toggle-button pref="{{prefs.cros.metrics.reportingEnabled}}"
         label="$i18n{enableLogging}"
-        sub-label="$i18n{enableLoggingDesc}">
+        sub-label="$i18n{enableLoggingDesc}"
+        disabled="[[unifiedConsentGiven]]">
     </settings-toggle-button>
 </if><!-- chromeos -->
 <if expr="not chromeos">
     <settings-toggle-button id="metricsReportingControl"
         pref="[[metricsReportingPref_]]" label="$i18n{enableLogging}"
         sub-label="$i18n{enableLoggingDesc}" no-set-pref
-        on-settings-boolean-control-change="onMetricsReportingChange_">
+        on-settings-boolean-control-change="onMetricsReportingChange_"
+        disabled="[[unifiedConsentGiven]]">
       <template is="dom-if" if="[[showRestart_]]" restamp>
         <paper-button on-click="onRestartTap_" id="restart"
             slot="more-actions">

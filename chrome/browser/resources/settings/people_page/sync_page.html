@@ -90,22 +90,13 @@
       </settings-sync-account-control>
     </template>
 </if>
-    <div class="settings-box first two-line"
+     <!-- A change of the unified consent toggle state is automatically handled
+          in the C++ code after a change in the pref is observed. -->
+    <settings-toggle-button class="first" pref="{{prefs.unified_consent_given}}"
+        label="$i18n{syncUnifiedConsentToggleTitle}"
         hidden="[[!unifiedConsentEnabled]]">
-      <div class="start">
-        <div>$i18n{syncUnifiedConsentToggleTitle}</div>
-        <div class="secondary">$i18n{syncUnifiedConsentToggleSubtitle}</div>
-      </div>
-      <!-- For now this toggle only turns on all sync services.
-           TODO(crbug.com/800974): Add custom function for turning
-           on all unified consent services.-->
-      <cr-toggle id="syncAllDataTypesControl"
-          checked="{{syncPrefs.syncAllDataTypes}}"
-          on-change="onSyncAllDataTypesChanged_"
-          aria-labelledby="syncUnifiedConsentToggleTitle">
-      </cr-toggle>
-    </div>
-    <div class="settings-box first two-line" id="sync-section-toggle"
+    </settings-toggle-button>
+    <div class="settings-box two-line" id="sync-section-toggle"
         actionable$="[[!syncSectionDisabled_]]"
         on-click="toggleExpandButton_"
         hidden="[[!unifiedConsentEnabled]]">
@@ -423,7 +414,8 @@
           opened="[[personalizeSectionOpened_]]">
         <settings-personalization-options class="list-frame" prefs="{{prefs}}"
             page-visibility="[[pageVisibility]]"
-            unified-consent-enabled="[[unifiedConsentEnabled]]">
+            unified-consent-enabled="[[unifiedConsentEnabled]]"
+            unified-consent-given="{{prefs.unified_consent_given.value}}">
         </settings-personalization-options>
       </iron-collapse>
     </template>

@@ -8,8 +8,12 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/unified_consent_helper.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/unified_consent/chrome_unified_consent_service_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/unified_consent/unified_consent_service.h"
 
 UnifiedConsentServiceFactory::UnifiedConsentServiceFactory()
@@ -17,6 +21,7 @@ UnifiedConsentServiceFactory::UnifiedConsentServiceFactory()
           "UnifiedConsentService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(IdentityManagerFactory::GetInstance());
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
 UnifiedConsentServiceFactory::~UnifiedConsentServiceFactory() = default;
@@ -46,7 +51,9 @@ KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
     return nullptr;
 
   return new UnifiedConsentService(
-      profile->GetPrefs(), IdentityManagerFactory::GetForProfile(profile));
+      new ChromeUnifiedConsentServiceClient(profile->GetPrefs()),
+      profile->GetPrefs(), IdentityManagerFactory::GetForProfile(profile),
+      ProfileSyncServiceFactory::GetForProfile(profile));
 }
 
 bool UnifiedConsentServiceFactory::ServiceIsNULLWhileTesting() const {
@@ -54,5 +61,5 @@ bool UnifiedConsentServiceFactory::ServiceIsNULLWhileTesting() const {
 }
 
 bool UnifiedConsentServiceFactory::ServiceIsCreatedWithBrowserContext() const {
-  return true;
+  return false;
 }
