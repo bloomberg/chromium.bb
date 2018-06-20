@@ -70,6 +70,12 @@ public final class ViewEventSinkImpl implements ViewEventSink, ActivityStateObse
     }
 
     @Override
+    public void setAccessDelegate(ViewEventSink.InternalAccessDelegate accessDelegate) {
+        GestureListenerManagerImpl.fromWebContents(mWebContents).setScrollDelegate(accessDelegate);
+        ContentUiEventHandler.fromWebContents(mWebContents).setEventDelegate(accessDelegate);
+    }
+
+    @Override
     public void onAttachedToWindow() {
         WindowEventObserverManager.from(mWebContents).onAttachedToWindow();
     }

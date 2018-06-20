@@ -174,8 +174,7 @@ public class AwContents implements SmartClipProvider {
      * Interface that consumers of {@link AwContents} must implement to allow the proper
      * dispatching of view methods through the containing view.
      */
-    public interface InternalAccessDelegate extends ContentViewCore.InternalAccessDelegate {
-
+    public interface InternalAccessDelegate extends ViewEventSink.InternalAccessDelegate {
         /**
          * @see View#overScrollBy(int, int, int, int, int, int, int, int, boolean);
          */
@@ -996,7 +995,7 @@ public class AwContents implements SmartClipProvider {
 
     private void setInternalAccessAdapter(InternalAccessDelegate internalAccessAdapter) {
         mInternalAccessAdapter = internalAccessAdapter;
-        mContentViewCore.setContainerViewInternals(mInternalAccessAdapter);
+        mViewEventSink.setAccessDelegate(mInternalAccessAdapter);
     }
 
     private void setContainerView(ViewGroup newContainerView, AwGLFunctor currentFunctor) {

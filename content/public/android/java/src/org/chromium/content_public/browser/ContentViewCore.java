@@ -5,11 +5,9 @@
 package org.chromium.content_public.browser;
 
 import android.content.Context;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
-import android.view.View;
 
 import org.chromium.content.browser.ContentViewCoreImpl;
+import org.chromium.content_public.browser.ViewEventSink.InternalAccessDelegate;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -42,44 +40,6 @@ public interface ContentViewCore {
     public static ContentViewCore fromWebContents(WebContents webContents) {
         return ContentViewCoreImpl.fromWebContents(webContents);
     }
-
-    /**
-     * Interface that consumers of {@link ContentViewCore} must implement to allow the proper
-     * dispatching of view methods through the containing view.
-     *
-     * <p>
-     * All methods with the "super_" prefix should be routed to the parent of the
-     * implementing container view.
-     */
-    @SuppressWarnings("javadoc")
-    public interface InternalAccessDelegate {
-        /**
-         * @see View#onKeyUp(keyCode, KeyEvent)
-         */
-        boolean super_onKeyUp(int keyCode, KeyEvent event);
-
-        /**
-         * @see View#dispatchKeyEvent(KeyEvent)
-         */
-        boolean super_dispatchKeyEvent(KeyEvent event);
-
-        /**
-         * @see View#onGenericMotionEvent(MotionEvent)
-         */
-        boolean super_onGenericMotionEvent(MotionEvent event);
-
-        /**
-         * @see View#onScrollChanged(int, int, int, int)
-         */
-        void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix);
-    }
-
-    /**
-     * Set the Container view Internals.
-     * @param internalDispatcher Handles dispatching all hidden or super methods to the
-     *                           containerView.
-     */
-    void setContainerViewInternals(InternalAccessDelegate internalDispatcher);
 
     /**
      * Destroy the internal state of the ContentView. This method may only be

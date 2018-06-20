@@ -14,7 +14,7 @@ import org.chromium.content.browser.input.TextSuggestionHost;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.ContentViewCore;
-import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegate;
+import org.chromium.content_public.browser.ViewEventSink.InternalAccessDelegate;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -84,7 +84,7 @@ public class ContentViewCoreImpl implements ContentViewCore {
         SelectPopup.create(context, mWebContents);
         Gamepad.create(context, mWebContents);
 
-        setContainerViewInternals(internalDispatcher);
+        ViewEventSinkImpl.from(mWebContents).setAccessDelegate(internalDispatcher);
         mWebContents.getRenderCoordinates().setDeviceScaleFactor(
                 windowAndroid.getDisplay().getDipScale());
 
@@ -93,13 +93,6 @@ public class ContentViewCoreImpl implements ContentViewCore {
 
     private boolean initialized() {
         return mInitialized;
-    }
-
-    @Override
-    public void setContainerViewInternals(InternalAccessDelegate internalDispatcher) {
-        GestureListenerManagerImpl.fromWebContents(mWebContents)
-                .setScrollDelegate(internalDispatcher);
-        ContentUiEventHandler.fromWebContents(mWebContents).setEventDelegate(internalDispatcher);
     }
 
     @Override
