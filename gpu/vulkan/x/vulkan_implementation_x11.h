@@ -35,6 +35,10 @@ class COMPONENT_EXPORT(VULKAN_X11) VulkanImplementationX11
   XDisplay* const x_display_;
   VulkanInstance vulkan_instance_;
 
+  PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR
+      vkGetPhysicalDeviceXlibPresentationSupportKHR_ = nullptr;
+  PFN_vkCreateXlibSurfaceKHR vkCreateXlibSurfaceKHR_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(VulkanImplementationX11);
 };
 

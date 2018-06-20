@@ -22,10 +22,11 @@ component("init") {
     "//gpu/vulkan",
   ]
 
+  deps = []
   if (use_x11) {
-    public_deps += [ "//gpu/vulkan/x" ]
+    deps += [ "//gpu/vulkan/x" ]
   }
   if (use_ozone) {
-    public_deps += [ "//ui/ozone" ]
+    deps += [ "//ui/ozone" ]
   }
 }

@@ -39,22 +39,20 @@ bool VulkanImplementationX11::InitializeVulkanInstance() {
   }
 
   // Initialize platform function pointers
-  vulkan_function_pointers->vkGetPhysicalDeviceXlibPresentationSupportKHR =
+  vkGetPhysicalDeviceXlibPresentationSupportKHR_ =
       reinterpret_cast<PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR>(
           vulkan_function_pointers->vkGetInstanceProcAddr(
               vulkan_instance_.vk_instance(),
               "vkGetPhysicalDeviceXlibPresentationSupportKHR"));
-  if (!vulkan_function_pointers
-           ->vkGetPhysicalDeviceXlibPresentationSupportKHR) {
+  if (!vkGetPhysicalDeviceXlibPresentationSupportKHR_) {
     vulkan_instance_.Destroy();
     return false;
   }
 
-  vulkan_function_pointers->vkCreateXlibSurfaceKHR =
-      reinterpret_cast<PFN_vkCreateXlibSurfaceKHR>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(
-              vulkan_instance_.vk_instance(), "vkCreateXlibSurfaceKHR"));
-  if (!vulkan_function_pointers->vkCreateXlibSurfaceKHR) {
+  vkCreateXlibSurfaceKHR_ = reinterpret_cast<PFN_vkCreateXlibSurfaceKHR>(
+      vulkan_function_pointers->vkGetInstanceProcAddr(
+          vulkan_instance_.vk_instance(), "vkCreateXlibSurfaceKHR"));
+  if (!vkCreateXlibSurfaceKHR_) {
     vulkan_instance_.Destroy();
     return false;
   }
@@ -68,15 +66,12 @@ VkInstance VulkanImplementationX11::GetVulkanInstance() {
 
 std::unique_ptr<VulkanSurface> VulkanImplementationX11::CreateViewSurface(
     gfx::AcceleratedWidget window) {
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
-
   VkSurfaceKHR surface;
   VkXlibSurfaceCreateInfoKHR surface_create_info = {};
   surface_create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
   surface_create_info.dpy = x_display_;
   surface_create_info.window = window;
-  VkResult result = vulkan_function_pointers->vkCreateXlibSurfaceKHR(
+  VkResult result = vkCreateXlibSurfaceKHR_(
       GetVulkanInstance(), &surface_create_info, nullptr, &surface);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateXlibSurfaceKHR() failed: " << result;
@@ -90,14 +85,10 @@ bool VulkanImplementationX11::GetPhysicalDevicePresentationSupport(
     VkPhysicalDevice device,
     const std::vector<VkQueueFamilyProperties>& queue_family_properties,
     uint32_t queue_family_index) {
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
-
-  return vulkan_function_pointers
-      ->vkGetPhysicalDeviceXlibPresentationSupportKHR(
-          device, queue_family_index, x_display_,
-          XVisualIDFromVisual(
-              DefaultVisual(x_display_, DefaultScreen(x_display_))));
+  return vkGetPhysicalDeviceXlibPresentationSupportKHR_(
+      device, queue_family_index, x_display_,
+      XVisualIDFromVisual(
+          DefaultVisual(x_display_, DefaultScreen(x_display_))));
 }
 
 }  // namespace gpu
