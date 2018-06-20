@@ -38,6 +38,7 @@ js_library("closure_compile_externs") {
     "$externs_path/chrome_extensions.js",
     "$externs_path/command_line_private.js",
     "$externs_path/file_manager_private.js",
+    "$externs_path/file_system_provider.js",
     "../../../../externs/app_window_common.js",
     "../../../../externs/entry_location.js",
     "../../../../externs/exif_entry.js",
