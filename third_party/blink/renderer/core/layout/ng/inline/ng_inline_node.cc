@@ -70,13 +70,8 @@ void CollectInlinesInternal(
   builder->EnterBlock(block->Style());
   LayoutObject* node = GetLayoutObjectForFirstChildNode(block);
 
-  LayoutObject* symbol = nullptr;
-  if (block->IsLayoutNGListMarker()) {
-    symbol = ToLayoutNGListMarker(block)->SymbolMarkerLayoutText();
-  } else if (block->IsLayoutNGListItem()) {
-    symbol = ToLayoutNGListItem(block)->SymbolMarkerLayoutText();
-  }
-
+  const LayoutObject* symbol =
+      LayoutNGListItem::FindSymbolMarkerLayoutText(block);
   while (node) {
     if (node->IsText()) {
       LayoutText* layout_text = ToLayoutText(node);

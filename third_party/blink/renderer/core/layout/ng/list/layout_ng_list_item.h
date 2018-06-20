@@ -37,6 +37,7 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   void WillCollectInlines() override;
 
   LayoutObject* SymbolMarkerLayoutText() const;
+  static const LayoutObject* FindSymbolMarkerLayoutText(const LayoutObject*);
 
   const char* GetName() const override { return "LayoutNGListItem"; }
 
