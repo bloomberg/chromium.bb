@@ -293,6 +293,9 @@ class PasswordStore : protected PasswordStoreSync,
   void SetPasswordStoreSigninNotifier(
       std::unique_ptr<PasswordStoreSigninNotifier> notifier);
 
+  // Schedule the update of password hashes used by reuse detector.
+  void SchedulePasswordHashUpdate(bool should_log_metrics);
+
 #endif
 
  protected:
