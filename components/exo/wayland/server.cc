@@ -1376,48 +1376,119 @@ void bind_output(wl_client* client, void* data, uint32_t version, uint32_t id) {
 ////////////////////////////////////////////////////////////////////////////////
 // xdg_positioner_interface:
 
+uint32_t InvertBitfield(uint32_t bitfield, uint32_t mask) {
+  return (bitfield & ~mask) | ((bitfield & mask) ^ mask);
+}
+
+// TODO(oshima): propagate x/y flip state to children.
 struct WaylandPositioner {
-  // Calculate and return position from current state.
-  gfx::Point CalculatePosition() const {
-    gfx::Point position;
-
+  static int CalculateX(const gfx::Size& size,
+                        const gfx::Rect& anchor_rect,
+                        uint32_t anchor,
+                        uint32_t gravity,
+                        int offset) {
+    int x = offset;
     if (anchor & ZXDG_POSITIONER_V6_ANCHOR_LEFT)
-      position.set_x(anchor_rect.x());
+      x += anchor_rect.x();
     else if (anchor & ZXDG_POSITIONER_V6_ANCHOR_RIGHT)
-      position.set_x(anchor_rect.right());
+      x += anchor_rect.right();
     else
-      position.set_x(anchor_rect.CenterPoint().x());
-
-    if (anchor & ZXDG_POSITIONER_V6_ANCHOR_TOP)
-      position.set_y(anchor_rect.y());
-    else if (anchor & ZXDG_POSITIONER_V6_ANCHOR_BOTTOM)
-      position.set_y(anchor_rect.bottom());
-    else
-      position.set_y(anchor_rect.CenterPoint().y());
-
-    gfx::Vector2d gravity_offset;
+      x += anchor_rect.CenterPoint().x();
 
     if (gravity & ZXDG_POSITIONER_V6_GRAVITY_LEFT)
-      gravity_offset.set_x(size.width());
-    else if (gravity & ZXDG_POSITIONER_V6_GRAVITY_RIGHT)
-      gravity_offset.set_x(0);
+      return x - size.width();
+    if (gravity & ZXDG_POSITIONER_V6_GRAVITY_RIGHT)
+      return x;
+    return x - size.width() / 2;
+  }
+
+  static int CalculateY(const gfx::Size& size,
+                        const gfx::Rect& anchor_rect,
+                        uint32_t anchor,
+                        uint32_t gravity,
+                        int offset) {
+    int y = offset;
+    if (anchor & ZXDG_POSITIONER_V6_ANCHOR_TOP)
+      y += anchor_rect.y();
+    else if (anchor & ZXDG_POSITIONER_V6_ANCHOR_BOTTOM)
+      y += anchor_rect.bottom();
     else
-      gravity_offset.set_x(size.width() / 2);
+      y += anchor_rect.CenterPoint().y();
 
     if (gravity & ZXDG_POSITIONER_V6_GRAVITY_TOP)
-      gravity_offset.set_y(size.height());
-    else if (gravity & ZXDG_POSITIONER_V6_GRAVITY_BOTTOM)
-      gravity_offset.set_y(0);
-    else
-      gravity_offset.set_y(size.height() / 2);
+      return y - size.height();
+    if (gravity & ZXDG_POSITIONER_V6_GRAVITY_BOTTOM)
+      return y;
+    return y - size.height() / 2;
+  }
 
-    return position + offset - gravity_offset;
+  // Calculate and return position from current state.
+  gfx::Point CalculatePosition(const gfx::Rect& work_area) const {
+    constexpr uint32_t kHorizontalAnchors =
+        ZXDG_POSITIONER_V6_ANCHOR_LEFT | ZXDG_POSITIONER_V6_ANCHOR_RIGHT;
+    constexpr uint32_t kVerticalAnchors =
+        ZXDG_POSITIONER_V6_ANCHOR_TOP | ZXDG_POSITIONER_V6_ANCHOR_BOTTOM;
+    constexpr uint32_t kHorizontalGravities =
+        ZXDG_POSITIONER_V6_GRAVITY_LEFT | ZXDG_POSITIONER_V6_GRAVITY_RIGHT;
+    constexpr uint32_t kVerticalGravities =
+        ZXDG_POSITIONER_V6_GRAVITY_TOP | ZXDG_POSITIONER_V6_GRAVITY_BOTTOM;
+
+    // TODO(oshima): The size must be smaller than work area.
+
+    gfx::Rect bounds(
+        gfx::Point(CalculateX(size, anchor_rect, anchor, gravity, offset.x()),
+                   CalculateY(size, anchor_rect, anchor, gravity, offset.y())),
+        size);
+
+    // Adjust x position if the bounds are not fully contained by the work area.
+    if (work_area.x() > bounds.x() || work_area.right() < bounds.right()) {
+      // Allow sliding horizontally if the surface is attached below
+      // or above the parent surface.
+      bool can_slide_x = (anchor & ZXDG_POSITIONER_V6_ANCHOR_BOTTOM &&
+                          gravity & ZXDG_POSITIONER_V6_GRAVITY_BOTTOM) ||
+                         (anchor & ZXDG_POSITIONER_V6_ANCHOR_TOP &&
+                          gravity & ZXDG_POSITIONER_V6_GRAVITY_TOP);
+      if (adjustment & ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_SLIDE_X &&
+          can_slide_x) {
+        if (bounds.x() < work_area.x())
+          bounds.set_x(work_area.x());
+        else if (bounds.right() > work_area.right())
+          bounds.set_x(work_area.right() - size.width());
+      } else if (adjustment & ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_FLIP_X) {
+        bounds.set_x(CalculateX(
+            size, anchor_rect, InvertBitfield(anchor, kHorizontalAnchors),
+            InvertBitfield(gravity, kHorizontalGravities), -offset.x()));
+      }
+    }
+
+    // Adjust y position if the bounds are not fully contained by the work area.
+    if (work_area.y() > bounds.y() || work_area.bottom() < bounds.bottom()) {
+      // Allow sliding vertically if the surface is attached left or
+      // right of the parent surface.
+      bool can_slide_y = (anchor & ZXDG_POSITIONER_V6_ANCHOR_LEFT &&
+                          gravity & ZXDG_POSITIONER_V6_GRAVITY_LEFT) ||
+                         (anchor & ZXDG_POSITIONER_V6_ANCHOR_RIGHT &&
+                          gravity & ZXDG_POSITIONER_V6_GRAVITY_RIGHT);
+      if (adjustment & ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_SLIDE_Y &&
+          can_slide_y) {
+        if (bounds.y() < work_area.y())
+          bounds.set_y(work_area.y());
+        else if (bounds.bottom() > work_area.bottom())
+          bounds.set_y(work_area.bottom() - size.height());
+      } else if (adjustment & ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_FLIP_Y) {
+        bounds.set_y(CalculateY(
+            size, anchor_rect, InvertBitfield(anchor, kVerticalAnchors),
+            InvertBitfield(gravity, kVerticalGravities), -offset.y()));
+      }
+    }
+    return bounds.origin();
   }
 
   gfx::Size size;
   gfx::Rect anchor_rect;
   uint32_t anchor = ZXDG_POSITIONER_V6_ANCHOR_NONE;
   uint32_t gravity = ZXDG_POSITIONER_V6_GRAVITY_NONE;
+  uint32_t adjustment = ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_NONE;
   gfx::Vector2d offset;
 };
 
@@ -1484,11 +1555,10 @@ void xdg_positioner_v6_set_gravity(wl_client* client,
   GetUserDataAs<WaylandPositioner>(resource)->gravity = gravity;
 }
 
-void xdg_positioner_v6_set_constraint_adjustment(
-    wl_client* client,
-    wl_resource* resource,
-    uint32_t constraint_adjustment) {
-  NOTIMPLEMENTED();
+void xdg_positioner_v6_set_constraint_adjustment(wl_client* client,
+                                                 wl_resource* resource,
+                                                 uint32_t adjustment) {
+  GetUserDataAs<WaylandPositioner>(resource)->adjustment = adjustment;
 }
 
 void xdg_positioner_v6_set_offset(wl_client* client,
@@ -1916,9 +1986,14 @@ void xdg_surface_v6_get_popup(wl_client* client,
                            "get_popup is called after constructed");
     return;
   }
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          parent->GetWidget()->GetNativeWindow());
+  gfx::Rect work_area = display.work_area();
+  wm::ConvertRectFromScreen(parent->GetWidget()->GetNativeWindow(), &work_area);
 
   gfx::Point position = GetUserDataAs<WaylandPositioner>(positioner_resource)
-                            ->CalculatePosition();
+                            ->CalculatePosition(work_area);
   // |position| is relative to the parent's contents view origin, and |origin|
   // is in screen coordinates.
   gfx::Point origin = position;
