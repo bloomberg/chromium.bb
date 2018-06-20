@@ -94,7 +94,6 @@ ModelTypeController::ModelTypeController(
     : DataTypeController(type),
       sync_client_(sync_client),
       model_thread_(model_thread),
-      sync_prefs_(sync_client->GetPrefService()),
       state_(NOT_RUNNING) {}
 
 ModelTypeController::~ModelTypeController() {}
@@ -238,22 +237,11 @@ void ModelTypeController::Stop(SyncStopMetadataFate metadata_fate) {
   if (state() == NOT_RUNNING)
     return;
 
-  // Check preferences if datatype is not in preferred datatypes. Only call
-  // StopSync() if the delegate is ready to handle it (controller is in loaded
-  // state).
-  ModelTypeSet preferred_types =
-      sync_prefs_.GetPreferredDataTypes(ModelTypeSet(type()));
-
+  // Only call StopSync if the delegate is ready to handle it (controller is
+  // in loaded state).
   if (state() == MODEL_LOADED || state() == RUNNING) {
-    // TODO(lixan@yandex-team.ru): Migrate away from preference-based inferring
-    // of |reason| and instead consume |metadata_fate|.
-    if (sync_prefs_.IsFirstSetupComplete() && preferred_types.Has(type())) {
-      PostModelTask(FROM_HERE, base::BindOnce(&StopSyncHelperOnModelThread,
-                                              KEEP_METADATA));
-    } else {
-      PostModelTask(FROM_HERE, base::BindOnce(&StopSyncHelperOnModelThread,
-                                              CLEAR_METADATA));
-    }
+    PostModelTask(FROM_HERE,
+                  base::BindOnce(&StopSyncHelperOnModelThread, metadata_fate));
   }
 
   state_ = NOT_RUNNING;

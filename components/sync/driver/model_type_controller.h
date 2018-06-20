@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_controller_delegate.h"
@@ -86,10 +85,6 @@ class ModelTypeController : public DataTypeController {
 
   // The thread the model type lives on.
   scoped_refptr<base::SingleThreadTaskRunner> model_thread_;
-
-  // Sync prefs. Used for determinig if DisableSync should be called during call
-  // to Stop().
-  SyncPrefs sync_prefs_;
 
   // State of this datatype controller.
   State state_;

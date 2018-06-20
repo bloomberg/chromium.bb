@@ -542,6 +542,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenBoth) {
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_EQ(ModelTypeSet(BOOKMARKS, PREFERENCES),
             configurer_.registered_directory_types());
+  EXPECT_EQ(0, GetController(BOOKMARKS)->clear_metadata_call_count());
 
   // Step 5.
   FinishDownload(ModelTypeSet(), ModelTypeSet());
@@ -599,6 +600,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenSwitch) {
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_EQ(ModelTypeSet(PREFERENCES),
             configurer_.registered_directory_types());
+  EXPECT_EQ(1, GetController(BOOKMARKS)->clear_metadata_call_count());
 
   // Step 5.
   FinishDownload(ModelTypeSet(), ModelTypeSet());
@@ -918,10 +920,12 @@ TEST_F(SyncDataTypeManagerImplTest, MigrateAll) {
   to_migrate.Put(BOOKMARKS);
   to_migrate.PutAll(ControlTypes());
 
+  EXPECT_EQ(0, GetController(BOOKMARKS)->clear_metadata_call_count());
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
   dtm_->PurgeForMigration(to_migrate, CONFIGURE_REASON_MIGRATION);
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_EQ(1, GetController(BOOKMARKS)->clear_metadata_call_count());
 
   // The DTM will call ConfigureDataTypes(), even though it is unnecessary.
   FinishDownload(ModelTypeSet(), ModelTypeSet());
@@ -935,6 +939,7 @@ TEST_F(SyncDataTypeManagerImplTest, MigrateAll) {
   FinishDownload(to_migrate, ModelTypeSet());
   GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(1, GetController(BOOKMARKS)->clear_metadata_call_count());
 }
 
 // Test receipt of a Configure request while a purge is in flight.
@@ -984,6 +989,8 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureDuringPurge) {
   // the BOOKMARKS because it was never stopped.
   GetController(PREFERENCES)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(0, GetController(BOOKMARKS)->clear_metadata_call_count());
+  EXPECT_EQ(0, GetController(PREFERENCES)->clear_metadata_call_count());
 }
 
 TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfiguration) {

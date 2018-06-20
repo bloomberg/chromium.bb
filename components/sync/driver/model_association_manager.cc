@@ -103,11 +103,15 @@ ModelAssociationManager::ModelAssociationManager(
 
 ModelAssociationManager::~ModelAssociationManager() {}
 
-void ModelAssociationManager::Initialize(ModelTypeSet desired_types) {
+void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
+                                         ModelTypeSet preferred_types) {
   // state_ can be INITIALIZED if types are reconfigured when
   // data is being downloaded, so StartAssociationAsync() is never called for
   // the first configuration.
   DCHECK_NE(ASSOCIATING, state_);
+
+  // |desired_types| must be a subset of |preferred_types|.
+  DCHECK(preferred_types.HasAll(desired_types));
 
   // Only keep types that have controllers.
   desired_types_.Clear();
@@ -122,7 +126,7 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types) {
   state_ = INITIALIZED;
   notified_about_ready_for_configure_ = false;
 
-  StopDisabledTypes();
+  StopDisabledTypes(preferred_types);
   LoadEnabledTypes();
 }
 
@@ -140,15 +144,18 @@ void ModelAssociationManager::StopDatatype(const SyncError& error,
   }
 }
 
-void ModelAssociationManager::StopDisabledTypes() {
+void ModelAssociationManager::StopDisabledTypes(ModelTypeSet preferred_types) {
   DVLOG(1) << "ModelAssociationManager: Stopping disabled types.";
   for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
        it != controllers_->end(); ++it) {
     DataTypeController* dtc = (*it).second.get();
     if (dtc->state() != DataTypeController::NOT_RUNNING &&
         !desired_types_.Has(dtc->type())) {
-      DVLOG(1) << "ModelAssociationManager: stop " << dtc->name();
-      StopDatatype(SyncError(), KEEP_METADATA, dtc);
+      const SyncStopMetadataFate metadata_fate =
+          preferred_types.Has(dtc->type()) ? KEEP_METADATA : CLEAR_METADATA;
+      DVLOG(1) << "ModelAssociationManager: stop " << dtc->name() << " with "
+               << SyncStopMetadataFateToString(metadata_fate);
+      StopDatatype(SyncError(), metadata_fate, dtc);
     }
   }
 }

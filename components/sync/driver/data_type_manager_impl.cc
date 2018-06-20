@@ -299,7 +299,9 @@ void DataTypeManagerImpl::Restart(ConfigureReason reason) {
   if (catch_up_in_progress_)
     model_association_manager_.Stop(KEEP_METADATA);
   download_started_ = false;
-  model_association_manager_.Initialize(last_enabled_types_);
+  model_association_manager_.Initialize(
+      last_enabled_types_ /* desired_types */,
+      last_requested_types_ /* preferred_types */);
 }
 
 void DataTypeManagerImpl::OnAllDataTypesReadyForConfigure() {
