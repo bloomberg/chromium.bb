@@ -6,6 +6,9 @@
 <custom-style>
 <style is="custom-style">
   html {
+    --primary-text-color: var(--google-grey-900);
+    --secondary-text-color: var(--google-grey-700);
+
     --cr-actionable: {
       cursor: pointer;
     };
@@ -47,12 +50,12 @@
     }
 
     --cr-primary-text: {
-        color: var(--paper-grey-900);
+        color: var(--primary-text-color);
         line-height: 154%;  /* 20px. */
      }
 
     --cr-secondary-text: {
-      color: var(--paper-grey-600);
+      color: var(--secondary-text-color);
       font-weight: 400;
     }
 
@@ -89,7 +92,7 @@
     };
 
     --cr-section-text: {
-        color: var(--paper-grey-700);
+        color: var(--google-grey-700);
         font-size: 100%;  /* Likely to be 13px. */
         font-weight: 500;
     };
@@ -153,6 +156,7 @@
     --google-grey-refresh-100: #F1F3F4;
     --google-grey-200: #E8EAED;
     --google-grey-400: #BDC1C6;
+    --google-grey-600: #80868B;
     --google-grey-900: #202124;
     --google-red-600: #D93025;
   }
