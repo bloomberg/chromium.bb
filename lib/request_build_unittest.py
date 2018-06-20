@@ -31,9 +31,10 @@ class RequestBuildHelperTestsBase(cros_test_lib.MockTestCase):
   DISPLAY_LABEL = 'display'
   PASS_THROUGH_ARGS = ['funky', 'cold', 'medina']
   TEST_EMAIL = 'explicit_email'
+  TEST_TEMPLATE = 'explicit_template'
   MASTER_CIDB_ID = 'master_cidb_id'
   MASTER_BUILDBUCKET_ID = 'master_bb_id'
-  TEST_BUCKET = 'test_bucket'
+  TEST_BUCKET = 'luci.chromeos.general'  # Use Prod bucket for network test.
 
   def setUp(self):
     self.maxDiff = None
@@ -49,6 +50,7 @@ class RequestBuildHelperTestsBase(cros_test_lib.MockTestCase):
         branch=self.BRANCH,
         extra_args=self.PASS_THROUGH_ARGS,
         user_email=self.TEST_EMAIL,
+        email_template=self.TEST_TEMPLATE,
         master_cidb_id=self.MASTER_CIDB_ID,
         master_buildbucket_id=self.MASTER_BUILDBUCKET_ID,
         bucket=self.TEST_BUCKET)
@@ -137,7 +139,8 @@ class RequestBuildHelperTestsMock(RequestBuildHelperTestsBase):
 
     self.assertEqual(parameters_parsed, {
         u'builder_name': u'luci_build',
-        u'email_notify': [{u'email': u'explicit_email'}],
+        u'email_notify': [{u'email': u'explicit_email',
+                           u'template': u'explicit_template'}],
         u'properties': {
             u'buildset': u'cros/master_buildbucket_id/master_bb_id',
             u'cbb_branch': u'test-branch',
@@ -171,7 +174,8 @@ class RequestBuildHelperTestsMock(RequestBuildHelperTestsBase):
 
     self.assertEqual(parameters_parsed, {
         u'builder_name': u'Try',
-        u'email_notify': [{u'email': u'default_email'}],
+        u'email_notify': [{u'email': u'default_email',
+                           u'template': u'default'}],
         u'properties': {
             u'cbb_branch': u'master',
             u'cbb_config': u'unknown-config',
@@ -269,8 +273,9 @@ class RequestBuildHelperTestsNetork(RequestBuildHelperTestsBase):
             bucket='luci.chromeos.general',
             buildbucket_id=result.buildbucket_id,
             build_config='amd64-generic-paladin-tryjob',
-            url=(u'http://cros-goldeneye/chromeos/healthmonitoring/'
-                 u'buildDetails?buildbucketId=%s' % result.buildbucket_id),
+            url=(u'https://cros-goldeneye.corp.google.com/chromeos/'
+                 u'healthmonitoring/buildDetails?buildbucketId=%s' %
+                 result.buildbucket_id),
             created_ts=mock.ANY),
     )
 
@@ -296,7 +301,8 @@ class RequestBuildHelperTestsNetork(RequestBuildHelperTestsBase):
         ],
         {
             u'builder_name': u'luci_build',
-            u'email_notify': [{u'email': u'explicit_email'}],
+            u'email_notify': [{u'email': u'explicit_email',
+                               u'template': u'explicit_template'}],
             u'properties': {
                 u'buildset': u'cros/master_buildbucket_id/master_bb_id',
                 u'cbb_branch': u'test-branch',
@@ -313,11 +319,12 @@ class RequestBuildHelperTestsNetork(RequestBuildHelperTestsBase):
     self.assertEqual(
         result,
         request_build.ScheduledBuild(
-            bucket='test_bucket',
+            bucket='luci.chromeos.general',
             buildbucket_id=result.buildbucket_id,
             build_config='amd64-generic-paladin',
-            url=(u'http://cros-goldeneye/chromeos/healthmonitoring/'
-                 u'buildDetails?buildbucketId=%s' % result.buildbucket_id),
+            url=(u'https://cros-goldeneye.corp.google.com/chromeos/'
+                 u'healthmonitoring/buildDetails?buildbucketId=%s' %
+                 result.buildbucket_id),
             created_ts=mock.ANY),
     )
 

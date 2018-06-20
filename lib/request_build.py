@@ -60,6 +60,7 @@ class RequestBuild(object):
                branch='master',
                extra_args=(),
                user_email=None,
+               email_template=None,
                master_cidb_id=None,
                master_buildbucket_id=None,
                bucket=constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET):
@@ -74,6 +75,8 @@ class RequestBuild(object):
       branch: Name of branch to build for.
       extra_args: Command line arguments to pass to cbuildbot in job.
       user_email: Email address of person requesting job, or None.
+      email_template: Name of the luci-notify template to use. None for
+                      default. Ignored if user_email is not set.
       master_cidb_id: CIDB id of scheduling builder, or None.
       master_buildbucket_id: buildbucket id of scheduling builder, or None.
       bucket: Which bucket do we request the build in?
@@ -100,6 +103,7 @@ class RequestBuild(object):
     self.branch = branch
     self.extra_args = extra_args
     self.user_email = user_email
+    self.email_template = email_template or 'default'
     self.master_cidb_id = master_cidb_id
     self.master_buildbucket_id = master_buildbucket_id
 
@@ -138,7 +142,10 @@ class RequestBuild(object):
     }
 
     if self.user_email:
-      parameters['email_notify'] = [{'email': self.user_email}]
+      parameters['email_notify'] = [{
+          'email': self.user_email,
+          'template': self.email_template,
+      }]
 
     return {
         'bucket': self.bucket,

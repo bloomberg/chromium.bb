@@ -310,6 +310,10 @@ def RunRemote(site_config, options, patch_pool):
   args += PushLocalPatches(
       site_config, patch_pool.local_patches, user_email)
 
+  email_template = None
+  if options.debug:
+    email_template = 'default_debug'
+
   logging.info('Submitting tryjob...')
   results = []
   for build_config in options.build_configs:
@@ -319,6 +323,7 @@ def RunRemote(site_config, options, patch_pool):
         branch=options.branch,
         extra_args=args,
         user_email=user_email,
+        email_template=email_template,
     )
     results.append(tryjob.Submit(dryrun=False))
 
