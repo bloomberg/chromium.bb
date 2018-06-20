@@ -35,6 +35,14 @@ const char kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[] =
     "If enabled, changes the server save card prompt's explanation to mention "
     "the saving of the billing address.";
 
+const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
+const char kSyncSandboxDescription[] =
+    "Connects to the testing server for Chrome Sync.";
+
+const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
+const char kWalletServiceUseSandboxDescription[] =
+    "Uses the sandbox service for Google Payments API calls.";
+
 const char kAutofillDynamicFormsName[] = "Autofill dynamic forms";
 const char kAutofillDynamicFormsDescription[] =
     "Refills forms that dynamically change after an initial fill";

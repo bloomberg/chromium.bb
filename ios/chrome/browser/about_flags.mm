@@ -22,6 +22,7 @@
 #include "base/sys_info.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/ios/browser/autofill_switches.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -39,6 +40,7 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
@@ -244,6 +246,19 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::kAutofillUpstreamUpdatePromptExplanation)},
+    {"use-sync-sandbox", flag_descriptions::kSyncSandboxName,
+     flag_descriptions::kSyncSandboxDescription, flags_ui::kOsIos,
+     SINGLE_VALUE_TYPE_AND_VALUE(
+         switches::kSyncServiceURL,
+         "https://chrome-sync.sandbox.google.com/chrome-sync/alpha")},
+    {"wallet-service-use-sandbox",
+     flag_descriptions::kWalletServiceUseSandboxName,
+     flag_descriptions::kWalletServiceUseSandboxDescription, flags_ui::kOsIos,
+     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
+         autofill::switches::kWalletServiceUseSandbox,
+         "1",
+         autofill::switches::kWalletServiceUseSandbox,
+         "0")},
     {"show-autofill-type-predictions",
      flag_descriptions::kShowAutofillTypePredictionsName,
      flag_descriptions::kShowAutofillTypePredictionsDescription,
