@@ -34,6 +34,18 @@ Polymer({
   /** @private {!print_preview.PrintSettingsUiMetricsContext} */
   metrics_: new print_preview.PrintSettingsUiMetricsContext(),
 
+  /** @override */
+  attached: function() {
+    this.metrics_.record(print_preview.Metrics.PrintSettingsUiBucket
+                             .ADVANCED_SETTINGS_DIALOG_SHOWN);
+    // This async() call is a workaround to prevent a DCHECK - see
+    // https://crbug.com/804047.
+    // TODO (rbpotter): Remove after Polymer2 migration is complete.
+    this.async(() => {
+      this.$.dialog.showModal();
+    }, 1);
+  },
+
   /**
    * @return {boolean} Whether there is more than one vendor item to display.
    * @private
@@ -47,6 +59,9 @@ Polymer({
    * @private
    */
   computeHasMatching_: function() {
+    if (!this.shadowRoot)
+      return true;
+
     cr.search_highlight_utils.removeHighlights(this.highlights_);
     for (let bubble of this.bubbles_)
       bubble.remove();
@@ -99,12 +114,6 @@ Polymer({
         });
     this.setSetting('vendorItems', settingsValues);
     this.$.dialog.close();
-  },
-
-  show: function() {
-    this.metrics_.record(print_preview.Metrics.PrintSettingsUiBucket
-                             .ADVANCED_SETTINGS_DIALOG_SHOWN);
-    this.$.dialog.showModal();
   },
 
   close: function() {

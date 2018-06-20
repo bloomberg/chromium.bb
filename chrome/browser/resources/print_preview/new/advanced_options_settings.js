@@ -12,15 +12,21 @@ Polymer({
 
     /** @type {!print_preview.Destination} */
     destination: Object,
+
+    /** @private {boolean} */
+    showAdvancedDialog_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @private */
   onButtonClick_: function() {
-    const dialog = this.$.advancedDialog.get();
-    // This async() call is a workaround to prevent a DCHECK - see
-    // https://crbug.com/804047.
-    this.async(() => {
-      dialog.show();
-    }, 1);
+    this.showAdvancedDialog_ = true;
+  },
+
+  /** @private */
+  onDialogClose_: function() {
+    this.showAdvancedDialog_ = false;
   },
 });

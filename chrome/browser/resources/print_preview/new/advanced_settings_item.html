@@ -9,40 +9,40 @@
 <link rel="import" href="settings_behavior.html">
 
 <dom-module id="print-preview-advanced-settings-item">
-  <style include="print-preview-shared select search-highlight-style">
-    :host {
-      display: flex;
-      position: relative;
-    }
-
-    :host > * {
-      overflow: hidden;
-      padding-bottom: 15px;
-      padding-top: 10px;
-      text-overflow: ellipsis;
-      vertical-align: middle;
-      white-space: nowrap;
-    }
-
-    :host .label {
-      -webkit-padding-end: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      width: 250px;
-    }
-
-    :host .value {
-      width: 175px;
-    }
-
-    :host input {
-      height: 28px;
-      line-height: 24px;
-      width: 175px;
-    }
-  </style>
   <template>
+    <style include="print-preview-shared select search-highlight-style">
+      :host {
+        display: flex;
+        position: relative;
+      }
+
+      :host > * {
+        overflow: hidden;
+        padding-bottom: 15px;
+        padding-top: 10px;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        white-space: nowrap;
+      }
+
+      :host .label {
+        -webkit-padding-end: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        width: 250px;
+      }
+
+      :host .value {
+        width: 175px;
+      }
+
+      :host input {
+        height: 28px;
+        line-height: 24px;
+        width: 175px;
+      }
+    </style>
     <label class="label searchable">[[getDisplayName_(capability)]]</label>
     <div class="value">
       <template is="dom-if" if="[[isCapabilityTypeSelect_(capability)]]"

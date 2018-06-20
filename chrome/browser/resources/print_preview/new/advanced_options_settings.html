@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="advanced_settings_dialog.html">
 <link rel="import" href="button_css.html">
@@ -24,13 +23,12 @@
         </button>
       </div>
     </print-preview-settings-section>
-    <cr-lazy-render id="advancedDialog">
-      <template>
-        <print-preview-advanced-dialog
-            settings="{{settings}}" destination="[[destination]]">
-        </print-preview-advanced-dialog>
-      </template>
-    </cr-lazy-render>
+    <template is="dom-if" if="[[showAdvancedDialog_]]" restamp>
+      <print-preview-advanced-dialog
+          settings="{{settings}}" destination="[[destination]]"
+          on-close="onDialogClose_">
+      </print-preview-advanced-dialog>
+    </template>
   </template>
   <script src="advanced_options_settings.js"></script>
 </dom-module>

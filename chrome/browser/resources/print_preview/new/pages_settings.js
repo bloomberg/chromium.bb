@@ -76,7 +76,7 @@ Polymer({
   },
 
   observers: [
-    'onRangeChange_(errorState_, rangesToPrint_)',
+    'onRangeChange_(errorState_, rangesToPrint_, settings.pages)',
     'onRadioChange_(allSelected_, customSelected_)'
   ],
 
@@ -235,6 +235,9 @@ Polymer({
    * @private
    */
   onRangeChange_: function() {
+    if (this.settings === undefined || this.pagesToPrint_ === undefined)
+      return;
+
     if (this.errorState_ != PagesInputErrorState.NO_ERROR) {
       this.setSettingValid('pages', false);
       this.$.pageSettingsCustomInput.classList.add('invalid');
@@ -291,10 +294,11 @@ Polymer({
       return loadTimeData.getStringF(
           'pageRangeSyntaxInstruction',
           loadTimeData.getString('examplePageRangeText'));
-    } else {
-      return loadTimeData.getStringF(
-          'pageRangeLimitInstructionWithValue', this.documentInfo.pageCount);
     }
+    return (this.documentInfo === undefined) ?
+        '' :
+        loadTimeData.getStringF(
+            'pageRangeLimitInstructionWithValue', this.documentInfo.pageCount);
   },
 
   /**

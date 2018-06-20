@@ -140,6 +140,9 @@ Polymer({
 
   /** @private */
   updateDestinations_: function() {
+    if (this.destinationStore === undefined)
+      return;
+
     this.notifyPath('userInfo.users');
     this.notifyPath('userInfo.activeUser');
     this.notifyPath('userInfo.loggedIn');
@@ -158,6 +161,9 @@ Polymer({
    * @private
    */
   computeRecentDestinationList_: function() {
+    if (!observerDepsDefined(Array.from(arguments)))
+      return [];
+
     let recentDestinations = [];
     const filterAccount = this.userInfo.activeUser;
     this.recentDestinations.forEach((recentDestination) => {
@@ -260,9 +266,9 @@ Polymer({
   },
 
   show: function() {
-    this.loadingDestinations_ =
-        this.destinationStore.isPrintDestinationSearchInProgress;
     this.$.dialog.showModal();
+    this.loadingDestinations_ = this.destinationStore === undefined ||
+        this.destinationStore.isPrintDestinationSearchInProgress;
     this.metrics_.record(
         print_preview.Metrics.DestinationSearchBucket.DESTINATION_SHOWN);
   },
