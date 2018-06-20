@@ -19,10 +19,10 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/printing/cloud_print/privet_constants.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace {
@@ -251,11 +251,11 @@ void PrivetPrinterHandler::StartPrint(
   privet_local_print_operation_->SetPageSize(page_size);
   privet_local_print_operation_->SetData(print_data);
 
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfileIfExists(profile_);
-  if (signin_manager) {
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfileIfExists(profile_);
+  if (identity_manager) {
     privet_local_print_operation_->SetUsername(
-        signin_manager->GetAuthenticatedAccountInfo().email);
+        identity_manager->GetPrimaryAccountInfo().email);
   }
 
   privet_local_print_operation_->Start();
