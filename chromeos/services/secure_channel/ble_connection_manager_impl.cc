@@ -240,10 +240,6 @@ void BleConnectionManagerImpl::SetAuthenticatingChannel(
   // connections to the same device can interfere with each other.
   PauseConnectionAttemptsToDevice(remote_device_id);
 
-  // Observe the channel to be notified of when either the channel authenticates
-  // successfully or faces BLE instability and disconnects.
-  secure_channel->AddObserver(this);
-
   if (base::ContainsKey(remote_device_id_to_secure_channel_map_,
                         remote_device_id)) {
     PA_LOG(ERROR) << "BleConnectionManager::OnReceivedAdvertisement(): A new "
@@ -254,6 +250,8 @@ void BleConnectionManagerImpl::SetAuthenticatingChannel(
     NOTREACHED();
   }
 
+  cryptauth::SecureChannel* secure_channel_raw = secure_channel.get();
+
   PA_LOG(INFO) << "BleConnectionManager::OnReceivedAdvertisement(): Connection "
                << "established; starting authentication process. Remote device "
                << "ID: "
@@ -262,6 +260,11 @@ void BleConnectionManagerImpl::SetAuthenticatingChannel(
                << ", Connection role: " << connection_role;
   remote_device_id_to_secure_channel_map_[remote_device_id] =
       std::make_pair(std::move(secure_channel), connection_role);
+
+  // Observe the channel to be notified of when either the channel authenticates
+  // successfully or faces BLE instability and disconnects.
+  secure_channel_raw->AddObserver(this);
+  secure_channel_raw->Initialize();
 }
 
 void BleConnectionManagerImpl::PauseConnectionAttemptsToDevice(

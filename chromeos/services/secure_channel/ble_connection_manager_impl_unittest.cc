@@ -538,7 +538,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
     cryptauth::FakeSecureChannel* last_created_secure_channel =
         fake_secure_channel_factory_->last_created_instance();
-    EXPECT_TRUE(last_created_secure_channel);
+    EXPECT_TRUE(last_created_secure_channel->was_initialized());
     return last_created_secure_channel;
   }
 

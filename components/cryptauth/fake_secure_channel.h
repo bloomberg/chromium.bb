@@ -21,6 +21,8 @@ class FakeSecureChannel : public SecureChannel {
     destructor_callback_ = std::move(destructor_callback);
   }
 
+  bool was_initialized() { return was_initialized_; }
+
   struct SentMessage {
     SentMessage(const std::string& feature, const std::string& payload);
 
@@ -46,6 +48,7 @@ class FakeSecureChannel : public SecureChannel {
 
  private:
   int next_sequence_number_ = 0;
+  bool was_initialized_ = false;
   std::vector<Observer*> observers_;
   std::vector<SentMessage> sent_messages_;
 

@@ -50,6 +50,7 @@ void FakeSecureChannel::CompleteSendingMessage(int sequence_number) {
 }
 
 void FakeSecureChannel::Initialize() {
+  was_initialized_ = true;
   ChangeStatus(Status::CONNECTING);
 }
 
