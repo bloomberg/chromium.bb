@@ -1750,13 +1750,21 @@ void ServiceWorkerContextClient::DispatchCookieChangeEvent(
                "ServiceWorkerContextClient::DispatchCookieChangeEvent",
                "request_id", request_id);
 
-  // TODO(pwnall): Map |cause| to a blink enum. Currently, a cookie overwrite
-  //               shows up as delete + insert.
-  bool is_cookie_delete =
-      cause != ::network::mojom::CookieChangeCause::INSERTED;
-  proxy_->DispatchCookieChangeEvent(
-      request_id, blink::WebString::FromUTF8(cookie.Name()),
-      blink::WebString::FromUTF8(cookie.Value()), is_cookie_delete);
+  // After onion-souping, the conversion below will be done by mojo directly.
+  DCHECK(!cookie.IsHttpOnly());
+  base::Optional<blink::WebCanonicalCookie> web_cookie_opt =
+      blink::WebCanonicalCookie::Create(
+          blink::WebString::FromUTF8(cookie.Name()),
+          blink::WebString::FromUTF8(cookie.Value()),
+          blink::WebString::FromUTF8(cookie.Domain()),
+          blink::WebString::FromUTF8(cookie.Path()), cookie.CreationDate(),
+          cookie.ExpiryDate(), cookie.LastAccessDate(), cookie.IsSecure(),
+          false /* cookie.IsHttpOnly() */,
+          static_cast<network::mojom::CookieSameSite>(cookie.SameSite()),
+          static_cast<network::mojom::CookiePriority>(cookie.Priority()));
+  DCHECK(web_cookie_opt.has_value());
+
+  proxy_->DispatchCookieChangeEvent(request_id, web_cookie_opt.value(), cause);
 }
 
 void ServiceWorkerContextClient::Ping(PingCallback callback) {

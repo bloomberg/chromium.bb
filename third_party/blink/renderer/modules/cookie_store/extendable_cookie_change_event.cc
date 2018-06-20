@@ -45,21 +45,4 @@ ExtendableCookieChangeEvent::ExtendableCookieChangeEvent(
     deleted_ = initializer.deleted();
 }
 
-// static
-void ExtendableCookieChangeEvent::ToCookieChangeListItem(
-    const WebString& cookie_name,
-    const WebString& cookie_value,
-    bool is_cookie_delete,
-    HeapVector<CookieListItem>& changed,
-    HeapVector<CookieListItem>& deleted) {
-  if (is_cookie_delete) {
-    CookieListItem& cookie = deleted.emplace_back();
-    cookie.setName(cookie_name);
-  } else {
-    CookieListItem& cookie = changed.emplace_back();
-    cookie.setName(cookie_name);
-    cookie.setValue(cookie_value);
-  }
-}
-
 }  // namespace blink

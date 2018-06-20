@@ -7,6 +7,10 @@
 dictionary CookieListItem {
   USVString name;
   USVString value;
+  USVString? domain;
+  USVString path;
+  DOMTimeStamp? expires;
+  boolean secure;
 };
 
 typedef sequence<CookieListItem> CookieList;

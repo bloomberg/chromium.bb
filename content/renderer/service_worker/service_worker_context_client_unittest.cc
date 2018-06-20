@@ -105,10 +105,10 @@ class MockWebServiceWorkerContextProxy
       override {
     NOTREACHED();
   }
-  void DispatchCookieChangeEvent(int event_id,
-                                 const blink::WebString& name,
-                                 const blink::WebString& value,
-                                 bool is_deleted) override {
+  void DispatchCookieChangeEvent(
+      int event_id,
+      const blink::WebCanonicalCookie& cookie,
+      ::network::mojom::CookieChangeCause change_cause) override {
     NOTREACHED();
   }
   void DispatchExtendableMessageEvent(

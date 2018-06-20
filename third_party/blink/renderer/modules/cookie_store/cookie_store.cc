@@ -130,7 +130,7 @@ base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
 
     if (name.IsEmpty() && value.Contains('=')) {
       exception_state.ThrowTypeError(
-          "Cookie value cannot contain '=' if the name is empty.");
+          "Cookie value cannot contain '=' if the name is empty");
       return base::nullopt;
     }
 
@@ -141,13 +141,27 @@ base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
     }
   }
 
+  String cookie_url_host = cookie_url.Host();
   String domain;
   if (options.hasDomain()) {
-    // TODO(crbug.com/729800): Checks and exception throwing.
-    domain = options.domain();
+    // The leading dot (".") from the domain attribute is stripped in the
+    // Set-Cookie header, for compatibility. This API doesn't have compatibility
+    // constraints, so reject the edge case outright.
+    if (options.domain().StartsWith(".")) {
+      exception_state.ThrowTypeError("Cookie domain cannot start with \".\"");
+      return base::nullopt;
+    }
+
+    domain = String(".") + options.domain();
+    if (!cookie_url_host.EndsWith(domain) &&
+        cookie_url_host != options.domain()) {
+      exception_state.ThrowTypeError(
+          "Cookie domain must domain-match current host");
+      return base::nullopt;
+    }
   } else {
-    // TODO(crbug.com/729800): Correct value?
-    domain = cookie_url.Host();
+    // The absence of "domain" implies a host-only cookie.
+    domain = cookie_url_host;
   }
 
   const String path = options.hasPath() ? options.path() : String("/");
@@ -211,15 +225,6 @@ blink::mojom::blink::CookieChangeSubscriptionPtr ToBackendSubscription(
   }
 
   return backend_subscription;
-}
-
-void ToCookieListItem(
-    const WebCanonicalCookie& canonical_cookie,
-    bool is_deleted,  // True for the information from a cookie deletion event.
-    CookieListItem& cookie) {
-  cookie.setName(canonical_cookie.Name());
-  if (!is_deleted)
-    cookie.setValue(canonical_cookie.Value());
 }
 
 void ToCookieChangeSubscription(
@@ -439,34 +444,12 @@ void CookieStore::OnCookieChange(
     const WebCanonicalCookie& backend_cookie,
     network::mojom::blink::CookieChangeCause change_cause) {
   HeapVector<CookieListItem> changed, deleted;
-
-  switch (change_cause) {
-    case ::network::mojom::blink::CookieChangeCause::INSERTED:
-    case ::network::mojom::blink::CookieChangeCause::EXPLICIT: {
-      CookieListItem& cookie = changed.emplace_back();
-      ToCookieListItem(backend_cookie, false /* is_deleted */, cookie);
-      break;
-    }
-    case ::network::mojom::blink::CookieChangeCause::UNKNOWN_DELETION:
-    case ::network::mojom::blink::CookieChangeCause::EXPIRED:
-    case ::network::mojom::blink::CookieChangeCause::EVICTED:
-    case ::network::mojom::blink::CookieChangeCause::EXPIRED_OVERWRITE: {
-      CookieListItem& cookie = deleted.emplace_back();
-      ToCookieListItem(backend_cookie, true /* is_deleted */, cookie);
-      break;
-    }
-
-    case ::network::mojom::blink::CookieChangeCause::OVERWRITE:
-      // A cookie overwrite causes an OVERWRITE (meaning the old cookie was
-      // deleted) and an INSERTED.
-      break;
-  }
-
+  CookieChangeEvent::ToEventInfo(backend_cookie, change_cause, changed,
+                                 deleted);
   if (changed.IsEmpty() && deleted.IsEmpty()) {
     // The backend only reported OVERWRITE events, which are dropped.
     return;
   }
-
   DispatchEvent(CookieChangeEvent::Create(
       EventTypeNames::change, std::move(changed), std::move(deleted)));
 }
@@ -538,9 +521,10 @@ void CookieStore::GetAllForUrlToGetAllResult(
 
   HeapVector<CookieListItem> cookies;
   cookies.ReserveInitialCapacity(backend_cookies.size());
-  for (const auto& canonical_cookie : backend_cookies) {
+  for (const auto& backend_cookie : backend_cookies) {
     CookieListItem& cookie = cookies.emplace_back();
-    ToCookieListItem(canonical_cookie, false /* is_deleted */, cookie);
+    CookieChangeEvent::ToCookieListItem(backend_cookie, false /* is_deleted */,
+                                        cookie);
   }
 
   resolver->Resolve(std::move(cookies));
@@ -559,9 +543,10 @@ void CookieStore::GetAllForUrlToGetResult(
     return;
   }
 
-  const auto& canonical_cookie = backend_cookies.front();
+  const auto& backend_cookie = backend_cookies.front();
   CookieListItem cookie;
-  ToCookieListItem(canonical_cookie, false /* is_deleted */, cookie);
+  CookieChangeEvent::ToCookieListItem(backend_cookie, false /* is_deleted */,
+                                      cookie);
   resolver->Resolve(cookie);
 }
 

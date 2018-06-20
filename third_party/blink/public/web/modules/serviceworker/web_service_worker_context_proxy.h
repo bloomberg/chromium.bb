@@ -35,6 +35,7 @@
 #include "third_party/blink/public/common/message_port/transferable_message.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
+#include "third_party/blink/public/platform/web_canonical_cookie.h"
 
 #include <memory>
 
@@ -87,12 +88,10 @@ class WebServiceWorkerContextProxy {
       const WebString& developer_id,
       const WebString& unique_id,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches) = 0;
-  // TODO(pwnall): Use blink::CanonicalCookie, after https://crrev.com/c/991196
-  //               lands.
-  virtual void DispatchCookieChangeEvent(int event_id,
-                                         const WebString& cookie_name,
-                                         const WebString& cookie_value,
-                                         bool is_cookie_delete) = 0;
+  virtual void DispatchCookieChangeEvent(
+      int event_id,
+      const WebCanonicalCookie& cookie,
+      network::mojom::CookieChangeCause change_cause) = 0;
   virtual void DispatchExtendableMessageEvent(
       int event_id,
       TransferableMessage,
