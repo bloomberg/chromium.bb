@@ -17,6 +17,9 @@ usage() {
        "fonts"
   echo "--[no-]nacl: enable or disable installation of prerequisites for"\
        "building standalone NaCl and all its toolchains"
+  echo "--[no-]backwards-compatible: enable or disable installation of packages
+        that are no longer currently needed and have been removed from this
+        script.  Useful for bisection."
   echo "--no-prompt: silently select standard options/defaults"
   echo "--quick-check: quickly try to determine if dependencies are installed"
   echo "               (this avoids interactive prompts and sudo commands,"
@@ -46,21 +49,23 @@ do_inst_nacl=1
 while [ "$1" != "" ]
 do
   case "$1" in
-  --syms)                   do_inst_syms=1;;
-  --no-syms)                do_inst_syms=0;;
-  --lib32)                  do_inst_lib32=1;;
-  --arm)                    do_inst_arm=1;;
-  --no-arm)                 do_inst_arm=0;;
-  --chromeos-fonts)         do_inst_chromeos_fonts=1;;
-  --no-chromeos-fonts)      do_inst_chromeos_fonts=0;;
-  --nacl)                   do_inst_nacl=1;;
-  --no-nacl)                do_inst_nacl=0;;
-  --add-cross-tool-repo)    add_cross_tool_repo=1;;
-  --no-prompt)              do_default=1
-                            do_quietly="-qq --assume-yes"
+  --syms)                    do_inst_syms=1;;
+  --no-syms)                 do_inst_syms=0;;
+  --lib32)                   do_inst_lib32=1;;
+  --arm)                     do_inst_arm=1;;
+  --no-arm)                  do_inst_arm=0;;
+  --chromeos-fonts)          do_inst_chromeos_fonts=1;;
+  --no-chromeos-fonts)       do_inst_chromeos_fonts=0;;
+  --nacl)                    do_inst_nacl=1;;
+  --no-nacl)                 do_inst_nacl=0;;
+  --backwards-compatible)    do_inst_backwards_compatible=1;;
+  --no-backwards-compatible) do_inst_backwards_compatible=0;;
+  --add-cross-tool-repo)     add_cross_tool_repo=1;;
+  --no-prompt)               do_default=1
+                             do_quietly="-qq --assume-yes"
     ;;
-  --quick-check)            do_quick_check=1;;
-  --unsupported)            do_unsupported=1;;
+  --quick-check)             do_quick_check=1;;
+  --unsupported)             do_unsupported=1;;
   *) usage;;
   esac
   shift
@@ -253,6 +258,62 @@ lib32_list="linux-libc-dev:i386 libpci3:i386"
 
 # 32-bit libraries needed for a 32-bit build
 lib32_list="$lib32_list libx11-xcb1:i386"
+
+# Packages that have been removed from this script.  Regardless of configuration
+# or options passed to this script, whenever a package is removed, it should be
+# added here.
+backwards_compatible_list="\
+  7za
+  fonts-indic
+  fonts-ipafont
+  fonts-stix
+  fonts-thai-tlwg
+  fonts-tlwg-garuda
+  language-pack-da
+  language-pack-fr
+  language-pack-he
+  language-pack-zh-hant
+  libappindicator3-1:i386
+  libdconf-dev
+  libdconf-dev:i386
+  libdconf1
+  libdconf1:i386
+  libexif-dev
+  libexif12
+  libexif12:i386
+  libgbm-dev
+  libgconf-2-4:i386
+  libgconf2-dev
+  libgl1-mesa-dev
+  libgl1-mesa-glx:i386
+  libgles2-mesa-dev
+  mesa-common-dev
+  msttcorefonts
+  ttf-dejavu-core
+  ttf-indic-fonts
+  ttf-kochi-gothic
+  ttf-kochi-mincho
+  ttf-mscorefonts-installer
+  xfonts-mathml
+"
+case $distro_codename in
+  trusty)
+    backwards_compatible_list+=" \
+      libgbm-dev-lts-trusty
+      libgl1-mesa-dev-lts-trusty
+      libgl1-mesa-glx-lts-trusty:i386
+      libgles2-mesa-dev-lts-trusty
+      mesa-common-dev-lts-trusty"
+    ;;
+  xenial)
+    backwards_compatible_list+=" \
+      libgbm-dev-lts-xenial
+      libgl1-mesa-dev-lts-xenial
+      libgl1-mesa-glx-lts-xenial:i386
+      libgles2-mesa-dev-lts-xenial
+      mesa-common-dev-lts-xenial"
+    ;;
+esac
 
 # arm cross toolchain packages needed to build chrome on armhf
 EM_REPO="deb http://emdebian.org/tools/debian/ jessie main"
@@ -467,6 +528,8 @@ if [ "$do_inst_syms" = "1" ]; then
       dbg_list="${dbg_list} libstdc++6-4.8-dbg"
     elif package_exists libstdc++6-4.7-dbg; then
       dbg_list="${dbg_list} libstdc++6-4.7-dbg"
+    elif package_exists libstdc++6-4.6-dbg; then
+      dbg_list="${dbg_list} libstdc++6-4.6-dbg"
     fi
   fi
   if [ "$(dbg_package_name libatk1.0-0)" == "" ]; then
@@ -501,11 +564,22 @@ else
   nacl_list=
 fi
 
+filtered_backwards_compatible_list=
+if [ "$do_inst_backwards_compatible" = "1" ]; then
+  echo "Including backwards compatible packages."
+  for package in ${backwards_compatible_list}; do
+    if package_exists ${package}; then
+      filtered_backwards_compatible_list+=" ${package}"
+    fi
+  done
+fi
+
 # The `sort -r -s -t: -k2` sorts all the :i386 packages to the front, to avoid
 # confusing dpkg-query (crbug.com/446172).
 packages="$(
-  echo "${dev_list} ${lib_list} ${dbg_list} ${lib32_list} ${arm_list}"\
-       "${nacl_list}" | tr " " "\n" | sort -u | sort -r -s -t: -k2 | tr "\n" " "
+  echo "${dev_list} ${lib_list} ${dbg_list} ${lib32_list} ${arm_list}" \
+       "${nacl_list}" ${filtered_backwards_compatible_list} | tr " " "\n" | \
+       sort -u | sort -r -s -t: -k2 | tr "\n" " "
 )"
 
 if [ 1 -eq "${do_quick_check-0}" ] ; then
