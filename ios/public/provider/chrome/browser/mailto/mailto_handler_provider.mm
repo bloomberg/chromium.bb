@@ -17,10 +17,6 @@ void MailtoHandlerProvider::PrepareMailtoHandling(
 
 void MailtoHandlerProvider::RemoveMailtoHandling() {}
 
-void MailtoHandlerProvider::PrepareMailtoHandling(
-    SignedInIdentityBlock signed_in_identity_block,
-    SignedInIdentitiesBlock signed_in_identities_block) {}
-
 NSString* MailtoHandlerProvider::MailtoHandlerSettingsTitle() const {
   return nil;
 }
