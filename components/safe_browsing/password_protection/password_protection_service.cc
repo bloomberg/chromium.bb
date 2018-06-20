@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -782,8 +783,7 @@ bool PasswordProtectionService::ParseVerdictEntry(
 bool PasswordProtectionService::PathVariantsMatchCacheExpression(
     const std::vector<std::string>& generated_paths,
     const std::string& cache_expression_path) {
-  return std::find(generated_paths.begin(), generated_paths.end(),
-                   cache_expression_path) != generated_paths.end();
+  return base::ContainsValue(generated_paths, cache_expression_path);
 }
 
 bool PasswordProtectionService::IsCacheExpired(int cache_creation_time,

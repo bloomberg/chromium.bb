@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -1441,7 +1442,7 @@ void TemplateURL::EncodeSearchTerms(
     base::string16* encoded_original_query) const {
 
   std::vector<std::string> encodings(input_encodings());
-  if (std::find(encodings.begin(), encodings.end(), "UTF-8") == encodings.end())
+  if (!base::ContainsValue(encodings, "UTF-8"))
     encodings.push_back("UTF-8");
   for (auto i = encodings.begin(); i != encodings.end(); ++i) {
     if (TryEncoding(search_terms_args.search_terms,

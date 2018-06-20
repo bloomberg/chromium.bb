@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/safe_browsing/base_ui_manager.h"
@@ -252,8 +253,7 @@ void TrimElements(const std::set<int> target_ids,
     const HTMLElement& element = *element_iter->second;
 
     // Delete any elements that we do not want to keep.
-    if (std::find(ids_to_keep.begin(), ids_to_keep.end(), element.id()) ==
-        ids_to_keep.end()) {
+    if (!base::ContainsValue(ids_to_keep, element.id())) {
       if (element.has_resource_id()) {
         const std::string& resource_url =
             resource_id_to_url[element.resource_id()];
