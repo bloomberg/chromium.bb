@@ -27,6 +27,16 @@
 
 namespace ui {
 
+namespace {
+
+// CGDataProviderReleaseDataCallback that releases the CreateImage buffer.
+void CreateImageBufferReleaser(void* info, const void* data, size_t size) {
+  DCHECK_EQ(info, data);
+  free(info);
+}
+
+}  // namespace
+
 class ClipboardMacTest : public PlatformTest {
  public:
   ClipboardMacTest() { }
@@ -41,11 +51,12 @@ class ClipboardMacTest : public PlatformTest {
     // representation for an NSImage. This doesn't work, because when the
     // result is written, and then read from an NSPasteboard, the new NSImage
     // loses its "retina-ness".
-    std::unique_ptr<uint8_t, base::FreeDeleter> buffer(
-        static_cast<uint8_t*>(calloc(pixel_width * pixel_height, 4)));
+    uint8_t* buffer =
+        static_cast<uint8_t*>(calloc(pixel_width * pixel_height, 4));
     base::ScopedCFTypeRef<CGDataProviderRef> provider(
-        CGDataProviderCreateWithData(
-            nullptr, buffer.get(), (pixel_width * pixel_height * 4), nullptr));
+        CGDataProviderCreateWithData(buffer, buffer,
+                                     (pixel_width * pixel_height * 4),
+                                     &CreateImageBufferReleaser));
     base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
         CGColorSpaceCreateWithName(kCGColorSpaceSRGB));
     base::ScopedCFTypeRef<CGImageRef> image_ref(
@@ -58,12 +69,7 @@ class ClipboardMacTest : public PlatformTest {
   }
 };
 
-#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
-#define MAYBE_ReadImageRetina DISABLED_ReadImageRetina
-#else
-#define MAYBE_ReadImageRetina ReadImageRetina
-#endif
-TEST_F(ClipboardMacTest, MAYBE_ReadImageRetina) {
+TEST_F(ClipboardMacTest, ReadImageRetina) {
   int32_t width = 99;
   int32_t height = 101;
   scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
@@ -79,12 +85,7 @@ TEST_F(ClipboardMacTest, MAYBE_ReadImageRetina) {
   EXPECT_EQ(2 * height, bitmap.height());
 }
 
-#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
-#define MAYBE_ReadImageNonRetina DISABLED_ReadImageNonRetina
-#else
-#define MAYBE_ReadImageNonRetina ReadImageNonRetina
-#endif
-TEST_F(ClipboardMacTest, MAYBE_ReadImageNonRetina) {
+TEST_F(ClipboardMacTest, ReadImageNonRetina) {
   int32_t width = 99;
   int32_t height = 101;
   scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
