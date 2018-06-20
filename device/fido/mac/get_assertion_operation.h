@@ -31,7 +31,7 @@ class API_AVAILABLE(macosx(10.12.2))
                            AuthenticatorGetAssertionResponse> {
  public:
   GetAssertionOperation(CtapGetAssertionRequest request,
-                        std::string profile_id,
+                        std::string metadata_secret,
                         std::string keychain_access_group,
                         Callback callback);
   ~GetAssertionOperation() override;

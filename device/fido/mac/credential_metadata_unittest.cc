@@ -4,7 +4,9 @@
 
 #include "device/fido/mac/credential_metadata.h"
 
+#include "device/fido/public_key_credential_user_entity.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace device {
 namespace fido {
@@ -108,6 +110,30 @@ TEST(CredentialMetadata, GenerateRandomSecret) {
   std::string s2 = CredentialMetadata::GenerateRandomSecret();
   EXPECT_EQ(32u, s2.size());
   EXPECT_NE(s1, s2);
+}
+
+TEST(CredentialMetadata, FromPublicKeyCredentialUserEntity) {
+  std::vector<uint8_t> user_id = {{1, 2, 3}};
+  PublicKeyCredentialUserEntity in(user_id);
+  in.SetUserName("username");
+  in.SetDisplayName("display name");
+  in.SetIconUrl(GURL("http://rp.foo/user.png"));
+  CredentialMetadata::UserEntity out =
+      CredentialMetadata::UserEntity::FromPublicKeyCredentialUserEntity(
+          std::move(in));
+  EXPECT_EQ(user_id, out.id);
+  EXPECT_EQ("username", out.name);
+  EXPECT_EQ("display name", out.display_name);
+}
+
+TEST(CredentialMetadata, ToPublicKeyCredentialUserEntity) {
+  std::vector<uint8_t> user_id = {{1, 2, 3}};
+  CredentialMetadata::UserEntity in(user_id, "username", "display name");
+  PublicKeyCredentialUserEntity out = in.ToPublicKeyCredentialUserEntity();
+  EXPECT_EQ(user_id, out.user_id());
+  EXPECT_EQ("username", out.user_name().value());
+  EXPECT_EQ("display name", out.user_display_name().value());
+  EXPECT_FALSE(out.user_icon_url().has_value());
 }
 
 }  // namespace
