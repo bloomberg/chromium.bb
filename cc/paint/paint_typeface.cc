@@ -4,8 +4,8 @@
 
 #include "cc/paint/paint_typeface.h"
 #include "build/build_config.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
-#include "third_party/skia/include/ports/SkFontMgr.h"
 
 namespace cc {
 

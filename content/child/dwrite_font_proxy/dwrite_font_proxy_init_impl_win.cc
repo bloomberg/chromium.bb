@@ -17,7 +17,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "skia/ext/fontmgr_default_win.h"
 #include "third_party/blink/public/web/win/web_font_rendering.h"
-#include "third_party/skia/include/ports/SkFontMgr.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 
 namespace mswr = Microsoft::WRL;

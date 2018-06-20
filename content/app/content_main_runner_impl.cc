@@ -102,8 +102,8 @@
 #include "third_party/blink/public/platform/web_font_render_style.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 #include "third_party/boringssl/src/include/openssl/rand.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
-#include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkFontMgr_android.h"
 #include "third_party/webrtc_overrides/init_webrtc.h"  // nogncheck
 

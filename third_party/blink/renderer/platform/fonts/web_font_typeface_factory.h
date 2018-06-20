@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_WEB_FONT_TYPEFACE_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_WEB_FONT_TYPEFACE_FACTORY_H_
 
-#include "third_party/skia/include/ports/SkFontMgr.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
 
 #include "build/build_config.h"
 #if defined(OS_WIN) || defined(OS_MACOSX)

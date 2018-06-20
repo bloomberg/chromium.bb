@@ -16,11 +16,11 @@
 #include "base/sys_byteorder.h"
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkString.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#include "third_party/skia/include/ports/SkFontMgr.h"
 
 namespace content {
 

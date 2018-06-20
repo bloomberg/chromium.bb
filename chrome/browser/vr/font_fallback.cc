@@ -13,9 +13,9 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#include "third_party/skia/include/ports/SkFontMgr.h"
 #include "ui/gfx/platform_font_linux.h"
 
 namespace vr {

@@ -4,8 +4,8 @@
 
 #include "skia/ext/fontmgr_default_linux.h"
 
+#include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
-#include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkFontMgr_FontConfigInterface.h"
 
 namespace {

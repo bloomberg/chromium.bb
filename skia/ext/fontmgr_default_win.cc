@@ -4,7 +4,7 @@
 
 #include "skia/ext/fontmgr_default_win.h"
 
-#include "third_party/skia/include/ports/SkFontMgr.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 
 namespace {

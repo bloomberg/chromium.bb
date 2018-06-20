@@ -5,7 +5,7 @@
 #include "content/shell/app/blink_test_platform_support.h"
 
 #include "skia/ext/fontmgr_default_android.h"
-#include "third_party/skia/include/ports/SkFontMgr.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkFontMgr_android.h"
 
 namespace content {
