@@ -464,9 +464,11 @@ void CoreOobeHandler::UpdateA11yState() {
 
 void CoreOobeHandler::UpdateOobeUIVisibility() {
   const std::string& display = oobe_ui_->display_type();
-  CallJSOrDefer("showAPIKeysNotice", !google_apis::HasKeysConfigured() &&
-                                         (display == OobeUI::kOobeDisplay ||
-                                          display == OobeUI::kLoginDisplay));
+  bool has_api_keys_configured = google_apis::HasAPIKeyConfigured() &&
+                                 google_apis::HasOAuthClientConfigured();
+  CallJSOrDefer("showAPIKeysNotice",
+                !has_api_keys_configured && (display == OobeUI::kOobeDisplay ||
+                                             display == OobeUI::kLoginDisplay));
 
   // Don't show version label on the stable channel by default.
   bool should_show_version = true;

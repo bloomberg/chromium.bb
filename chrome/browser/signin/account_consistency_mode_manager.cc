@@ -84,7 +84,8 @@ signin::AccountConsistencyMethod GetMethodForNonRegularProfile() {
 
 }  // namespace
 
-bool AccountConsistencyModeManager::ignore_missing_key_for_testing_ = false;
+bool AccountConsistencyModeManager::ignore_missing_oauth_client_for_testing_ =
+    false;
 
 // static
 AccountConsistencyModeManager* AccountConsistencyModeManager::GetForProfile(
@@ -173,8 +174,8 @@ bool AccountConsistencyModeManager::IsMirrorEnabledForProfile(
 }
 
 // static
-void AccountConsistencyModeManager::SetIgnoreMissingApiKeysForTesting() {
-  ignore_missing_key_for_testing_ = true;
+void AccountConsistencyModeManager::SetIgnoreMissingOAuthClientForTesting() {
+  ignore_missing_oauth_client_for_testing_ = true;
 }
 
 signin::AccountConsistencyMethod
@@ -213,11 +214,11 @@ AccountConsistencyModeManager::GetAccountConsistencyMethod() {
   if (profile_->IsLegacySupervised())
     return signin::AccountConsistencyMethod::kDiceFixAuthErrors;
 
-  bool can_enable_dice_for_build =
-      ignore_missing_key_for_testing_ || google_apis::HasKeysConfigured();
+  bool can_enable_dice_for_build = ignore_missing_oauth_client_for_testing_ ||
+                                   google_apis::HasOAuthClientConfigured();
   if (!can_enable_dice_for_build) {
     LOG(WARNING) << "Desktop Identity Consistency cannot be enabled as no "
-                    "API keys have been configured.";
+                    "OAuth client ID and client secret have been configured.";
     return signin::AccountConsistencyMethod::kDiceFixAuthErrors;
   }
 

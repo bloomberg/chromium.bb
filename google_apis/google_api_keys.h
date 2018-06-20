@@ -60,8 +60,8 @@ namespace google_apis {
 
 extern const char kAPIKeysDevelopersHowToURL[];
 
-// Returns true if no dummy API keys or OAuth2 tokens are set.
-bool HasKeysConfigured();
+// Returns true if no dummy API key is set.
+bool HasAPIKeyConfigured();
 
 // Retrieves the API key, a.k.a. developer key, or a dummy string
 // if not set.
@@ -88,6 +88,9 @@ enum OAuth2Client {
 
   CLIENT_NUM_ITEMS     // Must be last item.
 };
+
+// Returns true if no dummy OAuth2 client ID and secret are set.
+bool HasOAuthClientConfigured();
 
 // Retrieves the OAuth2 client ID for the specified client, or the
 // empty string if not set.

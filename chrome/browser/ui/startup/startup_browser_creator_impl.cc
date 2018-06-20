@@ -900,8 +900,10 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
     chrome::ShowBadFlagsPrompt(web_contents);
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents);
-    if (!google_apis::HasKeysConfigured())
+    if (!google_apis::HasAPIKeyConfigured() ||
+        !google_apis::HasOAuthClientConfigured()) {
       GoogleApiKeysInfoBarDelegate::Create(infobar_service);
+    }
     if (ObsoleteSystem::IsObsoleteNowOrSoon()) {
       PrefService* local_state = g_browser_process->local_state();
       if (!local_state ||

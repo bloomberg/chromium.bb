@@ -87,11 +87,11 @@ void ChromeTestSuite::Initialize() {
       ChromeMainDelegate::kNonWildcardDomainNonPortSchemes,
       ChromeMainDelegate::kNonWildcardDomainNonPortSchemesSize);
 
-  // Desktop Identity Consistency (a.k.a. DICE) requires API keys to be
-  // configured as they are needed for regular web sign-in flows to Google.
+  // Desktop Identity Consistency (a.k.a. DICE) requires OAuth client to be
+  // configured as it is needed for regular web sign-in flows to Google.
   // Ignore this requiement for unit and browser tests to make sure that the
   // DICE feature gets the right test coverage.
-  AccountConsistencyModeManager::SetIgnoreMissingApiKeysForTesting();
+  AccountConsistencyModeManager::SetIgnoreMissingOAuthClientForTesting();
 
 #if defined(OS_MACOSX)
   // Look in the framework bundle for resources.

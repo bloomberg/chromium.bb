@@ -175,7 +175,7 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
   std::string api_key;
   // This API needs whitelisted API keys. Get the key only if it is not a
   // dummy key.
-  if (google_apis::HasKeysConfigured()) {
+  if (google_apis::HasAPIKeyConfigured()) {
     bool is_stable_channel = GetChannel() == version_info::Channel::STABLE;
     api_key = is_stable_channel ? google_apis::GetAPIKey()
                                 : google_apis::GetNonStableAPIKey();
