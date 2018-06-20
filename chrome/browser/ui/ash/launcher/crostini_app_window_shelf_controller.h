@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_app_launch_observer.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/crostini_app_display.h"
-#include "chrome/browser/ui/browser_list_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
@@ -34,7 +33,6 @@ class ChromeLauncherController;
 class CrostiniAppWindowShelfController : public AppWindowLauncherController,
                                          public aura::EnvObserver,
                                          public aura::WindowObserver,
-                                         public BrowserListObserver,
                                          public CrostiniAppLaunchObserver {
  public:
   explicit CrostiniAppWindowShelfController(ChromeLauncherController* owner);
@@ -52,9 +50,6 @@ class CrostiniAppWindowShelfController : public AppWindowLauncherController,
                                intptr_t old) override;
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
   void OnWindowDestroying(aura::Window* window) override;
-
-  // BrowserListObserver:
-  void OnBrowserAdded(Browser* browser) override;
 
   // A Crostini app with |startup_id| is requested to launch on display with
   // |display_id|.

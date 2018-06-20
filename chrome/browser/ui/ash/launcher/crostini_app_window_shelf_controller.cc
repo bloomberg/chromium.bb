@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "components/exo/shell_surface.h"
 #include "components/user_manager/user_manager.h"
@@ -39,11 +39,9 @@ CrostiniAppWindowShelfController::CrostiniAppWindowShelfController(
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
     env->AddObserver(this);
-  BrowserList::AddObserver(this);
 }
 
 CrostiniAppWindowShelfController::~CrostiniAppWindowShelfController() {
-  BrowserList::RemoveObserver(this);
   for (auto window : observed_window_to_startup_id_)
     window.first->RemoveObserver(this);
   aura::Env* env = aura::Env::GetInstanceDontCreate();
@@ -165,6 +163,18 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanged(
   if (app_window_it != aura_window_to_app_window_.end())
     return;
 
+  // Handle browser windows, such as the Crostini terminal.
+  Browser* browser = chrome::FindBrowserWithWindow(window);
+  if (browser) {
+    base::Optional<std::string> app_id =
+        CrostiniAppIdFromAppName(browser->app_name());
+    if (!app_id)
+      return;
+    RegisterAppWindow(window, app_id.value());
+    return;
+  }
+
+  // Handle genuine Crostini app windows.
   const std::string* window_app_id =
       exo::ShellSurface::GetApplicationId(window);
   if (window_app_id == nullptr)
@@ -184,18 +194,6 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanged(
       window,
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
   RegisterAppWindow(window, shelf_app_id);
-}
-
-void CrostiniAppWindowShelfController::OnBrowserAdded(Browser* browser) {
-  // The Crostini Terminal opens in Crosh (a v1 App), but we override the
-  // Browser's app name so we can properly detect it.
-  if (!browser->is_type_popup() || !browser->is_app())
-    return;
-  base::Optional<std::string> app_id =
-      CrostiniAppIdFromAppName(browser->app_name());
-  if (!app_id)
-    return;
-  RegisterAppWindow(browser->window()->GetNativeWindow(), app_id.value());
 }
 
 void CrostiniAppWindowShelfController::RegisterAppWindow(

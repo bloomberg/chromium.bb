@@ -335,8 +335,8 @@ WebContents* OpenApplication(const AppLaunchParams& params) {
   return OpenEnabledApplication(params);
 }
 
-WebContents* OpenApplicationWindow(const AppLaunchParams& params,
-                                   const GURL& url) {
+Browser* CreateApplicationWindow(const AppLaunchParams& params,
+                                 const GURL& url) {
   Profile* const profile = params.profile;
   const Extension* const extension = GetExtension(params);
 
@@ -366,7 +366,13 @@ WebContents* OpenApplicationWindow(const AppLaunchParams& params,
   browser_params.initial_show_state =
       DetermineWindowShowState(profile, params.container, extension);
 
-  Browser* browser = new Browser(browser_params);
+  return new Browser(browser_params);
+}
+
+WebContents* ShowApplicationWindow(const AppLaunchParams& params,
+                                   const GURL& url,
+                                   Browser* browser) {
+  const Extension* const extension = GetExtension(params);
   ui::PageTransition transition =
       (extension ? ui::PAGE_TRANSITION_AUTO_BOOKMARK
                  : ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
@@ -379,13 +385,18 @@ WebContents* OpenApplicationWindow(const AppLaunchParams& params,
   WebContents* web_contents = nav_params.navigated_or_inserted_contents;
   extensions::HostedAppBrowserController::SetAppPrefsForWebContents(
       browser->hosted_app_controller(), web_contents);
-
   browser->window()->Show();
 
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
   //                focus explicitly.
   web_contents->SetInitialFocus();
   return web_contents;
+}
+
+WebContents* OpenApplicationWindow(const AppLaunchParams& params,
+                                   const GURL& url) {
+  Browser* browser = CreateApplicationWindow(params, url);
+  return ShowApplicationWindow(params, url, browser);
 }
 
 void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
