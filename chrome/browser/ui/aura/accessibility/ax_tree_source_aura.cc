@@ -8,10 +8,10 @@
 
 #include <vector>
 
-#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/accessibility/ax_view_obj_wrapper.h"
