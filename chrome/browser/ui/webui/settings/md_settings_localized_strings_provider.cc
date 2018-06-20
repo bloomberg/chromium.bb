@@ -275,7 +275,6 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"textToSpeechPreviewVoice", IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_VOICE},
     {"textToSpeechPreviewPlay", IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_PLAY},
     {"textToSpeechEngines", IDS_SETTINGS_TEXT_TO_SPEECH_ENGINES},
-    {"textToSpeechInstallEngines", IDS_SETTINGS_TEXT_TO_SPEECH_INSTALL_ENGINES},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,

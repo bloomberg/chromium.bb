@@ -421,9 +421,6 @@
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_ENGINES" desc="Heading for a section of text-to-speech settings to do per-engine settings">
       Speech Engines
     </message>
-    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_INSTALL_ENGINES" desc="A link to install additional text-to-speech engines">
-      Install additional speech engines
-    </message>
   </if>
 
   <if expr="chromeos">

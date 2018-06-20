@@ -73,21 +73,19 @@
         </paper-icon-button-light>
       </div>
     </iron-collapse>
-    <template is="dom-if" if="[[showExperimentalFeatures_]]">
-      <div class="settings-box two-line" on-click="onManageTtsSettingsTap_"
-          actionable>
-        <div class="start">
-          $i18n{manageTtsSettings}
-          <div class="secondary" id="appearanceSettingsSecondary">
-            $i18n{ttsSettingsLinkDescription}
-          </div>
+    <div class="settings-box two-line" on-click="onManageTtsSettingsTap_"
+        actionable>
+      <div class="start">
+        $i18n{manageTtsSettings}
+        <div class="secondary" id="appearanceSettingsSecondary">
+          $i18n{ttsSettingsLinkDescription}
         </div>
-        <paper-icon-button-light class="subpage-arrow">
-          <button aria-label="$i18n{manageTtsSettings}"
-              aria-describedby="appearanceSettingsSecondary"></button>
-        </paper-icon-button-light>
       </div>
-    </template>
+      <paper-icon-button-light class="subpage-arrow">
+        <button aria-label="$i18n{manageTtsSettings}"
+            aria-describedby="appearanceSettingsSecondary"></button>
+      </paper-icon-button-light>
+    </div>
 
     <h2>$i18n{displayHeading}</h2>
     <settings-toggle-button class="first"
