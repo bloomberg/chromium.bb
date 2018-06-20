@@ -24,7 +24,7 @@ class TrackObserver;
 // to make sure there is no difference between a video track where the source is
 // a local source and a video track where the source is a remote video track.
 class CONTENT_EXPORT MediaStreamRemoteVideoSource
-     : public MediaStreamVideoSource {
+    : public MediaStreamVideoSource {
  public:
   explicit MediaStreamRemoteVideoSource(
       std::unique_ptr<TrackObserver> observer);
@@ -44,7 +44,7 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
 
   // Used by tests to test that a frame can be received and that the
   // MediaStreamRemoteVideoSource behaves as expected.
-  rtc::VideoSinkInterface<webrtc::VideoFrame>* SinkInterfaceForTest();
+  rtc::VideoSinkInterface<webrtc::VideoFrame>* SinkInterfaceForTesting();
 
  private:
   void OnChanged(webrtc::MediaStreamTrackInterface::TrackState state);

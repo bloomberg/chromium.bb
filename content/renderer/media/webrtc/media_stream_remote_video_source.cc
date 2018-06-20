@@ -71,6 +71,7 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
 
   // Timestamp of the first received frame.
   base::TimeDelta start_timestamp_;
+
   // WebRTC Chromium timestamp diff
   const base::TimeDelta time_diff_;
 };
@@ -117,16 +118,16 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
   scoped_refptr<media::VideoFrame> video_frame;
   scoped_refptr<webrtc::VideoFrameBuffer> buffer(
       incoming_frame.video_frame_buffer());
+  const gfx::Size size(buffer->width(), buffer->height());
 
-  if (buffer->type() == webrtc::VideoFrameBuffer::Type::kNative) {
-    video_frame = static_cast<WebRtcVideoFrameAdapter*>(buffer.get())
-                      ->getMediaVideoFrame();
-    video_frame->set_timestamp(elapsed_timestamp);
-  } else {
-    const gfx::Size size(buffer->width(), buffer->height());
-    const bool has_alpha =
-        buffer->type() == webrtc::VideoFrameBuffer::Type::kI420A;
-    if (has_alpha) {
+  switch (buffer->type()) {
+    case webrtc::VideoFrameBuffer::Type::kNative: {
+      video_frame = static_cast<WebRtcVideoFrameAdapter*>(buffer.get())
+                        ->getMediaVideoFrame();
+      video_frame->set_timestamp(elapsed_timestamp);
+      break;
+    }
+    case webrtc::VideoFrameBuffer::Type::kI420A: {
       const webrtc::I420ABufferInterface* yuva_buffer = buffer->GetI420A();
       video_frame = media::VideoFrame::WrapExternalYuvaData(
           media::PIXEL_FORMAT_I420A, size, gfx::Rect(size), size,
@@ -136,36 +137,47 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
           const_cast<uint8_t*>(yuva_buffer->DataU()),
           const_cast<uint8_t*>(yuva_buffer->DataV()),
           const_cast<uint8_t*>(yuva_buffer->DataA()), elapsed_timestamp);
-    } else {
-      scoped_refptr<webrtc::PlanarYuvBuffer> yuv_buffer;
-      media::VideoPixelFormat pixel_format;
-      if (buffer->type() == webrtc::VideoFrameBuffer::Type::kI444) {
-        yuv_buffer = buffer->GetI444();
-        pixel_format = media::PIXEL_FORMAT_I444;
-      } else {
-        yuv_buffer = buffer->ToI420();
-        pixel_format = media::PIXEL_FORMAT_I420;
-      }
-      // Make a shallow copy. Both |frame| and |video_frame| will share a single
-      // reference counted frame buffer. Const cast and hope no one will
-      // overwrite the data.
+      break;
+    }
+    case webrtc::VideoFrameBuffer::Type::kI420: {
+      rtc::scoped_refptr<webrtc::I420BufferInterface> yuv_buffer =
+          buffer->ToI420();
       video_frame = media::VideoFrame::WrapExternalYuvData(
-          pixel_format, size, gfx::Rect(size), size, yuv_buffer->StrideY(),
-          yuv_buffer->StrideU(), yuv_buffer->StrideV(),
+          media::PIXEL_FORMAT_I420, size, gfx::Rect(size), size,
+          yuv_buffer->StrideY(), yuv_buffer->StrideU(), yuv_buffer->StrideV(),
           const_cast<uint8_t*>(yuv_buffer->DataY()),
           const_cast<uint8_t*>(yuv_buffer->DataU()),
           const_cast<uint8_t*>(yuv_buffer->DataV()), elapsed_timestamp);
+      break;
     }
-    if (!video_frame)
-      return;
-    // The bind ensures that we keep a reference to the underlying buffer.
-    video_frame->AddDestructionObserver(base::BindOnce(&DoNothing, buffer));
+    case webrtc::VideoFrameBuffer::Type::kI444: {
+      webrtc::I444BufferInterface* yuv_buffer = buffer->GetI444();
+      video_frame = media::VideoFrame::WrapExternalYuvData(
+          media::PIXEL_FORMAT_I444, size, gfx::Rect(size), size,
+          yuv_buffer->StrideY(), yuv_buffer->StrideU(), yuv_buffer->StrideV(),
+          const_cast<uint8_t*>(yuv_buffer->DataY()),
+          const_cast<uint8_t*>(yuv_buffer->DataU()),
+          const_cast<uint8_t*>(yuv_buffer->DataV()), elapsed_timestamp);
+      break;
+    }
+    default:
+      NOTREACHED();
   }
+
+  if (!video_frame)
+    return;
+
+  // The bind ensures that we keep a reference to the underlying buffer.
+  if (buffer->type() != webrtc::VideoFrameBuffer::Type::kNative)
+    video_frame->AddDestructionObserver(base::BindOnce(&DoNothing, buffer));
+
+  // Rotation may be explicitly set sometimes.
   if (incoming_frame.rotation() != webrtc::kVideoRotation_0) {
     video_frame->metadata()->SetRotation(
         media::VideoFrameMetadata::ROTATION,
         WebRTCToMediaVideoRotation(incoming_frame.rotation()));
   }
+
   // Run render smoothness algorithm only when we don't have to render
   // immediately.
   if (!render_immediately) {
@@ -235,7 +247,7 @@ void MediaStreamRemoteVideoSource::StopSourceImpl() {
 }
 
 rtc::VideoSinkInterface<webrtc::VideoFrame>*
-MediaStreamRemoteVideoSource::SinkInterfaceForTest() {
+MediaStreamRemoteVideoSource::SinkInterfaceForTesting() {
   return delegate_.get();
 }
 
