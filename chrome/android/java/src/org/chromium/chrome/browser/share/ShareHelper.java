@@ -415,7 +415,7 @@ public class ShareHelper {
         try {
             String path = UiUtils.getDirectoryForImageCapture(ContextUtils.getApplicationContext())
                     + File.separator + SHARE_IMAGES_DIRECTORY_NAME;
-            contents.getContentBitmapAsync(
+            contents.writeContentBitmapToDiskAsync(
                     width, height, path, new ExternallyVisibleUriCallback(callback));
         } catch (IOException e) {
             Log.e(TAG, "Error getting content bitmap: ", e);

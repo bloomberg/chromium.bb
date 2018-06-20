@@ -396,7 +396,7 @@ public interface WebContents extends Parcelable {
     void setOverscrollRefreshHandler(OverscrollRefreshHandler handler);
 
     /**
-     * Requests an image snapshot of the content.
+     * Requests an image snapshot of the content and stores it in the specified folder.
      *
      * @param width The width of the resulting bitmap, or 0 for "auto."
      * @param height The height of the resulting bitmap, or 0 for "auto."
@@ -404,7 +404,8 @@ public interface WebContents extends Parcelable {
      * @param callback May be called synchronously, or at a later point, to deliver the bitmap
      *                 result (or a failure code).
      */
-    void getContentBitmapAsync(int width, int height, String path, Callback<String> callback);
+    void writeContentBitmapToDiskAsync(
+            int width, int height, String path, Callback<String> callback);
 
     /**
      * Reloads all the Lo-Fi images in this WebContents.

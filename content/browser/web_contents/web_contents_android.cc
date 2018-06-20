@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/android/callback_android.h"
@@ -643,7 +644,7 @@ void WebContentsAndroid::SetOverscrollRefreshHandler(
           overscroll_refresh_handler));
 }
 
-void WebContentsAndroid::GetContentBitmap(
+void WebContentsAndroid::WriteContentBitmapToDisk(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint width,
@@ -768,7 +769,6 @@ void WebContentsAndroid::OnFinishGetContentBitmap(
     const std::string& path,
     const SkBitmap& bitmap) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> java_bitmap;
   if (!bitmap.drawsNothing()) {
     auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
         {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
