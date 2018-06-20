@@ -185,8 +185,8 @@ class CONTENT_EXPORT CursorRendererUndoer {
   CursorRendererUndoer();
   ~CursorRendererUndoer();
 
-  CursorRendererUndoer(CursorRendererUndoer&& other);
-  CursorRendererUndoer& operator=(CursorRendererUndoer&& other);
+  CursorRendererUndoer(CursorRendererUndoer&& other) noexcept;
+  CursorRendererUndoer& operator=(CursorRendererUndoer&& other) noexcept;
 
   void TakeSnapshot(const media::VideoFrame& frame, const gfx::Rect& rect);
 

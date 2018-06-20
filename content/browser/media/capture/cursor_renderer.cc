@@ -283,11 +283,11 @@ CursorRendererUndoer::CursorRendererUndoer() = default;
 
 CursorRendererUndoer::~CursorRendererUndoer() = default;
 
-CursorRendererUndoer::CursorRendererUndoer(CursorRendererUndoer&& other) =
-    default;
+CursorRendererUndoer::CursorRendererUndoer(
+    CursorRendererUndoer&& other) noexcept = default;
 
 CursorRendererUndoer& CursorRendererUndoer::operator=(
-    CursorRendererUndoer&& other) = default;
+    CursorRendererUndoer&& other) noexcept = default;
 
 namespace {
 
