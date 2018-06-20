@@ -39,16 +39,10 @@ CSSParserSelector::CSSParserSelector(const QualifiedName& tag_q_name,
     : selector_(std::make_unique<CSSSelector>(tag_q_name, is_implicit)) {}
 
 CSSParserSelector::~CSSParserSelector() {
-  if (!tag_history_)
-    return;
-  Vector<std::unique_ptr<CSSParserSelector>, 16> to_delete;
-  std::unique_ptr<CSSParserSelector> selector = std::move(tag_history_);
-  while (true) {
-    std::unique_ptr<CSSParserSelector> next = std::move(selector->tag_history_);
-    to_delete.push_back(std::move(selector));
-    if (!next)
-      break;
-    selector = std::move(next);
+  while (tag_history_) {
+    std::unique_ptr<CSSParserSelector> next =
+        std::move(tag_history_->tag_history_);
+    tag_history_ = std::move(next);
   }
 }
 
