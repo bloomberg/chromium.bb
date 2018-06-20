@@ -6,6 +6,7 @@
 
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -14,13 +15,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-
-// Font size used in the omnibox.
-const CGFloat kFontSize = 19.0f;
-
-}  // namespace
 
 @interface OmniboxViewController ()
 
@@ -48,15 +42,16 @@ const CGFloat kFontSize = 19.0f;
 - (void)loadView {
   UIColor* textColor = self.incognito ? [UIColor whiteColor]
                                       : [UIColor colorWithWhite:0 alpha:0.7];
-  UIColor* textFieldTintColor =
-      self.incognito ? [UIColor whiteColor] : [UIColor blackColor];
+  UIColor* textFieldTintColor = self.incognito
+                                    ? [UIColor whiteColor]
+                                    : UIColorFromRGB(kLocationBarTintBlue);
   UIColor* iconTintColor = self.incognito
                                ? [UIColor whiteColor]
                                : [UIColor colorWithWhite:0 alpha:0.7];
 
   self.view = [[OmniboxContainerView alloc]
       initWithFrame:CGRectZero
-               font:[UIFont systemFontOfSize:kFontSize]
+               font:[UIFont systemFontOfSize:kLocationBarFontSize]
           textColor:textColor
       textFieldTint:textFieldTintColor
            iconTint:iconTintColor];

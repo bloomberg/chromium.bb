@@ -20,6 +20,9 @@ const CGFloat kButtonSize = 28;
 
 const CGFloat kButtonTrailingSpacing = 10;
 
+// Font size used in the omnibox.
+const CGFloat kFontSize = 17.0f;
+
 }  // namespace
 
 @interface LocationBarSteadyView ()
@@ -101,7 +104,7 @@ const CGFloat kButtonTrailingSpacing = 10;
     [_locationLabel
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                         forAxis:UILayoutConstraintAxisVertical];
-    _locationLabel.font = [UIFont systemFontOfSize:19.0];
+    _locationLabel.font = [UIFont systemFontOfSize:kFontSize];
 
     // Container for location label and icon.
     UIView* container = [[UIView alloc] init];

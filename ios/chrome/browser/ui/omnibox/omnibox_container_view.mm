@@ -26,6 +26,9 @@ const CGFloat kleadingImageViewEdgeOffset = 9;
 const CGFloat kTextFieldLeadingOffsetNoImage = 16;
 // Space between the leading button and the textfield when a button is shown.
 const CGFloat kTextFieldLeadingOffsetImage = 6;
+// Space between the clear button and the edge of the omnibox.
+const CGFloat kTextFieldClearButtonTrailingOffset = 4;
+
 }  // namespace
 
 #pragma mark - OmniboxContainerView
@@ -74,11 +77,10 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
 
     [NSLayoutConstraint activateConstraints:@[
       [_textField.trailingAnchor
-          constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-      [_textField.topAnchor
-          constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-      [_textField.bottomAnchor
-          constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
+          constraintEqualToAnchor:self.trailingAnchor
+                         constant:-kTextFieldClearButtonTrailingOffset],
+      [_textField.topAnchor constraintEqualToAnchor:self.topAnchor],
+      [_textField.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
       _leadingTextfieldConstraint,
     ]];
 
@@ -101,10 +103,9 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
   } else {
     [self addSubview:_leadingImageView];
     self.leadingTextfieldConstraint.active = NO;
-    self.leadingImageViewLeadingConstraint =
-        [self.layoutMarginsGuide.leadingAnchor
-            constraintEqualToAnchor:self.leadingImageView.leadingAnchor
-                           constant:-kleadingImageViewEdgeOffset];
+    self.leadingImageViewLeadingConstraint = [self.leadingAnchor
+        constraintEqualToAnchor:self.leadingImageView.leadingAnchor
+                       constant:-kleadingImageViewEdgeOffset];
 
     NSLayoutConstraint* leadingImageViewToTextField = nil;
     leadingImageViewToTextField = [self.leadingImageView.trailingAnchor
@@ -113,7 +114,7 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
 
     [NSLayoutConstraint activateConstraints:@[
       [_leadingImageView.centerYAnchor
-          constraintEqualToAnchor:self.layoutMarginsGuide.centerYAnchor],
+          constraintEqualToAnchor:self.centerYAnchor],
       self.leadingImageViewLeadingConstraint,
       leadingImageViewToTextField,
     ]];

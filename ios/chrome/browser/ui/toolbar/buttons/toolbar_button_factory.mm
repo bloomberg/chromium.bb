@@ -447,6 +447,10 @@ const int styleCount = 2;
 
 - (UIButton*)cancelButton {
   UIButton* cancelButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  cancelButton.titleLabel.font = [UIFont systemFontOfSize:kLocationBarFontSize];
+  cancelButton.tintColor = self.style == NORMAL
+                               ? UIColorFromRGB(kLocationBarTintBlue)
+                               : [UIColor whiteColor];
   [cancelButton setTitle:l10n_util::GetNSString(IDS_CANCEL)
                 forState:UIControlStateNormal];
   [cancelButton setContentHuggingPriority:UILayoutPriorityDefaultHigh
