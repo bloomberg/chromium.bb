@@ -28,11 +28,31 @@ TEST(FileTest, File) {
       mojo::test::SerializeAndDeserialize<mojom::File>(&file, &file_out));
   std::vector<char> content(test_content.size());
   ASSERT_TRUE(file_out.IsValid());
+  ASSERT_FALSE(file_out.async());
   ASSERT_EQ(static_cast<int>(test_content.size()),
             file_out.Read(0, content.data(),
                           base::checked_cast<int>(test_content.size())));
   EXPECT_EQ(test_content,
             base::StringPiece(content.data(), test_content.size()));
+}
+
+TEST(FileTest, AsyncFile) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath path = temp_dir.GetPath().AppendASCII("async_test_file.txt");
+
+  base::File write_file(path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  const base::StringPiece test_content = "test string";
+  write_file.WriteAtCurrentPos(test_content.data(),
+                               base::checked_cast<int>(test_content.size()));
+  write_file.Close();
+
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                            base::File::FLAG_ASYNC);
+  base::File file_out;
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::File>(&file, &file_out));
+  ASSERT_TRUE(file_out.async());
 }
 
 TEST(FileTest, InvalidFile) {

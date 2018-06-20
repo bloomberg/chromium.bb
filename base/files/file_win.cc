@@ -269,10 +269,7 @@ File File::Duplicate() const {
     return File(GetLastFileError());
   }
 
-  File other(other_handle);
-  if (async())
-    other.async_ = true;
-  return other;
+  return File(other_handle, async());
 }
 
 bool File::DeleteOnClose(bool delete_on_close) {

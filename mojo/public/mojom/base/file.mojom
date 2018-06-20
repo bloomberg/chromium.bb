@@ -7,4 +7,5 @@ module mojo_base.mojom;
 // Corresponds to |base::File| in base/files/file.h
 struct File {
   handle fd;
+  bool async;
 };

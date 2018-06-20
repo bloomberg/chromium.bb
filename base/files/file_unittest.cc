@@ -745,4 +745,18 @@ TEST(FileTest, NoDeleteOnCloseWithMappedFile) {
   file.Close();
   ASSERT_TRUE(base::PathExists(file_path));
 }
+
+// Check that we handle the async bit being set incorrectly in a sane way.
+TEST(FileTest, UseSyncApiWithAsyncFile) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath file_path = temp_dir.GetPath().AppendASCII("file");
+
+  File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE |
+                           base::File::FLAG_ASYNC);
+  File lying_file(file.TakePlatformFile(), false /* async */);
+  ASSERT_TRUE(lying_file.IsValid());
+
+  ASSERT_EQ(lying_file.WriteAtCurrentPos("12345", 5), -1);
+}
 #endif  // defined(OS_WIN)
