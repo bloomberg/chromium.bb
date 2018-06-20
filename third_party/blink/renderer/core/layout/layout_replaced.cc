@@ -963,6 +963,19 @@ LayoutRect LayoutReplaced::LocalSelectionRect() const {
   if (GetSelectionState() == SelectionState::kNone)
     return LayoutRect();
 
+  if (IsInline()) {
+    const auto fragments = NGPaintFragment::InlineFragmentsFor(this);
+    if (fragments.IsInLayoutNGInlineFormattingContext()) {
+      LayoutRect rect;
+      for (const NGPaintFragment* fragment : fragments) {
+        const NGPhysicalOffsetRect fragment_rect =
+            fragment->ComputeLocalSelectionRectForReplaced();
+        rect.Unite(fragment_rect.ToLayoutRect());
+      }
+      return rect;
+    }
+  }
+
   if (!InlineBoxWrapper()) {
     // We're a block-level replaced element.  Just return our own dimensions.
     return LayoutRect(LayoutPoint(), Size());

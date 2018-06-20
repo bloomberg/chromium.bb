@@ -32,8 +32,7 @@ NGLogicalRect ComputeLogicalRectFor(const NGPhysicalOffsetRect& physical_rect,
                                     const NGPaintFragment& paint_fragment) {
   const WritingMode writing_mode = paint_fragment.Style().GetWritingMode();
   const TextDirection text_direction =
-      ToNGPhysicalTextFragmentOrDie(paint_fragment.PhysicalFragment())
-          .ResolvedDirection();
+      paint_fragment.PhysicalFragment().ResolvedDirection();
   const NGPhysicalSize outer_size = paint_fragment.Size();
   const NGLogicalOffset logical_offset = physical_rect.offset.ConvertToLogical(
       writing_mode, text_direction, outer_size, physical_rect.size);
@@ -47,8 +46,7 @@ NGPhysicalOffsetRect ComputePhysicalRectFor(
     const NGPaintFragment& paint_fragment) {
   const WritingMode writing_mode = paint_fragment.Style().GetWritingMode();
   const TextDirection text_direction =
-      ToNGPhysicalTextFragmentOrDie(paint_fragment.PhysicalFragment())
-          .ResolvedDirection();
+      paint_fragment.PhysicalFragment().ResolvedDirection();
   const NGPhysicalSize outer_size = paint_fragment.Size();
   const NGPhysicalSize physical_size =
       logical_rect.size.ConvertToPhysical(writing_mode);
@@ -384,7 +382,7 @@ void NGPaintFragment::SetShouldDoFullPaintInvalidationForFirstLine() {
     line_box->SetShouldDoFullPaintInvalidationRecursively();
 }
 
-NGPhysicalOffsetRect NGPaintFragment::ComputeLocalSelectionRect(
+NGPhysicalOffsetRect NGPaintFragment::ComputeLocalSelectionRectForText(
     const LayoutSelectionStatus& selection_status) const {
   const NGPhysicalTextFragment& text_fragment =
       ToNGPhysicalTextFragmentOrDie(PhysicalFragment());
@@ -407,6 +405,18 @@ NGPhysicalOffsetRect NGPaintFragment::ComputeLocalSelectionRect(
                                                           selection_status);
   const NGLogicalRect line_height_expanded_rect =
       ExpandSelectionRectToLineHeight(line_break_extended_rect, *this);
+  const NGPhysicalOffsetRect physical_rect =
+      ComputePhysicalRectFor(line_height_expanded_rect, *this);
+  return physical_rect;
+}
+
+NGPhysicalOffsetRect NGPaintFragment::ComputeLocalSelectionRectForReplaced()
+    const {
+  DCHECK(GetLayoutObject()->IsLayoutReplaced());
+  const NGPhysicalOffsetRect selection_rect = PhysicalFragment().LocalRect();
+  NGLogicalRect logical_rect = ComputeLogicalRectFor(selection_rect, *this);
+  const NGLogicalRect line_height_expanded_rect =
+      ExpandSelectionRectToLineHeight(logical_rect, *this);
   const NGPhysicalOffsetRect physical_rect =
       ComputePhysicalRectFor(line_height_expanded_rect, *this);
   return physical_rect;
