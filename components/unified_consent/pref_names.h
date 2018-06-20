@@ -7,6 +7,7 @@
 
 namespace prefs {
 
+extern const char kUnifiedConsentGiven[];
 extern const char kUrlKeyedAnonymizedDataCollectionEnabled[];
 
 }  // namespace prefs

@@ -61,6 +61,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
+#include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -1339,6 +1340,10 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   AccountFetcherServiceFactory::GetForProfile(profile)
       ->SetupInvalidationsOnProfileLoad(invalidation_service);
   AccountReconcilorFactory::GetForProfile(profile);
+
+  // Initialization needs to happen after the browser context is available
+  // because ProfileSyncService needs the URL context getter.
+  UnifiedConsentServiceFactory::GetForProfile(profile);
 
 #if defined(OS_ANDROID)
   // TODO(b/678590): create services during profile startup.

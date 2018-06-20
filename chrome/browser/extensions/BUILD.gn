@@ -864,6 +864,7 @@ jumbo_static_library("extensions") {
     "//components/sync_sessions",
     "//components/translate/core/browser",
     "//components/undo",
+    "//components/unified_consent",
     "//components/update_client",
     "//components/url_matcher",
     "//components/user_prefs",
