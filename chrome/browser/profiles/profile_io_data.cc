@@ -1110,9 +1110,6 @@ void ProfileIOData::Init(
       builder->set_network_delegate(std::move(network_delegate));
     }
 
-    builder->set_shared_http_auth_handler_factory(
-        io_thread_globals->system_request_context->http_auth_handler_factory());
-
     io_thread->SetUpProxyService(builder.get());
 
     if (g_cert_verifier_for_profile_io_data_testing) {
