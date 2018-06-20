@@ -288,6 +288,10 @@ aura::Window* KeyboardController::GetContainerWindow() {
   return container_.get();
 }
 
+aura::Window* KeyboardController::GetContentsWindow() {
+  return ui_->HasContentsWindow() ? ui_->GetContentsWindow() : nullptr;
+}
+
 aura::Window* KeyboardController::GetRootWindow() {
   return container_->GetRootWindow();
 }
@@ -656,19 +660,20 @@ void KeyboardController::PopulateKeyboardContent(
 
   TRACE_EVENT0("vk", "PopulateKeyboardContent");
 
-  if (layout_delegate_ != nullptr) {
-    if (display.is_valid())
-      layout_delegate_->MoveKeyboardToDisplay(display);
-    else
-      layout_delegate_->MoveKeyboardToTouchableDisplay();
-  }
-
   if (container_->children().empty()) {
     DCHECK_EQ(state_, KeyboardControllerState::INITIAL);
     aura::Window* contents = ui_->GetContentsWindow();
     contents->Show();
     container_->AddChild(contents);
     contents->set_owned_by_parent(false);
+  }
+
+  DCHECK(ui_->HasContentsWindow());
+  if (layout_delegate_ != nullptr) {
+    if (display.is_valid())
+      layout_delegate_->MoveKeyboardToDisplay(display);
+    else
+      layout_delegate_->MoveKeyboardToTouchableDisplay();
   }
 
   switch (state_) {
