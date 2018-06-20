@@ -8,12 +8,14 @@
 #include "media/cdm/cdm_proxy.h"
 
 #include <d3d11_1.h>
+#include <dxgi1_4.h>
 #include <wrl/client.h>
 
 #include <map>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "media/gpu/media_gpu_export.h"
 
 namespace media {
@@ -79,6 +81,10 @@ class MEDIA_GPU_EXPORT D3D11CdmProxy : public CdmProxy {
   template <typename T>
   using ComPtr = Microsoft::WRL::ComPtr<T>;
 
+  class HardwareEventWatcher;
+
+  void NotifyHardwareContentProtectionTeardown();
+
   const GUID crypto_type_;
   const CdmProxy::Protocol protocol_;
   const FunctionIdMap function_id_map_;
@@ -108,6 +114,8 @@ class MEDIA_GPU_EXPORT D3D11CdmProxy : public CdmProxy {
   ComPtr<ID3D11VideoContext> video_context_;
   ComPtr<ID3D11VideoContext1> video_context1_;
 
+  std::unique_ptr<HardwareEventWatcher> hardware_event_watcher_;
+
   // Crypto session ID -> actual crypto session.
   std::map<uint32_t, ComPtr<ID3D11CryptoSession>> crypto_session_map_;
 
@@ -115,6 +123,8 @@ class MEDIA_GPU_EXPORT D3D11CdmProxy : public CdmProxy {
   // Used when calling NegotiateCryptoSessionKeyExchange.
   UINT private_input_size_ = 0;
   UINT private_output_size_ = 0;
+
+  base::WeakPtrFactory<D3D11CdmProxy> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(D3D11CdmProxy);
 };
