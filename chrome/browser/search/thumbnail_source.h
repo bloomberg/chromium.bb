@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "components/image_fetcher/core/image_data_fetcher.h"
 #include "content/public/browser/url_data_source.h"
 
@@ -39,8 +38,6 @@ class ThumbnailSource : public content::URLDataSource {
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string& path) const override;
-  scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForRequestPath(
-      const std::string& path) const override;
   bool AllowCaching() const override;
   bool ShouldServiceRequest(const GURL& url,
                             content::ResourceContext* resource_context,
@@ -73,7 +70,7 @@ class ThumbnailSource : public content::URLDataSource {
 
   image_fetcher::ImageDataFetcher image_data_fetcher_;
 
-  base::WeakPtrFactory<ThumbnailSource> weak_ptr_factory_;
+  base::WeakPtrFactory<ThumbnailSource> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailSource);
 };
