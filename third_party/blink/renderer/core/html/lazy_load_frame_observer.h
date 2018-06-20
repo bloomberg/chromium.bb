@@ -21,6 +21,24 @@ class Visitor;
 
 class LazyLoadFrameObserver : public GarbageCollected<LazyLoadFrameObserver> {
  public:
+  // This enum is logged to histograms, so values should not be reordered or
+  // reused, and it must match the corresponding enum
+  // "LazyLoad.FrameInitialDeferralAction" in
+  // tools/metrics/histograms/enums.xml.
+  enum class FrameInitialDeferralAction {
+    // The frame was not loaded immediately, and the load continued to be
+    // deferred.
+    kDeferred = 0,
+    // The frame was either visible or near enough to the viewport that it was
+    // loaded immediately.
+    kLoadedNearOrInViewport = 1,
+    // The frame was determined to likely be a hidden frame (e.g. analytics or
+    // communication iframes), so it was loaded immediately.
+    kLoadedHidden = 2,
+
+    kMaxValue = kLoadedHidden
+  };
+
   explicit LazyLoadFrameObserver(HTMLFrameOwnerElement&);
 
   void DeferLoadUntilNearViewport(const ResourceRequest&, WebFrameLoadType);
@@ -42,6 +60,7 @@ class LazyLoadFrameObserver : public GarbageCollected<LazyLoadFrameObserver> {
       const HeapVector<Member<IntersectionObserverEntry>>&);
 
   void RecordVisibilityMetricsIfLoadedAndVisible();
+  void RecordInitialDeferralAction(FrameInitialDeferralAction);
 
   const Member<HTMLFrameOwnerElement> element_;
 
@@ -62,6 +81,11 @@ class LazyLoadFrameObserver : public GarbageCollected<LazyLoadFrameObserver> {
   TimeTicks time_when_first_visible_;
   // Set when the first load event is dispatched for the frame.
   TimeTicks time_when_first_load_finished_;
+
+  // Keeps track of whether the frame was initially recorded as having been
+  // deferred, so that the appropriate histograms can be recorded if the frame
+  // later gets loaded in for some reason.
+  bool was_recorded_as_deferred_ = false;
 };
 
 }  // namespace blink

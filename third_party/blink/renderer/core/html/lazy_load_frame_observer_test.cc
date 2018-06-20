@@ -51,6 +51,22 @@ constexpr std::pair<WebEffectiveConnectionType, const char*>
          "Blink.VisibleLoadTime.LazyLoadEligibleFrames.BelowTheFold.4G"},
 };
 
+constexpr std::pair<WebEffectiveConnectionType, const char*>
+    kInitialDeferralActionHistogramNames[] = {
+        {WebEffectiveConnectionType::kTypeUnknown,
+         "Blink.LazyLoad.CrossOriginFrames.InitialDeferralAction.Unknown"},
+        {WebEffectiveConnectionType::kTypeOffline,
+         "Blink.LazyLoad.CrossOriginFrames.InitialDeferralAction.Offline"},
+        {WebEffectiveConnectionType::kTypeSlow2G,
+         "Blink.LazyLoad.CrossOriginFrames.InitialDeferralAction.Slow2G"},
+        {WebEffectiveConnectionType::kType2G,
+         "Blink.LazyLoad.CrossOriginFrames.InitialDeferralAction.2G"},
+        {WebEffectiveConnectionType::kType3G,
+         "Blink.LazyLoad.CrossOriginFrames.InitialDeferralAction.3G"},
+        {WebEffectiveConnectionType::kType4G,
+         "Blink.LazyLoad.CrossOriginFrames.InitialDeferralAction.4G"},
+};
+
 // Convenience enums to make it easy to access the appropriate value of the
 // tuple parameters in the parameterized tests below, e.g. so that
 // std::get<LazyFrameLoadingFeatureStatus>(GetParam()) can be used instead of
@@ -94,11 +110,17 @@ class LazyLoadFramesTest : public SimTest,
     settings.SetLazyFrameLoadingDistanceThresholdPx4G(700);
   }
 
+  int GetLoadingDistanceThreshold() const {
+    static constexpr int kDistanceThresholdByEffectiveConnectionType[] = {
+        200, 300, 400, 500, 600, 700};
+    return kDistanceThresholdByEffectiveConnectionType[static_cast<int>(
+        std::get<WebEffectiveConnectionType>(GetParam()))];
+  }
+
   void ExpectVisibleLoadTimeHistogramSamplesIfApplicable(
       int expected_above_the_fold_count,
       int expected_below_the_fold_count) {
-    if (std::get<LazyFrameVisibleLoadTimeFeatureStatus>(GetParam()) !=
-        LazyFrameVisibleLoadTimeFeatureStatus::kEnabled) {
+    if (!RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled()) {
       // Expect zero samples if the visible load time metrics feature is
       // disabled.
       expected_above_the_fold_count = 0;
@@ -121,14 +143,46 @@ class LazyLoadFramesTest : public SimTest,
     }
   }
 
-  HistogramTester* histogram_tester() { return &histogram_tester_; }
-
-  int GetLoadingDistanceThreshold() const {
-    static constexpr int kDistanceThresholdByEffectiveConnectionType[] = {
-        200, 300, 400, 500, 600, 700};
-    return kDistanceThresholdByEffectiveConnectionType[static_cast<int>(
-        std::get<WebEffectiveConnectionType>(GetParam()))];
+  void ExpectInitialDeferralActionHistogramSamplesIfApplicable(
+      LazyLoadFrameObserver::FrameInitialDeferralAction action,
+      int expected_count) {
+    for (const auto& pair : kInitialDeferralActionHistogramNames) {
+      if (RuntimeEnabledFeatures::LazyFrameLoadingEnabled() &&
+          std::get<WebEffectiveConnectionType>(GetParam()) == pair.first) {
+        histogram_tester()->ExpectUniqueSample(
+            pair.second, static_cast<int>(action), expected_count);
+      } else {
+        histogram_tester()->ExpectTotalCount(pair.second, 0);
+      }
+    }
   }
+
+  void ExpectLoadStartedAfterDeferredSamplesIfApplicable(int expected_count) {
+    if (RuntimeEnabledFeatures::LazyFrameLoadingEnabled()) {
+      histogram_tester()->ExpectUniqueSample(
+          "Blink.LazyLoad.CrossOriginFrames.LoadStartedAfterBeingDeferred",
+          static_cast<int>(std::get<WebEffectiveConnectionType>(GetParam())),
+          expected_count);
+    } else {
+      histogram_tester()->ExpectTotalCount(
+          "Blink.LazyLoad.CrossOriginFrames.LoadStartedAfterBeingDeferred", 0);
+    }
+  }
+
+  void ExpectVisibleAfterDeferredSamplesIfApplicable(int expected_count) {
+    if (RuntimeEnabledFeatures::LazyFrameLoadingEnabled() &&
+        RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled()) {
+      histogram_tester()->ExpectUniqueSample(
+          "Blink.LazyLoad.CrossOriginFrames.VisibleAfterBeingDeferred",
+          static_cast<int>(std::get<WebEffectiveConnectionType>(GetParam())),
+          expected_count);
+    } else {
+      histogram_tester()->ExpectTotalCount(
+          "Blink.LazyLoad.CrossOriginFrames.VisibleAfterBeingDeferred", 0);
+    }
+  }
+
+  HistogramTester* histogram_tester() { return &histogram_tester_; }
 
   // Convenience function to load a page with a cross origin frame far down the
   // page such that it's not near the viewport.
@@ -166,6 +220,13 @@ class LazyLoadFramesTest : public SimTest,
     EXPECT_FALSE(ConsoleMessages().Contains("child frame element onload"));
 
     ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
+
+    ExpectInitialDeferralActionHistogramSamplesIfApplicable(
+        LazyLoadFrameObserver::FrameInitialDeferralAction::kDeferred, 1);
+    histogram_tester()->ExpectTotalCount(
+        "Blink.LazyLoad.CrossOriginFrames.LoadStartedAfterBeingDeferred", 0);
+    histogram_tester()->ExpectTotalCount(
+        "Blink.LazyLoad.CrossOriginFrames.VisibleAfterBeingDeferred", 0);
 
     if (!child_frame_resource) {
       child_frame_resource.reset(
@@ -214,6 +275,13 @@ TEST_P(LazyLoadFramesTest, SameOriginFrame) {
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
   histogram_tester()->ExpectTotalCount(
       "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
+
+  for (const auto& pair : kInitialDeferralActionHistogramNames)
+    histogram_tester()->ExpectTotalCount(pair.second, 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.LazyLoad.CrossOriginFrames.LoadStartedAfterBeingDeferred", 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.LazyLoad.CrossOriginFrames.VisibleAfterBeingDeferred", 0);
 }
 
 TEST_P(LazyLoadFramesTest, AboveTheFoldFrame) {
@@ -250,6 +318,15 @@ TEST_P(LazyLoadFramesTest, AboveTheFoldFrame) {
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(1, 0);
   histogram_tester()->ExpectTotalCount(
       "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
+
+  ExpectInitialDeferralActionHistogramSamplesIfApplicable(
+      LazyLoadFrameObserver::FrameInitialDeferralAction::
+          kLoadedNearOrInViewport,
+      1);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.LazyLoad.CrossOriginFrames.LoadStartedAfterBeingDeferred", 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.LazyLoad.CrossOriginFrames.VisibleAfterBeingDeferred", 0);
 }
 
 TEST_P(LazyLoadFramesTest, BelowTheFoldButNearViewportFrame) {
@@ -298,6 +375,15 @@ TEST_P(LazyLoadFramesTest, BelowTheFoldButNearViewportFrame) {
   // samples in the VisibleBeforeLoaded histogram.
   histogram_tester()->ExpectTotalCount(
       "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
+
+  ExpectInitialDeferralActionHistogramSamplesIfApplicable(
+      LazyLoadFrameObserver::FrameInitialDeferralAction::
+          kLoadedNearOrInViewport,
+      1);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.LazyLoad.CrossOriginFrames.LoadStartedAfterBeingDeferred", 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.LazyLoad.CrossOriginFrames.VisibleAfterBeingDeferred", 0);
 }
 
 TEST_P(LazyLoadFramesTest, HiddenAndTinyFrames) {
@@ -387,6 +473,13 @@ TEST_P(LazyLoadFramesTest, HiddenAndTinyFrames) {
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
   histogram_tester()->ExpectTotalCount(
       "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
+
+  ExpectInitialDeferralActionHistogramSamplesIfApplicable(
+      LazyLoadFrameObserver::FrameInitialDeferralAction::kLoadedHidden, 6);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.LazyLoad.CrossOriginFrames.LoadStartedAfterBeingDeferred", 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.LazyLoad.CrossOriginFrames.VisibleAfterBeingDeferred", 0);
 }
 
 TEST_P(LazyLoadFramesTest, LoadCrossOriginFrameFarFromViewport) {
@@ -405,6 +498,12 @@ TEST_P(LazyLoadFramesTest, LoadCrossOriginFrameFarFromViewport) {
 
   EXPECT_FALSE(ConsoleMessages().Contains("child frame element onload"));
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
+
+  ExpectInitialDeferralActionHistogramSamplesIfApplicable(
+      LazyLoadFrameObserver::FrameInitialDeferralAction::kDeferred, 1);
+  ExpectLoadStartedAfterDeferredSamplesIfApplicable(1);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.LazyLoad.CrossOriginFrames.VisibleAfterBeingDeferred", 0);
 
   child_frame_resource->Complete("");
 
@@ -429,6 +528,11 @@ TEST_P(LazyLoadFramesTest, LoadCrossOriginFrameFarFromViewport) {
 
   histogram_tester()->ExpectTotalCount(
       "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
+
+  ExpectInitialDeferralActionHistogramSamplesIfApplicable(
+      LazyLoadFrameObserver::FrameInitialDeferralAction::kDeferred, 1);
+  ExpectLoadStartedAfterDeferredSamplesIfApplicable(1);
+  ExpectVisibleAfterDeferredSamplesIfApplicable(1);
 }
 
 TEST_P(LazyLoadFramesTest,
@@ -458,6 +562,11 @@ TEST_P(LazyLoadFramesTest,
         "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
   }
 
+  ExpectInitialDeferralActionHistogramSamplesIfApplicable(
+      LazyLoadFrameObserver::FrameInitialDeferralAction::kDeferred, 1);
+  ExpectLoadStartedAfterDeferredSamplesIfApplicable(1);
+  ExpectVisibleAfterDeferredSamplesIfApplicable(1);
+
   child_frame_resource->Complete("");
 
   Compositor().BeginFrame();
@@ -471,6 +580,11 @@ TEST_P(LazyLoadFramesTest,
   histogram_tester()->ExpectTotalCount(
       "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold",
       RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled() ? 1 : 0);
+
+  ExpectInitialDeferralActionHistogramSamplesIfApplicable(
+      LazyLoadFrameObserver::FrameInitialDeferralAction::kDeferred, 1);
+  ExpectLoadStartedAfterDeferredSamplesIfApplicable(1);
+  ExpectVisibleAfterDeferredSamplesIfApplicable(1);
 }
 
 TEST_P(LazyLoadFramesTest, NestedFrameInCrossOriginFrameFarFromViewport) {
@@ -511,6 +625,12 @@ TEST_P(LazyLoadFramesTest, NestedFrameInCrossOriginFrameFarFromViewport) {
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
   histogram_tester()->ExpectTotalCount(
       "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
+
+  ExpectInitialDeferralActionHistogramSamplesIfApplicable(
+      LazyLoadFrameObserver::FrameInitialDeferralAction::kDeferred, 1);
+  ExpectLoadStartedAfterDeferredSamplesIfApplicable(1);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.LazyLoad.CrossOriginFrames.VisibleAfterBeingDeferred", 0);
 }
 
 TEST_P(LazyLoadFramesTest, AboutBlankChildFrameNavigation) {
@@ -558,6 +678,13 @@ TEST_P(LazyLoadFramesTest, AboutBlankChildFrameNavigation) {
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
   histogram_tester()->ExpectTotalCount(
       "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
+
+  for (const auto& pair : kInitialDeferralActionHistogramNames)
+    histogram_tester()->ExpectTotalCount(pair.second, 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.LazyLoad.CrossOriginFrames.LoadStartedAfterBeingDeferred", 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.LazyLoad.CrossOriginFrames.VisibleAfterBeingDeferred", 0);
 }
 
 TEST_P(LazyLoadFramesTest, JavascriptStringFrameUrl) {
@@ -583,6 +710,13 @@ TEST_P(LazyLoadFramesTest, JavascriptStringFrameUrl) {
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
   histogram_tester()->ExpectTotalCount(
       "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
+
+  for (const auto& pair : kInitialDeferralActionHistogramNames)
+    histogram_tester()->ExpectTotalCount(pair.second, 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.LazyLoad.CrossOriginFrames.LoadStartedAfterBeingDeferred", 0);
+  histogram_tester()->ExpectTotalCount(
+      "Blink.LazyLoad.CrossOriginFrames.VisibleAfterBeingDeferred", 0);
 }
 
 INSTANTIATE_TEST_CASE_P(

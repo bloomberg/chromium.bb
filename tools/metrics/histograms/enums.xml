@@ -26266,6 +26266,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="= 100%"/>
 </enum>
 
+<enum name="LazyLoad.FrameInitialDeferralAction">
+  <int value="0" label="Deferred"/>
+  <int value="1" label="Loaded because near or in viewport"/>
+  <int value="2" label="Loaded because hidden"/>
+</enum>
+
 <enum name="LevelDBCorruptionRestoreValue">
   <int value="0" label="Database Delete Success"/>
   <int value="1" label="Database Delete Failure"/>
