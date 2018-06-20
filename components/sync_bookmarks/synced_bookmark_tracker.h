@@ -96,6 +96,10 @@ class SyncedBookmarkTracker {
   // |sync_id_to_entities_map_|.
   void Remove(const std::string& sync_id);
 
+  // Increment sequence number in the metadata for the entity with |sync_id|.
+  // Tracker must contain a non-tomstone entity with server id = |sync_id|.
+  void IncrementSequenceNumber(const std::string& sync_id);
+
   sync_pb::BookmarkModelMetadata BuildBookmarkModelMetadata() const;
 
   // Returns true if there are any local entities to be committed.
