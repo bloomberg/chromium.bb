@@ -140,15 +140,31 @@ void CrostiniAppWindowShelfController::OnWindowPropertyChanged(
       crostini_app_display_.GetDisplayIdForStartupId(*startup_id);
   if (display_id == display::kInvalidDisplayId)
     return;
-  display::Display display;
+
+  display::Display new_display;
   if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
-                                                             &display))
+                                                             &new_display))
     return;
-  gfx::Rect bounds = window->bounds();
-  gfx::Point origin = display.bounds().origin();
-  origin.Offset(bounds.x(), bounds.y());
-  bounds.set_origin(origin);
-  window->SetBoundsInScreen(bounds, display);
+  display::Display old_display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window);
+
+  // Adjust the window size and origin in proportion to the relative size of the
+  // display.
+  int old_width = old_display.bounds().width();
+  int new_width = new_display.bounds().width();
+  int old_height = old_display.bounds().height();
+  int new_height = new_display.bounds().height();
+  gfx::Rect old_bounds = window->bounds();
+  gfx::Rect new_bounds(old_bounds.x() * new_width / old_width,
+                       old_bounds.y() * new_height / old_height,
+                       old_bounds.width() * new_width / old_width,
+                       old_bounds.height() * new_height / old_height);
+
+  // Transform the bounds in display to that in screen.
+  gfx::Point new_origin = new_display.bounds().origin();
+  new_origin.Offset(new_bounds.x(), new_bounds.y());
+  new_bounds.set_origin(new_origin);
+  window->SetBoundsInScreen(new_bounds, new_display);
 }
 
 void CrostiniAppWindowShelfController::OnWindowVisibilityChanged(
