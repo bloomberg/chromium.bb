@@ -23,8 +23,11 @@ class MailtoHandlerProvider {
   MailtoHandlerProvider();
   virtual ~MailtoHandlerProvider();
 
-  // Set up mailto handling for the current browser state.
-  virtual void PrepareMailtoHandling(ios::ChromeBrowserState* browserState);
+  // Sets up mailto handling for |browser_state|.
+  virtual void PrepareMailtoHandling(ios::ChromeBrowserState* browser_state);
+
+  // Unregisters the mailto handler for browser state.
+  virtual void RemoveMailtoHandling();
 
   // Deprecated: Set up mailto handling for the current user.
   // The Signed-In Identity Block should return the primary signed in user.
