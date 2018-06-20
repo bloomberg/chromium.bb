@@ -6,6 +6,7 @@
 
 #include <d3d11.h>
 #include <d3d11_1.h>
+#include <dxgi1_4.h>
 #include <wrl/client.h>
 #include <wrl/implements.h>
 
@@ -266,6 +267,71 @@ class D3D11DeviceMock : public MockCOMInterface<ID3D11Device> {
   MOCK_STDCALL_METHOD1(SetExceptionMode, HRESULT(UINT));
 
   MOCK_STDCALL_METHOD0(GetExceptionMode, UINT());
+};
+
+class DXGIDevice2Mock : public MockCOMInterface<IDXGIDevice2> {
+ public:
+  DXGIDevice2Mock();
+  ~DXGIDevice2Mock() override;
+
+  MOCK_STDCALL_METHOD1(EnqueueSetEvent, HRESULT(HANDLE));
+  MOCK_STDCALL_METHOD3(OfferResources,
+                       HRESULT(UINT,
+                               IDXGIResource* const*,
+                               DXGI_OFFER_RESOURCE_PRIORITY));
+  MOCK_STDCALL_METHOD3(ReclaimResources,
+                       HRESULT(UINT, IDXGIResource* const*, BOOL*));
+  MOCK_STDCALL_METHOD1(GetMaximumFrameLatency, HRESULT(UINT*));
+  MOCK_STDCALL_METHOD1(SetMaximumFrameLatency, HRESULT(UINT));
+
+  MOCK_STDCALL_METHOD5(CreateSurface,
+                       HRESULT(const DXGI_SURFACE_DESC*,
+                               UINT,
+                               DXGI_USAGE,
+                               const DXGI_SHARED_RESOURCE*,
+                               IDXGISurface**));
+  MOCK_STDCALL_METHOD1(GetAdapter, HRESULT(IDXGIAdapter**));
+  MOCK_STDCALL_METHOD1(GetGPUThreadPriority, HRESULT(INT*));
+  MOCK_STDCALL_METHOD3(QueryResourceResidency,
+                       HRESULT(IUnknown* const*, DXGI_RESIDENCY*, UINT));
+  MOCK_STDCALL_METHOD1(SetGPUThreadPriority, HRESULT(INT));
+
+  MOCK_STDCALL_METHOD2(GetParent, HRESULT(REFIID, void**));
+  MOCK_STDCALL_METHOD3(GetPrivateData, HRESULT(REFGUID, UINT*, void*));
+  MOCK_STDCALL_METHOD3(SetPrivateData, HRESULT(REFGUID, UINT, const void*));
+  MOCK_STDCALL_METHOD2(SetPrivateDataInterface,
+                       HRESULT(REFGUID, const IUnknown*));
+};
+
+class DXGIAdapter3Mock : public MockCOMInterface<IDXGIAdapter3> {
+ public:
+  DXGIAdapter3Mock();
+  ~DXGIAdapter3Mock() override;
+
+  MOCK_STDCALL_METHOD3(QueryVideoMemoryInfo,
+                       HRESULT(UINT,
+                               DXGI_MEMORY_SEGMENT_GROUP,
+                               DXGI_QUERY_VIDEO_MEMORY_INFO*));
+  MOCK_STDCALL_METHOD2(RegisterHardwareContentProtectionTeardownStatusEvent,
+                       HRESULT(HANDLE, DWORD*));
+  MOCK_STDCALL_METHOD2(RegisterVideoMemoryBudgetChangeNotificationEvent,
+                       HRESULT(HANDLE, DWORD*));
+  MOCK_STDCALL_METHOD3(SetVideoMemoryReservation,
+                       HRESULT(UINT, DXGI_MEMORY_SEGMENT_GROUP, UINT64));
+  MOCK_STDCALL_METHOD1(UnregisterHardwareContentProtectionTeardownStatus,
+                       void(DWORD));
+  MOCK_STDCALL_METHOD1(UnregisterVideoMemoryBudgetChangeNotification,
+                       void(DWORD));
+  MOCK_STDCALL_METHOD1(GetDesc2, HRESULT(DXGI_ADAPTER_DESC2*));
+  MOCK_STDCALL_METHOD1(GetDesc1, HRESULT(DXGI_ADAPTER_DESC1*));
+  MOCK_STDCALL_METHOD2(CheckInterfaceSupport, HRESULT(REFGUID, LARGE_INTEGER*));
+  MOCK_STDCALL_METHOD2(EnumOutputs, HRESULT(UINT, IDXGIOutput**));
+  MOCK_STDCALL_METHOD1(GetDesc, HRESULT(DXGI_ADAPTER_DESC*));
+  MOCK_STDCALL_METHOD2(GetParent, HRESULT(REFIID, void**));
+  MOCK_STDCALL_METHOD3(GetPrivateData, HRESULT(REFGUID, UINT*, void*));
+  MOCK_STDCALL_METHOD3(SetPrivateData, HRESULT(REFGUID, UINT, const void*));
+  MOCK_STDCALL_METHOD2(SetPrivateDataInterface,
+                       HRESULT(REFGUID, const IUnknown*));
 };
 
 // TODO(crbug.com/788880): This may not be necessary. Tyr out and see if
