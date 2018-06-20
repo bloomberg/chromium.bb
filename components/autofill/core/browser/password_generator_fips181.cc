@@ -50,6 +50,15 @@ bool VerifyPassword(const std::string& password) {
   return num_lower_case && num_upper_case && num_digits;
 }
 
+// Password generation function for unit testing, default to nullptr.
+// If not null, ForceFixPassword() will also always use |kMinDigit| as the digit
+// replacement, instead of choosing randomly.
+int (*g_test_override_generator)(char* word,
+                                 char* hypenated_word,
+                                 unsigned short minlen,
+                                 unsigned short maxlen,
+                                 unsigned int pass_mode) = nullptr;
+
 }  // namespace
 
 namespace autofill {
@@ -66,7 +75,13 @@ void ForceFixPassword(std::string* password) {
   for (std::string::reverse_iterator iter = password->rbegin();
        iter != password->rend(); ++iter) {
     if (islower(*iter)) {
-      *iter = base::RandInt(kMinDigit, kMaxDigit);
+      // Tests will use |PasswordGeneratorFips181::SetGeneratorForTest| to put a
+      // non-random generator in |g_test_override_generator|. To eliminate the
+      // other source of randomness, always fix the chosen digit to |kMinDigit|
+      // in such case.
+      *iter = g_test_override_generator == nullptr
+                  ? base::RandInt(kMinDigit, kMaxDigit)
+                  : kMinDigit;
       break;
     }
   }
@@ -76,6 +91,15 @@ PasswordGeneratorFips181::PasswordGeneratorFips181(int max_length)
     : password_length_(GetLengthFromHint(max_length, kDefaultPasswordLength)) {}
 PasswordGeneratorFips181::~PasswordGeneratorFips181() {}
 
+void PasswordGeneratorFips181::SetGeneratorForTest(
+    int (*generator)(char* word,
+                     char* hypenated_word,
+                     unsigned short minlen,
+                     unsigned short maxlen,
+                     unsigned int pass_mode)) {
+  g_test_override_generator = generator;
+}
+
 std::string PasswordGeneratorFips181::Generate() const {
   char password[255];
   char unused_hypenated_password[255];
@@ -83,12 +107,13 @@ std::string PasswordGeneratorFips181::Generate() const {
   // No special characters included for now.
   unsigned int mode = S_NB | S_CL | S_SL;
 
-  // Generate the password by gen_pron_pass(), if it is not conforming then
-  // force fix it.
-  gen_pron_pass(password, unused_hypenated_password, password_length_,
-                password_length_, mode);
-
+  // Generate the password and fix afterwards if needed.
+  auto generator =
+      g_test_override_generator ? g_test_override_generator : gen_pron_pass;
+  generator(password, unused_hypenated_password, password_length_,
+            password_length_, mode);
   std::string str_password(password);
+
   if (VerifyPassword(str_password))
     return str_password;
 
