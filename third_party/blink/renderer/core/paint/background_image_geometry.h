@@ -109,9 +109,7 @@ class BackgroundImageGeometry {
                                            const LayoutBox&);
 
   LayoutRectOutsets ComputeDestRectAdjustment(const FillLayer&,
-                                              PaintPhase,
-                                              LayoutRect&,
-                                              LayoutRect&) const;
+                                              PaintPhase) const;
   void ComputePositioningArea(const LayoutBoxModelObject*,
                               PaintPhase,
                               GlobalPaintFlags,
