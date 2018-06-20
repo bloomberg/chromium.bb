@@ -240,14 +240,6 @@ BrowserCompositorMac::~BrowserCompositorMac() {
     g_spare_recyclable_compositors.Get().clear();
 }
 
-gfx::AcceleratedWidget BrowserCompositorMac::GetAcceleratedWidget() {
-  if (recyclable_compositor_) {
-    return recyclable_compositor_->accelerated_widget_mac()
-        ->accelerated_widget();
-  }
-  return gfx::kNullAcceleratedWidget;
-}
-
 DelegatedFrameHost* BrowserCompositorMac::GetDelegatedFrameHost() {
   DCHECK(delegated_frame_host_);
   return delegated_frame_host_.get();

@@ -484,10 +484,7 @@ BrowserAccessibilityManagerMac::GetUserInfoForValueChangedNotification(
 }
 
 NSView* BrowserAccessibilityManagerMac::GetParentView() {
-  gfx::AcceleratedWidget accelerated_widget =
-      delegate() ? delegate()->AccessibilityGetAcceleratedWidget()
-                 : gfx::kNullAcceleratedWidget;
-  return ui::AcceleratedWidgetMac::GetNSView(accelerated_widget);
+  return delegate()->AccessibilityGetNativeViewAccessible();
 }
 
 }  // namespace content

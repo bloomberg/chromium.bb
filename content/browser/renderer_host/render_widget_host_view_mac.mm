@@ -1280,9 +1280,9 @@ gfx::Point RenderWidgetHostViewMac::AccessibilityOriginInScreen(
   return gfx::Point(originInScreen.x, originInScreen.y);
 }
 
-gfx::AcceleratedWidget
-RenderWidgetHostViewMac::AccessibilityGetAcceleratedWidget() {
-  return browser_compositor_->GetAcceleratedWidget();
+gfx::NativeViewAccessible
+RenderWidgetHostViewMac::AccessibilityGetNativeViewAccessible() {
+  return cocoa_view();
 }
 
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
