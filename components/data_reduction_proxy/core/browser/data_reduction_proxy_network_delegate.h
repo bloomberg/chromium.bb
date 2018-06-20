@@ -106,7 +106,8 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // |started| indicates whether the request has been started. If false,
   // some information like the socket address is not available.
   void OnCompletedInternal(net::URLRequest* request,
-                           bool started) override;
+                           bool started,
+                           int net_error) override;
 
   // Checks if a LoFi or Lite Pages response was received and sets the state on
   // DataReductionProxyData for |request|.

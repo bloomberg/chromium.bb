@@ -128,12 +128,13 @@ void LayeredNetworkDelegate::OnNetworkBytesSentInternal(URLRequest* request,
 void LayeredNetworkDelegate::OnCompleted(URLRequest* request,
                                          bool started,
                                          int net_error) {
-  OnCompletedInternal(request, started);
+  OnCompletedInternal(request, started, net_error);
   nested_network_delegate_->NotifyCompleted(request, started, net_error);
 }
 
 void LayeredNetworkDelegate::OnCompletedInternal(URLRequest* request,
-                                                 bool started) {}
+                                                 bool started,
+                                                 int net_error) {}
 
 void LayeredNetworkDelegate::OnURLRequestDestroyed(URLRequest* request) {
   OnURLRequestDestroyedInternal(request);

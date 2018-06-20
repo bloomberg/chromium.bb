@@ -271,7 +271,9 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_EQ(1, (*counters_)["on_network_bytes_sent_count"]);
   }
 
-  void OnCompletedInternal(URLRequest* request, bool started) override {
+  void OnCompletedInternal(URLRequest* request,
+                           bool started,
+                           int net_error) override {
     ++(*counters_)["on_completed_count"];
     EXPECT_EQ(1, (*counters_)["on_completed_count"]);
   }

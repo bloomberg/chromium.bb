@@ -468,12 +468,10 @@ void DataReductionProxyNetworkDelegate::OnBeforeRedirectInternal(
 
 void DataReductionProxyNetworkDelegate::OnCompletedInternal(
     net::URLRequest* request,
-    bool started) {
+    bool started,
+    int net_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(request);
-  // TODO(maksims): remove this once OnCompletedInternal() has net_error in
-  // arguments.
-  int net_error = request->status().error();
   DCHECK_NE(net::ERR_IO_PENDING, net_error);
   if (data_reduction_proxy_bypass_stats_)
     data_reduction_proxy_bypass_stats_->OnUrlRequestCompleted(request, started,

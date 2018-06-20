@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/gtest_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -882,6 +883,92 @@ TEST_F(NetworkContextTest, Referrers) {
         EXPECT_EQ(kReferrer.spec(), response_body);
       }
     }
+  }
+}
+
+TEST_F(NetworkContextTest, HttpRequestCompletionErrorCodes) {
+  net::EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  net::EmbeddedTestServer https_test_server(
+      net::test_server::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(https_test_server.Start());
+
+  const struct {
+    const char* path;
+    bool use_https;
+    bool is_main_frame;
+    int expected_net_error;
+    int expected_request_completion_count;
+    int expected_request_completion_main_frame_count;
+  } kTests[] = {
+      {"/", false /* use_https */, true /* is_main_frame */, net::OK,
+       1 /* expected_request_completion_count */,
+       1 /* expected_request_completion_main_frame_count */},
+      {"/close-socket", false /* use_https */, true /* is_main_frame */,
+       net::ERR_EMPTY_RESPONSE, 1 /* expected_request_completion_count */,
+       1 /* expected_request_completion_main_frame_count */},
+      {"/", false /* use_https */, false /* is_main_frame */, net::OK,
+       1 /* expected_request_completion_count */,
+       0 /* expected_request_completion_main_frame_count */},
+      {"/", true /* use_https */, true /* is_main_frame */, net::OK,
+       0 /* expected_request_completion_count */,
+       0 /* expected_request_completion_main_frame_count */},
+  };
+
+  const char kHttpRequestCompletionErrorCode[] =
+      "Net.HttpRequestCompletionErrorCodes";
+  const char kHttpRequestCompletionErrorCodeMainFrame[] =
+      "Net.HttpRequestCompletionErrorCodes.MainFrame";
+
+  for (const auto& test : kTests) {
+    base::HistogramTester histograms;
+
+    std::unique_ptr<NetworkContext> network_context =
+        CreateContextWithParams(CreateContextParams());
+
+    mojom::URLLoaderFactoryPtr loader_factory;
+    mojom::URLLoaderFactoryParamsPtr params =
+        mojom::URLLoaderFactoryParams::New();
+    params->process_id = mojom::kBrowserProcessId;
+    network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+                                            std::move(params));
+
+    ResourceRequest request;
+    if (!test.use_https) {
+      request.url = test_server.GetURL(test.path);
+    } else {
+      request.url = https_test_server.GetURL(test.path);
+    }
+    if (test.is_main_frame)
+      request.load_flags = net::LOAD_MAIN_FRAME_DEPRECATED;
+
+    mojom::URLLoaderPtr loader;
+    TestURLLoaderClient client;
+    loader_factory->CreateLoaderAndStart(
+        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
+        0 /* options */, request, client.CreateInterfacePtr(),
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    client.RunUntilComplete();
+    EXPECT_TRUE(client.has_received_completion());
+    EXPECT_EQ(test.expected_net_error, client.completion_status().error_code);
+
+    histograms.ExpectTotalCount(kHttpRequestCompletionErrorCode,
+                                test.expected_request_completion_count);
+    histograms.ExpectUniqueSample(kHttpRequestCompletionErrorCode,
+                                  -test.expected_net_error,
+                                  test.expected_request_completion_count);
+    histograms.ExpectTotalCount(
+        kHttpRequestCompletionErrorCodeMainFrame,
+        test.expected_request_completion_main_frame_count);
+    histograms.ExpectUniqueSample(
+        kHttpRequestCompletionErrorCodeMainFrame, -test.expected_net_error,
+        test.expected_request_completion_main_frame_count);
   }
 }
 

@@ -56,7 +56,9 @@ class DataUseNetworkDelegate : public net::LayeredNetworkDelegate {
   void OnNetworkBytesSentInternal(net::URLRequest* request,
                                   int64_t bytes_sent) override;
 
-  void OnCompletedInternal(net::URLRequest* request, bool started) override;
+  void OnCompletedInternal(net::URLRequest* request,
+                           bool started,
+                           int net_error) override;
 
   void OnURLRequestDestroyedInternal(net::URLRequest* request) override;
 

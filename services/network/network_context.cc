@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -33,6 +34,8 @@
 #include "components/prefs/pref_service_factory.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/layered_network_delegate.h"
+#include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_log_verifier.h"
@@ -233,10 +236,37 @@ class NetworkContext::ContextNetworkDelegate
 
   ~ContextNetworkDelegate() override {}
 
+  // net::NetworkDelegate implementation:
+
   void OnBeforeURLRequestInternal(net::URLRequest* request,
                                   GURL* new_url) override {
     if (!enable_referrers_)
       request->SetReferrer(std::string());
+  }
+
+  void OnCompletedInternal(net::URLRequest* request,
+                           bool started,
+                           int net_error) override {
+    // TODO(mmenke): Once the network service ships on all platforms, can move
+    // this logic into URLLoader's completion method.
+    DCHECK_NE(net::ERR_IO_PENDING, net_error);
+
+    // Record network errors that HTTP requests complete with, including OK and
+    // ABORTED.
+    // TODO(mmenke): Seems like this really should be looking at HTTPS requests,
+    // too.
+    // TODO(mmenke): We should remove the main frame case from here, and move it
+    // into the consumer - the network service shouldn't know what a main frame
+    // is.
+    if (request->url().SchemeIs("http")) {
+      base::UmaHistogramSparse("Net.HttpRequestCompletionErrorCodes",
+                               -net_error);
+
+      if (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
+        base::UmaHistogramSparse(
+            "Net.HttpRequestCompletionErrorCodes.MainFrame", -net_error);
+      }
+    }
   }
 
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeaderInternal(

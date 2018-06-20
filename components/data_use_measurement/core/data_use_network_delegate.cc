@@ -63,7 +63,8 @@ void DataUseNetworkDelegate::OnNetworkBytesSentInternal(
 }
 
 void DataUseNetworkDelegate::OnCompletedInternal(net::URLRequest* request,
-                                                 bool started) {
+                                                 bool started,
+                                                 int net_error) {
   ascriber_->OnUrlRequestCompleted(request, started);
   data_use_measurement_.OnCompleted(*request, started);
 }
