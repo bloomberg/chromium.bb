@@ -1089,6 +1089,9 @@ extern const char kTranslateForceTriggerOnEnglishDescription[];
 extern const char kTranslateRankerEnforcementName[];
 extern const char kTranslateRankerEnforcementDescription[];
 
+extern const char kTranslateUIName[];
+extern const char kTranslateUIDescription[];
+
 extern const char kTreatInsecureOriginAsSecureName[];
 extern const char kTreatInsecureOriginAsSecureDescription[];
 

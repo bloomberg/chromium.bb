@@ -122,7 +122,8 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   if (!language_state_.page_needs_translation() ||
       language_state_.translation_pending() ||
       language_state_.translation_declined() ||
-      language_state_.IsPageTranslated()) {
+      language_state_.IsPageTranslated() ||
+      !base::FeatureList::IsEnabled(translate::kTranslateUI)) {
     return;
   }
 

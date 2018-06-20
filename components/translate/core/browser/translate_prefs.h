@@ -43,6 +43,9 @@ extern const base::Feature kRegionalLocalesAsDisplayUI;
 // target language option.
 extern const base::Feature kTranslateRecentTarget;
 
+// Enable or disable the Translate popup altogether.
+extern const base::Feature kTranslateUI;
+
 // Minimum number of times the user must accept a translation before we show
 // a shortcut to the "Always Translate" functionality.
 #if defined(OS_ANDROID) || defined(OS_IOS)
