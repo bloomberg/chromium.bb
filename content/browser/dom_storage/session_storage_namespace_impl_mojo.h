@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/dom_storage/session_storage_area_impl.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
@@ -134,6 +135,9 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   void FlushOriginForTesting(const url::Origin& origin);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SessionStorageContextMojoTest,
+                           PurgeMemoryDoesNotCrashOrHang);
+
   const std::string namespace_id_;
   SessionStorageMetadata::NamespaceEntry namespace_entry_;
   leveldb::mojom::LevelDBDatabase* database_;

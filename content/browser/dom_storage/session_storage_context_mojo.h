@@ -13,6 +13,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -126,6 +127,8 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
  private:
   friend class DOMStorageBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(SessionStorageContextMojoTest,
+                           PurgeMemoryDoesNotCrashOrHang);
 
   // Object deletion is done through |ShutdownAndDelete()|.
   ~SessionStorageContextMojo() override;
@@ -200,7 +203,6 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   enum ConnectionState {
     NO_CONNECTION,
-    FETCHING_METADATA,
     CONNECTION_IN_PROGRESS,
     CONNECTION_FINISHED,
     CONNECTION_SHUTDOWN

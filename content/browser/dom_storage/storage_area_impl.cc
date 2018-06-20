@@ -202,6 +202,7 @@ void StorageAreaImpl::PurgeMemory() {
   }
 
   map_state_ = MapState::UNLOADED;
+  memory_used_ = 0;
   keys_only_map_.clear();
   keys_values_map_.clear();
 }

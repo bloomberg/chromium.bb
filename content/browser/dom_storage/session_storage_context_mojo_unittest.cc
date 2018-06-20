@@ -439,6 +439,8 @@ TEST_F(SessionStorageContextMojoTest, Scavenging) {
   // This scavenge call should NOT delete the namespace, as we just created it.
   {
     base::RunLoop loop;
+    // Cause the connection to start loading, so we start scavenging mid-load.
+    context()->Flush();
     context()->ScavengeUnusedNamespaces(loop.QuitClosure());
     loop.Run();
   }
@@ -938,52 +940,6 @@ TEST_F(SessionStorageContextMojoTest, DeleteStorage) {
   EXPECT_EQ(0ul, data.size());
 }
 
-TEST_F(SessionStorageContextMojoTest, PurgeMemoryDoesNotCrashOrHang) {
-  std::string namespace_id1 = base::GenerateGUID();
-  std::string namespace_id2 = base::GenerateGUID();
-  url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
-
-  context()->CreateSessionNamespace(namespace_id1);
-  blink::mojom::SessionStorageNamespacePtr ss_namespace1;
-  context()->OpenSessionStorage(kTestProcessId, namespace_id1,
-                                mojo::MakeRequest(&ss_namespace1));
-  blink::mojom::StorageAreaAssociatedPtr leveldb_n1_o1;
-  ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
-
-  context()->CreateSessionNamespace(namespace_id2);
-  blink::mojom::SessionStorageNamespacePtr ss_namespace2;
-  context()->OpenSessionStorage(kTestProcessId, namespace_id2,
-                                mojo::MakeRequest(&ss_namespace2));
-  blink::mojom::StorageAreaAssociatedPtr leveldb_n2_o1;
-  ss_namespace2->OpenArea(origin1, mojo::MakeRequest(&leveldb_n2_o1));
-
-  // Put some data in both.
-  EXPECT_TRUE(test::PutSync(
-      leveldb_n1_o1.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
-  EXPECT_TRUE(test::PutSync(
-      leveldb_n2_o1.get(), leveldb::StringPieceToUint8Vector("key1"),
-      leveldb::StringPieceToUint8Vector("value2"), base::nullopt, "source1"));
-
-  leveldb_n2_o1.reset();
-  ss_namespace2.reset();
-
-  base::RunLoop().RunUntilIdle();
-
-  // Verify this doesn't crash or hang.
-  context()->PurgeMemory();
-
-  // Test the values is still there.
-  std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(leveldb_n1_o1.get(), &data));
-  EXPECT_EQ(1ul, data.size());
-
-  base::Optional<std::vector<uint8_t>> opt_value2 =
-      DoTestGet(namespace_id2, origin1, "key1");
-  ASSERT_TRUE(opt_value2);
-  EXPECT_EQ(leveldb::StringPieceToUint8Vector("value2"), opt_value2.value());
-}
-
 TEST_F(SessionStorageContextMojoTest, PurgeInactiveWrappers) {
   std::string namespace_id1 = base::GenerateGUID();
   std::string namespace_id2 = base::GenerateGUID();
@@ -1039,4 +995,61 @@ TEST_F(SessionStorageContextMojoTest, PurgeInactiveWrappers) {
 }
 
 }  // namespace
+
+TEST_F(SessionStorageContextMojoTest, PurgeMemoryDoesNotCrashOrHang) {
+  std::string namespace_id1 = base::GenerateGUID();
+  std::string namespace_id2 = base::GenerateGUID();
+  url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
+
+  context()->CreateSessionNamespace(namespace_id1);
+  blink::mojom::SessionStorageNamespacePtr ss_namespace1;
+  context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                mojo::MakeRequest(&ss_namespace1));
+  blink::mojom::StorageAreaAssociatedPtr leveldb_n1_o1;
+  ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
+
+  context()->CreateSessionNamespace(namespace_id2);
+  blink::mojom::SessionStorageNamespacePtr ss_namespace2;
+  context()->OpenSessionStorage(kTestProcessId, namespace_id2,
+                                mojo::MakeRequest(&ss_namespace2));
+  blink::mojom::StorageAreaAssociatedPtr leveldb_n2_o1;
+  ss_namespace2->OpenArea(origin1, mojo::MakeRequest(&leveldb_n2_o1));
+
+  // Put some data in both.
+  EXPECT_TRUE(test::PutSync(
+      leveldb_n1_o1.get(), leveldb::StringPieceToUint8Vector("key1"),
+      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
+  EXPECT_TRUE(test::PutSync(
+      leveldb_n2_o1.get(), leveldb::StringPieceToUint8Vector("key1"),
+      leveldb::StringPieceToUint8Vector("value2"), base::nullopt, "source1"));
+
+  context()->FlushAreaForTesting(namespace_id1, origin1);
+
+  leveldb_n2_o1.reset();
+  ss_namespace2.reset();
+
+  base::RunLoop().RunUntilIdle();
+
+  // Verify this doesn't crash or hang.
+  context()->PurgeMemory();
+
+  size_t memory_used = context()
+                           ->namespaces_[namespace_id1]
+                           ->origin_areas_[origin1]
+                           ->data_map()
+                           ->storage_area()
+                           ->memory_used();
+  EXPECT_EQ(0ul, memory_used);
+
+  // Test the values is still there.
+  std::vector<blink::mojom::KeyValuePtr> data;
+  EXPECT_TRUE(test::GetAllSync(leveldb_n1_o1.get(), &data));
+  EXPECT_EQ(1ul, data.size());
+
+  base::Optional<std::vector<uint8_t>> opt_value2 =
+      DoTestGet(namespace_id2, origin1, "key1");
+  ASSERT_TRUE(opt_value2);
+  EXPECT_EQ(leveldb::StringPieceToUint8Vector("value2"), opt_value2.value());
+}
+
 }  // namespace content

@@ -128,7 +128,10 @@ void SessionStorageContextMojo::OpenSessionStorage(
     return;
   }
   auto found = namespaces_.find(namespace_id);
-  DCHECK(found != namespaces_.end()) << namespace_id;
+  if (found == namespaces_.end()) {
+    mojo::ReportBadMessage("Namespace not found: " + namespace_id);
+    return;
+  }
 
   if (!found->second->IsPopulated() &&
       !found->second->waiting_on_clone_population()) {
@@ -137,8 +140,8 @@ void SessionStorageContextMojo::OpenSessionStorage(
         data_maps_);
   }
 
-  found->second->Bind(std::move(request), process_id);
   PurgeUnusedAreasIfNeeded();
+  found->second->Bind(std::move(request), process_id);
 
   size_t total_cache_size, unused_area_count;
   GetStatistics(&total_cache_size, &unused_area_count);
@@ -302,13 +305,8 @@ void SessionStorageContextMojo::PurgeMemory() {
   GetStatistics(&total_cache_size, &unused_area_count);
 
   // Purge all areas that don't have bindings.
-  for (auto it = namespaces_.begin(); it != namespaces_.end();) {
-    if (!it->second->IsBound()) {
-      it = namespaces_.erase(it);
-      continue;
-    }
-    it->second->PurgeUnboundAreas();
-    ++it;
+  for (const auto& namespace_pair : namespaces_) {
+    namespace_pair.second->PurgeUnboundAreas();
   }
   // Purge memory from bound maps.
   for (const auto& data_map_pair : data_maps_) {
@@ -345,14 +343,9 @@ void SessionStorageContextMojo::PurgeUnusedAreasIfNeeded() {
   if (purge_reason == SessionStorageCachePurgeReason::kNotNeeded)
     return;
 
-  // Purge all namespaces and areas that don't have bindings.
-  for (auto it = namespaces_.begin(); it != namespaces_.end();) {
-    if (!it->second->IsBound()) {
-      it = namespaces_.erase(it);
-      continue;
-    }
-    it->second->PurgeUnboundAreas();
-    ++it;
+  // Purge all areas that don't have bindings.
+  for (const auto& namespace_pair : namespaces_) {
+    namespace_pair.second->PurgeUnboundAreas();
   }
 
   size_t final_total_cache_size;
@@ -584,21 +577,24 @@ void SessionStorageContextMojo::DoDatabaseDelete(
 }
 
 void SessionStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
-  DCHECK_NE(connection_state_, CONNECTION_SHUTDOWN);
-
-  // If we don't have a filesystem_connection_, we'll need to establish one.
-  if (connection_state_ == NO_CONNECTION) {
-    connection_state_ = CONNECTION_IN_PROGRESS;
-    InitiateConnection();
+  switch (connection_state_) {
+    case NO_CONNECTION:
+      // If we don't have a filesystem_connection_, we'll need to establish one.
+      connection_state_ = CONNECTION_IN_PROGRESS;
+      InitiateConnection();
+      FALLTHROUGH;
+    case CONNECTION_IN_PROGRESS:
+      // Queue this OpenSessionStorage call for when we have a level db pointer.
+      on_database_opened_callbacks_.push_back(std::move(callback));
+      return;
+    case CONNECTION_SHUTDOWN:
+      NOTREACHED();
+      return;
+    case CONNECTION_FINISHED:
+      std::move(callback).Run();
+      return;
   }
-
-  if (connection_state_ == CONNECTION_IN_PROGRESS) {
-    // Queue this OpenSessionStorage call for when we have a level db pointer.
-    on_database_opened_callbacks_.push_back(std::move(callback));
-    return;
-  }
-
-  std::move(callback).Run();
+  NOTREACHED();
 }
 
 void SessionStorageContextMojo::InitiateConnection(bool in_memory_only) {
@@ -726,7 +722,6 @@ void SessionStorageContextMojo::OnGotDatabaseVersion(
         "SessionStorageContext.OpenResultAfterReadVersionError");
     return;
   }
-  connection_state_ = FETCHING_METADATA;
 
   base::RepeatingClosure barrier = base::BarrierClosure(
       2, base::BindOnce(&SessionStorageContextMojo::OnConnectionFinished,
@@ -753,7 +748,7 @@ void SessionStorageContextMojo::OnGotNamespaces(
     std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations,
     leveldb::mojom::DatabaseError status,
     std::vector<leveldb::mojom::KeyValuePtr> values) {
-  DCHECK(connection_state_ == FETCHING_METADATA);
+  DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
   bool parsing_failure =
       status == leveldb::mojom::DatabaseError::OK &&
       !metadata_.ParseNamespaces(std::move(values), &migration_operations);
@@ -780,7 +775,7 @@ void SessionStorageContextMojo::OnGotNextMapId(
     base::OnceClosure done,
     leveldb::mojom::DatabaseError status,
     const std::vector<uint8_t>& map_id) {
-  DCHECK(connection_state_ == FETCHING_METADATA);
+  DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
   if (status == leveldb::mojom::DatabaseError::NOT_FOUND) {
     std::move(done).Run();
     return;
@@ -801,7 +796,7 @@ void SessionStorageContextMojo::OnGotNextMapId(
 }
 
 void SessionStorageContextMojo::OnConnectionFinished() {
-  DCHECK(!database_ || connection_state_ == FETCHING_METADATA);
+  DCHECK(!database_ || connection_state_ == CONNECTION_IN_PROGRESS);
   if (!database_) {
     partition_directory_.reset();
     file_system_.reset();
