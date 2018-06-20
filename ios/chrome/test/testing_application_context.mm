@@ -13,6 +13,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -22,14 +23,12 @@ TestingApplicationContext::TestingApplicationContext()
     : application_locale_("en"),
       local_state_(nullptr),
       chrome_browser_state_manager_(nullptr),
-      was_last_shutdown_clean_(false) {
-  // This is lazily-constructed, so it will fail via the NOTREACHED in
-  // GetSystemURLLoaderFactory() if it's actually used rather than just
-  // injected.
-  system_shared_url_loader_factory_ =
-      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-          base::BindOnce(&TestingApplicationContext::GetSystemURLLoaderFactory,
-                         base::Unretained(this) /* safe due to Detach call */));
+      was_last_shutdown_clean_(false),
+      test_url_loader_factory_(
+          std::make_unique<network::TestURLLoaderFactory>()),
+      system_shared_url_loader_factory_(
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              test_url_loader_factory_.get())) {
   DCHECK(!GetApplicationContext());
   SetApplicationContext(this);
 }
@@ -178,12 +177,5 @@ gcm::GCMDriver* TestingApplicationContext::GetGCMDriver() {
 component_updater::ComponentUpdateService*
 TestingApplicationContext::GetComponentUpdateService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return nullptr;
-}
-
-network::mojom::URLLoaderFactory*
-TestingApplicationContext::GetSystemURLLoaderFactory() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  NOTREACHED();
   return nullptr;
 }

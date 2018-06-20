@@ -121,7 +121,7 @@ void TestURLLoaderFactory::CreateLoaderAndStart(
 }
 
 void TestURLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {
-  NOTIMPLEMENTED();
+  bindings_.AddBinding(this, std::move(request));
 }
 
 bool TestURLLoaderFactory::CreateLoaderAndStartInternal(

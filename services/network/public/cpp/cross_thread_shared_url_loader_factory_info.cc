@@ -177,7 +177,10 @@ CrossThreadSharedURLLoaderFactoryInfo::State::~State() {
 
 void CrossThreadSharedURLLoaderFactoryInfo::State::DeleteOnCorrectThread()
     const {
-  task_runner_->DeleteSoon(FROM_HERE, this);
+  if (task_runner_->RunsTasksInCurrentSequence())
+    delete this;
+  else
+    task_runner_->DeleteSoon(FROM_HERE, this);
 }
 
 void CrossThreadSharedURLLoaderFactoryInfo::State::CreateLoaderAndStart(
