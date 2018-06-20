@@ -3488,9 +3488,11 @@ TEST_P(QuicStreamFactoryTest, MigrateOnNewNetworkConnectAfterPathDegrading) {
   EXPECT_TRUE(quic_data2.AllWriteDataConsumed());
 }
 
+// This test verifies that multiple sessions are migrated on connection
+// migration signal.
 TEST_P(QuicStreamFactoryTest,
-       OnNetworkChangeDisconnectedPauseBeforeConnectedMultipleSessions) {
-  InitializeConnectionMigrationTest({kDefaultNetworkForTests});
+       MigrateMultipleSessionsToBadSocketsAfterDisconnected) {
+  InitializeConnectionMigrationV2Test({kDefaultNetworkForTests});
 
   MockQuicData socket_data1;
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -3574,7 +3576,8 @@ TEST_P(QuicStreamFactoryTest,
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session1));
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session2));
 
-  // Add new sockets to use post migration.
+  // Add new sockets to use post migration. Those are bad sockets and will cause
+  // migration to fail.
   MockConnect connect_result =
       MockConnect(SYNCHRONOUS, ERR_INTERNET_DISCONNECTED);
   SequencedSocketData socket_data3(connect_result, base::span<MockRead>(),
@@ -3584,8 +3587,8 @@ TEST_P(QuicStreamFactoryTest,
                                    base::span<MockWrite>());
   socket_factory_->AddSocketDataProvider(&socket_data4);
 
-  // Add a new network and cause migration to bad sockets, causing sessions to
-  // close.
+  // Connect the new network and cause migration to bad sockets, causing
+  // sessions to close.
   scoped_mock_network_change_notifier_->mock_network_change_notifier()
       ->SetConnectedNetworksList({kNewNetworkForTests});
   scoped_mock_network_change_notifier_->mock_network_change_notifier()
