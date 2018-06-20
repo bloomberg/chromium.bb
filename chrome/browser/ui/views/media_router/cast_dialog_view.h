@@ -75,6 +75,7 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   void ExecuteCommand(int command_id, int event_flags) override;
 
   // Called by tests.
+  size_t selected_sink_index_for_test() const { return selected_sink_index_; }
   const std::vector<CastDialogSinkButton*>& sink_buttons_for_test() const {
     return sink_buttons_;
   }

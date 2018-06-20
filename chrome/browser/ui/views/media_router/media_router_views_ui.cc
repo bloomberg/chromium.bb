@@ -86,17 +86,18 @@ void MediaRouterViewsUI::OnRoutesUpdated(
 }
 
 void MediaRouterViewsUI::UpdateSinks() {
-  model_.dialog_header =
-      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_AUTO_CAST_MODE);
-  model_.media_sinks.clear();
+  model_.set_dialog_header(
+      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_AUTO_CAST_MODE));
+  std::vector<UIMediaSink> media_sinks;
   for (const MediaSinkWithCastModes& sink : GetEnabledSinks()) {
     auto route_it = std::find_if(
         routes().begin(), routes().end(), [&sink](const MediaRoute& route) {
           return route.media_sink_id() == sink.sink.id();
         });
     const MediaRoute* route = route_it == routes().end() ? nullptr : &*route_it;
-    model_.media_sinks.push_back(ConvertToUISink(sink, route, issue_));
+    media_sinks.push_back(ConvertToUISink(sink, route, issue_));
   }
+  model_.set_media_sinks(std::move(media_sinks));
   for (CastDialogController::Observer& observer : observers_)
     observer.OnModelUpdated(model_);
 }

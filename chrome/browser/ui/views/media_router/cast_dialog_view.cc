@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/media_router/cast_dialog_view.h"
 
+#include "base/optional.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/media_router/cast_dialog_model.h"
@@ -119,14 +120,19 @@ bool CastDialogView::Close() {
 }
 
 void CastDialogView::OnModelUpdated(const CastDialogModel& model) {
-  if (model.media_sinks.empty()) {
+  if (model.media_sinks().empty()) {
     ShowNoSinksView();
   } else {
+    // If |sink_buttons_| is empty, the sink list was empty before this update.
+    // In that case, select the first active sink, so that its session can be
+    // stopped with one click.
+    if (sink_buttons_.empty())
+      selected_sink_index_ = model.GetFirstActiveSinkIndex().value_or(0);
     ShowScrollView();
-    PopulateScrollView(model.media_sinks);
+    PopulateScrollView(model.media_sinks());
     RestoreSinkListState();
   }
-  dialog_title_ = model.dialog_header;
+  dialog_title_ = model.dialog_header();
   MaybeSizeToContents();
 }
 

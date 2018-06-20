@@ -11,7 +11,7 @@
 
 namespace media_router {
 
-struct CastDialogModel;
+class CastDialogModel;
 
 // Controller component of the Cast dialog. Responsible for handling user input,
 // updating the CastDialogModel, and notifying CastDialogView of updates.
