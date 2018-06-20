@@ -97,7 +97,7 @@ class JsUtil(object):
     if function.deprecated:
       c.Append('@deprecated %s' % function.deprecated)
 
-    c.Append(self.GetSeeLink(namespace_name, 'method', function.name))
+    self.AppendSeeLink(c, namespace_name, 'method', function.name)
 
     c.Eblock(' */')
 
@@ -174,14 +174,22 @@ class JsUtil(object):
       return Code().Append(js_type.property_type.name)
     return Code().Append('?') # TODO(tbreisacher): Make this more specific.
 
-  def GetSeeLink(self, namespace_name, object_type, object_name):
-    """Returns a @see link for a given API 'object' (type, method, or event).
+  def AppendSeeLink(self, c, namespace_name, object_type, object_name):
+    """Appends a @see link for a given API 'object' (type, method, or event).
     """
+
+    # TODO(nigeltao): this should actually be gated on if there is
+    # documentation, rather than if it's a private API. Most private APIs
+    # aren't documented, but some are. For example:
+    #  - https://developer.chrome.com/apps/developerPrivate exists
+    #  - https://developer.chrome.com/apps/screenlockPrivate does not
+    if namespace_name.endswith('Private'):
+      return
 
     # NOTE(devlin): This is kind of a hack. Some APIs will be hosted on
     # developer.chrome.com/apps/ instead of /extensions/, and some APIs have
     # '.'s in them (like app.window), which should resolve to 'app_window'.
     # Luckily, the doc server has excellent url resolution, and knows exactly
     # what we mean. This saves us from needing any complicated logic here.
-    return ('@see https://developer.chrome.com/extensions/%s#%s-%s' %
-                (namespace_name, object_type, object_name))
+    c.Append('@see https://developer.chrome.com/extensions/%s#%s-%s' %
+             (namespace_name, object_type, object_name))

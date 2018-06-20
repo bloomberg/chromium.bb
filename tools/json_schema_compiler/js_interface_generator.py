@@ -92,8 +92,7 @@ class _Generator(object):
     if (event.description):
       c.Comment(event.description, comment_prefix='')
     c.Append('@type {!ChromeEvent}')
-    c.Append(self._js_util.GetSeeLink(self._namespace.name, 'event',
-                                      event.name))
+    self._js_util.AppendSeeLink(c, self._namespace.name, 'event', event.name)
     c.Eblock(' */')
 
     c.Append('%s.prototype.%s;' % (self._interface, event.name))
