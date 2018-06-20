@@ -683,13 +683,12 @@ TEST_F(WebStateImplTest, GlobalObserverTest) {
 // A Google Mock matcher which matches WebStatePolicyDecider::RequestInfo.
 // This is needed because WebStatePolicyDecider::RequestInfo doesn't support
 // operator==.
-MATCHER_P2(RequestInfoMatch,
-           expected_transition_type,
-           target_main_frame,
-           /* argument_name = */ "") {
+MATCHER_P(RequestInfoMatch, expected_request_info, /* argument_name = */ "") {
   return ui::PageTransitionTypeIncludingQualifiersIs(
-             arg.transition_type, expected_transition_type) &&
-         arg.target_frame_is_main == target_main_frame;
+             arg.transition_type, expected_request_info.transition_type) &&
+         arg.target_frame_is_main ==
+             expected_request_info.target_frame_is_main &&
+         arg.has_user_gesture == expected_request_info.has_user_gesture;
 }
 
 // Verifies that policy deciders are correctly called by the web state.
@@ -706,44 +705,34 @@ TEST_F(WebStateImplTest, PolicyDeciderTest) {
                                               textEncodingName:nil];
 
   // Test that ShouldAllowRequest() is called for the same parameters.
-  EXPECT_CALL(
-      decider,
-      ShouldAllowRequest(
-          request, RequestInfoMatch(ui::PageTransition::PAGE_TRANSITION_LINK,
-                                    /*target_main_frame=*/true)))
+  WebStatePolicyDecider::RequestInfo request_info_main_frame(
+      ui::PageTransition::PAGE_TRANSITION_LINK, /*target_main_frame=*/true,
+      /*has_user_gesture=*/false);
+  EXPECT_CALL(decider, ShouldAllowRequest(
+                           request, RequestInfoMatch(request_info_main_frame)))
       .Times(1)
       .WillOnce(Return(true));
-  EXPECT_CALL(
-      decider2,
-      ShouldAllowRequest(
-          request, RequestInfoMatch(ui::PageTransition::PAGE_TRANSITION_LINK,
-                                    /*target_main_frame=*/true)))
+  EXPECT_CALL(decider2, ShouldAllowRequest(
+                            request, RequestInfoMatch(request_info_main_frame)))
       .Times(1)
       .WillOnce(Return(true));
 
-  WebStatePolicyDecider::RequestInfo request_info_main_frame(
-      ui::PageTransition::PAGE_TRANSITION_LINK,
-      /*target_frame_is_main=*/true);
   EXPECT_TRUE(web_state_->ShouldAllowRequest(request, request_info_main_frame));
 
-  EXPECT_CALL(
-      decider,
-      ShouldAllowRequest(
-          request, RequestInfoMatch(ui::PageTransition::PAGE_TRANSITION_LINK,
-                                    /*target_main_frame=*/false)))
+  WebStatePolicyDecider::RequestInfo request_info_iframe(
+      ui::PageTransition::PAGE_TRANSITION_LINK, /*target_main_frame=*/false,
+      /*has_user_gesture=*/false);
+
+  EXPECT_CALL(decider, ShouldAllowRequest(
+                           request, RequestInfoMatch(request_info_iframe)))
       .Times(1)
       .WillOnce(Return(true));
-  EXPECT_CALL(
-      decider2,
-      ShouldAllowRequest(
-          request, RequestInfoMatch(ui::PageTransition::PAGE_TRANSITION_LINK,
-                                    /*target_main_frame=*/false)))
+  EXPECT_CALL(decider2, ShouldAllowRequest(
+                            request, RequestInfoMatch(request_info_iframe)))
+
       .Times(1)
       .WillOnce(Return(true));
 
-  WebStatePolicyDecider::RequestInfo request_info_iframe(
-      ui::PageTransition::PAGE_TRANSITION_LINK,
-      /*target_frame_is_main=*/false);
   EXPECT_TRUE(web_state_->ShouldAllowRequest(request, request_info_iframe));
 
   // Test that ShouldAllowRequest() is stopping on negative answer. Only one
@@ -753,16 +742,12 @@ TEST_F(WebStateImplTest, PolicyDeciderTest) {
     bool decider2_called = false;
     EXPECT_CALL(
         decider,
-        ShouldAllowRequest(
-            request, RequestInfoMatch(ui::PageTransition::PAGE_TRANSITION_LINK,
-                                      /*target_main_frame=*/true)))
+        ShouldAllowRequest(request, RequestInfoMatch(request_info_main_frame)))
         .Times(AtMost(1))
         .WillOnce(DoAll(Assign(&decider_called, true), Return(false)));
     EXPECT_CALL(
         decider2,
-        ShouldAllowRequest(
-            request, RequestInfoMatch(ui::PageTransition::PAGE_TRANSITION_LINK,
-                                      /*target_main_frame=*/true)))
+        ShouldAllowRequest(request, RequestInfoMatch(request_info_main_frame)))
         .Times(AtMost(1))
         .WillOnce(DoAll(Assign(&decider2_called, true), Return(false)));
 

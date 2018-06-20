@@ -21,14 +21,19 @@ class WebStatePolicyDecider {
   // Data Transfer Object for the additional information about navigation
   // request passed to WebStatePolicyDecider::ShouldAllowRequest().
   struct RequestInfo {
-    RequestInfo(ui::PageTransition transition_type, bool target_frame_is_main)
+    RequestInfo(ui::PageTransition transition_type,
+                bool target_frame_is_main,
+                bool has_user_gesture)
         : transition_type(transition_type),
-          target_frame_is_main(target_frame_is_main) {}
+          target_frame_is_main(target_frame_is_main),
+          has_user_gesture(has_user_gesture) {}
     // The navigation page transition type.
     ui::PageTransition transition_type =
         ui::PageTransition::PAGE_TRANSITION_FIRST;
     // Indicates whether the navigation target frame is the main frame.
     bool target_frame_is_main = false;
+    // Indicates if there was a recent user interaction with the request frame.
+    bool has_user_gesture = false;
   };
 
   // Removes self as a policy decider of |web_state_|.
