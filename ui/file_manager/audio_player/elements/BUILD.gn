@@ -7,11 +7,17 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   deps = [
     ":audio_player",
+    ":closure_compile_externs",
     ":control_panel",
     ":repeat_button",
     ":track_info_panel",
     ":track_list",
   ]
+}
+
+js_library("closure_compile_externs") {
+  sources = []
+  externs_list = []
 }
 
 js_library("audio_player") {

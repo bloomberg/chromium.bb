@@ -7,6 +7,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   deps = [
     ":background",
+    ":closure_compile_externs",
     ":dimmable_ui_controller",
     ":entry_list_watcher",
     ":error_banner",
@@ -19,6 +20,25 @@ js_type_check("closure_compile") {
     ":ribbon",
     ":slide_mode",
     ":thumbnail_mode",
+  ]
+}
+
+js_library("closure_compile_externs") {
+  sources = []
+  externs_list = [
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/command_line_private.js",
+    "$externs_path/file_manager_private.js",
+    "$externs_path/metrics_private.js",
+    "$externs_path/web_animations.js",
+    "../../externs/entry_location.js",
+    "../../externs/paper_elements.js",
+    "../../externs/platform.js",
+    "../../externs/volume_info.js",
+    "../../externs/volume_info_list.js",
+    "../../externs/volume_manager.js",
+    "../../externs/webview_tag.js",
+    "//third_party/analytics/externs.js",
   ]
 }
 
@@ -36,17 +56,12 @@ js_library("dimmable_ui_controller") {
     "image_editor:image_editor_prompt",
     "//ui/webui/resources/js:assert",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
 js_library("entry_list_watcher") {
   deps = [
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js/cr/ui:array_data_model",
-  ]
-  externs_list = [
-    "../../externs/platform.js",
-    "$externs_path/file_manager_private.js",
   ]
 }
 
@@ -68,7 +83,6 @@ js_library("gallery") {
     "../../gallery/js:slide_mode",
     "//ui/webui/resources/js:i18n_template_no_process",
   ]
-  externs_list = [ "../../externs/volume_manager.js" ]
 }
 
 js_library("gallery_constants") {
@@ -119,7 +133,6 @@ js_library("ribbon") {
     "//ui/webui/resources/js/cr/ui:array_data_model",
     "//ui/webui/resources/js/cr/ui:list_selection_model",
   ]
-  externs_list = [ "../../externs/gallery_event.js" ]
 }
 
 js_library("slide_mode") {
@@ -140,10 +153,6 @@ js_library("slide_mode") {
     "image_editor:image_view",
     "image_editor:viewport",
     "//third_party/polymer/v1_0/components-chromium/paper-progress:paper-progress-extracted",
-  ]
-  externs_list = [
-    "$externs_path/chrome_extensions.js",
-    "../../externs/gallery_foreground.js",
   ]
 }
 

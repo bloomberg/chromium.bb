@@ -8,8 +8,26 @@ js_type_check("closure_compile") {
   deps = [
     ":audio_player",
     ":background",
+    ":closure_compile_externs",
     ":error_util",
     ":metadata_worker",
+  ]
+}
+
+js_library("closure_compile_externs") {
+  sources = []
+  externs_list = [
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/command_line_private.js",
+    "$externs_path/file_manager_private.js",
+    "$externs_path/metrics_private.js",
+    "../../externs/audio_player_foreground.js",
+    "../../externs/entry_location.js",
+    "../../externs/platform.js",
+    "../../externs/volume_info.js",
+    "../../externs/volume_info_list.js",
+    "../../externs/volume_manager.js",
+    "//third_party/analytics/externs.js",
   ]
 }
 
@@ -21,10 +39,6 @@ js_library("audio_player") {
     "../../file_manager/foreground/js/metadata:metadata_model",
     "../elements:audio_player",
     "../elements:track_list",
-  ]
-  externs_list = [
-    "../../externs/audio_player_foreground.js",
-    "$externs_path/file_manager_private.js",
   ]
 }
 

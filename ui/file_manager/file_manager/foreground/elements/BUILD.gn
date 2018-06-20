@@ -6,6 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":closure_compile_externs",
     ":files_icon_button",
     ":files_metadata_box",
     ":files_metadata_entry",
@@ -16,6 +17,15 @@ js_type_check("closure_compile") {
     ":files_toast",
     ":files_toggle_ripple",
     ":files_tooltip",
+  ]
+}
+
+js_library("closure_compile_externs") {
+  sources = []
+  externs_list = [
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/web_animations.js",
+    "../../../externs/webview_tag.js",
   ]
 }
 
@@ -36,17 +46,12 @@ js_library("files_quick_view") {
   deps = [
     ":files_metadata_box",
   ]
-  externs_list = [
-    "../../../externs/webview_tag.js",
-    "$externs_path/chrome_extensions.js",
-  ]
 }
 
 js_library("files_ripple") {
   deps = [
     "//ui/webui/resources/js:assert",
   ]
-  externs_list = [ "$externs_path/web_animations.js" ]
 }
 
 js_library("files_safe_media") {
@@ -56,11 +61,9 @@ js_library("files_safe_media_webview_content") {
 }
 
 js_library("files_toast") {
-  externs_list = [ "$externs_path/web_animations.js" ]
 }
 
 js_library("files_toggle_ripple") {
-  externs_list = [ "$externs_path/web_animations.js" ]
 }
 
 js_library("files_tooltip") {
