@@ -139,6 +139,11 @@
       status: "experimental",
     },
     {
+      // Detects bloated renderers even if the uptime is small.
+      // Useful for local testing, not intended for production.
+      name: "BloatedRendererDetectionSkipUptimeCheck",
+    },
+    {
       name: "BlockCredentialedSubresources",
       status: "stable",
     },
