@@ -48,6 +48,7 @@ public class AwAutofillManager {
         }
     }
 
+    private static boolean sIsLoggable;
     private AutofillManager mAutofillManager;
     private boolean mIsAutofillInputUIShowing;
     private AutofillInputUIMonitor mMonitor;
@@ -56,10 +57,14 @@ public class AwAutofillManager {
     private ArrayList<WeakReference<InputUIObserver>> mInputUIObservers;
 
     public AwAutofillManager(Context context) {
-        log("constructor");
+        updateLogStat();
+        if (isLoggable()) log("constructor");
         mAutofillManager = context.getSystemService(AutofillManager.class);
         mDisabled = mAutofillManager == null || !mAutofillManager.isEnabled();
-        if (mDisabled) return;
+        if (mDisabled) {
+            if (isLoggable()) log("disabled");
+            return;
+        }
 
         mMonitor = new AutofillInputUIMonitor(this);
         mAutofillManager.registerCallback(mMonitor);
@@ -67,19 +72,19 @@ public class AwAutofillManager {
 
     public void notifyVirtualValueChanged(View parent, int childId, AutofillValue value) {
         if (mDisabled || checkAndWarnIfDestroyed()) return;
-        log("notifyVirtualValueChanged");
+        if (isLoggable()) log("notifyVirtualValueChanged");
         mAutofillManager.notifyValueChanged(parent, childId, value);
     }
 
     public void commit(int submissionSource) {
         if (mDisabled || checkAndWarnIfDestroyed()) return;
-        log("commit source:" + submissionSource);
+        if (isLoggable()) log("commit source:" + submissionSource);
         mAutofillManager.commit();
     }
 
     public void cancel() {
         if (mDisabled || checkAndWarnIfDestroyed()) return;
-        log("cancel");
+        if (isLoggable()) log("cancel");
         mAutofillManager.cancel();
     }
 
@@ -92,31 +97,31 @@ public class AwAutofillManager {
             return;
         }
         if (checkAndWarnIfDestroyed()) return;
-        log("notifyVirtualViewEntered");
+        if (isLoggable()) log("notifyVirtualViewEntered");
         mAutofillManager.notifyViewEntered(parent, childId, absBounds);
     }
 
     public void notifyVirtualViewExited(View parent, int childId) {
         if (mDisabled || checkAndWarnIfDestroyed()) return;
-        log("notifyVirtualViewExited");
+        if (isLoggable()) log("notifyVirtualViewExited");
         mAutofillManager.notifyViewExited(parent, childId);
     }
 
     public void requestAutofill(View parent, int virtualId, Rect absBounds) {
         if (mDisabled || checkAndWarnIfDestroyed()) return;
-        log("requestAutofill");
+        if (isLoggable()) log("requestAutofill");
         mAutofillManager.requestAutofill(parent, virtualId, absBounds);
     }
 
     public boolean isAutofillInputUIShowing() {
         if (mDisabled || checkAndWarnIfDestroyed()) return false;
-        log("isAutofillInputUIShowing: " + mIsAutofillInputUIShowing);
+        if (isLoggable()) log("isAutofillInputUIShowing: " + mIsAutofillInputUIShowing);
         return mIsAutofillInputUIShowing;
     }
 
     public void destroy() {
         if (mDisabled || checkAndWarnIfDestroyed()) return;
-        log("destroy");
+        if (isLoggable()) log("destroy");
         mAutofillManager.unregisterCallback(mMonitor);
         mAutofillManager = null;
         mDestroyed = true;
@@ -164,9 +169,25 @@ public class AwAutofillManager {
         }
     }
 
+    public void notifyNewSessionStarted() {
+        updateLogStat();
+        if (isLoggable()) log("Session starts");
+    }
+
+    /**
+     * Always check isLoggable() before call this method.
+     */
     public static void log(String log) {
-        // Use 'setprop log.tag.AwAutofillManager DEBUG' to enable the log at runtime.
         // Log.i() instead of Log.d() is used here because log.d() is stripped out in release build.
-        if (Log.isLoggable(TAG, Log.DEBUG)) Log.i(TAG, log);
+        Log.i(TAG, log);
+    }
+
+    public static boolean isLoggable() {
+        return sIsLoggable;
+    }
+
+    private static void updateLogStat() {
+        // Use 'setprop log.tag.AwAutofillManager DEBUG' to enable the log at runtime.
+        sIsLoggable = Log.isLoggable(TAG, Log.DEBUG);
     }
 }
