@@ -6,6 +6,9 @@ source_set("popup") {
   sources = [
     "omnibox_popup_coordinator.h",
     "omnibox_popup_coordinator.mm",
+    "omnibox_popup_generic_presenter.h",
+    "omnibox_popup_legacy_presenter.h",
+    "omnibox_popup_legacy_presenter.mm",
     "omnibox_popup_mediator.h",
     "omnibox_popup_mediator.mm",
     "omnibox_popup_positioner.h",
