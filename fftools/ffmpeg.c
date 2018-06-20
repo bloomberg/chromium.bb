@@ -1236,8 +1236,12 @@ static void do_video_out(OutputFile *of,
         in_picture->quality = enc->global_quality;
         in_picture->pict_type = 0;
 
+        if (ost->forced_kf_ref_pts == AV_NOPTS_VALUE &&
+            in_picture->pts != AV_NOPTS_VALUE)
+            ost->forced_kf_ref_pts = in_picture->pts;
+
         pts_time = in_picture->pts != AV_NOPTS_VALUE ?
-            in_picture->pts * av_q2d(enc->time_base) : NAN;
+            (in_picture->pts - ost->forced_kf_ref_pts) * av_q2d(enc->time_base) : NAN;
         if (ost->forced_kf_index < ost->forced_kf_count &&
             in_picture->pts >= ost->forced_kf_pts[ost->forced_kf_index]) {
             ost->forced_kf_index++;
@@ -3479,6 +3483,23 @@ static int init_output_stream(OutputStream *ost, char *error, int error_len)
                          "encoder on output stream #%d:%d : %s",
                      ost->file_index, ost->index, av_err2str(ret));
                 return ret;
+            }
+        }
+        if (ist && ist->dec->type == AVMEDIA_TYPE_SUBTITLE && ost->enc->type == AVMEDIA_TYPE_SUBTITLE) {
+            int input_props = 0, output_props = 0;
+            AVCodecDescriptor const *input_descriptor =
+                avcodec_descriptor_get(dec->codec_id);
+            AVCodecDescriptor const *output_descriptor =
+                avcodec_descriptor_get(ost->enc_ctx->codec_id);
+            if (input_descriptor)
+                input_props = input_descriptor->props & (AV_CODEC_PROP_TEXT_SUB | AV_CODEC_PROP_BITMAP_SUB);
+            if (output_descriptor)
+                output_props = output_descriptor->props & (AV_CODEC_PROP_TEXT_SUB | AV_CODEC_PROP_BITMAP_SUB);
+            if (input_props && output_props && input_props != output_props) {
+                snprintf(error, error_len,
+                         "Subtitle encoding currently only possible from text to text "
+                         "or bitmap to bitmap");
+                return AVERROR_INVALIDDATA;
             }
         }
 

@@ -26,6 +26,8 @@ OBJS-$(HAVE_THREADS)                         += pthread.o
 
 # subsystems
 OBJS-$(CONFIG_QSVVPP)                        += qsvvpp.o
+DNN-OBJS-$(CONFIG_LIBTENSORFLOW)             += dnn_backend_tf.o
+OBJS-$(CONFIG_DNN)                           += dnn_interface.o dnn_backend_native.o $(DNN-OBJS-yes)
 
 # audio filters
 OBJS-$(CONFIG_ABENCH_FILTER)                 += f_bench.o
@@ -34,6 +36,8 @@ OBJS-$(CONFIG_ACONTRAST_FILTER)              += af_acontrast.o
 OBJS-$(CONFIG_ACOPY_FILTER)                  += af_acopy.o
 OBJS-$(CONFIG_ACROSSFADE_FILTER)             += af_afade.o
 OBJS-$(CONFIG_ACRUSHER_FILTER)               += af_acrusher.o
+OBJS-$(CONFIG_ADECLICK_FILTER)               += af_adeclick.o
+OBJS-$(CONFIG_ADECLIP_FILTER)                += af_adeclick.o
 OBJS-$(CONFIG_ADELAY_FILTER)                 += af_adelay.o
 OBJS-$(CONFIG_ADERIVATIVE_FILTER)            += af_aderivative.o
 OBJS-$(CONFIG_AECHO_FILTER)                  += af_aecho.o

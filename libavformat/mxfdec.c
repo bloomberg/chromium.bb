@@ -372,6 +372,8 @@ static int64_t klv_decode_ber_length(AVIOContext *pb)
         while (bytes_num--)
             size = size << 8 | avio_r8(pb);
     }
+    if (size > INT64_MAX)
+        return AVERROR_INVALIDDATA;
     return size;
 }
 
@@ -390,13 +392,17 @@ static int mxf_read_sync(AVIOContext *pb, const uint8_t *key, unsigned size)
 
 static int klv_read_packet(KLVPacket *klv, AVIOContext *pb)
 {
+    int64_t length;
     if (!mxf_read_sync(pb, mxf_klv_key, 4))
         return AVERROR_INVALIDDATA;
     klv->offset = avio_tell(pb) - 4;
     memcpy(klv->key, mxf_klv_key, 4);
     avio_read(pb, klv->key + 4, 12);
-    klv->length = klv_decode_ber_length(pb);
-    return klv->length == -1 ? -1 : 0;
+    length = klv_decode_ber_length(pb);
+    if (length < 0)
+        return length;
+    klv->length = length;
+    return 0;
 }
 
 static int mxf_get_stream_index(AVFormatContext *s, KLVPacket *klv, int body_sid)
@@ -486,7 +492,10 @@ static int mxf_decrypt_triplet(AVFormatContext *s, AVPacket *pkt, KLVPacket *klv
         av_aes_init(mxf->aesc, s->key, 128, 1);
     }
     // crypto context
-    avio_skip(pb, klv_decode_ber_length(pb));
+    size = klv_decode_ber_length(pb);
+    if (size < 0)
+        return size;
+    avio_skip(pb, size);
     // plaintext offset
     klv_decode_ber_length(pb);
     plaintext_size = avio_rb64(pb);
@@ -1222,7 +1231,10 @@ static const MXFCodecUL mxf_picture_essence_container_uls[] = {
     // video essence container uls
     { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x07,0x0d,0x01,0x03,0x01,0x02,0x0c,0x01,0x00 }, 14,   AV_CODEC_ID_JPEG2000 },
     { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x02,0x0d,0x01,0x03,0x01,0x02,0x10,0x60,0x01 }, 14,       AV_CODEC_ID_H264 }, /* H.264 frame wrapped */
+    { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x02,0x0d,0x01,0x03,0x01,0x02,0x11,0x01,0x00 }, 14,      AV_CODEC_ID_DNXHD }, /* VC-3 */
     { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x02,0x0d,0x01,0x03,0x01,0x02,0x12,0x01,0x00 }, 14,        AV_CODEC_ID_VC1 }, /* VC-1 frame wrapped */
+    { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x02,0x0d,0x01,0x03,0x01,0x02,0x14,0x01,0x00 }, 14,       AV_CODEC_ID_TIFF }, /* TIFF */
+    { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x02,0x0d,0x01,0x03,0x01,0x02,0x15,0x01,0x00 }, 14,      AV_CODEC_ID_DIRAC }, /* VC-2 */
     { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x02,0x0d,0x01,0x03,0x01,0x02,0x04,0x60,0x01 }, 14, AV_CODEC_ID_MPEG2VIDEO }, /* MPEG-ES frame wrapped */
     { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x01,0x0d,0x01,0x03,0x01,0x02,0x01,0x04,0x01 }, 14, AV_CODEC_ID_MPEG2VIDEO }, /* Type D-10 mapping of 40Mbps 525/60-I */
     { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x01,0x0d,0x01,0x03,0x01,0x02,0x02,0x41,0x01 }, 14,    AV_CODEC_ID_DVVIDEO }, /* DV 625 25mbps */
@@ -1266,12 +1278,10 @@ static const MXFCodecUL mxf_sound_essence_container_uls[] = {
 };
 
 static const MXFCodecUL mxf_data_essence_container_uls[] = {
-    { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x09,0x0d,0x01,0x03,0x01,0x02,0x0e,0x00,0x00 }, 16, 0 },
+    { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x09,0x0d,0x01,0x03,0x01,0x02,0x0d,0x00,0x00 }, 16, AV_CODEC_ID_NONE,      "vbi_smpte_436M" },
+    { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x09,0x0d,0x01,0x03,0x01,0x02,0x0e,0x00,0x00 }, 16, AV_CODEC_ID_NONE, "vbi_vanc_smpte_436M" },
+    { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x09,0x0d,0x01,0x03,0x01,0x02,0x13,0x01,0x01 }, 16, AV_CODEC_ID_TTML },
     { { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 },  0, AV_CODEC_ID_NONE },
-};
-
-static const char * const mxf_data_essence_descriptor[] = {
-    "vbi_vanc_smpte_436M",
 };
 
 static int mxf_get_sorted_table_segments(MXFContext *mxf, int *nb_sorted_segments, MXFIndexTableSegment ***sorted_segments)
@@ -2342,13 +2352,15 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
                 st->need_parsing = AVSTREAM_PARSE_FULL;
             }
         } else if (st->codecpar->codec_type == AVMEDIA_TYPE_DATA) {
-            int codec_id = mxf_get_codec_ul(mxf_data_essence_container_uls,
-                                            essence_container_ul)->id;
-            if (codec_id >= 0 &&
-                codec_id < FF_ARRAY_ELEMS(mxf_data_essence_descriptor)) {
-                av_dict_set(&st->metadata, "data_type",
-                            mxf_data_essence_descriptor[codec_id], 0);
-            }
+            enum AVMediaType type;
+            container_ul = mxf_get_codec_ul(mxf_data_essence_container_uls, essence_container_ul);
+            if (st->codecpar->codec_id == AV_CODEC_ID_NONE)
+                st->codecpar->codec_id = container_ul->id;
+            type = avcodec_get_type(st->codecpar->codec_id);
+            if (type == AVMEDIA_TYPE_SUBTITLE)
+                st->codecpar->codec_type = type;
+            if (container_ul->desc)
+                av_dict_set(&st->metadata, "data_type", container_ul->desc, 0);
         }
         if (descriptor->extradata) {
             if (!ff_alloc_extradata(st->codecpar, descriptor->extradata_size)) {
@@ -2493,8 +2505,10 @@ static const MXFMetadataReadTableEntry mxf_metadata_read_table[] = {
     { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x48,0x00 }, mxf_read_generic_descriptor, sizeof(MXFDescriptor), Descriptor }, /* Wave */
     { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x47,0x00 }, mxf_read_generic_descriptor, sizeof(MXFDescriptor), Descriptor }, /* AES3 */
     { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x51,0x00 }, mxf_read_generic_descriptor, sizeof(MXFDescriptor), Descriptor }, /* MPEG2VideoDescriptor */
+    { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x5b,0x00 }, mxf_read_generic_descriptor, sizeof(MXFDescriptor), Descriptor }, /* VBI - SMPTE 436M */
     { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x5c,0x00 }, mxf_read_generic_descriptor, sizeof(MXFDescriptor), Descriptor }, /* VANC/VBI - SMPTE 436M */
     { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x5e,0x00 }, mxf_read_generic_descriptor, sizeof(MXFDescriptor), Descriptor }, /* MPEG2AudioDescriptor */
+    { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x64,0x00 }, mxf_read_generic_descriptor, sizeof(MXFDescriptor), Descriptor }, /* DC Timed Text Descriptor */
     { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x3A,0x00 }, mxf_read_track, sizeof(MXFTrack), Track }, /* Static Track */
     { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x3B,0x00 }, mxf_read_track, sizeof(MXFTrack), Track }, /* Generic Track */
     { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x14,0x00 }, mxf_read_timecode_component, sizeof(MXFTimecodeComponent), TimecodeComponent },
@@ -3158,8 +3172,7 @@ static int mxf_compute_sample_count(MXFContext *mxf, int stream_index,
     if (!spf) {
         int remainder = (sample_rate.num * time_base.num) %
                         (time_base.den * sample_rate.den);
-        *sample_count = av_q2d(av_mul_q((AVRational){mxf->current_edit_unit, 1},
-                                        av_mul_q(sample_rate, time_base)));
+        *sample_count = av_rescale_q(mxf->current_edit_unit, sample_rate, track->edit_rate);
         if (remainder)
             av_log(mxf->fc, AV_LOG_WARNING,
                    "seeking detected on stream #%d with time base (%d/%d) and "
@@ -3216,7 +3229,7 @@ static int mxf_set_pts(MXFContext *mxf, AVStream *st, AVPacket *pkt, int64_t nex
         if (mxf->nb_index_tables >= 1 && mxf->current_edit_unit < t->nb_ptses) {
             pkt->dts = mxf->current_edit_unit + t->first_dts;
             pkt->pts = t->ptses[mxf->current_edit_unit];
-        } else if (track && track->intra_only) {
+        } else if (track->intra_only) {
             /* intra-only -> PTS = EditUnit.
              * let utils.c figure out DTS since it can be < PTS if low_delay = 0 (Sony IMX30) */
             pkt->pts = mxf->current_edit_unit;
@@ -3442,7 +3455,7 @@ static int mxf_read_seek(AVFormatContext *s, int stream_index, int64_t sample_ti
     MXFIndexTable *t;
     MXFTrack *source_track = st->priv_data;
 
-    if(st->codecpar->codec_type == AVMEDIA_TYPE_DATA)
+    if (!source_track)
         return 0;
 
     /* if audio then truncate sample_time to EditRate */

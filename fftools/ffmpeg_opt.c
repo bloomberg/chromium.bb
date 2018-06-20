@@ -1324,6 +1324,7 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
     ost->file_index = nb_output_files - 1;
     ost->index      = idx;
     ost->st         = st;
+    ost->forced_kf_ref_pts = AV_NOPTS_VALUE;
     st->codecpar->codec_type = type;
 
     ret = choose_encoder(o, oc, ost);
@@ -3339,7 +3340,7 @@ const OptionDef options[] = {
                         OPT_INPUT | OPT_OUTPUT,                      { .off = OFFSET(start_time) },
         "set the start time offset", "time_off" },
     { "sseof",          HAS_ARG | OPT_TIME | OPT_OFFSET |
-                        OPT_INPUT | OPT_OUTPUT,                      { .off = OFFSET(start_time_eof) },
+                        OPT_INPUT,                                   { .off = OFFSET(start_time_eof) },
         "set the start time offset relative to EOF", "time_off" },
     { "seek_timestamp", HAS_ARG | OPT_INT | OPT_OFFSET |
                         OPT_INPUT,                                   { .off = OFFSET(seek_timestamp) },
