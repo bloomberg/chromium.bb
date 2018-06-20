@@ -12,6 +12,8 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/wm/core/window_util.h"
 
+#include "chromeos/login/login_state.h"
+
 class ChromeNativeAppWindowViewsAuraAshBrowserTest
     : public extensions::PlatformAppBrowserTest {
  public:
@@ -144,4 +146,25 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   tablet_mode_controller->EnableTabletModeWindowManager(false);
   tablet_mode_controller->FlushForTesting();
   EXPECT_FALSE(window->immersive_fullscreen_controller_->IsEnabled());
+}
+
+// Make sure a normal window is not in immersive mode, and uses
+// immersive in fullscreen.
+IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
+                       PublicSessionImmersiveMode) {
+  chromeos::LoginState::Get()->SetLoggedInState(
+      chromeos::LoginState::LOGGED_IN_ACTIVE,
+      chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT);
+
+  extensions::AppWindow* app_window = CreateTestAppWindow("{}");
+  auto* window = static_cast<ChromeNativeAppWindowViewsAuraAsh*>(
+      GetNativeAppWindowForAppWindow(app_window));
+  ASSERT_TRUE(window != nullptr);
+  ASSERT_TRUE(window->immersive_fullscreen_controller_.get() != nullptr);
+  EXPECT_FALSE(window->immersive_fullscreen_controller_->IsEnabled());
+
+  app_window->SetFullscreen(extensions::AppWindow::FULLSCREEN_TYPE_HTML_API,
+                            true);
+
+  EXPECT_TRUE(window->immersive_fullscreen_controller_->IsEnabled());
 }

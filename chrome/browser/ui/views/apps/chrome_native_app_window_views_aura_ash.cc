@@ -584,8 +584,8 @@ bool ChromeNativeAppWindowViewsAuraAsh::ShouldEnableImmersiveMode() const {
   if (app_window()->IsForcedFullscreen())
     return false;
 
-  // Always use immersive mode in a public session.
-  if (profiles::IsPublicSession())
+  // Always use immersive mode in a public session in fullscreen state.
+  if (profiles::IsPublicSession() && IsFullscreen())
     return true;
 
   // Always use immersive mode when fullscreen is set by the OS.
