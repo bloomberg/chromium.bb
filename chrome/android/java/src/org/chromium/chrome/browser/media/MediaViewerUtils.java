@@ -30,7 +30,9 @@ import java.util.Locale;
  */
 public class MediaViewerUtils {
     private static final String DEFAULT_MIME_TYPE = "*/*";
+    private static final String MIMETYPE_AUDIO = "audio";
     private static final String MIMETYPE_IMAGE = "image";
+    private static final String MIMETYPE_VIDEO = "video";
 
     /**
      * Creates an Intent that allows viewing the given file in an internal media viewer.
@@ -137,6 +139,21 @@ public class MediaViewerUtils {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) return;
         if (originalUrl != null) intent.putExtra(Intent.EXTRA_ORIGINATING_URI, originalUrl);
         if (referrer != null) intent.putExtra(Intent.EXTRA_REFERRER, referrer);
+    }
+
+    /**
+     * Checks whether a given MIME type is a valid media MIME type.
+     * @param mimeType The MIME type to check.
+     * @return Whether the MIME type is a valid media MIME type.
+     */
+    public static boolean isMediaMIMEType(String mimeType) {
+        if (TextUtils.isEmpty(mimeType)) return false;
+
+        String[] pieces = mimeType.toLowerCase(Locale.getDefault()).split("/");
+        if (pieces.length != 2) return false;
+
+        return (MIMETYPE_AUDIO.equals(pieces[0]) || MIMETYPE_IMAGE.equals(pieces[0])
+                || MIMETYPE_VIDEO.equals(pieces[0]));
     }
 
     private static Intent createShareIntent(Uri fileUri, String mimeType) {
