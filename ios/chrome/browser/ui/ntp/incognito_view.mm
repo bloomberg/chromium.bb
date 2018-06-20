@@ -8,6 +8,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
@@ -133,6 +134,10 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   UILayoutGuide* _bottomUnsafeAreaGuide;
   UILayoutGuide* _bottomUnsafeAreaGuideInSuperview;
 
+  // Height constraints for adding margins for the toolbars.
+  NSLayoutConstraint* _topToolbarMarginHeight;
+  NSLayoutConstraint* _bottomToolbarMarginHeight;
+
   // Constraint ensuring that |containerView| is at least as high as the
   // superview of the IncognitoNTPView, i.e. the Incognito panel.
   // This ensures that if the Incognito panel is higher than a compact
@@ -204,18 +209,40 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
     [_containerView addLayoutGuide:bottomGuide];
     [_containerView addLayoutGuide:_bottomUnsafeAreaGuide];
 
+    // Those layout guide are used to prevent the content from being displayed
+    // below the toolbars.
+    UILayoutGuide* bottomToolbarMarginGuide = [[UILayoutGuide alloc] init];
+    UILayoutGuide* topToolbarMarginGuide = [[UILayoutGuide alloc] init];
+    [_containerView addLayoutGuide:bottomToolbarMarginGuide];
+    [_containerView addLayoutGuide:topToolbarMarginGuide];
+
+    _bottomToolbarMarginHeight =
+        [bottomToolbarMarginGuide.heightAnchor constraintEqualToConstant:0];
+    _topToolbarMarginHeight =
+        [topToolbarMarginGuide.heightAnchor constraintEqualToConstant:0];
+    // Updates the constraints to the correct value.
+    [self updateToolbarMargins];
+
     [self addSubview:_containerView];
 
     [NSLayoutConstraint activateConstraints:@[
-      // Position the stackview between the two guides.
+      // Position the two toolbar margin guides between the two guides used to
+      // have the correct centering margin.
       [topGuide.topAnchor constraintEqualToAnchor:_containerView.topAnchor],
-      [_stackView.topAnchor constraintEqualToAnchor:topGuide.bottomAnchor
-                                           constant:kLayoutGuideVerticalMargin],
+      [topToolbarMarginGuide.topAnchor
+          constraintEqualToAnchor:topGuide.bottomAnchor
+                         constant:kLayoutGuideVerticalMargin],
       [bottomGuide.topAnchor
-          constraintEqualToAnchor:_stackView.bottomAnchor
+          constraintEqualToAnchor:bottomToolbarMarginGuide.bottomAnchor
                          constant:kLayoutGuideVerticalMargin],
       [_containerView.bottomAnchor
           constraintEqualToAnchor:bottomGuide.bottomAnchor],
+
+      // Position the stack view between the two toolbar margin guides.
+      [topToolbarMarginGuide.bottomAnchor
+          constraintEqualToAnchor:_stackView.topAnchor],
+      [bottomToolbarMarginGuide.topAnchor
+          constraintEqualToAnchor:_stackView.bottomAnchor],
 
       // Center the stackview horizontally with a minimum margin.
       [_stackView.leadingAnchor
@@ -240,6 +267,10 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
       // Ensure that the stackview width is constrained.
       [_stackView.widthAnchor
           constraintLessThanOrEqualToConstant:kStackViewMaxWidth],
+
+      // Activate the height constraints.
+      _bottomToolbarMarginHeight,
+      _topToolbarMarginHeight,
 
       // Set a minimum top margin and make the bottom guide twice as tall as the
       // top guide.
@@ -297,6 +328,12 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   [super willMoveToSuperview:newSuperview];
 }
 
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+
+  [self updateToolbarMargins];
+}
+
 #pragma mark - Notifications
 
 - (void)contentSizeCategoryDidChange {
@@ -313,6 +350,25 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 }
 
 #pragma mark - Private
+
+// Updates the height of the margins for the top and bottom toolbars.
+- (void)updateToolbarMargins {
+  if (!IsUIRefreshPhase1Enabled())
+    return;
+
+  if (IsRegularXRegularSizeClass(self)) {
+    _topToolbarMarginHeight.constant = 0;
+  } else {
+    _topToolbarMarginHeight.constant =
+        StatusBarHeight() + kAdaptiveToolbarHeight;
+  }
+
+  if (IsSplitToolbarMode(self)) {
+    _bottomToolbarMarginHeight.constant = kAdaptiveToolbarHeight;
+  } else {
+    _bottomToolbarMarginHeight.constant = 0;
+  }
+}
 
 // Triggers a navigation to the help page.
 - (void)learnMoreButtonPressed {
