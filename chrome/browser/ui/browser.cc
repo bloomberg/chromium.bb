@@ -1698,7 +1698,8 @@ void Browser::WebContentsCreated(WebContents* source_contents,
 
 void Browser::RendererUnresponsive(
     WebContents* source,
-    content::RenderWidgetHost* render_widget_host) {
+    content::RenderWidgetHost* render_widget_host,
+    base::RepeatingClosure hang_monitor_restarter) {
   // Ignore hangs if a tab is blocked.
   int index = tab_strip_model_->GetIndexOfWebContents(source);
   DCHECK_NE(TabStripModel::kNoTab, index);
@@ -1706,7 +1707,7 @@ void Browser::RendererUnresponsive(
     return;
 
   TabDialogs::FromWebContents(source)->ShowHungRendererDialog(
-      render_widget_host);
+      render_widget_host, std::move(hang_monitor_restarter));
 }
 
 void Browser::RendererResponsive(

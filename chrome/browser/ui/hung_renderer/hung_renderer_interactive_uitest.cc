@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/bind_helpers.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_dialogs.h"
@@ -44,7 +45,8 @@ IN_PROC_BROWSER_TEST_F(HungRendererNavigationTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   TabDialogs::FromWebContents(active_web_contents)
       ->ShowHungRendererDialog(
-          active_web_contents->GetRenderViewHost()->GetWidget());
+          active_web_contents->GetRenderViewHost()->GetWidget(),
+          base::DoNothing::Repeatedly());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("b.com", "/title2.html"));
   // Expect that the dialog has been dismissed.

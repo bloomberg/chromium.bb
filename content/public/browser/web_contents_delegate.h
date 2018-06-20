@@ -323,13 +323,18 @@ class CONTENT_EXPORT WebContentsDelegate {
   // the WebContents that is hung, and |render_widget_host| is the
   // RenderWidgetHost that, while routing events to it, discovered the hang.
   //
+  // |hang_monitor_restarter| can be used to restart the timer used to
+  // detect the hang.  The timer is typically restarted when the renderer has
+  // become active, the tab got hidden, or the user has chosen to wait some
+  // more.
+  //
   // Useful member functions on |render_widget_host|:
   // - Getting the hung render process: GetProcess()
   // - Querying whether the process is still hung: IsCurrentlyUnresponsive()
-  // - Waiting for the process to recover on its own:
-  //     RestartHangMonitorTimeoutIfNecessary()
-  virtual void RendererUnresponsive(WebContents* source,
-                                    RenderWidgetHost* render_widget_host) {}
+  virtual void RendererUnresponsive(
+      WebContents* source,
+      RenderWidgetHost* render_widget_host,
+      base::RepeatingClosure hang_monitor_restarter) {}
 
   // Notification that a process in the WebContents is no longer hung. |source|
   // is the WebContents that was hung, and |render_widget_host| is the

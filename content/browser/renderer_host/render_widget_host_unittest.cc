@@ -161,7 +161,7 @@ class MockInputRouter : public InputRouter {
 
 class TestFrameTokenMessageQueue : public FrameTokenMessageQueue {
  public:
-  TestFrameTokenMessageQueue(FrameTokenMessageQueue::Client* client)
+  explicit TestFrameTokenMessageQueue(FrameTokenMessageQueue::Client* client)
       : FrameTokenMessageQueue(client) {}
   ~TestFrameTokenMessageQueue() override {}
 
@@ -184,7 +184,6 @@ class TestFrameTokenMessageQueue : public FrameTokenMessageQueue {
 
 class MockRenderWidgetHost : public RenderWidgetHostImpl {
  public:
-
   // Allow poking at a few private members.
   using RenderWidgetHostImpl::GetVisualProperties;
   using RenderWidgetHostImpl::RendererExited;
@@ -592,7 +591,9 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     return handle_wheel_event_;
   }
 
-  void RendererUnresponsive(RenderWidgetHostImpl* render_widget_host) override {
+  void RendererUnresponsive(
+      RenderWidgetHostImpl* render_widget_host,
+      base::RepeatingClosure hang_monitor_restarter) override {
     unresponsive_timer_fired_ = true;
   }
 
@@ -1461,13 +1462,13 @@ TEST_F(RenderWidgetHostTest, UnhandledGestureEvent) {
 
 // Test that the hang monitor timer expires properly if a new timer is started
 // while one is in progress (see crbug.com/11007).
-TEST_F(RenderWidgetHostTest, DontPostponeHangMonitorTimeout) {
+TEST_F(RenderWidgetHostTest, DontPostponeInputEventAckTimeout) {
   // Start with a short timeout.
-  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
+  host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(10));
 
   // Immediately try to add a long 30 second timeout.
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
-  host_->StartHangMonitorTimeout(TimeDelta::FromSeconds(30));
+  host_->StartInputEventAckTimeout(TimeDelta::FromSeconds(30));
 
   // Wait long enough for first timeout and see if it fired.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -1479,14 +1480,14 @@ TEST_F(RenderWidgetHostTest, DontPostponeHangMonitorTimeout) {
 
 // Test that the hang monitor timer expires properly if it is started, stopped,
 // and then started again.
-TEST_F(RenderWidgetHostTest, StopAndStartHangMonitorTimeout) {
+TEST_F(RenderWidgetHostTest, StopAndStartInputEventAckTimeout) {
   // Start with a short timeout, then stop it.
-  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
-  host_->StopHangMonitorTimeout();
+  host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(10));
+  host_->StopInputEventAckTimeout();
 
   // Start it again to ensure it still works.
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
-  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
+  host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(10));
 
   // Wait long enough for first timeout and see if it fired.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -1498,13 +1499,13 @@ TEST_F(RenderWidgetHostTest, StopAndStartHangMonitorTimeout) {
 
 // Test that the hang monitor timer expires properly if it is started, then
 // updated to a shorter duration.
-TEST_F(RenderWidgetHostTest, ShorterDelayHangMonitorTimeout) {
+TEST_F(RenderWidgetHostTest, ShorterDelayInputEventAckTimeout) {
   // Start with a timeout.
-  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(100));
+  host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(100));
 
   // Start it again with shorter delay.
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
-  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(20));
+  host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(20));
 
   // Wait long enough for the second timeout and see if it fired.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -1516,7 +1517,7 @@ TEST_F(RenderWidgetHostTest, ShorterDelayHangMonitorTimeout) {
 
 // Test that the hang monitor timer is effectively disabled when the widget is
 // hidden.
-TEST_F(RenderWidgetHostTest, HangMonitorTimeoutDisabledForInputWhenHidden) {
+TEST_F(RenderWidgetHostTest, InputEventAckTimeoutDisabledForInputWhenHidden) {
   host_->set_hung_renderer_delay(base::TimeDelta::FromMicroseconds(1));
   SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 10, 0, false);
 

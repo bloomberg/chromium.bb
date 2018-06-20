@@ -671,7 +671,8 @@ void WebViewGuest::RendererResponsive(
 
 void WebViewGuest::RendererUnresponsive(
     WebContents* source,
-    content::RenderWidgetHost* render_widget_host) {
+    content::RenderWidgetHost* render_widget_host,
+    base::RepeatingClosure hang_monitor_restarter) {
   auto args = std::make_unique<base::DictionaryValue>();
   args->SetInteger(webview::kProcessId,
                    render_widget_host->GetProcess()->GetID());

@@ -5841,7 +5841,8 @@ void WebContentsImpl::OnIgnoredUIEvent() {
 }
 
 void WebContentsImpl::RendererUnresponsive(
-    RenderWidgetHostImpl* render_widget_host) {
+    RenderWidgetHostImpl* render_widget_host,
+    base::RepeatingClosure hang_monitor_restarter) {
   for (auto& observer : observers_)
     observer.OnRendererUnresponsive(render_widget_host->GetProcess());
 
@@ -5852,7 +5853,8 @@ void WebContentsImpl::RendererUnresponsive(
     return;
 
   if (delegate_)
-    delegate_->RendererUnresponsive(this, render_widget_host);
+    delegate_->RendererUnresponsive(this, render_widget_host,
+                                    std::move(hang_monitor_restarter));
 }
 
 void WebContentsImpl::RendererResponsive(
