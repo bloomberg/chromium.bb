@@ -333,10 +333,10 @@ TEST_F(ActiveTabTest, GrantToSinglePage) {
 
 TEST_F(ActiveTabTest, CapturingPagesWithActiveTab) {
   std::vector<GURL> test_urls = {
-      GURL("https://example.com"), GURL("chrome://version"),
+      GURL("https://example.com"),
+      GURL("chrome://version"),
       GURL("chrome://newtab"),
-      // IPv6 addresses don't work with activeTab: https://crbug.com/853064.
-      //    {"http://[2607:f8b0:4005:805::200e]"},
+      GURL("http://[2607:f8b0:4005:805::200e]"),
       extension->GetResourceURL("test.html"),
       another_extension->GetResourceURL("test.html"),
   };
