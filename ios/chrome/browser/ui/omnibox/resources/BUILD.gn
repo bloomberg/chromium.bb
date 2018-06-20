@@ -21,3 +21,12 @@ imageset("omnibox_background") {
     "omnibox_background.imageset/omnibox_background@3x.png",
   ]
 }
+
+imageset("omnibox_clear_icon") {
+  sources = [
+    "omnibox_clear_icon.imageset/Contents.json",
+    "omnibox_clear_icon.imageset/omnibox_clear_icon.png",
+    "omnibox_clear_icon.imageset/omnibox_clear_icon@2x.png",
+    "omnibox_clear_icon.imageset/omnibox_clear_icon@3x.png",
+  ]
+}

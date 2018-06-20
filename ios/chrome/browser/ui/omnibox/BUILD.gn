@@ -92,6 +92,7 @@ source_set("omnibox_internal") {
     ":omnibox_popup_shared",
     ":omnibox_util",
     "resources:omnibox_background",
+    "resources:omnibox_clear_icon",
     "resources:omnibox_transparent_background",
     "//base",
     "//components/favicon/ios",

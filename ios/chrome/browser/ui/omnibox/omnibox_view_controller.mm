@@ -10,11 +10,18 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+const CGFloat kClearButtonSize = 28.0f;
+
+}  // namespace
 
 @interface OmniboxViewController ()
 
@@ -63,12 +70,10 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  if (self.incognito) {
-    self.textField.placeholderTextColor = [UIColor colorWithWhite:1 alpha:0.5];
-  } else {
-    self.textField.placeholderTextColor = [UIColor colorWithWhite:0 alpha:0.3];
-  }
+
+  self.textField.placeholderTextColor = [self placeholderAndClearButtonColor];
   self.textField.placeholder = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
+  [self setupClearButton];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
@@ -90,8 +95,49 @@
 
 #pragma mark - private
 
+- (void)setupClearButton {
+  // Do not use the system clear button. Use a custom "right view" instead.
+  // Note that |rightView| is an incorrect name, it's really a trailing view.
+  [self.textField setClearButtonMode:UITextFieldViewModeNever];
+  [self.textField setRightViewMode:UITextFieldViewModeAlways];
+
+  UIButton* clearButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  clearButton.frame = CGRectMake(0, 0, kClearButtonSize, kClearButtonSize);
+  [clearButton setImage:[self clearButtonIcon] forState:UIControlStateNormal];
+  [clearButton addTarget:self
+                  action:@selector(clearButtonPressed)
+        forControlEvents:UIControlEventTouchUpInside];
+  self.textField.rightView = clearButton;
+
+  clearButton.tintColor = [self placeholderAndClearButtonColor];
+  SetA11yLabelAndUiAutomationName(clearButton, IDS_IOS_ACCNAME_CLEAR_TEXT,
+                                  @"Clear Text");
+}
+
+- (UIImage*)clearButtonIcon {
+  UIImage* image = [[UIImage imageNamed:@"omnibox_clear_icon"]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+
+  return image;
+}
+
+- (void)clearButtonPressed {
+  // Emulate a system button clear callback.
+  BOOL shouldClear =
+      [self.textField.delegate textFieldShouldClear:self.textField];
+  if (shouldClear) {
+    [self.textField setText:@""];
+  }
+}
+
 - (void)updateLeadingImageVisibility {
   [self.view setLeadingImageHidden:!IsRegularXRegularSizeClass(self)];
+}
+
+// Tint color for the textfield placeholder and the clear button.
+- (UIColor*)placeholderAndClearButtonColor {
+  return self.incognito ? [UIColor colorWithWhite:1 alpha:0.5]
+                        : [UIColor colorWithWhite:0 alpha:0.3];
 }
 
 @end

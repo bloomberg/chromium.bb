@@ -389,12 +389,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxText("foo")];
 
-  id<GREYMatcher> cancelButton = nil;
-  if (IsRefreshLocationBarEnabled()) {
-    cancelButton = grey_accessibilityLabel(@"Clear text");
-  } else {
-    cancelButton = grey_accessibilityLabel(@"Clear Text");
-  }
+  id<GREYMatcher> cancelButton = grey_accessibilityLabel(@"Clear Text");
 
   [[EarlGrey selectElementWithMatcher:cancelButton] performAction:grey_tap()];
 
