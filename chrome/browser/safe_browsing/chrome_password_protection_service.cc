@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
@@ -32,6 +33,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -183,6 +185,11 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
       password_manager::prefs::kPasswordHashDataList,
       base::Bind(&ChromePasswordProtectionService::CheckGaiaPasswordChange,
                  base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kPasswordProtectionWarningTrigger,
+      base::BindRepeating(
+          &ChromePasswordProtectionService::OnWarningTriggerChanged,
+          base::Unretained(this)));
   password_manager::HashPasswordManager hash_password_manager;
   hash_password_manager.set_prefs(profile->GetPrefs());
   base::Optional<password_manager::PasswordHashData> sync_hash_data =
@@ -1164,6 +1171,23 @@ bool ChromePasswordProtectionService::HasUnhandledEnterprisePasswordReuse(
     content::WebContents* web_contents) const {
   return web_contents_with_unhandled_enterprise_reuses_.find(web_contents) !=
          web_contents_with_unhandled_enterprise_reuses_.end();
+}
+
+void ChromePasswordProtectionService::OnWarningTriggerChanged() {
+  if (GetPasswordProtectionWarningTriggerPref() != PASSWORD_PROTECTION_OFF)
+    return;
+
+  // Clears captured enterprise password hashes or GSuite sync password hashes.
+  password_manager::HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(profile_->GetPrefs());
+  if (GetSyncAccountType() == PasswordReuseEvent::GSUITE) {
+    hash_password_manager.ClearSavedPasswordHash(GetAccountInfo().email,
+                                                 /*is_gaia_password=*/true);
+  }
+  hash_password_manager.ClearAllPasswordHash(/*is_gaia_password=*/false);
+  PasswordStoreFactory::GetForProfile(profile_,
+                                      ServiceAccessType::EXPLICIT_ACCESS)
+      ->SchedulePasswordHashUpdate(/*should_log_metrics*/ false);
 }
 
 }  // namespace safe_browsing

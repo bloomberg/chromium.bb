@@ -32,7 +32,9 @@ class HashPasswordManager {
   void ClearSavedPasswordHash();
   void ClearSavedPasswordHash(const std::string& username,
                               bool is_gaia_password);
-  void ClearAllGaiaPasswordHash();
+  // If |is_gaia_password| is true, clears all Gaia password hashes, otherwise
+  // clears all enterprise password hashes.
+  void ClearAllPasswordHash(bool is_gaia_password);
 
   // Returns empty if no hash is available.
   base::Optional<SyncPasswordData> RetrievePasswordHash();

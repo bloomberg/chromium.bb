@@ -365,10 +365,7 @@ void PasswordStore::PrepareSyncPasswordHashData(
   // TODO(crbug.com/841438): Delete migration code when most users complete
   // the migration.
   hash_password_manager_.MaybeMigrateExistingSyncPasswordHash(sync_username);
-  ScheduleTask(base::BindRepeating(
-      &PasswordStore::SaveProtectedPasswordHashImpl, this,
-      base::Passed(hash_password_manager_.RetrieveAllPasswordHashes()),
-      /*should_log_metrics=*/true));
+  SchedulePasswordHashUpdate(/*should_log_metrics=*/true);
 }
 
 void PasswordStore::SaveGaiaPasswordHash(
@@ -398,12 +395,7 @@ void PasswordStore::SaveProtectedPasswordHash(
             metrics_util::SyncPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE) {
       metrics_util::LogSyncPasswordHashChange(event);
     }
-    PasswordHashDataList all_hashes(
-        hash_password_manager_.RetrieveAllPasswordHashes());
-    ScheduleTask(
-        base::BindRepeating(&PasswordStore::SaveProtectedPasswordHashImpl, this,
-                            std::move(all_hashes),
-                            /*should_log_metrics=*/false));
+    SchedulePasswordHashUpdate(/*should_log_metrics=*/false);
   }
 }
 
@@ -412,12 +404,7 @@ void PasswordStore::SaveSyncPasswordHash(
     metrics_util::SyncPasswordHashChange event) {
   if (hash_password_manager_.SavePasswordHash(sync_password_data)) {
     metrics_util::LogSyncPasswordHashChange(event);
-    PasswordHashDataList all_hashes(
-        hash_password_manager_.RetrieveAllPasswordHashes());
-    ScheduleTask(
-        base::BindRepeating(&PasswordStore::SaveProtectedPasswordHashImpl, this,
-                            std::move(all_hashes),
-                            /*should_log_metrics=*/false));
+    SchedulePasswordHashUpdate(/*should_log_metrics=*/false);
   }
 }
 
@@ -426,7 +413,7 @@ void PasswordStore::ClearPasswordHash(const std::string& username) {
                                                 /*is_gaia_password=*/true);
   // TODO(crbug.com/844134): Find a way to clear corresponding Gaia password
   // hash when user logs out individual Gaia account in content area.
-  hash_password_manager_.ClearAllGaiaPasswordHash();
+  hash_password_manager_.ClearAllPasswordHash(/*is_gaia_password=*/true);
   ScheduleTask(base::BindRepeating(
       &PasswordStore::ClearProtectedPasswordHashImpl, this));
 }
@@ -438,6 +425,14 @@ void PasswordStore::SetPasswordStoreSigninNotifier(
   notifier_ = std::move(notifier);
   notifier_->SubscribeToSigninEvents(this);
 }
+
+void PasswordStore::SchedulePasswordHashUpdate(bool should_log_metrics) {
+  ScheduleTask(base::BindRepeating(
+      &PasswordStore::SaveProtectedPasswordHashImpl, this,
+      base::Passed(hash_password_manager_.RetrieveAllPasswordHashes()),
+      should_log_metrics));
+}
+
 #endif
 
 PasswordStore::~PasswordStore() {

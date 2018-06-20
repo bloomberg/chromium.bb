@@ -280,6 +280,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       VerifyUnhandledSyncPasswordReuseUponClearHistoryDeletion);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceBrowserTest,
                            VerifyCheckGaiaPasswordChange);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceBrowserTest,
+                           OnEnterpriseTriggerOff);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceBrowserTest,
+                           OnEnterpriseTriggerOffGSuite);
 
  private:
   friend class MockChromePasswordProtectionService;
@@ -330,6 +334,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       Profile* profile,
       scoped_refptr<HostContentSettingsMap> content_setting_map,
       scoped_refptr<SafeBrowsingUIManager> ui_manager);
+
+  // If enterprise admin turns off password protection, removes all captured
+  // enterprise password hashes.
+  void OnWarningTriggerChanged();
 
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   TriggerManager* trigger_manager_;

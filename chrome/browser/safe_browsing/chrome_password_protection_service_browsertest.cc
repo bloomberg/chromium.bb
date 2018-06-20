@@ -643,4 +643,65 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
             security_info.malicious_content_status);
 }
 
+IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
+                       OnEnterpriseTriggerOffGSuite) {
+  ConfigureEnterprisePasswordProtection(
+      /*is_gsuite=*/true, PasswordProtectionTrigger::PHISHING_REUSE);
+  Profile* profile = browser()->profile();
+  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
+  password_manager::HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(profile->GetPrefs());
+  hash_password_manager.SavePasswordHash(service->GetAccountInfo().email,
+                                         base::UTF8ToUTF16("password"),
+                                         /*is_gaia_password=*/true);
+  ASSERT_EQ(1u, profile->GetPrefs()
+                    ->GetList(password_manager::prefs::kPasswordHashDataList)
+                    ->GetList()
+                    .size());
+
+  // Turn off trigger
+  profile->GetPrefs()->SetInteger(
+      prefs::kPasswordProtectionWarningTrigger,
+      PasswordProtectionTrigger::PASSWORD_PROTECTION_OFF);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(hash_password_manager.HasPasswordHash(
+      service->GetAccountInfo().email, /*is_gaia_password=*/true));
+  EXPECT_EQ(0u, profile->GetPrefs()
+                    ->GetList(password_manager::prefs::kPasswordHashDataList)
+                    ->GetList()
+                    .size());
+}
+
+IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
+                       OnEnterpriseTriggerOff) {
+  ConfigureEnterprisePasswordProtection(
+      /*is_gsuite=*/false, PasswordProtectionTrigger::PHISHING_REUSE);
+  Profile* profile = browser()->profile();
+  password_manager::HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(profile->GetPrefs());
+  hash_password_manager.SavePasswordHash(
+      "username", base::UTF8ToUTF16("password"), /*is_gaia_password=*/false);
+  hash_password_manager.SavePasswordHash("foo@gmail.com",
+                                         base::UTF8ToUTF16("password"),
+                                         /*is_gaia_password=*/true);
+  ASSERT_EQ(2u, profile->GetPrefs()
+                    ->GetList(password_manager::prefs::kPasswordHashDataList)
+                    ->GetList()
+                    .size());
+
+  // Turn off trigger
+  profile->GetPrefs()->SetInteger(
+      prefs::kPasswordProtectionWarningTrigger,
+      PasswordProtectionTrigger::PASSWORD_PROTECTION_OFF);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(hash_password_manager.HasPasswordHash(
+      "username", /*is_gaia_password=*/false));
+  EXPECT_TRUE(hash_password_manager.HasPasswordHash("foo@gmail.com",
+                                                    /*is_gaia_password=*/true));
+  EXPECT_EQ(1u, profile->GetPrefs()
+                    ->GetList(password_manager::prefs::kPasswordHashDataList)
+                    ->GetList()
+                    .size());
+}
+
 }  // namespace safe_browsing

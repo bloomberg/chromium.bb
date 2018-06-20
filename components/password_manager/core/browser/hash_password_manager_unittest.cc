@@ -196,20 +196,25 @@ TEST_F(HashPasswordManagerTest, ClearingPasswordHashData) {
   hash_password_manager.SavePasswordHash(
       "username3", base::UTF8ToUTF16("enterprise_password"),
       /*is_gaia_password=*/false);
+  hash_password_manager.SavePasswordHash(
+      "username4", base::UTF8ToUTF16("enterprise_password"),
+      /*is_gaia_password=*/false);
 
   hash_password_manager.ClearSavedPasswordHash("other_username",
                                                /*is_gaia_password=*/true);
-  EXPECT_EQ(3u, hash_password_manager.RetrieveAllPasswordHashes().size());
+  EXPECT_EQ(4u, hash_password_manager.RetrieveAllPasswordHashes().size());
   hash_password_manager.ClearSavedPasswordHash("username2",
                                                /*is_gaia_password=*/false);
-  EXPECT_EQ(3u, hash_password_manager.RetrieveAllPasswordHashes().size());
+  EXPECT_EQ(4u, hash_password_manager.RetrieveAllPasswordHashes().size());
 
   hash_password_manager.ClearSavedPasswordHash("username3",
                                                /*is_gaia_password=*/false);
   EXPECT_FALSE(hash_password_manager.HasPasswordHash(
       "username3", /*is_gaia_password=*/false));
-  EXPECT_EQ(2u, hash_password_manager.RetrieveAllPasswordHashes().size());
-  hash_password_manager.ClearAllGaiaPasswordHash();
+  EXPECT_EQ(3u, hash_password_manager.RetrieveAllPasswordHashes().size());
+  hash_password_manager.ClearAllPasswordHash(/*is_gaia_password=*/true);
+  EXPECT_EQ(1u, hash_password_manager.RetrieveAllPasswordHashes().size());
+  hash_password_manager.ClearAllPasswordHash(/*is_gaia_password=*/false);
   EXPECT_EQ(0u, hash_password_manager.RetrieveAllPasswordHashes().size());
 }
 
