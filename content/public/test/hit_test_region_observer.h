@@ -22,10 +22,8 @@ class WebContents;
 // When Viz Hit Testing is available, waits until hit test data for
 // |child_frame| has been submitted, see WaitForHitTestData. Otherwise waits
 // until the cc::Surface associated with |child_frame| has been activated.
-void WaitForHitTestDataOrChildSurfaceReady(
-    content::RenderFrameHost* child_frame);
-void WaitForHitTestDataOrGuestSurfaceReady(
-    content::WebContents* guest_web_contents);
+void WaitForHitTestDataOrChildSurfaceReady(RenderFrameHost* child_frame);
+void WaitForHitTestDataOrGuestSurfaceReady(WebContents* guest_web_contents);
 
 // TODO(jonross): Move this to components/viz/host/hit_test/ as a standalone
 // HitTestDataWaiter (is-a HitTestRegionObserver) once Viz HitTesting is on by

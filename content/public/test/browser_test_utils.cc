@@ -1639,62 +1639,6 @@ void SendRoutedGestureTapSequence(content::WebContents* web_contents,
 
 namespace {
 
-class SurfaceHitTestReadyNotifier {
- public:
-  explicit SurfaceHitTestReadyNotifier(RenderWidgetHostViewBase* target_view);
-  ~SurfaceHitTestReadyNotifier() {}
-
-  void WaitForSurfaceReady(RenderWidgetHostViewBase* root_container);
-
- private:
-  bool ContainsSurfaceId(const viz::SurfaceId& container_surface_id);
-
-  viz::SurfaceManager* surface_manager_;
-  RenderWidgetHostViewBase* target_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(SurfaceHitTestReadyNotifier);
-};
-
-SurfaceHitTestReadyNotifier::SurfaceHitTestReadyNotifier(
-    RenderWidgetHostViewBase* target_view)
-    : target_view_(target_view) {
-  surface_manager_ = GetFrameSinkManager()->surface_manager();
-}
-
-void SurfaceHitTestReadyNotifier::WaitForSurfaceReady(
-    RenderWidgetHostViewBase* root_view) {
-  viz::SurfaceId root_surface_id = root_view->GetCurrentSurfaceId();
-  while (!ContainsSurfaceId(root_surface_id)) {
-    // TODO(kenrb): Need a better way to do this. Needs investigation on
-    // whether we can add a callback through RenderWidgetHostViewBaseObserver
-    // from OnSwapCompositorFrame and avoid this busy waiting. A callback on
-    // every compositor frame might be generally undesirable for performance,
-    // however.
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
-}
-
-bool SurfaceHitTestReadyNotifier::ContainsSurfaceId(
-    const viz::SurfaceId& container_surface_id) {
-  if (!container_surface_id.is_valid())
-    return false;
-
-  viz::Surface* container_surface =
-      surface_manager_->GetSurfaceForId(container_surface_id);
-  if (!container_surface || !container_surface->active_referenced_surfaces())
-    return false;
-
-  for (const viz::SurfaceId& id :
-       *container_surface->active_referenced_surfaces()) {
-    if (id == target_view_->GetCurrentSurfaceId() || ContainsSurfaceId(id))
-      return true;
-  }
-  return false;
-}
-
 RenderFrameMetadataProvider* RenderFrameMetadataProviderFromFrameTreeNode(
     FrameTreeNode* node) {
   DCHECK(node);
@@ -1718,38 +1662,6 @@ RenderFrameMetadataProvider* RenderFrameMetadataProviderFromWebContents(
 }
 
 }  // namespace
-
-void WaitForGuestSurfaceReady(content::WebContents* guest_web_contents) {
-  RenderWidgetHostViewChildFrame* child_view =
-      static_cast<RenderWidgetHostViewChildFrame*>(
-          guest_web_contents->GetRenderWidgetHostView());
-
-  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
-      static_cast<content::WebContentsImpl*>(guest_web_contents)
-          ->GetOuterWebContents()
-          ->GetRenderWidgetHostView());
-
-  SurfaceHitTestReadyNotifier notifier(child_view);
-  notifier.WaitForSurfaceReady(root_view);
-}
-
-void WaitForChildFrameSurfaceReady(content::RenderFrameHost* child_frame) {
-  RenderWidgetHostViewBase* child_view =
-      static_cast<RenderFrameHostImpl*>(child_frame)
-          ->GetRenderWidgetHost()
-          ->GetView();
-  if (!child_view || !child_view->IsRenderWidgetHostViewChildFrame())
-    return;
-
-  RenderWidgetHostViewBase* root_view =
-      static_cast<CrossProcessFrameConnector*>(
-          static_cast<RenderWidgetHostViewChildFrame*>(child_view)
-              ->FrameConnectorForTesting())
-          ->GetRootRenderWidgetHostViewForTesting();
-
-  SurfaceHitTestReadyNotifier notifier(child_view);
-  notifier.WaitForSurfaceReady(root_view);
-}
 
 TitleWatcher::TitleWatcher(WebContents* web_contents,
                            const base::string16& expected_title)
