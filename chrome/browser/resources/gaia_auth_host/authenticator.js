@@ -158,7 +158,8 @@ cr.define('cr.login', function() {
      * Callback allowing to request whether the specified user which
      * authenticates via SAML is a user without a password (neither a manually
      * entered one nor one provided via Credentials Passing API).
-     * @type {function(string, function(boolean))}
+     * @type {function(string, string, function(boolean))} Arguments are the
+     * e-mail, the GAIA ID, and the response callback.
      */
     this.getIsSamlUserPasswordlessCallback = null;
     this.needPassword = true;
@@ -734,19 +735,20 @@ cr.define('cr.login', function() {
       return;
 
     if (this.isSamlUserPasswordless_ === null &&
-        this.authFlow == AuthFlow.SAML && this.email_ &&
+        this.authFlow == AuthFlow.SAML && this.email_ && this.gaiaId_ &&
         this.getIsSamlUserPasswordlessCallback) {
       // Start a request to obtain the |isSamlUserPasswordless_| value for the
       // current user. Once the response arrives, maybeCompleteAuth_() will be
       // called again.
       this.getIsSamlUserPasswordlessCallback(
-          this.email_,
-          this.onGotIsSamlUserPasswordless_.bind(this, this.email_));
+          this.email_, this.gaiaId_,
+          this.onGotIsSamlUserPasswordless_.bind(
+              this, this.email_, this.gaiaId_));
       return;
     }
 
     if (this.isSamlUserPasswordless_ && this.authFlow == AuthFlow.SAML &&
-        this.email_) {
+        this.email_ && this.gaiaId_) {
       // No password needed for this user, so complete immediately.
       this.onAuthCompleted_();
       return;
@@ -805,14 +807,16 @@ cr.define('cr.login', function() {
   /**
    * Invoked when the result of |getIsSamlUserPasswordlessCallback| arrives.
    * @param {string} email
+   * @param {string} gaiaId
    * @param {boolean} isSamlUserPasswordless
    * @private
    */
   Authenticator.prototype.onGotIsSamlUserPasswordless_ = function(
-      email, isSamlUserPasswordless) {
-    // Compare the request's e-mail with the currently set one, in order to
-    // ignore responses to old requests.
-    if (this.email_ && this.email_ == email) {
+      email, gaiaId, isSamlUserPasswordless) {
+    // Compare the request's user identifier with the currently set one, in
+    // order to ignore responses to old requests.
+    if (this.email_ && this.email_ == email && this.gaiaId_ &&
+        this.gaiaId_ == gaiaId) {
       this.isSamlUserPasswordless_ = isSamlUserPasswordless;
       this.maybeCompleteAuth_();
     }

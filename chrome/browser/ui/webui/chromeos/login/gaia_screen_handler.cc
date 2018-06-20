@@ -838,7 +838,8 @@ void GaiaScreenHandler::HandleShowAddUser(const base::ListValue* args) {
 
 void GaiaScreenHandler::HandleGetIsSamlUserPasswordless(
     const std::string& callback_id,
-    const std::string& typed_email) {
+    const std::string& typed_email,
+    const std::string& gaia_id) {
   AllowJavascript();
   // TODO(emaxx,https://crbug.com/826417): Determine the result value based on
   // known_user properties if the user already existed, or the

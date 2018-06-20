@@ -135,7 +135,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void HandleUpdateGaiaDialogVisibility(bool visible);
   void HandleShowAddUser(const base::ListValue* args);
   void HandleGetIsSamlUserPasswordless(const std::string& callback_id,
-                                       const std::string& typed_email);
+                                       const std::string& typed_email,
+                                       const std::string& gaia_id);
   void OnShowAddUser();
 
   // Really handles the complete login message.
