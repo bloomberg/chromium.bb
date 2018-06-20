@@ -79,6 +79,12 @@ const char kAutofillManualFallbackDescription[] =
     "When enabled, it shows the autofill UI with manual fallback when filling "
     "forms.";
 
+const char kAutofillShowAllSuggestionsOnPrefilledFormsName[] =
+    "Enable showing all suggestions when focusing prefilled field";
+const char kAutofillShowAllSuggestionsOnPrefilledFormsDescription[] =
+    "When enabled: show all suggestions when the focused field value has not "
+    "been entered by the user. When disabled: use the field value as a filter.";
+
 const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[] =
     "Restrict formless form extraction";
 const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[] =

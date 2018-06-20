@@ -311,6 +311,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillPrefilledFieldsName,
      flag_descriptions::kAutofillPrefilledFieldsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillPrefilledFields)},
+    {"autofill-show-all-profiles-on-prefilled-forms",
+     flag_descriptions::kAutofillShowAllSuggestionsOnPrefilledFormsName,
+     flag_descriptions::kAutofillShowAllSuggestionsOnPrefilledFormsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillShowAllSuggestionsOnPrefilledForms)},
     {"autofill-restrict-formless-form-extraction",
      flag_descriptions::kAutofillRestrictUnownedFieldsToFormlessCheckoutName,
      flag_descriptions::

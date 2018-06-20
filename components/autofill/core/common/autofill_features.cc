@@ -38,6 +38,12 @@ const base::Feature kAutofillEnablePaymentsInteractionsOnAuthError{
 const base::Feature kAutofillPrefilledFields{"AutofillPrefilledFields",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether autofill suggestions are filtered by field values previously
+// filled by website.
+const base::Feature kAutofillShowAllSuggestionsOnPrefilledForms{
+    "AutofillShowAllSuggestionsOnPrefilledForms",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether or not a minimum number of fields is required before
 // heuristic field type prediction is run for a form.
 const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics{
