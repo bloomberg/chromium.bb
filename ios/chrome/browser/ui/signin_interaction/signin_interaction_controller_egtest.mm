@@ -99,7 +99,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
 
 // Tests signing in with one account, switching sync account to a second and
 // choosing to keep the browsing data separate during the switch.
-- (void)testSignInSwitchAccountsAndKeepDataSeparate {
+// TODO(crbug.com/854446): Enable after fixing.
+- (void)DISABLED_testSignInSwitchAccountsAndKeepDataSeparate {
   // Set up the fake identities.
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
@@ -136,7 +137,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
 
 // Tests signing in with one account, switching sync account to a second and
 // choosing to import the browsing data during the switch.
-- (void)testSignInSwitchAccountsAndImportData {
+// TODO(crbug.com/854446): Enable after fixing.
+- (void)DISABLED_testSignInSwitchAccountsAndImportData {
   // Set up the fake identities.
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
@@ -174,7 +176,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
 
 // Tests that switching from a managed account to a non-managed account works
 // correctly and displays the expected warnings.
-- (void)testSignInSwitchManagedAccount {
+// TODO(crbug.com/854446): Enable after fixing.
+- (void)DISABLED_testSignInSwitchManagedAccount {
   // Set up the fake identities.
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
