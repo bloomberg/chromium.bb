@@ -13,13 +13,10 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/queue.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "components/previews/core/blacklist_data.h"
+#include "components/previews/core/opt_out_blacklist.h"
 #include "components/previews/core/previews_black_list_delegate.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_opt_out_store.h"
@@ -78,19 +75,13 @@ enum class PreviewsEligibilityReason {
 // browsing history), domains are reported as black listed. The list stores no
 // more than previews::params::MaxInMemoryHostsInBlackList hosts in-memory,
 // which defaults to 100.
-class PreviewsBlackList {
+class PreviewsBlackList : public OptOutBlacklist {
  public:
-  // |opt_out_store| is the backing store to retrieve and store black list
-  // information, and can be null. When |opt_out_store| is null, the in-memory
-  // map will be immediately loaded to empty. If |opt_out_store| is non-null,
-  // it will be used to load the in-memory map asynchronously.
-  // |blacklist_delegate| is a single object listening for blacklist events, and
-  // it is guaranteed to overlive the life time of |this|.
   PreviewsBlackList(std::unique_ptr<PreviewsOptOutStore> opt_out_store,
                     base::Clock* clock,
                     PreviewsBlacklistDelegate* blacklist_delegate,
                     BlacklistData::AllowedTypesAndVersions allowed_types);
-  virtual ~PreviewsBlackList();
+  ~PreviewsBlackList() override;
 
   // Asynchronously adds a new navigation to to the in-memory black list and
   // backing store. |opt_out| is whether the user opted out of the preview or
@@ -113,138 +104,25 @@ class PreviewsBlackList {
       bool ignore_long_term_black_list_rules,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
-  // Asynchronously deletes all entries in the in-memory black list. Informs
-  // the backing store to delete entries between |begin_time| and |end_time|,
-  // and reloads entries into memory from the backing store. If the embedder
-  // passed in a null store, resets all history in the in-memory black list.
-  void ClearBlackList(base::Time begin_time, base::Time end_time);
-
- private:
-  // Synchronous version of AddEntry method. |time| is the time
-  // stamp of when the navigation was determined to be an opt-out or non-opt
-  // out.
-  void AddEntrySync(const std::string& host_name,
-                    bool opt_out,
-                    int type,
-                    base::Time time);
-
-  // Creates the BlacklistData that backs the blacklist.
-  void Init();
-
-  // Synchronous version of ClearBlackList method.
-  void ClearBlackListSync(base::Time begin_time, base::Time end_time);
-
-  // Callback passed to the backing store when loading black list information.
-  // Moves the |black_list_item_map| and |host_indifferent_black_list_item| into
-  // the in-memory black list and runs any outstanding tasks.
-  void LoadBlackListDone(std::unique_ptr<BlacklistData> blacklist_data);
-
-  // Synchronously determines if |host_name| should be allowed to show previews.
-  // Returns the reason the blacklist disallowed the preview, or
-  // PreviewsEligibilityReason::ALLOWED if the preview is allowed. Record
-  // checked reasons in |passed_reasons|.
-  BlacklistReason IsLoadedAndAllowed(
-      const std::string& host_name,
-      int type,
-      bool ignore_long_term_black_list_rules,
-      std::vector<BlacklistReason>* passed_reasons) const;
-
-  // Whether the session rule should be enabled. |duration| specifies how long a
-  // user remains blacklisted. |history| specifies how many entries should be
-  // evaluated; |threshold| specifies how many opt outs would cause
-  // blacklisting. I.e., the most recent |history| are looked at and if
-  // |threshold| (or more) of them are opt outs, the user is considered
-  // blacklisted unless the most recent opt out was longer than |duration| ago.
-  // This rule only considers entries within this session (it does not use the
-  // data that was persisted in previous sessions). When the blacklist is
-  // cleared, this rule is reset as if it were a new session. Queried in Init().
+ protected:
+  // OptOutBlacklist (virtual for testing):
   bool ShouldUseSessionPolicy(base::TimeDelta* duration,
                               size_t* history,
-                              int* threshold) const;
-
-  // Whether the persistent rule should be enabled. |duration| specifies how
-  // long a user remains blacklisted. |history| specifies how many entries
-  // should be evaluated; |threshold| specifies how many opt outs would cause
-  // blacklisting. I.e., the most recent |history| are looked at and if
-  // |threshold| (or more) of them are opt outs, the user is considered
-  // blacklisted unless the most recent opt out was longer than |duration| ago.
-  // Queried in Init().
+                              int* threshold) const override;
   bool ShouldUsePersistentPolicy(base::TimeDelta* duration,
                                  size_t* history,
-                                 int* threshold) const;
-
-  // Whether the host rule should be enabled. |duration| specifies how long a
-  // host remains blacklisted. |history| specifies how many entries should be
-  // evaluated per host; |threshold| specifies how many opt outs would cause
-  // blacklisting. I.e., the most recent |history| entries per host are looked
-  // at and if |threshold| (or more) of them are opt outs, the host is
-  // considered blacklisted unless the most recent opt out was longer than
-  // |duration| ago. |max_hosts| will limit the number of hosts stored in this
-  // class when non-zero.
-  // Queried in Init().
+                                 int* threshold) const override;
   bool ShouldUseHostPolicy(base::TimeDelta* duration,
                            size_t* history,
                            int* threshold,
-                           size_t* max_hosts) const;
-
-  //  Whether the type rule should be enabled.  |duration| specifies how long a
-  //  type remains blacklisted. |history| specifies how many entries should be
-  //  evaluated per type; |threshold| specifies how many opt outs would cause
-  //  blacklisting.
-  // I.e., the most recent |history| entries per type are looked at and if
-  // |threshold| (or more) of them are opt outs, the type is considered
-  // blacklisted unless the most recent opt out was longer than |duration| ago.
-  // Queried in Init().
+                           size_t* max_hosts) const override;
   bool ShouldUseTypePolicy(base::TimeDelta* duration,
                            size_t* history,
-                           int* threshold) const;
+                           int* threshold) const override;
+  BlacklistData::AllowedTypesAndVersions GetAllowedTypes() const override;
 
-  // The allowed types and what version they are. Should be empty unless the
-  // caller will not be using the blacklist in the session. It is used to remove
-  // stale entries from the database and to DCHECK that other methods are not
-  // using disallowed types. Queried in Init().
-  const BlacklistData::AllowedTypesAndVersions& GetAllowedTypes() const;
-
-  // Asynchronously adds a new navigation to to the in-memory black list and
-  // backing store. |opt_out| is whether the user opted out of the preview or
-  // navigated away from the page without opting out. If the in memory map has
-  // reached the max number of hosts allowed, and |url| is a new host, a host
-  // will be evicted based on recency of the hosts most recent opt out. It
-  // returns the time used for recording the moment when the navigation is added
-  // for logging.
-  base::Time AddEntry(const std::string& host_name, bool opt_out, int type);
-
-  // Called while waiting for the black list to be loaded from the backing
-  // store.
-  // Enqueues a task to run when when loading black list information has
-  // completed. Maintains the order that tasks were called in.
-  void QueuePendingTask(base::OnceClosure callback);
-
-  // An in-memory representation of the various rules of the blacklist. This is
-  // null while reading from the backing store.
-  std::unique_ptr<BlacklistData> blacklist_data_;
-
-  // Whether the black list is done being loaded from the backing store.
-  bool loaded_;
-
-  // The backing store of the black list information.
-  std::unique_ptr<PreviewsOptOutStore> opt_out_store_;
-
-  // Callbacks to be run after loading information from the backing store has
-  // completed.
-  base::queue<base::OnceClosure> pending_callbacks_;
-
-  base::Clock* clock_;
-
-  // The delegate listening to this blacklist. |blacklist_delegate_| lifetime is
-  // guaranteed to overlive |this|.
-  PreviewsBlacklistDelegate* blacklist_delegate_;
-
+ private:
   const BlacklistData::AllowedTypesAndVersions allowed_types_;
-
-  base::ThreadChecker thread_checker_;
-
-  base::WeakPtrFactory<PreviewsBlackList> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsBlackList);
 };
