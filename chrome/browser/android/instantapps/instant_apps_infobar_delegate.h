@@ -50,7 +50,7 @@ class InstantAppsInfoBarDelegate : public ConfirmInfoBarDelegate,
   base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
   base::android::ScopedJavaGlobalRef<jobject> data_;
   std::string url_;
-  bool has_navigated_away_from_launch_url_;
+  bool user_navigated_away_from_launch_url_;
   bool instant_app_is_default_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantAppsInfoBarDelegate);
