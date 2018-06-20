@@ -3,7 +3,7 @@
     "Tests for super-fat iOS 12.0.",
     "Build is performed with gn+ninja."
   ],
-  "xcode build version": "10l176w",
+  "xcode build version": "10l177m",
   "use xcode build version": true,
   "gn_args": [
     "additional_target_cpus=[\"x86\"]",
