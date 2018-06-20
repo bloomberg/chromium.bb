@@ -186,6 +186,7 @@ PreviewsState DetermineEnabledPreviews(PreviewsState previews_to_allow,
                                        net::URLRequest* request,
                                        ResourceContext* resource_context,
                                        bool is_main_frame) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // If previews have already been turned off, or we are inheriting values on a
   // sub-frame, don't check any further.
   if (previews_to_allow & PREVIEWS_OFF ||
