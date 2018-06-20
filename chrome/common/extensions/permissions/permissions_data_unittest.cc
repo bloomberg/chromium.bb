@@ -1120,9 +1120,8 @@ TEST_F(CaptureVisiblePageTest, URLsCapturableWithEitherActiveTabOrAllURLs) {
       // Normal web page.
       GURL("https://example.com"),
 
-      // TODO(https://crbug.com/853064): IPv6 pages should behave like normal
-      // web pages.
-      // GURL("http://[2607:f8b0:4005:805::200e]"),
+      // IPv6 pages should behave like normal web pages.
+      GURL("http://[2607:f8b0:4005:805::200e]"),
 
       // filesystem: urls with web origins should behave like normal web pages.
       // TODO(https://crbug.com/853392): filesystem: URLs don't work with
