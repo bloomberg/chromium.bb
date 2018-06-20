@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 
 #include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"

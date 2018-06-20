@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_module.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"

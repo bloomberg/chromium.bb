@@ -26,20 +26,22 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_SCRIPT_RUNNER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_SCRIPT_RUNNER_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "v8/include/v8.h"
+
+namespace WTF {
+class TextPosition;
+}
 
 namespace blink {
 
 class ExecutionContext;
+class ReferrerScriptInfo;
 class ScriptSourceCode;
+class ScriptState;
 
 class CORE_EXPORT V8ScriptRunner final {
   STATIC_ONLY(V8ScriptRunner);
@@ -58,7 +60,7 @@ class CORE_EXPORT V8ScriptRunner final {
                                                   const String& source,
                                                   const String& file_name,
                                                   AccessControlStatus,
-                                                  const TextPosition&,
+                                                  const WTF::TextPosition&,
                                                   const ReferrerScriptInfo&);
   static v8::MaybeLocal<v8::Value> RunCompiledScript(v8::Isolate*,
                                                      v8::Local<v8::Script>,
@@ -93,7 +95,7 @@ class CORE_EXPORT V8ScriptRunner final {
   static void ReportExceptionForModule(v8::Isolate*,
                                        v8::Local<v8::Value> exception,
                                        const String& file_name,
-                                       const TextPosition&);
+                                       const WTF::TextPosition&);
 
   // Calls a function on the V8 extras binding object.
   template <size_t N>
