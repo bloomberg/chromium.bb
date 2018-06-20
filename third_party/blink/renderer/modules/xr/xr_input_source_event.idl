@@ -7,6 +7,6 @@
     OriginTrialEnabled=WebXR,
     Constructor(DOMString type, XRInputSourceEventInit eventInitDict)
 ] interface XRInputSourceEvent : Event {
-  readonly attribute XRPresentationFrame frame;
+  readonly attribute XRFrame frame;
   readonly attribute XRInputSource inputSource;
 };

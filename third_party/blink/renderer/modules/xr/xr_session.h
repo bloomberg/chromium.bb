@@ -137,7 +137,7 @@ class XRSession final : public EventTargetWithInlineData {
  private:
   class XRSessionResizeObserverDelegate;
 
-  XRPresentationFrame* CreatePresentationFrame();
+  XRFrame* CreatePresentationFrame();
   void UpdateCanvasDimensions(Element*);
 
   void UpdateInputSourceState(

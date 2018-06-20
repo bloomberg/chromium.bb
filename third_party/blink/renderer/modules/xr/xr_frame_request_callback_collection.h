@@ -12,7 +12,7 @@ namespace blink {
 
 class ExecutionContext;
 class V8XRFrameRequestCallback;
-class XRPresentationFrame;
+class XRFrame;
 class XRSession;
 
 class XRFrameRequestCallbackCollection final : public TraceWrapperBase {
@@ -24,7 +24,7 @@ class XRFrameRequestCallbackCollection final : public TraceWrapperBase {
   using CallbackId = int;
   CallbackId RegisterCallback(V8XRFrameRequestCallback*);
   void CancelCallback(CallbackId);
-  void ExecuteCallbacks(XRSession*, XRPresentationFrame*);
+  void ExecuteCallbacks(XRSession*, XRFrame*);
 
   bool IsEmpty() const { return !callbacks_.size(); }
 

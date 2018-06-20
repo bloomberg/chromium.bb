@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/modules/xr/xr.h"
 #include "third_party/blink/renderer/modules/xr/xr_canvas_input_provider.h"
 #include "third_party/blink/renderer/modules/xr/xr_device.h"
+#include "third_party/blink/renderer/modules/xr/xr_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_of_reference.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_of_reference_options.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
@@ -26,7 +27,6 @@
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_layer.h"
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
-#include "third_party/blink/renderer/modules/xr/xr_presentation_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_session_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
@@ -444,7 +444,7 @@ void XRSession::OnFrame(
   if (!base_layer_)
     return;
 
-  XRPresentationFrame* presentation_frame = CreatePresentationFrame();
+  XRFrame* presentation_frame = CreatePresentationFrame();
 
   if (pending_frame_) {
     pending_frame_ = false;
@@ -494,8 +494,8 @@ void XRSession::LogGetPose() const {
   }
 }
 
-XRPresentationFrame* XRSession::CreatePresentationFrame() {
-  XRPresentationFrame* presentation_frame = new XRPresentationFrame(this);
+XRFrame* XRSession::CreatePresentationFrame() {
+  XRFrame* presentation_frame = new XRFrame(this);
   if (base_pose_matrix_) {
     presentation_frame->SetBasePoseMatrix(*base_pose_matrix_);
   }
@@ -687,7 +687,7 @@ void XRSession::UpdateInputSourceState(
 XRInputSourceEvent* XRSession::CreateInputSourceEvent(
     const AtomicString& type,
     XRInputSource* input_source) {
-  XRPresentationFrame* presentation_frame = CreatePresentationFrame();
+  XRFrame* presentation_frame = CreatePresentationFrame();
   return XRInputSourceEvent::Create(type, presentation_frame, input_source);
 }
 
