@@ -19,8 +19,8 @@
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
@@ -74,21 +74,22 @@ enum class TestType {
 // both callbacks used, only image_callback used, only image_data_callback used.
 class CachedImageFetcherTest : public testing::TestWithParam<TestType> {
  public:
-  CachedImageFetcherTest() : fake_url_fetcher_factory_(nullptr) {
+  CachedImageFetcherTest() {
     EXPECT_TRUE(database_dir_.CreateUniqueTempDir());
 
     RequestThrottler::RegisterProfilePrefs(pref_service_.registry());
     database_ =
         std::make_unique<RemoteSuggestionsDatabase>(database_dir_.GetPath());
-    request_context_getter_ = scoped_refptr<net::TestURLRequestContextGetter>(
-        new net::TestURLRequestContextGetter(
-            scoped_task_environment_.GetMainThreadTaskRunner()));
+
+    shared_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_);
 
     auto decoder = std::make_unique<FakeImageDecoder>();
     fake_image_decoder_ = decoder.get();
     cached_image_fetcher_ = std::make_unique<ntp_snippets::CachedImageFetcher>(
-        std::make_unique<image_fetcher::ImageFetcherImpl>(
-            std::move(decoder), request_context_getter_.get()),
+        std::make_unique<image_fetcher::ImageFetcherImpl>(std::move(decoder),
+                                                          shared_factory_),
         &pref_service_, database_.get());
     RunUntilIdle();
     EXPECT_TRUE(database_->IsInitialized());
@@ -138,21 +139,22 @@ class CachedImageFetcherTest : public testing::TestWithParam<TestType> {
 
   RemoteSuggestionsDatabase* database() { return database_.get(); }
   FakeImageDecoder* fake_image_decoder() { return fake_image_decoder_; }
-  net::FakeURLFetcherFactory* fake_url_fetcher_factory() {
-    return &fake_url_fetcher_factory_;
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
   }
   CachedImageFetcher* cached_image_fetcher() {
     return cached_image_fetcher_.get();
   }
 
  private:
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   std::unique_ptr<CachedImageFetcher> cached_image_fetcher_;
   std::unique_ptr<RemoteSuggestionsDatabase> database_;
   base::ScopedTempDir database_dir_;
   FakeImageDecoder* fake_image_decoder_;
-  net::FakeURLFetcherFactory fake_url_fetcher_factory_;
+
   TestingPrefServiceSimple pref_service_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(CachedImageFetcherTest);
@@ -171,23 +173,20 @@ TEST_P(CachedImageFetcherTest, FetchImageFromCache) {
 TEST_P(CachedImageFetcherTest, FetchImagePopulatesCache) {
   // Expect the image to be fetched by URL.
   {
-    fake_url_fetcher_factory()->SetFakeResponse(GURL(kImageURL), kImageData,
-                                                net::HTTP_OK,
-                                                net::URLRequestStatus::SUCCESS);
+    test_url_loader_factory()->AddResponse(kImageURL, kImageData);
     Fetch(kImageData, true);
   }
   // Fetch again. The cache should be populated, no network request is needed.
   {
-    fake_url_fetcher_factory()->ClearFakeResponses();
+    test_url_loader_factory()->ClearResponses();
     Fetch(kImageData, true);
   }
 }
 
 TEST_P(CachedImageFetcherTest, FetchNonExistingImage) {
   const std::string kErrorResponse = "error-response";
-  fake_url_fetcher_factory()->SetFakeResponse(GURL(kImageURL), kErrorResponse,
-                                              net::HTTP_NOT_FOUND,
-                                              net::URLRequestStatus::FAILED);
+  test_url_loader_factory()->AddResponse(kImageURL, kErrorResponse,
+                                         net::HTTP_NOT_FOUND);
   // Expect an empty image is fetched if the URL cannot be requested.
   Fetch("", false);
 }

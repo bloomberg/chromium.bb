@@ -35,6 +35,7 @@
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/web/public/web_state/web_state.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
@@ -99,6 +100,7 @@ PaymentRequest::PaymentRequest(
       payment_instruments_ready_(false),
       ios_instrument_finder_(
           GetApplicationContext()->GetSystemURLRequestContext(),
+          GetApplicationContext()->GetSharedURLLoaderFactory(),
           payment_request_ui_delegate_) {
   PopulateAvailableShippingOptions();
   PopulateProfileCache();

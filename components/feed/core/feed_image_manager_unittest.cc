@@ -16,8 +16,9 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
@@ -59,7 +60,7 @@ class FakeImageDecoder : public image_fetcher::ImageDecoder {
 
 class FeedImageManagerTest : public testing::Test {
  public:
-  FeedImageManagerTest() : fake_url_fetcher_factory_(nullptr) {}
+  FeedImageManagerTest() {}
 
   ~FeedImageManagerTest() override {
     feed_image_manager_.reset();
@@ -75,17 +76,17 @@ class FeedImageManagerTest : public testing::Test {
         std::make_unique<FeedImageDatabase>(database_dir_.GetPath());
     image_database_ = image_database.get();
 
-    request_context_getter_ = scoped_refptr<net::TestURLRequestContextGetter>(
-        new net::TestURLRequestContextGetter(
-            scoped_task_environment_.GetMainThreadTaskRunner()));
+    shared_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_);
 
     auto decoder = std::make_unique<FakeImageDecoder>();
     decoder->SetExpectedData(kImageData);
     fake_image_decoder_ = decoder.get();
 
     feed_image_manager_ = std::make_unique<FeedImageManager>(
-        std::make_unique<image_fetcher::ImageFetcherImpl>(
-            std::move(decoder), request_context_getter_.get()),
+        std::make_unique<image_fetcher::ImageFetcherImpl>(std::move(decoder),
+                                                          shared_factory_),
         std::move(image_database));
 
     RunUntilIdle();
@@ -111,19 +112,19 @@ class FeedImageManagerTest : public testing::Test {
 
   FakeImageDecoder* fake_image_decoder() { return fake_image_decoder_; }
 
-  net::FakeURLFetcherFactory* fake_url_fetcher_factory() {
-    return &fake_url_fetcher_factory_;
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
   }
 
   MOCK_METHOD1(OnImageLoaded, void(std::string));
 
  private:
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   std::unique_ptr<FeedImageManager> feed_image_manager_;
   FeedImageDatabase* image_database_;
   base::ScopedTempDir database_dir_;
   FakeImageDecoder* fake_image_decoder_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
-  net::FakeURLFetcherFactory fake_url_fetcher_factory_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedImageManagerTest);
@@ -158,9 +159,7 @@ TEST_F(FeedImageManagerTest, FetchImageFromCache) {
 TEST_F(FeedImageManagerTest, FetchImagePopulatesCache) {
   // Expect the image to be fetched by URL.
   {
-    fake_url_fetcher_factory()->SetFakeResponse(GURL(kImageURL), kImageData,
-                                                net::HTTP_OK,
-                                                net::URLRequestStatus::SUCCESS);
+    test_url_loader_factory()->AddResponse(kImageURL, kImageData);
     base::MockCallback<ImageFetchedCallback> image_callback;
     EXPECT_CALL(image_callback, Run(testing::Property(&gfx::Image::IsEmpty,
                                                       testing::Eq(false))));
@@ -179,7 +178,7 @@ TEST_F(FeedImageManagerTest, FetchImagePopulatesCache) {
   }
   // Fetch again. The cache should be populated, no network request is needed.
   {
-    fake_url_fetcher_factory()->ClearFakeResponses();
+    test_url_loader_factory()->ClearResponses();
     base::MockCallback<ImageFetchedCallback> image_callback;
     EXPECT_CALL(image_callback, Run(testing::Property(&gfx::Image::IsEmpty,
                                                       testing::Eq(false))));
@@ -193,12 +192,9 @@ TEST_F(FeedImageManagerTest, FetchImagePopulatesCache) {
 TEST_F(FeedImageManagerTest, FetchSecondImageIfFirstFailed) {
   // Expect the image to be fetched by URL.
   {
-    fake_url_fetcher_factory()->SetFakeResponse(GURL(kImageURL), kImageData,
-                                                net::HTTP_NOT_FOUND,
-                                                net::URLRequestStatus::FAILED);
-    fake_url_fetcher_factory()->SetFakeResponse(GURL(kImageURL2), kImageData2,
-                                                net::HTTP_OK,
-                                                net::URLRequestStatus::SUCCESS);
+    test_url_loader_factory()->AddResponse(kImageURL, kImageData,
+                                           net::HTTP_NOT_FOUND);
+    test_url_loader_factory()->AddResponse(kImageURL2, kImageData2);
     base::MockCallback<ImageFetchedCallback> image_callback;
     EXPECT_CALL(image_callback, Run(testing::Property(&gfx::Image::IsEmpty,
                                                       testing::Eq(false))));
@@ -224,9 +220,7 @@ TEST_F(FeedImageManagerTest, DecodingErrorWillDeleteCache) {
   image_database()->SaveImage(kImageURL, kImageData);
   RunUntilIdle();
   {
-    fake_url_fetcher_factory()->SetFakeResponse(GURL(kImageURL), kImageData,
-                                                net::HTTP_OK,
-                                                net::URLRequestStatus::SUCCESS);
+    test_url_loader_factory()->AddResponse(kImageURL, kImageData);
     // Set decoding always error.
     fake_image_decoder()->SetDecodingValid(false);
     base::MockCallback<ImageFetchedCallback> image_callback;

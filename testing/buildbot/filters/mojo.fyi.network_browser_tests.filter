@@ -85,11 +85,6 @@
 -ExtensionManagementTest.ExternalUrlUpdate
 -ExtensionManagementTest.PolicyOverridesUserInstall
 
-# components/image_fetcher/core/image_fetcher_impl.cc still uses URLFetcher.
-# https://crbug.com/843205
--ImageFetcherImplBrowserTest.MultipleFetch
--ImageFetcherImplBrowserTest.NormalFetch
-
 # components/payments/core/payment_manifest_downloader.cc still uses
 # URLFetcher.
 # https://crbug.com/853778

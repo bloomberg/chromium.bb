@@ -16,10 +16,11 @@
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
+#include "content/public/browser/storage_partition.h"
 #include "jni/ExploreSitesBridge_jni.h"
 #include "jni/ExploreSitesCategoryTile_jni.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
@@ -113,10 +114,11 @@ static void JNI_ExploreSitesBridge_GetIcon(
     const JavaParamRef<jobject>& j_callback_obj) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   GURL icon_url(ConvertJavaStringToUTF8(env, j_url));
-  scoped_refptr<net::URLRequestContextGetter> request_context =
-      profile->GetRequestContext();
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess();
   auto image_fetcher = std::make_unique<image_fetcher::ImageFetcherImpl>(
-      std::make_unique<suggestions::ImageDecoderImpl>(), request_context.get());
+      std::make_unique<suggestions::ImageDecoderImpl>(), url_loader_factory);
   // |image_fetcher| will be owned by the callback and gets destroyed at the end
   // of the callback.
   image_fetcher::ImageFetcher* image_fetcher_ptr = image_fetcher.get();

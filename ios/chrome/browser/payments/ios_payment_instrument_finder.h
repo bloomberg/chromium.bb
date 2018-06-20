@@ -29,6 +29,10 @@ namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 @protocol PaymentRequestUIDelegate;
 
 namespace payments {
@@ -72,10 +76,12 @@ class IOSPaymentInstrumentFinder {
 
   // Initializes an IOSPaymentInstrumentFinder with a |context_getter| which is
   // used for making URL requests with the PaymentManifestDownloader class and
-  // the IOSImageDataFetcherWrapper class. |payment_request_ui_delegate| is
+  // |url_loader_factory| which is used for requests with the
+  // IOSImageDataFetcherWrapper class. |payment_request_ui_delegate| is
   // passed to the created IOSPaymentInstrument objects.
   IOSPaymentInstrumentFinder(
       net::URLRequestContextGetter* context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       id<PaymentRequestUIDelegate> payment_request_ui_delegate);
 
   ~IOSPaymentInstrumentFinder();

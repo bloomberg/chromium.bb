@@ -10,7 +10,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/url_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -22,8 +22,8 @@
 namespace image_fetcher {
 
 IOSImageDataFetcherWrapper::IOSImageDataFetcherWrapper(
-    net::URLRequestContextGetter* url_request_context_getter)
-    : image_data_fetcher_(url_request_context_getter) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : image_data_fetcher_(url_loader_factory) {}
 
 IOSImageDataFetcherWrapper::~IOSImageDataFetcherWrapper() {}
 
