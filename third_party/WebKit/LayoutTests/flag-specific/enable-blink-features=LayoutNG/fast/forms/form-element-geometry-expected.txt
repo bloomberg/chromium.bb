@@ -19,14 +19,14 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutNGBlockFlow {DIV} at (1,1) size 56x26 [border: (2px solid #0000FF)]
                 LayoutInline {FONT} at (0,0) size 52x22
                   LayoutButton {INPUT} at (2,2) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-                    LayoutNGBlockFlow (anonymous) at (8,3) size 36x16
+                    LayoutBlockFlow (anonymous) at (8,3) size 36x16
                       LayoutText {#text} at (0,0) size 36x16
                         text run at (0,0) width 36: "button"
             LayoutNGTableCell {TD} at (62,3) size 60x26 [r=0 c=1 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 58x24 [border: (2px solid #0000FF)]
                 LayoutInline {FONT} at (0,0) size 54x20
                   LayoutMenuList {SELECT} at (2,2) size 54x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-                    LayoutNGBlockFlow (anonymous) at (1,1) size 52x18
+                    LayoutBlockFlow (anonymous) at (1,1) size 52x18
                       LayoutText (anonymous) at (4,1) size 32x16
                         text run at (4,1) width 32: "menu"
             LayoutNGTableCell {TD} at (124,6) size 19x19 [r=0 c=2 rs=1 cs=1]
@@ -43,13 +43,13 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutNGTableCell {TD} at (2,2) size 58x28 [r=0 c=0 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 56x26 [border: (2px solid #0000FF)]
                 LayoutButton {INPUT} at (2,2) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-                  LayoutNGBlockFlow (anonymous) at (8,3) size 36x16
+                  LayoutBlockFlow (anonymous) at (8,3) size 36x16
                     LayoutText {#text} at (0,0) size 36x16
                       text run at (0,0) width 36: "button"
             LayoutNGTableCell {TD} at (62,3) size 60x26 [r=0 c=1 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 58x24 [border: (2px solid #0000FF)]
                 LayoutMenuList {SELECT} at (2,2) size 54x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-                  LayoutNGBlockFlow (anonymous) at (1,1) size 52x18
+                  LayoutBlockFlow (anonymous) at (1,1) size 52x18
                     LayoutText (anonymous) at (4,1) size 32x16
                       text run at (4,1) width 32: "menu"
             LayoutNGTableCell {TD} at (124,6) size 19x19 [r=0 c=2 rs=1 cs=1]
@@ -65,14 +65,14 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutNGBlockFlow {DIV} at (1,1) size 56x26 [border: (2px solid #0000FF)]
                 LayoutInline {FONT} at (0,0) size 52x22
                   LayoutButton {INPUT} at (2,2) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-                    LayoutNGBlockFlow (anonymous) at (8,3) size 36x16
+                    LayoutBlockFlow (anonymous) at (8,3) size 36x16
                       LayoutText {#text} at (0,0) size 36x16
                         text run at (0,0) width 36: "button"
             LayoutNGTableCell {TD} at (62,3) size 60x26 [r=0 c=1 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 58x24 [border: (2px solid #0000FF)]
                 LayoutInline {FONT} at (0,0) size 54x20
                   LayoutMenuList {SELECT} at (2,2) size 54x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-                    LayoutNGBlockFlow (anonymous) at (1,1) size 52x18
+                    LayoutBlockFlow (anonymous) at (1,1) size 52x18
                       LayoutText (anonymous) at (4,1) size 32x16
                         text run at (4,1) width 32: "menu"
             LayoutNGTableCell {TD} at (124,6) size 19x19 [r=0 c=2 rs=1 cs=1]
@@ -95,7 +95,7 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutNGBlockFlow {DIV} at (1,1) size 242x26 [border: (2px solid #0000FF)]
                 LayoutFileUploadControl {INPUT} at (2,2) size 238x22 "No file chosen"
                   LayoutButton {INPUT} at (0,0) size 85x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-                    LayoutNGBlockFlow (anonymous) at (8,3) size 69x16
+                    LayoutBlockFlow (anonymous) at (8,3) size 69x16
                       LayoutText {#text} at (0,0) size 69x16
                         text run at (0,0) width 69: "Choose File"
             LayoutNGTableCell {TD} at (403,2) size 185x42 [r=0 c=3 rs=1 cs=1]
@@ -104,17 +104,17 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 199x26
           text run at (0,0) width 199: "Baseline Alignment"
       LayoutNGBlockFlow {DIV} at (0,388.06) size 784x28
-        LayoutInline {FONT} at (0,0) size 205x27
+        LayoutInline {FONT} at (0,0) size 208x27
           LayoutText {#text} at (0,0) size 43x27
             text run at (0,0) width 43: "text "
           LayoutButton {INPUT} at (43,5) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-            LayoutNGBlockFlow (anonymous) at (8,3) size 36x16
+            LayoutBlockFlow (anonymous) at (8,3) size 36x16
               LayoutText {#text} at (0,0) size 36x16
                 text run at (0,0) width 36: "button"
           LayoutText {#text} at (95,0) size 6x27
             text run at (95,0) width 6: " "
           LayoutMenuList {SELECT} at (101,6) size 54x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-            LayoutNGBlockFlow (anonymous) at (1,1) size 52x18
+            LayoutBlockFlow (anonymous) at (1,1) size 52x18
               LayoutText (anonymous) at (4,1) size 32x16
                 text run at (4,1) width 32: "menu"
           LayoutText {#text} at (155,0) size 6x27
@@ -128,13 +128,13 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutText {#text} at (0,1) size 27x19
           text run at (0,1) width 27: "text "
         LayoutButton {INPUT} at (27,0) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          LayoutNGBlockFlow (anonymous) at (8,3) size 36x16
+          LayoutBlockFlow (anonymous) at (8,3) size 36x16
             LayoutText {#text} at (0,0) size 36x16
               text run at (0,0) width 36: "button"
         LayoutText {#text} at (79,1) size 4x19
           text run at (79,1) width 4: " "
         LayoutMenuList {SELECT} at (83,1) size 54x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-          LayoutNGBlockFlow (anonymous) at (1,1) size 52x18
+          LayoutBlockFlow (anonymous) at (1,1) size 52x18
             LayoutText (anonymous) at (4,1) size 32x16
               text run at (4,1) width 32: "menu"
         LayoutText {#text} at (137,1) size 4x19
@@ -145,17 +145,17 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutBlockFlow {INPUT} at (170,3) size 13x13
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {DIV} at (0,438.06) size 784x22
-        LayoutInline {FONT} at (0,0) size 171x22
+        LayoutInline {FONT} at (0,0) size 174x12
           LayoutText {#text} at (0,6) size 18x12
             text run at (0,6) width 18: "text "
           LayoutButton {INPUT} at (18,0) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-            LayoutNGBlockFlow (anonymous) at (8,3) size 36x16
+            LayoutBlockFlow (anonymous) at (8,3) size 36x16
               LayoutText {#text} at (0,0) size 36x16
                 text run at (0,0) width 36: "button"
           LayoutText {#text} at (70,6) size 3x12
             text run at (70,6) width 3: " "
           LayoutMenuList {SELECT} at (73,1) size 54x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-            LayoutNGBlockFlow (anonymous) at (1,1) size 52x18
+            LayoutBlockFlow (anonymous) at (1,1) size 52x18
               LayoutText (anonymous) at (4,1) size 32x16
                 text run at (4,1) width 32: "menu"
           LayoutText {#text} at (127,6) size 3x12
@@ -173,7 +173,7 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (128,21) width 4: " "
         LayoutFileUploadControl {INPUT} at (132,20) size 238x22 "No file chosen"
           LayoutButton {INPUT} at (0,0) size 85x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-            LayoutNGBlockFlow (anonymous) at (8,3) size 69x16
+            LayoutBlockFlow (anonymous) at (8,3) size 69x16
               LayoutText {#text} at (0,0) size 69x16
                 text run at (0,0) width 69: "Choose File"
         LayoutText {#text} at (370,21) size 4x19
@@ -186,37 +186,37 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutInline {FONT} at (0,0) size 137x27
           LayoutText {#text} at (0,0) size 0x0
           LayoutMenuList {SELECT} at (0,6) size 22x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-            LayoutNGBlockFlow (anonymous) at (1,1) size 20x18
+            LayoutBlockFlow (anonymous) at (1,1) size 20x18
               LayoutText (anonymous) at (4,1) size 4x16
                 text run at (4,1) width 4: " "
           LayoutText {#text} at (22,0) size 6x27
             text run at (22,0) width 6: " "
           LayoutMenuList {SELECT} at (28,6) size 25x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-            LayoutNGBlockFlow (anonymous) at (1,1) size 23x18
+            LayoutBlockFlow (anonymous) at (1,1) size 23x18
               LayoutText (anonymous) at (4,1) size 3x16
                 text run at (4,1) width 3: "|"
           LayoutText {#text} at (53,0) size 6x27
             text run at (53,0) width 6: " "
           LayoutMenuList {SELECT} at (59,6) size 78x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-            LayoutNGBlockFlow (anonymous) at (1,1) size 76x18
+            LayoutBlockFlow (anonymous) at (1,1) size 76x18
               LayoutText (anonymous) at (4,1) size 56x16
                 text run at (4,1) width 56: "xxxxxxxx"
           LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {DIV} at (0,596.88) size 784x20
         LayoutMenuList {SELECT} at (0,0) size 22x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-          LayoutNGBlockFlow (anonymous) at (1,1) size 20x18
+          LayoutBlockFlow (anonymous) at (1,1) size 20x18
             LayoutText (anonymous) at (4,1) size 4x16
               text run at (4,1) width 4: " "
         LayoutText {#text} at (22,0) size 4x19
           text run at (22,0) width 4: " "
         LayoutMenuList {SELECT} at (26,0) size 25x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-          LayoutNGBlockFlow (anonymous) at (1,1) size 23x18
+          LayoutBlockFlow (anonymous) at (1,1) size 23x18
             LayoutText (anonymous) at (4,1) size 3x16
               text run at (4,1) width 3: "|"
         LayoutText {#text} at (51,0) size 4x19
           text run at (51,0) width 4: " "
         LayoutMenuList {SELECT} at (55,0) size 78x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-          LayoutNGBlockFlow (anonymous) at (1,1) size 76x18
+          LayoutBlockFlow (anonymous) at (1,1) size 76x18
             LayoutText (anonymous) at (4,1) size 56x16
               text run at (4,1) width 56: "xxxxxxxx"
         LayoutText {#text} at (0,0) size 0x0
@@ -224,19 +224,19 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutInline {FONT} at (0,0) size 131x20
           LayoutText {#text} at (0,0) size 0x0
           LayoutMenuList {SELECT} at (0,0) size 22x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-            LayoutNGBlockFlow (anonymous) at (1,1) size 20x18
+            LayoutBlockFlow (anonymous) at (1,1) size 20x18
               LayoutText (anonymous) at (4,1) size 4x16
                 text run at (4,1) width 4: " "
           LayoutText {#text} at (22,5) size 3x12
             text run at (22,5) width 3: " "
           LayoutMenuList {SELECT} at (25,0) size 25x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-            LayoutNGBlockFlow (anonymous) at (1,1) size 23x18
+            LayoutBlockFlow (anonymous) at (1,1) size 23x18
               LayoutText (anonymous) at (4,1) size 3x16
                 text run at (4,1) width 3: "|"
           LayoutText {#text} at (50,5) size 3x12
             text run at (50,5) width 3: " "
           LayoutMenuList {SELECT} at (53,0) size 78x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
-            LayoutNGBlockFlow (anonymous) at (1,1) size 76x18
+            LayoutBlockFlow (anonymous) at (1,1) size 76x18
               LayoutText (anonymous) at (4,1) size 56x16
                 text run at (4,1) width 56: "xxxxxxxx"
           LayoutText {#text} at (0,0) size 0x0

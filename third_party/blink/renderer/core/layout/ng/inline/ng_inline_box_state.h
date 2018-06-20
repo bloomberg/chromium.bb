@@ -91,6 +91,12 @@ struct NGInlineBoxState {
   void SetLineRightForBoxFragment(const NGInlineItem&,
                                   const NGInlineItemResult&);
 
+  // In certain circumstances, the parent's rects is not a simple union of its
+  // children fragments' rects, e.g., when children have margin. In such cases,
+  // we should create box fragments for the parent to avoid hacky fixup when
+  // computing its rects.
+  bool ParentNeedsBoxFragment() const;
+
   // Returns if the text style can be added without open-tag.
   // Text with different font or vertical-align needs to be wrapped with an
   // inline box.
