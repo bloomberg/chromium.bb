@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
@@ -31,11 +32,11 @@ AssistantQueryView::AssistantQueryView(
 
   // The Assistant controller indirectly owns the view hierarchy to which
   // AssistantQueryView belongs so is guaranteed to outlive it.
-  assistant_controller_->AddInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->AddModelObserver(this);
 }
 
 AssistantQueryView::~AssistantQueryView() {
-  assistant_controller_->RemoveInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
 gfx::Size AssistantQueryView::CalculatePreferredSize() const {
@@ -72,10 +73,13 @@ void AssistantQueryView::InitLayout() {
   AddChildView(label_);
 
   // Artificially trigger event to initialize state.
-  OnPendingQueryChanged(
-      observed_query_state_ == ObservedQueryState::kCommitted
-          ? assistant_controller_->interaction_model()->committed_query()
-          : assistant_controller_->interaction_model()->pending_query());
+  OnPendingQueryChanged(observed_query_state_ == ObservedQueryState::kCommitted
+                            ? assistant_controller_->interaction_controller()
+                                  ->model()
+                                  ->committed_query()
+                            : assistant_controller_->interaction_controller()
+                                  ->model()
+                                  ->pending_query());
 }
 
 void AssistantQueryView::OnCommittedQueryChanged(

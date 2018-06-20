@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
@@ -35,11 +36,11 @@ AssistantHeaderView::AssistantHeaderView(
 
   // The Assistant controller indirectly owns the view hierarchy to which
   // AssistantHeaderView belongs so is guaranteed to outlive it.
-  assistant_controller_->AddInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->AddModelObserver(this);
 }
 
 AssistantHeaderView::~AssistantHeaderView() {
-  assistant_controller_->RemoveInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
 gfx::Size AssistantHeaderView::CalculatePreferredSize() const {

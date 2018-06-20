@@ -15,6 +15,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/debug.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_move_window_util.h"
@@ -671,7 +672,10 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
   // TODO(dmblack): Remove. Enabling eligibility check bypass for development
   // purposes only. We should otherwise respect the eligibility rules below.
   if (chromeos::switches::IsAssistantEnabled()) {
-    Shell::Get()->assistant_controller()->ToggleInteraction();
+    Shell::Get()
+        ->assistant_controller()
+        ->interaction_controller()
+        ->ToggleInteraction();
     return;
   }
 
@@ -707,10 +711,14 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
       break;
   }
 
-  if (!chromeos::switches::IsAssistantEnabled())
+  if (!chromeos::switches::IsAssistantEnabled()) {
     Shell::Get()->app_list_controller()->ToggleVoiceInteractionSession();
-  else
-    Shell::Get()->assistant_controller()->ToggleInteraction();
+  } else {
+    Shell::Get()
+        ->assistant_controller()
+        ->interaction_controller()
+        ->ToggleInteraction();
+  }
 }
 
 void HandleSuspend() {

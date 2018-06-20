@@ -5,6 +5,7 @@
 #include "ash/assistant/assistant_bubble_controller.h"
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/ui/assistant_bubble_view.h"
 #include "base/optional.h"
 
@@ -13,11 +14,11 @@ namespace ash {
 AssistantBubbleController::AssistantBubbleController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller) {
-  assistant_controller_->AddInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->AddModelObserver(this);
 }
 
 AssistantBubbleController::~AssistantBubbleController() {
-  assistant_controller_->RemoveInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 
   if (bubble_view_)
     bubble_view_->GetWidget()->RemoveObserver(this);
@@ -49,7 +50,9 @@ void AssistantBubbleController::OnWidgetDestroying(views::Widget* widget) {
   // widget is closed. Special cases, such as closing the widget via the |ESC|
   // key might otherwise go unhandled, causing inconsistencies between the
   // widget visibility state and the underlying interaction model state.
-  assistant_controller_->StopInteraction();
+  // TODO(dmblack): Clean this up. Sibling controllers shouldn't need to
+  // communicate to each other directly in this way.
+  assistant_controller_->interaction_controller()->StopInteraction();
 
   bubble_view_->GetWidget()->RemoveObserver(this);
   bubble_view_ = nullptr;
@@ -87,8 +90,11 @@ bool AssistantBubbleController::OnCaptionButtonPressed(CaptionButtonId id) {
   return false;
 }
 
-void AssistantBubbleController::OnSettingsButtonPressed() {
-  // TODO(dmblack): Navigate to Assistant settings.
+void AssistantBubbleController::OnDialogPlateButtonPressed(
+    DialogPlateButtonId id) {
+  if (id != DialogPlateButtonId::kSettings)
+    return;
+
   UpdateUiMode(AssistantUiMode::kWebUi);
 }
 
@@ -124,16 +130,17 @@ void AssistantBubbleController::UpdateUiMode(
     return;
   }
 
+  const AssistantInteractionModel* interaction_model =
+      assistant_controller_->interaction_controller()->model();
+
   // When the mic is open, we should be in main UI mode.
-  if (assistant_controller_->interaction_model()->mic_state() ==
-      MicState::kOpen) {
+  if (interaction_model->mic_state() == MicState::kOpen) {
     assistant_bubble_model_.SetUiMode(AssistantUiMode::kMainUi);
     return;
   }
 
   // When stylus input modality is selected, we should be in mini UI mode.
-  if (assistant_controller_->interaction_model()->input_modality() ==
-      InputModality::kStylus) {
+  if (interaction_model->input_modality() == InputModality::kStylus) {
     assistant_bubble_model_.SetUiMode(AssistantUiMode::kMiniUi);
     return;
   }

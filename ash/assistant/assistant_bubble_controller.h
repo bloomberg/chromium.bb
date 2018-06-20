@@ -9,6 +9,7 @@
 #include "ash/assistant/model/assistant_bubble_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/ui/caption_bar.h"
+#include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -24,7 +25,8 @@ class AssistantController;
 class ASH_EXPORT AssistantBubbleController
     : public views::WidgetObserver,
       public AssistantInteractionModelObserver,
-      public CaptionBarDelegate {
+      public CaptionBarDelegate,
+      public DialogPlateDelegate {
  public:
   explicit AssistantBubbleController(AssistantController* assistant_controller);
   ~AssistantBubbleController() override;
@@ -49,8 +51,8 @@ class ASH_EXPORT AssistantBubbleController
   // CaptionBarDelegate:
   bool OnCaptionButtonPressed(CaptionButtonId id) override;
 
-  // Invoked on settings button pressed.
-  void OnSettingsButtonPressed();
+  // DialogPlateDelegate:
+  void OnDialogPlateButtonPressed(DialogPlateButtonId id) override;
 
   // Returns true if assistant bubble is visible, otherwise false.
   bool IsVisible() const;
@@ -63,8 +65,9 @@ class ASH_EXPORT AssistantBubbleController
   // the basis of interaction/widget visibility state.
   void UpdateUiMode(base::Optional<AssistantUiMode> ui_mode = base::nullopt);
 
-  AssistantBubbleModel assistant_bubble_model_;
   AssistantController* const assistant_controller_;  // Owned by Shell.
+
+  AssistantBubbleModel assistant_bubble_model_;
 
   AssistantBubbleView* bubble_view_ = nullptr;  // Owned by view hierarchy.
 

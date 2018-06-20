@@ -5,6 +5,7 @@
 #include "ash/assistant/ui/main_stage/ui_element_container_view.h"
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/main_stage/assistant_header_view.h"
@@ -34,11 +35,11 @@ UiElementContainerView::UiElementContainerView(
 
   // The Assistant controller indirectly owns the view hierarchy to which
   // UiElementContainerView belongs so is guaranteed to outlive it.
-  assistant_controller_->AddInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->AddModelObserver(this);
 }
 
 UiElementContainerView::~UiElementContainerView() {
-  assistant_controller_->RemoveInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
   ReleaseAllCards();
 }
 

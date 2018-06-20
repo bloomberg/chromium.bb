@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -55,11 +56,11 @@ DialogPlate::DialogPlate(AssistantController* assistant_controller)
 
   // The Assistant controller indirectly owns the view hierarchy to which
   // DialogPlate belongs so is guaranteed to outlive it.
-  assistant_controller_->AddInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->AddModelObserver(this);
 }
 
 DialogPlate::~DialogPlate() {
-  assistant_controller_->RemoveInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
 gfx::Size DialogPlate::CalculatePreferredSize() const {
@@ -86,8 +87,9 @@ void DialogPlate::InitLayout() {
   InitVoiceLayoutContainer();
 
   // Artificially trigger event to set initial state.
-  OnInputModalityChanged(
-      assistant_controller_->interaction_model()->input_modality());
+  OnInputModalityChanged(assistant_controller_->interaction_controller()
+                             ->model()
+                             ->input_modality());
 }
 
 void DialogPlate::InitKeyboardLayoutContainer() {
