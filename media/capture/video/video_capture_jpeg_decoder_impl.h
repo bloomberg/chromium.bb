@@ -43,7 +43,7 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
   // VideoCaptureGpuJpegDecoder is destroyed.
   VideoCaptureJpegDecoderImpl(
       MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
-      scoped_refptr<base::SingleThreadTaskRunner> decoder_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       DecodeDoneCB decode_done_cb,
       base::RepeatingCallback<void(const std::string&)> send_log_message_cb);
   ~VideoCaptureJpegDecoderImpl() override;
@@ -78,7 +78,7 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
   void DestroyDecoderOnIOThread(base::WaitableEvent* event);
 
   MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_;
-  scoped_refptr<base::SingleThreadTaskRunner> decoder_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
 
   // The underlying JPEG decode accelerator.
   std::unique_ptr<media::JpegDecodeAccelerator> decoder_;

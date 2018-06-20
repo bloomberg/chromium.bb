@@ -25,7 +25,8 @@ class DeviceMediaToMojoAdapter : public mojom::Device {
   DeviceMediaToMojoAdapter(
       std::unique_ptr<service_manager::ServiceContextRef> service_ref,
       std::unique_ptr<media::VideoCaptureDevice> device,
-      media::MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback);
+      media::MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
+      scoped_refptr<base::SequencedTaskRunner> jpeg_decoder_task_runner);
   ~DeviceMediaToMojoAdapter() override;
 
   // mojom::Device implementation.
@@ -53,6 +54,7 @@ class DeviceMediaToMojoAdapter : public mojom::Device {
   const std::unique_ptr<media::VideoCaptureDevice> device_;
   const media::MojoJpegDecodeAcceleratorFactoryCB
       jpeg_decoder_factory_callback_;
+  scoped_refptr<base::SequencedTaskRunner> jpeg_decoder_task_runner_;
   std::unique_ptr<ReceiverMojoToMediaAdapter> receiver_;
   bool device_started_;
   base::ThreadChecker thread_checker_;

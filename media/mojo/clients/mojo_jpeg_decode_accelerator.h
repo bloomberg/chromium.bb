@@ -14,18 +14,18 @@
 #include "media/video/jpeg_decode_accelerator.h"
 
 namespace base {
-class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace media {
 
 // A JpegDecodeAccelerator, for use in the browser process, that proxies to a
 // mojom::JpegDecodeAccelerator. Created on the owner's thread, otherwise
-// operating and deleted on the IO thread.
+// operating and deleted on |io_task_runner|.
 class MojoJpegDecodeAccelerator : public JpegDecodeAccelerator {
  public:
   MojoJpegDecodeAccelerator(
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       mojom::JpegDecodeAcceleratorPtrInfo jpeg_decoder);
   ~MojoJpegDecodeAccelerator() override;
 
@@ -46,8 +46,7 @@ class MojoJpegDecodeAccelerator : public JpegDecodeAccelerator {
                    ::media::JpegDecodeAccelerator::Error error);
   void OnLostConnectionToJpegDecoder();
 
-  // Browser IO task runner.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   Client* client_ = nullptr;
 

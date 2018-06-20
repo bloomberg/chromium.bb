@@ -79,10 +79,12 @@ DeviceFactoryMediaToMojoAdapter::ActiveDeviceEntry::operator=(
 DeviceFactoryMediaToMojoAdapter::DeviceFactoryMediaToMojoAdapter(
     std::unique_ptr<service_manager::ServiceContextRef> service_ref,
     std::unique_ptr<media::VideoCaptureSystem> capture_system,
-    media::MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback)
+    media::MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
+    scoped_refptr<base::SequencedTaskRunner> jpeg_decoder_task_runner)
     : service_ref_(std::move(service_ref)),
       capture_system_(std::move(capture_system)),
       jpeg_decoder_factory_callback_(std::move(jpeg_decoder_factory_callback)),
+      jpeg_decoder_task_runner_(std::move(jpeg_decoder_task_runner)),
       has_called_get_device_infos_(false),
       weak_factory_(this) {}
 
@@ -158,7 +160,7 @@ void DeviceFactoryMediaToMojoAdapter::CreateAndAddNewDevice(
   ActiveDeviceEntry device_entry;
   device_entry.device = std::make_unique<DeviceMediaToMojoAdapter>(
       service_ref_->Clone(), std::move(media_device),
-      jpeg_decoder_factory_callback_);
+      jpeg_decoder_factory_callback_, jpeg_decoder_task_runner_);
   device_entry.binding = std::make_unique<mojo::Binding<mojom::Device>>(
       device_entry.device.get(), std::move(device_request));
   device_entry.binding->set_connection_error_handler(base::Bind(

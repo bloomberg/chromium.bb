@@ -17,13 +17,13 @@
 namespace media {
 
 MojoJpegDecodeAccelerator::MojoJpegDecodeAccelerator(
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     mojom::JpegDecodeAcceleratorPtrInfo jpeg_decoder)
     : io_task_runner_(std::move(io_task_runner)),
       jpeg_decoder_info_(std::move(jpeg_decoder)) {}
 
 MojoJpegDecodeAccelerator::~MojoJpegDecodeAccelerator() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 }
 
 bool MojoJpegDecodeAccelerator::Initialize(
@@ -34,7 +34,7 @@ bool MojoJpegDecodeAccelerator::Initialize(
 
 void MojoJpegDecodeAccelerator::InitializeAsync(Client* client,
                                                 InitCB init_cb) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   jpeg_decoder_.Bind(std::move(jpeg_decoder_info_));
 
@@ -50,7 +50,7 @@ void MojoJpegDecodeAccelerator::InitializeAsync(Client* client,
 void MojoJpegDecodeAccelerator::Decode(
     const BitstreamBuffer& bitstream_buffer,
     const scoped_refptr<VideoFrame>& video_frame) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(jpeg_decoder_.is_bound());
 
   DCHECK(
@@ -86,7 +86,7 @@ void MojoJpegDecodeAccelerator::OnInitializeDone(
     InitCB init_cb,
     JpegDecodeAccelerator::Client* client,
     bool success) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   if (success)
     client_ = client;
@@ -97,7 +97,7 @@ void MojoJpegDecodeAccelerator::OnInitializeDone(
 void MojoJpegDecodeAccelerator::OnDecodeAck(
     int32_t bitstream_buffer_id,
     ::media::JpegDecodeAccelerator::Error error) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   if (!client_)
     return;
@@ -116,7 +116,7 @@ void MojoJpegDecodeAccelerator::OnDecodeAck(
 }
 
 void MojoJpegDecodeAccelerator::OnLostConnectionToJpegDecoder() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   OnDecodeAck(kInvalidBitstreamBufferId,
               ::media::JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
 }
