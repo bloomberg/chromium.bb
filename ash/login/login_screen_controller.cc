@@ -193,6 +193,12 @@ void LoginScreenController::ShowGaiaSignin(
   login_screen_client_->ShowGaiaSignin(can_close, prefilled_account);
 }
 
+void LoginScreenController::ShowResetScreen() {
+  if (!login_screen_client_)
+    return;
+  login_screen_client_->ShowResetScreen();
+}
+
 void LoginScreenController::OnRemoveUserWarningShown() {
   if (!login_screen_client_)
     return;

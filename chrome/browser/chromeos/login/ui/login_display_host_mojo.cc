@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/mojo_version_info_dispatcher.h"
@@ -137,13 +138,15 @@ void LoginDisplayHostMojo::StartWizard(OobeScreen first_screen) {
   DCHECK(GetOobeUI());
 
   // Dtor of the old WizardController should be called before ctor of the
-  // new one to ensure only one |ExistingUserController| instance at a time.
+  // new one to ensure only one |WizardController| instance at a time.
   wizard_controller_.reset();
   wizard_controller_.reset(new WizardController(this, GetOobeUI()));
   wizard_controller_->Init(first_screen);
 
+  bool closable_by_esc = first_screen == OobeScreen::SCREEN_OOBE_RESET;
+
   // Post login screens should not be closable by escape key.
-  dialog_->Show(false /*closable_by_esc*/);
+  dialog_->Show(closable_by_esc);
 }
 
 WizardController* LoginDisplayHostMojo::GetWizardController() {
@@ -170,6 +173,20 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
                                   weak_factory_.GetWeakPtr(), context));
     return;
   }
+
+  // If signin_screen_started_, we already have an instance of LockScreen,
+  // so we can skip login screen initialization and just reset the dialog state.
+  if (signin_screen_started_) {
+    if (user_selection_screen_->HasAnyUsers()) {
+      dialog_->Hide();
+    } else {
+      GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
+      dialog_->Show(false /*closable_by_esc*/);
+    }
+    return;
+  }
+
+  signin_screen_started_ = true;
 
   // There can only be one |ExistingUserController| instance at a time.
   existing_user_controller_.reset();
@@ -222,13 +239,11 @@ void LoginDisplayHostMojo::UpdateGaiaDialogVisibility(
   DCHECK(dialog_);
 
   if (visible) {
-    if (prefilled_account) {
-      // Make sure gaia displays |account| if requested.
-      GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(prefilled_account);
+    GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(prefilled_account);
+    if (prefilled_account)
       LoginDisplayHost::default_host()->LoadWallpaper(*prefilled_account);
-    } else {
+    else
       LoginDisplayHost::default_host()->LoadSigninWallpaper();
-    }
 
     dialog_->Show(can_close /*closable_by_esc*/);
     return;

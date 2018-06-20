@@ -102,6 +102,7 @@ class ASH_EXPORT LockContentsView
 
   enum class AcceleratorAction {
     kShowFeedback,
+    kShowReset,
   };
 
   // Number of login attempts before a login dialog is shown. For example, if

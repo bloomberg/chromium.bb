@@ -144,6 +144,8 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // Updates UI when version info is changed.
   std::unique_ptr<MojoVersionInfoDispatcher> version_info_updater_;
 
+  bool signin_screen_started_ = false;
+
   base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostMojo);

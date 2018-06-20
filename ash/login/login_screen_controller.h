@@ -71,6 +71,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void FocusLockScreenApps(bool reverse);
   void ShowGaiaSignin(bool can_close,
                       const base::Optional<AccountId>& prefilled_account);
+  void ShowResetScreen();
   void OnRemoveUserWarningShown();
   void RemoveUser(const AccountId& account_id);
   void LaunchPublicSession(const AccountId& account_id,
