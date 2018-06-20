@@ -172,10 +172,7 @@ class LayoutGrid final : public LayoutBlock {
       Grid&,
       GridTrackSizingDirection) const;
 
-  void LayoutOrthogonalWritingModeRoots(const GridTrackSizingAlgorithm&,
-                                        const Vector<LayoutBox*>&) const;
-  void LayoutBaselineAlignedItems(const GridTrackSizingAlgorithm&,
-                                  const Vector<LayoutBox*>&) const;
+  void PerformGridItemsPreLayout(const GridTrackSizingAlgorithm&) const;
 
   void PlaceItemsOnGrid(
       GridTrackSizingAlgorithm&,

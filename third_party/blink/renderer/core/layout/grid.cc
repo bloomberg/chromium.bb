@@ -142,10 +142,6 @@ GridSpan Grid::GridItemSpan(const LayoutBox& grid_item,
   return direction == kForColumns ? area.columns : area.rows;
 }
 
-void Grid::SetHasAnyOrthogonalGridItem(bool has_any_orthogonal_grid_item) {
-  has_any_orthogonal_grid_item_ = has_any_orthogonal_grid_item;
-}
-
 void Grid::SetNeedsItemsPlacement(bool needs_items_placement) {
   needs_items_placement_ = needs_items_placement;
 
@@ -157,13 +153,14 @@ void Grid::SetNeedsItemsPlacement(bool needs_items_placement) {
   ClearGridDataStructure();
   grid_item_area_.clear();
   grid_items_indexes_map_.clear();
-  has_any_orthogonal_grid_item_ = false;
   smallest_row_start_ = 0;
   smallest_column_start_ = 0;
   auto_repeat_columns_ = 0;
   auto_repeat_rows_ = 0;
   auto_repeat_empty_columns_ = nullptr;
   auto_repeat_empty_rows_ = nullptr;
+  baseline_grid_items_.resize(0);
+  orthogonal_grid_items_.resize(0);
 }
 
 Grid::GridIterator::GridIterator(GridTrackSizingDirection direction,
