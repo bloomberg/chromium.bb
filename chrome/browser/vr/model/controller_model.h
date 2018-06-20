@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VR_MODEL_CONTROLLER_MODEL_H_
 #define CHROME_BROWSER_VR_MODEL_CONTROLLER_MODEL_H_
 
+#include "base/time/time.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/vr_export.h"
@@ -36,6 +37,9 @@ struct VR_EXPORT ControllerModel {
   bool recentered = false;
   bool app_button_long_pressed = false;
   PlatformController::Handedness handedness = PlatformController::kRightHanded;
+  base::TimeTicks last_orientation_timestamp;
+  base::TimeTicks last_touch_timestamp;
+  base::TimeTicks last_button_timestamp;
 };
 
 }  // namespace vr

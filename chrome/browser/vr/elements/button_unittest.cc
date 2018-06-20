@@ -16,19 +16,19 @@ TEST(Button, Hover) {
 
   gfx::Transform xform = button.hit_plane()->LocalTransform();
 
-  button.OnHoverEnter(gfx::PointF(0.5f, 0.5f));
+  button.OnHoverEnter(gfx::PointF(0.5f, 0.5f), base::TimeTicks());
   EXPECT_EQ(xform.ToString(), button.hit_plane()->LocalTransform().ToString());
-  button.OnHoverLeave();
+  button.OnHoverLeave(base::TimeTicks());
 
   button.set_hover_offset(0.04f);
-  button.OnHoverEnter(gfx::PointF(0.5f, 0.5f));
+  button.OnHoverEnter(gfx::PointF(0.5f, 0.5f), base::TimeTicks());
   EXPECT_NE(xform.ToString(), button.hit_plane()->LocalTransform().ToString());
-  button.OnHoverLeave();
+  button.OnHoverLeave(base::TimeTicks());
 
   button.SetEnabled(false);
-  button.OnHoverEnter(gfx::PointF(0.5f, 0.5f));
+  button.OnHoverEnter(gfx::PointF(0.5f, 0.5f), base::TimeTicks());
   EXPECT_EQ(xform.ToString(), button.hit_plane()->LocalTransform().ToString());
-  button.OnHoverLeave();
+  button.OnHoverLeave(base::TimeTicks());
 }
 
 }  // namespace vr

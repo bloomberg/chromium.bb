@@ -34,8 +34,10 @@ class VR_EXPORT TextInput : public UiElement {
             OnInputEditedCallback input_edit_callback);
   ~TextInput() override;
 
-  void OnButtonDown(const gfx::PointF& position) override;
-  void OnButtonUp(const gfx::PointF& position) override;
+  void OnButtonDown(const gfx::PointF& position,
+                    base::TimeTicks timestamp) override;
+  void OnButtonUp(const gfx::PointF& position,
+                  base::TimeTicks timestamp) override;
   void OnFocusChanged(bool focused) override;
   void OnInputEdited(const EditedText& info) override;
   void OnInputCommitted(const EditedText& info) override;

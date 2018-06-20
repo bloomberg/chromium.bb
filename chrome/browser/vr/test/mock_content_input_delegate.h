@@ -17,11 +17,19 @@ class MockContentInputDelegate : public ContentInputDelegate {
   MockContentInputDelegate();
   ~MockContentInputDelegate() override;
 
-  MOCK_METHOD1(OnHoverEnter, void(const gfx::PointF& normalized_hit_point));
-  MOCK_METHOD0(OnHoverLeave, void());
-  MOCK_METHOD1(OnHoverMove, void(const gfx::PointF& normalized_hit_point));
-  MOCK_METHOD1(OnButtonDown, void(const gfx::PointF& normalized_hit_point));
-  MOCK_METHOD1(OnButtonUp, void(const gfx::PointF& normalized_hit_point));
+  MOCK_METHOD2(OnHoverEnter,
+               void(const gfx::PointF& normalized_hit_point,
+                    base::TimeTicks timestamp));
+  MOCK_METHOD1(OnHoverLeave, void(base::TimeTicks timestamp));
+  MOCK_METHOD2(OnHoverMove,
+               void(const gfx::PointF& normalized_hit_point,
+                    base::TimeTicks timestamp));
+  MOCK_METHOD2(OnButtonDown,
+               void(const gfx::PointF& normalized_hit_point,
+                    base::TimeTicks timestamp));
+  MOCK_METHOD2(OnButtonUp,
+               void(const gfx::PointF& normalized_hit_point,
+                    base::TimeTicks timestamp));
 
   // As move-only parameters aren't supported by mock methods, we will override
   // the functions explicitly and fwd the calls to the mocked functions.

@@ -22,12 +22,17 @@ class PlatformUiElement : public UiElement {
   PlatformUiElement();
   ~PlatformUiElement() override;
 
-  void OnHoverEnter(const gfx::PointF& position) override;
-  void OnHoverLeave() override;
-  void OnHoverMove(const gfx::PointF& position) override;
-  void OnButtonDown(const gfx::PointF& position) override;
-  void OnButtonUp(const gfx::PointF& position) override;
-  void OnTouchMove(const gfx::PointF& position) override;
+  void OnHoverEnter(const gfx::PointF& position,
+                    base::TimeTicks timestamp) override;
+  void OnHoverLeave(base::TimeTicks timestamp) override;
+  void OnHoverMove(const gfx::PointF& position,
+                   base::TimeTicks timestamp) override;
+  void OnButtonDown(const gfx::PointF& position,
+                    base::TimeTicks timestamp) override;
+  void OnButtonUp(const gfx::PointF& position,
+                  base::TimeTicks timestamp) override;
+  void OnTouchMove(const gfx::PointF& position,
+                   base::TimeTicks timestamp) override;
   void OnFlingCancel(std::unique_ptr<blink::WebGestureEvent> gesture,
                      const gfx::PointF& position) override;
   void OnScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,
