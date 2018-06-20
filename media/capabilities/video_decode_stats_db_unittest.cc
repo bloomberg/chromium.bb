@@ -83,13 +83,6 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(VideoDecodeStatsDBImplTest);
 };
 
-MATCHER_P(EntryEq, other_entry, "") {
-  return arg.frames_decoded == other_entry.frames_decoded &&
-         arg.frames_dropped == other_entry.frames_dropped &&
-         arg.frames_decoded_power_efficient ==
-             other_entry.frames_decoded_power_efficient;
-}
-
 TEST_F(VideoDecodeStatsDBImplTest, ReadExpectingNothing) {
   EXPECT_CALL(*this, OnInitialize(true));
   fake_db_->InitCallback(true);
@@ -122,7 +115,7 @@ TEST_F(VideoDecodeStatsDBImplTest, WriteReadAndDestroy) {
   fake_db_->GetCallback(true);
   fake_db_->UpdateCallback(true);
 
-  EXPECT_CALL(*this, MockGetDecodeStatsCb(true, Pointee(EntryEq(entry))));
+  EXPECT_CALL(*this, MockGetDecodeStatsCb(true, Pointee(Eq(entry))));
   stats_db_->GetDecodeStats(
       key, base::BindOnce(&VideoDecodeStatsDBImplTest::GetDecodeStatsCb,
                           base::Unretained(this)));
@@ -139,8 +132,7 @@ TEST_F(VideoDecodeStatsDBImplTest, WriteReadAndDestroy) {
 
   // Expect to read what was written (2x the initial entry).
   VideoDecodeStatsDB::DecodeStatsEntry aggregate_entry(2000, 4, 20);
-  EXPECT_CALL(*this,
-              MockGetDecodeStatsCb(true, Pointee(EntryEq(aggregate_entry))));
+  EXPECT_CALL(*this, MockGetDecodeStatsCb(true, Pointee(Eq(aggregate_entry))));
   stats_db_->GetDecodeStats(
       key, base::BindOnce(&VideoDecodeStatsDBImplTest::GetDecodeStatsCb,
                           base::Unretained(this)));
