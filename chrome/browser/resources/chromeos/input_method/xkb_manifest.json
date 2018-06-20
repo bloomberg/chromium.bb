@@ -102,20 +102,6 @@
       "input_view": "inputview.html?id=nl.compact.qwerty&language=nl&passwordLayout=nl.compact.qwerty&name=keyboard_netherlands"
     },
     {
-      "name": "__MSG_keyboard_us_international__",
-      "type": "ime",
-      "id": "xkb:us:intl:por",
-      "indicator": "INTL",
-      "description": "",
-      "language": [
-        "pt-BR"
-      ],
-      "layouts": [
-        "us(intl)"
-      ],
-      "input_view": "inputview.html?id=us-intl&language=pt-BR&passwordLayout=us-intl&name=keyboard_us_international"
-    },
-    {
       "name": "__MSG_keyboard_us_extended__",
       "type": "ime",
       "id": "xkb:us:altgr-intl:eng",
@@ -396,6 +382,20 @@
         "br"
       ],
       "input_view": "inputview.html?id=br&language=pt-BR&passwordLayout=br&name=keyboard_brazilian"
+    },
+    {
+      "name": "__MSG_keyboard_us_international__",
+      "type": "ime",
+      "id": "xkb:us:intl:por",
+      "indicator": "INTL",
+      "description": "",
+      "language": [
+        "pt-BR"
+      ],
+      "layouts": [
+        "us(intl)"
+      ],
+      "input_view": "inputview.html?id=us-intl&language=pt-BR&passwordLayout=us-intl&name=keyboard_us_international"
     },
     {
       "name": "__MSG_keyboard_bulgarian__",
