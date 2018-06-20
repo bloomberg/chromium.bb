@@ -1055,10 +1055,8 @@ bool TabStrip::ShouldPaintTab(
     if (current_bounds.x() < previous_bounds.x())
       return true;  // Can happen during dragging.
 
-    if (previous_bounds.right() - Tab::GetOverlap() != current_bounds.x()) {
-      *clip = border_callback.Run(previous_bounds);
-      clip->offset(SkIntToScalar(previous_bounds.x() - current_bounds.x()), 0);
-    }
+    *clip = border_callback.Run(previous_bounds);
+    clip->offset(SkIntToScalar(previous_bounds.x() - current_bounds.x()), 0);
   }
   return true;
 }
