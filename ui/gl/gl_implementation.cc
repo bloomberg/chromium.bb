@@ -54,22 +54,20 @@ void CleanupNativeLibraries(void* due_to_fallback) {
   if (g_libraries) {
     // We do not call base::UnloadNativeLibrary() for these libraries as
     // unloading libGL without closing X display is not allowed. See
-    // crbug.com/250813 for details.
-    bool unload_libraries = false;
-#if defined(OS_WIN)
-    // However during fallback from ANGLE to SwiftShader ANGLE library needs to
+    // https://crbug.com/250813 for details.
+    // However, if we fallback to a software renderer (e.g., SwiftShader),
+    // then the above concern becomes irrelevant.
+    // During fallback from ANGLE to SwiftShader ANGLE library needs to
     // be unloaded, otherwise software SwiftShader loading will fail. See
-    // crbug.com/760063 for details.
-    unload_libraries = due_to_fallback &&
-                       *static_cast<bool*>(due_to_fallback) &&
-                       GetGLImplementation() == kGLImplementationEGLGLES2;
-#endif
-    if (unload_libraries) {
+    // https://crbug.com/760063 for details.
+    // During fallback from VMware mesa to SwiftShader mesa libraries need
+    // to be unloaded. See https://crbug.com/852537 for details.
+    if (due_to_fallback && *static_cast<bool*>(due_to_fallback)) {
       for (auto* library : *g_libraries)
         base::UnloadNativeLibrary(library);
     }
     delete g_libraries;
-    g_libraries = NULL;
+    g_libraries = nullptr;
   }
 }
 
