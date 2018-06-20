@@ -28,6 +28,7 @@
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/switches.h"
+#include "components/viz/host/host_display_client.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/host/renderer_settings_creation.h"
 #include "components/viz/service/display/display.h"
@@ -40,10 +41,8 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
-#include "content/browser/compositor/external_begin_frame_controller_client_impl.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
-#include "content/browser/compositor/in_process_display_client.h"
 #include "content/browser/compositor/offscreen_browser_compositor_output_surface.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/software_browser_compositor_output_surface.h"
@@ -70,6 +69,7 @@
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/compositor/host/external_begin_frame_controller_client_impl.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/types/display_snapshot.h"
@@ -155,7 +155,7 @@ struct GpuProcessTransportFactory::PerCompositorData {
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
   std::unique_ptr<viz::ExternalBeginFrameControllerImpl>
       external_begin_frame_controller;
-  std::unique_ptr<ExternalBeginFrameControllerClientImpl>
+  std::unique_ptr<ui::ExternalBeginFrameControllerClientImpl>
       external_begin_frame_controller_client;
   ReflectorImpl* reflector = nullptr;
   std::unique_ptr<viz::Display> display;
@@ -554,13 +554,13 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
   std::unique_ptr<viz::ExternalBeginFrameControllerImpl>
       external_begin_frame_controller;
-  std::unique_ptr<ExternalBeginFrameControllerClientImpl>
+  std::unique_ptr<ui::ExternalBeginFrameControllerClientImpl>
       external_begin_frame_controller_client;
 
   viz::BeginFrameSource* begin_frame_source = nullptr;
   if (compositor->external_begin_frames_enabled()) {
     external_begin_frame_controller_client =
-        std::make_unique<ExternalBeginFrameControllerClientImpl>(
+        std::make_unique<ui::ExternalBeginFrameControllerClientImpl>(
             compositor.get());
     // We don't bind the controller mojo interface, since we only use the
     // ExternalBeginFrameControllerImpl directly and not via mojo (plus, as it
@@ -610,7 +610,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       compositor->frame_sink_id(), std::move(display_output_surface),
       std::move(scheduler), compositor->task_runner());
   data->display_client =
-      std::make_unique<InProcessDisplayClient>(compositor->widget());
+      std::make_unique<viz::HostDisplayClient>(compositor->widget());
   GetFrameSinkManager()->RegisterBeginFrameSource(begin_frame_source,
                                                   compositor->frame_sink_id());
   // Note that we are careful not to destroy prior BeginFrameSource objects

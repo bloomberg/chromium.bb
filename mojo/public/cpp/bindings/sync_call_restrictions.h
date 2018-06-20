@@ -23,7 +23,6 @@ class PrefServiceSyncable;
 
 namespace content {
 class BlinkTestController;
-class VizProcessTransportFactory;
 }
 
 namespace display {
@@ -40,6 +39,7 @@ class PersistentPrefStoreClient;
 
 namespace ui {
 class ClipboardClient;
+class HostContextFactoryPrivate;
 }  // namespace ui
 
 namespace viz {
@@ -104,7 +104,7 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   friend class content::BlinkTestController;
   // For preventing frame swaps of wrong size during resize on Windows.
   // (https://crbug.com/811945)
-  friend class content::VizProcessTransportFactory;
+  friend class ui::HostContextFactoryPrivate;
   // END ALLOWED USAGE.
 
   // BEGIN USAGE THAT NEEDS TO BE FIXED.

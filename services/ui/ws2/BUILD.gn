@@ -71,6 +71,29 @@ component("lib") {
   defines = [ "IS_WINDOW_SERVICE_IMPL" ]
 }
 
+source_set("host") {
+  public = [
+    "host_context_factory.h",
+  ]
+  sources = [
+    "host_context_factory.cc",
+  ]
+
+  deps = [
+    ":lib",
+    "//cc/mojo_embedder",
+    "//components/viz/client",
+    "//components/viz/common",
+    "//components/viz/host",
+    "//services/ui/public/cpp",
+    "//services/ui/public/cpp/gpu",
+    "//services/viz/privileged/interfaces/compositing",
+    "//services/viz/public/interfaces",
+    "//ui/compositor",
+    "//ui/compositor/host",
+  ]
+}
+
 static_library("test_support") {
   testonly = true
 

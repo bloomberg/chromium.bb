@@ -48,6 +48,7 @@
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
+#include "components/viz/host/host_display_client.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
@@ -59,8 +60,6 @@
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/compositor/external_begin_frame_controller_client_impl.h"
-#include "content/browser/compositor/in_process_display_client.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -86,6 +85,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "ui/android/window_android.h"
+#include "ui/compositor/host/external_begin_frame_controller_client_impl.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/ca_layer_params.h"
@@ -114,12 +114,12 @@ class SingleThreadTaskGraphRunner : public cc::SingleThreadTaskGraphRunner {
   ~SingleThreadTaskGraphRunner() override { Shutdown(); }
 };
 
-// An implementation of InProcessDisplayClient which handles swap callbacks.
-class AndroidInProcessDisplayClient : public InProcessDisplayClient {
+// An implementation of HostDisplayClient which handles swap callbacks.
+class AndroidHostDisplayClient : public viz::HostDisplayClient {
  public:
-  AndroidInProcessDisplayClient(
+  explicit AndroidHostDisplayClient(
       base::RepeatingCallback<void(const gfx::Size&)> on_swap)
-      : InProcessDisplayClient(gfx::kNullAcceleratedWidget),
+      : HostDisplayClient(gfx::kNullAcceleratedWidget),
         on_swap_(std::move(on_swap)) {}
 
   // viz::mojom::DisplayClient implementation:
@@ -1223,14 +1223,14 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
       mojo::MakeRequest(&root_params->compositor_frame_sink_client);
   root_params->display_private = mojo::MakeRequest(&display_private_);
   display_client_ =
-      std::make_unique<AndroidInProcessDisplayClient>(base::BindRepeating(
+      std::make_unique<AndroidHostDisplayClient>(base::BindRepeating(
           &CompositorImpl::DidSwapBuffers, weak_factory_.GetWeakPtr()));
   root_params->display_client =
       display_client_->GetBoundPtr(task_runner).PassInterface();
 
   // Initialize ExternalBeginFrameControllerClient.
   external_begin_frame_controller_client_ =
-      std::make_unique<ExternalBeginFrameControllerClientImpl>(this);
+      std::make_unique<ui::ExternalBeginFrameControllerClientImpl>(this);
   root_params->external_begin_frame_controller =
       external_begin_frame_controller_client_->GetControllerRequest();
   root_params->external_begin_frame_controller_client =

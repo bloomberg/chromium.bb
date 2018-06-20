@@ -14,6 +14,8 @@ viz_component("host") {
     "hit_test/hit_test_query.cc",
     "hit_test/hit_test_query.h",
     "hit_test/hit_test_region_observer.h",
+    "host_display_client.cc",
+    "host_display_client.h",
     "host_frame_sink_client.h",
     "host_frame_sink_manager.cc",
     "host_frame_sink_manager.h",
@@ -52,6 +54,10 @@ viz_component("host") {
     "//services/viz/public/interfaces",
     "//ui/gfx/geometry",
   ]
+
+  if (is_mac) {
+    deps += [ "//ui/accelerated_widget_mac" ]
+  }
 }
 
 viz_source_set("unit_tests") {
