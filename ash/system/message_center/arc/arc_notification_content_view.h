@@ -58,10 +58,13 @@ class ArcNotificationContentView
   void OnSlideChanged();
   void OnContainerAnimationStarted();
   void OnContainerAnimationEnded();
+  void ActivateWidget(bool activate);
 
  private:
   friend class ArcNotificationViewTest;
   friend class ArcNotificationContentViewTest;
+  FRIEND_TEST_ALL_PREFIXES(ArcNotificationContentViewTest,
+                           ActivateWhenRemoteInputOpens);
 
   class EventForwarder;
   class MouseEnterExitHandler;
@@ -75,7 +78,6 @@ class ArcNotificationContentView
   void UpdatePreferredSize();
   void UpdateSnapshot();
   void AttachSurface();
-  void Activate();
   void SetExpanded(bool expanded);
   bool IsExpanded() const;
   void SetManuallyExpandedOrCollapsed(bool value);
@@ -106,6 +108,7 @@ class ArcNotificationContentView
 
   // ArcNotificationItem::Observer
   void OnItemDestroying() override;
+  void OnRemoteInputActivationChanged(bool activated) override;
 
   // ArcNotificationSurfaceManager::Observer:
   void OnNotificationSurfaceAdded(ArcNotificationSurface* surface) override;

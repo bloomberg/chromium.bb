@@ -89,21 +89,6 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
       return;
     }
 
-    // TODO(sarakato): Use a better tigger (eg. focusing EditText on
-    // notification) than clicking (b/78604162).
-    if (event->type() == ui::ET_MOUSE_PRESSED ||
-        event->type() == ui::ET_GESTURE_TAP) {
-      // Remove the focus from the currently focused view-control in the message
-      // center before activating the window of ARC notification, so that
-      // unexpected key handling doesn't happen (b/74415372).
-      // Focusing notification surface window doesn't steal the focus from
-      // the focucued view control in the message center, so that input events
-      // handles on both side wrongly without this.
-      owner_->GetFocusManager()->ClearFocus();
-
-      owner_->Activate();
-    }
-
     views::Widget* widget = owner_->GetWidget();
     if (!widget)
       return;
@@ -615,7 +600,7 @@ void ArcNotificationContentView::OnFocus() {
   notification_view->OnContentFocused();
 
   if (surface_ && surface_->GetAXTreeId() != -1)
-    Activate();
+    ActivateWidget(true);
 }
 
 void ArcNotificationContentView::OnBlur() {
@@ -631,18 +616,34 @@ void ArcNotificationContentView::OnBlur() {
   notification_view->OnContentBlurred();
 }
 
-void ArcNotificationContentView::Activate() {
+void ArcNotificationContentView::OnRemoteInputActivationChanged(
+    bool activated) {
+  // Remove the focus from the currently focused view-control in the message
+  // center before activating the window of ARC notification, so that unexpected
+  // key handling doesn't happen (b/74415372).
+  // Focusing notification surface window doesn't steal the focus from the
+  // focused view control in the message center, so that input events handles
+  // on both side wrongly without this.
+  GetFocusManager()->ClearFocus();
+
+  ActivateWidget(activated);
+}
+
+void ArcNotificationContentView::ActivateWidget(bool activate) {
   if (!GetWidget())
     return;
 
   // Make the widget active.
-  if (!GetWidget()->IsActive()) {
-    GetWidget()->widget_delegate()->set_can_activate(true);
-    GetWidget()->Activate();
-  }
+  if (activate) {
+    if (!GetWidget()->IsActive()) {
+      GetWidget()->widget_delegate()->set_can_activate(true);
+      GetWidget()->Activate();
+    }
 
-  // Focus the surface window.
-  surface_->FocusSurfaceWindow();
+    surface_->FocusSurfaceWindow();
+  } else {
+    GetWidget()->widget_delegate()->set_can_activate(false);
+  }
 }
 
 views::FocusTraversable* ArcNotificationContentView::GetFocusTraversable() {
@@ -676,7 +677,7 @@ void ArcNotificationContentView::OnAccessibilityEvent(ax::mojom::Event event) {
     // not activated by default. We need to activate the widget. If other view
     // in message center has focus, it can consume key event. We need to request
     // focus to move it to this content view.
-    Activate();
+    ActivateWidget(true);
     RequestFocus();
   }
 }

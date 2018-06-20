@@ -166,6 +166,32 @@ void ArcNotificationManager::OnNotificationUpdated(
   if (it == items_.end())
     return;
 
+  bool is_remote_view_focused =
+      (data->remote_input_state ==
+       arc::mojom::ArcNotificationRemoteInputState::OPENED);
+  if (is_remote_view_focused && (previously_focused_notification_key_ != key)) {
+    if (!previously_focused_notification_key_.empty()) {
+      auto prev_it = items_.find(previously_focused_notification_key_);
+      // The case that another remote input is focused. Notify the previously-
+      // focused notification (if any).
+      if (prev_it != items_.end())
+        prev_it->second->OnRemoteInputActivationChanged(false);
+    }
+
+    // Notify the newly-focused notification.
+    previously_focused_notification_key_ = key;
+    it->second->OnRemoteInputActivationChanged(true);
+  } else if (!is_remote_view_focused &&
+             (previously_focused_notification_key_ == key)) {
+    // The case that the previously-focused notification gets unfocused. Notify
+    // the previously-focused notification if the notification still exists.
+    auto it = items_.find(previously_focused_notification_key_);
+    if (it != items_.end())
+      it->second->OnRemoteInputActivationChanged(false);
+
+    previously_focused_notification_key_.clear();
+  }
+
   delegate_->GetAppIdByPackageName(
       data->package_name.value_or(std::string()),
       base::BindOnce(&ArcNotificationManager::OnGotAppId,

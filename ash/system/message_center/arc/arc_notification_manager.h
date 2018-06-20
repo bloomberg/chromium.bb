@@ -84,6 +84,9 @@ class ArcNotificationManager
 
   bool ready_ = false;
 
+  // If any remote input is focused, its key is stored. Otherwise, empty.
+  std::string previously_focused_notification_key_;
+
   std::unique_ptr<InstanceOwner> instance_owner_;
 
   base::WeakPtrFactory<ArcNotificationManager> weak_ptr_factory_{this};

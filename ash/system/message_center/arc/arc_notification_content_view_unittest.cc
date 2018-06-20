@@ -238,8 +238,9 @@ class ArcNotificationContentViewTest : public AshTestBase {
   ArcNotificationContentView* GetArcNotificationContentView() const {
     return notification_view_->content_view_;
   }
+
   void ActivateArcNotification() {
-    GetArcNotificationContentView()->Activate();
+    GetArcNotificationContentView()->ActivateWidget(true);
   }
 
  private:
@@ -474,7 +475,7 @@ TEST_F(ArcNotificationContentViewTest, Activate) {
   CloseNotificationView();
 }
 
-TEST_F(ArcNotificationContentViewTest, ActivateOnClick) {
+TEST_F(ArcNotificationContentViewTest, NotActivateOnClick) {
   std::string key("notification id");
   auto notification_item = std::make_unique<MockArcNotificationItem>(key);
   auto notification = CreateNotification(notification_item.get());
@@ -486,7 +487,24 @@ TEST_F(ArcNotificationContentViewTest, ActivateOnClick) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      kNotificationSurfaceBounds.CenterPoint());
   generator.PressLeftButton();
+  EXPECT_EQ(nullptr, GetFocusedWindow());
+
+  CloseNotificationView();
+}
+
+TEST_F(ArcNotificationContentViewTest, ActivateWhenRemoteInputOpens) {
+  std::string key("notification id");
+  auto notification_item = std::make_unique<MockArcNotificationItem>(key);
+  auto notification = CreateNotification(notification_item.get());
+
+  PrepareSurface(key);
+  CreateAndShowNotificationView(notification);
+
+  EXPECT_EQ(nullptr, GetFocusedWindow());
+  GetArcNotificationContentView()->OnRemoteInputActivationChanged(true);
   EXPECT_EQ(surface()->window(), GetFocusedWindow());
+  GetArcNotificationContentView()->OnRemoteInputActivationChanged(false);
+  EXPECT_NE(surface()->window(), GetFocusedWindow());
 
   CloseNotificationView();
 }

@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "ash/system/message_center/arc/arc_notification_constants.h"
+#include "ash/system/message_center/arc/arc_notification_content_view.h"
 #include "ash/system/message_center/arc/arc_notification_delegate.h"
+#include "ash/system/message_center/arc/arc_notification_view.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/geometry/size.h"
@@ -191,6 +193,11 @@ void ArcNotificationItemImpl::ToggleExpansion() {
   }
 
   manager_->SendNotificationToggleExpansionOnChrome(notification_key_);
+}
+
+void ArcNotificationItemImpl::OnRemoteInputActivationChanged(bool activated) {
+  for (auto& observer : observers_)
+    observer.OnRemoteInputActivationChanged(activated);
 }
 
 void ArcNotificationItemImpl::AddObserver(Observer* observer) {
