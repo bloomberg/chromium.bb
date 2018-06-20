@@ -3081,8 +3081,10 @@ void LocalFrameView::PaintTree() {
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     GraphicsContext context(*paint_controller_);
     // Note: Some blink unit tests run without turning on compositing which
-    // means we don't create viewport layers.
-    if (GetLayoutView()->Compositor()->InCompositingMode()) {
+    // means we don't create viewport layers. OOPIFs also don't have their own
+    // viewport layers.
+    if (GetLayoutView()->Compositor()->InCompositingMode() &&
+        GetFrame() == GetPage()->MainFrame()) {
       // TODO(bokan): We should eventually stop creating layers for the visual
       // viewport. At that point, we can remove this. However, for now, CC
       // still has some dependencies on the viewport scale and scroll layers.
