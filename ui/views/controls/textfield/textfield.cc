@@ -2161,12 +2161,22 @@ void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
   }
 
   if (drop_cursor_visible_ && !IsDropCursorForInsertion()) {
-    // Mark the entire text that will be replaced by the drop.
-    canvas->FillRect(ToEnclosedRect(render_text->GetStringRect()),
-                     GetSelectionBackgroundColor());
+    // Draw as selected to mark the entire text that will be replaced by drop.
+    // TODO(http://crbug.com/853678): Replace this state push/pop with a clean
+    // call to a finer grained rendering API when one becomes available.  These
+    // changes are only applied because RenderText is so stateful and subtle
+    // (e.g. focus is required for the selection to be rendered as selected).
+    const gfx::SelectionModel sm = render_text->selection_model();
+    const bool focused = render_text->focused();
+    render_text->SelectAll(true);
+    render_text->set_focused(true);
+    render_text->Draw(canvas);
+    render_text->set_focused(focused);
+    render_text->SetSelection(sm);
+  } else {
+    // Draw text as normal
+    render_text->Draw(canvas);
   }
-
-  render_text->Draw(canvas);
 
   if (drop_cursor_visible_ && IsDropCursorForInsertion()) {
     // Draw a drop cursor that marks where the text will be dropped/inserted.
