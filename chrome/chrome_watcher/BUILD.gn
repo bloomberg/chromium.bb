@@ -60,6 +60,7 @@ shared_library("chrome_watcher") {
     "//base",
     "//base:base_static",
     "//chrome/common:non_code_constants",
+    "//chrome/common/win:eventlog_messages",
     "//chrome/install_static:secondary_module",
     "//chrome_elf",
     "//components/browser_watcher",
