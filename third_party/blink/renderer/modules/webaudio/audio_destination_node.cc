@@ -43,8 +43,7 @@ AudioDestinationHandler::~AudioDestinationHandler() {
   DCHECK(!IsInitialized());
 }
 
-void AudioDestinationHandler::Render(AudioBus* source_bus,
-                                     AudioBus* destination_bus,
+void AudioDestinationHandler::Render(AudioBus* destination_bus,
                                      size_t number_of_frames,
                                      const AudioIOPosition& output_position) {
   TRACE_EVENT0("webaudio", "AudioDestinationHandler::Render");
@@ -77,10 +76,6 @@ void AudioDestinationHandler::Render(AudioBus* source_bus,
   // Let the context take care of any business at the start of each render
   // quantum.
   Context()->HandlePreRenderTasks(output_position);
-
-  // Prepare the local audio input provider for this render quantum.
-  if (source_bus)
-    local_audio_input_provider_.Set(source_bus);
 
   DCHECK_GE(NumberOfInputs(), 1u);
   if (NumberOfInputs() < 1) {
