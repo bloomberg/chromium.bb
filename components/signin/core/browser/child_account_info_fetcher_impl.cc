@@ -4,6 +4,7 @@
 
 #include "components/signin/core/browser/child_account_info_fetcher_impl.h"
 
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -127,10 +128,8 @@ void ChildAccountInfoFetcherImpl::OnGetUserInfoSuccess(
     std::vector<std::string> service_flags = base::SplitString(
         services_iter->second, ",", base::TRIM_WHITESPACE,
         base::SPLIT_WANT_ALL);
-    bool is_child_account =
-        std::find(service_flags.begin(), service_flags.end(),
-                  AccountTrackerService::kChildAccountServiceFlag) !=
-        service_flags.end();
+    bool is_child_account = base::ContainsValue(
+        service_flags, AccountTrackerService::kChildAccountServiceFlag);
     if (!is_child_account && invalidation_service_) {
       // Don't bother listening for invalidations as a non-child account can't
       // become a child account.

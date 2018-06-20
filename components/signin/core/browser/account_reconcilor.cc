@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
@@ -471,8 +472,7 @@ void AccountReconcilor::FinishReconcile(
       chrome_accounts, gaia_accounts, primary_account, first_execution_);
   // |first_account| must be in |chrome_accounts|.
   DCHECK(first_account.empty() ||
-         (std::find(chrome_accounts.begin(), chrome_accounts.end(),
-                    first_account) != chrome_accounts.end()));
+         base::ContainsValue(chrome_accounts, first_account));
   size_t number_gaia_accounts = gaia_accounts.size();
   bool first_account_mismatch =
       (number_gaia_accounts > 0) && (first_account != gaia_accounts[0].id);
@@ -483,9 +483,7 @@ void AccountReconcilor::FinishReconcile(
   int removed_from_cookie = 0;
   for (size_t i = 0; i < number_gaia_accounts; ++i) {
     if (gaia_accounts[i].valid &&
-        chrome_accounts.end() == std::find(chrome_accounts.begin(),
-                                           chrome_accounts.end(),
-                                           gaia_accounts[i].id)) {
+        !base::ContainsValue(chrome_accounts, gaia_accounts[i].id)) {
       ++removed_from_cookie;
     }
   }
