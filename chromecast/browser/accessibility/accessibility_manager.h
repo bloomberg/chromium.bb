@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "chromecast/browser/accessibility/touch_exploration_manager.h"
 #include "chromecast/graphics/accessibility/accessibility_focus_ring_controller.h"
 
 namespace aura {
@@ -64,6 +65,7 @@ class AccessibilityManager {
   std::unique_ptr<AccessibilityFocusRingController>
       accessibility_focus_ring_controller_;
   aura::WindowTreeHost* window_tree_host_;
+  std::unique_ptr<TouchExplorationManager> touch_exploration_manager_;
 };
 
 }  // namespace shell
