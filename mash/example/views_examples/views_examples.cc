@@ -31,11 +31,10 @@ class ViewsExamples : public service_manager::Service,
  private:
   // service_manager::Service:
   void OnStart() override {
-    views::AuraInit::InitParams params;
-    params.connector = context()->connector();
-    params.identity = context()->identity();
-    params.mode = views::AuraInit::Mode::AURA_MUS;
-    aura_init_ = views::AuraInit::Create(params);
+    aura_init_ =
+        views::AuraInit::Create(context()->connector(), context()->identity(),
+                                "views_mus_resources.pak", std::string(),
+                                nullptr, views::AuraInit::Mode::AURA_MUS);
     if (!aura_init_)
       context()->QuitNow();
   }
