@@ -239,7 +239,9 @@ Polymer({
   shouldShowMultidevice_: function() {
     const visibility = /** @type {boolean|undefined} */ (
         this.get('pageVisibility.multidevice'));
-    return this.showMultidevice && this.showPage_(visibility);
+    return this.showMultidevice && this.showPage_(visibility) &&
+        (settings.routes.MULTIDEVICE.contains(this.currentRoute_) ||
+         !this.hasExpandedSection_);
   },
 
   /**
