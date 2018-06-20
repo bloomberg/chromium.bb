@@ -29,6 +29,7 @@
 #include "components/viz/service/display/resource_metadata.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/vulkan/buildflags.h"
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -195,6 +196,8 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
 SkiaRenderer::~SkiaRenderer() = default;
 
 bool SkiaRenderer::CanPartialSwap() {
+  if (IsUsingVulkan())
+    return false;
   if (use_swap_with_bounds_)
     return false;
   auto* context_provider = output_surface_->context_provider();
@@ -205,7 +208,7 @@ bool SkiaRenderer::CanPartialSwap() {
 
 void SkiaRenderer::BeginDrawingFrame() {
   TRACE_EVENT0("viz", "SkiaRenderer::BeginDrawingFrame");
-  if (is_using_ddl())
+  if (IsUsingVulkan() || is_using_ddl())
     return;
   // Copied from GLRenderer.
   scoped_refptr<ResourceFence> read_lock_fence;
@@ -226,7 +229,7 @@ void SkiaRenderer::BeginDrawingFrame() {
       for (ResourceId resource_id : quad->resources)
         resource_provider_->WaitSyncToken(resource_id);
     }
-    }
+  }
 }
 
 void SkiaRenderer::FinishDrawingFrame() {
@@ -312,10 +315,33 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
     is_drawing_render_pass_ = false;
     DCHECK(root_canvas_);
   } else {
-    auto* gr_context = output_surface_->context_provider()->GrContext();
-    if (!root_canvas_ || root_canvas_->getGrContext() != gr_context ||
-        gfx::SkISizeToSize(root_canvas_->getBaseLayerSize()) !=
-            current_frame()->device_viewport_size) {
+    auto* gr_context = GetGrContext();
+    if (IsUsingVulkan()) {
+#if BUILDFLAG(ENABLE_VULKAN)
+      auto* vulkan_surface = output_surface_->GetVulkanSurface();
+      auto* swap_chain = vulkan_surface->GetSwapChain();
+      VkImage image = swap_chain->GetCurrentImage(swap_chain->current_image());
+      GrVkImageInfo vk_image_info;
+      vk_image_info.fImage = image;
+      vk_image_info.fAlloc = {VK_NULL_HANDLE, 0, 0, 0};
+      vk_image_info.fImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+      vk_image_info.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
+      vk_image_info.fFormat = VK_FORMAT_B8G8R8A8_UNORM;
+      vk_image_info.fLevelCount = 1;
+      GrBackendRenderTarget render_target(
+          current_frame()->device_viewport_size.width(),
+          current_frame()->device_viewport_size.height(), 0, 0, vk_image_info);
+      root_surface_ = SkSurface::MakeFromBackendRenderTarget(
+          gr_context, render_target, kTopLeft_GrSurfaceOrigin,
+          kBGRA_8888_SkColorType, nullptr, &surface_props);
+      DCHECK(root_surface_);
+      root_canvas_ = root_surface_->getCanvas();
+#else
+      NOTREACHED();
+#endif
+    } else if (!root_canvas_ || root_canvas_->getGrContext() != gr_context ||
+               gfx::SkISizeToSize(root_canvas_->getBaseLayerSize()) !=
+                   current_frame()->device_viewport_size) {
       // Either no SkSurface setup yet, or new GrContext, need to create new
       // surface.
       GrGLFramebufferInfo framebuffer_info;
@@ -329,6 +355,7 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
       root_surface_ = SkSurface::MakeFromBackendRenderTarget(
           gr_context, render_target, kBottomLeft_GrSurfaceOrigin,
           kRGB_888x_SkColorType, nullptr, &surface_props);
+      DCHECK(root_surface_);
       root_canvas_ = root_surface_->getCanvas();
     }
   }
@@ -955,6 +982,23 @@ bool SkiaRenderer::ShouldApplyBackgroundFilters(
   return true;
 }
 
+bool SkiaRenderer::IsUsingVulkan() const {
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (output_surface_->vulkan_context_provider())
+    return output_surface_->vulkan_context_provider()->GetGrContext();
+#endif
+  return false;
+}
+
+GrContext* SkiaRenderer::GetGrContext() {
+  DCHECK(!is_using_ddl());
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (output_surface_->vulkan_context_provider())
+    return output_surface_->vulkan_context_provider()->GetGrContext();
+#endif
+  return output_surface_->context_provider()->GrContext();
+}
+
 void SkiaRenderer::UpdateRenderPassTextures(
     const RenderPassList& render_passes_in_draw_order,
     const base::flat_map<RenderPassId, RenderPassRequirements>&
@@ -1000,10 +1044,17 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
   caps.texture_format_bgra8888 = true;
   GrContext* gr_context = nullptr;
   if (!is_using_ddl()) {
-    ContextProvider* context_provider = output_surface_->context_provider();
-    caps.texture_format_bgra8888 =
-        context_provider->ContextCapabilities().texture_format_bgra8888;
-    gr_context = context_provider->GrContext();
+    if (IsUsingVulkan()) {
+      // TODO(penghuang): check supported format correctly.
+      caps.texture_format_bgra8888 = true;
+    } else {
+      ContextProvider* context_provider = output_surface_->context_provider();
+      if (context_provider) {
+        caps.texture_format_bgra8888 =
+            context_provider->ContextCapabilities().texture_format_bgra8888;
+      }
+    }
+    gr_context = GetGrContext();
   }
   render_pass_backings_.insert(std::pair<RenderPassId, RenderPassBacking>(
       render_pass_id,

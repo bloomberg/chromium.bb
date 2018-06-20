@@ -97,6 +97,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   bool ShouldApplyBackgroundFilters(
       const RenderPassDrawQuad* quad,
       const cc::FilterOperations* background_filters) const;
+  bool IsUsingVulkan() const;
+  GrContext* GetGrContext();
   bool is_using_ddl() const { return !!skia_output_surface_; }
 
   // A map from RenderPass id to the texture used to draw the RenderPass from.
