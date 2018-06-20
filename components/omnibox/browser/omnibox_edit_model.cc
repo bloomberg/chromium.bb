@@ -205,8 +205,6 @@ AutocompleteMatch OmniboxEditModel::CurrentMatch(
 }
 
 bool OmniboxEditModel::ResetDisplayUrls() {
-  const base::string16 old_current_permanent_url = GetCurrentPermanentUrlText();
-
   url_for_editing_ = controller()->GetToolbarModel()->GetFormattedFullURL();
   display_only_url_ =
       OmniboxFieldTrial::IsHideSteadyStateUrlSchemeAndSubdomainsEnabled()
@@ -223,8 +221,7 @@ bool OmniboxEditModel::ResetDisplayUrls() {
   // always safe to change the text; this also prevents someone toggling "Show
   // URL" (which sounds as if it might be persistent) from seeing just that URL
   // forever afterwards.
-  return (GetCurrentPermanentUrlText() != old_current_permanent_url) &&
-         (!has_focus() || (!user_input_in_progress_ && !PopupIsOpen()));
+  return !has_focus() || (!user_input_in_progress_ && !PopupIsOpen());
 }
 
 GURL OmniboxEditModel::PermanentURL() const {
