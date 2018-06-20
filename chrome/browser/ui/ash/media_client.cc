@@ -12,9 +12,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -198,10 +198,10 @@ void MediaClient::RequestCaptureState() {
   // asynchronous (see OnRequestUpdate's PostTask()), we're not worrying about
   // this right now.
   std::vector<MediaCaptureState> state;
-  for (uint32_t i = 0;
-       i < user_manager::UserManager::Get()->GetLoggedInUsers().size(); ++i) {
-    state.push_back(
-        GetMediaCaptureStateByIndex(static_cast<ash::UserIndex>(i)));
+  for (user_manager::User* user :
+       user_manager::UserManager::Get()->GetLoggedInUsers()) {
+    state.push_back(GetMediaCaptureStateOfAllWebContents(
+        chromeos::ProfileHelper::Get()->GetProfileByUser(user)));
   }
 
   media_controller_->NotifyCaptureState(std::move(state));
@@ -224,11 +224,4 @@ void MediaClient::OnRequestUpdate(int render_process_id,
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&MediaClient::RequestCaptureState,
                                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-MediaCaptureState MediaClient::GetMediaCaptureStateByIndex(int user_index) {
-  content::BrowserContext* context =
-      ChromeShellContentState::GetInstance()->GetBrowserContextByIndex(
-          user_index);
-  return GetMediaCaptureStateOfAllWebContents(context);
 }

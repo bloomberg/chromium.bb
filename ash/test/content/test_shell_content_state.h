@@ -20,20 +20,11 @@ class TestShellContentState : public ShellContentState {
  public:
   TestShellContentState();
 
-  content::ScreenOrientationDelegate* screen_orientation_delegate() {
-    return &orientation_delegate_;
-  }
-
  private:
   ~TestShellContentState() override;
 
   // Overridden from ShellContentState:
   content::BrowserContext* GetActiveBrowserContext() override;
-  content::BrowserContext* GetBrowserContextByIndex(UserIndex index) override;
-  content::BrowserContext* GetBrowserContextForWindow(
-      aura::Window* window) override;
-  content::BrowserContext* GetUserPresentingBrowserContextForWindow(
-      aura::Window* window) override;
 
   std::unique_ptr<content::BrowserContext> active_browser_context_;
 

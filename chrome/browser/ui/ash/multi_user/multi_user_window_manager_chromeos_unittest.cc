@@ -88,29 +88,6 @@ class TestShellContentState : public ash::ShellContentState {
                        : NULL;
   }
 
-  content::BrowserContext* GetBrowserContextByIndex(
-      ash::UserIndex index) override {
-    return nullptr;
-  }
-
-  content::BrowserContext* GetBrowserContextForWindow(
-      aura::Window* window) override {
-    const AccountId& account_id =
-        MultiUserWindowManager::GetInstance()->GetWindowOwner(window);
-    return account_id.is_valid()
-               ? multi_user_util::GetProfileFromAccountId(account_id)
-               : nullptr;
-  }
-
-  content::BrowserContext* GetUserPresentingBrowserContextForWindow(
-      aura::Window* window) override {
-    const AccountId& account_id =
-        MultiUserWindowManager::GetInstance()->GetUserPresentingWindow(window);
-    return account_id.is_valid()
-               ? multi_user_util::GetProfileFromAccountId(account_id)
-               : nullptr;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(TestShellContentState);
 };
 

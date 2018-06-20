@@ -19,11 +19,6 @@ class ShellContentStateImpl : public ShellContentState {
 
   // Overridden from ShellContentState:
   content::BrowserContext* GetActiveBrowserContext() override;
-  content::BrowserContext* GetBrowserContextByIndex(UserIndex index) override;
-  content::BrowserContext* GetBrowserContextForWindow(
-      aura::Window* window) override;
-  content::BrowserContext* GetUserPresentingBrowserContextForWindow(
-      aura::Window* window) override;
 
   content::BrowserContext* browser_context_;
 
