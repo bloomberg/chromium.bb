@@ -912,11 +912,13 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * user without a password (neither a manually entered one nor one provided
      * via Credentials Passing API).
      * @param {string} email
+     * @param {string} gaiaId
      * @param {function(boolean)} callback
      * @private
      */
-    getIsSamlUserPasswordless_: function(email, callback) {
-      cr.sendWithPromise('getIsSamlUserPasswordless', email).then(callback);
+    getIsSamlUserPasswordless_: function(email, gaiaId, callback) {
+      cr.sendWithPromise('getIsSamlUserPasswordless', email, gaiaId)
+          .then(callback);
     },
 
     /**
