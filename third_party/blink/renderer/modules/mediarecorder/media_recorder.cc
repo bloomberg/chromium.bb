@@ -205,6 +205,8 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
   stopped_ = false;
 }
 
+MediaRecorder::~MediaRecorder() = default;
+
 String MediaRecorder::state() const {
   return StateToString(state_);
 }

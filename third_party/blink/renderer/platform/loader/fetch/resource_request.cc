@@ -30,6 +30,7 @@
 
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -127,6 +128,8 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
 }
 
 ResourceRequest::ResourceRequest(const ResourceRequest&) = default;
+
+ResourceRequest::~ResourceRequest() = default;
 
 ResourceRequest& ResourceRequest::operator=(const ResourceRequest&) = default;
 
@@ -469,5 +472,9 @@ bool ResourceRequest::NeedsHTTPOrigin() const {
   // server knows we support this feature.
   return true;
 }
+
+CrossThreadResourceRequestData::CrossThreadResourceRequestData() = default;
+
+CrossThreadResourceRequestData::~CrossThreadResourceRequestData() = default;
 
 }  // namespace blink

@@ -41,13 +41,11 @@
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
-#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
-#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
@@ -79,6 +77,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   // make ResourceRequest WTF_MAKE_NONCOPYABLE. See crbug.com/787704.
   ResourceRequest(const ResourceRequest&);
   ResourceRequest& operator=(const ResourceRequest&);
+
+  ~ResourceRequest();
 
   // Constructs a new ResourceRequest for a redirect from this instance.
   std::unique_ptr<ResourceRequest> CreateRedirectRequest(
@@ -448,12 +448,14 @@ class PLATFORM_EXPORT ResourceRequest final {
 //    threads (e.g., AtomicString)
 //  - Non-simple members need explicit copying (e.g., String::IsolatedCopy,
 //    KURL::Copy) rather than the copy constructor or the assignment operator.
-struct CrossThreadResourceRequestData {
+struct PLATFORM_EXPORT CrossThreadResourceRequestData {
   WTF_MAKE_NONCOPYABLE(CrossThreadResourceRequestData);
   USING_FAST_MALLOC(CrossThreadResourceRequestData);
 
  public:
-  CrossThreadResourceRequestData() = default;
+  CrossThreadResourceRequestData();
+  ~CrossThreadResourceRequestData();
+
   KURL url_;
 
   mojom::FetchCacheMode cache_mode_;
