@@ -6,6 +6,8 @@ static_library("core") {
   sources = [
     "blacklist_data.cc",
     "blacklist_data.h",
+    "opt_out_blacklist.cc",
+    "opt_out_blacklist.h",
     "previews_amp_converter.cc",
     "previews_amp_converter.h",
     "previews_black_list.cc",
@@ -44,6 +46,7 @@ static_library("core") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "opt_out_blacklist_unittest.cc",
     "previews_amp_converter_unittest.cc",
     "previews_black_list_item_unittest.cc",
     "previews_black_list_unittest.cc",
