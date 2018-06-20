@@ -72,10 +72,6 @@ std::string IOSWebViewSigninClient::GetSigninScopedDeviceId() {
   return GetOrCreateScopedDeviceIdPref(GetPrefs());
 }
 
-bool IOSWebViewSigninClient::ShouldMergeSigninCredentialsIntoCookieJar() {
-  return false;
-}
-
 bool IOSWebViewSigninClient::IsFirstRun() const {
   return false;
 }

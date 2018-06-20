@@ -20,16 +20,14 @@ class PrefRegistrySyncable;
 // Utility functions for sign in promos.
 namespace signin {
 
-const char kSignInPromoQueryKeyAccessPoint[] = "access_point";
-const char kSignInPromoQueryKeyAutoClose[] = "auto_close";
-const char kSignInPromoQueryKeyContinue[] = "continue";
-const char kSignInPromoQueryKeyForceKeepData[] = "force_keep_data";
-const char kSignInPromoQueryKeyReason[] = "reason";
-const char kSignInPromoQueryKeySource[] = "source";
-const char kSignInPromoQueryKeyConstrained[] = "constrained";
-const char kSignInPromoQueryKeyShowAccountManagement[] =
-    "showAccountManagement";
-const char kSigninPromoLandingURLSuccessPage[] = "success.html";
+extern const char kSignInPromoQueryKeyAccessPoint[];
+extern const char kSignInPromoQueryKeyAutoClose[];
+extern const char kSignInPromoQueryKeyContinue[];
+extern const char kSignInPromoQueryKeyForceKeepData[];
+extern const char kSignInPromoQueryKeyReason[];
+extern const char kSignInPromoQueryKeySource[];
+extern const char kSignInPromoQueryKeyConstrained[];
+extern const char kSigninPromoLandingURLSuccessPage[];
 
 // Returns true if we should show the sign in promo at startup.
 bool ShouldShowPromoAtStartup(Profile* profile, bool is_new_profile);
@@ -104,10 +102,6 @@ signin_metrics::Reason GetSigninReasonForPromoURL(const GURL& url);
 
 // Returns true if the auto_close parameter in the given URL is set to true.
 bool IsAutoCloseEnabledInURL(const GURL& url);
-
-// Returns true if the showAccountManagement parameter in the given url is set
-// to true.
-bool ShouldShowAccountManagement(const GURL& url);
 
 // Forces UseWebBasedSigninFlow() to return true when set; used in tests only.
 void ForceWebBasedSigninFlowForTesting(bool force);

@@ -35,6 +35,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -1339,8 +1340,7 @@ void PrintPreviewHandler::OnPrintResult(const std::string& callback_id,
 void PrintPreviewHandler::RegisterForGaiaCookieChanges() {
   DCHECK(!gaia_cookie_manager_service_);
   Profile* profile = Profile::FromWebUI(web_ui());
-  if (signin::IsAccountConsistencyMirrorEnabled() &&
-      !profile->IsOffTheRecord()) {
+  if (AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile)) {
     gaia_cookie_manager_service_ =
         GaiaCookieManagerServiceFactory::GetForProfile(profile);
     if (gaia_cookie_manager_service_)

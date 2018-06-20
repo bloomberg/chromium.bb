@@ -393,7 +393,8 @@ void SigninManager::DisableOneClickSignIn(PrefService* prefs) {
 }
 
 void SigninManager::MergeSigninCredentialIntoCookieJar() {
-  if (!client_->ShouldMergeSigninCredentialsIntoCookieJar())
+#if !defined(OS_IOS)
+  if (account_consistency_ != signin::AccountConsistencyMethod::kMirror)
     return;
 
   if (!IsAuthenticated())
@@ -401,6 +402,7 @@ void SigninManager::MergeSigninCredentialIntoCookieJar() {
 
   cookie_manager_service_->AddAccountToCookie(GetAuthenticatedAccountId(),
                                               "ChromiumSigninManager");
+#endif  // !defined(OS_IOS)
 }
 
 void SigninManager::CompletePendingSignin() {

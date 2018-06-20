@@ -412,15 +412,16 @@ void ProfileChooserView::Init() {
       this, browser_));
   avatar_menu_->RebuildMenu();
 
+  Profile* profile = browser_->profile();
   ProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   if (oauth2_token_service)
     oauth2_token_service->AddObserver(this);
 
   // If view mode is PROFILE_CHOOSER but there is an auth error, force
   // ACCOUNT_MANAGEMENT mode.
-  if (IsProfileChooser(view_mode_) && HasAuthError(browser_->profile()) &&
-      signin::IsAccountConsistencyMirrorEnabled() &&
+  if (IsProfileChooser(view_mode_) && HasAuthError(profile) &&
+      AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile) &&
       avatar_menu_->GetItemAt(avatar_menu_->GetActiveProfileIndex())
           .signed_in) {
     view_mode_ = profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT;
@@ -458,7 +459,8 @@ void ProfileChooserView::OnRefreshTokenAvailable(
       view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
     // The account management UI is only available through the
     // --account-consistency=mirror flag.
-    ShowViewFromMode(signin::IsAccountConsistencyMirrorEnabled()
+    ShowViewFromMode(AccountConsistencyModeManager::IsMirrorEnabledForProfile(
+                         browser_->profile())
                          ? profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT
                          : profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER);
   }
@@ -476,7 +478,8 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
   // The account management view should only be displayed if the active profile
   // is signed in.
   if (view_to_display == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
-    DCHECK(signin::IsAccountConsistencyMirrorEnabled());
+    DCHECK(AccountConsistencyModeManager::IsMirrorEnabledForProfile(
+        browser_->profile()));
     const AvatarMenu::Item& active_item = avatar_menu->GetItemAt(
         avatar_menu->GetActiveProfileIndex());
     if (!active_item.signed_in) {
@@ -656,12 +659,12 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     account_id_to_remove_.clear();
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT);
   } else if (sender == gaia_signin_cancel_button_) {
+    Profile* profile = browser_->profile();
     // The account management view is only available with the
     // --account-consistency=mirror flag.
     bool account_management_available =
-        SigninManagerFactory::GetForProfile(browser_->profile())
-            ->IsAuthenticated() &&
-        signin::IsAccountConsistencyMirrorEnabled();
+        SigninManagerFactory::GetForProfile(profile)->IsAuthenticated() &&
+        AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile);
     ShowViewFromMode(account_management_available ?
         profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT :
         profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER);
@@ -978,22 +981,23 @@ views::View* ProfileChooserView::CreateDiceSyncErrorView(
 views::View* ProfileChooserView::CreateCurrentProfileView(
     const AvatarMenu::Item& avatar_item,
     bool is_guest) {
-  const bool sync_disabled = !browser_->profile()->IsSyncAllowed();
+  Profile* profile = browser_->profile();
+  const bool sync_disabled = !profile->IsSyncAllowed();
   if (!is_guest && sync_disabled)
     return CreateDiceSyncErrorView(avatar_item, sync_ui_util::NO_SYNC_ERROR, 0);
 
   if (!avatar_item.signed_in && dice_enabled_ &&
-      SyncPromoUI::ShouldShowSyncPromo(browser_->profile())) {
+      SyncPromoUI::ShouldShowSyncPromo(profile)) {
     return CreateDiceSigninView();
   }
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   views::View* view = new views::View();
-  bool account_consistency_enabled =
-      signin::IsAccountConsistencyMirrorEnabled();
+  bool mirror_enabled =
+      AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile);
   int content_list_vert_spacing =
-      account_consistency_enabled
+      mirror_enabled
           ? provider->GetDistanceMetric(DISTANCE_CONTENT_LIST_VERTICAL_MULTI)
           : provider->GetDistanceMetric(DISTANCE_CONTENT_LIST_VERTICAL_SINGLE);
   view->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -1001,16 +1005,15 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
       0));
 
   auto current_profile_photo = std::make_unique<BadgedProfilePhoto>(
-      GetProfileBadgeType(browser_->profile()), avatar_item.icon);
+      GetProfileBadgeType(profile), avatar_item.icon);
   const base::string16 profile_name =
-      profiles::GetAvatarNameForProfile(browser_->profile()->GetPath());
+      profiles::GetAvatarNameForProfile(profile->GetPath());
 
   // Show the profile name by itself if not signed in or account consistency is
   // disabled. Otherwise, show the email attached to the profile.
-  bool show_email =
-      !is_guest && avatar_item.signed_in && !account_consistency_enabled;
+  bool show_email = !is_guest && avatar_item.signed_in && !mirror_enabled;
   const base::string16 hover_button_title =
-      dice_enabled_ && browser_->profile()->IsSyncAllowed()
+      dice_enabled_ && profile->IsSyncAllowed()
           ? l10n_util::GetStringUTF16(IDS_PROFILES_SYNC_COMPLETE_TITLE)
           : profile_name;
   HoverButton* profile_card = new HoverButton(
@@ -1032,7 +1035,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
 
   // The available links depend on the type of profile that is active.
   if (avatar_item.signed_in) {
-    if (account_consistency_enabled) {
+    if (mirror_enabled) {
       base::string16 button_text = l10n_util::GetStringUTF16(
           IsProfileChooser(view_mode_)
               ? IDS_PROFILES_PROFILE_MANAGE_ACCOUNTS_BUTTON
@@ -1049,8 +1052,8 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     return view;
   }
 
-  if (!dice_enabled_ && SigninManagerFactory::GetForProfile(browser_->profile())
-                            ->IsSigninAllowed()) {
+  if (!dice_enabled_ &&
+      SigninManagerFactory::GetForProfile(profile)->IsSigninAllowed()) {
     views::View* extra_links_view = new views::View();
     extra_links_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kVertical,

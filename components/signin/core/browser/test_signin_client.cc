@@ -70,10 +70,6 @@ void TestSigninClient::LoadTokenDatabase() {
   database_->Init();
 }
 
-bool TestSigninClient::ShouldMergeSigninCredentialsIntoCookieJar() {
-  return true;
-}
-
 std::unique_ptr<SigninClient::CookieChangeSubscription>
 TestSigninClient::AddCookieChangeCallback(const GURL& url,
                                           const std::string& name,

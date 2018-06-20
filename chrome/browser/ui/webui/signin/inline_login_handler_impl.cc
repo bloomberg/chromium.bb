@@ -29,6 +29,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/local_auth.h"
@@ -136,6 +137,22 @@ void UnlockProfileAndHideLoginUI(const base::FilePath profile_path,
     handler->CloseDialogFromJavascript();
 
   UserManager::Hide();
+}
+
+// Returns true if the showAccountManagement parameter in the given url is set
+// to true.
+bool ShouldShowAccountManagement(const GURL& url, bool is_mirror_enabled) {
+  if (!is_mirror_enabled)
+    return false;
+
+  std::string value;
+  if (net::GetValueForKeyInQuery(url, kSignInPromoQueryKeyShowAccountManagement,
+                                 &value)) {
+    int enabled = 0;
+    if (base::StringToInt(value, &enabled) && enabled == 1)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -254,10 +271,12 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     if (signin::IsAutoCloseEnabledInURL(current_url_)) {
       // Close the gaia sign in tab via a task to make sure we aren't in the
       // middle of any webui handler code.
+      bool show_account_management = ShouldShowAccountManagement(
+          current_url_,
+          AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile_));
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&InlineLoginHandlerImpl::CloseTab, handler_,
-                         signin::ShouldShowAccountManagement(current_url_)));
+          FROM_HERE, base::BindOnce(&InlineLoginHandlerImpl::CloseTab, handler_,
+                                    show_account_management));
     }
 
     if (reason == signin_metrics::Reason::REASON_REAUTHENTICATION ||
@@ -761,11 +780,14 @@ void InlineLoginHandlerImpl::SyncStarterCallback(
   if (result == OneClickSigninSyncStarter::SYNC_SETUP_FAILURE) {
     RedirectToNtpOrAppsPage(contents, access_point);
   } else if (auto_close) {
+    bool show_account_management = ShouldShowAccountManagement(
+        current_url,
+        AccountConsistencyModeManager::IsMirrorEnabledForProfile(
+            Profile::FromBrowserContext(contents->GetBrowserContext())));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&InlineLoginHandlerImpl::CloseTab,
-                       weak_factory_.GetWeakPtr(),
-                       signin::ShouldShowAccountManagement(current_url)));
+                       weak_factory_.GetWeakPtr(), show_account_management));
   } else {
     RedirectToNtpOrAppsPageIfNecessary(contents, access_point);
   }
