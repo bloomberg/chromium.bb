@@ -264,7 +264,7 @@ class TestDragDropClient : public aura::client::DragDropClient,
   // True while receiving ui::LocatedEvents for drag operations.
   bool drag_in_progress_;
 
-  // Target window where drag operations are occuring.
+  // Target window where drag operations are occurring.
   aura::Window* target_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDragDropClient);
@@ -411,7 +411,7 @@ TEST_F(MenuButtonTest, ButtonStateForMenuButtonsWithPressedLocks) {
   pressed_lock1.reset();
   EXPECT_EQ(Button::STATE_PRESSED, button()->state());
 
-  // Reseting the final lock should return the button's state to normal...
+  // Resetting the final lock should return the button's state to normal...
   pressed_lock2.reset();
   EXPECT_EQ(Button::STATE_NORMAL, button()->state());
 
@@ -568,8 +568,8 @@ TEST_F(MenuButtonTest,
 // Tests that the MenuButton does not become pressed if it can be dragged, and a
 // DragDropClient is processing the events.
 TEST_F(MenuButtonTest, DraggableMenuButtonDoesNotActivateOnDrag) {
-  // TODO: test uses GetContext(), which is not applicable to aura-mus.
-  // http://crbug.com/663809.
+  // TODO(https://crbug.com/663809): test uses GetContext(), which is not
+  // applicable to aura-mus.
   if (IsMus())
     return;
   TestMenuButtonListener menu_button_listener;

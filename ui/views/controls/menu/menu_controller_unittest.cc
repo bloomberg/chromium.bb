@@ -12,8 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "ui/aura/scoped_window_targeter.h"
-#include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
@@ -119,7 +117,7 @@ void TestMenuControllerDelegate::SiblingMenuCreated(MenuItemView* menu) {}
 
 class SubmenuViewShown : public SubmenuView {
  public:
-  SubmenuViewShown(MenuItemView* parent) : SubmenuView(parent) {}
+  using SubmenuView::SubmenuView;
   ~SubmenuViewShown() override {}
   bool IsShowing() override { return true; }
 
@@ -132,7 +130,7 @@ class TestEventHandler : public ui::EventHandler {
   TestEventHandler() : outstanding_touches_(0) {}
 
   void OnTouchEvent(ui::TouchEvent* event) override {
-    switch(event->type()) {
+    switch (event->type()) {
       case ui::ET_TOUCH_PRESSED:
         outstanding_touches_++;
         break;
@@ -246,7 +244,8 @@ void DestructingTestViewsDelegate::ReleaseRef() {
 
 class TestMenuItemViewShown : public MenuItemView {
  public:
-  TestMenuItemViewShown(MenuDelegate* delegate) : MenuItemView(delegate) {
+  explicit TestMenuItemViewShown(MenuDelegate* delegate)
+      : MenuItemView(delegate) {
     submenu_ = new SubmenuViewShown(this);
   }
   ~TestMenuItemViewShown() override {}
@@ -1083,7 +1082,7 @@ TEST_F(MenuControllerTest, AsynchronousCancelDuringDrag) {
             controller_delegate->on_menu_closed_notify_type());
 }
 
-// Tests that if a menu is destroyed while drag operations are occuring, that
+// Tests that if a menu is destroyed while drag operations are occurring, that
 // the MenuHost does not crash as the drag completes.
 TEST_F(MenuControllerTest, AsynchronousDragHostDeleted) {
   SubmenuView* submenu = menu_item()->GetSubmenu();
@@ -1118,8 +1117,8 @@ TEST_F(MenuControllerTest, HostReceivesInputBeforeDestruction) {
   root_view->OnMouseMoved(event);
 }
 
-// Tets that an asynchronous menu nested within an asynchronous menu closes both
-// menus, and notifies both delegates.
+// Tests that an asynchronous menu nested within an asynchronous menu closes
+// both menus, and notifies both delegates.
 TEST_F(MenuControllerTest, DoubleAsynchronousNested) {
   MenuController* controller = menu_controller();
   TestMenuControllerDelegate* delegate = menu_controller_delegate();
@@ -1166,7 +1165,7 @@ TEST_F(MenuControllerTest, PreserveGestureForOwner) {
   controller->OnGestureEvent(sub_menu, &event2);
   EXPECT_EQ(CountOwnerOnGestureEvent(), 2);
 
-  // ET_GESTURE_END resets the |send_gesture_events_to_owner_| flag, so futher
+  // ET_GESTURE_END resets the |send_gesture_events_to_owner_| flag, so further
   // gesture events should not be sent to the owner.
   controller->OnGestureEvent(sub_menu, &event2);
   EXPECT_EQ(CountOwnerOnGestureEvent(), 2);
@@ -1423,7 +1422,7 @@ TEST_F(MenuControllerTest, RepostEventToEmptyMenuItem) {
       ->SetContentsView(base_submenu->GetScrollViewContainer());
 
   // Build the submenu to have an empty menu item. Additionally hook up
-  // appropriate Widget and View containersm with counds, so that hit testing
+  // appropriate Widget and View containers with bounds, so that hit testing
   // works.
   std::unique_ptr<TestMenuDelegate> sub_menu_item_delegate =
       std::make_unique<TestMenuDelegate>();
@@ -1508,7 +1507,7 @@ TEST_F(MenuControllerTest, RepostEventToEmptyMenuItem) {
                   gfx::Rect(150, 50, 100, 100), MENU_ANCHOR_TOPLEFT, true,
                   false);
 
-  // The escapce key should only close the nested menu. SelectByChar should not
+  // The escape key should only close the nested menu. SelectByChar should not
   // crash.
   TestAsyncEscapeKey();
   EXPECT_EQ(nested_controller_delegate_2->on_menu_closed_called(), 1);
