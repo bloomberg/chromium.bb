@@ -60,10 +60,7 @@ function share(path) {
         return remoteCall
             .callRemoteTestUtil(
                 'queryAllElements', appId,
-                [
-                  '.share-dialog-webview-wrapper.loaded', null /* iframe */,
-                  ['width', 'height']
-                ])
+                ['.share-dialog-webview-wrapper.loaded', ['width', 'height']])
             .then(function(elements) {
               // TODO(mtomasz): Fix the wrong geometry of the share dialog.
               // return elements[0] &&
