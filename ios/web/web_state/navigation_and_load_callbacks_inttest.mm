@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "base/ios/ios_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
 #include "ios/testing/embedded_test_server_handlers.h"
@@ -1159,6 +1160,10 @@ TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
 
 // Tests going forward to a page rendered from post response.
 TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
+  // TODO(crbug.com/854615): Test fails on iOS12.
+  if (base::ios::IsRunningOnIOS12OrLater()) {
+    return;
+  }
   const GURL url = test_server_->GetURL("/form?echo");
   const GURL action = test_server_->GetURL("/echo");
 
