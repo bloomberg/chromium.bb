@@ -108,57 +108,46 @@ using LogicalT = typename ABI::Windows::Foundation::Internal::GetLogicalType<
 template <typename T>
 using InterfaceT = std::remove_pointer_t<AbiT<T>>;
 
-// Implementation of shared functionality.
+// Compile time switch to decide what container to use for the async results for
+// |T|. Depends on whether the underlying Abi type is a pointer to IUnknown or
+// not. It queries the internals of Windows::Foundation to obtain this
+// information.
+template <typename T>
+using ResultT =
+    std::conditional_t<std::is_convertible<AbiT<T>, IUnknown*>::value,
+                       Microsoft::WRL::ComPtr<std::remove_pointer_t<AbiT<T>>>,
+                       AbiT<T>>;
+
+template <typename T>
+using StorageT =
+    std::conditional_t<std::is_convertible<AbiT<T>, IUnknown*>::value,
+                       Microsoft::WRL::ComPtr<std::remove_pointer_t<AbiT<T>>>,
+                       base::Optional<AbiT<T>>>;
+
+template <typename T>
+HRESULT CopyStorage(const Microsoft::WRL::ComPtr<T>& storage, T** results) {
+  return storage.CopyTo(results);
+}
+
+template <typename T>
+HRESULT CopyStorage(const base::Optional<T>& storage, T* results) {
+  *results = *storage;
+  return S_OK;
+}
+
+}  // namespace internal
+
 template <class T>
-class AsyncOperationBase
+class AsyncOperation
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
           ABI::Windows::Foundation::IAsyncOperation<T>> {
  public:
+  using StorageT = internal::StorageT<T>;
+  using ResultT = internal::ResultT<T>;
   using Handler = ABI::Windows::Foundation::IAsyncOperationCompletedHandler<T>;
-
-  AsyncOperationBase() = default;
-  ~AsyncOperationBase() { DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); }
-
-  // ABI::Windows::Foundation::IAsyncOperation:
-  IFACEMETHODIMP put_Completed(Handler* handler) override {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    handler_ = handler;
-    return S_OK;
-  }
-
-  IFACEMETHODIMP get_Completed(Handler** handler) override {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    return handler_.CopyTo(handler);
-  }
-
- protected:
-  void InvokeCompletedHandler() {
-    handler_->Invoke(this, ABI::Windows::Foundation::AsyncStatus::Completed);
-  }
-
-  THREAD_CHECKER(thread_checker_);
-
- private:
-  Microsoft::WRL::ComPtr<Handler> handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(AsyncOperationBase);
-};
-
-}  // namespace internal
-
-template <typename T, typename Enable = void>
-class AsyncOperation;
-
-template <typename T>
-class AsyncOperation<
-    T,
-    std::enable_if_t<std::is_base_of<IUnknown, internal::InterfaceT<T>>::value>>
-    : public internal::AsyncOperationBase<T> {
- public:
-  using InterfacePointer = Microsoft::WRL::ComPtr<internal::InterfaceT<T>>;
-  using ResultCallback = base::OnceCallback<void(InterfacePointer)>;
+  using ResultCallback = base::OnceCallback<void(ResultT)>;
 
   AsyncOperation() : weak_factory_(this) {
     // Note: This can't be done in the constructor initializer list. This is
@@ -168,74 +157,49 @@ class AsyncOperation<
         base::BindOnce(&AsyncOperation::OnResult, weak_factory_.GetWeakPtr());
   }
 
-  ResultCallback callback() {
-    // Note: `this->` here and below is necessary due to the
-    // -Wmicrosoft-template compiler warning.
-    DCHECK_CALLED_ON_VALID_THREAD(this->thread_checker_);
-    DCHECK(!callback_.is_null());
-    return std::move(callback_);
-  }
+  ~AsyncOperation() { DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); }
 
   // ABI::Windows::Foundation::IAsyncOperation:
-  IFACEMETHODIMP GetResults(internal::AbiT<T>* results) override {
-    DCHECK_CALLED_ON_VALID_THREAD(this->thread_checker_);
-    return ptr_ ? ptr_.CopyTo(results) : E_PENDING;
-  }
-
- private:
-  void OnResult(InterfacePointer ptr) {
-    DCHECK_CALLED_ON_VALID_THREAD(this->thread_checker_);
-    DCHECK(!ptr_);
-    ptr_ = std::move(ptr);
-    this->InvokeCompletedHandler();
-  }
-
-  ResultCallback callback_;
-  InterfacePointer ptr_;
-  base::WeakPtrFactory<AsyncOperation> weak_factory_;
-};
-
-template <typename T>
-class AsyncOperation<
-    T,
-    std::enable_if_t<
-        !std::is_base_of<IUnknown, internal::InterfaceT<T>>::value>>
-    : public internal::AsyncOperationBase<T> {
- public:
-  using ResultCallback = base::OnceCallback<void(T)>;
-
-  AsyncOperation() : weak_factory_(this) {
-    callback_ =
-        base::BindOnce(&AsyncOperation::OnResult, weak_factory_.GetWeakPtr());
-  }
-
-  ResultCallback callback() {
-    DCHECK_CALLED_ON_VALID_THREAD(this->thread_checker_);
-    DCHECK(!callback_.is_null());
-    return std::move(callback_);
-  }
-
-  // ABI::Windows::Foundation::IAsyncOperation:
-  IFACEMETHODIMP GetResults(internal::AbiT<T>* results) override {
-    DCHECK_CALLED_ON_VALID_THREAD(this->thread_checker_);
-    if (!value_)
-      return E_PENDING;
-
-    *results = *value_;
+  IFACEMETHODIMP put_Completed(Handler* handler) override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    handler_ = handler;
     return S_OK;
   }
+  IFACEMETHODIMP get_Completed(Handler** handler) override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    return handler_.CopyTo(handler);
+  }
+  IFACEMETHODIMP GetResults(internal::AbiT<T>* results) override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    return storage_ ? internal::CopyStorage(storage_, results) : E_PENDING;
+  }
+
+  ResultCallback callback() {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK(!callback_.is_null());
+    return std::move(callback_);
+  }
 
  private:
-  void OnResult(T result) {
-    DCHECK_CALLED_ON_VALID_THREAD(this->thread_checker_);
-    DCHECK(!value_);
-    value_.emplace(std::move(result));
-    this->InvokeCompletedHandler();
+  void InvokeCompletedHandler() {
+    handler_->Invoke(this, ABI::Windows::Foundation::AsyncStatus::Completed);
+  }
+
+  void OnResult(ResultT result) {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK(!storage_);
+    storage_ = std::move(result);
+    InvokeCompletedHandler();
   }
 
   ResultCallback callback_;
-  base::Optional<T> value_;
+  Microsoft::WRL::ComPtr<Handler> handler_;
+  StorageT storage_;
+
+  THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<AsyncOperation> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncOperation);
 };
 
 }  // namespace win
