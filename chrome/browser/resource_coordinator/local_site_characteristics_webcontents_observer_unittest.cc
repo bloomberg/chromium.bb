@@ -104,6 +104,7 @@ class LocalSiteCharacteristicsWebContentsObserverTest
   }
 
   void TearDown() override {
+    TabLoadTracker::Get()->StopTracking(web_contents());
     DeleteContents();
     observer_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
