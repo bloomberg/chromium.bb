@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_ASSISTANT_BUBBLE_CONTROLLER_H_
-#define ASH_ASSISTANT_ASSISTANT_BUBBLE_CONTROLLER_H_
+#ifndef ASH_ASSISTANT_ASSISTANT_UI_CONTROLLER_H_
+#define ASH_ASSISTANT_ASSISTANT_UI_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/assistant/model/assistant_bubble_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/caption_bar.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "base/macros.h"
@@ -19,24 +19,24 @@ class Widget;
 
 namespace ash {
 
-class AssistantBubbleView;
+class AssistantContainerView;
 class AssistantController;
 
-class ASH_EXPORT AssistantBubbleController
+class ASH_EXPORT AssistantUiController
     : public views::WidgetObserver,
       public AssistantInteractionModelObserver,
       public CaptionBarDelegate,
       public DialogPlateDelegate {
  public:
-  explicit AssistantBubbleController(AssistantController* assistant_controller);
-  ~AssistantBubbleController() override;
+  explicit AssistantUiController(AssistantController* assistant_controller);
+  ~AssistantUiController() override;
 
   // Returns the underlying model.
-  const AssistantBubbleModel* model() const { return &assistant_bubble_model_; }
+  const AssistantUiModel* model() const { return &assistant_ui_model_; }
 
   // Adds/removes the specified model |observer|.
-  void AddModelObserver(AssistantBubbleModelObserver* observer);
-  void RemoveModelObserver(AssistantBubbleModelObserver* observer);
+  void AddModelObserver(AssistantUiModelObserver* observer);
+  void RemoveModelObserver(AssistantUiModelObserver* observer);
 
   // views::WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
@@ -67,13 +67,14 @@ class ASH_EXPORT AssistantBubbleController
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
-  AssistantBubbleModel assistant_bubble_model_;
+  AssistantUiModel assistant_ui_model_;
 
-  AssistantBubbleView* bubble_view_ = nullptr;  // Owned by view hierarchy.
+  AssistantContainerView* container_view_ =
+      nullptr;  // Owned by view hierarchy.
 
-  DISALLOW_COPY_AND_ASSIGN(AssistantBubbleController);
+  DISALLOW_COPY_AND_ASSIGN(AssistantUiController);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_ASSISTANT_BUBBLE_CONTROLLER_H_
+#endif  // ASH_ASSISTANT_ASSISTANT_UI_CONTROLLER_H_

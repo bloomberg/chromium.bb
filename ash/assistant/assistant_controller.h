@@ -25,8 +25,8 @@ class UnguessableToken;
 
 namespace ash {
 
-class AssistantBubbleController;
 class AssistantInteractionController;
+class AssistantUiController;
 
 class AssistantController : public mojom::AssistantController,
                             public DialogPlateDelegate {
@@ -81,9 +81,9 @@ class AssistantController : public mojom::AssistantController,
     return assistant_interaction_controller_.get();
   }
 
-  AssistantBubbleController* bubble_controller() {
-    DCHECK(assistant_bubble_controller_);
-    return assistant_bubble_controller_.get();
+  AssistantUiController* ui_controller() {
+    DCHECK(assistant_ui_controller_);
+    return assistant_ui_controller_.get();
   }
 
  private:
@@ -103,7 +103,7 @@ class AssistantController : public mojom::AssistantController,
   std::unique_ptr<AssistantInteractionController>
       assistant_interaction_controller_;
 
-  std::unique_ptr<AssistantBubbleController> assistant_bubble_controller_;
+  std::unique_ptr<AssistantUiController> assistant_ui_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantController);
 };

@@ -6,9 +6,9 @@
 
 #include <memory>
 
-#include "ash/assistant/assistant_bubble_controller.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
+#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/caption_bar.h"
@@ -31,7 +31,7 @@ AssistantMainView::AssistantMainView(AssistantController* assistant_controller)
   InitLayout();
 
   // Set delegates.
-  caption_bar_->set_delegate(assistant_controller_->bubble_controller());
+  caption_bar_->set_delegate(assistant_controller_->ui_controller());
   dialog_plate_->set_delegate(assistant_controller_);
 
   // Observe changes to interaction model.

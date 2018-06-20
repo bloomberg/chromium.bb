@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_UI_ASSISTANT_BUBBLE_VIEW_H_
-#define ASH_ASSISTANT_UI_ASSISTANT_BUBBLE_VIEW_H_
+#ifndef ASH_ASSISTANT_UI_ASSISTANT_CONTAINER_VIEW_H_
+#define ASH_ASSISTANT_UI_ASSISTANT_CONTAINER_VIEW_H_
 
 #include <memory>
 
-#include "ash/assistant/model/assistant_bubble_model_observer.h"
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "base/macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
@@ -18,11 +18,11 @@ class AssistantMainView;
 class AssistantMiniView;
 class AssistantWebView;
 
-class AssistantBubbleView : public views::BubbleDialogDelegateView,
-                            public AssistantBubbleModelObserver {
+class AssistantContainerView : public views::BubbleDialogDelegateView,
+                               public AssistantUiModelObserver {
  public:
-  explicit AssistantBubbleView(AssistantController* assistant_controller);
-  ~AssistantBubbleView() override;
+  explicit AssistantContainerView(AssistantController* assistant_controller);
+  ~AssistantContainerView() override;
 
   // views::BubbleDialogDelegateView:
   int GetDialogButtons() const override;
@@ -33,7 +33,7 @@ class AssistantBubbleView : public views::BubbleDialogDelegateView,
   void Init() override;
   void RequestFocus() override;
 
-  // AssistantBubbleModelObserver:
+  // AssistantUiModelObserver:
   void OnUiModeChanged(AssistantUiMode ui_mode) override;
 
  private:
@@ -45,9 +45,9 @@ class AssistantBubbleView : public views::BubbleDialogDelegateView,
   std::unique_ptr<AssistantMiniView> assistant_mini_view_;
   std::unique_ptr<AssistantWebView> assistant_web_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(AssistantBubbleView);
+  DISALLOW_COPY_AND_ASSIGN(AssistantContainerView);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_UI_ASSISTANT_BUBBLE_VIEW_H_
+#endif  // ASH_ASSISTANT_UI_ASSISTANT_CONTAINER_VIEW_H_

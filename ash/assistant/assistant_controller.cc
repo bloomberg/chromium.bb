@@ -4,8 +4,8 @@
 
 #include "ash/assistant/assistant_controller.h"
 
-#include "ash/assistant/assistant_bubble_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
+#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -18,8 +18,7 @@ namespace ash {
 AssistantController::AssistantController()
     : assistant_interaction_controller_(
           std::make_unique<AssistantInteractionController>()),
-      assistant_bubble_controller_(
-          std::make_unique<AssistantBubbleController>(this)) {}
+      assistant_ui_controller_(std::make_unique<AssistantUiController>(this)) {}
 
 AssistantController::~AssistantController() = default;
 
@@ -132,7 +131,7 @@ void AssistantController::DownloadImage(
 // remove this code from AssistantController. Use observer pattern.
 void AssistantController::OnDialogPlateButtonPressed(DialogPlateButtonId id) {
   assistant_interaction_controller_->OnDialogPlateButtonPressed(id);
-  assistant_bubble_controller_->OnDialogPlateButtonPressed(id);
+  assistant_ui_controller_->OnDialogPlateButtonPressed(id);
 }
 
 // TODO(dmblack): Update DialogPlate to accept multiple listeners and then
@@ -140,7 +139,7 @@ void AssistantController::OnDialogPlateButtonPressed(DialogPlateButtonId id) {
 void AssistantController::OnDialogPlateContentsCommitted(
     const std::string& text) {
   assistant_interaction_controller_->OnDialogPlateContentsCommitted(text);
-  assistant_bubble_controller_->OnDialogPlateContentsCommitted(text);
+  assistant_ui_controller_->OnDialogPlateContentsCommitted(text);
 }
 
 }  // namespace ash
