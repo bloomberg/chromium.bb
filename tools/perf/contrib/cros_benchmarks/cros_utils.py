@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import subprocess
+import time
 
 import py_utils
 
@@ -13,8 +14,34 @@ from telemetry.core import exceptions
 from telemetry.value import histogram_util
 
 
-def _RunRemoteCommand(dut_ip, cmd):
-  return os.system('ssh root@%s %s' % (dut_ip, cmd))
+def _RunCommand(dut_ip, cmd):
+  """Runs command on the DUT.
+
+  Args:
+    dut_ip: IP of the DUT. If it's None, runs command locally.
+    cmd: The command to run.
+  """
+  if dut_ip:
+    # Commands via ssh shall be double-quoted to escape special characters.
+    cmd = '"%s"' % cmd
+    return os.system('ssh root@%s %s' % (dut_ip, cmd))
+  else:
+    return os.system(cmd)
+
+
+def _Popen(dut_ip, cmd_list):
+  """Popen to run a command on DUT."""
+  if dut_ip:
+    cmd_list = ['ssh', 'root@' + dut_ip] + cmd_list
+  return subprocess.Popen(cmd_list, stdout=subprocess.PIPE)
+
+
+def _CopyToDUT(dut_ip, local_path, dut_path):
+  """Copies file to the DUT path."""
+  if dut_ip:
+    os.system('scp -q %s root@%s:%s' % (local_path, dut_ip, dut_path))
+  else:
+    os.system('cp %s %s' % (local_path, dut_path))
 
 
 def _GetTabSwitchHistogram(browser):
@@ -108,7 +135,6 @@ class KeyboardEmulator(object):
       dut_ip: DUT IP or hostname.
     """
     self._dut_ip = dut_ip
-    self._root_dut_ip = 'root@' + dut_ip
     self._key_device_name = None
 
   def _StartRemoteKeyboardEmulator(self):
@@ -122,18 +148,23 @@ class KeyboardEmulator(object):
     """
     kbd_prop_filename = '/usr/local/autotest/cros/input_playback/keyboard.prop'
 
-    ret = _RunRemoteCommand(self._dut_ip, 'test -e %s' % kbd_prop_filename)
+    ret = _RunCommand(self._dut_ip, 'test -e %s' % kbd_prop_filename)
     if ret != 0:
       raise RuntimeError('Keyboard property file does not exist.')
 
-    cmd = ['ssh', self._root_dut_ip, 'evemu-device', kbd_prop_filename]
-    ssh_process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    process = _Popen(self._dut_ip, ['evemu-device', kbd_prop_filename])
 
     # The evemu-device output format:
     # Emulated Keyboard: /dev/input/event10
-    output = ssh_process.stdout.readline()
-    # The remote process would live when the ssh process was terminated.
-    ssh_process.kill()
+    output = process.stdout.readline()
+    if self._dut_ip:
+      # The remote process would live when the ssh process was terminated.
+      process.kill()
+    else:
+      # Needs extra sleep when running locally, otherwise the first key may not
+      # dispatch.
+      # TODO(cywang): crbug.com/852702
+      time.sleep(1)
     if not output.startswith('Emulated Keyboard:'):
       raise RuntimeError('Keyboard emulation failed.')
     key_device_name = output.split()[2]
@@ -143,9 +174,8 @@ class KeyboardEmulator(object):
     """Uploads the script to send key to switch tabs."""
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     log_key_filename = os.path.join(cur_dir, 'data', 'log_key_tab_switch')
-    os.system('scp -q %s %s:%s' %
-              (log_key_filename, self._root_dut_ip,
-               KeyboardEmulator.REMOTE_LOG_KEY_FILENAME))
+    _CopyToDUT(self._dut_ip, log_key_filename,
+               KeyboardEmulator.REMOTE_LOG_KEY_FILENAME)
 
   def __enter__(self):
     self._key_device_name = self._StartRemoteKeyboardEmulator()
@@ -154,14 +184,14 @@ class KeyboardEmulator(object):
 
   def SwitchTab(self):
     """Sending Ctrl-tab key to trigger tab switching."""
-    cmd = ('"evemu-play --insert-slot0 %s < %s"' %
+    cmd = ('evemu-play --insert-slot0 %s < %s' %
            (self._key_device_name,
             KeyboardEmulator.REMOTE_LOG_KEY_FILENAME))
-    _RunRemoteCommand(self._dut_ip, cmd)
+    _RunCommand(self._dut_ip, cmd)
 
   def __exit__(self, exc_type, exc_value, traceback):
-    # Kills the remote emulator process explicitly.
-    _RunRemoteCommand(self._dut_ip, 'pkill evemu-device')
+    # Kills the emulator process explicitly.
+    _RunCommand(self._dut_ip, 'pkill evemu-device')
 
 
 def NoScreenOff(dut_ip):
@@ -170,5 +200,5 @@ def NoScreenOff(dut_ip):
   Args:
     dut_ip: DUT IP or hostname.
   """
-  _RunRemoteCommand(dut_ip, 'set_power_policy --ac_screen_off_delay=3600')
-  _RunRemoteCommand(dut_ip, 'set_power_policy --ac_screen_dim_delay=3600')
+  _RunCommand(dut_ip, 'set_power_policy --ac_screen_off_delay=3600')
+  _RunCommand(dut_ip, 'set_power_policy --ac_screen_dim_delay=3600')

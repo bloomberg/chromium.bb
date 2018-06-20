@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import os
-import logging
 
 from core import perf_benchmark
 
@@ -42,9 +41,10 @@ class CrosTabSwitchingTypical24(perf_benchmark.PerfBenchmark):
                       help='pause between tab creation and tab switch')
 
   def CreateStorySet(self, options):
-    if not options.cros_remote:
-      # Raise exception here would fail the presubmit check.
-      logging.error('Must specify --remote=DUT_IP to run this test.')
+    # When running this test with test_that, fetch_benchmark_deps.py would
+    # invoke this method. Options doesn't have attribute cros_remote in this
+    # case.
+    cros_remote = getattr(options, 'cros_remote', None)
     story_set = story.StorySet(
         archive_data_file='data/tab_switching.json',
         base_dir=os.path.dirname(os.path.abspath(__file__)),
@@ -52,7 +52,7 @@ class CrosTabSwitchingTypical24(perf_benchmark.PerfBenchmark):
     # May not have pause_after_creation attribute in presubmit check.
     pause_after_creation = getattr(options, 'pause_after_creation', 0)
     story_set.AddStory(tab_switching_stories.CrosMultiTabTypical24Story(
-        story_set, options.cros_remote, options.tabset_repeat,
+        story_set, cros_remote, options.tabset_repeat,
         pause_after_creation))
     return story_set
 
