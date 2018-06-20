@@ -516,6 +516,14 @@ bool NetworkQualityEstimatorParams::use_small_responses() const {
   return use_small_responses_;
 };
 
+void NetworkQualityEstimatorParams::SetForcedEffectiveConnectionTypeForTesting(
+    EffectiveConnectionType type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!forced_effective_connection_type_);
+  DCHECK(!forced_effective_connection_type_on_cellular_only_);
+  forced_effective_connection_type_ = type;
+}
+
 base::Optional<EffectiveConnectionType>
 NetworkQualityEstimatorParams::GetForcedEffectiveConnectionType(
     NetworkChangeNotifier::ConnectionType connection_type) {

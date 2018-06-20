@@ -2335,6 +2335,31 @@ TEST_F(NetworkQualityEstimatorTest,
   }
 }
 
+// Tests that the value of the effective connection type can be forced after
+// network quality estimator has been initialized.
+TEST_F(NetworkQualityEstimatorTest, SimulateNetworkQualityChangeForTesting) {
+  for (int i = 0; i < EFFECTIVE_CONNECTION_TYPE_LAST; ++i) {
+    EffectiveConnectionType ect_type = static_cast<EffectiveConnectionType>(i);
+    TestNetworkQualityEstimator estimator;
+
+    TestEffectiveConnectionTypeObserver ect_observer;
+    estimator.AddEffectiveConnectionTypeObserver(&ect_observer);
+
+    // |observer| may be notified as soon as it is added. Run the loop to so
+    // that the notification to |observer| is finished.
+    base::RunLoop().RunUntilIdle();
+
+    TestDelegate test_delegate;
+    TestURLRequestContext context(true);
+    context.set_network_quality_estimator(&estimator);
+    context.Init();
+    estimator.SimulateNetworkQualityChangeForTesting(ect_type);
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(ect_type, ect_observer.effective_connection_types().back());
+  }
+}
+
 // Test that the typical network qualities are set correctly.
 TEST_F(NetworkQualityEstimatorTest, TypicalNetworkQualities) {
   TestNetworkQualityEstimator estimator;

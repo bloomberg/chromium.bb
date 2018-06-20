@@ -214,6 +214,9 @@ class NET_EXPORT NetworkQualityEstimatorParams {
     return socket_watchers_min_notification_interval_;
   }
 
+  // Sets the forced effective connection type as |type|.
+  void SetForcedEffectiveConnectionTypeForTesting(EffectiveConnectionType type);
+
  private:
   // Map containing all field trial parameters related to
   // NetworkQualityEstimator field trial.
