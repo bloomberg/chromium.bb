@@ -89,6 +89,17 @@ void RecordOffliningPreviewsUMA(const ClientId& client_id,
       is_previews_enabled);
 }
 
+void RecordResourceCompletionUMA(bool image_complete,
+                                 bool css_complete,
+                                 bool xhr_complete) {
+  base::UmaHistogramBoolean("OfflinePages.Background.ResourceCompletion.Image",
+                            image_complete);
+  base::UmaHistogramBoolean("OfflinePages.Background.ResourceCompletion.Css",
+                            css_complete);
+  base::UmaHistogramBoolean("OfflinePages.Background.ResourceCompletion.Xhr",
+                            xhr_complete);
+}
+
 void HandleLoadTerminationCancel(
     Offliner::CompletionCallback completion_callback,
     const SavePageRequest& canceled_request) {
@@ -464,18 +475,24 @@ void BackgroundLoaderOffliner::StartSnapshot() {
   content::WebContents* web_contents(
       content::WebContentsObserver::web_contents());
 
+  // Capture loading signals to UMA.
+  RequestStats& image_stats = stats_[ResourceDataType::IMAGE];
+  RequestStats& css_stats = stats_[ResourceDataType::TEXT_CSS];
+  RequestStats& xhr_stats = stats_[ResourceDataType::XHR];
+  bool image_complete = (image_stats.requested == image_stats.completed);
+  bool css_complete = (css_stats.requested == css_stats.completed);
+  bool xhr_complete = (xhr_stats.requested == xhr_stats.completed);
+  RecordResourceCompletionUMA(image_complete, css_complete, xhr_complete);
+
   // Add loading signal into the MHTML that will be generated if the command
   // line flag is set for it.
   if (IsOfflinePagesLoadSignalCollectingEnabled()) {
     // Write resource percentage signal data into extra data before emitting it
     // to the MHTML.
-    RequestStats& image_stats = stats_[ResourceDataType::IMAGE];
     signal_data_.SetDouble("StartedImages", image_stats.requested);
     signal_data_.SetDouble("CompletedImages", image_stats.completed);
-    RequestStats& css_stats = stats_[ResourceDataType::TEXT_CSS];
     signal_data_.SetDouble("StartedCSS", css_stats.requested);
     signal_data_.SetDouble("CompletedCSS", css_stats.completed);
-    RequestStats& xhr_stats = stats_[ResourceDataType::XHR];
     signal_data_.SetDouble("StartedXHR", xhr_stats.requested);
     signal_data_.SetDouble("CompletedXHR", xhr_stats.completed);
 
