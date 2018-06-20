@@ -6,7 +6,6 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -59,11 +58,9 @@ void ChromeViewsDelegate::AdjustSavedWindowPlacementChromeOS(
     gfx::Rect* bounds) const {
   // On ChromeOS a window won't span across displays.  Adjust the bounds to fit
   // the work area.
-  aura::Window* window = widget->GetNativeView();
   display::Display display =
       display::Screen::GetScreen()->GetDisplayMatching(*bounds);
   bounds->AdjustToFit(display.work_area());
-  ash::wm::GetWindowState(window)->set_minimum_visibility(true);
 }
 
 views::Widget::InitParams::WindowOpacity
