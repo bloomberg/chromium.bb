@@ -333,7 +333,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Mark ANGLE's OpenGL as flaky on Windows Amd
     self.Flaky('conformance/*', ['win', 'amd', 'opengl'], bug=582083)
 
-    # Win / OpenGL / Intel HD 530 failures
+    # Win / OpenGL / Intel HD 530 / 630 failures
     self.Fail('conformance/canvas/draw-webgl-to-canvas-test.html',
         ['win10', 'intel', 'opengl'], bug=680797)
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
@@ -358,6 +358,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win10', 'intel', 'opengl'], bug=680797)
     self.Fail('conformance/glsl/matrices/matrix-compound-multiply.html',
         ['win10', 'intel', 'opengl'], bug=680797)
+    self.Flaky('conformance/glsl/variables/gl-pointcoord.html',
+        ['win10', 'intel', 'opengl'], bug=854100)
     self.Fail('conformance/more/conformance/webGLArrays.html',
         ['win10', 'intel', 'opengl'], bug=680797)
     self.Fail('conformance/ogles/GL/struct/struct_049_to_056.html',
