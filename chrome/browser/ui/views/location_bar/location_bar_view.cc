@@ -780,7 +780,13 @@ int LocationBarView::GetHorizontalEdgeThickness() const {
 }
 
 void LocationBarView::RefreshBackground() {
-  SkColor background_color = GetColor(OmniboxPart::LOCATION_BAR_BACKGROUND);
+  // Note we are not using hover state color when focused; only in steady state.
+  const OmniboxPartState state =
+      (omnibox_view_->HasFocus() || !omnibox_view_->IsHovered())
+          ? OmniboxPartState::NORMAL
+          : OmniboxPartState::HOVERED;
+  SkColor background_color =
+      GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, tint(), state);
   SkColor border_color = GetBorderColor();
 
   if (IsRounded()) {
@@ -1255,6 +1261,11 @@ void LocationBarView::OnOmniboxBlurred() {
 
   if (IsRounded())
     RefreshBackground();
+}
+
+void LocationBarView::OnOmniboxHoverChanged() {
+  RefreshBackground();
+  SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -225,8 +225,12 @@ SkColor GetOmniboxColor(OmniboxPart part,
   const bool dark = tint == OmniboxTint::DARK;
 
   switch (part) {
-    case OmniboxPart::LOCATION_BAR_BACKGROUND:
-      return dark ? SkColorSetRGB(0x28, 0x2C, 0x2F) : gfx::kGoogleGrey100;
+    case OmniboxPart::LOCATION_BAR_BACKGROUND: {
+      const bool hovered = state == OmniboxPartState::HOVERED;
+      return dark ? (hovered ? SkColorSetRGB(0x2F, 0x33, 0x36)
+                             : SkColorSetRGB(0x28, 0x2C, 0x2F))
+                  : (hovered ? gfx::kGoogleGrey200 : gfx::kGoogleGrey100);
+    }
     case OmniboxPart::LOCATION_BAR_SECURITY_CHIP:
       return GetSecurityChipColor(tint, state);
     case OmniboxPart::LOCATION_BAR_SELECTED_KEYWORD:
