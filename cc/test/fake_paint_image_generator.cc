@@ -9,12 +9,14 @@ namespace cc {
 FakePaintImageGenerator::FakePaintImageGenerator(
     const SkImageInfo& info,
     std::vector<FrameMetadata> frames,
-    bool allocate_discardable_memory)
+    bool allocate_discardable_memory,
+    std::vector<SkISize> supported_sizes)
     : PaintImageGenerator(info, std::move(frames)),
       image_backing_memory_(
           allocate_discardable_memory ? info.computeMinByteSize() : 0,
           0),
-      image_pixmap_(info, image_backing_memory_.data(), info.minRowBytes()) {}
+      image_pixmap_(info, image_backing_memory_.data(), info.minRowBytes()),
+      supported_sizes_(std::move(supported_sizes)) {}
 
 FakePaintImageGenerator::~FakePaintImageGenerator() = default;
 
@@ -48,6 +50,17 @@ bool FakePaintImageGenerator::GetYUV8Planes(const SkYUVSizeInfo& info,
                                             uint32_t lazy_pixel_ref) {
   NOTREACHED();
   return false;
+}
+
+SkISize FakePaintImageGenerator::GetSupportedDecodeSize(
+    const SkISize& requested_size) const {
+  for (auto& size : supported_sizes_) {
+    if (size.width() >= requested_size.width() &&
+        size.height() >= requested_size.height()) {
+      return size;
+    }
+  }
+  return PaintImageGenerator::GetSupportedDecodeSize(requested_size);
 }
 
 }  // namespace cc

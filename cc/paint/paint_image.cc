@@ -137,10 +137,8 @@ SkISize PaintImage::GetSupportedDecodeSize(
   // TODO(vmpstr): If this image is using subset_rect, then we don't support
   // decoding to any scale other than the original. See the comment in Decode()
   // explaining this in more detail.
-  // TODO(vmpstr): For now, always decode to the original size. This can be
-  // enabled with the following code, and should be done as a follow-up.
-  //  if (paint_image_generator_ && subset_rect_.IsEmpty())
-  //    return paint_image_generator_->GetSupportedDecodeSize(requested_size);
+  if (paint_image_generator_ && subset_rect_.IsEmpty())
+    return paint_image_generator_->GetSupportedDecodeSize(requested_size);
   return SkISize::Make(width(), height());
 }
 

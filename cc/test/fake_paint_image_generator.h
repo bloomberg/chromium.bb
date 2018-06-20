@@ -15,7 +15,8 @@ class FakePaintImageGenerator : public PaintImageGenerator {
   explicit FakePaintImageGenerator(
       const SkImageInfo& info,
       std::vector<FrameMetadata> frames = {FrameMetadata()},
-      bool allocate_discardable_memory = true);
+      bool allocate_discardable_memory = true,
+      std::vector<SkISize> supported_sizes = {});
   ~FakePaintImageGenerator() override;
 
   sk_sp<SkData> GetEncodedData() const override;
@@ -30,6 +31,7 @@ class FakePaintImageGenerator : public PaintImageGenerator {
                      void* planes[3],
                      size_t frame_index,
                      uint32_t lazy_pixel_ref) override;
+  SkISize GetSupportedDecodeSize(const SkISize& requested_size) const override;
 
   const base::flat_map<size_t, int>& frames_decoded() const {
     return frames_decoded_count_;
@@ -40,6 +42,7 @@ class FakePaintImageGenerator : public PaintImageGenerator {
   std::vector<uint8_t> image_backing_memory_;
   SkPixmap image_pixmap_;
   base::flat_map<size_t, int> frames_decoded_count_;
+  std::vector<SkISize> supported_sizes_;
 };
 
 }  // namespace cc

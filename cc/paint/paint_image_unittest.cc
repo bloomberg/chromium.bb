@@ -82,4 +82,27 @@ TEST(PaintImageTest, DecodesCorrectFrames) {
   generator->reset_frames_decoded();
 }
 
+TEST(PaintImageTest, SupportedDecodeSize) {
+  SkISize full_size = SkISize::Make(10, 10);
+  std::vector<SkISize> supported_sizes = {SkISize::Make(5, 5)};
+  std::vector<FrameMetadata> frames = {FrameMetadata()};
+  sk_sp<FakePaintImageGenerator> generator =
+      sk_make_sp<FakePaintImageGenerator>(
+          SkImageInfo::MakeN32Premul(full_size.width(), full_size.height()),
+          frames, true, supported_sizes);
+  PaintImage image = PaintImageBuilder::WithDefault()
+                         .set_id(PaintImage::GetNextId())
+                         .set_paint_image_generator(generator)
+                         .set_frame_index(0u)
+                         .TakePaintImage();
+  EXPECT_EQ(image.GetSupportedDecodeSize(supported_sizes[0]),
+            supported_sizes[0]);
+
+  PaintImage subset = PaintImageBuilder::WithCopy(image)
+                          .make_subset(gfx::Rect(8, 8))
+                          .TakePaintImage();
+  EXPECT_EQ(subset.GetSupportedDecodeSize(supported_sizes[0]),
+            SkISize::Make(8, 8));
+}
+
 }  // namespace cc
