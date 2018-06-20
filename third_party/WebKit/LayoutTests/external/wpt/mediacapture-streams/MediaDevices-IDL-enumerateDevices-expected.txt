@@ -3,10 +3,6 @@ Found 136 tests; 128 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test MediaDevices.enumerateDevices call and result. Types only.
 PASS Partial interface NavigatorUserMedia: original interface defined
 PASS Partial interface MediaDevices: original interface defined
-PASS Navigator interface: attribute mediaDevices
-PASS Unscopable handled correctly for mediaDevices property on Navigator
-PASS Navigator interface: operation getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback)
-PASS Unscopable handled correctly for getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback) on Navigator
 PASS MediaStream interface: existence and properties of interface object
 PASS MediaStream interface object length
 PASS MediaStream interface object name
@@ -136,5 +132,9 @@ PASS MediaDeviceInfo interface: [object InputDeviceInfo] must inherit property "
 PASS MediaDeviceInfo interface: [object InputDeviceInfo] must inherit property "groupId" with the proper type
 PASS MediaDeviceInfo interface: [object InputDeviceInfo] must inherit property "toJSON()" with the proper type
 PASS Test default toJSON operation of InputDeviceInfo
+PASS Navigator interface: attribute mediaDevices
+PASS Unscopable handled correctly for mediaDevices property on Navigator
+PASS Navigator interface: operation getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback)
+PASS Unscopable handled correctly for getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback) on Navigator
 Harness: the test ran to completion.
 
