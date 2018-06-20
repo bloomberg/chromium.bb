@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/tick_clock.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 
 namespace blink {

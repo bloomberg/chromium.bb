@@ -25,7 +25,7 @@ std::unique_ptr<NonMainThreadSchedulerImpl> NonMainThreadSchedulerImpl::Create(
     WorkerSchedulerProxy* proxy) {
   return std::make_unique<WorkerThreadScheduler>(
       thread_type,
-      base::sequence_manager::SequenceManager::CreateOnCurrentThread(), proxy);
+      base::sequence_manager::CreateSequenceManagerOnCurrentThread(), proxy);
 }
 
 void NonMainThreadSchedulerImpl::Init() {

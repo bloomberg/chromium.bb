@@ -28,7 +28,7 @@ WebThreadScheduler::CreateMainThreadScheduler(
 
   std::unique_ptr<MainThreadSchedulerImpl> scheduler(
       new MainThreadSchedulerImpl(
-          base::sequence_manager::SequenceManager::CreateOnCurrentThread(),
+          base::sequence_manager::CreateSequenceManagerOnCurrentThread(),
           initial_virtual_time));
   return std::move(scheduler);
 }

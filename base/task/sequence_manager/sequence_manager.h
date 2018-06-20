@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_SEQUENCE_MANAGER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_SEQUENCE_MANAGER_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_SEQUENCE_MANAGER_H_
+#define BASE_TASK_SEQUENCE_MANAGER_SEQUENCE_MANAGER_H_
 
 #include <memory>
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/task_time_observer.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
 
 namespace base {
 namespace sequence_manager {
+
+class TimeDomain;
 
 // SequenceManager manages TaskQueues which have different properties
 // (e.g. priority, common task type) multiplexing all posted tasks into
 // a single backing sequence (currently bound to a single thread, which is
 // refererred as *main thread* in the comments below). SequenceManager
 // implementation can be used in a various ways to apply scheduling logic.
-class PLATFORM_EXPORT SequenceManager {
+class SequenceManager {
  public:
   class Observer {
    public:
@@ -35,11 +35,13 @@ class PLATFORM_EXPORT SequenceManager {
 
   virtual ~SequenceManager() = default;
 
-  // Create SequenceManager using MessageLoop on the current thread.
-  static std::unique_ptr<SequenceManager> CreateOnCurrentThread();
+  // TODO(kraynov): Bring back CreateOnCurrentThread static method here
+  // when the move is done. It's not here yet to reduce PLATFORM_EXPORT
+  // macros hacking during the move.
 
-  // Must be called once, on the main thread.
-  // Observer is expected to outlive the SequenceManager.
+  // Must be called on the main thread.
+  // Can be called only once, before creating TaskQueues.
+  // Observer must outlive the SequenceManager.
   virtual void SetObserver(Observer* observer) = 0;
 
   // Must be called on the main thread.
@@ -48,7 +50,10 @@ class PLATFORM_EXPORT SequenceManager {
   virtual void AddTaskTimeObserver(TaskTimeObserver* task_time_observer) = 0;
   virtual void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer) = 0;
 
-  // TaskQueues have their TimeDomain which must be registered in advance.
+  // Registers a TimeDomain with SequenceManager.
+  // TaskQueues must only be created with a registered TimeDomain.
+  // Conversely, any TimeDomain must remain registered until no
+  // TaskQueues (using that TimeDomain) remain.
   virtual void RegisterTimeDomain(TimeDomain* time_domain) = 0;
   virtual void UnregisterTimeDomain(TimeDomain* time_domain) = 0;
 
@@ -64,8 +69,8 @@ class PLATFORM_EXPORT SequenceManager {
   // Removes all canceled delayed tasks.
   virtual void SweepCanceledDelayedTasks() = 0;
 
-  // Some TaskQueues do monitor a quiescent state, so this method returns
-  // true if any such queue has ran a task since the last call.
+  // Returns true if no tasks were executed in TaskQueues that monitor
+  // quiescence since the last call to this method.
   virtual bool GetAndClearSystemIsQuiescentBit() = 0;
 
   // Set the number of tasks executed in a single SequenceManager invocation.
@@ -73,6 +78,9 @@ class PLATFORM_EXPORT SequenceManager {
   // logic at the cost of a potentially worse latency. 1 by default.
   virtual void SetWorkBatchSize(int work_batch_size) = 0;
 
+  // Enables crash keys that can be set in the scope of a task which help
+  // to identify the culprit if upcoming work results in a crash.
+  // Key names must be thread-specific to avoid races and corrupted crash dumps.
   virtual void EnableCrashKeys(const char* file_name_crash_key,
                                const char* function_name_crash_key) = 0;
 
@@ -86,9 +94,8 @@ class PLATFORM_EXPORT SequenceManager {
   template <typename TaskQueueType, typename... Args>
   scoped_refptr<TaskQueueType> CreateTaskQueue(const TaskQueue::Spec& spec,
                                                Args&&... args) {
-    scoped_refptr<TaskQueueType> task_queue(new TaskQueueType(
-        CreateTaskQueueImpl(spec), spec, std::forward<Args>(args)...));
-    return task_queue;
+    return WrapRefCounted(new TaskQueueType(CreateTaskQueueImpl(spec), spec,
+                                            std::forward<Args>(args)...));
   }
 
  protected:
@@ -99,4 +106,4 @@ class PLATFORM_EXPORT SequenceManager {
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_SEQUENCE_MANAGER_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_SEQUENCE_MANAGER_H_
