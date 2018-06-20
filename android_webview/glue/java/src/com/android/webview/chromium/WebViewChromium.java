@@ -457,7 +457,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         }
 
         // Make sure that we do not trigger any callbacks after destruction
-        mContentsClientAdapter.setWebChromeClient(null);
+        setWebChromeClient(null);
         setWebViewClient(null);
         mContentsClientAdapter.setPictureListener(null, true);
         mContentsClientAdapter.setFindListener(null);
@@ -1295,12 +1295,13 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     @Override
     public void setWebChromeClient(WebChromeClient client) {
         mWebSettings.getAwSettings().setFullscreenSupported(doesSupportFullscreen(client));
-        mContentsClientAdapter.setWebChromeClient(client);
+        mSharedWebViewChromium.setWebChromeClient(client);
+        mContentsClientAdapter.setWebChromeClient(mSharedWebViewChromium.getWebChromeClient());
     }
 
     @Override
     public WebChromeClient getWebChromeClient() {
-        return mContentsClientAdapter.getWebChromeClient();
+        return mSharedWebViewChromium.getWebChromeClient();
     }
 
     /**

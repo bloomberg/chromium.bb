@@ -121,4 +121,7 @@ public class Features {
 
     // WebViewCompat.getWebViewClient
     public static final String GET_WEB_VIEW_CLIENT = "GET_WEB_VIEW_CLIENT";
+
+    // WebViewCompat.getWebChromeClient
+    public static final String GET_WEB_CHROME_CLIENT = "GET_WEB_CHROME_CLIENT";
 }
