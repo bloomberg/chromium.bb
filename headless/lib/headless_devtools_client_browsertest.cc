@@ -952,11 +952,16 @@ class HeadlessCrashObserverTest : public HeadlessAsyncDevTooledBrowserTest,
   // Make sure we don't fail because the renderer crashed!
   void RenderProcessExited(base::TerminationStatus status,
                            int exit_code) override {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+    // TODO(crbug.com/845011): Make ASan not interfere and expect a crash.
+    // ASan's normal error exit code is 1, which base categorizes as the process
+    // being killed.
+    EXPECT_EQ(base::TERMINATION_STATUS_PROCESS_WAS_KILLED, status);
+#elif defined(OS_WIN) || defined(OS_MACOSX)
     EXPECT_EQ(base::TERMINATION_STATUS_PROCESS_CRASHED, status);
 #else
     EXPECT_EQ(base::TERMINATION_STATUS_ABNORMAL_TERMINATION, status);
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif
   }
 };
 
