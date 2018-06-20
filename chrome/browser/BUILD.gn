@@ -1802,6 +1802,7 @@ jumbo_split_static_library("browser") {
     "//crypto",
     "//crypto:platform",
     "//device/base",
+    "//device/fido",
     "//device/usb/mojo",
     "//device/usb/public/mojom",
     "//device/vr/buildflags",

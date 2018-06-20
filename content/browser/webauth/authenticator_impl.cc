@@ -815,7 +815,8 @@ AuthenticatorImpl::MaybeCreatePlatformAuthenticator() {
   if (base::FeatureList::IsEnabled(features::kWebAuthTouchId)) {
     if (__builtin_available(macOS 10.12.2, *)) {
       return device::fido::mac::TouchIdAuthenticator::CreateIfAvailable(
-          request_delegate_->TouchIdAuthenticatorKeychainAccessGroup());
+          request_delegate_->TouchIdAuthenticatorKeychainAccessGroup(),
+          request_delegate_->TouchIdMetadataSecret());
     }
   }
 #endif

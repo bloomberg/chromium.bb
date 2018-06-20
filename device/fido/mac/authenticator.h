@@ -26,7 +26,8 @@ class API_AVAILABLE(macosx(10.12.2))
   // CreateIfAvailable returns a TouchIdAuthenticator if IsAvailable() returns
   // true and nullptr otherwise.
   static std::unique_ptr<TouchIdAuthenticator> CreateIfAvailable(
-      base::StringPiece keychain_access_group);
+      std::string keychain_access_group,
+      std::string metadata_secret);
 
   ~TouchIdAuthenticator() override;
 
@@ -42,12 +43,8 @@ class API_AVAILABLE(macosx(10.12.2))
   std::string GetId() const override;
 
  private:
-  TouchIdAuthenticator(base::StringPiece keychain_access_group);
-
-  // The profile ID identifies the user profile from which the request
-  // originates. It is used to scope credentials to the profile under which they
-  // were created.
-  base::StringPiece GetOrInitializeProfileId();
+  TouchIdAuthenticator(std::string keychain_access_group,
+                       std::string metadata_secret);
 
   // The keychain access group under which credentials are stored in the macOS
   // keychain for access control. The set of all access groups that the
@@ -55,6 +52,8 @@ class API_AVAILABLE(macosx(10.12.2))
   // embedded into the application during code signing. For more information see
   // https://developer.apple.com/documentation/security/ksecattraccessgroup?language=objc.
   std::string keychain_access_group_;
+
+  std::string metadata_secret_;
 
   std::unique_ptr<Operation> operation_;
 

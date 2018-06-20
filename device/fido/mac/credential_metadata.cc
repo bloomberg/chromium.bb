@@ -45,8 +45,18 @@ std::string DeriveKey(base::StringPiece in, Algorithm alg) {
 
 }  // namespace
 
-CredentialMetadata::CredentialMetadata(const std::string& profile_id)
-    : profile_id_(profile_id) {}
+// static
+std::string CredentialMetadata::GenerateRandomSecret() {
+  static constexpr size_t kSecretSize = 32u;
+  std::string secret;
+  RAND_bytes(
+      reinterpret_cast<uint8_t*>(base::WriteInto(&secret, kSecretSize + 1)),
+      kSecretSize);
+  return secret;
+}
+
+CredentialMetadata::CredentialMetadata(const std::string& secret)
+    : secret_(secret) {}
 CredentialMetadata::~CredentialMetadata() = default;
 
 CredentialMetadata::UserEntity::UserEntity(std::vector<uint8_t> id_,
@@ -67,10 +77,10 @@ static constexpr size_t kNonceLength = 12;
 
 // static
 base::Optional<std::vector<uint8_t>> CredentialMetadata::SealCredentialId(
-    const std::string& profile_id,
+    const std::string& secret,
     const std::string& rp_id,
     const UserEntity& user) {
-  CredentialMetadata cryptor(profile_id);
+  CredentialMetadata cryptor(secret);
 
   // The first 13 bytes are the version and nonce.
   std::vector<uint8_t> result(1 + kNonceLength);
@@ -108,10 +118,10 @@ base::Optional<std::vector<uint8_t>> CredentialMetadata::SealCredentialId(
 // static
 base::Optional<CredentialMetadata::UserEntity>
 CredentialMetadata::UnsealCredentialId(
-    const std::string& profile_id,
+    const std::string& secret,
     const std::string& rp_id,
     base::span<const uint8_t> credential_id) {
-  CredentialMetadata cryptor(profile_id);
+  CredentialMetadata cryptor(secret);
 
   // Recover the nonce and check for the correct version byte. Then try to
   // decrypt the remaining bytes.
@@ -145,22 +155,21 @@ CredentialMetadata::UnsealCredentialId(
 
 // static
 base::Optional<std::string> CredentialMetadata::EncodeRpIdAndUserId(
-    const std::string& profile_id,
+    const std::string& secret,
     const std::string& rp_id,
     base::span<const uint8_t> user_id) {
   // Encoding RP ID along with the user ID hides whether the same user ID was
   // reused on different RPs.
   const auto* user_id_data = reinterpret_cast<const char*>(user_id.data());
-  return CredentialMetadata(profile_id)
-      .HmacForStorage(rp_id + "/" +
-                      std::string(user_id_data, user_id_data + user_id.size()));
+  return CredentialMetadata(secret).HmacForStorage(
+      rp_id + "/" + std::string(user_id_data, user_id_data + user_id.size()));
 }
 
 // static
 base::Optional<std::string> CredentialMetadata::EncodeRpId(
-    const std::string& profile_id,
+    const std::string& secret,
     const std::string& rp_id) {
-  return CredentialMetadata(profile_id).HmacForStorage(rp_id);
+  return CredentialMetadata(secret).HmacForStorage(rp_id);
 }
 
 // static
@@ -172,7 +181,7 @@ base::Optional<std::string> CredentialMetadata::Seal(
     base::span<const uint8_t> nonce,
     base::span<const uint8_t> plaintext,
     base::StringPiece authenticated_data) const {
-  const std::string key = DeriveKey(profile_id_, Algorithm::kAes256Gcm);
+  const std::string key = DeriveKey(secret_, Algorithm::kAes256Gcm);
   crypto::Aead aead(crypto::Aead::AES_256_GCM);
   aead.Init(&key);
   std::string ciphertext;
@@ -191,7 +200,7 @@ base::Optional<std::string> CredentialMetadata::Unseal(
     base::span<const uint8_t> nonce,
     base::span<const uint8_t> ciphertext,
     base::StringPiece authenticated_data) const {
-  const std::string key = DeriveKey(profile_id_, Algorithm::kAes256Gcm);
+  const std::string key = DeriveKey(secret_, Algorithm::kAes256Gcm);
   crypto::Aead aead(crypto::Aead::AES_256_GCM);
   aead.Init(&key);
   std::string plaintext;
@@ -209,7 +218,7 @@ base::Optional<std::string> CredentialMetadata::Unseal(
 base::Optional<std::string> CredentialMetadata::HmacForStorage(
     base::StringPiece data) const {
   crypto::HMAC hmac(crypto::HMAC::SHA256);
-  const std::string key = DeriveKey(profile_id_, Algorithm::kHmacSha256);
+  const std::string key = DeriveKey(secret_, Algorithm::kHmacSha256);
   std::vector<uint8_t> digest(hmac.DigestLength());
   if (!hmac.Init(key) || !hmac.Sign(data, digest.data(), hmac.DigestLength())) {
     return base::nullopt;

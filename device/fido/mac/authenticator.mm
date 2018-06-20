@@ -34,10 +34,12 @@ bool TouchIdAuthenticator::IsAvailable() {
 
 // static
 std::unique_ptr<TouchIdAuthenticator> TouchIdAuthenticator::CreateIfAvailable(
-    base::StringPiece keychain_access_group) {
-  return IsAvailable()
-             ? base::WrapUnique(new TouchIdAuthenticator(keychain_access_group))
-             : nullptr;
+    std::string keychain_access_group,
+    std::string metadata_secret) {
+  return IsAvailable() ? base::WrapUnique(new TouchIdAuthenticator(
+                             std::move(keychain_access_group),
+                             std::move(metadata_secret)))
+                       : nullptr;
 }
 
 TouchIdAuthenticator::~TouchIdAuthenticator() = default;
@@ -48,8 +50,8 @@ void TouchIdAuthenticator::MakeCredential(
     MakeCredentialCallback callback) {
   DCHECK(!operation_);
   operation_ = std::make_unique<MakeCredentialOperation>(
-      std::move(request), GetOrInitializeProfileId().as_string(),
-      keychain_access_group_, std::move(callback));
+      std::move(request), metadata_secret_, keychain_access_group_,
+      std::move(callback));
   operation_->Run();
 }
 
@@ -57,8 +59,8 @@ void TouchIdAuthenticator::GetAssertion(CtapGetAssertionRequest request,
                                         GetAssertionCallback callback) {
   DCHECK(!operation_);
   operation_ = std::make_unique<GetAssertionOperation>(
-      std::move(request), GetOrInitializeProfileId().as_string(),
-      keychain_access_group_, std::move(callback));
+      std::move(request), metadata_secret_, keychain_access_group_,
+      std::move(callback));
   operation_->Run();
 }
 
@@ -74,14 +76,10 @@ std::string TouchIdAuthenticator::GetId() const {
   return "TouchIdAuthenticator";
 }
 
-TouchIdAuthenticator::TouchIdAuthenticator(
-    base::StringPiece keychain_access_group)
-    : keychain_access_group_(keychain_access_group.as_string()) {}
-
-base::StringPiece TouchIdAuthenticator::GetOrInitializeProfileId() {
-  // TODO(martinkr): Implement.
-  return "12345678901234567890123456789012";
-}
+TouchIdAuthenticator::TouchIdAuthenticator(std::string keychain_access_group,
+                                           std::string metadata_secret)
+    : keychain_access_group_(std::move(keychain_access_group)),
+      metadata_secret_(std::move(metadata_secret)) {}
 
 }  // namespace mac
 }  // namespace fido

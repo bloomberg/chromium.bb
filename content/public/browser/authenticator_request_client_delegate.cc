@@ -32,10 +32,17 @@ bool AuthenticatorRequestClientDelegate::IsFocused() {
 }
 
 #if defined(OS_MACOSX)
-base::StringPiece
+std::string
 AuthenticatorRequestClientDelegate::TouchIdAuthenticatorKeychainAccessGroup() {
-  static const char* access_group = "not-implemented";
-  return access_group;
+  NOTREACHED();
+  return std::string();
+}
+#endif
+
+#if defined(OS_MACOSX)
+std::string AuthenticatorRequestClientDelegate::TouchIdMetadataSecret() {
+  NOTREACHED();
+  return std::string();
 }
 #endif
 

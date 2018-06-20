@@ -11,7 +11,12 @@
 #include "content/public/browser/authenticator_request_client_delegate.h"
 
 namespace content {
+class BrowserContext;
 class RenderFrameHost;
+}  // namespace content
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 class AuthenticatorRequestDialogModel;
@@ -20,6 +25,8 @@ class ChromeAuthenticatorRequestDelegate
     : public content::AuthenticatorRequestClientDelegate,
       public AuthenticatorRequestDialogModel::Observer {
  public:
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
   // The |render_frame_host| must outlive this instance.
   explicit ChromeAuthenticatorRequestDelegate(
       content::RenderFrameHost* render_frame_host);
@@ -27,10 +34,16 @@ class ChromeAuthenticatorRequestDelegate
 
   base::WeakPtr<ChromeAuthenticatorRequestDelegate> AsWeakPtr();
 
+#if defined(OS_MACOSX)
+  std::string TouchIdAuthenticatorKeychainAccessGroup() override;
+  std::string TouchIdMetadataSecret() override;
+#endif
+
  private:
   content::RenderFrameHost* render_frame_host() const {
     return render_frame_host_;
   }
+  content::BrowserContext* browser_context() const;
 
   // content::AuthenticatorRequestClientDelegate:
   void DidStartRequest() override;
@@ -40,9 +53,6 @@ class ChromeAuthenticatorRequestDelegate
       const std::string& relying_party_id,
       base::OnceCallback<void(bool)> callback) override;
   bool IsFocused() override;
-#if defined(OS_MACOSX)
-  base::StringPiece TouchIdAuthenticatorKeychainAccessGroup() override;
-#endif
 
   // AuthenticatorRequestDialogModel::Observer:
   void OnModelDestroyed() override;

@@ -102,6 +102,14 @@ TEST_F(CredentialMetadataTest, EncodeRpId) {
   EXPECT_NE(EncodeRpId(), *CredentialMetadata::EncodeRpId(wrong_key_, rp_id_));
 }
 
+TEST(CredentialMetadata, GenerateRandomSecret) {
+  std::string s1 = CredentialMetadata::GenerateRandomSecret();
+  EXPECT_EQ(32u, s1.size());
+  std::string s2 = CredentialMetadata::GenerateRandomSecret();
+  EXPECT_EQ(32u, s2.size());
+  EXPECT_NE(s1, s2);
+}
+
 }  // namespace
 }  // namespace mac
 }  // namespace fido

@@ -30,11 +30,11 @@ class API_AVAILABLE(macosx(10.12.2)) OperationBase : public Operation {
                                            base::Optional<Response>)>;
 
   OperationBase(Request request,
-                std::string profile_id,
+                std::string metadata_secret,
                 std::string keychain_access_group,
                 Callback callback)
       : request_(std::move(request)),
-        profile_id_(std::move(profile_id)),
+        metadata_secret_(std::move(metadata_secret)),
         keychain_access_group_(std::move(keychain_access_group)),
         callback_(std::move(callback)),
         touch_id_context_(std::make_unique<TouchIdContext>()) {}
@@ -45,7 +45,7 @@ class API_AVAILABLE(macosx(10.12.2)) OperationBase : public Operation {
   // Subclasses must call Init() at the beginning of Run().
   bool Init() {
     base::Optional<std::string> rp_id =
-        CredentialMetadata::EncodeRpId(profile_id(), RpId());
+        CredentialMetadata::EncodeRpId(metadata_secret(), RpId());
     if (!rp_id)
       return false;
 
@@ -80,9 +80,9 @@ class API_AVAILABLE(macosx(10.12.2)) OperationBase : public Operation {
   }
 
   // DefaultKeychainQuery returns a default keychain query dictionary that has
-  // the keychain item class, profile ID and RP ID filled out (but not the
-  // credential ID). More fields can be set on the return value to refine the
-  // query.
+  // the keychain item class, keychain access group and RP ID filled out (but
+  // not the credential ID). More fields can be set on the return value to
+  // refine the query.
   base::ScopedCFTypeRef<CFMutableDictionaryRef> DefaultKeychainQuery() const {
     base::ScopedCFTypeRef<CFMutableDictionaryRef> query(
         CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr));
@@ -95,14 +95,16 @@ class API_AVAILABLE(macosx(10.12.2)) OperationBase : public Operation {
     return query;
   }
 
-  const std::string& profile_id() const { return profile_id_; }
+  const std::string& metadata_secret() const { return metadata_secret_; }
 
   const Request& request() const { return request_; }
   Callback& callback() { return callback_; }
 
  private:
   Request request_;
-  std::string profile_id_;
+  // The secret parameter passed to |CredentialMetadata| operations to encrypt
+  // or encode credential metadata for storage in the macOS keychain.
+  std::string metadata_secret_;
   std::string keychain_access_group_;
   std::string encoded_rp_id_ = "";
   Callback callback_;
