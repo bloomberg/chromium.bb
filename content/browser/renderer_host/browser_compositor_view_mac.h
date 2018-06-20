@@ -196,7 +196,8 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
 
   // Weak pointer to the layer supplied and reset via SetParentUiLayer. |this|
   // is an observer of |parent_ui_layer_|, to ensure that |parent_ui_layer_|
-  // always be valid when non-null.
+  // always be valid when non-null. The UpdateState function will re-parent
+  // |root_layer_| to be under |parent_ui_layer_|, if needed.
   ui::Layer* parent_ui_layer_ = nullptr;
   bool render_widget_host_is_hidden_ = true;
   bool ns_view_attached_to_window_ = false;
