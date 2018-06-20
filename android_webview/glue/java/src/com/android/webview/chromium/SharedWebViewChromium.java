@@ -4,6 +4,7 @@
 
 package com.android.webview.chromium;
 
+import android.webkit.WebChromeClient;
 import android.webkit.WebViewClient;
 
 import org.chromium.android_webview.AwContents;
@@ -27,6 +28,7 @@ public class SharedWebViewChromium {
     final static WebViewClient sNullWebViewClient = new WebViewClient();
     // The WebViewClient instance that was passed to WebView.setWebViewClient().
     private WebViewClient mWebViewClient = sNullWebViewClient;
+    private WebChromeClient mWebChromeClient;
 
     public SharedWebViewChromium(WebViewChromiumRunQueue runQueue, WebViewChromiumAwInit awInit) {
         mRunQueue = runQueue;
@@ -39,6 +41,14 @@ public class SharedWebViewChromium {
 
     public WebViewClient getWebViewClient() {
         return mWebViewClient;
+    }
+
+    void setWebChromeClient(WebChromeClient client) {
+        mWebChromeClient = client;
+    }
+
+    public WebChromeClient getWebChromeClient() {
+        return mWebChromeClient;
     }
 
     public void setAwContentsOnUiThread(AwContents awContents) {
