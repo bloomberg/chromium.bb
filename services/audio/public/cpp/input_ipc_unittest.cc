@@ -4,6 +4,9 @@
 
 #include "services/audio/public/cpp/input_ipc.h"
 
+#include <string>
+#include <utility>
+
 #include "base/test/scoped_task_environment.h"
 #include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -20,7 +23,7 @@ namespace audio {
 
 namespace {
 
-const std::string& kDeviceId = "1234";
+const char kDeviceId[] = "1234";
 const size_t kShMemSize = 456;
 const double kNewVolume = 0.271828;
 
