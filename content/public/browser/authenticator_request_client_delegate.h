@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/strings/string_piece_forward.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 
@@ -61,7 +60,15 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate {
   // more information on this, refer to |device::fido::TouchIdAuthenticator|.
   // This method may to return empty string or some other placeholder value on
   // platforms where |TouchIdAuthenticator| is not used.
-  virtual base::StringPiece TouchIdAuthenticatorKeychainAccessGroup();
+  virtual std::string TouchIdAuthenticatorKeychainAccessGroup();
+
+  // Returns the secret used to derive key material when encrypting WebAuthn
+  // credential metadata for storage in the macOS keychain. Chrome returns
+  // different secrets for each user profile in order to logically separate
+  // credentials per profile. This method may to return empty string or some
+  // other placeholder value on platforms where |TouchIdAuthenticator| is not
+  // used.
+  virtual std::string TouchIdMetadataSecret();
 #endif
 
  private:

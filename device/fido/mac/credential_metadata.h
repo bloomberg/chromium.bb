@@ -43,6 +43,10 @@ namespace mac {
 // TODO(martinkr): We currently do not store profile icon URLs.
 class COMPONENT_EXPORT(DEVICE_FIDO) CredentialMetadata {
  public:
+  // Generate a new random secret to use with the public interface of
+  // CredentialMetadata. Chrome stores this secret in the Profile Prefs.
+  static std::string GenerateRandomSecret();
+
   // UserEntity loosely corresponds to a PublicKeyCredentialUserEntity
   // (https://www.w3.org/TR/webauthn/#sctn-user-credential-params). Values of
   // this type should be moved whenever possible.
@@ -63,26 +67,26 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialMetadata {
 
   // SealCredentialId encrypts the given UserEntity into a credential id.
   static base::Optional<std::vector<uint8_t>> SealCredentialId(
-      const std::string& profile_id,
+      const std::string& secret,
       const std::string& rp_id,
       const UserEntity& user);
 
   // UnsealCredentialId attempts to decrypt a UserEntity from a given credential
   // id.
   static base::Optional<UserEntity> UnsealCredentialId(
-      const std::string& profile_id,
+      const std::string& secret,
       const std::string& rp_id,
       base::span<const uint8_t> credential_id);
 
   // EncodeRpIdAndUserId encodes the concatenation of RP ID and user ID for
   // storage in the macOS keychain.
   static base::Optional<std::string> EncodeRpIdAndUserId(
-      const std::string& profile_id,
+      const std::string& secret,
       const std::string& rp_id,
       base::span<const uint8_t> user_id);
 
   // EncodeRpId encodes the given RP ID for storage in the macOS keychain.
-  static base::Optional<std::string> EncodeRpId(const std::string& profile_id,
+  static base::Optional<std::string> EncodeRpId(const std::string& secret,
                                                 const std::string& rp_id);
 
  private:
@@ -92,7 +96,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialMetadata {
   // which is used as the additional authenticated data (AAD) input to the AEAD.
   static std::string MakeAad(const std::string& rp_id);
 
-  CredentialMetadata(const std::string& profile_id);
+  CredentialMetadata(const std::string& secret);
   ~CredentialMetadata();
 
   base::Optional<std::string> Seal(base::span<const uint8_t> nonce,
@@ -104,11 +108,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialMetadata {
       base::StringPiece authenticated_data) const;
   base::Optional<std::string> HmacForStorage(base::StringPiece data) const;
 
-  // profile_id_ is a randomly generated string identifying the current Chrome
-  // user profile. It is used to derive the key material for AEAD and HMAC.
-  // This ensures that credentials are logically tied to the Chrome user
-  // profile under which they were created.
-  const std::string& profile_id_;
+  // Used to derive keys for the HMAC and AEAD operations. Chrome picks
+  // different secrets for each user profile. This ensures that credentials are
+  // logically tied to the Chrome user profile under which they were created.
+  const std::string& secret_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialMetadata);
 };

@@ -70,6 +70,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/secure_origin_whitelist.h"
@@ -509,6 +510,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   autofill::AutofillManager::RegisterProfilePrefs(registry);
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);
   certificate_transparency::prefs::RegisterPrefs(registry);
+  ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(registry);
   ChromeContentBrowserClient::RegisterProfilePrefs(registry);
   ChromeSSLHostStateDelegate::RegisterProfilePrefs(registry);
   ChromeVersionService::RegisterProfilePrefs(registry);

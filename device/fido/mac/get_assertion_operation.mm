@@ -24,12 +24,12 @@ namespace mac {
 using base::ScopedCFTypeRef;
 
 GetAssertionOperation::GetAssertionOperation(CtapGetAssertionRequest request,
-                                             std::string profile_id,
+                                             std::string metadata_secret,
                                              std::string keychain_access_group,
                                              Callback callback)
     : OperationBase<CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>(
           std::move(request),
-          std::move(profile_id),
+          std::move(metadata_secret),
           std::move(keychain_access_group),
           std::move(callback)) {}
 GetAssertionOperation::~GetAssertionOperation() = default;

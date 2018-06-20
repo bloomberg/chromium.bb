@@ -26,13 +26,13 @@ using base::ScopedCFTypeRef;
 
 MakeCredentialOperation::MakeCredentialOperation(
     CtapMakeCredentialRequest request,
-    std::string profile_id,
+    std::string metadata_secret,
     std::string keychain_access_group,
     Callback callback)
     : OperationBase<CtapMakeCredentialRequest,
                     AuthenticatorMakeCredentialResponse>(
           std::move(request),
-          std::move(profile_id),
+          std::move(metadata_secret),
           std::move(keychain_access_group),
           std::move(callback)) {}
 MakeCredentialOperation::~MakeCredentialOperation() = default;
@@ -110,7 +110,7 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success, NSError* err) {
 
   // Delete the key pair for this RP + user handle if one already exists.
   base::Optional<std::string> encoded_rp_id_user_id =
-      CredentialMetadata::EncodeRpIdAndUserId(profile_id(), RpId(),
+      CredentialMetadata::EncodeRpIdAndUserId(metadata_secret(), RpId(),
                                               request().user().user_id());
   if (!encoded_rp_id_user_id) {
     // Internal error.
@@ -214,7 +214,7 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success, NSError* err) {
 base::Optional<std::vector<uint8_t>>
 MakeCredentialOperation::GenerateCredentialIdForRequest() const {
   return CredentialMetadata::SealCredentialId(
-      profile_id(), RpId(),
+      metadata_secret(), RpId(),
       CredentialMetadata::UserEntity(
           request().user().user_id(), request().user().user_name().value_or(""),
           request().user().user_display_name().value_or("")));

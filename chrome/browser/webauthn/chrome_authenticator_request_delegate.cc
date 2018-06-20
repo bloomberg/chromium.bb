@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -25,9 +26,15 @@
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+
+#if defined(OS_MACOSX)
+#include "device/fido/mac/credential_metadata.h"
+#endif
 
 namespace {
 
@@ -52,6 +59,20 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
 
 }  // namespace
 
+#if defined(OS_MACOSX)
+static const char kWebAuthnTouchIdMetadataSecretPrefName[] =
+    "webauthn.touchid.metadata_secret";
+#endif
+
+// static
+void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+#if defined(OS_MACOSX)
+  registry->RegisterStringPref(kWebAuthnTouchIdMetadataSecretPrefName,
+                               std::string());
+#endif
+}
+
 ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
     content::RenderFrameHost* render_frame_host)
     : render_frame_host_(render_frame_host), weak_ptr_factory_(this) {}
@@ -75,6 +96,12 @@ ChromeAuthenticatorRequestDelegate::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+content::BrowserContext* ChromeAuthenticatorRequestDelegate::browser_context()
+    const {
+  return content::WebContents::FromRenderFrameHost(render_frame_host())
+      ->GetBrowserContext();
+}
+
 void ChromeAuthenticatorRequestDelegate::DidStartRequest() {
 #if !defined(OS_ANDROID)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -94,10 +121,7 @@ bool ChromeAuthenticatorRequestDelegate::ShouldPermitIndividualAttestation(
     const std::string& relying_party_id) {
   // If the RP ID is listed in the policy, signal that individual attestation is
   // permitted.
-  auto* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host());
-  auto* browser_context = web_contents->GetBrowserContext();
-  return IsWebauthnRPIDListedInEnterprisePolicy(browser_context,
+  return IsWebauthnRPIDListedInEnterprisePolicy(browser_context(),
                                                 relying_party_id);
 }
 
@@ -109,10 +133,7 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
   // of prompting.
   std::move(callback).Run(true);
 #else
-  auto* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host());
-  auto* browser_context = web_contents->GetBrowserContext();
-  if (IsWebauthnRPIDListedInEnterprisePolicy(browser_context,
+  if (IsWebauthnRPIDListedInEnterprisePolicy(browser_context(),
                                              relying_party_id)) {
     std::move(callback).Run(true);
     return;
@@ -121,8 +142,8 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
   // This does not use content::PermissionManager because that only works with
   // content settings, while this permission is a non-persisted, per-attested-
   // registration consent.
-  auto* permission_request_manager =
-      PermissionRequestManager::FromWebContents(web_contents);
+  auto* permission_request_manager = PermissionRequestManager::FromWebContents(
+      content::WebContents::FromRenderFrameHost(render_frame_host()));
   if (!permission_request_manager) {
     std::move(callback).Run(false);
     return;
@@ -157,7 +178,7 @@ bool ChromeAuthenticatorRequestDelegate::IsFocused() {
 }
 
 #if defined(OS_MACOSX)
-base::StringPiece
+std::string
 ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorKeychainAccessGroup() {
   // This exact value must be whitelisted in the keychain-access-group section
   // of the entitlements plist file with which Chrome is signed. Note that
@@ -165,6 +186,21 @@ ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorKeychainAccessGroup() {
   // of the other channels, Canary still uses the same keychain access group.
   static const char* access_group = "EQHXZ8M8AV.com.google.Chrome.webauthn";
   return access_group;
+}
+#endif
+
+#if defined(OS_MACOSX)
+std::string ChromeAuthenticatorRequestDelegate::TouchIdMetadataSecret() {
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
+  std::string key = prefs->GetString(kWebAuthnTouchIdMetadataSecretPrefName);
+  if (key.empty() || !base::Base64Decode(key, &key)) {
+    key = device::fido::mac::CredentialMetadata::GenerateRandomSecret();
+    std::string encoded_key;
+    base::Base64Encode(key, &encoded_key);
+    prefs->SetString(kWebAuthnTouchIdMetadataSecretPrefName, encoded_key);
+  }
+  return key;
 }
 #endif
 
