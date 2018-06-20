@@ -77,10 +77,9 @@ public class PasswordAccessorySheetViewTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         openLayoutInAccessorySheet(R.layout.password_accessory_sheet, view -> {
             mView.set((RecyclerView) view);
-            final PasswordAccessorySheetViewBinder binder = new PasswordAccessorySheetViewBinder();
             // Reuse coordinator code to create and wire the adapter. No mediator involved.
-            binder.initializeView(
-                    mView.get(), PasswordAccessorySheetCoordinator.createAdapter(mModel, binder));
+            PasswordAccessorySheetViewBinder.initializeView(
+                    mView.get(), PasswordAccessorySheetCoordinator.createAdapter(mModel));
         });
         CriteriaHelper.pollUiThread(Criteria.equals(true, () -> mView.get() != null));
     }

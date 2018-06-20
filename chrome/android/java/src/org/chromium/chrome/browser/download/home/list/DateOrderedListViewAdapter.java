@@ -6,31 +6,28 @@ package org.chromium.chrome.browser.download.home.list;
 
 import android.support.v7.widget.RecyclerView;
 
-import org.chromium.chrome.browser.download.home.list.ListUtils.ViewType;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 
 /**
  * A helper {@link RecyclerView.Adapter} implementation meant to glue a {@link ListItemModel}
  * to the right {@link ViewHolder} and {@link ViewBinder}.
+ * TODO(bauerb): Remove this class together with reliance on stable IDs
  */
-class DateOrderedListViewAdapter
-        extends RecyclerViewAdapter<DecoratedListItemModel, ListItemViewHolder> {
+class DateOrderedListViewAdapter extends RecyclerViewAdapter<ListItemViewHolder, Void> {
+    private final DecoratedListItemModel mModel;
+
     /** Creates an instance of a {@link DateOrderedListViewAdapter}. */
     public DateOrderedListViewAdapter(DecoratedListItemModel model,
-            ViewBinder<DecoratedListItemModel, ListItemViewHolder> viewBinder) {
-        super(model, viewBinder);
+            Delegate<ListItemViewHolder, Void> delegate,
+            ViewHolderFactory<ListItemViewHolder> factory) {
+        super(delegate, factory);
+        mModel = model;
         setHasStableIds(true);
     }
 
     @Override
     public long getItemId(int position) {
         if (!hasStableIds()) return RecyclerView.NO_ID;
-        return mModel.getItemAt(position).stableId;
-    }
-
-    @Override
-    public @ViewType int getItemViewType(int position) {
-        ListItem item = mModel.getItemAt(position);
-        return ListUtils.getViewTypeForItem(item);
+        return mModel.get(position).stableId;
     }
 }

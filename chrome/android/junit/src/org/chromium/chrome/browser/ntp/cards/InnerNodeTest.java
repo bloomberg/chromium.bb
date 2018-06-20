@@ -221,7 +221,7 @@ public class InnerNodeTest {
 
         private void checkCount(ListObservable child) {
             if (mNextExpectedItemCount == null) fail("Unexpected call");
-            assertThat(child.getItemCount(), is(mNextExpectedItemCount));
+            assertThat(((ChildNode) child).getItemCount(), is(mNextExpectedItemCount));
             mNextExpectedItemCount = null;
         }
     }

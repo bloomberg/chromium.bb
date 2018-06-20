@@ -13,7 +13,7 @@ import android.support.v7.widget.RecyclerView;
  * Internally uses a view binder to bind model properties to a view like a TabLayout.
  *
  * Do not use this class to fill {@link RecyclerView}s - consider using the
- * {@link RecyclerViewModelChangeProcessor} which was specifically designed for that use case!
+ * {@link SimpleRecyclerViewMcp} which was specifically designed for that use case!
  *
  * @param <M> The {@link ListObservable} model.
  * @param <V> The view object that is changing.

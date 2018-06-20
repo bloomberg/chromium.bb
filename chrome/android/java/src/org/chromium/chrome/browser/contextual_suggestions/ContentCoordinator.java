@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextual_suggestions;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
@@ -13,10 +14,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
+import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
+import org.chromium.chrome.browser.modelutil.ListObservable;
+import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.cards.ChildNode;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
+import org.chromium.chrome.browser.ntp.cards.TreeNode;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -33,8 +38,43 @@ class ContentCoordinator {
     private ContextualSuggestionsModel mModel;
     private WindowAndroid mWindowAndroid;
     private ContextMenuManager mContextMenuManager;
-    private RecyclerViewModelChangeProcessor<ClusterList, NewTabPageViewHolder, PartialBindCallback>
-            mModelChangeProcessor;
+    private ModelChangeProcessor mModelChangeProcessor;
+
+    /**
+     * This class acts as an adapter between RecyclerView contents represented by a
+     * {@link TreeNode} and the new {@link RecyclerViewAdapter.Delegate} interface.
+     * TODO(bauerb): Merge {@link TreeNode} into {@link RecyclerViewAdapter.Delegate}.
+     */
+    private static class ModelChangeProcessor extends ForwardingListObservable<PartialBindCallback>
+            implements RecyclerViewAdapter.Delegate<NewTabPageViewHolder, PartialBindCallback>,
+                       ListObservable.ListObserver<PartialBindCallback> {
+        private final TreeNode mTreeNode;
+
+        private ModelChangeProcessor(ChildNode treeNode) {
+            mTreeNode = treeNode;
+        }
+
+        @Override
+        public int getItemCount() {
+            return mTreeNode.getItemCount();
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return mTreeNode.getItemViewType(position);
+        }
+
+        @Override
+        public void onBindViewHolder(NewTabPageViewHolder viewHolder, int position,
+                @Nullable PartialBindCallback payload) {
+            if (payload == null) {
+                mTreeNode.onBindViewHolder(viewHolder, position);
+                return;
+            }
+
+            payload.onResult(viewHolder);
+        }
+    }
 
     /**
      * Construct a new {@link ContentCoordinator}.
@@ -77,13 +117,15 @@ class ContentCoordinator {
                 mRecyclerView::setTouchEnabled, closeContextMenuCallback);
         mWindowAndroid.addContextMenuCloseListener(mContextMenuManager);
 
+        final ClusterList clusterList = mModel.getClusterList();
+        mModelChangeProcessor = new ModelChangeProcessor(clusterList);
         ContextualSuggestionsAdapter adapter =
                 new ContextualSuggestionsAdapter(profile, new UiConfig(mRecyclerView), uiDelegate,
-                        mModel.getClusterList(), mContextMenuManager);
+                        mContextMenuManager, mModelChangeProcessor);
         mRecyclerView.setAdapter(adapter);
 
-        mModelChangeProcessor = new RecyclerViewModelChangeProcessor<>(adapter);
-        mModel.getClusterList().addObserver(mModelChangeProcessor);
+        mModelChangeProcessor.addObserver(adapter);
+        clusterList.addObserver(mModelChangeProcessor);
 
         // TODO(twellington): Should this be a proper model property, set by the mediator and bound
         // to the RecyclerView?

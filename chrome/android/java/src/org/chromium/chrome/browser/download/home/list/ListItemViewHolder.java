@@ -40,8 +40,35 @@ abstract class ListItemViewHolder extends ViewHolder {
     private static final int INVALID_ID = -1;
 
     /** Creates an instance of a {@link ListItemViewHolder}. */
-    public ListItemViewHolder(View itemView) {
+    protected ListItemViewHolder(View itemView) {
         super(itemView);
+    }
+
+    /**
+     * Used as a method reference for ViewHolderFactory.
+     * @see
+     * org.chromium.chrome.browser.modelutil.RecyclerViewAdapter.ViewHolderFactory#createViewHolder
+     */
+    public static ListItemViewHolder create(ViewGroup parent, @ListUtils.ViewType int viewType) {
+        switch (viewType) {
+            case ListUtils.DATE:
+                return DateViewHolder.create(parent);
+            case ListUtils.IN_PROGRESS:
+                return new InProgressViewHolder(parent);
+            case ListUtils.GENERIC:
+                return GenericViewHolder.create(parent);
+            case ListUtils.VIDEO:
+                return new VideoViewHolder(parent);
+            case ListUtils.IMAGE:
+                return new ImageViewHolder(parent);
+            case ListUtils.CUSTOM_VIEW:
+                return new CustomViewHolder(parent);
+            case ListUtils.PREFETCH:
+                return PrefetchViewHolder.create(parent);
+        }
+
+        assert false;
+        return null;
     }
 
     /**

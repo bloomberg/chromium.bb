@@ -9,9 +9,14 @@ import android.support.annotation.Nullable;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
+import org.chromium.chrome.browser.modelutil.SimpleList;
 
-/** A wrapper class that adds decoration {@link ListItem}s to a {@link ListItemModel}. */
-class DecoratedListItemModel extends ListObservable<Void> implements ListObserver<Void> {
+/**
+ * A wrapper class that adds decoration {@link ListItem}s to a {@link ListItemModel}.
+ * TODO(bauerb): Replace this with InnerNode (once it has been migrated to the UI architecture)
+ */
+class DecoratedListItemModel
+        extends ListObservable<Void> implements ListObserver<Void>, SimpleList<ListItem> {
     private final ListItemModel mModel;
 
     private ViewListItem mHeaderItem;
@@ -43,10 +48,16 @@ class DecoratedListItemModel extends ListObservable<Void> implements ListObserve
         }
     }
 
-    /** @see ListItemModel#getItemAt(int) */
-    public ListItem getItemAt(int index) {
+    // SimpleList implementation.
+    @Override
+    public int size() {
+        return mModel.size() + (mHeaderItem == null ? 0 : 1);
+    }
+
+    @Override
+    public ListItem get(int index) {
         if (index == 0 && mHeaderItem != null) return mHeaderItem;
-        return mModel.getItemAt(convertIndexForSource(index));
+        return mModel.get(convertIndexForSource(index));
     }
 
     // ListObserver implementation.
@@ -65,12 +76,6 @@ class DecoratedListItemModel extends ListObservable<Void> implements ListObserve
             ListObservable source, int index, int count, @Nullable Void payload) {
         assert payload == null;
         notifyItemRangeChanged(convertIndexFromSource(index), count, payload);
-    }
-
-    // ListObservable implementation.
-    @Override
-    public int getItemCount() {
-        return mModel.getItemCount() + (mHeaderItem == null ? 0 : 1);
     }
 
     private int convertIndexForSource(int index) {

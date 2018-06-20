@@ -15,8 +15,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetViewBinder.TextViewHolder;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
-import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.SimpleListObservable;
+import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
 
 /**
  * This component is a tab that can be added to the {@link ManualFillingCoordinator} which shows it
@@ -26,7 +26,6 @@ public class PasswordAccessorySheetCoordinator {
     private final Context mContext;
     private final SimpleListObservable<Item> mModel = new SimpleListObservable<>();
     private final KeyboardAccessoryData.Observer<Item> mMediator = mModel::set;
-    private final PasswordAccessorySheetViewBinder mBinder = new PasswordAccessorySheetViewBinder();
 
     private final KeyboardAccessoryData.Tab mTab;
 
@@ -70,8 +69,7 @@ public class PasswordAccessorySheetCoordinator {
     }
 
     private void onTabCreated(View view) {
-        mBinder.initializeView((RecyclerView) view,
-                PasswordAccessorySheetCoordinator.createAdapter(mModel, mBinder));
+        PasswordAccessorySheetViewBinder.initializeView((RecyclerView) view, createAdapter(mModel));
     }
 
     /**
@@ -80,11 +78,14 @@ public class PasswordAccessorySheetCoordinator {
      * @param model the {@link SimpleListObservable<Item>} the adapter gets its data from.
      * @return Returns a fully initialized and wired adapter to a PasswordAccessorySheetViewBinder.
      */
-    static RecyclerViewAdapter<SimpleListObservable<Item>, TextViewHolder> createAdapter(
-            SimpleListObservable<Item> model, PasswordAccessorySheetViewBinder viewBinder) {
-        RecyclerViewAdapter<SimpleListObservable<Item>, TextViewHolder> adapter =
-                new PasswordAccessorySheetViewAdapter<>(model, viewBinder);
-        model.addObserver(new RecyclerViewModelChangeProcessor<>(adapter));
+    static RecyclerViewAdapter<TextViewHolder, Void> createAdapter(
+            SimpleListObservable<Item> model) {
+        SimpleRecyclerViewMcp<Item, TextViewHolder, Void> processor =
+                new SimpleRecyclerViewMcp<>(model, Item::getType, TextViewHolder::bind);
+        RecyclerViewAdapter<TextViewHolder, Void> adapter =
+                new RecyclerViewAdapter<>(processor, TextViewHolder::create);
+        model.addObserver(processor);
+        processor.addObserver(adapter);
         return adapter;
     }
 

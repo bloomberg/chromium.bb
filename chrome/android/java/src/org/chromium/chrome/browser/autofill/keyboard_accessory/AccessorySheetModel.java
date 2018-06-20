@@ -45,7 +45,7 @@ class AccessorySheetModel extends PropertyObservable<AccessorySheetModel.Propert
 
     void setActiveTabIndex(int activeTabPosition) {
         if (mActiveTabIndex == activeTabPosition) return;
-        assert((activeTabPosition >= 0 && activeTabPosition < mTabList.getItemCount())
+        assert((activeTabPosition >= 0 && activeTabPosition < mTabList.size())
                 || activeTabPosition == NO_ACTIVE_TAB)
             : "Tried to set invalid index '" + activeTabPosition + "' as active tab!";
         mActiveTabIndex = activeTabPosition;

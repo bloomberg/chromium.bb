@@ -47,7 +47,7 @@ class AccessorySheetMediator {
     void addTab(KeyboardAccessoryData.Tab tab) {
         mModel.getTabList().add(tab);
         if (mModel.getActiveTabIndex() == NO_ACTIVE_TAB) {
-            mModel.setActiveTabIndex(mModel.getTabList().getItemCount() - 1);
+            mModel.setActiveTabIndex(mModel.getTabList().size() - 1);
         }
     }
 
@@ -59,7 +59,7 @@ class AccessorySheetMediator {
     }
 
     void setActiveTab(int position) {
-        assert position < mModel.getTabList().getItemCount()
+        assert position < mModel.getTabList().size()
                 || position >= 0 : position + " is not a valid tab index!";
         mModel.setActiveTabIndex(position);
     }
@@ -83,7 +83,7 @@ class AccessorySheetMediator {
         }
         if (activeTab >= 0) return activeTab; // The new active tab is valid.
         // If there are items left, take the first one.
-        int itemCountAfterDeletion = mModel.getTabList().getItemCount() - 1;
+        int itemCountAfterDeletion = mModel.getTabList().size() - 1;
         return itemCountAfterDeletion > 0 ? 0 : NO_ACTIVE_TAB;
     }
 }

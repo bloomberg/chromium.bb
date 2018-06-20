@@ -102,13 +102,13 @@ public class KeyboardAccessoryControllerTest {
         // Calling addTab on the coordinator should make model propagate that it has a new tab.
         mCoordinator.addTab(mTestTab);
         verify(mMockTabListObserver).onItemRangeInserted(mModel.getTabList(), 0, 1);
-        assertThat(mModel.getTabList().getItemCount(), is(1));
+        assertThat(mModel.getTabList().size(), is(1));
         assertThat(mModel.getTabList().get(0), is(mTestTab));
 
         // Calling hide on the coordinator should make model propagate that it's invisible.
         mCoordinator.removeTab(mTestTab);
         verify(mMockTabListObserver).onItemRangeRemoved(mModel.getTabList(), 0, 1);
-        assertThat(mModel.getTabList().getItemCount(), is(0));
+        assertThat(mModel.getTabList().size(), is(0));
     }
 
     @Test
@@ -122,19 +122,19 @@ public class KeyboardAccessoryControllerTest {
         // If the coordinator receives an initial actions, the model should report an insertion.
         testProvider.notifyObservers(new Action[] {testAction});
         verify(mMockActionListObserver).onItemRangeInserted(mModel.getActionList(), 0, 1);
-        assertThat(mModel.getActionList().getItemCount(), is(1));
+        assertThat(mModel.getActionList().size(), is(1));
         assertThat(mModel.getActionList().get(0), is(equalTo(testAction)));
 
         // If the coordinator receives a new set of actions, the model should report a change.
         testProvider.notifyObservers(new Action[] {testAction});
         verify(mMockActionListObserver).onItemRangeChanged(mModel.getActionList(), 0, 1, null);
-        assertThat(mModel.getActionList().getItemCount(), is(1));
+        assertThat(mModel.getActionList().size(), is(1));
         assertThat(mModel.getActionList().get(0), is(equalTo(testAction)));
 
         // If the coordinator receives an empty set of actions, the model should report a deletion.
         testProvider.notifyObservers(new Action[] {});
         verify(mMockActionListObserver).onItemRangeRemoved(mModel.getActionList(), 0, 1);
-        assertThat(mModel.getActionList().getItemCount(), is(0));
+        assertThat(mModel.getActionList().size(), is(0));
 
         // There should be no notification if no actions are reported repeatedly.
         testProvider.notifyObservers(new Action[] {});
@@ -194,7 +194,7 @@ public class KeyboardAccessoryControllerTest {
     @Test
     public void testIsVisibleWithActions() {
         // Without any actions, the accessory should remain invisible.
-        assertThat(mModel.getActionList().getItemCount(), is(0));
+        assertThat(mModel.getActionList().size(), is(0));
         mMediator.keyboardVisibilityChanged(true);
         assertThat(mModel.isVisible(), is(false));
 
@@ -206,7 +206,7 @@ public class KeyboardAccessoryControllerTest {
     @Test
     public void testIsVisibleWithTabs() {
         // Without any actions, the accessory should remain invisible.
-        assertThat(mModel.getActionList().getItemCount(), is(0));
+        assertThat(mModel.getActionList().size(), is(0));
         mMediator.keyboardVisibilityChanged(true);
         assertThat(mModel.isVisible(), is(false));
 

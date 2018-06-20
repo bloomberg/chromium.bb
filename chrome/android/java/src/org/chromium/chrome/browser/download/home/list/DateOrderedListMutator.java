@@ -76,10 +76,10 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
 
     @Override
     public void onItemsRemoved(Collection<OfflineItem> items) {
-        for (int i = mModel.getItemCount() - 1; i >= 0; i--) {
+        for (int i = mModel.size() - 1; i >= 0; i--) {
             ListItem.DateListItem item = getItemAt(i);
             boolean isHeader = isHeader(item);
-            boolean isLast = i == mModel.getItemCount() - 1;
+            boolean isLast = i == mModel.size() - 1;
             boolean isNextHeader = isLast ? false : isHeader(getItemAt(i + 1));
             boolean removeHeader = isHeader && (isLast || isNextHeader);
             boolean removeItem = !isHeader && items.contains(getOfflineItemFrom(item));
@@ -109,7 +109,7 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
     }
 
     private int indexOfItem(ContentId id) {
-        for (int i = 0; i < mModel.getItemCount(); i++) {
+        for (int i = 0; i < mModel.size(); i++) {
             ListItem.DateListItem listItem = getItemAt(i);
             if (isHeader(listItem)) continue;
             if (getOfflineItemFrom(listItem).id.equals(id)) return i;
@@ -119,7 +119,7 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
     }
 
     private int getBestIndexFor(OfflineItem item) {
-        for (int i = 0; i < mModel.getItemCount(); i++) {
+        for (int i = 0; i < mModel.size(); i++) {
             ListItem.DateListItem listItem = getItemAt(i);
 
             // We need to compare different things depending on whether or not the ListItem is a
@@ -132,11 +132,11 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
             if (itemTimestamp > listItem.date.getTime()) return i;
         }
 
-        return mModel.getItemCount();
+        return mModel.size();
     }
 
     private ListItem.DateListItem getItemAt(int index) {
-        return (ListItem.DateListItem) mModel.getItemAt(index);
+        return (ListItem.DateListItem) mModel.get(index);
     }
 
     private boolean isHeader(ListItem.DateListItem item) {

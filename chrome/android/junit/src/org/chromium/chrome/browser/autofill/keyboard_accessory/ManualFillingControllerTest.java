@@ -111,14 +111,14 @@ public class ManualFillingControllerTest {
                                                           .getModelForTesting();
         accessorySheetModel.getTabList().addObserver(mMockTabListObserver);
 
-        assertThat(keyboardAccessoryModel.getTabList().getItemCount(), is(0));
+        assertThat(keyboardAccessoryModel.getTabList().size(), is(0));
         mController.getMediatorForTesting().addTab(
                 new KeyboardAccessoryData.Tab(null, null, 0, null));
 
         verify(mMockTabListObserver).onItemRangeInserted(keyboardAccessoryModel.getTabList(), 0, 1);
         verify(mMockTabListObserver).onItemRangeInserted(accessorySheetModel.getTabList(), 0, 1);
-        assertThat(keyboardAccessoryModel.getTabList().getItemCount(), is(1));
-        assertThat(accessorySheetModel.getTabList().getItemCount(), is(1));
+        assertThat(keyboardAccessoryModel.getTabList().size(), is(1));
+        assertThat(accessorySheetModel.getTabList().size(), is(1));
     }
 
     @Test
@@ -196,7 +196,7 @@ public class ManualFillingControllerTest {
         mController.registerActionProvider(secondTabProvider);
         secondTabProvider.notifyObservers(new Action[] {});
         mMockItemListObserver.onItemRangeRemoved(keyboardActions, 0, 1);
-        assertThat(keyboardActions.getItemCount(), is(0)); // No actions on this tab.
+        assertThat(keyboardActions.size(), is(0)); // No actions on this tab.
 
         // Simulate switching back to the first tab:
         switchTab(mediator, /*from=*/secondTab, /*to=*/firstTab);
@@ -206,7 +206,7 @@ public class ManualFillingControllerTest {
         // And back to the second:
         switchTab(mediator, /*from=*/firstTab, /*to=*/secondTab);
         mMockItemListObserver.onItemRangeRemoved(keyboardActions, 0, 1);
-        assertThat(keyboardActions.getItemCount(), is(0)); // Still no actions on this tab.
+        assertThat(keyboardActions.size(), is(0)); // Still no actions on this tab.
     }
 
     @Test
@@ -217,33 +217,33 @@ public class ManualFillingControllerTest {
         AccessorySheetModel accessorySheetModel =
                 mediator.getAccessorySheet().getMediatorForTesting().getModelForTesting();
 
-        assertThat(keyboardAccessoryModel.getTabList().getItemCount(), is(0));
-        assertThat(accessorySheetModel.getTabList().getItemCount(), is(0));
+        assertThat(keyboardAccessoryModel.getTabList().size(), is(0));
+        assertThat(accessorySheetModel.getTabList().size(), is(0));
 
         // Create a new tab with a passwords tab:
         Tab firstTab = addTab(mediator, 1111, null);
         mController.registerPasswordProvider(new PropertyProvider<>());
         // There should be a tab in accessory and sheet:
-        assertThat(keyboardAccessoryModel.getTabList().getItemCount(), is(1));
-        assertThat(accessorySheetModel.getTabList().getItemCount(), is(1));
+        assertThat(keyboardAccessoryModel.getTabList().size(), is(1));
+        assertThat(accessorySheetModel.getTabList().size(), is(1));
 
         // Simulate creating a second tab without any tabs:
         Tab secondTab = addTab(mediator, 2222, firstTab);
         // There should be no tab in accessory and sheet:
-        assertThat(keyboardAccessoryModel.getTabList().getItemCount(), is(0));
-        assertThat(accessorySheetModel.getTabList().getItemCount(), is(0));
+        assertThat(keyboardAccessoryModel.getTabList().size(), is(0));
+        assertThat(accessorySheetModel.getTabList().size(), is(0));
 
         // Simulate switching back to the first tab:
         switchTab(mediator, /*from=*/secondTab, /*to=*/firstTab);
         // There should be a tab in accessory and sheet:
-        assertThat(keyboardAccessoryModel.getTabList().getItemCount(), is(1));
-        assertThat(accessorySheetModel.getTabList().getItemCount(), is(1));
+        assertThat(keyboardAccessoryModel.getTabList().size(), is(1));
+        assertThat(accessorySheetModel.getTabList().size(), is(1));
 
         // And back to the second:
         switchTab(mediator, /*from=*/firstTab, /*to=*/secondTab);
         // Still no tab in accessory and sheet:
-        assertThat(keyboardAccessoryModel.getTabList().getItemCount(), is(0));
-        assertThat(accessorySheetModel.getTabList().getItemCount(), is(0));
+        assertThat(keyboardAccessoryModel.getTabList().size(), is(0));
+        assertThat(accessorySheetModel.getTabList().size(), is(0));
     }
 
     // TODO(fhorschig): Test that updating tab1 works if tab2 is active.

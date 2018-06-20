@@ -4,86 +4,135 @@
 
 package org.chromium.chrome.browser.modelutil;
 
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.ViewGroup;
 
+import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
+
+import java.util.List;
+
 /**
- * An adapter that uses a {@link ViewBinder} to bind items in a {@link ListObservable} model to
- * {@link ViewHolder}s.
+ * A base {@link RecyclerView} adapter that delegates most of its logic. This allows compositing
+ * different delegates together to support different UI features living in the same
+ * {@link RecyclerView}.
  *
- * @param <E> The type of the {@link ListObservable} model.
  * @param <VH> The {@link ViewHolder} type for the {@link RecyclerView}.
+ * @param <P> The payload type for partial updates, or {@link Void} if the adapter does not support
+ * partial updates.
  */
-public class RecyclerViewAdapter<E extends ListObservable, VH extends ViewHolder>
-        extends RecyclerView.Adapter<VH> {
+public class RecyclerViewAdapter<VH extends ViewHolder, P>
+        extends RecyclerView.Adapter<VH> implements ListObserver<P> {
     /**
-     * A view binder used to bind items in the {@link ListObservable} model to {@link ViewHolder}s.
-     *
-     * @param <E> The type of the {@link ListObservable} model.
+     * Delegate interface for the adapter.
+     * @param <VH> The {@link ViewHolder} type for the {@link RecyclerView}.
+     * @param <P> The payload type for partial updates, or {@link Void} if the adapter does not
+     * support partial updates.
+     */
+    public interface Delegate<VH, P> {
+        /**
+         * @return The number of items represented by the adapter.
+         * @see RecyclerView.Adapter#getItemCount
+         */
+        int getItemCount();
+
+        /**
+         * @param position The adapter position for which to return the view type.
+         * @return The view type for the item at the given {@code position} in the adapter.
+         * @see RecyclerView.Adapter#getItemViewType
+         */
+        int getItemViewType(int position);
+
+        /**
+         * Bind a given {@code viewHolder} to the data represented by the item at the given
+         * {@code position} in the adapter. If {@code payload} is non-null, performs a "partial"
+         * update of only the property represented by {@code payload}.
+         * @param viewHolder A view holder to bind.
+         * @param position The adapter position of the item to bind to the {@code viewHolder}.
+         * @param payload The payload for partial updates, or null to perform a full bind.
+         * @see RecyclerView.Adapter#onBindViewHolder
+         */
+        void onBindViewHolder(VH viewHolder, int position, @Nullable P payload);
+    }
+
+    /**
+     * Factory for creating new {@link ViewHolder}s.
      * @param <VH> The {@link ViewHolder} type for the {@link RecyclerView}.
      */
-    public interface ViewBinder<E, VH> {
+    public interface ViewHolderFactory<VH> {
         /**
          * Called when the {@link RecyclerView} needs a new {@link ViewHolder} of the given
          * {@code viewType} to represent an item.
          *
-         * @param parent The {@link ViewGroup} into which the new {@link View} will be added after
+         * @param parent The {@link ViewGroup} into which the new view will be added after
          *               it's bound to an adapter position.
-         * @param viewType The view type of the new {@link View}.
-         * @return A new {@link ViewHolder} that holds a {@link View} of the given view type.
+         * @param viewType The view type of the new view.
+         * @return A new {@link ViewHolder} that holds a view of the given view type.
+         * @see RecyclerView.Adapter#createViewHolder
          */
-        VH onCreateViewHolder(ViewGroup parent, int viewType);
-
-        /**
-         * Called to display the item at the specified {@code position} in the provided
-         * {@code holder}.
-         *
-         * @param model The {@link ListObservable} model used to retrieve the item at
-         *              {@code position}.
-         * @param holder The {@link ViewHolder} which should be updated to represent {@code item}.
-         * @param position The position of the item to be bound.
-         */
-        void onBindViewHolder(E model, VH holder, int position);
-    }
-
-    protected final E mModel;
-
-    private ViewBinder<E, VH> mViewBinder;
-
-    /**
-     * Construct a new {@link RecyclerViewAdapter}.
-     * @param model The {@link ListObservable} model used to retrieve items to display in the
-     *              {@link RecyclerView}.
-     * @param viewBinder The {@link ViewBinder} binding this adapter to the view holder.
-     */
-    public RecyclerViewAdapter(E model, RecyclerViewAdapter.ViewBinder<E, VH> viewBinder) {
-        mModel = model;
-        mViewBinder = viewBinder;
+        VH createViewHolder(ViewGroup parent, int viewType);
     }
 
     /**
-     * Set the {@link ViewBinder} to use with this adapter.
-     *
-     * @param viewBinder The {@link ViewBinder} used to bind items in the {@link ListObservable}
-     *                   model to {@link ViewHolder}s.
+     * Creates a new adapter for the given {@code delegate} and {@link ViewHolder} {@code factory}.
+     * @param delegate The delegate for this adapter.
+     * @param factory The {@link ViewHolder} factory for this adapter.
      */
-    public void setViewBinder(ViewBinder<E, VH> viewBinder) {
-        mViewBinder = viewBinder;
+    public RecyclerViewAdapter(Delegate<VH, P> delegate, ViewHolderFactory<VH> factory) {
+        mDelegate = delegate;
+        mFactory = factory;
     }
+
+    private final Delegate<VH, P> mDelegate;
+    private final ViewHolderFactory<VH> mFactory;
 
     @Override
     public int getItemCount() {
-        return mModel.getItemCount();
+        return mDelegate.getItemCount();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return mDelegate.getItemViewType(position);
     }
 
     @Override
     public VH onCreateViewHolder(ViewGroup parent, int viewType) {
-        return mViewBinder.onCreateViewHolder(parent, viewType);
+        return mFactory.createViewHolder(parent, viewType);
     }
 
     @Override
-    public void onBindViewHolder(VH holder, int position) {
-        mViewBinder.onBindViewHolder(mModel, holder, position);
+    public void onBindViewHolder(VH vh, int position) {
+        mDelegate.onBindViewHolder(vh, position, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void onBindViewHolder(VH holder, int position, List<Object> payloads) {
+        if (payloads.isEmpty()) {
+            onBindViewHolder(holder, position);
+            return;
+        }
+
+        for (Object p : payloads) {
+            mDelegate.onBindViewHolder(holder, position, (P) p);
+        }
+    }
+
+    @Override
+    public void onItemRangeInserted(ListObservable source, int index, int count) {
+        notifyItemRangeInserted(index, count);
+    }
+
+    @Override
+    public void onItemRangeRemoved(ListObservable source, int index, int count) {
+        notifyItemRangeRemoved(index, count);
+    }
+
+    @Override
+    public void onItemRangeChanged(
+            ListObservable<P> source, int index, int count, @Nullable P payload) {
+        notifyItemRangeChanged(index, count, payload);
     }
 }
