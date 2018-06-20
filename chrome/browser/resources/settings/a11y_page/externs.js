@@ -4,8 +4,7 @@
 
 /**
  * @fileoverview Stub methods to allow the closure compiler to compile
- * successfully for external dependencies which cannot be included in
- * compiled_resources2.gyp.
+ * successfully for external dependencies.
  */
 
 /**
