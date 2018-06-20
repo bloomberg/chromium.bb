@@ -29,6 +29,17 @@ struct KeyboardShortcutData {
   int chrome_command;  // The chrome command # to execute for this shortcut.
 };
 
+struct CommandForKeyEventResult {
+  bool found() { return chrome_command != -1; }
+
+  // The command to execute. -1 if none was found.
+  int chrome_command;
+
+  // Whether the command was from a mapping in the main menu. Only relevant if
+  // command != -1.
+  bool from_main_menu;
+};
+
 // macOS applications are supposed to put all keyEquivalents [hotkeys] in the
 // menu bar. For legacy reasons, Chrome does not. There are around 30 hotkeys
 // that are explicitly coded to virtual keycodes. This has the following
@@ -45,7 +56,7 @@ struct KeyboardShortcutData {
 // NSMenu as well. The user can remap these to conflict with Chrome hotkeys.
 // This function will return the Chrome hotkey, regardless of whether there's a
 // conflicting symbolic hotkey.
-int CommandForKeyEvent(NSEvent* event);
+CommandForKeyEventResult CommandForKeyEvent(NSEvent* event);
 
 // For legacy reasons and compatibility with Safari, some commands [e.g. cmd +
 // left arrow] are only allowed to fire if the firstResponder is a WebContents,

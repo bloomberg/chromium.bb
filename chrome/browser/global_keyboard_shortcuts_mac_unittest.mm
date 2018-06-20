@@ -45,7 +45,7 @@ int CommandForKeys(bool command_key,
                                    isARepeat:NO
                                      keyCode:vkey_code];
 
-  return CommandForKeyEvent(event);
+  return CommandForKeyEvent(event).chrome_command;
 }
 
 }  // namespace
