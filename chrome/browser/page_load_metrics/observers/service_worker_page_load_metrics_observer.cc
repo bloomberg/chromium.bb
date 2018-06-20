@@ -28,6 +28,8 @@ const char kHistogramServiceWorkerParseStartForwardBackNoStore[] =
 const char kBackgroundHistogramServiceWorkerParseStart[] =
     "PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart."
     "Background";
+const char kHistogramServiceWorkerFirstPaint[] =
+    "PageLoad.Clients.ServiceWorker.PaintTiming.NavigationToFirstPaint";
 const char kHistogramServiceWorkerFirstContentfulPaint[] =
     "PageLoad.Clients.ServiceWorker.PaintTiming."
     "NavigationToFirstContentfulPaint";
@@ -151,6 +153,18 @@ ServiceWorkerPageLoadMetricsObserver::OnCommit(
         headers->HasHeaderValue("cache-control", "no-store");
   }
   return CONTINUE_OBSERVING;
+}
+
+void ServiceWorkerPageLoadMetricsObserver::OnFirstPaintInPage(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (!IsServiceWorkerControlled(extra_info) ||
+      !WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_paint, extra_info)) {
+    return;
+  }
+  PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerFirstPaint,
+                      timing.paint_timing->first_paint.value());
 }
 
 void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
