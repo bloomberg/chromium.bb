@@ -7,11 +7,11 @@
 
 #include "content/public/browser/screen_orientation_delegate.h"
 
-#include "base/macros.h"
+#include "ash/content/ash_with_content_export.h"
 
 namespace ash {
 
-class ScreenOrientationDelegateChromeos
+class ASH_WITH_CONTENT_EXPORT ScreenOrientationDelegateChromeos
     : public content::ScreenOrientationDelegate {
  public:
   ScreenOrientationDelegateChromeos();

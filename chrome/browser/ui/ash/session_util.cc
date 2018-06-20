@@ -4,17 +4,43 @@
 
 #include "chrome/browser/ui/ash/session_util.h"
 
-#include "ash/content/shell_content_state.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_operations.h"
+
+namespace {
+
+// Gets the browser context (profile) associated with |window|. Either the
+// profile of the user who owns the window or the profile of the desktop on
+// which the window is positioned (for teleported windows) is returned, based on
+// |presenting|.
+content::BrowserContext* GetBrowserContextForWindow(aura::Window* window,
+                                                    bool presenting) {
+  DCHECK(window);
+  // Speculative fix for multi-profile crash. crbug.com/661821
+  if (!MultiUserWindowManager::GetInstance())
+    return nullptr;
+
+  const AccountId& account_id =
+      presenting
+          ? MultiUserWindowManager::GetInstance()->GetUserPresentingWindow(
+                window)
+          : MultiUserWindowManager::GetInstance()->GetWindowOwner(window);
+  return account_id.is_valid()
+             ? multi_user_util::GetProfileFromAccountId(account_id)
+             : nullptr;
+}
+
+}  // namespace
 
 content::BrowserContext* GetActiveBrowserContext() {
   DCHECK(user_manager::UserManager::Get()->GetLoggedInUsers().size());
@@ -28,11 +54,10 @@ bool CanShowWindowForUser(
   if (user_manager::UserManager::Get()->GetLoggedInUsers().size() > 1u) {
     content::BrowserContext* active_browser_context =
         get_context_callback.Run();
-    ash::ShellContentState* state = ash::ShellContentState::GetInstance();
     content::BrowserContext* owner_browser_context =
-        state->GetBrowserContextForWindow(window);
+        GetBrowserContextForWindow(window, false);
     content::BrowserContext* shown_browser_context =
-        state->GetUserPresentingBrowserContextForWindow(window);
+        GetBrowserContextForWindow(window, true);
 
     if (owner_browser_context && active_browser_context &&
         owner_browser_context != active_browser_context &&
