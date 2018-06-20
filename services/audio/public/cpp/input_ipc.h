@@ -57,7 +57,7 @@ class InputIPC : public media::AudioInputIPC,
   mojo::Binding<AudioInputStreamClient> stream_client_binding_;
   media::AudioInputIPCDelegate* delegate_ = nullptr;
 
-  const std::string& device_id_;
+  std::string device_id_;
   base::Optional<base::UnguessableToken> stream_id_;
 
   // stream_factory_info_ is bound in the constructor, and later used to

@@ -17,7 +17,7 @@ InputIPC::InputIPC(std::unique_ptr<service_manager::Connector> connector,
                    media::mojom::AudioLogPtr log)
     : stream_(),
       stream_client_binding_(this),
-      device_id_(std::move(device_id)),
+      device_id_(device_id),
       stream_factory_(),
       stream_factory_info_(),
       log_(std::move(log)),
