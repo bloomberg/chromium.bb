@@ -68,15 +68,15 @@ Second, familiarize yourself with the following:
 ## Key knowledge areas and contacts
 | Knowledge Area | Contact points |
 |----------------|----------------|
-| Chrome on Android | mariakhomenko, dskiba, ssid |
-| Browser Process | mariakhomenko, dskiba, ssid |
+| Chrome on Android | lizeb, pasko, ssid |
+| Browser Process | ssid, erikchen, etienneb |
 | GPU/cc | ericrk |
-| Memory metrics | erikchen, primano, ajwong, wez |
-| Native Heap Profiling | primiano, dskiba, ajwong |
+| Memory metrics | ssid, erikchen, primano, ajwong, wez |
+| Native Heap Profiling | primiano, ajwong |
 | Net Stack | mmenke, rsleevi, xunjieli |
 | Renderer Process | haraken, tasak, hajimehoshi, keishi, hiroshige |
 | V8 | hpayer, ulan, verwaest, mlippautz |
-| Out of Process Heap Profiling | erikchen, ajwong, brettw, etienneb
+| Out of Process Heap Profiling | erikchen, ajwong, brettw, etienneb |
 
 
 ## Other docs
