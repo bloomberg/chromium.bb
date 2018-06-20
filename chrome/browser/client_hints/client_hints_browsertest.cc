@@ -1091,6 +1091,13 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 // Start incognito browser twice to ensure that client hints prefs are
 // not carried over.
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsHttpsIncognito) {
+  // TODO(crbug.com/850945): This test causes a use-after-free when the
+  // NetworkServices feature is enabled. Disable the test in that configuration
+  // until the issue is fixed.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    return;
+  }
+
   for (size_t i = 0; i < 2; ++i) {
     base::HistogramTester histogram_tester;
 
