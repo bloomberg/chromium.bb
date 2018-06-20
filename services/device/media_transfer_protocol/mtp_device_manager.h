@@ -74,7 +74,6 @@ class MtpDeviceManager : public mojom::MtpManager {
   std::unique_ptr<MediaTransferProtocolManager>
       media_transfer_protocol_manager_;
 
-  std::unique_ptr<MediaTransferProtocolManager::Observer> observer_;
   mojo::BindingSet<mojom::MtpManager> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(MtpDeviceManager);

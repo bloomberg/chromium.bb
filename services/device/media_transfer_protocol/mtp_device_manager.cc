@@ -9,40 +9,6 @@
 
 namespace device {
 
-namespace {
-
-class ForwardingMediaTransferProtocolManagerObserver
-    : public MediaTransferProtocolManager::Observer {
- public:
-  explicit ForwardingMediaTransferProtocolManagerObserver(
-      mojom::MtpManagerClientAssociatedPtr client)
-      : client_(std::move(client)) {}
-
-  void StorageAttached(
-      const device::mojom::MtpStorageInfo& storage_info) override {
-    client_->StorageAttached(storage_info.Clone());
-  }
-
-  void StorageDetached(const std::string& storage_name) override {
-    client_->StorageDetached(storage_name);
-  }
-
- private:
-  mojom::MtpManagerClientAssociatedPtr client_;
-};
-
-void EnumerateStorageCallbackWrapper(
-    mojom::MtpManager::EnumerateStoragesAndSetClientCallback callback,
-    std::vector<const mojom::MtpStorageInfo*> storage_info_list) {
-  std::vector<mojom::MtpStorageInfoPtr> storage_info_ptr_list(
-      storage_info_list.size());
-  for (size_t i = 0; i < storage_info_list.size(); ++i)
-    storage_info_ptr_list[i] = storage_info_list[i]->Clone();
-  std::move(callback).Run(std::move(storage_info_ptr_list));
-}
-
-}  // namespace
-
 MtpDeviceManager::MtpDeviceManager()
     : media_transfer_protocol_manager_(
           MediaTransferProtocolManager::Initialize()) {}
@@ -56,17 +22,8 @@ void MtpDeviceManager::AddBinding(mojom::MtpManagerRequest request) {
 void MtpDeviceManager::EnumerateStoragesAndSetClient(
     mojom::MtpManagerClientAssociatedPtrInfo client,
     EnumerateStoragesAndSetClientCallback callback) {
-  if (!client.is_valid())
-    return;
-
-  DCHECK(!observer_);
-  mojom::MtpManagerClientAssociatedPtr client_ptr;
-  client_ptr.Bind(std::move(client));
-  observer_ = std::make_unique<ForwardingMediaTransferProtocolManagerObserver>(
-      std::move(client_ptr));
-  media_transfer_protocol_manager_->AddObserverAndEnumerateStorages(
-      observer_.get(),
-      base::BindOnce(EnumerateStorageCallbackWrapper, std::move(callback)));
+  media_transfer_protocol_manager_->EnumerateStoragesAndSetClient(
+      std::move(client), std::move(callback));
 }
 
 void MtpDeviceManager::GetStorageInfo(const std::string& storage_name,

@@ -26,15 +26,8 @@
 namespace device {
 
 // This class handles the interaction with mtpd.
-// Other classes can add themselves as observers.
 class MediaTransferProtocolManager {
  public:
-  // A callback to handle the result of AddObserverAndEnumerateStorages().
-  // The argument is the returned vector of available MTP storages info.
-  // The pointers in the vector are guaranteed to be non-NULL.
-  using EnumerateStoragesCallback = base::OnceCallback<void(
-      std::vector<const mojom::MtpStorageInfo*> storage_info_list)>;
-
   // A callback to handle the result of GetStorages().
   // The argument is the returned vector of available MTP storage names.
   using GetStoragesCallback =
@@ -72,27 +65,15 @@ class MediaTransferProtocolManager {
   // The first argument is true if there was an error.
   using DeleteObjectCallback = base::Callback<void(bool error)>;
 
-  // Implement this interface to be notified about MTP storage
-  // attachment / detachment events.
-  class Observer {
-   public:
-    virtual ~Observer() {}
-
-    // Functions called after a MTP storage has been attached / detached.
-    virtual void StorageAttached(
-        const device::mojom::MtpStorageInfo& storage_info) = 0;
-    virtual void StorageDetached(const std::string& storage_name) = 0;
-  };
-
   virtual ~MediaTransferProtocolManager() {}
 
-  // Adds an observer and runs |callback| with a list of existing storages.
-  virtual void AddObserverAndEnumerateStorages(
-      Observer* observer,
-      EnumerateStoragesCallback callback) = 0;
-
-  // Removes an observer.
-  virtual void RemoveObserver(Observer* observer) = 0;
+  // This is a combined interface to get existing storages and set a
+  // client for incoming storage change events. It is designed to reduce
+  // async calls and eliminate a potential race condition between
+  // the client being set and storage updates being made.
+  virtual void EnumerateStoragesAndSetClient(
+      mojom::MtpManagerClientAssociatedPtrInfo client,
+      mojom::MtpManager::EnumerateStoragesAndSetClientCallback callback) = 0;
 
   // Gets all available MTP storages and runs |callback|.
   virtual void GetStorages(GetStoragesCallback callback) const = 0;

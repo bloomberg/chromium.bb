@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_checker.h"
@@ -66,27 +65,25 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
     VLOG(1) << "MediaTransferProtocolManager Shutdown completed";
   }
-
   // MediaTransferProtocolManager override.
-  void AddObserverAndEnumerateStorages(
-      Observer* observer,
-      EnumerateStoragesCallback callback) override {
+  void EnumerateStoragesAndSetClient(
+      mojom::MtpManagerClientAssociatedPtrInfo client,
+      mojom::MtpManager::EnumerateStoragesAndSetClientCallback callback)
+      override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     // Return all available storage info.
-    std::vector<const mojom::MtpStorageInfo*> storage_info_list;
-    storage_info_list.reserve(storage_info_map_.size());
+    std::vector<mojom::MtpStorageInfoPtr> storage_info_ptr_list;
+    storage_info_ptr_list.reserve(storage_info_map_.size());
     for (const auto& info : storage_info_map_)
-      storage_info_list.push_back(&info.second);
-    std::move(callback).Run(std::move(storage_info_list));
+      storage_info_ptr_list.push_back(info.second.Clone());
+    std::move(callback).Run(std::move(storage_info_ptr_list));
 
-    observers_.AddObserver(observer);
-  }
+    // Set client.
+    if (!client.is_valid())
+      return;
 
-  // MediaTransferProtocolManager override.
-  void RemoveObserver(Observer* observer) override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    observers_.RemoveObserver(observer);
+    client_.Bind(std::move(client));
   }
 
   // MediaTransferProtocolManager override.
@@ -329,11 +326,14 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     if (storage_info_map_.erase(storage_name) == 0) {
       // This can happen for a storage where
       // MediaTransferProtocolDaemonClient::GetStorageInfo() failed.
-      // Return to avoid giving observers phantom detach events.
+      // Return to avoid giving client phantom detach events.
       return;
     }
-    for (auto& observer : observers_)
-      observer.StorageDetached(storage_name);
+
+    // Notify the bound MtpManagerClient.
+    if (client_) {
+      client_->StorageDetached(storage_name);
+    }
   }
 
   void OnStorageChanged(bool is_attach, const std::string& storage_name) {
@@ -367,16 +367,17 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       // After that, all incoming signals are either for new storage
       // attachments, which should not be in |storage_info_map_|, or for
       // storage detachments, which do not add to |storage_info_map_|.
-      // Return to avoid giving observers phantom detach events.
+      // Return to avoid giving client phantom detach events.
       NOTREACHED();
       return;
     }
 
-    // New storage. Add it and let the observers know.
+    // New storage. Add it and let the bound client know.
     storage_info_map_.insert(std::make_pair(storage_name, storage_info));
 
-    for (auto& observer : observers_)
-      observer.StorageAttached(storage_info);
+    if (client_) {
+      client_->StorageAttached(storage_info.Clone());
+    }
   }
 
   void OnGetStorageInfoFromDevice(const mojom::MtpStorageInfo& storage_info) {
@@ -572,8 +573,10 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   // DBusThreadManager to provide a bus in unit tests.
   scoped_refptr<dbus::Bus> const bus_;
 
-  // Device attachment / detachment observers.
-  base::ObserverList<Observer> observers_;
+  // MtpManager client who keeps tuned on attachment / detachment events.
+  // Currently, storage_monitor::StorageMonitorCros is supposed to be the
+  // only client.
+  mojom::MtpManagerClientAssociatedPtr client_;
 
   // Map to keep track of attached storages by name.
   base::flat_map<std::string, mojom::MtpStorageInfo> storage_info_map_;
