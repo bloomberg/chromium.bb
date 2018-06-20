@@ -16,11 +16,13 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_text_view.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "extensions/common/image_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -296,6 +298,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
   } else {
     // Determine if we have a local icon (or else it will be downloaded).
     const gfx::VectorIcon* vector_icon = nullptr;
+    int idr_image = 0;
     if (match.answer) {
       switch (match.answer->type()) {
         case SuggestionAnswer::ANSWER_TYPE_CURRENCY:
@@ -310,6 +313,9 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
         case SuggestionAnswer::ANSWER_TYPE_SUNRISE:
           vector_icon = &omnibox::kAnswerSunriseIcon;
           break;
+        case SuggestionAnswer::ANSWER_TYPE_TRANSLATION:
+          idr_image = IDR_OMNIBOX_TRANSLATION_ROUND;
+          break;
         case SuggestionAnswer::ANSWER_TYPE_WEATHER:
           // Weather icons are downloaded. Do nothing.
           break;
@@ -322,6 +328,10 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
       if (vector_icon) {
         image_view_->SetImage(gfx::CreateVectorIcon(
             *vector_icon, kNewAnswerImageSize, gfx::kGoogleBlue600));
+      } else if (idr_image) {
+        image_view_->SetImage(
+            ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+                idr_image));
       }
       // Always set the image size so that downloaded images get the correct
       // size (such as Weather answers).
