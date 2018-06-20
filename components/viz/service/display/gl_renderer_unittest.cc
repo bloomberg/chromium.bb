@@ -142,7 +142,7 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
 
   void TearDown() override {
     cc::GLRendererPixelTest::TearDown();
-    ASSERT_FALSE(renderer()->IsContextLost());
+    ASSERT_FALSE(renderer());
   }
 
   void TestShaderWithDrawingFrame(

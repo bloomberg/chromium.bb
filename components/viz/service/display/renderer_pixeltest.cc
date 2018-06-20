@@ -842,6 +842,7 @@ using RendererTypes =
     ::testing::Types<GLRenderer,
                      SoftwareRenderer,
                      SkiaRenderer,
+                     cc::SkiaRendererDDL,
                      cc::GLRendererWithExpandedViewport,
                      cc::SoftwareRendererWithExpandedViewport>;
 TYPED_TEST_CASE(RendererPixelTest, RendererTypes);
@@ -889,6 +890,13 @@ bool FuzzyForSoftwareOnlyPixelComparator<SoftwareRenderer>::Compare(
 
 template <>
 bool FuzzyForSoftwareOnlyPixelComparator<SkiaRenderer>::Compare(
+    const SkBitmap& actual_bmp,
+    const SkBitmap& expected_bmp) const {
+  return fuzzy_.Compare(actual_bmp, expected_bmp);
+}
+
+template <>
+bool FuzzyForSoftwareOnlyPixelComparator<cc::SkiaRendererDDL>::Compare(
     const SkBitmap& actual_bmp,
     const SkBitmap& expected_bmp) const {
   return fuzzy_.Compare(actual_bmp, expected_bmp);
@@ -1301,6 +1309,11 @@ uint32_t GetColor<SkiaRenderer>(const SkColor& color) {
 }
 
 template <>
+uint32_t GetColor<cc::SkiaRendererDDL>(const SkColor& color) {
+  return GetSkiaOrGLColor(color);
+}
+
+template <>
 uint32_t GetColor<cc::GLRendererWithExpandedViewport>(const SkColor& color) {
   return GetSkiaOrGLColor(color);
 }
@@ -1594,6 +1607,11 @@ class VideoGLRendererPixelTest : public cc::GLRendererPixelTest {
         child_context_provider_.get(), nullptr, child_resource_provider_.get(),
         kUseStreamVideoDrawQuad, kUseGpuMemoryBufferResources, kUseR16Texture,
         kMaxResourceSize);
+  }
+
+  void TearDown() override {
+    video_resource_updater_ = nullptr;
+    GLRendererPixelTest::TearDown();
   }
 
   std::unique_ptr<media::VideoResourceUpdater> video_resource_updater_;
@@ -2573,7 +2591,7 @@ class RendererPixelTestWithBackgroundFilter
 
 // The software renderer does not support background filters yet.
 using BackgroundFilterRendererTypes =
-    ::testing::Types<GLRenderer, SkiaRenderer>;
+    ::testing::Types<GLRenderer, SkiaRenderer, cc::SkiaRendererDDL>;
 
 TYPED_TEST_CASE(RendererPixelTestWithBackgroundFilter,
                 BackgroundFilterRendererTypes);

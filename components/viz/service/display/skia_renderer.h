@@ -35,7 +35,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   SkiaRenderer(const RendererSettings* settings,
                OutputSurface* output_surface,
                DisplayResourceProvider* resource_provider,
-               SkiaOutputSurface* skia_output_surface = nullptr);
+               SkiaOutputSurface* skia_output_surface);
   ~SkiaRenderer() override;
 
   void SwapBuffers(std::vector<ui::LatencyInfo> latency_info,

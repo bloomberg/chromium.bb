@@ -29,9 +29,20 @@
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/display/software_renderer.h"
+#include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
+#include "components/viz/service/display_embedder/skia_output_surface_impl.h"
+#include "components/viz/service/display_embedder/viz_process_context_provider.h"
+#include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/test/paths.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
+#include "gpu/config/gpu_info.h"
+#include "gpu/ipc/gpu_in_process_thread_service.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "gpu/ipc/service/gpu_watchdog_thread.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -45,9 +56,7 @@ PixelTest::PixelTest()
   renderer_settings_.dont_round_texture_sizes_for_pixel_tests = true;
 }
 
-PixelTest::~PixelTest() {
-  child_resource_provider_->ShutdownAndReleaseAllResources();
-}
+PixelTest::~PixelTest() = default;
 
 bool PixelTest::RunPixelTest(viz::RenderPassList* pass_list,
                              const base::FilePath& ref_file,
@@ -225,9 +234,113 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
 void PixelTest::SetUpSkiaRenderer() {
   SetUpGLWithoutRenderer(false);
   renderer_ = std::make_unique<viz::SkiaRenderer>(
-      &renderer_settings_, output_surface_.get(), resource_provider_.get());
+      &renderer_settings_, output_surface_.get(), resource_provider_.get(),
+      nullptr /* skia_output_surface */);
   renderer_->Initialize();
   renderer_->SetVisible(true);
+}
+
+void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
+  ASSERT_TRUE(gpu_thread_->task_runner()->BelongsToCurrentThread());
+  gpu_service_ = std::make_unique<viz::GpuServiceImpl>(
+      gpu::GPUInfo(), nullptr /* watchdog_thread */, io_thread_->task_runner(),
+      gpu::GpuFeatureInfo(), gpu::GpuPreferences(), gpu::GPUInfo(),
+      gpu::GpuFeatureInfo(), base::DoNothing() /* exit_callback */);
+
+  // Uses a null gpu_host here, because we don't want to receive any message.
+  std::unique_ptr<viz::mojom::GpuHost> gpu_host;
+  viz::mojom::GpuHostPtr gpu_host_proxy;
+  mojo::MakeStrongBinding(std::move(gpu_host),
+                          mojo::MakeRequest(&gpu_host_proxy));
+  gpu_service_->InitializeWithHost(
+      std::move(gpu_host_proxy), gpu::GpuProcessActivityFlags(),
+      nullptr /* sync_point_manager */, nullptr /* shutdown_event */);
+  gpu_command_service_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
+      gpu_thread_->task_runner(), gpu_service_->sync_point_manager(),
+      gpu_service_->mailbox_manager(), gpu_service_->share_group(),
+      gpu_service_->gpu_feature_info(),
+      gpu_service_->gpu_channel_manager()->gpu_preferences());
+  event->Signal();
+}
+
+void PixelTest::SetUpSkiaRendererDDL() {
+  // Set up the GPU service.
+  gpu_thread_ = std::make_unique<base::Thread>("GPUMainThread");
+  ASSERT_TRUE(gpu_thread_->Start());
+  io_thread_ = std::make_unique<base::Thread>("GPUIOThread");
+  ASSERT_TRUE(io_thread_->Start());
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  gpu_thread_->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&PixelTest::SetUpGpuServiceOnGpuThread,
+                                base::Unretained(this), &event));
+  event.Wait();
+
+  // Set up the skia renderer.
+  output_surface_ = std::make_unique<viz::SkiaOutputSurfaceImpl>(
+      gpu_service_.get(), gpu::kNullSurfaceHandle,
+      nullptr /* synthetic_begin_frame_source */);
+  output_surface_->BindToClient(output_surface_client_.get());
+  resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(
+      viz::DisplayResourceProvider::kGpu,
+      nullptr /* compositor_context_provider */,
+      nullptr /* shared_bitmap_manager */);
+  renderer_ = std::make_unique<viz::SkiaRenderer>(
+      &renderer_settings_, output_surface_.get(), resource_provider_.get(),
+      static_cast<viz::SkiaOutputSurfaceImpl*>(output_surface_.get()));
+  renderer_->Initialize();
+  renderer_->SetVisible(true);
+
+  // Set up the client side context provider, etc
+  auto* gpu_channel_manager = gpu_service_->gpu_channel_manager();
+  gpu_memory_buffer_manager_ =
+      std::make_unique<viz::InProcessGpuMemoryBufferManager>(
+          gpu_channel_manager);
+  gpu::ImageFactory* image_factory = nullptr;
+  if (gpu_channel_manager->gpu_memory_buffer_factory()) {
+    image_factory =
+        gpu_channel_manager->gpu_memory_buffer_factory()->AsImageFactory();
+  }
+  auto* gpu_channel_manager_delegate = gpu_channel_manager->delegate();
+  child_context_provider_ =
+      base::MakeRefCounted<viz::VizProcessContextProvider>(
+          gpu_command_service_, gpu::kNullSurfaceHandle,
+          gpu_memory_buffer_manager_.get(), image_factory,
+          gpu_channel_manager_delegate, gpu::SharedMemoryLimits());
+  child_context_provider_->BindToCurrentThread();
+  child_resource_provider_ =
+      std::make_unique<viz::ClientResourceProvider>(true);
+}
+
+void PixelTest::TearDownGpuServiceOnGpuThread(base::WaitableEvent* event) {
+  gpu_command_service_ = nullptr;
+  gpu_service_ = nullptr;
+  event->Signal();
+}
+
+void PixelTest::TearDown() {
+  // Tear down the client side context provider, etc.
+  child_resource_provider_->ShutdownAndReleaseAllResources();
+  child_resource_provider_ = nullptr;
+  child_context_provider_ = nullptr;
+  gpu_memory_buffer_manager_ = nullptr;
+
+  // Tear down the skia renderer.
+  renderer_ = nullptr;
+  resource_provider_ = nullptr;
+  output_surface_ = nullptr;
+
+  if (gpu_command_service_) {
+    // Tear down the GPU service.
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
+    gpu_thread_->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&PixelTest::TearDownGpuServiceOnGpuThread,
+                                  base::Unretained(this), &event));
+    event.Wait();
+  }
+  io_thread_ = nullptr;
+  gpu_thread_ = nullptr;
 }
 
 void PixelTest::EnableExternalStencilTest() {

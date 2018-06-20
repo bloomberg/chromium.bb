@@ -16,21 +16,28 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/skia_renderer.h"
 #include "components/viz/service/display/software_renderer.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/ipc/in_process_command_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_implementation.h"
+
+namespace base {
+class Thread;
+}
 
 namespace viz {
 class CopyOutputResult;
 class DirectRenderer;
 class DisplayResourceProvider;
+class GLRenderer;
+class GpuServiceImpl;
 class TestSharedBitmapManager;
 }
 
 namespace cc {
 class FakeOutputSurfaceClient;
 class OutputSurface;
-class TestInProcessContextProvider;
 
 class PixelTest : public testing::Test {
  protected:
@@ -71,6 +78,13 @@ class PixelTest : public testing::Test {
   viz::ResourceId AllocateAndFillSoftwareResource(const gfx::Size& size,
                                                   const SkBitmap& source);
 
+  // For SkiaRendererDDL.
+  std::unique_ptr<base::Thread> gpu_thread_;
+  std::unique_ptr<base::Thread> io_thread_;
+  std::unique_ptr<viz::GpuServiceImpl> gpu_service_;
+  std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_command_service_;
+
   viz::RendererSettings renderer_settings_;
   gfx::Size device_viewport_size_;
   bool disable_picture_quad_image_filtering_;
@@ -78,7 +92,7 @@ class PixelTest : public testing::Test {
   std::unique_ptr<viz::OutputSurface> output_surface_;
   std::unique_ptr<viz::TestSharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<viz::DisplayResourceProvider> resource_provider_;
-  scoped_refptr<TestInProcessContextProvider> child_context_provider_;
+  scoped_refptr<viz::ContextProvider> child_context_provider_;
   std::unique_ptr<viz::ClientResourceProvider> child_resource_provider_;
   std::unique_ptr<viz::DirectRenderer> renderer_;
   viz::SoftwareRenderer* software_renderer_ = nullptr;
@@ -87,7 +101,10 @@ class PixelTest : public testing::Test {
   void SetUpGLWithoutRenderer(bool flipped_output_surface);
   void SetUpGLRenderer(bool flipped_output_surface);
   void SetUpSkiaRenderer();
+  void SetUpSkiaRendererDDL();
   void SetUpSoftwareRenderer();
+
+  void TearDown() override;
 
   void EnableExternalStencilTest();
 
@@ -97,6 +114,8 @@ class PixelTest : public testing::Test {
 
   bool PixelsMatchReference(const base::FilePath& ref_file,
                             const PixelComparator& comparator);
+  void SetUpGpuServiceOnGpuThread(base::WaitableEvent* event);
+  void TearDownGpuServiceOnGpuThread(base::WaitableEvent* event);
 
   std::unique_ptr<gl::DisableNullDrawGLBindings> enable_pixel_output_;
 };
@@ -151,6 +170,18 @@ class GLRendererWithFlippedSurface : public viz::GLRenderer {
                         std::move(current_task_runner)) {}
 };
 
+class SkiaRendererDDL : public viz::SkiaRenderer {
+ public:
+  SkiaRendererDDL(const viz::RendererSettings* settings,
+                  viz::OutputSurface* output_surface,
+                  viz::DisplayResourceProvider* resource_provider,
+                  viz::SkiaOutputSurface* skia_output_surface)
+      : viz::SkiaRenderer(settings,
+                          output_surface,
+                          resource_provider,
+                          skia_output_surface) {}
+};
+
 template <>
 inline void RendererPixelTest<viz::GLRenderer>::SetUp() {
   SetUpGLRenderer(false);
@@ -179,6 +210,11 @@ inline void RendererPixelTest<SoftwareRendererWithExpandedViewport>::SetUp() {
 template <>
 inline void RendererPixelTest<viz::SkiaRenderer>::SetUp() {
   SetUpSkiaRenderer();
+}
+
+template <>
+inline void RendererPixelTest<SkiaRendererDDL>::SetUp() {
+  SetUpSkiaRendererDDL();
 }
 
 typedef RendererPixelTest<viz::GLRenderer> GLRendererPixelTest;

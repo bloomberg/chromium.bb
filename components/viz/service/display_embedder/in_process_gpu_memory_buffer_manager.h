@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_IN_PROCESS_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 
 namespace gpu {
@@ -15,7 +16,8 @@ class GpuMemoryBufferSupport;
 
 namespace viz {
 
-class InProcessGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
+class VIZ_SERVICE_EXPORT InProcessGpuMemoryBufferManager
+    : public gpu::GpuMemoryBufferManager {
  public:
   explicit InProcessGpuMemoryBufferManager(
       gpu::GpuChannelManager* channel_manager);

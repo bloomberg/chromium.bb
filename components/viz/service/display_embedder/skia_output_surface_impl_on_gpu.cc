@@ -7,6 +7,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/callback_helpers.h"
 #include "base/synchronization/waitable_event.h"
+#include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
@@ -18,10 +19,12 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "third_party/skia/include/private/SkDeferredDisplayList.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
+#include "ui/gl/init/gl_factory.h"
 
 namespace viz {
 namespace {
@@ -64,8 +67,13 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
           gpu::CommandBufferNamespace::VIZ_OUTPUT_SURFACE, command_buffer_id_,
           gpu_service_->skia_output_surface_sequence_id());
 
-  surface_ = gpu::ImageTransportSurface::CreateNativeSurface(
-      weak_ptr_factory_.GetWeakPtr(), surface_handle_, gl::GLSurfaceFormat());
+  if (surface_handle_) {
+    surface_ = gpu::ImageTransportSurface::CreateNativeSurface(
+        weak_ptr_factory_.GetWeakPtr(), surface_handle_, gl::GLSurfaceFormat());
+  } else {
+    // surface_ could be null for pixel tests.
+    surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size(1, 1));
+  }
   DCHECK(surface_);
 
   if (!gpu_service_->CreateGrContextIfNecessary(surface_.get())) {
@@ -101,6 +109,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
 
 SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  sync_point_client_state_->Destroy();
 }
 
 void SkiaOutputSurfaceImplOnGpu::Reshape(
@@ -157,8 +166,7 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
   }
 }
 
-void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
-    OutputSurfaceFrame frame,
+void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     std::unique_ptr<SkDeferredDisplayList> ddl,
     std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
     uint64_t sync_fence_release) {
@@ -175,11 +183,20 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
 
   sk_surface_->draw(ddl.get());
   gpu_service_->gr_context()->flush();
+  sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
+}
+
+void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(sk_surface_);
+  if (!gpu_service_->context_for_skia()->MakeCurrent(surface_.get())) {
+    LOG(FATAL) << "Failed to make current.";
+    // TODO(penghuang): Handle the failure.
+  }
   OnSwapBuffers();
   surface_->SwapBuffers(frame.need_presentation_feedback
                             ? buffer_presented_callback_
                             : base::DoNothing());
-  sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
 }
 
 void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
@@ -214,12 +231,38 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
 
 void SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource(
     std::vector<RenderPassId> ids) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!ids.empty());
   for (const auto& id : ids) {
     auto it = offscreen_surfaces_.find(id);
     DCHECK(it != offscreen_surfaces_.end());
     offscreen_surfaces_.erase(it);
   }
+}
+
+void SkiaOutputSurfaceImplOnGpu::CopyOutput(
+    RenderPassId id,
+    const gfx::Rect& copy_rect,
+    std::unique_ptr<CopyOutputRequest> request) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // TODO(crbug.com/644851): Complete the implementation for all request types,
+  // scaling, etc.
+  DCHECK_EQ(request->result_format(), CopyOutputResult::Format::RGBA_BITMAP);
+  DCHECK(!request->is_scaled());
+  DCHECK(!request->has_result_selection() ||
+         request->result_selection() == gfx::Rect(copy_rect.size()));
+
+  DCHECK(!id || offscreen_surfaces_.find(id) != offscreen_surfaces_.end());
+  auto* surface = id ? offscreen_surfaces_[id].get() : sk_surface_.get();
+
+  sk_sp<SkImage> copy_image =
+      surface->makeImageSnapshot()->makeSubset(RectToSkIRect(copy_rect));
+  // Send copy request by copying into a bitmap.
+  SkBitmap bitmap;
+  copy_image->asLegacyBitmap(&bitmap);
+  request->SendResult(
+      std::make_unique<CopyOutputSkBitmapResult>(copy_rect, bitmap));
 }
 
 void SkiaOutputSurfaceImplOnGpu::FullfillPromiseTexture(
