@@ -636,11 +636,12 @@ void SVGImage::ServiceAnimations(
   LocalFrameView* frame_view = ToLocalFrame(page_->MainFrame())->View();
   frame_view->UpdateAllLifecyclePhasesExceptPaint();
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // For SPv2 we run UpdateAnimations after the paint phase, but per above
-    // comment we don't want to run lifecycle through to paint for SVG images.
-    // Since we know SVG images never have composited animations we can update
-    // animations directly without worrying about including
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    // For SPv2/BGPT we run UpdateAnimations after the paint phase, but per the
+    // above comment, we don't want to run lifecycle through to paint for SVG
+    // images. Since we know SVG images never have composited animations we can
+    // update animations directly without worrying about including
     // PaintArtifactCompositor analysis of whether animations should be
     // composited.
     base::Optional<CompositorElementIdSet> composited_element_ids;

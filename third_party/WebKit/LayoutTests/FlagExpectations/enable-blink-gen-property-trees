@@ -647,7 +647,3 @@ crbug.com/854196 paint/invalidation/compositing/should-not-repaint-composited-de
 crbug.com/854196 paint/invalidation/compositing/should-not-repaint-composited-descendants.html [ Failure ]
 crbug.com/854196 paint/invalidation/scroll/overflow-scroll-composited-non-stacking-child.html [ Failure ]
 crbug.com/854196 paint/invalidation/scroll/repaint-composited-child-in-scrolled-container.html [ Failure ]
-
-# Animated SVG images do not work.
-crbug.com/854198 paint/invalidation/svg/image-animation-with-zoom.html [ Failure ]
-crbug.com/854198 svg/as-image/svg-image-with-css-animation.html [ Failure ]
