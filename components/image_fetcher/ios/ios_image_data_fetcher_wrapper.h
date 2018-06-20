@@ -12,8 +12,8 @@
 #include "components/image_fetcher/core/image_data_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_types.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 class GURL;
@@ -24,7 +24,7 @@ class IOSImageDataFetcherWrapper {
  public:
   // The TaskRunner is used to decode the image if it is WebP-encoded.
   explicit IOSImageDataFetcherWrapper(
-      net::URLRequestContextGetter* url_request_context_getter);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   virtual ~IOSImageDataFetcherWrapper();
 
   // Helper to start downloading and possibly decoding the image without a
@@ -46,6 +46,11 @@ class IOSImageDataFetcherWrapper {
 
   // Sets a service name against which to track data usage.
   void SetDataUseServiceName(DataUseServiceName data_use_service_name);
+
+  // Test-only accessor for underlying ImageDataFetcher.
+  ImageDataFetcher* AccessImageDataFetcherForTesting() {
+    return &image_data_fetcher_;
+  }
 
  private:
   ImageDataFetcherCallback CallbackForImageDataFetcher(

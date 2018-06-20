@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -50,7 +51,7 @@
 - (void)start {
   std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> imageFetcher =
       std::make_unique<image_fetcher::IOSImageDataFetcherWrapper>(
-          self.browserState->GetRequestContext());
+          self.browserState->GetSharedURLLoaderFactory());
 
   self.mediator =
       [[OmniboxPopupMediator alloc] initWithFetcher:std::move(imageFetcher)

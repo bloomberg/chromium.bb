@@ -51,6 +51,7 @@ class ChromeSigninClient
   std::string GetSigninScopedDeviceId() override;
   void OnSignedOut() override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsFirstRun() const override;
   base::Time GetInstallDate() override;
   bool AreSigninCookiesAllowed() override;

@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 std::unique_ptr<KeyedService> BuildLargeIconService(
@@ -24,7 +25,7 @@ std::unique_ptr<KeyedService> BuildLargeIconService(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS),
       std::make_unique<image_fetcher::ImageFetcherImpl>(
           image_fetcher::CreateIOSImageDecoder(),
-          browser_state->GetRequestContext()));
+          browser_state->GetSharedURLLoaderFactory()));
 }
 }  // namespace
 

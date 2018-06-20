@@ -17,6 +17,7 @@
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/ntp_tiles/ios_popular_sites_factory.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 std::unique_ptr<ntp_tiles::MostVisitedSites>
 IOSMostVisitedSitesFactory::NewForBrowserState(
@@ -32,6 +33,6 @@ IOSMostVisitedSitesFactory::NewForBrowserState(
           IOSChromeLargeIconServiceFactory::GetForBrowserState(browser_state),
           std::make_unique<image_fetcher::ImageFetcherImpl>(
               image_fetcher::CreateIOSImageDecoder(),
-              browser_state->GetRequestContext())),
+              browser_state->GetSharedURLLoaderFactory())),
       nil);
 }

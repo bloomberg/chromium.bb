@@ -26,7 +26,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 
 #if defined(OS_ANDROID)
@@ -93,8 +92,6 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   }
 
   PrefService* pref_service = profile->GetPrefs();
-  scoped_refptr<net::URLRequestContextGetter> request_context =
-      profile->GetRequestContext();
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetDefaultStoragePartition(context);
   auto contextual_suggestions_fetcher =
@@ -110,7 +107,8 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       std::make_unique<ntp_snippets::CachedImageFetcher>(
           std::make_unique<image_fetcher::ImageFetcherImpl>(
               std::make_unique<suggestions::ImageDecoderImpl>(),
-              request_context.get()),
+              content::BrowserContext::GetDefaultStoragePartition(profile)
+                  ->GetURLLoaderFactoryForBrowserProcess()),
           pref_service, contextual_suggestions_database.get());
   auto reporter_provider = std::make_unique<
       contextual_suggestions::ContextualSuggestionsReporterProvider>(

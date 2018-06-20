@@ -18,6 +18,7 @@
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/avatar_icon_util.h"
 #include "components/signin/core/browser/child_account_info_fetcher.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
@@ -79,6 +80,14 @@ std::string AccountIdToLocale(const std::string& account_id) {
 std::string AccountIdToPictureURL(const std::string& account_id) {
   return "https://example.com/-" + account_id +
          "/AAAAAAAAAAI/AAAAAAAAACQ/Efg/photo.jpg";
+}
+
+std::string AccountIdToPictureURLWithSize(const std::string& account_id) {
+  return signin::GetAvatarImageURLWithOptions(
+             GURL(AccountIdToPictureURL(account_id)),
+             AccountFetcherService::kAccountImageDownloadSize,
+             true /* no_silhouette */)
+      .spec();
 }
 
 void CheckAccountDetails(const std::string& account_id,
@@ -267,9 +276,7 @@ testing::AssertionResult AccountTrackerObserver::CheckEvents(
 
 class AccountTrackerServiceTest : public testing::Test {
  public:
-  AccountTrackerServiceTest()
-      : next_image_data_fetcher_id_(
-            image_fetcher::ImageDataFetcher::kFirstUrlFetcherId) {}
+  AccountTrackerServiceTest() {}
 
   ~AccountTrackerServiceTest() override {}
 
@@ -353,6 +360,12 @@ class AccountTrackerServiceTest : public testing::Test {
   }
   SigninClient* signin_client() { return signin_client_.get(); }
 
+  // Images go through test_url_loader_factory(); others use
+  // |test_fetcher_factory_| for now.
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return signin_client_->test_url_loader_factory();
+  }
+
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
@@ -367,8 +380,6 @@ class AccountTrackerServiceTest : public testing::Test {
   std::unique_ptr<AccountFetcherService> account_fetcher_;
   std::unique_ptr<AccountTrackerService> account_tracker_;
   std::unique_ptr<TestSigninClient> signin_client_;
-
-  int next_image_data_fetcher_id_;
 };
 
 void AccountTrackerServiceTest::ReturnFetchResults(
@@ -406,12 +417,16 @@ void AccountTrackerServiceTest::ReturnAccountInfoFetchFailure(
 
 void AccountTrackerServiceTest::ReturnAccountImageFetchSuccess(
     const std::string& account_id) {
-  ReturnFetchResults(next_image_data_fetcher_id_++, net::HTTP_OK, "image data");
+  test_url_loader_factory()->AddResponse(
+      AccountIdToPictureURLWithSize(account_id), "image data");
+  scoped_task_environment_.RunUntilIdle();
 }
 
 void AccountTrackerServiceTest::ReturnAccountImageFetchFailure(
     const std::string& account_id) {
-  ReturnFetchResults(next_image_data_fetcher_id_++, net::HTTP_BAD_REQUEST, "");
+  test_url_loader_factory()->AddResponse(
+      AccountIdToPictureURLWithSize(account_id), "", net::HTTP_BAD_REQUEST);
+  scoped_task_environment_.RunUntilIdle();
 }
 
 TEST_F(AccountTrackerServiceTest, Basic) {
