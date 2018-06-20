@@ -122,13 +122,6 @@ class StackedTabStripLayoutTest : public testing::Test {
     return result;
   }
 
-  void Validate(int active_index, int max_width) {
-    // Make sure none of the tabs are more than 90 apart
-    // (tab_size(100) + padding (-10)).
-    for (int j = 1; j < view_model_.view_size(); ++j)
-      EXPECT_LE(ideal_x(j) - ideal_x(j - 1), max_width - 100);
-  }
-
   int ideal_x(int index) const {
     return view_model_.ideal_bounds(index).x();
   }
@@ -151,9 +144,8 @@ TEST_F(StackedTabStripLayoutTest, ValidateInitialLayout) {
   for (int i = 120; i < 600; ++i) {
     for (int j = 0; j < 12; ++j) {
       Reset(&layout, 0, i, 0, j);
-      Validate(j, i);
-      if (HasNonfatalFailure())
-        return;
+      for (int k = 1; k < view_model_.view_size(); ++k)
+        EXPECT_LE(ideal_x(k) - ideal_x(k - 1), 90);
     }
   }
 }
