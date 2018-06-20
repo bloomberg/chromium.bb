@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.download.home.list;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.GridLayoutManager.SpanSizeLookup;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ItemDecoration;
 import android.support.v7.widget.RecyclerView.Recycler;
@@ -15,8 +15,9 @@ import android.support.v7.widget.RecyclerView.State;
 import android.view.View;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
-import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
+import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 
 /**
  * The View component of a DateOrderedList.  This takes the DateOrderedListModel and creates the
@@ -32,6 +33,31 @@ class DateOrderedListView {
 
     private final RecyclerView mView;
 
+    private static class ModelChangeProcessor extends ForwardingListObservable<Void>
+            implements RecyclerViewAdapter.Delegate<ListItemViewHolder, Void> {
+        private final DecoratedListItemModel mModel;
+
+        public ModelChangeProcessor(DecoratedListItemModel model) {
+            mModel = model;
+        }
+
+        @Override
+        public int getItemCount() {
+            return mModel.size();
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return ListUtils.getViewTypeForItem(mModel.get(position));
+        }
+
+        @Override
+        public void onBindViewHolder(
+                ListItemViewHolder viewHolder, int position, @Nullable Void payload) {
+            viewHolder.bind(mModel.getProperties(), mModel.get(position));
+        }
+    }
+
     /** Creates an instance of a {@link DateOrderedListView} representing {@code model}. */
     public DateOrderedListView(Context context, DecoratedListItemModel model) {
         mModel = model;
@@ -45,11 +71,11 @@ class DateOrderedListView {
         mPrefetchVerticalPaddingPx = context.getResources().getDimensionPixelSize(
                 R.dimen.download_manager_prefetch_vertical_margin);
 
-        DateOrderedListViewBinder listViewBinder = new DateOrderedListViewBinder();
-        DateOrderedListViewAdapter adapter = new DateOrderedListViewAdapter(mModel, listViewBinder);
-        RecyclerViewModelChangeProcessor<DecoratedListItemModel, ListItemViewHolder, Void>
-                modelChangeProcessor = new RecyclerViewModelChangeProcessor<>(adapter);
-        mModel.addObserver(modelChangeProcessor);
+        ModelChangeProcessor processor = new ModelChangeProcessor(mModel);
+        RecyclerViewAdapter<ListItemViewHolder, Void> adapter =
+                new DateOrderedListViewAdapter(mModel, processor, ListItemViewHolder::create);
+        processor.addObserver(adapter);
+        mModel.addObserver(processor);
 
         mView = new RecyclerView(context);
         mView.setHasFixedSize(true);
@@ -94,7 +120,7 @@ class DateOrderedListView {
             // SpanSizeLookup implementation.
             @Override
             public int getSpanSize(int position) {
-                return ListUtils.getSpanSize(mModel.getItemAt(position), getSpanCount());
+                return ListUtils.getSpanSize(mModel.get(position), getSpanCount());
             }
         }
     }
@@ -104,9 +130,9 @@ class DateOrderedListView {
         @Override
         public void getItemOffsets(Rect outRect, View view, RecyclerView parent, State state) {
             int position = parent.getChildAdapterPosition(view);
-            if (position < 0 || position >= mModel.getItemCount()) return;
+            if (position < 0 || position >= mModel.size()) return;
 
-            switch (ListUtils.getViewTypeForItem(mModel.getItemAt(position))) {
+            switch (ListUtils.getViewTypeForItem(mModel.get(position))) {
                 case ListUtils.IMAGE:
                     outRect.left = mImagePaddingPx;
                     outRect.right = mImagePaddingPx;

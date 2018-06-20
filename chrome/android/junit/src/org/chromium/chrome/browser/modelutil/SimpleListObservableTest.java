@@ -45,16 +45,16 @@ public class SimpleListObservableTest {
     @Test
     public void testNotifiesSuccessfulInsertions() {
         // Replacing an empty list with a non-empty one is always an insertion.
-        assertThat(mIntegerList.getItemCount(), is(0));
+        assertThat(mIntegerList.size(), is(0));
         mIntegerList.set(new Integer[] {333, 88888888, 22});
         verify(mObserver).onItemRangeInserted(mIntegerList, 0, 3);
-        assertThat(mIntegerList.getItemCount(), is(3));
+        assertThat(mIntegerList.size(), is(3));
         assertThat(mIntegerList.get(1), is(88888888));
 
         // Adding Items is always an insertion.
         mIntegerList.add(55555);
         verify(mObserver).onItemRangeInserted(mIntegerList, 3, 1);
-        assertThat(mIntegerList.getItemCount(), is(4));
+        assertThat(mIntegerList.size(), is(4));
         assertThat(mIntegerList.get(3), is(55555));
     }
 
@@ -62,7 +62,7 @@ public class SimpleListObservableTest {
     public void testModelNotifiesSuccessfulRemoval() {
         Integer eightEights = 88888888;
         mIntegerList.set(new Integer[] {333, eightEights, 22});
-        assertThat(mIntegerList.getItemCount(), is(3));
+        assertThat(mIntegerList.size(), is(3));
 
         // Removing any item by instance is always a removal.
         mIntegerList.remove(eightEights);

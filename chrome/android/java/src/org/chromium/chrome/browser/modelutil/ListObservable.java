@@ -11,6 +11,11 @@ import org.chromium.base.ObserverList;
 /**
  * A base class for models maintaining a list of items. Note that ListObservable models do not need
  * to be implemented as a list. Internally they may use any structure to organize their items.
+ * Note also that this class on purpose does not expose an item type (it only exposes a
+ * <i>payload</i> type for partial change notifications), nor does it give access to the list
+ * contents. This is because the list might not be homogeneous -- it could represent items of vastly
+ * different types that don't share a common base class. Use the {@link SimpleListObservable}
+ * subclass for homogeneous lists.
  * @param <P> The parameter type for the payload for partial updates. Use {@link Void} for
  *         implementations that don't support partial updates.
  */
@@ -59,9 +64,6 @@ public abstract class ListObservable<P> {
 
     private final ObserverList<ListObserver<P>> mObservers = new ObserverList<>();
 
-    /** @return The total number of items held by the model. */
-    public abstract int getItemCount();
-
     /**
      * @param observer An observer to be notified of changes to the model.
      */
@@ -104,6 +106,7 @@ public abstract class ListObservable<P> {
      * @param count The number of added items.
      */
     protected void notifyItemRangeInserted(int index, int count) {
+        assert count > 0; // No spurious notifications
         for (ListObserver observer : mObservers) {
             observer.onItemRangeInserted(this, index, count);
         }
@@ -117,6 +120,7 @@ public abstract class ListObservable<P> {
      * @param count The number of removed items.
      */
     protected void notifyItemRangeRemoved(int index, int count) {
+        assert count > 0; // No spurious notifications
         for (ListObserver observer : mObservers) {
             observer.onItemRangeRemoved(this, index, count);
         }
@@ -131,6 +135,7 @@ public abstract class ListObservable<P> {
      * @param payload Optional parameter, use {@code null} to identify a "full" update.
      */
     protected void notifyItemRangeChanged(int index, int count, @Nullable P payload) {
+        assert count > 0; // No spurious notifications
         for (ListObserver<P> observer : mObservers) {
             observer.onItemRangeChanged(this, index, count, payload);
         }

@@ -34,7 +34,7 @@ class AccessoryPagerAdapter extends PagerAdapter
      */
     public AccessoryPagerAdapter(SimpleListObservable<Tab> tabList) {
         mTabList = tabList;
-        mViews = new HashMap<>(mTabList.getItemCount());
+        mViews = new HashMap<>(mTabList.size());
     }
 
     @NonNull
@@ -69,7 +69,7 @@ class AccessoryPagerAdapter extends PagerAdapter
 
     @Override
     public int getCount() {
-        return mTabList.getItemCount();
+        return mTabList.size();
     }
 
     @Override
@@ -80,7 +80,7 @@ class AccessoryPagerAdapter extends PagerAdapter
     @Override
     public int getItemPosition(@NonNull Object object) {
         ViewGroup viewToBeFound = (ViewGroup) object;
-        for (int i = 0; i < mTabList.getItemCount(); i++) {
+        for (int i = 0; i < mTabList.size(); i++) {
             if (mViews.get(mTabList.get(i)).equals(viewToBeFound)) {
                 return i; // The tab the view is connected to still exists and its position is i.
             }

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.home.list;
 
 import org.chromium.chrome.browser.modelutil.ListObservable;
+import org.chromium.chrome.browser.modelutil.SimpleList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  * This includes (1) a {@link ListObservable} implementation and (2) exposing a
  * {@link ListPropertyModel} for shared item properties and general list information.
  */
-class ListItemModel extends BatchListObservable {
+class ListItemModel extends BatchListObservable implements SimpleList<ListItem> {
     private final List<ListItem> mItems = new ArrayList<>();
     private final ListPropertyModel mListProperties = new ListPropertyModel();
 
@@ -44,14 +45,14 @@ class ListItemModel extends BatchListObservable {
         notifyItemChanged(index);
     }
 
-    /** @return The {@link ListItem} at {@code index}. */
-    public ListItem getItemAt(int index) {
+    // SimpleList implementation.
+    @Override
+    public ListItem get(int index) {
         return mItems.get(index);
     }
 
-    // ListObservable implementation.
     @Override
-    public int getItemCount() {
+    public int size() {
         return mItems.size();
     }
 }

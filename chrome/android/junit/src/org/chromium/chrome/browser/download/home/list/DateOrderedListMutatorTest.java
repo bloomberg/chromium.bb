@@ -65,7 +65,7 @@ public class DateOrderedListMutatorTest {
         DateOrderedListMutator list = new DateOrderedListMutator(mSource, mModel);
         verify(mSource, times(1)).addObserver(list);
 
-        Assert.assertEquals(0, mModel.getItemCount());
+        Assert.assertEquals(0, mModel.size());
     }
 
     /**
@@ -79,9 +79,9 @@ public class DateOrderedListMutatorTest {
         when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item1));
         DateOrderedListMutator list = new DateOrderedListMutator(mSource, mModel);
 
-        Assert.assertEquals(2, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 1, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 1, 1), item1);
+        Assert.assertEquals(2, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 1, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 1, 1), item1);
     }
 
     /**
@@ -97,10 +97,10 @@ public class DateOrderedListMutatorTest {
         when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item1, item2));
         DateOrderedListMutator list = new DateOrderedListMutator(mSource, mModel);
 
-        Assert.assertEquals(3, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 1, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 1, 2), item1);
-        assertListItemEquals(mModel.getItemAt(2), buildCalendar(2018, 1, 1, 1), item2);
+        Assert.assertEquals(3, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 1, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 1, 2), item1);
+        assertListItemEquals(mModel.get(2), buildCalendar(2018, 1, 1, 1), item2);
     }
 
     /**
@@ -117,11 +117,11 @@ public class DateOrderedListMutatorTest {
         when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item1, item2));
         DateOrderedListMutator list = new DateOrderedListMutator(mSource, mModel);
 
-        Assert.assertEquals(4, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 2, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 2, 0), item1);
-        assertListItemEquals(mModel.getItemAt(2), buildCalendar(2018, 1, 1, 0), null);
-        assertListItemEquals(mModel.getItemAt(3), buildCalendar(2018, 1, 1, 0), item2);
+        Assert.assertEquals(4, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 2, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 2, 0), item1);
+        assertListItemEquals(mModel.get(2), buildCalendar(2018, 1, 1, 0), null);
+        assertListItemEquals(mModel.get(3), buildCalendar(2018, 1, 1, 0), item2);
     }
 
     /**
@@ -137,10 +137,10 @@ public class DateOrderedListMutatorTest {
         when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item1, item2));
         DateOrderedListMutator list = new DateOrderedListMutator(mSource, mModel);
 
-        Assert.assertEquals(3, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 1, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 1, 5), item2);
-        assertListItemEquals(mModel.getItemAt(2), buildCalendar(2018, 1, 1, 4), item1);
+        Assert.assertEquals(3, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 1, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 1, 5), item2);
+        assertListItemEquals(mModel.get(2), buildCalendar(2018, 1, 1, 4), item1);
     }
 
     /**
@@ -157,11 +157,11 @@ public class DateOrderedListMutatorTest {
         when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item1, item2));
         DateOrderedListMutator list = new DateOrderedListMutator(mSource, mModel);
 
-        Assert.assertEquals(4, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 2, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 2, 4), item1);
-        assertListItemEquals(mModel.getItemAt(2), buildCalendar(2018, 1, 1, 0), null);
-        assertListItemEquals(mModel.getItemAt(3), buildCalendar(2018, 1, 1, 5), item2);
+        Assert.assertEquals(4, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 2, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 2, 4), item1);
+        assertListItemEquals(mModel.get(2), buildCalendar(2018, 1, 1, 0), null);
+        assertListItemEquals(mModel.get(3), buildCalendar(2018, 1, 1, 5), item2);
     }
 
     /**
@@ -178,11 +178,11 @@ public class DateOrderedListMutatorTest {
         when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item1, item2));
         DateOrderedListMutator list = new DateOrderedListMutator(mSource, mModel);
 
-        Assert.assertEquals(4, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 2, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 2, 3), item2);
-        assertListItemEquals(mModel.getItemAt(2), buildCalendar(2018, 1, 1, 0), null);
-        assertListItemEquals(mModel.getItemAt(3), buildCalendar(2018, 1, 1, 4), item1);
+        Assert.assertEquals(4, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 2, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 2, 3), item2);
+        assertListItemEquals(mModel.get(2), buildCalendar(2018, 1, 1, 0), null);
+        assertListItemEquals(mModel.get(3), buildCalendar(2018, 1, 1, 4), item1);
     }
 
     /**
@@ -203,9 +203,9 @@ public class DateOrderedListMutatorTest {
         list.onItemsAdded(CollectionUtil.newArrayList(item1));
 
         verify(mObserver, times(1)).onItemRangeInserted(mModel, 0, 2);
-        Assert.assertEquals(2, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 1, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 1, 4), item1);
+        Assert.assertEquals(2, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 1, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 1, 4), item1);
     }
 
     /**
@@ -236,10 +236,10 @@ public class DateOrderedListMutatorTest {
         list.onItemsAdded(CollectionUtil.newArrayList(item2));
 
         verify(mObserver, times(1)).onItemRangeInserted(mModel, 1, 1);
-        Assert.assertEquals(3, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 2, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 2, 2), item2);
-        assertListItemEquals(mModel.getItemAt(2), buildCalendar(2018, 1, 2, 1), item1);
+        Assert.assertEquals(3, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 2, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 2, 2), item2);
+        assertListItemEquals(mModel.get(2), buildCalendar(2018, 1, 2, 1), item1);
 
         // Add an item on an earlier day that will be placed first.
         OfflineItem item3 = buildItem("3", buildCalendar(2018, 1, 3, 2));
@@ -247,12 +247,12 @@ public class DateOrderedListMutatorTest {
         list.onItemsAdded(CollectionUtil.newArrayList(item3));
 
         verify(mObserver, times(1)).onItemRangeInserted(mModel, 0, 2);
-        Assert.assertEquals(5, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 3, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 3, 2), item3);
-        assertListItemEquals(mModel.getItemAt(2), buildCalendar(2018, 1, 2, 0), null);
-        assertListItemEquals(mModel.getItemAt(3), buildCalendar(2018, 1, 2, 2), item2);
-        assertListItemEquals(mModel.getItemAt(4), buildCalendar(2018, 1, 2, 1), item1);
+        Assert.assertEquals(5, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 3, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 3, 2), item3);
+        assertListItemEquals(mModel.get(2), buildCalendar(2018, 1, 2, 0), null);
+        assertListItemEquals(mModel.get(3), buildCalendar(2018, 1, 2, 2), item2);
+        assertListItemEquals(mModel.get(4), buildCalendar(2018, 1, 2, 1), item1);
     }
 
     /**
@@ -283,10 +283,10 @@ public class DateOrderedListMutatorTest {
         list.onItemsAdded(CollectionUtil.newArrayList(item2));
 
         verify(mObserver, times(1)).onItemRangeInserted(mModel, 2, 1);
-        Assert.assertEquals(3, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 2, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 2, 4), item1);
-        assertListItemEquals(mModel.getItemAt(2), buildCalendar(2018, 1, 2, 3), item2);
+        Assert.assertEquals(3, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 2, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 2, 4), item1);
+        assertListItemEquals(mModel.get(2), buildCalendar(2018, 1, 2, 3), item2);
 
         // Add an item on a later day that will be placed last.
         OfflineItem item3 = buildItem("3", buildCalendar(2018, 1, 1, 4));
@@ -294,12 +294,12 @@ public class DateOrderedListMutatorTest {
         list.onItemsAdded(CollectionUtil.newArrayList(item3));
 
         verify(mObserver, times(1)).onItemRangeInserted(mModel, 3, 2);
-        Assert.assertEquals(5, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 2, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 2, 4), item1);
-        assertListItemEquals(mModel.getItemAt(2), buildCalendar(2018, 1, 2, 3), item2);
-        assertListItemEquals(mModel.getItemAt(3), buildCalendar(2018, 1, 1, 0), null);
-        assertListItemEquals(mModel.getItemAt(4), buildCalendar(2018, 1, 1, 4), item3);
+        Assert.assertEquals(5, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 2, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 2, 4), item1);
+        assertListItemEquals(mModel.get(2), buildCalendar(2018, 1, 2, 3), item2);
+        assertListItemEquals(mModel.get(3), buildCalendar(2018, 1, 1, 0), null);
+        assertListItemEquals(mModel.get(4), buildCalendar(2018, 1, 1, 4), item3);
     }
 
     /**
@@ -320,7 +320,7 @@ public class DateOrderedListMutatorTest {
         list.onItemsRemoved(CollectionUtil.newArrayList(item1));
 
         verify(mObserver, times(1)).onItemRangeRemoved(mModel, 0, 2);
-        Assert.assertEquals(0, mModel.getItemCount());
+        Assert.assertEquals(0, mModel.size());
     }
 
     /**
@@ -344,9 +344,9 @@ public class DateOrderedListMutatorTest {
         list.onItemsRemoved(CollectionUtil.newArrayList(item1));
 
         verify(mObserver, times(1)).onItemRangeRemoved(mModel, 1, 1);
-        Assert.assertEquals(2, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 2, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 2, 2), item2);
+        Assert.assertEquals(2, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 2, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 2, 2), item2);
     }
 
     /**
@@ -370,9 +370,9 @@ public class DateOrderedListMutatorTest {
         list.onItemsRemoved(CollectionUtil.newArrayList(item2));
 
         verify(mObserver, times(1)).onItemRangeRemoved(mModel, 2, 1);
-        Assert.assertEquals(2, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 2, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 2, 3), item1);
+        Assert.assertEquals(2, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 2, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 2, 3), item1);
     }
 
     /**
@@ -397,9 +397,9 @@ public class DateOrderedListMutatorTest {
         list.onItemsRemoved(CollectionUtil.newArrayList(item2));
 
         verify(mObserver, times(1)).onItemRangeRemoved(mModel, 2, 2);
-        Assert.assertEquals(2, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 3, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 3, 3), item1);
+        Assert.assertEquals(2, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 3, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 3, 3), item1);
     }
 
     /**
@@ -429,13 +429,13 @@ public class DateOrderedListMutatorTest {
         list.onItemsAdded(CollectionUtil.newArrayList(item1, item2, item3, item4));
 
         verify(mObserver, times(1)).onItemRangeInserted(mModel, 0, 6);
-        Assert.assertEquals(6, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 2, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 2, 12), item4);
-        assertListItemEquals(mModel.getItemAt(2), buildCalendar(2018, 1, 2, 10), item3);
-        assertListItemEquals(mModel.getItemAt(3), buildCalendar(2018, 1, 1, 0), null);
-        assertListItemEquals(mModel.getItemAt(4), buildCalendar(2018, 1, 1, 6), item1);
-        assertListItemEquals(mModel.getItemAt(5), buildCalendar(2018, 1, 1, 4), item2);
+        Assert.assertEquals(6, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 2, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 2, 12), item4);
+        assertListItemEquals(mModel.get(2), buildCalendar(2018, 1, 2, 10), item3);
+        assertListItemEquals(mModel.get(3), buildCalendar(2018, 1, 1, 0), null);
+        assertListItemEquals(mModel.get(4), buildCalendar(2018, 1, 1, 6), item1);
+        assertListItemEquals(mModel.get(5), buildCalendar(2018, 1, 1, 4), item2);
     }
 
     /**
@@ -468,9 +468,9 @@ public class DateOrderedListMutatorTest {
 
         verify(mObserver, times(1)).onItemRangeRemoved(mModel, 5, 1);
         verify(mObserver, times(1)).onItemRangeRemoved(mModel, 0, 3);
-        Assert.assertEquals(2, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 1, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 1, 6), item1);
+        Assert.assertEquals(2, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 1, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 1, 6), item1);
     }
 
     /**
@@ -496,9 +496,9 @@ public class DateOrderedListMutatorTest {
         list.onItemUpdated(item1, newItem1);
 
         verify(mObserver, times(1)).onItemRangeChanged(mModel, 1, 1, null);
-        Assert.assertEquals(2, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 1, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 1, 4), newItem1);
+        Assert.assertEquals(2, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 1, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 1, 4), newItem1);
     }
 
     /**
@@ -527,10 +527,10 @@ public class DateOrderedListMutatorTest {
 
         verify(mObserver, times(1)).onItemRangeRemoved(mModel, 1, 1);
         verify(mObserver, times(1)).onItemRangeInserted(mModel, 2, 1);
-        Assert.assertEquals(3, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 1, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 1, 4), item2);
-        assertListItemEquals(mModel.getItemAt(2), buildCalendar(2018, 1, 1, 3), newItem1);
+        Assert.assertEquals(3, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 1, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 1, 4), item2);
+        assertListItemEquals(mModel.get(2), buildCalendar(2018, 1, 1, 3), newItem1);
     }
 
     /**
@@ -557,9 +557,9 @@ public class DateOrderedListMutatorTest {
 
         verify(mObserver, times(1)).onItemRangeRemoved(mModel, 0, 2);
         verify(mObserver, times(1)).onItemRangeInserted(mModel, 0, 2);
-        Assert.assertEquals(2, mModel.getItemCount());
-        assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 2, 0), null);
-        assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 2, 6), newItem1);
+        Assert.assertEquals(2, mModel.size());
+        assertListItemEquals(mModel.get(0), buildCalendar(2018, 1, 2, 0), null);
+        assertListItemEquals(mModel.get(1), buildCalendar(2018, 1, 2, 6), newItem1);
     }
 
     private static Calendar buildCalendar(int year, int month, int dayOfMonth, int hourOfDay) {

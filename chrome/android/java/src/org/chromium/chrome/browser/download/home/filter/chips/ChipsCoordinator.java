@@ -14,8 +14,8 @@ import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
-import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.SimpleListObservable;
+import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
 
 /**
  * The coordinator responsible for managing a list of chips.  To get the {@link View} that
@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.modelutil.SimpleListObservable;
  */
 public class ChipsCoordinator implements ChipsProvider.Observer {
     private final ChipsProvider mProvider;
-    private final SimpleListObservable<Chip> mModel;
+    private final SimpleListObservable<Chip> mModel = new SimpleListObservable<>();
     private final RecyclerView mView;
 
     /**
@@ -38,13 +38,15 @@ public class ChipsCoordinator implements ChipsProvider.Observer {
         mProvider = provider;
 
         // Build the underlying components.
-        mModel = new SimpleListObservable<>();
         mView = createView(context);
-        RecyclerViewAdapter<SimpleListObservable<Chip>, ChipsViewBinder.ChipsViewHolder> adapter =
-                new RecyclerViewAdapter<>(mModel, new ChipsViewBinder());
+        SimpleRecyclerViewMcp<Chip, ChipsViewHolder, Void> processor =
+                new SimpleRecyclerViewMcp<>(mModel, null, ChipsViewHolder::bind);
+        RecyclerViewAdapter<ChipsViewHolder, Void> adapter =
+                new RecyclerViewAdapter<>(processor, ChipsViewHolder::create);
 
         mView.setAdapter(adapter);
-        mModel.addObserver(new RecyclerViewModelChangeProcessor<>(adapter));
+        processor.addObserver(adapter);
+        mModel.addObserver(processor);
 
         mProvider.addObserver(this);
         mModel.set(mProvider.getChips());

@@ -156,8 +156,8 @@ class KeyboardAccessoryMediator
 
     private boolean shouldShowAccessory() {
         if (!mIsKeyboardVisible && mModel.activeTab() == null) return false;
-        return mModel.getAutofillSuggestions() != null || mModel.getActionList().getItemCount() > 0
-                || mModel.getTabList().getItemCount() > 0;
+        return mModel.getAutofillSuggestions() != null || mModel.getActionList().size() > 0
+                || mModel.getTabList().size() > 0;
     }
 
     private void updateVisibility() {

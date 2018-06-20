@@ -18,8 +18,6 @@ import org.chromium.components.offline_items_collection.OfflineContentProvider;
 public class DateOrderedListCoordinator {
     private final FilterCoordinator mFilterCoordinator;
 
-    private final ListItemModel mModel;
-    private final DecoratedListItemModel mDecoratedModel;
     private final DateOrderedListMediator mMediator;
     private final DateOrderedListView mView;
 
@@ -31,15 +29,15 @@ public class DateOrderedListCoordinator {
      */
     public DateOrderedListCoordinator(
             Context context, Boolean offTheRecord, OfflineContentProvider provider) {
-        mModel = new ListItemModel();
-        mDecoratedModel = new DecoratedListItemModel(mModel);
-        mView = new DateOrderedListView(context, mDecoratedModel);
-        mMediator = new DateOrderedListMediator(offTheRecord, provider, mModel);
+        ListItemModel model = new ListItemModel();
+        DecoratedListItemModel decoratedModel = new DecoratedListItemModel(model);
+        mView = new DateOrderedListView(context, decoratedModel);
+        mMediator = new DateOrderedListMediator(offTheRecord, provider, model);
 
         // Hook up the FilterCoordinator with our mediator.
         mFilterCoordinator = new FilterCoordinator(context, mMediator.getFilterSource());
-        mFilterCoordinator.addObserver(filter -> mMediator.onFilterTypeSelected(filter));
-        mDecoratedModel.setHeader(new ViewListItem(Long.MAX_VALUE, mFilterCoordinator.getView()));
+        mFilterCoordinator.addObserver(mMediator::onFilterTypeSelected);
+        decoratedModel.setHeader(new ViewListItem(Long.MAX_VALUE, mFilterCoordinator.getView()));
     }
 
     /** Tears down this coordinator. */

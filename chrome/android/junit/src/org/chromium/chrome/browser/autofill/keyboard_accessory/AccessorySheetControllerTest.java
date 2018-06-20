@@ -92,10 +92,10 @@ public class AccessorySheetControllerTest {
         mModel.addObserver(mMockPropertyObserver);
         mModel.getTabList().addObserver(mTabListObserver);
 
-        assertThat(mModel.getTabList().getItemCount(), is(0));
+        assertThat(mModel.getTabList().size(), is(0));
         mCoordinator.addTab(mTabs[0]);
         verify(mTabListObserver).onItemRangeInserted(mModel.getTabList(), 0, 1);
-        assertThat(mModel.getTabList().getItemCount(), is(1));
+        assertThat(mModel.getTabList().size(), is(1));
     }
 
     @Test
@@ -103,20 +103,20 @@ public class AccessorySheetControllerTest {
         mModel.addObserver(mMockPropertyObserver);
 
         // Initially, there is no active Tab.
-        assertThat(mModel.getTabList().getItemCount(), is(0));
+        assertThat(mModel.getTabList().size(), is(0));
         assertThat(mCoordinator.getTab(), is(nullValue()));
 
         // The first tab becomes the active Tab.
         mCoordinator.addTab(mTabs[0]);
         verify(mMockPropertyObserver).onPropertyChanged(mModel, PropertyKey.ACTIVE_TAB_INDEX);
-        assertThat(mModel.getTabList().getItemCount(), is(1));
+        assertThat(mModel.getTabList().size(), is(1));
         assertThat(mModel.getActiveTabIndex(), is(0));
         assertThat(mCoordinator.getTab(), is(mTabs[0]));
 
         // A second tab is added but doesn't become automatically active.
         mCoordinator.addTab(mTabs[1]);
         verify(mMockPropertyObserver).onPropertyChanged(mModel, PropertyKey.ACTIVE_TAB_INDEX);
-        assertThat(mModel.getTabList().getItemCount(), is(2));
+        assertThat(mModel.getTabList().size(), is(2));
         assertThat(mModel.getActiveTabIndex(), is(0));
     }
 
@@ -126,12 +126,12 @@ public class AccessorySheetControllerTest {
         mCoordinator.addTab(mTabs[1]);
         mCoordinator.addTab(mTabs[2]);
         mCoordinator.addTab(mTabs[3]);
-        assertThat(mModel.getTabList().getItemCount(), is(4));
+        assertThat(mModel.getTabList().size(), is(4));
         assertThat(mModel.getActiveTabIndex(), is(0));
 
         mCoordinator.removeTab(mTabs[0]);
 
-        assertThat(mModel.getTabList().getItemCount(), is(3));
+        assertThat(mModel.getTabList().size(), is(3));
         assertThat(mModel.getActiveTabIndex(), is(0));
     }
 
@@ -140,7 +140,7 @@ public class AccessorySheetControllerTest {
         mCoordinator.addTab(mTabs[0]);
         mCoordinator.removeTab(mTabs[0]);
 
-        assertThat(mModel.getTabList().getItemCount(), is(0));
+        assertThat(mModel.getTabList().size(), is(0));
         assertThat(mModel.getActiveTabIndex(), is(AccessorySheetModel.NO_ACTIVE_TAB));
     }
 
@@ -156,7 +156,7 @@ public class AccessorySheetControllerTest {
         mCoordinator.removeTab(mTabs[2]);
 
         verify(mMockPropertyObserver).onPropertyChanged(mModel, PropertyKey.ACTIVE_TAB_INDEX);
-        assertThat(mModel.getTabList().getItemCount(), is(3));
+        assertThat(mModel.getTabList().size(), is(3));
         assertThat(mModel.getActiveTabIndex(), is(1));
     }
 
@@ -172,7 +172,7 @@ public class AccessorySheetControllerTest {
         mCoordinator.removeTab(mTabs[1]);
 
         verify(mMockPropertyObserver).onPropertyChanged(mModel, PropertyKey.ACTIVE_TAB_INDEX);
-        assertThat(mModel.getTabList().getItemCount(), is(3));
+        assertThat(mModel.getTabList().size(), is(3));
         assertThat(mModel.getActiveTabIndex(), is(1));
     }
 
@@ -186,7 +186,7 @@ public class AccessorySheetControllerTest {
 
         mCoordinator.removeTab(mTabs[3]);
 
-        assertThat(mModel.getTabList().getItemCount(), is(3));
+        assertThat(mModel.getTabList().size(), is(3));
         assertThat(mModel.getActiveTabIndex(), is(2));
     }
 }

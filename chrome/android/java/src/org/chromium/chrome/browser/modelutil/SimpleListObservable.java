@@ -13,7 +13,7 @@ import java.util.List;
  * It allows models to compose different ListObservables.
  * @param <T> The object type that this class manages in a list.
  */
-public class SimpleListObservable<T> extends ListObservable<Void> {
+public class SimpleListObservable<T> extends ListObservable<Void> implements SimpleList<T> {
     private final List<T> mItems = new ArrayList<>();
 
     /**
@@ -21,12 +21,13 @@ public class SimpleListObservable<T> extends ListObservable<Void> {
      * @param index The position to get the item from.
      * @return Returns the found item.
      */
+    @Override
     public T get(int index) {
         return mItems.get(index);
     }
 
     @Override
-    public int getItemCount() {
+    public int size() {
         return mItems.size();
     }
 
