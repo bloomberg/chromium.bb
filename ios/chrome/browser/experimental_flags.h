@@ -66,6 +66,9 @@ bool IsRecentTabsUIRebootEnabled();
 // Whether the Bookmarks UI Reboot is enabled.
 bool IsBookmarksUIRebootEnabled();
 
+// Whether the Reading List UI Reboot is enabled.
+bool IsReadingListUIRebootEnabled();
+
 // Whether the Collections UI Reboot is enabled.
 bool IsCollectionsUIRebootEnabled();
 
