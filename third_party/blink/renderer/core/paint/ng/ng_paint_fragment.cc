@@ -169,6 +169,16 @@ std::unique_ptr<NGPaintFragment> NGPaintFragment::Create(
   return paint_fragment;
 }
 
+bool NGPaintFragment::IsDescendantOfNotSelf(
+    const NGPaintFragment& ancestor) const {
+  for (const NGPaintFragment* fragment = Parent(); fragment;
+       fragment = fragment->Parent()) {
+    if (fragment == &ancestor)
+      return true;
+  }
+  return false;
+}
+
 bool NGPaintFragment::HasSelfPaintingLayer() const {
   return physical_fragment_->IsBox() &&
          ToNGPhysicalBoxFragment(*physical_fragment_).HasSelfPaintingLayer();
