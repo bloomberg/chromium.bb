@@ -2397,7 +2397,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'mojo_chromiumos_fyi_gtests',
-          'isolated_scripts': 'mojo_chromiumos_isolated_scripts',
         },
       },
       'Mojo Linux': {
