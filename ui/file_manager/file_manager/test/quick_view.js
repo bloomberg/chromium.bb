@@ -14,15 +14,17 @@ quickview.openCloseQuickView = () => {
   assertTrue(test.selectFile('My Desktop Background.png'));
   // Press Space key.
   assertTrue(test.fakeKeyDown('#file-list', ' ', ' ', false, false, false));
-  return test.waitForElement(['#quick-view', '#dialog'])
-      .then((result) => {
-        // Wait until Quick View is displayed and files-safe-media.src is set.
-        return test.repeatUntil(() => {
-          if (getComputedStyle(result).display === 'block' &&
-              result.querySelector('files-safe-media').src)
-            return result;
-          return test.pending('Quick View is not opened yet.');
-        });
+  // Wait until Quick View is displayed and files-safe-media.src is set.
+  return test
+      .repeatUntil(() => {
+        let element = document.querySelector('#quick-view');
+        if (element && element.shadowRoot) {
+          element = element.shadowRoot.querySelector('#dialog');
+          if (getComputedStyle(element).display === 'block' &&
+              element.querySelector('files-safe-media').src)
+            return element;
+        }
+        return test.pending('Quick View is not opened yet.');
       })
       .then((result) => {
         // Click panel and wait for close.
