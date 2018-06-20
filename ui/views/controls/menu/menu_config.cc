@@ -8,7 +8,6 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_image_util.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/layout/layout_provider.h"
 #include "ui/views/round_rect_painter.h"
 
 namespace views {
@@ -25,11 +24,10 @@ MenuConfig::MenuConfig()
       minimum_text_item_height(0),
       minimum_container_item_height(0),
       minimum_menu_width(0),
-      item_horizontal_padding(LayoutProvider::Get()->GetDistanceMetric(
-          DistanceMetric::DISTANCE_RELATED_CONTROL_HORIZONTAL)),
-      touchable_item_horizontal_padding(
-          LayoutProvider::Get()->GetDistanceMetric(
-              DistanceMetric::DISTANCE_TOUCHABLE_RELATED_CONTROL_HORIZONTAL)),
+      // TODO(ftirelo): Paddings should come from the layout provider, once
+      //                Harmony is the default behavior.
+      item_horizontal_padding(8),
+      touchable_item_horizontal_padding(16),
       label_to_arrow_padding(8),
       arrow_to_edge_padding(5),
       touchable_icon_size(20),
