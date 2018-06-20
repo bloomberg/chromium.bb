@@ -322,6 +322,12 @@ void InProgressDownloadManager::ResumeInterruptedDownload(
                 GURL(), GURL());
 }
 
+bool InProgressDownloadManager::ShouldOpenDownload(
+    DownloadItemImpl* item,
+    const ShouldOpenDownloadCallback& callback) {
+  return true;
+}
+
 base::Optional<DownloadEntry> InProgressDownloadManager::GetInProgressEntry(
     DownloadItemImpl* download) {
   if (!download || !download_metadata_cache_ || !download_db_cache_)
