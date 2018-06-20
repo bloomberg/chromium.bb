@@ -33,6 +33,11 @@ static void JNI_ExploreSitesBridge_GetIcon(
     const base::android::JavaParamRef<jstring>& j_url,
     const base::android::JavaParamRef<jobject>& j_callback_obj);
 
+static base::android::ScopedJavaLocalRef<jstring>
+JNI_ExploreSitesBridge_GetCatalogUrl(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller);
+
 }  // namespace explore_sites
 
 #endif  // CHROME_BROWSER_ANDROID_EXPLORE_SITES_EXPLORE_SITES_BRIDGE_H_

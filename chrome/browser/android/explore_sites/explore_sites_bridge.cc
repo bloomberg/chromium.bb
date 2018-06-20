@@ -10,6 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/android/explore_sites/url_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
@@ -124,6 +125,13 @@ static void JNI_ExploreSitesBridge_GetIcon(
       base::BindOnce(&OnGetIconDone, std::move(image_fetcher),
                      ScopedJavaGlobalRef<jobject>(j_callback_obj)),
       kTrafficAnnotation);
+}
+
+// static
+ScopedJavaLocalRef<jstring> JNI_ExploreSitesBridge_GetCatalogUrl(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller) {
+  return base::android::ConvertUTF8ToJavaString(env, GetCatalogURL().spec());
 }
 
 }  // namespace explore_sites
