@@ -46,10 +46,21 @@ class Grid {
   // Note that out of flow children are not grid items.
   bool HasGridItems() const { return !grid_item_area_.IsEmpty(); }
 
-  bool HasAnyOrthogonalGridItem() const {
-    return has_any_orthogonal_grid_item_;
+  void AddBaselineAlignedItem(LayoutBox& item) {
+    baseline_grid_items_.push_back(&item);
   }
-  void SetHasAnyOrthogonalGridItem(bool);
+  void AddOrthogonalItem(LayoutBox& item) {
+    orthogonal_grid_items_.push_back(&item);
+  }
+  bool HasAnyOrthogonalGridItem() const {
+    return !orthogonal_grid_items_.IsEmpty();
+  }
+  const Vector<LayoutBox*>& OrthogonalGridItems() const {
+    return orthogonal_grid_items_;
+  }
+  const Vector<LayoutBox*>& BaselineGridItems() const {
+    return baseline_grid_items_;
+  }
 
   GridArea GridItemArea(const LayoutBox&) const;
   void SetGridItemArea(const LayoutBox&, GridArea);
@@ -131,7 +142,6 @@ class Grid {
   size_t auto_repeat_columns_{0};
   size_t auto_repeat_rows_{0};
 
-  bool has_any_orthogonal_grid_item_{false};
   bool needs_items_placement_{true};
 
   HashMap<const LayoutBox*, GridArea> grid_item_area_;
@@ -139,6 +149,9 @@ class Grid {
 
   std::unique_ptr<OrderedTrackIndexSet> auto_repeat_empty_columns_{nullptr};
   std::unique_ptr<OrderedTrackIndexSet> auto_repeat_empty_rows_{nullptr};
+
+  Vector<LayoutBox*> orthogonal_grid_items_;
+  Vector<LayoutBox*> baseline_grid_items_;
 };
 
 class VectorGrid final : public Grid {

@@ -304,6 +304,8 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     LayoutUnit available_space_for_columns = AvailableLogicalWidth();
     PlaceItemsOnGrid(track_sizing_algorithm_, available_space_for_columns);
 
+    PerformGridItemsPreLayout(track_sizing_algorithm_);
+
     track_sizing_algorithm_.ComputeBaselineAlignmentContext();
 
     // 1- First, the track sizing algorithm is used to resolve the sizes of the
@@ -498,6 +500,8 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
   std::unique_ptr<Grid> grid = Grid::Create(this);
   GridTrackSizingAlgorithm algorithm(this, *grid);
   PlaceItemsOnGrid(algorithm, base::nullopt);
+
+  PerformGridItemsPreLayout(algorithm);
 
   algorithm.ComputeBaselineAlignmentContext();
   ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns, min_logical_width,
@@ -770,8 +774,6 @@ void LayoutGrid::PlaceItemsOnGrid(
 
   Vector<LayoutBox*> auto_major_axis_auto_grid_items;
   Vector<LayoutBox*> specified_major_axis_auto_grid_items;
-  Vector<LayoutBox*> orthogonal_grid_items;
-  Vector<LayoutBox*> baseline_grid_items;
 #if DCHECK_IS_ON()
   DCHECK(!grid.HasAnyGridItemPaintOrder());
 #endif
@@ -791,9 +793,9 @@ void LayoutGrid::PlaceItemsOnGrid(
       child->SetOverrideContainingBlockContentLogicalHeight(LayoutUnit(-1));
 
     if (GridLayoutUtils::IsOrthogonalChild(*this, *child))
-      orthogonal_grid_items.push_back(child);
+      grid.AddOrthogonalItem(*child);
     if (IsBaselineAlignmentForChild(*child))
-      baseline_grid_items.push_back(child);
+      grid.AddBaselineAlignedItem(*child);
     grid.SetGridItemPaintOrder(*child, child_index++);
 
     GridArea area = grid.GridItemArea(*child);
@@ -815,7 +817,6 @@ void LayoutGrid::PlaceItemsOnGrid(
     }
     grid.insert(*child, area);
   }
-  grid.SetHasAnyOrthogonalGridItem(!orthogonal_grid_items.IsEmpty());
 
 #if DCHECK_IS_ON()
   if (grid.HasGridItems()) {
@@ -838,19 +839,6 @@ void LayoutGrid::PlaceItemsOnGrid(
   grid.SetAutoRepeatEmptyRows(ComputeEmptyTracksForAutoRepeat(grid, kForRows));
 
   grid.SetNeedsItemsPlacement(false);
-
-  // Blink does a pre-layout of all the orthogonal boxes in the layout
-  // tree (see how LocalFrameView::PerformLayout calls its
-  // LayoutOrthogonalWritingModeRoots function). However, grid items
-  // don't participate in this process (see the function
-  // PrepareOrthogonalWritingModeRootForLayout) because it's useless
-  // and even wrong if they don't have their corresponding Grid Area.
-  LayoutOrthogonalWritingModeRoots(algorithm, orthogonal_grid_items);
-
-  // We need to layout the item to know whether it must synthesize its
-  // baseline or not, which may imply a cyclic sizing dependency.
-  // TODO (jfernandez): Can we avoid it ?
-  LayoutBaselineAlignedItems(algorithm, baseline_grid_items);
 
 #if DCHECK_IS_ON()
   for (LayoutBox* child = grid.GetOrderIterator().First(); child;
@@ -876,32 +864,34 @@ static bool PrepareOrthogonalWritingModeRootForLayout(LayoutObject& root) {
   return true;
 }
 
-// TODO(lajava): Consider rafactoring this code with
-// LocalFrameView::LayoutOrthogonalWritingModeRoots
-void LayoutGrid::LayoutOrthogonalWritingModeRoots(
-    const GridTrackSizingAlgorithm& algorithm,
-    const Vector<LayoutBox*>& orthogonal_grid_items) const {
+void LayoutGrid::PerformGridItemsPreLayout(
+    const GridTrackSizingAlgorithm& algorithm) const {
+  DCHECK(!algorithm.GetGrid().NeedsItemsPlacement());
   if (!GetDocument().View()->IsInPerformLayout())
     return;
-
-  for (auto* root : orthogonal_grid_items) {
-    DCHECK(GridLayoutUtils::IsOrthogonalChild(*this, *root));
-    if (PrepareOrthogonalWritingModeRootForLayout(*root)) {
+  // Blink does a pre-layout of all the orthogonal boxes in the layout
+  // tree (see how LocalFrameView::PerformLayout calls its
+  // LayoutOrthogonalWritingModeRoots function). However, grid items
+  // don't participate in this process (see the function
+  // PrepareOrthogonalWritingModeRootForLayout) because it's useless
+  // and even wrong if they don't have their corresponding Grid Area.
+  // TODO(jfernandez): Consider rafactoring this code with
+  // LocalFrameView::LayoutOrthogonalWritingModeRoots
+  for (auto* item : algorithm.GetGrid().OrthogonalGridItems()) {
+    DCHECK(GridLayoutUtils::IsOrthogonalChild(*this, *item));
+    if (PrepareOrthogonalWritingModeRootForLayout(*item)) {
       UpdateGridAreaLogicalSize(
-          *root, algorithm.EstimatedGridAreaBreadthForChild(*root));
-      root->LayoutIfNeeded();
+          *item, algorithm.EstimatedGridAreaBreadthForChild(*item));
+      item->LayoutIfNeeded();
     }
   }
-}
-
-void LayoutGrid::LayoutBaselineAlignedItems(
-    const GridTrackSizingAlgorithm& algorithm,
-    const Vector<LayoutBox*>& items_list) const {
-  if (!GetDocument().View()->IsInPerformLayout())
-    return;
-
-  for (auto* item : items_list) {
+  // We need to layout the item to know whether it must synthesize its
+  // baseline or not, which may imply a cyclic sizing dependency.
+  // TODO (jfernandez): Can we avoid it ?
+  for (auto* item : algorithm.GetGrid().BaselineGridItems()) {
     DCHECK(IsBaselineAlignmentForChild(*item));
+    if (GridLayoutUtils::IsOrthogonalChild(*this, *item))
+      continue;
     if (item->HasRelativeLogicalWidth() || item->HasRelativeLogicalHeight()) {
       UpdateGridAreaLogicalSize(
           *item, algorithm.EstimatedGridAreaBreadthForChild(*item));
