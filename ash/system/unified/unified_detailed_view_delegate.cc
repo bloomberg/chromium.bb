@@ -146,6 +146,30 @@ views::View* UnifiedDetailedViewDelegate::CreateTitleSeparator() {
   return separator;
 }
 
+void UnifiedDetailedViewDelegate::ShowStickyHeaderSeparator(
+    views::View* view,
+    bool show_separator) {
+  if (show_separator) {
+    view->SetBorder(views::CreatePaddedBorder(
+        views::CreateSolidSidedBorder(0, 0, kSeparatorWidth, 0,
+                                      kUnifiedMenuSeparatorColor),
+        gfx::Insets(kMenuSeparatorVerticalPadding, 0,
+                    kMenuSeparatorVerticalPadding - kSeparatorWidth, 0)));
+  } else {
+    view->SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(kMenuSeparatorVerticalPadding, 0)));
+  }
+  view->SchedulePaint();
+}
+
+views::Separator* UnifiedDetailedViewDelegate::CreateListSubHeaderSeparator() {
+  views::Separator* separator = new views::Separator();
+  separator->SetColor(kUnifiedMenuSeparatorColor);
+  separator->SetBorder(views::CreateEmptyBorder(
+      kMenuSeparatorVerticalPadding - views::Separator::kThickness, 0, 0, 0));
+  return separator;
+}
+
 HoverHighlightView* UnifiedDetailedViewDelegate::CreateScrollListItem(
     ViewClickListener* listener,
     const gfx::VectorIcon& icon,

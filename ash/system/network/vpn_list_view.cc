@@ -324,8 +324,7 @@ void VPNListView::AddProviderAndNetworks(
     const chromeos::NetworkStateHandler::NetworkStateList& networks) {
   // Add a visual separator, unless this is the topmost entry in the list.
   if (!list_empty_) {
-    scroll_content()->AddChildView(
-        TrayPopupUtils::CreateListSubHeaderSeparator());
+    scroll_content()->AddChildView(CreateListSubHeaderSeparator());
   }
   std::string vpn_name =
       vpn_provider.provider_type == VPNProvider::BUILT_IN_VPN

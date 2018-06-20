@@ -86,6 +86,17 @@ views::View* SystemTrayItemDetailedViewDelegate::CreateTitleSeparator() {
   return separator;
 }
 
+void SystemTrayItemDetailedViewDelegate::ShowStickyHeaderSeparator(
+    views::View* view,
+    bool show_separator) {
+  TrayPopupUtils::ShowStickyHeaderSeparator(view, show_separator);
+}
+
+views::Separator*
+SystemTrayItemDetailedViewDelegate::CreateListSubHeaderSeparator() {
+  return TrayPopupUtils::CreateListSubHeaderSeparator();
+}
+
 HoverHighlightView* SystemTrayItemDetailedViewDelegate::CreateScrollListItem(
     ViewClickListener* listener,
     const gfx::VectorIcon& icon,

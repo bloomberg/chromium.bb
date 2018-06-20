@@ -54,7 +54,8 @@ const int kTitleRowSeparatorIndex = 1;
 // row use set_id(VIEW_ID_STICKY_HEADER).
 class ScrollContentsView : public views::View {
  public:
-  ScrollContentsView() {
+  explicit ScrollContentsView(DetailedViewDelegate* delegate)
+      : delegate_(delegate) {
     box_layout_ = SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   }
@@ -212,8 +213,7 @@ class ScrollContentsView : public views::View {
       }
       if (header.draw_separator_below != draw_separator_below) {
         header.draw_separator_below = draw_separator_below;
-        TrayPopupUtils::ShowStickyHeaderSeparator(header_view,
-                                                  draw_separator_below);
+        delegate_->ShowStickyHeaderSeparator(header_view, draw_separator_below);
       }
       if (header.natural_offset < scroll_offset)
         break;
@@ -252,6 +252,8 @@ class ScrollContentsView : public views::View {
     canvas->ClipRect(shadowed_area, SkClipOp::kDifference);
     canvas->DrawRect(shadowed_area, flags);
   }
+
+  DetailedViewDelegate* const delegate_;
 
   views::BoxLayout* box_layout_ = nullptr;
 
@@ -313,7 +315,7 @@ void TrayDetailedView::CreateTitleRow(int string_id) {
 
 void TrayDetailedView::CreateScrollableList() {
   DCHECK(!scroller_);
-  scroll_content_ = new ScrollContentsView();
+  scroll_content_ = new ScrollContentsView(delegate_);
   scroller_ = new views::ScrollView;
   scroller_->set_draw_overflow_indicator(
       delegate_->IsOverflowIndicatorEnabled());
@@ -426,6 +428,10 @@ views::Button* TrayDetailedView::CreateSettingsButton(
 
 views::Button* TrayDetailedView::CreateHelpButton() {
   return delegate_->CreateHelpButton(this);
+}
+
+views::Separator* TrayDetailedView::CreateListSubHeaderSeparator() {
+  return delegate_->CreateListSubHeaderSeparator();
 }
 
 void TrayDetailedView::HandleViewClicked(views::View* view) {
