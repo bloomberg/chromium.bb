@@ -693,7 +693,7 @@ def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory,
     apk_path: Path to the .apk file to measure.
     tool_prefix: Prefix for c++filt & nm.
     output_directory: Build output directory.
-    linker_name: "gold", "lld", or None
+    linker_name: 'gold', 'lld_v#' (# is a number), 'lld-lto_v#', or None.
 
   Returns:
     None if |elf_path| is not supplied. Otherwise returns dict mapping string
@@ -747,7 +747,7 @@ def _ResolveThinArchivePaths(raw_symbols, thin_archives):
 
 
 def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
-                  outdir_context=None):
+                  outdir_context=None, linker_name=None):
   """Adds ELF section sizes and symbols."""
   if elf_path:
     # Run nm on the elf file to retrieve the list of symbol names per-address.
@@ -773,7 +773,7 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
   logging.info('Parsing Linker Map')
   with _OpenMaybeGz(map_path) as map_file:
     section_sizes, raw_symbols = (
-        linker_map_parser.MapFileParser().Parse(map_file))
+        linker_map_parser.MapFileParser().Parse(linker_name, map_file))
 
     if outdir_context and outdir_context.thin_archives:
       _ResolveThinArchivePaths(raw_symbols, outdir_context.thin_archives)
@@ -1125,7 +1125,7 @@ def _CalculateElfOverhead(section_sizes, elf_path):
 def CreateSectionSizesAndSymbols(
       map_path=None, tool_prefix=None, output_directory=None, elf_path=None,
       apk_path=None, track_string_literals=True, metadata=None,
-      apk_so_path=None, pak_files=None, pak_info_file=None,
+      apk_so_path=None, pak_files=None, pak_info_file=None, linker_name=None,
       knobs=SectionSizeKnobs()):
   """Creates sections sizes and symbols for a SizeInfo.
 
@@ -1184,7 +1184,8 @@ def CreateSectionSizesAndSymbols(
         thin_archives=thin_archives)
 
   section_sizes, raw_symbols = _ParseElfInfo(
-      map_path, elf_path, tool_prefix, track_string_literals, outdir_context)
+      map_path, elf_path, tool_prefix, track_string_literals,
+      outdir_context=outdir_context, linker_name=linker_name)
   elf_overhead_size = _CalculateElfOverhead(section_sizes, elf_path)
 
   pak_symbols_by_id = None
@@ -1318,7 +1319,7 @@ def _ParseGnArgs(args_path):
 
 def _DetectLinkerName(map_path):
   with _OpenMaybeGz(map_path) as map_file:
-    return linker_map_parser.DetectLinkerNameFromMapFileHeader(next(map_file))
+    return linker_map_parser.DetectLinkerNameFromMapFile(map_file)
 
 
 def _ElfInfoFromApk(apk_path, apk_so_path, tool_prefix):
@@ -1439,6 +1440,7 @@ def DeduceMainPaths(args, parser):
                    'linker map file.')
 
   linker_name = _DetectLinkerName(map_path)
+  logging.info('Linker name: %s' % linker_name)
   tool_prefix_finder = path_util.ToolPrefixFinder(
       value=args.tool_prefix,
       output_directory_finder=output_directory_finder,
@@ -1470,7 +1472,8 @@ def Run(args, parser):
       apk_path=apk_path, output_directory=output_directory,
       track_string_literals=args.track_string_literals,
       metadata=metadata, apk_so_path=apk_so_path,
-      pak_files=args.pak_file, pak_info_file=args.pak_info_file, knobs=knobs)
+      pak_files=args.pak_file, pak_info_file=args.pak_info_file,
+      linker_name=linker_name, knobs=knobs)
   size_info = CreateSizeInfo(
       section_sizes, raw_symbols, metadata=metadata, normalize_names=False)
 

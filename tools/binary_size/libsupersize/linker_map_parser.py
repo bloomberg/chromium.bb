@@ -287,6 +287,7 @@ class MapFileParserLld(object):
   _LINE_RE_V0 = re.compile(r'([0-9a-f]+)\s+([0-9a-f]+)\s+(\d+) ( *)(.*)')
   _LINE_RE_V1 = re.compile(
       r'\s*[0-9a-f]+\s+([0-9a-f]+)\s+([0-9a-f]+)\s+(\d+) ( *)(.*)')
+  _LINE_RE = [_LINE_RE_V0, _LINE_RE_V1]
 
   def __init__(self, linker_name):
     self._linker_name = linker_name
@@ -325,13 +326,13 @@ class MapFileParserLld(object):
 # 00000000002010c0 0000000000000000     0                 frame_dummy
 # 00000000002010ed 0000000000000071     1         a.o:(.text)
 # 00000000002010ed 0000000000000071     0                 main
+    # Extract e.g., 'lld_v0' -> 0, or 'lld-lto_v1' -> 1.
+    map_file_version = int(self._linker_name.split('_v')[1])
+    pattern = MapFileParserLld._LINE_RE[map_file_version]
+
     sym_maker = _SymbolMaker()
     cur_section = None
     cur_section_is_useful = None
-    if self._linker_name.endswith('v1'):
-      pattern = self._LINE_RE_V1
-    else:
-      pattern = self._LINE_RE_V0
 
     for line in lines:
       m = pattern.match(line)
@@ -391,19 +392,58 @@ class MapFileParserLld(object):
     return self._section_sizes, sym_maker.syms
 
 
-def DetectLinkerNameFromMapFileHeader(first_line):
+def _DetectLto(lines):
+  """Scans LLD linker map file and returns whether LTO was used."""
+  # It's assumed that the first line in |lines| was consumed to determine that
+  # LLD was used. Seek 'thinlto-cache' prefix within an "indicator section" as
+  # indicator for LTO.
+  found_indicator_section = False
+  # Potential names of "main section". Only one gets used.
+  indicator_section_set = set(['.rodata', '.ARM.exidx'])
+  start_pos = -1
+  for line in lines:
+    # Shortcut to avoid regex: The first line seen (second line in file) should
+    # start a section, and start with '.', e.g.:
+    #     194      194       13     1 .interp
+    # Assign |start_pos| as position of '.', and trim everything before!
+    if start_pos < 0:
+      start_pos = line.index('.')
+    if len(line) < start_pos:
+      continue
+    line = line[start_pos:]
+    tok = line.lstrip()  # Allow whitespace at right.
+    indent_size = len(line) - len(tok)
+    if indent_size == 0:  # Section change.
+      if found_indicator_section:  # Exit if just visited "main section".
+        break
+      if tok.strip() in indicator_section_set:
+        found_indicator_section = True
+    elif indent_size == 8:
+      if found_indicator_section:
+        if tok.startswith('thinlto-cache'):
+          return True
+  return False
+
+
+def DetectLinkerNameFromMapFile(lines):
+  """Scans linker map file, and returns a coded linker name."""
+  first_line = next(lines)
+
   if first_line.startswith('Address'):
-    return 'lld_v0'
-  elif first_line.lstrip().startswith('VMA'):
-    return 'lld_v1'
+    return 'lld-lto_v0' if _DetectLto(lines) else 'lld_v0'
+
+  if first_line.lstrip().startswith('VMA'):
+    return 'lld-lto_v1' if _DetectLto(lines) else 'lld_v1'
+
   if first_line.startswith('Archive member'):
     return 'gold'
+
   raise Exception('Invalid map file: ' + first_line)
 
 
 class MapFileParser(object):
   """Parses a linker map file, with heuristic linker detection."""
-  def Parse(self, lines):
+  def Parse(self, linker_name, lines):
     """Parses a linker map file.
 
     Args:
@@ -412,7 +452,7 @@ class MapFileParser(object):
     Returns:
       A tuple of (section_sizes, symbols).
     """
-    linker_name = DetectLinkerNameFromMapFileHeader(next(lines))
+    next(lines)  # Consume the first line of headers.
     if linker_name.startswith('lld'):
       inner_parser = MapFileParserLld(linker_name)
     elif linker_name == 'gold':

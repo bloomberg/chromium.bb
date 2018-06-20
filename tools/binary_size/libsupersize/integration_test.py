@@ -183,16 +183,18 @@ class IntegrationTest(unittest.TestCase):
         pak_files = [_TEST_APK_PAK_PATH]
         pak_info_file = _TEST_PAK_INFO_PATH
       metadata = None
+      linker_name = 'gold'
       if use_elf:
         with _AddMocksToPath():
           metadata = archive.CreateMetadata(
               _TEST_MAP_PATH, elf_path, apk_path, _TEST_TOOL_PREFIX,
-              output_directory, 'gold')
+              output_directory, linker_name)
       section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
           map_path=_TEST_MAP_PATH, tool_prefix=_TEST_TOOL_PREFIX,
           elf_path=elf_path, output_directory=output_directory,
           apk_path=apk_path, apk_so_path=apk_so_path, metadata=metadata,
-          pak_files=pak_files, pak_info_file=pak_info_file, knobs=knobs)
+          pak_files=pak_files, pak_info_file=pak_info_file,
+          linker_name=linker_name, knobs=knobs)
       IntegrationTest.cached_size_info[cache_key] = archive.CreateSizeInfo(
           section_sizes, raw_symbols, metadata=metadata)
     return copy.deepcopy(IntegrationTest.cached_size_info[cache_key])
