@@ -22,6 +22,7 @@
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -117,14 +118,24 @@ bool CrostiniInstallerView::ShouldShowCloseButton() const {
 
 bool CrostiniInstallerView::Accept() {
   DCHECK_EQ(state_, State::PROMPT);
+
   state_ = State::INSTALL_START;
   profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
   GetWidget()->UpdateWindowTitle();
 
   progress_bar_ = new views::ProgressBar();
   AddChildView(progress_bar_);
-
   StepProgress();
+
+  // HandleError needs the |progress_bar_|, so we delay our Offline check until
+  // it exists.
+  if (net::NetworkChangeNotifier::IsOffline()) {
+    const base::string16 device_type = ui::GetChromeOSDeviceName();
+    HandleError(l10n_util::GetStringFUTF16(IDS_CROSTINI_INSTALLER_OFFLINE_ERROR,
+                                           app_name_, device_type),
+                SetupResult::kErrorOffline);
+    return false;  // should not close the dialog.
+  }
 
   // Kick off the Crostini Restart sequence. We will be added as an observer.
   restart_id_ = crostini::CrostiniManager::GetInstance()->RestartCrostini(

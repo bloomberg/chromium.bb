@@ -4880,6 +4880,9 @@ Installing the <ph name="APP_NAME">$2<ex>Terminal</ex></ph> will download <ph na
   <message name="IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE" desc="Text shown in the Crostini installer dialog when the container inside the VM is starting">
     Starting container inside VM.
   </message>
+  <message name="IDS_CROSTINI_INSTALLER_OFFLINE_ERROR" desc="Text shown in the Crostini installer dialog when there is no internet connection">
+    ERROR: Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> must be connected to the Internet to install the <ph name="APP_NAME">$2<ex>Terminal</ex></ph>.
+  </message>
   <message name="IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR" desc="Text shown in the Crostini installer dialog when the VM component fails to load">
     ERROR: Failed to load VM component.
   </message>

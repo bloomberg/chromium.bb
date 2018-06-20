@@ -39,6 +39,7 @@ class CrostiniInstallerView
     kErrorCreatingDiskImage = 5,
     kErrorStartingTermina = 6,
     kErrorStartingContainer = 7,
+    kErrorOffline = 8,
     kCount
   };
 

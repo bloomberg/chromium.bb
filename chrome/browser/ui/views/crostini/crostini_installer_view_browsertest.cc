@@ -8,6 +8,8 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -23,8 +25,44 @@
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
+#include "net/base/mock_network_change_notifier.h"
+#include "net/base/network_change_notifier_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/window/dialog_client_view.h"
+
+// ChromeBrowserMainExtraParts used to install a MockNetworkChangeNotifier.
+class ChromeBrowserMainExtraPartsNetFactoryInstaller
+    : public ChromeBrowserMainExtraParts {
+ public:
+  ChromeBrowserMainExtraPartsNetFactoryInstaller() = default;
+  ~ChromeBrowserMainExtraPartsNetFactoryInstaller() override {
+    // |network_change_notifier_| needs to be destroyed before |net_installer_|.
+    network_change_notifier_.reset();
+  }
+
+  net::test::MockNetworkChangeNotifier* network_change_notifier() {
+    return network_change_notifier_.get();
+  }
+
+  // ChromeBrowserMainExtraParts:
+  void PreEarlyInitialization() override {}
+  void PostMainMessageLoopStart() override {
+    ASSERT_TRUE(net::NetworkChangeNotifier::HasNetworkChangeNotifier());
+    net_installer_ =
+        std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
+    network_change_notifier_ =
+        std::make_unique<net::test::MockNetworkChangeNotifier>();
+    network_change_notifier_->SetConnectionType(
+        net::NetworkChangeNotifier::CONNECTION_WIFI);
+  }
+
+ private:
+  std::unique_ptr<net::test::MockNetworkChangeNotifier>
+      network_change_notifier_;
+  std::unique_ptr<net::NetworkChangeNotifier::DisableForTest> net_installer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsNetFactoryInstaller);
+};
 
 class CrostiniInstallerViewBrowserTest : public DialogBrowserTest {
  public:
@@ -64,6 +102,15 @@ class CrostiniInstallerViewBrowserTest : public DialogBrowserTest {
     test::GetAppListClient()->ActivateItem(kCrostiniTerminalId, 0);
   }
 
+  // BrowserTestBase:
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
+    ChromeBrowserMainParts* chrome_browser_main_parts =
+        static_cast<ChromeBrowserMainParts*>(browser_main_parts);
+    extra_parts_ = new ChromeBrowserMainExtraPartsNetFactoryInstaller();
+    chrome_browser_main_parts->AddParts(extra_parts_);
+  }
+
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
         features::kExperimentalCrostiniUI);
@@ -89,7 +136,9 @@ class CrostiniInstallerViewBrowserTest : public DialogBrowserTest {
 
  protected:
   // Owned by chromeos::DBusThreadManager
-  WaitingFakeConciergeClient* waiting_fake_concierge_client_;
+  WaitingFakeConciergeClient* waiting_fake_concierge_client_ = nullptr;
+  // Owned by content::Browser
+  ChromeBrowserMainExtraPartsNetFactoryInstaller* extra_parts_ = nullptr;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -129,6 +178,36 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow) {
       "Crostini.SetupResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniInstallerView::SetupResult::kSuccess),
+      1);
+}
+
+IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow_Offline) {
+  base::HistogramTester histogram_tester;
+  extra_parts_->network_change_notifier()->SetConnectionType(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+
+  ShowUi("default");
+  EXPECT_NE(nullptr, ActiveView());
+  EXPECT_EQ(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
+            ActiveView()->GetDialogButtons());
+
+  EXPECT_TRUE(HasAcceptButton());
+  EXPECT_TRUE(HasCancelButton());
+
+  ActiveView()->GetDialogClientView()->AcceptWindow();
+  EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());
+  EXPECT_FALSE(HasAcceptButton());
+  EXPECT_TRUE(HasCancelButton());
+
+  ActiveView()->GetDialogClientView()->CancelWindow();
+  EXPECT_TRUE(ActiveView()->GetWidget()->IsClosed());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(nullptr, ActiveView());
+
+  histogram_tester.ExpectBucketCount(
+      "Crostini.SetupResult",
+      static_cast<base::HistogramBase::Sample>(
+          CrostiniInstallerView::SetupResult::kErrorOffline),
       1);
 }
 
