@@ -147,6 +147,11 @@ bool EPKPChallengeKeyBase::IsExtensionWhitelisted() const {
     // TODO(drcrash): Use a separate device-wide policy for the API.
     return Manifest::IsPolicyLocation(extension_->location());
   }
+  if (Manifest::IsComponentLocation(extension_->location())) {
+    // Note: For this to even be called, the component extension must also be
+    // whitelisted in chrome/common/extensions/api/_permission_features.json
+    return true;
+  }
   const base::ListValue* list =
       profile_->GetPrefs()->GetList(prefs::kAttestationExtensionWhitelist);
   base::Value value(extension_->id());
