@@ -135,7 +135,7 @@ const char kSizingMediumCSSClass[] = "sizing-medium";
 const char kSizingLargeCSSClass[] = "sizing-large";
 
 // The minimum width in pixels to reach a given size.
-constexpr int kSizingMediumThreshold = 641;
+constexpr int kSizingMediumThreshold = 741;
 constexpr int kSizingLargeThreshold = 1441;
 
 // Used for setting overlay play button width CSS variable.
@@ -1354,8 +1354,8 @@ void MediaControlsImpl::UpdateOverlayPlayButtonWidthCSSVar() {
   int width = size_.Width();
   int height = size_.Height();
 
-  double play_button_width =
-      std::max(kMinOverlayPlayButtonWidth, std::min(width * 0.3, height * 0.3));
+  double play_button_width = std::max(kMinOverlayPlayButtonWidth,
+                                      std::min(width * 0.25, height * 0.25));
 
   WTF::String play_button_css_value = WTF::String::Number(play_button_width);
   play_button_css_value.append("px");

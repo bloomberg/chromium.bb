@@ -215,10 +215,10 @@ video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls
 video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-mute-button" i],
 video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-fullscreen-button" i],
 video::-webkit-media-controls.sizing-medium input[pseudo="-internal-media-controls-overflow-button" i] {
-  width: 96px;
-  height: 96px;
-  min-width: 96px;
-  background-size: 48px;
+  width: 64px;
+  height: 64px;
+  min-width: 64px;
+  background-size: 32px;
 }
 
 video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-play-button" i],
@@ -238,8 +238,8 @@ video::-webkit-media-controls.sizing-small div[pseudo="-internal-media-controls-
 }
 
 video::-webkit-media-controls.sizing-medium div[pseudo="-internal-media-controls-button-panel" i] {
-  height: 96px;
-  line-height: 96px;
+  height: 64px;
+  line-height: 64px;
   padding: 0 32px 0 64px;
 }
 
@@ -408,7 +408,7 @@ video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-
 }
 
 video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-overlay-play-button" i] {
-  margin-bottom: -96px;
+  margin-bottom: -64px;
 }
 
 video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-overlay-play-button" i] {
