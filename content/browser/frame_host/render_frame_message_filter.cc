@@ -35,6 +35,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
@@ -123,6 +124,29 @@ void DownloadUrlOnUIThread(
   download_manager->DownloadUrl(std::move(parameters),
                                 std::move(blob_data_handle),
                                 std::move(blob_url_loader_factory));
+}
+
+// With network service disabled the downloads code wouldn't know what to do
+// with a BlobURLToken, so this method is used to convert from a token to a
+// BlobDataHandle to be passed on to the rest of the downloads system.
+void DownloadBlobURLFromToken(
+    std::unique_ptr<download::DownloadUrlParameters> params,
+    blink::mojom::BlobURLTokenPtr,
+    const base::WeakPtr<storage::BlobStorageContext>& context,
+    const base::UnguessableToken& token) {
+  std::unique_ptr<storage::BlobDataHandle> blob_handle;
+  GURL blob_url;
+  if (context) {
+    std::string uuid;
+    if (context->registry().GetTokenMapping(token, &blob_url, &uuid) &&
+        blob_url == params->url()) {
+      blob_handle = context->GetBlobDataFromUUID(uuid);
+    }
+  }
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&DownloadUrlOnUIThread, std::move(params),
+                     std::move(blob_handle), nullptr));
 }
 
 // Common functionality for converting a sync renderer message to a callback
@@ -363,6 +387,24 @@ void RenderFrameMessageFilter::DownloadUrl(
   if (url.SchemeIsBlob()) {
     ChromeBlobStorageContext* blob_context =
         GetChromeBlobStorageContextForResourceContext(resource_context_);
+
+    // With network service disabled the downloads code wouldn't know what to do
+    // with the BlobURLToken (or the resulting URLLoaderFactory). So for that
+    // case convert the token to a BlobDataHandle before passing it of to the
+    // rest of the downloads system.
+    if (blob_url_token &&
+        !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      blink::mojom::BlobURLTokenPtr blob_url_token_ptr(
+          std::move(blob_url_token));
+      auto* raw_token = blob_url_token_ptr.get();
+      raw_token->GetToken(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          base::BindOnce(&DownloadBlobURLFromToken, std::move(parameters),
+                         std::move(blob_url_token_ptr),
+                         blob_context->context()->AsWeakPtr()),
+          base::UnguessableToken()));
+      return;
+    }
+
     blob_data_handle = blob_context->context()->GetBlobDataFromPublicURL(url);
     // Don't care if the above fails. We are going to let the download go
     // through and allow it to be interrupted so that the embedder can deal.
