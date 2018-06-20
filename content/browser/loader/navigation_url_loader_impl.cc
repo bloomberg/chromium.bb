@@ -266,7 +266,6 @@ std::unique_ptr<NavigationRequestInfo> CreateNavigationRequestInfoForRedirect(
                    updated_resource_request.referrer_policy));
   new_common_params.method = updated_resource_request.method;
   new_common_params.post_data = updated_resource_request.request_body;
-  // TODO(shimazu): Set correct base url and history url for a data URL.
 
   mojom::BeginNavigationParamsPtr new_begin_params =
       previous_request_info.begin_params.Clone();
