@@ -158,26 +158,17 @@ RemoteCall.prototype.waitForWindowGeometry = function(windowId, width, height) {
  * Waits for the specified element appearing in the DOM.
  * @param {string} windowId Target window ID.
  * @param {string} query Query string for the element.
- * @param {string=} opt_iframeQuery Query string for the iframe containing the
- *     element.
  * @return {Promise} Promise to be fulfilled when the element appears.
  */
-RemoteCall.prototype.waitForElement = function(
-    windowId, query, opt_iframeQuery) {
+RemoteCall.prototype.waitForElement = function(windowId, query) {
   var caller = getCaller();
   return repeatUntil(function() {
-    return this.callRemoteTestUtil(
-        'queryAllElements',
-        windowId,
-        [query, opt_iframeQuery]
-    ).then(function(elements) {
-      if (elements.length > 0)
-        return elements[0];
-      else
-        return pending(
-            caller, 'Element %s (maybe in iframe %s) is not found.', query,
-            opt_iframeQuery);
-    });
+    return this.callRemoteTestUtil('queryAllElements', windowId, [query])
+        .then(function(elements) {
+          if (elements.length > 0)
+            return elements[0];
+          return pending(caller, 'Element %s is not found.', query);
+        });
   }.bind(this));
 };
 
@@ -185,23 +176,17 @@ RemoteCall.prototype.waitForElement = function(
  * Waits for the specified element leaving from the DOM.
  * @param {string} windowId Target window ID.
  * @param {string} query Query string for the element.
- * @param {string=} opt_iframeQuery Query string for the iframe containing the
- *     element.
  * @return {Promise} Promise to be fulfilled when the element is lost.
  */
-RemoteCall.prototype.waitForElementLost = function(
-    windowId, query, opt_iframeQuery) {
+RemoteCall.prototype.waitForElementLost = function(windowId, query) {
   var caller = getCaller();
   return repeatUntil(function() {
-    return this.callRemoteTestUtil(
-        'queryAllElements',
-        windowId,
-        [query, opt_iframeQuery]
-    ).then(function(elements) {
-      if (elements.length > 0)
-        return pending(caller, 'Elements %j is still exists.', elements);
-      return true;
-    });
+    return this.callRemoteTestUtil('queryAllElements', windowId, [query])
+        .then(function(elements) {
+          if (elements.length > 0)
+            return pending(caller, 'Elements %j is still exists.', elements);
+          return true;
+        });
   }.bind(this));
 };
 

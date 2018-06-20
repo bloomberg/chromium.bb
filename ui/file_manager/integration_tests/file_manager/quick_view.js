@@ -40,7 +40,7 @@ function openQuickViewSteps(appId, name) {
         const elements = ['#quick-view', '#dialog'];
         return remoteCall
             .callRemoteTestUtil(
-                'deepQueryAllElements', appId, [elements, null, ['display']])
+                'deepQueryAllElements', appId, [elements, ['display']])
             .then(checkQuickViewElementsDisplayBlock);
       }).then(this.next);
     },
@@ -78,7 +78,7 @@ function closeQuickViewSteps(appId) {
         const elements = ['#quick-view', '#dialog'];
         return remoteCall
             .callRemoteTestUtil(
-                'deepQueryAllElements', appId, [elements, null, ['display']])
+                'deepQueryAllElements', appId, [elements, ['display']])
             .then(checkQuickViewElementsDisplayNone);
       }).then(this.next);
     },
