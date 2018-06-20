@@ -320,13 +320,91 @@ ChromeSyncClient::CreateDataTypeControllers(
       component_factory_->CreateCommonDataTypeControllers(
           disabled_types, local_device_info_provider);
 
-// TODO(mastiz): Merge the two functions below into one or inline bodies here,
-// since there is common code.
-#if defined(OS_ANDROID)
-  RegisterAndroidDataTypes(&controllers);
-#else
-  RegisterDesktopDataTypes(disabled_types, &controllers);
-#endif  // defined(OS_ANDROID)
+  base::RepeatingClosure error_callback = base::BindRepeating(
+      &syncer::ReportUnrecoverableError, chrome::GetChannel());
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  controllers.push_back(std::make_unique<SupervisedUserSyncDataTypeController>(
+      syncer::SUPERVISED_USER_SETTINGS, error_callback, this, profile_));
+  controllers.push_back(std::make_unique<SupervisedUserSyncDataTypeController>(
+      syncer::SUPERVISED_USER_WHITELISTS, error_callback, this, profile_));
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // App sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!disabled_types.Has(syncer::APPS)) {
+    controllers.push_back(std::make_unique<ExtensionDataTypeController>(
+        syncer::APPS, error_callback, this, profile_));
+  }
+
+  // Extension sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!disabled_types.Has(syncer::EXTENSIONS)) {
+    controllers.push_back(std::make_unique<ExtensionDataTypeController>(
+        syncer::EXTENSIONS, error_callback, this, profile_));
+  }
+
+  // Extension setting sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!disabled_types.Has(syncer::EXTENSION_SETTINGS)) {
+    controllers.push_back(std::make_unique<ExtensionSettingDataTypeController>(
+        syncer::EXTENSION_SETTINGS, error_callback, this, profile_));
+  }
+
+  // App setting sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!disabled_types.Has(syncer::APP_SETTINGS)) {
+    controllers.push_back(std::make_unique<ExtensionSettingDataTypeController>(
+        syncer::APP_SETTINGS, error_callback, this, profile_));
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if !defined(OS_ANDROID)
+  // Theme sync is enabled by default.  Register unless explicitly disabled.
+  if (!disabled_types.Has(syncer::THEMES)) {
+    controllers.push_back(std::make_unique<ThemeDataTypeController>(
+        error_callback, this, profile_));
+  }
+
+  // Search Engine sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!disabled_types.Has(syncer::SEARCH_ENGINES)) {
+    controllers.push_back(std::make_unique<SearchEngineDataTypeController>(
+        error_callback, this,
+        TemplateURLServiceFactory::GetForProfile(profile_)));
+  }
+#endif  // !defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_APP_LIST)
+  controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
+      syncer::APP_LIST, error_callback, this, syncer::GROUP_UI,
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
+#endif  // BUILDFLAG(ENABLE_APP_LIST)
+
+#if defined(OS_LINUX) || defined(OS_WIN)
+  // Dictionary sync is enabled by default.
+  if (!disabled_types.Has(syncer::DICTIONARY)) {
+    controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
+        syncer::DICTIONARY, error_callback, this, syncer::GROUP_UI,
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
+  }
+#endif  // defined(OS_LINUX) || defined(OS_WIN)
+
+#if defined(OS_CHROMEOS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWifiCredentialSync) &&
+      !disabled_types.Has(syncer::WIFI_CREDENTIALS)) {
+    controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
+        syncer::WIFI_CREDENTIALS, error_callback, this, syncer::GROUP_UI,
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
+  }
+  if (arc::IsArcAllowedForProfile(profile_)) {
+    controllers.push_back(std::make_unique<ArcPackageSyncDataTypeController>(
+        syncer::ARC_PACKAGE, error_callback, this, profile_));
+  }
+#endif  // defined(OS_CHROMEOS)
+
   return controllers;
 }
 
@@ -593,109 +671,6 @@ void ChromeSyncClient::GetDeviceInfoTrackers(
       }
     }
   }
-}
-
-void ChromeSyncClient::RegisterDesktopDataTypes(
-    syncer::ModelTypeSet disabled_types,
-    syncer::DataTypeController::TypeVector* controllers) {
-  base::Closure error_callback =
-      base::Bind(&syncer::ReportUnrecoverableError, chrome::GetChannel());
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // App sync is enabled by default.  Register unless explicitly
-  // disabled.
-  if (!disabled_types.Has(syncer::APPS)) {
-    controllers->push_back(std::make_unique<ExtensionDataTypeController>(
-        syncer::APPS, error_callback, this, profile_));
-  }
-
-  // Extension sync is enabled by default.  Register unless explicitly
-  // disabled.
-  if (!disabled_types.Has(syncer::EXTENSIONS)) {
-    controllers->push_back(std::make_unique<ExtensionDataTypeController>(
-        syncer::EXTENSIONS, error_callback, this, profile_));
-  }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if !defined(OS_ANDROID)
-  // Theme sync is enabled by default.  Register unless explicitly disabled.
-  if (!disabled_types.Has(syncer::THEMES)) {
-    controllers->push_back(std::make_unique<ThemeDataTypeController>(
-        error_callback, this, profile_));
-  }
-#endif  // !defined(OS_ANDROID)
-
-  // Search Engine sync is enabled by default.  Register unless explicitly
-  // disabled.
-  if (!disabled_types.Has(syncer::SEARCH_ENGINES)) {
-    controllers->push_back(std::make_unique<SearchEngineDataTypeController>(
-        error_callback, this,
-        TemplateURLServiceFactory::GetForProfile(profile_)));
-  }
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Extension setting sync is enabled by default.  Register unless explicitly
-  // disabled.
-  if (!disabled_types.Has(syncer::EXTENSION_SETTINGS)) {
-    controllers->push_back(std::make_unique<ExtensionSettingDataTypeController>(
-        syncer::EXTENSION_SETTINGS, error_callback, this, profile_));
-  }
-
-  // App setting sync is enabled by default.  Register unless explicitly
-  // disabled.
-  if (!disabled_types.Has(syncer::APP_SETTINGS)) {
-    controllers->push_back(std::make_unique<ExtensionSettingDataTypeController>(
-        syncer::APP_SETTINGS, error_callback, this, profile_));
-  }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if BUILDFLAG(ENABLE_APP_LIST)
-  controllers->push_back(std::make_unique<AsyncDirectoryTypeController>(
-      syncer::APP_LIST, error_callback, this, syncer::GROUP_UI,
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
-#endif  // BUILDFLAG(ENABLE_APP_LIST)
-
-#if defined(OS_LINUX) || defined(OS_WIN)
-  // Dictionary sync is enabled by default.
-  if (!disabled_types.Has(syncer::DICTIONARY)) {
-    controllers->push_back(std::make_unique<AsyncDirectoryTypeController>(
-        syncer::DICTIONARY, error_callback, this, syncer::GROUP_UI,
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
-  }
-#endif  // defined(OS_LINUX) || defined(OS_WIN)
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  controllers->push_back(std::make_unique<SupervisedUserSyncDataTypeController>(
-      syncer::SUPERVISED_USER_SETTINGS, error_callback, this, profile_));
-  controllers->push_back(std::make_unique<SupervisedUserSyncDataTypeController>(
-      syncer::SUPERVISED_USER_WHITELISTS, error_callback, this, profile_));
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-
-#if defined(OS_CHROMEOS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWifiCredentialSync) &&
-      !disabled_types.Has(syncer::WIFI_CREDENTIALS)) {
-    controllers->push_back(std::make_unique<AsyncDirectoryTypeController>(
-        syncer::WIFI_CREDENTIALS, error_callback, this, syncer::GROUP_UI,
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
-  }
-  if (arc::IsArcAllowedForProfile(profile_)) {
-    controllers->push_back(std::make_unique<ArcPackageSyncDataTypeController>(
-        syncer::ARC_PACKAGE, error_callback, this, profile_));
-  }
-#endif  // defined(OS_CHROMEOS)
-}
-
-void ChromeSyncClient::RegisterAndroidDataTypes(
-    syncer::DataTypeController::TypeVector* controllers) {
-  base::Closure error_callback =
-      base::Bind(&syncer::ReportUnrecoverableError, chrome::GetChannel());
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  controllers->push_back(std::make_unique<SupervisedUserSyncDataTypeController>(
-      syncer::SUPERVISED_USER_SETTINGS, error_callback, this, profile_));
-  controllers->push_back(std::make_unique<SupervisedUserSyncDataTypeController>(
-      syncer::SUPERVISED_USER_WHITELISTS, error_callback, this, profile_));
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 }
 
 }  // namespace browser_sync
