@@ -97,6 +97,7 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
       const blink::WebSize& cumulative_scroll) override;
   bool AllowScriptExtensionForServiceWorker(
       const blink::WebURL& script_url) override;
+  bool IsServiceWorkerNetServicificationEnabled() override;
   blink::WebCrypto* Crypto() override;
   const char* GetBrowserServiceName() const override;
   blink::WebMediaCapabilitiesClient* MediaCapabilitiesClient() override;

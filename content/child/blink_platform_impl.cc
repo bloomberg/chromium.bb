@@ -36,6 +36,7 @@
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/child/child_thread_impl.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -678,6 +679,10 @@ BlinkPlatformImpl::CreateFlingAnimationCurve(
 bool BlinkPlatformImpl::AllowScriptExtensionForServiceWorker(
     const blink::WebURL& scriptUrl) {
   return GetContentClient()->AllowScriptExtensionForServiceWorker(scriptUrl);
+}
+
+bool BlinkPlatformImpl::IsServiceWorkerNetServicificationEnabled() {
+  return ServiceWorkerUtils::IsServicificationEnabled();
 }
 
 blink::WebCrypto* BlinkPlatformImpl::Crypto() {
