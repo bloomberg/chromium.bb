@@ -1200,11 +1200,16 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
   // but would require knowing then the image from the ThemeProvider had been
   // changed, and invalidating when the tab's x-coordinate or background_offset_
   // changed.
-  // Similarly, if |paint_hover_effect|, we don't try to cache since hover
-  // effects change on every invalidation and we would need to invalidate the
-  // cache based on the hover states.
+  //
+  // If |paint_hover_effect|, we don't try to cache since hover effects change
+  // on every invalidation and we would need to invalidate the cache based on
+  // the hover states.
+  // Finally, in refresh, we don't cache for non-integral scale factors, since
+  // tabs draw with slightly different offsets so as to pixel-align the layout
+  // rect (see ScaleAndAlignBounds()).
   const float scale = canvas->image_scale();
-  if (fill_id || paint_hover_effect) {
+  if (fill_id || paint_hover_effect ||
+      (MD::IsRefreshUi() && (std::trunc(scale) != scale))) {
     gfx::Path fill_path = GetInteriorPath(scale, bounds(), endcap_width);
     PaintTabBackgroundFill(canvas, fill_path, active, paint_hover_effect,
                            active_color, inactive_color, fill_id, y_offset);
