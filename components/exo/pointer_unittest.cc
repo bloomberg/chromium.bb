@@ -27,8 +27,6 @@
 namespace exo {
 namespace {
 
-using PointerTest = test::ExoTestBase;
-
 class MockPointerDelegate : public PointerDelegate {
  public:
   MockPointerDelegate() {}
@@ -44,6 +42,22 @@ class MockPointerDelegate : public PointerDelegate {
                void(base::TimeTicks, const gfx::Vector2dF&, bool));
   MOCK_METHOD1(OnPointerScrollStop, void(base::TimeTicks));
   MOCK_METHOD0(OnPointerFrame, void());
+};
+
+class PointerTest : public test::ExoTestBase {
+ public:
+  PointerTest() = default;
+
+  void SetUp() override {
+    test::ExoTestBase::SetUp();
+    // Sometimes underlying infra (i.e. X11 / Xvfb) may emit pointer events
+    // which can break MockPointerDelegate's expectations, so they should be
+    // consumed before starting. See https://crbug.com/854674.
+    RunAllPendingInMessageLoop();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PointerTest);
 };
 
 TEST_F(PointerTest, SetCursor) {
