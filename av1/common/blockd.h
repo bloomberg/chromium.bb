@@ -395,6 +395,7 @@ typedef struct {
   DECLARE_ALIGNED(32, tran_low_t, dqcoeff[MAX_MB_PLANE][MAX_SB_SQUARE]);
   eob_info eob_data[MAX_MB_PLANE]
                    [MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+  DECLARE_ALIGNED(16, uint8_t, color_index_map[2][MAX_SB_SQUARE]);
 } CB_BUFFER;
 
 typedef struct macroblockd_plane {
@@ -597,6 +598,7 @@ typedef struct macroblockd {
 
   uint16_t cb_offset[MAX_MB_PLANE];
   uint16_t txb_offset[MAX_MB_PLANE];
+  uint16_t color_index_map_offset[2];
 } MACROBLOCKD;
 
 static INLINE int get_bitdepth_data_path_index(const MACROBLOCKD *xd) {

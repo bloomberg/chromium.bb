@@ -1507,7 +1507,8 @@ void av1_predict_intra_block(
 
   if (use_palette) {
     int r, c;
-    const uint8_t *const map = xd->plane[plane != 0].color_index_map;
+    const uint8_t *const map = xd->plane[plane != 0].color_index_map +
+                               xd->color_index_map_offset[plane != 0];
     const uint16_t *const palette =
         mbmi->palette_mode_info.palette_colors + plane * PALETTE_MAX_SIZE;
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {

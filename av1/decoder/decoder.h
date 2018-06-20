@@ -38,7 +38,6 @@ typedef struct ThreadData {
   DECLARE_ALIGNED(32, MACROBLOCKD, xd);
   /* dqcoeff are shared by all the planes. So planes must be decoded serially */
   DECLARE_ALIGNED(32, tran_low_t, dqcoeff[MAX_TX_SQUARE]);
-  DECLARE_ALIGNED(16, uint8_t, color_index_map[2][MAX_PALETTE_SQUARE]);
   CB_BUFFER cb_buffer_base;
   uint8_t *mc_buf[2];
   int32_t mc_buf_size;
@@ -226,6 +225,13 @@ static INLINE int av1_read_uniform(aom_reader *r, int n) {
   else
     return (v << 1) - m + aom_read_literal(r, 1, ACCT_STR);
 }
+
+typedef void (*palette_visitor_fn_t)(MACROBLOCKD *const xd, int plane,
+                                     aom_reader *r);
+
+void av1_visit_palette(AV1Decoder *const pbi, MACROBLOCKD *const xd, int mi_row,
+                       int mi_col, aom_reader *r, BLOCK_SIZE bsize,
+                       palette_visitor_fn_t visit);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -1054,6 +1054,16 @@ static void predict_inter_block(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     dec_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
 }
 
+static void set_color_index_map_offset(MACROBLOCKD *const xd, int plane,
+                                       aom_reader *r) {
+  (void)r;
+  Av1ColorMapParam params;
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
+  av1_get_block_dimensions(mbmi->sb_type, plane, xd, &params.plane_width,
+                           &params.plane_height, NULL, NULL);
+  xd->color_index_map_offset[plane] += params.plane_width * params.plane_height;
+}
+
 static void decode_token_and_recon_block(AV1Decoder *const pbi,
                                          MACROBLOCKD *const xd, int mi_row,
                                          int mi_col, aom_reader *r,
@@ -1216,6 +1226,9 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
     cfl_store_inter_block(cm, xd);
   }
 
+  av1_visit_palette(pbi, xd, mi_row, mi_col, r, bsize,
+                    set_color_index_map_offset);
+
   int reader_corrupted_flag = aom_reader_has_error(r);
   aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);
 }
@@ -1330,19 +1343,8 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                          PARTITION_TYPE partition, BLOCK_SIZE bsize) {
   decode_mbmi_block(pbi, xd, mi_row, mi_col, r, partition, bsize);
 
-  if (!is_inter_block(xd->mi[0])) {
-    for (int plane = 0; plane < AOMMIN(2, av1_num_planes(&pbi->common));
-         ++plane) {
-      const struct macroblockd_plane *const pd = &xd->plane[plane];
-      if (is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
-                              pd->subsampling_y)) {
-        if (xd->mi[0]->palette_mode_info.palette_size[plane])
-          av1_decode_palette_tokens(xd, plane, r);
-      } else {
-        assert(xd->mi[0]->palette_mode_info.palette_size[plane] == 0);
-      }
-    }
-  }
+  av1_visit_palette(pbi, xd, mi_row, mi_col, r, bsize,
+                    av1_decode_palette_tokens);
 
   AV1_COMMON *cm = &pbi->common;
   MB_MODE_INFO *mbmi = xd->mi[0];
@@ -2506,6 +2508,10 @@ static void set_cb_buffer(MACROBLOCKD *const xd, CB_BUFFER *cb_buffer,
     xd->cb_offset[plane] = 0;
     xd->txb_offset[plane] = 0;
   }
+  xd->plane[0].color_index_map = cb_buffer->color_index_map[0];
+  xd->plane[1].color_index_map = cb_buffer->color_index_map[1];
+  xd->color_index_map_offset[0] = 0;
+  xd->color_index_map_offset[1] = 0;
 }
 
 static void decode_tile_sb_row(AV1Decoder *pbi, ThreadData *const td,
@@ -2683,8 +2689,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       // Initialise the tile context from the frame context
       tile_data->tctx = *cm->fc;
       td->xd.tile_ctx = &tile_data->tctx;
-      td->xd.plane[0].color_index_map = td->color_index_map[0];
-      td->xd.plane[1].color_index_map = td->color_index_map[1];
 
       // decode tile
       decode_tile(pbi, &pbi->td, row, col);
@@ -2775,8 +2779,6 @@ static int tile_worker_hook(void *arg1, void *arg2) {
       // Initialise the tile context from the frame context
       tile_data->tctx = *cm->fc;
       td->xd.tile_ctx = &tile_data->tctx;
-      td->xd.plane[0].color_index_map = td->color_index_map[0];
-      td->xd.plane[1].color_index_map = td->color_index_map[1];
 #if CONFIG_ACCOUNTING
       if (pbi->acct_enabled) {
         tile_data->bit_reader.accounting->last_tell_frac =
