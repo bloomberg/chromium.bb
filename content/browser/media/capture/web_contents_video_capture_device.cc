@@ -53,10 +53,15 @@ class WebContentsVideoCaptureDevice::FrameTracker
             AsWeakPtr(), render_process_id, main_render_frame_id));
   }
 
-  ~FrameTracker() final { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
+  ~FrameTracker() final {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (is_capturing_)
+      DidStopCapturingWebContents();
+  }
 
   void WillStartCapturingWebContents(const gfx::Size& capture_size) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(!is_capturing_);
 
     auto* contents = web_contents();
     if (!contents) {
@@ -85,14 +90,18 @@ class WebContentsVideoCaptureDevice::FrameTracker
             << preferred_size.ToString() << " from a capture size of "
             << capture_size.ToString();
     contents->IncrementCapturerCount(preferred_size);
+    is_capturing_ = true;
   }
 
   void DidStopCapturingWebContents() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     if (auto* contents = web_contents()) {
+      DCHECK(is_capturing_);
       contents->DecrementCapturerCount();
+      is_capturing_ = false;
     }
+    DCHECK(!is_capturing_);
   }
 
  private:
@@ -134,6 +143,7 @@ class WebContentsVideoCaptureDevice::FrameTracker
   void DidDestroyFullscreenWidget() final { OnPossibleTargetChange(); }
   void WebContentsDestroyed() final {
     Observe(nullptr);
+    is_capturing_ = false;
     OnPossibleTargetChange();
   }
 
@@ -191,6 +201,9 @@ class WebContentsVideoCaptureDevice::FrameTracker
 
   viz::FrameSinkId target_frame_sink_id_;
   gfx::NativeView target_native_view_ = gfx::NativeView();
+
+  // Indicates whether the WebContents's capturer count needs to be decremented.
+  bool is_capturing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTracker);
 };

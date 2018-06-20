@@ -143,8 +143,8 @@ void ContentCaptureDeviceBrowserTestBase::
 
 void ContentCaptureDeviceBrowserTestBase::StopAndDeAllocate() {
   device_->StopAndDeAllocate();
-  RunUntilIdle();
   device_.reset();
+  RunUntilIdle();
 }
 
 void ContentCaptureDeviceBrowserTestBase::RunUntilIdle() {
