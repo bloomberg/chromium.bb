@@ -82,8 +82,10 @@ class SyncSetupChecker : public SingleClientStatusChangeChecker {
     if (service()->ConfigurationDone())
       return true;
     // Sync is blocked because a custom passphrase is required.
-    if (service()->passphrase_required_reason() == syncer::REASON_DECRYPTION)
+    if (service()->passphrase_required_reason_for_test() ==
+        syncer::REASON_DECRYPTION) {
       return true;
+    }
     // Sync is blocked by an auth error.
     if (HasAuthError(service()))
       return true;
@@ -346,7 +348,8 @@ bool ProfileSyncServiceHarness::AwaitEngineInitialization(
 
   // Make sure that initial sync wasn't blocked by a missing passphrase.
   if (!skip_passphrase_verification &&
-      service()->passphrase_required_reason() == syncer::REASON_DECRYPTION) {
+      service()->passphrase_required_reason_for_test() ==
+          syncer::REASON_DECRYPTION) {
     LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
                   " until SetDecryptionPassphrase is called.";
     return false;
@@ -370,7 +373,8 @@ bool ProfileSyncServiceHarness::AwaitSyncSetupCompletion(
   // If passphrase verification is not skipped, make sure that initial sync
   // wasn't blocked by a missing passphrase.
   if (!skip_passphrase_verification &&
-      service()->passphrase_required_reason() == syncer::REASON_DECRYPTION) {
+      service()->passphrase_required_reason_for_test() ==
+          syncer::REASON_DECRYPTION) {
     LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
                   " until SetDecryptionPassphrase is called.";
     return false;
@@ -546,7 +550,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << snap.model_neutral_state().num_updates_downloaded_total
        << ", passphrase_required_reason: "
        << syncer::PassphraseRequiredReasonToString(
-              service()->passphrase_required_reason())
+              service()->passphrase_required_reason_for_test())
        << ", notifications_enabled: " << status.notifications_enabled
        << ", service_is_active: " << service()->IsSyncActive();
   } else {

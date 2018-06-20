@@ -69,33 +69,31 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-using syncer::BackendMigrator;
-using syncer::ClientTagBasedModelTypeProcessor;
 using syncer::DataTypeController;
 using syncer::DataTypeManager;
-using syncer::DataTypeStatusTable;
-using syncer::DeviceInfoSyncBridge;
 using syncer::EngineComponentsFactory;
 using syncer::EngineComponentsFactoryImpl;
-using syncer::JsBackend;
-using syncer::JsController;
-using syncer::JsEventHandler;
-using syncer::ModelSafeRoutingInfo;
-using syncer::ModelType;
-using syncer::ModelTypeSet;
-using syncer::ModelTypeStore;
-using syncer::ProtocolEventObserver;
-using syncer::SyncBackendRegistrar;
-using syncer::SyncClient;
-using syncer::SyncCredentials;
-using syncer::SyncEngine;
-using syncer::SyncManagerFactory;
-using syncer::SyncProtocolError;
-using syncer::WeakHandle;
 
 namespace browser_sync {
 
 namespace {
+
+// The initial state of sync, for the Sync.InitialState histogram. Even if
+// this value is CAN_START, sync startup might fail for reasons that we may
+// want to consider logging in the future, such as a passphrase needed for
+// decryption, or the version of Chrome being too old. This enum is used to
+// back a UMA histogram, and should therefore be treated as append-only.
+enum SyncInitialState {
+  CAN_START,                // Sync can attempt to start up.
+  NOT_SIGNED_IN,            // There is no signed in user.
+  NOT_REQUESTED,            // The user turned off sync.
+  NOT_REQUESTED_NOT_SETUP,  // The user turned off sync and setup completed
+                            // is false. Might indicate a stop-and-clear.
+  NEEDS_CONFIRMATION,       // The user must confirm sync settings.
+  IS_MANAGED,               // Sync is disallowed by enterprise policy.
+  NOT_ALLOWED_BY_PLATFORM,  // Sync is disallowed by the platform.
+  SYNC_INITIAL_STATE_LIMIT
+};
 
 constexpr char kSyncUnrecoverableErrorHistogram[] = "Sync.UnrecoverableErrors";
 
@@ -141,7 +139,7 @@ DataTypeController::TypeMap BuildDataTypeControllerMap(
   DataTypeController::TypeMap type_map;
   for (std::unique_ptr<DataTypeController>& controller : controllers) {
     DCHECK(controller);
-    ModelType type = controller->type();
+    syncer::ModelType type = controller->type();
     DCHECK_EQ(0U, type_map.count(type));
     type_map[type] = std::move(controller);
   }
@@ -252,7 +250,7 @@ void ProfileSyncService::Initialize() {
         local_device_.get(), model_type_store_factory_,
         base::BindRepeating(&ProfileSyncService::NotifyForeignSessionUpdated,
                             sync_enabled_weak_factory_.GetWeakPtr()),
-        std::make_unique<ClientTagBasedModelTypeProcessor>(
+        std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
             syncer::SESSIONS,
             base::BindRepeating(&syncer::ReportUnrecoverableError, channel_)));
   } else {
@@ -265,9 +263,9 @@ void ProfileSyncService::Initialize() {
                 sync_enabled_weak_factory_.GetWeakPtr()));
   }
 
-  device_info_sync_bridge_ = std::make_unique<DeviceInfoSyncBridge>(
+  device_info_sync_bridge_ = std::make_unique<syncer::DeviceInfoSyncBridge>(
       local_device_.get(), model_type_store_factory_,
-      std::make_unique<ClientTagBasedModelTypeProcessor>(
+      std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
           syncer::DEVICE_INFO,
           /*dump_stack=*/base::BindRepeating(&syncer::ReportUnrecoverableError,
                                              channel_)));
@@ -429,7 +427,7 @@ ProfileSyncService::GetUnrecoverableErrorHandler() {
 void ProfileSyncService::AccountStateChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (auth_manager_->GetAuthenticatedAccountInfo().account_id.empty()) {
+  if (!IsSignedIn()) {
     sync_disabled_by_admin_ = false;
     RequestStop(CLEAR_DATA);
     DCHECK(!engine_);
@@ -555,12 +553,12 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
     DCHECK(success);
   }
 
-  SyncEngine::InitParams params;
+  syncer::SyncEngine::InitParams params;
   params.sync_task_runner = sync_thread_->task_runner();
   params.host = this;
-  params.registrar = std::make_unique<SyncBackendRegistrar>(
+  params.registrar = std::make_unique<syncer::SyncBackendRegistrar>(
       debug_identifier_,
-      base::BindRepeating(&SyncClient::CreateModelWorkerForGroup,
+      base::BindRepeating(&syncer::SyncClient::CreateModelWorkerForGroup,
                           base::Unretained(sync_client_.get())));
   params.encryption_observer_proxy = crypto_->GetEncryptionObserverProxy();
   params.extensions_activity = sync_client_->GetExtensionsActivity();
@@ -574,7 +572,7 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
       sync_client_->GetInvalidationService();
   params.invalidator_client_id =
       invalidator ? invalidator->GetInvalidatorClientId() : "",
-  params.sync_manager_factory = std::make_unique<SyncManagerFactory>();
+  params.sync_manager_factory = std::make_unique<syncer::SyncManagerFactory>();
   // The first time we start up the engine we want to ensure we have a clean
   // directory, so delete any old one that might be there.
   params.delete_sync_data_folder = !IsFirstSetupComplete();
@@ -685,7 +683,7 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   // Shutdown the migrator before the engine to ensure it doesn't pull a null
   // snapshot.
   migrator_.reset();
-  sync_js_controller_.AttachJsBackend(WeakHandle<syncer::JsBackend>());
+  sync_js_controller_.AttachJsBackend(syncer::WeakHandle<syncer::JsBackend>());
 
   engine_->Shutdown(reason);
   engine_.reset();
@@ -777,7 +775,7 @@ void ProfileSyncService::NotifyShutdown() {
 
 void ProfileSyncService::ClearStaleErrors() {
   ClearUnrecoverableError();
-  last_actionable_error_ = SyncProtocolError();
+  last_actionable_error_ = syncer::SyncProtocolError();
   // Clear the data type errors as well.
   if (data_type_manager_)
     data_type_manager_->ResetDataTypeErrors();
@@ -848,7 +846,7 @@ void ProfileSyncService::UpdateEngineInitUMA(bool success) const {
 }
 
 void ProfileSyncService::OnEngineInitialized(
-    ModelTypeSet initial_types,
+    syncer::ModelTypeSet initial_types,
     const syncer::WeakHandle<syncer::JsBackend>& js_backend,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
@@ -991,7 +989,8 @@ void ProfileSyncService::OnMigrationNeededForTypes(syncer::ModelTypeSet types) {
   migrator_->MigrateTypes(types);
 }
 
-void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
+void ProfileSyncService::OnActionableError(
+    const syncer::SyncProtocolError& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   last_actionable_error_ = error;
   DCHECK_NE(last_actionable_error_.action, syncer::UNKNOWN_ACTION);
@@ -1156,7 +1155,7 @@ void ProfileSyncService::OnConfigureDone(
     engine_->EnableEncryptEverything();
   NotifyObservers();
 
-  if (migrator_.get() && migrator_->state() != BackendMigrator::IDLE) {
+  if (migrator_.get() && migrator_->state() != syncer::BackendMigrator::IDLE) {
     // Migration in progress.  Let the migrator know we just finished
     // configuring something.  It will be up to the migrator to call
     // StartSyncingWithServer() if migration is now finished.
@@ -1210,13 +1209,14 @@ bool ProfileSyncService::IsSetupInProgress() const {
   return startup_controller_->IsSetupInProgress();
 }
 
-bool ProfileSyncService::QueryDetailedSyncStatus(SyncEngine::Status* result) {
+bool ProfileSyncService::QueryDetailedSyncStatus(
+    syncer::SyncEngine::Status* result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (engine_ && engine_initialized_) {
     *result = engine_->GetDetailedStatus();
     return true;
   }
-  SyncEngine::Status status;
+  syncer::SyncEngine::Status status;
   status.sync_protocol_error = last_actionable_error_;
   *result = status;
   return false;
@@ -1388,16 +1388,10 @@ void ProfileSyncService::OnUserChoseDatatypes(
 
   if (data_type_manager_)
     data_type_manager_->ResetDataTypeErrors();
-  ChangePreferredDataTypes(chosen_types);
-}
 
-void ProfileSyncService::ChangePreferredDataTypes(
-    syncer::ModelTypeSet preferred_types) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOG(1) << "ChangePreferredDataTypes invoked";
   const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
   // Will only enable those types that are registered and preferred.
-  sync_prefs_.SetPreferredDataTypes(registered_types, preferred_types);
+  sync_prefs_.SetPreferredDataTypes(registered_types, chosen_types);
 
   // Now reconfigure the DTM.
   ReconfigureDatatypeManager();
@@ -1505,7 +1499,7 @@ ProfileSyncService::GetModelTypeStoreFactory(const base::FilePath& base_path) {
   // as the Local State file is guaranteed to be UTF-8.
   const std::string path =
       FormatSharedModelTypeStorePath(base_path).AsUTF8Unsafe();
-  return base::BindRepeating(&ModelTypeStore::CreateStore, path);
+  return base::BindRepeating(&syncer::ModelTypeStore::CreateStore, path);
 }
 
 void ProfileSyncService::ConfigureDataTypeManager() {
@@ -1526,7 +1520,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     restart = true;
 
     // We create the migrator at the same time.
-    migrator_ = std::make_unique<BackendMigrator>(
+    migrator_ = std::make_unique<syncer::BackendMigrator>(
         debug_identifier_, GetUserShare(), this, data_type_manager_.get(),
         base::BindRepeating(&ProfileSyncService::StartSyncingWithServer,
                             base::Unretained(this)));
@@ -1574,7 +1568,7 @@ void ProfileSyncService::HasUnsyncedItemsForTest(
   engine_->HasUnsyncedItemsForTest(std::move(cb));
 }
 
-BackendMigrator* ProfileSyncService::GetBackendMigratorForTest() {
+syncer::BackendMigrator* ProfileSyncService::GetBackendMigratorForTest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return migrator_.get();
 }
@@ -1587,9 +1581,10 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
     return std::move(result);
   }
 
-  SyncEngine::Status detailed_status = engine_->GetDetailedStatus();
-  const ModelTypeSet& throttled_types(detailed_status.throttled_types);
-  const ModelTypeSet& backed_off_types(detailed_status.backed_off_types);
+  syncer::SyncEngine::Status detailed_status = engine_->GetDetailedStatus();
+  const syncer::ModelTypeSet& throttled_types(detailed_status.throttled_types);
+  const syncer::ModelTypeSet& backed_off_types(
+      detailed_status.backed_off_types);
 
   std::unique_ptr<base::DictionaryValue> type_status_header(
       new base::DictionaryValue());
@@ -1602,11 +1597,12 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
   type_status_header->SetString("group_type", "Group Type");
   result->Append(std::move(type_status_header));
 
-  ModelSafeRoutingInfo routing_info;
+  syncer::ModelSafeRoutingInfo routing_info;
   engine_->GetModelSafeRoutingInfo(&routing_info);
-  const ModelTypeSet registered = GetRegisteredDataTypes();
-  for (ModelTypeSet::Iterator it = registered.First(); it.Good(); it.Inc()) {
-    ModelType type = it.Get();
+  const syncer::ModelTypeSet registered = GetRegisteredDataTypes();
+  for (syncer::ModelTypeSet::Iterator it = registered.First(); it.Good();
+       it.Inc()) {
+    syncer::ModelType type = it.Get();
 
     auto type_status = std::make_unique<base::DictionaryValue>();
     type_status->SetString("name", ModelTypeToString(type));
@@ -1757,7 +1753,7 @@ bool ProfileSyncService::HasCookieJarMismatch(
 }
 
 void ProfileSyncService::AddProtocolEventObserver(
-    ProtocolEventObserver* observer) {
+    syncer::ProtocolEventObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   protocol_event_observers_.AddObserver(observer);
   if (engine_) {
@@ -1766,7 +1762,7 @@ void ProfileSyncService::AddProtocolEventObserver(
 }
 
 void ProfileSyncService::RemoveProtocolEventObserver(
-    ProtocolEventObserver* observer) {
+    syncer::ProtocolEventObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   protocol_event_observers_.RemoveObserver(observer);
   if (engine_ && !protocol_event_observers_.might_have_observers()) {
@@ -1889,13 +1885,14 @@ void ProfileSyncService::GetAllNodes(
     return;
   }
 
-  ModelTypeSet all_types = GetActiveDataTypes();
+  syncer::ModelTypeSet all_types = GetActiveDataTypes();
   all_types.PutAll(syncer::ControlTypes());
   scoped_refptr<GetAllNodesRequestHelper> helper =
       new GetAllNodesRequestHelper(all_types, callback);
 
-  for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
-    ModelType type = it.Get();
+  for (syncer::ModelTypeSet::Iterator it = all_types.First(); it.Good();
+       it.Inc()) {
+    syncer::ModelType type = it.Get();
     const auto dtc_iter = data_type_controllers_.find(type);
     if (dtc_iter != data_type_controllers_.end()) {
       dtc_iter->second->GetAllNodes(base::BindRepeating(
@@ -2156,9 +2153,9 @@ void ProfileSyncService::ReportPreviousSessionMemoryWarningCount() {
 }
 
 void ProfileSyncService::RecordMemoryUsageHistograms() {
-  ModelTypeSet active_types = GetActiveDataTypes();
-  for (ModelTypeSet::Iterator type_it = active_types.First(); type_it.Good();
-       type_it.Inc()) {
+  syncer::ModelTypeSet active_types = GetActiveDataTypes();
+  for (syncer::ModelTypeSet::Iterator type_it = active_types.First();
+       type_it.Good(); type_it.Inc()) {
     auto dtc_it = data_type_controllers_.find(type_it.Get());
     if (dtc_it != data_type_controllers_.end())
       dtc_it->second->RecordMemoryUsageHistogram();

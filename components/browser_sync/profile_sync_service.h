@@ -94,8 +94,7 @@ class SyncAuthManager;
 //
 //      When a datatype is registered, the user has the option of syncing it.
 //      The sync opt-in UI will show only registered types; a checkbox should
-//      never be shown for an unregistered type, and nor should it ever be
-//      synced.
+//      never be shown for an unregistered type, nor can it ever be synced.
 //
 //   'Preferred' (user preferences and opt-out for a datatype)
 //
@@ -104,7 +103,7 @@ class SyncAuthManager;
 //      If a user has opted out of syncing a particular datatype, it will
 //      be registered, but not preferred.
 //
-//      This state is controlled by the ConfigurePreferredDataTypes and
+//      This state is controlled by OnUserChoseDatatypes and
 //      GetPreferredDataTypes.  They are stored in the preferences system,
 //      and persist; though if a datatype is not registered, it cannot
 //      be a preferred datatype.
@@ -374,13 +373,12 @@ class ProfileSyncService : public syncer::SyncService,
   // Reconfigures the data type manager with the latest enabled types.
   // Note: Does not initialize the engine if it is not already initialized.
   // This function needs to be called only after sync has been initialized
-  // (i.e.,only for reconfigurations). The reason we don't initialize the
+  // (i.e., only for reconfigurations). The reason we don't initialize the
   // engine is because if we had encountered an unrecoverable error we don't
   // want to startup once more.
-  // This function is called by |SetSetupInProgress|.
   virtual void ReconfigureDatatypeManager();
 
-  syncer::PassphraseRequiredReason passphrase_required_reason() const {
+  syncer::PassphraseRequiredReason passphrase_required_reason_for_test() const {
     return crypto_->passphrase_required_reason();
   }
 
@@ -408,14 +406,13 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Returns whether sync is managed, i.e. controlled by configuration
   // management. If so, the user is not allowed to configure sync.
-  virtual bool IsManaged() const;
+  // TODO(crbug.com/839834): This is misnamed, it means "is force-disabled by
+  // policy".
+  bool IsManaged() const;
 
   // syncer::UnrecoverableErrorHandler implementation.
   void OnUnrecoverableError(const base::Location& from_here,
                             const std::string& message) override;
-
-  // The functions below (until ActivateDataType()) should only be
-  // called if IsEngineInitialized() is true.
 
   // Returns whether or not the underlying sync engine has made any
   // local changes to items that have not yet been synced with the
@@ -434,15 +431,9 @@ class ProfileSyncService : public syncer::SyncService,
   // SyncPrefObserver implementation.
   void OnSyncManagedPrefChange(bool is_sync_managed) override;
 
-  // Changes which data types we're going to be syncing to |preferred_types|.
-  // If it is running, the DataTypeManager will be instructed to reconfigure
-  // the sync engine so that exactly these datatypes are actively synced. See
-  // class comment for more on what it means for a datatype to be Preferred.
-  virtual void ChangePreferredDataTypes(syncer::ModelTypeSet preferred_types);
-
   // Returns the set of types which are enforced programmatically and can not
   // be disabled by the user.
-  virtual syncer::ModelTypeSet GetForcedDataTypes() const;
+  syncer::ModelTypeSet GetForcedDataTypes() const;
 
   // Gets the set of all data types that could be allowed (the set that
   // should be advertised to the user).  These will typically only change
@@ -456,7 +447,7 @@ class ProfileSyncService : public syncer::SyncService,
   virtual void SetEncryptEverythingAllowed(bool allowed);
 
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
-  virtual bool encryption_pending() const;
+  bool encryption_pending() const;
 
   syncer::SyncErrorController* sync_error_controller() {
     return sync_error_controller_.get();
@@ -530,23 +521,6 @@ class ProfileSyncService : public syncer::SyncService,
     ERROR_REASON_CONFIGURATION_FAILURE,
     ERROR_REASON_ACTIONABLE_ERROR,
     ERROR_REASON_LIMIT
-  };
-
-  // The initial state of sync, for the Sync.InitialState histogram. Even if
-  // this value is CAN_START, sync startup might fail for reasons that we may
-  // want to consider logging in the future, such as a passphrase needed for
-  // decryption, or the version of Chrome being too old. This enum is used to
-  // back a UMA histogram, and should therefore be treated as append-only.
-  enum SyncInitialState {
-    CAN_START,                // Sync can attempt to start up.
-    NOT_SIGNED_IN,            // There is no signed in user.
-    NOT_REQUESTED,            // The user turned off sync.
-    NOT_REQUESTED_NOT_SETUP,  // The user turned off sync and setup completed
-                              // is false. Might indicate a stop-and-clear.
-    NEEDS_CONFIRMATION,       // The user must confirm sync settings.
-    IS_MANAGED,               // Sync is disallowed by enterprise policy.
-    NOT_ALLOWED_BY_PLATFORM,  // Sync is disallowed by the platform.
-    SYNC_INITIAL_STATE_LIMIT
   };
 
   friend class TestProfileSyncService;
@@ -669,6 +643,8 @@ class ProfileSyncService : public syncer::SyncService,
   // email address.
   const std::unique_ptr<SigninManagerWrapper> signin_;
 
+  // Handles tracking of the authenticated account and acquiring access tokens.
+  // Only null after Shutdown().
   std::unique_ptr<SyncAuthManager> auth_manager_;
 
   // The product channel of the embedder.
