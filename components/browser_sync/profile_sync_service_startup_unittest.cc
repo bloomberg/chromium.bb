@@ -159,8 +159,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   SetUpFakeSyncEngine();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
   EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(0);
-  EXPECT_CALL(*data_type_manager, state())
-      .WillRepeatedly(Return(DataTypeManager::STOPPED));
+  ON_CALL(*data_type_manager, state())
+      .WillByDefault(Return(DataTypeManager::STOPPED));
 
   // Should not actually start, rather just clean things up and wait
   // to be enabled.
@@ -203,8 +203,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // Releasing the sync blocker will let ProfileSyncService configure the
   // DataTypeManager.
   EXPECT_CALL(*data_type_manager, Configure(_, _));
-  EXPECT_CALL(*data_type_manager, state())
-      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
+  ON_CALL(*data_type_manager, state())
+      .WillByDefault(Return(DataTypeManager::CONFIGURED));
 
   // Simulate the UI telling sync it has finished setting up.
   sync_blocker.reset();
@@ -228,8 +228,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
   SetUpFakeSyncEngine();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
-  EXPECT_CALL(*data_type_manager, state())
-      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
+  ON_CALL(*data_type_manager, state())
+      .WillByDefault(Return(DataTypeManager::CONFIGURED));
 
   sync_service()->Initialize();
 
@@ -268,15 +268,17 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
   pref_service()->ClearPref(syncer::prefs::kSyncFirstSetupComplete);
 
   SetUpFakeSyncEngine();
-  SetUpDataTypeManagerMock();
+  DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
 
+  EXPECT_CALL(*data_type_manager, Configure(_, _));
   sync_service()->Initialize();
-  // Sync should not start because there are no tokens yet.
-  EXPECT_FALSE(sync_service()->IsSyncActive());
-  sync_service()->SetFirstSetupComplete();
+  ON_CALL(*data_type_manager, state())
+      .WillByDefault(Return(DataTypeManager::CONFIGURED));
 
-  // Sync should not start because there are still no tokens.
-  EXPECT_FALSE(sync_service()->IsSyncActive());
+  // Sync should start up the engine, even though there is no refresh token yet.
+  EXPECT_TRUE(sync_service()->IsSyncActive());
+  // Since we're in AUTO_START mode, FirstSetupComplete gets set automatically.
+  EXPECT_TRUE(sync_service()->IsFirstSetupComplete());
 }
 
 TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
@@ -284,8 +286,8 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
   pref_service()->ClearPref(syncer::prefs::kSyncFirstSetupComplete);
   EXPECT_CALL(*data_type_manager, Configure(_, _));
-  EXPECT_CALL(*data_type_manager, state())
-      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
+  ON_CALL(*data_type_manager, state())
+      .WillByDefault(Return(DataTypeManager::CONFIGURED));
 
   // The primary account is already populated, all that's left to do is provide
   // a refresh token.
@@ -302,8 +304,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
   SetUpFakeSyncEngine();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
-  EXPECT_CALL(*data_type_manager, state())
-      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
+  ON_CALL(*data_type_manager, state())
+      .WillByDefault(Return(DataTypeManager::CONFIGURED));
   ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
 
   sync_service()->Initialize();
@@ -361,8 +363,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   SetUpFakeSyncEngine();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
-  EXPECT_CALL(*data_type_manager, state())
-      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
+  ON_CALL(*data_type_manager, state())
+      .WillByDefault(Return(DataTypeManager::CONFIGURED));
   ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
 
   sync_service()->Initialize();
@@ -384,8 +386,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
   SetUpFakeSyncEngine();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
-  EXPECT_CALL(*data_type_manager, state())
-      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
+  ON_CALL(*data_type_manager, state())
+      .WillByDefault(Return(DataTypeManager::CONFIGURED));
   ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
   sync_service()->Initialize();
 
@@ -414,8 +416,8 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   SetUpFakeSyncEngine();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
-  EXPECT_CALL(*data_type_manager, state())
-      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
+  ON_CALL(*data_type_manager, state())
+      .WillByDefault(Return(DataTypeManager::CONFIGURED));
   ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
   sync_service()->Initialize();
   EXPECT_TRUE(sync_service()->IsEngineInitialized());
