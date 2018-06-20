@@ -107,7 +107,6 @@ crbug.com/726075 [ Linux ] shapedetection/detection-HTMLVideoElement.html [ Time
 crbug.com/726075 [ Mac ] css3/filters/effect-combined-hw.html [ Pass Timeout ]
 crbug.com/726075 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Pass Timeout ]
 crbug.com/726075 [ Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-filter-in-worker.html [ Pass Timeout ]
-crbug.com/845266 [ Mac ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Pass Timeout ]
 
 crbug.com/693568 [ Mac ] virtual/gpu/fast/canvas/canvas-imageSmoothingQuality.html [ Failure Pass Timeout ]
 
