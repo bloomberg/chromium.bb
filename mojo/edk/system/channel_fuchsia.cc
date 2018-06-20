@@ -397,6 +397,11 @@ class ChannelFuchsia : public Channel,
       zx_status_t result =
           zx_channel_write(handle_.get().as_handle(), 0, message_view.data(),
                            write_bytes, handles, handles_count);
+      // zx_channel_write() consumes |handles| whether or not it succeeds, so
+      // release() our copies now, to avoid them being double-closed.
+      for (auto& outgoing_handle : outgoing_handles)
+        ignore_result(outgoing_handle.release());
+
       if (result != ZX_OK) {
         // TODO(fuchsia): Handle ZX_ERR_SHOULD_WAIT flow-control errors, once
         // the platform starts generating them. See crbug.com/754084.
@@ -406,10 +411,6 @@ class ChannelFuchsia : public Channel,
         return false;
       }
 
-      // |handles| have been transferred to the peer process, so release()
-      // them, to avoid them being double-closed.
-      for (auto& outgoing_handle : outgoing_handles)
-        ignore_result(outgoing_handle.release());
     } while (write_bytes < message_view.data_num_bytes());
 
     return true;
