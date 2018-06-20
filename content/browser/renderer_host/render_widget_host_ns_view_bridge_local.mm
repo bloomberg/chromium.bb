@@ -27,13 +27,12 @@ namespace {
 // Bridge to a locally-hosted NSView -- this is always instantiated in the same
 // process as the NSView. The caller of this interface may exist in another
 // process.
-class RenderWidgetHostViewNSViewBridgeLocal
-    : public RenderWidgetHostNSViewBridge,
-      public display::DisplayObserver {
+class RenderWidgetHostNSViewBridgeLocal : public RenderWidgetHostNSViewBridge,
+                                          public display::DisplayObserver {
  public:
-  explicit RenderWidgetHostViewNSViewBridgeLocal(
+  explicit RenderWidgetHostNSViewBridgeLocal(
       RenderWidgetHostNSViewClient* client);
-  ~RenderWidgetHostViewNSViewBridgeLocal() override;
+  ~RenderWidgetHostNSViewBridgeLocal() override;
   RenderWidgetHostViewCocoa* GetRenderWidgetHostViewCocoa() override;
 
   void InitAsPopup(const gfx::Rect& content_rect,
@@ -91,10 +90,10 @@ class RenderWidgetHostViewNSViewBridgeLocal
   // Cached copy of the tooltip text, to avoid redundant calls.
   base::string16 tooltip_text_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewNSViewBridgeLocal);
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewBridgeLocal);
 };
 
-RenderWidgetHostViewNSViewBridgeLocal::RenderWidgetHostViewNSViewBridgeLocal(
+RenderWidgetHostNSViewBridgeLocal::RenderWidgetHostNSViewBridgeLocal(
     RenderWidgetHostNSViewClient* client) {
   display::Screen::GetScreen()->AddObserver(this);
 
@@ -107,8 +106,7 @@ RenderWidgetHostViewNSViewBridgeLocal::RenderWidgetHostViewNSViewBridgeLocal(
   [cocoa_view_ setWantsLayer:YES];
 }
 
-RenderWidgetHostViewNSViewBridgeLocal::
-    ~RenderWidgetHostViewNSViewBridgeLocal() {
+RenderWidgetHostNSViewBridgeLocal::~RenderWidgetHostNSViewBridgeLocal() {
   [cocoa_view_ setClientDisconnected];
   // Do not immediately remove |cocoa_view_| from the NSView heirarchy, because
   // the call to -[NSView removeFromSuperview] may cause use to call into the
@@ -123,11 +121,11 @@ RenderWidgetHostViewNSViewBridgeLocal::
 }
 
 RenderWidgetHostViewCocoa*
-RenderWidgetHostViewNSViewBridgeLocal::GetRenderWidgetHostViewCocoa() {
+RenderWidgetHostNSViewBridgeLocal::GetRenderWidgetHostViewCocoa() {
   return cocoa_view_;
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::InitAsPopup(
+void RenderWidgetHostNSViewBridgeLocal::InitAsPopup(
     const gfx::Rect& content_rect,
     blink::WebPopupType popup_type) {
   popup_type_ = popup_type;
@@ -135,11 +133,11 @@ void RenderWidgetHostViewNSViewBridgeLocal::InitAsPopup(
       std::make_unique<PopupWindowMac>(content_rect, popup_type_, cocoa_view_);
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::MakeFirstResponder() {
+void RenderWidgetHostNSViewBridgeLocal::MakeFirstResponder() {
   [[cocoa_view_ window] makeFirstResponder:cocoa_view_];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::DisableDisplay() {
+void RenderWidgetHostNSViewBridgeLocal::DisableDisplay() {
   if (display_disabled_)
     return;
   SetBackgroundColor(SK_ColorTRANSPARENT);
@@ -147,7 +145,7 @@ void RenderWidgetHostViewNSViewBridgeLocal::DisableDisplay() {
   display_disabled_ = true;
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::SetBounds(const gfx::Rect& rect) {
+void RenderWidgetHostNSViewBridgeLocal::SetBounds(const gfx::Rect& rect) {
   // |rect.size()| is view coordinates, |rect.origin| is screen coordinates,
   // TODO(thakis): fix, http://crbug.com/73362
 
@@ -188,14 +186,14 @@ void RenderWidgetHostViewNSViewBridgeLocal::SetBounds(const gfx::Rect& rect) {
   }
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::SetCALayerParams(
+void RenderWidgetHostNSViewBridgeLocal::SetCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {
   if (display_disabled_)
     return;
   display_ca_layer_tree_->UpdateCALayerTree(ca_layer_params);
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::SetBackgroundColor(SkColor color) {
+void RenderWidgetHostNSViewBridgeLocal::SetBackgroundColor(SkColor color) {
   if (display_disabled_)
     return;
   ScopedCAActionDisabler disabler;
@@ -204,12 +202,12 @@ void RenderWidgetHostViewNSViewBridgeLocal::SetBackgroundColor(SkColor color) {
   [background_layer_ setBackgroundColor:cg_color];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::SetVisible(bool visible) {
+void RenderWidgetHostNSViewBridgeLocal::SetVisible(bool visible) {
   ScopedCAActionDisabler disabler;
   [cocoa_view_ setHidden:!visible];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::SetTooltipText(
+void RenderWidgetHostNSViewBridgeLocal::SetTooltipText(
     const base::string16& tooltip_text) {
   // Called from the renderer to tell us what the tooltip text should be. It
   // calls us frequently so we need to cache the value to prevent doing a lot
@@ -233,22 +231,22 @@ void RenderWidgetHostViewNSViewBridgeLocal::SetTooltipText(
   [cocoa_view_ setToolTipAtMousePoint:tooltip_nsstring];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::SetCompositionRangeInfo(
+void RenderWidgetHostNSViewBridgeLocal::SetCompositionRangeInfo(
     const gfx::Range& range) {
   [cocoa_view_ setCompositionRange:range];
   [cocoa_view_ setMarkedRange:range.ToNSRange()];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::CancelComposition() {
+void RenderWidgetHostNSViewBridgeLocal::CancelComposition() {
   [cocoa_view_ cancelComposition];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::SetTextInputType(
+void RenderWidgetHostNSViewBridgeLocal::SetTextInputType(
     ui::TextInputType text_input_type) {
   [cocoa_view_ setTextInputType:text_input_type];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::SetTextSelection(
+void RenderWidgetHostNSViewBridgeLocal::SetTextSelection(
     const base::string16& text,
     size_t offset,
     const gfx::Range& range) {
@@ -261,12 +259,11 @@ void RenderWidgetHostViewNSViewBridgeLocal::SetTextSelection(
   }
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::SetShowingContextMenu(
-    bool showing) {
+void RenderWidgetHostNSViewBridgeLocal::SetShowingContextMenu(bool showing) {
   [cocoa_view_ setShowingContextMenu:showing];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::OnDisplayMetricsChanged(
+void RenderWidgetHostNSViewBridgeLocal::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
   // Note that -updateScreenProperties is also be called by the notification
@@ -275,13 +272,12 @@ void RenderWidgetHostViewNSViewBridgeLocal::OnDisplayMetricsChanged(
   [cocoa_view_ updateScreenProperties];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::DisplayCursor(
-    const WebCursor& cursor) {
+void RenderWidgetHostNSViewBridgeLocal::DisplayCursor(const WebCursor& cursor) {
   WebCursor non_const_cursor = cursor;
   [cocoa_view_ updateCursor:non_const_cursor.GetNativeCursor()];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::SetCursorLocked(bool locked) {
+void RenderWidgetHostNSViewBridgeLocal::SetCursorLocked(bool locked) {
   if (locked) {
     CGAssociateMouseAndMouseCursorPosition(NO);
     [NSCursor hide];
@@ -292,13 +288,12 @@ void RenderWidgetHostViewNSViewBridgeLocal::SetCursorLocked(bool locked) {
   }
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::
-    ShowDictionaryOverlayForSelection() {
+void RenderWidgetHostNSViewBridgeLocal::ShowDictionaryOverlayForSelection() {
   NSRange selection_range = [cocoa_view_ selectedRange];
   [cocoa_view_ showLookUpDictionaryOverlayFromRange:selection_range];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::ShowDictionaryOverlay(
+void RenderWidgetHostNSViewBridgeLocal::ShowDictionaryOverlay(
     const mac::AttributedStringCoder::EncodedString& encoded_string,
     gfx::Point baseline_point) {
   NSAttributedString* string =
@@ -312,12 +307,12 @@ void RenderWidgetHostViewNSViewBridgeLocal::ShowDictionaryOverlay(
                                          atPoint:flipped_baseline_point];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::LockKeyboard(
+void RenderWidgetHostNSViewBridgeLocal::LockKeyboard(
     base::Optional<base::flat_set<ui::DomCode>> dom_codes) {
   [cocoa_view_ lockKeyboard:std::move(dom_codes)];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::UnlockKeyboard() {
+void RenderWidgetHostNSViewBridgeLocal::UnlockKeyboard() {
   [cocoa_view_ unlockKeyboard];
 }
 
@@ -326,7 +321,7 @@ void RenderWidgetHostViewNSViewBridgeLocal::UnlockKeyboard() {
 // static
 std::unique_ptr<RenderWidgetHostNSViewBridge>
 RenderWidgetHostNSViewBridge::Create(RenderWidgetHostNSViewClient* client) {
-  return std::make_unique<RenderWidgetHostViewNSViewBridgeLocal>(client);
+  return std::make_unique<RenderWidgetHostNSViewBridgeLocal>(client);
 }
 
 }  // namespace content
