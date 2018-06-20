@@ -95,6 +95,9 @@ class OmniboxViewViews : public OmniboxView,
   // Otherwise, resets the text indent to default.
   void UpdateTextIndent();
 
+  // Returns true if the omnibox is currently hovered.
+  bool IsHovered() const;
+
   // OmniboxView:
   void EmphasizeURLComponents() override;
   void Update() override;
@@ -136,6 +139,8 @@ class OmniboxViewViews : public OmniboxView,
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, MaintainCursorAfterFocusCycle);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, OnBlur);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, DoNotNavigateOnDrop);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest,
+                           MouseMoveAndExitSetsHoveredState);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
                            FirstMouseClickFocusesOnly);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
@@ -184,6 +189,9 @@ class OmniboxViewViews : public OmniboxView,
   void UpdateSecurityLevel();
 
   void ClearAccessibilityLabel();
+
+  // Sets the hovered state for omnibox.
+  void SetHovered(bool hovered);
 
   // Returns true if the user text was updated with the full URL (without
   // steady-state elisions).  |gesture| is the user gesture causing unelision.
@@ -238,6 +246,10 @@ class OmniboxViewViews : public OmniboxView,
   bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
   void ExecuteTextEditCommand(ui::TextEditCommand command) override;
 
+  // views::View:
+  void OnMouseMoved(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+
   // chromeos::input_method::InputMethodManager::CandidateWindowObserver:
 #if defined(OS_CHROMEOS)
   void CandidateWindowOpened(
@@ -273,6 +285,9 @@ class OmniboxViewViews : public OmniboxView,
 
   // TemplateURLServiceObserver:
   void OnTemplateURLServiceChanged() override;
+
+  // Holds hover state for visual hinting.
+  bool hovered_;
 
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (smaller font size). This is used for popups.

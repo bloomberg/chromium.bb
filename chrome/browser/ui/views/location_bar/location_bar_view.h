@@ -267,6 +267,9 @@ class LocationBarView : public LocationBar,
   void OnOmniboxFocused();
   void OnOmniboxBlurred();
 
+  // Called when omnibox detects change in hover state
+  void OnOmniboxHoverChanged();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
   FRIEND_TEST_ALL_PREFIXES(TouchLocationBarViewBrowserTest,

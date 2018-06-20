@@ -124,6 +124,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    LocationBarView* location_bar,
                                    const gfx::FontList& font_list)
     : OmniboxView(controller, std::move(client)),
+      hovered_(false),
       popup_window_mode_(popup_window_mode),
       security_level_(security_state::NONE),
       saved_selection_for_focus_change_(gfx::Range::InvalidRange()),
@@ -250,6 +251,10 @@ void OmniboxViewViews::UpdateTextIndent() {
 
   // This is necessary to reposition the internal RenderText.
   OnBoundsChanged(gfx::Rect());
+}
+
+bool OmniboxViewViews::IsHovered() const {
+  return hovered_;
 }
 
 void OmniboxViewViews::EmphasizeURLComponents() {
@@ -606,6 +611,15 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
   friendly_suggestion_text_prefix_length_ = 0;
 }
 
+void OmniboxViewViews::SetHovered(bool hovered) {
+  if (hovered != hovered_) {
+    hovered_ = hovered;
+    if (location_bar_view_) {
+      location_bar_view_->OnOmniboxHoverChanged();
+    }
+  }
+}
+
 bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   if (!OmniboxFieldTrial::IsHideSteadyStateUrlSchemeAndSubdomainsEnabled())
     return false;
@@ -845,6 +859,13 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   is_mouse_pressed_ = false;
   if (UnapplySteadyStateElisions(UnelisionGesture::MOUSE_RELEASE))
     TextChanged();
+}
+
+void OmniboxViewViews::OnMouseMoved(const ui::MouseEvent& event) {
+  SetHovered(true);
+}
+void OmniboxViewViews::OnMouseExited(const ui::MouseEvent& event) {
+  SetHovered(false);
 }
 
 void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
