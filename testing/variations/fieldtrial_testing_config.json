@@ -359,13 +359,12 @@
             ],
             "experiments": [
                 {
-                    "name": "AudioProcess_LaunchOnStartup_v2",
+                    "name": "AudioProcess",
                     "params": {
-                        "teardown_timeout_s": "0"
+                        "teardown_timeout_s": "300"
                     },
                     "enable_features": [
                         "AudioServiceAudioStreams",
-                        "AudioServiceLaunchOnStartup",
                         "AudioServiceOutOfProcess"
                     ]
                 }
