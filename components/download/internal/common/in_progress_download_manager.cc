@@ -314,7 +314,13 @@ void InProgressDownloadManager::DetermineDownloadTarget(
 
 void InProgressDownloadManager::ResumeInterruptedDownload(
     std::unique_ptr<DownloadUrlParameters> params,
-    const GURL& site_url) {}
+    const GURL& site_url) {
+  if (!url_loader_factory_getter_)
+    return;
+
+  BeginDownload(std::move(params), url_loader_factory_getter_, false, site_url,
+                GURL(), GURL());
+}
 
 base::Optional<DownloadEntry> InProgressDownloadManager::GetInProgressEntry(
     DownloadItemImpl* download) {
