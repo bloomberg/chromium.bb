@@ -94,7 +94,7 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeBe
      * @return The {@link EdgeSwipeHandler} responsible for processing swipe events for the toolbar.
      */
     @Override
-    public EdgeSwipeHandler getTopSwipeHandler() {
+    public EdgeSwipeHandler getToolbarSwipeHandler() {
         return mToolbarSwipeHandler;
     }
 

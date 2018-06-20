@@ -883,7 +883,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      * @return The {@link EdgeSwipeHandler} responsible for processing swipe events for the toolbar.
      *         By default this returns null.
      */
-    public EdgeSwipeHandler getTopSwipeHandler() {
+    public EdgeSwipeHandler getToolbarSwipeHandler() {
         return null;
     }
 

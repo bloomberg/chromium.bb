@@ -537,9 +537,9 @@ public class LayoutManagerTest implements MockTabModelDelegate {
                 direction == ScrollDirection.LEFT || direction == ScrollDirection.RIGHT);
 
         final Layout layout = mManager.getActiveLayout();
-        final EdgeSwipeHandler eventHandler = mManager.getTopSwipeHandler();
+        final EdgeSwipeHandler eventHandler = mManager.getToolbarSwipeHandler();
 
-        Assert.assertNotNull("LayoutManager#getTopSwipeHandler() returned null", eventHandler);
+        Assert.assertNotNull("LayoutManager#getToolbarSwipeHandler() returned null", eventHandler);
         Assert.assertNotNull("LayoutManager#getActiveLayout() returned null", layout);
 
         final float layoutWidth = layout.getWidth();

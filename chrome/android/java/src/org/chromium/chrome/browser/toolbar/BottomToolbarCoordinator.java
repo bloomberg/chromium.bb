@@ -96,6 +96,7 @@ public class BottomToolbarCoordinator {
                 searchAcceleratorListener, homeButtonListener, menuButtonListener);
         mMediator.setLayoutManager(layoutManager);
         mMediator.setOverviewModeBehavior(overviewModeBehavior);
+        mMediator.setToolbarSwipeHandler(layoutManager.getToolbarSwipeHandler());
 
         mTabSwitcherButtonCoordinator.setTabSwitcherListener(tabSwitcherListener);
         mTabSwitcherButtonCoordinator.setTabModelSelector(tabModelSelector);

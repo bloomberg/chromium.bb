@@ -12,6 +12,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 
@@ -47,6 +48,13 @@ class BottomToolbarMediator implements FullscreenListener, OverviewModeObserver 
         fullscreenManager.setBottomControlsHeight(
                 resources.getDimensionPixelOffset(R.dimen.bottom_toolbar_height));
         fullscreenManager.updateViewportSize();
+    }
+
+    /**
+     * @param swipeHandler The handler that controls the toolbar swipe behavior.
+     */
+    void setToolbarSwipeHandler(EdgeSwipeHandler swipeHandler) {
+        mModel.setValue(BottomToolbarModel.TOOLBAR_SWIPE_HANDLER, swipeHandler);
     }
 
     /**

@@ -80,6 +80,9 @@ public class BottomToolbarViewBinder
                     .setVisibility(model.getValue(BottomToolbarModel.UPDATE_BADGE_VISIBLE)
                                     ? View.VISIBLE
                                     : View.GONE);
+        } else if (BottomToolbarModel.TOOLBAR_SWIPE_HANDLER == propertyKey) {
+            view.toolbarRoot.setSwipeDetector(
+                    model.getValue(BottomToolbarModel.TOOLBAR_SWIPE_HANDLER));
         } else {
             assert false : "Unhandled property detected in BottomToolbarViewBinder!";
         }
