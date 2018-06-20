@@ -21,7 +21,7 @@ extern const base::Feature kAffiliationBasedMatching;
 extern const base::Feature kHtmlBasedUsernameDetector;
 extern const base::Feature kManualFallbacksFilling;
 extern const base::Feature kManualFallbacksFillingStandalone;
-extern const base::Feature kEnableManualFallbacksGeneration;
+extern const base::Feature kManualFallbacksGeneration;
 extern const base::Feature kEnableManualPasswordGeneration;
 extern const base::Feature kPasswordGenerationRequirements;
 extern const base::Feature kPasswordGenerationRequirementsDomainOverrides;
