@@ -16,10 +16,10 @@
 #include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/consumer.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/data_source_descriptor.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/service.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/tracing_service.h"
 #include "third_party/perfetto/protos/perfetto/common/commit_data_request.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/test_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
@@ -170,7 +170,7 @@ class MockProducerClient : public ProducerClient {
 class MockConsumer : public perfetto::Consumer {
  public:
   using PacketReceivedCallback = std::function<void(bool)>;
-  MockConsumer(perfetto::Service* service,
+  MockConsumer(perfetto::TracingService* service,
                std::string data_source_name,
                PacketReceivedCallback packet_received_callback)
       : packet_received_callback_(packet_received_callback),
@@ -218,7 +218,8 @@ class MockConsumer : public perfetto::Consumer {
   }
 
  private:
-  std::unique_ptr<perfetto::Service::ConsumerEndpoint> consumer_endpoint_;
+  std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>
+      consumer_endpoint_;
   size_t received_packets_ = 0;
   PacketReceivedCallback packet_received_callback_;
   std::string data_source_name_;
@@ -260,7 +261,7 @@ class MockProducer : public ProducerHost {
   }
 
   void OnMessagepipesReadyCallback(
-      perfetto::Service* perfetto_service,
+      perfetto::TracingService* perfetto_service,
       mojom::ProducerClientPtr producer_client_pipe,
       mojom::ProducerHostRequest producer_host_pipe) {
     Initialize(std::move(producer_client_pipe), std::move(producer_host_pipe),

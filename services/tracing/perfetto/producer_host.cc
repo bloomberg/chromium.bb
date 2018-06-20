@@ -18,7 +18,7 @@ ProducerHost::~ProducerHost() = default;
 
 void ProducerHost::Initialize(mojom::ProducerClientPtr producer_client,
                               mojom::ProducerHostRequest producer_host,
-                              perfetto::Service* service,
+                              perfetto::TracingService* service,
                               const std::string& name) {
   DCHECK(service);
   DCHECK(!producer_endpoint_);

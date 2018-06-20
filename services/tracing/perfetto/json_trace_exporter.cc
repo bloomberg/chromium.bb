@@ -177,7 +177,7 @@ void OutputJSONFromTraceEventProto(
 namespace tracing {
 
 JSONTraceExporter::JSONTraceExporter(const std::string& config,
-                                     perfetto::Service* service)
+                                     perfetto::TracingService* service)
     : config_(config) {
   consumer_endpoint_ = service->ConnectConsumer(this);
 }

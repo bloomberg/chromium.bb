@@ -21,13 +21,13 @@ struct BindSourceInfo;
 }  // namespace service_manager
 
 namespace perfetto {
-class Service;
+class TracingService;
 }  // namespace perfetto
 
 namespace tracing {
 
 // This class serves two purposes: It wraps the use of the system-wide
-// perfetto::Service instance, and serves as the main Mojo interface for
+// perfetto::TracingService instance, and serves as the main Mojo interface for
 // connecting per-process ProducerClient with corresponding service-side
 // ProducerHost.
 class PerfettoService : public mojom::PerfettoService {
@@ -46,7 +46,7 @@ class PerfettoService : public mojom::PerfettoService {
   void ConnectToProducerHost(mojom::ProducerClientPtr producer_client,
                              mojom::ProducerHostRequest producer_host) override;
 
-  perfetto::Service* GetService() const;
+  perfetto::TracingService* GetService() const;
   scoped_refptr<base::SequencedTaskRunner> task_runner() {
     return perfetto_task_runner_.task_runner();
   }
@@ -57,7 +57,7 @@ class PerfettoService : public mojom::PerfettoService {
   void CreateServiceOnSequence();
 
   PerfettoTaskRunner perfetto_task_runner_;
-  std::unique_ptr<perfetto::Service> service_;
+  std::unique_ptr<perfetto::TracingService> service_;
   mojo::BindingSet<mojom::PerfettoService, service_manager::Identity> bindings_;
   SEQUENCE_CHECKER(sequence_checker_);
 
