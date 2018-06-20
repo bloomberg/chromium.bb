@@ -73,6 +73,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/autoplay.mojom.h"
 #include "third_party/blink/public/platform/site_engagement.mojom.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
@@ -1245,8 +1246,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // Whether or not a navigation in this frame consumes user gestures.
   bool ConsumeGestureOnNavigation() const;
 
-  // Whether or not the frame is controlled by a service worker.
-  bool IsControlledByServiceWorker();
+  // Whether the frame is controlled by a service worker.
+  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker();
 
   // Build DidCommitProvisionalLoad_Params based on the frame internal state.
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>

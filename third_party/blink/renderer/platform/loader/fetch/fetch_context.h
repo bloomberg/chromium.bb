@@ -34,6 +34,7 @@
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
@@ -197,7 +198,10 @@ class PLATFORM_EXPORT FetchContext
     return ResourceRequestBlockedReason::kOther;
   }
 
-  virtual bool IsControlledByServiceWorker() const { return false; }
+  virtual blink::mojom::ControllerServiceWorkerMode
+  IsControlledByServiceWorker() const {
+    return blink::mojom::ControllerServiceWorkerMode::kNoController;
+  }
   virtual int64_t ServiceWorkerID() const { return -1; }
   virtual int ApplicationCacheHostID() const {
     return WebApplicationCacheHost::kAppCacheNoHostId;

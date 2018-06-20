@@ -74,14 +74,16 @@ class WebServiceWorkerNetworkProviderForFrame
             network::mojom::RequestContextFrameType::kTopLevel &&
         request.GetFrameType() !=
             network::mojom::RequestContextFrameType::kNested &&
-        !provider_->IsControlledByServiceWorker()) {
+        provider_->IsControlledByServiceWorker() ==
+            blink::mojom::ControllerServiceWorkerMode::kNoController) {
       request.SetSkipServiceWorker(true);
     }
   }
 
   int ProviderID() const override { return provider_->provider_id(); }
 
-  bool HasControllerServiceWorker() override {
+  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+      override {
     return provider_->IsControlledByServiceWorker();
   }
 
@@ -251,9 +253,11 @@ int ServiceWorkerNetworkProvider::provider_id() const {
   return context()->provider_id();
 }
 
-bool ServiceWorkerNetworkProvider::IsControlledByServiceWorker() const {
-  return context() && context()->GetControllerVersionId() !=
-                          blink::mojom::kInvalidServiceWorkerVersionId;
+blink::mojom::ControllerServiceWorkerMode
+ServiceWorkerNetworkProvider::IsControlledByServiceWorker() const {
+  if (!context())
+    return blink::mojom::ControllerServiceWorkerMode::kNoController;
+  return context()->IsControlledByServiceWorker();
 }
 
 // Creates an invalid instance (provider_id() returns

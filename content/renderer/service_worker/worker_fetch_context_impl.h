@@ -75,7 +75,8 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   std::unique_ptr<blink::WebURLLoaderFactory> WrapURLLoaderFactory(
       mojo::ScopedMessagePipeHandle url_loader_factory_handle) override;
   void WillSendRequest(blink::WebURLRequest&) override;
-  bool IsControlledByServiceWorker() const override;
+  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+      const override;
   void SetIsOnSubframe(bool) override;
   bool IsOnSubframe() const override;
   blink::WebURL SiteForCookies() const override;
@@ -93,12 +94,13 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   CreateWebSocketHandshakeThrottle() override;
 
   // mojom::ServiceWorkerWorkerClient implementation:
-  void OnControllerChanged() override;
+  void OnControllerChanged(blink::mojom::ControllerServiceWorkerMode) override;
 
   // Sets the fetch context status copied from the frame; the parent frame for a
   // dedicated worker, the main frame of the shadow page for a shared worker.
   void set_service_worker_provider_id(int id);
-  void set_is_controlled_by_service_worker(bool flag);
+  void set_is_controlled_by_service_worker(
+      blink::mojom::ControllerServiceWorkerMode mode);
   void set_parent_frame_id(int id);
   void set_site_for_cookies(const blink::WebURL& site_for_cookies);
   // Sets whether the worker context is a secure context.
@@ -134,7 +136,9 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info_;
 
   int service_worker_provider_id_ = kInvalidServiceWorkerProviderId;
-  bool is_controlled_by_service_worker_ = false;
+  blink::mojom::ControllerServiceWorkerMode is_controlled_by_service_worker_ =
+      blink::mojom::ControllerServiceWorkerMode::kNoController;
+
   // S13nServiceWorker:
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   mojom::ServiceWorkerContainerHostPtr service_worker_container_host_;

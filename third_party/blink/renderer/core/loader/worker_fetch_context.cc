@@ -277,7 +277,8 @@ std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
   return url_loader_factory_->CreateURLLoader(wrapped, task_runner);
 }
 
-bool WorkerFetchContext::IsControlledByServiceWorker() const {
+blink::mojom::ControllerServiceWorkerMode
+WorkerFetchContext::IsControlledByServiceWorker() const {
   return web_context_->IsControlledByServiceWorker();
 }
 

@@ -103,14 +103,16 @@ class WebServiceWorkerNetworkProviderForSharedWorker
     // request and break the assumptions of the renderer.
     if (request.GetRequestContext() !=
             blink::WebURLRequest::kRequestContextSharedWorker &&
-        !provider_->IsControlledByServiceWorker()) {
+        provider_->IsControlledByServiceWorker() ==
+            blink::mojom::ControllerServiceWorkerMode::kNoController) {
       request.SetSkipServiceWorker(true);
     }
   }
 
   int ProviderID() const override { return provider_->provider_id(); }
 
-  bool HasControllerServiceWorker() override {
+  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+      override {
     return provider_->IsControlledByServiceWorker();
   }
 
@@ -396,13 +398,11 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   // https://w3c.github.io/webappsec-secure-contexts/#examples-shared-workers
   worker_fetch_context->set_is_secure_context(IsOriginSecure(url_));
   worker_fetch_context->set_origin_url(url_.GetOrigin());
-  if (web_network_provider) {
-    worker_fetch_context->set_service_worker_provider_id(
-        web_network_provider->ProviderID());
-    worker_fetch_context->set_is_controlled_by_service_worker(
-        web_network_provider->HasControllerServiceWorker());
-  }
+  worker_fetch_context->set_service_worker_provider_id(context->provider_id());
+  worker_fetch_context->set_is_controlled_by_service_worker(
+      context->IsControlledByServiceWorker());
   worker_fetch_context->set_client_id(context->client_id());
+
   return std::move(worker_fetch_context);
 }
 

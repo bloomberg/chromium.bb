@@ -1456,7 +1456,8 @@ TEST_F(FrameFetchContextTest, AllowImageWhenDetached) {
 TEST_F(FrameFetchContextTest, IsControlledByServiceWorkerWhenDetached) {
   dummy_page_holder = nullptr;
 
-  EXPECT_FALSE(fetch_context->IsControlledByServiceWorker());
+  EXPECT_EQ(blink::mojom::ControllerServiceWorkerMode::kNoController,
+            fetch_context->IsControlledByServiceWorker());
 }
 
 TEST_F(FrameFetchContextTest, IsMainFrameWhenDetached) {

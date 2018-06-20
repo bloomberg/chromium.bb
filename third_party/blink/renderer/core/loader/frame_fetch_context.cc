@@ -795,20 +795,23 @@ bool FrameFetchContext::AllowImage(bool images_enabled, const KURL& url) const {
   return GetContentSettingsClient()->AllowImage(images_enabled, url);
 }
 
-bool FrameFetchContext::IsControlledByServiceWorker() const {
+blink::mojom::ControllerServiceWorkerMode
+FrameFetchContext::IsControlledByServiceWorker() const {
   if (IsDetached())
-    return false;
+    return blink::mojom::ControllerServiceWorkerMode::kNoController;
 
   DCHECK(MasterDocumentLoader());
 
   auto* service_worker_network_provider =
       MasterDocumentLoader()->GetServiceWorkerNetworkProvider();
-  return service_worker_network_provider &&
-         service_worker_network_provider->HasControllerServiceWorker();
+  if (!service_worker_network_provider)
+    return blink::mojom::ControllerServiceWorkerMode::kNoController;
+  return service_worker_network_provider->IsControlledByServiceWorker();
 }
 
 int64_t FrameFetchContext::ServiceWorkerID() const {
-  DCHECK(IsControlledByServiceWorker());
+  DCHECK(IsControlledByServiceWorker() !=
+         blink::mojom::ControllerServiceWorkerMode::kNoController);
   DCHECK(MasterDocumentLoader());
   auto* service_worker_network_provider =
       MasterDocumentLoader()->GetServiceWorkerNetworkProvider();

@@ -825,8 +825,10 @@ void ResourceLoader::ActivateCacheAwareLoadingIfNeeded(
     return;
 
   // Don't activate if the page is controlled by service worker.
-  if (fetcher_->IsControlledByServiceWorker())
+  if (fetcher_->IsControlledByServiceWorker() !=
+      blink::mojom::ControllerServiceWorkerMode::kNoController) {
     return;
+  }
 
   is_cache_aware_loading_activated_ = true;
 }

@@ -260,6 +260,7 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
   // with the navigation commit.
   SubresourceLoaderParams params;
   auto controller_info = mojom::ControllerServiceWorkerInfo::New();
+  controller_info->mode = provider_host_->GetControllerMode();
   // Note that |controller_info->endpoint| is null if the controller has no
   // fetch event handler. In that case the renderer frame won't get the
   // controller pointer upon the navigation commit, and subresource loading will

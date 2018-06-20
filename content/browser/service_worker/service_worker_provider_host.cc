@@ -301,6 +301,24 @@ bool ServiceWorkerProviderHost::IsContextSecureForServiceWorker() const {
   return schemes.find(document_url().scheme()) != schemes.end();
 }
 
+blink::mojom::ControllerServiceWorkerMode
+ServiceWorkerProviderHost::GetControllerMode() const {
+  if (!controller_)
+    return blink::mojom::ControllerServiceWorkerMode::kNoController;
+  switch (controller_->fetch_handler_existence()) {
+    case ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST:
+      return blink::mojom::ControllerServiceWorkerMode::kNoFetchEventHandler;
+    case ServiceWorkerVersion::FetchHandlerExistence::EXISTS:
+      return blink::mojom::ControllerServiceWorkerMode::kControlled;
+    case ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN:
+      // UNKNOWN means the controller is still installing. It's not possible to
+      // have a controller that hasn't finished installing.
+      NOTREACHED();
+  }
+  NOTREACHED();
+  return blink::mojom::ControllerServiceWorkerMode::kNoController;
+}
+
 void ServiceWorkerProviderHost::OnVersionAttributesChanged(
     ServiceWorkerRegistration* registration,
     ChangedVersionAttributesMask changed_mask,
@@ -778,6 +796,13 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
   DCHECK(associated_registration_);
   DCHECK_EQ(associated_registration_->active_version(), controller_.get());
 
+  controller_info->mode = GetControllerMode();
+
+  // S13nServiceWorker: Pass an endpoint for the client to talk to this
+  // controller.
+  if (ServiceWorkerUtils::IsServicificationEnabled())
+    controller_info->endpoint = GetControllerServiceWorkerPtr().PassInterface();
+
   // Set the info for the JavaScript ServiceWorkerContainer#controller object.
   base::WeakPtr<ServiceWorkerObjectHost> object_host =
       GetOrCreateServiceWorkerObjectHost(controller_);
@@ -790,10 +815,6 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
   for (const blink::mojom::WebFeature feature : controller_->used_features())
     used_features.push_back(feature);
 
-  // S13nServiceWorker: Pass an endpoint for the client to talk to this
-  // controller.
-  if (ServiceWorkerUtils::IsServicificationEnabled())
-    controller_info->endpoint = GetControllerServiceWorkerPtr().PassInterface();
 
   container_->SetController(std::move(controller_info), used_features,
                             notify_controllerchange);

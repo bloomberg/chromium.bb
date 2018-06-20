@@ -4338,7 +4338,10 @@ void RenderFrameImpl::DidFinishLoad() {
     return;
   RecordSuffixedRendererMemoryMetrics(memory_metrics,
                                       ".MainFrameDidFinishLoad");
-  if (!IsControlledByServiceWorker())
+  // TODO(falken): Filter out no fetch controllers. This UMA probably didn't
+  // intend to log them.
+  if (IsControlledByServiceWorker() ==
+      blink::mojom::ControllerServiceWorkerMode::kNoController)
     return;
   RecordSuffixedRendererMemoryMetrics(
       memory_metrics, ".ServiceWorkerControlledMainFrameDidFinishLoad");
@@ -7182,11 +7185,12 @@ bool RenderFrameImpl::ConsumeGestureOnNavigation() const {
          base::FeatureList::IsEnabled(kConsumeGestureOnNavigation);
 }
 
-bool RenderFrameImpl::IsControlledByServiceWorker() {
+blink::mojom::ControllerServiceWorkerMode
+RenderFrameImpl::IsControlledByServiceWorker() {
   blink::WebServiceWorkerNetworkProvider* web_provider =
       frame_->GetDocumentLoader()->GetServiceWorkerNetworkProvider();
   if (!web_provider)
-    return false;
+    return blink::mojom::ControllerServiceWorkerMode::kNoController;
   ServiceWorkerNetworkProvider* provider =
       ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
           web_provider);

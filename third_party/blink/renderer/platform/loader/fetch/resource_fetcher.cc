@@ -388,7 +388,8 @@ void ResourceFetcher::ClearResourcesFromPreviousFetcher() {
   resources_from_previous_fetcher_.clear();
 }
 
-bool ResourceFetcher::IsControlledByServiceWorker() const {
+blink::mojom::ControllerServiceWorkerMode
+ResourceFetcher::IsControlledByServiceWorker() const {
   return Context().IsControlledByServiceWorker();
 }
 
@@ -910,7 +911,8 @@ void ResourceFetcher::InitializeRevalidation(
   DCHECK(resource->IsLoaded());
   DCHECK(resource->CanUseCacheValidator());
   DCHECK(!resource->IsCacheValidator());
-  DCHECK(!Context().IsControlledByServiceWorker());
+  DCHECK(Context().IsControlledByServiceWorker() ==
+         blink::mojom::ControllerServiceWorkerMode::kNoController);
   // RawResource doesn't support revalidation.
   CHECK(!IsRawResource(*resource));
 
@@ -1276,8 +1278,14 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
     // is controlled by the ServiceWorker, we choose the Reload policy because
     // the revalidation headers should not be exposed to the
     // ServiceWorker.(crbug.com/429570)
+    //
+    // TODO(falken): If the controller has no fetch event handler, we probably
+    // can treat it as not being controlled in the S13nSW case. In the
+    // non-S13nSW, we don't know what controller the request will ultimately go
+    // to (due to skipWaiting) so be conservative.
     if (existing_resource.CanUseCacheValidator() &&
-        !Context().IsControlledByServiceWorker()) {
+        Context().IsControlledByServiceWorker() ==
+            blink::mojom::ControllerServiceWorkerMode::kNoController) {
       // If the resource is already a cache validator but not started yet, the
       // |Use| policy should be applied to subsequent requests.
       if (existing_resource.IsCacheValidator()) {
@@ -1687,7 +1695,8 @@ void ResourceFetcher::ReloadLoFiImages() {
 }
 
 String ResourceFetcher::GetCacheIdentifier() const {
-  if (Context().IsControlledByServiceWorker())
+  if (Context().IsControlledByServiceWorker() !=
+      blink::mojom::ControllerServiceWorkerMode::kNoController)
     return String::Number(Context().ServiceWorkerID());
   return MemoryCache::DefaultCacheIdentifier();
 }
