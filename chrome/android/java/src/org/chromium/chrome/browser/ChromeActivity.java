@@ -1822,9 +1822,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 getTabContentManager(), contentContainer, mContextualSearchManager);
 
         if (controlContainer != null && DeviceClassManager.enableToolbarSwipe()
-                && getCompositorViewHolder().getLayoutManager().getTopSwipeHandler() != null) {
+                && getCompositorViewHolder().getLayoutManager().getToolbarSwipeHandler() != null) {
             controlContainer.setSwipeHandler(
-                    getCompositorViewHolder().getLayoutManager().getTopSwipeHandler());
+                    getCompositorViewHolder().getLayoutManager().getToolbarSwipeHandler());
         }
     }
 

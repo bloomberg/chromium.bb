@@ -112,7 +112,7 @@ public class ContentViewFocusTest {
         // Start the swipe
         addFocusChangedListener(view);
         final EdgeSwipeHandler edgeSwipeHandler =
-                mActivityTestRule.getActivity().getLayoutManager().getTopSwipeHandler();
+                mActivityTestRule.getActivity().getLayoutManager().getToolbarSwipeHandler();
         ThreadUtils.runOnUiThread(() -> {
             edgeSwipeHandler.swipeStarted(ScrollDirection.RIGHT, 0, 0);
             edgeSwipeHandler.swipeUpdated(100, 0, 100, 0, 100, 0);

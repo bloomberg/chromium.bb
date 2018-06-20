@@ -8,6 +8,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 
 /**
@@ -41,10 +42,14 @@ public class BottomToolbarModel extends PropertyModel {
     /** Whether or not the update badge is visible. */
     public static final BooleanPropertyKey UPDATE_BADGE_VISIBLE = new BooleanPropertyKey();
 
+    /** A handler for swipe events on the toolbar. */
+    public static final ObjectPropertyKey<EdgeSwipeHandler> TOOLBAR_SWIPE_HANDLER =
+            new ObjectPropertyKey<>();
+
     /** Default constructor. */
     public BottomToolbarModel() {
         super(Y_OFFSET, ANDROID_VIEW_VISIBLE, SEARCH_ACCELERATOR_LISTENER, HOME_BUTTON_LISTENER,
                 MENU_BUTTON_LISTENER, LAYOUT_MANAGER, SEARCH_ACCELERATOR_VISIBLE,
-                UPDATE_BADGE_VISIBLE);
+                UPDATE_BADGE_VISIBLE, TOOLBAR_SWIPE_HANDLER);
     }
 }
