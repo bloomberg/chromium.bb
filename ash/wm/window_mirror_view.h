@@ -29,6 +29,9 @@ class WindowMirrorView : public views::View {
   WindowMirrorView(aura::Window* window, bool trilinear_filtering_on_init);
   ~WindowMirrorView() override;
 
+  // Recreates |layer_owner_|.
+  void RecreateMirrorLayers();
+
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;

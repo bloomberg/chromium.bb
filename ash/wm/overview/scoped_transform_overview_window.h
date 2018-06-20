@@ -182,6 +182,10 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // Stop listening to any animations to finish.
   void CancelAnimationsListener();
 
+  // If the original window is minimized, resize |minimized_widget_| to match
+  // the bounds of the |window_|.
+  void ResizeMinimizedWidgetIfNeeded();
+
   views::Widget* minimized_widget() { return minimized_widget_.get(); }
 
   // ui::ImplicitAnimationObserver:

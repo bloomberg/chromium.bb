@@ -569,6 +569,24 @@ void ScopedTransformOverviewWindow::CancelAnimationsListener() {
   StopObservingImplicitAnimations();
 }
 
+void ScopedTransformOverviewWindow::ResizeMinimizedWidgetIfNeeded() {
+  if (!minimized_widget_)
+    return;
+
+  gfx::Rect bounds(window_->GetBoundsInScreen());
+  if (bounds.size() == window_->GetBoundsInScreen().size())
+    return;
+
+  wm::WindowMirrorView* mirror_view =
+      static_cast<wm::WindowMirrorView*>(minimized_widget_->GetContentsView());
+  if (mirror_view) {
+    mirror_view->RecreateMirrorLayers();
+    bounds.Inset(0, 0, 0,
+                 bounds.height() - mirror_view->GetPreferredSize().height());
+    minimized_widget_->SetBounds(bounds);
+  }
+}
+
 void ScopedTransformOverviewWindow::OnImplicitAnimationsCompleted() {
   CreateAndApplyMaskAndShadow();
   selector_item_->OnDragAnimationCompleted();

@@ -971,6 +971,15 @@ void WindowSelectorItem::ButtonPressed(views::Button* sender,
     window_selector_->SelectWindow(this);
 }
 
+void WindowSelectorItem::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
+  if (reason == ui::PropertyChangeReason::NOT_FROM_ANIMATION)
+    transform_window_.ResizeMinimizedWidgetIfNeeded();
+}
+
 void WindowSelectorItem::OnWindowDestroying(aura::Window* window) {
   window->RemoveObserver(this);
   transform_window_.OnWindowDestroyed();
