@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/services/multidevice_setup/observer_notifier.h"
+#include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier.h"
 
 #include <set>
 #include <utility>
@@ -43,37 +43,42 @@ base::Optional<std::string> GetHostPublicKey(
 }  // namespace
 
 // static
-ObserverNotifier::Factory* ObserverNotifier::Factory::test_factory_ = nullptr;
+AccountStatusChangeDelegateNotifier::Factory*
+    AccountStatusChangeDelegateNotifier::Factory::test_factory_ = nullptr;
 
 // static
-ObserverNotifier::Factory* ObserverNotifier::Factory::Get() {
+AccountStatusChangeDelegateNotifier::Factory*
+AccountStatusChangeDelegateNotifier::Factory::Get() {
   if (test_factory_)
     return test_factory_;
 
-  static base::NoDestructor<ObserverNotifier::Factory> factory;
+  static base::NoDestructor<Factory> factory;
   return factory.get();
 }
 
 // static
-void ObserverNotifier::Factory::SetFactoryForTesting(Factory* test_factory) {
+void AccountStatusChangeDelegateNotifier::Factory::SetFactoryForTesting(
+    Factory* test_factory) {
   test_factory_ = test_factory;
 }
 
-ObserverNotifier::Factory::~Factory() = default;
+AccountStatusChangeDelegateNotifier::Factory::~Factory() = default;
 
-std::unique_ptr<ObserverNotifier> ObserverNotifier::Factory::BuildInstance(
+std::unique_ptr<AccountStatusChangeDelegateNotifier>
+AccountStatusChangeDelegateNotifier::Factory::BuildInstance(
     device_sync::DeviceSyncClient* device_sync_client,
     PrefService* pref_service,
     SetupFlowCompletionRecorder* setup_flow_completion_recorder,
     base::Clock* clock) {
-  return base::WrapUnique(new ObserverNotifier(
+  return base::WrapUnique(new AccountStatusChangeDelegateNotifier(
       device_sync_client, pref_service, setup_flow_completion_recorder, clock));
 }
 
 // static
-void ObserverNotifier::RegisterPrefs(PrefRegistrySimple* registry) {
+void AccountStatusChangeDelegateNotifier::RegisterPrefs(
+    PrefRegistrySimple* registry) {
   // Records the timestamps (in milliseconds since UNIX Epoch, aka JavaTime) of
-  // the last instance the observer was notified for each of the changes listed
+  // the last instance the delegate was notified for each of the changes listed
   // in the class description.
   registry->RegisterInt64Pref(kNewUserPotentialHostExistsPrefName,
                               kTimestampNotSet);
@@ -85,38 +90,45 @@ void ObserverNotifier::RegisterPrefs(PrefRegistrySimple* registry) {
                                kNoHost);
 }
 
-ObserverNotifier::~ObserverNotifier() {
+AccountStatusChangeDelegateNotifier::~AccountStatusChangeDelegateNotifier() {
   device_sync_client_->RemoveObserver(this);
 }
 
-void ObserverNotifier::SetMultiDeviceSetupObserverPtr(
-    mojom::MultiDeviceSetupObserverPtr observer_ptr) {
-  if (observer_ptr_.is_bound()) {
-    PA_LOG(ERROR) << "There is already a mojom::MultiDeviceSetupObserverPtr "
-                  << "set. There should only be one.";
+void AccountStatusChangeDelegateNotifier::SetAccountStatusChangeDelegatePtr(
+    mojom::AccountStatusChangeDelegatePtr delegate_ptr) {
+  if (delegate_ptr_.is_bound()) {
+    PA_LOG(ERROR) << "AccountStatusChangeDelegateNotifier::"
+                  << "SetAccountStatusChangeDelegatePtr(): Tried to set "
+                  << "delegate, but it was already set. Replacing "
+                  << "the previously-set delegate.";
     NOTREACHED();
   }
-  observer_ptr_ = std::move(observer_ptr);
+
+  delegate_ptr_ = std::move(delegate_ptr);
   CheckForMultiDeviceEvents();
 }
 
 // static
-const char ObserverNotifier::kNewUserPotentialHostExistsPrefName[] =
-    "multidevice_setup.new_user_potential_host_exists";
+const char
+    AccountStatusChangeDelegateNotifier::kNewUserPotentialHostExistsPrefName[] =
+        "multidevice_setup.new_user_potential_host_exists";
 
 // static
-const char ObserverNotifier::kExistingUserHostSwitchedPrefName[] =
-    "multidevice_setup.existing_user_host_switched";
+const char
+    AccountStatusChangeDelegateNotifier::kExistingUserHostSwitchedPrefName[] =
+        "multidevice_setup.existing_user_host_switched";
 
 // static
-const char ObserverNotifier::kExistingUserChromebookAddedPrefName[] =
-    "multidevice_setup.existing_user_chromebook_added";
+const char AccountStatusChangeDelegateNotifier::
+    kExistingUserChromebookAddedPrefName[] =
+        "multidevice_setup.existing_user_chromebook_added";
 
 // static
-const char ObserverNotifier::kHostPublicKeyFromMostRecentSyncPrefName[] =
-    "multidevice_setup.host_public_key_from_most_recent_sync";
+const char AccountStatusChangeDelegateNotifier::
+    kHostPublicKeyFromMostRecentSyncPrefName[] =
+        "multidevice_setup.host_public_key_from_most_recent_sync";
 
-ObserverNotifier::ObserverNotifier(
+AccountStatusChangeDelegateNotifier::AccountStatusChangeDelegateNotifier(
     device_sync::DeviceSyncClient* device_sync_client,
     PrefService* pref_service,
     SetupFlowCompletionRecorder* setup_flow_completion_recorder,
@@ -131,8 +143,9 @@ ObserverNotifier::ObserverNotifier(
       device_sync_client_->GetSyncedDevices();
   base::Optional<cryptauth::RemoteDeviceRef> local_device =
       device_sync_client_->GetLocalDeviceMetadata();
-  // ObserverNotifier should not be constructed if DeviceSyncClient is not
-  // initialized.
+
+  // AccountStatusChangeDelegateNotifier should not be constructed if
+  // DeviceSyncClient is not initialized.
   DCHECK(local_device);
   local_device_is_enabled_client_ =
       local_device->GetSoftwareFeatureState(
@@ -141,15 +154,15 @@ ObserverNotifier::ObserverNotifier(
   device_sync_client_->AddObserver(this);
 }
 
-void ObserverNotifier::OnNewDevicesSynced() {
+void AccountStatusChangeDelegateNotifier::OnNewDevicesSynced() {
   CheckForMultiDeviceEvents();
 }
 
-void ObserverNotifier::CheckForMultiDeviceEvents() {
-  // Without an observer, there is nothing to do.
-  if (!observer_ptr_) {
-    PA_LOG(INFO) << "You must set a mojom::MultiDeviceSetupObserverPtr using "
-                 << "ObserverNotifier::SetMultiDeviceSetupObserverPtr()";
+void AccountStatusChangeDelegateNotifier::CheckForMultiDeviceEvents() {
+  if (!delegate_ptr_) {
+    PA_LOG(INFO) << "AccountStatusChangeDelegateNotifier::"
+                 << "CheckForMultiDeviceEvents(): Tried to check for potential "
+                 << "events, but no delegat was set.";
     return;
   }
 
@@ -178,8 +191,9 @@ void ObserverNotifier::CheckForMultiDeviceEvents() {
       local_device_was_enabled_client_before_sync);
 }
 
-void ObserverNotifier::CheckForNewUserPotentialHostExistsEvent(
-    const cryptauth::RemoteDeviceRefList& device_ref_list) {
+void AccountStatusChangeDelegateNotifier::
+    CheckForNewUserPotentialHostExistsEvent(
+        const cryptauth::RemoteDeviceRefList& device_ref_list) {
   // We only check for new user events if there is no enabled host.
   if (host_public_key_from_most_recent_sync_)
     return;
@@ -187,23 +201,25 @@ void ObserverNotifier::CheckForNewUserPotentialHostExistsEvent(
   // If the observer has been notified of this event before, the user is not
   // new.
   if (pref_service_->GetInt64(kNewUserPotentialHostExistsPrefName) !=
-      kTimestampNotSet)
+      kTimestampNotSet) {
     return;
+  }
 
   for (const auto& device_ref : device_ref_list) {
     if (device_ref.GetSoftwareFeatureState(
             cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST) !=
-        cryptauth::SoftwareFeatureState::kSupported)
+        cryptauth::SoftwareFeatureState::kSupported) {
       continue;
+    }
 
-    observer_ptr_->OnPotentialHostExistsForNewUser();
+    delegate_ptr_->OnPotentialHostExistsForNewUser();
     pref_service_->SetInt64(kNewUserPotentialHostExistsPrefName,
                             clock_->Now().ToJavaTime());
     return;
   }
 }
 
-void ObserverNotifier::CheckForExistingUserHostSwitchedEvent(
+void AccountStatusChangeDelegateNotifier::CheckForExistingUserHostSwitchedEvent(
     base::Optional<std::string> host_public_key_before_sync) {
   // If the local device is not an enabled client, the account's new host is not
   // yet the local device's new host.
@@ -218,18 +234,20 @@ void ObserverNotifier::CheckForExistingUserHostSwitchedEvent(
   if (host_public_key_before_sync == host_public_key_from_most_recent_sync_)
     return;
 
-  observer_ptr_->OnConnectedHostSwitchedForExistingUser();
+  delegate_ptr_->OnConnectedHostSwitchedForExistingUser();
   pref_service_->SetInt64(kExistingUserHostSwitchedPrefName,
                           clock_->Now().ToJavaTime());
 }
 
-void ObserverNotifier::CheckForExistingUserChromebookAddedEvent(
-    bool local_device_was_enabled_client_before_sync) {
+void AccountStatusChangeDelegateNotifier::
+    CheckForExistingUserChromebookAddedEvent(
+        bool local_device_was_enabled_client_before_sync) {
   // The chromebook added event requires that the local device changed its
   // client status in the sync from not being enabled to being enabled.
   if (!local_device_is_enabled_client_ ||
-      local_device_was_enabled_client_before_sync)
+      local_device_was_enabled_client_before_sync) {
     return;
+  }
 
   // This event only applies if the user completed the setup flow on a different
   // device.
@@ -239,23 +257,23 @@ void ObserverNotifier::CheckForExistingUserChromebookAddedEvent(
   // Without an enabled host, the local device cannot be an enabled client.
   DCHECK(host_public_key_from_most_recent_sync_);
 
-  observer_ptr_->OnNewChromebookAddedForExistingUser();
+  delegate_ptr_->OnNewChromebookAddedForExistingUser();
   pref_service_->SetInt64(kExistingUserChromebookAddedPrefName,
                           clock_->Now().ToJavaTime());
 }
 
-void ObserverNotifier::FlushForTesting() {
-  if (observer_ptr_)
-    observer_ptr_.FlushForTesting();
-}
-
-base::Optional<std::string>
-ObserverNotifier::LoadHostPublicKeyFromEndOfPreviousSession() {
+base::Optional<std::string> AccountStatusChangeDelegateNotifier::
+    LoadHostPublicKeyFromEndOfPreviousSession() {
   std::string host_public_key_from_most_recent_sync =
       pref_service_->GetString(kHostPublicKeyFromMostRecentSyncPrefName);
   if (host_public_key_from_most_recent_sync.empty())
     return base::nullopt;
   return host_public_key_from_most_recent_sync;
+}
+
+void AccountStatusChangeDelegateNotifier::FlushForTesting() {
+  if (delegate_ptr_)
+    delegate_ptr_.FlushForTesting();
 }
 
 }  // namespace multidevice_setup

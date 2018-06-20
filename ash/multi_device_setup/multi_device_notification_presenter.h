@@ -43,7 +43,7 @@ namespace ash {
 // Note that if one notification is showing and another one is triggered, the
 // old text is replaced (if it's different) and the notification pops up again.
 class ASH_EXPORT MultiDeviceNotificationPresenter
-    : public chromeos::multidevice_setup::mojom::MultiDeviceSetupObserver,
+    : public chromeos::multidevice_setup::mojom::AccountStatusChangeDelegate,
       public SessionObserver {
  public:
   MultiDeviceNotificationPresenter(
@@ -57,7 +57,7 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
   void RemoveMultiDeviceSetupNotification();
 
  protected:
-  // multidevice_setup::mojom::MultiDeviceSetupObserver:
+  // multidevice_setup::mojom::AccountStatusChangeDelegate:
   void OnPotentialHostExistsForNewUser() override;
   void OnConnectedHostSwitchedForExistingUser() override;
   void OnNewChromebookAddedForExistingUser() override;
@@ -128,7 +128,7 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
 
   chromeos::multidevice_setup::mojom::MultiDeviceSetupPtr
       multidevice_setup_ptr_;
-  mojo::Binding<chromeos::multidevice_setup::mojom::MultiDeviceSetupObserver>
+  mojo::Binding<chromeos::multidevice_setup::mojom::AccountStatusChangeDelegate>
       binding_;
 
   std::unique_ptr<OpenUiDelegate> open_ui_delegate_;

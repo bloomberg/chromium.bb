@@ -27,14 +27,15 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup {
   void BindRequest(mojom::MultiDeviceSetupRequest request);
 
   // mojom::MultiDeviceSetup:
-  void SetObserver(mojom::MultiDeviceSetupObserverPtr presenter,
-                   SetObserverCallback callback) override;
+  void SetAccountStatusChangeDelegate(
+      mojom::AccountStatusChangeDelegatePtr delegate,
+      SetAccountStatusChangeDelegateCallback callback) override;
   void TriggerEventForDebugging(
       mojom::EventTypeForDebugging type,
       TriggerEventForDebuggingCallback callback) override;
 
  private:
-  mojom::MultiDeviceSetupObserverPtr observer_;
+  mojom::AccountStatusChangeDelegatePtr delegate_;
   mojo::BindingSet<mojom::MultiDeviceSetup> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupImpl);

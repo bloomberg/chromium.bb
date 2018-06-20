@@ -10,24 +10,6 @@ namespace chromeos {
 
 namespace multidevice_setup {
 
-namespace {
-
-std::string EventTypeEnumToString(mojom::EventTypeForDebugging type) {
-  switch (type) {
-    case mojom::EventTypeForDebugging::kNewUserPotentialHostExists:
-      return "kNewUserPotentialHostExists";
-    case mojom::EventTypeForDebugging::kExistingUserConnectedHostSwitched:
-      return "kExistingUserConnectedHostSwitched";
-    case mojom::EventTypeForDebugging::kExistingUserNewChromebookAdded:
-      return "kExistingUserNewChromebookAdded";
-    default:
-      NOTREACHED();
-      return "[invalid input]";
-  }
-}
-
-}  // namespace
-
 MultiDeviceSetupImpl::MultiDeviceSetupImpl() = default;
 
 MultiDeviceSetupImpl::~MultiDeviceSetupImpl() = default;
@@ -36,42 +18,35 @@ void MultiDeviceSetupImpl::BindRequest(mojom::MultiDeviceSetupRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void MultiDeviceSetupImpl::SetObserver(
-    mojom::MultiDeviceSetupObserverPtr observer,
-    SetObserverCallback callback) {
-  if (observer_.is_bound()) {
-    PA_LOG(ERROR) << "SetObserver() called when a MultiDeviceSetupObserver was "
-                  << "already set. Replacing the previously-set "
-                  << "MultiDeviceSetupObserver.";
-  }
-
-  PA_LOG(INFO) << "MultiDeviceSetupImpl::SetObserver()";
-  observer_ = std::move(observer);
+void MultiDeviceSetupImpl::SetAccountStatusChangeDelegate(
+    mojom::AccountStatusChangeDelegatePtr delegate,
+    SetAccountStatusChangeDelegateCallback callback) {
+  delegate_ = std::move(delegate);
   std::move(callback).Run();
 }
 
 void MultiDeviceSetupImpl::TriggerEventForDebugging(
     mojom::EventTypeForDebugging type,
     TriggerEventForDebuggingCallback callback) {
-  PA_LOG(INFO) << "TriggerEventForDebugging(" << EventTypeEnumToString(type)
+  PA_LOG(INFO) << "MultiDeviceSetupImpl::TriggerEventForDebugging(" << type
                << ") called.";
 
-  if (!observer_.is_bound()) {
-    PA_LOG(ERROR) << "No MultiDeviceSetupObserver has been set. Cannot "
-                  << "proceed.";
+  if (!delegate_.is_bound()) {
+    PA_LOG(ERROR) << "MultiDeviceSetupImpl::TriggerEventForDebugging(): No "
+                  << "delgate has been set; cannot proceed.";
     std::move(callback).Run(false /* success */);
     return;
   }
 
   switch (type) {
     case mojom::EventTypeForDebugging::kNewUserPotentialHostExists:
-      observer_->OnPotentialHostExistsForNewUser();
+      delegate_->OnPotentialHostExistsForNewUser();
       break;
     case mojom::EventTypeForDebugging::kExistingUserConnectedHostSwitched:
-      observer_->OnConnectedHostSwitchedForExistingUser();
+      delegate_->OnConnectedHostSwitchedForExistingUser();
       break;
     case mojom::EventTypeForDebugging::kExistingUserNewChromebookAdded:
-      observer_->OnNewChromebookAddedForExistingUser();
+      delegate_->OnNewChromebookAddedForExistingUser();
       break;
     default:
       NOTREACHED();

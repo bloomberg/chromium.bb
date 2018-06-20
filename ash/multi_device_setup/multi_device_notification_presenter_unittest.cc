@@ -80,16 +80,17 @@ class TestMessageCenter : public message_center::FakeMessageCenter {
 };
 
 // Fake for the MultiDeviceSetup service. This class only implements the
-// SetObserver() interface function since it's the only one that is used by
-// MultiDeviceNotificationPresenter.
+// SetAccountStatusChangeDelegate() interface function since it's the only one
+// that is used by MultiDeviceNotificationPresenter.
 class FakeMultiDeviceSetup
     : public chromeos::multidevice_setup::mojom::MultiDeviceSetup {
  public:
   FakeMultiDeviceSetup() : binding_(this) {}
   ~FakeMultiDeviceSetup() override = default;
 
-  chromeos::multidevice_setup::mojom::MultiDeviceSetupObserverPtr& observer() {
-    return observer_;
+  chromeos::multidevice_setup::mojom::AccountStatusChangeDelegatePtr&
+  delegate() {
+    return delegate_;
   }
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
@@ -98,10 +99,11 @@ class FakeMultiDeviceSetup
   }
 
   // mojom::MultiDeviceSetup:
-  void SetObserver(
-      chromeos::multidevice_setup::mojom::MultiDeviceSetupObserverPtr observer,
-      SetObserverCallback callback) override {
-    observer_ = std::move(observer);
+  void SetAccountStatusChangeDelegate(
+      chromeos::multidevice_setup::mojom::AccountStatusChangeDelegatePtr
+          delegate,
+      SetAccountStatusChangeDelegateCallback callback) override {
+    delegate_ = std::move(delegate);
     std::move(callback).Run();
   }
 
@@ -112,7 +114,7 @@ class FakeMultiDeviceSetup
   }
 
  private:
-  chromeos::multidevice_setup::mojom::MultiDeviceSetupObserverPtr observer_;
+  chromeos::multidevice_setup::mojom::AccountStatusChangeDelegatePtr delegate_;
   mojo::Binding<chromeos::multidevice_setup::mojom::MultiDeviceSetup> binding_;
 };
 
@@ -206,25 +208,25 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
         AccountId::FromUserEmail(kTestUserEmail));
 
     InvokePendingMojoCalls();
-    EXPECT_TRUE(fake_multidevice_setup_->observer().is_bound());
+    EXPECT_TRUE(fake_multidevice_setup_->delegate().is_bound());
   }
 
   void ShowNewUserNotification() {
-    EXPECT_TRUE(fake_multidevice_setup_->observer().is_bound());
-    fake_multidevice_setup_->observer()->OnPotentialHostExistsForNewUser();
+    EXPECT_TRUE(fake_multidevice_setup_->delegate().is_bound());
+    fake_multidevice_setup_->delegate()->OnPotentialHostExistsForNewUser();
     InvokePendingMojoCalls();
   }
 
   void ShowExistingUserHostSwitchedNotification() {
-    EXPECT_TRUE(fake_multidevice_setup_->observer().is_bound());
-    fake_multidevice_setup_->observer()
+    EXPECT_TRUE(fake_multidevice_setup_->delegate().is_bound());
+    fake_multidevice_setup_->delegate()
         ->OnConnectedHostSwitchedForExistingUser();
     InvokePendingMojoCalls();
   }
 
   void ShowExistingUserNewChromebookNotification() {
-    EXPECT_TRUE(fake_multidevice_setup_->observer().is_bound());
-    fake_multidevice_setup_->observer()->OnNewChromebookAddedForExistingUser();
+    EXPECT_TRUE(fake_multidevice_setup_->delegate().is_bound());
+    fake_multidevice_setup_->delegate()->OnNewChromebookAddedForExistingUser();
     InvokePendingMojoCalls();
   }
 
@@ -348,15 +350,15 @@ TEST_F(MultiDeviceNotificationPresenterTest, NotSignedIntoAccount) {
       session_manager::SessionState::LOGIN_SECONDARY};
 
   // For each of the states which is not ACTIVE, set the session state. None of
-  // these should trigger a SetObserver() call.
+  // these should trigger a SetAccountStatusChangeDelegate() call.
   for (const auto state : kNonActiveStates) {
     GetSessionControllerClient()->SetSessionState(state);
     InvokePendingMojoCalls();
-    EXPECT_FALSE(fake_multidevice_setup_->observer().is_bound());
+    EXPECT_FALSE(fake_multidevice_setup_->delegate().is_bound());
   }
 
   SignIntoAccount();
-  EXPECT_TRUE(fake_multidevice_setup_->observer().is_bound());
+  EXPECT_TRUE(fake_multidevice_setup_->delegate().is_bound());
 }
 
 TEST_F(MultiDeviceNotificationPresenterTest,
