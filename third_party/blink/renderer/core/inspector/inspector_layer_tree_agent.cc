@@ -522,14 +522,15 @@ Response InspectorLayerTreeAgent::replaySnapshot(const String& snapshot_id,
   Response response = GetSnapshotById(snapshot_id, snapshot);
   if (!response.isSuccess())
     return response;
-  std::unique_ptr<Vector<char>> base64_data = snapshot->Replay(
+  Vector<char> base64_data = snapshot->Replay(
       from_step.fromMaybe(0), to_step.fromMaybe(0), scale.fromMaybe(1.0));
-  if (!base64_data)
+  if (base64_data.IsEmpty())
     return Response::Error("Image encoding failed");
+  static constexpr char kUrlPrefix[] = "data:image/png;base64,";
   StringBuilder url;
-  url.Append("data:image/png;base64,");
-  url.ReserveCapacity(url.length() + base64_data->size());
-  url.Append(base64_data->begin(), base64_data->size());
+  url.ReserveCapacity(sizeof(kUrlPrefix) + base64_data.size());
+  url.Append(kUrlPrefix);
+  url.Append(base64_data.begin(), base64_data.size());
   *data_url = url.ToString();
   return Response::OK();
 }

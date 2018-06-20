@@ -88,9 +88,9 @@ bool PictureSnapshot::IsEmpty() const {
   return picture_->cullRect().isEmpty();
 }
 
-std::unique_ptr<Vector<char>> PictureSnapshot::Replay(unsigned from_step,
-                                                      unsigned to_step,
-                                                      double scale) const {
+Vector<char> PictureSnapshot::Replay(unsigned from_step,
+                                     unsigned to_step,
+                                     double scale) const {
   const SkIRect bounds = picture_->cullRect().roundOut();
   int width = ceil(scale * bounds.width());
   int height = ceil(scale * bounds.height());
@@ -113,7 +113,7 @@ std::unique_ptr<Vector<char>> PictureSnapshot::Replay(unsigned from_step,
     canvas.ResetStepCount();
     picture_->playback(&canvas, &canvas);
   }
-  std::unique_ptr<Vector<char>> base64_data = std::make_unique<Vector<char>>();
+  Vector<char> base64_data;
   Vector<char> encoded_image;
 
   SkPixmap src;
@@ -127,10 +127,10 @@ std::unique_ptr<Vector<char>> PictureSnapshot::Replay(unsigned from_step,
   if (!ImageEncoder::Encode(
           reinterpret_cast<Vector<unsigned char>*>(&encoded_image), src,
           options)) {
-    return nullptr;
+    return Vector<char>();
   }
 
-  Base64Encode(encoded_image, *base64_data);
+  Base64Encode(encoded_image, base64_data);
   return base64_data;
 }
 
