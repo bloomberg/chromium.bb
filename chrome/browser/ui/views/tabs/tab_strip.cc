@@ -606,21 +606,23 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
   if (stacked_layout_)
     return true;
 
-  // If the tab is currently clipped, it shouldn't be visible.  Note that we
-  // allow dragged tabs to draw over any trailing "New Tab button" region as
-  // well, because either the New Tab button will be hidden, or the dragged tabs
-  // will be animating back to their normal positions and we don't want to hide
-  // them in the New Tab button region in case they re-appear after leaving it.
-  // (This prevents flickeriness.)  We never draw non-dragged tabs in New Tab
-  // button area, even when the button is invisible, so that they don't appear
-  // to "pop in" when the button disappears.
-  // TODO: Probably doesn't work for RTL
+  // If the tab is currently clipped by the trailing edge of the strip, it
+  // shouldn't be visible.
   int right_edge = tab->bounds().right();
-  const bool trailing_new_tab_button =
-      (controller_->GetNewTabButtonPosition() == TRAILING) ||
-      (MayHideNewTabButtonWhileDragging() && !tab->dragging());
-  const int tabstrip_right =
-      trailing_new_tab_button ? GetTabAreaWidth() : width();
+  int tabstrip_right = width() - GetFrameGrabWidth();
+  // When there's a trailing new tab button that hides during tab dragging, the
+  // calculation above allows dragged tabs to draw over that region as well,
+  // since if the button is hidden there's no reason not to, and if it's showing
+  // the dragged tabs are animating back to their normal positions, and we don't
+  // want them to vanish in this region and then pop back in after leaving it.
+  // But for non-dragged tabs or when the new tab button never hides, disallow
+  // drawing over the new tab button area.
+  // TODO: Probably doesn't work for RTL
+  if ((controller_->GetNewTabButtonPosition() != LEADING) &&
+      (!tab->dragging() || !MayHideNewTabButtonWhileDragging())) {
+    tabstrip_right -= GetNewTabButtonWidth(IsIncognito()) +
+                      TabToFollowingNewTabButtonSpacing();
+  }
   if (right_edge > tabstrip_right)
     return false;
 
@@ -1305,8 +1307,9 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
     needed_tab_width = std::min(std::max(needed_tab_width, min_selected_width),
                                 largest_min_tab_width);
   }
-  return gfx::Size(needed_tab_width + GetFrameGrabWidth() +
-                       GetNewTabButtonWidth(IsIncognito()),
+  return gfx::Size(needed_tab_width + TabToFollowingNewTabButtonSpacing() +
+                       GetNewTabButtonWidth(IsIncognito()) +
+                       GetFrameGrabWidth(),
                    Tab::GetMinimumInactiveSize().height());
 }
 
@@ -1494,28 +1497,16 @@ bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
   return in_tab_close_;
 }
 
-int TabStrip::GetNewTabButtonSpacing() const {
-  constexpr int kSpacing[] = {-5, -6, 6, 8, 8};
-  const auto mode = MD::GetMode();
-  int spacing = kSpacing[mode];
-
-  // Not sure if we can reach here with no tabs (e.g. during startup), but not
-  // crashing in that case is easy.
-  if (MD::IsRefreshUi() && tab_count()) {
-    const int adjacent_tab_index =
-        (controller_->GetNewTabButtonPosition() == LEADING) ? 0
-                                                            : tab_count() - 1;
-    spacing -= tab_at(adjacent_tab_index)->GetCornerRadius();
-  }
-
-  return spacing;
+int TabStrip::GetNewTabButtonWidth(bool is_incognito) const {
+  return GetLayoutSize(NEW_TAB_BUTTON, is_incognito).width();
 }
 
-int TabStrip::GetNewTabButtonWidth(bool is_incognito) const {
-  int width = GetLayoutSize(NEW_TAB_BUTTON, is_incognito).width();
-  if (controller_->GetNewTabButtonPosition() != TRAILING)
-    width += GetNewTabButtonSpacing();
-  return width;
+int TabStrip::TabToFollowingNewTabButtonSpacing() const {
+  if (controller_->GetNewTabButtonPosition() != AFTER_TABS)
+    return 0;
+
+  constexpr int kNewTabButtonSpacing[] = {-5, -6, 6, 0, 0};
+  return kNewTabButtonSpacing[MD::GetMode()];
 }
 
 bool TabStrip::MayHideNewTabButtonWhileDragging() const {
@@ -1675,14 +1666,12 @@ int TabStrip::TabStartX() const {
              : 0;
 }
 
-int TabStrip::NewTabButtonX() const {
+int TabStrip::NewTabButtonIdealX() const {
   const auto position = controller_->GetNewTabButtonPosition();
   if (position == LEADING)
     return 0;
 
-  // This is not GetTabAreaWidth() because we don't want to subtract the
-  // separator region between the tabs and the new tab button.
-  const int tab_area_width = width() - new_tab_button_bounds_.width();
+  const int tab_area_width = width() - GetNewTabButtonWidth(IsIncognito());
   if (position == TRAILING)
     return tab_area_width;
 
@@ -1691,7 +1680,7 @@ int TabStrip::NewTabButtonX() const {
   // tabstrip. Constrain the x-coordinate of the new tab button so that it is
   // always visible.
   return std::min(tab_area_width - GetFrameGrabWidth(),
-                  trailing_x + GetNewTabButtonSpacing());
+                  trailing_x + TabToFollowingNewTabButtonSpacing());
 }
 
 int TabStrip::GetSizeNeededForTabs(const Tabs& tabs) {
@@ -2159,7 +2148,7 @@ void TabStrip::GenerateIdealBounds() {
       tabs_.set_ideal_bounds(i, tabs_bounds[i]);
   }
 
-  new_tab_button_bounds_.set_origin(gfx::Point(NewTabButtonX(), 0));
+  new_tab_button_bounds_.set_origin(gfx::Point(NewTabButtonIdealX(), 0));
 
   if (GetTabsMaxX() != old_max_x) {
     for (TabStripObserver& observer : observers_)
@@ -2186,7 +2175,8 @@ int TabStrip::GenerateIdealBoundsForPinnedTabs(int* first_non_pinned_index) {
 }
 
 int TabStrip::GetTabAreaWidth() const {
-  return width() - GetFrameGrabWidth() - GetNewTabButtonWidth(IsIncognito());
+  return width() - GetFrameGrabWidth() - GetNewTabButtonWidth(IsIncognito()) -
+         TabToFollowingNewTabButtonSpacing();
 }
 
 void TabStrip::StartResizeLayoutAnimation() {

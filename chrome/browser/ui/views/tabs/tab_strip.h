@@ -347,11 +347,13 @@ class TabStrip : public views::View,
   // Returns whether the close button should be highlighted after a remove.
   bool ShouldHighlightCloseButtonAfterRemove();
 
-  // Returns the spacing between the new tab button and the adjacent tab.
-  int GetNewTabButtonSpacing() const;
-
   // Returns the width needed for the new tab button (and padding).
   int GetNewTabButtonWidth(bool is_incognito) const;
+
+  // If the new tab button position is AFTER_TABS, returns the spacing to use
+  // between the trailing edge of the tabs and the leading edge of the new tab
+  // button.  For other button positions, returns 0.
+  int TabToFollowingNewTabButtonSpacing() const;
 
   // Returns whether dragging tabs should ever result in the new tab button
   // being hidden.
@@ -399,7 +401,7 @@ class TabStrip : public views::View,
 
   // Returns the X coordinate the new tab button should be placed at.  Requires
   // |tabs_| to have correct ideal bounds.
-  int NewTabButtonX() const;
+  int NewTabButtonIdealX() const;
 
   // Returns the size needed for the specified tabs. This is invoked during drag
   // and drop to calculate offsets and positioning.
