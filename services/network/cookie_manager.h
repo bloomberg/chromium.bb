@@ -26,6 +26,7 @@ class GURL;
 
 namespace network {
 class SessionCleanupCookieStore;
+class SessionCleanupChannelIDStore;
 
 // Wrap a cookie store in an implementation of the mojo cookie interface.
 
@@ -37,9 +38,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
  public:
   // Construct a CookieService that can serve mojo requests for the underlying
   // cookie store.  |*cookie_store| must outlive this object.
-  CookieManager(net::CookieStore* cookie_store,
-                scoped_refptr<network::SessionCleanupCookieStore>
-                    session_cleanup_cookie_store);
+  CookieManager(
+      net::CookieStore* cookie_store,
+      scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store,
+      scoped_refptr<SessionCleanupChannelIDStore>
+          session_cleanup_channel_id_store);
 
   ~CookieManager() override;
 
@@ -106,8 +109,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
   void RemoveChangeListener(ListenerRegistration* registration);
 
   net::CookieStore* const cookie_store_;
-  scoped_refptr<network::SessionCleanupCookieStore>
-      session_cleanup_cookie_store_;
+  scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store_;
+  scoped_refptr<SessionCleanupChannelIDStore> session_cleanup_channel_id_store_;
   mojo::BindingSet<mojom::CookieManager> bindings_;
   std::vector<std::unique_ptr<ListenerRegistration>> listener_registrations_;
   CookieSettings cookie_settings_;

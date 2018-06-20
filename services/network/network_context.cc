@@ -71,6 +71,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/resource_scheduler_client.h"
 #include "services/network/restricted_cookie_manager.h"
+#include "services/network/session_cleanup_channel_id_store.h"
 #include "services/network/session_cleanup_cookie_store.h"
 #include "services/network/ssl_config_service_mojo.h"
 #include "services/network/throttling/network_conditions.h"
@@ -277,8 +278,9 @@ NetworkContext::NetworkContext(
       on_connection_close_callback_(std::move(on_connection_close_callback)),
       binding_(this, std::move(request)) {
   SessionCleanupCookieStore* session_cleanup_cookie_store = nullptr;
-  url_request_context_owner_ =
-      MakeURLRequestContext(&session_cleanup_cookie_store);
+  SessionCleanupChannelIDStore* session_cleanup_channel_id_store = nullptr;
+  url_request_context_owner_ = MakeURLRequestContext(
+      &session_cleanup_cookie_store, &session_cleanup_channel_id_store);
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
   network_service_->RegisterNetworkContext(this);
@@ -291,7 +293,8 @@ NetworkContext::NetworkContext(
       &NetworkContext::OnConnectionError, base::Unretained(this)));
 
   cookie_manager_ = std::make_unique<CookieManager>(
-      url_request_context_->cookie_store(), session_cleanup_cookie_store);
+      url_request_context_->cookie_store(), session_cleanup_cookie_store,
+      session_cleanup_channel_id_store);
   socket_factory_ = std::make_unique<SocketFactory>(network_service_->net_log(),
                                                     url_request_context_);
   resource_scheduler_ =
@@ -314,7 +317,7 @@ NetworkContext::NetworkContext(
 
   network_service_->RegisterNetworkContext(this);
   cookie_manager_ = std::make_unique<CookieManager>(
-      url_request_context_->cookie_store(), nullptr);
+      url_request_context_->cookie_store(), nullptr, nullptr);
   socket_factory_ = std::make_unique<SocketFactory>(network_service_->net_log(),
                                                     url_request_context_);
   resource_scheduler_ =
@@ -329,6 +332,7 @@ NetworkContext::NetworkContext(NetworkService* network_service,
       binding_(this, std::move(request)),
       cookie_manager_(
           std::make_unique<CookieManager>(url_request_context->cookie_store(),
+                                          nullptr,
                                           nullptr)),
       socket_factory_(std::make_unique<SocketFactory>(
           network_service_ ? network_service_->net_log() : nullptr,
@@ -1009,7 +1013,8 @@ void NetworkContext::OnConnectionError() {
 }
 
 URLRequestContextOwner NetworkContext::MakeURLRequestContext(
-    SessionCleanupCookieStore** session_cleanup_cookie_store) {
+    SessionCleanupCookieStore** session_cleanup_cookie_store,
+    SessionCleanupChannelIDStore** session_cleanup_channel_id_store) {
   URLRequestContextBuilderMojo builder;
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -1032,9 +1037,9 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
 
     std::unique_ptr<net::ChannelIDService> channel_id_service;
     if (params_->channel_id_path) {
-      scoped_refptr<net::SQLiteChannelIDStore> channel_id_db =
-          new net::SQLiteChannelIDStore(params_->channel_id_path.value(),
-                                        background_task_runner);
+      auto channel_id_db = base::MakeRefCounted<SessionCleanupChannelIDStore>(
+          params_->channel_id_path.value(), background_task_runner);
+      *session_cleanup_channel_id_store = channel_id_db.get();
       channel_id_service = std::make_unique<net::ChannelIDService>(
           new net::DefaultChannelIDStore(channel_id_db.get()));
     }

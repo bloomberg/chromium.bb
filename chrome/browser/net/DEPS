@@ -2,6 +2,7 @@ include_rules = [
   "+components/data_use_measurement",
   # For nss_context_chromeos_browsertest.cc.
   "+components/user_manager",
+  "+services/network/session_cleanup_channel_id_store.h",
 ]
 
 specific_include_rules = {

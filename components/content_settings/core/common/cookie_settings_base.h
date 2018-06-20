@@ -37,6 +37,13 @@ class CookieSettingsBase {
   bool IsCookieAccessAllowed(const GURL& url,
                              const GURL& first_party_url) const;
 
+  // Returns true if the cookie set by a page identified by |url| should be
+  // session only. Querying this only makes sense if |IsCookieAccessAllowed|
+  // has returned true.
+  //
+  // This may be called on any thread.
+  bool IsCookieSessionOnly(const GURL& url) const;
+
   // A helper for applying third party cookie blocking rules.
   virtual void GetCookieSetting(const GURL& url,
                                 const GURL& first_party_url,
