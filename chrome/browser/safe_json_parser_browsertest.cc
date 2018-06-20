@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_service_manager_listener.h"
@@ -24,6 +26,8 @@ namespace {
 
 using data_decoder::SafeJsonParser;
 
+constexpr char kTestJson[] = "[\"awesome\", \"possum\"]";
+
 std::string MaybeToJson(const base::Value* value) {
   if (!value)
     return "(null)";
@@ -35,32 +39,22 @@ std::string MaybeToJson(const base::Value* value) {
   return json;
 }
 
-class ParseCallback {
- public:
-  explicit ParseCallback(base::Closure callback) : callback_(callback) {}
-
-  void OnSuccess(std::unique_ptr<base::Value> value) {
-    success_ = true;
-    callback_.Run();
-  }
-
-  void OnError(const std::string& error) {
-    success_ = false;
-    callback_.Run();
-  }
-
-  bool success() const { return success_; }
-
- private:
-  bool success_ = false;
-  base::Closure callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ParseCallback);
-};
-
 class SafeJsonParserTest : public InProcessBrowserTest {
+ public:
+  SafeJsonParserTest() = default;
+
  protected:
-  void TestParse(const std::string& json) {
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    listener_.Init();
+  }
+
+  // Tests SafeJsonParser::Parse/ParseBatch. Parses |json| using SafeJsonParser
+  // and verifies that the correct callbacks are called. If |batch_id| is not
+  // empty, uses SafeJsonParser::ParseBatch to batch multiple parse requests.
+  void Parse(const std::string& json,
+             const base::Optional<std::string>& batch_id = base::nullopt) {
     SCOPED_TRACE(json);
     DCHECK(!message_loop_runner_);
     message_loop_runner_ = new content::MessageLoopRunner;
@@ -83,12 +77,23 @@ class SafeJsonParserTest : public InProcessBrowserTest {
       error_callback = base::Bind(&SafeJsonParserTest::ExpectError,
                                   base::Unretained(this), error);
     }
-    SafeJsonParser::Parse(
-        content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-        json, success_callback, error_callback);
+
+    if (batch_id) {
+      SafeJsonParser::ParseBatch(
+          content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+          json, success_callback, error_callback, *batch_id);
+    } else {
+      SafeJsonParser::Parse(
+          content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+          json, success_callback, error_callback);
+    }
 
     message_loop_runner_->Run();
     message_loop_runner_ = nullptr;
+  }
+
+  uint32_t GetServiceStartCount(const std::string& service_name) const {
+    return listener_.GetServiceStartCount(service_name);
   }
 
  private:
@@ -117,81 +122,49 @@ class SafeJsonParserTest : public InProcessBrowserTest {
   }
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-};
-
-class SafeJsonParserImplTest : public InProcessBrowserTest {
- public:
-  SafeJsonParserImplTest() = default;
-
- protected:
-  // InProcessBrowserTest implementation:
-  void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-
-    // Initialize the TestServiceManagerListener so it starts listening for
-    // service activity.
-    listener_.Init();
-
-    // The data_decoder service will stop if no connection is bound to it after
-    // 5 seconds. We bind a connection to it for the duration of the test so it
-    // is guaranteed the service is always running.
-    connector()->BindInterface(data_decoder::mojom::kServiceName,
-                               &json_parser_ptr_);
-    listener_.WaitUntilServiceStarted(data_decoder::mojom::kServiceName);
-    EXPECT_EQ(
-        1U, listener_.GetServiceStartCount(data_decoder::mojom::kServiceName));
-  }
-
-  service_manager::Connector* connector() const {
-    return content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  }
-
-  uint32_t GetServiceStartCount(const std::string& service_name) const {
-    return listener_.GetServiceStartCount(service_name);
-  }
-
- private:
-  data_decoder::mojom::JsonParserPtr json_parser_ptr_;
   TestServiceManagerListener listener_;
 
-  DISALLOW_COPY_AND_ASSIGN(SafeJsonParserImplTest);
+  DISALLOW_COPY_AND_ASSIGN(SafeJsonParserTest);
 };
 
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(SafeJsonParserTest, Parse) {
-  TestParse("{}");
-  TestParse("choke");
-  TestParse("{\"awesome\": true}");
-  TestParse("\"laser\"");
-  TestParse("false");
-  TestParse("null");
-  TestParse("3.14");
-  TestParse("[");
-  TestParse("\"");
-  TestParse(std::string());
-  TestParse("☃");
-  TestParse("\"☃\"");
-  TestParse("\"\\ufdd0\"");
-  TestParse("\"\\ufffe\"");
-  TestParse("\"\\ud83f\\udffe\"");
+  Parse("{}");
+  Parse("choke");
+  Parse("{\"awesome\": true}");
+  Parse("\"laser\"");
+  Parse("false");
+  Parse("null");
+  Parse("3.14");
+  Parse("[");
+  Parse("\"");
+  Parse(std::string());
+  Parse("☃");
+  Parse("\"☃\"");
+  Parse("\"\\ufdd0\"");
+  Parse("\"\\ufffe\"");
+  Parse("\"\\ud83f\\udffe\"");
 }
 
 // Tests that when calling SafeJsonParser::Parse() a new service is started
 // every time.
-IN_PROC_BROWSER_TEST_F(SafeJsonParserImplTest, Isolation) {
+IN_PROC_BROWSER_TEST_F(SafeJsonParserTest, Isolation) {
   for (int i = 0; i < 5; i++) {
-    base::RunLoop run_loop;
-    ParseCallback parse_callback(run_loop.QuitClosure());
-    SafeJsonParser::Parse(
-        connector(), "[\"awesome\", \"possum\"]",
-        base::Bind(&ParseCallback::OnSuccess,
-                   base::Unretained(&parse_callback)),
-        base::Bind(&ParseCallback::OnError, base::Unretained(&parse_callback)));
-    run_loop.Run();
-    EXPECT_TRUE(parse_callback.success());
-    // 2 + i below because the data_decoder is already running and the index
-    // starts at 0.
-    EXPECT_EQ(2U + i, GetServiceStartCount(data_decoder::mojom::kServiceName));
+    SCOPED_TRACE(base::StringPrintf("Testing iteration %d", i));
+    Parse(kTestJson);
+    EXPECT_EQ(1U + i, GetServiceStartCount(data_decoder::mojom::kServiceName));
   }
+}
+
+// Tests that using a batch ID allows service reuse.
+IN_PROC_BROWSER_TEST_F(SafeJsonParserTest, IsolationWithGroups) {
+  constexpr char kBatchId1[] = "batch1";
+  constexpr char kBatchId2[] = "batch2";
+  for (int i = 0; i < 5; i++) {
+    SCOPED_TRACE(base::StringPrintf("Testing iteration %d", i));
+    Parse(kTestJson, kBatchId1);
+    Parse(kTestJson, kBatchId2);
+  }
+  EXPECT_EQ(2U, GetServiceStartCount(data_decoder::mojom::kServiceName));
 }

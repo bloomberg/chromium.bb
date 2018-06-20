@@ -16,19 +16,20 @@
 
 namespace data_decoder {
 
-SafeJsonParserImpl::SafeJsonParserImpl(service_manager::Connector* connector,
-                                       const std::string& unsafe_json,
-                                       const SuccessCallback& success_callback,
-                                       const ErrorCallback& error_callback)
+SafeJsonParserImpl::SafeJsonParserImpl(
+    service_manager::Connector* connector,
+    const std::string& unsafe_json,
+    const SuccessCallback& success_callback,
+    const ErrorCallback& error_callback,
+    const base::Optional<std::string>& batch_id)
     : unsafe_json_(unsafe_json),
       success_callback_(success_callback),
       error_callback_(error_callback) {
-  // Use a random instance ID to guarantee the connection is to a new service
-  // (running in its own process).
-  base::UnguessableToken token = base::UnguessableToken::Create();
-  service_manager::Identity identity(mojom::kServiceName,
-                                     service_manager::mojom::kInheritUserID,
-                                     token.ToString());
+  // If no batch ID has been provided, use a random instance ID to guarantee the
+  // connection is to a new service running in its own process.
+  service_manager::Identity identity(
+      mojom::kServiceName, service_manager::mojom::kInheritUserID,
+      batch_id.value_or(base::UnguessableToken::Create().ToString()));
   connector->BindInterface(identity, &json_parser_ptr_);
 }
 
