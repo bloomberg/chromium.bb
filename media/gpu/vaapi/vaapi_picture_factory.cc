@@ -45,7 +45,9 @@ std::unique_ptr<VaapiPicture> VaapiPictureFactory::Create(
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
     const PictureBuffer& picture_buffer) {
-  DCHECK_EQ(picture_buffer.texture_target(), GetGLTextureTarget());
+  // ARC++ sends |picture_buffer| with no texture_target().
+  DCHECK(picture_buffer.texture_target() == GetGLTextureTarget() ||
+         picture_buffer.texture_target() == 0u);
 
   // |client_texture_ids| and |service_texture_ids| are empty from ARC++.
   const uint32_t client_texture_id =
