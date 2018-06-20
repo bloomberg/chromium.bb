@@ -205,11 +205,14 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetFocused(bool focused) {
     }
 
     case LifecycleUnitState::PENDING_DISCARD: {
-      // When the state is PENDING_DISCARD, a freeze request is being processed
-      // by the renderer. Switch the state to PENDING_FREEZE to prevent a
-      // discard when the browser is notified that the freeze request has been
-      // processed. There should be a renderer-initiated to ACTIVE soon after
-      // the freeze request is processed.
+      // PENDING_DISCARD indicates that a freeze request is being processed by
+      // the renderer and that the page should be discarded as soon as it is
+      // frozen. On focus, we transition the state to PENDING_FREEZE and we stop
+      // the freeze timeout timer to indicate that a freeze request is being
+      // processed, but that the page should not be discarded once frozen. After
+      // the renderer has processed the freeze request, it will realize that the
+      // page is focused, unfreeze it and initiate a transition to ACTIVE.
+      freeze_timeout_timer_->Stop();
       SetState(LifecycleUnitState::PENDING_FREEZE,
                StateChangeReason::BROWSER_INITIATED);
       break;
@@ -787,10 +790,10 @@ void TabLifecycleUnitSource::TabLifecycleUnit::
 void TabLifecycleUnitSource::TabLifecycleUnit::OnLifecycleUnitStateChanged(
     LifecycleUnitState last_state,
     LifecycleUnitStateChangeReason reason) {
-  if (!IsValidStateChange(last_state, GetState(), reason)) {
-    IsValidStateChange(last_state, GetState(), reason);
-    NOTREACHED();
-  }
+  DCHECK(IsValidStateChange(last_state, GetState(), reason))
+      << "Cannot transition TabLifecycleUnit state from " << last_state
+      << " to " << GetState() << " with reason " << reason;
+
   // Invoke OnDiscardedStateChange() if necessary.
   const bool was_discarded = IsDiscardedOrPendingDiscard(last_state);
   const bool is_discarded = IsDiscardedOrPendingDiscard(GetState());
