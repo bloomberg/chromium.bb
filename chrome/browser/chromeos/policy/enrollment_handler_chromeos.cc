@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -121,6 +122,24 @@ base::Optional<std::string> ReadFileToOptionalString(
   base::Optional<std::string> result;
   if (base::ReadFileToString(file_path, &content))
     result = std::move(content);
+  return result;
+}
+
+// Returns binary config which is encrypted by a password that the joining user
+// has to enter.
+std::string GetActiveDirectoryDomainJoinConfig(
+    const base::DictionaryValue* config) {
+  if (!config)
+    return std::string();
+  const base::Value* base64_value = config->FindKeyOfType(
+      "active_directory_domain_join_config", base::Value::Type::STRING);
+  if (!base64_value)
+    return std::string();
+  std::string result;
+  if (!base::Base64Decode(base64_value->GetString(), &result)) {
+    LOG(ERROR) << "Active Directory config is not base64";
+    return std::string();
+  }
   return result;
 }
 
@@ -622,6 +641,7 @@ void EnrollmentHandlerChromeOS::StartJoinAdDomain() {
   DCHECK(ad_join_delegate_);
   ad_join_delegate_->JoinDomain(
       client_->dm_token(),
+      GetActiveDirectoryDomainJoinConfig(client_->configuration_seed()),
       base::BindOnce(&EnrollmentHandlerChromeOS::OnAdDomainJoined,
                      weak_ptr_factory_.GetWeakPtr()));
 }

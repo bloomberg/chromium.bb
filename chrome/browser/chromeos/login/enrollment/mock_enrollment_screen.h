@@ -33,8 +33,9 @@ class MockEnrollmentScreenView : public EnrollmentScreenView {
   MOCK_METHOD0(ShowSigninScreen, void());
   MOCK_METHOD1(ShowLicenseTypeSelectionScreen,
                void(const base::DictionaryValue&));
-  MOCK_METHOD3(ShowActiveDirectoryScreen,
-               void(const std::string& machine_name,
+  MOCK_METHOD4(ShowActiveDirectoryScreen,
+               void(const std::string& domain_join_config,
+                    const std::string& machine_name,
                     const std::string& username,
                     authpolicy::ErrorType error));
   MOCK_METHOD2(ShowAttributePromptScreen,

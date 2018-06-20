@@ -69,7 +69,8 @@ class EnrollmentScreenView {
       const base::DictionaryValue& license_types) = 0;
 
   // Shows the Active Directory domain joining screen.
-  virtual void ShowActiveDirectoryScreen(const std::string& machine_name,
+  virtual void ShowActiveDirectoryScreen(const std::string& domain_join_config,
+                                         const std::string& machine_name,
                                          const std::string& username,
                                          authpolicy::ErrorType error) = 0;
 

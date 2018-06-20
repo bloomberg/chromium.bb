@@ -4156,20 +4156,44 @@
     Device Location
   </message>
   <!-- Administrator facing strings for Active Directory screens. -->
-  <message name="IDS_AD_MACHINE_NAME_INPUT_LABEL" desc="Admin-facing. Label for device name input field on the AD domain join screen. User should tell us the name of his device.">
+  <message name="IDS_AD_DEVICE_NAME_INPUT_LABEL" desc="Admin-facing. Label for device name input field on the Active Directory domain join screen. User should tell us the name of their device.">
     Chromebook device name
   </message>
-  <message name="IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE" desc="Admin-facing. Welcome message on the AD domain join screen.">
+  <message name="IDS_AD_DEVICE_NAME_REGEX_INPUT_LABEL" desc="Admin-facing. Label for device name input field on the Active Directory domain join screen. User should tell us the name of their device.">
+    Chromebook device name (<ph name="REGEX">$1<ex>^DEVICE_\d+$</ex></ph>)
+  </message>
+  <message name="IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE" desc="Admin-facing. Welcome message on the Active Directory domain join screen.">
     Join device to domain
   </message>
   <message name="IDS_AD_MORE_OPTIONS_BUTTON" desc="Admin-facing. Text on the 'More options' button on the Active Directory domain join screen.">
     More options
+  </message>
+  <message name="IDS_AD_UNLOCK_CONFIG" desc="Admin-facing. Text on the button which opens 'Enter unlocking password' dialog on the Active Directory domain join screen.">
+    Unlock configuration
+  </message>
+  <message name="IDS_AD_UNLOCK_CONFIG_UNLOCK_BUTTON" desc="Admin-facing. Text on the button to use entered password to unlock domain join configuration.">
+    Unlock
+  </message>
+  <message name="IDS_AD_UNLOCK_CONFIG_PASSWORD" desc="Admin-facing. Label for unlocking password input field on the Active Directory domain join screen.">
+    Unlocking password
+  </message>
+  <message name="IDS_AD_UNLOCK_INCORRECT_PASSWORD" desc="Admin-facing. Error that is shown when incorrect unlocking password was entered.">
+    Incorrect password
+  </message>
+  <message name="IDS_AD_UNLOCK_PASSWORD_SKIP" desc="Admin-facing. Text on the button which skips entering unlocking password step.">
+    Skip
   </message>
   <message name="IDS_AD_ORG_UNIT_HINT" desc="Admin-facing. Hint for the Active Directory Organizational units input on the 'More options' dialog.">
     Device OU (e.g. OU=Chromebooks,DC=example,DC=com)
   </message>
   <message name="IDS_AD_ENCRYPTION_SELECTION_SELECT" desc="Admin-facing. Title for kerberos encryption types selection.">
     Select encryption types
+  </message>
+  <message name="IDS_AD_CONFIG_SELECTION_SELECT" desc="Admin-facing. Title for configuration selection.">
+    Select configuration
+  </message>
+  <message name="IDS_AD_CONFIG_SELECTION_CUSTOM" desc="Admin-facing. Title for a custom option of domain join config.">
+    Custom
   </message>
   <message name="IDS_AD_ENCRYPTION_STRONG_TITLE" desc="Admin-facing. Title for 'Strong' kerberos types option.">
     Strong
@@ -4192,13 +4216,16 @@
   <message name="IDS_AD_DOMAIN_JOIN_UNKNOWN_ERROR" desc="Admin-facing. Default error text on the Active Directory join screen">
     Oops!  Something went wrong when trying to join the domain. Please try again.
   </message>
-  <message name="IDS_AD_MACHINENAME_INVALID" desc="Admin-facing alert message. Admin entered a bad device name.">
+  <message name="IDS_AD_DEVICE_NAME_INVALID" desc="Admin-facing alert message. Admin entered a bad device name.">
     The device name is invalid. Enter a valid device name to try again.
   </message>
-  <message name="IDS_AD_MACHINENAME_TOO_LONG" desc="Admin-facing alert message. Admin entered a device name that was too long.">
+  <message name="IDS_AD_DEVICE_NAME_TOO_LONG" desc="Admin-facing alert message. Admin entered a device name that was too long.">
     The device name is too long. Enter a shorter name to try again.
   </message>
-  <message name="IDS_AD_USER_DENIED_TO_JOIN_MACHINE" desc="Admin-facing alert message. Admin doesn’t have privileges to add devices to the domain. 'Devices' refers to Chromebook computers. 'Domain' is the Windows domain that accounts are registered to.">
+  <message name="IDS_AD_DEVICE_NAME_DOESNT_MATCH_REGEX" desc="Admin-facing. Alert message about device name does not match regular expression">
+    The device name must match regular expression <ph name="REGEX">$1<ex>^DEVICE_\d+$</ex></ph>.
+  </message>
+  <message name="IDS_AD_USER_DENIED_TO_JOIN_DEVICE" desc="Admin-facing alert message. Admin doesn’t have privileges to add devices to the domain. 'Devices' refers to Chromebook computers. 'Domain' is the Windows domain that accounts are registered to.">
     Can't join the domain. Check your account to see if you have sufficient privileges to add devices.
   </message>
   <message name="IDS_AD_USER_HIT_JOIN_QUOTA" desc="Admin-facing alert message. Administrator has reached the limit of devices that can be added.">
@@ -4220,16 +4247,16 @@
     Chrome <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> integration is only supported on x86_64 platforms. Chromebooks built on top of an ARM or x86 platform do not support this functionality.
   </message>
   <!-- User facing strings for Active Directory screens. -->
-  <message name="IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE" desc="Welcome message on the AD Authentication user screen. Include the domain (realm) the device joined to.">
+  <message name="IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE" desc="Welcome message on the Active Directory Authentication user screen. Include the domain (realm) the device joined to.">
     Sign in to <ph name="REALM">$1<ex>example.com</ex></ph>
   </message>
-  <message name="IDS_AD_ENROLLMENT_LOGIN_USER" desc="Label for userPrincipalName input field on the AD domain join user screen. Looks like user@example.com where example.com is the realm.">
+  <message name="IDS_AD_ENROLLMENT_LOGIN_USER" desc="Label for userPrincipalName input field on the Active Directory domain join user screen. Looks like user@example.com where example.com is the realm.">
     Username (e.g. user@example.com)
   </message>
-  <message name="IDS_AD_AUTH_LOGIN_USER" desc="Label for userPrincipalName input field on the AD authentication user screen.">
+  <message name="IDS_AD_AUTH_LOGIN_USER" desc="Label for userPrincipalName input field on the Active Directory authentication user screen.">
     Username
   </message>
-  <message name="IDS_AD_LOGIN_PASSWORD" desc="Label for Password input field on both AD domain join and AD Authorization user screens.">
+  <message name="IDS_AD_LOGIN_PASSWORD" desc="Label for Password input field on both Active Directory domain join and Active Directory Authorization user screens.">
     Password
   </message>
   <message name="IDS_AD_PASSWORD_CHANGE_OLD_PASSWORD_HINT" desc="Old password field hint on the Active Directory password change dialog.">
@@ -4273,6 +4300,9 @@
   </message>
   <message name="IDS_AD_AUTH_NETWORK_ERROR" desc="Error message to show when there is a problem contacting the logon server when authenticating for Active Directory enrollment.">
     Oops!  There was a problem contacting the logon server. Please check your network connection and the domain name, then try again.
+  </message>
+  <message name="IDS_AD_JOIN_CONFIG_NOT_PARSED" desc="Alert message to say unlocked configuration could not be parsed.">
+    Oops!  Can't parse domain join configuration. Please contact your administrator.
   </message>
   <message name="IDS_AD_AUTH_UNKNOWN_ERROR" desc="Error message to show that occurs something a user could not fix.">
     Oops!  An unknown error occurred. Please try again later or contact your administrator if the issue persists.

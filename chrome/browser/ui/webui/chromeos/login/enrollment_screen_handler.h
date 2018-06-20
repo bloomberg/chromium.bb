@@ -29,7 +29,8 @@ enum class ActiveDirectoryErrorState {
   MACHINE_NAME_INVALID = 1,
   MACHINE_NAME_TOO_LONG = 2,
   BAD_USERNAME = 3,
-  BAD_PASSWORD = 4,
+  BAD_AUTH_PASSWORD = 4,
+  BAD_UNLOCK_PASSWORD = 5,
 };
 
 // WebUIMessageHandler implementation which handles events occurring on the
@@ -55,7 +56,8 @@ class EnrollmentScreenHandler
   void ShowSigninScreen() override;
   void ShowLicenseTypeSelectionScreen(
       const base::DictionaryValue& license_types) override;
-  void ShowActiveDirectoryScreen(const std::string& machine_name,
+  void ShowActiveDirectoryScreen(const std::string& domain_join_config,
+                                 const std::string& machine_name,
                                  const std::string& username,
                                  authpolicy::ErrorType error) override;
   void ShowAttributePromptScreen(const std::string& asset_id,
@@ -85,9 +87,10 @@ class EnrollmentScreenHandler
                            const std::string& auth_code);
   void HandleAdCompleteLogin(const std::string& machine_name,
                              const std::string& distinguished_name,
-                             int encryption_types,
+                             const std::string& encryption_types,
                              const std::string& user_name,
                              const std::string& password);
+  void HandleAdUnlockConfiguration(const std::string& password);
   void HandleRetry();
   void HandleFrameLoadingCompleted();
   void HandleDeviceAttributesProvided(const std::string& asset_id,
@@ -130,6 +133,9 @@ class EnrollmentScreenHandler
   // enrollment sign-in page.
   bool IsEnrollmentScreenHiddenByError() const;
 
+  // Called after configuration seed was unlocked.
+  void OnAdConfigurationUnlocked(std::string unlocked_data);
+
   // Keeps the controller for this view.
   Controller* controller_ = nullptr;
 
@@ -137,6 +143,12 @@ class EnrollmentScreenHandler
 
   // The enrollment configuration.
   policy::EnrollmentConfig config_;
+
+  // Active Directory configuration in the form of encrypted binary data.
+  std::string active_directory_domain_join_config_;
+
+  // Whether unlock password input step should be shown.
+  bool show_unlock_password_ = false;
 
   // True if screen was not shown yet.
   bool first_show_ = true;

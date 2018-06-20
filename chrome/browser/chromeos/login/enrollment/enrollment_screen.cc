@@ -439,13 +439,15 @@ void EnrollmentScreen::RecordEnrollmentErrorMetrics() {
 }
 
 void EnrollmentScreen::JoinDomain(const std::string& dm_token,
+                                  const std::string& domain_join_config,
                                   OnDomainJoinedCallback on_joined_callback) {
   if (!authpolicy_login_helper_)
     authpolicy_login_helper_ = std::make_unique<AuthPolicyLoginHelper>();
   authpolicy_login_helper_->set_dm_token(dm_token);
   on_joined_callback_ = std::move(on_joined_callback);
-  view_->ShowActiveDirectoryScreen(std::string(), std::string(),
-                                   authpolicy::ERROR_NONE);
+  view_->ShowActiveDirectoryScreen(
+      domain_join_config, std::string() /* machine_name */,
+      std::string() /* username */, authpolicy::ERROR_NONE);
 }
 
 void EnrollmentScreen::OnActiveDirectoryJoined(
@@ -458,7 +460,8 @@ void EnrollmentScreen::OnActiveDirectoryJoined(
     std::move(on_joined_callback_).Run(machine_domain);
     return;
   }
-  view_->ShowActiveDirectoryScreen(machine_name, username, error);
+  view_->ShowActiveDirectoryScreen(std::string() /* domain_join_config */,
+                                   machine_name, username, error);
 }
 
 }  // namespace chromeos

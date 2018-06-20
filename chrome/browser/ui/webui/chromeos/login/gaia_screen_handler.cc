@@ -698,7 +698,7 @@ void GaiaScreenHandler::DoAdAuth(
       break;
     case authpolicy::ERROR_BAD_PASSWORD:
       CallJS("invalidateAd", username,
-             static_cast<int>(ActiveDirectoryErrorState::BAD_PASSWORD));
+             static_cast<int>(ActiveDirectoryErrorState::BAD_AUTH_PASSWORD));
       break;
     default:
       CallJS("invalidateAd", username,

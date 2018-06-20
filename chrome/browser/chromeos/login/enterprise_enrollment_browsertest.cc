@@ -162,8 +162,8 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
       js_checker().ExecuteAsync(set_encryption_types);
     }
     js_checker().ExecuteAsync(
-        "document.querySelector('#oauth-enroll-ad-join-ui /deep/ "
-        "#button').fire('tap')");
+        "document.querySelector('#oauth-enroll-ad-join-ui /deep/ #adCreds"
+        "    /deep/ #button').fire('tap')");
     ExecutePendingJavaScript();
   }
 
@@ -235,12 +235,13 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
                       EnrollUsingAuthCode("test_auth_code", _))
               .WillOnce(InvokeWithoutArgs([this, expected_domain]() {
                 this->enrollment_screen()->JoinDomain(
-                    kDMToken, base::BindOnce(
-                                  [](const std::string& expected_domain,
-                                     const std::string& domain) {
-                                    ASSERT_EQ(expected_domain, domain);
-                                  },
-                                  expected_domain));
+                    kDMToken, std::string() /* domain_join_config */,
+                    base::BindOnce(
+                        [](const std::string& expected_domain,
+                           const std::string& domain) {
+                          ASSERT_EQ(expected_domain, domain);
+                        },
+                        expected_domain));
               }));
         });
   }
@@ -259,23 +260,25 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
 
   void SetupActiveDirectoryJSNotifications() {
     js_checker().ExecuteAsync(
-        "var testShowStep = login.OAuthEnrollmentScreen.showStep;\n"
+        "var originalShowStep = login.OAuthEnrollmentScreen.showStep;\n"
         "login.OAuthEnrollmentScreen.showStep = function(step) {\n"
-        "  testShowStep(step);\n"
+        "  originalShowStep(step);\n"
         "  if (step == 'working') {\n"
         "    window.domAutomationController.send('ShowSpinnerScreen');\n"
         "  }"
         "}\n"
-        "var testShowError = login.OAuthEnrollmentScreen.showError;\n"
+        "var originalShowError = login.OAuthEnrollmentScreen.showError;\n"
         "login.OAuthEnrollmentScreen.showError = function(message, retry) {\n"
-        "  testShowError(message, retry);\n"
+        "  originalShowError(message, retry);\n"
         "  window.domAutomationController.send('ShowADJoinError');\n"
         "}\n");
     js_checker().ExecuteAsync(
-        "var testInvalidateAd = login.OAuthEnrollmentScreen.invalidateAd;"
-        "login.OAuthEnrollmentScreen.invalidateAd = function(machineName, "
-        "user, errorState) {"
-        "  testInvalidateAd(machineName, user, errorState);"
+        "var originalSetAdJoinParams ="
+        "    login.OAuthEnrollmentScreen.setAdJoinParams;"
+        "login.OAuthEnrollmentScreen.setAdJoinParams = function("
+        "    machineName, user, errorState, showUnlockConfig) {"
+        "  originalSetAdJoinParams("
+        "      machineName, user, errorState, showUnlockConfig);"
         "  window.domAutomationController.send('ShowJoinDomainError');"
         "}");
   }
@@ -432,13 +435,11 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 
   content::DOMMessageQueue message_queue;
   SetupActiveDirectoryJSNotifications();
-  authpolicy::KerberosEncryptionTypes enc_types =
-      authpolicy::KerberosEncryptionTypes::ENC_TYPES_ALL;
-  SetExpectedJoinRequest("machine_name", "" /* machine_domain */, enc_types,
+  SetExpectedJoinRequest("machine_name", "" /* machine_domain */,
+                         authpolicy::KerberosEncryptionTypes::ENC_TYPES_ALL,
                          {} /* machine_ou */, kAdTestUser, kDMToken);
-  SubmitActiveDirectoryCredentials("machine_name", "" /* machine_dn */,
-                                   std::to_string(enc_types), kAdTestUser,
-                                   "password");
+  SubmitActiveDirectoryCredentials("machine_name", "" /* machine_dn */, "all",
+                                   kAdTestUser, "password");
   WaitForMessage(&message_queue, "\"ShowSpinnerScreen\"");
   EXPECT_FALSE(IsStepDisplayed("ad-join"));
 
@@ -554,11 +555,8 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
   content::DOMMessageQueue message_queue;
   SetupActiveDirectoryJSNotifications();
   // Legacy type triggers error card.
-  authpolicy::KerberosEncryptionTypes enc_types =
-      authpolicy::KerberosEncryptionTypes::ENC_TYPES_LEGACY;
   SubmitActiveDirectoryCredentials("machine_name", "" /* machine_dn */,
-                                   std::to_string(enc_types), "test_user",
-                                   "password");
+                                   "legacy", "test_user", "password");
   WaitForMessage(&message_queue, "\"ShowADJoinError\"");
   EXPECT_TRUE(IsStepDisplayed("active-directory-join-error"));
   ClickRetry();

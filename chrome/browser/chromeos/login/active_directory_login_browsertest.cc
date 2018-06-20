@@ -54,7 +54,8 @@ constexpr char kAdMachineInput[] = "machineNameInput";
 constexpr char kAdMoreOptionsButton[] = "moreOptionsBtn";
 constexpr char kAdUserInput[] = "userInput";
 constexpr char kAdPasswordInput[] = "passwordInput";
-constexpr char kAdButton[] = "button";
+constexpr char kAdCredsButton[] = "adCreds /deep/ #button";
+constexpr char kAdPasswordChangeButton[] = "button";
 constexpr char kAdWelcomMessage[] = "welcomeMsg";
 constexpr char kAdAutocompleteRealm[] = "userInput /deep/ #domainLabel";
 
@@ -288,7 +289,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
                               ".value='" + username + "'");
     js_checker().ExecuteAsync(JSElement(kAdOfflineAuthId, kAdPasswordInput) +
                               ".value='" + password + "'");
-    js_checker().Evaluate(JSElement(kAdOfflineAuthId, kAdButton) +
+    js_checker().Evaluate(JSElement(kAdOfflineAuthId, kAdCredsButton) +
                           ".fire('tap')");
   }
 
@@ -306,8 +307,9 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     js_checker().ExecuteAsync(
         JSElement(kAdPasswordChangeId, kAdNewPassword2Input) + ".value='" +
         new_password2 + "'");
-    js_checker().Evaluate(JSElement(kAdPasswordChangeId, kAdButton) +
-                          ".fire('tap')");
+    js_checker().Evaluate(
+        JSElement(kAdPasswordChangeId, kAdPasswordChangeButton) +
+        ".fire('tap')");
   }
 
   void SetupActiveDirectoryJSNotifications() {
