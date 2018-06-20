@@ -58,7 +58,6 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crypto.CipherFactory;
@@ -1811,7 +1810,6 @@ public class Tab
             }
 
             mWebContents = webContents;
-            ContentUtils.setUserAgentOverride(mWebContents);
             mContentViewCore = cvc;
             mContentView = webContents.getViewAndroidDelegate().getContainerView();
 

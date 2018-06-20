@@ -15,7 +15,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
-import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.tab.Tab;
@@ -319,7 +318,6 @@ public class OverlayPanelContent {
         OverlayViewDelegate delegate = new OverlayViewDelegate(cv);
         mContentViewCore = ContentViewCore.create(mActivity, ChromeVersionInfo.getProductVersion(),
                 mWebContents, delegate, cv, mActivity.getWindowAndroid());
-        ContentUtils.setUserAgentOverride(mWebContents);
 
         // Transfers the ownership of the WebContents to the native OverlayPanelContent.
         nativeSetWebContents(mNativeOverlayPanelContentPtr, mWebContents, mWebContentsDelegate);
