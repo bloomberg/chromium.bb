@@ -84,6 +84,7 @@ void LazyLoadFrameObserver::DeferLoadUntilNearViewport(
     const ResourceRequest& resource_request,
     WebFrameLoadType frame_load_type) {
   DCHECK(!lazy_load_intersection_observer_);
+  was_recorded_as_deferred_ = false;
 
   lazy_load_intersection_observer_ = IntersectionObserver::Create(
       {Length(GetLazyFrameLoadingViewportDistanceThresholdPx(
@@ -111,9 +112,26 @@ void LazyLoadFrameObserver::LoadIfHiddenOrNearViewport(
   DCHECK(!entries.IsEmpty());
   DCHECK_EQ(element_, entries.back()->target());
 
-  if (!entries.back()->isIntersecting() &&
-      !IsFrameProbablyHidden(*entries.back()->boundingClientRect())) {
+  if (entries.back()->isIntersecting()) {
+    RecordInitialDeferralAction(
+        FrameInitialDeferralAction::kLoadedNearOrInViewport);
+  } else if (IsFrameProbablyHidden(*entries.back()->boundingClientRect())) {
+    RecordInitialDeferralAction(FrameInitialDeferralAction::kLoadedHidden);
+  } else {
+    RecordInitialDeferralAction(FrameInitialDeferralAction::kDeferred);
     return;
+  }
+
+  if (was_recorded_as_deferred_) {
+    DCHECK(element_->GetDocument().GetFrame());
+    DCHECK(element_->GetDocument().GetFrame()->Client());
+
+    UMA_HISTOGRAM_ENUMERATION(
+        "Blink.LazyLoad.CrossOriginFrames.LoadStartedAfterBeingDeferred",
+        element_->GetDocument()
+            .GetFrame()
+            ->Client()
+            ->GetEffectiveConnectionType());
   }
 
   // The content frame of the element should not have changed, since any
@@ -166,6 +184,17 @@ void LazyLoadFrameObserver::RecordMetricsOnVisibilityChanged(
   time_when_first_visible_ = CurrentTimeTicks();
   RecordVisibilityMetricsIfLoadedAndVisible();
 
+  visibility_metrics_observer_->disconnect();
+  visibility_metrics_observer_.Clear();
+
+  // The below metrics require getting the effective connection type from the
+  // parent frame, so return early here if there's no parent frame to get the
+  // effective connection type from.
+  if (!element_->GetDocument().GetFrame())
+    return;
+
+  DCHECK(element_->GetDocument().GetFrame()->Client());
+
   // On slow networks, iframes might not finish loading by the time the user
   // leaves the page, so the visible load time metrics samples won't represent
   // the slowest frames. To remedy this, record how often below the fold
@@ -173,7 +202,7 @@ void LazyLoadFrameObserver::RecordMetricsOnVisibilityChanged(
   // This isn't recorded for above the fold frames since basically every above
   // the fold frame would be visible before they finish loading.
   if (time_when_first_load_finished_.is_null() &&
-      !is_initially_above_the_fold_ && element_->GetDocument().GetFrame()) {
+      !is_initially_above_the_fold_) {
     // Note: If the WebEffectiveConnectionType enum ever gets out of sync with
     // net::EffectiveConnectionType, then this will have to be updated to record
     // the sample in terms of net::EffectiveConnectionType instead of
@@ -186,8 +215,14 @@ void LazyLoadFrameObserver::RecordMetricsOnVisibilityChanged(
             ->GetEffectiveConnectionType());
   }
 
-  visibility_metrics_observer_->disconnect();
-  visibility_metrics_observer_.Clear();
+  if (was_recorded_as_deferred_) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Blink.LazyLoad.CrossOriginFrames.VisibleAfterBeingDeferred",
+        element_->GetDocument()
+            .GetFrame()
+            ->Client()
+            ->GetEffectiveConnectionType());
+  }
 }
 
 void LazyLoadFrameObserver::RecordMetricsOnLoadFinished() {
@@ -269,6 +304,51 @@ void LazyLoadFrameObserver::RecordVisibilityMetricsIfLoadedAndVisible() {
       // connection types.
       break;
   }
+}
+
+void LazyLoadFrameObserver::RecordInitialDeferralAction(
+    FrameInitialDeferralAction action) {
+  if (was_recorded_as_deferred_)
+    return;
+
+  DCHECK(element_->GetDocument().GetFrame());
+  DCHECK(element_->GetDocument().GetFrame()->Client());
+
+  switch (element_->GetDocument()
+              .GetFrame()
+              ->Client()
+              ->GetEffectiveConnectionType()) {
+    case WebEffectiveConnectionType::kTypeUnknown:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Blink.LazyLoad.CrossOriginFrames.InitialDeferralAction.Unknown",
+          action);
+      break;
+    case WebEffectiveConnectionType::kTypeOffline:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Blink.LazyLoad.CrossOriginFrames.InitialDeferralAction.Offline",
+          action);
+      break;
+    case WebEffectiveConnectionType::kTypeSlow2G:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Blink.LazyLoad.CrossOriginFrames.InitialDeferralAction.Slow2G",
+          action);
+      break;
+    case WebEffectiveConnectionType::kType2G:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Blink.LazyLoad.CrossOriginFrames.InitialDeferralAction.2G", action);
+      break;
+    case WebEffectiveConnectionType::kType3G:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Blink.LazyLoad.CrossOriginFrames.InitialDeferralAction.3G", action);
+      break;
+    case WebEffectiveConnectionType::kType4G:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Blink.LazyLoad.CrossOriginFrames.InitialDeferralAction.4G", action);
+      break;
+  }
+
+  if (action == FrameInitialDeferralAction::kDeferred)
+    was_recorded_as_deferred_ = true;
 }
 
 void LazyLoadFrameObserver::Trace(blink::Visitor* visitor) {
