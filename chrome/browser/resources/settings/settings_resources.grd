@@ -1293,6 +1293,12 @@
         <structure name="IDR_SETTINGS_INTERNET_SUBPAGE_JS"
                    file="internet_page/internet_subpage.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_BROWSER_PROXY_HTML"
+                   file="multidevice_page/multidevice_browser_proxy.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_BROWSER_PROXY_JS"
+                   file="multidevice_page/multidevice_browser_proxy.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_MULTIDEVICE_PAGE_HTML"
                    file="multidevice_page/multidevice_page.html"
                    type="chrome_html" />
