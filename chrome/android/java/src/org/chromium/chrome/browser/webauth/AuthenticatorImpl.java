@@ -47,7 +47,7 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
         }
 
         mIsOperationPending = true;
-        onError(AuthenticatorStatus.NOT_IMPLEMENTED);
+        Fido2ApiHandler.getInstance().makeCredential(options, mRenderFrameHost, this);
     }
 
     @Override
