@@ -3859,6 +3859,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     }
     xd->cur_frame_force_integer_mv = cm->cur_frame_force_integer_mv;
 
+    x->sb_energy_level = 0;
     if (cm->delta_q_present_flag) {
       // Delta-q modulation based on variance
       av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes);
@@ -3867,11 +3868,13 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       if (DELTAQ_MODULATION == 1) {
         const int block_wavelet_energy_level =
             av1_block_wavelet_energy_level(cpi, x, cm->seq_params.sb_size);
+        x->sb_energy_level = block_wavelet_energy_level;
         offset_qindex = av1_compute_deltaq_from_energy_level(
             cpi, block_wavelet_energy_level);
       } else {
         const int block_var_level =
             av1_block_energy(cpi, x, cm->seq_params.sb_size);
+        x->sb_energy_level = block_var_level;
         offset_qindex =
             av1_compute_deltaq_from_energy_level(cpi, block_var_level);
       }

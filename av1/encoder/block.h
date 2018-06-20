@@ -224,6 +224,7 @@ struct macroblock {
   int sadperbit4;
   int rdmult;
   int mb_energy;
+  int sb_energy_level;
   int *m_search_count_ptr;
   int *ex_search_count_ptr;
 
