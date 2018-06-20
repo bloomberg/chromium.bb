@@ -250,8 +250,8 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
       WARN_UNUSED_RESULT = 0;
 
   // Checks whether the Cryptographer is ready to encrypt and decrypt updates
-  // for sensitive data types. Caller must be holding a
-  // syncapi::BaseTransaction to ensure thread safety.
+  // for sensitive data types. Caller must be holding a syncer::BaseTransaction
+  // to ensure thread safety.
   virtual bool IsCryptographerReady(const BaseTransaction* trans) const = 0;
 
   // TODO(akalin): This is called mostly by ModelAssociators and
