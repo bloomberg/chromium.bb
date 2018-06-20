@@ -77,20 +77,22 @@ class HttpServer : public net::HttpServer::Delegate {
 
   ~HttpServer() override {}
 
-  int Start(uint16_t port, bool allow_remote, bool use_ipv4) {
+  bool Start(uint16_t port, bool allow_remote) {
     std::unique_ptr<net::ServerSocket> server_socket(
         new net::TCPServerSocket(NULL, net::NetLogSource()));
-    int status = use_ipv4
-                     ? ListenOnIPv4(server_socket.get(), port, allow_remote)
-                     : ListenOnIPv6(server_socket.get(), port, allow_remote);
-    if (status != net::OK) {
-      VLOG(0) << "listen on " << (use_ipv4 ? "IPv4" : "IPv6")
-              << " failed with error " << net::ErrorToShortString(status);
-      return status;
+    if (ListenOnIPv4(server_socket.get(), port, allow_remote) != net::OK) {
+      // This will work on an IPv6-only host, but we will be IPv4-only on
+      // dual-stack hosts.
+      // TODO(samuong): change this to listen on both IPv4 and IPv6.
+      VLOG(0) << "listen on IPv4 failed, trying IPv6";
+      if (ListenOnIPv6(server_socket.get(), port, allow_remote) != net::OK) {
+        VLOG(1) << "listen on both IPv4 and IPv6 failed, giving up";
+        return false;
+      }
     }
     server_.reset(new net::HttpServer(std::move(server_socket), this));
     net::IPEndPoint address;
-    return server_->GetLocalAddress(&address);
+    return server_->GetLocalAddress(&address) == net::OK;
   }
 
   // Overridden from net::HttpServer::Delegate:
@@ -172,48 +174,24 @@ void HandleRequestOnIOThread(
 }
 
 base::LazyInstance<base::ThreadLocalPointer<HttpServer>>::DestructorAtExit
-    lazy_tls_server_ipv4 = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<base::ThreadLocalPointer<HttpServer>>::DestructorAtExit
-    lazy_tls_server_ipv6 = LAZY_INSTANCE_INITIALIZER;
+    lazy_tls_server = LAZY_INSTANCE_INITIALIZER;
 
 void StopServerOnIOThread() {
   // Note, |server| may be NULL.
-  HttpServer* server = lazy_tls_server_ipv4.Pointer()->Get();
-  lazy_tls_server_ipv4.Pointer()->Set(NULL);
-  delete server;
-
-  server = lazy_tls_server_ipv6.Pointer()->Get();
-  lazy_tls_server_ipv6.Pointer()->Set(NULL);
+  HttpServer* server = lazy_tls_server.Pointer()->Get();
+  lazy_tls_server.Pointer()->Set(NULL);
   delete server;
 }
 
 void StartServerOnIOThread(uint16_t port,
                            bool allow_remote,
                            const HttpRequestHandlerFunc& handle_request_func) {
-  std::unique_ptr<HttpServer> temp_server;
-
-  temp_server.reset(new HttpServer(handle_request_func));
-  int ipv4_status = temp_server->Start(port, allow_remote, true);
-  if (ipv4_status == net::OK) {
-    lazy_tls_server_ipv4.Pointer()->Set(temp_server.release());
-  } else if (ipv4_status == net::ERR_ADDRESS_IN_USE) {
-    printf("IPv4 port not available. Exiting...\n");
+  std::unique_ptr<HttpServer> temp_server(new HttpServer(handle_request_func));
+  if (!temp_server->Start(port, allow_remote)) {
+    printf("Port not available. Exiting...\n");
     exit(1);
   }
-
-  temp_server.reset(new HttpServer(handle_request_func));
-  int ipv6_status = temp_server->Start(port, allow_remote, false);
-  if (ipv6_status == net::OK) {
-    lazy_tls_server_ipv6.Pointer()->Set(temp_server.release());
-  } else if (ipv6_status == net::ERR_ADDRESS_IN_USE) {
-    printf("IPv6 port not available. Exiting...\n");
-    exit(1);
-  }
-
-  if (ipv4_status != net::OK && ipv6_status != net::OK) {
-    printf("Unable to start server with either IPv4 or IPv6. Exiting...\n");
-    exit(1);
-  }
+  lazy_tls_server.Pointer()->Set(temp_server.release());
 }
 
 void RunServer(uint16_t port,
