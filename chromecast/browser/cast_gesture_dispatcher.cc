@@ -32,6 +32,8 @@ void CastGestureDispatcher::HandleSideSwipeBegin(
     const gfx::Point& touch_location) {
   if (swipe_origin == CastSideSwipeOrigin::LEFT) {
     dispatched_back_ = false;
+    VLOG(1) << "swipe gesture begin";
+    current_swipe_time_ = base::ElapsedTimer();
   }
 }
 
@@ -47,9 +49,14 @@ void CastGestureDispatcher::HandleSideSwipeContinue(
   }
 
   delegate_->GestureProgress(GestureType::GO_BACK, touch_location);
+  VLOG(1) << "swipe gesture continue, elapsed time: "
+          << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
+
   if (!dispatched_back_ && touch_location.x() >= horizontal_threshold_) {
     dispatched_back_ = true;
     delegate_->ConsumeGesture(GestureType::GO_BACK);
+    VLOG(1) << "swipe gesture complete, elapsed time: "
+            << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
   }
 }
 
@@ -59,10 +66,13 @@ void CastGestureDispatcher::HandleSideSwipeEnd(
   if (swipe_origin != CastSideSwipeOrigin::LEFT) {
     return;
   }
+  VLOG(1) << "swipe end, elapsed time: "
+          << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
   if (!delegate_->CanHandleGesture(GestureType::GO_BACK)) {
     return;
   }
   if (!dispatched_back_ && touch_location.x() < horizontal_threshold_) {
+    VLOG(1) << "swipe gesture cancelled";
     delegate_->CancelGesture(GestureType::GO_BACK, touch_location);
   }
 }

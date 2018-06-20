@@ -6,6 +6,7 @@
 #define CHROMECAST_BROWSER_CAST_GESTURE_DISPATCHER_H_
 
 #include "base/macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "chromecast/graphics/cast_gesture_handler.h"
 
@@ -34,6 +35,7 @@ class CastGestureDispatcher : public CastGestureHandler {
   const int horizontal_threshold_;
   CastContentWindow::Delegate* const delegate_;
   bool dispatched_back_;
+  base::ElapsedTimer current_swipe_time_;
 };
 
 }  // namespace shell

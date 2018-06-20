@@ -7,6 +7,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "chromecast/graphics/cast_gesture_handler.h"
 #include "ui/events/event_handler.h"
 
@@ -50,6 +51,7 @@ class CastSystemGestureEventHandler : public ui::EventHandler {
 
   aura::Window* root_window_;
   CastSideSwipeOrigin current_swipe_;
+  base::ElapsedTimer current_swipe_time_;
 
   base::flat_set<CastGestureHandler*> gesture_handlers_;
 
