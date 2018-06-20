@@ -15,6 +15,8 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/concierge/service.pb.h"
@@ -114,6 +116,14 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // Checks if the cros-termina component is installed.
   static bool IsCrosTerminaInstalled();
 
+  // Generate the URL for Crostini terminal application.
+  static GURL GenerateVshInCroshUrl(Profile* profile,
+                                    const std::string& vm_name,
+                                    const std::string& container_name);
+
+  // Generate AppLaunchParams for the Crostini terminal application.
+  static AppLaunchParams GenerateTerminalAppLaunchParams(Profile* profile);
+
   // Starts the Concierge service. |callback| is called after the method call
   // finishes.
   void StartConcierge(StartConciergeCallback callback);
@@ -206,6 +216,16 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
                            std::string container_name,
                            std::string cryptohome_id,
                            GetContainerSshKeysCallback callback);
+
+  // Create the crosh-in-a-window that displays a shell in an container on a VM.
+  Browser* CreateContainerTerminal(const AppLaunchParams& launch_params,
+                                   const GURL& vsh_in_crosh_url);
+
+  // Shows the already created crosh-in-a-window that displays a shell in an
+  // already running container on a VM.
+  void ShowContainerTerminal(const AppLaunchParams& launch_params,
+                             const GURL& vsh_in_crosh_url,
+                             Browser* browser);
 
   // Launches the crosh-in-a-window that displays a shell in an already running
   // container on a VM.

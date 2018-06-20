@@ -19,6 +19,7 @@
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -759,10 +760,10 @@ void CrostiniManager::GetContainerSshKeys(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void CrostiniManager::LaunchContainerTerminal(
-    Profile* profile,
-    const std::string& vm_name,
-    const std::string& container_name) {
+// static
+GURL CrostiniManager::GenerateVshInCroshUrl(Profile* profile,
+                                            const std::string& vm_name,
+                                            const std::string& container_name) {
   std::string vsh_crosh = base::StringPrintf(
       "chrome-extension://%s/html/crosh.html?command=vmshell",
       kCrostiniCroshBuiltinAppId);
@@ -780,7 +781,12 @@ void CrostiniManager::LaunchContainerTerminal(
       vsh_crosh, vm_name_param, container_name_param, owner_id_param};
 
   GURL vsh_in_crosh_url(base::JoinString(pieces, "&args[]="));
+  return vsh_in_crosh_url;
+}
 
+// static
+AppLaunchParams CrostiniManager::GenerateTerminalAppLaunchParams(
+    Profile* profile) {
   const extensions::Extension* crosh_extension =
       extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
           kCrostiniCroshBuiltinAppId);
@@ -790,7 +796,29 @@ void CrostiniManager::LaunchContainerTerminal(
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_APP_LAUNCHER);
   launch_params.override_app_name =
       AppNameFromCrostiniAppId(kCrostiniTerminalId);
+  return launch_params;
+}
 
+Browser* CrostiniManager::CreateContainerTerminal(
+    const AppLaunchParams& launch_params,
+    const GURL& vsh_in_crosh_url) {
+  return CreateApplicationWindow(launch_params, vsh_in_crosh_url);
+}
+
+void CrostiniManager::ShowContainerTerminal(
+    const AppLaunchParams& launch_params,
+    const GURL& vsh_in_crosh_url,
+    Browser* browser) {
+  ShowApplicationWindow(launch_params, vsh_in_crosh_url, browser);
+}
+
+void CrostiniManager::LaunchContainerTerminal(
+    Profile* profile,
+    const std::string& vm_name,
+    const std::string& container_name) {
+  GURL vsh_in_crosh_url =
+      GenerateVshInCroshUrl(profile, vm_name, container_name);
+  AppLaunchParams launch_params = GenerateTerminalAppLaunchParams(profile);
   OpenApplicationWindow(launch_params, vsh_in_crosh_url);
 }
 

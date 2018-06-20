@@ -99,7 +99,8 @@ class CrostiniInstallerViewBrowserTest : public DialogBrowserTest {
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
-    test::GetAppListClient()->ActivateItem(kCrostiniTerminalId, 0);
+    ShowCrostiniInstallerView(browser()->profile(),
+                              CrostiniUISurface::kSettings);
   }
 
   // BrowserTestBase:

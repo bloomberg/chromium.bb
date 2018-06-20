@@ -25,6 +25,16 @@ void OpenApplicationWithReenablePrompt(const AppLaunchParams& params);
 // Open the application in a way specified by |params|.
 content::WebContents* OpenApplication(const AppLaunchParams& params);
 
+// Create the application in a way specified by |params| in a new window but
+// delaying activating and showing it.
+Browser* CreateApplicationWindow(const AppLaunchParams& params,
+                                 const GURL& url);
+
+// Show the application window that's already created.
+content::WebContents* ShowApplicationWindow(const AppLaunchParams& params,
+                                            const GURL& url,
+                                            Browser* browser);
+
 // Open the application in a way specified by |params| in a new window.
 content::WebContents* OpenApplicationWindow(const AppLaunchParams& params,
                                             const GURL& url);

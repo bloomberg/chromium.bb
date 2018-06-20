@@ -19,6 +19,8 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -62,10 +64,13 @@ void OnLaunchFailed(const std::string& app_id) {
 }
 
 void OnCrostiniRestarted(const std::string& app_id,
+                         Browser* browser,
                          base::OnceClosure callback,
                          crostini::ConciergeClientResult result) {
   if (result != crostini::ConciergeClientResult::SUCCESS) {
     OnLaunchFailed(app_id);
+    if (browser && browser->window())
+      browser->window()->Close();
     return;
   }
   std::move(callback).Run();
@@ -77,9 +82,17 @@ void OnContainerApplicationLaunched(const std::string& app_id,
     OnLaunchFailed(app_id);
 }
 
-void LaunchTerminal(Profile* profile) {
-  crostini::CrostiniManager::GetInstance()->LaunchContainerTerminal(
-      profile, kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
+Browser* CreateTerminal(const AppLaunchParams& launch_params,
+                        const GURL& vsh_in_crosh_url) {
+  return crostini::CrostiniManager::GetInstance()->CreateContainerTerminal(
+      launch_params, vsh_in_crosh_url);
+}
+
+void ShowTerminal(const AppLaunchParams& launch_params,
+                  const GURL& vsh_in_crosh_url,
+                  Browser* browser) {
+  crostini::CrostiniManager::GetInstance()->ShowContainerTerminal(
+      launch_params, vsh_in_crosh_url, browser);
 }
 
 void LaunchContainerApplication(
@@ -150,6 +163,7 @@ void LaunchCrostiniApp(Profile* profile,
   const std::string container_name = registration->ContainerName();
 
   base::OnceClosure launch_closure;
+  Browser* browser = nullptr;
   if (app_id == kCrostiniTerminalId) {
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
 
@@ -159,7 +173,16 @@ void LaunchCrostiniApp(Profile* profile,
       return;
     }
 
-    launch_closure = base::BindOnce(&LaunchTerminal, profile);
+    GURL vsh_in_crosh_url = crostini::CrostiniManager::GenerateVshInCroshUrl(
+        profile, vm_name, container_name);
+    AppLaunchParams launch_params =
+        crostini::CrostiniManager::GenerateTerminalAppLaunchParams(profile);
+    // Create the terminal here so it's created in the right display. If the
+    // browser creation is delayed into the callback the root window for new
+    // windows setting can be changed due to the launcher or shelf dismissal.
+    Browser* browser = CreateTerminal(launch_params, vsh_in_crosh_url);
+    launch_closure =
+        base::BindOnce(&ShowTerminal, launch_params, vsh_in_crosh_url, browser);
   } else {
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
     launch_closure =
@@ -179,7 +202,8 @@ void LaunchCrostiniApp(Profile* profile,
 
   crostini_manager->RestartCrostini(
       profile, vm_name, container_name,
-      base::BindOnce(OnCrostiniRestarted, app_id, std::move(launch_closure)));
+      base::BindOnce(OnCrostiniRestarted, app_id, browser,
+                     std::move(launch_closure)));
 }
 
 std::string CryptohomeIdForProfile(Profile* profile) {
