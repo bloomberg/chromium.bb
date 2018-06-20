@@ -397,27 +397,12 @@ LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
   if (box_data_list_.IsEmpty())
     return position;
 
-  // Compute inline positions of inline boxes.
+  // Adjust child offsets for margin/border/padding of inline boxes.
   for (auto& box_data : box_data_list_) {
     unsigned start = box_data.fragment_start;
     unsigned end = box_data.fragment_end;
     DCHECK_GT(end, start);
-    NGLineBoxFragmentBuilder::Child& start_child = (*line_box)[start];
 
-    // Clamping left offset is not defined, match to the existing behavior.
-    LayoutUnit line_left_offset =
-        start_child.offset.inline_offset.ClampNegativeToZero();
-    LayoutUnit line_right_offset = end < line_box->size()
-                                       ? (*line_box)[end].offset.inline_offset
-                                       : position;
-    box_data.offset.inline_offset =
-        line_left_offset + box_data.margin_line_left;
-    box_data.size.inline_size =
-        line_right_offset - line_left_offset +
-        box_data.margin_border_padding_line_left - box_data.margin_line_left +
-        box_data.margin_border_padding_line_right - box_data.margin_line_right;
-
-    // Adjust child offsets for margin/border/padding.
     if (box_data.margin_border_padding_line_left) {
       line_box->MoveInInlineDirection(box_data.margin_border_padding_line_left,
                                       start, line_box->size());
@@ -429,6 +414,39 @@ LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
                                       end, line_box->size());
       position += box_data.margin_border_padding_line_right;
     }
+  }
+
+  // Compute positions and sizes of inline boxes.
+  //
+  // Accumulate margin/border/padding of boxes for each child, to place nested
+  // parent boxes relative to the leaf (text or atomic inline) child.
+  struct LinePadding {
+    LayoutUnit line_left;
+    LayoutUnit line_right;
+  };
+  Vector<LinePadding, 32> accumulated_padding(line_box->size());
+  for (auto& box_data : box_data_list_) {
+    // Compute line-left and line-right edge of this box by accomodating
+    // border/padding of this box and margin/border/padding of descendants
+    // boxes, while accumulating its margin/border/padding.
+    unsigned start = box_data.fragment_start;
+    NGLineBoxFragmentBuilder::Child& start_child = (*line_box)[start];
+    LayoutUnit line_left_offset = start_child.offset.inline_offset;
+    LinePadding& start_padding = accumulated_padding[start];
+    start_padding.line_left += box_data.margin_border_padding_line_left;
+    line_left_offset -= start_padding.line_left - box_data.margin_line_left;
+
+    DCHECK_GT(box_data.fragment_end, start);
+    unsigned last = box_data.fragment_end - 1;
+    NGLineBoxFragmentBuilder::Child& last_child = (*line_box)[last];
+    LayoutUnit line_right_offset =
+        last_child.offset.inline_offset + last_child.inline_size;
+    LinePadding& last_padding = accumulated_padding[last];
+    last_padding.line_right += box_data.margin_border_padding_line_right;
+    line_right_offset += last_padding.line_right - box_data.margin_line_right;
+
+    box_data.offset.inline_offset = line_left_offset;
+    box_data.size.inline_size = line_right_offset - line_left_offset;
   }
 
   return position;
