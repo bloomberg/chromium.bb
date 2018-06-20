@@ -1549,6 +1549,18 @@ extern const char kEnableAudioFocusEnabledDuckFlash[];
 extern const char kEnableNewAppMenuIconName[];
 extern const char kEnableNewAppMenuIconDescription[];
 
+extern const char kEnableWebAuthenticationAPIName[];
+extern const char kEnableWebAuthenticationAPIDescription[];
+
+extern const char kEnableWebAuthenticationCtap2SupportName[];
+extern const char kEnableWebAuthenticationCtap2SupportDescription[];
+
+extern const char kEnableWebAuthenticationTestingAPIName[];
+extern const char kEnableWebAuthenticationTestingAPIDescription[];
+
+extern const char kInfiniteSessionRestoreName[];
+extern const char kInfiniteSessionRestoreDescription[];
+
 extern const char kOmniboxRichEntitySuggestionsName[];
 extern const char kOmniboxRichEntitySuggestionsDescription[];
 
@@ -1564,20 +1576,20 @@ extern const char kOmniboxTailSuggestionsDescription[];
 extern const char kOneGoogleBarOnLocalNtpName[];
 extern const char kOneGoogleBarOnLocalNtpDescription[];
 
+extern const char kPageAlmostIdleName[];
+extern const char kPageAlmostIdleDescription[];
+
+extern const char kProactiveTabFreezeAndDiscardName[];
+extern const char kProactiveTabFreezeAndDiscardDescription[];
+
+extern const char kSiteCharacteristicsDatabaseName[];
+extern const char kSiteCharacteristicsDatabaseDescription[];
+
 extern const char kUseGoogleLocalNtpName[];
 extern const char kUseGoogleLocalNtpDescription[];
 
 extern const char kVoiceSearchOnLocalNtpName[];
 extern const char kVoiceSearchOnLocalNtpDescription[];
-
-extern const char kEnableWebAuthenticationAPIName[];
-extern const char kEnableWebAuthenticationAPIDescription[];
-
-extern const char kEnableWebAuthenticationTestingAPIName[];
-extern const char kEnableWebAuthenticationTestingAPIDescription[];
-
-extern const char kEnableWebAuthenticationCtap2SupportName[];
-extern const char kEnableWebAuthenticationCtap2SupportDescription[];
 
 #if defined(GOOGLE_CHROME_BUILD)
 

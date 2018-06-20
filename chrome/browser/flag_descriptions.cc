@@ -2547,9 +2547,31 @@ const char kEnableAudioFocusEnabledDuckFlash[] =
     "Enabled (Flash lowers volume when interrupted by other sound, "
     "experimental)";
 
+const char kInfiniteSessionRestoreName[] = "Infinite Session Restore";
+const char kInfiniteSessionRestoreDescription[] =
+    "Reduces the number of tabs being loaded simultaneously during session "
+    "restore, to improve responsiveness of the foreground tab. This requires "
+    "#enable-page-almost-idle.";
+
 const char kEnableNewAppMenuIconName[] = "Enable the New App Menu Icon";
 const char kEnableNewAppMenuIconDescription[] =
     "Use the new app menu icon with update notification animations.";
+
+const char kEnableWebAuthenticationAPIName[] = "Web Authentication API";
+const char kEnableWebAuthenticationAPIDescription[] =
+    "Enable Web Authentication API support";
+
+const char kEnableWebAuthenticationCtap2SupportName[] =
+    "Enable Web Authentication API support for CTAP2 security keys";
+const char kEnableWebAuthenticationCtap2SupportDescription[] =
+    "Enable CTAP2 security keys for the Web Authenication API.";
+
+const char kEnableWebAuthenticationTestingAPIName[] =
+    "Web Authentication Testing API";
+const char kEnableWebAuthenticationTestingAPIDescription[] =
+    "Enable Web Authentication Testing API support, which disconnects the API "
+    "implementation from the real world, and allows configuring virtual "
+    "authenticator devices for testing";
 
 const char kOmniboxRichEntitySuggestionsName[] =
     "Omnibox rich entity suggestions";
@@ -2583,6 +2605,23 @@ const char kOneGoogleBarOnLocalNtpDescription[] =
     "Show a OneGoogleBar on the local New Tab page if Google is the default "
     "search engine.";
 
+const char kPageAlmostIdleName[] = "Page Almost Idle";
+const char kPageAlmostIdleDescription[] =
+    "Make session restore use a definition of loading that waits for CPU and "
+    "network quiescence.";
+
+const char kProactiveTabFreezeAndDiscardName[] =
+    "Proactive Tab Freeze and Discard";
+const char kProactiveTabFreezeAndDiscardDescription[] =
+    "Enables proactive tab freezing and discarding. This requires "
+    "#enable-page-almost-idle.";
+
+const char kSiteCharacteristicsDatabaseName[] = "Site Characteristics database";
+const char kSiteCharacteristicsDatabaseDescription[] =
+    "Records usage of some features in a database while a tab is in background "
+    "(title/favicon update, audio playback or usage of non-persistent "
+    "notifications).";
+
 const char kUseGoogleLocalNtpName[] = "Enable using the Google local NTP";
 const char kUseGoogleLocalNtpDescription[] =
     "Use the local New Tab page if Google is the default search engine.";
@@ -2592,22 +2631,6 @@ const char kVoiceSearchOnLocalNtpName[] =
 const char kVoiceSearchOnLocalNtpDescription[] =
     "Show a microphone for voice search on the local New Tab page "
     "if Google is the default search engine.";
-
-const char kEnableWebAuthenticationAPIName[] = "Web Authentication API";
-const char kEnableWebAuthenticationAPIDescription[] =
-    "Enable Web Authentication API support";
-
-const char kEnableWebAuthenticationCtap2SupportName[] =
-    "Enable Web Authentication API support for CTAP2 security keys";
-const char kEnableWebAuthenticationCtap2SupportDescription[] =
-    "Enable CTAP2 security keys for the Web Authenication API.";
-
-const char kEnableWebAuthenticationTestingAPIName[] =
-    "Web Authentication Testing API";
-const char kEnableWebAuthenticationTestingAPIDescription[] =
-    "Enable Web Authentication Testing API support, which disconnects the API "
-    "implementation from the real world, and allows configuring virtual "
-    "authenticator devices for testing";
 
 #if defined(GOOGLE_CHROME_BUILD)
 
