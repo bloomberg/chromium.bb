@@ -223,6 +223,13 @@ class NET_EXPORT NetworkQualityEstimator
   void EnableGetNetworkIdAsynchronously();
 #endif  // defined(OS_CHROMEOS)
 
+  // Forces the effective connection type to be recomputed as |type|. Once
+  // called, effective connection type would always be computed as |type|.
+  // Calling this also notifies all the observers of the effective connection
+  // type as |type|.
+  void SimulateNetworkQualityChangeForTesting(
+      net::EffectiveConnectionType type);
+
   typedef nqe::internal::Observation Observation;
   typedef nqe::internal::ObservationBuffer ObservationBuffer;
 

@@ -1782,4 +1782,11 @@ bool NetworkQualityEstimator::ShouldSocketWatcherNotifyRTT(
           params_->socket_watchers_min_notification_interval());
 }
 
+void NetworkQualityEstimator::SimulateNetworkQualityChangeForTesting(
+    net::EffectiveConnectionType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  params_->SetForcedEffectiveConnectionTypeForTesting(type);
+  ComputeEffectiveConnectionType();
+}
+
 }  // namespace net
