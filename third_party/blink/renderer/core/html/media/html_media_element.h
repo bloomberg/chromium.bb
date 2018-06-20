@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/events/media_element_event_queue.h"
 #include "third_party/blink/renderer/core/dom/pausable_object.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/media/media_controls.h"
@@ -44,6 +43,7 @@
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace cc {
@@ -60,6 +60,7 @@ class ContentType;
 class CueTimeline;
 class EnumerationHistogram;
 class Event;
+class EventQueue;
 class ExceptionState;
 class HTMLMediaElementControlsList;
 class HTMLMediaSource;
@@ -567,7 +568,7 @@ class CORE_EXPORT HTMLMediaElement
   TaskRunnerTimer<HTMLMediaElement> check_viewport_intersection_timer_;
 
   Member<TimeRanges> played_time_ranges_;
-  Member<MediaElementEventQueue> async_event_queue_;
+  Member<EventQueue> async_event_queue_;
 
   double playback_rate_;
   double default_playback_rate_;

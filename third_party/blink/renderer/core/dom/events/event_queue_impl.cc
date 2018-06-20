@@ -99,14 +99,11 @@ void EventQueueImpl::DispatchEvent(Event* event) {
   DCHECK(GetExecutionContext());
 
   probe::AsyncTask async_task(GetExecutionContext(), event);
-  // TODO(hajimehoshi): Don't use |event->target()| here. Assuming the taget
-  // exists here is weird since event target is set later at
-  // |EventTarget::DispatchEvent|.
-  EventTarget* event_target = event->target();
-  if (LocalDOMWindow* window = event_target->ToLocalDOMWindow())
+  EventTarget* target = event->target();
+  if (LocalDOMWindow* window = target->ToLocalDOMWindow())
     window->DispatchEvent(event, nullptr);
   else
-    event_target->DispatchEvent(event);
+    target->DispatchEvent(event);
 }
 
 void EventQueueImpl::ContextDestroyed(ExecutionContext* context) {
@@ -122,6 +119,10 @@ void EventQueueImpl::DoCancelAllEvents(ExecutionContext* context) {
   for (const auto& queued_event : queued_events_)
     probe::AsyncTaskCanceled(context, queued_event);
   queued_events_.clear();
+}
+
+bool EventQueueImpl::HasPendingEvents() const {
+  return queued_events_.size() > 0;
 }
 
 }  // namespace blink
