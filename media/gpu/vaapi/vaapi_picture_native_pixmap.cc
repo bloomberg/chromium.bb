@@ -46,6 +46,10 @@ bool VaapiPictureNativePixmap::AllowOverlay() const {
   return true;
 }
 
+VASurfaceID VaapiPictureNativePixmap::va_surface_id() const {
+  return va_surface_->id();
+}
+
 unsigned VaapiPictureNativePixmap::BufferFormatToInternalFormat(
     gfx::BufferFormat format) const {
   switch (format) {

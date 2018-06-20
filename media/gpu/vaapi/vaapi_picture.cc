@@ -4,6 +4,8 @@
 
 #include "media/gpu/vaapi/vaapi_picture.h"
 
+#include <va/va.h>
+
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
@@ -34,6 +36,10 @@ VaapiPicture::~VaapiPicture() {
 
 bool VaapiPicture::AllowOverlay() const {
   return false;
+}
+
+VASurfaceID VaapiPicture::va_surface_id() const {
+  return VA_INVALID_ID;
 }
 
 }  // namespace media

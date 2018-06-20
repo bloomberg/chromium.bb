@@ -233,7 +233,6 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
     ASSERT_TRUE(vda_.curr_input_buffer_)
         << "QueueInputBuffer() should have been called";
 
-    ::testing::InSequence s;
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
 
@@ -249,6 +248,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
                 MockCreateVaapiPicture(mock_vaapi_wrapper_.get(), picture_size))
         .Times(num_pictures);
 
+    ::testing::InSequence s;
     EXPECT_CALL(*mock_decoder_, Decode())
         .WillOnce(Return(AcceleratedVideoDecoder::kRanOutOfStreamData));
     EXPECT_CALL(*this, NotifyEndOfBitstreamBuffer(bitstream_id))
