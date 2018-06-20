@@ -430,7 +430,7 @@
     },
     {
       name: "ExperimentalHardwareEchoCancellation",
-      origin_trial_feature_name: "ExperimentalHardwareEchoCancellation",
+      origin_trial_feature_name: "ExperimentalHardwareEchoCancellation2",
       status: "experimental",
     },
     // Enables a set of features intended to help improve web developer
