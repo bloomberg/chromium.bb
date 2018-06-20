@@ -98,16 +98,20 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
                bool use_stencil,
                SkSurfaceCharacterization* characterization,
                base::WaitableEvent* event);
-  void SwapBuffers(OutputSurfaceFrame frame,
-                   std::unique_ptr<SkDeferredDisplayList> ddl,
-                   std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
-                   uint64_t sync_fence_release);
+  void FinishPaintCurrentFrame(
+      std::unique_ptr<SkDeferredDisplayList> ddl,
+      std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
+      uint64_t sync_fence_release);
+  void SwapBuffers(OutputSurfaceFrame frame);
   void FinishPaintRenderPass(
       RenderPassId id,
       std::unique_ptr<SkDeferredDisplayList> ddl,
       std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
       uint64_t sync_fence_release);
   void RemoveRenderPassResource(std::vector<RenderPassId> ids);
+  void CopyOutput(RenderPassId id,
+                  const gfx::Rect& copy_rect,
+                  std::unique_ptr<CopyOutputRequest> request);
 
   // Fullfill callback for promise SkImage created from a resource.
   void FullfillPromiseTexture(const ResourceMetadata& metadata,

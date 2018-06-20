@@ -274,11 +274,7 @@ void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info,
   }
 
   if (is_using_ddl()) {
-    auto sync_token =
-        skia_output_surface_->SkiaSwapBuffers(std::move(output_frame));
-    promise_images_.clear();
-    yuv_promise_images_.clear();
-    lock_set_for_external_use_.UnlockResources(sync_token);
+    skia_output_surface_->SkiaSwapBuffers(std::move(output_frame));
   } else {
     // TODO(penghuang): remove it when SkiaRenderer and SkDDL are always used.
     output_surface_->SwapBuffers(std::move(output_frame));
@@ -312,7 +308,8 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
   // TODO(weiliangc): Set up correct can_use_lcd_text for SkSurfaceProps flags.
   // How to setup is in ResourceProvider. (http://crbug.com/644851)
   if (is_using_ddl()) {
-    root_canvas_ = skia_output_surface_->GetSkCanvasForCurrentFrame();
+    root_canvas_ = skia_output_surface_->BeginPaintCurrentFrame();
+    is_drawing_render_pass_ = false;
     DCHECK(root_canvas_);
   } else {
     auto* gr_context = output_surface_->context_provider()->GrContext();
@@ -877,12 +874,6 @@ void SkiaRenderer::CopyDrawnRenderPass(
   // TODO(weiliangc): Make copy request work. (crbug.com/644851)
   TRACE_EVENT0("viz", "SkiaRenderer::CopyDrawnRenderPass");
 
-  if (is_using_ddl()) {
-    // TODO(penghuang): Support it with SkDDL.
-    NOTIMPLEMENTED();
-    return;
-  }
-
   gfx::Rect copy_rect = current_frame()->current_render_pass->output_rect;
   if (request->has_area())
     copy_rect.Intersect(request->area());
@@ -892,20 +883,32 @@ void SkiaRenderer::CopyDrawnRenderPass(
 
   gfx::Rect window_copy_rect = MoveFromDrawToWindowSpace(copy_rect);
 
-  sk_sp<SkImage> copy_image = current_surface_->makeImageSnapshot()->makeSubset(
-      RectToSkIRect(window_copy_rect));
-
-  if (request->result_format() == CopyOutputResult::Format::RGBA_BITMAP) {
-    // Send copy request by copying into a bitmap.
-    SkBitmap bitmap;
-    copy_image->asLegacyBitmap(&bitmap);
-
-    request->SendResult(
-        std::make_unique<CopyOutputSkBitmapResult>(copy_rect, bitmap));
+  if (request->result_format() != CopyOutputResult::Format::RGBA_BITMAP ||
+      request->is_scaled() ||
+      (request->has_result_selection() &&
+       request->result_selection() == gfx::Rect(copy_rect.size()))) {
+    // TODO(crbug.com/644851): Complete the implementation for all request
+    // types, scaling, etc.
+    NOTIMPLEMENTED();
     return;
   }
 
-  NOTREACHED();
+  if (is_using_ddl()) {
+    auto render_pass_id =
+        is_drawing_render_pass_ ? current_frame()->current_render_pass->id : 0;
+    skia_output_surface_->CopyOutput(render_pass_id, window_copy_rect,
+                                     std::move(request));
+    return;
+  }
+
+  sk_sp<SkImage> copy_image = current_surface_->makeImageSnapshot()->makeSubset(
+      RectToSkIRect(window_copy_rect));
+
+  // Send copy request by copying into a bitmap.
+  SkBitmap bitmap;
+  copy_image->asLegacyBitmap(&bitmap);
+  request->SendResult(
+      std::make_unique<CopyOutputSkBitmapResult>(copy_rect, bitmap));
 }
 
 void SkiaRenderer::SetEnableDCLayers(bool enable) {
@@ -922,13 +925,13 @@ void SkiaRenderer::DidChangeVisibility() {
 
 void SkiaRenderer::FinishDrawingQuadList() {
   if (is_using_ddl()) {
-    if (is_drawing_render_pass_) {
-      gpu::SyncToken sync_token = skia_output_surface_->FinishPaintRenderPass();
-      promise_images_.clear();
-      yuv_promise_images_.clear();
-      lock_set_for_external_use_.UnlockResources(sync_token);
-      is_drawing_render_pass_ = false;
-    }
+    gpu::SyncToken sync_token =
+        is_drawing_render_pass_
+            ? skia_output_surface_->FinishPaintRenderPass()
+            : skia_output_surface_->FinishPaintCurrentFrame();
+    promise_images_.clear();
+    yuv_promise_images_.clear();
+    lock_set_for_external_use_.UnlockResources(sync_token);
   } else {
     current_canvas_->flush();
   }

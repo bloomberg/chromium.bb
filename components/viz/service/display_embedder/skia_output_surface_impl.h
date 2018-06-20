@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/service/display/skia_output_surface.h"
+#include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/in_process_command_buffer.h"
@@ -37,7 +38,7 @@ class YUVResourceMetadata;
 // render into. In SwapBuffers, it detaches a SkDeferredDisplayList from the
 // recorder and plays it back on the framebuffer SkSurface on the GPU thread
 // through SkiaOutputSurfaceImpleOnGpu.
-class SkiaOutputSurfaceImpl : public SkiaOutputSurface {
+class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
  public:
   SkiaOutputSurfaceImpl(
       GpuServiceImpl* gpu_service,
@@ -72,12 +73,13 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       bool needs_swap_size_notifications) override;
 
   // SkiaOutputSurface implementation:
-  SkCanvas* GetSkCanvasForCurrentFrame() override;
+  SkCanvas* BeginPaintCurrentFrame() override;
+  gpu::SyncToken FinishPaintCurrentFrame() override;
   sk_sp<SkImage> MakePromiseSkImage(ResourceMetadata metadata) override;
   sk_sp<SkImage> MakePromiseSkImageFromYUV(
       std::vector<ResourceMetadata> metadatas,
       SkYUVColorSpace yuv_color_space) override;
-  gpu::SyncToken SkiaSwapBuffers(OutputSurfaceFrame frame) override;
+  void SkiaSwapBuffers(OutputSurfaceFrame frame) override;
   SkCanvas* BeginPaintRenderPass(const RenderPassId& id,
                                  const gfx::Size& surface_size,
                                  ResourceFormat format,
@@ -88,6 +90,9 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                                                   ResourceFormat format,
                                                   bool mipmap) override;
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
+  void CopyOutput(RenderPassId id,
+                  const gfx::Rect& copy_rect,
+                  std::unique_ptr<CopyOutputRequest> request) override;
 
  private:
   template <class T>

@@ -165,8 +165,14 @@ GpuServiceImpl::~GpuServiceImpl() {
     scheduler_->DestroySequence(skia_output_surface_sequence_id_);
   }
 
-  gr_context_ = nullptr;
-  context_for_skia_ = nullptr;
+  if (context_for_skia_) {
+    // Initialize an offscreen surface, so MakeCurrent can work.
+    auto surface = gl::init::CreateOffscreenGLSurface(gfx::Size(1, 1));
+    context_for_skia_->MakeCurrent(surface.get());
+    gr_context_ = nullptr;
+    context_for_skia_ = nullptr;
+  }
+  DCHECK(!gr_context_);
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
   owned_sync_point_manager_.reset();
@@ -284,10 +290,9 @@ bool GpuServiceImpl::CreateGrContextIfNecessary(gl::GLSurface* surface) {
       LOG(FATAL) << "Failed to make current.";
       // TODO(penghuang): handle the failure.
     }
-    auto native_interface =
-        GrGLMakeAssembledInterface(nullptr, [](void* ctx, const char name[]) {
-          return gl::GetGLProcAddress(name);
-        });
+
+    const auto* gl_version_info = context_for_skia_->GetVersionInfo();
+    auto native_interface = gl::init::CreateGrGLInterface(*gl_version_info);
     DCHECK(native_interface);
 
     GrContextOptions options;

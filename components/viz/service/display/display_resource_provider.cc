@@ -68,7 +68,7 @@ DisplayResourceProvider::DisplayResourceProvider(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // If no ContextProvider, then we are doing software compositing and a
   // SharedBitmapManager must be given.
-  DCHECK(compositor_context_provider || shared_bitmap_manager);
+  DCHECK(mode_ == kGpu || shared_bitmap_manager);
 
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.

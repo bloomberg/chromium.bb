@@ -225,7 +225,8 @@ void Display::InitializeRenderer() {
 #if BUILDFLAG(ENABLE_VULKAN)
   } else if (output_surface_->vulkan_context_provider()) {
     renderer_ = std::make_unique<SkiaRenderer>(
-        &settings_, output_surface_.get(), resource_provider_.get());
+        &settings_, output_surface_.get(), resource_provider_.get(),
+        nullptr /* skia_output_surface */);
 #endif
   } else {
     auto renderer = std::make_unique<SoftwareRenderer>(
