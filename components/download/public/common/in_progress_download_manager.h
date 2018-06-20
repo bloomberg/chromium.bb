@@ -128,6 +128,11 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   }
   DownloadFileFactory* file_factory() { return file_factory_.get(); }
 
+  void set_url_loader_factory_getter(
+      scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter) {
+    url_loader_factory_getter_ = std::move(url_loader_factory_getter);
+  }
+
  private:
   // UrlDownloadHandler::Delegate implementations.
   void OnUrlDownloadStarted(
@@ -178,6 +183,10 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // A list of in-progress download items, could be null if DownloadManagerImpl
   // is managing all downloads.
   std::vector<std::unique_ptr<DownloadItemImpl>> in_progress_downloads_;
+
+  // URLLoaderFactoryGetter for issuing network request when DownloadMangerImpl
+  // is not available.
+  scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter_;
 
   base::WeakPtrFactory<InProgressDownloadManager> weak_factory_;
 
