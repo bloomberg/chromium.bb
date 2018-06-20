@@ -215,6 +215,13 @@ void NGInlineLayoutStateStack::EndBoxState(
   if (position_pending == kPositionNotPending && box != stack_.begin()) {
     box[-1].metrics.Unite(box->metrics);
   }
+
+  // Create box fragments for parent if the current box has properties (e.g.,
+  // margin) that make it tricky to compute the parent's rects.
+  if (box != stack_.begin() && box[-1].item) {
+    if (box->ParentNeedsBoxFragment())
+      box[-1].SetNeedsBoxFragment();
+  }
 }
 
 void NGInlineBoxState::SetNeedsBoxFragment() {
@@ -235,6 +242,15 @@ void NGInlineBoxState::SetLineRightForBoxFragment(
     DCHECK_EQ(item_result.margins.inline_end, LayoutUnit());
     DCHECK_EQ(item_result.inline_size, LayoutUnit());
   }
+}
+
+bool NGInlineBoxState::ParentNeedsBoxFragment() const {
+  if (margin_inline_start || margin_inline_end)
+    return true;
+  // TODO(xiaochengh): Include other cases:
+  // - current box has a different font-size
+  // - current box is an atomic inline
+  return false;
 }
 
 // Crete a placeholder for a box fragment.
