@@ -11,6 +11,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -197,7 +198,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   int GetRoutingID() const override;
   RenderWidgetHostViewBase* GetView() const override;
   bool IsLoading() const override;
-  void RestartHangMonitorTimeoutIfNecessary() override;
   bool IsCurrentlyUnresponsive() const override;
   void SetIgnoreInputEvents(bool ignore_input_events) override;
   bool SynchronizeVisualProperties() override;
@@ -755,13 +755,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
-                           DontPostponeHangMonitorTimeout);
+                           DontPostponeInputEventAckTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, HiddenPaint);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, RendererExitedNoDrag);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
-                           StopAndStartHangMonitorTimeout);
+                           StopAndStartInputEventAckTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
-                           ShorterDelayHangMonitorTimeout);
+                           ShorterDelayInputEventAckTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, SynchronizeVisualProperties);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, AutoResizeWithScale);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
@@ -792,7 +792,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // destructor is called as well.
   void Destroy(bool also_delete);
 
-  // Called by |hang_monitor_timeout_| on delayed response from the renderer.
+  // Called by |input_event_ack_timeout_| on delayed response from the renderer.
   void RendererIsUnresponsive();
 
   // Called by |new_content_rendering_timeout_| if a renderer has loaded new
@@ -878,11 +878,16 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Starts a hang monitor timeout. If there's already a hang monitor timeout
   // the new one will only fire if it has a shorter delay than the time
   // left on the existing timeouts.
-  void StartHangMonitorTimeout(base::TimeDelta delay);
+  void StartInputEventAckTimeout(base::TimeDelta delay);
 
   // Stops all existing hang monitor timeouts and assumes the renderer is
   // responsive.
-  void StopHangMonitorTimeout();
+  void StopInputEventAckTimeout();
+
+  // Implementation of |hang_monitor_restarter| callback passed to
+  // RenderWidgetHostDelegate::RendererUnresponsive if the unresponsiveness
+  // was noticed because of input event ack timeout.
+  void RestartInputEventAckTimeoutIfNecessary();
 
   void SetupInputRouter();
 
@@ -1055,8 +1060,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Receives and handles all input events.
   std::unique_ptr<InputRouter> input_router_;
 
-  std::unique_ptr<TimeoutMonitor> hang_monitor_timeout_;
-  base::TimeTicks hang_monitor_start_time_;
+  std::unique_ptr<TimeoutMonitor> input_event_ack_timeout_;
+  base::TimeTicks input_event_ack_start_time_;
 
   std::unique_ptr<TimeoutMonitor> new_content_rendering_timeout_;
 

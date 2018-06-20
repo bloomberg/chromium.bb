@@ -74,28 +74,43 @@ content::RenderWidgetHost* HungPagesTableModel::GetRenderWidgetHost() {
 
 void HungPagesTableModel::InitForWebContents(
     WebContents* contents,
-    content::RenderWidgetHost* render_widget_host) {
-  process_observer_.RemoveAll();
-  widget_observer_.RemoveAll();
+    content::RenderWidgetHost* render_widget_host,
+    base::RepeatingClosure hang_monitor_restarter) {
+  DCHECK(contents);
+  DCHECK(render_widget_host);
+  DCHECK(!hang_monitor_restarter.is_null());
+
+  DCHECK(!render_widget_host_);
+  DCHECK(!process_observer_.IsObservingSources());
+  DCHECK(!widget_observer_.IsObservingSources());
+  DCHECK(tab_observers_.empty());
+
   render_widget_host_ = render_widget_host;
-  tab_observers_.clear();
+  hang_monitor_restarter_ = std::move(hang_monitor_restarter);
 
-  if (contents) {
-    for (auto* hung_contents :
-         GetHungWebContentsList(contents, render_widget_host->GetProcess())) {
-      tab_observers_.push_back(
-          std::make_unique<WebContentsObserverImpl>(this, hung_contents));
-    }
+  for (auto* hung_contents :
+       GetHungWebContentsList(contents, render_widget_host->GetProcess())) {
+    tab_observers_.push_back(
+        std::make_unique<WebContentsObserverImpl>(this, hung_contents));
   }
 
-  if (render_widget_host_) {
-    process_observer_.Add(render_widget_host_->GetProcess());
-    widget_observer_.Add(render_widget_host_);
-  }
+  process_observer_.Add(render_widget_host_->GetProcess());
+  widget_observer_.Add(render_widget_host_);
 
   // The world is different.
   if (observer_)
     observer_->OnModelChanged();
+}
+
+void HungPagesTableModel::Reset() {
+  process_observer_.RemoveAll();
+  widget_observer_.RemoveAll();
+  tab_observers_.clear();
+  render_widget_host_ = nullptr;
+}
+
+void HungPagesTableModel::RestartHangMonitorTimeout() {
+  hang_monitor_restarter_.Run();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -218,7 +233,8 @@ HungRendererDialogView* HungRendererDialogView::GetInstance() {
 // static
 void HungRendererDialogView::Show(
     WebContents* contents,
-    content::RenderWidgetHost* render_widget_host) {
+    content::RenderWidgetHost* render_widget_host,
+    base::RepeatingClosure hang_monitor_restarter) {
   if (logging::DialogsAreSuppressed())
     return;
 
@@ -232,7 +248,8 @@ void HungRendererDialogView::Show(
     return;
 #endif
   HungRendererDialogView* view = HungRendererDialogView::Create(window);
-  view->ShowForWebContents(contents, render_widget_host);
+  view->ShowForWebContents(contents, render_widget_host,
+                           std::move(hang_monitor_restarter));
 }
 
 // static
@@ -264,7 +281,8 @@ HungRendererDialogView::~HungRendererDialogView() {
 
 void HungRendererDialogView::ShowForWebContents(
     WebContents* contents,
-    content::RenderWidgetHost* render_widget_host) {
+    content::RenderWidgetHost* render_widget_host,
+    base::RepeatingClosure hang_monitor_restarter) {
   DCHECK(contents && GetWidget());
 
   // Don't show the warning unless the foreground window is the frame, or this
@@ -306,7 +324,8 @@ void HungRendererDialogView::ShowForWebContents(
     // renderer may hang while this one is showing, and we don't want to reset
     // the list of hung pages for a potentially unrelated renderer while this
     // one is showing.
-    hung_pages_table_model_->InitForWebContents(contents, render_widget_host);
+    hung_pages_table_model_->InitForWebContents(
+        contents, render_widget_host, std::move(hang_monitor_restarter));
 
     UpdateLabels();
 
@@ -458,9 +477,7 @@ void HungRendererDialogView::Init() {
 
 void HungRendererDialogView::RestartHangTimer() {
   // Start waiting again for responsiveness.
-  auto* render_widget_host = hung_pages_table_model_->GetRenderWidgetHost();
-  if (render_widget_host)
-    render_widget_host->RestartHangMonitorTimeoutIfNecessary();
+  hung_pages_table_model_->RestartHangMonitorTimeout();
 }
 
 void HungRendererDialogView::UpdateLabels() {
@@ -476,6 +493,6 @@ void HungRendererDialogView::CloseDialogWithNoAction() {
   // - Close is async and we don't want hanging references, and
   // - While the dialog is active, [X] maps to restarting the hang timer, but
   //   while closing we don't want that action.
-  hung_pages_table_model_->InitForWebContents(nullptr, nullptr);
+  hung_pages_table_model_->Reset();
   GetWidget()->Close();
 }

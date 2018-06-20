@@ -62,9 +62,11 @@ void TabDialogsCocoa::ShowCollectedCookies() {
 }
 
 void TabDialogsCocoa::ShowHungRendererDialog(
-    content::RenderWidgetHost* render_widget_host) {
+    content::RenderWidgetHost* render_widget_host,
+    base::RepeatingClosure hang_monitor_restarter) {
   [HungRendererController showForWebContents:web_contents_
-                            renderWidgetHost:render_widget_host];
+                            renderWidgetHost:render_widget_host
+                            timeoutRestarter:hang_monitor_restarter];
 }
 
 void TabDialogsCocoa::HideHungRendererDialog(

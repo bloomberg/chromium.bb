@@ -45,7 +45,8 @@ using content::WebContents;
 // process with |contents|.  The caller must not delete any tab
 // contents without first calling endForWebContents.
 - (void)showForWebContents:(content::WebContents*)contents
-          renderWidgetHost:(content::RenderWidgetHost*)renderWidget;
+          renderWidgetHost:(content::RenderWidgetHost*)renderWidget
+          timeoutRestarter:(base::RepeatingClosure)timeoutRestarter;
 
 // Notifies the dialog that |contents| is either responsive or closed.
 // If |contents| shares the same render process as the tab contents
@@ -187,13 +188,15 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
 }
 
 + (void)showForWebContents:(content::WebContents*)contents
-          renderWidgetHost:(content::RenderWidgetHost*)renderWidget {
+          renderWidgetHost:(content::RenderWidgetHost*)renderWidget
+          timeoutRestarter:(base::RepeatingClosure)timeoutRestarter {
   if (!logging::DialogsAreSuppressed()) {
     if (!g_hung_renderer_controller_instance)
       g_hung_renderer_controller_instance = [[HungRendererController alloc]
           initWithWindowNibName:@"HungRendererDialog"];
     [g_hung_renderer_controller_instance showForWebContents:contents
-                                           renderWidgetHost:renderWidget];
+                                           renderWidgetHost:renderWidget
+                                           timeoutRestarter:timeoutRestarter];
   }
 }
 
@@ -220,8 +223,8 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
 }
 
 - (IBAction)wait:(id)sender {
-  if (hungWidget_)
-    hungWidget_->RestartHangMonitorTimeoutIfNecessary();
+  if (!hangMonitorRestarter_.is_null())
+    hangMonitorRestarter_.Run();
 
   // Cannot call performClose:, because the close button is disabled.
   [self close];
@@ -264,6 +267,7 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
   // button depressed just when new activity was detected.
   hungContents_ = nullptr;
   hungWidget_ = nullptr;
+  hangMonitorRestarter_ = base::RepeatingClosure();
 
   // Reset the observer now. It is not necessarily the case that this class
   // actually holds a reference to the containing BrowserWindow, and if it does
@@ -281,10 +285,13 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
 // activity!), so it would not add much value.  Also, the views
 // implementation only monitors the initiating tab.
 - (void)showForWebContents:(WebContents*)contents
-          renderWidgetHost:(content::RenderWidgetHost*)renderWidget {
+          renderWidgetHost:(content::RenderWidgetHost*)renderWidget
+          timeoutRestarter:(base::RepeatingClosure)timeoutRestarter {
   DCHECK(contents);
+  DCHECK(!timeoutRestarter.is_null());
   hungContents_ = contents;
   hungWidget_ = renderWidget;
+  hangMonitorRestarter_ = timeoutRestarter;
   hungContentsObserver_.reset(
       new HungRendererObserverBridge(contents, renderWidget, self));
 
@@ -313,6 +320,7 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
   DCHECK(hungContents_);
   DCHECK(renderWidget);
   DCHECK(hungWidget_);
+  DCHECK(!hangMonitorRestarter_.is_null());
   if (hungContents_ && hungWidget_ == renderWidget) {
     // Cannot call performClose:, because the close button is disabled.
     [self close];
@@ -327,8 +335,8 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
 - (void)tabUpdated {
   // Tab was updated so restart the hang monitor if necessary and dismiss the
   // current dialog.
-  if (hungWidget_)
-    hungWidget_->RestartHangMonitorTimeoutIfNecessary();
+  if (!hangMonitorRestarter_.is_null())
+    hangMonitorRestarter_.Run();
 
   [self close];
 }

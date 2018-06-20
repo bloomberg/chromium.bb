@@ -7,6 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <vector>
+
 #include "base/callback.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -195,14 +198,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Returns true if the renderer is loading, false if not.
   virtual bool IsLoading() const = 0;
 
-  // Restart the active hang monitor timeout if the renderer is actively
-  // waiting on a response. Clears all existing timeouts and starts with
-  // a new one.  This can be because the renderer has become
-  // active, the tab is being hidden, or the user has chosen to wait some more
-  // to give the tab a chance to become active and we don't want to display a
-  // warning too soon.
-  virtual void RestartHangMonitorTimeoutIfNecessary() = 0;
-
   // Returns true if the renderer is considered unresponsive.
   virtual bool IsCurrentlyUnresponsive() const = 0;
 
@@ -264,7 +259,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
       const gfx::PointF& client_pt,
       const gfx::PointF& screen_pt,
       blink::WebDragOperationsMask operations_allowed,
-      int key_modifiers){};
+      int key_modifiers) {}
   virtual void DragTargetDragOver(
       const gfx::PointF& client_pt,
       const gfx::PointF& screen_pt,
@@ -281,11 +276,11 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // either in a drop or by being cancelled.
   virtual void DragSourceEndedAt(const gfx::PointF& client_pt,
                                  const gfx::PointF& screen_pt,
-                                 blink::WebDragOperation operation){};
+                                 blink::WebDragOperation operation) {}
 
   // Notifies the renderer that we're done with the drag and drop operation.
   // This allows the renderer to reset some state.
-  virtual void DragSourceSystemDragEnded() {};
+  virtual void DragSourceSystemDragEnded() {}
 
   // Filters drop data before it is passed to RenderWidgetHost.
   virtual void FilterDropData(DropData* drop_data) {}

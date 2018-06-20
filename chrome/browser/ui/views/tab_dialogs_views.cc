@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/tab_dialogs_views.h"
 
 #include <memory>
+#include <utility>
 
 #include "build/build_config.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
@@ -46,8 +47,10 @@ void TabDialogsViews::ShowCollectedCookies() {
 }
 
 void TabDialogsViews::ShowHungRendererDialog(
-    content::RenderWidgetHost* render_widget_host) {
-  HungRendererDialogView::Show(web_contents_, render_widget_host);
+    content::RenderWidgetHost* render_widget_host,
+    base::RepeatingClosure hang_monitor_restarter) {
+  HungRendererDialogView::Show(web_contents_, render_widget_host,
+                               std::move(hang_monitor_restarter));
 }
 
 void TabDialogsViews::HideHungRendererDialog(

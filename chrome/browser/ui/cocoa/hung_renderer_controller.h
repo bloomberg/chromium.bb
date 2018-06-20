@@ -21,6 +21,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #import "base/mac/scoped_nsobject.h"
 
 @class MultiKeyEquivalentButton;
@@ -44,6 +45,10 @@ class WebContents;
   content::WebContents* hungContents_;
   content::RenderWidgetHost* hungWidget_;
 
+  // Callback that restarts the hang timeout (e.g. if the user wants to wait
+  // some more until the renderer process responds).
+  base::RepeatingClosure hangMonitorRestarter_;
+
   // Observes |hungContents_| in case it closes while the panel is up.
   std::unique_ptr<HungRendererObserverBridge> hungContentsObserver_;
 
@@ -58,7 +63,8 @@ class WebContents;
 
 // Shows or hides the hung renderer dialog for the given WebContents.
 + (void)showForWebContents:(content::WebContents*)contents
-          renderWidgetHost:(content::RenderWidgetHost*)renderWidget;
+          renderWidgetHost:(content::RenderWidgetHost*)renderWidget
+          timeoutRestarter:(base::RepeatingClosure)timeoutRestarter;
 + (void)endForWebContents:(content::WebContents*)contents
          renderWidgetHost:(content::RenderWidgetHost*)renderWidget;
 + (bool)isShowing;

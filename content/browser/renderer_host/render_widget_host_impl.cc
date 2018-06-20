@@ -406,7 +406,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 
   const auto* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kDisableHangMonitor)) {
-    hang_monitor_timeout_.reset(new TimeoutMonitor(
+    input_event_ack_timeout_.reset(new TimeoutMonitor(
         base::Bind(&RenderWidgetHostImpl::RendererIsUnresponsive,
                    weak_factory_.GetWeakPtr())));
   }
@@ -690,7 +690,7 @@ void RenderWidgetHostImpl::WasHidden() {
   visual_properties_ack_pending_ = false;
 
   // Don't bother reporting hung state when we aren't active.
-  StopHangMonitorTimeout();
+  StopInputEventAckTimeout();
 
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
@@ -720,7 +720,7 @@ void RenderWidgetHostImpl::WasShown(bool record_presentation_time) {
   ForceFirstFrameAfterNavigationTimeout();
 
   SendScreenRects();
-  RestartHangMonitorTimeoutIfNecessary();
+  RestartInputEventAckTimeoutIfNecessary();
 
   // Always repaint on restore.
   bool needs_repainting = true;
@@ -1105,39 +1105,39 @@ bool RenderWidgetHostImpl::RequestRepaintForTesting() {
 void RenderWidgetHostImpl::ProcessIgnoreInputEventsChanged(
     bool ignore_input_events) {
   if (ignore_input_events)
-    StopHangMonitorTimeout();
+    StopInputEventAckTimeout();
   else
-    RestartHangMonitorTimeoutIfNecessary();
+    RestartInputEventAckTimeoutIfNecessary();
 }
 
-void RenderWidgetHostImpl::StartHangMonitorTimeout(TimeDelta delay) {
-  if (!hang_monitor_timeout_)
+void RenderWidgetHostImpl::StartInputEventAckTimeout(TimeDelta delay) {
+  if (!input_event_ack_timeout_)
     return;
-  hang_monitor_timeout_->Start(delay);
-  hang_monitor_start_time_ = clock_->NowTicks();
+  input_event_ack_timeout_->Start(delay);
+  input_event_ack_start_time_ = clock_->NowTicks();
 }
 
-void RenderWidgetHostImpl::RestartHangMonitorTimeoutIfNecessary() {
-  if (hang_monitor_timeout_ && in_flight_event_count_ > 0 && !is_hidden_)
-    hang_monitor_timeout_->Restart(hung_renderer_delay_);
+void RenderWidgetHostImpl::RestartInputEventAckTimeoutIfNecessary() {
+  if (input_event_ack_timeout_ && in_flight_event_count_ > 0 && !is_hidden_)
+    input_event_ack_timeout_->Restart(hung_renderer_delay_);
 }
 
 bool RenderWidgetHostImpl::IsCurrentlyUnresponsive() const {
   return is_unresponsive_;
 }
 
-void RenderWidgetHostImpl::StopHangMonitorTimeout() {
-  if (hang_monitor_timeout_)
-    hang_monitor_timeout_->Stop();
+void RenderWidgetHostImpl::StopInputEventAckTimeout() {
+  if (input_event_ack_timeout_)
+    input_event_ack_timeout_->Stop();
 
-  if (!hang_monitor_start_time_.is_null()) {
-    base::TimeDelta elapsed = clock_->NowTicks() - hang_monitor_start_time_;
+  if (!input_event_ack_start_time_.is_null()) {
+    base::TimeDelta elapsed = clock_->NowTicks() - input_event_ack_start_time_;
     const base::TimeDelta kMinimumHangTimeToReport =
         base::TimeDelta::FromSeconds(5);
     if (elapsed >= kMinimumHangTimeToReport)
       UMA_HISTOGRAM_LONG_TIMES("Renderer.Hung.Duration", elapsed);
 
-    hang_monitor_start_time_ = TimeTicks();
+    input_event_ack_start_time_ = TimeTicks();
   }
   RendererIsResponsive();
 }
@@ -1890,7 +1890,7 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
 
   // Reset this to ensure the hung renderer mechanism is working properly.
   in_flight_event_count_ = 0;
-  StopHangMonitorTimeout();
+  StopInputEventAckTimeout();
 
   if (view_) {
     view_->RenderProcessGone(status, exit_code);
@@ -2046,7 +2046,10 @@ void RenderWidgetHostImpl::RendererIsUnresponsive() {
   is_unresponsive_ = true;
 
   if (delegate_)
-    delegate_->RendererUnresponsive(this);
+    delegate_->RendererUnresponsive(
+        this, base::BindRepeating(
+                  &RenderWidgetHostImpl::RestartInputEventAckTimeoutIfNecessary,
+                  weak_factory_.GetWeakPtr()));
 
   // Do not add code after this since the Delegate may delete this
   // RenderWidgetHostImpl in RendererUnresponsive.
@@ -2451,7 +2454,7 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
 void RenderWidgetHostImpl::IncrementInFlightEventCount() {
   ++in_flight_event_count_;
   if (!is_hidden_)
-    StartHangMonitorTimeout(hung_renderer_delay_);
+    StartInputEventAckTimeout(hung_renderer_delay_);
 }
 
 void RenderWidgetHostImpl::DecrementInFlightEventCount(
@@ -2459,12 +2462,12 @@ void RenderWidgetHostImpl::DecrementInFlightEventCount(
   --in_flight_event_count_;
   if (in_flight_event_count_ <= 0) {
     // Cancel pending hung renderer checks since the renderer is responsive.
-    StopHangMonitorTimeout();
+    StopInputEventAckTimeout();
   } else {
     // Only restart the hang monitor timer if we got a response from the
     // main thread.
     if (ack_source == InputEventAckSource::MAIN_THREAD)
-      RestartHangMonitorTimeoutIfNecessary();
+      RestartInputEventAckTimeoutIfNecessary();
   }
 }
 
@@ -2981,7 +2984,7 @@ device::mojom::WakeLock* RenderWidgetHostImpl::GetWakeLock() {
 
 void RenderWidgetHostImpl::SetupInputRouter() {
   in_flight_event_count_ = 0;
-  StopHangMonitorTimeout();
+  StopInputEventAckTimeout();
   associated_widget_input_handler_ = nullptr;
   widget_input_handler_ = nullptr;
 

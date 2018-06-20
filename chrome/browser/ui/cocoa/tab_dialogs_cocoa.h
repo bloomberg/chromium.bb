@@ -18,7 +18,8 @@ class TabDialogsCocoa : public TabDialogs {
   gfx::NativeView GetDialogParentView() const override;
   void ShowCollectedCookies() override;
   void ShowHungRendererDialog(
-      content::RenderWidgetHost* render_widget_host) override;
+      content::RenderWidgetHost* render_widget_host,
+      base::RepeatingClosure hang_monitor_restarter) override;
   void HideHungRendererDialog(
       content::RenderWidgetHost* render_widget_host) override;
   bool IsShowingHungRendererDialog() override;

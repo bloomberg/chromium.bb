@@ -6,6 +6,10 @@
 
 #include <stddef.h>
 
+#include <map>
+#include <string>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -489,12 +493,12 @@ bool Shell::IsFullscreenForTabOrPending(const WebContents* web_contents) const {
 
 blink::WebDisplayMode Shell::GetDisplayMode(
     const WebContents* web_contents) const {
- // TODO : should return blink::WebDisplayModeFullscreen wherever user puts
- // a browser window into fullscreen (not only in case of renderer-initiated
- // fullscreen mode): crbug.com/476874.
- return IsFullscreenForTabOrPending(web_contents)
-            ? blink::kWebDisplayModeFullscreen
-            : blink::kWebDisplayModeBrowser;
+  // TODO: should return blink::WebDisplayModeFullscreen wherever user puts
+  // a browser window into fullscreen (not only in case of renderer-initiated
+  // fullscreen mode): crbug.com/476874.
+  return IsFullscreenForTabOrPending(web_contents)
+             ? blink::kWebDisplayModeFullscreen
+             : blink::kWebDisplayModeBrowser;
 }
 
 void Shell::RequestToLockMouse(WebContents* web_contents,
@@ -546,8 +550,10 @@ bool Shell::DidAddMessageToConsole(WebContents* source,
   return switches::IsRunWebTestsSwitchPresent();
 }
 
-void Shell::RendererUnresponsive(WebContents* source,
-                                 RenderWidgetHost* render_widget_host) {
+void Shell::RendererUnresponsive(
+    WebContents* source,
+    RenderWidgetHost* render_widget_host,
+    base::RepeatingClosure hang_monitor_restarter) {
   BlinkTestController* blink_test_controller = BlinkTestController::Get();
   if (blink_test_controller && switches::IsRunWebTestsSwitchPresent())
     blink_test_controller->RendererUnresponsive();

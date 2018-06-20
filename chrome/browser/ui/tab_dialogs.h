@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/supports_user_data.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -44,7 +45,8 @@ class TabDialogs : public base::SupportsUserData::Data {
 
   // Shows or hides the hung renderer dialog.
   virtual void ShowHungRendererDialog(
-      content::RenderWidgetHost* render_widget_host) = 0;
+      content::RenderWidgetHost* render_widget_host,
+      base::RepeatingClosure hang_monitor_restarter) = 0;
   virtual void HideHungRendererDialog(
       content::RenderWidgetHost* render_widget_host) = 0;
   virtual bool IsShowingHungRendererDialog() = 0;
