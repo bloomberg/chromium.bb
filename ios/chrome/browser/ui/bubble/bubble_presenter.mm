@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/commands/toolbar_commands.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
@@ -29,6 +30,10 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+const CGFloat kBubblePresentationDelay = 1;
+}  // namespace
 
 @interface BubblePresenter ()
 
@@ -84,7 +89,16 @@
   void (^onInitializedBlock)(bool) = ^(bool successfullyLoaded) {
     if (!successfullyLoaded)
       return;
-    [weakSelf presentBubbles];
+    if (IsUIRefreshPhase1Enabled()) {
+      dispatch_after(
+          dispatch_time(DISPATCH_TIME_NOW,
+                        (int64_t)(kBubblePresentationDelay * NSEC_PER_SEC)),
+          dispatch_get_main_queue(), ^{
+            [weakSelf presentBubbles];
+          });
+    } else {
+      [weakSelf presentBubbles];
+    }
   };
 
   // Because the new tab tip occurs on startup, the feature engagement
