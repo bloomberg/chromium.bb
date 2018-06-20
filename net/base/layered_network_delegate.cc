@@ -231,18 +231,19 @@ bool LayeredNetworkDelegate::
         const URLRequest& request,
         const GURL& target_url,
         const GURL& referrer_url) const {
-  OnCancelURLRequestWithPolicyViolatingReferrerHeaderInternal(
-      request, target_url, referrer_url);
-  return nested_network_delegate_
-      ->CancelURLRequestWithPolicyViolatingReferrerHeader(request, target_url,
-                                                          referrer_url);
+  return OnCancelURLRequestWithPolicyViolatingReferrerHeaderInternal(
+             request, target_url, referrer_url) ||
+         nested_network_delegate_
+             ->CancelURLRequestWithPolicyViolatingReferrerHeader(
+                 request, target_url, referrer_url);
 }
 
-void LayeredNetworkDelegate::
+bool LayeredNetworkDelegate::
     OnCancelURLRequestWithPolicyViolatingReferrerHeaderInternal(
         const URLRequest& request,
         const GURL& target_url,
         const GURL& referrer_url) const {
+  return false;
 }
 
 bool LayeredNetworkDelegate::OnCanQueueReportingReport(

@@ -322,7 +322,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_EQ(1, (*counters_)["on_can_enable_privacy_mode_count"]);
   }
 
-  void OnCancelURLRequestWithPolicyViolatingReferrerHeaderInternal(
+  bool OnCancelURLRequestWithPolicyViolatingReferrerHeaderInternal(
       const URLRequest& request,
       const GURL& target_url,
       const GURL& referrer_url) const override {
@@ -332,6 +332,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_EQ(1, (*counters_)
                      ["on_cancel_url_request_with_policy_"
                       "violating_referrer_header_count"]);
+    return false;
   }
 
   void OnCanQueueReportingReportInternal(

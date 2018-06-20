@@ -163,7 +163,9 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
 
   virtual void OnAreExperimentalCookieFeaturesEnabledInternal() const;
 
-  virtual void OnCancelURLRequestWithPolicyViolatingReferrerHeaderInternal(
+  // If this returns false, it short circuits the corresponding call in any
+  // nested NetworkDelegates.
+  virtual bool OnCancelURLRequestWithPolicyViolatingReferrerHeaderInternal(
       const URLRequest& request,
       const GURL& target_url,
       const GURL& referrer_url) const;

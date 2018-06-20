@@ -50,6 +50,10 @@ struct NetworkContextParams {
   // If false, the referrer of requests is never populated.
   bool enable_referrers = true;
 
+  // If true, requests initiated with referrers that don't match their referrer
+  // policy will fail.
+  bool validate_referrer_policy_on_initial_request = true;
+
   // Handles PAC script execution. If not populated, will attempt to use
   // platform implementation to execute PAC scripts, if available (Only
   // available on Windows and Mac).

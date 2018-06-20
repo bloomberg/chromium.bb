@@ -56,6 +56,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
@@ -943,6 +944,36 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   request->referrer = kReferrer;
   ASSERT_TRUE(FetchHeaderEcho("referer", &referrer, std::move(request)));
   EXPECT_EQ("None", referrer);
+}
+
+// Make sure that sending referrers that violate the referrer policy results in
+// errors.
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
+                       PolicyViolatingReferrers) {
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
+  request->url = embedded_test_server()->GetURL("/echoheader?Referer");
+  request->referrer = GURL("http://referrer/");
+  request->referrer_policy = net::URLRequest::NO_REFERRER;
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory(), simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+  if (GetParam().network_context_type == NetworkContextType::kSafeBrowsing &&
+      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // Safebrowsing ignores referrers, when the network service is enabled, so
+    // the requests succeed.
+    EXPECT_EQ(net::OK, simple_loader->NetError());
+    ASSERT_TRUE(simple_loader_helper.response_body());
+    EXPECT_EQ("None", *simple_loader_helper.response_body());
+  } else {
+    // In all other cases, the invalid referrer causes the request to fail.
+    EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, simple_loader->NetError());
+  }
 }
 
 class NetworkContextConfigurationFixedPortBrowserTest

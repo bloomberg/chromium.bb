@@ -94,24 +94,6 @@ void ForceGoogleSafeSearchCallbackWrapper(net::CompletionOnceCallback callback,
   std::move(callback).Run(rv);
 }
 
-void ReportInvalidReferrerSendOnUI() {
-  base::RecordAction(
-      base::UserMetricsAction("Net.URLRequest_StartJob_InvalidReferrer"));
-}
-
-void ReportInvalidReferrerSend(const GURL& target_url,
-                               const GURL& referrer_url) {
-  LOG(ERROR) << "Cancelling request to " << target_url
-             << " with invalid referrer " << referrer_url;
-  // Record information to help debug http://crbug.com/422871
-  if (!target_url.SchemeIsHTTPOrHTTPS())
-    return;
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&ReportInvalidReferrerSendOnUI));
-  base::debug::DumpWithoutCrashing();
-  NOTREACHED();
-}
-
 // Record network errors that HTTP requests complete with, including OK and
 // ABORTED.
 void RecordNetworkErrorHistograms(const net::URLRequest* request,
@@ -496,7 +478,9 @@ bool ChromeNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
     const net::URLRequest& request,
     const GURL& target_url,
     const GURL& referrer_url) const {
-  ReportInvalidReferrerSend(target_url, referrer_url);
+  // These errors should be handled by the NetworkDelegate wrapper created by
+  // the owning NetworkContext.
+  NOTREACHED();
   return true;
 }
 

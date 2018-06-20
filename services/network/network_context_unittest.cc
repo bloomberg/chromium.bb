@@ -35,6 +35,7 @@
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/cache_type.h"
 #include "net/base/hash_value.h"
 #include "net/base/ip_endpoint.h"
@@ -812,6 +813,75 @@ TEST_F(NetworkContextTest, CertReporting) {
     // Remove global reference to the MockCertVerifier before it falls out of
     // scope.
     NetworkContext::SetCertVerifierForTesting(nullptr);
+  }
+}
+
+// Test that valid referrers are allowed, while invalid ones result in errors.
+TEST_F(NetworkContextTest, Referrers) {
+  const GURL kReferrer = GURL("http://referrer/");
+  net::test_server::EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  for (bool validate_referrer_policy_on_initial_request : {false, true}) {
+    for (net::URLRequest::ReferrerPolicy referrer_policy :
+         {net::URLRequest::NEVER_CLEAR_REFERRER,
+          net::URLRequest::NO_REFERRER}) {
+      mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+      context_params->validate_referrer_policy_on_initial_request =
+          validate_referrer_policy_on_initial_request;
+      std::unique_ptr<NetworkContext> network_context =
+          CreateContextWithParams(std::move(context_params));
+
+      mojom::URLLoaderFactoryPtr loader_factory;
+      mojom::URLLoaderFactoryParamsPtr params =
+          mojom::URLLoaderFactoryParams::New();
+      params->process_id = 0;
+      network_context->CreateURLLoaderFactory(
+          mojo::MakeRequest(&loader_factory), std::move(params));
+
+      ResourceRequest request;
+      request.url = test_server.GetURL("/echoheader?Referer");
+      request.referrer = kReferrer;
+      request.referrer_policy = referrer_policy;
+
+      mojom::URLLoaderPtr loader;
+      TestURLLoaderClient client;
+      loader_factory->CreateLoaderAndStart(
+          mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
+          0 /* options */, request, client.CreateInterfacePtr(),
+          net::MutableNetworkTrafficAnnotationTag(
+              TRAFFIC_ANNOTATION_FOR_TESTS));
+
+      client.RunUntilComplete();
+      EXPECT_TRUE(client.has_received_completion());
+
+      // If validating referrers, and the referrer policy is not to send
+      // referrers, the request should fail.
+      if (validate_referrer_policy_on_initial_request &&
+          referrer_policy == net::URLRequest::NO_REFERRER) {
+        EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT,
+                  client.completion_status().error_code);
+        EXPECT_FALSE(client.response_body().is_valid());
+        continue;
+      }
+
+      // Otherwise, the request should succeed.
+      EXPECT_EQ(net::OK, client.completion_status().error_code);
+      std::string response_body;
+      ASSERT_TRUE(client.response_body().is_valid());
+      EXPECT_TRUE(mojo::BlockingCopyToString(client.response_body_release(),
+                                             &response_body));
+      if (referrer_policy == net::URLRequest::NO_REFERRER) {
+        // If not validating referrers, and the referrer policy is not to send
+        // referrers, the referrer should be cleared.
+        EXPECT_EQ("None", response_body);
+      } else {
+        // Otherwise, the referrer should be send.
+        EXPECT_EQ(kReferrer.spec(), response_body);
+      }
+    }
   }
 }
 
