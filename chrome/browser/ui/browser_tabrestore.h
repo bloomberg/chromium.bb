@@ -34,7 +34,9 @@ namespace chrome {
 // contains the string being used as the user agent for all of the tab's
 // navigations when the regular user agent is overridden. If
 // |from_session_restore| is true, the restored tab is created by session
-// restore. Returns the WebContents of the restored tab.
+// restore. |last_active_time| is the value to use to indicate the last time the
+// WebContents was made active, if this is left default initialized then the
+// creation time will be used. Returns the WebContents of the restored tab.
 content::WebContents* AddRestoredTab(
     Browser* browser,
     const std::vector<sessions::SerializedNavigationEntry>& navigations,
@@ -44,6 +46,7 @@ content::WebContents* AddRestoredTab(
     bool select,
     bool pin,
     bool from_last_session,
+    base::TimeTicks last_active_time,
     content::SessionStorageNamespace* storage_namespace,
     const std::string& user_agent_override,
     bool from_session_restore);

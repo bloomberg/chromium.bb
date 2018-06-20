@@ -581,6 +581,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
       old_contents->GetVisibility() == content::Visibility::HIDDEN;
   create_params.desired_renderer_state =
       content::WebContents::CreateParams::kNoRendererProcess;
+  create_params.last_active_time = old_contents->GetLastActiveTime();
   std::unique_ptr<content::WebContents> null_contents =
       content::WebContents::Create(create_params);
   content::WebContents* raw_null_contents = null_contents.get();
@@ -600,9 +601,6 @@ void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
   // care of reloading the tab when it becomes active in a focused window.
   null_contents->GetController().CopyStateFrom(old_contents->GetController(),
                                                /* needs_reload */ false);
-
-  // Persist the last active time property.
-  null_contents->SetLastActiveTime(old_contents->GetLastActiveTime());
 
   // First try to fast-kill the process, if it's just running a single tab.
   bool fast_shutdown_success =

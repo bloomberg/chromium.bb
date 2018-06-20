@@ -17,6 +17,7 @@
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/invalidate_type.h"
@@ -216,6 +217,12 @@ class WebContents : public PageNavigator,
 
     // Sandboxing flags set on the new WebContents.
     blink::WebSandboxFlags starting_sandbox_flags;
+
+    // Value used to set the last time the WebContents was made active, this is
+    // the value that'll be returned by GetLastActiveTime(). If this is left
+    // default initialized then the value is not passed on to the WebContents
+    // and GetLastActiveTime() will return the WebContents' creation time.
+    base::TimeTicks last_active_time;
   };
 
   // Creates a new WebContents.
@@ -465,7 +472,7 @@ class WebContents : public PageNavigator,
 
   // Indicates whether this tab should be considered crashed. The setter will
   // also notify the delegate when the flag is changed.
-  virtual bool IsCrashed() const  = 0;
+  virtual bool IsCrashed() const = 0;
   virtual void SetIsCrashed(base::TerminationStatus status, int error_code) = 0;
 
   virtual base::TerminationStatus GetCrashedStatus() const = 0;
@@ -486,7 +493,6 @@ class WebContents : public PageNavigator,
   // Get/Set the last time that the WebContents was made active (either when it
   // was created or shown with WasShown()).
   virtual base::TimeTicks GetLastActiveTime() const = 0;
-  virtual void SetLastActiveTime(base::TimeTicks last_active_time) = 0;
 
   // Invoked when the WebContents becomes shown/hidden. A hidden WebContents
   // isn't painted on the screen.

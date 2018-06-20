@@ -301,7 +301,8 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
                   &foreground_lifecycle_unit);
     content::WebContents* initial_web_contents =
         tab_strip_model_->GetWebContentsAt(0);
-    initial_web_contents->SetLastActiveTime(kDummyLastActiveTime);
+    content::WebContentsTester::For(initial_web_contents)
+        ->SetLastActiveTime(kDummyLastActiveTime);
 
     // Discard the tab.
     EXPECT_EQ(LifecycleUnitState::ACTIVE,

@@ -36,6 +36,7 @@
 #endif  // defined(OS_CHROMEOS)
 
 using content::WebContents;
+using content::WebContentsTester;
 
 namespace {
 
@@ -120,7 +121,8 @@ class TabDesktopMediaListTest : public testing::Test {
             profile_, content::SiteInstance::Create(profile_)));
     ASSERT_TRUE(contents);
 
-    contents->SetLastActiveTime(base::TimeTicks::Now());
+    WebContentsTester::For(contents.get())
+        ->SetLastActiveTime(base::TimeTicks::Now());
 
     // Get or create the transient NavigationEntry and add a title and a
     // favicon to it.
@@ -314,8 +316,8 @@ TEST_F(TabDesktopMediaListTest, MoveTab) {
   ASSERT_TRUE(contents1);
   base::TimeTicks t1 = contents1->GetLastActiveTime();
 
-  contents0->SetLastActiveTime(t1);
-  contents1->SetLastActiveTime(t0);
+  WebContentsTester::For(contents0)->SetLastActiveTime(t1);
+  WebContentsTester::For(contents1)->SetLastActiveTime(t0);
 
   EXPECT_CALL(observer_, OnSourceMoved(list_.get(), 1, 0))
       .WillOnce(testing::DoAll(CheckListSize(list_.get(), kDefaultSourceCount),

@@ -159,6 +159,9 @@ class WebContentsTester {
 
   // Sets the return value of GetPageImportanceSignals().
   virtual void SetPageImportanceSignals(PageImportanceSignals signals) = 0;
+
+  // Sets the last active time.
+  virtual void SetLastActiveTime(base::TimeTicks last_active_time) = 0;
 };
 
 }  // namespace content
