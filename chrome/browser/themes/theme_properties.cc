@@ -81,7 +81,9 @@ constexpr SkColor kDefaultColorButtonBackground = SK_ColorTRANSPARENT;
 
 // Default tints.
 constexpr color_utils::HSL kDefaultTintButtons = {-1, -1, -1};
-constexpr color_utils::HSL kDefaultTintButtonsIncognito = {-1, -1, 0.85};
+constexpr color_utils::HSL kDefaultTintButtonsIncognito = {-1, -1, 0.96};
+constexpr color_utils::HSL kPreRefreshDefaultTintButtonsIncognito = {-1, -1,
+                                                                     0.85};
 constexpr color_utils::HSL kDefaultTintFrame = {-1, -1, -1};
 constexpr color_utils::HSL kDefaultTintFrameInactive = {-1, -1, 0.75};
 constexpr color_utils::HSL kDefaultTintFrameIncognito = {-1, 0.2, 0.35};
@@ -261,6 +263,8 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool incognito) {
       return incognito ? kDefaultTintFrameIncognitoInactive
                        : kDefaultTintFrameInactive;
     case TINT_BUTTONS:
+      if (incognito && !ui::MaterialDesignController::IsRefreshUi())
+        return kPreRefreshDefaultTintButtonsIncognito;
       return incognito ? kDefaultTintButtonsIncognito : kDefaultTintButtons;
     case TINT_BACKGROUND_TAB:
       return kDefaultTintBackgroundTab;

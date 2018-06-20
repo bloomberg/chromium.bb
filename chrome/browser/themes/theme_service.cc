@@ -428,13 +428,6 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
       ui::MaterialDesignController::IsNewerMaterialUi();
   switch (id) {
     case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
-      // Touch-optimized UI uses different colors than gfx::kChromeIconGrey.
-      // They are two specific colors in normal and incognito modes which we
-      // can't get one from the other by HSLShift().
-      // TODO: This will break custom themes. https://crbug.com/820495.
-      if (is_newer_material)
-        break;
-
       return color_utils::HSLShift(
           gfx::kChromeIconGrey,
           GetTint(ThemeProperties::TINT_BUTTONS, incognito));
@@ -467,9 +460,10 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
           0x4D);
     }
     case ThemeProperties::COLOR_BACKGROUND_TAB: {
-      // Touch optimized color design uses different tab background colors.
-      // TODO(malaykeshav) - This will break custom themes on touch optimized
-      // UI. Use tint shift instead. https://crbug.com/820495.
+      // Touchable hardcodes the background tab color. This can break custom
+      // themes, but touchable is replaced by touchable refresh, which doesn't
+      // use the default background tab color at all, so this issue won't be
+      // fixed.
       if (is_newer_material)
         break;
 
