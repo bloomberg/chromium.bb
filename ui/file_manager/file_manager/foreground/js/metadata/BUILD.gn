@@ -7,6 +7,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   deps = [
     ":byte_reader",
+    ":closure_compile_externs",
     ":content_metadata_provider",
     ":exif_constants",
     ":exif_parser",
@@ -31,6 +32,21 @@ js_type_check("closure_compile") {
   ]
 }
 
+js_library("closure_compile_externs") {
+  sources = []
+  externs_list = [
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/command_line_private.js",
+    "$externs_path/file_manager_private.js",
+    "../../../../externs/app_window_common.js",
+    "../../../../externs/entry_location.js",
+    "../../../../externs/exif_entry.js",
+    "../../../../externs/metadata_worker_window.js",
+    "../../../../externs/platform.js",
+    "../../../../externs/volume_info.js",
+  ]
+}
+
 js_library("byte_reader") {
 }
 
@@ -40,7 +56,6 @@ js_library("content_metadata_provider") {
     "../../../common/js:file_type",
     "../../../common/js:util",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
 js_library("exif_constants") {
@@ -52,14 +67,12 @@ js_library("exif_parser") {
     ":image_parsers",
     ":metadata_parser",
   ]
-  externs_list = [ "../../../../externs/exif_entry.js" ]
 }
 
 js_library("external_metadata_provider") {
   deps = [
     ":metadata_provider",
   ]
-  externs_list = [ "$externs_path/file_manager_private.js" ]
 }
 
 js_library("file_system_metadata_provider") {
@@ -120,10 +133,6 @@ js_library("metadata_dispatcher") {
   deps = [
     ":metadata_parser",
   ]
-  externs_list = [
-    "../../../../externs/metadata_worker_window.js",
-    "../../../../externs/platform.js",
-  ]
 }
 
 js_library("metadata_item") {
@@ -146,7 +155,6 @@ js_library("metadata_parser") {
   deps = [
     ":byte_reader",
   ]
-  externs_list = [ "../../../../externs/metadata_worker_window.js" ]
 }
 
 js_library("metadata_provider") {

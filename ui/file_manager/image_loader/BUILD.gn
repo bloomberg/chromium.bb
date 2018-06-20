@@ -8,12 +8,23 @@ js_type_check("closure_compile") {
   deps = [
     ":background",
     ":cache",
+    ":closure_compile_externs",
     ":image_loader",
     ":image_loader_client",
     ":image_loader_util",
     ":piex_loader",
     ":request",
     ":scheduler",
+  ]
+}
+
+js_library("closure_compile_externs") {
+  sources = []
+  externs_list = [
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/file_manager_private.js",
+    "$externs_path/metrics_private.js",
+    "//third_party/analytics/externs.js",
   ]
 }
 
@@ -33,10 +44,6 @@ js_library("image_loader") {
     ":request",
     ":scheduler",
   ]
-  externs_list = [
-    "$externs_path/chrome_extensions.js",
-    "$externs_path/file_manager_private.js",
-  ]
 }
 
 js_library("image_loader_util") {
@@ -44,16 +51,11 @@ js_library("image_loader_util") {
     ":piex_loader",
     "//ui/webui/resources/js:assert",
   ]
-  externs_list = [ "$externs_path/file_manager_private.js" ]
 }
 
 js_library("image_loader_client") {
   deps = [
     "../file_manager/common/js:lru_cache",
-  ]
-  externs_list = [
-    "$externs_path/chrome_extensions.js",
-    "$externs_path/metrics_private.js",
   ]
 }
 
@@ -61,7 +63,6 @@ js_library("piex_loader") {
   deps = [
     "../file_manager/foreground/js/metadata:image_orientation",
   ]
-  externs_list = [ "$externs_path/file_manager_private.js" ]
 }
 
 js_library("request") {
