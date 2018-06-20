@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier.h"
+#include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
 
 #include <string>
 #include <vector>
@@ -60,7 +60,7 @@ class MultiDeviceSetupAccountStatusChangeDelegateNotifierTest
   void SetUp() override {
     test_pref_service_ =
         std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
-    AccountStatusChangeDelegateNotifier::RegisterPrefs(
+    AccountStatusChangeDelegateNotifierImpl::RegisterPrefs(
         test_pref_service_->registry());
 
     fake_delegate_ = std::make_unique<FakeAccountStatusChangeDelegate>();
@@ -77,25 +77,25 @@ class MultiDeviceSetupAccountStatusChangeDelegateNotifierTest
 
   void BuildAccountStatusChangeDelegateNotifier() {
     delegate_notifier_ =
-        AccountStatusChangeDelegateNotifier::Factory::Get()->BuildInstance(
+        AccountStatusChangeDelegateNotifierImpl::Factory::Get()->BuildInstance(
             fake_device_sync_client_.get(), test_pref_service_.get(),
             fake_setup_flow_completion_recorder_.get(), test_clock_.get());
   }
 
   void SetNewUserPotentialHostExistsTimestamp(int64_t timestamp) {
-    test_pref_service_->SetInt64(AccountStatusChangeDelegateNotifier::
+    test_pref_service_->SetInt64(AccountStatusChangeDelegateNotifierImpl::
                                      kNewUserPotentialHostExistsPrefName,
                                  timestamp);
   }
 
   void SetExistingUserChromebookAddedTimestamp(int64_t timestamp) {
-    test_pref_service_->SetInt64(AccountStatusChangeDelegateNotifier::
+    test_pref_service_->SetInt64(AccountStatusChangeDelegateNotifierImpl::
                                      kExistingUserChromebookAddedPrefName,
                                  timestamp);
   }
 
   void SetHostFromPreviousSession(std::string old_host_key) {
-    test_pref_service_->SetString(AccountStatusChangeDelegateNotifier::
+    test_pref_service_->SetString(AccountStatusChangeDelegateNotifierImpl::
                                       kHostPublicKeyFromMostRecentSyncPrefName,
                                   old_host_key);
   }
@@ -108,7 +108,11 @@ class MultiDeviceSetupAccountStatusChangeDelegateNotifierTest
 
   void RecordSetupFlowCompletionAtEarlierTime(const base::Time& earlier_time) {
     fake_setup_flow_completion_recorder_->set_current_time(earlier_time);
-    delegate_notifier_->setup_flow_completion_recorder_->RecordCompletion();
+
+    SetupFlowCompletionRecorder* derived_ptr =
+        static_cast<SetupFlowCompletionRecorder*>(
+            fake_setup_flow_completion_recorder_.get());
+    derived_ptr->RecordCompletion();
   }
 
   void NotifyNewDevicesSynced() {
@@ -153,13 +157,13 @@ class MultiDeviceSetupAccountStatusChangeDelegateNotifierTest
 
   int64_t GetNewUserPotentialHostExistsTimestamp() {
     return test_pref_service_->GetInt64(
-        AccountStatusChangeDelegateNotifier::
+        AccountStatusChangeDelegateNotifierImpl::
             kNewUserPotentialHostExistsPrefName);
   }
 
   int64_t GetExistingUserChromebookAddedTimestamp() {
     return test_pref_service_->GetInt64(
-        AccountStatusChangeDelegateNotifier::
+        AccountStatusChangeDelegateNotifierImpl::
             kExistingUserChromebookAddedPrefName);
   }
 
