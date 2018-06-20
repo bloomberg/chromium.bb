@@ -860,47 +860,6 @@ const FeatureEntry::FeatureVariation
          arraysize(kAutofillCreditCardLastUsedDateFeatureVariationExpDate),
          nullptr}};
 
-const FeatureEntry::FeatureParam kMemoryAblation5MiB_512[] = {
-    {blink::kMemoryAblationFeatureSizeParam, "5242880"},
-    {blink::kMemoryAblationFeatureMaxRAMParam, "512"}};
-const FeatureEntry::FeatureParam kMemoryAblation10MiB_512_1024[] = {
-    {blink::kMemoryAblationFeatureSizeParam, "10485760"},
-    {blink::kMemoryAblationFeatureMinRAMParam, "512"},
-    {blink::kMemoryAblationFeatureMaxRAMParam, "1024"}};
-const FeatureEntry::FeatureParam kMemoryAblation20MiB_1024_2048[] = {
-    {blink::kMemoryAblationFeatureSizeParam, "20971520"},
-    {blink::kMemoryAblationFeatureMinRAMParam, "1024"},
-    {blink::kMemoryAblationFeatureMaxRAMParam, "2048"}};
-const FeatureEntry::FeatureParam kMemoryAblation30MiB[] = {
-    {blink::kMemoryAblationFeatureSizeParam, "31457280"}};
-const FeatureEntry::FeatureParam kMemoryAblation40MiB_512_4096[] = {
-    {blink::kMemoryAblationFeatureSizeParam, "41943040"},
-    {blink::kMemoryAblationFeatureMinRAMParam, "512"},
-    {blink::kMemoryAblationFeatureMaxRAMParam, "4096"}};
-const FeatureEntry::FeatureParam kMemoryAblation50MiB_2048_4096[] = {
-    {blink::kMemoryAblationFeatureSizeParam, "52428800"},
-    {blink::kMemoryAblationFeatureMinRAMParam, "2048"},
-    {blink::kMemoryAblationFeatureMaxRAMParam, "4096"}};
-const FeatureEntry::FeatureParam kMemoryAblation100MiB_4096[] = {
-    {blink::kMemoryAblationFeatureSizeParam, "104857600"},
-    {blink::kMemoryAblationFeatureMinRAMParam, "4096"}};
-
-const FeatureEntry::FeatureVariation kMemoryAblationFeatureVariations[] = {
-    {"5 MiB (RAM <= 512)", kMemoryAblation5MiB_512,
-     arraysize(kMemoryAblation5MiB_512), nullptr},
-    {"10 MiB (512 <= RAM <= 1024)", kMemoryAblation10MiB_512_1024,
-     arraysize(kMemoryAblation10MiB_512_1024), nullptr},
-    {"20 MiB (1024 <= RAM <= 2048)", kMemoryAblation20MiB_1024_2048,
-     arraysize(kMemoryAblation20MiB_1024_2048), nullptr},
-    {"30 MiB (any RAM)", kMemoryAblation30MiB, arraysize(kMemoryAblation30MiB),
-     nullptr},
-    {"40 MiB (512 <= RAM <= 4096)", kMemoryAblation40MiB_512_4096,
-     arraysize(kMemoryAblation40MiB_512_4096), nullptr},
-    {"50 MiB (2048 <= RAM <= 4096)", kMemoryAblation50MiB_2048_4096,
-     arraysize(kMemoryAblation50MiB_2048_4096), nullptr},
-    {"100 MiB (RAM >= 4096)", kMemoryAblation100MiB_4096,
-     arraysize(kMemoryAblation100MiB_4096), nullptr}};
-
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kPersistentMenuItemEnabled[] = {
     {"persistent_menu_item_enabled", "true"}};
@@ -3055,12 +3014,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUiModeDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kAshUiModeChoices)},
 #endif  // OS_CHROMEOS
-
-    {"memory-ablation", flag_descriptions::kMemoryAblationName,
-     flag_descriptions::kMemoryAblationDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(blink::kMemoryAblationFeature,
-                                    kMemoryAblationFeatureVariations,
-                                    "MemoryAblation")},
 
 #if defined(OS_ANDROID)
     {"enable-command-line-on-non-rooted-devices",
