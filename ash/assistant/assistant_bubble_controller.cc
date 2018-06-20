@@ -81,13 +81,15 @@ bool AssistantBubbleController::OnCaptionButtonPressed(CaptionButtonId id) {
     case CaptionButtonId::kMinimize:
       UpdateUiMode(AssistantUiMode::kMiniUi);
       return true;
-    case CaptionButtonId::kSettings:
-      UpdateUiMode(AssistantUiMode::kWebUi);
-      return true;
     case CaptionButtonId::kClose:
       return false;
   }
   return false;
+}
+
+void AssistantBubbleController::OnSettingsButtonPressed() {
+  // TODO(dmblack): Navigate to Assistant settings.
+  UpdateUiMode(AssistantUiMode::kWebUi);
 }
 
 bool AssistantBubbleController::IsVisible() const {

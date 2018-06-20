@@ -356,6 +356,11 @@ void AssistantController::OnDialogPlateButtonPressed(DialogPlateButtonId id) {
     return;
   }
 
+  if (id == DialogPlateButtonId::kSettings) {
+    assistant_bubble_controller_->OnSettingsButtonPressed();
+    return;
+  }
+
   DCHECK_EQ(id, DialogPlateButtonId::kVoiceInputToggle);
 
   switch (assistant_interaction_model_.mic_state()) {

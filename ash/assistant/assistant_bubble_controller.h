@@ -49,6 +49,9 @@ class ASH_EXPORT AssistantBubbleController
   // CaptionBarDelegate:
   bool OnCaptionButtonPressed(CaptionButtonId id) override;
 
+  // Invoked on settings button pressed.
+  void OnSettingsButtonPressed();
+
   // Returns true if assistant bubble is visible, otherwise false.
   bool IsVisible() const;
 

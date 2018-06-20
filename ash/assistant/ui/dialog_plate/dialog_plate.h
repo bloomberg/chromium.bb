@@ -27,6 +27,7 @@ class AssistantController;
 enum class DialogPlateButtonId {
   kKeyboardInputToggle = 1,
   kVoiceInputToggle,
+  kSettings,
 };
 
 // DialogPlateDelegate ---------------------------------------------------------

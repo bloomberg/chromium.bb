@@ -8,11 +8,13 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -28,6 +30,20 @@ namespace {
 // Appearance.
 constexpr int kIconSizeDip = 24;
 constexpr int kPreferredHeightDip = 48;
+
+// Helpers ---------------------------------------------------------------------
+
+// Creates a settings button. Caller takes ownership.
+views::ImageButton* CreateSettingsButton(DialogPlate* dialog_plate) {
+  views::ImageButton* settings_button = new views::ImageButton(dialog_plate);
+  settings_button->set_id(static_cast<int>(DialogPlateButtonId::kSettings));
+  settings_button->SetImage(
+      views::Button::ButtonState::STATE_NORMAL,
+      gfx::CreateVectorIcon(kNotificationSettingsIcon, kIconSizeDip,
+                            gfx::kGoogleGrey600));
+  settings_button->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
+  return settings_button;
+}
 
 }  // namespace
 
@@ -113,6 +129,14 @@ void DialogPlate::InitKeyboardLayoutContainer() {
   voice_input_toggle_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
   keyboard_layout_container_->AddChildView(voice_input_toggle_);
 
+  // Spacer.
+  views::View* spacer = new views::View();
+  spacer->SetPreferredSize(gfx::Size(kSpacingDip, kSpacingDip));
+  keyboard_layout_container_->AddChildView(spacer);
+
+  // Settings.
+  keyboard_layout_container_->AddChildView(CreateSettingsButton(this));
+
   AddChildView(keyboard_layout_container_);
 }
 
@@ -154,13 +178,8 @@ void DialogPlate::InitVoiceLayoutContainer() {
 
   layout_manager->SetFlexForView(spacer, 1);
 
-  // Spacer.
-  // Note: this spacer has preferred size (kIconSizeDip, kIconSizeDip) to
-  // match |keyboard_input_toggle_| so that |action_view_| will be centered
-  // within its parent.
-  spacer = new views::View();
-  spacer->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  voice_layout_container_->AddChildView(spacer);
+  // Settings.
+  voice_layout_container_->AddChildView(CreateSettingsButton(this));
 
   AddChildView(voice_layout_container_);
 }
