@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_MODEL_ASSISTANT_BUBBLE_MODEL_H_
-#define ASH_ASSISTANT_MODEL_ASSISTANT_BUBBLE_MODEL_H_
+#ifndef ASH_ASSISTANT_MODEL_ASSISTANT_UI_MODEL_H_
+#define ASH_ASSISTANT_MODEL_ASSISTANT_UI_MODEL_H_
 
 #include "base/macros.h"
 #include "base/observer_list.h"
 
 namespace ash {
 
-class AssistantBubbleModelObserver;
+class AssistantUiModelObserver;
 
 // Enumeration of Assistant UI modes.
 enum class AssistantUiMode {
@@ -19,15 +19,15 @@ enum class AssistantUiMode {
   kWebUi,
 };
 
-// Models the Assistant bubble.
-class AssistantBubbleModel {
+// Models the Assistant UI.
+class AssistantUiModel {
  public:
-  AssistantBubbleModel();
-  ~AssistantBubbleModel();
+  AssistantUiModel();
+  ~AssistantUiModel();
 
   // Adds/removes the specified |observer|.
-  void AddObserver(AssistantBubbleModelObserver* observer);
-  void RemoveObserver(AssistantBubbleModelObserver* observer);
+  void AddObserver(AssistantUiModelObserver* observer);
+  void RemoveObserver(AssistantUiModelObserver* observer);
 
   // Sets the UI mode.
   void SetUiMode(AssistantUiMode ui_mode);
@@ -40,11 +40,11 @@ class AssistantBubbleModel {
 
   AssistantUiMode ui_mode_ = AssistantUiMode::kMainUi;
 
-  base::ObserverList<AssistantBubbleModelObserver> observers_;
+  base::ObserverList<AssistantUiModelObserver> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(AssistantBubbleModel);
+  DISALLOW_COPY_AND_ASSIGN(AssistantUiModel);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_MODEL_ASSISTANT_BUBBLE_MODEL_H_
+#endif  // ASH_ASSISTANT_MODEL_ASSISTANT_UI_MODEL_H_

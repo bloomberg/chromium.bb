@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/assistant/assistant_bubble_controller.h"
+#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -42,11 +42,11 @@ class AssistantControllerTest : public AshTestBase {
     assistant_binding_->Bind(mojo::MakeRequest(&assistant));
     controller_->SetAssistant(std::move(assistant));
 
-    ASSERT_FALSE(IsAssistantBubbleShown());
+    ASSERT_FALSE(IsAssistantUiShown());
   }
 
-  bool IsAssistantBubbleShown() {
-    return controller_->bubble_controller()->IsVisible();
+  bool IsAssistantUiShown() {
+    return controller_->ui_controller()->IsVisible();
   }
 
  private:

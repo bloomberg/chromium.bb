@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/assistant/ui/assistant_bubble_view.h"
+#include "ash/assistant/ui/assistant_container_view.h"
 
-#include "ash/assistant/assistant_bubble_controller.h"
 #include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/model/assistant_bubble_model.h"
+#include "ash/assistant/assistant_ui_controller.h"
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_main_view.h"
 #include "ash/assistant/ui/assistant_mini_view.h"
 #include "ash/assistant/ui/assistant_web_view.h"
@@ -30,7 +30,7 @@ constexpr int kMarginDip = 8;
 
 }  // namespace
 
-AssistantBubbleView::AssistantBubbleView(
+AssistantContainerView::AssistantContainerView(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller) {
   set_accept_events(true);
@@ -50,30 +50,30 @@ AssistantBubbleView::AssistantBubbleView(
   SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
 
   // The AssistantController owns the view hierarchy to which
-  // AssistantBubbleView belongs so is guaranteed to outlive it.
-  assistant_controller_->bubble_controller()->AddModelObserver(this);
+  // AssistantContainerView belongs so is guaranteed to outlive it.
+  assistant_controller_->ui_controller()->AddModelObserver(this);
 }
 
-AssistantBubbleView::~AssistantBubbleView() {
-  assistant_controller_->bubble_controller()->RemoveModelObserver(this);
+AssistantContainerView::~AssistantContainerView() {
+  assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
 
-void AssistantBubbleView::ChildPreferredSizeChanged(views::View* child) {
+void AssistantContainerView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-void AssistantBubbleView::PreferredSizeChanged() {
+void AssistantContainerView::PreferredSizeChanged() {
   views::View::PreferredSizeChanged();
 
   if (GetWidget())
     SizeToContents();
 }
 
-int AssistantBubbleView::GetDialogButtons() const {
+int AssistantContainerView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-void AssistantBubbleView::OnBeforeBubbleWidgetInit(
+void AssistantContainerView::OnBeforeBubbleWidgetInit(
     views::Widget::InitParams* params,
     views::Widget* widget) const {
   params->corner_radius = kCornerRadiusDip;
@@ -82,7 +82,7 @@ void AssistantBubbleView::OnBeforeBubbleWidgetInit(
   params->shadow_elevation = wm::kShadowElevationActiveWindow;
 }
 
-void AssistantBubbleView::Init() {
+void AssistantContainerView::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Main view.
@@ -100,16 +100,15 @@ void AssistantBubbleView::Init() {
   assistant_web_view_->set_owned_by_client();
 
   // Update the view state based on the current UI mode.
-  OnUiModeChanged(
-      assistant_controller_->bubble_controller()->model()->ui_mode());
+  OnUiModeChanged(assistant_controller_->ui_controller()->model()->ui_mode());
 }
 
-void AssistantBubbleView::RequestFocus() {
+void AssistantContainerView::RequestFocus() {
   if (assistant_main_view_)
     assistant_main_view_->RequestFocus();
 }
 
-void AssistantBubbleView::SetAnchor() {
+void AssistantContainerView::SetAnchor() {
   // TODO(dmblack): Handle multiple displays, dynamic shelf repositioning, and
   // any other corner cases.
   // Anchors to bottom center of primary display's work area.
@@ -123,7 +122,7 @@ void AssistantBubbleView::SetAnchor() {
   SetAnchorRect(anchor);
 }
 
-void AssistantBubbleView::OnUiModeChanged(AssistantUiMode ui_mode) {
+void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode) {
   RemoveAllChildViews(/*delete_children=*/false);
 
   switch (ui_mode) {
