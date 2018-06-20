@@ -295,6 +295,10 @@ initWithToolsMenuConfigurationProvider:
   return self.toolbarViewController.view.superview;
 }
 
+- (UIViewController*)popupParentViewController {
+  return self.toolbarViewController.parentViewController;
+}
+
 #pragma mark - ToolsMenuPresentationStateProvider
 
 - (BOOL)isShowingToolsMenu {
