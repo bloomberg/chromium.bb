@@ -21,27 +21,23 @@ message TaskQueueManagerTestDescription {
   // Describes interfaces that can be tested by the fuzzer.
   // TODO(farahcharab) Add more interfaces here.
   message Action {
-    // NEXT ID = 5
+    // NEXT ID = 3
 
-    // The number of milliseconds after which an action should be executed
-    // relative to the start of the program.
-    optional uint64 delay_ms = 1;
-
-    required PostDelayedTaskAction default_action_desc = 2;
-
-    oneof description {
-      CreateTaskQueueAction create_task_queue_desc = 3;
-      PostDelayedTaskAction post_delayed_task_desc = 4;
+    oneof action {
+      CreateTaskQueueAction create_task_queue = 1;
+      PostDelayedTaskAction post_delayed_task = 2;
     }
   }
 
   message Task {
-    // NEXT ID = 3
+    // NEXT ID = 4
 
-    // If not set, then this is a no-op task.
-    repeated Action actions = 1;
+    required uint64 task_id = 1;
 
     optional uint64 duration_ms = 2;
+
+    // If not set, then this is a no-op task.
+    repeated Action action = 3;
   }
 
   // Describes the grammar of TaskQueueManager::CreateTaskQueue.
@@ -56,14 +52,14 @@ message TaskQueueManagerTestDescription {
     // NEXT ID = 4
 
     // Used to identify the queue to post to.
-    required uint64 task_queue_id = 1;
+    optional uint64 task_queue_id = 1;
 
-    required Task task = 2;
+    optional Task task = 2;
 
     // Delay parameter passed to TaskQueue::PostDelayedTask i.e. the delay is
     // measured after executing the PostDelayedTaskAction.
     optional uint64 delay_ms = 3;
   }
 
-  repeated Action actions = 1;
+  repeated PostDelayedTaskAction initial_task = 1;
 }
