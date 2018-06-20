@@ -122,6 +122,11 @@ def generate_sharding_map(story_timing_dict, all_stories, num_shards, debug):
   total_time = 0
   sharding_map = OrderedDict()
   debug_map = OrderedDict()
+  min_shard_time = float('inf')
+  min_shard_index = None
+  max_shard_time = 0
+  max_shard_index = None
+  num_stories = len(story_timing_dict)
   for i in range(num_shards):
     sharding_map[str(i)] = {'benchmarks': OrderedDict()}
     debug_map[str(i)] = OrderedDict()
@@ -136,9 +141,25 @@ def generate_sharding_map(story_timing_dict, all_stories, num_shards, debug):
       debug_map[str(i)][story] = time
     _add_benchmarks_to_shard(sharding_map, i, stories_in_shard, all_stories)
     debug_map[str(i)]['full_time'] = time_per_shard
+    if time_per_shard > max_shard_time:
+      max_shard_time = time_per_shard
+      max_shard_index = i
+    if time_per_shard < min_shard_time:
+      min_shard_time = time_per_shard
+      min_shard_index = i
   if debug:
     with open(debug, 'w') as output_file:
       json.dump(debug_map, output_file, indent = 4, separators=(',', ': '))
+
+
+  sharding_map['extra_infos'] = OrderedDict([
+      ('num_stories', num_stories),
+      # Double all the time stats by 2 to account for reference build.
+      ('predicted_min_shard_time', min_shard_time * 2),
+      ('predicted_min_shard_index', min_shard_index),
+      ('predicted_max_shard_time', max_shard_time * 2),
+      ('predicted_max_shard_index', max_shard_index),
+      ])
   return sharding_map
 
 
@@ -222,6 +243,7 @@ def test_sharding_map(sharding_map_file, timing_data, all_stories):
 
   with open(sharding_map_file) as f:
     sharding_map = json.load(f, object_pairs_hook=OrderedDict)
+    sharding_map.pop('extra_infos', None)
     for shard in sharding_map:
       results[shard] = OrderedDict()
       shard_total_time = 0
