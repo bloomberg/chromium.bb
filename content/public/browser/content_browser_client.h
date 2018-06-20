@@ -76,7 +76,6 @@ class ImageSkia;
 namespace media {
 class AudioLogFactory;
 class AudioManager;
-class CdmFactory;
 }
 
 namespace mojo {
@@ -965,10 +964,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns true if (and only if) CreateAudioManager() is implemented and
   // returns a non-null value.
   virtual bool OverridesAudioManager();
-
-  // Creates and returns a factory used for creating CDM instances for playing
-  // protected content.
-  virtual std::unique_ptr<media::CdmFactory> CreateCdmFactory();
 
   // Populates |mappings| with all files that need to be mapped before launching
   // a child process.
