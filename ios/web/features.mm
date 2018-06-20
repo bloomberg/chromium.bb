@@ -8,7 +8,7 @@ namespace web {
 namespace features {
 
 const base::Feature kContextMenuElementPostMessage{
-    "ContextMenuElementPostMessage", base::FEATURE_ENABLED_BY_DEFAULT};
+    "ContextMenuElementPostMessage", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kWebFrameMessaging{"WebFrameMessaging",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
