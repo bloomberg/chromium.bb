@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "components/arc/common/input_method_manager.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -64,9 +65,25 @@ class ArcInputMethodManagerService
  private:
   void EnableIme(const std::string& ime_id, bool enable);
   void SwitchImeTo(const std::string& ime_id);
+  chromeos::input_method::InputMethodDescriptor BuildInputMethodDescriptor(
+      const mojom::ImeInfo* info);
+
+  // Removes ARC IME from IME related prefs that are current active IME pref,
+  // previous active IME pref, enabled IME list pref and preloading IME list
+  // pref.
+  void RemoveArcIMEFromPrefs();
+  void RemoveArcIMEFromPref(const char* pref_name);
+
+  Profile* const profile_;
 
   std::unique_ptr<ArcInputMethodManagerBridge> imm_bridge_;
   std::set<std::string> active_arc_ime_ids_;
+
+  // ArcInputMethodManager installs a proxy IME to redirect IME related events
+  // from/to ARC IMEs in the container. The below two variables are for the
+  // proxy IME.
+  const std::string proxy_ime_extension_id_;
+  std::unique_ptr<chromeos::InputMethodEngine> proxy_ime_engine_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcInputMethodManagerService);
 };
