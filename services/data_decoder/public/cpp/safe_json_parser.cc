@@ -4,6 +4,7 @@
 
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 
+#include "base/optional.h"
 #include "build/build_config.h"
 
 #if defined(OS_ANDROID)
@@ -21,7 +22,8 @@ SafeJsonParser::Factory g_factory = nullptr;
 SafeJsonParser* Create(service_manager::Connector* connector,
                        const std::string& unsafe_json,
                        const SafeJsonParser::SuccessCallback& success_callback,
-                       const SafeJsonParser::ErrorCallback& error_callback) {
+                       const SafeJsonParser::ErrorCallback& error_callback,
+                       const base::Optional<std::string>& batch_id) {
   if (g_factory)
     return g_factory(unsafe_json, success_callback, error_callback);
 
@@ -30,7 +32,7 @@ SafeJsonParser* Create(service_manager::Connector* connector,
                                    error_callback);
 #else
   return new SafeJsonParserImpl(connector, unsafe_json, success_callback,
-                                error_callback);
+                                error_callback, batch_id);
 #endif
 }
 
@@ -46,8 +48,19 @@ void SafeJsonParser::Parse(service_manager::Connector* connector,
                            const std::string& unsafe_json,
                            const SuccessCallback& success_callback,
                            const ErrorCallback& error_callback) {
-  SafeJsonParser* parser =
-      Create(connector, unsafe_json, success_callback, error_callback);
+  SafeJsonParser* parser = Create(connector, unsafe_json, success_callback,
+                                  error_callback, base::nullopt);
+  parser->Start();
+}
+
+// static
+void SafeJsonParser::ParseBatch(service_manager::Connector* connector,
+                                const std::string& unsafe_json,
+                                const SuccessCallback& success_callback,
+                                const ErrorCallback& error_callback,
+                                const std::string& batch_id) {
+  SafeJsonParser* parser = Create(connector, unsafe_json, success_callback,
+                                  error_callback, batch_id);
   parser->Start();
 }
 

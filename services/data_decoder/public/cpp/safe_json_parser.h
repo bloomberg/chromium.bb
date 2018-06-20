@@ -36,9 +36,9 @@ class SafeJsonParser {
 
   // Starts parsing the passed in |unsafe_json| and calls either
   // |success_callback| or |error_callback| when finished.
-  // |connector| is the connector provided by the service manager and is used
-  // to retrieve the JSON decoder service. It's commonly retrieved from a
-  // service manager connection context object that the embedder provides.
+  // |connector| is the connector provided by the service manager and is used to
+  // retrieve the JSON decoder service. It's commonly retrieved from a service
+  // manager connection context object that the embedder provides.
   // Note that on Android, this runs in process, the sanitizing of |unsafe_json|
   // being performed in Java for safety. On other platforms the parsing happens
   // in an isolated sandboxed utility process.
@@ -46,6 +46,17 @@ class SafeJsonParser {
                     const std::string& unsafe_json,
                     const SuccessCallback& success_callback,
                     const ErrorCallback& error_callback);
+
+  // Same as Parse, but allows clients to provide a |batch_id|, which the system
+  // may use to batch this parse request with other parse requests using the
+  // same |batch_id| in an effort to amortize the overhead of a single request.
+  // The trade-off is that batch requests may not be well-isolated from each
+  // other, so this should be used with appropriate caution.
+  static void ParseBatch(service_manager::Connector* connector,
+                         const std::string& unsafe_json,
+                         const SuccessCallback& success_callback,
+                         const ErrorCallback& error_callback,
+                         const std::string& batch_id);
 
   static void SetFactoryForTesting(Factory factory);
 
