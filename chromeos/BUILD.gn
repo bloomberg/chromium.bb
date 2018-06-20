@@ -829,17 +829,6 @@ if (cros_board != "") {
       "//:chromiumos_preflight",  # Builds the browser.
       ":cros_vm_sanity_test_wrapper",  # Builds the test wrapper.
     ]
-
-    # The following dependencies are needed to deploy chrome to the VM. See the
-    # link for the full list:
-    # https://codesearch.chromium.org/chromium/src/third_party/chromite/lib/chrome_util.py?l=341
-    data_deps += [ "//chrome:xdg_mime" ]
-
-    # TODO(bpastene): Figure out what's generating resources/chromeos/ and
-    # declare it as a dep instead of adding the dir directly.
-    data = [
-      "$root_out_dir/resources/chromeos/",
-    ]
   }
 }
 
