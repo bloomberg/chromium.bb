@@ -96,6 +96,8 @@ component("ash") {
     "assistant/assistant_bubble_controller.h",
     "assistant/assistant_controller.cc",
     "assistant/assistant_controller.h",
+    "assistant/assistant_interaction_controller.cc",
+    "assistant/assistant_interaction_controller.h",
     "assistant/model/assistant_bubble_model.cc",
     "assistant/model/assistant_bubble_model.h",
     "assistant/model/assistant_bubble_model_observer.h",

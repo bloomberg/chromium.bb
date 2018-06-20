@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/ui/logo_view/base_logo_view.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ui/gfx/color_palette.h"
@@ -34,11 +35,11 @@ ActionView::ActionView(AssistantController* assistant_controller,
 
   // The Assistant controller indirectly owns the view hierarchy to which
   // ActionView belongs so is guaranteed to outlive it.
-  assistant_controller_->AddInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->AddModelObserver(this);
 }
 
 ActionView::~ActionView() {
-  assistant_controller_->RemoveInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
 gfx::Size ActionView::CalculatePreferredSize() const {
@@ -102,7 +103,7 @@ void ActionView::OnSpeechLevelChanged(float speech_level_db) {
 
 void ActionView::UpdateState(bool animate) {
   const AssistantInteractionModel* interaction_model =
-      assistant_controller_->interaction_model();
+      assistant_controller_->interaction_controller()->model();
 
   InputModality input_modality = interaction_model->input_modality();
 

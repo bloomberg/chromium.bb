@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -34,11 +35,11 @@ AssistantMiniView::AssistantMiniView(AssistantController* assistant_controller)
 
   // AssistantController indirectly owns the view hierarchy to which
   // AssistantMiniView belongs so is guaranteed to outlive it.
-  assistant_controller_->AddInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->AddModelObserver(this);
 }
 
 AssistantMiniView::~AssistantMiniView() {
-  assistant_controller_->RemoveInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
 gfx::Size AssistantMiniView::CalculatePreferredSize() const {
@@ -79,8 +80,9 @@ void AssistantMiniView::InitLayout() {
   AddChildView(label_);
 
   // Trigger input modality changed event to initialize view state.
-  OnInputModalityChanged(
-      assistant_controller_->interaction_model()->input_modality());
+  OnInputModalityChanged(assistant_controller_->interaction_controller()
+                             ->model()
+                             ->input_modality());
 }
 
 void AssistantMiniView::OnInputModalityChanged(InputModality input_modality) {

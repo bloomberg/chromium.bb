@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
@@ -48,11 +49,11 @@ SuggestionContainerView::SuggestionContainerView(
 
   // The Assistant controller indirectly owns the view hierarchy to which
   // SuggestionContainerView belongs so is guaranteed to outlive it.
-  assistant_controller_->AddInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->AddModelObserver(this);
 }
 
 SuggestionContainerView::~SuggestionContainerView() {
-  assistant_controller_->RemoveInteractionModelObserver(this);
+  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
 gfx::Size SuggestionContainerView::CalculatePreferredSize() const {
@@ -141,7 +142,8 @@ void SuggestionContainerView::OnSuggestionChipIconDownloaded(
 
 void SuggestionContainerView::OnSuggestionChipPressed(
     app_list::SuggestionChipView* suggestion_chip_view) {
-  assistant_controller_->OnSuggestionChipPressed(suggestion_chip_view->id());
+  assistant_controller_->interaction_controller()->OnSuggestionChipPressed(
+      suggestion_chip_view->id());
 }
 
 void SuggestionContainerView::UpdateContentsBounds() {
