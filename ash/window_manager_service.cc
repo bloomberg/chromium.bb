@@ -179,11 +179,14 @@ void WindowManagerService::OnStart() {
   registry_.AddInterface(base::BindRepeating(
       &WindowManagerService::BindServiceFactory, base::Unretained(this)));
 
-  const bool register_path_provider = running_standalone_;
-  aura_init_ = views::AuraInit::Create(
-      context()->connector(), context()->identity(),
-      "ash_service_resources.pak", "ash_service_resources_200.pak", nullptr,
-      views::AuraInit::Mode::AURA_MUS_WINDOW_MANAGER, register_path_provider);
+  views::AuraInit::InitParams params;
+  params.connector = context()->connector();
+  params.identity = context()->identity();
+  params.resource_file = "ash_service_resources.pak";
+  params.resource_file_200 = "ash_service_resources_200.pak";
+  params.mode = views::AuraInit::Mode::AURA_MUS_WINDOW_MANAGER;
+  params.register_path_provider = running_standalone_;
+  aura_init_ = views::AuraInit::Create(params);
   if (!aura_init_) {
     context()->QuitNow();
     return;
