@@ -11,13 +11,19 @@
 
 #include "base/macros.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
+#include "ui/display/display_observer.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 
 namespace aura {
 class Window;
 }  // namespace aura
 
-class AXRootObjWrapper : public views::AXAuraObjWrapper {
+namespace display {
+class Display;
+};
+
+class AXRootObjWrapper : public views::AXAuraObjWrapper,
+                         display::DisplayObserver {
  public:
   AXRootObjWrapper();
   ~AXRootObjWrapper() override;
@@ -36,6 +42,10 @@ class AXRootObjWrapper : public views::AXAuraObjWrapper {
   const ui::AXUniqueId& GetUniqueId() const override;
 
  private:
+  // display::DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
+
   ui::AXUniqueId unique_id_;
 
   aura::Window* alert_window_;

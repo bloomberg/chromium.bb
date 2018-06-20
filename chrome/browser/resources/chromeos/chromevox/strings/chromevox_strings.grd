@@ -2984,6 +2984,12 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="A hint to the user controls that can be double tapped." name="IDS_CHROMEVOX_HINT_DOUBLE_TAP">
         Double tap to activate
       </message>
+      <message desc="Shown to the user in braille and speech when the device goes into landscape orientation." name="IDS_CHROMEVOX_DEVICE_LANDSCAPE">
+        landscape
+      </message>
+      <message desc="Shown to the user in braille and speech when the device goes into portrait orientation." name="IDS_CHROMEVOX_DEVICE_PORTRAIT">
+        portrait
+      </message>
     </messages>
   </release>
 </grit>
