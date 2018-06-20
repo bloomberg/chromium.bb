@@ -111,8 +111,8 @@
           </settings-section>
         </template>
         <template is="dom-if"
-            if="[[shouldShowMultidevice_(showMultidevice, pageVisibility)]]"
-            restamp>
+            if="[[shouldShowMultidevice_(showMultidevice, pageVisibility,
+                hasExpandedSection_, currentRoute_)]]" restamp>
           <settings-multidevice-section-container prefs="{{prefs}}">
           </settings-multidevice-section-container>
         </template>
