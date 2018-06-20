@@ -74,6 +74,9 @@ Polymer({
    * @private
    */
   getStatusText_: function() {
+    if (this.destination === undefined)
+      return '';
+
     return this.destination.shouldShowInvalidCertificateError ?
         this.i18n('noLongerSupportedFragment') :
         this.destination.connectionStatusText;
@@ -86,6 +89,7 @@ Polymer({
     const dialog = this.$.destinationDialog.get();
     // This async() call is a workaround to prevent a DCHECK - see
     // https://crbug.com/804047.
+    // TODO (rbpotter): Remove after Polymer2 migration is complete.
     this.async(() => {
       dialog.show();
     }, 1);

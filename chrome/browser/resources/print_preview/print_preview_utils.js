@@ -241,3 +241,11 @@ function getStringForCurrentLocale(localizedStrings) {
   return getStringForLocale(localizedStrings, navigator.language) ||
       getStringForLocale(localizedStrings, navigator.language.split('-')[0]);
 }
+
+/**
+ * @param {!Array<*>} args The arguments for the observer.
+ * @return {boolean} Whether all arguments are defined.
+ */
+function observerDepsDefined(args) {
+  return args.every(arg => arg !== undefined);
+}

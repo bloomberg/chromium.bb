@@ -391,6 +391,9 @@ Polymer({
 
   /** @private */
   updateHeaderFooterAvailable_: function() {
+    if (this.documentInfo === undefined)
+      return;
+
     this.set(
         'settings.headerFooter.available', this.isHeaderFooterAvailable_());
   },

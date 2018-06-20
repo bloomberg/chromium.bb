@@ -334,9 +334,10 @@ Polymer({
 
   /** @private */
   onDestinationUpdated_: function() {
-    this.set(
-        'destination_.capabilities',
-        this.destinationStore_.selectedDestination.capabilities);
+    // Notify observers, since destination_ ==
+    // destinationStore_.selectedDestination and this event indicates
+    // destinationStore_.selectedDestination.capabilities has been updated.
+    this.notifyPath('destination_.capabilities');
 
     if (!this.$.model.initialized())
       this.$.model.applyStickySettings();

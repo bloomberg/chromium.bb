@@ -158,6 +158,9 @@ Polymer({
 
   /** @private */
   updatePosition_: function() {
+    if (!observerDepsDefined(Array.from(arguments)))
+      return;
+
     const orientationEnum = print_preview.ticket_items.CustomMarginsOrientation;
     let x = this.translateTransform.x;
     let y = this.translateTransform.y;

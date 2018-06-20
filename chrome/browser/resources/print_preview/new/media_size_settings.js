@@ -22,8 +22,13 @@ Polymer({
    * @private
    */
   onMediaSizeSettingChange_: function(value) {
+    if (!this.capability)
+      return;
+
     const valueToSet = JSON.stringify(value);
-    for (const option of this.capability.option) {
+    for (const option of
+         /** @type {!Array<!print_preview_new.SelectOption>} */ (
+             this.capability.option)) {
       if (JSON.stringify(option) == valueToSet) {
         this.$$('print-preview-settings-select').selectValue(valueToSet);
         return;

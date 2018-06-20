@@ -45,12 +45,13 @@ Polymer({
 
   /**
    * Adds default labels for each option.
-   * @return {{option: Array<!print_preview_new.SelectOption>}}
+   * @return {?{option: Array<!print_preview_new.SelectOption>}}
    * @private
    */
   computeCapabilityWithLabels_: function() {
-    if (!this.capability || !this.capability.option)
-      return this.capability;
+    if (this.capability === undefined)
+      return null;
+
     const result =
         /** @type {{option: Array<!print_preview_new.SelectOption>}} */ (
             JSON.parse(JSON.stringify(this.capability)));
@@ -76,6 +77,11 @@ Polymer({
    * @private
    */
   onDpiSettingChange_: function(value) {
+    if (this.capabilityWithLabels_ === null ||
+        this.capabilityWithLabels_ === undefined) {
+      return;
+    }
+
     const dpiValue = /** @type {print_preview_new.DpiOption} */ (value);
     for (const option of assert(this.capabilityWithLabels_.option)) {
       const dpiOption =
