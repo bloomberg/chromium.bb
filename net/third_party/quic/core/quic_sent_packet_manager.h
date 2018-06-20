@@ -100,11 +100,15 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   void SetNumOpenStreams(size_t num_streams);
 
-  void SetMaxPacingRate(QuicBandwidth max_pacing_rate);
+  void SetMaxPacingRate(QuicBandwidth max_pacing_rate) {
+    pacing_sender_.set_max_pacing_rate(max_pacing_rate);
+  }
 
-  QuicBandwidth MaxPacingRate() const;
+  QuicBandwidth MaxPacingRate() const {
+    return pacing_sender_.max_pacing_rate();
+  }
 
-  void SetHandshakeConfirmed();
+  void SetHandshakeConfirmed() { handshake_confirmed_ = true; }
 
   // Processes the incoming ack. Returns true if a previously-unacked packet is
   // acked.
@@ -126,7 +130,12 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Retransmits the oldest pending packet there is still a tail loss probe
   // pending.  Invoked after OnRetransmissionTimeout.
-  bool MaybeRetransmitTailLossProbe();
+  bool MaybeRetransmitTailLossProbe() {
+    if (pending_timer_transmission_count_ == 0) {
+      return false;
+    }
+    return MaybeRetransmitOldestPacket(TLP_RETRANSMISSION);
+  }
 
   // Retransmits the oldest pending packet.
   bool MaybeRetransmitOldestPacket(TransmissionType type);
@@ -137,20 +146,28 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Returns true if there are pending retransmissions.
   // Not const because retransmissions may be cancelled before returning.
-  bool HasPendingRetransmissions() const;
+  bool HasPendingRetransmissions() const {
+    return !pending_retransmissions_.empty();
+  }
 
   // Retrieves the next pending retransmission.  You must ensure that
   // there are pending retransmissions prior to calling this function.
   QuicPendingRetransmission NextPendingRetransmission();
 
-  bool HasUnackedPackets() const;
+  bool HasUnackedPackets() const {
+    return unacked_packets_.HasUnackedPackets();
+  }
 
   // Returns true if there's outstanding crypto data.
-  bool HasUnackedCryptoPackets() const;
+  bool HasUnackedCryptoPackets() const {
+    return unacked_packets_.HasPendingCryptoPackets();
+  }
 
   // Returns the smallest packet number of a serialized packet which has not
   // been acked by the peer.
-  QuicPacketNumber GetLeastUnacked() const;
+  QuicPacketNumber GetLeastUnacked() const {
+    return unacked_packets_.GetLeastUnacked();
+  }
 
   // Called when we have sent bytes to the peer.  This informs the manager both
   // the number of bytes sent and if they were retransmitted.  Returns true if
@@ -180,39 +197,53 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // notify the session that this connection is degrading.
   const QuicTime::Delta GetPathDegradingDelay() const;
 
-  const RttStats* GetRttStats() const;
+  const RttStats* GetRttStats() const { return &rtt_stats_; }
 
   // Returns the estimated bandwidth calculated by the congestion algorithm.
-  QuicBandwidth BandwidthEstimate() const;
+  QuicBandwidth BandwidthEstimate() const {
+    return send_algorithm_->BandwidthEstimate();
+  }
 
-  const QuicSustainedBandwidthRecorder* SustainedBandwidthRecorder() const;
+  const QuicSustainedBandwidthRecorder* SustainedBandwidthRecorder() const {
+    return &sustained_bandwidth_recorder_;
+  }
 
   // Returns the size of the current congestion window in number of
   // kDefaultTCPMSS-sized segments. Note, this is not the *available* window.
   // Some send algorithms may not use a congestion window and will return 0.
-  QuicPacketCount GetCongestionWindowInTcpMss() const;
+  QuicPacketCount GetCongestionWindowInTcpMss() const {
+    return send_algorithm_->GetCongestionWindow() / kDefaultTCPMSS;
+  }
 
   // Returns the number of packets of length |max_packet_length| which fit in
   // the current congestion window. More packets may end up in flight if the
   // congestion window has been recently reduced, of if non-full packets are
   // sent.
   QuicPacketCount EstimateMaxPacketsInFlight(
-      QuicByteCount max_packet_length) const;
+      QuicByteCount max_packet_length) const {
+    return send_algorithm_->GetCongestionWindow() / max_packet_length;
+  }
 
   // Returns the size of the current congestion window size in bytes.
-  QuicByteCount GetCongestionWindowInBytes() const;
+  QuicByteCount GetCongestionWindowInBytes() const {
+    return send_algorithm_->GetCongestionWindow();
+  }
 
   // Returns the size of the slow start congestion window in nume of 1460 byte
   // TCP segments, aka ssthresh.  Some send algorithms do not define a slow
   // start threshold and will return 0.
-  QuicPacketCount GetSlowStartThresholdInTcpMss() const;
+  QuicPacketCount GetSlowStartThresholdInTcpMss() const {
+    return send_algorithm_->GetSlowStartThreshold() / kDefaultTCPMSS;
+  }
 
   // Returns debugging information about the state of the congestion controller.
   QuicString GetDebugState() const;
 
   // Returns the number of bytes that are considered in-flight, i.e. not lost or
   // acknowledged.
-  QuicByteCount GetBytesInFlight() const;
+  QuicByteCount GetBytesInFlight() const {
+    return unacked_packets_.bytes_in_flight();
+  }
 
   // No longer retransmit data for |stream_id|.
   void CancelRetransmissionsForStream(QuicStreamId stream_id);
@@ -234,29 +265,45 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   bool OnAckFrameEnd(QuicTime ack_receive_time);
 
   // Called to enable/disable letting session decide what to write.
-  void SetSessionDecideWhatToWrite(bool session_decides_what_to_write);
+  void SetSessionDecideWhatToWrite(bool session_decides_what_to_write) {
+    unacked_packets_.SetSessionDecideWhatToWrite(session_decides_what_to_write);
+  }
 
   void SetDebugDelegate(DebugDelegate* debug_delegate);
 
-  void SetPacingAlarmGranularity(QuicTime::Delta alarm_granularity);
+  void SetPacingAlarmGranularity(QuicTime::Delta alarm_granularity) {
+    pacing_sender_.set_alarm_granularity(alarm_granularity);
+  }
 
-  QuicPacketNumber GetLargestObserved() const;
+  QuicPacketNumber GetLargestObserved() const {
+    return unacked_packets_.largest_observed();
+  }
 
-  QuicPacketNumber GetLargestSentPacket() const;
+  QuicPacketNumber GetLargestSentPacket() const {
+    return unacked_packets_.largest_sent_packet();
+  }
 
-  void SetNetworkChangeVisitor(NetworkChangeVisitor* visitor);
+  void SetNetworkChangeVisitor(NetworkChangeVisitor* visitor) {
+    DCHECK(!network_change_visitor_);
+    DCHECK(visitor);
+    network_change_visitor_ = visitor;
+  }
 
-  bool InSlowStart() const;
+  bool InSlowStart() const { return send_algorithm_->InSlowStart(); }
 
-  size_t GetConsecutiveRtoCount() const;
+  size_t GetConsecutiveRtoCount() const { return consecutive_rto_count_; }
 
-  size_t GetConsecutiveTlpCount() const;
+  size_t GetConsecutiveTlpCount() const { return consecutive_tlp_count_; }
 
   void OnApplicationLimited();
 
-  const SendAlgorithmInterface* GetSendAlgorithm() const;
+  const SendAlgorithmInterface* GetSendAlgorithm() const {
+    return send_algorithm_.get();
+  }
 
-  void SetSessionNotifier(SessionNotifierInterface* session_notifier);
+  void SetSessionNotifier(SessionNotifierInterface* session_notifier) {
+    unacked_packets_.SetSessionNotifier(session_notifier);
+  }
 
   QuicTime GetNextReleaseTime() const;
 
@@ -270,7 +317,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   bool handshake_confirmed() const { return handshake_confirmed_; }
 
-  bool session_decides_what_to_write() const;
+  bool session_decides_what_to_write() const {
+    return unacked_packets_.session_decides_what_to_write();
+  }
 
   size_t pending_timer_transmission_count() const {
     return pending_timer_transmission_count_;
@@ -326,7 +375,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Calls GetTailLossProbeDelay() with values from the current state of this
   // packet manager as its params.
-  const QuicTime::Delta GetTailLossProbeDelay() const;
+  const QuicTime::Delta GetTailLossProbeDelay() const {
+    return GetTailLossProbeDelay(consecutive_tlp_count_);
+  }
 
   // Returns the retransmission timeout, after which a full RTO occurs.
   // |consecutive_rto_count| is the number of consecutive RTOs that have already
@@ -336,7 +387,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Calls GetRetransmissionDelay() with values from the current state of this
   // packet manager as its params.
-  const QuicTime::Delta GetRetransmissionDelay() const;
+  const QuicTime::Delta GetRetransmissionDelay() const {
+    return GetRetransmissionDelay(consecutive_rto_count_);
+  }
 
   // Returns the newest transmission associated with a packet.
   QuicPacketNumber GetNewestRetransmission(
