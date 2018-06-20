@@ -8,7 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
-#import "ios/chrome/browser/web/external_apps_launch_policy_decider.h"
+#import "ios/chrome/browser/web/app_launcher_abuse_detector.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -19,20 +19,20 @@ DEFINE_WEB_STATE_USER_DATA_KEY(AppLauncherTabHelper);
 
 void AppLauncherTabHelper::CreateForWebState(
     web::WebState* web_state,
-    ExternalAppsLaunchPolicyDecider* policy_decider,
+    AppLauncherAbuseDetector* abuse_detector,
     id<AppLauncherTabHelperDelegate> delegate) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
     web_state->SetUserData(
         UserDataKey(),
-        base::WrapUnique(new AppLauncherTabHelper(policy_decider, delegate)));
+        base::WrapUnique(new AppLauncherTabHelper(abuse_detector, delegate)));
   }
 }
 
 AppLauncherTabHelper::AppLauncherTabHelper(
-    ExternalAppsLaunchPolicyDecider* policy_decider,
+    AppLauncherAbuseDetector* abuse_detector,
     id<AppLauncherTabHelperDelegate> delegate)
-    : policy_decider_(policy_decider),
+    : abuse_detector_(abuse_detector),
       delegate_(delegate),
       weak_factory_(this) {}
 
@@ -54,10 +54,10 @@ bool AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
   if (is_prompt_active_)
     return false;
 
-  [policy_decider_ didRequestLaunchExternalAppURL:url
+  [abuse_detector_ didRequestLaunchExternalAppURL:url
                                 fromSourcePageURL:source_page_url];
   ExternalAppLaunchPolicy policy =
-      [policy_decider_ launchPolicyForURL:url
+      [abuse_detector_ launchPolicyForURL:url
                         fromSourcePageURL:source_page_url];
   switch (policy) {
     case ExternalAppLaunchPolicyBlock: {
@@ -88,7 +88,7 @@ bool AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
             } else {
               // TODO(crbug.com/674649): Once non modal dialogs are implemented,
               // update this to always prompt instead of blocking the app.
-              [policy_decider_ blockLaunchingAppURL:copied_url
+              [abuse_detector_ blockLaunchingAppURL:copied_url
                                   fromSourcePageURL:copied_source_page_url];
             }
             is_prompt_active_ = false;

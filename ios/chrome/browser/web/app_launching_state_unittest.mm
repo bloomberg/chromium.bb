@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/web/external_app_launching_state.h"
+#import "ios/chrome/browser/web/app_launching_state.h"
 
 #include "base/test/ios/wait_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -12,17 +12,17 @@
 #error "This file requires ARC support."
 #endif
 
-using ExternalAppLaunchingStateTest = PlatformTest;
+using AppLaunchingStateTest = PlatformTest;
 
 // Tests that updateWithLaunchRequest counts the number of consecutive launches
 // correctly and also reset when the time between launches is more than the
 // predefined max allowed time between consecutive launches.
-TEST_F(ExternalAppLaunchingStateTest, TestUpdateWithLaunchRequest) {
-  ExternalAppLaunchingState* state = [[ExternalAppLaunchingState alloc] init];
+TEST_F(AppLaunchingStateTest, TestUpdateWithLaunchRequest) {
+  AppLaunchingState* state = [[AppLaunchingState alloc] init];
   EXPECT_EQ(kDefaultMaxSecondsBetweenConsecutiveExternalAppLaunches,
-            [ExternalAppLaunchingState maxSecondsBetweenConsecutiveLaunches]);
+            [AppLaunchingState maxSecondsBetweenConsecutiveLaunches]);
   double maxSecondsBetweenLaunches = 0.25;
-  [ExternalAppLaunchingState
+  [AppLaunchingState
       setMaxSecondsBetweenConsecutiveLaunches:maxSecondsBetweenLaunches];
 
   EXPECT_EQ(0, state.consecutiveLaunchesCount);
@@ -41,7 +41,7 @@ TEST_F(ExternalAppLaunchingStateTest, TestUpdateWithLaunchRequest) {
   [state updateWithLaunchRequest];
   EXPECT_EQ(2, state.consecutiveLaunchesCount);
   // reset back to the default value.
-  [ExternalAppLaunchingState
+  [AppLaunchingState
       setMaxSecondsBetweenConsecutiveLaunches:
           kDefaultMaxSecondsBetweenConsecutiveExternalAppLaunches];
 }

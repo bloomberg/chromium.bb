@@ -155,6 +155,10 @@ js_compile_checked("credential_manager") {
 source_set("web_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "app_launcher_abuse_detector.h",
+    "app_launcher_abuse_detector.mm",
+    "app_launching_state.h",
+    "app_launching_state.mm",
     "blocked_popup_tab_helper.h",
     "blocked_popup_tab_helper.mm",
     "chrome_web_client.h",
@@ -163,10 +167,6 @@ source_set("web_internal") {
     "error_page_content.mm",
     "error_page_generator.h",
     "error_page_generator.mm",
-    "external_app_launching_state.h",
-    "external_app_launching_state.mm",
-    "external_apps_launch_policy_decider.h",
-    "external_apps_launch_policy_decider.mm",
     "print_tab_helper.h",
     "print_tab_helper.mm",
     "web_state_printer.h",
@@ -237,11 +237,11 @@ source_set("unit_tests_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "app_launcher_abuse_detector_unittest.mm",
+    "app_launching_state_unittest.mm",
     "blocked_popup_tab_helper_unittest.mm",
     "chrome_web_client_unittest.mm",
     "error_page_generator_unittest.mm",
-    "external_app_launching_state_unittest.mm",
-    "external_apps_launch_policy_decider_unittest.mm",
   ]
   deps = [
     ":test_support",
