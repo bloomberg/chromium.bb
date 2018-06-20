@@ -43,6 +43,7 @@
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -3021,6 +3022,27 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeInvalidURL) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeBlobURL) {
+  GURL document_url =
+      embedded_test_server()->GetURL("/download/download-attribute-blob.html");
+  download::DownloadItem* download =
+      StartDownloadAndReturnItem(shell(), document_url);
+  WaitForCompletion(download);
+
+  EXPECT_STREQ(FILE_PATH_LITERAL("suggested-filename.txt"),
+               download->GetTargetFilePath().BaseName().value().c_str());
+}
+
+class DownloadContentTestWithMojoBlobURLs : public DownloadContentTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DownloadContentTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "MojoBlobURLs");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTestWithMojoBlobURLs,
+                       DownloadAttributeBlobURL) {
   GURL document_url =
       embedded_test_server()->GetURL("/download/download-attribute-blob.html");
   download::DownloadItem* download =
