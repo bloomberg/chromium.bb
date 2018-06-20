@@ -17,7 +17,10 @@ import android.preference.PreferenceScreen;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SearchView;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.format.Formatter;
+import android.text.style.ForegroundColorSpan;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -30,6 +33,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
@@ -47,7 +51,6 @@ import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.ProtectedContentResetCredentialConfirmDialogFragment;
 import org.chromium.chrome.browser.preferences.website.Website.StoredDataClearedCallback;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
@@ -55,6 +58,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -209,14 +213,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
         int resourceId = toggleValue
                 ? R.string.website_settings_allowed_group_heading
                 : R.string.website_settings_exceptions_group_heading;
-
-        // Set the title and arrow icons for the header.
-        allowedGroup.setGroupTitle(resourceId, numAllowed);
-        TintedDrawable icon = TintedDrawable.constructTintedDrawable(getActivity(),
-                mAllowListExpanded ? R.drawable.ic_expand_more_black_24dp
-                                   : R.drawable.ic_expand_less_black_24dp);
+        allowedGroup.setTitle(getHeaderTitle(resourceId, numAllowed));
         allowedGroup.setExpanded(mAllowListExpanded);
-        allowedGroup.setIcon(icon);
     }
 
     private void updateBlockedHeader(int numBlocked) {
@@ -232,12 +230,27 @@ public class SingleCategoryPreferences extends PreferenceFragment
         int resourceId = mCategory.showSoundSites()
                 ? R.string.website_settings_blocked_group_heading_sound
                 : R.string.website_settings_blocked_group_heading;
-        blockedGroup.setGroupTitle(resourceId, numBlocked);
-        TintedDrawable icon = TintedDrawable.constructTintedDrawable(getActivity(),
-                mBlockListExpanded ? R.drawable.ic_expand_more_black_24dp
-                                   : R.drawable.ic_expand_less_black_24dp);
+        blockedGroup.setTitle(getHeaderTitle(resourceId, numBlocked));
         blockedGroup.setExpanded(mBlockListExpanded);
-        blockedGroup.setIcon(icon);
+    }
+
+    private CharSequence getHeaderTitle(int resourceId, int count) {
+        SpannableStringBuilder spannable =
+                new SpannableStringBuilder(getResources().getString(resourceId));
+        String prefCount = String.format(Locale.getDefault(), " - %d", count);
+        spannable.append(prefCount);
+
+        // Color the first part of the title blue.
+        ForegroundColorSpan blueSpan = new ForegroundColorSpan(
+                ApiCompatibilityUtils.getColor(getResources(), R.color.google_blue_700));
+        spannable.setSpan(blueSpan, 0, spannable.length() - prefCount.length(),
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        // Gray out the total count of items.
+        int gray = ApiCompatibilityUtils.getColor(getResources(), R.color.black_alpha_54);
+        spannable.setSpan(new ForegroundColorSpan(gray), spannable.length() - prefCount.length(),
+                spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return spannable;
     }
 
     @Override
