@@ -4559,20 +4559,17 @@ void LocalFrameView::RecordDeferredLoadingStats() {
     return;
   }
 
-  IntRect parent_rect = parent->FrameRect();
+  IntSize parent_size(parent->Size());
   // First clause: for this rough data collection we assume the user never
   // scrolls right.
-  if (frame_rect.X() >= parent_rect.Width() || parent_rect.Height() <= 0)
+  if (frame_rect.X() >= parent_size.Width() || parent_size.Height() <= 0)
     return;
 
   int this_frame_screens_away = 0;
   // If an frame is created above the current scoll position, this logic counts
   // it as visible.
-  if (frame_rect.Y() > parent->GetScrollOffset().Height()) {
-    this_frame_screens_away =
-        (frame_rect.Y() - parent->GetScrollOffset().Height()) /
-        parent_rect.Height();
-  }
+  if (frame_rect.Y() > 0)
+    this_frame_screens_away = frame_rect.Y() / parent_size.Height();
   DCHECK_GE(this_frame_screens_away, 0);
 
   int parent_screens_away = 0;
