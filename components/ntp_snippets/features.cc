@@ -35,7 +35,7 @@ const base::Feature* const kAllFeatures[] = {
     &kRemoteSuggestionsBackendFeature};
 
 const base::Feature kArticleSuggestionsExpandableHeader{
-    "NTPArticleSuggestionsExpandableHeader", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NTPArticleSuggestionsExpandableHeader", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kArticleSuggestionsFeature{
     "NTPArticleSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
