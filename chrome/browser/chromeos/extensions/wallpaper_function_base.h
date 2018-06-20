@@ -23,6 +23,8 @@ extern const char kCancelWallpaperMessage[];
 
 ash::WallpaperLayout GetLayoutEnum(const std::string& layout);
 
+std::string GetLayoutString(const ash::WallpaperLayout& layout);
+
 // This is used to record the wallpaper layout when the user sets a custom
 // wallpaper or changes the existing custom wallpaper's layout.
 void RecordCustomWallpaperLayout(const ash::WallpaperLayout& layout);

@@ -419,10 +419,10 @@ void WallpaperControllerClient::IsActiveUserWallpaperControlledByPolicy(
       std::move(callback));
 }
 
-void WallpaperControllerClient::GetActiveUserWallpaperLocation(
-    ash::mojom::WallpaperController::GetActiveUserWallpaperLocationCallback
+void WallpaperControllerClient::GetActiveUserWallpaperInfo(
+    ash::mojom::WallpaperController::GetActiveUserWallpaperInfoCallback
         callback) {
-  wallpaper_controller_->GetActiveUserWallpaperLocation(std::move(callback));
+  wallpaper_controller_->GetActiveUserWallpaperInfo(std::move(callback));
 }
 
 void WallpaperControllerClient::ShouldShowWallpaperSetting(

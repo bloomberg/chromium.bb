@@ -86,6 +86,10 @@ cr.define('wallpapers', function() {
       }
 
       var imageEl = cr.doc.createElement('img');
+      // On the new picker, do not show the image until |cropImageToFitGrid_| is
+      // done.
+      if (loadTimeData.getBoolean('useNewWallpaperPicker'))
+        imageEl.hidden = true;
       imageEl.classList.add('thumbnail');
       cr.defineProperty(imageEl, 'offline', cr.PropertyKind.BOOL_ATTR);
       imageEl.offline = this.dataItem.availableOffline;
@@ -480,6 +484,7 @@ cr.define('wallpapers', function() {
 
       image.style.height = newHeight + 'px';
       image.style.width = newWidth + 'px';
+      image.hidden = false;
     },
 
     /**
@@ -549,6 +554,10 @@ cr.define('wallpapers', function() {
         if (this.dailyRefreshItem) {
           window.clearTimeout(this.dailyRefreshTimer_);
           this.showNextImage_(0);
+        }
+        if (this.useNewWallpaperPicker_ &&
+            this.classList.contains('image-picker-offline')) {
+          this.highlightOfflineWallpapers();
         }
       }
     },
@@ -653,6 +662,7 @@ cr.define('wallpapers', function() {
       if (this.useNewWallpaperPicker_) {
         var selectedGridBorder = cr.doc.createElement('div');
         selectedGridBorder.classList.add('selected-grid-border');
+        selectedGridBorder.appendChild(cr.doc.createElement('div'));
         selectedGridItem.appendChild(selectedGridBorder);
       }
       selectedGridItem.appendChild(this.checkmark_);
@@ -723,6 +733,37 @@ cr.define('wallpapers', function() {
         this.dailyRefreshTimer_ =
             window.setTimeout(this.showNextImage_.bind(this, nextIndex), 3000);
       }
+    },
+
+    /**
+     * Highlights the wallpapers that are available offline by greying out all
+     * the other wallpapers.
+     */
+    highlightOfflineWallpapers: function() {
+      if (!this.useNewWallpaperPicker_ ||
+          !this.classList.contains('image-picker-offline')) {
+        return;
+      }
+
+      chrome.wallpaperPrivate.getOfflineWallpaperList(list => {
+        var offlineWallpaperList = {};
+        for (var url of list) {
+          offlineWallpaperList[url] = true;
+        }
+
+        for (var i = 0; i < this.dataModel.length; ++i) {
+          var url = this.dataModel.item(i).baseURL;
+          if (!url)
+            continue;
+          var fileName = url.substring(url.lastIndexOf('/') + 1) +
+              loadTimeData.getString('highResolutionSuffix');
+          if (this.getListItemByIndex(i) &&
+              offlineWallpaperList.hasOwnProperty(encodeURI(fileName))) {
+            this.getListItemByIndex(i).querySelector('.thumbnail').offline =
+                true;
+          }
+        }
+      });
     },
 
     /**

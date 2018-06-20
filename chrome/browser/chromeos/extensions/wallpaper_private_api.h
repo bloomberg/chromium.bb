@@ -33,9 +33,10 @@ class WallpaperPrivateGetStringsFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  // Responds with the dictionary after getting the wallpaper location.
-  void OnWallpaperLocationReturned(std::unique_ptr<base::DictionaryValue> dict,
-                                   const std::string& location);
+  // Responds with the dictionary after getting the wallpaper info.
+  void OnWallpaperInfoReturned(std::unique_ptr<base::DictionaryValue> dict,
+                               const std::string& location,
+                               ash::WallpaperLayout layout);
 };
 
 // Check if sync themes setting is enabled.

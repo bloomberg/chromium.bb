@@ -345,8 +345,8 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   void IsWallpaperBlurred(IsWallpaperBlurredCallback callback) override;
   void IsActiveUserWallpaperControlledByPolicy(
       IsActiveUserWallpaperControlledByPolicyCallback callback) override;
-  void GetActiveUserWallpaperLocation(
-      GetActiveUserWallpaperLocationCallback callback) override;
+  void GetActiveUserWallpaperInfo(
+      GetActiveUserWallpaperInfoCallback callback) override;
   void ShouldShowWallpaperSetting(
       ShouldShowWallpaperSettingCallback callback) override;
 
@@ -546,8 +546,8 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // Implementation of |IsActiveUserWallpaperControlledByPolicy|.
   bool IsActiveUserWallpaperControlledByPolicyImpl() const;
 
-  // Implementation of |GetActiveUserWallpaperLocation|.
-  std::string GetActiveUserWallpaperLocationImpl() const;
+  // Implementation of |GetActiveUserWallpaperInfo|.
+  bool GetActiveUserWallpaperInfoImpl(WallpaperInfo* info_out) const;
 
   // Implementation of |ShouldShowWallpaperSetting|.
   bool ShouldShowWallpaperSettingImpl() const;
