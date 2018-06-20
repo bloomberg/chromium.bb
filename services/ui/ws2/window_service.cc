@@ -36,6 +36,9 @@ WindowService::WindowService(
 }
 
 WindowService::~WindowService() {
+  // WindowTreeFactory owns WindowTrees created by way of WindowTreeFactory.
+  // Deleting it should ensure there are no WindowTrees left.
+  window_tree_factory_.reset();
   DCHECK(window_trees_.empty());
 }
 
