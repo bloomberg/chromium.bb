@@ -18,6 +18,8 @@ UnifiedBrightnessView::UnifiedBrightnessView(
                         kSystemMenuBrightnessIcon,
                         IDS_ASH_STATUS_TRAY_BRIGHTNESS),
       model_(model) {
+  button()->SetEnabled(false);
+
   model_->AddObserver(this);
   OnDisplayBrightnessChanged(false /* by_user */);
 }
