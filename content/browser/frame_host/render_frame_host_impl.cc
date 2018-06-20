@@ -3356,9 +3356,11 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    registry_->AddInterface(base::BindRepeating(
-        &RenderFrameHostImpl::ConnectToPrefetchURLLoaderService,
-        base::Unretained(this)));
+    registry_->AddInterface(
+        base::BindRepeating(
+            &RenderFrameHostImpl::ConnectToPrefetchURLLoaderService,
+            base::Unretained(this)),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
   }
 }
 
@@ -3761,7 +3763,8 @@ void RenderFrameHostImpl::CommitNavigation(
       }
     }
 
-    SaveSubresourceFactories(std::move(subresource_loader_factories));
+    if (subresource_loader_factories)
+      SaveSubresourceFactories(std::move(subresource_loader_factories));
 
     if (IsPerNavigationMojoInterfaceEnabled() && navigation_request_ &&
         navigation_request_->GetCommitNavigationClient()) {
@@ -4650,6 +4653,8 @@ void RenderFrameHostImpl::ConnectToPrefetchURLLoaderService(
       static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
           GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
   auto subresource_factories = CloneSubresourceFactories();
+  // Temporary for https://crbug.com/849929.
+  CHECK(subresource_factories);
   // Make sure that file: URL is available only when the origin of the last
   // commited URL is for file:. This should be always true as far as
   // SaveSubresourceFactories() is called appropriately whenever the set of
@@ -5142,6 +5147,9 @@ void RenderFrameHostImpl::OnCrossDocumentCommitProcessed(
 
 void RenderFrameHostImpl::SaveSubresourceFactories(
     std::unique_ptr<URLLoaderFactoryBundleInfo> bundle_info) {
+  // CHECK for https://crbug.com/849929.
+  CHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+        bundle_info);
   subresource_loader_factories_bundle_ = nullptr;
   if (bundle_info) {
     subresource_loader_factories_bundle_ =
