@@ -344,6 +344,8 @@ chrome.app.runtime.onLaunched.addListener(function() {
       w.onClosed.addListener(function() {
         wallpaperPickerWindow = null;
         chrome.wallpaperPrivate.restoreMinimizedWindows();
+        // In case the app exits unexpectedly during preview.
+        chrome.wallpaperPrivate.cancelPreviewWallpaper(() => {});
       });
       if (result) {
         // By design, the new wallpaper picker should never be shown on top of

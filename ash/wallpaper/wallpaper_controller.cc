@@ -1248,6 +1248,10 @@ void WallpaperController::SetThirdPartyWallpaper(
 }
 
 void WallpaperController::ConfirmPreviewWallpaper() {
+  if (!confirm_preview_wallpaper_callback_) {
+    DCHECK(!reload_preview_wallpaper_callback_);
+    return;
+  }
   std::move(confirm_preview_wallpaper_callback_).Run();
   reload_preview_wallpaper_callback_.Reset();
   for (auto& observer : observers_)
@@ -1473,9 +1477,14 @@ void WallpaperController::IsActiveUserWallpaperControlledByPolicy(
   std::move(callback).Run(IsActiveUserWallpaperControlledByPolicyImpl());
 }
 
-void WallpaperController::GetActiveUserWallpaperLocation(
-    GetActiveUserWallpaperLocationCallback callback) {
-  std::move(callback).Run(GetActiveUserWallpaperLocationImpl());
+void WallpaperController::GetActiveUserWallpaperInfo(
+    GetActiveUserWallpaperInfoCallback callback) {
+  WallpaperInfo info;
+  if (!GetActiveUserWallpaperInfoImpl(&info)) {
+    std::move(callback).Run(std::string(), ash::NUM_WALLPAPER_LAYOUT);
+    return;
+  }
+  std::move(callback).Run(info.location, info.layout);
 }
 
 void WallpaperController::ShouldShowWallpaperSetting(
@@ -2039,19 +2048,20 @@ bool WallpaperController::IsActiveUserWallpaperControlledByPolicyImpl() const {
                             active_user_session->user_info->is_ephemeral);
 }
 
-std::string WallpaperController::GetActiveUserWallpaperLocationImpl() const {
+bool WallpaperController::GetActiveUserWallpaperInfoImpl(
+    WallpaperInfo* info_out) const {
   // The currently active user has index 0.
   const mojom::UserSession* const active_user_session =
       Shell::Get()->session_controller()->GetUserSession(/*user index=*/0);
   if (!active_user_session)
-    return std::string();
+    return false;
 
-  WallpaperInfo info;
-  if (!GetUserWallpaperInfo(active_user_session->user_info->account_id, &info,
+  if (!GetUserWallpaperInfo(active_user_session->user_info->account_id,
+                            info_out,
                             active_user_session->user_info->is_ephemeral)) {
-    return std::string();
+    return false;
   }
-  return info.location;
+  return true;
 }
 
 bool WallpaperController::ShouldShowWallpaperSettingImpl() const {

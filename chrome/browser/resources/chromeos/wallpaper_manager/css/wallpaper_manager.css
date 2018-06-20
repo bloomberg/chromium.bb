@@ -8,12 +8,15 @@ html {
 
 body {
   -webkit-app-region: drag;
-  background-color: rgba(20, 20, 20, 0.93);
   color: #999;
   font-size: 80%;
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+body.v1 {
+  background-color: rgba(20, 20, 20, 0.93);
 }
 
 /* Click events are not received in draggable area. Making all clickable areas
@@ -380,7 +383,7 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
 #dialog-header,
 #no-images-message,
 #current-wallpaper-info-bar,
-#set-successfully-message {
+#message-container {
   display: none;
 }
 
@@ -430,6 +433,7 @@ body.v2 {
 .v2 #categories-list {
   display: block;
   height: 100%;
+  pointer-events: none;
 }
 
 .v2 #categories-list > li {
@@ -437,6 +441,7 @@ body.v2 {
   height: 32px;
   margin-bottom: 8px;
   margin-top: 8px;
+  pointer-events: auto;
 }
 
 .v2 #categories-list > li > div {
@@ -518,6 +523,15 @@ body.v2 {
   width: 100%;
 }
 
+.v2 .image-picker .selected-grid-border > div {
+  border: solid 16px rgba(26, 115, 232, 0.08);
+  height: 100%;
+  left: -16px;
+  position: absolute;
+  top: -16px;
+  width: 100%;
+}
+
 .v2 #window-close-button {
   display: none;
 }
@@ -547,7 +561,7 @@ body.v2 {
 .v2 #top-header {
   -webkit-app-region: no-drag;
   background-color: #fff;
-  border-radius: 0 0 48px 48px;
+  border-radius: 0 0 24px 24px;
   display: flex;
   height: 48px;
   position: absolute;
@@ -576,7 +590,7 @@ body.v2 {
 }
 
 .v2 .top-header-contents #cancel-preview-wallpaper {
-  -webkit-margin-start: 32px;
+  -webkit-margin-start: 16px;
   -webkit-padding-start: 32px;
   background-image: url(../images/ui/left_arrow.svg);
   background-repeat: no-repeat;
@@ -586,10 +600,8 @@ body.v2 {
 
 .v2 .top-header-contents #image-title {
   -webkit-padding-end: 8px;
-  -webkit-padding-start: 8px;
   color: rgb(32, 33, 36);
-  max-width: 360px;
-  overflow: hidden;
+  white-space: nowrap;
 }
 
 .v2 .top-header-contents .divider {
@@ -598,30 +610,42 @@ body.v2 {
   margin-top: 8px;
 }
 
-.v2 .top-header-contents #collection-name {
+.v2 .top-header-contents #wallpaper-description {
   -webkit-padding-start: 8px;
   color: rgb(128, 134, 139);
+  max-width: 312px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.v2.custom-wallpaper .top-header-contents #collection-name {
+.v2.custom-wallpaper .top-header-contents #wallpaper-description {
   color: rgb(32, 33, 36);
 }
 
 .v2 .top-header-contents .more-options {
   display: flex;
   position: absolute;
-  /* TODO(wzang): Change this to be RTL-friendly. */
-  right: 32px;
+  right: 8px;
+}
+
+html[dir='rtl'] .v2 .top-header-contents .more-options {
+  -webkit-padding-start: 96px;
+  position: unset;
 }
 
 .v2 .top-header-contents .more-options > div {
-  -webkit-padding-end: 16px;
-  -webkit-padding-start: 16px;
+  border: 0.5px solid;
+  border-color: rgba(128, 134, 139, 0.6);
+  border-radius: 16px;
   color: rgb(66, 133, 244);
   display: none;
+  margin-top: -8px;
+  padding: 8px 24px;
 }
 
 .v2 .top-header-contents .more-options > div.disabled {
+  background-color: #fff;
   color: rgb(128, 134, 139);
   pointer-events: none;
 }
@@ -632,12 +656,27 @@ body.v2 {
   width: 16px;
 }
 
+.v2 .top-header-contents .more-options .center-button,
+.v2 .top-header-contents .more-options .center-cropped-button {
+  background-color: rgb(232,240,254);
+}
+
+.v2 .top-header-contents .more-options .center-button {
+  -webkit-padding-end: 48px;
+  -webkit-padding-start: 32px;
+}
+
+.v2 .top-header-contents .more-options .center-cropped-button {
+  -webkit-margin-start: -24px;
+}
+
 .v2 .top-header-contents .center-button .icon,
 .v2 #current-wallpaper-more-options #center .icon {
   background-image: url(../images/ui/center_layout.svg);
 }
 
-.v2 .top-header-contents .center-button.disabled .icon {
+.v2 .top-header-contents .center-button.disabled .icon,
+.v2 #current-wallpaper-more-options #center.disabled .icon {
   background-image: url(../images/ui/center_layout_disabled.svg);
 }
 
@@ -646,12 +685,18 @@ body.v2 {
   background-image: url(../images/ui/center_cropped_layout.svg);
 }
 
-.v2 .top-header-contents .center-cropped-button.disabled .icon {
+.v2 .top-header-contents .center-cropped-button.disabled .icon,
+.v2 #current-wallpaper-more-options #center-cropped.disabled .icon {
   background-image: url(../images/ui/center_cropped_layout_disabled.svg);
 }
 
+.v2 #current-wallpaper-more-options .disabled {
+  color: rgb(128, 134, 139);
+  pointer-events: none;
+}
+
 .v2 .top-header-contents #confirm-preview-wallpaper {
-  -webkit-padding-start: 96px;
+  -webkit-margin-start: 96px;
 }
 
 .v2.preview-mode.custom-wallpaper .more-options .custom-option,
@@ -713,6 +758,10 @@ body.v2 {
   top: 15px;
   transition: 400ms;
   width: 30px;
+}
+
+.v2 .image-picker-offline .daily-refresh-slider {
+  pointer-events: none;
 }
 
 .v2 .daily-refresh-slider::before {
@@ -804,14 +853,17 @@ body.v2 {
   flex-direction: column;
   font-size: 12px;
   position: absolute;
-  /* TODO(wzang): Change this to be RTL-friendly. */
   right: 0;
+}
+
+html[dir='rtl'] .v2 #current-wallpaper-more-options {
+  right: 420px;
 }
 
 .v2 #current-wallpaper-more-options > div {
   border: 0.5px solid;
   border-color: rgba(128, 134, 139, 0.6);
-  border-radius: 32px;
+  border-radius: 16px;
   display: flex;
   padding: 8px 4px;
 }
@@ -842,24 +894,33 @@ body.v2 {
   background-image: url(../images/ui/current_wallpaper_explore.svg);
 }
 
-.v2 #set-successfully-message {
-  background-color: #000;
-  border-radius: 18px;
+.v2 #message-container {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 16px;
   bottom: 12px;
   color: #fff;
   display: block;
   padding: 8px 28px;
   position: absolute;
   visibility: hidden;  /* Need this for correct positioning. */
-}
-
-.v2.wallpaper-set-successfully #set-successfully-message {
-  visibility: visible;
+  z-index: 4;
 }
 
 .v2 .progress-bar {
   bottom: 0;
   top: unset;
+}
+
+.v2 .image-picker-offline .progress-bar {
+  display: none;
+}
+
+.v2 #spinner {
+  background: url(chrome://resources/images/throbber_medium.svg) center/32px
+      no-repeat;
+  height: 32px;
+  position: absolute;
+  width: 32px;
 }
 
 @keyframes fade-in {

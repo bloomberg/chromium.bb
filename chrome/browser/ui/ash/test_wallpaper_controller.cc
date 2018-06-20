@@ -190,8 +190,8 @@ void TestWallpaperController::IsActiveUserWallpaperControlledByPolicy(
   NOTIMPLEMENTED();
 }
 
-void TestWallpaperController::GetActiveUserWallpaperLocation(
-    ash::mojom::WallpaperController::GetActiveUserWallpaperLocationCallback
+void TestWallpaperController::GetActiveUserWallpaperInfo(
+    ash::mojom::WallpaperController::GetActiveUserWallpaperInfoCallback
         callback) {
   NOTIMPLEMENTED();
 }

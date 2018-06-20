@@ -183,7 +183,7 @@ void CollectionInfoFetcher::OnResponseFetched(const std::string& response) {
       collections_info_list;
 
   backdrop::GetCollectionsResponse collections_response;
-  if (!collections_response.ParseFromString(response)) {
+  if (response.empty() || !collections_response.ParseFromString(response)) {
     LOG(ERROR) << "Deserializing Backdrop wallpaper proto for collection info "
                   "failed.";
     backdrop_fetcher_.reset();
@@ -259,7 +259,7 @@ void ImageInfoFetcher::OnResponseFetched(const std::string& response) {
   std::vector<extensions::api::wallpaper_private::ImageInfo> images_info_list;
 
   backdrop::GetImagesInCollectionResponse images_response;
-  if (!images_response.ParseFromString(response)) {
+  if (response.empty() || !images_response.ParseFromString(response)) {
     LOG(ERROR) << "Deserializing Backdrop wallpaper proto for collection "
                << collection_id_ << " failed";
     backdrop_fetcher_.reset();
@@ -338,7 +338,8 @@ void SurpriseMeImageFetcher::OnResponseFetched(const std::string& response) {
   extensions::api::wallpaper_private::ImageInfo image_info;
 
   backdrop::GetImageFromCollectionResponse surprise_me_image_response;
-  if (!surprise_me_image_response.ParseFromString(response)) {
+  if (response.empty() ||
+      !surprise_me_image_response.ParseFromString(response)) {
     LOG(ERROR) << "Deserializing surprise me wallpaper proto for collection "
                << collection_id_ << " failed";
     backdrop_fetcher_.reset();

@@ -57,6 +57,11 @@ ash::WallpaperLayout GetLayoutEnum(const std::string& layout) {
   return ash::WALLPAPER_LAYOUT_CENTER;
 }
 
+std::string GetLayoutString(const ash::WallpaperLayout& layout) {
+  return kWallpaperLayoutArrays[layout >= ash::NUM_WALLPAPER_LAYOUT ? 0
+                                                                    : layout];
+}
+
 void RecordCustomWallpaperLayout(const ash::WallpaperLayout& layout) {
   UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.CustomLayout", layout,
                             ash::NUM_WALLPAPER_LAYOUT);

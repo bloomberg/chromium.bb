@@ -266,17 +266,19 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
                                               ? GetBackdropWallpaperSuffix()
                                               : kHighResolutionSuffix);
 
-  WallpaperControllerClient::Get()->GetActiveUserWallpaperLocation(
-      base::BindOnce(
-          &WallpaperPrivateGetStringsFunction::OnWallpaperLocationReturned,
-          this, std::move(dict)));
+  WallpaperControllerClient::Get()->GetActiveUserWallpaperInfo(base::BindOnce(
+      &WallpaperPrivateGetStringsFunction::OnWallpaperInfoReturned, this,
+      std::move(dict)));
   return RespondLater();
 }
 
-void WallpaperPrivateGetStringsFunction::OnWallpaperLocationReturned(
+void WallpaperPrivateGetStringsFunction::OnWallpaperInfoReturned(
     std::unique_ptr<base::DictionaryValue> dict,
-    const std::string& location) {
+    const std::string& location,
+    ash::WallpaperLayout layout) {
   dict->SetString("currentWallpaper", location);
+  dict->SetString("currentWallpaperLayout",
+                  wallpaper_api_util::GetLayoutString(layout));
   Respond(OneArgument(std::move(dict)));
 }
 
