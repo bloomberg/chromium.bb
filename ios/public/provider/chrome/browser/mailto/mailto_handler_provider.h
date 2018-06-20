@@ -29,13 +29,6 @@ class MailtoHandlerProvider {
   // Unregisters the mailto handler for browser state.
   virtual void RemoveMailtoHandling();
 
-  // Deprecated: Set up mailto handling for the current user.
-  // The Signed-In Identity Block should return the primary signed in user.
-  // The Signed-In Identities Block should return all users signed in to Chrome.
-  virtual void PrepareMailtoHandling(
-      SignedInIdentityBlock signed_in_identity_block,
-      SignedInIdentitiesBlock signed_in_identities_block);
-
   // Returns a properly localized title for the menu item or button used to open
   // the settings for this handler. Returns nil if mailto handling is not
   // supported by the provider.
