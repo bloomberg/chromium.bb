@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/stl_util.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/surface_info.h"
@@ -542,8 +543,7 @@ Surface* CompositorFrameSinkSupport::CreateSurface(
 
 void CompositorFrameSinkSupport::AttachCaptureClient(
     CapturableFrameSink::Client* client) {
-  DCHECK(std::find(capture_clients_.begin(), capture_clients_.end(), client) ==
-         capture_clients_.end());
+  DCHECK(!base::ContainsValue(capture_clients_, client));
   capture_clients_.push_back(client);
 }
 
