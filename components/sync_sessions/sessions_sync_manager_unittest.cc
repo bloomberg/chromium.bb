@@ -485,36 +485,13 @@ TEST_F(SessionsSyncManagerTest, PreserveTabbedDataCustomTab) {
   manager()->StopSyncing(syncer::SESSIONS);
   ResetWindows();
   window = AddWindow(sync_pb::SessionWindow_BrowserType_TYPE_CUSTOM_TAB);
-  TestSyncedTabDelegate* custom_tab = AddTab(window->GetSessionId(), kBar1);
+  AddTab(window->GetSessionId(), kBar1);
   InitWithSyncDataTakeOutput(ConvertToRemote(in), &out);
 
-  // The previous session should be preserved. The transient window cannot be
-  // synced because we do not have enough local data to ensure that we wouldn't
-  // vend the same sync id if our persistent storage didn't match upon the last
-  // shutdown.
-  ASSERT_TRUE(ChangeTypeMatches(out, {SyncChange::ACTION_UPDATE}));
-  VerifyLocalHeaderChange(out[0], 1, 1);
-  out.clear();
-
-  // Now re-create local data and modify it.
-  TestSyncedWindowDelegate* alive_again = AddWindow();
-  alive_again->OverrideTabAt(0, tab);
-  tab->Navigate(kBaz1);
-
-  // The local change should be created and tracked correctly. This doesn't
-  // actually start syncing the custom tab yet, because the tab itself isn't
-  // associated yet.
-  ASSERT_TRUE(ChangeTypeMatches(
-      out, {SyncChange::ACTION_UPDATE, SyncChange::ACTION_UPDATE}));
-  VerifyLocalTabChange(out[0], 3, kBaz1);
-  VerifyLocalHeaderChange(out[1], 1, 1);
-  out.clear();
-
-  // Now trigger OnLocalTabModified() for the custom tab again, it should sync.
-  custom_tab->Navigate(kBar2);
+  // The previous session should be preserved, together with the new custom tab.
   ASSERT_TRUE(ChangeTypeMatches(
       out, {SyncChange::ACTION_ADD, SyncChange::ACTION_UPDATE}));
-  VerifyLocalTabChange(out[0], 2, kBar2);
+  VerifyLocalTabChange(out[0], 1, kBar1);
   VerifyLocalHeaderChange(out[1], 2, 2);
 }
 

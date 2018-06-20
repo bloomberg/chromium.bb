@@ -46,6 +46,20 @@ bool IsWindowSyncable(const SyncedWindowDelegate& window_delegate) {
          window_delegate.HasWindow();
 }
 
+// On Android, it's possible to not have any tabbed windows when only custom
+// tabs are currently open. This means that there is tab data that will be
+// restored later, but we cannot access it.
+bool ScanForTabbedWindow(SyncedWindowDelegatesGetter* delegates_getter) {
+  for (const auto& window_iter_pair :
+       delegates_getter->GetSyncedWindowDelegates()) {
+    const SyncedWindowDelegate* window_delegate = window_iter_pair.second;
+    if (window_delegate->IsTypeTabbed() && IsWindowSyncable(*window_delegate)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 LocalSessionEventHandlerImpl::WriteBatch::WriteBatch() = default;
@@ -77,7 +91,7 @@ LocalSessionEventHandlerImpl::~LocalSessionEventHandlerImpl() {}
 
 void LocalSessionEventHandlerImpl::OnSessionRestoreComplete() {
   std::unique_ptr<WriteBatch> batch = delegate_->CreateLocalSessionWriteBatch();
-  AssociateWindows(RELOAD_TABS, ScanForTabbedWindow(), batch.get());
+  AssociateWindows(RELOAD_TABS, batch.get());
   batch->Commit();
 }
 
@@ -88,9 +102,12 @@ LocalSessionEventHandlerImpl::GetTabSpecificsFromDelegateForTest(
 }
 
 void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
-                                                    bool has_tabbed_window,
                                                     WriteBatch* batch) {
   DCHECK(!IsSessionRestoreInProgress(sessions_client_));
+
+  const bool has_tabbed_window =
+      ScanForTabbedWindow(sessions_client_->GetSyncedWindowDelegatesGetter());
+
   // Note that |current_session| is a pointer owned by |session_tracker_|.
   // |session_tracker_| will continue to update |current_session| under
   // the hood so care must be taken accessing it. In particular, invoking
@@ -113,8 +130,6 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
     session_tracker_->ResetSessionTracking(current_session_tag_);
     current_session->modified_time = base::Time::Now();
   } else {
-    // TODO(mastiz): Investigate if this whole code block should be
-    // conditioned to RELOAD_TABS.
     DVLOG(1) << "Found no tabbed windows. Reloading "
              << current_session->windows.size()
              << " windows from previous session.";
@@ -164,7 +179,7 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
         // changed after a session restore.
         AssociateRestoredPlaceholderTab(*synced_tab, tab_id, window_id, batch);
       } else if (RELOAD_TABS == option) {
-        AssociateTab(synced_tab, has_tabbed_window, batch);
+        AssociateTab(synced_tab, batch);
       }
 
       // If the tab was syncable, it would have been added to the tracker
@@ -222,7 +237,6 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
 
 void LocalSessionEventHandlerImpl::AssociateTab(
     SyncedTabDelegate* const tab_delegate,
-    bool has_tabbed_window,
     WriteBatch* batch) {
   DCHECK(!tab_delegate->IsPlaceholderTab());
 
@@ -241,28 +255,18 @@ void LocalSessionEventHandlerImpl::AssociateTab(
   }
 
   SessionID tab_id = tab_delegate->GetSessionId();
-  DVLOG(1) << "Syncing tab " << tab_id.id() << " from window "
-           << tab_delegate->GetWindowId().id();
-
   int tab_node_id =
       session_tracker_->LookupTabNodeFromTabId(current_session_tag_, tab_id);
 
-  if (tab_node_id != TabNodePool::kInvalidTabNodeID) {
-    // Already associated, so do nothing.
-  } else if (has_tabbed_window) {
+  if (tab_node_id == TabNodePool::kInvalidTabNodeID) {
     // Allocate a new (or reused) sync node for this tab.
     tab_node_id = session_tracker_->AssociateLocalTabWithFreeTabNode(tab_id);
     DCHECK_NE(TabNodePool::kInvalidTabNodeID, tab_node_id)
         << "https://crbug.com/639009";
-  } else {
-    // Only allowed to allocate sync ids when we have native data, which is only
-    // true when we have a tabbed window. Without a sync id we cannot sync this
-    // data, the tracker cannot even really track it. So don't do any more work.
-    // This effectively breaks syncing custom tabs when the native browser isn't
-    // fully loaded. Ideally this is fixed by saving tab data and sync data
-    // atomically, see https://crbug.com/681921.
-    return;
   }
+
+  DVLOG(1) << "Syncing tab " << tab_id << " from window "
+           << tab_delegate->GetWindowId() << " using tab node " << tab_node_id;
 
   // Get the previously synced url.
   sessions::SessionTab* session_tab =
@@ -359,14 +363,13 @@ void LocalSessionEventHandlerImpl::OnLocalTabModified(
       modified_tab->GetCurrentEntryIndex(), &current);
   delegate_->TrackLocalNavigationId(current.timestamp(), current.unique_id());
 
-  bool found_tabbed_window = ScanForTabbedWindow();
   std::unique_ptr<WriteBatch> batch = delegate_->CreateLocalSessionWriteBatch();
-  AssociateTab(modified_tab, found_tabbed_window, batch.get());
+  AssociateTab(modified_tab, batch.get());
   // Note, we always associate windows because it's possible a tab became
   // "interesting" by going to a valid URL, in which case it needs to be added
   // to the window's tab information. Similarly, if a tab became
   // "uninteresting", we remove it from the window's tab information.
-  AssociateWindows(DONT_RELOAD_TABS, found_tabbed_window, batch.get());
+  AssociateWindows(DONT_RELOAD_TABS, batch.get());
   batch->Commit();
 }
 
@@ -476,18 +479,6 @@ sync_pb::SessionTab LocalSessionEventHandlerImpl::GetTabSpecificsFromDelegate(
   }
 
   return specifics;
-}
-
-bool LocalSessionEventHandlerImpl::ScanForTabbedWindow() {
-  for (const auto& window_iter_pair :
-       sessions_client_->GetSyncedWindowDelegatesGetter()
-           ->GetSyncedWindowDelegates()) {
-    const SyncedWindowDelegate* window_delegate = window_iter_pair.second;
-    if (window_delegate->IsTypeTabbed() && IsWindowSyncable(*window_delegate)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 }  // namespace sync_sessions
