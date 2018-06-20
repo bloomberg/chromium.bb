@@ -4,11 +4,14 @@
 
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment_traversal.h"
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
+
+using testing::ElementsAreArray;
 
 class NGPaintFragmentTraversalTest : public RenderingTest,
                                      private ScopedLayoutNGForTest {
@@ -28,9 +31,97 @@ class NGPaintFragmentTraversalTest : public RenderingTest,
     return root_fragment_->Children();
   }
 
+  Vector<const NGPaintFragment*> ToDepthFirstList(
+      NGPaintFragmentTraversal* traversal) const {
+    Vector<const NGPaintFragment*> results;
+    for (; *traversal; traversal->MoveToNext()) {
+      const NGPaintFragment& fragment = **traversal;
+      results.push_back(&fragment);
+    }
+    return results;
+  }
+
   LayoutBlockFlow* layout_block_flow_;
   NGPaintFragment* root_fragment_;
 };
+
+TEST_F(NGPaintFragmentTraversalTest, MoveToNext) {
+  SetUpHtml("t", R"HTML(
+    <div id=t>
+      line0
+      <span style="background: red">red</span>
+      <br>
+      line1
+    </div>
+  )HTML");
+  NGPaintFragmentTraversal traversal(*root_fragment_);
+  NGPaintFragment* line0 = root_fragment_->Children()[0].get();
+  NGPaintFragment* line1 = root_fragment_->Children()[1].get();
+  NGPaintFragment* span = line0->Children()[1].get();
+  NGPaintFragment* br = line0->Children()[2].get();
+  EXPECT_THAT(ToDepthFirstList(&traversal),
+              ElementsAreArray({line0, line0->Children()[0].get(), span,
+                                span->Children()[0].get(), br, line1,
+                                line1->Children()[0].get()}));
+}
+
+TEST_F(NGPaintFragmentTraversalTest, MoveToNextWithRoot) {
+  SetUpHtml("t", R"HTML(
+    <div id=t>
+      line0
+      <span style="background: red">red</span>
+      <br>
+      line1
+    </div>
+  )HTML");
+  NGPaintFragment* line0 = root_fragment_->Children()[0].get();
+  NGPaintFragment* span = line0->Children()[1].get();
+  NGPaintFragment* br = line0->Children()[2].get();
+  NGPaintFragmentTraversal traversal(*line0);
+  EXPECT_THAT(ToDepthFirstList(&traversal),
+              ElementsAreArray({line0->Children()[0].get(), span,
+                                span->Children()[0].get(), br}));
+}
+
+TEST_F(NGPaintFragmentTraversalTest, MoveTo) {
+  SetUpHtml("t", R"HTML(
+    <div id=t>
+      line0
+      <span style="background: red">red</span>
+      <br>
+      line1
+    </div>
+  )HTML");
+  NGPaintFragmentTraversal traversal(*root_fragment_);
+  NGPaintFragment* line0 = root_fragment_->Children()[0].get();
+  NGPaintFragment* line1 = root_fragment_->Children()[1].get();
+  NGPaintFragment* span = line0->Children()[1].get();
+  NGPaintFragment* br = line0->Children()[2].get();
+  traversal.MoveTo(*span);
+  EXPECT_EQ(span, &*traversal);
+  EXPECT_THAT(ToDepthFirstList(&traversal),
+              ElementsAreArray({span, span->Children()[0].get(), br, line1,
+                                line1->Children()[0].get()}));
+}
+
+TEST_F(NGPaintFragmentTraversalTest, MoveToWithRoot) {
+  SetUpHtml("t", R"HTML(
+    <div id=t>
+      line0
+      <span style="background: red">red</span>
+      <br>
+      line1
+    </div>
+  )HTML");
+  NGPaintFragment* line0 = root_fragment_->Children()[0].get();
+  NGPaintFragment* span = line0->Children()[1].get();
+  NGPaintFragment* br = line0->Children()[2].get();
+  NGPaintFragmentTraversal traversal(*line0);
+  traversal.MoveTo(*span);
+  EXPECT_EQ(span, &*traversal);
+  EXPECT_THAT(ToDepthFirstList(&traversal),
+              ElementsAreArray({span, span->Children()[0].get(), br}));
+}
 
 TEST_F(NGPaintFragmentTraversalTest, PreviousLineOf) {
   SetUpHtml("t", "<div id=t>foo<br>bar</div>");

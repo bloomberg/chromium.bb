@@ -143,7 +143,92 @@ NGPaintFragmentTraversalContext NextSiblingOf(
   return {fragment.parent, fragment.index + 1};
 }
 
+unsigned IndexOfChild(const NGPaintFragment& parent,
+                      const NGPaintFragment& fragment) {
+  const auto& children = parent.Children();
+  const auto* it = std::find_if(
+      children.begin(), children.end(),
+      [&fragment](const auto& child) { return &fragment == child.get(); });
+  DCHECK(it != children.end());
+  return std::distance(children.begin(), it);
+}
+
 }  // namespace
+
+NGPaintFragmentTraversal::NGPaintFragmentTraversal(const NGPaintFragment& root)
+    : root_(root) {
+  Push(root, 0);
+}
+
+NGPaintFragmentTraversal::NGPaintFragmentTraversal(const NGPaintFragment& root,
+                                                   const NGPaintFragment& start)
+    : root_(root) {
+  MoveTo(start);
+}
+
+void NGPaintFragmentTraversal::Push(const NGPaintFragment& parent,
+                                    unsigned index) {
+  stack_.push_back(ParentAndIndex{&parent, index});
+  current_ = parent.Children()[index].get();
+}
+
+void NGPaintFragmentTraversal::Push(const NGPaintFragment& fragment) {
+  const NGPaintFragment* parent = fragment.Parent();
+  DCHECK(parent);
+  Push(*parent, IndexOfChild(*parent, fragment));
+}
+
+void NGPaintFragmentTraversal::MoveTo(const NGPaintFragment& fragment) {
+  DCHECK(fragment.IsDescendantOfNotSelf(root_));
+
+  // Because we may not traverse all descendants of |root_|, just push the
+  // specified fragment. Computing its ancestors up to |root_| is deferred to
+  // |MoveToNextSiblingOrAncestor()|.
+  stack_.resize(0);
+  Push(fragment);
+}
+
+void NGPaintFragmentTraversal::MoveToNext() {
+  if (IsAtEnd())
+    return;
+
+  if (!current_->Children().IsEmpty()) {
+    Push(*current_, 0);
+    return;
+  }
+
+  MoveToNextSiblingOrAncestor();
+}
+
+void NGPaintFragmentTraversal::MoveToNextSiblingOrAncestor() {
+  if (IsAtEnd())
+    return;
+
+  while (true) {
+    // Check if we have a next sibling.
+    auto& stack_top = stack_.back();
+    if (++stack_top.index < stack_top.parent->Children().size()) {
+      current_ = stack_top.parent->Children()[stack_top.index].get();
+      return;
+    }
+
+    // Check the next parent in the stack. If the stack is not empty, traverse
+    // its next sibiling.
+    stack_.pop_back();
+    if (!stack_.IsEmpty())
+      continue;
+
+    // We might have started with |MoveTo()|, and thus computing parent stack
+    // was deferred. Check parents until we reach the |root_|.
+    const NGPaintFragment* parent = current_->Parent();
+    DCHECK(parent);
+    if (parent == &root_) {
+      current_ = nullptr;
+      return;
+    }
+    Push(*parent);
+  }
+}
 
 Vector<NGPaintFragmentWithContainerOffset>
 NGPaintFragmentTraversal::DescendantsOf(const NGPaintFragment& container) {
@@ -198,14 +283,7 @@ NGPaintFragmentTraversalContext NGPaintFragmentTraversalContext::Create(
     const NGPaintFragment* fragment) {
   if (!fragment)
     return NGPaintFragmentTraversalContext();
-
-  DCHECK(fragment->Parent());
-  const auto& siblings = fragment->Parent()->Children();
-  const auto* self_iter = std::find_if(
-      siblings.begin(), siblings.end(),
-      [&fragment](const auto& sibling) { return fragment == sibling.get(); });
-  DCHECK_NE(self_iter, siblings.end());
-  return {fragment->Parent(), self_iter - siblings.begin()};
+  return {fragment->Parent(), IndexOfChild(*fragment->Parent(), *fragment)};
 }
 
 NGPaintFragmentTraversalContext NGPaintFragmentTraversal::PreviousInlineLeafOf(

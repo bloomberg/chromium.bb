@@ -41,10 +41,51 @@ struct CORE_EXPORT NGPaintFragmentTraversalContext {
 };
 
 // Utility class for traversing the paint fragment tree.
+//
+// This class has two groups of functions; one is a traversing cursor, by
+// instantiating and using instance functions. The other is a set of static
+// functions that are similar to DOM traversal functions.
 class CORE_EXPORT NGPaintFragmentTraversal {
-  STATIC_ONLY(NGPaintFragmentTraversal);
+  STACK_ALLOCATED();
 
  public:
+  // Create an instance to traverse descendants of |root|.
+  explicit NGPaintFragmentTraversal(const NGPaintFragment& root);
+
+  // Create an instance to traverse descendants of |root|, starting at |start|.
+  // Same as constructing with |root| and then |MoveTo()|.
+  NGPaintFragmentTraversal(const NGPaintFragment& root,
+                           const NGPaintFragment& start);
+
+  bool IsAtEnd() const { return !current_; }
+  explicit operator bool() const { return !IsAtEnd(); }
+
+  const NGPaintFragment* get() const {
+    DCHECK(current_);
+    return current_;
+  }
+  const NGPaintFragment& operator*() const { return *get(); }
+  const NGPaintFragment* operator->() const { return get(); }
+
+  // Move to the specified fragment. The fragment must be a descendant of
+  // |root|. This function is O(n) where |n| is the number of senior siblings
+  // before |fragment|.
+  void MoveTo(const NGPaintFragment& fragment);
+
+  // Move to the next node using the pre-order depth-first-search.
+  void MoveToNext();
+
+  // Move to the next sibling, or next ancestor node using the pre-order
+  // depth-first-search, skipping children of the current node.
+  void MoveToNextSiblingOrAncestor();
+
+  //
+  // Following functions are static, similar to DOM traversal utilities.
+  //
+  // Because fragments have children as a vector, not a two-way list, static
+  // functions are not as cheap as their DOM versions. When traversing more than
+  // once, instace functions are recommended.
+
   // Returns descendants without paint layer in preorder.
   static Vector<NGPaintFragmentWithContainerOffset> DescendantsOf(
       const NGPaintFragment&);
@@ -73,6 +114,28 @@ class CORE_EXPORT NGPaintFragmentTraversal {
       const NGPaintFragmentTraversalContext&);
   static NGPaintFragmentTraversalContext NextInlineLeafOfIgnoringLineBreak(
       const NGPaintFragmentTraversalContext&);
+
+ private:
+  void Push(const NGPaintFragment& parent, unsigned index);
+  void Push(const NGPaintFragment& fragment);
+
+  const NGPaintFragment* current_ = nullptr;
+  const NGPaintFragment& root_;
+
+  // The stack of parent and its child index up to the root. Each stack entry
+  // represents the current node, and thus
+  // |stack_.back().parent->Children()[stack_.back().index] == current_|.
+  //
+  // Computing ancestors maybe deferred until |MoveToNextSiblingOrAncestor()|
+  // when |Moveto()| is used. In that case, the |stack_| does not contain all
+  // fragments to the |root_|.
+  struct ParentAndIndex {
+    const NGPaintFragment* parent;
+    unsigned index;
+  };
+  Vector<ParentAndIndex, 4> stack_;
+
+  DISALLOW_COPY_AND_ASSIGN(NGPaintFragmentTraversal);
 };
 
 }  // namespace blink

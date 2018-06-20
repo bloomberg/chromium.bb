@@ -50,6 +50,10 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   const Vector<std::unique_ptr<NGPaintFragment>>& Children() const {
     return children_;
   }
+  // Note, as the name implies, |IsDescendantOfNotSelf| returns false for the
+  // same object. This is different from |LayoutObject::IsDescendant| but is
+  // same as |Node::IsDescendant|.
+  bool IsDescendantOfNotSelf(const NGPaintFragment&) const;
 
   // Returns the first line box for a block-level container.
   NGPaintFragment* FirstLineBox() const;
