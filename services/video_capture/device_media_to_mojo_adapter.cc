@@ -16,7 +16,7 @@
 namespace {
 
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
-    scoped_refptr<base::SingleThreadTaskRunner> decoder_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
     media::MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
     media::VideoCaptureJpegDecoder::DecodeDoneCB decode_done_cb,
     base::RepeatingCallback<void(const std::string&)> send_log_message_cb) {
@@ -32,10 +32,12 @@ namespace video_capture {
 DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
     std::unique_ptr<service_manager::ServiceContextRef> service_ref,
     std::unique_ptr<media::VideoCaptureDevice> device,
-    media::MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback)
+    media::MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
+    scoped_refptr<base::SequencedTaskRunner> jpeg_decoder_task_runner)
     : service_ref_(std::move(service_ref)),
       device_(std::move(device)),
       jpeg_decoder_factory_callback_(std::move(jpeg_decoder_factory_callback)),
+      jpeg_decoder_task_runner_(std::move(jpeg_decoder_task_runner)),
       device_started_(false),
       weak_factory_(this) {}
 
@@ -67,12 +69,13 @@ void DeviceMediaToMojoAdapter::Start(
   auto device_client = std::make_unique<media::VideoCaptureDeviceClient>(
       std::move(media_receiver), buffer_pool,
       base::BindRepeating(
-          &CreateGpuJpegDecoder, base::ThreadTaskRunnerHandle::Get(),
+          &CreateGpuJpegDecoder, jpeg_decoder_task_runner_,
           jpeg_decoder_factory_callback_,
-          base::BindRepeating(&media::VideoFrameReceiver::OnFrameReadyInBuffer,
-                              receiver_->GetWeakPtr()),
-          base::BindRepeating(&media::VideoFrameReceiver::OnLog,
-                              receiver_->GetWeakPtr())));
+          media::BindToCurrentLoop(base::BindRepeating(
+              &media::VideoFrameReceiver::OnFrameReadyInBuffer,
+              receiver_->GetWeakPtr())),
+          media::BindToCurrentLoop(base::BindRepeating(
+              &media::VideoFrameReceiver::OnLog, receiver_->GetWeakPtr()))));
 
   device_->AllocateAndStart(requested_settings, std::move(device_client));
   device_started_ = true;

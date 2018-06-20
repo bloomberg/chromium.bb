@@ -11,7 +11,7 @@ namespace media {
 
 VideoCaptureJpegDecoderImpl::VideoCaptureJpegDecoderImpl(
     MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
-    scoped_refptr<base::SingleThreadTaskRunner> decoder_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
     DecodeDoneCB decode_done_cb,
     base::RepeatingCallback<void(const std::string&)> send_log_message_cb)
     : jpeg_decoder_factory_(std::move(jpeg_decoder_factory)),

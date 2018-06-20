@@ -28,7 +28,8 @@ class DeviceMediaToMojoAdapterTest : public ::testing::Test {
     mock_device_ptr_ = mock_device.get();
     adapter_ = std::make_unique<DeviceMediaToMojoAdapter>(
         std::unique_ptr<service_manager::ServiceContextRef>(),
-        std::move(mock_device), base::DoNothing());
+        std::move(mock_device), base::DoNothing(),
+        base::ThreadTaskRunnerHandle::Get());
   }
 
   void TearDown() override {

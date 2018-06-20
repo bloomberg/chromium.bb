@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "base/threading/thread.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -32,20 +32,16 @@ class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
   void SetShutdownDelayInSeconds(float seconds) override;
 
  private:
+  class GpuDependenciesContext;
+
+  void LazyInitializeGpuDependenciesContext();
   void LazyInitializeDeviceFactory();
-  void CreateJpegDecodeAccelerator(
-      media::mojom::JpegDecodeAcceleratorRequest request);
-  void CreateJpegEncodeAccelerator(
-      media::mojom::JpegEncodeAcceleratorRequest request);
 
   mojo::BindingSet<mojom::DeviceFactory> factory_bindings_;
   std::unique_ptr<mojom::DeviceFactory> device_factory_;
-
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
-  mojom::AcceleratorFactoryPtr accelerator_factory_;
-  std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  std::unique_ptr<GpuDependenciesContext> gpu_dependencies_context_;
   base::Callback<void(float)> set_shutdown_delay_cb_;
-  base::WeakPtrFactory<DeviceFactoryProviderImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceFactoryProviderImpl);
 };
