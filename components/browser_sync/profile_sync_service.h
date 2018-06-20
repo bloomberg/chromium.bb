@@ -540,11 +540,9 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsEncryptedDatatypeEnabled() const;
 
   // Helper for OnUnrecoverableError.
-  // TODO(tim): Use an enum for |delete_sync_database| here, in ShutdownImpl,
-  // and in SyncEngine::Shutdown.
   void OnUnrecoverableErrorImpl(const base::Location& from_here,
                                 const std::string& message,
-                                bool delete_sync_database);
+                                SyncStopDataFate data_fate);
 
   // Stops the sync engine. Does NOT set IsSyncRequested to false. Use
   // RequestStop for that. |data_fate| controls whether the local sync data is
@@ -585,7 +583,7 @@ class ProfileSyncService : public syncer::SyncService,
   // Sync.UnrecoverableErrors histogram.
   void OnInternalUnrecoverableError(const base::Location& from_here,
                                     const std::string& message,
-                                    bool delete_sync_database,
+                                    SyncStopDataFate data_fate,
                                     UnrecoverableErrorReason reason);
 
   // Update UMA for syncing engine.
@@ -710,9 +708,9 @@ class ProfileSyncService : public syncer::SyncService,
   // Whether the SyncEngine has been initialized.
   bool engine_initialized_;
 
-  // Set when sync receives DISABLED_BY_ADMIN error from server. Prevents
-  // ProfileSyncService from starting engine till browser restarted or user
-  // signed out.
+  // Set when sync receives STOP_SYNC_FOR_DISABLED_ACCOUNT error from server.
+  // Prevents ProfileSyncService from starting engine till browser restarted
+  // or user signed out.
   bool sync_disabled_by_admin_;
 
   // Information describing an unrecoverable error.

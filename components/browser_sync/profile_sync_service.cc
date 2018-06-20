@@ -795,13 +795,13 @@ void ProfileSyncService::OnUnrecoverableError(const base::Location& from_here,
   // Unrecoverable errors that arrive via the syncer::UnrecoverableErrorHandler
   // interface are assumed to originate within the syncer.
   unrecoverable_error_reason_ = ERROR_REASON_SYNCER;
-  OnUnrecoverableErrorImpl(from_here, message, true);
+  OnUnrecoverableErrorImpl(from_here, message, CLEAR_DATA);
 }
 
 void ProfileSyncService::OnUnrecoverableErrorImpl(
     const base::Location& from_here,
     const std::string& message,
-    bool delete_sync_database) {
+    SyncStopDataFate data_fate) {
   DCHECK(HasUnrecoverableError());
   unrecoverable_error_message_ = message;
   unrecoverable_error_location_ = from_here;
@@ -814,11 +814,12 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
   NotifyObservers();
 
   // Shut all data types down.
+  syncer::ShutdownReason reason =
+      (data_fate == KEEP_DATA) ? syncer::STOP_SYNC : syncer::DISABLE_SYNC;
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ProfileSyncService::ShutdownImpl,
-                                sync_enabled_weak_factory_.GetWeakPtr(),
-                                delete_sync_database ? syncer::DISABLE_SYNC
-                                                     : syncer::STOP_SYNC));
+      FROM_HERE,
+      base::BindOnce(&ProfileSyncService::ShutdownImpl,
+                     sync_enabled_weak_factory_.GetWeakPtr(), reason));
 }
 
 void ProfileSyncService::ReenableDatatype(syncer::ModelType type) {
@@ -861,7 +862,7 @@ void ProfileSyncService::OnEngineInitialized(
   if (!success) {
     // Something went unexpectedly wrong.  Play it safe: stop syncing at once
     // and surface error UI to alert the user sync has stopped.
-    // Keep the directory around for now so that on restart we will retry
+    // Keep the sync data around for now so that on restart we will retry
     // again and potentially succeed in presence of transient file IO failures
     // or permissions issues, etc.
     //
@@ -871,8 +872,8 @@ void ProfileSyncService::OnEngineInitialized(
     // directory corruption recovery mechanism makes it obsolete.  By the time
     // we get here, we will have already tried and failed to delete the
     // directory.  It would be no big deal if we tried to delete it again.
-    OnInternalUnrecoverableError(FROM_HERE, "BackendInitialize failure", false,
-                                 ERROR_REASON_ENGINE_INIT_FAILURE);
+    OnInternalUnrecoverableError(FROM_HERE, "BackendInitialize failure",
+                                 KEEP_DATA, ERROR_REASON_ENGINE_INIT_FAILURE);
     return;
   }
 
@@ -1009,7 +1010,7 @@ void ProfileSyncService::OnActionableError(
       // Trigger an unrecoverable error to stop syncing.
       OnInternalUnrecoverableError(FROM_HERE,
                                    last_actionable_error_.error_description,
-                                   true, ERROR_REASON_ACTIONABLE_ERROR);
+                                   CLEAR_DATA, ERROR_REASON_ACTIONABLE_ERROR);
       break;
     case syncer::DISABLE_SYNC_ON_CLIENT:
       if (error.error_type == syncer::NOT_MY_BIRTHDAY) {
@@ -1041,7 +1042,7 @@ void ProfileSyncService::OnActionableError(
           syncer::CLEAR_SERVER_DATA_RESET_LOCAL_DATA_RECEIVED,
           syncer::CLEAR_SERVER_DATA_MAX);
       break;
-    default:
+    case syncer::UNKNOWN_ACTION:
       NOTREACHED();
   }
   NotifyObservers();
@@ -1138,7 +1139,7 @@ void ProfileSyncService::OnConfigureDone(
             result.data_type_status_table.GetUnrecoverableErrorTypes()) +
         ": " + error.message();
     LOG(ERROR) << "ProfileSyncService error: " << message;
-    OnInternalUnrecoverableError(error.location(), message, true,
+    OnInternalUnrecoverableError(error.location(), message, CLEAR_DATA,
                                  ERROR_REASON_CONFIGURATION_FAILURE);
     return;
   }
@@ -2002,11 +2003,11 @@ syncer::ModelTypeSet ProfileSyncService::GetDataTypesFromPreferenceProviders()
 void ProfileSyncService::OnInternalUnrecoverableError(
     const base::Location& from_here,
     const std::string& message,
-    bool delete_sync_database,
+    SyncStopDataFate data_fate,
     UnrecoverableErrorReason reason) {
   DCHECK(!HasUnrecoverableError());
   unrecoverable_error_reason_ = reason;
-  OnUnrecoverableErrorImpl(from_here, message, delete_sync_database);
+  OnUnrecoverableErrorImpl(from_here, message, data_fate);
 }
 
 bool ProfileSyncService::IsRetryingAccessTokenFetchForTest() const {
