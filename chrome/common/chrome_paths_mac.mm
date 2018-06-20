@@ -20,8 +20,6 @@
 
 namespace {
 
-const base::FilePath* g_override_versioned_directory = NULL;
-
 // Return a retained (NOT autoreleased) NSBundle* as the internal
 // implementation of chrome::OuterAppBundle(), which should be the only
 // caller.
@@ -152,9 +150,6 @@ bool GetUserVideosDirectory(base::FilePath* result) {
 }
 
 base::FilePath GetVersionedDirectory() {
-  if (g_override_versioned_directory)
-    return *g_override_versioned_directory;
-
   // Start out with the path to the running executable.
   base::FilePath path;
   base::PathService::Get(base::FILE_EXE, &path);
@@ -175,13 +170,6 @@ base::FilePath GetVersionedDirectory() {
   }
 
   return path;
-}
-
-void SetOverrideVersionedDirectory(const base::FilePath* path) {
-  if (path != g_override_versioned_directory) {
-    delete g_override_versioned_directory;
-    g_override_versioned_directory = path;
-  }
 }
 
 base::FilePath GetFrameworkBundlePath() {
