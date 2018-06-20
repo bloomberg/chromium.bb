@@ -579,6 +579,7 @@ public class NewTabPageTest {
     @Feature({"NewTabPage"})
     public void testPlaceholder() {
         final NewTabPageView ntpView = mNtp.getNewTabPageView();
+        final NewTabPageLayout ntpLayout = ntpView.getNewTabPageLayout();
         final View logoView = ntpView.findViewById(R.id.search_provider_logo);
         final View searchBoxView = ntpView.findViewById(R.id.search_box);
 
@@ -587,7 +588,7 @@ public class NewTabPageTest {
         Assert.assertEquals(View.VISIBLE, logoView.getVisibility());
         Assert.assertEquals(View.VISIBLE, searchBoxView.getVisibility());
         Assert.assertEquals(8, mTileGridLayout.getChildCount());
-        Assert.assertNull(ntpView.getPlaceholder());
+        Assert.assertNull(ntpLayout.getPlaceholder());
 
         // When the search provider has no logo and there are no tile suggestions, the placeholder
         // is shown.
@@ -600,7 +601,7 @@ public class NewTabPageTest {
 
                 mMostVisitedSites.setTileSuggestions(new String[] {});
 
-                ntpView.getTileGroup().onSwitchToForeground(false); // Force tile refresh.
+                ntpLayout.getTileGroup().onSwitchToForeground(false); // Force tile refresh.
             }
         });
         CriteriaHelper.pollUiThread(new Criteria("The tile grid was not updated.") {
@@ -609,8 +610,8 @@ public class NewTabPageTest {
                 return mTileGridLayout.getChildCount() == 0;
             }
         });
-        Assert.assertNotNull(ntpView.getPlaceholder());
-        Assert.assertEquals(View.VISIBLE, ntpView.getPlaceholder().getVisibility());
+        Assert.assertNotNull(ntpLayout.getPlaceholder());
+        Assert.assertEquals(View.VISIBLE, ntpLayout.getPlaceholder().getVisibility());
 
         // Once the search provider has a logo again, the logo and search box are shown again and
         // the placeholder is hidden.
@@ -620,7 +621,7 @@ public class NewTabPageTest {
                 ntpView.setSearchProviderInfo(/* hasLogo = */ true, /* isGoogle */ true);
                 Assert.assertEquals(View.VISIBLE, logoView.getVisibility());
                 Assert.assertEquals(View.VISIBLE, searchBoxView.getVisibility());
-                Assert.assertEquals(View.GONE, ntpView.getPlaceholder().getVisibility());
+                Assert.assertEquals(View.GONE, ntpLayout.getPlaceholder().getVisibility());
             }
         });
     }
@@ -739,7 +740,7 @@ public class NewTabPageTest {
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return mNtp.getNewTabPageView().urlFocusAnimationsDisabled();
+                return mNtp.getNewTabPageView().getNewTabPageLayout().urlFocusAnimationsDisabled();
             }
         });
     }
@@ -770,7 +771,9 @@ public class NewTabPageTest {
         CriteriaHelper.pollUiThread(Criteria.equals(percent, new Callable<Float>() {
             @Override
             public Float call() {
-                return ntp.getNewTabPageView().getUrlFocusChangeAnimationPercent();
+                return ntp.getNewTabPageView()
+                        .getNewTabPageLayout()
+                        .getUrlFocusChangeAnimationPercent();
             }
         }));
     }

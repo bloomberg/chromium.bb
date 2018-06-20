@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.feedback;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ntp.NewTabPageView;
+import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +28,7 @@ public class SimplifiedNtpFeedbackSource implements FeedbackSource {
         if (!isEnabled) {
             mMap.put(SIMPLIFIED_NTP_KEY, DISABLED_VALUE);
         } else {
-            boolean isAblationEnabled = NewTabPageView.isSimplifiedNtpAblationEnabled();
+            boolean isAblationEnabled = NewTabPageLayout.isSimplifiedNtpAblationEnabled();
             mMap.put(
                     SIMPLIFIED_NTP_KEY, isAblationEnabled ? ENABLED_ABLATION_VALUE : ENABLED_VALUE);
         }
