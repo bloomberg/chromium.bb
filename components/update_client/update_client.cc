@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -183,14 +184,14 @@ bool UpdateClientImpl::IsUpdating(const std::string& id) const {
 
   for (const auto task : tasks_) {
     const auto ids = task->GetIds();
-    if (std::find(ids.begin(), ids.end(), id) != ids.end()) {
+    if (base::ContainsValue(ids, id)) {
       return true;
     }
   }
 
   for (const auto task : task_queue_) {
     const auto ids = task->GetIds();
-    if (std::find(ids.begin(), ids.end(), id) != ids.end()) {
+    if (base::ContainsValue(ids, id)) {
       return true;
     }
   }

@@ -6,6 +6,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -870,8 +871,7 @@ DisplayResourceProvider::LockSetForExternalUse::~LockSetForExternalUse() {
 
 ResourceMetadata DisplayResourceProvider::LockSetForExternalUse::LockResource(
     ResourceId id) {
-  DCHECK(std::find(resources_.begin(), resources_.end(), id) ==
-         resources_.end());
+  DCHECK(!base::ContainsValue(resources_, id));
   resources_.push_back(id);
   return resource_provider_->LockForExternalUse(id);
 }

@@ -682,8 +682,7 @@ URLMatcherSchemeFilter::URLMatcherSchemeFilter(
 URLMatcherSchemeFilter::~URLMatcherSchemeFilter() {}
 
 bool URLMatcherSchemeFilter::IsMatch(const GURL& url) const {
-  return std::find(filters_.begin(), filters_.end(), url.scheme()) !=
-      filters_.end();
+  return base::ContainsValue(filters_, url.scheme());
 }
 
 //
