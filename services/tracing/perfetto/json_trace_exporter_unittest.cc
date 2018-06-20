@@ -22,7 +22,7 @@
 
 namespace tracing {
 
-class MockService : public perfetto::Service {
+class MockService : public perfetto::TracingService {
  public:
   explicit MockService(base::MessageLoop* message_loop);
 
@@ -36,7 +36,7 @@ class MockService : public perfetto::Service {
     return tracing_enabled_with_config_;
   }
 
-  // perfetto::Service implementation.
+  // perfetto::TracingService implementation.
   std::unique_ptr<ProducerEndpoint> ConnectProducer(
       perfetto::Producer*,
       uid_t uid,
@@ -54,7 +54,7 @@ class MockService : public perfetto::Service {
   std::string tracing_enabled_with_config_;
 };
 
-class MockConsumerEndpoint : public perfetto::Service::ConsumerEndpoint {
+class MockConsumerEndpoint : public perfetto::TracingService::ConsumerEndpoint {
  public:
   explicit MockConsumerEndpoint(MockService* mock_service)
       : mock_service_(mock_service) {
@@ -100,8 +100,8 @@ void MockService::WaitForTracingDisabled() {
   wait_for_tracing_disabled_.Run();
 }
 
-// perfetto::Service implementation.
-std::unique_ptr<perfetto::Service::ProducerEndpoint>
+// perfetto::TracingService implementation.
+std::unique_ptr<perfetto::TracingService::ProducerEndpoint>
 MockService::ConnectProducer(perfetto::Producer*,
                              uid_t uid,
                              const std::string& name,
@@ -110,7 +110,7 @@ MockService::ConnectProducer(perfetto::Producer*,
   return nullptr;
 }
 
-std::unique_ptr<perfetto::Service::ConsumerEndpoint>
+std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>
 MockService::ConnectConsumer(perfetto::Consumer* consumer) {
   message_loop_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&perfetto::Consumer::OnConnect,

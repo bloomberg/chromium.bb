@@ -18,7 +18,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 
 #include "third_party/perfetto/include/perfetto/tracing/core/producer.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/service.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/tracing_service.h"
 
 namespace perfetto {
 class CommitDataRequest;
@@ -51,11 +51,11 @@ class ProducerHost : public tracing::mojom::ProducerHost,
   // corresponding remote ProducerClient.
   void Initialize(mojom::ProducerClientPtr producer_client,
                   mojom::ProducerHostRequest producer_host,
-                  perfetto::Service* service,
+                  perfetto::TracingService* service,
                   const std::string& name);
 
   // perfetto::Producer implementation.
-  // Gets called by perfetto::Service to toggle specific data sources
+  // Gets called by perfetto::TracingService to toggle specific data sources
   // when requested by a Perfetto Consumer.
   void OnConnect() override;
   void OnDisconnect() override;
@@ -89,7 +89,8 @@ class ProducerHost : public tracing::mojom::ProducerHost,
  protected:
   // Perfetto guarantees that no OnXX callbacks are invoked on |this|
   // immediately after |producer_endpoint_| is destroyed.
-  std::unique_ptr<perfetto::Service::ProducerEndpoint> producer_endpoint_;
+  std::unique_ptr<perfetto::TracingService::ProducerEndpoint>
+      producer_endpoint_;
 
   DISALLOW_COPY_AND_ASSIGN(ProducerHost);
 };

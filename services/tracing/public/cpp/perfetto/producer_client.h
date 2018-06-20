@@ -16,7 +16,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/service.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/tracing_service.h"
 
 namespace perfetto {
 class SharedMemoryArbiter;
@@ -39,7 +39,7 @@ class MojoSharedMemory;
 //   in ProducerClient::CreateDataSourceInstance.
 class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
     : public mojom::ProducerClient,
-      public perfetto::Service::ProducerEndpoint {
+      public perfetto::TracingService::ProducerEndpoint {
  public:
   ProducerClient();
   ~ProducerClient() override;
@@ -70,7 +70,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   void Flush(uint64_t flush_request_id,
              const std::vector<uint64_t>& data_source_ids) override;
 
-  // perfetto::Service::ProducerEndpoint implementation.
+  // perfetto::TracingService::ProducerEndpoint implementation.
   // Used by the TraceWriters
   // to signal Perfetto that shared memory chunks are ready
   // for consumption.

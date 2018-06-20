@@ -13,7 +13,7 @@
 #include "base/macros.h"
 
 #include "third_party/perfetto/include/perfetto/tracing/core/consumer.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/service.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/tracing_service.h"
 
 namespace tracing {
 
@@ -25,7 +25,8 @@ class JSONTraceExporter : public perfetto::Consumer {
  public:
   // The owner of JSONTraceExporter should make sure to destroy
   // |service| before destroying this.
-  JSONTraceExporter(const std::string& config, perfetto::Service* service);
+  JSONTraceExporter(const std::string& config,
+                    perfetto::TracingService* service);
 
   ~JSONTraceExporter() override;
 
@@ -49,7 +50,8 @@ class JSONTraceExporter : public perfetto::Consumer {
   std::string config_;
 
   // Keep last to avoid edge-cases where its callbacks come in mid-destruction.
-  std::unique_ptr<perfetto::Service::ConsumerEndpoint> consumer_endpoint_;
+  std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>
+      consumer_endpoint_;
   DISALLOW_COPY_AND_ASSIGN(JSONTraceExporter);
 };
 
