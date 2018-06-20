@@ -94,6 +94,9 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   return NO;
 }
 
+// |delegate_| may be nil in this method. Rather than adding nil checks to every
+// call, we rely on the fact that method calls to nil return nil, and that nil
+// == ui::PerformKeyEquivalentResult::kUnhandled;
 - (BOOL)doPerformKeyEquivalent:(NSEvent*)event {
   // If the event is being redispatched, then this is the second time
   // performKeyEquivalent: is being called on the event. The first time, a
@@ -106,17 +109,24 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   // We skip all steps before postPerformKeyEquivalent, since those were already
   // triggered on the first pass of the event.
   if ([self isEventBeingRedispatched:event]) {
-    if ([delegate_ postPerformKeyEquivalent:event
+    ui::PerformKeyEquivalentResult result =
+        [delegate_ postPerformKeyEquivalent:event
                                      window:owner_
-                               isRedispatch:YES]) {
+                               isRedispatch:YES];
+    if (result == ui::PerformKeyEquivalentResult::kHandled)
       return YES;
-    }
+    if (result == ui::PerformKeyEquivalentResult::kPassToMainMenu)
+      return NO;
     return [[self bubbleParent] performKeyEquivalent:event];
   }
 
   // First, give the delegate an opportunity to consume this event.
-  if ([delegate_ prePerformKeyEquivalent:event window:owner_])
+  ui::PerformKeyEquivalentResult result =
+      [delegate_ prePerformKeyEquivalent:event window:owner_];
+  if (result == ui::PerformKeyEquivalentResult::kHandled)
     return YES;
+  if (result == ui::PerformKeyEquivalentResult::kPassToMainMenu)
+    return NO;
 
   // Next, pass the event down the NSView hierarchy. Surprisingly, this doesn't
   // use the responder chain. See implementation of -[NSWindow
@@ -129,8 +139,12 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
 
   // If the firstResponder [e.g. omnibox] chose not to handle the keyEquivalent,
   // then give the delegate another chance to consume it.
-  if ([delegate_ postPerformKeyEquivalent:event window:owner_ isRedispatch:NO])
+  result =
+      [delegate_ postPerformKeyEquivalent:event window:owner_ isRedispatch:NO];
+  if (result == ui::PerformKeyEquivalentResult::kHandled)
     return YES;
+  if (result == ui::PerformKeyEquivalentResult::kPassToMainMenu)
+    return NO;
 
   // Allow commands to "bubble up" to CommandDispatchers in parent windows, if
   // they were not handled here.

@@ -44,7 +44,7 @@ CGFloat GetPatternVerticalOffsetWithTabStrip(bool tabStripVisible) {
 }
 
 + (int)getCommandId:(const NativeWebKeyboardEvent&)event {
-  return CommandForKeyEvent(event.os_event);
+  return CommandForKeyEvent(event.os_event).chrome_command;
 }
 
 + (BOOL)handleKeyboardEvent:(NSEvent*)event

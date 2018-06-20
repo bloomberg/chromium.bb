@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 
 #include "base/logging.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/global_shortcut_listener.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -34,7 +35,8 @@
   return NO;
 }
 
-- (BOOL)prePerformKeyEquivalent:(NSEvent*)event window:(NSWindow*)window {
+- (ui::PerformKeyEquivalentResult)prePerformKeyEquivalent:(NSEvent*)event
+                                                   window:(NSWindow*)window {
   // TODO(erikchen): Detect symbolic hot keys, and force control to be passed
   // back to AppKit so that it can handle it correctly.
   // https://crbug.com/846893.
@@ -44,13 +46,13 @@
     NSObject<CommandDispatcherTarget>* target =
         static_cast<NSObject<CommandDispatcherTarget>*>(responder);
     if ([target isKeyLocked:event])
-      return NO;
+      return ui::PerformKeyEquivalentResult::kUnhandled;
   }
 
   if ([self eventHandledByExtensionCommand:event
                                   priority:ui::AcceleratorManager::
                                                kHighPriority]) {
-    return YES;
+    return ui::PerformKeyEquivalentResult::kHandled;
   }
 
   // The specification for this private extensions API is incredibly vague. For
@@ -58,7 +60,7 @@
   // a chance to handle the event.
   if (extensions::GlobalShortcutListener::GetInstance()
           ->IsShortcutHandlingSuspended()) {
-    return NO;
+    return ui::PerformKeyEquivalentResult::kUnhandled;
   }
 
   // If this keyEquivalent corresponds to a Chrome command, trigger it directly
@@ -78,42 +80,53 @@
   // TODO(erikchen): Add a throttle. Otherwise, it's possible for a user holding
   // down a hotkey [e.g. cmd + w] to accidentally close too many tabs!
   // https://crbug.com/846893.
-  int cmd = CommandForKeyEvent(event);
-  if (cmd != -1) {
+  CommandForKeyEventResult result = CommandForKeyEvent(event);
+  if (result.found()) {
     Browser* browser = chrome::FindBrowserWithWindow(window);
-    if (browser && browser->command_controller()->IsReservedCommandOrKey(
-                       cmd, content::NativeWebKeyboardEvent(event))) {
-      chrome::ExecuteCommand(browser, cmd);
-      return YES;
+    if (browser &&
+        browser->command_controller()->IsReservedCommandOrKey(
+            result.chrome_command, content::NativeWebKeyboardEvent(event))) {
+      if (result.from_main_menu) {
+        return ui::PerformKeyEquivalentResult::kPassToMainMenu;
+      }
+
+      chrome::ExecuteCommand(browser, result.chrome_command);
+      return ui::PerformKeyEquivalentResult::kHandled;
     }
   }
 
-  return NO;
+  return ui::PerformKeyEquivalentResult::kUnhandled;
 }
 
-- (BOOL)postPerformKeyEquivalent:(NSEvent*)event
-                          window:(NSWindow*)window
-                    isRedispatch:(BOOL)isRedispatch {
+- (ui::PerformKeyEquivalentResult)postPerformKeyEquivalent:(NSEvent*)event
+                                                    window:(NSWindow*)window
+                                              isRedispatch:(BOOL)isRedispatch {
   if ([self eventHandledByExtensionCommand:event
                                   priority:ui::AcceleratorManager::
                                                kNormalPriority]) {
-    return true;
+    return ui::PerformKeyEquivalentResult::kHandled;
   }
 
-  int cmd = CommandForKeyEvent(event);
+  CommandForKeyEventResult result = CommandForKeyEvent(event);
 
-  if (cmd == -1 && isRedispatch)
-    cmd = DelayedWebContentsCommandForKeyEvent(event);
+  if (!result.found() && isRedispatch) {
+    result.chrome_command = DelayedWebContentsCommandForKeyEvent(event);
+    result.from_main_menu = false;
+  }
 
-  if (cmd != -1) {
+  if (result.found()) {
     Browser* browser = chrome::FindBrowserWithWindow(window);
     if (browser) {
-      chrome::ExecuteCommand(browser, cmd);
-      return true;
+      if (result.from_main_menu) {
+        return ui::PerformKeyEquivalentResult::kPassToMainMenu;
+      }
+
+      chrome::ExecuteCommand(browser, result.chrome_command);
+      return ui::PerformKeyEquivalentResult::kHandled;
     }
   }
 
-  return false;
+  return ui::PerformKeyEquivalentResult::kUnhandled;
 }
 
 @end  // ChromeCommandDispatchDelegate

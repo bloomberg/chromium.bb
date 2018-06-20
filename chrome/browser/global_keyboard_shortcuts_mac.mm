@@ -101,6 +101,18 @@ GetDelayedShortcutsNotPresentInMainMenu() {
   return *keys;
 }
 
+CommandForKeyEventResult NoCommand() {
+  return {-1, /*from_main_menu=*/false};
+}
+
+CommandForKeyEventResult MainMenuCommand(int cmd) {
+  return {cmd, /*from_main_menu=*/true};
+}
+
+CommandForKeyEventResult ShortcutCommand(int cmd) {
+  return {cmd, /*from_main_menu=*/false};
+}
+
 }  // namespace
 
 const std::vector<KeyboardShortcutData>& GetShortcutsNotPresentInMainMenu() {
@@ -142,14 +154,14 @@ const std::vector<KeyboardShortcutData>& GetShortcutsNotPresentInMainMenu() {
   return *keys;
 }
 
-int CommandForKeyEvent(NSEvent* event) {
+CommandForKeyEventResult CommandForKeyEvent(NSEvent* event) {
   DCHECK(event);
   if ([event type] != NSKeyDown)
-    return -1;
+    return NoCommand();
 
   int cmdNum = MenuCommandForKeyEvent(event);
   if (cmdNum != -1)
-    return cmdNum;
+    return MainMenuCommand(cmdNum);
 
   // Look in secondary keyboard shortcuts.
   NSUInteger modifiers = [event modifierFlags];
@@ -164,11 +176,11 @@ int CommandForKeyEvent(NSEvent* event) {
   for (const auto& shortcut : GetShortcutsNotPresentInMainMenu()) {
     if (MatchesEventForKeyboardShortcut(shortcut, cmdKey, shiftKey, cntrlKey,
                                         optKey, keyCode)) {
-      return shortcut.chrome_command;
+      return ShortcutCommand(shortcut.chrome_command);
     }
   }
 
-  return -1;
+  return NoCommand();
 }
 
 int DelayedWebContentsCommandForKeyEvent(NSEvent* event) {

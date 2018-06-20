@@ -73,6 +73,23 @@ UI_BASE_EXPORT
 
 @end
 
+namespace ui {
+
+enum class PerformKeyEquivalentResult {
+  // The CommandDispatcherDelegate did not handle the key equivalent.
+  kUnhandled,
+
+  // The CommandDispatcherDelegate handled the key equivalent.
+  kHandled,
+
+  // The CommandDispatcherDelegate did not handle the key equivalent, but wants
+  // the event to be passed to the MainMenu, which will handle the key
+  // equivalent.
+  kPassToMainMenu,
+};
+
+}  // namespace ui
+
 // Provides CommandDispatcher with the means to redirect key equivalents at
 // different stages of event handling.
 @protocol CommandDispatcherDelegate
@@ -81,16 +98,17 @@ UI_BASE_EXPORT
 // responder. See https://crbug.com/846893#c5 for more details on
 // keyEquivalent consumer ordering. |window| is the CommandDispatchingWindow
 // that owns CommandDispatcher, not the window of the event.
-- (BOOL)prePerformKeyEquivalent:(NSEvent*)event window:(NSWindow*)window;
+- (ui::PerformKeyEquivalentResult)prePerformKeyEquivalent:(NSEvent*)event
+                                                   window:(NSWindow*)window;
 
 // Gives the delegate a chance to process the keyEquivalent after the first
 // responder has declined to process the event. See https://crbug.com/846893#c5
 // for more details on keyEquivalent consumer ordering.
 // |window| is the CommandDispatchingWindow that owns CommandDispatcher, not the
 // window of the event.
-- (BOOL)postPerformKeyEquivalent:(NSEvent*)event
-                          window:(NSWindow*)window
-                    isRedispatch:(BOOL)isRedispatch;
+- (ui::PerformKeyEquivalentResult)postPerformKeyEquivalent:(NSEvent*)event
+                                                    window:(NSWindow*)window
+                                              isRedispatch:(BOOL)isRedispatch;
 
 @end
 

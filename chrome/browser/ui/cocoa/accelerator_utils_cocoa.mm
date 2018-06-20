@@ -46,7 +46,7 @@ bool IsChromeAccelerator(const ui::Accelerator& accelerator, Profile* profile) {
                                    isARepeat:NO
                                      keyCode:accelerator.key_code()];
 
-  return CommandForKeyEvent(event) != -1;
+  return CommandForKeyEvent(event).found();
 }
 
 ui::Accelerator GetPrimaryChromeAcceleratorForBookmarkPage() {
