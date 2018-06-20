@@ -6,9 +6,3 @@ include_rules = [
   "+gpu/ipc/host",
   "+services/viz/privileged/interfaces",
 ]
-
-specific_include_rules = {
-  "run_all_service_tests\.cc": [
-    "+mojo/edk/embedder/embedder.h",
-  ],
-}

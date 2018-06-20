@@ -2,7 +2,6 @@ include_rules = [
   "+components/url_formatter",
   "+content/public/browser",
   "+content/public/test",
-  "+mojo/edk/embedder",
   "+native_client/src/public",
   "+net",
   "+ppapi/host",
