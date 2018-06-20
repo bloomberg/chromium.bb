@@ -9,7 +9,7 @@ namespace blink {
 XRInputSourceEvent::XRInputSourceEvent() {}
 
 XRInputSourceEvent::XRInputSourceEvent(const AtomicString& type,
-                                       XRPresentationFrame* frame,
+                                       XRFrame* frame,
                                        XRInputSource* input_source)
     : Event(type, Bubbles::kYes, Cancelable::kNo),
       frame_(frame),

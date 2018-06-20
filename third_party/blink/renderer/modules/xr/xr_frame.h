@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_PRESENTATION_FRAME_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_PRESENTATION_FRAME_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_FRAME_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_FRAME_H_
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -21,11 +21,11 @@ class XRInputSource;
 class XRSession;
 class XRView;
 
-class XRPresentationFrame final : public ScriptWrappable {
+class XRFrame final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit XRPresentationFrame(XRSession*);
+  explicit XRFrame(XRSession*);
 
   XRSession* session() const { return session_; }
 

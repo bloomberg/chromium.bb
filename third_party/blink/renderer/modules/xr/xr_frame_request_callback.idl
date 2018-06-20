@@ -3,4 +3,4 @@
 // found in the LICENSE file.
 
 // https://immersive-web.github.io/webxr/#callbackdef-xrframerequestcallback
-callback XRFrameRequestCallback = void (DOMHighResTimeStamp time, XRPresentationFrame frame);
+callback XRFrameRequestCallback = void (DOMHighResTimeStamp time, XRFrame frame);

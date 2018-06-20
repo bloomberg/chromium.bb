@@ -15,7 +15,7 @@ xr_session_promise_test( (session) => new Promise((resolve) => {
     session.baseLayer = new XRWebGLLayer(session, gl);
 
     function onFrame(time, xrFrame) {
-      assert_true(xrFrame instanceof XRPresentationFrame);
+      assert_true(xrFrame instanceof XRFrame);
       // Test does not complete until the returned promise resolves.
       resolve();
     }

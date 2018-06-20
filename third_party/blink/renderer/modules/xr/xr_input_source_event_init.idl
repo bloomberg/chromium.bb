@@ -5,6 +5,6 @@
 [
     SecureContext
 ] dictionary XRInputSourceEventInit : EventInit {
-  required XRPresentationFrame frame;
+  required XRFrame frame;
   required XRInputSource inputSource;
 };

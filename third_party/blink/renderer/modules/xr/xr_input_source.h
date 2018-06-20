@@ -46,7 +46,7 @@ class XRInputSource : public ScriptWrappable {
   bool selection_cancelled = false;
 
  private:
-  friend class XRPresentationFrame;
+  friend class XRFrame;
 
   const Member<XRSession> session_;
   const uint32_t source_id_;

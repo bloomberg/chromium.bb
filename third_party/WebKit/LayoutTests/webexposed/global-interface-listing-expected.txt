@@ -9111,6 +9111,13 @@ interface XRDevicePose
     getter poseModelMatrix
     method constructor
     method getViewMatrix
+interface XRFrame
+    attribute @@toStringTag
+    getter session
+    getter views
+    method constructor
+    method getDevicePose
+    method getInputPose
 interface XRFrameOfReference : XRCoordinateSystem
     attribute @@toStringTag
     getter bounds
@@ -9139,13 +9146,6 @@ interface XRPresentationContext
     attribute @@toStringTag
     getter canvas
     method constructor
-interface XRPresentationFrame
-    attribute @@toStringTag
-    getter session
-    getter views
-    method constructor
-    method getDevicePose
-    method getInputPose
 interface XRSession : EventTarget
     attribute @@toStringTag
     getter baseLayer

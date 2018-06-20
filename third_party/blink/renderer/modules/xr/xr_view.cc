@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 
-#include "third_party/blink/renderer/modules/xr/xr_presentation_frame.h"
+#include "third_party/blink/renderer/modules/xr/xr_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 

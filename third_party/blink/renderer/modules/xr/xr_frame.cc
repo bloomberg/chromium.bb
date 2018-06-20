@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/xr/xr_presentation_frame.h"
+#include "third_party/blink/renderer/modules/xr/xr_frame.h"
 
 #include "third_party/blink/renderer/modules/xr/xr_coordinate_system.h"
 #include "third_party/blink/renderer/modules/xr/xr_device_pose.h"
@@ -13,14 +13,13 @@
 
 namespace blink {
 
-XRPresentationFrame::XRPresentationFrame(XRSession* session)
-    : session_(session) {}
+XRFrame::XRFrame(XRSession* session) : session_(session) {}
 
-const HeapVector<Member<XRView>>& XRPresentationFrame::views() const {
+const HeapVector<Member<XRView>>& XRFrame::views() const {
   return session_->views();
 }
 
-XRDevicePose* XRPresentationFrame::getDevicePose(
+XRDevicePose* XRFrame::getDevicePose(
     XRCoordinateSystem* coordinate_system) const {
   session_->LogGetPose();
 
@@ -45,7 +44,7 @@ XRDevicePose* XRPresentationFrame::getDevicePose(
   return new XRDevicePose(session(), std::move(pose));
 }
 
-XRInputPose* XRPresentationFrame::getInputPose(
+XRInputPose* XRFrame::getInputPose(
     XRInputSource* input_source,
     XRCoordinateSystem* coordinate_system) const {
   if (!input_source || !coordinate_system) {
@@ -118,12 +117,11 @@ XRInputPose* XRPresentationFrame::getInputPose(
   return nullptr;
 }
 
-void XRPresentationFrame::SetBasePoseMatrix(
-    const TransformationMatrix& base_pose_matrix) {
+void XRFrame::SetBasePoseMatrix(const TransformationMatrix& base_pose_matrix) {
   base_pose_matrix_ = TransformationMatrix::Create(base_pose_matrix);
 }
 
-void XRPresentationFrame::Trace(blink::Visitor* visitor) {
+void XRFrame::Trace(blink::Visitor* visitor) {
   visitor->Trace(session_);
   ScriptWrappable::Trace(visitor);
 }
