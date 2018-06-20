@@ -1790,6 +1790,10 @@ const char kTranslateRankerEnforcementDescription[] =
     "Improved Translate UI triggering logic. TranslateRanker decides whether "
     "or not Translate UI should be triggered in a given context.";
 
+const char kTranslateUIName[] = "Enable Translate";
+const char kTranslateUIDescription[] =
+    "Enable the Translate popup when visiting webpages in other languages.";
+
 const char kTreatInsecureOriginAsSecureName[] =
     "Insecure origins treated as secure";
 const char kTreatInsecureOriginAsSecureDescription[] =
