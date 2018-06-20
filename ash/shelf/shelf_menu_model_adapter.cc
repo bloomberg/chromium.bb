@@ -26,7 +26,7 @@ ShelfMenuModelAdapter::~ShelfMenuModelAdapter() = default;
 void ShelfMenuModelAdapter::RecordHistogram() {
   base::TimeDelta user_journey_time = base::TimeTicks::Now() - menu_open_time();
   // If the menu is for a ShelfButton.
-  if (app_id().empty()) {
+  if (!app_id().empty()) {
     UMA_HISTOGRAM_TIMES("Apps.ContextMenuUserJourneyTime.ShelfButton",
                         user_journey_time);
     UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.ShelfButton",
@@ -34,8 +34,8 @@ void ShelfMenuModelAdapter::RecordHistogram() {
     return;
   }
 
-  // TODO(newcomer): Add Apps.ContextMenuUserJourneyTime.Shelf metric.
-  // https://crbug.com/845273.
+  UMA_HISTOGRAM_TIMES("Apps.ContextMenuUserJourneyTime.Shelf",
+                      user_journey_time);
   UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.Shelf", source_type(),
                             ui::MENU_SOURCE_TYPE_LAST);
 }
