@@ -25,6 +25,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.accessibility.AccessibilityManager;
 
+import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
@@ -580,6 +581,15 @@ public class WindowAndroid implements AndroidPermissionDelegate {
     public void removeActivityStateObserver(ActivityStateObserver observer) {
         assert mActivityStateObservers.hasObserver(observer);
         mActivityStateObservers.removeObserver(observer);
+    }
+
+    /**
+     * @return Current state of the associated {@link Activity}. Can be overriden
+     *         to return the correct state. {@code ActivityState.DESTROYED} by default.
+     */
+    @ActivityState
+    public int getActivityState() {
+        return ActivityState.DESTROYED;
     }
 
     @CalledByNative
