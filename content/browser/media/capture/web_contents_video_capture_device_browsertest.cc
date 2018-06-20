@@ -195,6 +195,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
   capture_stack()->ExpectHasLogMessages();
 
   device->StopAndDeAllocate();
+  device.reset();
   RunUntilIdle();
 }
 
@@ -204,6 +205,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
                        ErrorsOutWhenWebContentsIsDestroyed) {
   NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
+  EXPECT_TRUE(shell()->web_contents()->IsBeingCaptured());
 
   // Initially, the device captures any content changes normally.
   ChangePageContentColor(SK_ColorRED);
@@ -226,6 +228,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
                        SuspendsAndResumes) {
   NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
+  EXPECT_TRUE(shell()->web_contents()->IsBeingCaptured());
 
   // Initially, the device captures any content changes normally.
   ChangePageContentColor(SK_ColorRED);
@@ -252,6 +255,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
   WaitForFrameWithColor(SK_ColorGREEN);
 
   StopAndDeAllocate();
+  EXPECT_FALSE(shell()->web_contents()->IsBeingCaptured());
 }
 
 // Tests that the device delivers refresh frames when asked, while the source
@@ -260,6 +264,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
                        DeliversRefreshFramesUponRequest) {
   NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
+  EXPECT_TRUE(shell()->web_contents()->IsBeingCaptured());
 
   // Set the page content to a known color.
   ChangePageContentColor(SK_ColorRED);
@@ -274,6 +279,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
   }
 
   StopAndDeAllocate();
+  EXPECT_FALSE(shell()->web_contents()->IsBeingCaptured());
 }
 
 class WebContentsVideoCaptureDeviceBrowserTestP
@@ -331,6 +337,7 @@ IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
 
   NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
+  EXPECT_TRUE(shell()->web_contents()->IsBeingCaptured());
 
   for (int visilibilty_case = 0; visilibilty_case < 3; ++visilibilty_case) {
     switch (visilibilty_case) {
@@ -378,6 +385,7 @@ IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
   }
 
   StopAndDeAllocate();
+  EXPECT_FALSE(shell()->web_contents()->IsBeingCaptured());
 }
 
 }  // namespace

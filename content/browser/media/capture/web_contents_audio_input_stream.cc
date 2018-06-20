@@ -177,15 +177,20 @@ bool WebContentsAudioInputStream::Impl::Open() {
   tracker_->Start(
       initial_render_process_id_, initial_main_render_frame_id_,
       base::Bind(&Impl::OnTargetChanged, this));
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&Impl::IncrementCapturerCount, this));
+  IncrementCapturerCount();
 
   return true;
 }
 
 void WebContentsAudioInputStream::Impl::IncrementCapturerCount() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&Impl::IncrementCapturerCount, this));
+    return;
+  }
 
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (WebContents* contents = tracker_->web_contents())
     contents->IncrementCapturerCount(gfx::Size());
 }
@@ -237,9 +242,7 @@ void WebContentsAudioInputStream::Impl::Close() {
 
   if (state_ == OPENED) {
     state_ = CONSTRUCTED;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&Impl::DecrementCapturerCount, this));
+    DecrementCapturerCount();
     tracker_->Stop();
     mixer_stream_->Close();
   }
@@ -249,8 +252,14 @@ void WebContentsAudioInputStream::Impl::Close() {
 }
 
 void WebContentsAudioInputStream::Impl::DecrementCapturerCount() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&Impl::DecrementCapturerCount, this));
+    return;
+  }
 
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (WebContents* contents = tracker_->web_contents())
     contents->DecrementCapturerCount();
 }
