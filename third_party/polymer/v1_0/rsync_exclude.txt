@@ -1,7 +1,7 @@
 .bower.json
 build.log
 build.sh
-compiled_resources*.gyp
+BUILD.gn
 */demo/
 demo*.html
 */demos/

@@ -122,9 +122,6 @@ python css_strip_prefixes.py
 echo 'Creating a summary of components...'
 python create_components_summary.py > components_summary.txt
 
-echo 'Creating GYP files for interfaces and externs...'
-./generate_gyp.sh
-
 echo 'Creating GN files for interfaces and externs...'
 ./generate_gn.sh
 
