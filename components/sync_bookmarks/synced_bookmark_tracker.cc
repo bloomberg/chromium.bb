@@ -37,6 +37,10 @@ SyncedBookmarkTracker::Entity::Entity(
 
 SyncedBookmarkTracker::Entity::~Entity() = default;
 
+bool SyncedBookmarkTracker::Entity::IsUnsynced() const {
+  return metadata_->sequence_number() > metadata_->acked_sequence_number();
+}
+
 bool SyncedBookmarkTracker::Entity::MatchesData(
     const syncer::EntityData& data) const {
   if (metadata_->is_deleted() || data.is_deleted()) {
@@ -53,10 +57,6 @@ bool SyncedBookmarkTracker::Entity::MatchesSpecificsHash(
   std::string hash;
   HashSpecifics(specifics, &hash);
   return hash == metadata_->specifics_hash();
-}
-
-bool SyncedBookmarkTracker::Entity::IsUnsynced() const {
-  return metadata_->sequence_number() > metadata_->acked_sequence_number();
 }
 
 SyncedBookmarkTracker::SyncedBookmarkTracker(
@@ -89,6 +89,8 @@ void SyncedBookmarkTracker::Add(const std::string& sync_id,
   metadata->set_server_id(sync_id);
   metadata->set_server_version(server_version);
   metadata->set_creation_time(syncer::TimeToProtoTime(creation_time));
+  metadata->set_sequence_number(0);
+  metadata->set_acked_sequence_number(0);
   HashSpecifics(specifics, metadata->mutable_specifics_hash());
   sync_id_to_entities_map_[sync_id] =
       std::make_unique<Entity>(bookmark_node, std::move(metadata));
@@ -113,6 +115,17 @@ void SyncedBookmarkTracker::Remove(const std::string& sync_id) {
   sync_id_to_entities_map_.erase(sync_id);
 }
 
+void SyncedBookmarkTracker::IncrementSequenceNumber(
+    const std::string& sync_id) {
+  Entity* entity = sync_id_to_entities_map_.find(sync_id)->second.get();
+  DCHECK(entity);
+  DCHECK(!entity->metadata()->is_deleted());
+  // TODO(crbug.com/516866): Update base hash specifics here if the entity is
+  // not already out of sync.
+  entity->metadata()->set_sequence_number(
+      entity->metadata()->sequence_number() + 1);
+}
+
 sync_pb::BookmarkModelMetadata
 SyncedBookmarkTracker::BuildBookmarkModelMetadata() const {
   sync_pb::BookmarkModelMetadata model_metadata;
@@ -130,7 +143,13 @@ SyncedBookmarkTracker::BuildBookmarkModelMetadata() const {
 }
 
 bool SyncedBookmarkTracker::HasLocalChanges() const {
-  NOTIMPLEMENTED();
+  for (const std::pair<const std::string, std::unique_ptr<Entity>>& pair :
+       sync_id_to_entities_map_) {
+    Entity* entity = pair.second.get();
+    if (entity->IsUnsynced()) {
+      return true;
+    }
+  }
   return false;
 }
 
