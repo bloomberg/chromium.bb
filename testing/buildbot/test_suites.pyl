@@ -903,11 +903,7 @@
   },
 
   'fuchsia_gtests': {
-    'base_unittests': {
-      'args': [
-        '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.base_unittests.filter',
-      ],
-    },
+    'base_unittests': {},
     'content_unittests': {
       'args': [
         '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter',
@@ -921,8 +917,7 @@
         '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ipc_tests.filter',
       ],
     },
-    'media_unittests': {
-    },
+    'media_unittests': {},
     'mojo_unittests': {
       'args': [
         '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter',
