@@ -525,7 +525,10 @@ void Canvas2DLayerBridge::FlushRecording() {
 
     // Rastering the recording would have locked images, since we've flushed
     // all recorded ops, we should relase all locked images as well.
-    GetOrCreateResourceProvider()->ReleaseLockedImages();
+    // A new null check on the resource provider is necessary just in case
+    // the playback crashed the context.
+    if (GetOrCreateResourceProvider())
+      GetOrCreateResourceProvider()->ReleaseLockedImages();
 
     if (is_deferral_enabled_)
       StartRecording();
