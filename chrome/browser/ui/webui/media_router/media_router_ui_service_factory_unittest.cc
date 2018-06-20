@@ -16,7 +16,18 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+class MockMediaRouterUIServiceObserver
+    : public media_router::MediaRouterUIService::Observer {
+ public:
+  MOCK_METHOD0(OnServiceDisabled, void());
+};
+
+}  // namespace
 
 namespace media_router {
 
@@ -59,12 +70,34 @@ TEST_F(MediaRouterUIServiceFactoryUnitTest, CreateService) {
   ASSERT_TRUE(service->action_controller());
 }
 
-TEST_F(MediaRouterUIServiceFactoryUnitTest, DoNotCreateServiceWhenDisabled) {
+TEST_F(MediaRouterUIServiceFactoryUnitTest,
+       DoNotCreateActionControllerWhenDisabled) {
   profile_->GetTestingPrefService()->SetManagedPref(
       prefs::kEnableMediaRouter, std::make_unique<base::Value>(false));
-  EXPECT_EQ(nullptr,
-            MediaRouterUIServiceFactory::GetInstance()->BuildServiceInstanceFor(
-                profile_.get()));
+  std::unique_ptr<MediaRouterUIService> service(
+      static_cast<MediaRouterUIService*>(
+          MediaRouterUIServiceFactory::GetInstance()->BuildServiceInstanceFor(
+              profile_.get())));
+  ASSERT_TRUE(service);
+  EXPECT_EQ(nullptr, service->action_controller());
+}
+
+TEST_F(MediaRouterUIServiceFactoryUnitTest, DisablingMediaRouting) {
+  std::unique_ptr<MediaRouterUIService> service(
+      static_cast<MediaRouterUIService*>(
+          MediaRouterUIServiceFactory::GetInstance()->BuildServiceInstanceFor(
+              profile_.get())));
+  ASSERT_TRUE(service);
+  ASSERT_TRUE(service->action_controller());
+
+  MockMediaRouterUIServiceObserver mock_observer;
+  service->AddObserver(&mock_observer);
+  EXPECT_CALL(mock_observer, OnServiceDisabled).Times(testing::Exactly(1));
+
+  profile_->GetTestingPrefService()->SetManagedPref(
+      prefs::kEnableMediaRouter, std::make_unique<base::Value>(false));
+  EXPECT_EQ(nullptr, service->action_controller());
+  service->RemoveObserver(&mock_observer);
 }
 
 }  // namespace media_router
