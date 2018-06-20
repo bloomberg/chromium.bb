@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_ANDROID_SCROLLER_H_
-#define UI_EVENTS_ANDROID_SCROLLER_H_
+#ifndef UI_EVENTS_MOBILE_SCROLLER_H_
+#define UI_EVENTS_MOBILE_SCROLLER_H_
 
 #include "base/time/time.h"
 #include "ui/events/events_base_export.h"
@@ -15,9 +15,9 @@ namespace ui {
 // Native port of android.widget.Scroller.
 // * Change-Id: I4365946f890a76fcfa78ca9d69f2a8e0848095a9
 // * Please update the Change-Id as upstream Android changes are pulled.
-class EVENTS_BASE_EXPORT Scroller : public GestureCurve {
+class EVENTS_BASE_EXPORT MobileScroller : public GestureCurve {
  public:
-  struct Config {
+  struct EVENTS_BASE_EXPORT Config {
     Config();
 
     // Controls fling deceleration. Defaults to 0.015f.
@@ -27,8 +27,8 @@ class EVENTS_BASE_EXPORT Scroller : public GestureCurve {
     bool flywheel_enabled;
   };
 
-  explicit Scroller(const Config& config);
-  ~Scroller() override;
+  explicit MobileScroller(const Config& config);
+  ~MobileScroller() override;
 
   // GestureCurve implementation.
   bool ComputeScrollOffset(base::TimeTicks time,
@@ -148,4 +148,4 @@ class EVENTS_BASE_EXPORT Scroller : public GestureCurve {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_ANDROID_SCROLLER_H_
+#endif  // UI_EVENTS_MOBILE_SCROLLER_H_

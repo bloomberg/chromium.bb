@@ -242,6 +242,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual GURL GetEffectiveURL(BrowserContext* browser_context,
                                const GURL& url);
 
+  // Returns whether gesture fling events should use the mobile-behavior gesture
+  // curve for scrolling.
+  virtual bool ShouldUseMobileFlingCurve() const;
+
   // Returns whether all instances of the specified effective URL should be
   // rendered by the same process, rather than using process-per-site-instance.
   virtual bool ShouldUseProcessPerSite(BrowserContext* browser_context,

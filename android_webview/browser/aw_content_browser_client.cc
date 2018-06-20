@@ -249,6 +249,10 @@ void AwContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(new AwPrintingMessageFilter(host->GetID()));
 }
 
+bool AwContentBrowserClient::ShouldUseMobileFlingCurve() const {
+  return true;
+}
+
 bool AwContentBrowserClient::IsHandledURL(const GURL& url) {
   if (!url.is_valid()) {
     // We handle error cases.
