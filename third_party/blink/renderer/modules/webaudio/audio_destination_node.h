@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/audio/audio_io_callback.h"
-#include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
 
 namespace blink {
 
@@ -46,11 +45,9 @@ class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
   void Process(size_t) final {
   }  // we're pulled by hardware so this is never called
 
-  // The audio hardware calls render() to get the next render quantum of audio
-  // into destinationBus.  It will optionally give us local/live audio input in
-  // sourceBus (if it's not 0).
-  void Render(AudioBus* source_bus,
-              AudioBus* destination_bus,
+  // Invoked by the AudioDestination to get the next render quantum into
+  // |destination_bus|.
+  void Render(AudioBus* destination_bus,
               size_t number_of_frames,
               const AudioIOPosition& output_position) final;
 
@@ -79,42 +76,8 @@ class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
   virtual int FramesPerBuffer() const = 0;
 
  protected:
-  // LocalAudioInputProvider allows us to expose an AudioSourceProvider for
-  // local/live audio input.  If there is local/live audio input, we call set()
-  // with the audio input data every render quantum.
-  class LocalAudioInputProvider final : public AudioSourceProvider {
-   public:
-    LocalAudioInputProvider()
-        : source_bus_(AudioBus::Create(
-              2,
-              AudioUtilities::kRenderQuantumFrames))  // FIXME: handle
-                                                      // non-stereo local input.
-    {}
-
-    void Set(AudioBus* bus) {
-      if (bus)
-        source_bus_->CopyFrom(*bus);
-    }
-
-    // AudioSourceProvider.
-    void ProvideInput(AudioBus* destination_bus,
-                      size_t number_of_frames) override {
-      bool is_good = destination_bus &&
-                     destination_bus->length() == number_of_frames &&
-                     source_bus_->length() == number_of_frames;
-      DCHECK(is_good);
-      if (is_good)
-        destination_bus->CopyFrom(*source_bus_);
-    }
-
-   private:
-    scoped_refptr<AudioBus> source_bus_;
-  };
-
   // Counts the number of sample-frames processed by the destination.
   size_t current_sample_frame_;
-
-  LocalAudioInputProvider local_audio_input_provider_;
 };
 
 class AudioDestinationNode : public AudioNode {

@@ -314,10 +314,6 @@ bool OfflineAudioDestinationHandler::RenderIfNotSuspended(
     return true;
   }
 
-  // Prepare the local audio input provider for this render quantum.
-  if (source_bus)
-    local_audio_input_provider_.Set(source_bus);
-
   DCHECK_GE(NumberOfInputs(), 1u);
   if (NumberOfInputs() < 1) {
     destination_bus->Zero();

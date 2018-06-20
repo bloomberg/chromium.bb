@@ -183,7 +183,7 @@ void AudioDestination::RequestRender(size_t frames_requested,
       output_position.position = 0.0;
 
     // Process WebAudio graph and push the rendered output to FIFO.
-    callback_.Render(nullptr, render_bus_.get(),
+    callback_.Render(render_bus_.get(),
                      AudioUtilities::kRenderQuantumFrames, output_position);
     fifo_->Push(render_bus_.get());
   }
