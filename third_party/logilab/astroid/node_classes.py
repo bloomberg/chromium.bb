@@ -130,7 +130,8 @@ class LookupMixIn(object):
         the lookup method
         """
         frame, stmts = self.lookup(name)
-        return _infer_stmts(stmts, None, frame)
+        context = InferenceContext()
+        return _infer_stmts(stmts, context, frame)
 
     def _filter_stmts(self, stmts, frame, offset):
         """filter statements to remove ignorable statements.
@@ -308,7 +309,7 @@ class Arguments(NodeNG, AssignTypeMixin):
     @cachedproperty
     def fromlineno(self):
         lineno = super(Arguments, self).fromlineno
-        return max(lineno, self.parent.fromlineno)
+        return max(lineno, self.parent.fromlineno or 0)
 
     def format_args(self):
         """return arguments formatted as string"""

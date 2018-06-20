@@ -48,7 +48,7 @@ from logilab.common import optik_ext
 from logilab.common import interface
 from logilab.common import textutils
 from logilab.common import ureports
-from logilab.common.__pkginfo__ import version as common_version
+from logilab.common import __version__ as common_version
 import six
 
 from pylint import checkers
@@ -60,6 +60,10 @@ from pylint.__pkginfo__ import version
 
 
 MANAGER = astroid.MANAGER
+INCLUDE_IDS_HELP = ("Deprecated. It was used to include message\'s "
+                    "id in output. Use --msg-template instead.")
+SYMBOLS_HELP = ("Deprecated. It was used to include symbolic ids of "
+                "messages in output. Use --msg-template instead.")
 
 def _get_new_args(message):
     location = (
@@ -103,6 +107,24 @@ def _merge_stats(stats):
                 else:
                     merged[key] = merged[key] + item
     return merged
+
+
+@contextlib.contextmanager
+def _patch_sysmodules():
+    # Context manager that permits running pylint, on Windows, with -m switch
+    # and with --jobs, as in 'python -2 -m pylint .. --jobs'.
+    # For more details why this is needed,
+    # see Python issue http://bugs.python.org/issue10845.
+
+    mock_main = __name__ != '__main__' # -m switch
+    if mock_main:
+        sys.modules['__main__'] = sys.modules[__name__]
+
+    try:
+        yield
+    finally:
+        if mock_main:
+            sys.modules.pop('__main__')
 
 
 # Python Linter class #########################################################
@@ -177,10 +199,10 @@ MSGS = {
     }
 
 
-def _deprecated_option(shortname, opt_type):
+def _deprecated_option(shortname, opt_type, help_msg):
     def _warn_deprecated(option, optname, *args): # pylint: disable=unused-argument
         sys.stderr.write('Warning: option %s is deprecated and ignored.\n' % (optname,))
-    return {'short': shortname, 'help': 'DEPRECATED', 'hide': True,
+    return {'short': shortname, 'help': help_msg, 'hide': True,
             'type': opt_type, 'action': 'callback', 'callback': _warn_deprecated}
 
 
@@ -190,6 +212,8 @@ if multiprocessing is not None:
             tasks_queue, results_queue, self._config = self._args # pylint: disable=no-member
 
             self._config["jobs"] = 1  # Child does not parallelize any further.
+            self._python3_porting_mode = self._config.pop(
+                'python3_porting_mode', None)
 
             # Run linter for received files/modules.
             for file_or_module in iter(tasks_queue.get, 'STOP'):
@@ -197,7 +221,8 @@ if multiprocessing is not None:
                 try:
                     results_queue.put(result)
                 except Exception as ex:
-                    print("internal error with sending report for module %s" % file_or_module, file=sys.stderr)
+                    print("internal error with sending report for module %s" %
+                          file_or_module, file=sys.stderr)
                     print(ex, file=sys.stderr)
                     results_queue.put({})
 
@@ -211,6 +236,13 @@ if multiprocessing is not None:
 
             linter.load_configuration(**self._config)
             linter.set_reporter(reporters.CollectingReporter())
+
+            # Enable the Python 3 checker mode. This option is
+            # passed down from the parent linter up to here, since
+            # the Python 3 porting flag belongs to the Run class,
+            # instead of the Linter class.
+            if self._python3_porting_mode:
+                linter.python3_porting_mode()
 
             # Run the checks.
             linter.check(file_or_module)
@@ -350,8 +382,9 @@ class PyLinter(configuration.OptionsManagerMixIn,
                             'See doc for all details')
                  }),
 
-                ('include-ids', _deprecated_option('i', 'yn')),
-                ('symbols', _deprecated_option('s', 'yn')),
+                ('include-ids', _deprecated_option('i', 'yn',
+                                                   INCLUDE_IDS_HELP)),
+                ('symbols', _deprecated_option('s', 'yn', SYMBOLS_HELP)),
 
                 ('jobs',
                  {'type' : 'int', 'metavar': '<n-processes>',
@@ -373,6 +406,19 @@ class PyLinter(configuration.OptionsManagerMixIn,
                             ' loading into the active Python interpreter and may run'
                             ' arbitrary code')}
                   ),
+
+                ('optimize-ast',
+                  {'type': 'yn', 'metavar': '<yn>', 'default': False,
+                   'help': ('Allow optimization of some AST trees. This will '
+                            'activate a peephole AST optimizer, which will '
+                            'apply various small optimizations. For instance, '
+                            'it can be used to obtain the result of joining '
+                            'multiple strings with the addition operator. '
+                            'Joining a lot of strings can lead to a maximum '
+                            'recursion error in Pylint and this flag can prevent '
+                            'that. It has one side effect, the resulting AST '
+                            'will be different than the one from reality.')}
+                ),
                )
 
     option_groups = (
@@ -427,6 +473,8 @@ class PyLinter(configuration.OptionsManagerMixIn,
                        )
         self.register_checker(self)
         self._dynamic_plugins = set()
+        self._python3_porting_mode = False
+        self._error_mode = False
         self.load_provider_defaults()
         if reporter:
             self.set_reporter(reporter)
@@ -555,10 +603,33 @@ class PyLinter(configuration.OptionsManagerMixIn,
 
     def error_mode(self):
         """error mode: enable only errors; no reports, no persistent"""
+        self._error_mode = True
         self.disable_noerror_messages()
         self.disable('miscellaneous')
+        if self._python3_porting_mode:
+            self.disable('all')
+            for msg_id in self._checker_messages('python3'):
+                if msg_id.startswith('E'):
+                    self.enable(msg_id)
+        else:
+            self.disable('python3')
         self.set_option('reports', False)
         self.set_option('persistent', False)
+
+    def python3_porting_mode(self):
+        """Disable all other checkers and enable Python 3 warnings."""
+        self.disable('all')
+        self.enable('python3')
+        if self._error_mode:
+            # The error mode was activated, using the -E flag.
+            # So we'll need to enable only the errors from the
+            # Python 3 porting checker.
+            for msg_id in self._checker_messages('python3'):
+                if msg_id.startswith('E'):
+                    self.enable(msg_id)
+                else:
+                    self.disable(msg_id)
+        self._python3_porting_mode = True
 
     # block level option handling #############################################
     #
@@ -596,7 +667,8 @@ class PyLinter(configuration.OptionsManagerMixIn,
                 except KeyError:
                     meth = self._bw_options_methods[opt]
                     # found a "(dis|en)able-msg" pragma deprecated suppresssion
-                    self.add_message('deprecated-pragma', line=start[0], args=(opt, opt.replace('-msg', '')))
+                    self.add_message('deprecated-pragma', line=start[0],
+                                     args=(opt, opt.replace('-msg', '')))
                 for msgid in textutils.splitstrip(value):
                     # Add the line where a control pragma was encountered.
                     if opt in control_pragmas:
@@ -604,7 +676,8 @@ class PyLinter(configuration.OptionsManagerMixIn,
 
                     try:
                         if (opt, msgid) == ('disable', 'all'):
-                            self.add_message('deprecated-pragma', line=start[0], args=('disable=all', 'skip-file'))
+                            self.add_message('deprecated-pragma', line=start[0],
+                                             args=('disable=all', 'skip-file'))
                             self.add_message('file-ignored', line=start[0])
                             self._ignore_file = True
                             return
@@ -674,19 +747,9 @@ class PyLinter(configuration.OptionsManagerMixIn,
             with fix_import_path(files_or_modules):
                 self._do_check(files_or_modules)
         else:
-            # Hack that permits running pylint, on Windows, with -m switch
-            # and with --jobs, as in 'python -2 -m pylint .. --jobs'.
-            # For more details why this is needed,
-            # see Python issue http://bugs.python.org/issue10845.
-
-            mock_main = __name__ != '__main__' # -m switch
-            if mock_main:
-                sys.modules['__main__'] = sys.modules[__name__]
-            try:
+            with _patch_sysmodules():
                 self._parallel_check(files_or_modules)
-            finally:
-                if mock_main:
-                    sys.modules.pop('__main__')
+
 
     def _parallel_task(self, files_or_modules):
         # Prepare configuration for child linters.
@@ -697,6 +760,7 @@ class PyLinter(configuration.OptionsManagerMixIn,
             for optname, optdict, val in opt_providers.options_and_values():
                 if optname not in filter_options:
                     config[optname] = configuration.format_option_value(optdict, val)
+        config['python3_porting_mode'] = self._python3_porting_mode
 
         childs = []
         manager = multiprocessing.Manager()  # pylint: disable=no-member
@@ -805,7 +869,8 @@ class PyLinter(configuration.OptionsManagerMixIn,
             self.current_file = ast_node.file # pylint: disable=maybe-no-member
             self.check_astroid_module(ast_node, walker, rawcheckers, tokencheckers)
             # warn about spurious inline messages handling
-            for msgid, line, args in self.file_state.iter_spurious_suppression_messages(self.msgs_store):
+            spurious_messages = self.file_state.iter_spurious_suppression_messages(self.msgs_store)
+            for msgid, line, args in spurious_messages:
                 self.add_message(msgid, line, None, args)
         # notify global end
         self.stats['statement'] = walker.nbstatements
@@ -889,6 +954,7 @@ class PyLinter(configuration.OptionsManagerMixIn,
         self.stats = {'by_module' : {},
                       'by_msg' : {},
                      }
+        MANAGER.optimize_ast = self.config.optimize_ast
         MANAGER.always_load_extensions = self.config.unsafe_load_any_extension
         MANAGER.extension_package_whitelist.update(
             self.config.extension_pkg_whitelist)
@@ -1315,8 +1381,7 @@ group are mutually exclusive.'),
 
     def cb_python3_porting_mode(self, *args, **kwargs):
         """Activate only the python3 porting checker."""
-        self.linter.disable('all')
-        self.linter.enable('python3')
+        self.linter.python3_porting_mode()
 
 
 def cb_list_confidence_levels(option, optname, value, parser):

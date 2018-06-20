@@ -15,7 +15,6 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """Checkers for various standard library functions."""
 
-import re
 import six
 import sys
 
@@ -27,10 +26,15 @@ from pylint.checkers import BaseChecker
 from pylint.checkers import utils
 
 
+TYPECHECK_COMPARISON_OPERATORS = frozenset(('is', 'is not', '==', '!=', 'in', 'not in'))
+LITERAL_NODE_TYPES = (astroid.Const, astroid.Dict, astroid.List, astroid.Set)
+
 if sys.version_info >= (3, 0):
     OPEN_MODULE = '_io'
+    TYPE_QNAME = 'builtins.type'
 else:
     OPEN_MODULE = '__builtin__'
+    TYPE_QNAME = '__builtin__.type'
 
 
 def _check_mode_str(mode):
@@ -50,7 +54,6 @@ def _check_mode_str(mode):
     reading = "r" in modes
     writing = "w" in modes
     appending = "a" in modes
-    updating = "+" in modes
     text = "t" in modes
     binary = "b" in modes
     if "U" in modes:
@@ -76,6 +79,15 @@ def _check_mode_str(mode):
     return True
 
 
+def _is_one_arg_pos_call(call):
+    """Is this a call with exactly 1 argument,
+    where that argument is positional?
+    """
+    return (isinstance(call, astroid.CallFunc)
+            and len(call.args) == 1
+            and not isinstance(call.args[0], astroid.Keyword))
+
+
 class StdlibChecker(BaseChecker):
     __implements__ = (IAstroidChecker,)
     name = 'stdlib'
@@ -88,7 +100,7 @@ class StdlibChecker(BaseChecker):
                   'See http://docs.python.org/2/library/functions.html#open'),
         'W1502': ('Using datetime.time in a boolean context.',
                   'boolean-datetime',
-                  'Using datetetime.time in a boolean context can hide '
+                  'Using datetime.time in a boolean context can hide '
                   'subtle bugs when the time they represent matches '
                   'midnight UTC. This behaviour was fixed in Python 3.5. '
                   'See http://bugs.python.org/issue13936 for reference.',
@@ -96,10 +108,16 @@ class StdlibChecker(BaseChecker):
         'W1503': ('Redundant use of %s with constant '
                   'value %r',
                   'redundant-unittest-assert',
-                  'The first argument of assertTrue and assertFalse is'
-                  'a condition. If a constant is passed as parameter, that'
+                  'The first argument of assertTrue and assertFalse is '
+                  'a condition. If a constant is passed as parameter, that '
                   'condition will be always true. In this case a warning '
-                  'should be emitted.')
+                  'should be emitted.'),
+        'W1504': ('Using type() instead of isinstance() for a typecheck.',
+                  'unidiomatic-typecheck',
+                  'The idiomatic way to perform an explicit typecheck in '
+                  'Python is to use isinstance(x, Y) rather than '
+                  'type(x) == Y, type(x) is Y. Though there are unusual '
+                  'situations where these give different results.')
     }
 
     @utils.check_messages('bad-open-mode', 'redundant-unittest-assert')
@@ -132,6 +150,14 @@ class StdlibChecker(BaseChecker):
         for value in node.values:
             self._check_datetime(value)
 
+    @utils.check_messages('unidiomatic-typecheck')
+    def visit_compare(self, node):
+        operator, right = node.ops[0]
+        if operator in TYPECHECK_COMPARISON_OPERATORS:
+            left = node.left
+            if _is_one_arg_pos_call(left):
+                self._check_type_x_is_y(node, left, operator, right)
+
     def _check_redundant_assert(self, node, infer):
         if (isinstance(infer, astroid.BoundMethod) and
                 node.args and isinstance(node.args[0], astroid.Const) and
@@ -152,7 +178,6 @@ class StdlibChecker(BaseChecker):
                 infered.qname() == 'datetime.time'):
             self.add_message('boolean-datetime', node=node)
 
-
     def _check_open_mode(self, node):
         """Check that the mode argument of an open or file call is valid."""
         try:
@@ -166,6 +191,24 @@ class StdlibChecker(BaseChecker):
                     and not _check_mode_str(mode_arg.value)):
                 self.add_message('bad-open-mode', node=node,
                                  args=mode_arg.value)
+
+    def _check_type_x_is_y(self, node, left, operator, right):
+        """Check for expressions like type(x) == Y."""
+        left_func = utils.safe_infer(left.func)
+        if not (isinstance(left_func, astroid.Class)
+                and left_func.qname() == TYPE_QNAME):
+            return
+
+        if operator in ('is', 'is not') and _is_one_arg_pos_call(right):
+            right_func = utils.safe_infer(right.func)
+            if (isinstance(right_func, astroid.Class)
+                    and right_func.qname() == TYPE_QNAME):
+                # type(x) == type(a)
+                right_arg = utils.safe_infer(right.args[0])
+                if not isinstance(right_arg, LITERAL_NODE_TYPES):
+                    # not e.g. type(x) == type([])
+                    return
+        self.add_message('unidiomatic-typecheck', node=node)
 
 
 def register(linter):

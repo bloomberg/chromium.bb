@@ -12,12 +12,13 @@
 # this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """Check Python 2 code for Python 2/3 source-compatible issues."""
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import re
 import tokenize
 
 import astroid
+from astroid import bases
 from pylint import checkers, interfaces
 from pylint.utils import WarningScope
 from pylint.checkers import utils
@@ -45,6 +46,46 @@ def _check_dict_node(node):
         pass
     return (not inferred_types
             or any(isinstance(x, astroid.Dict) for x in inferred_types))
+
+def _is_builtin(node):
+    return getattr(node, 'name', None) in ('__builtin__', 'builtins')
+
+_accepts_iterator = {'iter', 'list', 'tuple', 'sorted', 'set', 'sum', 'any',
+                     'all', 'enumerate', 'dict'}
+
+def _in_iterating_context(node):
+    """Check if the node is being used as an iterator.
+
+    Definition is taken from lib2to3.fixer_util.in_special_context().
+    """
+    parent = node.parent
+    # Since a call can't be the loop variant we only need to know if the node's
+    # parent is a 'for' loop to know it's being used as the iterator for the
+    # loop.
+    if isinstance(parent, astroid.For):
+        return True
+    # Need to make sure the use of the node is in the iterator part of the
+    # comprehension.
+    elif isinstance(parent, astroid.Comprehension):
+        if parent.iter == node:
+            return True
+    # Various built-ins can take in an iterable or list and lead to the same
+    # value.
+    elif isinstance(parent, astroid.CallFunc):
+        if isinstance(parent.func, astroid.Name):
+            parent_scope = parent.func.lookup(parent.func.name)[0]
+            if _is_builtin(parent_scope) and parent.func.name in _accepts_iterator:
+                return True
+        elif isinstance(parent.func, astroid.Getattr):
+            if parent.func.attrname == 'join':
+                return True
+    # If the call is in an unpacking, there's no need to warn,
+    # since it can be considered iterating.
+    elif (isinstance(parent, astroid.Assign) and
+          isinstance(parent.targets[0], (astroid.List, astroid.Tuple))):
+        if len(parent.targets[0].elts) > 1:
+            return True
+    return False
 
 
 class Python3Checker(checkers.BaseChecker):
@@ -177,13 +218,13 @@ class Python3Checker(checkers.BaseChecker):
         'W1618': ('import missing `from __future__ import absolute_import`',
                   'no-absolute-import',
                   'Used when an import is not accompanied by '
-                  '`from __future__ import absolute_import`'
-                  ' (default behaviour in Python 3)',
+                  '``from __future__ import absolute_import`` '
+                  '(default behaviour in Python 3)',
                   {'maxversion': (3, 0)}),
         'W1619': ('division w/o __future__ statement',
                   'old-division',
                   'Used for non-floor division w/o a float literal or '
-                  '``from __future__ import division``'
+                  '``from __future__ import division`` '
                   '(Python 3 returns a float for int division unconditionally)',
                   {'maxversion': (3, 0)}),
         'W1620': ('Calling a dict.iter*() method',
@@ -244,14 +285,7 @@ class Python3Checker(checkers.BaseChecker):
                   'Used when a __cmp__ method is defined '
                   '(method is not used by Python 3)',
                   {'maxversion': (3, 0)}),
-        'W1631': ('map is used as implicitly evaluated call',
-                  'implicit-map-evaluation',
-                  'Used when the map builtin is used as implicitly '
-                  'evaluated call, as in "map(func, args)" on a single line. '
-                  'This behaviour will not work in Python 3, where '
-                  'map is a generator and must be evaluated. '
-                  'Prefer a for-loop as alternative.',
-                  {'maxversion': (3, 0)}),
+        # 'W1631': replaced by W1636
         'W1632': ('input built-in referenced',
                   'input-builtin',
                   'Used when the input built-in is referenced '
@@ -261,6 +295,44 @@ class Python3Checker(checkers.BaseChecker):
                   'round-builtin',
                   'Used when the round built-in is referenced '
                   '(backwards-incompatible semantics in Python 3)',
+                  {'maxversion': (3, 0)}),
+        'W1634': ('intern built-in referenced',
+                  'intern-builtin',
+                  'Used when the intern built-in is referenced '
+                  '(Moved to sys.intern in Python 3)',
+                  {'maxversion': (3, 0)}),
+        'W1635': ('unichr built-in referenced',
+                  'unichr-builtin',
+                  'Used when the unichr built-in is referenced '
+                  '(Use chr in Python 3)',
+                  {'maxversion': (3, 0)}),
+        'W1636': ('map built-in referenced when not iterating',
+                  'map-builtin-not-iterating',
+                  'Used when the map built-in is referenced in a non-iterating '
+                  'context (returns an iterator in Python 3)',
+                  {'maxversion': (3, 0),
+                   'old_names': [('W1631', 'implicit-map-evaluation')]}),
+        'W1637': ('zip built-in referenced when not iterating',
+                  'zip-builtin-not-iterating',
+                  'Used when the zip built-in is referenced in a non-iterating '
+                  'context (returns an iterator in Python 3)',
+                  {'maxversion': (3, 0)}),
+        'W1638': ('range built-in referenced when not iterating',
+                  'range-builtin-not-iterating',
+                  'Used when the range built-in is referenced in a non-iterating '
+                  'context (returns an iterator in Python 3)',
+                  {'maxversion': (3, 0)}),
+        'W1639': ('filter built-in referenced when not iterating',
+                  'filter-builtin-not-iterating',
+                  'Used when the filter built-in is referenced in a non-iterating '
+                  'context (returns an iterator in Python 3)',
+                  {'maxversion': (3, 0)}),
+        'W1640': ('Using the cmp argument for list.sort / sorted',
+                  'using-cmp-argument',
+                  'Using the cmp argument for list.sort or the sorted '
+                  'builtin should be avoided, since it was removed in '
+                  'Python 3. Using either `key` or `functools.cmp_to_key` '
+                  'should be preferred.',
                   {'maxversion': (3, 0)}),
     }
 
@@ -273,11 +345,13 @@ class Python3Checker(checkers.BaseChecker):
         'execfile',
         'file',
         'input',  # Not missing, but incompatible semantics
+        'intern',
         'long',
         'raw_input',
         'reduce',
         'round',  # Not missing, but incompatible semantics
         'StandardError',
+        'unichr',
         'unicode',
         'xrange',
         'reload',
@@ -299,6 +373,11 @@ class Python3Checker(checkers.BaseChecker):
         self._future_absolute_import = False
         super(Python3Checker, self).__init__(*args, **kwargs)
 
+    def visit_module(self, node): # pylint: disable=unused-argument
+        """Clear checker state after previous module."""
+        self._future_division = False
+        self._future_absolute_import = False
+
     def visit_function(self, node):
         if node.is_method() and node.name in self._unused_magic_methods:
             method_name = node.name
@@ -312,19 +391,10 @@ class Python3Checker(checkers.BaseChecker):
             if isinstance(arg, astroid.Tuple):
                 self.add_message('parameter-unpacking', node=arg)
 
-    @utils.check_messages('implicit-map-evaluation')
-    def visit_discard(self, node):
-        if (isinstance(node.value, astroid.CallFunc) and
-                isinstance(node.value.func, astroid.Name) and
-                node.value.func.name == 'map'):
-            module = node.value.func.lookup('map')[0]
-            if getattr(module, 'name', None) == '__builtin__':
-                self.add_message('implicit-map-evaluation', node=node)
-
     def visit_name(self, node):
         """Detect when a "bad" built-in is referenced."""
         found_node = node.lookup(node.name)[0]
-        if getattr(found_node, 'name', None) == '__builtin__':
+        if _is_builtin(found_node):
             if node.name in self._bad_builtins:
                 message = node.name.lower() + '-builtin'
                 self.add_message(message, node=node)
@@ -363,22 +433,57 @@ class Python3Checker(checkers.BaseChecker):
             else:
                 self.add_message('old-division', node=node)
 
-    @utils.check_messages('next-method-called',
-                          'dict-iter-method',
-                          'dict-view-method')
+    def _check_cmp_argument(self, node):
+        # Check that the `cmp` argument is used
+        args = []
+        if (isinstance(node.func, astroid.Getattr)
+                and node.func.attrname == 'sort'):
+            inferred = utils.safe_infer(node.func.expr)
+            if not inferred:
+                return
+
+            builtins_list = "{}.list".format(bases.BUILTINS)
+            if (isinstance(inferred, astroid.List)
+                    or inferred.qname() == builtins_list):
+                args = node.args
+
+        elif (isinstance(node.func, astroid.Name)
+                and node.func.name == 'sorted'):
+            inferred = utils.safe_infer(node.func)
+            if not inferred:
+                return
+
+            builtins_sorted = "{}.sorted".format(bases.BUILTINS)
+            if inferred.qname() == builtins_sorted:
+                args = node.args
+
+        for arg in args:
+            if isinstance(arg, astroid.Keyword) and arg.arg == 'cmp':
+                self.add_message('using-cmp-argument', node=node)
+                return
+
     def visit_callfunc(self, node):
-        if not isinstance(node.func, astroid.Getattr):
-            return
-        if any([node.args, node.starargs, node.kwargs]):
-            return
-        if node.func.attrname == 'next':
-            self.add_message('next-method-called', node=node)
-        else:
-            if _check_dict_node(node.func.expr):
-                if node.func.attrname in ('iterkeys', 'itervalues', 'iteritems'):
-                    self.add_message('dict-iter-method', node=node)
-                elif node.func.attrname in ('viewkeys', 'viewvalues', 'viewitems'):
-                    self.add_message('dict-view-method', node=node)
+        self._check_cmp_argument(node)
+
+        if isinstance(node.func, astroid.Getattr):
+            if any([node.args, node.starargs, node.kwargs]):
+                return
+            if node.func.attrname == 'next':
+                self.add_message('next-method-called', node=node)
+            else:
+                if _check_dict_node(node.func.expr):
+                    if node.func.attrname in ('iterkeys', 'itervalues', 'iteritems'):
+                        self.add_message('dict-iter-method', node=node)
+                    elif node.func.attrname in ('viewkeys', 'viewvalues', 'viewitems'):
+                        self.add_message('dict-view-method', node=node)
+        elif isinstance(node.func, astroid.Name):
+            found_node = node.func.lookup(node.func.name)[0]
+            if _is_builtin(found_node):
+                if node.func.name in ('filter', 'map', 'range', 'zip'):
+                    if not _in_iterating_context(node):
+                        checker = '{}-builtin-not-iterating'.format(node.func.name)
+                        self.add_message(checker, node=node)
+
 
     @utils.check_messages('indexing-exception')
     def visit_subscript(self, node):

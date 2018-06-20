@@ -39,8 +39,8 @@ from astroid.exceptions import NotFoundError, \
      AstroidBuildingException, InferenceError, ResolveError
 from astroid.node_classes import Const, DelName, DelAttr, \
      Dict, From, List, Pass, Raise, Return, Tuple, Yield, YieldFrom, \
-     LookupMixIn, const_factory as cf, unpack_infer, Name, CallFunc
-from astroid.bases import NodeNG, InferenceContext, Instance,\
+     LookupMixIn, const_factory as cf, unpack_infer, CallFunc
+from astroid.bases import NodeNG, InferenceContext, Instance, copy_context, \
      YES, Generator, UnboundMethod, BoundMethod, _infer_stmts, \
      BUILTINS
 from astroid.mixins import FilterStmtsMixin
@@ -376,10 +376,10 @@ class Module(LocalsDictNodeNG):
         """inferred getattr"""
         # set lookup name since this is necessary to infer on import nodes for
         # instance
-        if not context:
-            context = InferenceContext()
+        context = copy_context(context)
+        context.lookupname = name
         try:
-            return _infer_stmts(self.getattr(name, context), context, frame=self, lookupname=name)
+            return _infer_stmts(self.getattr(name, context), context, frame=self)
         except NotFoundError:
             raise InferenceError(name)
 
@@ -822,7 +822,8 @@ class Function(Statement, Lambda):
                 c = Class('temporary_class', None)
                 c.hide = True
                 c.parent = self
-                c.bases = [next(b.infer(context)) for b in caller.args[1:]]
+                bases = [next(b.infer(context)) for b in caller.args[1:]]
+                c.bases = [base for base in bases if base != YES]
                 c._metaclass = metaclass
                 yield c
                 return
@@ -1036,7 +1037,21 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
             yield Instance(self)
 
     def scope_lookup(self, node, name, offset=0):
-        if node in self.bases:
+        if any(node == base or base.parent_of(node)
+               for base in self.bases):
+            # Handle the case where we have either a name
+            # in the bases of a class, which exists before
+            # the actual definition or the case where we have
+            # a Getattr node, with that name.
+            #
+            # name = ...
+            # class A(name):
+            #     def name(self): ...
+            #
+            # import name
+            # class A(name.Name):
+            #     def name(self): ...
+
             frame = self.parent.frame()
             # line offset to avoid that class A(A) resolve the ancestor to
             # the defined class
@@ -1070,29 +1085,33 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
                 return
 
         for stmt in self.bases:
-            try:
-                for baseobj in stmt.infer(context):
-                    if not isinstance(baseobj, Class):
-                        if isinstance(baseobj, Instance):
-                            baseobj = baseobj._proxied
-                        else:
-                            # duh ?
-                            continue
-                    if not baseobj.hide:
-                        if baseobj in yielded:
-                            continue # cf xxx above
-                        yielded.add(baseobj)
-                        yield baseobj
-                    if recurs:
-                        for grandpa in baseobj.ancestors(recurs=True,
-                                                         context=context):
-                            if grandpa in yielded:
+            with context.restore_path():
+                try:
+                    for baseobj in stmt.infer(context):
+                        if not isinstance(baseobj, Class):
+                            if isinstance(baseobj, Instance):
+                                baseobj = baseobj._proxied
+                            else:
+                                # duh ?
+                                continue
+                        if not baseobj.hide:
+                            if baseobj in yielded:
                                 continue # cf xxx above
-                            yielded.add(grandpa)
-                            yield grandpa
-            except InferenceError:
-                # XXX log error ?
-                continue
+                            yielded.add(baseobj)
+                            yield baseobj
+                        if recurs:
+                            for grandpa in baseobj.ancestors(recurs=True,
+                                                             context=context):
+                                if grandpa is self:
+                                    # This class is the ancestor of itself.
+                                    break
+                                if grandpa in yielded:
+                                    continue # cf xxx above
+                                yielded.add(grandpa)
+                                yield grandpa
+                except InferenceError:
+                    # XXX log error ?
+                    continue
 
     def local_attr_ancestors(self, name, context=None):
         """return an iterator on astroid representation of parent classes
@@ -1187,11 +1206,11 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
         """
         # set lookup name since this is necessary to infer on import nodes for
         # instance
-        if not context:
-            context = InferenceContext()
+        context = copy_context(context)
+        context.lookupname = name
         try:
             for infered in _infer_stmts(self.getattr(name, context), context,
-                                        frame=self, lookupname=name):
+                                        frame=self):
                 # yield YES object instead of descriptors when necessary
                 if not isinstance(infered, Const) and isinstance(infered, Instance):
                     try:
@@ -1398,6 +1417,10 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
         Also, it will return None in the case the slots weren't inferred.
         Otherwise, it will return a list of slot names.
         """
+        if not self.newstyle:
+            raise NotImplementedError(
+                "The concept of slots is undefined for old-style classes.")
+
         slots = self._islots()
         try:
             first = next(slots)
@@ -1453,7 +1476,9 @@ class Class(Statement, LocalsDictNodeNG, FilterStmtsMixin):
                 "Could not obtain mro for old-style classes.")
 
         bases = list(self._inferred_bases(context=context))
-        unmerged_mro = [[self]] + [base.mro() for base in bases] + [bases]
+        unmerged_mro = ([[self]] +
+                        [base.mro() for base in bases if base is not self] +
+                        [bases])
 
         _verify_duplicates_mro(unmerged_mro)
         return _c3_merge(unmerged_mro)

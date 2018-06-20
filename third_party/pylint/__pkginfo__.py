@@ -19,10 +19,10 @@ from __future__ import absolute_import
 
 modname = distname = 'pylint'
 
-numversion = (1, 4, 1)
+numversion = (1, 4, 5)
 version = '.'.join([str(num) for num in numversion])
 
-install_requires = ['logilab-common >= 0.53.0', 'astroid >= 1.3.3', 'six']
+install_requires = ['logilab-common >= 0.53.0', 'astroid >= 1.3.6,<1.4.0', 'six']
 
 license = 'GPL'
 description = "python code static checker"
@@ -67,4 +67,4 @@ scripts = [join('bin', filename)
            for filename in ('pylint', 'pylint-gui', "symilar", "epylint",
                             "pyreverse")]
 
-include_dirs = ['test']
+include_dirs = [join('pylint', 'test')]

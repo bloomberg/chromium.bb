@@ -20,10 +20,11 @@ where it makes sense.
 """
 
 __doctype__ = "restructuredtext en"
+import collections
 
 from astroid.exceptions import InferenceError, NoDefault, NotFoundError
 from astroid.node_classes import unpack_infer
-from astroid.bases import InferenceContext, \
+from astroid.bases import InferenceContext, copy_context, \
      raise_if_nothing_infered, yes_if_nothing_infered, Instance, YES
 from astroid.nodes import const_factory
 from astroid import nodes
@@ -282,8 +283,7 @@ def _arguments_infer_argname(self, name, context):
     # if there is a default value, yield it. And then yield YES to reflect
     # we can't guess given argument value
     try:
-        if context is None:
-            context = InferenceContext()
+        context = copy_context(context)
         for infered in self.default_value(name).infer(context):
             yield infered
         yield YES
@@ -295,6 +295,8 @@ def arguments_assigned_stmts(self, node, context, asspath=None):
     if context.callcontext:
         # reset call context/name
         callcontext = context.callcontext
+        context = copy_context(context)
+        context.callcontext = None
         return callcontext.infer_argument(self.parent, node.name, context)
     return _arguments_infer_argname(self, node.name, context)
 nodes.Arguments.assigned_stmts = arguments_assigned_stmts
@@ -359,3 +361,55 @@ def with_assigned_stmts(self, node, context=None, asspath=None):
 nodes.With.assigned_stmts = raise_if_nothing_infered(with_assigned_stmts)
 
 
+def starred_assigned_stmts(self, node=None, context=None, asspath=None):
+    stmt = self.statement()
+    if not isinstance(stmt, (nodes.Assign, nodes.For)):
+        raise InferenceError()
+
+    if isinstance(stmt, nodes.Assign):
+        value = stmt.value
+        lhs = stmt.targets[0]
+
+        if sum(1 for node in lhs.nodes_of_class(nodes.Starred)) > 1:
+            # Too many starred arguments in the expression.
+            raise InferenceError()
+
+        if context is None:
+            context = InferenceContext()
+        try:
+            rhs = next(value.infer(context))
+        except InferenceError:
+            yield YES
+            return
+        if rhs is YES or not hasattr(rhs, 'elts'):
+            # Not interested in inferred values without elts.
+            yield YES
+            return
+
+        elts = collections.deque(rhs.elts[:])
+        if len(lhs.elts) > len(rhs.elts):
+            # a, *b, c = (1, 2)
+            raise InferenceError()
+
+        # Unpack iteratively the values from the rhs of the assignment,
+        # until the find the starred node. What will remain will
+        # be the list of values which the Starred node will represent
+        # This is done in two steps, from left to right to remove
+        # anything before the starred node and from right to left
+        # to remvoe anything after the starred node.
+
+        for index, node in enumerate(lhs.elts):
+            if not isinstance(node, nodes.Starred):
+                elts.popleft()
+                continue
+            lhs_elts = collections.deque(reversed(lhs.elts[index:]))
+            for node in lhs_elts:
+                if not isinstance(node, nodes.Starred):
+                    elts.pop()
+                    continue
+                # We're done
+                for elt in elts:
+                    yield elt
+                break
+
+nodes.Starred.assigned_stmts = starred_assigned_stmts
