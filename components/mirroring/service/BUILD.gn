@@ -27,6 +27,8 @@ source_set("service") {
   sources = [
     "captured_audio_input.cc",
     "captured_audio_input.h",
+    "media_remoter.cc",
+    "media_remoter.h",
     "message_dispatcher.cc",
     "message_dispatcher.h",
     "mirror_settings.cc",
@@ -85,6 +87,7 @@ source_set("unittests") {
     "fake_network_service.h",
     "fake_video_capture_host.cc",
     "fake_video_capture_host.h",
+    "media_remoter_unittest.cc",
     "message_dispatcher_unittest.cc",
     "receiver_response_unittest.cc",
     "remoting_sender_unittest.cc",
