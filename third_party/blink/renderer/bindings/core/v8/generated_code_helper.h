@@ -61,7 +61,8 @@ class CORE_EXPORT ExceptionToRejectPromiseScope {
 };
 
 CORE_EXPORT bool IsCallbackFunctionRunnable(
-    const ScriptState* callback_relevant_script_state);
+    const ScriptState* callback_relevant_script_state,
+    ScriptState* incumbent_script_state);
 
 using InstallTemplateFunction =
     void (*)(v8::Isolate* isolate,

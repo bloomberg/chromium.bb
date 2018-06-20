@@ -31,7 +31,8 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
   // "3.10. Invoking callback functions".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
 
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+                                  IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
@@ -62,15 +63,6 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
   // step 9. Prepare to run a callback with stored settings.
-  if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    V8ThrowException::ThrowError(
-        GetIsolate(),
-        ExceptionMessages::FailedToExecute(
-            "invoke",
-            "VoidCallbackFunctionEnumArg",
-            "The provided callback is no longer runnable."));
-    return v8::Nothing<void>();
-  }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 

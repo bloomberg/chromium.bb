@@ -29,7 +29,8 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethod(ScriptWrappable* callback_th
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
 
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+                                  IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
@@ -49,15 +50,6 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethod(ScriptWrappable* callback_th
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
   // step 8. Prepare to run a callback with stored settings.
-  if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    V8ThrowException::ThrowError(
-        GetIsolate(),
-        ExceptionMessages::FailedToExecute(
-            "voidMethod",
-            "TestCallbackInterface",
-            "The provided callback is no longer runnable."));
-    return v8::Nothing<void>();
-  }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -133,7 +125,8 @@ v8::Maybe<bool> V8TestCallbackInterface::booleanMethod(ScriptWrappable* callback
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
 
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+                                  IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
@@ -153,15 +146,6 @@ v8::Maybe<bool> V8TestCallbackInterface::booleanMethod(ScriptWrappable* callback
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
   // step 8. Prepare to run a callback with stored settings.
-  if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    V8ThrowException::ThrowError(
-        GetIsolate(),
-        ExceptionMessages::FailedToExecute(
-            "booleanMethod",
-            "TestCallbackInterface",
-            "The provided callback is no longer runnable."));
-    return v8::Nothing<bool>();
-  }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -249,7 +233,8 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodBooleanArg(ScriptWrappable* c
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
 
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+                                  IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
@@ -269,15 +254,6 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodBooleanArg(ScriptWrappable* c
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
   // step 8. Prepare to run a callback with stored settings.
-  if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    V8ThrowException::ThrowError(
-        GetIsolate(),
-        ExceptionMessages::FailedToExecute(
-            "voidMethodBooleanArg",
-            "TestCallbackInterface",
-            "The provided callback is no longer runnable."));
-    return v8::Nothing<void>();
-  }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -357,7 +333,8 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodSequenceArg(ScriptWrappable* 
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
 
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+                                  IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
@@ -377,15 +354,6 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodSequenceArg(ScriptWrappable* 
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
   // step 8. Prepare to run a callback with stored settings.
-  if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    V8ThrowException::ThrowError(
-        GetIsolate(),
-        ExceptionMessages::FailedToExecute(
-            "voidMethodSequenceArg",
-            "TestCallbackInterface",
-            "The provided callback is no longer runnable."));
-    return v8::Nothing<void>();
-  }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -465,7 +433,8 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodFloatArg(ScriptWrappable* cal
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
 
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+                                  IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
@@ -485,15 +454,6 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodFloatArg(ScriptWrappable* cal
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
   // step 8. Prepare to run a callback with stored settings.
-  if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    V8ThrowException::ThrowError(
-        GetIsolate(),
-        ExceptionMessages::FailedToExecute(
-            "voidMethodFloatArg",
-            "TestCallbackInterface",
-            "The provided callback is no longer runnable."));
-    return v8::Nothing<void>();
-  }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -573,7 +533,8 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(ScriptW
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
 
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+                                  IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
@@ -593,15 +554,6 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(ScriptW
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
   // step 8. Prepare to run a callback with stored settings.
-  if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    V8ThrowException::ThrowError(
-        GetIsolate(),
-        ExceptionMessages::FailedToExecute(
-            "voidMethodTestInterfaceEmptyArg",
-            "TestCallbackInterface",
-            "The provided callback is no longer runnable."));
-    return v8::Nothing<void>();
-  }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -681,7 +633,8 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(S
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
 
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+                                  IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
@@ -701,15 +654,6 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(S
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
   // step 8. Prepare to run a callback with stored settings.
-  if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    V8ThrowException::ThrowError(
-        GetIsolate(),
-        ExceptionMessages::FailedToExecute(
-            "voidMethodTestInterfaceEmptyStringArg",
-            "TestCallbackInterface",
-            "The provided callback is no longer runnable."));
-    return v8::Nothing<void>();
-  }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -790,7 +734,8 @@ v8::Maybe<void> V8TestCallbackInterface::callbackWithThisValueVoidMethodStringAr
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
 
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+                                  IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
@@ -810,15 +755,6 @@ v8::Maybe<void> V8TestCallbackInterface::callbackWithThisValueVoidMethodStringAr
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
   // step 8. Prepare to run a callback with stored settings.
-  if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    V8ThrowException::ThrowError(
-        GetIsolate(),
-        ExceptionMessages::FailedToExecute(
-            "callbackWithThisValueVoidMethodStringArg",
-            "TestCallbackInterface",
-            "The provided callback is no longer runnable."));
-    return v8::Nothing<void>();
-  }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -898,7 +834,8 @@ v8::Maybe<void> V8TestCallbackInterface::customVoidMethodTestInterfaceEmptyArg(S
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
 
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+                                  IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
@@ -918,15 +855,6 @@ v8::Maybe<void> V8TestCallbackInterface::customVoidMethodTestInterfaceEmptyArg(S
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
   // step 8. Prepare to run a callback with stored settings.
-  if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    V8ThrowException::ThrowError(
-        GetIsolate(),
-        ExceptionMessages::FailedToExecute(
-            "customVoidMethodTestInterfaceEmptyArg",
-            "TestCallbackInterface",
-            "The provided callback is no longer runnable."));
-    return v8::Nothing<void>();
-  }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 

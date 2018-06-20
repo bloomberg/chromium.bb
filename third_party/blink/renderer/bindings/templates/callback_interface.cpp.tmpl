@@ -73,7 +73,8 @@ v8::Maybe<{{method.cpp_type}}> {{v8_class}}::{{method.name}}({{method.argument_d
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
 
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+                                  IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
@@ -93,17 +94,6 @@ v8::Maybe<{{method.cpp_type}}> {{v8_class}}::{{method.name}}({{method.argument_d
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
   // step 8. Prepare to run a callback with stored settings.
-  {# TODO(yukishiino): Callback interface type value must make the incumbent
-     environment alive, i.e. the reference to v8::Context must be strong. #}
-  if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    V8ThrowException::ThrowError(
-        GetIsolate(),
-        ExceptionMessages::FailedToExecute(
-            "{{method.name}}",
-            "{{cpp_class}}",
-            "The provided callback is no longer runnable."));
-    return v8::Nothing<{{method.cpp_type}}>();
-  }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 

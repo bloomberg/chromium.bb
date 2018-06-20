@@ -32,13 +32,35 @@ v8::Local<v8::Value> V8Deserialize(v8::Isolate* isolate,
 }
 
 bool IsCallbackFunctionRunnable(
-    const ScriptState* callback_relevant_script_state) {
+    const ScriptState* callback_relevant_script_state,
+    ScriptState* incumbent_script_state) {
   if (!callback_relevant_script_state->ContextIsValid())
     return false;
-  const ExecutionContext* execution_context =
+  const ExecutionContext* relevant_execution_context =
       ExecutionContext::From(callback_relevant_script_state);
-  return execution_context && !execution_context->IsContextPaused() &&
-         !execution_context->IsContextDestroyed();
+  if (!relevant_execution_context ||
+      relevant_execution_context->IsContextPaused() ||
+      relevant_execution_context->IsContextDestroyed()) {
+    return false;
+  }
+
+  // TODO(yukishiino): Callback function type value must make the incumbent
+  // environment alive, i.e. the reference to v8::Context must be strong.
+  v8::HandleScope handle_scope(incumbent_script_state->GetIsolate());
+  v8::Local<v8::Context> incumbent_context =
+      incumbent_script_state->GetContext();
+  ExecutionContext* incumbent_execution_context =
+      incumbent_context.IsEmpty() ? nullptr
+                                  : ToExecutionContext(incumbent_context);
+  // The incumbent realm schedules the currently-running callback although it
+  // may not correspond to the currently-running function object. So we check
+  // the incumbent context which originally schedules the currently-running
+  // callback to see whether the script setting is disabled before invoking
+  // the callback.
+  return incumbent_execution_context &&
+         !incumbent_execution_context->IsContextPaused() &&
+         !incumbent_execution_context->IsContextDestroyed() &&
+         incumbent_execution_context->CanExecuteScripts(kAboutToExecuteScript);
 }
 
 }  // namespace blink

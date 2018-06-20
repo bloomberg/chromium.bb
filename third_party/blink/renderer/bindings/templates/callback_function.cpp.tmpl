@@ -24,7 +24,8 @@ v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Invoke({{argument_declarations | j
      promise type, in which case this function needs to convert any exception
      into a rejected promise. See also step 14.4. to 14.6. #}
 
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+                                  IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
@@ -55,17 +56,6 @@ v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Invoke({{argument_declarations | j
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
   // step 9. Prepare to run a callback with stored settings.
-  {# TODO(yukishiino): Callback function type value must make the incumbent
-     environment alive, i.e. the reference to v8::Context must be strong. #}
-  if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    V8ThrowException::ThrowError(
-        GetIsolate(),
-        ExceptionMessages::FailedToExecute(
-            "invoke",
-            "{{callback_function_name}}",
-            "The provided callback is no longer runnable."));
-    return v8::Nothing<{{return_cpp_type}}>();
-  }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
