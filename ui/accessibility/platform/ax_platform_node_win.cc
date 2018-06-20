@@ -394,6 +394,25 @@ void AXPlatformNodeWin::HtmlAttributeToUIAAriaProperty(
   }
 }
 
+SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayForRelation(
+    const ax::mojom::IntListAttribute& attribute) {
+  std::vector<int32_t> id_list = GetIntListAttribute(attribute);
+  SAFEARRAY* propertyvalue =
+      SafeArrayCreateVector(VT_UNKNOWN, 0, id_list.size());
+
+  LONG i = 0;
+  for (int32_t node_id : id_list) {
+    AXPlatformNodeWin* node =
+        static_cast<AXPlatformNodeWin*>(delegate_->GetFromNodeID(node_id));
+    DCHECK(node);
+    node->AddRef();
+    SafeArrayPutElement(propertyvalue, &i, node);
+    ++i;
+  }
+
+  return propertyvalue;
+}
+
 //
 // AXPlatformNodeBase implementation.
 //
@@ -2603,6 +2622,7 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
   const AXNodeData& data = GetData();
   int int_attribute;
+  ax::mojom::IntListAttribute relation_attribute;
   result->vt = VT_EMPTY;
 
   switch (property_id) {
@@ -2631,8 +2651,12 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_ClickablePointPropertyId:
-    case UIA_ControllerForPropertyId:
       // TODO(suproteem)
+      break;
+    case UIA_ControllerForPropertyId:
+      result->vt = VT_ARRAY;
+      relation_attribute = ax::mojom::IntListAttribute::kControlsIds;
+      result->parray = CreateUIAElementsArrayForRelation(relation_attribute);
       break;
 
     case UIA_CulturePropertyId:
@@ -2642,7 +2666,17 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_DescribedByPropertyId:
+      result->vt = VT_ARRAY;
+      relation_attribute = ax::mojom::IntListAttribute::kDescribedbyIds;
+      result->parray = CreateUIAElementsArrayForRelation(relation_attribute);
+      break;
+
     case UIA_FlowsToPropertyId:
+      result->vt = VT_ARRAY;
+      relation_attribute = ax::mojom::IntListAttribute::kFlowtoIds;
+      result->parray = CreateUIAElementsArrayForRelation(relation_attribute);
+      break;
+
     case UIA_FrameworkIdPropertyId:
     case UIA_IsContentElementPropertyId:
     case UIA_IsControlElementPropertyId:
@@ -2669,8 +2703,10 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
     case UIA_ItemStatusPropertyId:
     case UIA_ItemTypePropertyId:
-    case UIA_LabeledByPropertyId:
       // TODO(suproteem)
+      break;
+
+    case UIA_LabeledByPropertyId:
       break;
 
     case UIA_LocalizedControlTypePropertyId:
