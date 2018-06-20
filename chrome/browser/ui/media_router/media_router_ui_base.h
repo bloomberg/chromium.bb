@@ -19,6 +19,7 @@
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
+#include "chrome/browser/ui/media_router/media_router_file_dialog.h"
 #include "chrome/browser/ui/media_router/media_router_ui_helper.h"
 #include "chrome/browser/ui/media_router/media_sink_with_cast_modes.h"
 #include "chrome/browser/ui/media_router/query_result_manager.h"
@@ -52,9 +53,11 @@ class RouteRequestResult;
 // observing and organizing route, sink, and presentation request information,
 // and executing and keeping track of route requests from the dialog to Media
 // Router.
-class MediaRouterUIBase : public QueryResultManager::Observer,
-                          public PresentationServiceDelegateImpl::
-                              DefaultPresentationRequestObserver {
+class MediaRouterUIBase
+    : public QueryResultManager::Observer,
+      public PresentationServiceDelegateImpl::
+          DefaultPresentationRequestObserver,
+      public MediaRouterFileDialog::MediaRouterFileDialogDelegate {
  public:
   MediaRouterUIBase();
   ~MediaRouterUIBase() override;
@@ -119,6 +122,9 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
 
   // Calls MediaRouter to remove the given issue.
   void RemoveIssue(const Issue::Id& issue_id);
+
+  // Opens a file picker for when the user selected local file casting.
+  void OpenFileDialog();
 
   const std::vector<MediaRoute>& routes() const { return routes_; }
   content::WebContents* initiator() const { return initiator_; }
@@ -201,6 +207,9 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
   // Instantiates and initializes the issues observer.
   void StartObservingIssues();
 
+  // MediaRouterFileDialogDelegate:
+  void FileDialogSelectionFailed(const IssueInfo& issue) override;
+
   const base::Optional<RouteRequest> current_route_request() const {
     return current_route_request_;
   }
@@ -214,6 +223,11 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
     start_presentation_context_ = std::move(start_presentation_context);
   }
 
+  void set_media_router_file_dialog_for_test(
+      std::unique_ptr<MediaRouterFileDialog> file_dialog) {
+    media_router_file_dialog_ = std::move(file_dialog);
+  }
+
   QueryResultManager* query_result_manager() const {
     return query_result_manager_.get();
   }
@@ -223,6 +237,8 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
                            UIMediaRoutesObserverAssignsCurrentCastModes);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
                            UIMediaRoutesObserverSkipsUnavailableCastModes);
+
+  class WebContentsFullscreenOnLoadedObserver;
 
   // This class calls to refresh the UI when the highest priority issue is
   // updated.
@@ -268,8 +284,31 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
   virtual void OnIssue(const Issue& issue) = 0;
   virtual void OnIssueCleared() = 0;
 
+  // Populates route-related parameters for CreateRoute() when doing file
+  // casting.
+  base::Optional<RouteParameters> GetLocalFileRouteParameters(
+      const MediaSink::Id& sink_id,
+      const GURL& file_url,
+      content::WebContents* tab_contents);
+
+  // If the current URL for |web_contents| is |file_url|, requests the first
+  // video in it to be shown fullscreen.
+  void FullScreenFirstVideoElement(const GURL& file_url,
+                                   content::WebContents* web_contents,
+                                   const RouteRequestResult& result);
+
+  // Sends a request to the file dialog to log UMA stats for the file that was
+  // cast if the result is successful.
+  void MaybeReportFileInformation(const RouteRequestResult& result);
+
+  // Opens the URL in a tab, returns the tab it was opened in.
+  content::WebContents* OpenTabWithUrl(const GURL& url);
+
   // Returns the MediaRouter for this instance's BrowserContext.
   virtual MediaRouter* GetMediaRouter() const;
+
+  // Retrieves the browser associated with this UI.
+  Browser* GetBrowser();
 
   // This is non-null while this instance is registered to receive
   // updates from them.
@@ -307,6 +346,10 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
 
   // WebContents for the tab for which the Cast dialog is shown.
   content::WebContents* initiator_;
+
+  // The dialog that handles opening the file dialog and validating and
+  // returning the results.
+  std::unique_ptr<MediaRouterFileDialog> media_router_file_dialog_;
 
   std::unique_ptr<IssuesObserver> issues_observer_;
 
