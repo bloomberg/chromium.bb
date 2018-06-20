@@ -11,6 +11,10 @@ namespace background_loader {
 BackgroundLoaderContents::BackgroundLoaderContents(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context) {
+  // It is very important that we create the web contents with
+  // CreateParams::initially_hidden == false, and that we never change the
+  // visibility after that.  If we did change it, then background throttling
+  // could kill the background offliner while it was running.
   web_contents_ = content::WebContents::Create(
       content::WebContents::CreateParams(browser_context_));
   web_contents_->SetAudioMuted(true);
