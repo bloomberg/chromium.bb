@@ -69,7 +69,6 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   // no valid frame is available.
   const gfx::CALayerParams* GetLastCALayerParams() const;
 
-  gfx::AcceleratedWidget GetAcceleratedWidget();
   void DidCreateNewRendererCompositorFrameSink(
       viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink);
   void OnDidNotProduceFrame(const viz::BeginFrameAck& ack);
