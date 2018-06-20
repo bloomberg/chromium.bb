@@ -323,6 +323,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
           vector_icon = &omnibox::kAnswerWhenIsIcon;
           break;
         default:
+          vector_icon = &omnibox::kAnswerDefaultIcon;
           break;
       }
       if (vector_icon) {
