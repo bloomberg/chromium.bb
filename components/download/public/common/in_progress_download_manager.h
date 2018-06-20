@@ -116,12 +116,17 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
                                const DownloadTargetCallback& callback) override;
   void ResumeInterruptedDownload(std::unique_ptr<DownloadUrlParameters> params,
                                  const GURL& site_url) override;
+  bool ShouldOpenDownload(DownloadItemImpl* item,
+                          const ShouldOpenDownloadCallback& callback) override;
   base::Optional<DownloadEntry> GetInProgressEntry(
       DownloadItemImpl* download) override;
   void ReportBytesWasted(DownloadItemImpl* download) override;
 
-  // Called to remove a in-progress download.
+  // Called to remove an in-progress download.
   void RemoveInProgressDownload(const std::string& guid);
+
+  // Called to retrieve an in-progress download.
+  DownloadItemImpl* GetInProgressDownload(const std::string& guid);
 
   void set_file_factory(std::unique_ptr<DownloadFileFactory> file_factory) {
     file_factory_ = std::move(file_factory);
@@ -155,8 +160,6 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
       std::unique_ptr<DownloadCreateInfo> info,
       DownloadItemImpl* download);
-
-  DownloadItemImpl* GetInProgressDownload(const std::string& guid);
 
   // Active download handlers.
   std::vector<UrlDownloadHandler::UniqueUrlDownloadHandlerPtr>
