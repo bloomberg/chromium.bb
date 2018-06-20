@@ -276,21 +276,10 @@ void AccountManager::RemoveAccountInternal(const AccountKey& account_key) {
     return;
   }
 
-  const std::string token = std::move(it->second);
+  MaybeRevokeTokenOnServer(account_key);
   tokens_.erase(it);
   PersistTokensAsync();
   NotifyAccountRemovalObservers(account_key);
-
-  // Revoke the token iff it is a GAIA account and the token is not empty.
-  // Stored tokens can be empty for accounts recently migrated to
-  // AccountManager, for which we do not have LSTs yet. These accounts require
-  // re-authentication from the user, but are in a valid state (and hence don't
-  // do a DCHECK here for |!token.empty()|).
-  if (account_key.account_type ==
-          account_manager::AccountType::ACCOUNT_TYPE_GAIA &&
-      !token.empty()) {
-    RevokeGaiaTokenOnServer(token);
-  }
 }
 
 void AccountManager::UpsertToken(const AccountKey& account_key,
@@ -312,6 +301,7 @@ void AccountManager::UpsertTokenInternal(const AccountKey& account_key,
 
   auto it = tokens_.find(account_key);
   if ((it == tokens_.end()) || (it->second != token)) {
+    MaybeRevokeTokenOnServer(account_key);
     tokens_[account_key] = token;
     PersistTokensAsync();
     NotifyTokenObservers(account_key);
@@ -385,7 +375,28 @@ bool AccountManager::IsTokenAvailable(const AccountKey& account_key) const {
   return it != tokens_.end() && !it->second.empty();
 }
 
+void AccountManager::MaybeRevokeTokenOnServer(const AccountKey& account_key) {
+  auto it = tokens_.find(account_key);
+  if (it == tokens_.end()) {
+    return;
+  }
+
+  const std::string& token = it->second;
+
+  // Stored tokens can be empty for accounts recently migrated to
+  // AccountManager, for which we do not have LSTs yet. These accounts require
+  // re-authentication from the user, but are in a valid state (and hence don't
+  // do a DCHECK here for |!token.empty()|).
+  if (account_key.account_type ==
+          account_manager::AccountType::ACCOUNT_TYPE_GAIA &&
+      !token.empty()) {
+    RevokeGaiaTokenOnServer(token);
+  }
+}
+
 void AccountManager::RevokeGaiaTokenOnServer(const std::string& refresh_token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   pending_token_revocation_requests_.emplace_back(
       std::make_unique<GaiaTokenRevocationRequest>(
           GetUrlRequestContext(), delay_network_call_runner_, refresh_token,

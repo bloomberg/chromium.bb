@@ -194,6 +194,14 @@ class CHROMEOS_EXPORT AccountManager {
   // Notify |Observer|s about an account removal.
   void NotifyAccountRemovalObservers(const AccountKey& account_key);
 
+  // Revokes |account_key|'s token on the relevant backend.
+  // Note: Does not do anything if the |account_manager::AccountType|
+  // of |account_key| does not support server token revocation.
+  // Note: Does not do anything if |account_key| is not present in |tokens_|.
+  // Hence, call this method before actually modifying or deleting old tokens
+  // from |tokens_|.
+  void MaybeRevokeTokenOnServer(const AccountKey& account_key);
+
   // Revokes |refresh_token| with GAIA. Virtual for testing.
   virtual void RevokeGaiaTokenOnServer(const std::string& refresh_token);
 
