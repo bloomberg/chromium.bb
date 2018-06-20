@@ -124,25 +124,6 @@ test.util.sync.closeWindow = function(appId) {
 };
 
 /**
- * Gets the element specified by |targetQuery|.
- *
- * @param {Window} contentWindow Window to be used.
- * @param {string} targetQuery Query to specify the element.
- * @return {Element} If the specified element is not found, null is returned.
- * @private
- */
-test.util.sync.getElement_ = function(contentWindow, targetQuery) {
-  if (!contentWindow.document)
-    return null;
-
-  var target = contentWindow.document.querySelector(targetQuery);
-  if (!target)
-    console.error('Target element for ' + targetQuery + ' not found.');
-
-  return target;
-};
-
-/**
  * Gets total Javascript error count from background page and each app window.
  * @return {number} Error count.
  */
@@ -314,18 +295,19 @@ test.util.sync.inputText = function(contentWindow, query, text) {
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
 test.util.sync.sendEvent = function(contentWindow, targetQuery, event) {
-  var target;
+  if (!contentWindow.document)
+    return false;
+
+  let target;
   if (targetQuery === null) {
     target = contentWindow.document.activeElement;
   } else if (typeof targetQuery === 'string') {
-    target = test.util.sync.getElement_(contentWindow, targetQuery);
+    target = contentWindow.document.querySelector(targetQuery);
   } else if (Array.isArray(targetQuery)) {
-    if (contentWindow.document) {
-      var elems = test.util.sync.deepQuerySelectorAll_(
-          contentWindow.document, targetQuery);
-      if (elems.length > 0)
-        target = elems[0];
-    }
+    let elems = test.util.sync.deepQuerySelectorAll_(
+        contentWindow.document, targetQuery);
+    if (elems.length > 0)
+      target = elems[0];
   }
 
   if (!target)
@@ -500,7 +482,9 @@ test.util.sync.fakeMouseUp = function(contentWindow, targetQuery) {
  *     otherwise.
  */
 test.util.sync.focus = function(contentWindow, targetQuery) {
-  var target = test.util.sync.getElement_(contentWindow, targetQuery);
+  var target = contentWindow.document &&
+      contentWindow.document.querySelector(targetQuery);
+
   if (!target)
     return false;
 
