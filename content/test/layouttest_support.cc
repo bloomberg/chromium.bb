@@ -68,8 +68,8 @@
 #elif defined(OS_WIN)
 #include "content/child/font_warmup_win.h"
 #include "third_party/blink/public/web/win/web_font_rendering.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 #include "ui/gfx/win/direct_write.h"
 #endif

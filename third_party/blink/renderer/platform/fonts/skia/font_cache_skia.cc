@@ -34,10 +34,6 @@
 #include <memory>
 #include <utility>
 
-#include "SkFontMgr.h"
-#include "SkStream.h"
-#include "SkTypeface.h"
-
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/linux/web_sandbox_support.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -53,6 +49,9 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
+#include "third_party/skia/include/core/SkStream.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 
 namespace blink {
 

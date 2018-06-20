@@ -18,7 +18,7 @@
 #include "content/public/child/child_process_sandbox_support_linux.h"
 #include "content/public/common/common_sandbox_support_linux.h"
 #elif defined(OS_WIN)
-#include "third_party/skia/include/ports/SkFontMgr.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
 #endif
 
 PepperFlashFontFileHost::PepperFlashFontFileHost(

@@ -34,8 +34,6 @@
 #include <memory>
 #include <utility>
 
-#include "SkFontMgr.h"
-#include "SkTypeface_win.h"
 #include "base/debug/alias.h"
 #include "third_party/blink/renderer/platform/fonts/bitmap_glyphs_blacklist.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
@@ -44,6 +42,8 @@
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/win/font_fallback_win.h"
 #include "third_party/blink/renderer/platform/language.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
+#include "third_party/skia/include/ports/SkTypeface_win.h"
 
 namespace blink {
 
