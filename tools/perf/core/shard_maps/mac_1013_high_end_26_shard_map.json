@@ -308,5 +308,12 @@
             "wasm": {},
             "webrtc": {}
         }
+    },
+    "extra_infos": {
+        "num_stories": 2401,
+        "predicted_min_shard_time": 1956.2044916944444,
+        "predicted_min_shard_index": 18,
+        "predicted_max_shard_time": 3590.0444336944443,
+        "predicted_max_shard_index": 17
     }
 }
