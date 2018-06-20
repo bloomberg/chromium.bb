@@ -1457,8 +1457,6 @@
       # chromium.clang
       'ToTLinuxUBSanVptr',  # https://crbug.com/815190
       'UBSanVptr Linux',  # https://crbug.com/815190
-      # chromium.memory
-      'Linux TSan Tests',
     ],
     'modifications': {
       # chromium.win
@@ -1469,8 +1467,13 @@
       },
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
-        # These are slow on the ASAN trybot for some reason.
-        # crbug.com/794372
+        # These are slow on the ASan trybot for some reason, crbug.com/794372
+        'swarming': {
+          'shards': 6,
+        },
+      },
+      'Linux TSan Tests': {
+        # These are slow on the TSan trybot for some reason, crbug.com/794372
         'swarming': {
           'shards': 6,
         },
