@@ -352,12 +352,7 @@ void BluetoothDeviceCast::CreateGattConnectionImpl() {
 }
 
 void BluetoothDeviceCast::DisconnectGatt() {
-  DVLOG(2) << __func__ << " pending:" << pending_disconnect_;
-  if (pending_disconnect_)
-    return;
-  pending_disconnect_ = true;
-  remote_device_->Disconnect(base::BindOnce(&BluetoothDeviceCast::OnDisconnect,
-                                            weak_factory_.GetWeakPtr()));
+  // The device is intentionally not disconnected.
 }
 
 void BluetoothDeviceCast::OnConnect(bool success) {
@@ -365,13 +360,6 @@ void BluetoothDeviceCast::OnConnect(bool success) {
   pending_connect_ = false;
   if (!success)
     DidFailToConnectGatt(ERROR_FAILED);
-}
-
-void BluetoothDeviceCast::OnDisconnect(bool success) {
-  DVLOG(2) << __func__ << " success:" << success;
-  pending_disconnect_ = false;
-  if (!success)
-    LOG(ERROR) << "Request to DisconnectGatt() failed!";
 }
 
 }  // namespace device

@@ -122,9 +122,6 @@ class BluetoothDeviceCast : public BluetoothDevice {
   // Called back from connect requests generated from CreateGattConnectionImpl.
   void OnConnect(bool success);
 
-  // Called back from disconnect requests.
-  void OnDisconnect(bool success);
-
   // Called in response to GetServices
   void OnGetServices(
       std::vector<scoped_refptr<chromecast::bluetooth::RemoteService>>
@@ -132,7 +129,6 @@ class BluetoothDeviceCast : public BluetoothDevice {
 
   bool connected_;
   bool pending_connect_ = false;
-  bool pending_disconnect_ = false;
 
   const scoped_refptr<chromecast::bluetooth::RemoteDevice> remote_device_;
   const std::string address_;
