@@ -16,6 +16,7 @@ import android.util.Log;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.ipc.invalidation.ticl.android2.channel.GcmUpstreamSenderService;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.signin.OAuth2TokenService;
@@ -40,12 +41,11 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
     @Override
     public void deliverMessage(final String to, final Bundle data) {
         final Bundle dataToSend = createDeepCopy(data);
-        final Context applicationContext = getApplicationContext();
 
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                doDeliverMessage(applicationContext, to, dataToSend);
+                doDeliverMessage(ContextUtils.getApplicationContext(), to, dataToSend);
             }
         });
     }
@@ -82,8 +82,8 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
 
                     @Override
                     public void tokenUnavailable(boolean isTransientError) {
-                        GcmUma.recordGcmUpstreamHistogram(
-                                getApplicationContext(), GcmUma.UMA_UPSTREAM_TOKEN_REQUEST_FAILED);
+                        GcmUma.recordGcmUpstreamHistogram(ContextUtils.getApplicationContext(),
+                                GcmUma.UMA_UPSTREAM_TOKEN_REQUEST_FAILED);
                     }
                 });
     }
@@ -100,7 +100,8 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
         }
         String msgId = UUID.randomUUID().toString();
         try {
-            GoogleCloudMessaging.getInstance(getApplicationContext()).send(to, msgId, 1, data);
+            GoogleCloudMessaging.getInstance(ContextUtils.getApplicationContext())
+                    .send(to, msgId, 1, data);
         } catch (IOException | IllegalArgumentException exception) {
             Log.w(TAG, "Send message failed");
             GcmUma.recordGcmUpstreamHistogram(context, GcmUma.UMA_UPSTREAM_SEND_FAILED);
