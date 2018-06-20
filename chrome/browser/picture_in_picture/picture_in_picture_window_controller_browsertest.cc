@@ -612,8 +612,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 }
 
 // Same as above for a cross-origin iframe.
-// Flaky on windows: crbug/854349
-#if defined(OS_WIN)
+// Flaky on windows and Linux: crbug/854349
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_CrossOriginFrameEnterLeaveCloseWindow \
   DISABLED_CrossOriginFrameEnterLeaveCloseWindow
 #else
