@@ -1799,9 +1799,12 @@ TEST_F(SessionsSyncManagerTest, SwappedOutOnRestore) {
   in.push_back(CreateRemoteData(t1_entity));
   out.clear();
   manager()->StopSyncing(syncer::SESSIONS);
+  ResetWindows();
 
   PlaceholderTabDelegate t1_override(
       SessionID::FromSerializedValue(t1_entity.session().tab().tab_id()));
+  window = AddWindow();
+  window->OverrideTabAt(0, tab1);
   window->OverrideTabAt(1, &t1_override);
   InitWithSyncDataTakeOutput(in, &out);
 

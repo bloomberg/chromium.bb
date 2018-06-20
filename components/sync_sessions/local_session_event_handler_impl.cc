@@ -177,6 +177,9 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
       if (synced_tab->IsPlaceholderTab()) {
         // For tabs without WebContents update |window_id|, as it could have
         // changed after a session restore.
+        // TODO(crbug.com/854493): Avoid associating placeholder tabs
+        // altogether, because it's not worth to update the window ID in tab
+        // entities.
         AssociateRestoredPlaceholderTab(*synced_tab, tab_id, window_id, batch);
       } else if (RELOAD_TABS == option) {
         AssociateTab(synced_tab, batch);
@@ -402,7 +405,10 @@ void LocalSessionEventHandlerImpl::AssociateRestoredPlaceholderTab(
   // Update the window id on the SessionTab itself.
   sessions::SessionTab* local_tab =
       session_tracker_->GetTab(current_session_tag_, tab_id);
-  // TODO(mastiz): Return early if the window ID hasn't changed.
+  if (local_tab->window_id == new_window_id) {
+    // Nothing to update.
+    return;
+  }
   local_tab->window_id = new_window_id;
 
   // Filter out placeholder tabs that have been associated but don't have known
@@ -412,7 +418,7 @@ void LocalSessionEventHandlerImpl::AssociateRestoredPlaceholderTab(
   }
 
   // Rewrite the specifics based on the reassociated SessionTab to preserve
-  // the new tab and window ids.
+  // the new window id.
   auto specifics = std::make_unique<sync_pb::SessionSpecifics>();
   local_tab->ToSyncData().Swap(specifics->mutable_tab());
   specifics->set_session_tag(current_session_tag_);

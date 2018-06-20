@@ -518,16 +518,17 @@ TEST_F(SessionSyncBridgeTest, ShouldReportLocalTabCreation) {
 }
 
 TEST_F(SessionSyncBridgeTest, ShouldUpdateIdsDuringRestore) {
-  const int kWindowId = 1000001;
-  const int kTabId1 = 1000002;
-  const int kTabId2 = 1000003;
+  const int kWindowId1 = 1000001;
+  const int kWindowId2 = 1000002;
+  const int kTabId1 = 1000003;
+  const int kTabId2 = 1000004;
   // Zero is the first assigned tab node ID.
   const int kTabNodeId1 = 0;
   const int kTabNodeId2 = 1;
 
-  AddWindow(kWindowId);
-  AddTab(kWindowId, "http://foo.com/", kTabId1);
-  AddTab(kWindowId, "http://bar.com/", kTabId2);
+  AddWindow(kWindowId1);
+  AddTab(kWindowId1, "http://foo.com/", kTabId1);
+  AddTab(kWindowId1, "http://bar.com/", kTabId2);
 
   const std::string header_storage_key =
       SessionStore::GetHeaderStorageKey(kLocalSessionTag);
@@ -541,14 +542,14 @@ TEST_F(SessionSyncBridgeTest, ShouldUpdateIdsDuringRestore) {
 
   ASSERT_THAT(GetData(header_storage_key),
               EntityDataHasSpecifics(MatchesHeader(
-                  kLocalSessionTag, {kWindowId}, {kTabId1, kTabId2})));
+                  kLocalSessionTag, {kWindowId1}, {kTabId1, kTabId2})));
   ASSERT_THAT(
       GetData(tab_storage_key1),
-      EntityDataHasSpecifics(MatchesTab(kLocalSessionTag, kWindowId, kTabId1,
+      EntityDataHasSpecifics(MatchesTab(kLocalSessionTag, kWindowId1, kTabId1,
                                         kTabNodeId1, {"http://foo.com/"})));
   ASSERT_THAT(
       GetData(tab_storage_key2),
-      EntityDataHasSpecifics(MatchesTab(kLocalSessionTag, kWindowId, kTabId2,
+      EntityDataHasSpecifics(MatchesTab(kLocalSessionTag, kWindowId1, kTabId2,
                                         kTabNodeId2, {"http://bar.com/"})));
 
   ShutdownBridge();
@@ -560,7 +561,7 @@ TEST_F(SessionSyncBridgeTest, ShouldUpdateIdsDuringRestore) {
   PlaceholderTabDelegate placeholder_tab2(
       SessionID::FromSerializedValue(kTabId2));
   ResetWindows();
-  TestSyncedWindowDelegate* window = AddWindow(kWindowId);
+  TestSyncedWindowDelegate* window = AddWindow(kWindowId2);
   window->OverrideTabAt(0, &placeholder_tab1);
   window->OverrideTabAt(1, &placeholder_tab2);
 
@@ -569,16 +570,16 @@ TEST_F(SessionSyncBridgeTest, ShouldUpdateIdsDuringRestore) {
   EXPECT_CALL(mock_processor(),
               Put(header_storage_key,
                   EntityDataHasSpecifics(MatchesHeader(
-                      kLocalSessionTag, {kWindowId}, {kTabId1, kTabId2})),
+                      kLocalSessionTag, {kWindowId2}, {kTabId1, kTabId2})),
                   _));
   EXPECT_CALL(mock_processor(), Put(tab_storage_key1,
                                     EntityDataHasSpecifics(MatchesTab(
-                                        kLocalSessionTag, kWindowId, kTabId1,
+                                        kLocalSessionTag, kWindowId2, kTabId1,
                                         kTabNodeId1, {"http://foo.com/"})),
                                     _));
   EXPECT_CALL(mock_processor(), Put(tab_storage_key2,
                                     EntityDataHasSpecifics(MatchesTab(
-                                        kLocalSessionTag, kWindowId, kTabId2,
+                                        kLocalSessionTag, kWindowId2, kTabId2,
                                         kTabNodeId2, {"http://bar.com/"})),
                                     _));
 
@@ -588,14 +589,14 @@ TEST_F(SessionSyncBridgeTest, ShouldUpdateIdsDuringRestore) {
 
   EXPECT_THAT(GetData(header_storage_key),
               EntityDataHasSpecifics(MatchesHeader(
-                  kLocalSessionTag, {kWindowId}, {kTabId1, kTabId2})));
+                  kLocalSessionTag, {kWindowId2}, {kTabId1, kTabId2})));
   EXPECT_THAT(
       GetData(tab_storage_key1),
-      EntityDataHasSpecifics(MatchesTab(kLocalSessionTag, kWindowId, kTabId1,
+      EntityDataHasSpecifics(MatchesTab(kLocalSessionTag, kWindowId2, kTabId1,
                                         kTabNodeId1, {"http://foo.com/"})));
   EXPECT_THAT(
       GetData(tab_storage_key2),
-      EntityDataHasSpecifics(MatchesTab(kLocalSessionTag, kWindowId, kTabId2,
+      EntityDataHasSpecifics(MatchesTab(kLocalSessionTag, kWindowId2, kTabId2,
                                         kTabNodeId2, {"http://bar.com/"})));
 
   EXPECT_THAT(
@@ -603,27 +604,28 @@ TEST_F(SessionSyncBridgeTest, ShouldUpdateIdsDuringRestore) {
       UnorderedElementsAre(
           Pair(header_storage_key,
                EntityDataHasSpecifics(MatchesHeader(
-                   kLocalSessionTag, {kWindowId}, {kTabId1, kTabId2}))),
+                   kLocalSessionTag, {kWindowId2}, {kTabId1, kTabId2}))),
           Pair(tab_storage_key1, EntityDataHasSpecifics(MatchesTab(
-                                     kLocalSessionTag, kWindowId, kTabId1,
+                                     kLocalSessionTag, kWindowId2, kTabId1,
                                      kTabNodeId1, {"http://foo.com/"}))),
           Pair(tab_storage_key2, EntityDataHasSpecifics(MatchesTab(
-                                     kLocalSessionTag, kWindowId, kTabId2,
+                                     kLocalSessionTag, kWindowId2, kTabId2,
                                      kTabNodeId2, {"http://bar.com/"})))));
 }
 
 TEST_F(SessionSyncBridgeTest,
        ShouldIgnoreUnsyncablePlaceholderTabDuringRestore) {
-  const int kWindowId = 1000001;
+  const int kWindowId1 = 1000001;
+  const int kWindowId2 = 1000002;
   const int kTabId1 = 1000002;
   const int kTabId2 = 1000003;
   // Zero is the first assigned tab node ID.
   const int kTabNodeId1 = 0;
 
-  AddWindow(kWindowId);
-  AddTab(kWindowId, "http://foo.com/", kTabId1);
+  AddWindow(kWindowId1);
+  AddTab(kWindowId1, "http://foo.com/", kTabId1);
   // Tab 2 is unsyncable because of the URL scheme.
-  AddTab(kWindowId, "about:blank", kTabId2);
+  AddTab(kWindowId1, "about:blank", kTabId2);
 
   const std::string header_storage_key =
       SessionStore::GetHeaderStorageKey(kLocalSessionTag);
@@ -638,9 +640,9 @@ TEST_F(SessionSyncBridgeTest,
       UnorderedElementsAre(
           Pair(header_storage_key,
                EntityDataHasSpecifics(
-                   MatchesHeader(kLocalSessionTag, {kWindowId}, {kTabId1}))),
+                   MatchesHeader(kLocalSessionTag, {kWindowId1}, {kTabId1}))),
           Pair(tab_storage_key1, EntityDataHasSpecifics(MatchesTab(
-                                     kLocalSessionTag, kWindowId, kTabId1,
+                                     kLocalSessionTag, kWindowId1, kTabId1,
                                      kTabNodeId1, {"http://foo.com/"})))));
 
   ShutdownBridge();
@@ -652,7 +654,7 @@ TEST_F(SessionSyncBridgeTest,
   PlaceholderTabDelegate placeholder_tab2(
       SessionID::FromSerializedValue(kTabId2));
   ResetWindows();
-  TestSyncedWindowDelegate* window = AddWindow(kWindowId);
+  TestSyncedWindowDelegate* window = AddWindow(kWindowId2);
   window->OverrideTabAt(0, &placeholder_tab1);
   window->OverrideTabAt(1, &placeholder_tab2);
 
@@ -665,20 +667,21 @@ TEST_F(SessionSyncBridgeTest,
       UnorderedElementsAre(
           Pair(header_storage_key,
                EntityDataHasSpecifics(
-                   MatchesHeader(kLocalSessionTag, {kWindowId}, {kTabId1}))),
+                   MatchesHeader(kLocalSessionTag, {kWindowId2}, {kTabId1}))),
           Pair(tab_storage_key1, EntityDataHasSpecifics(MatchesTab(
-                                     kLocalSessionTag, kWindowId, kTabId1,
+                                     kLocalSessionTag, kWindowId2, kTabId1,
                                      kTabNodeId1, {"http://foo.com/"})))));
 }
 
 // Ensure that tabbed windows from a previous session are preserved if no
 // windows are present on startup.
 TEST_F(SessionSyncBridgeTest, ShouldRestoreTabbedDataIfNoWindowsDuringStartup) {
-  const int kWindowId = 1000001;
+  const int kWindowId1 = 1000001;
+  const int kWindowId2 = 1000002;
   const int kTabNodeId = 0;
 
-  AddWindow(kWindowId);
-  TestSyncedTabDelegate* tab = AddTab(kWindowId, "http://foo.com/");
+  AddWindow(kWindowId1);
+  TestSyncedTabDelegate* tab = AddTab(kWindowId1, "http://foo.com/");
 
   const std::string header_storage_key =
       SessionStore::GetHeaderStorageKey(kLocalSessionTag);
@@ -725,7 +728,7 @@ TEST_F(SessionSyncBridgeTest, ShouldRestoreTabbedDataIfNoWindowsDuringStartup) {
                       kLocalSessionTag, /*window_id=*/_, /*tab_id=*/_,
                       kTabNodeId, {"http://foo.com/", "http://bar.com/"})),
                   _));
-  AddWindow(kWindowId)->OverrideTabAt(0, tab);
+  AddWindow(kWindowId2)->OverrideTabAt(0, tab);
   tab->Navigate("http://bar.com/");
 }
 
