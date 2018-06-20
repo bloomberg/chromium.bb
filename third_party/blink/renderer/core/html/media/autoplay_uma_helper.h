@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 #include <set>
 
@@ -133,10 +134,10 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
   // The recording stops whenever the playback pauses or the page is unloaded.
 
   // The starting time of autoplaying muted video.
-  int64_t muted_video_autoplay_offscreen_start_time_ms_;
+  TimeTicks muted_video_autoplay_offscreen_start_time_;
 
   // The duration an autoplaying muted video has been in offscreen.
-  int64_t muted_video_autoplay_offscreen_duration_ms_;
+  TimeDelta muted_video_autoplay_offscreen_duration_;
 
   // Whether an autoplaying muted video is visible.
   bool is_visible_;
@@ -149,7 +150,7 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
   Member<ElementVisibilityObserver>
       muted_video_offscreen_duration_visibility_observer_;
 
-  double load_start_time_ms_;
+  TimeTicks load_start_time_;
 };
 
 }  // namespace blink
