@@ -57,8 +57,3 @@ include_rules = [
   # FIXME - refactor code and remove these dependencies
   "+chrome/installer/util",
 ]
-specific_include_rules = {
-  "service_process_util.*": [
-    "+mojo/edk/embedder",
-  ],
-}

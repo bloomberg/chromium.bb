@@ -39,7 +39,6 @@ static_library("browser") {
     "//components/url_formatter",
     "//content/public/browser",
     "//content/public/common",
-    "//mojo/edk",
     "//native_client/src/trusted/service_runtime:sel_main_chrome",
     "//net",
     "//ppapi/host",

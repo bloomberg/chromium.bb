@@ -352,7 +352,6 @@ source_set("common") {
     "//media/gpu/ipc/common",
     "//media/midi",
     "//media/midi:mojo",
-    "//mojo/edk",
     "//mojo/public/cpp/system",
     "//net",
     "//ppapi/buildflags",
