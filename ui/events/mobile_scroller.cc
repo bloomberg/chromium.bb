@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/android/scroller.h"
+#include "ui/events/mobile_scroller.h"
 
 #include <cmath>
 
@@ -158,11 +158,10 @@ base::LazyInstance<SplineConstants>::Leaky g_spline_constants =
 
 }  // namespace
 
-Scroller::Config::Config()
-    : fling_friction(kDefaultFriction), flywheel_enabled(false) {
-}
+MobileScroller::Config::Config()
+    : fling_friction(kDefaultFriction), flywheel_enabled(false) {}
 
-Scroller::Scroller(const Config& config)
+MobileScroller::MobileScroller(const Config& config)
     : mode_(UNDEFINED),
       start_x_(0),
       start_y_(0),
@@ -186,15 +185,13 @@ Scroller::Scroller(const Config& config)
       distance_(0),
       fling_friction_(config.fling_friction),
       deceleration_(ComputeDeceleration(fling_friction_)),
-      tuning_coeff_(ComputeDeceleration(0.84f)) {
-}
+      tuning_coeff_(ComputeDeceleration(0.84f)) {}
 
-Scroller::~Scroller() {
-}
+MobileScroller::~MobileScroller() {}
 
-bool Scroller::ComputeScrollOffset(base::TimeTicks time,
-                                   gfx::Vector2dF* offset,
-                                   gfx::Vector2dF* velocity) {
+bool MobileScroller::ComputeScrollOffset(base::TimeTicks time,
+                                         gfx::Vector2dF* offset,
+                                         gfx::Vector2dF* velocity) {
   DCHECK(offset);
   DCHECK(velocity);
   if (!ComputeScrollOffsetInternal(time)) {
@@ -208,25 +205,21 @@ bool Scroller::ComputeScrollOffset(base::TimeTicks time,
   return true;
 }
 
-void Scroller::StartScroll(float start_x,
-                           float start_y,
-                           float dx,
-                           float dy,
-                           base::TimeTicks start_time) {
-  StartScroll(start_x,
-              start_y,
-              dx,
-              dy,
-              start_time,
+void MobileScroller::StartScroll(float start_x,
+                                 float start_y,
+                                 float dx,
+                                 float dy,
+                                 base::TimeTicks start_time) {
+  StartScroll(start_x, start_y, dx, dy, start_time,
               base::TimeDelta::FromMilliseconds(kDefaultDurationMs));
 }
 
-void Scroller::StartScroll(float start_x,
-                           float start_y,
-                           float dx,
-                           float dy,
-                           base::TimeTicks start_time,
-                           base::TimeDelta duration) {
+void MobileScroller::StartScroll(float start_x,
+                                 float start_y,
+                                 float dx,
+                                 float dy,
+                                 base::TimeTicks start_time,
+                                 base::TimeDelta duration) {
   DCHECK_GT(duration, base::TimeDelta());
   mode_ = SCROLL_MODE;
   finished_ = false;
@@ -241,15 +234,15 @@ void Scroller::StartScroll(float start_x,
   curr_time_ = start_time_;
 }
 
-void Scroller::Fling(float start_x,
-                     float start_y,
-                     float velocity_x,
-                     float velocity_y,
-                     float min_x,
-                     float max_x,
-                     float min_y,
-                     float max_y,
-                     base::TimeTicks start_time) {
+void MobileScroller::Fling(float start_x,
+                           float start_y,
+                           float velocity_x,
+                           float velocity_y,
+                           float min_x,
+                           float max_x,
+                           float min_y,
+                           float max_y,
+                           base::TimeTicks start_time) {
   DCHECK(velocity_x || velocity_y);
 
   // Continue a scroll or fling in progress.
@@ -297,26 +290,26 @@ void Scroller::Fling(float start_x,
   RecomputeDeltas();
 }
 
-void Scroller::ExtendDuration(base::TimeDelta extend) {
+void MobileScroller::ExtendDuration(base::TimeDelta extend) {
   base::TimeDelta passed = GetTimePassed();
   duration_ = passed + extend;
   duration_seconds_reciprocal_ = 1.0 / duration_.InSecondsF();
   finished_ = false;
 }
 
-void Scroller::SetFinalX(float new_x) {
+void MobileScroller::SetFinalX(float new_x) {
   final_x_ = new_x;
   finished_ = false;
   RecomputeDeltas();
 }
 
-void Scroller::SetFinalY(float new_y) {
+void MobileScroller::SetFinalY(float new_y) {
   final_y_ = new_y;
   finished_ = false;
   RecomputeDeltas();
 }
 
-void Scroller::AbortAnimation() {
+void MobileScroller::AbortAnimation() {
   curr_x_ = final_x_;
   curr_y_ = final_y_;
   curr_velocity_ = 0;
@@ -324,31 +317,31 @@ void Scroller::AbortAnimation() {
   finished_ = true;
 }
 
-void Scroller::ForceFinished(bool finished) {
+void MobileScroller::ForceFinished(bool finished) {
   finished_ = finished;
 }
 
-bool Scroller::IsFinished() const {
+bool MobileScroller::IsFinished() const {
   return finished_;
 }
 
-base::TimeDelta Scroller::GetTimePassed() const {
+base::TimeDelta MobileScroller::GetTimePassed() const {
   return curr_time_ - start_time_;
 }
 
-base::TimeDelta Scroller::GetDuration() const {
+base::TimeDelta MobileScroller::GetDuration() const {
   return duration_;
 }
 
-float Scroller::GetCurrX() const {
+float MobileScroller::GetCurrX() const {
   return curr_x_;
 }
 
-float Scroller::GetCurrY() const {
+float MobileScroller::GetCurrY() const {
   return curr_y_;
 }
 
-float Scroller::GetCurrVelocity() const {
+float MobileScroller::GetCurrVelocity() const {
   if (finished_)
     return 0;
   if (mode_ == FLING_MODE)
@@ -356,36 +349,36 @@ float Scroller::GetCurrVelocity() const {
   return velocity_ - deceleration_ * GetTimePassed().InSecondsF() * 0.5f;
 }
 
-float Scroller::GetCurrVelocityX() const {
+float MobileScroller::GetCurrVelocityX() const {
   return delta_x_norm_ * GetCurrVelocity();
 }
 
-float Scroller::GetCurrVelocityY() const {
+float MobileScroller::GetCurrVelocityY() const {
   return delta_y_norm_ * GetCurrVelocity();
 }
 
-float Scroller::GetStartX() const {
+float MobileScroller::GetStartX() const {
   return start_x_;
 }
 
-float Scroller::GetStartY() const {
+float MobileScroller::GetStartY() const {
   return start_y_;
 }
 
-float Scroller::GetFinalX() const {
+float MobileScroller::GetFinalX() const {
   return final_x_;
 }
 
-float Scroller::GetFinalY() const {
+float MobileScroller::GetFinalY() const {
   return final_y_;
 }
 
-bool Scroller::IsScrollingInDirection(float xvel, float yvel) const {
+bool MobileScroller::IsScrollingInDirection(float xvel, float yvel) const {
   return !finished_ && Signum(xvel) == Signum(delta_x_) &&
          Signum(yvel) == Signum(delta_y_);
 }
 
-bool Scroller::ComputeScrollOffsetInternal(base::TimeTicks time) {
+bool MobileScroller::ComputeScrollOffsetInternal(base::TimeTicks time) {
   if (finished_)
     return false;
 
@@ -420,8 +413,8 @@ bool Scroller::ComputeScrollOffsetInternal(base::TimeTicks time) {
     case FLING_MODE: {
       float distance_coef = 1.f;
       float velocity_coef = 0.f;
-      g_spline_constants.Get().CalculateCoefficients(
-          u, &distance_coef, &velocity_coef);
+      g_spline_constants.Get().CalculateCoefficients(u, &distance_coef,
+                                                     &velocity_coef);
 
       curr_velocity_ = velocity_coef * distance_ * duration_seconds_reciprocal_;
 
@@ -441,7 +434,7 @@ bool Scroller::ComputeScrollOffsetInternal(base::TimeTicks time) {
   return !finished_;
 }
 
-void Scroller::RecomputeDeltas() {
+void MobileScroller::RecomputeDeltas() {
   delta_x_ = final_x_ - start_x_;
   delta_y_ = final_y_ - start_y_;
 
@@ -454,12 +447,12 @@ void Scroller::RecomputeDeltas() {
   }
 }
 
-double Scroller::GetSplineDeceleration(float velocity) const {
+double MobileScroller::GetSplineDeceleration(float velocity) const {
   return std::log(kInflexion * std::abs(velocity) /
                   (fling_friction_ * tuning_coeff_));
 }
 
-base::TimeDelta Scroller::GetSplineFlingDuration(float velocity) const {
+base::TimeDelta MobileScroller::GetSplineFlingDuration(float velocity) const {
   const double l = GetSplineDeceleration(velocity);
   const double decel_minus_one = kDecelerationRate - 1.0;
   const double time_seconds = std::exp(l / decel_minus_one);
@@ -467,7 +460,7 @@ base::TimeDelta Scroller::GetSplineFlingDuration(float velocity) const {
                                            base::Time::kMicrosecondsPerSecond);
 }
 
-double Scroller::GetSplineFlingDistance(float velocity) const {
+double MobileScroller::GetSplineFlingDistance(float velocity) const {
   const double l = GetSplineDeceleration(velocity);
   const double decel_minus_one = kDecelerationRate - 1.0;
   return fling_friction_ * tuning_coeff_ *

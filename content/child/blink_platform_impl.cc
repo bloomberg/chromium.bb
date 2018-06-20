@@ -672,7 +672,7 @@ BlinkPlatformImpl::CreateFlingAnimationCurve(
   return ui::WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
       device_source, gfx::Vector2dF(velocity.x, velocity.y),
       gfx::Vector2dF(cumulative_scroll.width, cumulative_scroll.height),
-      IsMainThread());
+      IsMainThread(), false /*use_mobile_fling_curve*/);
 }
 
 bool BlinkPlatformImpl::AllowScriptExtensionForServiceWorker(

@@ -15,13 +15,10 @@
 #include "third_party/blink/public/platform/web_gesture_curve_target.h"
 #include "ui/events/gestures/fixed_velocity_curve.h"
 #include "ui/events/gestures/fling_curve.h"
+#include "ui/events/mobile_scroller.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_f.h"
-
-#if defined(OS_ANDROID)
-#include "ui/events/android/scroller.h"
-#endif
 
 #if !defined(OS_ANDROID) && defined(CHROMECAST_BUILD)
 #include "ui/events/chromecast/scroller.h"
@@ -34,25 +31,26 @@ namespace {
 
 std::unique_ptr<GestureCurve> CreateDefaultPlatformCurve(
     blink::WebGestureDevice device_source,
-    const gfx::Vector2dF& initial_velocity) {
+    const gfx::Vector2dF& initial_velocity,
+    bool use_mobile_fling_curve) {
   if (device_source == blink::kWebGestureDeviceSyntheticAutoscroll) {
     return std::make_unique<FixedVelocityCurve>(initial_velocity,
                                                 base::TimeTicks());
   }
 
-#if defined(OS_ANDROID) || defined(CHROMECAST_BUILD)
+#if defined(CHROMECAST_BUILD)
   auto scroller = std::make_unique<Scroller>(Scroller::Config());
-  scroller->Fling(0,
-                  0,
-                  initial_velocity.x(),
-                  initial_velocity.y(),
-                  INT_MIN,
-                  INT_MAX,
-                  INT_MIN,
-                  INT_MAX,
-                  base::TimeTicks());
+  scroller->Fling(0, 0, initial_velocity.x(), initial_velocity.y(), INT_MIN,
+                  INT_MAX, INT_MIN, INT_MAX, base::TimeTicks());
   return std::move(scroller);
 #else
+  if (use_mobile_fling_curve) {
+    auto scroller = std::make_unique<MobileScroller>(MobileScroller::Config());
+    scroller->Fling(0, 0, initial_velocity.x(), initial_velocity.y(), INT_MIN,
+                    INT_MAX, INT_MIN, INT_MAX, base::TimeTicks());
+    return std::move(scroller);
+  }
+
   return std::make_unique<FlingCurve>(initial_velocity, base::TimeTicks());
 #endif
 }
@@ -65,9 +63,11 @@ WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
     blink::WebGestureDevice device_source,
     const gfx::Vector2dF& initial_velocity,
     const gfx::Vector2dF& initial_offset,
-    bool on_main_thread) {
+    bool on_main_thread,
+    bool use_mobile_fling_curve) {
   return std::unique_ptr<WebGestureCurve>(new WebGestureCurveImpl(
-      CreateDefaultPlatformCurve(device_source, initial_velocity),
+      CreateDefaultPlatformCurve(device_source, initial_velocity,
+                                 use_mobile_fling_curve),
       initial_offset, on_main_thread ? ThreadType::MAIN : ThreadType::IMPL));
 }
 

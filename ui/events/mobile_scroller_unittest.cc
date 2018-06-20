@@ -6,7 +6,7 @@
 
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/events/android/scroller.h"
+#include "ui/events/mobile_scroller.h"
 
 namespace ui {
 namespace {
@@ -19,24 +19,21 @@ const float kDefaultVelocityX = -350.f;
 const float kDefaultVelocityY = 220.f;
 const float kEpsilon = 1e-3f;
 
-Scroller::Config DefaultConfig() {
-  return Scroller::Config();
+MobileScroller::Config DefaultConfig() {
+  return MobileScroller::Config();
 }
 
 }  // namespace
 
-class ScrollerTest : public testing::Test {};
+using MobileScrollerTest = testing::Test;
 
-TEST_F(ScrollerTest, Scroll) {
-  Scroller scroller(DefaultConfig());
+TEST_F(MobileScrollerTest, Scroll) {
+  MobileScroller scroller(DefaultConfig());
   base::TimeTicks start_time = base::TimeTicks::Now();
 
   // Start a scroll and verify initialized values.
-  scroller.StartScroll(kDefaultStartX,
-                       kDefaultStartY,
-                       kDefaultDeltaX,
-                       kDefaultDeltaY,
-                       start_time);
+  scroller.StartScroll(kDefaultStartX, kDefaultStartY, kDefaultDeltaX,
+                       kDefaultDeltaY, start_time);
 
   EXPECT_EQ(kDefaultStartX, scroller.GetStartX());
   EXPECT_EQ(kDefaultStartY, scroller.GetStartY());
@@ -50,8 +47,8 @@ TEST_F(ScrollerTest, Scroll) {
   // Advance halfway through the scroll.
   const base::TimeDelta scroll_duration = scroller.GetDuration();
   gfx::Vector2dF offset, velocity;
-  EXPECT_TRUE(scroller.ComputeScrollOffset(
-      start_time + scroll_duration / 2, &offset, &velocity));
+  EXPECT_TRUE(scroller.ComputeScrollOffset(start_time + scroll_duration / 2,
+                                           &offset, &velocity));
 
   // Ensure we've moved in the direction of the delta, but have yet to reach
   // the target.
@@ -72,16 +69,16 @@ TEST_F(ScrollerTest, Scroll) {
   float curr_y = offset.y();
   float curr_velocity_x = velocity.x();
   float curr_velocity_y = velocity.y();
-  EXPECT_TRUE(scroller.ComputeScrollOffset(
-      start_time + scroll_duration / 2, &offset, &velocity));
+  EXPECT_TRUE(scroller.ComputeScrollOffset(start_time + scroll_duration / 2,
+                                           &offset, &velocity));
   EXPECT_EQ(curr_x, offset.x());
   EXPECT_EQ(curr_y, offset.y());
   EXPECT_EQ(curr_velocity_x, velocity.x());
   EXPECT_EQ(curr_velocity_y, velocity.y());
 
   // Advance to the end.
-  EXPECT_FALSE(scroller.ComputeScrollOffset(
-      start_time + scroll_duration, &offset, &velocity));
+  EXPECT_FALSE(scroller.ComputeScrollOffset(start_time + scroll_duration,
+                                            &offset, &velocity));
   EXPECT_EQ(scroller.GetFinalX(), offset.x());
   EXPECT_EQ(scroller.GetFinalY(), offset.y());
   EXPECT_TRUE(scroller.IsFinished());
@@ -90,27 +87,21 @@ TEST_F(ScrollerTest, Scroll) {
   EXPECT_NEAR(0.f, velocity.y(), kEpsilon);
 
   // Try to advance further; nothing should change.
-  EXPECT_FALSE(scroller.ComputeScrollOffset(
-      start_time + scroll_duration * 2, &offset, &velocity));
+  EXPECT_FALSE(scroller.ComputeScrollOffset(start_time + scroll_duration * 2,
+                                            &offset, &velocity));
   EXPECT_EQ(scroller.GetFinalX(), offset.x());
   EXPECT_EQ(scroller.GetFinalY(), offset.y());
   EXPECT_TRUE(scroller.IsFinished());
   EXPECT_EQ(scroll_duration, scroller.GetTimePassed());
 }
 
-TEST_F(ScrollerTest, Fling) {
-  Scroller scroller(DefaultConfig());
+TEST_F(MobileScrollerTest, Fling) {
+  MobileScroller scroller(DefaultConfig());
   base::TimeTicks start_time = base::TimeTicks::Now();
 
   // Start a fling and verify initialized values.
-  scroller.Fling(kDefaultStartX,
-                 kDefaultStartY,
-                 kDefaultVelocityX,
-                 kDefaultVelocityY,
-                 INT_MIN,
-                 INT_MAX,
-                 INT_MIN,
-                 INT_MAX,
+  scroller.Fling(kDefaultStartX, kDefaultStartY, kDefaultVelocityX,
+                 kDefaultVelocityY, INT_MIN, INT_MAX, INT_MIN, INT_MAX,
                  start_time);
 
   EXPECT_EQ(kDefaultStartX, scroller.GetStartX());
@@ -125,8 +116,8 @@ TEST_F(ScrollerTest, Fling) {
   // Advance halfway through the fling.
   const base::TimeDelta scroll_duration = scroller.GetDuration();
   gfx::Vector2dF offset, velocity;
-  scroller.ComputeScrollOffset(
-      start_time + scroll_duration / 2, &offset, &velocity);
+  scroller.ComputeScrollOffset(start_time + scroll_duration / 2, &offset,
+                               &velocity);
 
   // Ensure we've moved in the direction of the velocity, but have yet to reach
   // the target.
@@ -149,16 +140,16 @@ TEST_F(ScrollerTest, Fling) {
   float curr_y = offset.y();
   float curr_velocity_x = velocity.x();
   float curr_velocity_y = velocity.y();
-  EXPECT_TRUE(scroller.ComputeScrollOffset(
-      start_time + scroll_duration / 2, &offset, &velocity));
+  EXPECT_TRUE(scroller.ComputeScrollOffset(start_time + scroll_duration / 2,
+                                           &offset, &velocity));
   EXPECT_EQ(curr_x, offset.x());
   EXPECT_EQ(curr_y, offset.y());
   EXPECT_EQ(curr_velocity_x, velocity.x());
   EXPECT_EQ(curr_velocity_y, velocity.y());
 
   // Advance to the end.
-  EXPECT_FALSE(scroller.ComputeScrollOffset(
-      start_time + scroll_duration, &offset, &velocity));
+  EXPECT_FALSE(scroller.ComputeScrollOffset(start_time + scroll_duration,
+                                            &offset, &velocity));
   EXPECT_EQ(scroller.GetFinalX(), offset.x());
   EXPECT_EQ(scroller.GetFinalY(), offset.y());
   EXPECT_TRUE(scroller.IsFinished());
@@ -167,8 +158,8 @@ TEST_F(ScrollerTest, Fling) {
   EXPECT_NEAR(0.f, velocity.y(), kEpsilon);
 
   // Try to advance further; nothing should change.
-  EXPECT_FALSE(scroller.ComputeScrollOffset(
-      start_time + scroll_duration * 2, &offset, &velocity));
+  EXPECT_FALSE(scroller.ComputeScrollOffset(start_time + scroll_duration * 2,
+                                            &offset, &velocity));
   EXPECT_EQ(scroller.GetFinalX(), offset.x());
   EXPECT_EQ(scroller.GetFinalY(), offset.y());
   EXPECT_TRUE(scroller.IsFinished());

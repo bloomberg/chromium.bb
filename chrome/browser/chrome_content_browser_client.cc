@@ -316,6 +316,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_features.h"
@@ -1325,6 +1326,17 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(
 #else
   return url;
 #endif
+}
+
+bool ChromeContentBrowserClient::ShouldUseMobileFlingCurve() const {
+#if defined(OS_ANDROID)
+  return true;
+#elif defined(OS_CHROMEOS)
+  return TabletModeClient::Get() &&
+         TabletModeClient::Get()->tablet_mode_enabled();
+#else
+  return false;
+#endif  // defined(OS_ANDROID)
 }
 
 bool ChromeContentBrowserClient::ShouldUseProcessPerSite(

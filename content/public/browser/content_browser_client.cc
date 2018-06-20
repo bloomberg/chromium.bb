@@ -80,6 +80,10 @@ GURL ContentBrowserClient::GetEffectiveURL(BrowserContext* browser_context,
   return url;
 }
 
+bool ContentBrowserClient::ShouldUseMobileFlingCurve() const {
+  return false;
+}
+
 bool ContentBrowserClient::ShouldUseProcessPerSite(
     BrowserContext* browser_context, const GURL& effective_url) {
   return false;

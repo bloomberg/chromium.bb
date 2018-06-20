@@ -108,6 +108,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool AllowGpuLaunchRetryOnIOThread() override;
   GURL GetEffectiveURL(content::BrowserContext* browser_context,
                        const GURL& url) override;
+  bool ShouldUseMobileFlingCurve() const override;
   bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
                                const GURL& effective_url) override;
   bool ShouldUseSpareRenderProcessHost(content::BrowserContext* browser_context,

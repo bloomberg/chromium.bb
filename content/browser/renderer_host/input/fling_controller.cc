@@ -6,6 +6,8 @@
 
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/fling_booster.h"
@@ -420,7 +422,8 @@ bool FlingController::UpdateCurrentFlingState(
       ui::WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
           current_fling_parameters_.source_device,
           current_fling_parameters_.velocity,
-          gfx::Vector2dF() /*initial_offset*/, false /*on_main_thread*/));
+          gfx::Vector2dF() /*initial_offset*/, false /*on_main_thread*/,
+          GetContentClient()->browser()->ShouldUseMobileFlingCurve()));
   return true;
 }
 
