@@ -23,7 +23,6 @@
 #include "content/public/common/url_loader_throttle.h"
 #include "device/geolocation/public/cpp/location_provider.h"
 #include "media/audio/audio_manager.h"
-#include "media/base/cdm_factory.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/ssl/client_cert_identity.h"
@@ -184,10 +183,6 @@ std::unique_ptr<media::AudioManager> ContentBrowserClient::CreateAudioManager(
 
 bool ContentBrowserClient::OverridesAudioManager() {
   return false;
-}
-
-std::unique_ptr<media::CdmFactory> ContentBrowserClient::CreateCdmFactory() {
-  return nullptr;
 }
 
 bool ContentBrowserClient::ShouldAssignSiteForURL(const GURL& url) {
