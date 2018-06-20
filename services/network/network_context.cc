@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_current.h"
@@ -222,9 +223,12 @@ class NetworkContext::ContextNetworkDelegate
  public:
   ContextNetworkDelegate(
       std::unique_ptr<net::NetworkDelegate> nested_network_delegate,
-      bool enable_referrers)
+      bool enable_referrers,
+      bool validate_referrer_policy_on_initial_request)
       : LayeredNetworkDelegate(std::move(nested_network_delegate)),
-        enable_referrers_(enable_referrers) {}
+        enable_referrers_(enable_referrers),
+        validate_referrer_policy_on_initial_request_(
+            validate_referrer_policy_on_initial_request) {}
 
   ~ContextNetworkDelegate() override {}
 
@@ -234,12 +238,31 @@ class NetworkContext::ContextNetworkDelegate
       request->SetReferrer(std::string());
   }
 
+  bool OnCancelURLRequestWithPolicyViolatingReferrerHeaderInternal(
+      const net::URLRequest& request,
+      const GURL& target_url,
+      const GURL& referrer_url) const override {
+    // TODO(mmenke): Once the network service has shipped on all platforms,
+    // consider moving this logic into URLLoader, and removing this method from
+    // NetworkDelegate. Can just have a DCHECK in URLRequest instead.
+    if (!validate_referrer_policy_on_initial_request_)
+      return false;
+
+    LOG(ERROR) << "Cancelling request to " << target_url
+               << " with invalid referrer " << referrer_url;
+    // Record information to help debug issues like http://crbug.com/422871.
+    if (target_url.SchemeIsHTTPOrHTTPS())
+      base::debug::DumpWithoutCrashing();
+    return true;
+  }
+
   void set_enable_referrers(bool enable_referrers) {
     enable_referrers_ = enable_referrers;
   }
 
  private:
   bool enable_referrers_;
+  bool validate_referrer_policy_on_initial_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextNetworkDelegate);
 };
@@ -854,7 +877,9 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         std::unique_ptr<ContextNetworkDelegate> context_network_delegate =
             std::make_unique<ContextNetworkDelegate>(
                 std::move(nested_network_delegate),
-                network_context_params->enable_referrers);
+                network_context_params->enable_referrers,
+                network_context_params
+                    ->validate_referrer_policy_on_initial_request);
         if (out_context_network_delegate)
           *out_context_network_delegate = context_network_delegate.get();
         return context_network_delegate;
