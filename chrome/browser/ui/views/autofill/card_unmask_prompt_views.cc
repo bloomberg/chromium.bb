@@ -31,7 +31,6 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/bubble/tooltip_icon.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/image_view.h"
@@ -218,12 +217,6 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
       STYLE_SECONDARY));
   storage_row_->AddChildView(storage_checkbox_);
   storage_row_layout->SetFlexForView(storage_checkbox_, 1);
-
-  views::TooltipIcon* icon = new views::TooltipIcon(l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP));
-  const int kTooltipWidth = 233;
-  icon->set_bubble_width(kTooltipWidth);
-  storage_row_->AddChildView(icon);
 
   return storage_row_;
 }
