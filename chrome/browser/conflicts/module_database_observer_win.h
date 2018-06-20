@@ -10,8 +10,6 @@ struct ModuleInfoData;
 
 class ModuleDatabaseObserver {
  public:
-  virtual ~ModuleDatabaseObserver() = default;
-
   // Invoked when a new module is loaded into Chrome, but after it has been
   // inspected on disk.
   virtual void OnNewModuleFound(const ModuleInfoKey& module_key,
@@ -21,6 +19,18 @@ class ModuleDatabaseObserver {
   // ModuleDatabase stopped inspecting modules and it received no new module
   // events in the last 10 seconds.
   virtual void OnModuleDatabaseIdle() {}
+
+ protected:
+  virtual ~ModuleDatabaseObserver() = default;
+};
+
+class ModuleDatabaseEventSource {
+ public:
+  virtual void AddObserver(ModuleDatabaseObserver* observer) = 0;
+  virtual void RemoveObserver(ModuleDatabaseObserver* observer) = 0;
+
+ protected:
+  virtual ~ModuleDatabaseEventSource() = default;
 };
 
 #endif  // CHROME_BROWSER_CONFLICTS_MODULE_DATABASE_OBSERVER_WIN_H_

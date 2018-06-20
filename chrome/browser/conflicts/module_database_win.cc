@@ -295,7 +295,6 @@ void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager() {
       base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking)) {
     third_party_conflicts_manager_ =
         std::make_unique<ThirdPartyConflictsManager>(this);
-    AddObserver(third_party_conflicts_manager_.get());
 
     pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
     pref_change_registrar_->Init(g_browser_process->local_state());

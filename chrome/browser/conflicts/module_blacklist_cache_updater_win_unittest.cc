@@ -100,7 +100,8 @@ void GetModulePath(HMODULE module_handle, base::FilePath* module_path) {
 
 }  // namespace
 
-class ModuleBlacklistCacheUpdaterTest : public testing::Test {
+class ModuleBlacklistCacheUpdaterTest : public testing::Test,
+                                        public ModuleDatabaseEventSource {
  protected:
   ModuleBlacklistCacheUpdaterTest()
       : dll1_(kDllPath1),
@@ -124,7 +125,7 @@ class ModuleBlacklistCacheUpdaterTest : public testing::Test {
   std::unique_ptr<ModuleBlacklistCacheUpdater>
   CreateModuleBlacklistCacheUpdater() {
     return std::make_unique<ModuleBlacklistCacheUpdater>(
-        exe_certificate_info_, module_list_filter_,
+        this, exe_certificate_info_, module_list_filter_,
         base::BindRepeating(
             &ModuleBlacklistCacheUpdaterTest::OnModuleBlacklistCacheUpdated,
             base::Unretained(this)));
@@ -145,6 +146,10 @@ class ModuleBlacklistCacheUpdaterTest : public testing::Test {
   bool on_cache_updated_callback_invoked() {
     return on_cache_updated_callback_invoked_;
   }
+
+  // ModuleDatabaseEventSource:
+  void AddObserver(ModuleDatabaseObserver* observer) override {}
+  void RemoveObserver(ModuleDatabaseObserver* observer) override {}
 
   const base::FilePath dll1_;
   const base::FilePath dll2_;

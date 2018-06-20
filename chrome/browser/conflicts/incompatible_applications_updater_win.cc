@@ -207,16 +207,21 @@ IncompatibleApplicationsUpdater::IncompatibleApplication::operator=(
 // IncompatibleApplicationsUpdater
 
 IncompatibleApplicationsUpdater::IncompatibleApplicationsUpdater(
+    ModuleDatabaseEventSource* module_database_event_source,
     const CertificateInfo& exe_certificate_info,
     const ModuleListFilter& module_list_filter,
     const InstalledApplications& installed_applications)
-    : exe_certificate_info_(exe_certificate_info),
+    : module_database_event_source_(module_database_event_source),
+      exe_certificate_info_(exe_certificate_info),
       module_list_filter_(module_list_filter),
       installed_applications_(installed_applications) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  module_database_event_source_->AddObserver(this);
 }
 
-IncompatibleApplicationsUpdater::~IncompatibleApplicationsUpdater() = default;
+IncompatibleApplicationsUpdater::~IncompatibleApplicationsUpdater() {
+  module_database_event_source_->RemoveObserver(this);
+}
 
 // static
 void IncompatibleApplicationsUpdater::RegisterLocalStatePrefs(
