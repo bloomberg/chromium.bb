@@ -161,11 +161,9 @@ int TraceStartupConfig::GetStartupDuration() const {
   return startup_duration_;
 }
 
-#if !defined(OS_ANDROID)
 base::FilePath TraceStartupConfig::GetResultFile() const {
   DCHECK(IsEnabled());
   return result_file_;
 }
-#endif
 
 }  // namespace tracing
