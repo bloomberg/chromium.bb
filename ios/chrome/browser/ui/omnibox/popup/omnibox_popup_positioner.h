@@ -13,6 +13,9 @@
 // View to which the popup view should be added as subview.
 - (UIView*)popupParentView;
 
+// The view controller that will parent the popup.
+- (UIViewController*)popupParentViewController;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_POSITIONER_H_

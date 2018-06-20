@@ -86,7 +86,11 @@ NS_INLINE CGFloat BottomPadding() {
 - (void)updateHeightAndAnimateAppearanceIfNecessary {
   UIView* popup = self.popupContainerView;
   if (!popup.superview) {
+    UIViewController* parentVC = [self.positioner popupParentViewController];
+    [parentVC addChildViewController:self.viewController];
     [[self.positioner popupParentView] addSubview:popup];
+    [self.viewController didMoveToParentViewController:parentVC];
+
     [self initialLayout];
   }
 
@@ -108,6 +112,7 @@ NS_INLINE CGFloat BottomPadding() {
 
 - (void)animateCollapse {
   UIView* retainedPopupView = self.popupContainerView;
+  UIViewController* retainedViewController = self.viewController;
   if (!IsIPadIdiom()) {
     self.bottomConstraint.active = NO;
   }
@@ -119,7 +124,9 @@ NS_INLINE CGFloat BottomPadding() {
         [[self.popupContainerView superview] layoutIfNeeded];
       }
       completion:^(BOOL) {
+        [retainedViewController willMoveToParentViewController:nil];
         [retainedPopupView removeFromSuperview];
+        [retainedViewController removeFromParentViewController];
       }];
 }
 

@@ -165,6 +165,10 @@
   return self.viewController.view.superview;
 }
 
+- (UIViewController*)popupParentViewController {
+  return self.viewController.parentViewController;
+}
+
 #pragma mark - Protected override
 
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {

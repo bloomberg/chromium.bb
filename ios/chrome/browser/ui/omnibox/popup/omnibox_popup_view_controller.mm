@@ -171,6 +171,17 @@ UIColor* BackgroundColorIncognito() {
   [self layoutRows];
 }
 
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:
+           (id<UIViewControllerTransitionCoordinator>)coordinator {
+  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+  [coordinator animateAlongsideTransition:^(
+                   id<UIViewControllerTransitionCoordinatorContext> context) {
+    [self layoutRows];
+  }
+                               completion:nil];
+}
+
 #pragma mark - Properties accessors
 
 - (void)setIncognito:(BOOL)incognito {
