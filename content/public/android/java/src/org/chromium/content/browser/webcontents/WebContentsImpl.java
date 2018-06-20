@@ -672,9 +672,9 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public void getContentBitmapAsync(
+    public void writeContentBitmapToDiskAsync(
             int width, int height, String path, Callback<String> callback) {
-        nativeGetContentBitmap(mNativeWebContentsAndroid, width, height, path, callback);
+        nativeWriteContentBitmapToDisk(mNativeWebContentsAndroid, width, height, path, callback);
     }
 
     @Override
@@ -912,8 +912,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
             long nativeWebContentsAndroid, AccessibilitySnapshotCallback callback);
     private native void nativeSetOverscrollRefreshHandler(
             long nativeWebContentsAndroid, OverscrollRefreshHandler nativeOverscrollRefreshHandler);
-    private native void nativeGetContentBitmap(long nativeWebContentsAndroid, int width, int height,
-            String path, Callback<String> callback);
+    private native void nativeWriteContentBitmapToDisk(long nativeWebContentsAndroid, int width,
+            int height, String path, Callback<String> callback);
     private native void nativeReloadLoFiImages(long nativeWebContentsAndroid);
     private native int nativeDownloadImage(long nativeWebContentsAndroid,
             String url, boolean isFavicon, int maxBitmapSize,
