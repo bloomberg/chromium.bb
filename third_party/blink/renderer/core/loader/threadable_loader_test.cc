@@ -250,7 +250,10 @@ class WebWorkerFetchContextForTest : public WebWorkerFetchContext {
   }
 
   void WillSendRequest(WebURLRequest&) override {}
-  bool IsControlledByServiceWorker() const override { return false; }
+  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+      const override {
+    return blink::mojom::ControllerServiceWorkerMode::kNoController;
+  }
   WebURL SiteForCookies() const override { return site_for_cookies_; }
 
  private:

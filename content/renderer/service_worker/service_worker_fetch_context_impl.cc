@@ -95,8 +95,9 @@ void ServiceWorkerFetchContextImpl::WillSendRequest(
   request.SetExtraData(std::move(extra_data));
 }
 
-bool ServiceWorkerFetchContextImpl::IsControlledByServiceWorker() const {
-  return false;
+blink::mojom::ControllerServiceWorkerMode
+ServiceWorkerFetchContextImpl::IsControlledByServiceWorker() const {
+  return blink::mojom::ControllerServiceWorkerMode::kNoController;
 }
 
 blink::WebURL ServiceWorkerFetchContextImpl::SiteForCookies() const {

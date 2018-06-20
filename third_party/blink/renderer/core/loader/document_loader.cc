@@ -978,7 +978,8 @@ void DocumentLoader::DidCommitNavigation(
   // didObserveLoadingBehavior() must be called after dispatchDidCommitLoad() is
   // called for the metrics tracking logic to handle it properly.
   if (service_worker_network_provider_ &&
-      service_worker_network_provider_->HasControllerServiceWorker()) {
+      service_worker_network_provider_->IsControlledByServiceWorker() !=
+          blink::mojom::ControllerServiceWorkerMode::kNoController) {
     GetLocalFrameClient().DidObserveLoadingBehavior(
         kWebLoadingBehaviorServiceWorkerControlled);
   }

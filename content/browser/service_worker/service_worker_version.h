@@ -191,7 +191,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // This status is set to EXISTS or DOES_NOT_EXIST when the install event has
   // been executed in a new version or when an installed version is loaded from
-  // the storage. When a new version is not installed yet, it is  UNKNOW.
+  // the storage. When a new version is not installed yet, it is UNKNOWN.
   FetchHandlerExistence fetch_handler_existence() const {
     return fetch_handler_existence_;
   }

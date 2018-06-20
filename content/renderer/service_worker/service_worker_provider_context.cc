@@ -57,10 +57,8 @@ struct ServiceWorkerProviderContext::ProviderStateForClient {
   // The Client#id value of the client.
   std::string client_id;
 
-  // S13nServiceWorker:
-  // True when the controller has a fetch event handler. If false,
-  // ServiceWorkerSubresourceLoader will be bypassed.
-  bool controller_has_fetch_event_handler = false;
+  blink::mojom::ControllerServiceWorkerMode controller_mode =
+      blink::mojom::ControllerServiceWorkerMode::kNoController;
 
   // Tracks feature usage for UseCounter.
   std::set<blink::mojom::WebFeature> used_features;
@@ -144,14 +142,24 @@ ServiceWorkerProviderContext::TakeController() {
   return std::move(state_for_client_->controller);
 }
 
-int64_t ServiceWorkerProviderContext::GetControllerVersionId() {
+int64_t ServiceWorkerProviderContext::GetControllerVersionId() const {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_for_client_);
   return state_for_client_->controller_version_id;
 }
 
+blink::mojom::ControllerServiceWorkerMode
+ServiceWorkerProviderContext::IsControlledByServiceWorker() const {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(state_for_client_);
+  return state_for_client_->controller_mode;
+}
+
 network::mojom::URLLoaderFactory*
 ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
+  if (!ServiceWorkerUtils::IsServicificationEnabled())
+    return nullptr;
+
   DCHECK(state_for_client_);
   auto* state = state_for_client_.get();
   if (!state->controller_connector ||
@@ -160,9 +168,13 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
     // No controller is attached.
     return nullptr;
   }
-  if (!state->controller_has_fetch_event_handler)
+
+  if (state->controller_mode !=
+      blink::mojom::ControllerServiceWorkerMode::kControlled) {
+    // The controller does not exist or has no fetch event handler.
     return nullptr;
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  }
+
   if (!state->subresource_loader_factory) {
     ServiceWorkerSubresourceLoaderFactory::Create(
         state->controller_connector, state->fallback_loader_factory,
@@ -292,8 +304,14 @@ void ServiceWorkerProviderContext::SetController(
   DCHECK(state->client_id.empty() ||
          state->client_id == controller_info->client_id);
   state->client_id = controller_info->client_id;
-  // |endpoint| is set only when the controller has a fetch event handler.
-  state->controller_has_fetch_event_handler = !!controller_info->endpoint;
+
+  DCHECK((controller_info->mode ==
+              blink::mojom::ControllerServiceWorkerMode::kNoController &&
+          !state->controller) ||
+         (controller_info->mode !=
+              blink::mojom::ControllerServiceWorkerMode::kNoController &&
+          state->controller));
+  state->controller_mode = controller_info->mode;
 
   // Propagate the controller to workers related to this provider.
   if (state->controller) {
@@ -302,7 +320,7 @@ void ServiceWorkerProviderContext::SetController(
     for (const auto& worker : state->worker_clients) {
       // This is a Mojo interface call to the (dedicated or shared) worker
       // thread.
-      worker->OnControllerChanged();
+      worker->OnControllerChanged(state->controller_mode);
     }
   }
   for (blink::mojom::WebFeature feature : used_features)

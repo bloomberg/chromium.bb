@@ -360,7 +360,8 @@ void DocumentThreadableLoader::Start(const ResourceRequest& request) {
   if (!async_ || new_request.GetSkipServiceWorker() ||
       !SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           new_request.Url().Protocol()) ||
-      !loading_context_->GetResourceFetcher()->IsControlledByServiceWorker()) {
+      loading_context_->GetResourceFetcher()->IsControlledByServiceWorker() ==
+          blink::mojom::ControllerServiceWorkerMode::kNoController) {
     DispatchInitialRequest(new_request);
     return;
   }

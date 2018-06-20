@@ -103,7 +103,9 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
     return script_loader_factory_.get();
   }
 
-  bool IsControlledByServiceWorker() const;
+  // Returns whether the context this provider is for is controlled by a service
+  // worker. Can be called only for providers for service worker clients.
+  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker() const;
 
  private:
   // Creates an invalid instance (provider_id() returns

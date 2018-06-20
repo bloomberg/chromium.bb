@@ -8,6 +8,7 @@
 #include <memory>
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/base_fetch_context.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -73,7 +74,8 @@ class WorkerFetchContext final : public BaseFetchContext {
       scoped_refptr<base::SingleThreadTaskRunner>,
       const ResourceLoaderOptions&) override;
   void PrepareRequest(ResourceRequest&, RedirectType) override;
-  bool IsControlledByServiceWorker() const override;
+  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+      const override;
   int ApplicationCacheHostID() const override;
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;

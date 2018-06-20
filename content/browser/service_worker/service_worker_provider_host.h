@@ -194,6 +194,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // security, so they must be set properly before calling this function.
   bool IsContextSecureForServiceWorker() const;
 
+  // For service worker clients. Describes whether the client has a controller
+  // and if it has a fetch event handler.
+  blink::mojom::ControllerServiceWorkerMode GetControllerMode() const;
+
   // Returns this provider's controller. The controller is typically the same as
   // active_version() but can differ in the following cases:
   // (1) The client was created before the registration existed or had an active

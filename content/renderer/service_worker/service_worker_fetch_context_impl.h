@@ -44,7 +44,8 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
   std::unique_ptr<blink::WebURLLoaderFactory> CreateScriptLoaderFactory()
       override;
   void WillSendRequest(blink::WebURLRequest&) override;
-  bool IsControlledByServiceWorker() const override;
+  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+      const override;
   blink::WebURL SiteForCookies() const override;
   std::unique_ptr<blink::WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle() override;

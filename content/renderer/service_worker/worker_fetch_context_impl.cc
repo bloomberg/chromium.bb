@@ -249,7 +249,8 @@ void WorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
   request.SetExtraData(std::move(extra_data));
   request.SetAppCacheHostID(appcache_host_id_);
 
-  if (!IsControlledByServiceWorker()) {
+  if (IsControlledByServiceWorker() ==
+      blink::mojom::ControllerServiceWorkerMode::kNoController) {
     // TODO(falken): Is still this needed? It used to set kForeign for foreign
     // fetch.
     request.SetSkipServiceWorker(true);
@@ -259,7 +260,8 @@ void WorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
     request.SetURL(g_rewrite_url(request.Url().GetString().Utf8(), false));
 }
 
-bool WorkerFetchContextImpl::IsControlledByServiceWorker() const {
+blink::mojom::ControllerServiceWorkerMode
+WorkerFetchContextImpl::IsControlledByServiceWorker() const {
   return is_controlled_by_service_worker_;
 }
 
@@ -316,8 +318,9 @@ void WorkerFetchContextImpl::set_service_worker_provider_id(int id) {
   service_worker_provider_id_ = id;
 }
 
-void WorkerFetchContextImpl::set_is_controlled_by_service_worker(bool flag) {
-  is_controlled_by_service_worker_ = flag;
+void WorkerFetchContextImpl::set_is_controlled_by_service_worker(
+    blink::mojom::ControllerServiceWorkerMode mode) {
+  is_controlled_by_service_worker_ = mode;
 }
 
 void WorkerFetchContextImpl::set_parent_frame_id(int id) {
@@ -349,10 +352,9 @@ int WorkerFetchContextImpl::ApplicationCacheHostID() const {
   return appcache_host_id_;
 }
 
-void WorkerFetchContextImpl::OnControllerChanged() {
-  // This function is called if we transition from (no controller) to
-  // (controller), or if the controller changed.
-  set_is_controlled_by_service_worker(true);
+void WorkerFetchContextImpl::OnControllerChanged(
+    blink::mojom::ControllerServiceWorkerMode mode) {
+  set_is_controlled_by_service_worker(mode);
 
   if (ServiceWorkerUtils::IsServicificationEnabled())
     ResetServiceWorkerURLLoaderFactory();
@@ -366,7 +368,8 @@ void WorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
   if (!web_loader_factory_)
     return;
-  if (!IsControlledByServiceWorker()) {
+  if (IsControlledByServiceWorker() ==
+      blink::mojom::ControllerServiceWorkerMode::kNoController) {
     web_loader_factory_->SetServiceWorkerURLLoaderFactory(nullptr);
     return;
   }

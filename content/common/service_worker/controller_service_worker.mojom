@@ -54,9 +54,14 @@ interface ControllerServiceWorker {
 // information from the browser process to the renderer process on navigation
 // commit, and also as a parameter of ServiceWorkerContainer.SetController().
 struct ControllerServiceWorkerInfo {
-  // S13nServiceWorker:
-  // Non-null iff the controller has a fetch event handler.
+  // Describes whether there is a controller and it has a fetch event handler.
+  blink.mojom.ControllerServiceWorkerMode mode =
+      blink.mojom.ControllerServiceWorkerMode.kNoController;
+
+  // S13nServiceWorker only:
+  // Non-null iff there is a controller and it has a fetch event handler.
   ControllerServiceWorker? endpoint;
+
   // S13nServiceWorker:
   // The client being controlled, used for FetchEvent#clientId. The ID is
   // issued by the browser process for this receiving client, and would

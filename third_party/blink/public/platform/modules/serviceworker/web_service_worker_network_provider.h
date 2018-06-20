@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 
 namespace base {
@@ -63,11 +64,12 @@ class WebServiceWorkerNetworkProvider {
   // Returns an identifier of this provider.
   virtual int ProviderID() const { return -1; }
 
-  // Whether the document associated with WebDocumentLoader is controlled by a
-  // service worker.
-  virtual bool HasControllerServiceWorker() { return false; }
+  virtual blink::mojom::ControllerServiceWorkerMode
+  IsControlledByServiceWorker() {
+    return blink::mojom::ControllerServiceWorkerMode::kNoController;
+  }
 
-  // Returns an identifier of the service worker controlling the document
+  // Returns an identifier of the controller service worker
   // associated with the WebDocumentLoader.
   virtual int64_t ControllerServiceWorkerID() { return -1; }
 

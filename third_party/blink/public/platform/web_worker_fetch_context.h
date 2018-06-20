@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-shared.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -67,7 +68,8 @@ class WebWorkerFetchContext {
   virtual void WillSendRequest(WebURLRequest&) = 0;
 
   // Whether the fetch context is controlled by a service worker.
-  virtual bool IsControlledByServiceWorker() const = 0;
+  virtual blink::mojom::ControllerServiceWorkerMode
+  IsControlledByServiceWorker() const = 0;
 
   // This flag is used to block all mixed content in subframes.
   virtual void SetIsOnSubframe(bool) {}
