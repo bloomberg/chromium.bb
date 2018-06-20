@@ -644,9 +644,6 @@ extern const char kMaterialDesignIncognitoNTPDescription[];
 extern const char kMediaRouterCastAllowAllIPsName[];
 extern const char kMediaRouterCastAllowAllIPsDescription[];
 
-extern const char kMemoryAblationName[];
-extern const char kMemoryAblationDescription[];
-
 extern const char kMemoryCoordinatorName[];
 extern const char kMemoryCoordinatorDescription[];
 

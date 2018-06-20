@@ -1027,10 +1027,6 @@ const char kMediaRouterCastAllowAllIPsDescription[] =
     "Have the Media Router connect to Cast devices on all IP addresses, not "
     "just RFC1918/RFC4913 private addresses.";
 
-const char kMemoryAblationName[] = "Memory ablation experiment";
-const char kMemoryAblationDescription[] =
-    "Allocates extra memory in the browser process.";
-
 const char kMemoryCoordinatorName[] = "Memory coordinator";
 const char kMemoryCoordinatorDescription[] =
     "Enable memory coordinator instead of memory pressure listeners.";
