@@ -456,6 +456,12 @@ DCLayerTree::SwapChainPresenter::SwapChainPresenter(
 DCLayerTree::SwapChainPresenter::~SwapChainPresenter() {}
 
 bool DCLayerTree::SwapChainPresenter::ShouldBeYUY2() {
+  // Always prefer YUY2 for protected video for now.
+  // TODO(crbug.com/850799): Assess power/perf impact when protected video
+  // swap chain is composited by DWM.
+  if (is_protected_video_)
+    return true;
+
   // Start out as YUY2.
   if (!presentation_history_.valid())
     return true;
