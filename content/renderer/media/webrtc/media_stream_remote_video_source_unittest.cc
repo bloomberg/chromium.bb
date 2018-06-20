@@ -36,7 +36,7 @@ class MediaStreamRemoteVideoSourceUnderTest
   explicit MediaStreamRemoteVideoSourceUnderTest(
       std::unique_ptr<TrackObserver> observer)
       : MediaStreamRemoteVideoSource(std::move(observer)) {}
-  using MediaStreamRemoteVideoSource::SinkInterfaceForTest;
+  using MediaStreamRemoteVideoSource::SinkInterfaceForTesting;
 };
 
 class MediaStreamRemoteVideoSourceTest
@@ -171,7 +171,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
 
   webrtc::I420Buffer::SetBlack(buffer);
 
-  source()->SinkInterfaceForTest()->OnFrame(
+  source()->SinkInterfaceForTesting()->OnFrame(
       webrtc::VideoFrame(buffer, webrtc::kVideoRotation_0, 1000));
   run_loop.Run();
 
