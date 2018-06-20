@@ -28,6 +28,7 @@ class DOMArrayBufferView;
 class PresentationController;
 class PresentationReceiver;
 class PresentationRequest;
+class WebString;
 
 class PresentationConnection : public EventTargetWithInlineData,
                                public ContextLifecycleObserver,

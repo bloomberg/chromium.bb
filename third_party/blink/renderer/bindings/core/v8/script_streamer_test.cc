@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer_thread.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
