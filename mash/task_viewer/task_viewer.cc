@@ -297,9 +297,11 @@ void TaskViewer::RemoveWindow(views::Widget* widget) {
 }
 
 void TaskViewer::OnStart() {
-  aura_init_ = views::AuraInit::Create(
-      context()->connector(), context()->identity(), "views_mus_resources.pak",
-      std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
+  views::AuraInit::InitParams params;
+  params.connector = context()->connector();
+  params.identity = context()->identity();
+  params.mode = views::AuraInit::Mode::AURA_MUS;
+  aura_init_ = views::AuraInit::Create(params);
   if (!aura_init_)
     context()->QuitNow();
 }
