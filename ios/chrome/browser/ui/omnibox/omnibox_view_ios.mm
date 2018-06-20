@@ -786,7 +786,7 @@ void OmniboxViewIOS::UpdateAppearance() {
 
 void OmniboxViewIOS::CreateClearTextIcon(bool is_incognito) {
   if (IsRefreshLocationBarEnabled()) {
-    // In UI Refresh, the system clear button is used.
+    // In UI Refresh, the view controller sets up the clear button.
     return;
   }
 

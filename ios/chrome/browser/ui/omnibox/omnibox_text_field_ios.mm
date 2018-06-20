@@ -130,8 +130,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     [self setKeyboardType:(UIKeyboardType)UIKeyboardTypeWebSearch];
 
     if (IsRefreshLocationBarEnabled()) {
-      [self setClearButtonMode:UITextFieldViewModeWhileEditing];
-      [self setRightViewMode:UITextFieldViewModeNever];
+      // The right view mode is managed by the view controller.
     } else {
       [self setClearButtonMode:UITextFieldViewModeNever];
       [self setRightViewMode:UITextFieldViewModeAlways];
