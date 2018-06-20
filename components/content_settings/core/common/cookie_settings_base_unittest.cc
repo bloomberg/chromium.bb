@@ -117,6 +117,24 @@ TEST(CookieSettingsBaseTest, CookieAccessAllowedWithSessionOnlySetting) {
   EXPECT_TRUE(settings.IsCookieAccessAllowed(GURL(), GURL()));
 }
 
+TEST(CookieSettingsBaseTest, IsCookieSessionOnlyWithAllowSetting) {
+  CallbackCookieSettings settings(
+      base::BindRepeating([](const GURL&) { return CONTENT_SETTING_ALLOW; }));
+  EXPECT_FALSE(settings.IsCookieSessionOnly(GURL()));
+}
+
+TEST(CookieSettingsBaseTest, IsCookieSessionOnlyWithBlockSetting) {
+  CallbackCookieSettings settings(
+      base::BindRepeating([](const GURL&) { return CONTENT_SETTING_BLOCK; }));
+  EXPECT_FALSE(settings.IsCookieSessionOnly(GURL()));
+}
+
+TEST(CookieSettingsBaseTest, IsCookieSessionOnlySessionWithOnlySetting) {
+  CallbackCookieSettings settings(base::BindRepeating(
+      [](const GURL&) { return CONTENT_SETTING_SESSION_ONLY; }));
+  EXPECT_TRUE(settings.IsCookieSessionOnly(GURL()));
+}
+
 TEST(CookieSettingsBaseTest, IsValidSetting) {
   EXPECT_FALSE(CookieSettingsBase::IsValidSetting(CONTENT_SETTING_DEFAULT));
   EXPECT_FALSE(CookieSettingsBase::IsValidSetting(CONTENT_SETTING_ASK));

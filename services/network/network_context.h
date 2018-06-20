@@ -220,7 +220,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void OnConnectionError();
 
   URLRequestContextOwner MakeURLRequestContext(
-      SessionCleanupCookieStore** session_cleanup_cookie_store);
+      SessionCleanupCookieStore** session_cleanup_cookie_store,
+      SessionCleanupChannelIDStore** session_cleanup_channel_id_store);
 
   NetworkService* const network_service_;
 

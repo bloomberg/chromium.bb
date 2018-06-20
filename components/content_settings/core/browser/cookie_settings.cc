@@ -41,13 +41,6 @@ ContentSetting CookieSettings::GetDefaultCookieSetting(
       CONTENT_SETTINGS_TYPE_COOKIES, provider_id);
 }
 
-bool CookieSettings::IsCookieSessionOnly(const GURL& origin) const {
-  ContentSetting setting;
-  GetCookieSetting(origin, origin, nullptr, &setting);
-  DCHECK(IsValidSetting(setting));
-  return (setting == CONTENT_SETTING_SESSION_ONLY);
-}
-
 void CookieSettings::GetCookieSettings(
     ContentSettingsForOneType* settings) const {
   host_content_settings_map_->GetSettingsForOneType(
