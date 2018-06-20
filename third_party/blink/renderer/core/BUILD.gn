@@ -221,6 +221,7 @@ component("core") {
     "//third_party/blink/renderer/core/style:svg_style",
     "//third_party/blink/renderer/core/svg",
     "//third_party/blink/renderer/core/timing",
+    "//third_party/blink/renderer/core/trustedtypes",
     "//third_party/blink/renderer/core/typed_arrays",
     "//third_party/blink/renderer/core/url",
     "//third_party/blink/renderer/core/workers",
