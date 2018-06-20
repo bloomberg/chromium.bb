@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/test_browser_context.h"
@@ -31,7 +33,8 @@ class TestInputMethodManager : public im::MockInputMethodManager {
   // The fake im::InputMethodManager::State implementation for testing.
   class TestState : public im::MockInputMethodManager::State {
    public:
-    TestState() : active_input_method_ids_() {}
+    TestState()
+        : added_input_method_extensions_(), active_input_method_ids_() {}
 
     const std::vector<std::string>& GetActiveInputMethodIds() const override {
       return active_input_method_ids_;
@@ -43,6 +46,18 @@ class TestInputMethodManager : public im::MockInputMethodManager {
           std::vector<std::string>(), false /* is_login_keyboard */, GURL(),
           GURL());
       return descriptor;
+    }
+
+    void AddInputMethodExtension(
+        const std::string& extension_id,
+        const im::InputMethodDescriptors& descriptors,
+        ui::IMEEngineHandlerInterface* instance) override {
+      added_input_method_extensions_.push_back(
+          std::make_tuple(extension_id, descriptors));
+    }
+
+    void RemoveInputMethodExtension(const std::string& extension_id) override {
+      removed_input_method_extensions_.push_back(extension_id);
     }
 
     void AddActiveInputMethodId(const std::string& ime_id) {
@@ -61,6 +76,10 @@ class TestInputMethodManager : public im::MockInputMethodManager {
     void SetActiveInputMethod(const std::string& ime_id) {
       active_ime_id_ = ime_id;
     }
+
+    std::vector<std::tuple<std::string, im::InputMethodDescriptors>>
+        added_input_method_extensions_;
+    std::vector<std::string> removed_input_method_extensions_;
 
    protected:
     friend base::RefCounted<InputMethodManager::State>;
@@ -116,7 +135,7 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
  protected:
   ArcInputMethodManagerServiceTest()
       : arc_service_manager_(std::make_unique<ArcServiceManager>()) {}
-  ~ArcInputMethodManagerServiceTest() override {}
+  ~ArcInputMethodManagerServiceTest() override = default;
 
   ArcInputMethodManagerService* service() { return service_; }
 
@@ -124,16 +143,15 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
 
   TestInputMethodManager* imm() { return input_method_manager_; }
 
+  TestingProfile* profile() { return profile_.get(); }
+
   void SetUp() override {
     input_method_manager_ = new TestInputMethodManager();
     chromeos::input_method::InputMethodManager::Initialize(
         input_method_manager_);
-
-    context_ = std::make_unique<TestBrowserContext>();
-
+    profile_ = std::make_unique<TestingProfile>();
     service_ = ArcInputMethodManagerService::GetForBrowserContextForTesting(
-        context_.get());
-
+        profile_.get());
     test_bridge_ = new TestInputMethodManagerBridge();
     service_->SetInputMethodManagerBridgeForTesting(
         base::WrapUnique(test_bridge_));
@@ -142,16 +160,14 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
   void TearDown() override {
     test_bridge_ = nullptr;
     service_->Shutdown();
-
-    context_.reset(nullptr);
-
+    profile_.reset(nullptr);
     chromeos::input_method::InputMethodManager::Shutdown();
   }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
-  std::unique_ptr<TestBrowserContext> context_;
+  std::unique_ptr<TestingProfile> profile_;
   TestInputMethodManager* input_method_manager_ = nullptr;
   TestInputMethodManagerBridge* test_bridge_ = nullptr;  // Owned by |service_|
 
@@ -255,6 +271,90 @@ TEST_F(ArcInputMethodManagerServiceTest, SwitchImeTo) {
   service()->InputMethodChanged(imm(), nullptr, false /* show_message */);
   ASSERT_EQ(3u, bridge()->switch_ime_to_calls_.size());
   EXPECT_EQ("ime.id.in.arc.container", bridge()->switch_ime_to_calls_[2]);
+}
+
+TEST_F(ArcInputMethodManagerServiceTest, OnImeInfoChanged) {
+  using namespace chromeos::extension_ime_util;
+
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(kEnableInputMethodFeature);
+
+  // Preparing 2 ImeInfo.
+  const std::string android_ime_id1 = "test.arc.ime";
+  const std::string display_name1 = "DisplayName";
+  const std::string settings_url1 = "url_to_settings";
+  mojom::ImeInfoPtr info1 = mojom::ImeInfo::New();
+  info1->ime_id = android_ime_id1;
+  info1->display_name = display_name1;
+  info1->enabled = false;
+  info1->settings_url = settings_url1;
+
+  const std::string android_ime_id2 = "test.arc.ime2";
+  const std::string display_name2 = "DisplayName2";
+  const std::string settings_url2 = "url_to_settings2";
+  mojom::ImeInfoPtr info2 = mojom::ImeInfo::New();
+  info2->ime_id = android_ime_id2;
+  info2->display_name = display_name2;
+  info2->enabled = true;
+  info2->settings_url = settings_url2;
+
+  std::vector<
+      std::tuple<std::string, chromeos::input_method::InputMethodDescriptors>>&
+      added_extensions = imm()->state()->added_input_method_extensions_;
+  ASSERT_EQ(0u, added_extensions.size());
+
+  {
+    // Passing empty info_array shouldn't call AddInputMethodExtension.
+    std::vector<mojom::ImeInfoPtr> info_array{};
+    service()->OnImeInfoChanged(std::move(info_array));
+    EXPECT_TRUE(added_extensions.empty());
+  }
+
+  {
+    // Adding one ARC IME.
+    std::vector<mojom::ImeInfoPtr> info_array;
+    info_array.push_back(info1.Clone());
+    service()->OnImeInfoChanged(std::move(info_array));
+    ASSERT_EQ(1u, added_extensions.size());
+    ASSERT_EQ(1u, std::get<1>(added_extensions[0]).size());
+    EXPECT_EQ(android_ime_id1, GetComponentIDByInputMethodID(
+                                   std::get<1>(added_extensions[0])[0].id()));
+    EXPECT_EQ(display_name1, std::get<1>(added_extensions[0])[0].name());
+
+    // Emulate enabling ARC IME from chrome://settings.
+    const std::string& arc_ime_id = std::get<1>(added_extensions[0])[0].id();
+    profile()->GetPrefs()->SetString(prefs::kLanguageEnabledExtensionImes,
+                                     arc_ime_id);
+    EXPECT_EQ(arc_ime_id, profile()->GetPrefs()->GetString(
+                              prefs::kLanguageEnabledExtensionImes));
+
+    // Removing the ARC IME should clear the pref
+    std::vector<mojom::ImeInfoPtr> empty_info_array;
+    service()->OnImeInfoChanged(std::move(empty_info_array));
+    EXPECT_TRUE(profile()
+                    ->GetPrefs()
+                    ->GetString(prefs::kLanguageEnabledExtensionImes)
+                    .empty());
+    added_extensions.clear();
+  }
+
+  {
+    // Adding two ARC IMEs.
+    std::vector<mojom::ImeInfoPtr> info_array;
+    info_array.push_back(info1.Clone());
+    info_array.push_back(info2.Clone());
+    service()->OnImeInfoChanged(std::move(info_array));
+    // The ARC IMEs should be registered as two IMEs in one extension.
+    ASSERT_EQ(1u, added_extensions.size());
+    ASSERT_EQ(2u, std::get<1>(added_extensions[0]).size());
+    EXPECT_EQ(android_ime_id1, GetComponentIDByInputMethodID(
+                                   std::get<1>(added_extensions[0])[0].id()));
+    EXPECT_EQ(display_name1, std::get<1>(added_extensions[0])[0].name());
+    EXPECT_EQ(android_ime_id2, GetComponentIDByInputMethodID(
+                                   std::get<1>(added_extensions[0])[1].id()));
+    EXPECT_EQ(display_name2, std::get<1>(added_extensions[0])[1].name());
+    added_extensions.clear();
+  }
 }
 
 }  // namespace arc
