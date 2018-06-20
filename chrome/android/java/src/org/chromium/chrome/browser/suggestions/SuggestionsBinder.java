@@ -62,10 +62,12 @@ public class SuggestionsBinder {
     private final TintedImageView mThumbnailView;
     private final @Nullable ImageView mVideoBadge;
     private final ImageView mOfflineBadge;
+    private final @Nullable ImageView mOfflineBadgePublisherRow;
     private final View mPublisherBar;
     private final int mThumbnailSize;
     private final int mSmallThumbnailCornerRadius;
 
+    boolean mShowThumbnail;
     boolean mHasVideoBadge;
     boolean mHasOfflineBadge;
 
@@ -95,6 +97,8 @@ public class SuggestionsBinder {
         mAgeTextView = mCardContainerView.findViewById(R.id.article_age);
         mVideoBadge = mCardContainerView.findViewById(R.id.video_badge);
         mOfflineBadge = mCardContainerView.findViewById(R.id.offline_icon);
+        mOfflineBadgePublisherRow =
+                mCardContainerView.findViewById(R.id.offline_icon_publisher_row);
         mPublisherBar = mCardContainerView.findViewById(R.id.publisher_bar);
 
         if (mIsContextual) {
@@ -132,6 +136,7 @@ public class SuggestionsBinder {
                 showSnippet ? MAX_HEADER_LINES_WITH_SNIPPET : MAX_HEADER_LINES);
         mThumbnailView.setVisibility(showThumbnail ? View.VISIBLE : View.GONE);
         mHasVideoBadge = showThumbnailVideoBadge;
+        mShowThumbnail = showThumbnail;
         updateVisibilityForBadges();
 
         ViewGroup.MarginLayoutParams publisherBarParams =
@@ -170,7 +175,15 @@ public class SuggestionsBinder {
             mVideoBadge.setVisibility(
                     mHasVideoBadge && !mHasOfflineBadge ? View.VISIBLE : View.GONE);
         }
-        mOfflineBadge.setVisibility(mHasOfflineBadge ? View.VISIBLE : View.GONE);
+
+        boolean showPublisherRowOfflineBadge =
+                mOfflineBadgePublisherRow != null && mHasOfflineBadge && !mShowThumbnail;
+        mOfflineBadge.setVisibility(
+                mHasOfflineBadge && !showPublisherRowOfflineBadge ? View.VISIBLE : View.GONE);
+        if (mOfflineBadgePublisherRow != null) {
+            mOfflineBadgePublisherRow.setVisibility(
+                    showPublisherRowOfflineBadge ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void setFavicon() {

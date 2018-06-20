@@ -114,6 +114,20 @@
                     android:textColor="@color/snippets_publisher_name_color"
                     android:textDirection="locale"
                     tools:text=" - 3 hours ago" />
+
+                <!-- We can't add this ImageView as a CompoundDrawable to the TextView because we
+                     want to have different paddings between the favicon (which is a compound
+                     drawable on the TextView) and the offline icon. -->
+                <!--  TODO(twellington): Remove this if the simplified NTP ships -->
+                <ImageView
+                    android:id="@+id/offline_icon_publisher_row"
+                    android:layout_width="@dimen/snippets_offline_icon_size"
+                    android:layout_height="@dimen/snippets_offline_icon_size"
+                    android:layout_marginStart="6dp"
+                    android:src="@drawable/offline_pin_round"
+                    android:contentDescription="@string/accessibility_ntp_offline_badge"
+                    android:visibility="gone"
+                    tools:tint="@color/black_alpha_54" />
             </LinearLayout>
         </LinearLayout>
     </RelativeLayout>
