@@ -181,6 +181,13 @@ public class DownloadBroadcastManager extends Service {
                 OfflineContentAggregatorNotificationBridgeUiFactory.instance();
                 propagateInteraction(intent);
             }
+
+            @Override
+            public boolean startServiceManagerOnly() {
+                // TODO(qinmin): change this to return true once ServiceManager can be started
+                // without launching full browser.
+                return false;
+            }
         };
 
         try {

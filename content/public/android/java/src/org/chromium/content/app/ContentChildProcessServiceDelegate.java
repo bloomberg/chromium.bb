@@ -184,7 +184,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
     @Override
     public void runMain() {
-        ContentMain.start();
+        ContentMain.start(false);
     }
 
     // Return a Linker instance. If testing, the Linker needs special setup.

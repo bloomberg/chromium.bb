@@ -328,8 +328,8 @@ public class ChromeBrowserInitializer {
             // We want to start this queue once the C++ startup tasks have run; allow the
             // C++ startup to run asynchonously, and set it up to start the Java queue once
             // it has finished.
-            startChromeBrowserProcessesAsync(
-                    delegate.shouldStartGpuProcess(),
+            startChromeBrowserProcessesAsync(delegate.shouldStartGpuProcess(),
+                    delegate.startServiceManagerOnly(),
                     new BrowserStartupController.StartupCallback() {
                         @Override
                         public void onFailure() {
@@ -347,12 +347,13 @@ public class ChromeBrowserInitializer {
         }
     }
 
-    private void startChromeBrowserProcessesAsync(
-            boolean startGpuProcess,
-            BrowserStartupController.StartupCallback callback) throws ProcessInitException {
+    private void startChromeBrowserProcessesAsync(boolean startGpuProcess,
+            boolean startServiceManagerOnly, BrowserStartupController.StartupCallback callback)
+            throws ProcessInitException {
         try {
             TraceEvent.begin("ChromeBrowserInitializer.startChromeBrowserProcessesAsync");
-            getBrowserStartupController().startBrowserProcessesAsync(startGpuProcess, callback);
+            getBrowserStartupController().startBrowserProcessesAsync(
+                    startGpuProcess, startServiceManagerOnly, callback);
         } finally {
             TraceEvent.end("ChromeBrowserInitializer.startChromeBrowserProcessesAsync");
         }

@@ -67,7 +67,8 @@ public class NativeBackgroundTaskTest {
 
         @Override
         public void startBrowserProcessesAsync(boolean startGpuProcess,
-                final StartupCallback callback) throws ProcessInitException {}
+                boolean startServiceManagerOnly, final StartupCallback callback)
+                throws ProcessInitException {}
 
         @Override
         public void startBrowserProcessesSync(boolean singleProcess) throws ProcessInitException {}

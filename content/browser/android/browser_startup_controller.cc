@@ -21,6 +21,11 @@ void BrowserStartupComplete(int result) {
   Java_BrowserStartupControllerImpl_browserStartupComplete(env, result);
 }
 
+void ServiceManagerStartupComplete() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_BrowserStartupControllerImpl_serviceManagerStartupComplete(env);
+}
+
 bool ShouldStartGpuProcessOnBrowserStartup() {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_BrowserStartupControllerImpl_shouldStartGpuProcessOnBrowserStartup(

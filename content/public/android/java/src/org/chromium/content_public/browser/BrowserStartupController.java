@@ -46,10 +46,12 @@ public interface BrowserStartupController {
      * Note that this can only be called on the UI thread.
      *
      * @param startGpuProcess Whether to start the GPU process if it is not started.
+     * @param startServiceManagerOnly Whether browser startup will be paused after ServiceManager
+     *                                is started.
      * @param callback the callback to be called when browser startup is complete.
      */
-    void startBrowserProcessesAsync(boolean startGpuProcess, final StartupCallback callback)
-            throws ProcessInitException;
+    void startBrowserProcessesAsync(boolean startGpuProcess, boolean startServiceManagerOnly,
+            final StartupCallback callback) throws ProcessInitException;
 
     /**
      * Start the browser process synchronously. If the browser is already being started
