@@ -958,6 +958,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   [_mainCoordinator stop];
 
+  ios::GetChromeBrowserProvider()
+      ->GetMailtoHandlerProvider()
+      ->RemoveMailtoHandling();
+
   _chromeMain.reset();
 }
 
@@ -1152,14 +1156,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
         enqueueBlockNamed:kMailtoHandlingInitialization
                     block:^{
                       __strong __typeof(weakSelf) strongSelf = weakSelf;
-                      if (!strongSelf) {
+                      if (!strongSelf || !strongSelf->_mainBrowserState) {
                         return;
                       }
-                      MailtoHandlerProvider* provider =
-                          ios::GetChromeBrowserProvider()
-                              ->GetMailtoHandlerProvider();
-                      provider->PrepareMailtoHandling(
-                          strongSelf->_mainBrowserState);
+                      ios::GetChromeBrowserProvider()
+                          ->GetMailtoHandlerProvider()
+                          ->PrepareMailtoHandling(
+                              strongSelf->_mainBrowserState);
                     }];
   }
 }
