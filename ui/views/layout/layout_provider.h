@@ -85,9 +85,6 @@ enum DistanceMetric {
   DISTANCE_RELATED_BUTTON_HORIZONTAL,
   // Horizontal spacing between controls that are logically related.
   DISTANCE_RELATED_CONTROL_HORIZONTAL,
-  // Horizontal spacing between controls in a touchable context that are
-  // logically related.
-  DISTANCE_TOUCHABLE_RELATED_CONTROL_HORIZONTAL,
   // The spacing between a pair of related vertical controls, used for
   // dialog layout.
   DISTANCE_RELATED_CONTROL_VERTICAL,
