@@ -95,7 +95,8 @@ class MockPageInfoUI : public PageInfoUI {
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
   std::unique_ptr<PageInfoUI::SecurityDescription>
-  CreateSecurityDescriptionForPasswordReuse() const override {
+  CreateSecurityDescriptionForPasswordReuse(
+      bool unused_is_enterprise_password) const override {
     std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
         new PageInfoUI::SecurityDescription());
     security_description->summary_style = SecuritySummaryColor::RED;
@@ -445,15 +446,27 @@ TEST_F(PageInfoTest, UnwantedSoftware) {
 }
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
-TEST_F(PageInfoTest, PasswordReuse) {
+TEST_F(PageInfoTest, SignInPasswordReuse) {
   security_info_.security_level = security_state::DANGEROUS;
   security_info_.malicious_content_status =
-      security_state::MALICIOUS_CONTENT_STATUS_PASSWORD_REUSE;
+      security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE;
   SetDefaultUIExpectations(mock_ui());
 
   EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
             page_info()->site_connection_status());
-  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_PASSWORD_REUSE,
+  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE,
+            page_info()->site_identity_status());
+}
+
+TEST_F(PageInfoTest, EnterprisePasswordReuse) {
+  security_info_.security_level = security_state::DANGEROUS;
+  security_info_.malicious_content_status =
+      security_state::MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE;
+  SetDefaultUIExpectations(mock_ui());
+
+  EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
+            page_info()->site_connection_status());
+  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_ENTERPRISE_PASSWORD_REUSE,
             page_info()->site_identity_status());
 }
 #endif

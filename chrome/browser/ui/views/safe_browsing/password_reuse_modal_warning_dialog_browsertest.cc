@@ -32,6 +32,7 @@ class PasswordReuseModalWarningTest : public DialogBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents();
     dialog_ = new PasswordReuseModalWarningDialog(
         web_contents, nullptr,
+        LoginReputationClientRequest::PasswordReuseEvent::SIGN_IN_PASSWORD,
         base::BindOnce(&PasswordReuseModalWarningTest::DialogCallback,
                        base::Unretained(this)));
     constrained_window::CreateBrowserModalDialogViews(

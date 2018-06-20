@@ -156,10 +156,11 @@ void ShowImportLockDialogViews(gfx::NativeWindow parent,
 void ShowPasswordReuseWarningDialog(
     content::WebContents* web_contents,
     safe_browsing::ChromePasswordProtectionService* service,
+    safe_browsing::ReusedPasswordType password_type,
     safe_browsing::OnWarningDone done_callback) {
   safe_browsing::PasswordReuseModalWarningDialog* dialog =
       new safe_browsing::PasswordReuseModalWarningDialog(
-          web_contents, service, std::move(done_callback));
+          web_contents, service, password_type, std::move(done_callback));
   constrained_window::CreateBrowserModalDialogViews(
       dialog, web_contents->GetTopLevelNativeWindow())
       ->Show();

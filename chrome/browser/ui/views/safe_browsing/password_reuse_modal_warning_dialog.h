@@ -24,6 +24,7 @@ class PasswordReuseModalWarningDialog
  public:
   PasswordReuseModalWarningDialog(content::WebContents* web_contents,
                                   ChromePasswordProtectionService* service,
+                                  ReusedPasswordType password_type,
                                   OnWarningDone done_callback);
 
   ~PasswordReuseModalWarningDialog() override;

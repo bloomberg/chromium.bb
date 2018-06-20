@@ -951,7 +951,8 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
 std::unique_ptr<PageInfoUI::SecurityDescription>
-PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse() const {
+PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse(
+    bool is_enterprise_password) const {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
       new PageInfoUI::SecurityDescription());
   security_description->summary_style = SecuritySummaryColor::RED;
@@ -960,7 +961,12 @@ PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse() const {
   security_description->details =
       safe_browsing::ChromePasswordProtectionService::
           GetPasswordProtectionService(profile_)
-              ->GetWarningDetailText();
+              ->GetWarningDetailText(
+                  is_enterprise_password
+                      ? safe_browsing::LoginReputationClientRequest::
+                            PasswordReuseEvent::ENTERPRISE_PASSWORD
+                      : safe_browsing::LoginReputationClientRequest::
+                            PasswordReuseEvent::SIGN_IN_PASSWORD);
   return security_description;
 }
 #endif

@@ -22,6 +22,7 @@ class PasswordReuseWarningDialogCocoa
   PasswordReuseWarningDialogCocoa(
       content::WebContents* web_contents,
       safe_browsing::ChromePasswordProtectionService* service,
+      ReusedPasswordType password_type,
       safe_browsing::OnWarningDone callback);
 
   ~PasswordReuseWarningDialogCocoa() override;
@@ -67,6 +68,9 @@ class PasswordReuseWarningDialogCocoa
 
   // Controller for the dialog view.
   base::scoped_nsobject<PasswordReuseWarningViewController> controller_;
+
+  // Type of password reuse that triggered this warning dialog.
+  ReusedPasswordType password_type_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseWarningDialogCocoa);
 };

@@ -93,6 +93,10 @@ using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
 using content::BrowserThread;
+#if defined(SAFE_BROWSING_DB_LOCAL)
+using PasswordReuseEvent =
+    safe_browsing::LoginReputationClientRequest::PasswordReuseEvent;
+#endif  // SAFE_BROWSING_DB_LOCAL
 
 namespace {
 
@@ -501,8 +505,15 @@ void PageInfo::OnChangePasswordButtonPressed(
     content::WebContents* web_contents) {
 #if defined(SAFE_BROWSING_DB_LOCAL)
   DCHECK(password_protection_service_);
+  DCHECK(site_identity_status_ == SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE ||
+         site_identity_status_ ==
+             SITE_IDENTITY_STATUS_ENTERPRISE_PASSWORD_REUSE);
   password_protection_service_->OnUserAction(
-      web_contents, safe_browsing::PasswordProtectionService::PAGE_INFO,
+      web_contents,
+      site_identity_status_ == SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE
+          ? PasswordReuseEvent::SIGN_IN_PASSWORD
+          : PasswordReuseEvent::ENTERPRISE_PASSWORD,
+      safe_browsing::PasswordProtectionService::PAGE_INFO,
       safe_browsing::PasswordProtectionService::CHANGE_PASSWORD);
 #endif
 }
@@ -511,8 +522,15 @@ void PageInfo::OnWhitelistPasswordReuseButtonPressed(
     content::WebContents* web_contents) {
 #if defined(SAFE_BROWSING_DB_LOCAL)
   DCHECK(password_protection_service_);
+  DCHECK(site_identity_status_ == SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE ||
+         site_identity_status_ ==
+             SITE_IDENTITY_STATUS_ENTERPRISE_PASSWORD_REUSE);
   password_protection_service_->OnUserAction(
-      web_contents, safe_browsing::PasswordProtectionService::PAGE_INFO,
+      web_contents,
+      site_identity_status_ == SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE
+          ? PasswordReuseEvent::SIGN_IN_PASSWORD
+          : PasswordReuseEvent::ENTERPRISE_PASSWORD,
+      safe_browsing::PasswordProtectionService::PAGE_INFO,
       safe_browsing::PasswordProtectionService::MARK_AS_LEGITIMATE);
 #endif
 }
@@ -566,8 +584,11 @@ void PageInfo::Init(const GURL& url,
         security_info.malicious_content_status, &site_identity_status_,
         &site_identity_details_);
     show_change_password_buttons_ =
-        security_info.malicious_content_status ==
-        security_state::MALICIOUS_CONTENT_STATUS_PASSWORD_REUSE;
+        (security_info.malicious_content_status ==
+             security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE ||
+         security_info.malicious_content_status ==
+             security_state::
+                 MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE);
   } else if (certificate_ &&
              (!net::IsCertStatusError(security_info.cert_status) ||
               net::IsCertStatusMinorError(security_info.cert_status))) {
@@ -898,9 +919,19 @@ void PageInfo::PresentSiteIdentity() {
   ui_->SetIdentityInfo(info);
 #if defined(SAFE_BROWSING_DB_LOCAL)
   if (password_protection_service_ && show_change_password_buttons_) {
-    password_protection_service_->RecordWarningAction(
-        safe_browsing::PasswordProtectionService::PAGE_INFO,
-        safe_browsing::PasswordProtectionService::SHOWN);
+    if (site_identity_status_ == SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE) {
+      password_protection_service_->RecordWarningAction(
+          safe_browsing::PasswordProtectionService::PAGE_INFO,
+          safe_browsing::PasswordProtectionService::SHOWN,
+          safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
+              SIGN_IN_PASSWORD);
+    } else {
+      password_protection_service_->RecordWarningAction(
+          safe_browsing::PasswordProtectionService::PAGE_INFO,
+          safe_browsing::PasswordProtectionService::SHOWN,
+          safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::
+              ENTERPRISE_PASSWORD);
+    }
   }
 #endif
 }
@@ -939,12 +970,24 @@ void PageInfo::GetSiteIdentityByMaliciousContentStatus(
       *details =
           l10n_util::GetStringUTF16(IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
       break;
-    case security_state::MALICIOUS_CONTENT_STATUS_PASSWORD_REUSE:
+    case security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE:
 #if defined(SAFE_BROWSING_DB_LOCAL)
-      *status = PageInfo::SITE_IDENTITY_STATUS_PASSWORD_REUSE;
-      *details = safe_browsing::ChromePasswordProtectionService::
-                     GetPasswordProtectionService(profile_)
-                         ->GetWarningDetailText();
+      *status = PageInfo::SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE;
+      // |password_protection_service_| may be null in test.
+      *details = password_protection_service_
+                     ? password_protection_service_->GetWarningDetailText(
+                           PasswordReuseEvent::SIGN_IN_PASSWORD)
+                     : base::string16();
+#endif
+      break;
+    case security_state::MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE:
+#if defined(SAFE_BROWSING_DB_LOCAL)
+      *status = PageInfo::SITE_IDENTITY_STATUS_ENTERPRISE_PASSWORD_REUSE;
+      // |password_protection_service_| maybe null in test.
+      *details = password_protection_service_
+                     ? password_protection_service_->GetWarningDetailText(
+                           PasswordReuseEvent::ENTERPRISE_PASSWORD)
+                     : base::string16();
 #endif
       break;
   }

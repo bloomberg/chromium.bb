@@ -38,15 +38,15 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MOCK_METHOD0(OnPolicySpecifiedPasswordChanged, void());
   MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(content::WebContents*));
   MOCK_METHOD1(UserClickedThroughSBInterstitial, bool(content::WebContents*));
-  MOCK_METHOD1(ShowInterstitial, void(content::WebContents*));
+  MOCK_METHOD2(ShowInterstitial,
+               void(content::WebContents*, ReusedPasswordType));
   MOCK_METHOD2(IsPingingEnabled,
                bool(LoginReputationClientRequest::TriggerType,
                     RequestOutcome*));
   MOCK_METHOD3(ShowModalWarning,
                void(content::WebContents*,
                     const std::string&,
-                    LoginReputationClientRequest::PasswordReuseEvent::
-                        ReusedPasswordType));
+                    ReusedPasswordType));
   MOCK_METHOD2(UpdateSecurityState,
                void(safe_browsing::SBThreatType, content::WebContents*));
   MOCK_METHOD2(RemoveUnhandledSyncPasswordReuseOnURLsDeleted,
@@ -60,19 +60,15 @@ class MockPasswordProtectionService : public PasswordProtectionService {
                void(content::WebContents*,
                     PasswordProtectionService::RequestOutcome,
                     const safe_browsing::LoginReputationClientResponse*));
-  MOCK_METHOD3(OnUserAction,
-               void(content::WebContents*, WarningUIType, WarningAction));
-
   MOCK_METHOD4(
       MaybeStartPasswordFieldOnFocusRequest,
       void(content::WebContents*, const GURL&, const GURL&, const GURL&));
-  MOCK_METHOD5(
-      MaybeStartProtectedPasswordEntryRequest,
-      void(content::WebContents*,
-           const GURL&,
-           LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType,
-           const std::vector<std::string>&,
-           bool));
+  MOCK_METHOD5(MaybeStartProtectedPasswordEntryRequest,
+               void(content::WebContents*,
+                    const GURL&,
+                    ReusedPasswordType,
+                    const std::vector<std::string>&,
+                    bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordProtectionService);

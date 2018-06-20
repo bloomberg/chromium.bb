@@ -1052,10 +1052,11 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   EXPECT_EQ(content::SSLStatus::NORMAL_CONTENT, entry->GetSSL().content_status);
 }
 
-// Tests the security level and malicious content status for password reuse
-// threat type.
-IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
-                       VerifyPasswordReuseMaliciousContentAndSecurityLevel) {
+// Tests the security level and malicious content status for sign-in password
+// reuse threat type.
+IN_PROC_BROWSER_TEST_P(
+    SecurityStateTabHelperTest,
+    VerifySignInPasswordReuseMaliciousContentAndSecurityLevel) {
   // Setup https server. This makes sure that the DANGEROUS security level is
   // not caused by any certificate error rather than the password reuse SB
   // threat type.
@@ -1073,7 +1074,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL("/ssl/google.html"));
   // Update security state of the current page to match
-  // SB_THREAT_TYPE_PASSWORD_REUSE.
+  // SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE.
   safe_browsing::ChromePasswordProtectionService* service =
       safe_browsing::ChromePasswordProtectionService::
           GetPasswordProtectionService(browser()->profile());
@@ -1085,7 +1086,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   security_state::SecurityInfo security_info;
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
-  EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_PASSWORD_REUSE,
+  EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE,
             security_info.malicious_content_status);
 
   // Simulates a Gaia password change, then malicious content status will
@@ -1096,6 +1097,45 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING,
             security_info.malicious_content_status);
+}
+
+// Tests the security level and malicious content status for enterprise password
+// reuse threat type.
+IN_PROC_BROWSER_TEST_P(
+    SecurityStateTabHelperTest,
+    VerifyEnterprisePasswordReuseMaliciousContentAndSecurityLevel) {
+  // Setup https server. This makes sure that the DANGEROUS security level is
+  // not caused by any certificate error rather than the password reuse SB
+  // threat type.
+  SetUpMockCertVerifierForHttpsServer(0, net::OK);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  SecurityStyleTestObserver observer(contents);
+
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  // Update security state of the current page to match
+  // SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE.
+  safe_browsing::ChromePasswordProtectionService* service =
+      safe_browsing::ChromePasswordProtectionService::
+          GetPasswordProtectionService(browser()->profile());
+  service->ShowModalWarning(contents, "unused-token",
+                            safe_browsing::LoginReputationClientRequest::
+                                PasswordReuseEvent::ENTERPRISE_PASSWORD);
+  observer.WaitForDidChangeVisibleSecurityState();
+
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE,
+            security_info.malicious_content_status);
+
+  // Since these are non-Gaia enterprise passwords, Gaia password change won't
+  // have any impact here.
 }
 
 // Tests that the security level of ftp: URLs is always downgraded to

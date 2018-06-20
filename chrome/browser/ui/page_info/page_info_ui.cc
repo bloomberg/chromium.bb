@@ -250,9 +250,15 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
       return CreateSecurityDescription(SecuritySummaryColor::RED,
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
-    case PageInfo::SITE_IDENTITY_STATUS_PASSWORD_REUSE:
+    case PageInfo::SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE:
 #if defined(SAFE_BROWSING_DB_LOCAL)
-      return CreateSecurityDescriptionForPasswordReuse();
+      return CreateSecurityDescriptionForPasswordReuse(
+          /*is_enterprise_password=*/false);
+#endif
+    case PageInfo::SITE_IDENTITY_STATUS_ENTERPRISE_PASSWORD_REUSE:
+#if defined(SAFE_BROWSING_DB_LOCAL)
+      return CreateSecurityDescriptionForPasswordReuse(
+          /*is_enterprise_password=*/true);
 #endif
     case PageInfo::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM:
     case PageInfo::SITE_IDENTITY_STATUS_UNKNOWN:

@@ -13,17 +13,18 @@ namespace safe_browsing {
 void ShowPasswordReuseModalWarningDialog(
     content::WebContents* web_contents,
     ChromePasswordProtectionService* service,
+    ReusedPasswordType password_type,
     OnWarningDone done_callback) {
   DCHECK(web_contents);
 
   if (chrome::ShowAllDialogsWithViewsToolkit()) {
-    chrome::ShowPasswordReuseWarningDialog(web_contents, service,
+    chrome::ShowPasswordReuseWarningDialog(web_contents, service, password_type,
                                            std::move(done_callback));
     return;
   }
 
   // Dialog owns itself.
-  new PasswordReuseWarningDialogCocoa(web_contents, service,
+  new PasswordReuseWarningDialogCocoa(web_contents, service, password_type,
                                       std::move(done_callback));
 }
 
@@ -32,11 +33,13 @@ void ShowPasswordReuseModalWarningDialog(
 PasswordReuseWarningDialogCocoa::PasswordReuseWarningDialogCocoa(
     content::WebContents* web_contents,
     safe_browsing::ChromePasswordProtectionService* service,
+    ReusedPasswordType password_type,
     safe_browsing::OnWarningDone callback)
     : content::WebContentsObserver(web_contents),
       service_(service),
       url_(web_contents->GetLastCommittedURL()),
-      callback_(std::move(callback)) {
+      callback_(std::move(callback)),
+      password_type_(password_type) {
   controller_.reset(
       [[PasswordReuseWarningViewController alloc] initWithOwner:this]);
 
@@ -119,5 +122,5 @@ void PasswordReuseWarningDialogCocoa::WebContentsDestroyed() {
 }
 
 base::string16 PasswordReuseWarningDialogCocoa::GetWarningDetailText() {
-  return service_->GetWarningDetailText();
+  return service_->GetWarningDetailText(password_type_);
 }

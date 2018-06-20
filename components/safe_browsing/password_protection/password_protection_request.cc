@@ -43,6 +43,10 @@ const char kSyncPasswordEntryVerdictHistogram[] =
     "PasswordProtection.Verdict.SyncPasswordEntry";
 const char kProtectedPasswordEntryVerdictHistogram[] =
     "PasswordProtection.Verdict.ProtectedPasswordEntry";
+const char kEnterprisePasswordEntryVerdictHistogram[] =
+    "PasswordProtection.Verdict.NonGaiaEnterprisePasswordEntry";
+const char kGSuiteSyncPasswordEntryVerdictHistogram[] =
+    "PasswordProtection.Verdict.GSuiteSyncPasswordEntry";
 
 PasswordProtectionRequest::PasswordProtectionRequest(
     WebContents* web_contents,
@@ -339,16 +343,14 @@ void PasswordProtectionRequest::Finish(
     std::unique_ptr<LoginReputationClientResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_.TryCancelAll();
-  bool matches_sync_password =
-      reused_password_type_ ==
-      LoginReputationClientRequest::PasswordReuseEvent::SIGN_IN_PASSWORD;
   if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
     UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogram, outcome,
                               PasswordProtectionService::MAX_OUTCOME);
   } else {
-    PasswordProtectionService::LogPasswordEntryRequestOutcome(
-        outcome, matches_sync_password);
-    if (matches_sync_password) {
+    password_protection_service_->LogPasswordEntryRequestOutcome(
+        outcome, reused_password_type_);
+    if (reused_password_type_ ==
+        LoginReputationClientRequest::PasswordReuseEvent::SIGN_IN_PASSWORD) {
       password_protection_service_->MaybeLogPasswordReuseLookupEvent(
           web_contents_, outcome, response.get());
     }
@@ -365,9 +367,24 @@ void PasswordProtectionRequest::Finish(
         UMA_HISTOGRAM_ENUMERATION(
             kAnyPasswordEntryVerdictHistogram, response->verdict_type(),
             LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
-        if (matches_sync_password) {
+        if (reused_password_type_ == LoginReputationClientRequest::
+                                         PasswordReuseEvent::SIGN_IN_PASSWORD) {
+          if (password_protection_service_->GetSyncAccountType() ==
+              LoginReputationClientRequest::PasswordReuseEvent::GSUITE) {
+            UMA_HISTOGRAM_ENUMERATION(
+                kGSuiteSyncPasswordEntryVerdictHistogram,
+                response->verdict_type(),
+                LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
+          }
           UMA_HISTOGRAM_ENUMERATION(
               kSyncPasswordEntryVerdictHistogram, response->verdict_type(),
+              LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
+        } else if (reused_password_type_ ==
+                   LoginReputationClientRequest::PasswordReuseEvent::
+                       ENTERPRISE_PASSWORD) {
+          UMA_HISTOGRAM_ENUMERATION(
+              kEnterprisePasswordEntryVerdictHistogram,
+              response->verdict_type(),
               LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
         } else {
           UMA_HISTOGRAM_ENUMERATION(
