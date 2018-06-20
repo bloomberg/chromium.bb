@@ -61,8 +61,8 @@ class PictureInPictureWindowControllerBrowserTest
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureWindowControllerBrowserTest);
 };
 
-// TODO(845747): Linux is hitting this DCHECK.
-#if !defined(OS_LINUX)
+// TODO(845747): ChromeOS is hitting this DCHECK.
+#if !defined(OS_CHROMEOS)
 
 // Checks the creation of the window controller, as well as basic window
 // creation and visibility.
@@ -661,4 +661,4 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
-#endif  // !defined(OS_LINUX)
+#endif  // !defined(OS_CHROMEOS)
