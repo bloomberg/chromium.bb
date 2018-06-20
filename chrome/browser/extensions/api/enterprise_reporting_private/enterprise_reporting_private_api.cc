@@ -23,6 +23,14 @@
 namespace em = enterprise_management;
 
 namespace extensions {
+namespace {
+
+void LogReportError(const std::string& reason) {
+  VLOG(1) << "Enterprise report is not uploaded: " << reason;
+}
+
+}  // namespace
+
 namespace enterprise_reporting {
 
 const char kInvalidInputErrorMessage[] = "The report is not valid.";
@@ -53,8 +61,12 @@ EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
 
 ExtensionFunction::ResponseAction
 EnterpriseReportingPrivateUploadChromeDesktopReportFunction::Run() {
-  if (dm_token_.empty() || client_id_.empty())
+  VLOG(1) << "Uploading enterprise report";
+
+  if (dm_token_.empty() || client_id_.empty()) {
+    LogReportError("Device is not enrolled.");
     return RespondNow(Error(enterprise_reporting::kDeviceNotEnrolled));
+  }
   std::unique_ptr<
       api::enterprise_reporting_private::UploadChromeDesktopReport::Params>
       params(api::enterprise_reporting_private::UploadChromeDesktopReport::
@@ -65,6 +77,7 @@ EnterpriseReportingPrivateUploadChromeDesktopReportFunction::Run() {
           params->report.additional_properties,
           Profile::FromBrowserContext(browser_context()));
   if (!request) {
+    LogReportError("The input from extension is not valid.");
     return RespondNow(Error(enterprise_reporting::kInvalidInputErrorMessage));
   }
 
@@ -101,10 +114,13 @@ void EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
 
 void EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
     OnReportUploaded(bool status) {
-  if (status)
+  if (status) {
+    VLOG(1) << "The enterprise report has been uploaded.";
     Respond(NoArguments());
-  else
+  } else {
+    LogReportError("Server error.");
     Respond(Error(enterprise_reporting::kUploadFailed));
+  }
 }
 
 }  // namespace extensions
