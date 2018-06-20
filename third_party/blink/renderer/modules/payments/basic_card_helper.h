@@ -27,8 +27,8 @@ class BasicCardHelper {
       Vector<::payments::mojom::blink::BasicCardType>& supported_types_output,
       ExceptionState&);
 
-  // Check whether |input| contains 'basic-card' network names.
-  static bool ContainsNetworkNames(const Vector<String>& input);
+  // Check whether |input| is 'basic-card' network name.
+  static bool IsNetworkName(const String& input);
 };
 
 }  // namespace blink

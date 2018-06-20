@@ -511,12 +511,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                  "HTTPS. See "
                  "https://goo.gl/rStTGz for more details.")};
 
-    case WebFeature::kPaymentRequestSupportedMethodsArray:
-      return {"PaymentRequestSupportedMethodsArray", kM64,
-              ReplacedWillBeRemoved(
-                  "PaymentRequest's supportedMethods taking an array",
-                  "a single string", kM64, "5177301645918208")};
-
     case WebFeature::kLocalCSSFileExtensionRejected:
       return {"LocalCSSFileExtensionRejected", kM64,
               String("CSS cannot be loaded from `file:` URLs unless they end "

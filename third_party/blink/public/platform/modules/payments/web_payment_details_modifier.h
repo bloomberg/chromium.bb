@@ -13,7 +13,7 @@ namespace blink {
 
 // https://w3c.github.io/browser-payment-api/#paymentdetailsmodifier-dictionary
 struct WebPaymentDetailsModifier {
-  WebVector<WebString> supported_methods;
+  WebString supported_method;
   WebPaymentItem total;
   WebVector<WebPaymentItem> additional_display_items;
   WebString stringified_data;

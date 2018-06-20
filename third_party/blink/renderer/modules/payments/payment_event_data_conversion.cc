@@ -37,12 +37,7 @@ PaymentDetailsModifier ToPaymentDetailsModifier(
     ScriptState* script_state,
     const WebPaymentDetailsModifier& web_modifier) {
   PaymentDetailsModifier modifier;
-  Vector<String> supported_methods;
-  for (const auto& web_method : web_modifier.supported_methods) {
-    supported_methods.push_back(web_method);
-  }
-  modifier.setSupportedMethods(
-      StringOrStringSequence::FromStringSequence(supported_methods));
+  modifier.setSupportedMethod(web_modifier.supported_method);
   modifier.setTotal(ToPaymentItem(web_modifier.total));
   HeapVector<PaymentItem> additional_display_items;
   for (const auto& web_item : web_modifier.additional_display_items) {
@@ -71,12 +66,7 @@ PaymentMethodData ToPaymentMethodData(
     ScriptState* script_state,
     const WebPaymentMethodData& web_method_data) {
   PaymentMethodData method_data;
-  Vector<String> supported_methods;
-  for (const auto& method : web_method_data.supported_methods) {
-    supported_methods.push_back(method);
-  }
-  method_data.setSupportedMethods(
-      StringOrStringSequence::FromStringSequence(supported_methods));
+  method_data.setSupportedMethod(web_method_data.supported_method);
   method_data.setData(
       StringDataToScriptValue(script_state, web_method_data.stringified_data));
   return method_data;

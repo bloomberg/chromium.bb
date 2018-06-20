@@ -24,12 +24,10 @@ self.addEventListener('canmakepayment', e => {
 
   e.respondWith(new Promise(resolve => {
     e.methodData.forEach(methodData => {
-      methodData.supportedMethods.forEach(method => {
-        if (method == 'basic-card') {
-          resolve(true);
-          return;
-        }
-      });
+      if (methodData.supportedMethods == 'basic-card') {
+        resolve(true);
+        return;
+      }
     });
   }));
 });
