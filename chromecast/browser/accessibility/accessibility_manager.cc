@@ -23,6 +23,9 @@ AccessibilityManager::AccessibilityManager(
       std::make_unique<FocusRingController>(root_window, activation_client);
   accessibility_focus_ring_controller_ =
       std::make_unique<AccessibilityFocusRingController>(root_window);
+  touch_exploration_manager_ = std::make_unique<TouchExplorationManager>(
+      root_window, activation_client,
+      accessibility_focus_ring_controller_.get());
 }
 
 AccessibilityManager::~AccessibilityManager() {}
@@ -64,7 +67,7 @@ void AccessibilityManager::HideHighlights() {
 
 void AccessibilityManager::SetTouchAccessibilityAnchorPoint(
     const gfx::Point& anchor_point) {
-  // TODO(rdaum): Implement
+  touch_exploration_manager_->SetTouchAccessibilityAnchorPoint(anchor_point);
 }
 
 aura::WindowTreeHost* AccessibilityManager::window_tree_host() const {
