@@ -18,6 +18,7 @@ using ::testing::AllOf;
 using ::testing::AtLeast;
 using ::testing::DoAll;
 using ::testing::Invoke;
+using ::testing::Lt;
 using ::testing::Ne;
 using ::testing::Pointee;
 using ::testing::Return;
@@ -76,12 +77,86 @@ class D3D11CdmProxyTest : public ::testing::Test {
     video_context_mock_ = CreateD3D11Mock<D3D11VideoContextMock>();
     video_context1_mock_ = CreateD3D11Mock<D3D11VideoContext1Mock>();
 
+    // These flags are a reasonable subset of flags to get HARDWARE protected
+    // playback.
+    content_protection_caps_.Caps =
+        D3D11_CONTENT_PROTECTION_CAPS_HARDWARE |
+        D3D11_CONTENT_PROTECTION_CAPS_HARDWARE_PROTECT_UNCOMPRESSED |
+        D3D11_CONTENT_PROTECTION_CAPS_HARDWARE_PROTECTED_MEMORY_PAGEABLE |
+        D3D11_CONTENT_PROTECTION_CAPS_HARDWARE_TEARDOWN |
+        D3D11_CONTENT_PROTECTION_CAPS_HARDWARE_DRM_COMMUNICATION;
+    // 1 for the mock behavior below for CheckCryptoKeyExchange().
+    content_protection_caps_.KeyExchangeTypeCount = 1;
+    // This is arbitrary but 1 is reasonable, meaning doesn't need to be
+    // aligned.
+    content_protection_caps_.BlockAlignmentSize = 1;
+    // This value is arbitrary.
+    content_protection_caps_.ProtectedMemorySize = 10000000;
+
+    OnCallsForInitialize();
+
     proxy_->SetCreateDeviceCallbackForTesting(
         base::BindRepeating(&D3D11CreateDeviceMock::Create,
                             base::Unretained(&create_device_mock_)));
   }
-  // Helper method to do Initialize(). Only useful if the test doesn't require
-  // access to the mocks later.
+
+  // Sets up ON_CALLs for the mock objects. These can be overriden with
+  // EXPECT_CALLs.
+  // |content_protection_caps_| should be set.
+  void OnCallsForInitialize() {
+    ON_CALL(create_device_mock_,
+            Create(_, D3D_DRIVER_TYPE_HARDWARE, _, _, _, _, _, _, _, _))
+        .WillByDefault(
+            DoAll(AddRefAndSetArgPointee<7>(device_mock_.Get()),
+                  AddRefAndSetArgPointee<9>(device_context_mock_.Get()),
+                  Return(S_OK)));
+
+    ON_CALL(*device_mock_.Get(), QueryInterface(IID_ID3D11VideoDevice, _))
+        .WillByDefault(DoAll(
+            AddRefAndSetArgPointee<1>(video_device_mock_.Get()), Return(S_OK)));
+
+    ON_CALL(*device_mock_.Get(), QueryInterface(IID_ID3D11VideoDevice1, _))
+        .WillByDefault(
+            DoAll(AddRefAndSetArgPointee<1>(video_device1_mock_.Get()),
+                  Return(S_OK)));
+
+    ON_CALL(*device_context_mock_.Get(),
+            QueryInterface(IID_ID3D11VideoContext, _))
+        .WillByDefault(
+            DoAll(AddRefAndSetArgPointee<1>(video_context_mock_.Get()),
+                  Return(S_OK)));
+
+    ON_CALL(*device_context_mock_.Get(),
+            QueryInterface(IID_ID3D11VideoContext1, _))
+        .WillByDefault(
+            DoAll(AddRefAndSetArgPointee<1>(video_context1_mock_.Get()),
+                  Return(S_OK)));
+
+    ON_CALL(*video_device_mock_.Get(),
+            CreateCryptoSession(Pointee(CRYPTO_TYPE_GUID), _,
+                                Pointee(D3D11_KEY_EXCHANGE_HW_PROTECTION), _))
+        .WillByDefault(
+            DoAll(AddRefAndSetArgPointee<3>(crypto_session_mock_.Get()),
+                  Return(S_OK)));
+
+    ON_CALL(
+        *video_device1_mock_.Get(),
+        GetCryptoSessionPrivateDataSize(Pointee(CRYPTO_TYPE_GUID), _, _, _, _))
+        .WillByDefault(DoAll(SetArgPointee<3>(kPrivateInputSize),
+                             SetArgPointee<4>(kPrivateOutputSize),
+                             Return(S_OK)));
+
+    ON_CALL(*video_device_mock_.Get(), GetContentProtectionCaps(_, _, _))
+        .WillByDefault(
+            DoAll(SetArgPointee<2>(content_protection_caps_), Return(S_OK)));
+
+    ON_CALL(*video_device_mock_.Get(), CheckCryptoKeyExchange(_, _, Lt(1u), _))
+        .WillByDefault(DoAll(SetArgPointee<3>(D3D11_KEY_EXCHANGE_HW_PROTECTION),
+                             Return(S_OK)));
+  }
+
+  // Helper method to do Initialize(), sets up EXPECT_CALLs for a successful
+  // initialization.
   void Initialize(CdmProxy::InitializeCB callback) {
     EXPECT_CALL(create_device_mock_,
                 Create(_, D3D_DRIVER_TYPE_HARDWARE, _, _, _, _, _, _, _, _))
@@ -148,6 +223,7 @@ class D3D11CdmProxyTest : public ::testing::Test {
   Microsoft::WRL::ComPtr<D3D11DeviceContextMock> device_context_mock_;
   Microsoft::WRL::ComPtr<D3D11VideoContextMock> video_context_mock_;
   Microsoft::WRL::ComPtr<D3D11VideoContext1Mock> video_context1_mock_;
+  D3D11_VIDEO_CONTENT_PROTECTION_CAPS content_protection_caps_ = {};
 
   // These size values are arbitrary. Used for mocking
   // GetCryptoSessionPrivateDataSize().
@@ -171,6 +247,22 @@ TEST_F(D3D11CdmProxyTest, Initialize) {
   EXPECT_CALL(callback_mock_, InitializeCallback(CdmProxy::Status::kOk, _, _));
   ASSERT_NO_FATAL_FAILURE(Initialize(base::BindOnce(
       &CallbackMock::InitializeCallback, base::Unretained(&callback_mock_))));
+}
+
+// Initialization failure because HW key exchange is not available.
+TEST_F(D3D11CdmProxyTest, NoHwKeyExchange) {
+  EXPECT_CALL(callback_mock_,
+              InitializeCallback(CdmProxy::Status::kFail, _, _));
+  // GUID is set to non-D3D11_KEY_EXCHANGE_HW_PROTECTION, which means no HW key
+  // exchange.
+  EXPECT_CALL(*video_device_mock_.Get(),
+              CheckCryptoKeyExchange(_, _, Lt(1u), _))
+      .WillOnce(
+          DoAll(SetArgPointee<3>(D3D11_CRYPTO_TYPE_AES128_CTR), Return(S_OK)));
+
+  proxy_->Initialize(nullptr,
+                     base::BindOnce(&CallbackMock::InitializeCallback,
+                                    base::Unretained(&callback_mock_)));
 }
 
 // Verifies that Process() won't work if not initialized.

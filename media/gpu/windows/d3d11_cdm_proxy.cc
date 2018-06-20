@@ -18,6 +18,39 @@ namespace media {
 
 namespace {
 
+// Checks whether there is a hardware protected key exhange method.
+// https://msdn.microsoft.com/en-us/library/windows/desktop/dn894125(v=vs.85).aspx
+// The key exhange capabilities are checked using these.
+// https://msdn.microsoft.com/en-us/library/windows/desktop/hh447640%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+// https://msdn.microsoft.com/en-us/library/windows/desktop/hh447782(v=vs.85).aspx
+bool CanDoHardwareProtectedKeyExchange(
+    Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
+    const GUID& crypto_type) {
+  D3D11_VIDEO_CONTENT_PROTECTION_CAPS caps = {};
+  HRESULT hresult = video_device->GetContentProtectionCaps(
+      &crypto_type, &D3D11_DECODER_PROFILE_H264_VLD_NOFGT, &caps);
+  if (FAILED(hresult)) {
+    DVLOG(1) << "Failed to get content protection caps.";
+    return false;
+  }
+
+  for (uint32_t i = 0; i < caps.KeyExchangeTypeCount; ++i) {
+    GUID kex_guid = {};
+    hresult = video_device->CheckCryptoKeyExchange(
+        &crypto_type, &D3D11_DECODER_PROFILE_H264_VLD_NOFGT, i, &kex_guid);
+    if (FAILED(hresult)) {
+      DVLOG(1) << "Failed to get key exchange GUID";
+      return false;
+    }
+
+    if (kex_guid == D3D11_KEY_EXCHANGE_HW_PROTECTION)
+      return true;
+  }
+
+  DVLOG(1) << "Hardware key exchange is not supported.";
+  return false;
+}
+
 class D3D11CdmProxyContext : public CdmProxyContext {
  public:
   explicit D3D11CdmProxyContext(const GUID& key_info_guid)
@@ -179,6 +212,12 @@ void D3D11CdmProxy::Initialize(Client* client, InitializeCB init_cb) {
   hresult = device_.CopyTo(video_device_.GetAddressOf());
   if (FAILED(hresult)) {
     DLOG(ERROR) << "Failed to get ID3D11VideoDevice: " << hresult;
+    failed();
+    return;
+  }
+
+  if (!CanDoHardwareProtectedKeyExchange(video_device_, crypto_type_)) {
+    DLOG(ERROR) << "Cannot do hardware proteted key exhange.";
     failed();
     return;
   }
