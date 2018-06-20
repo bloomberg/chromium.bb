@@ -126,10 +126,13 @@ void MachineLevelUserCloudPolicyController::Init(
       device_management_service, request_context);
   policy_fetcher_ = std::make_unique<MachineLevelUserCloudPolicyFetcher>(
       policy_manager, local_state, device_management_service, request_context);
-  policy_register_watcher_ =
-      std::make_unique<MachineLevelUserCloudPolicyRegisterWatcher>(this);
 
   if (dm_token.empty()) {
+    policy_register_watcher_ =
+        std::make_unique<MachineLevelUserCloudPolicyRegisterWatcher>(this);
+
+    enrollment_start_time_ = base::Time::Now();
+
     // Not registered already, so do it now.
     policy_registrar_->RegisterForPolicyWithEnrollmentToken(
         enrollment_token, client_id,
@@ -186,15 +189,24 @@ bool MachineLevelUserCloudPolicyController::GetEnrollmentTokenAndClientId(
 void MachineLevelUserCloudPolicyController::
     RegisterForPolicyWithEnrollmentTokenCallback(const std::string& dm_token,
                                                  const std::string& client_id) {
+  base::TimeDelta enrollment_time = base::Time::Now() - enrollment_start_time_;
+
   if (dm_token.empty()) {
     VLOG(1) << "No DM token returned from browser registration.";
     RecordEnrollmentResult(
         MachineLevelUserCloudPolicyEnrollmentResult::kFailedToFetch);
+    UMA_HISTOGRAM_TIMES(
+        "Enterprise.MachineLevelUserCloudPolicyEnrollment.RequestFailureTime",
+        enrollment_time);
     NotifyPolicyRegisterFinished(false);
     return;
   }
 
   VLOG(1) << "DM token retrieved from server.";
+
+  UMA_HISTOGRAM_TIMES(
+      "Enterprise.MachineLevelUserCloudPolicyEnrollment.RequestSuccessTime",
+      enrollment_time);
 
   // TODO(alito): Log failures to store the DM token. Should we try again later?
   BrowserDMTokenStorage::Get()->StoreDMToken(

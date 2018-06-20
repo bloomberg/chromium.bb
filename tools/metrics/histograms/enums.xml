@@ -29025,6 +29025,14 @@ from previous Chrome versions.
   <int value="2" label="Failed to store DM Token to the device"/>
 </enum>
 
+<enum name="MachineLevelUserCloudPolicyEnrollmentStartupDialog">
+  <int value="0" label="Shown"/>
+  <int value="1" label="ClosedSuccess"/>
+  <int value="2" label="ClosedRelaunch"/>
+  <int value="3" label="ClosedFail"/>
+  <int value="4" label="ClosedAbort"/>
+</enum>
+
 <enum name="MacOSBluetoothOperationsResult">
   <int value="-2" label="Unknown error domain"/>
   <int value="-1" label="No error"/>

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "net/url_request/url_request_context_getter.h"
 
 class PrefService;
@@ -79,6 +80,9 @@ class MachineLevelUserCloudPolicyController {
     // |observers_|.
   std::unique_ptr<MachineLevelUserCloudPolicyRegisterWatcher>
       policy_register_watcher_;
+
+  // Time at which the enrollment process was started.  Used to log UMA metric.
+  base::Time enrollment_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyController);
 };

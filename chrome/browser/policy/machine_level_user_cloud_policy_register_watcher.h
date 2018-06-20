@@ -9,11 +9,15 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "chrome/browser/ui/enterprise_startup_dialog.h"
+
+class MachineLevelUserCloudPolicyRegisterWatcherTest;
 
 namespace policy {
 
@@ -38,6 +42,46 @@ class MachineLevelUserCloudPolicyRegisterWatcher
   void SetDialogCreationCallbackForTesting(DialogCreationCallback callback);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
+                           EnrollmentSucceed);
+  FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
+                           EnrollmentFailedAndQuit);
+  FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
+                           EnrollmentFailedAndRestart);
+  FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
+                           EnrollmentCanceledBeforeFinish);
+  FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
+                           EnrollmentFailedBeforeDialogDisplay);
+
+  // Enum used with kStartupDialogHistogramName.
+  enum class EnrollmentStartupDialog {
+    // The enrollment startup dialog was shown.
+    kShown = 0,
+
+    // The dialog was closed automatically because enrollment completed
+    // successfully.  Chrome startup can continue normally.
+    kClosedSuccess = 1,
+
+    // The dialog was closed because enrollment failed.  The user chose to
+    // relaunch chrome and try again.
+    kClosedRelaunch = 2,
+
+    // The dialog was closed because enrollment failed.  The user chose to
+    // close chrome.
+    kClosedFail = 3,
+
+    // The dialog was closed because no response from the server was received
+    // before the user gave up and closed the dialog.
+    kClosedAbort = 4,
+
+    kMaxValue = kClosedAbort,
+  };
+
+  static const char kStartupDialogHistogramName[];
+
+  static void RecordEnrollmentStartDialog(
+      EnrollmentStartupDialog dialog_startup);
+
   // MachineLevelUserCloudPolicyController::Observer
   void OnPolicyRegisterFinished(bool succeeded) override;
 
@@ -55,6 +99,8 @@ class MachineLevelUserCloudPolicyRegisterWatcher
   base::Optional<bool> register_result_;
 
   DialogCreationCallback dialog_creation_callback_;
+
+  base::Time visible_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyRegisterWatcher);
 };
