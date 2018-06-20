@@ -1572,6 +1572,11 @@ const char kWebAppCreateInAppsMenu[] = "browser.web_app.create_in_apps_menu";
 const char kWebAppCreateInQuickLaunchBar[] =
     "browser.web_app.create_in_quick_launch_bar";
 
+// A list of dictionaries for force-installed Web Apps. Each dictionary contains
+// two strings: the URL of the Web App and "tab" or "window" for where the app
+// will be launched.
+const char kWebAppInstallForceList[] = "profile.web_app.install.forcelist";
+
 // Dictionary that maps Geolocation network provider server URLs to
 // corresponding access token.
 const char kGeolocationAccessToken[] = "geolocation.access_token";

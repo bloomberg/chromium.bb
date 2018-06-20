@@ -31,6 +31,10 @@ namespace gfx {
 class ImageFamily;
 }
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 // This namespace contains everything related to integrating Chrome apps into
 // the OS. E.g. creating and updating shorcuts for apps, setting up file
 // associations, etc.
@@ -125,6 +129,8 @@ enum ShortcutCreationReason {
 // Called by GetShortcutInfoForApp after fetching the ShortcutInfo.
 typedef base::Callback<void(std::unique_ptr<ShortcutInfo>)>
     ShortcutInfoCallback;
+
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
     const extensions::Extension* app,
