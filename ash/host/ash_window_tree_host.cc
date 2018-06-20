@@ -20,6 +20,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ash {
 namespace {
@@ -86,7 +87,7 @@ std::unique_ptr<AshWindowTreeHost> AshWindowTreeHost::Create(
         init_params.initial_bounds, init_params.mirroring_delegate);
   }
   return std::make_unique<AshWindowTreeHostPlatform>(
-      init_params.initial_bounds);
+      ui::PlatformWindowInitProperties{init_params.initial_bounds});
 }
 
 }  // namespace ash

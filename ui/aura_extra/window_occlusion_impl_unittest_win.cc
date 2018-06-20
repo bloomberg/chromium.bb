@@ -9,6 +9,7 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window_tree_host_platform.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace aura_extra {
 
@@ -79,8 +80,8 @@ class WindowOcclusionWinTest
   }
 
   aura::WindowTreeHost* AddRootAuraWindowWithBounds(const gfx::Rect& bounds) {
-    std::unique_ptr<aura::WindowTreeHost> window_tree_host(
-        aura::WindowTreeHost::Create(bounds));
+    std::unique_ptr<aura::WindowTreeHost> window_tree_host =
+        aura::WindowTreeHost::Create(ui::PlatformWindowInitProperties{bounds});
     window_tree_host->window()->Show();
 
     EvaluatorArgs args{true, bounds, window_tree_host->GetAcceleratedWidget()};
@@ -422,8 +423,8 @@ class EnumWindowsTest : public aura::test::AuraTestBase {
   }
 
   void CreateAuraWindowWithBounds(const gfx::Rect& bounds) {
-    std::unique_ptr<aura::WindowTreeHost> host(
-        aura::WindowTreeHost::Create(bounds));
+    std::unique_ptr<aura::WindowTreeHost> host =
+        aura::WindowTreeHost::Create(ui::PlatformWindowInitProperties{bounds});
     host->window()->Show();
     evaluator_.AddToStack(host->window());
     window_tree_hosts_.push_back(std::move(host));

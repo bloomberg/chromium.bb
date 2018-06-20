@@ -5,4 +5,5 @@ include_rules = [
   "+ui/compositor",
   "+ui/events",
   "+ui/gfx",
+  "+ui/platform_window",
 ]

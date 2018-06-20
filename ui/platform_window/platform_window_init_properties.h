@@ -27,6 +27,10 @@ enum class PlatformWindowType {
 // with a desired set of properties.
 struct PlatformWindowInitProperties {
   PlatformWindowInitProperties();
+
+  // Initializes properties with the specified |bounds|.
+  explicit PlatformWindowInitProperties(const gfx::Rect& bounds);
+
   PlatformWindowInitProperties(PlatformWindowInitProperties&& props);
 
   ~PlatformWindowInitProperties();

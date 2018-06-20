@@ -7,6 +7,11 @@
 namespace ui {
 
 PlatformWindowInitProperties::PlatformWindowInitProperties() = default;
+
+PlatformWindowInitProperties::PlatformWindowInitProperties(
+    const gfx::Rect& bounds)
+    : bounds(bounds) {}
+
 PlatformWindowInitProperties::PlatformWindowInitProperties(
     PlatformWindowInitProperties&& props) = default;
 

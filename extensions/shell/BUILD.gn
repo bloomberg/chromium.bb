@@ -198,6 +198,7 @@ source_set("app_shell_lib") {
       "browser/shell_native_app_window_aura.h",
     ]
     deps += [
+      "//ui/platform_window",
       "//ui/wm",
       "//ui/wm/public",
     ]
@@ -341,6 +342,7 @@ test("app_shell_unittests") {
     "//google_apis",
     "//testing/gtest",
     "//ui/gl:test_support",
+    "//ui/platform_window",
   ]
 
   data_deps = [

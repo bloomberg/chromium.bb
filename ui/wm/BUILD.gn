@@ -119,6 +119,7 @@ static_library("test_support") {
     "//ui/base/ime",
     "//ui/events",
     "//ui/events:events_base",
+    "//ui/platform_window",
   ]
 }
 
@@ -158,6 +159,7 @@ test("wm_unittests") {
     "//ui/gfx/animation",
     "//ui/gfx/geometry",
     "//ui/gl:test_support",
+    "//ui/platform_window",
     "//ui/resources",
     "//ui/wm/public",
   ]

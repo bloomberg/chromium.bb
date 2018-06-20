@@ -17,6 +17,10 @@ namespace aura {
 class InputMethodMus;
 }
 
+namespace ui {
+struct PlatformWindowInitProperties;
+}
+
 namespace ash {
 
 class ASH_EXPORT AshWindowTreeHostPlatform
@@ -24,7 +28,9 @@ class ASH_EXPORT AshWindowTreeHostPlatform
       public aura::WindowTreeHostPlatform,
       public aura::InputMethodMusDelegate {
  public:
-  explicit AshWindowTreeHostPlatform(const gfx::Rect& initial_bounds);
+  explicit AshWindowTreeHostPlatform(
+      ui::PlatformWindowInitProperties properties);
+
   ~AshWindowTreeHostPlatform() override;
 
  protected:

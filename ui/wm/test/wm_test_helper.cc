@@ -18,6 +18,7 @@
 #include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/window.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/wm_state.h"
@@ -48,8 +49,7 @@ WMTestHelper::WMTestHelper(const gfx::Size& default_window_size,
       new aura::client::DefaultCaptureClient(host_->window()));
 }
 
-WMTestHelper::~WMTestHelper() {
-}
+WMTestHelper::~WMTestHelper() = default;
 
 aura::Window* WMTestHelper::GetDefaultParent(aura::Window* window,
                                              const gfx::Rect& bounds) {
@@ -57,7 +57,8 @@ aura::Window* WMTestHelper::GetDefaultParent(aura::Window* window,
 }
 
 void WMTestHelper::InitLocalHost(const gfx::Size& default_window_size) {
-  host_.reset(aura::WindowTreeHost::Create(gfx::Rect(default_window_size)));
+  host_ = aura::WindowTreeHost::Create(
+      ui::PlatformWindowInitProperties{gfx::Rect(default_window_size)});
   host_->InitHost();
 }
 

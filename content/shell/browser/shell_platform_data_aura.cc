@@ -16,6 +16,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_factory.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/wm/core/default_activation_client.h"
 
 namespace content {
@@ -61,7 +62,8 @@ ShellPlatformDataAura* Shell::platform_ = nullptr;
 
 ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
   CHECK(aura::Env::GetInstance());
-  host_.reset(aura::WindowTreeHost::Create(gfx::Rect(initial_size)));
+  host_ = aura::WindowTreeHost::Create(
+      ui::PlatformWindowInitProperties{gfx::Rect(initial_size)});
   host_->InitHost();
   host_->window()->Show();
   host_->window()->SetLayoutManager(new FillLayout(host_->window()));
