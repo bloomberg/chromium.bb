@@ -114,17 +114,15 @@ public class VrIntentUtils {
     /**
      * @param activity The Activity to check.
      * @param intent The intent the Activity was launched with.
-     * @return Whether this Activity is launching into VR, or is already in VR.
+     * @return Whether this Activity is launching into VR.
      */
     public static boolean isLaunchingIntoVr(Activity activity, Intent intent) {
         if (!VrShellDelegate.deviceSupportsVrLaunches()) return false;
-        return VrShellDelegate.isInVr() || VrShellDelegate.isVrModeEnabled(activity)
-                || isLaunchingIntoVrBrowsing(activity, intent) || isCustomTabVrIntent(intent);
+        return isLaunchingIntoVrBrowsing(activity, intent) || isCustomTabVrIntent(intent);
     }
 
     private static boolean isLaunchingIntoVrBrowsing(Activity activity, Intent intent) {
-        return (isVrIntent(intent) || VrIntentUtils.wouldUse2DInVrRenderingMode(activity))
-                && VrShellDelegate.activitySupportsVrBrowsing(activity);
+        return isVrIntent(intent) && VrShellDelegate.activitySupportsVrBrowsing(activity);
     }
 
     /**

@@ -33,6 +33,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ActivityState;
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
@@ -58,6 +59,7 @@ import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.content_public.browser.ScreenOrientationDelegate;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroidManager;
 import org.chromium.ui.widget.UiWidgetFactory;
 
@@ -652,6 +654,7 @@ public class VrShellDelegate
      * This is called every time ChromeActivity gets a new intent.
      */
     public static void onNewIntentWithNative(ChromeActivity activity, Intent intent) {
+        if (activity.isFinishing()) return;
         if (!VrIntentUtils.isLaunchingIntoVr(activity, intent)) return;
 
         VrShellDelegate instance = getInstance(activity);
@@ -663,11 +666,30 @@ public class VrShellDelegate
      * This is called when ChromeTabbedActivity gets a new intent before native is initialized.
      */
     public static void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {
-        if (!VrIntentUtils.isVrIntent(intent)) {
-            if (!VrIntentUtils.isLaunchingIntoVr(activity, intent)) return;
-            // This is to handle intents that are sent directly to ChromeActivitys, bypassing the
-            // launcher.
-            intent.addCategory(VrIntentUtils.DAYDREAM_CATEGORY);
+        boolean launchingIntoVr = VrIntentUtils.isLaunchingIntoVr(activity, intent);
+
+        if (!launchingIntoVr) {
+            // We trust that if an intent is targeted for 2D, that Chrome should switch to 2D
+            // regardless of whether the user is in headset.
+            if (VrShellDelegate.isInVr()) VrShellDelegate.forceExitVrImmediately();
+            return;
+        }
+
+        if (VrShellDelegate.bootsToVr() && launchingIntoVr) {
+            boolean onMainDisplay = DisplayAndroid.getNonMultiDisplay(activity).getDisplayId()
+                    == Display.DEFAULT_DISPLAY;
+            // TODO(mthiesse): There's a known race when switching displays on Android O/P that can
+            // lead us to actually be on the main display, but our context still thinks it's on
+            // the virtual display. This is intended to be fixed for Android Q+, but we can work
+            // around the race by explicitly relaunching ourselves to the main display.
+            if (!onMainDisplay) {
+                Log.i(TAG, "Relaunching Chrome onto the main display.");
+                activity.finish();
+                activity.startActivity(intent,
+                        ApiCompatibilityUtils.createLaunchDisplayIdActivityOptions(
+                                Display.DEFAULT_DISPLAY));
+                return;
+            }
         }
 
         if (sInstance != null && !sInstance.mInternalIntentUsedToStartVr) {
@@ -1510,6 +1532,10 @@ public class VrShellDelegate
     private void presentRequested() {
         if (DEBUG_LOGS) Log.i(TAG, "WebVR page requested presentation");
         mRequestedWebVr = true;
+        if (VrShellDelegate.bootsToVr() && !mInVr) {
+            maybeSetPresentResult(false, false);
+            return;
+        }
         switch (enterVrInternal()) {
             case ENTER_VR_NOT_NECESSARY:
                 mVrShell.setWebVrModeEnabled(true);

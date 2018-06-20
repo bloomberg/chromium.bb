@@ -406,14 +406,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      */
     @SuppressLint("InlinedApi")
     private @Action int dispatchToTabbedActivity() {
-        // Avoid Daydream's 2D-in-VR rendering mode by launching 2D intents in VR if we're in
-        // VR mode and the intent is supported in VR.
-        // TODO(mthiesse): If we ever support VR browsing in more than just Tabbed Activity,
-        // (ie CCT), we'll need to figure out how to handle this at a higher level.
-        if (VrIntentUtils.maybeForwardToVrLauncher(mIntent, mActivity)) {
-            return Action.FINISH_ACTIVITY;
-        }
-
         maybePrefetchDnsInBackground();
 
         Intent newIntent = new Intent(mIntent);
