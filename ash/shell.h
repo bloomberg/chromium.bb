@@ -56,6 +56,10 @@ namespace keyboard {
 class KeyboardController;
 }  // namespace keyboard
 
+namespace service_manager {
+class Connector;
+}
+
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
@@ -381,6 +385,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   ClientImageRegistry* client_image_registry() {
     return client_image_registry_.get();
   }
+  service_manager::Connector* connector() { return connector_; }
   CrosDisplayConfig* cros_display_config() {
     return cros_display_config_.get();
   }
@@ -679,7 +684,8 @@ class ASH_EXPORT Shell : public SessionObserver,
       ui::ContextFactory* context_factory,
       ui::ContextFactoryPrivate* context_factory_private,
       std::unique_ptr<base::Value> initial_display_prefs,
-      std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider);
+      std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider,
+      service_manager::Connector* connector);
 
   // Initializes the display manager and related components.
   void InitializeDisplayManager();
@@ -744,6 +750,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<CastConfigController> cast_config_;
   std::unique_ptr<ClientImageRegistry> client_image_registry_;
   std::unique_ptr<CrosDisplayConfig> cros_display_config_;
+  service_manager::Connector* connector_ = nullptr;
   std::unique_ptr<DetachableBaseHandler> detachable_base_handler_;
   std::unique_ptr<DetachableBaseNotificationController>
       detachable_base_notification_controller_;

@@ -21,15 +21,16 @@ enum class EventResult;
 
 namespace aura {
 
+class InputMethodMusDelegate;
 class InputMethodMusTestApi;
 class TextInputClientImpl;
-class Window;
 
 class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
  public:
   using EventResultCallback = base::OnceCallback<void(ui::mojom::EventResult)>;
 
-  InputMethodMus(ui::internal::InputMethodDelegate* delegate, Window* window);
+  InputMethodMus(ui::internal::InputMethodDelegate* delegate,
+                 InputMethodMusDelegate* input_method_mus_delegate);
   ~InputMethodMus() override;
 
   void Init(service_manager::Connector* connector);
@@ -72,9 +73,9 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
       const ui::KeyEvent& event,
       bool handled);
 
-  // The toplevel window which is not owned by this class. This may be null
-  // for tests.
-  Window* window_;
+  // Delegate used to update window related ime state. This may be null in
+  // tests.
+  InputMethodMusDelegate* input_method_mus_delegate_;
 
   // May be null in tests.
   ui::mojom::IMEDriverPtr ime_driver_;

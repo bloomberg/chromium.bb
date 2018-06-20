@@ -9,9 +9,8 @@
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "ui/aura/mus/input_method_mus_delegate.h"
 #include "ui/aura/mus/text_input_client_impl.h"
-#include "ui/aura/mus/window_port_mus.h"
-#include "ui/aura/window.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/platform_window/mojo/ime_type_converters.h"
@@ -24,9 +23,10 @@ namespace aura {
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodMus, public:
 
-InputMethodMus::InputMethodMus(ui::internal::InputMethodDelegate* delegate,
-                               Window* window)
-    : window_(window) {
+InputMethodMus::InputMethodMus(
+    ui::internal::InputMethodDelegate* delegate,
+    InputMethodMusDelegate* input_method_mus_delegate)
+    : input_method_mus_delegate_(input_method_mus_delegate) {
   SetDelegate(delegate);
 }
 
@@ -185,12 +185,11 @@ void InputMethodMus::UpdateTextInputType() {
   ui::TextInputType type = GetTextInputType();
   ui::mojom::TextInputStatePtr state = ui::mojom::TextInputState::New();
   state->type = mojo::ConvertTo<ui::mojom::TextInputType>(type);
-  if (window_) {
-    WindowPortMus* window_impl_mus = WindowPortMus::Get(window_);
+  if (input_method_mus_delegate_) {
     if (type != ui::TEXT_INPUT_TYPE_NONE)
-      window_impl_mus->SetImeVisibility(true, std::move(state));
+      input_method_mus_delegate_->SetImeVisibility(true, std::move(state));
     else
-      window_impl_mus->SetTextInputState(std::move(state));
+      input_method_mus_delegate_->SetTextInputState(std::move(state));
   }
 }
 
