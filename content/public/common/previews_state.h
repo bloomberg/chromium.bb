@@ -38,7 +38,7 @@ enum PreviewsTypes {
                           // the resource. Server transformations may
                           // still happen if the page is heavy.
   NOSCRIPT_ON = 1 << 6,   // Request that script be disabled for page load.
-  PREVIEWS_STATE_LAST = PREVIEWS_OFF
+  PREVIEWS_STATE_LAST = NOSCRIPT_ON
 };
 
 // Combination of all previews that are guaranteed not to provide partial

@@ -822,6 +822,7 @@ ChromeResourceDispatcherHostDelegate::DetermineCommittedPreviews(
     const net::URLRequest* request,
     const previews::PreviewsDecider* previews_decider,
     content::PreviewsState initial_state) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!previews::HasEnabledPreviews(initial_state))
     return content::PREVIEWS_OFF;
 

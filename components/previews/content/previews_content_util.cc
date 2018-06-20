@@ -101,21 +101,25 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     return content::PREVIEWS_OFF;
   }
 
-  NOTREACHED() << previews_state;
-  return previews_state;
+  DCHECK(previews_state == content::PREVIEWS_OFF ||
+         previews_state == content::PREVIEWS_UNSPECIFIED);
+  return content::PREVIEWS_OFF;
 }
 
 previews::PreviewsType GetMainFramePreviewsType(
     content::PreviewsState previews_state) {
-  if (previews_state & content::SERVER_LITE_PAGE_ON) {
+  if (previews_state & content::SERVER_LITE_PAGE_ON)
     return previews::PreviewsType::LITE_PAGE;
-  } else if (previews_state & content::SERVER_LOFI_ON) {
+  if (previews_state & content::SERVER_LOFI_ON)
     return previews::PreviewsType::LOFI;
-  } else if (previews_state & content::NOSCRIPT_ON) {
+  if (previews_state & content::NOSCRIPT_ON)
     return previews::PreviewsType::NOSCRIPT;
-  } else if (previews_state & content::CLIENT_LOFI_ON) {
+  if (previews_state & content::CLIENT_LOFI_ON)
     return previews::PreviewsType::LOFI;
-  }
+
+  DCHECK_EQ(content::PREVIEWS_UNSPECIFIED,
+            previews_state & ~content::CLIENT_LOFI_AUTO_RELOAD &
+                ~content::PREVIEWS_NO_TRANSFORM & ~content::PREVIEWS_OFF);
   return previews::PreviewsType::NONE;
 }
 
