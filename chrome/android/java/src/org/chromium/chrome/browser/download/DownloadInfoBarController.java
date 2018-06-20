@@ -114,6 +114,9 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         public String link;
         public int icon;
 
+        // Whether the icon corresponds to a vector drawable.
+        public boolean hasVectorDrawable;
+
         // Whether the icon should have animation.
         public boolean hasAnimation;
 
@@ -531,9 +534,11 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         if (infoBarState == DownloadInfoBarState.DOWNLOADING) {
             info.icon = showAccelerating ? R.drawable.infobar_downloading_sweep_animation
                                          : R.drawable.infobar_downloading_fill_animation;
+            info.hasVectorDrawable = true;
         } else if (offlineItemState == OfflineItemState.COMPLETE) {
             stringRes = R.plurals.multiple_download_complete;
-            info.icon = R.drawable.infobar_download_complete_animation;
+            info.icon = R.drawable.infobar_download_complete;
+            info.hasVectorDrawable = true;
         } else if (offlineItemState == OfflineItemState.FAILED) {
             stringRes = R.plurals.multiple_download_failed;
             info.icon = R.drawable.ic_error_outline_googblue_24dp;
@@ -587,6 +592,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                         R.string.download_infobar_filename, itemToShow.title);
                 info.id = itemToShow.id;
                 info.link = getContext().getString(R.string.open_downloaded_label);
+                info.icon = R.drawable.infobar_download_complete_animation;
                 info.hasAnimation = true;
                 info.dontRepeat = true;
             } else {

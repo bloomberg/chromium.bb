@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.graphics.drawable.Animatable2Compat;
 import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.widget.TextView;
@@ -121,7 +122,12 @@ public class DownloadProgressInfoBar extends InfoBar {
         ViewCompat.setAccessibilityLiveRegion(messageView, View.ACCESSIBILITY_LIVE_REGION_POLITE);
 
         if (!mInfo.hasAnimation) {
-            layout.getIcon().setImageResource(mInfo.icon);
+            if (mInfo.hasVectorDrawable) {
+                layout.getIcon().setImageDrawable(VectorDrawableCompat.create(
+                        layout.getResources(), mInfo.icon, layout.getContext().getTheme()));
+            } else {
+                layout.getIcon().setImageResource(mInfo.icon);
+            }
             return;
         }
 
