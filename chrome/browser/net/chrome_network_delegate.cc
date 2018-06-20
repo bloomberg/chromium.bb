@@ -16,7 +16,6 @@
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -47,7 +46,6 @@
 #include "content/public/common/resource_type.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
@@ -92,21 +90,6 @@ void ForceGoogleSafeSearchCallbackWrapper(net::CompletionOnceCallback callback,
   if (rv == net::OK && new_url->is_empty())
     safe_search_util::ForceGoogleSafeSearch(request, new_url);
   std::move(callback).Run(rv);
-}
-
-// Record network errors that HTTP requests complete with, including OK and
-// ABORTED.
-void RecordNetworkErrorHistograms(const net::URLRequest* request,
-                                  int net_error) {
-  if (request->url().SchemeIs("http")) {
-    base::UmaHistogramSparse("Net.HttpRequestCompletionErrorCodes",
-                             std::abs(net_error));
-
-    if (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
-      base::UmaHistogramSparse("Net.HttpRequestCompletionErrorCodes.MainFrame",
-                               std::abs(net_error));
-    }
-  }
 }
 
 bool IsAccessAllowedInternal(const base::FilePath& path,
@@ -349,12 +332,6 @@ void ChromeNetworkDelegate::OnNetworkBytesSent(net::URLRequest* request,
 void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
                                         bool started,
                                         int net_error) {
-  DCHECK_NE(net::ERR_IO_PENDING, net_error);
-
-  // TODO(amohammadkhan): Verify that there is no double recording in data use
-  // of redirected requests.
-  RecordNetworkErrorHistograms(request, net_error);
-
   extensions_delegate_->NotifyCompleted(request, started, net_error);
   if (domain_reliability_monitor_)
     domain_reliability_monitor_->OnCompleted(request, started);

@@ -134,7 +134,9 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   virtual void OnNetworkBytesSentInternal(URLRequest* request,
                                           int64_t bytes_sent);
 
-  virtual void OnCompletedInternal(URLRequest* request, bool started);
+  virtual void OnCompletedInternal(URLRequest* request,
+                                   bool started,
+                                   int net_error);
 
   virtual void OnURLRequestDestroyedInternal(URLRequest* request);
 
