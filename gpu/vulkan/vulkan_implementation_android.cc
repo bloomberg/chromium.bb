@@ -30,8 +30,6 @@ bool VulkanImplementationAndroid::InitializeVulkanInstance() {
 
   if (!vulkan_instance_.Initialize(required_extensions)) {
     vulkan_instance_.Destroy();
-    base::UnloadNativeLibrary(vulkan_function_pointers->vulkan_loader_library_);
-    vulkan_function_pointers->vulkan_loader_library_ = nullptr;
     return false;
   }
 
@@ -42,8 +40,6 @@ bool VulkanImplementationAndroid::InitializeVulkanInstance() {
               vulkan_instance_.vk_instance(), "vkCreateAndroidSurfaceKHR"));
   if (!vulkan_function_pointers->vkCreateAndroidSurfaceKHR) {
     vulkan_instance_.Destroy();
-    base::UnloadNativeLibrary(vulkan_function_pointers->vulkan_loader_library_);
-    vulkan_function_pointers->vulkan_loader_library_ = nullptr;
     return false;
   }
 
