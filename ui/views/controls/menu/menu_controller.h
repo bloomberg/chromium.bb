@@ -10,6 +10,7 @@
 #include <list>
 #include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -118,7 +119,7 @@ class VIEWS_EXPORT MenuController
   // WARNING: this may be NULL.
   Widget* owner() { return owner_; }
 
-  // Get the anchor position wich is used to show this menu.
+  // Get the anchor position which is used to show this menu.
   MenuAnchorPosition GetAnchorPosition() { return state_.anchor; }
 
   // Cancels the current Run. See ExitType for a description of what happens
@@ -230,18 +231,18 @@ class VIEWS_EXPORT MenuController
 
   // Values supplied to SetSelection.
   enum SetSelectionTypes {
-    SELECTION_DEFAULT               = 0,
+    SELECTION_DEFAULT = 0,
 
     // If set submenus are opened immediately, otherwise submenus are only
-    // openned after a timer fires.
-    SELECTION_UPDATE_IMMEDIATELY    = 1 << 0,
+    // opened after a timer fires.
+    SELECTION_UPDATE_IMMEDIATELY = 1 << 0,
 
     // If set and the menu_item has a submenu, the submenu is shown.
-    SELECTION_OPEN_SUBMENU          = 1 << 1,
+    SELECTION_OPEN_SUBMENU = 1 << 1,
 
     // SetSelection is being invoked as the result exiting or cancelling the
     // menu. This is used for debugging.
-    SELECTION_EXIT                  = 1 << 2,
+    SELECTION_EXIT = 1 << 2,
   };
 
   // Direction for IncrementSelection and FindInitialSelectableMenuItem.
@@ -323,7 +324,7 @@ class VIEWS_EXPORT MenuController
   // Sets the selection to |menu_item|. A value of NULL unselects
   // everything. |types| is a bitmask of |SetSelectionTypes|.
   //
-  // Internally this updates pending_state_ immediatley. state_ is only updated
+  // Internally this updates pending_state_ immediately. state_ is only updated
   // immediately if SELECTION_UPDATE_IMMEDIATELY is set. If
   // SELECTION_UPDATE_IMMEDIATELY is not set CommitPendingSelection is invoked
   // to show/hide submenus and update state_.
@@ -560,7 +561,7 @@ class VIEWS_EXPORT MenuController
   // Sets exit type. Calling this can terminate the active nested message-loop.
   void SetExitType(ExitType type);
 
-  // Performs the teardown of menus. This will notifiy the |delegate_|. If
+  // Performs the teardown of menus. This will notify the |delegate_|. If
   // |exit_type_| is EXIT_ALL all nested runs will be exited.
   void ExitMenu();
 
