@@ -207,45 +207,62 @@ SurpriseWallpaper.prototype.setRandomWallpaperFromManifest_ = function(
  */
 SurpriseWallpaper.prototype.setRandomWallpaperFromServer_ = function(
     onSuccess, suffix) {
-  // The first step is to get the list of wallpaper collections (ie. categories)
-  // and randomly select one.
-  chrome.wallpaperPrivate.getCollectionsInfo(collectionsInfo => {
-    if (chrome.runtime.lastError) {
-      this.retryLater_();
-      return;
-    }
-    if (collectionsInfo.length == 0) {
-      // Although the fetch succeeds, it's theoretically possible that the
-      // collection list is empty, in this case do nothing.
+  var onDailyRefreshInfoReturned = dailyRefreshInfo => {
+    var setRandomWallpaperFromServerImpl = dailyRefreshInfo => {
+      chrome.wallpaperPrivate.getSurpriseMeImage(
+          dailyRefreshInfo.collectionId, dailyRefreshInfo.resumeToken,
+          (imageInfo, nextResumeToken) => {
+            if (chrome.runtime.lastError) {
+              this.retryLater_();
+              return;
+            }
+            dailyRefreshInfo.resumeToken = nextResumeToken;
+            WallpaperUtil.saveDailyRefreshInfo(dailyRefreshInfo);
+
+            var wallpaperUrl = imageInfo['imageUrl'] + suffix;
+            var layout = Constants.WallpaperThumbnailDefaultLayout;
+            WallpaperUtil.setOnlineWallpaperWithoutPreview(
+                wallpaperUrl, layout,
+                onSuccess.bind(null, wallpaperUrl, layout),
+                this.retryLater_.bind(this));
+          });
+    };
+
+    if (dailyRefreshInfo) {
+      if (dailyRefreshInfo.enabled) {
+        setRandomWallpaperFromServerImpl(dailyRefreshInfo);
+      } else {
+        console.error(
+            'Daily refresh is disabled when the alarm goes off. ' +
+            'This should never happen!');
+      }
       return;
     }
 
-    var randomCollectionIndex =
-        Math.floor(Math.random() * collectionsInfo.length);
-    var collectionId = collectionsInfo[randomCollectionIndex]['collectionId'];
-    // The second step is to get the list of wallpapers that belong to the
-    // particular collection, and randomly select one.
-    chrome.wallpaperPrivate.getImagesInfo(collectionId, imagesInfo => {
+    // Migration: we reach here if the old picker set an alarm and by the time
+    // the alarm goes off, the new picker is already in use. We should ensure
+    // the user transitions to the daily refresh feature.
+    chrome.wallpaperPrivate.getCollectionsInfo(collectionsInfo => {
       if (chrome.runtime.lastError) {
         this.retryLater_();
         return;
       }
-      if (imagesInfo.length == 0) {
+      if (collectionsInfo.length == 0) {
         // Although the fetch succeeds, it's theoretically possible that the
-        // image list is empty, in this case do nothing.
-        // TODO(crbug.com/800945): Consider fetching another collection.
+        // collection list is empty, in this case do nothing.
         return;
       }
-      var randomImageIndex = Math.floor(Math.random() * imagesInfo.length);
-      var wallpaperUrl = imagesInfo[randomImageIndex]['imageUrl'] + suffix;
-      // The backend service doesn't specify the desired layout. Use the default
-      // layout here.
-      var layout = Constants.WallpaperThumbnailDefaultLayout;
-      WallpaperUtil.setOnlineWallpaperWithoutPreview(
-          wallpaperUrl, layout, onSuccess.bind(null, wallpaperUrl, layout),
-          this.retryLater_.bind(this));
+      dailyRefreshInfo = {
+        enabled: true,
+        // Use the first collection (an arbitrary choice).
+        collectionId: collectionsInfo[0]['collectionId'],
+        resumeToken: null
+      };
+      setRandomWallpaperFromServerImpl(dailyRefreshInfo);
     });
-  });
+  };
+
+  WallpaperUtil.getDailyRefreshInfo(onDailyRefreshInfoReturned.bind(null));
 };
 
 /**
@@ -401,6 +418,30 @@ chrome.syncFileSystem.onFileStatusChanged.addListener(function(detail) {
 
 chrome.storage.onChanged.addListener(function(changes, namespace) {
   WallpaperUtil.enabledSyncThemesCallback(function(syncEnabled) {
+    // Daily refresh feature is on the new wallpaper picker only.
+    var updateDailyRefreshStates = key => {
+      if (!changes[key])
+        return;
+      var oldDailyRefreshInfo = JSON.parse(changes[key].oldValue);
+      var newDailyRefreshInfo = JSON.parse(changes[key].newValue);
+      // The resume token is expected to change after a new daily refresh
+      // wallpaper is set. Ignore it if it's the only change.
+      if (oldDailyRefreshInfo.enabled === newDailyRefreshInfo.enabled &&
+          oldDailyRefreshInfo.collectionId ===
+              newDailyRefreshInfo.collectionId) {
+        return;
+      }
+      // Although the old and new values may both have enabled == true, they can
+      // have different collection ids, so the old alarm should always be
+      // cleared.
+      chrome.alarms.clearAll();
+      if (newDailyRefreshInfo.enabled)
+        SurpriseWallpaper.getInstance().next();
+    };
+    updateDailyRefreshStates(
+        syncEnabled ? Constants.AccessSyncDailyRefreshInfoKey :
+                      Constants.AccessLocalDailyRefreshInfoKey);
+
     if (syncEnabled) {
       // If sync theme is enabled, use values from chrome.storage.sync to sync
       // wallpaper changes.
@@ -462,12 +503,14 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
                     wpDocument.querySelector('.check').style.visibility =
                         'visible';
                 }
-                wpDocument.querySelector('#categories-list').disabled = enable;
                 chrome.commandLinePrivate.hasSwitch(
                     'new-wallpaper-picker', useNewWallpaperPicker => {
-                      if (!useNewWallpaperPicker)
+                      if (!useNewWallpaperPicker) {
                         wpDocument.querySelector('#wallpaper-grid').disabled =
                             enable;
+                        wpDocument.querySelector('#categories-list').disabled =
+                            enable;
+                      }
                     });
               });
         }
