@@ -280,12 +280,20 @@
     "extension_types": ["extension", "platform_app"],
     "location": "policy"
   },
-  "enterprise.platformKeys": {
+  "enterprise.platformKeys": [{
     "channel": "stable",
     "platforms": ["chromeos"],
     "extension_types": ["extension", "platform_app", "legacy_packaged_app"],
     "location": "policy"
-  },
+  }, {
+    "channel": "stable",
+    "platforms": ["chromeos"],
+    "extension_types": ["extension"],
+    "location": "external_component",
+    "whitelist": [
+      "EC8EA268128FECE14CEC68B90686D87755D87083"  // http://crbug.com/854695
+    ]
+  }],
   "enterprise.platformKeysPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],
