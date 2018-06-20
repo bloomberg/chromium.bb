@@ -42,7 +42,7 @@ class MODULES_EXPORT MediaRecorder final
                                const MediaRecorderOptions& options,
                                ExceptionState& exception_state);
 
-  ~MediaRecorder() override = default;
+  ~MediaRecorder() override;
 
   MediaStream* stream() const { return stream_.Get(); }
   const String& mimeType() const { return mime_type_; }
