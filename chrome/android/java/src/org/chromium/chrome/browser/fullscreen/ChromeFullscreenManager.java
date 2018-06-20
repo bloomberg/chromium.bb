@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content_public.browser.ContentVideoView;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -314,7 +315,11 @@ public class ChromeFullscreenManager
 
             @Override
             public boolean shouldShowNotificationToast() {
-                return !isOverlayVideoMode();
+                // The toast tells user how to leave fullscreen by touching the screen. Since,
+                // there is no touchscreen when browsing in VR, the toast doesn't have any useful
+                // information.
+                return !isOverlayVideoMode() && !VrShellDelegate.isInVr()
+                        && !VrShellDelegate.bootsToVr();
             }
         };
     }
