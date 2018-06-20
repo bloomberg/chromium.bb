@@ -12,7 +12,7 @@
 <dom-module id="site-details-permission">
   <template>
     <style include="settings-shared md-select"></style>
-    <div id="details">
+    <div id="details" hidden$="[[shouldHideCategory_(category)]]">
       <div id="permissionItem"
           class$="list-item [[permissionInfoStringClass_(site.source, category,
                                                          site.setting)]]">

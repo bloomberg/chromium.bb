@@ -244,6 +244,7 @@ suite('SiteDetailsPermission', function() {
   test('info string correct for drm disabled source', function() {
     const origin = 'https://www.example.com';
     testElement.category = settings.ContentSettingsTypes.PROTECTED_CONTENT;
+    testElement.$.details.hidden = false;
     testElement.site = {
       origin: origin,
       embeddingOrigin: origin,

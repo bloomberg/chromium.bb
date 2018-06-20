@@ -36,6 +36,10 @@ Polymer({
         this.onDefaultSettingChanged_.bind(this));
   },
 
+  shouldHideCategory_: function(category) {
+    return !this.getCategoryList().includes(category);
+  },
+
   /**
    * Updates the drop-down value after |site| has changed.
    * @param {!RawSiteException} site The site to display.
