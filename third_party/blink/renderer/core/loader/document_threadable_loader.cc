@@ -337,6 +337,33 @@ void DocumentThreadableLoader::Start(const ResourceRequest& request) {
   if (should_bypass_service_worker)
     new_request.SetSkipServiceWorker(true);
 
+  // In S13nServiceWorker, if the controller service worker has no fetch event
+  // handler, it's skipped entirely, so we should treat that case the same as
+  // having no controller. In non-S13nServiceWorker, we can't do that since we
+  // don't know which service worker will handle the request since it's
+  // determined on the browser process and skipWaiting() can happen in the
+  // meantime.
+  //
+  // TODO(crbug.com/715640): When non-S13nServiceWorker is removed,
+  // is_controlled_by_service_worker is the same as
+  // ControllerServiceWorkerMode::kControlled, so this code can be simplified.
+  bool is_controlled_by_service_worker = false;
+  switch (
+      loading_context_->GetResourceFetcher()->IsControlledByServiceWorker()) {
+    case blink::mojom::ControllerServiceWorkerMode::kControlled:
+      is_controlled_by_service_worker = true;
+      break;
+    case blink::mojom::ControllerServiceWorkerMode::kNoFetchEventHandler:
+      if (Platform::Current()->IsServiceWorkerNetServicificationEnabled())
+        is_controlled_by_service_worker = false;
+      else
+        is_controlled_by_service_worker = true;
+      break;
+    case blink::mojom::ControllerServiceWorkerMode::kNoController:
+      is_controlled_by_service_worker = false;
+      break;
+  }
+
   // Process the CORS protocol inside the DocumentThreadableLoader for the
   // following cases:
   //
@@ -360,8 +387,7 @@ void DocumentThreadableLoader::Start(const ResourceRequest& request) {
   if (!async_ || new_request.GetSkipServiceWorker() ||
       !SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           new_request.Url().Protocol()) ||
-      loading_context_->GetResourceFetcher()->IsControlledByServiceWorker() ==
-          blink::mojom::ControllerServiceWorkerMode::kNoController) {
+      !is_controlled_by_service_worker) {
     DispatchInitialRequest(new_request);
     return;
   }

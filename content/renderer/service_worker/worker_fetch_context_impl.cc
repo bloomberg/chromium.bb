@@ -83,6 +83,10 @@ class WorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
 
   void SetServiceWorkerURLLoaderFactory(
       network::mojom::URLLoaderFactoryPtr service_worker_loader_factory) {
+    if (!service_worker_loader_factory) {
+      service_worker_loader_factory_ = nullptr;
+      return;
+    }
     service_worker_loader_factory_ =
         base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
             std::move(service_worker_loader_factory));
@@ -368,8 +372,8 @@ void WorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
   if (!web_loader_factory_)
     return;
-  if (IsControlledByServiceWorker() ==
-      blink::mojom::ControllerServiceWorkerMode::kNoController) {
+  if (IsControlledByServiceWorker() !=
+      blink::mojom::ControllerServiceWorkerMode::kControlled) {
     web_loader_factory_->SetServiceWorkerURLLoaderFactory(nullptr);
     return;
   }
