@@ -567,13 +567,10 @@ void RootWindowController::ActivateKeyboard(
   if (keyboard_controller->GetRootWindow() == GetRootWindow())
     return;
 
-  aura::Window* keyboard_window = keyboard_controller->GetContainerWindow();
-  DCHECK(!keyboard_window->parent());
-
   aura::Window* vk_container =
       GetContainer(kShellWindowId_VirtualKeyboardContainer);
   DCHECK(vk_container);
-  vk_container->AddChild(keyboard_window);
+  keyboard_controller->ActivateKeyboardInContainer(vk_container);
 
   keyboard_controller->LoadKeyboardUiInBackground();
 }
@@ -585,18 +582,8 @@ void RootWindowController::DeactivateKeyboard(
     return;
 
   // If the VK is under the root window of this controller.
-  if (keyboard_controller->GetRootWindow() == GetRootWindow()) {
-    aura::Window* keyboard_window = keyboard_controller->GetContainerWindow();
-
-    // Virtual keyboard may be deactivated while still showing, hide the
-    // keyboard before removing it from view hierarchy.
-    keyboard_controller->HideKeyboardExplicitlyBySystem();
-    aura::Window* vk_container =
-        GetContainer(kShellWindowId_VirtualKeyboardContainer);
-    DCHECK(vk_container);
-    DCHECK_EQ(vk_container, keyboard_window->parent());
-    vk_container->RemoveChild(keyboard_window);
-  }
+  if (keyboard_controller->GetRootWindow() == GetRootWindow())
+    keyboard_controller->DeactivateKeyboard();
 }
 
 void RootWindowController::SetTouchAccessibilityAnchorPoint(

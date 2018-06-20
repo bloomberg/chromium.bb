@@ -200,7 +200,7 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
     controller_.EnableKeyboard(
         std::make_unique<TestKeyboardUI>(host()->GetInputMethod()),
         layout_delegate_.get());
-    root_window()->AddChild(controller().GetContainerWindow());
+    controller_.ActivateKeyboardInContainer(root_window());
     controller_.AddObserver(this);
   }
 
@@ -785,8 +785,8 @@ TEST_F(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
   EXPECT_EQ(1.0, layer->opacity());
 }
 
-TEST_F(KeyboardControllerAnimationTest, SetBoundsOnOldKeyboardUiReference) {
-
+TEST_F(KeyboardControllerAnimationTest,
+       SetKeyboardWindowBoundsOnDeactivatedKeyboard) {
   // Ensure keyboard ui is populated
   ui::Layer* layer = keyboard_container()->layer();
   ShowKeyboard();
@@ -794,11 +794,7 @@ TEST_F(KeyboardControllerAnimationTest, SetBoundsOnOldKeyboardUiReference) {
 
   ASSERT_TRUE(controller().ui());
 
-  aura::Window* container_window = controller().GetContainerWindow();
-
-  // Simulate removal of keyboard controller from root window as done by
-  // RootWindowController::DeactivateKeyboard()
-  container_window->parent()->RemoveChild(container_window);
+  controller().DeactivateKeyboard();
 
   // lingering handle to the contents window is adjusted.
   // container_window's LayoutManager should abort silently and not crash.

@@ -84,6 +84,16 @@ class KEYBOARD_EXPORT KeyboardController
   // Does nothing if the keyboard is already disabled.
   void DisableKeyboard();
 
+  // Attach the KeyboardUI contents window as a child of the given window.
+  // Can only be called when the keyboard is not activated. |parent| must not
+  // have any children.
+  void ActivateKeyboardInContainer(aura::Window* parent);
+
+  // Detach the KeyboardUI contents window from its parent container window.
+  // Can only be called when the keyboard is activated. Explicitly hides the
+  // keyboard if it is currently visible.
+  void DeactivateKeyboard();
+
   // Returns the container for the keyboard, which is owned by
   // KeyboardController.
   aura::Window* GetContainerWindow();
