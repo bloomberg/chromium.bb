@@ -1,8 +1,8 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_legacy_presenter.h"
 
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_positioner.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
@@ -20,13 +20,13 @@ namespace {
 const CGFloat kExpandAnimationDuration = 0.1;
 const CGFloat kCollapseAnimationDuration = 0.05;
 const CGFloat kShadowHeight = 10;
-const CGFloat kVerticalOffset = 6;
+const CGFloat kiPadVerticalOffset = 3;
 NS_INLINE CGFloat BottomPadding() {
   return IsIPadIdiom() ? kShadowHeight : 0;
 }
 }  // namespace
 
-@interface OmniboxPopupPresenter ()
+@interface OmniboxPopupLegacyPresenter ()
 // Constraint for the bottom anchor of the popup.
 @property(nonatomic, strong) NSLayoutConstraint* bottomConstraint;
 
@@ -35,7 +35,7 @@ NS_INLINE CGFloat BottomPadding() {
 @property(nonatomic, strong) UIView* popupContainerView;
 @end
 
-@implementation OmniboxPopupPresenter
+@implementation OmniboxPopupLegacyPresenter
 @synthesize viewController = _viewController;
 @synthesize positioner = _positioner;
 @synthesize popupContainerView = _popupContainerView;
@@ -148,7 +148,9 @@ NS_INLINE CGFloat BottomPadding() {
       [NamedGuide guideWithName:kOmniboxGuide view:popup];
   NSLayoutConstraint* topConstraint =
       [popup.topAnchor constraintEqualToAnchor:topLayout.bottomAnchor];
-  topConstraint.constant = kVerticalOffset;
+  if (IsIPadIdiom()) {
+    topConstraint.constant = kiPadVerticalOffset;
+  }
 
   [NSLayoutConstraint activateConstraints:@[
     [popup.leadingAnchor constraintEqualToAnchor:popup.superview.leadingAnchor],
