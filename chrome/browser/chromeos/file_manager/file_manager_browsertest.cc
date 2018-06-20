@@ -37,16 +37,10 @@ struct TestCase {
     return *this;
   }
 
-  TestCase& EnableDriveFs() {
-    enable_drivefs = true;
-    return *this;
-  }
-
   const char* test_case_name = nullptr;
   GuestMode guest_mode = NOT_IN_GUEST_MODE;
   bool trusted_events = false;
   bool tablet_mode = false;
-  bool enable_drivefs = false;
 };
 
 // EventCase: FilesAppBrowserTest with trusted JS Events.
@@ -80,7 +74,6 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
   }
 
   GuestMode GetGuestMode() const override { return GetParam().guest_mode; }
-  bool GetEnableDriveFs() const override { return GetParam().enable_drivefs; }
 
   const char* GetTestCaseName() const override {
     return GetParam().test_case_name;
@@ -119,9 +112,6 @@ std::string PostTestCaseName(const ::testing::TestParamInfo<TestCase>& test) {
   if (test.param.tablet_mode)
     name.append("_TabletMode");
 
-  if (test.param.enable_drivefs)
-    name.append("_DriveFs");
-
   return name;
 }
 
@@ -133,7 +123,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("fileDisplayDownloads").TabletMode(),
                       TestCase("fileDisplayDrive"),
                       TestCase("fileDisplayDrive").TabletMode(),
-                      TestCase("fileDisplayDrive").EnableDriveFs(),
                       TestCase("fileDisplayMtp"),
                       TestCase("fileDisplayUsb"),
                       TestCase("fileSearch"),
@@ -145,8 +134,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("videoOpenDownloads").InGuestMode(),
                       TestCase("videoOpenDownloads"),
-                      TestCase("videoOpenDrive"),
-                      TestCase("videoOpenDrive").EnableDriveFs()));
+                      TestCase("videoOpenDrive")));
 
 // TIMEOUT PASS on MSAN, https://crbug.com/836254
 #if defined(MEMORY_SANITIZER)
@@ -163,7 +151,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("audioOpenDownloads").InGuestMode(),
                       TestCase("audioOpenDownloads"),
                       TestCase("audioOpenDrive"),
-                      TestCase("audioOpenDrive").EnableDriveFs(),
                       TestCase("audioAutoAdvanceDrive"),
                       TestCase("audioRepeatAllModeSingleFileDrive"),
                       TestCase("audioNoRepeatModeSingleFileDrive"),
@@ -183,8 +170,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("imageOpenDownloads").InGuestMode(),
                       TestCase("imageOpenDownloads"),
-                      TestCase("imageOpenDrive"),
-                      TestCase("imageOpenDrive").EnableDriveFs()));
+                      TestCase("imageOpenDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CreateNewFolder, /* create_new_folder.js */
@@ -193,8 +179,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("selectCreateFolderDownloads"),
                       TestCase("createFolderDownloads").InGuestMode(),
                       TestCase("createFolderDownloads"),
-                      TestCase("createFolderDrive"),
-                      TestCase("createFolderDrive").EnableDriveFs()));
+                      TestCase("createFolderDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     KeyboardOperations, /* keyboard_operations.js */
@@ -202,19 +187,15 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestCase("keyboardDeleteDownloads").InGuestMode(),
                       TestCase("keyboardDeleteDownloads"),
                       TestCase("keyboardDeleteDrive"),
-                      TestCase("keyboardDeleteDrive").EnableDriveFs(),
                       TestCase("keyboardCopyDownloads").InGuestMode(),
                       TestCase("keyboardCopyDownloads"),
                       TestCase("keyboardCopyDrive"),
-                      TestCase("keyboardCopyDrive").EnableDriveFs(),
                       TestCase("renameFileDownloads").InGuestMode(),
                       TestCase("renameFileDownloads"),
                       TestCase("renameFileDrive"),
-                      TestCase("renameFileDrive").EnableDriveFs(),
                       TestCase("renameNewFolderDownloads").InGuestMode(),
                       TestCase("renameNewFolderDownloads"),
-                      TestCase("renameNewFolderDrive"),
-                      TestCase("renameNewFolderDrive").EnableDriveFs()));
+                      TestCase("renameNewFolderDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     ContextMenu, /* context_menu.js */
@@ -254,7 +235,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("openQuickView").InGuestMode(),
                       TestCase("openQuickView").TabletMode(),
                       TestCase("openQuickViewDrive"),
-                      TestCase("openQuickViewDrive").EnableDriveFs(),
                       TestCase("openQuickViewUsb"),
                       TestCase("openQuickViewMtp"),
                       TestCase("closeQuickView")));
@@ -294,7 +274,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("driveOpenSidebarSharedWithMe"),
                       TestCase("driveAutoCompleteQuery"),
                       TestCase("drivePinFileMobileNetwork"),
-                      TestCase("drivePinFileMobileNetwork").EnableDriveFs(),
                       TestCase("driveClickFirstSearchResult"),
                       TestCase("drivePressEnterToSearch")));
 
@@ -302,9 +281,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     Transfer, /* transfer.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("transferFromDriveToDownloads"),
-                      TestCase("transferFromDriveToDownloads").EnableDriveFs(),
                       TestCase("transferFromDownloadsToDrive"),
-                      TestCase("transferFromDownloadsToDrive").EnableDriveFs(),
                       TestCase("transferFromSharedToDownloads"),
                       TestCase("transferFromSharedToDrive"),
                       TestCase("transferFromOfflineToDownloads"),
@@ -331,11 +308,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestCase("shareFileDrive"),
                       TestCase("shareDirectoryDrive"),
                       TestCase("manageHostedFileDrive"),
-                      TestCase("manageHostedFileDrive").EnableDriveFs(),
                       TestCase("manageFileDrive"),
-                      TestCase("manageFileDrive").EnableDriveFs(),
-                      TestCase("manageDirectoryDrive"),
-                      TestCase("manageDirectoryDrive").EnableDriveFs()));
+                      TestCase("manageDirectoryDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     SuggestAppDialog, /* suggest_app_dialog.js */
@@ -355,10 +329,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestCase("executeDefaultTaskDownloads"),
                       TestCase("executeDefaultTaskDownloads").InGuestMode(),
                       TestCase("executeDefaultTaskDrive"),
-                      TestCase("executeDefaultTaskDrive").EnableDriveFs(),
                       TestCase("defaultTaskDialogDownloads"),
                       TestCase("defaultTaskDialogDownloads").InGuestMode(),
-                      TestCase("defaultTaskDialogDrive").EnableDriveFs(),
+                      TestCase("defaultTaskDialogDrive"),
                       TestCase("genericTaskIsNotExecuted"),
                       TestCase("genericTaskAndNonGenericTask")));
 
@@ -407,25 +380,19 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CopyBetweenWindows, /* copy_between_windows.js */
     FilesAppBrowserTest,
-    ::testing::Values(
-        TestCase("copyBetweenWindowsLocalToDrive"),
-        TestCase("copyBetweenWindowsLocalToDrive").EnableDriveFs(),
-        TestCase("copyBetweenWindowsLocalToUsb"),
-        TestCase("copyBetweenWindowsUsbToDrive"),
-        TestCase("copyBetweenWindowsUsbToDrive").EnableDriveFs(),
-        TestCase("copyBetweenWindowsDriveToLocal"),
-        TestCase("copyBetweenWindowsDriveToLocal").EnableDriveFs(),
-        TestCase("copyBetweenWindowsDriveToUsb"),
-        TestCase("copyBetweenWindowsDriveToUsb").EnableDriveFs(),
-        TestCase("copyBetweenWindowsUsbToLocal")));
+    ::testing::Values(TestCase("copyBetweenWindowsLocalToDrive"),
+                      TestCase("copyBetweenWindowsLocalToUsb"),
+                      TestCase("copyBetweenWindowsUsbToDrive"),
+                      TestCase("copyBetweenWindowsDriveToLocal"),
+                      TestCase("copyBetweenWindowsDriveToUsb"),
+                      TestCase("copyBetweenWindowsUsbToLocal")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     GridView, /* grid_view.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("showGridViewDownloads"),
                       TestCase("showGridViewDownloads").InGuestMode(),
-                      TestCase("showGridViewDrive"),
-                      TestCase("showGridViewDrive").EnableDriveFs()));
+                      TestCase("showGridViewDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Providers, /* providers.js */
@@ -441,7 +408,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestCase("showHiddenFilesDownloads"),
                       TestCase("showHiddenFilesDownloads").InGuestMode(),
                       TestCase("showHiddenFilesDrive"),
-                      TestCase("showHiddenFilesDrive").EnableDriveFs(),
                       TestCase("toogleGoogleDocsDrive"),
                       TestCase("showPasteIntoCurrentFolder"),
                       TestCase("showSelectAllInCurrentFolder")));
