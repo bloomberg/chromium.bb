@@ -2796,7 +2796,7 @@ static int tile_worker_hook(void *arg1, void *arg2) {
 static int compare_tile_buffers(const void *a, const void *b) {
   const TileJobsDec *const buf1 = (const TileJobsDec *)a;
   const TileJobsDec *const buf2 = (const TileJobsDec *)b;
-  return (int)(buf2->tile_buffer->size - buf1->tile_buffer->size);
+  return (((int)buf2->tile_buffer->size) - ((int)buf1->tile_buffer->size));
 }
 
 static void enqueue_tile_jobs(AV1Decoder *pbi, AV1_COMMON *cm,
