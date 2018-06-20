@@ -26,6 +26,16 @@ extern const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[];
 extern const char
     kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[];
 
+// Title and description for the flag to control if Chrome Sync should use the
+// sandbox servers.
+extern const char kSyncSandboxName[];
+extern const char kSyncSandboxDescription[];
+
+// Title and description for the flag to control if Google Payments API calls
+// should use the sandbox servers.
+extern const char kWalletServiceUseSandboxName[];
+extern const char kWalletServiceUseSandboxDescription[];
+
 // Title and description for the flag to control the dynamic autofill.
 extern const char kAutofillDynamicFormsName[];
 extern const char kAutofillDynamicFormsDescription[];
