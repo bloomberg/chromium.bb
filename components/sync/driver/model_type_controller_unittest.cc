@@ -28,7 +28,6 @@
 #include "components/sync/model/fake_model_type_change_processor.h"
 #include "components/sync/model/fake_model_type_controller_delegate.h"
 #include "components/sync/model/stub_model_type_sync_bridge.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -167,10 +166,7 @@ class TestSyncService : public FakeSyncService {
 
 class ModelTypeControllerTest : public testing::Test {
  public:
-  ModelTypeControllerTest() : model_thread_("modelthread") {
-    SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
-    sync_prefs_ = std::make_unique<SyncPrefs>(&pref_service_);
-  }
+  ModelTypeControllerTest() : model_thread_("modelthread") {}
 
   void SetUp() override {
     model_thread_.Start();
@@ -182,8 +178,6 @@ class ModelTypeControllerTest : public testing::Test {
 
     ON_CALL(sync_client_mock_, GetSyncService())
         .WillByDefault(testing::Return(&sync_service_));
-    ON_CALL(sync_client_mock_, GetPrefService())
-        .WillByDefault(testing::Return(&pref_service_));
     ON_CALL(sync_client_mock_, GetControllerDelegateForModelType(_))
         .WillByDefault(testing::Return(
             bridge_->change_processor()->GetControllerDelegateOnUIThread()));
@@ -218,9 +212,9 @@ class ModelTypeControllerTest : public testing::Test {
     EXPECT_TRUE(association_callback_called_);
   }
 
-  void DeactivateDataTypeAndStop() {
+  void DeactivateDataTypeAndStop(SyncStopMetadataFate metadata_fate) {
     controller_->DeactivateDataType(&configurer_);
-    controller_->Stop(KEEP_METADATA);
+    controller_->Stop(metadata_fate);
   }
 
   // These threads can ping-pong for a bit so we run the model thread twice.
@@ -255,7 +249,6 @@ class ModelTypeControllerTest : public testing::Test {
     processor_->set_initial_sync_done(initial_sync_done);
   }
 
-  SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
   DataTypeController* controller() { return controller_.get(); }
   int load_models_done_count() { return load_models_done_count_; }
   int cleared_metadata_count() { return cleared_metadata_count_; }
@@ -316,10 +309,6 @@ class ModelTypeControllerTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   base::Thread model_thread_;
-  // TODO(mastiz): Remove all preferences-related dependencies once
-  // ModelTypeController doesn't actually read from preferences.
-  sync_preferences::TestingPrefServiceSyncable pref_service_;
-  std::unique_ptr<SyncPrefs> sync_prefs_;
   TestSyncService sync_service_;
   testing::NiceMock<SyncClientMock> sync_client_mock_;
   TestModelTypeConfigurer configurer_;
@@ -381,80 +370,46 @@ TEST_F(ModelTypeControllerTest, Stop) {
 
   StartAssociating();
 
-  DeactivateDataTypeAndStop();
+  DeactivateDataTypeAndStop(KEEP_METADATA);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
 }
 
-// Test emulates normal browser shutdown. Ensures that DisableSync is not
-// called.
+// Test emulates normal browser shutdown. Ensures that metadata was not cleared.
 TEST_F(ModelTypeControllerTest, StopWhenDatatypeEnabled) {
-  // Enable datatype through preferences.
-  sync_prefs()->SetFirstSetupComplete();
-  sync_prefs()->SetKeepEverythingSynced(true);
-
   LoadModels();
   RunAllTasks();
   StartAssociating();
 
-  DeactivateDataTypeAndStop();
+  DeactivateDataTypeAndStop(KEEP_METADATA);
   RunAllTasks();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
-  // Ensure that DisableSync is not called.
+  // Ensures that metadata was not cleared.
   EXPECT_EQ(0, cleared_metadata_count());
   ExpectProcessorConnected(false);
 }
 
-// Test emulates scenario when user disables datatype. DisableSync should be
-// called.
+// Test emulates scenario when user disables datatype. Metadata should be
+// cleared.
 TEST_F(ModelTypeControllerTest, StopWhenDatatypeDisabled) {
-  // Enable datatype through preferences.
-  sync_prefs()->SetFirstSetupComplete();
-  sync_prefs()->SetKeepEverythingSynced(true);
   LoadModels();
   RunAllTasks();
   StartAssociating();
 
-  // Disable datatype through preferences.
-  sync_prefs()->SetKeepEverythingSynced(false);
-  sync_prefs()->SetPreferredDataTypes(ModelTypeSet(kTestModelType),
-                                      ModelTypeSet());
-
-  DeactivateDataTypeAndStop();
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
-  // Ensure that DisableSync is called.
-  PumpModelThread();
-  EXPECT_EQ(1, cleared_metadata_count());
-}
-
-// Test emulates disabling sync by signing out. DisableSync should be called.
-TEST_F(ModelTypeControllerTest, StopWithInitialSyncPrefs) {
-  // Enable datatype through preferences.
-  sync_prefs()->SetFirstSetupComplete();
-  sync_prefs()->SetKeepEverythingSynced(true);
-  LoadModels();
+  DeactivateDataTypeAndStop(CLEAR_METADATA);
   RunAllTasks();
-  StartAssociating();
-
-  // Clearing preferences emulates signing out.
-  sync_prefs()->ClearPreferences();
-  DeactivateDataTypeAndStop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
-  // Ensure that DisableSync is called.
-  PumpModelThread();
+  // Ensures that metadata was cleared.
   EXPECT_EQ(1, cleared_metadata_count());
+  ExpectProcessorConnected(false);
 }
 
-// Test emulates disabling sync when datatype is not loaded yet. DisableSync
-// should not be called as the bridge is potentially not ready to handle it.
+// Test emulates disabling sync when datatype is not loaded yet. Metadata should
+// not be cleared as the delegate is potentially not ready to handle it.
 TEST_F(ModelTypeControllerTest, StopBeforeLoadModels) {
-  // Enable datatype through preferences.
-  sync_prefs()->SetFirstSetupComplete();
-  sync_prefs()->SetKeepEverythingSynced(true);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
 
-  // Clearing preferences emulates signing out.
-  sync_prefs()->ClearPreferences();
-  controller()->Stop(KEEP_METADATA);
+  controller()->Stop(CLEAR_METADATA);
+
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
   // Ensure that DisableSync is not called.
   EXPECT_EQ(0, cleared_metadata_count());

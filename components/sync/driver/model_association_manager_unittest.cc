@@ -78,7 +78,8 @@ TEST_F(SyncModelAssociationManagerTest, SimpleModelStart) {
             DataTypeController::NOT_RUNNING);
 
   // Initialize() kicks off model loading.
-  model_association_manager.Initialize(types);
+  model_association_manager.Initialize(types /* desired_types */,
+                                       types /* preferred_types */);
 
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::MODEL_LOADED);
@@ -110,7 +111,8 @@ TEST_F(SyncModelAssociationManagerTest, StopModelBeforeFinish) {
       .WillOnce(VerifyResult(expected_result));
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(BOOKMARKS, _));
 
-  model_association_manager.Initialize(types);
+  model_association_manager.Initialize(types /* desired_types */,
+                                       types /* preferred_types */);
   model_association_manager.StartAssociationAsync(types);
 
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
@@ -134,7 +136,8 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterFinish) {
       .WillOnce(VerifyResult(expected_result));
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(BOOKMARKS, _));
 
-  model_association_manager.Initialize(types);
+  model_association_manager.Initialize(types /* desired_types */,
+                                       types /* preferred_types */);
   model_association_manager.StartAssociationAsync(types);
 
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
@@ -160,7 +163,8 @@ TEST_F(SyncModelAssociationManagerTest, TypeFailModelAssociation) {
   EXPECT_CALL(delegate_, OnModelAssociationDone(_))
       .WillOnce(VerifyResult(expected_result));
 
-  model_association_manager.Initialize(types);
+  model_association_manager.Initialize(types /* desired_types */,
+                                       types /* preferred_types */);
   model_association_manager.StartAssociationAsync(types);
 
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
@@ -184,8 +188,8 @@ TEST_F(SyncModelAssociationManagerTest, TypeReturnUnrecoverableError) {
   EXPECT_CALL(delegate_, OnModelAssociationDone(_))
       .WillOnce(VerifyResult(expected_result));
 
-  model_association_manager.Initialize(types);
-
+  model_association_manager.Initialize(types /* desired_types */,
+                                       types /* preferred_types */);
   model_association_manager.StartAssociationAsync(types);
 
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
@@ -211,7 +215,8 @@ TEST_F(SyncModelAssociationManagerTest, SlowTypeAsFailedType) {
   EXPECT_CALL(delegate_, OnModelAssociationDone(_))
       .WillOnce(VerifyResult(expected_result_partially_done));
 
-  model_association_manager.Initialize(types);
+  model_association_manager.Initialize(types /* desired_types */,
+                                       types /* preferred_types */);
   model_association_manager.StartAssociationAsync(types);
   GetController(controllers_, APPS)->FinishStart(DataTypeController::OK);
 
@@ -239,7 +244,8 @@ TEST_F(SyncModelAssociationManagerTest, StartMultipleTimes) {
       .WillOnce(VerifyResult(result_1st))
       .WillOnce(VerifyResult(result_2nd));
 
-  model_association_manager.Initialize(types);
+  model_association_manager.Initialize(types /* desired_types */,
+                                       types /* preferred_types */);
 
   // Start BOOKMARKS first.
   model_association_manager.StartAssociationAsync(ModelTypeSet(BOOKMARKS));
@@ -280,7 +286,9 @@ TEST_F(SyncModelAssociationManagerTest, ModelLoadFailBeforeAssociationStart) {
   EXPECT_CALL(delegate_, OnModelAssociationDone(_))
       .WillOnce(VerifyResult(expected_result));
 
-  model_association_manager.Initialize(types);
+  model_association_manager.Initialize(types /* desired_types */,
+                                       types /* preferred_types */);
+
   EXPECT_EQ(DataTypeController::NOT_RUNNING,
             GetController(controllers_, BOOKMARKS)->state());
   model_association_manager.StartAssociationAsync(types);
@@ -299,7 +307,8 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterConfiguration) {
   EXPECT_CALL(delegate_, OnModelAssociationDone(_))
       .WillOnce(VerifyResult(expected_result));
 
-  model_association_manager.Initialize(types);
+  model_association_manager.Initialize(types /* desired_types */,
+                                       types /* preferred_types */);
   model_association_manager.StartAssociationAsync(types);
 
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
@@ -335,7 +344,8 @@ TEST_F(SyncModelAssociationManagerTest, AbortDuringAssociation) {
   EXPECT_CALL(delegate_, OnModelAssociationDone(_))
       .WillOnce(VerifyResult(expected_result_partially_done));
 
-  model_association_manager.Initialize(types);
+  model_association_manager.Initialize(types /* desired_types */,
+                                       types /* preferred_types */);
   model_association_manager.StartAssociationAsync(types);
   GetController(controllers_, APPS)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(GetController(controllers_, APPS)->state(),
@@ -371,7 +381,8 @@ TEST_F(SyncModelAssociationManagerTest, OnAllDataTypesReadyForConfigure) {
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
   EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure()).Times(0);
 
-  model_association_manager.Initialize(types);
+  model_association_manager.Initialize(types /* desired_types */,
+                                       types /* preferred_types */);
 
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::MODEL_STARTING);
@@ -395,8 +406,14 @@ TEST_F(SyncModelAssociationManagerTest, OnAllDataTypesReadyForConfigure) {
   testing::Mock::VerifyAndClearExpectations(&delegate_);
 
   EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
+
   ModelTypeSet reduced_types(APPS);
-  model_association_manager.Initialize(reduced_types);
+  model_association_manager.Initialize(reduced_types /* desired_types */,
+                                       reduced_types /* preferred_types */);
+
+  EXPECT_EQ(0, GetController(controllers_, APPS)->clear_metadata_call_count());
+  EXPECT_EQ(
+      1, GetController(controllers_, BOOKMARKS)->clear_metadata_call_count());
 }
 
 // Test that OnAllDataTypesReadyForConfigure() is called correctly after
@@ -417,7 +434,8 @@ TEST_F(SyncModelAssociationManagerTest,
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
   EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure()).Times(0);
 
-  model_association_manager.Initialize(types);
+  model_association_manager.Initialize(types /* desired_types */,
+                                       types /* preferred_types */);
 
   EXPECT_EQ(GetController(controllers_, APPS)->state(),
             DataTypeController::MODEL_STARTING);
@@ -460,7 +478,8 @@ TEST_F(SyncModelAssociationManagerTest,
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
   EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure()).Times(0);
 
-  model_association_manager.Initialize(types);
+  model_association_manager.Initialize(types /* desired_types */,
+                                       types /* preferred_types */);
 
   GetController(controllers_, APPS)->SimulateModelLoadFinishing();
 
@@ -510,7 +529,8 @@ TEST_F(SyncModelAssociationManagerTest, TypeRegistrationCallSequence) {
     EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
   }
 
-  model_association_manager.Initialize(types);
+  model_association_manager.Initialize(types /* desired_types */,
+                                       types /* preferred_types */);
 
   EXPECT_EQ(DataTypeController::MODEL_LOADED,
             GetController(controllers_, BOOKMARKS)->state());
@@ -526,10 +546,11 @@ TEST_F(SyncModelAssociationManagerTest, StopClearMetadata) {
   ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::NOT_RUNNING);
 
-  ModelTypeSet desired_types(BOOKMARKS);
+  ModelTypeSet types(BOOKMARKS);
 
   // Initialize() kicks off model loading.
-  model_association_manager.Initialize(desired_types);
+  model_association_manager.Initialize(types /* desired_types */,
+                                       types /* preferred_types */);
 
   ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::MODEL_LOADED);
@@ -540,6 +561,52 @@ TEST_F(SyncModelAssociationManagerTest, StopClearMetadata) {
             DataTypeController::NOT_RUNNING);
   EXPECT_EQ(
       1, GetController(controllers_, BOOKMARKS)->clear_metadata_call_count());
+}
+
+// Test that Initialize stops controllers with KEEP_METADATA for preferred
+// types.
+TEST_F(SyncModelAssociationManagerTest, KeepsMetadataForPreferredDataType) {
+  // Associate model with two data types.
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[APPS] = std::make_unique<FakeDataTypeController>(APPS);
+  ModelAssociationManager model_association_manager(&controllers_, &delegate_);
+  ModelTypeSet preferred_types(BOOKMARKS, APPS);
+  ModelTypeSet desired_types = preferred_types;
+
+  DataTypeManager::ConfigureResult expected_result(DataTypeManager::OK,
+                                                   desired_types);
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
+  EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(BOOKMARKS, _));
+  EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(APPS, _));
+  EXPECT_CALL(delegate_, OnModelAssociationDone(_))
+      .WillOnce(VerifyResult(expected_result));
+
+  model_association_manager.Initialize(desired_types, preferred_types);
+  model_association_manager.StartAssociationAsync(desired_types);
+  GetController(controllers_, BOOKMARKS)->FinishStart(DataTypeController::OK);
+  GetController(controllers_, APPS)->FinishStart(DataTypeController::OK);
+
+  ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::RUNNING);
+  ASSERT_EQ(GetController(controllers_, APPS)->state(),
+            DataTypeController::RUNNING);
+  testing::Mock::VerifyAndClearExpectations(&delegate_);
+
+  // Stop one data type without disabling sync.
+  desired_types.Remove(APPS);
+
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(APPS, _));
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
+
+  model_association_manager.Initialize(desired_types, preferred_types);
+
+  EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::RUNNING);
+  EXPECT_EQ(GetController(controllers_, APPS)->state(),
+            DataTypeController::NOT_RUNNING);
+  EXPECT_EQ(0, GetController(controllers_, APPS)->clear_metadata_call_count());
 }
 
 }  // namespace syncer
