@@ -508,6 +508,15 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() != ui::ET_GESTURE_TAP)
     return;
 
+  // If the controls were not shown, make them visible. All controls related
+  // layers are expected to have the same visibility.
+  // TODO(apacible): This placeholder logic should be updated with touchscreen
+  // specific investigation. https://crbug/854373
+  if (!GetControlsBackgroundLayer()->visible()) {
+    UpdateControlsVisibility(true);
+    return;
+  }
+
   if (GetCloseControlsBounds().Contains(event->location())) {
     controller_->Close(true /* should_pause_video */);
     event->SetHandled();
