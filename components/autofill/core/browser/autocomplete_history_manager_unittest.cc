@@ -186,6 +186,48 @@ TEST_F(AutocompleteHistoryManagerTest, FieldWithAutocompleteOff) {
   autocomplete_manager_->OnWillSubmitForm(form);
 }
 
+// Tests that text entered into fields that are not focusable is not sent to the
+// WebDatabase to be saved.
+TEST_F(AutocompleteHistoryManagerTest, NonFocusableField) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  // Unfocusable field.
+  FormFieldData field;
+  field.label = ASCIIToUTF16("Something esoteric");
+  field.name = ASCIIToUTF16("esoterica");
+  field.value = ASCIIToUTF16("a truly esoteric value, I assure you");
+  field.form_control_type = "text";
+  field.is_focusable = false;
+  form.fields.push_back(field);
+
+  EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
+  autocomplete_manager_->OnWillSubmitForm(form);
+}
+
+// Tests that text entered into presentation fields is not sent to the
+// WebDatabase to be saved.
+TEST_F(AutocompleteHistoryManagerTest, PresentationField) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  // Presentation field.
+  FormFieldData field;
+  field.label = ASCIIToUTF16("Something esoteric");
+  field.name = ASCIIToUTF16("esoterica");
+  field.value = ASCIIToUTF16("a truly esoteric value, I assure you");
+  field.form_control_type = "text";
+  field.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+  form.fields.push_back(field);
+
+  EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
+  autocomplete_manager_->OnWillSubmitForm(form);
+}
+
 namespace {
 
 class MockAutofillExternalDelegate : public AutofillExternalDelegate {
