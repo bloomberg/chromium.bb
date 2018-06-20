@@ -9,6 +9,7 @@
 #include <atlcom.h>
 #include <objbase.h>
 #include <oleacc.h>
+#include <oleauto.h>
 #include <uiautomation.h>
 #include <wrl/client.h>
 
@@ -838,6 +839,12 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   void HtmlAttributeToUIAAriaProperty(std::vector<base::string16>& properties,
                                       const char* html_attribute_name,
                                       const char* uia_aria_property);
+
+  // If the IntList attribute |attribute| is present, return an array
+  // of automation elements referenced by the ids in the
+  // IntList attribute. Otherwise return an empty array.
+  SAFEARRAY* CreateUIAElementsArrayForRelation(
+      const ax::mojom::IntListAttribute& attribute);
 
   void AddAlertTarget();
   void RemoveAlertTarget();
