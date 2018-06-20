@@ -719,6 +719,7 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   size_t seq_header_size = 0;
   ObuHeader obu_header;
   memset(&obu_header, 0, sizeof(obu_header));
+  pbi->seen_frame_header = 0;
 
   if (data_end < data) {
     cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
