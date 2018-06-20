@@ -90,6 +90,34 @@ function mouseMoveTo(xPosition, yPosition) {
   });
 }
 
+function mouseDownAt(xPosition, yPosition) {
+  return new Promise(function(resolve, reject) {
+    if (chrome && chrome.gpuBenchmarking) {
+      chrome.gpuBenchmarking.pointerActionSequence([
+        {source: 'mouse',
+         actions: [
+            { name: 'pointerDown', x: xPosition, y: yPosition },
+      ]}], resolve);
+    } else {
+      reject('This test requires chrome.gpuBenchmarking');
+    }
+  });
+}
+
+function mouseUpAt(xPosition, yPosition) {
+  return new Promise(function(resolve, reject) {
+    if (chrome && chrome.gpuBenchmarking) {
+      chrome.gpuBenchmarking.pointerActionSequence([
+        {source: 'mouse',
+         actions: [
+            { name: 'pointerUp', x: xPosition, y: yPosition },
+      ]}], resolve);
+    } else {
+      reject('This test requires chrome.gpuBenchmarking');
+    }
+  });
+}
+
 // Simulate a mouse click on point.
 function mouseClickOn(x, y) {
   return new Promise((resolve, reject) => {

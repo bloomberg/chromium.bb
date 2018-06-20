@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<script src="../../../resources/js-test.js"></script>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/gesture-util.js"></script>
 <style>
 body {
     height: 1800px;
@@ -7,41 +9,24 @@ body {
 </style>
 <body>
 <script>
-window.jsTestIsAsync = true;
-
-description("This test scrolls by clicking in the scrollbar track.");
 
 // Compute ScrollableArea::pageStep.
 var pageStep = innerHeight * 0.875;
 if (navigator.userAgent.indexOf("Mac OS X") >= 0)
     pageStep = Math.max(pageStep, innerHeight - 40);
 
-onload = function() {
-    if (!window.eventSender || !window.internals) {
-        finishJSTest();
-        return;
-    }
+// Turn on smooth scrolling.
+internals.settings.setScrollAnimatorEnabled(true);
 
-    // Turn on smooth scrolling.
-    internals.settings.setScrollAnimatorEnabled(true);
-
+promise_test(async () => {
     // Click in the vertical scrollbar track, below the thumb.
-    eventSender.mouseMoveTo(790, 280);
-    eventSender.mouseDown();
-    eventSender.mouseUp();
+    await mouseClickOn(790, 280);
 
     // A second click should have no effect since we will be under the thumb
     // by the time the animation completes.
-    eventSender.mouseDown();
-    eventSender.mouseUp();
+    await mouseClickOn(790, 280);
 
-    shouldBecomeEqual("scrollY", "pageStep", function() {
-        requestAnimationFrame(function() {
-            // Make sure we stopped here.
-            shouldBe("scrollY", "pageStep");
-            finishJSTest();
-       });
-    });
-};
+    await waitFor( () => {return scrollY == pageStep;});
+}, 'This test scrolls by clicking in the scrollbar track.');
 </script>
 </body>
