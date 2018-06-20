@@ -59,6 +59,7 @@ source_set("test_support") {
     "//ios/web",
     "//ios/web/public/test",
     "//net",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base",

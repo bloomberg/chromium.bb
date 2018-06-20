@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -106,6 +107,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
   std::vector<PendingRequest> pending_requests_;
 
   Interceptor interceptor_;
+  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactory);
 };
