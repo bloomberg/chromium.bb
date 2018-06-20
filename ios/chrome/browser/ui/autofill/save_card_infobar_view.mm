@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -82,6 +83,9 @@ UIFont* InfoBarMessageFont() {
 // Allows styled and clickable links in the legal message label. May be nil.
 @property(nonatomic, strong) LabelLinkController* legalMessageLinkController;
 
+// Constraint used to add bottom margin to the view.
+@property(nonatomic) NSLayoutConstraint* footerViewBottomAnchorConstraint;
+
 // Creates and adds subviews.
 - (void)setupSubviews;
 
@@ -137,18 +141,35 @@ UIFont* InfoBarMessageFont() {
 @synthesize confirmButtonTitle = _confirmButtonTitle;
 @synthesize messageLinkController = _messageLinkController;
 @synthesize legalMessageLinkController = _legalMessageLinkController;
+@synthesize footerViewBottomAnchorConstraint =
+    _footerViewBottomAnchorConstraint;
 
 #pragma mark - UIView
 
 - (void)willMoveToSuperview:(UIView*)newSuperview {
   // Create and add subviews the first time this moves to a superview.
-  if (newSuperview && self.subviews.count == 0) {
+  if (newSuperview && !self.subviews.count) {
     [self setupSubviews];
   }
 }
 
 - (void)layoutSubviews {
   [super layoutSubviews];
+
+  // Return early if no subviews have been added yet.
+  if (!self.subviews.count)
+    return;
+
+  // Set a bottom margin equal to the height of the secondary toolbar, if any.
+  // Deduct the bottom safe area inset as it is already included in the height
+  // of the secondary toolbar.
+  NamedGuide* layoutGuide =
+      [NamedGuide guideWithName:kSecondaryToolbar view:self];
+  CGFloat bottomSafeAreaInset = SafeAreaInsetsForView(self).bottom;
+  self.footerViewBottomAnchorConstraint.constant =
+      layoutGuide.constrained
+          ? layoutGuide.layoutFrame.size.height - bottomSafeAreaInset
+          : 0;
 
   [self.sizingDelegate didSetInfoBarTargetHeight:CGRectGetHeight(self.frame)];
 }
@@ -318,14 +339,16 @@ UIFont* InfoBarMessageFont() {
     footerView.layoutMargins =
         UIEdgeInsetsMake(kButtonsTopPadding, kPadding, kPadding, kPadding);
     [self addSubview:footerView];
+
+    self.footerViewBottomAnchorConstraint = [safeAreaLayoutGuide.bottomAnchor
+        constraintEqualToAnchor:footerView.bottomAnchor];
     [NSLayoutConstraint activateConstraints:@[
       [safeAreaLayoutGuide.leadingAnchor
           constraintEqualToAnchor:footerView.leadingAnchor],
       [safeAreaLayoutGuide.trailingAnchor
           constraintEqualToAnchor:footerView.trailingAnchor],
       [contentView.bottomAnchor constraintEqualToAnchor:footerView.topAnchor],
-      [safeAreaLayoutGuide.bottomAnchor
-          constraintEqualToAnchor:footerView.bottomAnchor],
+      self.footerViewBottomAnchorConstraint
     ]];
 
     // Dummy view that expands so that the action buttons are aligned to the
