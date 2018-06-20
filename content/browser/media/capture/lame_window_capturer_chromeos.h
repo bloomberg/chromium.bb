@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_MEDIA_CAPTURE_LAME_WINDOW_CAPTURER_CHROMEOS_H_
 #define CONTENT_BROWSER_MEDIA_CAPTURE_LAME_WINDOW_CAPTURER_CHROMEOS_H_
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -60,7 +61,8 @@ class LameWindowCapturerChromeOS : public viz::mojom::FrameSinkVideoCapturer,
                                 const gfx::Size& max_size,
                                 bool use_fixed_aspect_ratio) final;
   void SetAutoThrottlingEnabled(bool enabled) final;
-  void ChangeTarget(const viz::FrameSinkId& frame_sink_id) final;
+  void ChangeTarget(
+      const base::Optional<viz::FrameSinkId>& frame_sink_id) final;
   void Start(viz::mojom::FrameSinkVideoConsumerPtr consumer) final;
   void Stop() final;
   void RequestRefreshFrame() final;

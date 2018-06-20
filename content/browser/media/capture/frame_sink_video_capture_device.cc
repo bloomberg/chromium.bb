@@ -41,7 +41,7 @@ class ScopedFrameDoneHelper
     : public base::ScopedClosureRunner,
       public media::VideoCaptureDevice::Client::Buffer::ScopedAccessPermission {
  public:
-  ScopedFrameDoneHelper(base::OnceClosure done_callback)
+  explicit ScopedFrameDoneHelper(base::OnceClosure done_callback)
       : base::ScopedClosureRunner(std::move(done_callback)) {}
   ~ScopedFrameDoneHelper() final = default;
 };
@@ -258,12 +258,6 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
       std::move(info));
 }
 
-void FrameSinkVideoCaptureDevice::OnTargetLost(
-    const viz::FrameSinkId& frame_sink_id) {
-  // This is ignored because FrameSinkVideoCaptureDevice subclasses always call
-  // OnTargetChanged() and OnTargetPermanentlyLost() to resolve lost targets.
-}
-
 void FrameSinkVideoCaptureDevice::OnStopped() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -279,19 +273,19 @@ void FrameSinkVideoCaptureDevice::OnTargetChanged(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   target_ = frame_sink_id;
-  // TODO(crbug.com/754872): When the frame sink is invalid, the capturer should
-  // be told there is no target. This will require a mojo API change; and will
-  // be addressed in a soon-upcoming CL.
-  if (capturer_ && frame_sink_id.is_valid()) {
-    capturer_->ChangeTarget(frame_sink_id);
+  if (capturer_) {
+    if (target_.is_valid()) {
+      capturer_->ChangeTarget(target_);
+    } else {
+      capturer_->ChangeTarget(base::nullopt);
+    }
   }
 }
 
 void FrameSinkVideoCaptureDevice::OnTargetPermanentlyLost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  target_ = viz::FrameSinkId();
-
+  OnTargetChanged(viz::FrameSinkId());
   OnFatalError("Capture target has been permanently lost.");
 }
 
@@ -376,9 +370,9 @@ void FrameSinkVideoCaptureDevice::OnFatalError(std::string message) {
 FrameSinkVideoCaptureDevice::ConsumptionState::ConsumptionState() = default;
 FrameSinkVideoCaptureDevice::ConsumptionState::~ConsumptionState() = default;
 FrameSinkVideoCaptureDevice::ConsumptionState::ConsumptionState(
-    FrameSinkVideoCaptureDevice::ConsumptionState&& other) = default;
+    FrameSinkVideoCaptureDevice::ConsumptionState&& other) noexcept = default;
 FrameSinkVideoCaptureDevice::ConsumptionState&
 FrameSinkVideoCaptureDevice::ConsumptionState::operator=(
-    FrameSinkVideoCaptureDevice::ConsumptionState&& other) = default;
+    FrameSinkVideoCaptureDevice::ConsumptionState&& other) noexcept = default;
 
 }  // namespace content

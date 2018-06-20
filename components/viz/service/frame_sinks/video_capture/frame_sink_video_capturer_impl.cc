@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -93,8 +94,9 @@ void FrameSinkVideoCapturerImpl::SetResolvedTarget(
     resolved_target_->AttachCaptureClient(this);
     RefreshEntireSourceSoon();
   } else {
-    // Not calling consumer_->OnTargetLost() because SetResolvedTarget() should
-    // be called by FrameSinkManagerImpl with a valid target very soon.
+    // The capturer will remain idle until either: 1) the requested target is
+    // re-resolved by the |frame_sink_manager_|, or 2) a new target is set via a
+    // call to ChangeTarget().
   }
 }
 
@@ -102,13 +104,6 @@ void FrameSinkVideoCapturerImpl::OnTargetWillGoAway() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   SetResolvedTarget(nullptr);
-
-  // TODO(crbug/754872): Remove this, since it's misleading: Resolved targets
-  // can be temporarily deleted and then re-created. So, the target really isn't
-  // lost.
-  if (requested_target_.is_valid() && consumer_) {
-    consumer_->OnTargetLost(requested_target_);
-  }
 }
 
 void FrameSinkVideoCapturerImpl::SetFormat(media::VideoPixelFormat format,
@@ -206,12 +201,17 @@ void FrameSinkVideoCapturerImpl::SetAutoThrottlingEnabled(bool enabled) {
 }
 
 void FrameSinkVideoCapturerImpl::ChangeTarget(
-    const FrameSinkId& frame_sink_id) {
+    const base::Optional<FrameSinkId>& frame_sink_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  requested_target_ = frame_sink_id;
-  SetResolvedTarget(
-      frame_sink_manager_->FindCapturableFrameSink(frame_sink_id));
+  if (frame_sink_id) {
+    requested_target_ = *frame_sink_id;
+    SetResolvedTarget(
+        frame_sink_manager_->FindCapturableFrameSink(requested_target_));
+  } else {
+    requested_target_ = FrameSinkId();
+    SetResolvedTarget(nullptr);
+  }
 }
 
 void FrameSinkVideoCapturerImpl::Start(
@@ -474,15 +474,15 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
       media::LetterboxVideoFrame(frame.get(), gfx::Rect());
     }
     dirty_rect_ = gfx::Rect();
-    DidCaptureFrame(frame_number, oracle_frame_number, std::move(frame),
-                    gfx::Rect());
+    DidCaptureFrame(frame_number, oracle_frame_number, gfx::Rect(),
+                    std::move(frame));
     return;
   }
 
   // For passive refreshes, just deliver the resurrected frame.
   if (dirty_rect_.IsEmpty()) {
-    DidCaptureFrame(frame_number, oracle_frame_number, std::move(frame),
-                    content_rect);
+    DidCaptureFrame(frame_number, oracle_frame_number, content_rect,
+                    std::move(frame));
     return;
   }
 
@@ -493,7 +493,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
           : CopyOutputRequest::ResultFormat::RGBA_BITMAP,
       base::BindOnce(&FrameSinkVideoCapturerImpl::DidCopyFrame,
                      capture_weak_factory_.GetWeakPtr(), frame_number,
-                     oracle_frame_number, std::move(frame), content_rect)));
+                     oracle_frame_number, content_rect, std::move(frame))));
   request->set_source(copy_request_source_);
   request->set_area(gfx::Rect(source_size));
   request->SetScaleRatio(
@@ -510,8 +510,8 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
 void FrameSinkVideoCapturerImpl::DidCopyFrame(
     int64_t frame_number,
     OracleFrameNumber oracle_frame_number,
-    scoped_refptr<VideoFrame> frame,
     const gfx::Rect& content_rect,
+    scoped_refptr<VideoFrame> frame,
     std::unique_ptr<CopyOutputResult> result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GE(frame_number, next_delivery_frame_number_);
@@ -566,15 +566,15 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
     }
   }
 
-  DidCaptureFrame(frame_number, oracle_frame_number, std::move(frame),
-                  content_rect);
+  DidCaptureFrame(frame_number, oracle_frame_number, content_rect,
+                  std::move(frame));
 }
 
 void FrameSinkVideoCapturerImpl::DidCaptureFrame(
     int64_t frame_number,
     OracleFrameNumber oracle_frame_number,
-    scoped_refptr<VideoFrame> frame,
-    const gfx::Rect& content_rect) {
+    const gfx::Rect& content_rect,
+    scoped_refptr<VideoFrame> frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GE(frame_number, next_delivery_frame_number_);
 
@@ -585,12 +585,12 @@ void FrameSinkVideoCapturerImpl::DidCaptureFrame(
 
   // Ensure frames are delivered in-order by using a min-heap, and only
   // deliver the next frame(s) in-sequence when they are found at the top.
-  delivery_queue_.emplace(frame_number, oracle_frame_number, std::move(frame),
-                          content_rect);
+  delivery_queue_.emplace(frame_number, oracle_frame_number, content_rect,
+                          std::move(frame));
   while (delivery_queue_.top().frame_number == next_delivery_frame_number_) {
     auto& next = delivery_queue_.top();
-    MaybeDeliverFrame(next.oracle_frame_number, std::move(next.frame),
-                      next.content_rect);
+    MaybeDeliverFrame(next.oracle_frame_number, next.content_rect,
+                      std::move(next.frame));
     ++next_delivery_frame_number_;
     delivery_queue_.pop();
     if (delivery_queue_.empty()) {
@@ -601,8 +601,8 @@ void FrameSinkVideoCapturerImpl::DidCaptureFrame(
 
 void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
     OracleFrameNumber oracle_frame_number,
-    scoped_refptr<VideoFrame> frame,
-    const gfx::Rect& content_rect) {
+    const gfx::Rect& content_rect,
+    scoped_refptr<VideoFrame> frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // The Oracle has the final say in whether frame delivery will proceed. It
@@ -694,14 +694,14 @@ gfx::Size FrameSinkVideoCapturerImpl::AdjustSizeForPixelFormat(
 }
 
 FrameSinkVideoCapturerImpl::CapturedFrame::CapturedFrame(
-    int64_t fn,
-    OracleFrameNumber ofn,
-    scoped_refptr<VideoFrame> fr,
-    const gfx::Rect& cr)
-    : frame_number(fn),
-      oracle_frame_number(ofn),
-      frame(std::move(fr)),
-      content_rect(cr) {}
+    int64_t frame_number,
+    OracleFrameNumber oracle_frame_number,
+    const gfx::Rect& content_rect,
+    scoped_refptr<media::VideoFrame> frame)
+    : frame_number(frame_number),
+      oracle_frame_number(oracle_frame_number),
+      content_rect(content_rect),
+      frame(std::move(frame)) {}
 
 FrameSinkVideoCapturerImpl::CapturedFrame::CapturedFrame(
     const CapturedFrame& other) = default;

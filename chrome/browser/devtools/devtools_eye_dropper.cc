@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/devtools_eye_dropper.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "cc/paint/skia_paint_canvas.h"
@@ -344,7 +346,5 @@ void DevToolsEyeDropper::OnFrameCaptured(
 
   UpdateCursor();
 }
-
-void DevToolsEyeDropper::OnTargetLost(const viz::FrameSinkId& frame_sink_id) {}
 
 void DevToolsEyeDropper::OnStopped() {}

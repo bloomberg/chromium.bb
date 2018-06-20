@@ -17,8 +17,12 @@
 namespace viz {
 
 // Client library for using FrameSinkVideoCapturer. Clients should use this
-// class instead of talking directly to FrameSinkVideoCapturer in order to
-// survive Viz crashes.
+// instead of talking directly to FrameSinkVideoCapturer in order to survive Viz
+// crashes.
+//
+// An instance of ClientFrameSinkVideoCapturer must only be used in the same
+// sequence (e.g., single-threaded).
+//
 // TODO(samans): Move this class and all its dependencies to the client
 // directory.
 class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
@@ -38,7 +42,7 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
                                 const gfx::Size& max_size,
                                 bool use_fixed_aspect_ratio);
   void SetAutoThrottlingEnabled(bool enabled);
-  void ChangeTarget(const FrameSinkId& frame_sink_id);
+  void ChangeTarget(const base::Optional<FrameSinkId>& frame_sink_id);
   void Stop();
   void RequestRefreshFrame();
 
@@ -77,7 +81,6 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
       const gfx::Rect& update_rect,
       const gfx::Rect& content_rect,
       mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) final;
-  void OnTargetLost(const FrameSinkId& frame_sink_id) final;
   void OnStopped() final;
 
   // Establishes connection to FrameSinkVideoCapturer and sends the existing

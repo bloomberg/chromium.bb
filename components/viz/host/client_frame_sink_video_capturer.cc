@@ -4,6 +4,8 @@
 
 #include "components/viz/host/client_frame_sink_video_capturer.h"
 
+#include <utility>
+
 namespace viz {
 
 namespace {
@@ -57,7 +59,7 @@ void ClientFrameSinkVideoCapturer::SetAutoThrottlingEnabled(bool enabled) {
 }
 
 void ClientFrameSinkVideoCapturer::ChangeTarget(
-    const FrameSinkId& frame_sink_id) {
+    const base::Optional<FrameSinkId>& frame_sink_id) {
   target_ = frame_sink_id;
   capturer_->ChangeTarget(frame_sink_id);
 }
@@ -109,11 +111,6 @@ void ClientFrameSinkVideoCapturer::OnFrameCaptured(
                              update_rect, content_rect, std::move(callbacks));
 }
 
-void ClientFrameSinkVideoCapturer::OnTargetLost(
-    const FrameSinkId& frame_sink_id) {
-  consumer_->OnTargetLost(frame_sink_id);
-}
-
 void ClientFrameSinkVideoCapturer::OnStopped() {
   consumer_->OnStopped();
 }
@@ -137,7 +134,7 @@ void ClientFrameSinkVideoCapturer::EstablishConnection() {
   if (auto_throttling_enabled_)
     capturer_->SetAutoThrottlingEnabled(*auto_throttling_enabled_);
   if (target_)
-    capturer_->ChangeTarget(*target_);
+    capturer_->ChangeTarget(target_);
   if (is_started_)
     StartInternal();
 }

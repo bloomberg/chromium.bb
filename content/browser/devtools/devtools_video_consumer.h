@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_VIDEO_CONSUMER_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_VIDEO_CONSUMER_H_
 
+#include <memory>
+
 #include "base/time/time.h"
 #include "components/viz/host/client_frame_sink_video_capturer.h"
 #include "content/common/content_export.h"
@@ -68,7 +70,6 @@ class CONTENT_EXPORT DevToolsVideoConsumer
       const gfx::Rect& update_rect,
       const gfx::Rect& content_rect,
       viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) override;
-  void OnTargetLost(const viz::FrameSinkId& frame_sink_id) override;
   void OnStopped() override;
 
   // Default min frame size is 1x1, as otherwise, nothing would be captured.

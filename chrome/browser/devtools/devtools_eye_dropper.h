@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVTOOLS_EYE_DROPPER_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_EYE_DROPPER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/viz/host/client_frame_sink_video_capturer.h"
@@ -52,7 +54,6 @@ class DevToolsEyeDropper : public content::WebContentsObserver,
       const gfx::Rect& update_rect,
       const gfx::Rect& content_rect,
       viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) override;
-  void OnTargetLost(const viz::FrameSinkId& frame_sink_id) override;
   void OnStopped() override;
 
   // This object keeps the shared memory that backs |frame_| mapped.
