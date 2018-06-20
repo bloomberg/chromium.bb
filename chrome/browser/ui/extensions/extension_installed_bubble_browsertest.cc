@@ -111,33 +111,37 @@ void ExtensionInstalledBubbleBrowserTest::ShowUi(const std::string& name) {
   manager->ShowBubble(std::move(bubble));
 }
 
+// TODO(crbug.com/854355): Fix the ownership of ExtensionInstalledBubble and
+// re-enable these tests.
 IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
-                       InvokeUi_BrowserAction) {
+                       DISABLED_InvokeUi_BrowserAction) {
   ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
-                       InvokeUi_PageAction) {
+                       DISABLED_InvokeUi_PageAction) {
   ShowAndVerifyUi();
 }
 
 // Test anchoring to the app menu.
 IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
-                       InvokeUi_InstalledByDefault) {
+                       DISABLED_InvokeUi_InstalledByDefault) {
   ShowAndVerifyUi();
 }
 
 // Test anchoring to the omnibox.
-IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest, InvokeUi_Omnibox) {
+IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
+                       DISABLED_InvokeUi_Omnibox) {
   ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
-                       InvokeUi_SignInPromo) {
+                       DISABLED_InvokeUi_SignInPromo) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest, InvokeUi_NoAction) {
+IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
+                       DISABLED_InvokeUi_NoAction) {
   // Sign in to supppress the signin promo.
   identity::MakePrimaryAccountAvailable(
       SigninManagerFactory::GetForProfile(profile()),
