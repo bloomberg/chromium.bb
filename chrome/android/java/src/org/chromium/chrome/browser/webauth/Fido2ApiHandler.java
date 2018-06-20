@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webauth;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.webauth.mojom.PublicKeyCredentialCreationOptions;
@@ -16,6 +17,11 @@ import org.chromium.webauth.mojom.PublicKeyCredentialRequestOptions;
  */
 public class Fido2ApiHandler {
     private static Fido2ApiHandler sInstance;
+
+    @VisibleForTesting
+    static void overrideInstanceForTesting(Fido2ApiHandler instance) {
+        sInstance = instance;
+    }
 
     /**
      * @return The Fido2ApiHandler for use during the lifetime of the browser process.
@@ -33,10 +39,4 @@ public class Fido2ApiHandler {
 
     protected void getAssertion(PublicKeyCredentialRequestOptions options,
             RenderFrameHost frameHost, HandlerResponseCallback callback) {}
-
-    protected void makeCredential(
-            PublicKeyCredentialCreationOptions options, HandlerResponseCallback callback) {}
-
-    protected void getAssertion(
-            PublicKeyCredentialRequestOptions options, HandlerResponseCallback callback) {}
 }

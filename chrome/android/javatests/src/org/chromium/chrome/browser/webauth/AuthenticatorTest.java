@@ -23,9 +23,13 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
+import org.chromium.webauth.mojom.AuthenticatorStatus;
+import org.chromium.webauth.mojom.PublicKeyCredentialCreationOptions;
+import org.chromium.webauth.mojom.PublicKeyCredentialRequestOptions;
 
 /** Test suite for navigator.credentials functionality. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -43,6 +47,21 @@ public class AuthenticatorTest {
     private String mUrl;
     private Tab mTab;
     private AuthenticatorUpdateWaiter mUpdateWaiter;
+    private MockFido2ApiHandler mMockHandler;
+
+    private class MockFido2ApiHandler extends Fido2ApiHandler {
+        @Override
+        protected void makeCredential(PublicKeyCredentialCreationOptions options,
+                RenderFrameHost frameHost, HandlerResponseCallback callback) {
+            callback.onError(AuthenticatorStatus.NOT_IMPLEMENTED);
+        }
+
+        @Override
+        protected void getAssertion(PublicKeyCredentialRequestOptions options,
+                RenderFrameHost frameHost, HandlerResponseCallback callback) {
+            callback.onError(AuthenticatorStatus.NOT_IMPLEMENTED);
+        }
+    }
 
     /** Waits until the JavaScript code supplies a result. */
     private class AuthenticatorUpdateWaiter extends EmptyTabObserver {
@@ -79,6 +98,7 @@ public class AuthenticatorTest {
         mTab = mActivityTestRule.getActivity().getActivityTab();
         mUpdateWaiter = new AuthenticatorUpdateWaiter();
         mTab.addObserver(mUpdateWaiter);
+        mMockHandler = new MockFido2ApiHandler();
     }
 
     @After
@@ -98,6 +118,7 @@ public class AuthenticatorTest {
     @Feature({"WebAuth"})
     public void testCreatePublicKeyCredential() throws Exception {
         mActivityTestRule.loadUrl(mUrl);
+        Fido2ApiHandler.overrideInstanceForTesting(mMockHandler);
         mActivityTestRule.runJavaScriptCodeInCurrentTab("doCreatePublicKeyCredential()");
         Assert.assertEquals("Success", mUpdateWaiter.waitForUpdate());
     }
@@ -113,6 +134,7 @@ public class AuthenticatorTest {
     @Feature({"WebAuth"})
     public void testGetPublicKeyCredential() throws Exception {
         mActivityTestRule.loadUrl(mUrl);
+        Fido2ApiHandler.overrideInstanceForTesting(mMockHandler);
         mActivityTestRule.runJavaScriptCodeInCurrentTab("doGetPublicKeyCredential()");
         Assert.assertEquals("Success", mUpdateWaiter.waitForUpdate());
     }
