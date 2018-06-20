@@ -263,11 +263,11 @@ void AutofillControllerTest::ExpectHappinessMetric(
 TEST_F(AutofillControllerTest, ReadForm) {
   AutofillManager* autofill_manager =
       AutofillDriverIOS::FromWebState(web_state())->autofill_manager();
-  EXPECT_TRUE(autofill_manager->GetFormStructures().empty())
+  EXPECT_TRUE(autofill_manager->form_structures().empty())
       << "Forms are registered at beginning";
   LoadHtml(kProfileFormHtml);
   const std::vector<std::unique_ptr<FormStructure>>& forms =
-      autofill_manager->GetFormStructures();
+      autofill_manager->form_structures();
   ASSERT_EQ(1U, forms.size());
   CheckField(*forms[0], NAME_FULL, "name_1");
   CheckField(*forms[0], ADDRESS_HOME_LINE1, "address_1");
@@ -286,7 +286,7 @@ TEST_F(AutofillControllerTest, ReadFormName) {
       AutofillDriverIOS::FromWebState(web_state())->autofill_manager();
   LoadHtml(kMinimalFormWithNameHtml);
   const std::vector<std::unique_ptr<FormStructure>>& forms =
-      autofill_manager->GetFormStructures();
+      autofill_manager->form_structures();
   ASSERT_EQ(1U, forms.size());
   EXPECT_EQ(base::UTF8ToUTF16("form1"), forms[0]->ToFormData().name);
 };
