@@ -98,8 +98,9 @@ int RunTests(const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
     }
   }
   if (!ran_at_least_once) {
+    // CloseAllWindows will cause the |main_runner| loop to quit.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+        FROM_HERE, base::BindOnce(&content::Shell::CloseAllWindows));
     main_runner->Run();
   }
 
@@ -149,9 +150,8 @@ int LayoutTestBrowserMain(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kCheckLayoutTestSysDeps)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+        FROM_HERE, base::BindOnce(&content::Shell::CloseAllWindows));
     main_runner->Run();
-    content::Shell::CloseAllWindows();
     main_runner->Shutdown();
     return 0;
   }

@@ -824,9 +824,8 @@ void BlinkTestController::DiscardMainWindow() {
   devtools_protocol_test_bindings_.reset();
   WebContentsObserver::Observe(nullptr);
   if (test_phase_ != BETWEEN_TESTS) {
+    // CloseAllWindows will also signal the main message loop to exit.
     Shell::CloseAllWindows();
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     test_phase_ = CLEAN_UP;
   } else if (main_window_) {
     main_window_->Close();
@@ -1192,14 +1191,14 @@ void BlinkTestController::OnResetDone() {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+      FROM_HERE, base::BindOnce(&Shell::QuitMainMessageLoopForTesting));
 }
 
 void BlinkTestController::OnLeakDetectionDone(
     const LeakDetector::LeakDetectionReport& report) {
   if (!report.leaked) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+        FROM_HERE, base::BindOnce(&Shell::QuitMainMessageLoopForTesting));
     return;
   }
 

@@ -113,12 +113,18 @@ class Shell : public WebContentsDelegate,
   // Returns the currently open windows.
   static std::vector<Shell*>& windows() { return windows_; }
 
-  // Closes all windows and returns.
+  // Closes all windows, pumps teardown tasks, then returns. The main message
+  // loop will be signalled to quit, before the call returns.
   static void CloseAllWindows();
 
   // Stores the supplied |quit_closure|, to be run when the last Shell instance
   // is destroyed.
   static void SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure);
+
+  // Used by the BlinkTestController to stop the message loop before closing all
+  // windows, for specific tests. Fails if called after the message loop has
+  // already been signalled to quit.
+  static void QuitMainMessageLoopForTesting();
 
   // Used for content_browsertests. Called once.
   static void SetShellCreatedCallback(
