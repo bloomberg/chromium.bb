@@ -80,7 +80,6 @@ class WebContentsViewAndroid : public WebContentsView,
       RenderWidgetHost* render_widget_host) override;
   void SetPageTitle(const base::string16& title) override;
   void RenderViewCreated(RenderViewHost* host) override;
-  void RenderViewReady() override;
   void RenderViewSwappedIn(RenderViewHost* host) override;
   void SetOverscrollControllerEnabled(bool enabled) override;
 
@@ -123,7 +122,6 @@ class WebContentsViewAndroid : public WebContentsView,
   void OnSizeChanged() override;
   void OnPhysicalBackingSizeChanged() override;
 
-  void SetFocus(bool focused);
   void set_device_orientation(int orientation) {
     device_orientation_ = orientation;
   }
@@ -169,8 +167,6 @@ class WebContentsViewAndroid : public WebContentsView,
 
   gfx::PointF drag_location_;
   gfx::PointF drag_screen_location_;
-
-  RenderViewHost* render_view_host_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAndroid);
 };

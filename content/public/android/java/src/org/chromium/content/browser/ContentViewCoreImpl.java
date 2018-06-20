@@ -7,6 +7,8 @@ package org.chromium.content.browser;
 import android.content.Context;
 import android.view.ViewGroup;
 
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
 import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.input.SelectPopup;
@@ -23,10 +25,14 @@ import org.chromium.ui.base.WindowAndroid;
 /**
  * Implementation of the interface {@ContentViewCore}.
  */
+@JNINamespace("content")
 public class ContentViewCoreImpl implements ContentViewCore {
     private static final String TAG = "cr_ContentViewCore";
 
     private WebContentsImpl mWebContents;
+
+    // Native pointer to C++ ContentViewCore object which will be set by nativeInit().
+    private long mNativeContentViewCore;
 
     private boolean mInitialized;
 
@@ -73,6 +79,7 @@ public class ContentViewCoreImpl implements ContentViewCore {
 
         mWebContents.setViewAndroidDelegate(viewDelegate);
         mWebContents.setTopLevelNativeWindow(windowAndroid);
+        mNativeContentViewCore = nativeInit(mWebContents);
 
         ViewGroup containerView = viewDelegate.getContainerView();
         ImeAdapterImpl.create(
@@ -91,16 +98,31 @@ public class ContentViewCoreImpl implements ContentViewCore {
         mInitialized = true;
     }
 
-    private boolean initialized() {
+    public boolean initialized() {
         return mInitialized;
+    }
+
+    @CalledByNative
+    private void onNativeContentViewCoreDestroyed(long nativeContentViewCore) {
+        assert nativeContentViewCore == mNativeContentViewCore;
+        mNativeContentViewCore = 0;
     }
 
     @Override
     public void destroy() {
+        if (mNativeContentViewCore != 0) {
+            nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
+        }
         // This is called to fix crash. See https://crbug.com/803244
         // TODO(jinsukkim): Use an observer to let the manager handle it on its own.
         GestureListenerManagerImpl.fromWebContents(mWebContents).reset();
         mWebContents.destroyContentsInternal();
         mWebContents = null;
+        mNativeContentViewCore = 0;
+
+        // See warning in javadoc before adding more clean up code here.
     }
+
+    private native long nativeInit(WebContents webContents);
+    private native void nativeOnJavaContentViewCoreDestroyed(long nativeContentViewCore);
 }
