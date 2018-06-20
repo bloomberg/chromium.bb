@@ -151,7 +151,7 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
 
   void EnableManualGenerationFallback() {
     scoped_feature_list_.InitAndEnableFeature(
-        password_manager::features::kEnableManualFallbacksGeneration);
+        password_manager::features::kManualFallbacksGeneration);
   }
 
   FakeContentPasswordManagerDriver fake_driver_;

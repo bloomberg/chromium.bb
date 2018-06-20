@@ -266,7 +266,7 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
           show_all_saved_passwords_shown_context_);
     }
     if (base::FeatureList::IsEnabled(
-            password_manager::features::kEnableManualFallbacksGeneration) &&
+            password_manager::features::kManualFallbacksGeneration) &&
         password_manager_util::GetPasswordSyncState(
             autofill_client_->GetSyncService()) == SYNCING_NORMAL_ENCRYPTION) {
       AddSimpleSuggestionWithSeparatorOnTop(
@@ -307,7 +307,7 @@ void PasswordAutofillManager::OnShowManualFallbackSuggestion(
       show_all_saved_passwords_shown_context_);
 
   if (base::FeatureList::IsEnabled(
-          password_manager::features::kEnableManualFallbacksGeneration) &&
+          password_manager::features::kManualFallbacksGeneration) &&
       password_manager_util::GetPasswordSyncState(
           autofill_client_->GetSyncService()) == SYNCING_NORMAL_ENCRYPTION) {
     AddSimpleSuggestionWithSeparatorOnTop(

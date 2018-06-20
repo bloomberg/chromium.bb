@@ -196,7 +196,7 @@ class PasswordAutofillManagerTest : public testing::Test {
         password_manager::features::kManualFallbacksFilling.name,
         password_manager::features::kManualFallbacksFillingStandalone
             .name,
-        password_manager::features::kEnableManualFallbacksGeneration.name};
+        password_manager::features::kManualFallbacksGeneration.name};
     if (enabled) {
       scoped_feature_list_.InitFromCommandLine(base::JoinString(features, ","),
                                                std::string());

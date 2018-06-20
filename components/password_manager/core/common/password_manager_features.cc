@@ -20,8 +20,8 @@ const base::Feature kHtmlBasedUsernameDetector = {
 
 // Enable additional elements in the form popup UI, which will allow the user to
 // view all saved passwords.
-const base::Feature kEnableManualFallbacksGeneration = {
-    "EnableManualFallbacksGeneration", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kManualFallbacksGeneration = {
+    "ManualFallbacksGeneration", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable additional elements in the form popup UI, which will allow the user to
 // trigger generation or view all saved passwords.
