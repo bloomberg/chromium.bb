@@ -611,7 +611,6 @@ void IDBRequest::ContextDestroyed(ExecutionContext*) {
       transaction_->UnregisterRequest(this);
   }
 
-  event_queue_->CancelAllEvents();
   if (source_.IsIDBCursor())
     source_.GetAsIDBCursor()->ContextWillBeDestroyed();
   if (result_)

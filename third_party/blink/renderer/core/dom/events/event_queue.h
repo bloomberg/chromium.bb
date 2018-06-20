@@ -43,6 +43,7 @@ class CORE_EXPORT EventQueue : public GarbageCollectedFinalized<EventQueue> {
   virtual void Trace(blink::Visitor* visitor) {}
   virtual bool EnqueueEvent(const base::Location&, Event*) = 0;
   virtual void CancelAllEvents() = 0;
+  virtual bool HasPendingEvents() const = 0;
 };
 
 }  // namespace blink

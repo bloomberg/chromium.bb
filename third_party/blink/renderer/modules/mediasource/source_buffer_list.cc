@@ -30,14 +30,14 @@
 
 #include "third_party/blink/renderer/modules/mediasource/source_buffer_list.h"
 
-#include "third_party/blink/renderer/core/dom/events/media_element_event_queue.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/mediasource/source_buffer.h"
 
 namespace blink {
 
 SourceBufferList::SourceBufferList(ExecutionContext* context,
-                                   MediaElementEventQueue* async_event_queue)
+                                   EventQueue* async_event_queue)
     : ContextClient(context), async_event_queue_(async_event_queue) {}
 
 SourceBufferList::~SourceBufferList() = default;
