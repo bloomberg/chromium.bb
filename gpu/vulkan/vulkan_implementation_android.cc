@@ -34,11 +34,10 @@ bool VulkanImplementationAndroid::InitializeVulkanInstance() {
   }
 
   // Initialize platform function pointers
-  vulkan_function_pointers->vkCreateAndroidSurfaceKHR =
-      reinterpret_cast<PFN_vkCreateAndroidSurfaceKHR>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(
-              vulkan_instance_.vk_instance(), "vkCreateAndroidSurfaceKHR"));
-  if (!vulkan_function_pointers->vkCreateAndroidSurfaceKHR) {
+  vkCreateAndroidSurfaceKHR_ = reinterpret_cast<PFN_vkCreateAndroidSurfaceKHR>(
+      vulkan_function_pointers->vkGetInstanceProcAddr(
+          vulkan_instance_.vk_instance(), "vkCreateAndroidSurfaceKHR"));
+  if (!vkCreateAndroidSurfaceKHR_) {
     vulkan_instance_.Destroy();
     return false;
   }

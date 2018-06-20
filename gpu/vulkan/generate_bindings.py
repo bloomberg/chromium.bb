@@ -1,4 +1,4 @@
-#!/usr/bin/env_python
+#!/usr/bin/env python
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -123,12 +123,6 @@ struct VulkanFunctionPointers {
   PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices = nullptr;
   PFN_vkDestroySurfaceKHR vkDestroySurfaceKHR = nullptr;
   PFN_vkDestroyInstance vkDestroyInstance = nullptr;
-#if defined(VK_USE_PLATFORM_XLIB_KHR)
-  PFN_vkCreateXlibSurfaceKHR vkCreateXlibSurfaceKHR = nullptr;
-#endif  // defined(VK_USE_PLATFORM_XLIB_KHR)
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-  PFN_vkCreateAndroidSurfaceKHR vkCreateAndroidSurfaceKHR = nullptr;
-#endif  // defined(VK_USE_PLATFORM_ANDROID_KHR)
 
   // Physical Device functions
   PFN_vkGetPhysicalDeviceQueueFamilyProperties
@@ -142,10 +136,6 @@ struct VulkanFunctionPointers {
       vkGetPhysicalDeviceSurfaceFormatsKHR = nullptr;
   PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR
       vkGetPhysicalDeviceSurfaceCapabilitiesKHR = nullptr;
-#if defined(VK_USE_PLATFORM_XLIB_KHR)
-  PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR
-      vkGetPhysicalDeviceXlibPresentationSupportKHR = nullptr;
-#endif  // defined(VK_USE_PLATFORM_XLIB_KHR)
 
   // Device functions
 """)

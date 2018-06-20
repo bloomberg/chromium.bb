@@ -8,10 +8,9 @@
 #include <memory>
 
 #include "base/component_export.h"
+#include "gpu/vulkan/vulkan_implementation.h"
 
 namespace gpu {
-
-class VulkanImplementation;
 
 COMPONENT_EXPORT(VULKAN_INIT)
 std::unique_ptr<VulkanImplementation> CreateVulkanImplementation();
