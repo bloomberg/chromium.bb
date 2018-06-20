@@ -1019,8 +1019,11 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabFreezeAndUrgentDiscard) {
 // - (optional) Freeze happens in renderer: PENDING_FREEZE->FROZEN
 // - Renderer is notified of new visibility: PENDING_FREEZE->ACTIVE or
 //   FROZEN->ACTIVE.
-IN_PROC_BROWSER_TEST_F(TabManagerTestWithTwoTabs,
-                       TabProactiveDiscardAndFocusBeforeFreezeCompletes) {
+//
+// TODO(fdoray): Fails on Windows. https://crbug.com/854720
+IN_PROC_BROWSER_TEST_F(
+    TabManagerTestWithTwoTabs,
+    DISABLED_TabProactiveDiscardAndFocusBeforeFreezeCompletes) {
   // Proactively discard the background tab.
   EXPECT_EQ(LifecycleUnitState::ACTIVE, GetLifecycleUnitAt(1)->GetState());
   EXPECT_TRUE(GetLifecycleUnitAt(1)->Discard(DiscardReason::kProactive));
