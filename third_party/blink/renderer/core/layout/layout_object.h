@@ -1601,6 +1601,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return IsListItem() || IsLayoutNGListItem();
   }
 
+  bool IsListMarkerIncludingNG() const {
+    return IsListMarker() || IsLayoutNGListMarker();
+  }
+
   virtual bool IsCombineText() const { return false; }
 
   virtual int CaretMinOffset() const;
