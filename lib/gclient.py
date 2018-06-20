@@ -171,22 +171,29 @@ def _GetGclientSolutions(internal, rev, template, managed):
   return solutions
 
 
-def _GetGclientSpec(internal, rev, template, cache_dir, managed):
+def _GetGclientSpec(internal, rev, template, use_cache, managed):
   """Return a formatted gclient spec.
 
   See WriteConfigFile below.
   """
-  assert cache_dir, 'A git cache_dir is needed to perform well.'
-
   solutions = _GetGclientSolutions(internal, rev, template, managed)
   result = 'solutions = %s\n' % pprint.pformat(solutions)
+
   result += "target_os = ['chromeos']\n"
-  result += "cache_dir = '%s'\n" % cache_dir
+
+  # Horrible hack, I will go to hell for this.  The bots need to have a git
+  # cache set up; but how can we tell whether this code is running on a bot
+  # or a developer's machine?
+  if cros_build_lib.HostIsCIBuilder() and use_cache:
+    if cros_build_lib.IsInsideChroot():
+      result += "cache_dir = '/tmp/b/git-cache'\n"
+    else:
+      result += "cache_dir = '/b/git-cache'\n"
 
   return result
 
 def WriteConfigFile(gclient, cwd, internal, rev, template=None,
-                    cache_dir=None, managed=True):
+                    use_cache=True, managed=True):
   """Initialize the specified directory as a gclient checkout.
 
   For gclient documentation, see:
@@ -205,11 +212,12 @@ def WriteConfigFile(gclient, cwd, internal, rev, template=None,
               by the template and performs appropriate modifications such as
               filling information like url and revision and adding extra
               solutions.
-    cache_dir: The git cache directory to use.
+    use_cache: An optional Boolean flag to indicate if the git cache should
+               be used when available (on a continuous-integration builder).
     managed: Default value of gclient config's 'managed' field. Default True
              (see crbug.com/624177).
   """
-  spec = _GetGclientSpec(internal, rev, template, cache_dir, managed)
+  spec = _GetGclientSpec(internal, rev, template, use_cache, managed)
   cmd = [gclient, 'config', '--spec', spec]
   cros_build_lib.RunCommand(cmd, cwd=cwd)
 
