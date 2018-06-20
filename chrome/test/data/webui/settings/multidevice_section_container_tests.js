@@ -25,9 +25,13 @@ suite('Multidevice', function() {
     multideviceSectionContainer.remove();
   });
 
-  let isSettingsSectionVisible = function() {
+  const setMode = function(mode) {
+    multideviceSectionContainer.mode_ = mode;
     Polymer.dom.flush();
-    let settingsSection = multideviceSectionContainer.$$(
+  };
+
+  const isSettingsSectionVisible = function() {
+    const settingsSection = multideviceSectionContainer.$$(
         'settings-section[section="multidevice"]');
     return !!settingsSection && !settingsSection.hidden;
   };
@@ -36,7 +40,7 @@ suite('Multidevice', function() {
     // Check that the settings-section is visible iff the mode is not
     // NO_ELIGIBLE_HOSTS.
     for (let mode of ALL_MODES) {
-      multideviceSectionContainer.mode_ = mode;
+      setMode(mode);
       assertEquals(
           isSettingsSectionVisible(),
           mode != settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS);
@@ -44,7 +48,7 @@ suite('Multidevice', function() {
     // One more loop to ensure we transition in and out of NO_ELIGIBLE_HOSTS
     // mode.
     for (let mode of ALL_MODES) {
-      multideviceSectionContainer.mode_ = mode;
+      setMode(mode);
       assertEquals(
           isSettingsSectionVisible(),
           mode != settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS);
@@ -55,9 +59,8 @@ suite('Multidevice', function() {
       'mode_ property passes to settings-multidevice-page if present',
       function() {
         for (let mode of ALL_MODES) {
-          multideviceSectionContainer.mode_ = mode;
-          Polymer.dom.flush();
-          let multidevicePage =
+          setMode(mode);
+          const multidevicePage =
               multideviceSectionContainer.$$('settings-multidevice-page');
           if (mode == settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS)
             assertEquals(multidevicePage, null);

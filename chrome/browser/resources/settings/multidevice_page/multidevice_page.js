@@ -48,6 +48,14 @@ Polymer({
     hostEnabled: Boolean,
   },
 
+  /** @private {?settings.MultiDeviceBrowserProxy} */
+  browserProxy_: null,
+
+  /** @override */
+  created: function() {
+    this.browserProxy_ = settings.MultiDeviceBrowserProxyImpl.getInstance();
+  },
+
   /**
    * @return {string} Translated item label.
    * @private
@@ -90,7 +98,7 @@ Polymer({
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION:
         return this.i18n('multideviceVerifyButton');
       default:
-        return null;
+        return '';
     }
   },
 
@@ -108,5 +116,22 @@ Polymer({
    */
   showToggle_: function() {
     return this.mode == settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
+  },
+
+  /** @private */
+  handleClick_: function() {
+    switch (this.mode) {
+      case settings.MultiDeviceSettingsMode.NO_HOST_SET:
+        this.browserProxy_.showMultiDeviceSetupDialog();
+        return;
+      case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER:
+        // TODO(jordynass): Implement this when API is ready.
+        console.log('Trying to connect to server again.');
+        return;
+      case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION:
+        // TODO(jordynass): Implement this when API is ready.
+        console.log('Trying to verify multidevice connection.');
+        return;
+    }
   },
 });
