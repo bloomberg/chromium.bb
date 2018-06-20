@@ -70,6 +70,7 @@ import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.browser.ChromeModernDesign;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
@@ -129,6 +130,15 @@ public class NewTabPageTest {
         }
     }
 
+    /** Parameter provider for enabling/disabling "Interest Feed Content Suggestions". */
+    public static class InterestFeedParams implements ParameterProvider {
+        @Override
+        public Iterable<ParameterSet> getParameters() {
+            return Arrays.asList(new ParameterSet().value(false).name("DisableInterestFeed"),
+                    new ParameterSet().value(true).name("EnableInterestFeed"));
+        }
+    }
+
     private static final String TEST_PAGE = "/chrome/test/data/android/navigate/simple.html";
 
     private Tab mTab;
@@ -149,6 +159,15 @@ public class NewTabPageTest {
     @ParameterAnnotations.UseMethodParameterAfter(ModernParams.class)
     public void teardownModernDesign(boolean enabled) {
         mChromeModernProcessor.clearTestState();
+    }
+
+    @ParameterAnnotations.UseMethodParameterBefore(InterestFeedParams.class)
+    public void setupInterestFeed(boolean interestFeedEnabled) {
+        if (interestFeedEnabled) {
+            Features.getInstance().enable(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
+        } else {
+            Features.getInstance().disable(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
+        }
     }
 
     @Before
@@ -231,10 +250,11 @@ public class NewTabPageTest {
 
     @Test
     @MediumTest
-    @Feature({"NewTabPage"})
+    @Feature({"NewTabPage", "FeedNewTabPage"})
     @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testSimplifiedNtp_BookmarksShortcuts() {
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testSimplifiedNtp_BookmarksShortcuts(boolean interestFeedEnabled) {
         ActivityMonitor activityMonitor = InstrumentationRegistry.getInstrumentation().addMonitor(
                 BookmarkActivity.class.getName(),
                 new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
@@ -249,10 +269,11 @@ public class NewTabPageTest {
 
     @Test
     @MediumTest
-    @Feature({"NewTabPage"})
+    @Feature({"NewTabPage", "FeedNewTabPage"})
     @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testSimplifiedNtp_DownloadsShortcuts() {
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testSimplifiedNtp_DownloadsShortcuts(boolean interestFeedEnabled) {
         ActivityMonitor activityMonitor = InstrumentationRegistry.getInstrumentation().addMonitor(
                 DownloadActivity.class.getName(),
                 new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
@@ -267,10 +288,12 @@ public class NewTabPageTest {
 
     @Test
     @MediumTest
-    @Feature({"NewTabPage"})
+    @Feature({"NewTabPage", "FeedNewTabPage"})
     @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testSimplifiedNtp_DefaultSearchEngineChange() throws Exception {
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testSimplifiedNtp_DefaultSearchEngineChange(boolean interestFeedEnabled)
+            throws Exception {
         View logo = mNtp.getView().findViewById(R.id.search_provider_logo);
         View shortcuts = mNtp.getView().findViewById(R.id.shortcuts);
         Assert.assertEquals(View.VISIBLE, logo.getVisibility());
@@ -380,8 +403,9 @@ public class NewTabPageTest {
      */
     @Test
     @SmallTest
-    @Feature({"NewTabPage"})
-    public void testClickMostVisitedItem() throws InterruptedException {
+    @Feature({"NewTabPage", "FeedNewTabPage"})
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testClickMostVisitedItem(boolean interestFeedEnabled) throws InterruptedException {
         ChromeTabUtils.waitForTabPageLoaded(mTab, new Runnable() {
             @Override
             public void run() {
@@ -410,8 +434,9 @@ public class NewTabPageTest {
      */
     @Test
     @SmallTest
-    @Feature({"NewTabPage"})
-    public void testOpenMostVisitedItemInIncognitoTab()
+    @Feature({"NewTabPage", "FeedNewTabPage"})
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testOpenMostVisitedItemInIncognitoTab(boolean interestFeedEnabled)
             throws InterruptedException, ExecutionException {
         ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule,
                 mTileGridLayout.getChildAt(0), ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB, true,
@@ -423,8 +448,9 @@ public class NewTabPageTest {
      */
     @Test
     @SmallTest
-    @Feature({"NewTabPage"})
-    public void testRemoveMostVisitedItem() throws ExecutionException {
+    @Feature({"NewTabPage", "FeedNewTabPage"})
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testRemoveMostVisitedItem(boolean interestFeedEnabled) throws ExecutionException {
         SiteSuggestion testSite = mSiteSuggestions.get(0);
         View mostVisitedItem = mTileGridLayout.getChildAt(0);
         ArrayList<View> views = new ArrayList<>();
@@ -441,8 +467,10 @@ public class NewTabPageTest {
 
     @Test
     @MediumTest
-    @Feature({"NewTabPage"})
-    public void testUrlFocusAnimationsDisabledOnLoad() throws InterruptedException {
+    @Feature({"NewTabPage", "FeedNewTabPage"})
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testUrlFocusAnimationsDisabledOnLoad(boolean interestFeedEnabled)
+            throws InterruptedException {
         Assert.assertFalse(getUrlFocusAnimationsDisabled());
         ChromeTabUtils.waitForTabPageLoaded(mTab, new Runnable() {
             @Override
@@ -466,7 +494,7 @@ public class NewTabPageTest {
 
     @Test
     @LargeTest
-    @Feature({"NewTabPage"})
+    @Feature({"NewTabPage", "FeedNewTabPage"})
     public void testUrlFocusAnimationsEnabledOnFailedLoad() throws Exception {
         // TODO(jbudorick): switch this to EmbeddedTestServer.
         TestWebServer webServer = TestWebServer.start();
@@ -533,38 +561,18 @@ public class NewTabPageTest {
      */
     @Test
     @SmallTest
-    @Feature({"NewTabPage"})
-    public void testSetSearchProviderInfo() throws Throwable {
+    @Feature({"NewTabPage", "FeedNewTabPage"})
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testSetSearchProviderInfo(boolean interestFeedEnabled) throws Throwable {
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                NewTabPageView ntpView = mNtp.getNewTabPageView();
-                View logoView = ntpView.findViewById(R.id.search_provider_logo);
+                NewTabPageLayout ntpLayout = mNtp.getNewTabPageLayout();
+                View logoView = ntpLayout.findViewById(R.id.search_provider_logo);
                 Assert.assertEquals(View.VISIBLE, logoView.getVisibility());
-                ntpView.setSearchProviderInfo(/* hasLogo = */ false, /* isGoogle */ true);
+                ntpLayout.setSearchProviderInfo(/* hasLogo = */ false, /* isGoogle */ true);
                 Assert.assertEquals(View.GONE, logoView.getVisibility());
-                ntpView.setSearchProviderInfo(/* hasLogo = */ true, /* isGoogle */ true);
-                Assert.assertEquals(View.VISIBLE, logoView.getVisibility());
-            }
-        });
-    }
-
-    /**
-     * Tests setting whether the search provider has a logo when the condensed UI is enabled.
-     */
-    @Test
-    @SmallTest
-    @Feature({"NewTabPage"})
-    public void testSetSearchProviderInfoCondensedUi() throws Throwable {
-        mActivityTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                NewTabPageView ntpView = mNtp.getNewTabPageView();
-                View logoView = ntpView.findViewById(R.id.search_provider_logo);
-                Assert.assertEquals(View.VISIBLE, logoView.getVisibility());
-                ntpView.setSearchProviderInfo(/* hasLogo = */ false, /* isGoogle */ true);
-                Assert.assertEquals(View.GONE, logoView.getVisibility());
-                ntpView.setSearchProviderInfo(/* hasLogo = */ true, /* isGoogle */ true);
+                ntpLayout.setSearchProviderInfo(/* hasLogo = */ true, /* isGoogle */ true);
                 Assert.assertEquals(View.VISIBLE, logoView.getVisibility());
             }
         });
@@ -576,12 +584,12 @@ public class NewTabPageTest {
      */
     @Test
     @SmallTest
-    @Feature({"NewTabPage"})
-    public void testPlaceholder() {
-        final NewTabPageView ntpView = mNtp.getNewTabPageView();
-        final NewTabPageLayout ntpLayout = ntpView.getNewTabPageLayout();
-        final View logoView = ntpView.findViewById(R.id.search_provider_logo);
-        final View searchBoxView = ntpView.findViewById(R.id.search_box);
+    @Feature({"NewTabPage", "FeedNewTabPage"})
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testPlaceholder(boolean interestFeedEnabled) {
+        final NewTabPageLayout ntpLayout = mNtp.getNewTabPageLayout();
+        final View logoView = ntpLayout.findViewById(R.id.search_provider_logo);
+        final View searchBoxView = ntpLayout.findViewById(R.id.search_box);
 
         // Initially, the logo is visible, the search box is visible, there is one tile suggestion,
         // and the placeholder has not been inflated yet.
@@ -595,7 +603,7 @@ public class NewTabPageTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ntpView.setSearchProviderInfo(/* hasLogo = */ false, /* isGoogle */ true);
+                ntpLayout.setSearchProviderInfo(/* hasLogo = */ false, /* isGoogle */ true);
                 Assert.assertEquals(View.GONE, logoView.getVisibility());
                 Assert.assertEquals(View.GONE, searchBoxView.getVisibility());
 
@@ -618,7 +626,7 @@ public class NewTabPageTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ntpView.setSearchProviderInfo(/* hasLogo = */ true, /* isGoogle */ true);
+                ntpLayout.setSearchProviderInfo(/* hasLogo = */ true, /* isGoogle */ true);
                 Assert.assertEquals(View.VISIBLE, logoView.getVisibility());
                 Assert.assertEquals(View.VISIBLE, searchBoxView.getVisibility());
                 Assert.assertEquals(View.GONE, ntpLayout.getPlaceholder().getVisibility());
@@ -740,7 +748,7 @@ public class NewTabPageTest {
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return mNtp.getNewTabPageView().getNewTabPageLayout().urlFocusAnimationsDisabled();
+                return mNtp.getNewTabPageLayout().urlFocusAnimationsDisabled();
             }
         });
     }
@@ -771,9 +779,7 @@ public class NewTabPageTest {
         CriteriaHelper.pollUiThread(Criteria.equals(percent, new Callable<Float>() {
             @Override
             public Float call() {
-                return ntp.getNewTabPageView()
-                        .getNewTabPageLayout()
-                        .getUrlFocusChangeAnimationPercent();
+                return ntp.getNewTabPageLayout().getUrlFocusChangeAnimationPercent();
             }
         }));
     }
