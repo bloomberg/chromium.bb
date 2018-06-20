@@ -34,7 +34,6 @@
 #include "third_party/webrtc/api/audio_codecs/audio_encoder_factory_template.h"
 #include "third_party/webrtc/api/audio_codecs/opus/audio_decoder_opus.h"
 #include "third_party/webrtc/api/audio_codecs/opus/audio_encoder_opus.h"
-#include "third_party/webrtc/api/test/fakeconstraints.h"
 
 using buzz::QName;
 using buzz::XmlElement;
@@ -190,11 +189,8 @@ class WebrtcTransport::PeerConnectionWrapper
         webrtc::CreateAudioDecoderFactory<webrtc::AudioDecoderOpus>(),
         encoder_factory.release(), nullptr);
 
-    webrtc::FakeConstraints constraints;
-    constraints.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
-                             webrtc::MediaConstraintsInterface::kValueTrue);
-
     webrtc::PeerConnectionInterface::RTCConfiguration rtc_config;
+    rtc_config.enable_dtls_srtp = true;
 
     // Set bundle_policy and rtcp_mux_policy to ensure that all channels are
     // multiplexed over a single channel.
@@ -206,7 +202,7 @@ class WebrtcTransport::PeerConnectionWrapper
     rtc_config.media_config.video.periodic_alr_bandwidth_probing = true;
 
     peer_connection_ = peer_connection_factory_->CreatePeerConnection(
-        rtc_config, &constraints, std::move(port_allocator), nullptr, this);
+        rtc_config, std::move(port_allocator), nullptr, this);
   }
 
   ~PeerConnectionWrapper() override {
@@ -691,25 +687,15 @@ void WebrtcTransport::SendOffer() {
   DCHECK(negotiation_pending_);
   negotiation_pending_ = false;
 
-  webrtc::FakeConstraints offer_config;
-  offer_config.AddMandatory(
-      webrtc::MediaConstraintsInterface::kOfferToReceiveVideo,
-      webrtc::MediaConstraintsInterface::kValueTrue);
-  offer_config.AddMandatory(
-      webrtc::MediaConstraintsInterface::kOfferToReceiveAudio,
-      webrtc::MediaConstraintsInterface::kValueFalse);
-  offer_config.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
-                            webrtc::MediaConstraintsInterface::kValueTrue);
-  if (want_ice_restart_) {
-    offer_config.AddMandatory(webrtc::MediaConstraintsInterface::kIceRestart,
-                              webrtc::MediaConstraintsInterface::kValueTrue);
-    want_ice_restart_ = false;
-  }
+  webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+  options.offer_to_receive_video = true;
+  options.offer_to_receive_audio = false;
+  options.ice_restart = want_ice_restart_;
   peer_connection()->CreateOffer(
       CreateSessionDescriptionObserver::Create(
           base::Bind(&WebrtcTransport::OnLocalSessionDescriptionCreated,
                      weak_factory_.GetWeakPtr())),
-      &offer_config);
+      options);
 }
 
 void WebrtcTransport::SendTransportInfo() {
