@@ -34,6 +34,8 @@ const MessageType kTestMessageType = MessageType::TETHER_AVAILABILITY_REQUEST;
 
 const uint32_t kTestTimeoutSeconds = 5;
 
+const char kTetherFeature[] = "magic_tether";
+
 // A test double for MessageTransferOperation is needed because
 // MessageTransferOperation has pure virtual methods which must be overridden in
 // order to create a concrete instantiation of the class.
@@ -224,6 +226,15 @@ class MessageTransferOperationTest : public testing::Test {
     VerifyOperationStartedAndFinished(false /* has_started */,
                                       false /* has_finished */);
     operation_->Initialize();
+
+    if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+      for (const auto* arguments :
+           fake_secure_channel_client_
+               ->last_listen_for_connection_request_arguments_list()) {
+        EXPECT_EQ(kTetherFeature, arguments->feature);
+      }
+    }
+
     VerifyOperationStartedAndFinished(true /* has_started */,
                                       false /* has_finished */);
   }
