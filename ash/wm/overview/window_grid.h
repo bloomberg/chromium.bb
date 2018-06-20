@@ -178,6 +178,8 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
     return window_animation_observer_;
   }
 
+  const gfx::Rect bounds() const { return bounds_; }
+
   views::Widget* new_selector_item_widget_for_testing() {
     return new_selector_item_widget_.get();
   }

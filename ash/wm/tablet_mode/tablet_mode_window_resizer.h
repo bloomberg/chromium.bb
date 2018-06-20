@@ -57,14 +57,18 @@ class TabletModeWindowResizer : public WindowResizer {
   // |kIndicatorThresholdRatio| threshold and restores it if the dragged window
   // is dragged back toward the top of the screen. |location_in_screen| is the
   // current drag location for the dragged window.
-  void UpdateScrimAndSourceWindow(const gfx::Point& location_in_screen);
+  void UpdateSourceWindow(const gfx::Point& location_in_screen);
+
+  // Shows/Hides/Destroies the scrim widget |scrim_| based on the current
+  // location |location_in_screen|.
+  void UpdateScrim(const gfx::Point& location_in_screen);
 
   // Gets the desired snap position for |location_in_screen|.
   SplitViewController::SnapPosition GetSnapPosition(
       const gfx::Point& location_in_screen) const;
 
-  // Shows the scrim with the specified opacity and blur.
-  void ShowScrim(float opacity, float blur);
+  // Shows the scrim with the specified opacity, blur and expected bounds.
+  void ShowScrim(float opacity, float blur, const gfx::Rect& bounds_in_screen);
 
   // Returns true if the drag indicators should show.
   bool ShouldShowDragIndicators(const gfx::Point& location_in_screen) const;

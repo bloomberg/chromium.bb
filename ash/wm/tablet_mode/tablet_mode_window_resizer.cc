@@ -46,6 +46,7 @@ constexpr SkColor kScrimBackgroundColor = SK_ColorGRAY;
 constexpr float kScrimOpacity = 0.8;
 constexpr float kScrimBlur = 5.f;
 constexpr int kScrimTransitionInMs = 250;
+constexpr int kScrimRoundRectRadiusDp = 4;
 
 // Returns the window selector if overview mode is active, otherwise returns
 // nullptr.
@@ -76,21 +77,34 @@ WindowSelectorItem* GetWindowSelectorItemContains(
 }
 
 // Creates a transparent scrim which is placed below |dragged_window|.
-std::unique_ptr<views::Widget> CreateScrim(aura::Window* dragged_window) {
+std::unique_ptr<views::Widget> CreateScrim(aura::Window* dragged_window,
+                                           const gfx::Rect& bounds) {
   std::unique_ptr<views::Widget> widget = CreateBackgroundWidget(
       /*root_window=*/dragged_window->GetRootWindow(),
       /*layer_type=*/ui::LAYER_TEXTURED,
       /*background_color=*/kScrimBackgroundColor,
       /*border_thickness=*/0,
-      /*border_radius=*/0,
+      /*border_radius=*/kScrimRoundRectRadiusDp,
       /*border_color=*/SK_ColorTRANSPARENT,
       /*initial_opacity=*/0.f,
       /*parent=*/dragged_window->parent(),
       /*stack_on_top=*/false);
-  widget->SetBounds(display::Screen::GetScreen()
-                        ->GetDisplayNearestWindow(dragged_window)
-                        .work_area());
+  widget->SetBounds(bounds);
   return widget;
+}
+
+// When the dragged window is dragged past this value, the drag indicators will
+// show up.
+int GetIndicatorsVerticalThreshold(const gfx::Rect& work_area_bounds) {
+  return work_area_bounds.y() +
+         work_area_bounds.height() * kIndicatorsThresholdRatio;
+}
+
+// When the dragged window is dragged past this value, a scrim will show up,
+// indicating the dragged window will be maximized after releasing.
+int GetMaximizeVerticalThreshold(const gfx::Rect& work_area_bounds) {
+  return work_area_bounds.y() +
+         work_area_bounds.height() * kMaximizeThresholdRatio;
 }
 
 }  // namespace
@@ -144,8 +158,11 @@ void TabletModeWindowResizer::Drag(const gfx::Point& location_in_parent,
   // Update the drag indicators and snap preview window if necessary.
   UpdateIndicatorsAndPreviewWindow(location_in_screen);
 
-  // Update the scrim and do scale transform of the source window if necessary.
-  UpdateScrimAndSourceWindow(location_in_screen);
+  // Update the source window if necessary.
+  UpdateSourceWindow(location_in_screen);
+
+  // Update the scrim that beneath the dragged window if necessary.
+  UpdateScrim(location_in_screen);
 
   // Update dragged window's bounds.
   gfx::Rect bounds = CalculateBoundsForDrag(location_in_parent);
@@ -210,9 +227,8 @@ void TabletModeWindowResizer::EndDragImpl(EndDragType type) {
 
 void TabletModeWindowResizer::UpdateIndicatorsAndPreviewWindow(
     const gfx::Point& location_in_screen) {
-  SplitViewController::SnapPosition snap_position =
-      GetSnapPosition(location_in_screen);
-  if (snap_position != SplitViewController::NONE) {
+  if (GetSnapPosition(location_in_screen) != SplitViewController::NONE &&
+      !split_view_controller_->IsSplitViewModeActive()) {
     // Show the preview window if |location_in_screen| is not contained by an
     // eligible target window item to merge the dragged window.
     WindowSelectorItem* item =
@@ -234,7 +250,7 @@ void TabletModeWindowResizer::UpdateIndicatorsAndPreviewWindow(
       location_in_screen);
 }
 
-void TabletModeWindowResizer::UpdateScrimAndSourceWindow(
+void TabletModeWindowResizer::UpdateSourceWindow(
     const gfx::Point& location_in_screen) {
   // Only do the scale if the source window is not the dragged window && the
   // source window is not in splitscreen && the source window is not in
@@ -252,15 +268,9 @@ void TabletModeWindowResizer::UpdateScrimAndSourceWindow(
   const gfx::Rect work_area_bounds = display::Screen::GetScreen()
                                          ->GetDisplayNearestWindow(GetTarget())
                                          .work_area();
-  const int indicators_vertical_threshold =
-      work_area_bounds.y() +
-      work_area_bounds.height() * kIndicatorsThresholdRatio;
-  const int maximize_vertical_threshold =
-      work_area_bounds.y() +
-      work_area_bounds.height() * kMaximizeThresholdRatio;
-
   gfx::Rect expected_bounds(work_area_bounds);
-  if (location_in_screen.y() >= indicators_vertical_threshold) {
+  if (location_in_screen.y() >=
+      GetIndicatorsVerticalThreshold(work_area_bounds)) {
     SplitViewController::SnapPosition snap_position =
         GetSnapPosition(location_in_screen);
 
@@ -277,26 +287,63 @@ void TabletModeWindowResizer::UpdateScrimAndSourceWindow(
                              ? SplitViewController::RIGHT
                              : SplitViewController::LEFT);
     }
-
-    const bool should_show_blurred_scrim =
-        (location_in_screen.y() > maximize_vertical_threshold) &&
-        (snap_position == SplitViewController::NONE);
-    // When the event is between |indicators_vertical_threshold| and
-    // |maximize_vertical_threshold|, the scrim is still shown but is invisible
-    // to the user (transparent). It's needed to prevent the dragged window to
-    // merge into the scaled down source window.
-    ShowScrim(should_show_blurred_scrim ? kScrimOpacity : 0.f,
-              should_show_blurred_scrim ? kScrimBlur : 0.f);
-  } else {
-    // Remove |scrim_| entirely so that the dragged window can be merged back
-    // to the source window when the dragged window is dragged back toward the
-    // top area of the screen.
-    scrim_.reset();
   }
 
   source_window->SetBoundsInScreen(
       expected_bounds,
       display::Screen::GetScreen()->GetDisplayNearestWindow(source_window));
+}
+
+void TabletModeWindowResizer::UpdateScrim(
+    const gfx::Point& location_in_screen) {
+  const gfx::Rect work_area_bounds = display::Screen::GetScreen()
+                                         ->GetDisplayNearestWindow(GetTarget())
+                                         .work_area();
+  if (location_in_screen.y() <
+      GetIndicatorsVerticalThreshold(work_area_bounds)) {
+    // Remove |scrim_| entirely so that the dragged window can be merged back
+    // to the source window when the dragged window is dragged back toward the
+    // top area of the screen.
+    scrim_.reset();
+    return;
+  }
+
+  // If overview mode is active, do not show the scrim on the overview side of
+  // the screen.
+  if (Shell::Get()->window_selector_controller()->IsSelecting()) {
+    WindowGrid* window_grid = GetWindowSelector()->GetGridWithRootWindow(
+        GetTarget()->GetRootWindow());
+    if (window_grid && window_grid->bounds().Contains(location_in_screen)) {
+      scrim_.reset();
+      return;
+    }
+  }
+
+  SplitViewController::SnapPosition snap_position =
+      GetSnapPosition(location_in_screen);
+  gfx::Rect expected_bounds(work_area_bounds);
+  if (split_view_controller_->IsSplitViewModeActive()) {
+    expected_bounds = split_view_controller_->GetSnappedWindowBoundsInScreen(
+        GetTarget(), snap_position);
+  } else {
+    expected_bounds.Inset(kHighlightScreenEdgePaddingDp,
+                          kHighlightScreenEdgePaddingDp);
+  }
+
+  bool should_show_blurred_scrim = false;
+  if (location_in_screen.y() >=
+      GetMaximizeVerticalThreshold(work_area_bounds)) {
+    if (split_view_controller_->IsSplitViewModeActive() !=
+        (snap_position == SplitViewController::NONE)) {
+      should_show_blurred_scrim = true;
+    }
+  }
+  // When the event is between |indicators_vertical_threshold| and
+  // |maximize_vertical_threshold|, the scrim is still shown but is invisible
+  // to the user (transparent). It's needed to prevent the dragged window to
+  // merge into the scaled down source window.
+  ShowScrim(should_show_blurred_scrim ? kScrimOpacity : 0.f,
+            should_show_blurred_scrim ? kScrimBlur : 0.f, expected_bounds);
 }
 
 SplitViewController::SnapPosition TabletModeWindowResizer::GetSnapPosition(
@@ -307,26 +354,44 @@ SplitViewController::SnapPosition TabletModeWindowResizer::GetSnapPosition(
 
   // The user has to drag pass the indicator vertical threshold to snap the
   // window.
-  const int indicators_vertical_threshold =
-      work_area_bounds.y() +
-      work_area_bounds.height() * kIndicatorsThresholdRatio;
-  if (location_in_screen.y() < indicators_vertical_threshold)
+  if (location_in_screen.y() < GetIndicatorsVerticalThreshold(work_area_bounds))
     return SplitViewController::NONE;
 
-  if (split_view_controller_->IsCurrentScreenOrientationLandscape()) {
+  const bool is_landscape =
+      split_view_controller_->IsCurrentScreenOrientationLandscape();
+  const bool is_primary =
+      split_view_controller_->IsCurrentScreenOrientationPrimary();
+
+  // If split view mode is active during dragging, the dragged window will be
+  // either snapped left or right (if it's not merged into overview window),
+  // depending on the relative position of |location_in_screen| and the current
+  // divider position.
+  if (split_view_controller_->IsSplitViewModeActive()) {
+    const int position =
+        is_landscape ? location_in_screen.x() : location_in_screen.y();
+    if (position < split_view_controller_->divider_position()) {
+      return is_primary ? SplitViewController::LEFT
+                        : SplitViewController::RIGHT;
+    } else {
+      return is_primary ? SplitViewController::RIGHT
+                        : SplitViewController::LEFT;
+    }
+  }
+
+  // Otherwise, check to see if the current event location |location_in_screen|
+  // is within the drag indicators bounds.
+  if (is_landscape) {
     const int screen_edge_inset =
         work_area_bounds.width() * kHighlightScreenPrimaryAxisRatio +
         kHighlightScreenEdgePaddingDp;
     work_area_bounds.Inset(screen_edge_inset, 0);
     if (location_in_screen.x() < work_area_bounds.x()) {
-      return split_view_controller_->IsCurrentScreenOrientationPrimary()
-                 ? SplitViewController::LEFT
-                 : SplitViewController::RIGHT;
+      return is_primary ? SplitViewController::LEFT
+                        : SplitViewController::RIGHT;
     }
-    if (location_in_screen.x() > work_area_bounds.right()) {
-      return split_view_controller_->IsCurrentScreenOrientationPrimary()
-                 ? SplitViewController::RIGHT
-                 : SplitViewController::LEFT;
+    if (location_in_screen.x() >= work_area_bounds.right()) {
+      return is_primary ? SplitViewController::RIGHT
+                        : SplitViewController::LEFT;
     }
     return SplitViewController::NONE;
   } else {
@@ -337,28 +402,41 @@ SplitViewController::SnapPosition TabletModeWindowResizer::GetSnapPosition(
         work_area_bounds.height() * kHighlightScreenPrimaryAxisRatio +
         kHighlightScreenEdgePaddingDp;
     work_area_bounds.Inset(0, screen_edge_inset);
-    if (location_in_screen.y() > work_area_bounds.bottom()) {
-      return split_view_controller_->IsCurrentScreenOrientationPrimary()
-                 ? SplitViewController::RIGHT
-                 : SplitViewController::LEFT;
+    if (location_in_screen.y() >= work_area_bounds.bottom()) {
+      return is_primary ? SplitViewController::RIGHT
+                        : SplitViewController::LEFT;
     }
     return SplitViewController::NONE;
   }
 }
 
-void TabletModeWindowResizer::ShowScrim(float opacity, float blur) {
-  if (scrim_ && scrim_->GetLayer()->GetTargetOpacity() == opacity)
+void TabletModeWindowResizer::ShowScrim(float opacity,
+                                        float blur,
+                                        const gfx::Rect& bounds_in_screen) {
+  gfx::Rect bounds(bounds_in_screen);
+  ::wm::ConvertRectFromScreen(GetTarget()->parent(), &bounds);
+
+  if (scrim_ && scrim_->GetLayer()->GetTargetOpacity() == opacity &&
+      scrim_->GetNativeWindow()->bounds() == bounds) {
     return;
+  }
 
   if (!scrim_)
-    scrim_ = CreateScrim(GetTarget());
+    scrim_ = CreateScrim(GetTarget(), bounds);
   GetTarget()->parent()->StackChildBelow(scrim_->GetNativeWindow(),
                                          GetTarget());
   scrim_->GetLayer()->SetBackgroundBlur(blur);
+
+  if (scrim_->GetNativeWindow()->bounds() != bounds) {
+    scrim_->SetOpacity(0.f);
+    scrim_->SetBounds(bounds);
+  }
   ui::ScopedLayerAnimationSettings animation(scrim_->GetLayer()->GetAnimator());
   animation.SetTweenType(gfx::Tween::EASE_IN_OUT);
   animation.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kScrimTransitionInMs));
+  animation.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   scrim_->SetOpacity(opacity);
 }
 
@@ -373,19 +451,14 @@ bool TabletModeWindowResizer::ShouldShowDragIndicators(
   gfx::Rect work_area_bounds = display::Screen::GetScreen()
                                    ->GetDisplayNearestWindow(GetTarget())
                                    .work_area();
-  const int indicators_vertical_threshold =
-      work_area_bounds.y() +
-      work_area_bounds.height() * kIndicatorsThresholdRatio;
-  if (location_in_screen.y() < indicators_vertical_threshold)
+  if (location_in_screen.y() < GetIndicatorsVerticalThreshold(work_area_bounds))
     return false;
 
   // If the event location has passed the maximize vertical threshold, and the
   // event location is not in snap indicator area, and overview mode is not
   // active at the moment, do not show the drag indicators.
-  const int maximize_vertical_threshold =
-      work_area_bounds.y() +
-      work_area_bounds.height() * kMaximizeThresholdRatio;
-  if (location_in_screen.y() > maximize_vertical_threshold &&
+  if (location_in_screen.y() >=
+          GetMaximizeVerticalThreshold(work_area_bounds) &&
       GetSnapPosition(location_in_screen) == SplitViewController::NONE &&
       !Shell::Get()->window_selector_controller()->IsSelecting()) {
     return false;

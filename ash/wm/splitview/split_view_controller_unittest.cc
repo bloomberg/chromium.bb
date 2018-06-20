@@ -1867,8 +1867,8 @@ TEST_F(SplitViewTabDraggingTest, DragSnappedWindow) {
   ASSERT_TRUE(resizer.get());
   EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
   DragWindowTo(resizer.get(), gfx::Point(600, 300));
-  EXPECT_EQ(GetIndicatorState(resizer.get()),
-            IndicatorState::kPreviewAreaRight);
+  // No preview window shows up on overview side of the screen.
+  EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kNone);
   CompleteDrag(std::move(resizer));
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::RIGHT_SNAPPED);
@@ -1953,7 +1953,8 @@ TEST_F(SplitViewTabDraggingTest, DragSnappedWindow) {
   EXPECT_EQ(split_view_controller()->right_window(), window1.get());
   EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   DragWindowTo(resizer.get(), gfx::Point(0, 300));
-  EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kPreviewAreaLeft);
+  // No preview window shows up on overview side of the screen.
+  EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kNone);
   CompleteDrag(std::move(resizer));
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::BOTH_SNAPPED);
@@ -2052,7 +2053,8 @@ TEST_F(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
   // 2.a. The dragged window can replace the only snapped window in the split
   // screen. After that, the old snapped window will be put back in overview.
   DragWindowTo(resizer.get(), gfx::Point(0, 500));
-  EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kPreviewAreaLeft);
+  // No preview window shows up on overview side of the screen.
+  EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kNone);
   CompleteDrag(std::move(resizer));
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::LEFT_SNAPPED);
@@ -2071,8 +2073,8 @@ TEST_F(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
   resizer = StartDrag(window1.get(), window2.get());
   ASSERT_TRUE(resizer.get());
   DragWindowTo(resizer.get(), gfx::Point(600, 500));
-  EXPECT_EQ(GetIndicatorState(resizer.get()),
-            IndicatorState::kPreviewAreaRight);
+  // No preview window shows up on overview side of the screen.
+  EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kNone);
   CompleteDrag(std::move(resizer));
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::BOTH_SNAPPED);
