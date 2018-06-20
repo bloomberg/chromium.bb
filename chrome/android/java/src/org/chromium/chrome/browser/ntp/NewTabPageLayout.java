@@ -753,7 +753,7 @@ public class NewTabPageLayout
     /**
      * @see InvalidationAwareThumbnailProvider#shouldCaptureThumbnail()
      */
-    boolean shouldCaptureThumbnail() {
+    public boolean shouldCaptureThumbnail() {
         return mSnapshotTileGridChanged;
     }
 
@@ -761,7 +761,7 @@ public class NewTabPageLayout
      * Should be called before a thumbnail of the parent view is captured.
      * @see InvalidationAwareThumbnailProvider#captureThumbnail(Canvas)
      */
-    void onPreCaptureThumbnail() {
+    public void onPreCaptureThumbnail() {
         mSearchProviderLogoView.endFadeAnimation();
         mSnapshotTileGridChanged = false;
     }

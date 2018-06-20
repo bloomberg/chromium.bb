@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -73,19 +75,22 @@ public class NewTabPage
     // Key for the scroll position data that may be stored in a navigation entry.
     private static final String NAVIGATION_ENTRY_SCROLL_POSITION_KEY = "NewTabPageScrollPosition";
 
-    private final Tab mTab;
+    protected final Tab mTab;
 
     private final String mTitle;
     private final int mBackgroundColor;
     private final int mThemeColor;
-    private final NewTabPageView mNewTabPageView;
-    private final NewTabPageLayout mNewTabPageLayout;
-    private final NewTabPageManagerImpl mNewTabPageManager;
-    private final TileGroup.Delegate mTileGroupDelegate;
+    protected final NewTabPageManagerImpl mNewTabPageManager;
+    protected final TileGroup.Delegate mTileGroupDelegate;
     private final boolean mIsTablet;
 
+    /**
+     * The {@link NewTabPageView} shown in this NewTabPageLayout. This may be null in sub-classes.
+     */
+    private @Nullable NewTabPageView mNewTabPageView;
+    protected NewTabPageLayout mNewTabPageLayout;
     private TabObserver mTabObserver;
-    private boolean mSearchProviderHasLogo;
+    protected boolean mSearchProviderHasLogo;
 
     private FakeboxDelegate mFakeboxDelegate;
     private LocationBarVoiceRecognitionHandler mVoiceRecognitionHandler;
@@ -167,7 +172,7 @@ public class NewTabPage
         }
     }
 
-    private class NewTabPageManagerImpl
+    protected class NewTabPageManagerImpl
             extends SuggestionsUiDelegateImpl implements NewTabPageManager {
         public NewTabPageManagerImpl(SuggestionsSource suggestionsSource,
                 SuggestionsEventReporter eventReporter,
@@ -221,7 +226,7 @@ public class NewTabPage
             // If not visible when loading completes, wait until onShown is received.
             if (!mTab.isHidden()) recordNTPShown();
             if (mTab.getUrl().contains(UrlConstants.CONTENT_SUGGESTIONS_SUFFIX)) {
-                mNewTabPageView.scrollToSuggestions();
+                scrollToSuggestions();
             }
         }
     }
@@ -309,38 +314,13 @@ public class NewTabPage
 
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
-                int scrollPosition = mNewTabPageView.getScrollPosition();
-                if (scrollPosition == RecyclerView.NO_POSITION) return;
-
-                if (mTab.getWebContents() == null) return;
-
-                NavigationController controller = mTab.getWebContents().getNavigationController();
-                int index = controller.getLastCommittedEntryIndex();
-                NavigationEntry entry = controller.getEntryAtIndex(index);
-                if (entry == null) return;
-
-                // At least under test conditions this method may be called initially for the load
-                // of the NTP itself, at which point the last committed entry is not for the NTP
-                // yet. This method will then be called a second time when the user navigates away,
-                // at which point the last committed entry is for the NTP. The extra data must only
-                // be set in the latter case.
-                if (!isNTPUrl(entry.getUrl())) return;
-
-                controller.setEntryExtraData(index, NAVIGATION_ENTRY_SCROLL_POSITION_KEY,
-                        Integer.toString(scrollPosition));
+                restoreLastScrollPosition();
             }
         };
         mTab.addObserver(mTabObserver);
         updateSearchProviderHasLogo();
 
-        LayoutInflater inflater = LayoutInflater.from(activity);
-        mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page_view, null);
-        mNewTabPageLayout = mNewTabPageView.getNewTabPageLayout();
-
-        mNewTabPageView.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
-                mSearchProviderHasLogo,
-                TemplateUrlService.getInstance().isDefaultSearchEngineGoogle(),
-                getScrollPositionFromNavigationEntry());
+        initializeMainView(activity);
 
         eventReporter.onSurfaceOpened();
 
@@ -353,10 +333,62 @@ public class NewTabPage
         TraceEvent.end(TAG);
     }
 
+    /**
+     * Create and initialize the main view contained in this NewTabPage.
+     * @param context The context used to inflate the view.
+     */
+    protected void initializeMainView(Context context) {
+        LayoutInflater inflater = LayoutInflater.from(context);
+        mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page_view, null);
+        mNewTabPageLayout = mNewTabPageView.getNewTabPageLayout();
+
+        mNewTabPageView.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
+                mSearchProviderHasLogo,
+                TemplateUrlService.getInstance().isDefaultSearchEngineGoogle(),
+                getScrollPositionFromNavigationEntry());
+    }
+
+    /**
+     * Restore the last scroll position stored in the navigation entry (if set).
+     */
+    protected void restoreLastScrollPosition() {
+        int scrollPosition = mNewTabPageView.getScrollPosition();
+        if (scrollPosition == RecyclerView.NO_POSITION) return;
+
+        if (mTab.getWebContents() == null) return;
+
+        NavigationController controller = mTab.getWebContents().getNavigationController();
+        int index = controller.getLastCommittedEntryIndex();
+        NavigationEntry entry = controller.getEntryAtIndex(index);
+        if (entry == null) return;
+
+        // At least under test conditions this method may be called initially for the load of the
+        // NTP itself, at which point the last committed entry is not for the NTP yet. This method
+        // will then be called a second time when the user navigates away, at which point the last
+        // committed entry is for the NTP. The extra data must only be set in the latter case.
+        if (!isNTPUrl(entry.getUrl())) return;
+
+        controller.setEntryExtraData(
+                index, NAVIGATION_ENTRY_SCROLL_POSITION_KEY, Integer.toString(scrollPosition));
+    }
+
+    /**
+     * Scroll to the list of suggested articles.
+     */
+    protected void scrollToSuggestions() {
+        mNewTabPageView.scrollToSuggestions();
+    }
+
     /** @return The view container for the new tab page. */
     @VisibleForTesting
     public NewTabPageView getNewTabPageView() {
         return mNewTabPageView;
+    }
+
+    /** @return The view container for the new tab layout. */
+    @VisibleForTesting
+    public NewTabPageLayout getNewTabPageLayout() {
+        return mNewTabPageLayout;
     }
 
     /**
@@ -377,9 +409,19 @@ public class NewTabPage
 
     private void onSearchEngineUpdated() {
         updateSearchProviderHasLogo();
-        mNewTabPageView.setSearchProviderInfo(mSearchProviderHasLogo,
+        setSearchProviderInfoOnView(mSearchProviderHasLogo,
                 TemplateUrlService.getInstance().isDefaultSearchEngineGoogle());
         mNewTabPageLayout.loadSearchProviderLogo();
+    }
+
+    /**
+     * Set the search provider info on the main child view, so that it can change layouts if
+     * needed.
+     * @param hasLogo Whether the search provider has a logo.
+     * @param isGoogle Whether the search provider is Google.
+     */
+    protected void setSearchProviderInfoOnView(boolean hasLogo, boolean isGoogle) {
+        mNewTabPageView.setSearchProviderInfo(hasLogo, isGoogle);
     }
 
     /**
