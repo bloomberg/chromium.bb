@@ -728,6 +728,11 @@ const char kEnableWasmBaselineName[] = "WebAssembly baseline compiler";
 const char kEnableWasmBaselineDescription[] =
     "Enables WebAssembly baseline compilation and tier up.";
 
+const char kEnableWasmThreadsName[] = "WebAssembly threads support.";
+const char kEnableWasmThreadsDescription[] =
+    "Enables support for the WebAssembly Threads proposal. Implies "
+    "#shared-array-buffer and #enable-webassembly.";
+
 const char kExpensiveBackgroundTimerThrottlingName[] =
     "Throttle expensive background timers";
 const char kExpensiveBackgroundTimerThrottlingDescription[] =

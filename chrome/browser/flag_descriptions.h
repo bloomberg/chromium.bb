@@ -462,6 +462,9 @@ extern const char kEnableWasmStreamingDescription[];
 extern const char kEnableWasmBaselineName[];
 extern const char kEnableWasmBaselineDescription[];
 
+extern const char kEnableWasmThreadsName[];
+extern const char kEnableWasmThreadsDescription[];
+
 extern const char kExpensiveBackgroundTimerThrottlingName[];
 extern const char kExpensiveBackgroundTimerThrottlingDescription[];
 
