@@ -30,6 +30,7 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "extension_app.icon",
     "http.icon",
     "keyword_search.icon",
+    "md_page.icon",
     "star.icon",
     "switch.icon",
     "tab.icon",
