@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = Uncaught Error: assert_true: expected true got false
 PASS Test SourceBuffer.appendBuffer() event dispatching.
 PASS Test SourceBuffer.appendBuffer() call during a pending appendBuffer().
 PASS Test SourceBuffer.abort() call during a pending appendBuffer().
@@ -15,7 +14,7 @@ PASS Test appending an empty ArrayBuffer.
 PASS Test appending a neutered ArrayBuffer.
 PASS Test appendBuffer with partial init segments.
 PASS Test appendBuffer with partial media segments.
-PASS Test appendBuffer events order.
+FAIL Test appendBuffer events order. assert_true: expected true got false
 PASS Test abort in the middle of an initialization segment.
 PASS Test abort after removing sourcebuffer.
 PASS Test abort after readyState is ended following init segment and media segment.
