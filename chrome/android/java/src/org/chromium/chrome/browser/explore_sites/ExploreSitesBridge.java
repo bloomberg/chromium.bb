@@ -44,4 +44,5 @@ public class ExploreSitesBridge {
             Callback<List<ExploreSitesCategoryTile>> callback);
     private static native void nativeGetIcon(
             Profile profile, String iconUrl, Callback<Bitmap> callback);
+    public static native String nativeGetCatalogUrl();
 }

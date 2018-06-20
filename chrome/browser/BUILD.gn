@@ -2071,6 +2071,8 @@ jumbo_split_static_library("browser") {
       "android/explore_sites/explore_sites_bridge.h",
       "android/explore_sites/ntp_json_fetcher.cc",
       "android/explore_sites/ntp_json_fetcher.h",
+      "android/explore_sites/url_util.cc",
+      "android/explore_sites/url_util.h",
       "android/favicon_helper.cc",
       "android/favicon_helper.h",
       "android/feature_engagement/tracker_factory_android.cc",
