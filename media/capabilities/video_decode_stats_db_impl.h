@@ -27,6 +27,9 @@ class DecodeStatsProto;
 class MEDIA_EXPORT VideoDecodeStatsDBImplFactory
     : public VideoDecodeStatsDBFactory {
  public:
+  // |db_dir| specifies where to store LevelDB files to disk. LevelDB generates
+  // a handful of files, so its recommended to provide a dedicated directory to
+  // keep them isolated.
   explicit VideoDecodeStatsDBImplFactory(base::FilePath db_dir);
   ~VideoDecodeStatsDBImplFactory() override;
   std::unique_ptr<VideoDecodeStatsDB> CreateDB() override;
@@ -53,7 +56,7 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   ~VideoDecodeStatsDBImpl() override;
 
   // Implement VideoDecodeStatsDB.
-  void Initialize(base::OnceCallback<void(bool)> init_cb) override;
+  void Initialize(InitializeCB init_cb) override;
   void AppendDecodeStats(const VideoDescKey& key,
                          const DecodeStatsEntry& entry,
                          AppendDecodeStatsCB append_done_cb) override;
@@ -66,7 +69,7 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
 
   // Called when the database has been initialized. Will immediately call
   // |init_cb| to forward |success|.
-  void OnInit(base::OnceCallback<void(bool)> init_cb, bool success);
+  void OnInit(InitializeCB init_cb, bool success);
 
   // Returns true if the DB is successfully initialized.
   bool IsInitialized();

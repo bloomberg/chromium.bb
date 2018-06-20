@@ -6,8 +6,10 @@
 #define MEDIA_CAPABILITIES_VIDEO_DECODE_STATS_DB_H_
 
 #include <memory>
+#include <string>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
@@ -26,11 +28,19 @@ class MEDIA_EXPORT VideoDecodeStatsDB {
                                         const gfx::Size& size,
                                         int frame_rate);
 
+    // Returns a concise string representation of the key for storing in DB.
+    std::string Serialize() const;
+
+    // For debug logging. NOT interchangeable with Serialize().
+    std::string ToLogString() const;
+
+    // Note: operator == and != are defined outside this class.
     const VideoCodecProfile codec_profile;
     const gfx::Size size;
     const int frame_rate;
 
    private:
+    // All key's should be "bucketed" using MakeBucketedKey(...).
     VideoDescKey(VideoCodecProfile codec_profile,
                  const gfx::Size& size,
                  int frame_rate);
@@ -42,6 +52,15 @@ class MEDIA_EXPORT VideoDecodeStatsDB {
     DecodeStatsEntry(uint64_t frames_decoded,
                      uint64_t frames_dropped,
                      uint64_t frames_decoded_power_efficient);
+    DecodeStatsEntry(const DecodeStatsEntry& entry);
+
+    // Add stats from |right| to |this| entry.
+    DecodeStatsEntry& operator+=(const DecodeStatsEntry& right);
+
+    // For debug logging.
+    std::string ToLogString() const;
+
+    // Note: operator == and != are defined outside this class.
     uint64_t frames_decoded;
     uint64_t frames_dropped;
     uint64_t frames_decoded_power_efficient;
@@ -53,7 +72,8 @@ class MEDIA_EXPORT VideoDecodeStatsDB {
   // before calling other APIs. Initialization must be RE-RUN after calling
   // DestroyStats() and receiving its completion callback. |init_cb| must not be
   // a null callback.
-  virtual void Initialize(base::OnceCallback<void(bool)> init_cb) = 0;
+  using InitializeCB = base::OnceCallback<void(bool)>;
+  virtual void Initialize(InitializeCB init_cb) = 0;
 
   // Appends `stats` to existing entry associated with `key`. Will create a new
   // entry if none exists. The operation is asynchronous. The caller should be
@@ -78,6 +98,15 @@ class MEDIA_EXPORT VideoDecodeStatsDB {
   // RE-RUN Initialize() before performing further I/O.
   virtual void DestroyStats(base::OnceClosure destroy_done_cb) = 0;
 };
+
+MEDIA_EXPORT bool operator==(const VideoDecodeStatsDB::VideoDescKey& x,
+                             const VideoDecodeStatsDB::VideoDescKey& y);
+MEDIA_EXPORT bool operator!=(const VideoDecodeStatsDB::VideoDescKey& x,
+                             const VideoDecodeStatsDB::VideoDescKey& y);
+MEDIA_EXPORT bool operator==(const VideoDecodeStatsDB::DecodeStatsEntry& x,
+                             const VideoDecodeStatsDB::DecodeStatsEntry& y);
+MEDIA_EXPORT bool operator!=(const VideoDecodeStatsDB::DecodeStatsEntry& x,
+                             const VideoDecodeStatsDB::DecodeStatsEntry& y);
 
 // Factory interface to create a DB instance.
 class MEDIA_EXPORT VideoDecodeStatsDBFactory {
