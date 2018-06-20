@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/webrtc/fake_desktop_media_list.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
@@ -59,6 +60,12 @@ class DesktopMediaPickerViewsTest : public testing::Test {
     picker_params.app_name = app_name;
     picker_params.target_name = app_name;
     picker_params.request_audio = true;
+#if defined(OS_MACOSX)
+    // On Mac, we don't have a NativeView to provide to
+    // DialogDelegate::CreateDialogWidget for the default MODAL_TYPE_CHILD
+    // default. MODAL_TYPE_WINDOW works around this.
+    picker_params.modality = ui::ModalType::MODAL_TYPE_WINDOW;
+#endif
     picker_views_->Show(picker_params, std::move(source_lists),
                         base::Bind(&DesktopMediaPickerViewsTest::OnPickerDone,
                                    base::Unretained(this)));
