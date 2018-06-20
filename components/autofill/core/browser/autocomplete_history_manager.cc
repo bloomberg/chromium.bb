@@ -90,14 +90,14 @@ void AutocompleteHistoryManager::OnWillSubmitForm(const FormData& form) {
   //  - value is not a SSN
   //  - field was not identified as a CVC field (this is handled in
   //    AutofillManager)
+  //  - field is focusable
+  //  - not a presentation field
   std::vector<FormFieldData> values;
   for (const FormFieldData& field : form.fields) {
-    if (!field.value.empty() &&
-        !field.name.empty() &&
-        IsTextField(field) &&
-        field.should_autocomplete &&
-        !IsValidCreditCardNumber(field.value) &&
-        !IsSSN(field.value)) {
+    if (!field.value.empty() && !field.name.empty() && IsTextField(field) &&
+        field.should_autocomplete && !IsValidCreditCardNumber(field.value) &&
+        !IsSSN(field.value) && field.is_focusable &&
+        field.role != FormFieldData::ROLE_ATTRIBUTE_PRESENTATION) {
       values.push_back(field);
     }
   }
