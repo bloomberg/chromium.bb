@@ -19,6 +19,7 @@ if (is_ios) {
 static_library("dom_keycode_converter") {
   public = [
     "keycodes/dom/dom_code.h",
+    "keycodes/dom/dom_codes.h",
     "keycodes/dom/dom_key.h",
     "keycodes/dom/keycode_converter.h",
   ]
@@ -36,11 +37,6 @@ static_library("dom_keycode_converter") {
   if (!is_ios) {
     deps += [ "//ipc:param_traits" ]
   }
-
-  # TODO(joedow): Remove the ash friend.  There is a cc file in that directory
-  # which includes the private inc file, we should expose the funcitonality they
-  # need in the KeycodeConverter and then clean this up.
-  friend = [ "//ash/components/shortcut_viewer:lib" ]
 }
 
 static_library("dom_keyboard_layout") {
