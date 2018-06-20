@@ -105,6 +105,7 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   memset(&cm->next_ref_frame_map, -1, sizeof(cm->next_ref_frame_map));
 
   cm->current_video_frame = 0;
+  pbi->decoding_first_frame = 1;
   pbi->common.buffer_pool = pool;
 
   cm->bit_depth = AOM_BITS_8;
@@ -487,6 +488,10 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   // Note: At this point, this function holds a reference to cm->new_fb_idx
   // in the buffer pool. This reference is consumed by swap_frame_buffers().
   swap_frame_buffers(pbi, frame_decoded);
+
+  if (frame_decoded) {
+    pbi->decoding_first_frame = 0;
+  }
 
   if (cm->error.error_code != AOM_CODEC_OK) return 1;
 

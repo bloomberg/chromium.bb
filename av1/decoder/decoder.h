@@ -121,6 +121,11 @@ typedef struct AV1Decoder {
   size_t output_frame_index[MAX_NUM_SPATIAL_LAYERS];  // Buffer pool indices
   size_t num_output_frames;  // How many frames are queued up so far?
 
+  // In order to properly support random-access decoding, we need
+  // to behave slightly differently for the very first frame we decode.
+  // So we track whether this is the first frame or not.
+  int decoding_first_frame;
+
   int allow_lowbitdepth;
   int max_threads;
   int inv_tile_order;
