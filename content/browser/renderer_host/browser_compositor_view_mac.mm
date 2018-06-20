@@ -407,9 +407,12 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
   // Note that the state enum values represent the other through which
   // transitions must be done (see comments in State definition).
 
-  // Transition UseParentLayerCompositor -> HasNoCompositor.
+  // Transition UseParentLayerCompositor -> HasNoCompositor. Note that this
+  // transition will be made if we are already in UseParentLayerCompositor, but
+  // with a different parent layer.
   if (state_ == UseParentLayerCompositor &&
-      new_state < UseParentLayerCompositor) {
+      (new_state < UseParentLayerCompositor ||
+       parent_ui_layer_ != root_layer_->parent())) {
     DCHECK(root_layer_->parent());
     root_layer_->parent()->RemoveObserver(this);
     root_layer_->parent()->Remove(root_layer_.get());
@@ -582,16 +585,16 @@ bool BrowserCompositorMac::ShouldContinueToPauseForFrame() const {
 }
 
 void BrowserCompositorMac::SetParentUiLayer(ui::Layer* new_parent_ui_layer) {
-  if (new_parent_ui_layer) {
+  if (new_parent_ui_layer)
     DCHECK(new_parent_ui_layer->GetCompositor());
-    DCHECK(!parent_ui_layer_);
-    parent_ui_layer_ = new_parent_ui_layer;
-  } else if (parent_ui_layer_) {
-    DCHECK(root_layer_->parent());
-    DCHECK_EQ(root_layer_->parent(), parent_ui_layer_);
-    parent_ui_layer_ = nullptr;
-  }
+
+  // Set |parent_ui_layer_| to the new value, which potentially not match the
+  // value of |root_layer_->parent()|. The call to UpdateState will re-parent
+  // |root_layer_|.
+  DCHECK_EQ(root_layer_->parent(), parent_ui_layer_);
+  parent_ui_layer_ = new_parent_ui_layer;
   UpdateState();
+  DCHECK_EQ(root_layer_->parent(), parent_ui_layer_);
 }
 
 bool BrowserCompositorMac::ForceNewSurfaceForTesting() {
