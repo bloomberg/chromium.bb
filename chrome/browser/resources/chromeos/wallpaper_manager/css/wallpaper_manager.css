@@ -623,6 +623,10 @@ body.v2 {
   color: rgb(32, 33, 36);
 }
 
+.v2.daily-wallpaper .top-header-contents #wallpaper-description {
+  max-width: 226px;
+}
+
 .v2 .top-header-contents .more-options {
   display: flex;
   position: absolute;
@@ -635,6 +639,7 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
 }
 
 .v2 .top-header-contents .more-options > div {
+  background-color: #fff;
   border: 0.5px solid;
   border-color: rgba(128, 134, 139, 0.6);
   border-radius: 16px;
@@ -699,8 +704,17 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
   -webkit-margin-start: 96px;
 }
 
+.v2.daily-wallpaper .top-header-contents #confirm-preview-wallpaper {
+  -webkit-margin-start: 8px;
+}
+
+.v2 .top-header-contents #refresh-wallpaper {
+  -webkit-margin-start: 16px;
+}
+
 .v2.preview-mode.custom-wallpaper .more-options .custom-option,
-.v2.preview-mode:not(.custom-wallpaper) .more-options :not(.custom-option) {
+.v2.preview-mode.daily-wallpaper .more-options .daily-option,
+.v2.preview-mode:not(.custom-wallpaper):not(.daily-option) .more-options :not(.custom-option):not(.daily-option) {
   display: flex;
 }
 

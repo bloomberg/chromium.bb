@@ -388,6 +388,15 @@ cr.define('wallpapers', function() {
     },
 
     /**
+     * The id of the collection that the wallpapers belong to, assuming all the
+     * wallpapers have the same id (enfored by the source of the data model).
+     * @type {string}
+     */
+    get collectionId() {
+      return this.dataModel.item(this.dataModel.length - 1).collectionId;
+    },
+
+    /**
      * A unique ID that assigned to each set dataModel operation. Note that this
      * id wont increase if the new dataModel is null or empty.
      */
@@ -697,11 +706,9 @@ cr.define('wallpapers', function() {
       if (!this.dailyRefreshItem.querySelector('.daily-refresh-banner')) {
         var dailyRefreshBanner = document.querySelector('.daily-refresh-banner')
                                      .cloneNode(true /*deep=*/);
-        dailyRefreshBanner.querySelector('.daily-refresh-slider')
-            .addEventListener(
-                'click',
-                WallpaperManager.prototype.toggleSurpriseMe.bind(
-                    wallpaperManager));
+        wallpaperManager.decorateDailyRefreshSlider(
+            this.collectionId,
+            dailyRefreshBanner.querySelector('.daily-refresh-slider'));
         this.dailyRefreshItem.appendChild(dailyRefreshBanner);
       }
 

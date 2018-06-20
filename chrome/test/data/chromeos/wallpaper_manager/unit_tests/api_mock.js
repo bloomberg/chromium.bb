@@ -286,6 +286,10 @@ var chrome = {
     },
     getImagesInfo: function(collectionId, callback) {
       callback([{imageUrl: TestConstants.wallpaperUrl}]);
+    },
+    getSurpriseMeImage: function(collectionId, resumeToken, callback) {
+      callback(
+          {imageUrl: TestConstants.wallpaperUrl}, null /*nextResumeToken=*/);
     }
   },
   runtime: {lastError: null},
