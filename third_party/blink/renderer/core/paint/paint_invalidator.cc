@@ -261,7 +261,7 @@ static LayoutRect ComputeFragmentLocalSelectionRect(
       frame_selection.ComputeLayoutSelectionStatus(fragment);
   if (status.start == status.end)
     return LayoutRect();
-  return fragment.ComputeLocalSelectionRect(status).ToLayoutRect();
+  return fragment.ComputeLocalSelectionRectForText(status).ToLayoutRect();
 }
 
 LayoutRect PaintInvalidator::MapFragmentLocalRectToVisualRect(

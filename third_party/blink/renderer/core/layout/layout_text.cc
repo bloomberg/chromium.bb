@@ -1902,7 +1902,7 @@ LayoutRect LayoutText::LocalSelectionRect() const {
       if (status.start == status.end)
         continue;
       NGPhysicalOffsetRect fragment_rect =
-          fragment->ComputeLocalSelectionRect(status);
+          fragment->ComputeLocalSelectionRectForText(status);
       fragment_rect.offset += fragment->InlineOffsetToContainerBox();
       rect.Unite(fragment_rect.ToLayoutRect());
     }

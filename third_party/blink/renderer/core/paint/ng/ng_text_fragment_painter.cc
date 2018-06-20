@@ -248,7 +248,7 @@ static void PaintSelection(GraphicsContext& context,
   const Color color =
       SelectionBackgroundColor(document, style, text_fragment, text_color);
   const NGPhysicalOffsetRect selection_rect =
-      paint_fragment.ComputeLocalSelectionRect(selection_status);
+      paint_fragment.ComputeLocalSelectionRectForText(selection_status);
   PaintRect(context, NGPhysicalOffset(box_rect.Location()), selection_rect,
             color);
 }
@@ -310,12 +310,12 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
 
   // 1. Paint backgrounds behind text if needed. Examples of such backgrounds
   // include selection and composition highlights.
-  // Since NGPaintFragment::ComputeLocalSelectionRect() returns
+  // Since NGPaintFragment::ComputeLocalSelectionRectForText() returns
   // NGPhysicalOffsetRect rather than NGLogicalRect, we should paint selection
   // before GraphicsContext flip.
   // TODO(yoichio): Make NGPhysicalTextFragment::LocalRect and
-  // NGPaintFragment::ComputeLocalSelectionRect logical so that we can paint
-  // selection in same fliped dimention as NGTextPainter.
+  // NGPaintFragment::ComputeLocalSelectionRectForText logical so that we can
+  // paint selection in same fliped dimention as NGTextPainter.
   const DocumentMarkerVector& markers_to_paint =
       ComputeMarkersToPaint(fragment_);
   if (paint_info.phase != PaintPhase::kSelection &&
