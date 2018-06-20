@@ -580,8 +580,9 @@ void Tab::Layout() {
         gfx::Size(icon_->GetPreferredSize().width(),
                   contents_rect.height() - favicon_bounds.y()));
     if (center_favicon_) {
-      favicon_bounds.set_x(contents_rect.CenterPoint().x() -
-                           gfx::kFaviconSize / 2);
+      // When centering the favicon, the favicon is allowed to escape the normal
+      // contents rect.
+      favicon_bounds.set_x(Center(width(), gfx::kFaviconSize));
     } else {
       MaybeAdjustLeftForPinnedTab(&favicon_bounds, gfx::kFaviconSize);
     }
@@ -607,11 +608,16 @@ void Tab::Layout() {
     const gfx::Size close_button_size(close_button_->GetPreferredSize());
     const int top = contents_rect.y() +
                     Center(contents_rect.height(), close_button_size.height());
-    close_x = contents_rect.right() - close_button_size.width();
-    const int left = after_title_padding;
+    // Clamp the close button position to "centered within the tab"; this should
+    // only have an effect when animating in a new active tab, which might start
+    // out narrower than the minimum active tab width.
+    close_x = std::max(contents_rect.right() - close_button_size.width(),
+                       Center(width(), close_button_size.width()));
+    const int left = std::min(after_title_padding, close_x);
     close_button_->SetPosition(gfx::Point(close_x - left, 0));
     const int bottom = height() - close_button_size.height() - top;
-    const int right = width() - contents_rect.right();
+    const int right =
+        std::max(0, width() - (close_x + close_button_size.width()));
     close_button_->SetBorder(
         views::CreateEmptyBorder(top, left, bottom, right));
     close_button_->SizeToPreferredSize();
@@ -643,13 +649,16 @@ void Tab::Layout() {
   // Size the title to fill the remaining width and use all available height.
   bool show_title = ShouldRenderAsNormalTab();
   if (show_title) {
-    // When computing the spacing from the favicon, don't count the actual
-    // icon view width (which will include extra room for the alert indicator),
-    // but rather the normal favicon width which is what it will look like.
-    const int title_left = showing_icon_
-                               ? (favicon_bounds.x() + gfx::kFaviconSize +
-                                  GetLayoutConstant(TAB_PRE_TITLE_PADDING))
-                               : start;
+    int title_left = start;
+    if (showing_icon_) {
+      // When computing the spacing from the favicon, don't count the actual
+      // icon view width (which will include extra room for the alert
+      // indicator), but rather the normal favicon width which is what it will
+      // look like.
+      const int after_favicon = favicon_bounds.x() + gfx::kFaviconSize +
+                                GetLayoutConstant(TAB_PRE_TITLE_PADDING);
+      title_left = std::max(title_left, after_favicon);
+    }
     int title_right = contents_rect.right();
     if (showing_alert_indicator_) {
       title_right = alert_indicator_button_->x() - after_title_padding;
@@ -1129,9 +1138,10 @@ void Tab::MaybeAdjustLeftForPinnedTab(gfx::Rect* bounds,
   // TODO(pkasting): https://crbug.com/533570  This code is broken when the
   // current width is less than the pinned width.
   bounds->set_x(
-      bounds->x() + static_cast<int>(
+      bounds->x() +
+      gfx::ToRoundedInt(
           (1 - static_cast<float>(ideal_delta) /
-              static_cast<float>(kPinnedTabExtraWidthToRenderAsNormal)) *
+                   static_cast<float>(kPinnedTabExtraWidthToRenderAsNormal)) *
           (ideal_x - bounds->x())));
 }
 

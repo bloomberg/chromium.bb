@@ -761,7 +761,7 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
     double ratio =
         static_cast<double>(attached_tabstrip_->current_inactive_width()) /
         Tab::GetStandardSize().width();
-    threshold = static_cast<int>(ratio * kHorizontalMoveThreshold);
+    threshold = gfx::ToRoundedInt(ratio * kHorizontalMoveThreshold);
   }
   // else case: touch tabs never shrink.
 
@@ -1035,9 +1035,9 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
   tabs_to_source.erase(tabs_to_source.begin() + source_tab_index_ + 1,
                        tabs_to_source.end());
   int new_x = attached_tabstrip_->GetSizeNeededForTabs(tabs_to_source) -
-      tabs[source_tab_index_]->width() +
-      static_cast<int>(offset_to_width_ratio_ *
-                       tabs[source_tab_index_]->width());
+              tabs[source_tab_index_]->width() +
+              gfx::ToRoundedInt(offset_to_width_ratio_ *
+                                tabs[source_tab_index_]->width());
   mouse_offset_.set_x(new_x);
 
   // Transfer ownership of us to the new tabstrip as well as making sure the
@@ -1877,7 +1877,7 @@ void TabDragController::AdjustBrowserAndTabBoundsForDrag(
     // under the mouse cursor.
     gfx::Rect tab_bounds = (*drag_bounds)[source_tab_index_];
     gfx::Point offset(
-        static_cast<int>(tab_bounds.width() * offset_to_width_ratio_) +
+        gfx::ToRoundedInt(tab_bounds.width() * offset_to_width_ratio_) +
             tab_bounds.x(),
         0);
     views::View::ConvertPointToWidget(attached_tabstrip_, &offset);
