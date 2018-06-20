@@ -821,3 +821,26 @@ TEST_F('PrintPreviewAdvancedItemTest', 'QueryName', function() {
 TEST_F('PrintPreviewAdvancedItemTest', 'QueryOption', function() {
   this.runMochaTest(advanced_item_test.TestNames.QueryOption);
 });
+
+PrintPreviewDestinationListTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/destination_list.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'destination_list_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return destination_list_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewDestinationListTest', 'FilterDestinations', function() {
+  this.runMochaTest(destination_list_test.TestNames.FilterDestinations);
+});
