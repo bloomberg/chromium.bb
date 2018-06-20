@@ -21,7 +21,6 @@ static constexpr gfx::PointF kOutOfBoundsPoint = {-0.5f, -0.5f};
 }  // namespace
 
 PlatformUiInputDelegate::PlatformUiInputDelegate() {}
-
 PlatformUiInputDelegate::PlatformUiInputDelegate(
     PlatformInputHandler* input_handler)
     : input_handler_(input_handler) {}
@@ -29,43 +28,48 @@ PlatformUiInputDelegate::PlatformUiInputDelegate(
 PlatformUiInputDelegate::~PlatformUiInputDelegate() = default;
 
 void PlatformUiInputDelegate::OnHoverEnter(
-    const gfx::PointF& normalized_hit_point) {
-  SendGestureToTarget(
-      MakeMouseEvent(blink::WebInputEvent::kMouseEnter, normalized_hit_point));
+    const gfx::PointF& normalized_hit_point,
+    base::TimeTicks timestamp) {
+  SendGestureToTarget(MakeMouseEvent(blink::WebInputEvent::kMouseEnter,
+                                     normalized_hit_point, timestamp));
 }
 
-void PlatformUiInputDelegate::OnHoverLeave() {
+void PlatformUiInputDelegate::OnHoverLeave(base::TimeTicks timestamp) {
   // Note that we send an out of bounds mouse leave event. With blink feature
   // UpdateHoverPostLayout turned on, a MouseMove event will dispatched post a
   // Layout. Sending a mouse leave event at 0,0 will result continuous
   // MouseMove events sent to the content if the content keeps relayout itself.
   // See https://crbug.com/762573 for details.
-  SendGestureToTarget(
-      MakeMouseEvent(blink::WebInputEvent::kMouseLeave, kOutOfBoundsPoint));
+  SendGestureToTarget(MakeMouseEvent(blink::WebInputEvent::kMouseLeave,
+                                     kOutOfBoundsPoint, timestamp));
 }
 
 void PlatformUiInputDelegate::OnHoverMove(
-    const gfx::PointF& normalized_hit_point) {
-  SendGestureToTarget(
-      MakeMouseEvent(blink::WebInputEvent::kMouseMove, normalized_hit_point));
+    const gfx::PointF& normalized_hit_point,
+    base::TimeTicks timestamp) {
+  SendGestureToTarget(MakeMouseEvent(blink::WebInputEvent::kMouseMove,
+                                     normalized_hit_point, timestamp));
 }
 
 void PlatformUiInputDelegate::OnButtonDown(
-    const gfx::PointF& normalized_hit_point) {
-  SendGestureToTarget(
-      MakeTouchEvent(blink::WebInputEvent::kTouchStart, normalized_hit_point));
+    const gfx::PointF& normalized_hit_point,
+    base::TimeTicks timestamp) {
+  SendGestureToTarget(MakeTouchEvent(blink::WebInputEvent::kTouchStart,
+                                     normalized_hit_point, timestamp));
 }
 
 void PlatformUiInputDelegate::OnButtonUp(
-    const gfx::PointF& normalized_hit_point) {
-  SendGestureToTarget(
-      MakeTouchEvent(blink::WebInputEvent::kTouchEnd, normalized_hit_point));
+    const gfx::PointF& normalized_hit_point,
+    base::TimeTicks timestamp) {
+  SendGestureToTarget(MakeTouchEvent(blink::WebInputEvent::kTouchEnd,
+                                     normalized_hit_point, timestamp));
 }
 
 void PlatformUiInputDelegate::OnTouchMove(
-    const gfx::PointF& normalized_hit_point) {
-  SendGestureToTarget(
-      MakeTouchEvent(blink::WebInputEvent::kTouchMove, normalized_hit_point));
+    const gfx::PointF& normalized_hit_point,
+    base::TimeTicks timestamp) {
+  SendGestureToTarget(MakeTouchEvent(blink::WebInputEvent::kTouchMove,
+                                     normalized_hit_point, timestamp));
 }
 
 void PlatformUiInputDelegate::OnFlingCancel(
@@ -113,30 +117,12 @@ void PlatformUiInputDelegate::SendGestureToTarget(
 
 std::unique_ptr<blink::WebMouseEvent> PlatformUiInputDelegate::MakeMouseEvent(
     blink::WebInputEvent::Type type,
-    const gfx::PointF& normalized_web_content_location) const {
-  // TODO(acondor): Remove dependency on platform controller.
-  if (!controller_)
-    return nullptr;
-
+    const gfx::PointF& normalized_web_content_location,
+    base::TimeTicks timestamp) const {
   gfx::Point location = CalculateLocation(normalized_web_content_location);
-  blink::WebInputEvent::Modifiers modifiers =
-      controller_->IsButtonDown(PlatformController::kButtonSelect)
-          ? blink::WebInputEvent::kLeftButtonDown
-          : blink::WebInputEvent::kNoModifiers;
 
-  base::TimeTicks timestamp;
-  switch (type) {
-    case blink::WebInputEvent::kMouseMove:
-    case blink::WebInputEvent::kMouseEnter:
-    case blink::WebInputEvent::kMouseLeave:
-      timestamp = controller_->GetLastOrientationTimestamp();
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  auto mouse_event =
-      std::make_unique<blink::WebMouseEvent>(type, modifiers, timestamp);
+  auto mouse_event = std::make_unique<blink::WebMouseEvent>(
+      type, blink::WebInputEvent::kNoModifiers, timestamp);
   mouse_event->pointer_type = blink::WebPointerProperties::PointerType::kMouse;
   mouse_event->button = blink::WebPointerProperties::Button::kLeft;
   mouse_event->SetPositionInWidget(location.x(), location.y());
@@ -146,30 +132,23 @@ std::unique_ptr<blink::WebMouseEvent> PlatformUiInputDelegate::MakeMouseEvent(
 
 std::unique_ptr<blink::WebTouchEvent> PlatformUiInputDelegate::MakeTouchEvent(
     blink::WebInputEvent::Type type,
-    const gfx::PointF& normalized_web_content_location) const {
-  // TODO(acondor): Remove dependency on platform controller.
-  if (!controller_)
-    return nullptr;
-
+    const gfx::PointF& normalized_web_content_location,
+    base::TimeTicks timestamp) const {
   gfx::Point location = CalculateLocation(normalized_web_content_location);
   blink::WebInputEvent::Modifiers modifiers =
       blink::WebInputEvent::kNoModifiers;
 
-  base::TimeTicks timestamp;
   blink::WebTouchPoint::State touch_state =
       blink::WebTouchPoint::kStateUndefined;
   switch (type) {
     case blink::WebInputEvent::kTouchStart:
       touch_state = blink::WebTouchPoint::kStatePressed;
-      timestamp = controller_->GetLastButtonTimestamp();
       break;
     case blink::WebInputEvent::kTouchEnd:
       touch_state = blink::WebTouchPoint::kStateReleased;
-      timestamp = controller_->GetLastButtonTimestamp();
       break;
     case blink::WebInputEvent::kTouchMove:
       touch_state = blink::WebTouchPoint::kStateMoved;
-      timestamp = controller_->GetLastOrientationTimestamp();
       break;
     default:
       NOTREACHED();

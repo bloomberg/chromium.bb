@@ -863,7 +863,6 @@ void VrShellGl::EnableAlertDialog(PlatformInputHandler* input_handler,
   showing_vr_dialog_ = true;
   vr_dialog_input_delegate_.reset(new PlatformUiInputDelegate(input_handler));
   vr_dialog_input_delegate_->SetSize(width, height);
-  vr_dialog_input_delegate_->SetPlatformController(controller_.get());
   ui_->SetAlertDialogEnabled(true, vr_dialog_input_delegate_.get(),
                              width / content_tex_buffer_size_.width(),
                              height / content_tex_buffer_size_.width());
@@ -1024,7 +1023,6 @@ void VrShellGl::OnWebVrTimeoutImminent() {
 void VrShellGl::GvrInit(gvr_context* gvr_api) {
   gvr_api_ = gvr::GvrApi::WrapNonOwned(gvr_api);
   controller_.reset(new VrController(gvr_api));
-  ui_->OnPlatformControllerInitialized(controller_.get());
 
   MetricsUtilAndroid::LogVrViewerType(gvr_api_->GetViewerType());
 
@@ -1254,6 +1252,11 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
   controller_model.touchpad_touch_position =
       gfx::PointF(controller_->TouchPosX(), controller_->TouchPosY());
   controller_model.app_button_long_pressed = app_button_long_pressed_;
+  controller_model.last_orientation_timestamp =
+      controller_->GetLastOrientationTimestamp();
+  controller_model.last_touch_timestamp = controller_->GetLastTouchTimestamp();
+  controller_model.last_button_timestamp =
+      controller_->GetLastButtonTimestamp();
 
   if (!test_controller_model_queue_.empty()) {
     cached_test_controller_model_ = test_controller_model_queue_.front();

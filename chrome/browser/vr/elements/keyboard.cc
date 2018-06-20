@@ -63,35 +63,39 @@ void Keyboard::NotifyClientFloatAnimated(float value,
   UpdateDelegateVisibility();
 }
 
-void Keyboard::OnHoverEnter(const gfx::PointF& position) {
+void Keyboard::OnHoverEnter(const gfx::PointF& position,
+                            base::TimeTicks timestamp) {
   if (!delegate_)
     return;
 
   delegate_->OnHoverEnter(position);
 }
 
-void Keyboard::OnHoverLeave() {
+void Keyboard::OnHoverLeave(base::TimeTicks) {
   if (!delegate_)
     return;
 
   delegate_->OnHoverLeave();
 }
 
-void Keyboard::OnHoverMove(const gfx::PointF& position) {
+void Keyboard::OnHoverMove(const gfx::PointF& position,
+                           base::TimeTicks timestamp) {
   if (!delegate_)
     return;
 
   delegate_->OnHoverMove(position);
 }
 
-void Keyboard::OnButtonDown(const gfx::PointF& position) {
+void Keyboard::OnButtonDown(const gfx::PointF& position,
+                            base::TimeTicks timestamp) {
   if (!delegate_)
     return;
 
   delegate_->OnButtonDown(position);
 }
 
-void Keyboard::OnButtonUp(const gfx::PointF& position) {
+void Keyboard::OnButtonUp(const gfx::PointF& position,
+                          base::TimeTicks timestamp) {
   if (!delegate_)
     return;
 

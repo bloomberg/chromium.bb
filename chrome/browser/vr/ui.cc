@@ -437,10 +437,6 @@ void Ui::OnContentBoundsChanged(int width, int height) {
   content_input_delegate_->SetSize(width, height);
 }
 
-void Ui::OnPlatformControllerInitialized(PlatformController* controller) {
-  content_input_delegate_->SetPlatformController(controller);
-}
-
 bool Ui::IsControllerVisible() const {
   UiElement* controller_group = scene_->GetUiElementByName(kControllerGroup);
   return controller_group && controller_group->GetTargetOpacity() > 0.0f;
@@ -557,10 +553,10 @@ void Ui::AcceptDoffPromptForTesting() {
   DCHECK(prompt);
   auto* button = prompt->GetDescendantByType(kTypePromptPrimaryButton);
   DCHECK(button);
-  button->OnHoverEnter({0.5f, 0.5f});
-  button->OnButtonDown({0.5f, 0.5f});
-  button->OnButtonUp({0.5f, 0.5f});
-  button->OnHoverLeave();
+  button->OnHoverEnter({0.5f, 0.5f}, base::TimeTicks::Now());
+  button->OnButtonDown({0.5f, 0.5f}, base::TimeTicks::Now());
+  button->OnButtonUp({0.5f, 0.5f}, base::TimeTicks::Now());
+  button->OnHoverLeave(base::TimeTicks::Now());
 }
 
 void Ui::PerformControllerActionForTesting(

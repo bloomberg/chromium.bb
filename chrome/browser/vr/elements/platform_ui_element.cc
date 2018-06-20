@@ -26,34 +26,39 @@ void PlatformUiElement::Render(UiElementRenderer* renderer,
   }
 }
 
-void PlatformUiElement::OnHoverEnter(const gfx::PointF& position) {
+void PlatformUiElement::OnHoverEnter(const gfx::PointF& position,
+                                     base::TimeTicks timestamp) {
   if (delegate_)
-    delegate_->OnHoverEnter(position);
+    delegate_->OnHoverEnter(position, timestamp);
 }
 
-void PlatformUiElement::OnHoverLeave() {
+void PlatformUiElement::OnHoverLeave(base::TimeTicks timestamp) {
   if (delegate_)
-    delegate_->OnHoverLeave();
+    delegate_->OnHoverLeave(timestamp);
 }
 
-void PlatformUiElement::OnHoverMove(const gfx::PointF& position) {
+void PlatformUiElement::OnHoverMove(const gfx::PointF& position,
+                                    base::TimeTicks timestamp) {
   if (delegate_)
-    delegate_->OnHoverMove(position);
+    delegate_->OnHoverMove(position, timestamp);
 }
 
-void PlatformUiElement::OnButtonDown(const gfx::PointF& position) {
+void PlatformUiElement::OnButtonDown(const gfx::PointF& position,
+                                     base::TimeTicks timestamp) {
   if (delegate_)
-    delegate_->OnButtonDown(position);
+    delegate_->OnButtonDown(position, timestamp);
 }
 
-void PlatformUiElement::OnButtonUp(const gfx::PointF& position) {
+void PlatformUiElement::OnButtonUp(const gfx::PointF& position,
+                                   base::TimeTicks timestamp) {
   if (delegate_)
-    delegate_->OnButtonUp(position);
+    delegate_->OnButtonUp(position, timestamp);
 }
 
-void PlatformUiElement::OnTouchMove(const gfx::PointF& position) {
+void PlatformUiElement::OnTouchMove(const gfx::PointF& position,
+                                    base::TimeTicks timestamp) {
   if (delegate_)
-    delegate_->OnTouchMove(position);
+    delegate_->OnTouchMove(position, timestamp);
 }
 
 void PlatformUiElement::OnFlingCancel(

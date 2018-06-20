@@ -14,13 +14,14 @@ InvisibleHitTarget::~InvisibleHitTarget() = default;
 void InvisibleHitTarget::Render(UiElementRenderer* renderer,
                                 const CameraModel& model) const {}
 
-void InvisibleHitTarget::OnHoverEnter(const gfx::PointF& position) {
-  UiElement::OnHoverEnter(position);
+void InvisibleHitTarget::OnHoverEnter(const gfx::PointF& position,
+                                      base::TimeTicks timestamp) {
+  UiElement::OnHoverEnter(position, timestamp);
   hovered_ = true;
 }
 
-void InvisibleHitTarget::OnHoverLeave() {
-  UiElement::OnHoverLeave();
+void InvisibleHitTarget::OnHoverLeave(base::TimeTicks timestamp) {
+  UiElement::OnHoverLeave(timestamp);
   hovered_ = false;
 }
 

@@ -159,7 +159,6 @@ class VR_EXPORT Ui : public BrowserUiInterface, public KeyboardUiInterface {
   bool SkipsRedrawWhenNotDirty() const;
   void OnSwapContents(int new_content_id);
   void OnContentBoundsChanged(int width, int height);
-  void OnPlatformControllerInitialized(PlatformController* controller);
   void OnUiRequestedNavigation();
   void SetFloorHeight(float floor_height);
 

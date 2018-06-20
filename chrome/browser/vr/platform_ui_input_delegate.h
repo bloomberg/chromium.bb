@@ -18,6 +18,10 @@
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace base {
+class TimeTicks;
+}  // namespace base
+
 namespace blink {
 class WebGestureEvent;
 class WebMouseEvent;
@@ -30,7 +34,6 @@ class PointF;
 
 namespace vr {
 
-class PlatformController;
 class PlatformInputHandler;
 
 // This class is responsible for processing all events and gestures for
@@ -45,12 +48,17 @@ class VR_EXPORT PlatformUiInputDelegate {
 
   // The following functions are virtual so that they may be overridden in the
   // MockContentInputDelegate.
-  VIRTUAL_FOR_MOCKS void OnHoverEnter(const gfx::PointF& normalized_hit_point);
-  VIRTUAL_FOR_MOCKS void OnHoverLeave();
-  VIRTUAL_FOR_MOCKS void OnHoverMove(const gfx::PointF& normalized_hit_point);
-  VIRTUAL_FOR_MOCKS void OnButtonDown(const gfx::PointF& normalized_hit_point);
-  VIRTUAL_FOR_MOCKS void OnButtonUp(const gfx::PointF& normalized_hit_point);
-  VIRTUAL_FOR_MOCKS void OnTouchMove(const gfx::PointF& normalized_hit_point);
+  VIRTUAL_FOR_MOCKS void OnHoverEnter(const gfx::PointF& normalized_hit_point,
+                                      base::TimeTicks timestamp);
+  VIRTUAL_FOR_MOCKS void OnHoverLeave(base::TimeTicks timestamp);
+  VIRTUAL_FOR_MOCKS void OnHoverMove(const gfx::PointF& normalized_hit_point,
+                                     base::TimeTicks timestamp);
+  VIRTUAL_FOR_MOCKS void OnButtonDown(const gfx::PointF& normalized_hit_point,
+                                      base::TimeTicks timestamp);
+  VIRTUAL_FOR_MOCKS void OnButtonUp(const gfx::PointF& normalized_hit_point,
+                                    base::TimeTicks timestamp);
+  VIRTUAL_FOR_MOCKS void OnTouchMove(const gfx::PointF& normalized_hit_point,
+                                     base::TimeTicks timestamp);
   VIRTUAL_FOR_MOCKS void OnFlingCancel(
       std::unique_ptr<blink::WebGestureEvent> gesture,
       const gfx::PointF& normalized_hit_point);
@@ -63,10 +71,6 @@ class VR_EXPORT PlatformUiInputDelegate {
   VIRTUAL_FOR_MOCKS void OnScrollEnd(
       std::unique_ptr<blink::WebGestureEvent> gesture,
       const gfx::PointF& normalized_hit_point);
-
-  void SetPlatformController(PlatformController* controller) {
-    controller_ = controller;
-  }
 
   void SetSize(int width, int height) { size_ = {width, height}; }
   void SetPlatformInputHandlerForTest(PlatformInputHandler* input_handler) {
@@ -82,19 +86,18 @@ class VR_EXPORT PlatformUiInputDelegate {
                      blink::WebGestureEvent& gesture);
   std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(
       blink::WebInputEvent::Type type,
-      const gfx::PointF& normalized_web_content_location) const;
+      const gfx::PointF& normalized_web_content_location,
+      base::TimeTicks timestamp) const;
   std::unique_ptr<blink::WebTouchEvent> MakeTouchEvent(
       blink::WebInputEvent::Type type,
-      const gfx::PointF& normalized_web_content_location) const;
+      const gfx::PointF& normalized_web_content_location,
+      base::TimeTicks timestamp) const;
   gfx::Point CalculateLocation(
       const gfx::PointF& normalized_web_content_location) const;
 
   gfx::Size size_;
 
   PlatformInputHandler* input_handler_ = nullptr;
-
-  // TODO(acondor): Remove dependency on platform controller.
-  PlatformController* controller_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformUiInputDelegate);
 };

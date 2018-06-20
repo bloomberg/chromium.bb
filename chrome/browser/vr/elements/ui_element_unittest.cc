@@ -498,21 +498,21 @@ TEST(UiElement, EventBubbling) {
   ElementEventHandlers child_handlers(child_ptr);
 
   // Events on grand_child don't bubble up the parent chain.
-  grand_child_ptr->OnHoverEnter(gfx::PointF());
-  grand_child_ptr->OnHoverMove(gfx::PointF());
-  grand_child_ptr->OnHoverLeave();
-  grand_child_ptr->OnButtonDown(gfx::PointF());
-  grand_child_ptr->OnButtonUp(gfx::PointF());
+  grand_child_ptr->OnHoverEnter(gfx::PointF(), base::TimeTicks());
+  grand_child_ptr->OnHoverMove(gfx::PointF(), base::TimeTicks());
+  grand_child_ptr->OnHoverLeave(base::TimeTicks());
+  grand_child_ptr->OnButtonDown(gfx::PointF(), base::TimeTicks());
+  grand_child_ptr->OnButtonUp(gfx::PointF(), base::TimeTicks());
   child_handlers.ExpectCalled(false);
   element_handlers.ExpectCalled(false);
 
   // Events on grand_child bubble up the parent chain.
   grand_child_ptr->set_bubble_events(true);
-  grand_child_ptr->OnHoverEnter(gfx::PointF());
-  grand_child_ptr->OnHoverMove(gfx::PointF());
-  grand_child_ptr->OnHoverLeave();
-  grand_child_ptr->OnButtonDown(gfx::PointF());
-  grand_child_ptr->OnButtonUp(gfx::PointF());
+  grand_child_ptr->OnHoverEnter(gfx::PointF(), base::TimeTicks());
+  grand_child_ptr->OnHoverMove(gfx::PointF(), base::TimeTicks());
+  grand_child_ptr->OnHoverLeave(base::TimeTicks());
+  grand_child_ptr->OnButtonDown(gfx::PointF(), base::TimeTicks());
+  grand_child_ptr->OnButtonUp(gfx::PointF(), base::TimeTicks());
   child_handlers.ExpectCalled(true);
   // Events don't bubble to element since it doesn't have the bubble_events bit
   // set.

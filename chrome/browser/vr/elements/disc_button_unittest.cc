@@ -30,7 +30,7 @@ TEST(DiscButton, HoverTest) {
   cc::TransformOperation hit_plane_op =
       button.hit_plane()->GetTargetTransform().at(UiElement::kScaleIndex);
 
-  button.OnHoverEnter(gfx::PointF(0.5f, 0.5f));
+  button.OnHoverEnter(gfx::PointF(0.5f, 0.5f), base::TimeTicks());
   cc::TransformOperation foreground_op_hover =
       button.foreground()->GetTargetTransform().at(UiElement::kTranslateIndex);
   cc::TransformOperation background_op_hover =

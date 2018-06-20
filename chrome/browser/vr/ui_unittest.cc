@@ -1049,19 +1049,21 @@ TEST_F(UiTest, CloseButtonColorBindings) {
     RunForMs(kAnimationTimeMs);
     VerifyButtonColor(button, scheme.disc_button_colors.foreground,
                       scheme.disc_button_colors.background, "normal");
-    button->hit_plane()->OnHoverEnter(gfx::PointF(0.5f, 0.5f));
+    button->hit_plane()->OnHoverEnter(gfx::PointF(0.5f, 0.5f),
+                                      base::TimeTicks());
     RunForMs(kAnimationTimeMs);
     VerifyButtonColor(button, scheme.disc_button_colors.foreground,
                       scheme.disc_button_colors.background_hover, "hover");
-    button->hit_plane()->OnButtonDown(gfx::PointF(0.5f, 0.5f));
+    button->hit_plane()->OnButtonDown(gfx::PointF(0.5f, 0.5f),
+                                      base::TimeTicks());
     RunForMs(kAnimationTimeMs);
     VerifyButtonColor(button, scheme.disc_button_colors.foreground,
                       scheme.disc_button_colors.background_down, "down");
-    button->hit_plane()->OnHoverMove(gfx::PointF());
+    button->hit_plane()->OnHoverMove(gfx::PointF(), base::TimeTicks());
     RunForMs(kAnimationTimeMs);
     VerifyButtonColor(button, scheme.disc_button_colors.foreground,
                       scheme.disc_button_colors.background, "move");
-    button->hit_plane()->OnButtonUp(gfx::PointF());
+    button->hit_plane()->OnButtonUp(gfx::PointF(), base::TimeTicks());
     RunForMs(kAnimationTimeMs);
     VerifyButtonColor(button, scheme.disc_button_colors.foreground,
                       scheme.disc_button_colors.background, "up");

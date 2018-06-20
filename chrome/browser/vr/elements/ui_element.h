@@ -149,12 +149,17 @@ class VR_EXPORT UiElement : public cc::AnimationTarget {
   virtual void Initialize(SkiaSurfaceProvider* provider);
 
   // Controller interaction methods.
-  virtual void OnHoverEnter(const gfx::PointF& position);
-  virtual void OnHoverLeave();
-  virtual void OnHoverMove(const gfx::PointF& position);
-  virtual void OnButtonDown(const gfx::PointF& position);
-  virtual void OnButtonUp(const gfx::PointF& position);
-  virtual void OnTouchMove(const gfx::PointF& position);
+  virtual void OnHoverEnter(const gfx::PointF& position,
+                            base::TimeTicks timestamp);
+  virtual void OnHoverLeave(base::TimeTicks timestamp);
+  virtual void OnHoverMove(const gfx::PointF& position,
+                           base::TimeTicks timestamp);
+  virtual void OnButtonDown(const gfx::PointF& position,
+                            base::TimeTicks timestamp);
+  virtual void OnButtonUp(const gfx::PointF& position,
+                          base::TimeTicks timestamp);
+  virtual void OnTouchMove(const gfx::PointF& position,
+                           base::TimeTicks timestamp);
   virtual void OnFlingCancel(std::unique_ptr<blink::WebGestureEvent> gesture,
                              const gfx::PointF& position);
   virtual void OnScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,

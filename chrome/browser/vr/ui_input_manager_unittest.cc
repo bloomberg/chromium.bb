@@ -45,12 +45,17 @@ class MockRect : public Rect {
   MockRect() = default;
   ~MockRect() override = default;
 
-  MOCK_METHOD1(OnHoverEnter, void(const gfx::PointF& position));
-  MOCK_METHOD0(OnHoverLeave, void());
-  MOCK_METHOD1(OnHoverMove, void(const gfx::PointF& position));
-  MOCK_METHOD1(OnButtonDown, void(const gfx::PointF& position));
-  MOCK_METHOD1(OnButtonUp, void(const gfx::PointF& position));
-  MOCK_METHOD1(OnTouchMove, void(const gfx::PointF& position));
+  MOCK_METHOD2(OnHoverEnter,
+               void(const gfx::PointF& position, base::TimeTicks timestamp));
+  MOCK_METHOD1(OnHoverLeave, void(base::TimeTicks timestamp));
+  MOCK_METHOD2(OnHoverMove,
+               void(const gfx::PointF& position, base::TimeTicks timestamp));
+  MOCK_METHOD2(OnButtonDown,
+               void(const gfx::PointF& position, base::TimeTicks timestamp));
+  MOCK_METHOD2(OnButtonUp,
+               void(const gfx::PointF& position, base::TimeTicks timestamp));
+  MOCK_METHOD2(OnTouchMove,
+               void(const gfx::PointF& position, base::TimeTicks timestamp));
   MOCK_METHOD2(OnScrollBegin,
                void(std::unique_ptr<blink::WebGestureEvent>,
                     const gfx::PointF&));
@@ -218,12 +223,12 @@ TEST_F(UiInputManagerTest, FocusableChildStealsFocus) {
   input_manager_->RequestFocus(p_element->id());
 
   // Focus child.
-  EXPECT_CALL(*p_child, OnHoverEnter(_)).InSequence(s);
-  EXPECT_CALL(*p_child, OnButtonDown(_)).InSequence(s);
+  EXPECT_CALL(*p_child, OnHoverEnter(_, _)).InSequence(s);
+  EXPECT_CALL(*p_child, OnButtonDown(_, _)).InSequence(s);
   HandleInput(kForwardVector, kDown);
-  EXPECT_CALL(*p_child, OnButtonUp(_)).InSequence(s);
+  EXPECT_CALL(*p_child, OnButtonUp(_, _)).InSequence(s);
   EXPECT_CALL(*p_element, OnFocusChanged(false)).InSequence(s);
-  EXPECT_CALL(*p_child, OnHoverMove(_)).InSequence(s);
+  EXPECT_CALL(*p_child, OnHoverMove(_, _)).InSequence(s);
   HandleInput(kForwardVector, kUp);
 }
 
@@ -244,8 +249,8 @@ TEST_F(UiInputManagerTest, NonFocusableChildDoestNotStealFocus) {
   input_manager_->RequestFocus(p_element->id());
 
   // Focus child.
-  EXPECT_CALL(*p_child, OnHoverEnter(_)).InSequence(s);
-  EXPECT_CALL(*p_child, OnButtonDown(_)).InSequence(s);
+  EXPECT_CALL(*p_child, OnHoverEnter(_, _)).InSequence(s);
+  EXPECT_CALL(*p_child, OnButtonDown(_, _)).InSequence(s);
   EXPECT_CALL(*p_element, OnFocusChanged(false)).Times(0).InSequence(s);
   HandleInput(kForwardVector, kDown);
 }
@@ -283,30 +288,30 @@ TEST_F(UiInputManagerTest, HoverClick) {
   StrictMock<MockRect>* p_element = CreateAndAddMockElement(-5.f);
 
   // Move over the test element.
-  EXPECT_CALL(*p_element, OnHoverEnter(_));
+  EXPECT_CALL(*p_element, OnHoverEnter(_, _));
   HandleInput(kForwardVector, kUp);
-  EXPECT_CALL(*p_element, OnHoverMove(_));
+  EXPECT_CALL(*p_element, OnHoverMove(_, _));
   HandleInput(kForwardVector, kUp);
   Mock::VerifyAndClearExpectations(p_element);
 
   // Press the button while on the element.
-  EXPECT_CALL(*p_element, OnHoverMove(_));
-  EXPECT_CALL(*p_element, OnButtonDown(_));
+  EXPECT_CALL(*p_element, OnHoverMove(_, _));
+  EXPECT_CALL(*p_element, OnButtonDown(_, _));
   HandleInput(kForwardVector, kDown);
   Mock::VerifyAndClearExpectations(p_element);
 
-  EXPECT_CALL(*p_element, OnTouchMove(_));
+  EXPECT_CALL(*p_element, OnTouchMove(_, _));
   HandleInput(kForwardVector, kDown);
   Mock::VerifyAndClearExpectations(p_element);
 
   // Release the button while on the element.
-  EXPECT_CALL(*p_element, OnButtonUp(_));
-  EXPECT_CALL(*p_element, OnHoverMove(_));
+  EXPECT_CALL(*p_element, OnButtonUp(_, _));
+  EXPECT_CALL(*p_element, OnHoverMove(_, _));
   HandleInput(kForwardVector, kUp);
   Mock::VerifyAndClearExpectations(p_element);
 
   // Move off of the element.
-  EXPECT_CALL(*p_element, OnHoverLeave());
+  EXPECT_CALL(*p_element, OnHoverLeave(_));
   HandleInput(kBackwardVector, kUp);
   Mock::VerifyAndClearExpectations(p_element);
 
@@ -319,14 +324,14 @@ TEST_F(UiInputManagerTest, HoverClick) {
 
   // Press on an element, move away, then release. The element should receive
   // hover leave, but keep receiving touch move events until release.
-  EXPECT_CALL(*p_element, OnHoverEnter(_));
-  EXPECT_CALL(*p_element, OnButtonDown(_));
+  EXPECT_CALL(*p_element, OnHoverEnter(_, _));
+  EXPECT_CALL(*p_element, OnButtonDown(_, _));
   HandleInput(kForwardVector, kDown);
-  EXPECT_CALL(*p_element, OnHoverLeave());
-  EXPECT_CALL(*p_element, OnTouchMove(_));
+  EXPECT_CALL(*p_element, OnHoverLeave(_));
+  EXPECT_CALL(*p_element, OnTouchMove(_, _));
   HandleInput(kBackwardVector, kDown);
   Mock::VerifyAndClearExpectations(p_element);
-  EXPECT_CALL(*p_element, OnButtonUp(_));
+  EXPECT_CALL(*p_element, OnButtonUp(_, _));
   HandleInput(kBackwardVector, kUp);
   Mock::VerifyAndClearExpectations(p_element);
 }
@@ -340,25 +345,25 @@ TEST_F(UiInputManagerTest, ReleaseButtonOnAnotherElement) {
   StrictMock<MockRect>* p_back_element = CreateAndAddMockElement(5.f);
 
   // Press on an element.
-  EXPECT_CALL(*p_front_element, OnHoverEnter(_));
-  EXPECT_CALL(*p_front_element, OnButtonDown(_));
+  EXPECT_CALL(*p_front_element, OnHoverEnter(_, _));
+  EXPECT_CALL(*p_front_element, OnButtonDown(_, _));
   HandleInput(kForwardVector, kDown);
   // Point to another element while pressing.
-  EXPECT_CALL(*p_front_element, OnHoverLeave());
-  EXPECT_CALL(*p_front_element, OnTouchMove(_));
+  EXPECT_CALL(*p_front_element, OnHoverLeave(_));
+  EXPECT_CALL(*p_front_element, OnTouchMove(_, _));
   HandleInput(kBackwardVector, kDown);
   // Point again to the previous element while pressing.
-  EXPECT_CALL(*p_front_element, OnTouchMove(_));
-  EXPECT_CALL(*p_front_element, OnHoverEnter(_));
+  EXPECT_CALL(*p_front_element, OnTouchMove(_, _));
+  EXPECT_CALL(*p_front_element, OnHoverEnter(_, _));
   HandleInput(kForwardVector, kDown);
   // Point to second element and release.
-  EXPECT_CALL(*p_front_element, OnButtonUp(_));
-  EXPECT_CALL(*p_front_element, OnHoverLeave());
-  EXPECT_CALL(*p_back_element, OnHoverEnter(_));
+  EXPECT_CALL(*p_front_element, OnButtonUp(_, _));
+  EXPECT_CALL(*p_front_element, OnHoverLeave(_));
+  EXPECT_CALL(*p_back_element, OnHoverEnter(_, _));
   HandleInput(kBackwardVector, kUp);
   // Point again to first element.
-  EXPECT_CALL(*p_back_element, OnHoverLeave());
-  EXPECT_CALL(*p_front_element, OnHoverEnter(_));
+  EXPECT_CALL(*p_back_element, OnHoverLeave(_));
+  EXPECT_CALL(*p_front_element, OnHoverEnter(_, _));
   HandleInput(kForwardVector, kUp);
 }
 
@@ -373,7 +378,7 @@ TEST_F(UiInputManagerTest, ScrollEndOnAnotherElement) {
 
   // Scroll on an element.
   AddGesture(blink::WebGestureEvent::kGestureScrollBegin);
-  EXPECT_CALL(*p_front_element, OnHoverEnter(_));
+  EXPECT_CALL(*p_front_element, OnHoverEnter(_, _));
   EXPECT_CALL(*p_front_element, OnScrollBegin(_, _));
   HandleInput(kForwardVector, kUp);
   EXPECT_TRUE(gesture_list_.empty());
@@ -384,7 +389,7 @@ TEST_F(UiInputManagerTest, ScrollEndOnAnotherElement) {
 
   // Move away.
   AddGesture(blink::WebGestureEvent::kGestureScrollUpdate);
-  EXPECT_CALL(*p_front_element, OnHoverLeave());
+  EXPECT_CALL(*p_front_element, OnHoverLeave(_));
   EXPECT_CALL(*p_front_element, OnScrollUpdate(_, _));
   HandleInput(kBackwardVector, kUp);
   EXPECT_TRUE(gesture_list_.empty());
@@ -392,12 +397,12 @@ TEST_F(UiInputManagerTest, ScrollEndOnAnotherElement) {
   // Release scroll.
   AddGesture(blink::WebGestureEvent::kGestureScrollEnd);
   EXPECT_CALL(*p_front_element, OnScrollEnd(_, _));
-  EXPECT_CALL(*p_back_element, OnHoverEnter(_));
+  EXPECT_CALL(*p_back_element, OnHoverEnter(_, _));
   HandleInput(kBackwardVector, kUp);
   EXPECT_TRUE(gesture_list_.empty());
 
   // Start scrolling on a new element.
-  EXPECT_CALL(*p_back_element, OnHoverMove(_));
+  EXPECT_CALL(*p_back_element, OnHoverMove(_, _));
   AddGesture(blink::WebGestureEvent::kGestureScrollBegin);
   EXPECT_CALL(*p_back_element, OnScrollBegin(_, _));
   HandleInput(kBackwardVector, kUp);
@@ -417,7 +422,7 @@ TEST_F(UiInputManagerTest, ScrollBeginOnChild) {
   p_element->AddChild(std::move(child));
 
   AddGesture(blink::WebGestureEvent::kGestureScrollBegin);
-  EXPECT_CALL(*p_element, OnHoverEnter(_));
+  EXPECT_CALL(*p_element, OnHoverEnter(_, _));
   EXPECT_CALL(*p_element, OnScrollBegin(_, _));
   EXPECT_CALL(*p_child, OnScrollBegin(_, _)).Times(0);
   HandleInput(kForwardVector, kUp);
@@ -430,7 +435,7 @@ TEST_F(UiInputManagerTest, ElementDeletion) {
   StrictMock<MockRect>* p_element = CreateAndAddMockElement(-5.f);
 
   // Hover on an element.
-  EXPECT_CALL(*p_element, OnHoverEnter(_));
+  EXPECT_CALL(*p_element, OnHoverEnter(_, _));
   HandleInput(kForwardVector, kUp);
 
   // Remove and retain the element from the scene, and ensure that it receives
@@ -442,8 +447,8 @@ TEST_F(UiInputManagerTest, ElementDeletion) {
   // Re-add the element to the scene, and press on it to lock it for input.
   scene_->AddUiElement(kRoot, std::move(deleted_element));
   scene_->OnBeginFrame(base::TimeTicks(), kStartHeadPose);
-  EXPECT_CALL(*p_element, OnHoverEnter(_));
-  EXPECT_CALL(*p_element, OnButtonDown(_));
+  EXPECT_CALL(*p_element, OnHoverEnter(_, _));
+  EXPECT_CALL(*p_element, OnButtonDown(_, _));
   HandleInput(kForwardVector, kDown);
 
   // Remove the element again, move off the element, and release to ensure that
@@ -514,7 +519,7 @@ TEST_F(UiInputManagerContentTest, NoMouseMovesDuringClick) {
   // Unless we suppress content move events during clicks, this will cause us to
   // call OnContentMove on the delegate. We should do this suppression, so we
   // set the expected number of calls to zero.
-  EXPECT_CALL(*content_input_delegate_, OnHoverMove(testing::_)).Times(0);
+  EXPECT_CALL(*content_input_delegate_, OnHoverMove(_, _)).Times(0);
 
   input_manager_->HandleInput(MsToTicks(1), RenderInfo(), controller_model,
                               &reticle_model, &gesture_list);

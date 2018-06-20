@@ -108,23 +108,28 @@ void UiInputManager::HandleInput(base::TimeTicks current_time,
   SendFlingCancel(gesture_list, element_local_point);
   SendScrollEnd(gesture_list, element_local_point,
                 controller_model.touchpad_button_state);
-  SendButtonUp(element_local_point, controller_model.touchpad_button_state);
-  SendHoverLeave(target_element);
+  SendButtonUp(element_local_point, controller_model.touchpad_button_state,
+               controller_model.last_button_timestamp);
+  SendHoverLeave(target_element, controller_model.last_orientation_timestamp);
 
   // Sending update events.
   if (in_scroll_) {
     SendScrollUpdate(gesture_list, element_local_point);
   } else if (in_click_) {
-    SendTouchMove(element_local_point);
+    SendTouchMove(element_local_point,
+                  controller_model.last_orientation_timestamp);
   } else {
-    SendHoverMove(target_element, reticle_model->target_local_point);
+    SendHoverMove(target_element, reticle_model->target_local_point,
+                  controller_model.last_orientation_timestamp);
   }
 
   // Sending begin events.
-  SendHoverEnter(target_element, reticle_model->target_local_point);
+  SendHoverEnter(target_element, reticle_model->target_local_point,
+                 controller_model.last_orientation_timestamp);
   SendScrollBegin(target_element, gesture_list, element_local_point);
   SendButtonDown(target_element, reticle_model->target_local_point,
-                 controller_model.touchpad_button_state);
+                 controller_model.touchpad_button_state,
+                 controller_model.last_button_timestamp);
 
   previous_button_state_ = controller_model.touchpad_button_state;
 }
@@ -133,7 +138,7 @@ void UiInputManager::OnPause() {
   if (hover_target_id_) {
     UiElement* prev_hovered = scene_->GetUiElementById(hover_target_id_);
     if (prev_hovered)
-      prev_hovered->OnHoverLeave();
+      prev_hovered->OnHoverLeave(base::TimeTicks::Now());
     hover_target_id_ = 0;
   }
 }
@@ -218,35 +223,38 @@ void UiInputManager::SendScrollUpdate(GestureList* gesture_list,
   gesture_list->erase(gesture_list->begin());
 }
 
-void UiInputManager::SendHoverLeave(UiElement* current_target) {
+void UiInputManager::SendHoverLeave(UiElement* current_target,
+                                    base::TimeTicks timestamp) {
   if (hover_target_id_ &&
       (!current_target || current_target->id() != hover_target_id_)) {
     UiElement* prev_hovered = scene_->GetUiElementById(hover_target_id_);
-    if (prev_hovered) {
-      prev_hovered->OnHoverLeave();
-    }
+    if (prev_hovered)
+      prev_hovered->OnHoverLeave(timestamp);
     hover_target_id_ = 0;
   }
 }
 
 void UiInputManager::SendHoverEnter(UiElement* target,
-                                    const gfx::PointF& target_point) {
+                                    const gfx::PointF& target_point,
+                                    base::TimeTicks timestamp) {
   if (!target || target->id() == hover_target_id_)
     return;
   if ((in_click_ || in_scroll_) && target->id() != input_capture_element_id_)
     return;
-  target->OnHoverEnter(target_point);
+  target->OnHoverEnter(target_point, timestamp);
   hover_target_id_ = target->id();
 }
 
 void UiInputManager::SendHoverMove(UiElement* target,
-                                   const gfx::PointF& target_point) {
+                                   const gfx::PointF& target_point,
+                                   base::TimeTicks timestamp) {
   if (target && target->id() == hover_target_id_)
-    target->OnHoverMove(target_point);
+    target->OnHoverMove(target_point, timestamp);
 }
 
 void UiInputManager::SendButtonUp(const gfx::PointF& target_point,
-                                  ButtonState button_state) {
+                                  ButtonState button_state,
+                                  base::TimeTicks timestamp) {
   if (!in_click_ || previous_button_state_ == button_state ||
       button_state != ButtonState::UP) {
     return;
@@ -256,7 +264,7 @@ void UiInputManager::SendButtonUp(const gfx::PointF& target_point,
     return;
   UiElement* element = scene_->GetUiElementById(input_capture_element_id_);
   if (element) {
-    element->OnButtonUp(target_point);
+    element->OnButtonUp(target_point, timestamp);
     // Clicking outside of the focused element causes it to lose focus.
     if (element->id() != focused_element_id_ && element->focusable())
       UnfocusFocusedElement();
@@ -267,26 +275,28 @@ void UiInputManager::SendButtonUp(const gfx::PointF& target_point,
 
 void UiInputManager::SendButtonDown(UiElement* target,
                                     const gfx::PointF& target_point,
-                                    ButtonState button_state) {
+                                    ButtonState button_state,
+                                    base::TimeTicks timestamp) {
   if (previous_button_state_ == button_state ||
       button_state != ButtonState::DOWN) {
     return;
   }
   in_click_ = true;
   if (target) {
-    target->OnButtonDown(target_point);
+    target->OnButtonDown(target_point, timestamp);
     input_capture_element_id_ = target->id();
   } else {
     input_capture_element_id_ = 0;
   }
 }
 
-void UiInputManager::SendTouchMove(const gfx::PointF& target_point) {
+void UiInputManager::SendTouchMove(const gfx::PointF& target_point,
+                                   base::TimeTicks timestamp) {
   if (!input_capture_element_id_)
     return;
   UiElement* element = scene_->GetUiElementById(input_capture_element_id_);
   if (element)
-    element->OnTouchMove(target_point);
+    element->OnTouchMove(target_point, timestamp);
 }
 
 UiElement* UiInputManager::GetTargetElement(

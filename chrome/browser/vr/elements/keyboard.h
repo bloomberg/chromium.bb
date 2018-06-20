@@ -31,11 +31,15 @@ class VR_EXPORT Keyboard : public UiElement {
                                  int target_property_id,
                                  cc::KeyframeModel* keyframe_model) override;
 
-  void OnHoverEnter(const gfx::PointF& position) override;
-  void OnHoverLeave() override;
-  void OnHoverMove(const gfx::PointF& position) override;
-  void OnButtonDown(const gfx::PointF& position) override;
-  void OnButtonUp(const gfx::PointF& position) override;
+  void OnHoverEnter(const gfx::PointF& position,
+                    base::TimeTicks timestamp) override;
+  void OnHoverLeave(base::TimeTicks timestamp) override;
+  void OnHoverMove(const gfx::PointF& position,
+                   base::TimeTicks timestamp) override;
+  void OnButtonDown(const gfx::PointF& position,
+                    base::TimeTicks timestamp) override;
+  void OnButtonUp(const gfx::PointF& position,
+                  base::TimeTicks timestamp) override;
 
   class Renderer : public BaseRenderer {
    public:

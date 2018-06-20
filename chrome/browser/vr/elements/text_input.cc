@@ -68,7 +68,8 @@ void TextInput::SetTextInputDelegate(TextInputDelegate* text_input_delegate) {
   delegate_ = text_input_delegate;
 }
 
-void TextInput::OnButtonDown(const gfx::PointF& position) {
+void TextInput::OnButtonDown(const gfx::PointF& position,
+                             base::TimeTicks timestamp) {
   // Reposition the cursor based on click position.
   int cursor_position = text_element_->GetCursorPositionFromPoint(position);
 
@@ -83,7 +84,8 @@ void TextInput::OnButtonDown(const gfx::PointF& position) {
   }
 }
 
-void TextInput::OnButtonUp(const gfx::PointF& position) {
+void TextInput::OnButtonUp(const gfx::PointF& position,
+                           base::TimeTicks timestamp) {
   RequestFocus();
 }
 

@@ -87,15 +87,23 @@ class VR_EXPORT UiInputManager {
   void SendScrollUpdate(GestureList* gesture_list,
                         const gfx::PointF& target_point);
 
-  void SendHoverLeave(UiElement* current_target);
-  void SendHoverEnter(UiElement* target, const gfx::PointF& target_point);
-  void SendHoverMove(UiElement* target, const gfx::PointF& target_point);
+  void SendHoverLeave(UiElement* current_target, base::TimeTicks timestamp);
+  void SendHoverEnter(UiElement* target,
+                      const gfx::PointF& target_point,
+                      base::TimeTicks timestamp);
+  void SendHoverMove(UiElement* target,
+                     const gfx::PointF& target_point,
+                     base::TimeTicks timestamp);
 
-  void SendButtonUp(const gfx::PointF& target_point, ButtonState button_state);
+  void SendButtonUp(const gfx::PointF& target_point,
+                    ButtonState button_state,
+                    base::TimeTicks timestamp);
   void SendButtonDown(UiElement* target,
                       const gfx::PointF& target_point,
-                      ButtonState button_state);
-  void SendTouchMove(const gfx::PointF& target_point);
+                      ButtonState button_state,
+                      base::TimeTicks timestamp);
+  void SendTouchMove(const gfx::PointF& target_point,
+                     base::TimeTicks timestamp);
 
   UiElement* GetTargetElement(const ControllerModel& controller_model,
                               ReticleModel* reticle_model,

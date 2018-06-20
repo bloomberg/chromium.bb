@@ -107,7 +107,7 @@ TEST_F(TextInputSceneTest, InputFieldFocus) {
 
   // Clicking on the text field should request focus.
   EXPECT_CALL(*text_input_delegate_, RequestFocus(_)).InSequence(in_sequence_);
-  text_input_->OnButtonUp(gfx::PointF());
+  text_input_->OnButtonUp(gfx::PointF(), base::TimeTicks());
 
   // Focusing on an input field should show the keyboard and tell the delegate
   // the field's content.
@@ -150,7 +150,7 @@ TEST_F(TextInputSceneTest, InputFieldEdit) {
 
 TEST_F(TextInputSceneTest, ClickOnTextGrabsFocus) {
   EXPECT_CALL(*text_input_delegate_, RequestFocus(_));
-  text_input_->get_text_element()->OnButtonUp({0, 0});
+  text_input_->get_text_element()->OnButtonUp({0, 0}, base::TimeTicks());
 }
 
 TEST(TextInputTest, ControllerInteractionsSentToDelegate) {
@@ -166,11 +166,11 @@ TEST(TextInputTest, ControllerInteractionsSentToDelegate) {
   EXPECT_CALL(*kb_delegate, OnButtonDown(_)).InSequence(s);
   EXPECT_CALL(*kb_delegate, OnButtonUp(_)).InSequence(s);
   gfx::PointF p;
-  keyboard->OnHoverEnter(p);
-  keyboard->OnHoverLeave();
-  keyboard->OnHoverMove(p);
-  keyboard->OnButtonDown(p);
-  keyboard->OnButtonUp(p);
+  keyboard->OnHoverEnter(p, base::TimeTicks());
+  keyboard->OnHoverLeave(base::TimeTicks());
+  keyboard->OnHoverMove(p, base::TimeTicks());
+  keyboard->OnButtonDown(p, base::TimeTicks());
+  keyboard->OnButtonUp(p, base::TimeTicks());
 }
 
 TEST(TextInputTest, HintText) {
@@ -281,14 +281,14 @@ TEST(TextInputTest, CursorPositionUpdatesOnClicks) {
   element->get_text_element()->PrepareToDrawForTest();
 
   // Click on the left edge of the field.
-  element->OnButtonDown(gfx::PointF(0.0, 0.5));
-  element->OnButtonUp(gfx::PointF(0.0, 0.5));
+  element->OnButtonDown(gfx::PointF(0.0, 0.5), base::TimeTicks());
+  element->OnButtonUp(gfx::PointF(0.0, 0.5), base::TimeTicks());
   element->get_text_element()->PrepareToDrawForTest();
   auto x1 = element->get_text_element()->GetRawCursorBounds().x();
 
   // Click on the right edge of the field.
-  element->OnButtonDown(gfx::PointF(1.0, 0.5));
-  element->OnButtonUp(gfx::PointF(1.0, 0.5));
+  element->OnButtonDown(gfx::PointF(1.0, 0.5), base::TimeTicks());
+  element->OnButtonUp(gfx::PointF(1.0, 0.5), base::TimeTicks());
   element->get_text_element()->PrepareToDrawForTest();
   auto x2 = element->get_text_element()->GetRawCursorBounds().x();
 
@@ -300,8 +300,8 @@ TEST(TextInputTest, CursorPositionUpdatesOnClicks) {
   info.current.selection_end = info.current.text.size();
   element->UpdateInput(info);
   EXPECT_GT(element->edited_text().current.SelectionSize(), 0u);
-  element->OnButtonDown(gfx::PointF(0.5, 0.5));
-  element->OnButtonUp(gfx::PointF(0.5, 0.5));
+  element->OnButtonDown(gfx::PointF(0.5, 0.5), base::TimeTicks());
+  element->OnButtonUp(gfx::PointF(0.5, 0.5), base::TimeTicks());
   EXPECT_EQ(element->edited_text().current.SelectionSize(), 0u);
 }
 

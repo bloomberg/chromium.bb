@@ -153,7 +153,8 @@ void UiElement::Render(UiElementRenderer* renderer,
 
 void UiElement::Initialize(SkiaSurfaceProvider* provider) {}
 
-void UiElement::OnHoverEnter(const gfx::PointF& position) {
+void UiElement::OnHoverEnter(const gfx::PointF& position,
+                             base::TimeTicks timestamp) {
   if (GetSounds().hover_enter != kSoundNone && audio_delegate_) {
     audio_delegate_->PlaySound(GetSounds().hover_enter);
   }
@@ -161,62 +162,66 @@ void UiElement::OnHoverEnter(const gfx::PointF& position) {
   if (event_handlers_.hover_enter) {
     event_handlers_.hover_enter.Run();
   } else if (parent() && bubble_events()) {
-    parent()->OnHoverEnter(position);
+    parent()->OnHoverEnter(position, timestamp);
   }
 }
 
-void UiElement::OnHoverLeave() {
+void UiElement::OnHoverLeave(base::TimeTicks timestamp) {
   if (GetSounds().hover_leave != kSoundNone && audio_delegate_) {
     audio_delegate_->PlaySound(GetSounds().hover_leave);
   }
   if (event_handlers_.hover_leave) {
     event_handlers_.hover_leave.Run();
   } else if (parent() && bubble_events()) {
-    parent()->OnHoverLeave();
+    parent()->OnHoverLeave(timestamp);
   }
 }
 
-void UiElement::OnHoverMove(const gfx::PointF& position) {
+void UiElement::OnHoverMove(const gfx::PointF& position,
+                            base::TimeTicks timestamp) {
   if (GetSounds().hover_move != kSoundNone && audio_delegate_) {
     audio_delegate_->PlaySound(GetSounds().hover_move);
   }
   if (event_handlers_.hover_move) {
     event_handlers_.hover_move.Run(position);
   } else if (parent() && bubble_events()) {
-    parent()->OnHoverMove(position);
+    parent()->OnHoverMove(position, timestamp);
   }
 }
 
-void UiElement::OnButtonDown(const gfx::PointF& position) {
+void UiElement::OnButtonDown(const gfx::PointF& position,
+                             base::TimeTicks timestamp) {
   if (GetSounds().button_down != kSoundNone && audio_delegate_) {
     audio_delegate_->PlaySound(GetSounds().button_down);
   }
   if (event_handlers_.button_down) {
     event_handlers_.button_down.Run();
   } else if (parent() && bubble_events()) {
-    parent()->OnButtonDown(position);
+    parent()->OnButtonDown(position, timestamp);
   }
 }
 
-void UiElement::OnButtonUp(const gfx::PointF& position) {
+void UiElement::OnButtonUp(const gfx::PointF& position,
+                           base::TimeTicks timestamp) {
   if (GetSounds().button_up != kSoundNone && audio_delegate_) {
     audio_delegate_->PlaySound(GetSounds().button_up);
   }
   if (event_handlers_.button_up) {
     event_handlers_.button_up.Run();
   } else if (parent() && bubble_events()) {
-    parent()->OnButtonUp(position);
+    parent()->OnButtonUp(position, timestamp);
   }
 }
 
-void UiElement::OnTouchMove(const gfx::PointF& position) {
+void UiElement::OnTouchMove(const gfx::PointF& position,
+                            base::TimeTicks timestamp) {
   if (GetSounds().touch_move != kSoundNone && audio_delegate_) {
     audio_delegate_->PlaySound(GetSounds().touch_move);
   }
   if (event_handlers_.touch_move) {
     event_handlers_.touch_move.Run(position);
   } else if (parent() && bubble_events()) {
-    parent()->OnTouchMove(position);
+    parent()->OnTouchMove(position, timestamp);
   }
 }
 
