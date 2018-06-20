@@ -39,6 +39,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/base/webui/web_ui_util.h"
 
 static const char kTargetsDataFile[] = "targets-data.json";
 
@@ -105,8 +106,13 @@ std::unique_ptr<base::DictionaryValue> BuildTargetDescriptor(
     title = base::UTF16ToUTF8(web_contents->GetTitle());
     NavigationController& controller = web_contents->GetController();
     NavigationEntry* entry = controller.GetVisibleEntry();
-    if (entry != nullptr && entry->GetURL().is_valid())
-      favicon_url = entry->GetFavicon().url;
+    if (entry != nullptr && entry->GetURL().is_valid()) {
+      gfx::Image favicon_image = entry->GetFavicon().image;
+      if (!favicon_image.IsEmpty()) {
+        const SkBitmap* favicon_bitmap = favicon_image.ToSkBitmap();
+        favicon_url = GURL(webui::GetBitmapDataUrl(*favicon_bitmap));
+      }
+    }
     accessibility_mode = web_contents->GetAccessibilityMode();
   }
 
