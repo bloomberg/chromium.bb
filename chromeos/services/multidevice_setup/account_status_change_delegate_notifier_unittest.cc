@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier.h"
+
 #include <string>
 #include <vector>
 
@@ -9,9 +11,8 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
-#include "chromeos/services/multidevice_setup/fake_multidevice_setup_observer.h"
+#include "chromeos/services/multidevice_setup/fake_account_status_change_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_setup_flow_completion_recorder.h"
-#include "chromeos/services/multidevice_setup/observer_notifier.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +22,7 @@ namespace chromeos {
 namespace multidevice_setup {
 
 namespace {
+
 const int64_t kTestTimeMillis = 1500000000000;
 constexpr const char* const kDummyKeys[] = {"publicKey0", "publicKey1",
                                             "publicKey2"};
@@ -44,20 +46,24 @@ cryptauth::RemoteDeviceRef BuildLocalDevice() {
           cryptauth::SoftwareFeatureState::kSupported)
       .Build();
 }
+
 }  // namespace
 
-class ObserverNotifierTest : public testing::Test {
+class MultiDeviceSetupAccountStatusChangeDelegateNotifierTest
+    : public testing::Test {
  protected:
-  ObserverNotifierTest() : local_device_(BuildLocalDevice()) {}
+  MultiDeviceSetupAccountStatusChangeDelegateNotifierTest()
+      : local_device_(BuildLocalDevice()) {}
 
-  ~ObserverNotifierTest() override = default;
+  ~MultiDeviceSetupAccountStatusChangeDelegateNotifierTest() override = default;
 
   void SetUp() override {
     test_pref_service_ =
         std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
-    ObserverNotifier::RegisterPrefs(test_pref_service_->registry());
+    AccountStatusChangeDelegateNotifier::RegisterPrefs(
+        test_pref_service_->registry());
 
-    fake_observer_ = std::make_unique<FakeMultiDeviceSetupObserver>();
+    fake_delegate_ = std::make_unique<FakeAccountStatusChangeDelegate>();
 
     fake_device_sync_client_ =
         std::make_unique<device_sync::FakeDeviceSyncClient>();
@@ -69,42 +75,45 @@ class ObserverNotifierTest : public testing::Test {
     test_clock_->SetNow(base::Time::FromJavaTime(kTestTimeMillis));
   }
 
-  void BuildObserverNotifier() {
-    observer_notifier_ = ObserverNotifier::Factory::Get()->BuildInstance(
-        fake_device_sync_client_.get(), test_pref_service_.get(),
-        fake_setup_flow_completion_recorder_.get(), test_clock_.get());
+  void BuildAccountStatusChangeDelegateNotifier() {
+    delegate_notifier_ =
+        AccountStatusChangeDelegateNotifier::Factory::Get()->BuildInstance(
+            fake_device_sync_client_.get(), test_pref_service_.get(),
+            fake_setup_flow_completion_recorder_.get(), test_clock_.get());
   }
 
   void SetNewUserPotentialHostExistsTimestamp(int64_t timestamp) {
-    test_pref_service_->SetInt64(
-        ObserverNotifier::kNewUserPotentialHostExistsPrefName, timestamp);
+    test_pref_service_->SetInt64(AccountStatusChangeDelegateNotifier::
+                                     kNewUserPotentialHostExistsPrefName,
+                                 timestamp);
   }
 
   void SetExistingUserChromebookAddedTimestamp(int64_t timestamp) {
-    test_pref_service_->SetInt64(
-        ObserverNotifier::kExistingUserChromebookAddedPrefName, timestamp);
+    test_pref_service_->SetInt64(AccountStatusChangeDelegateNotifier::
+                                     kExistingUserChromebookAddedPrefName,
+                                 timestamp);
   }
 
   void SetHostFromPreviousSession(std::string old_host_key) {
-    test_pref_service_->SetString(
-        ObserverNotifier::kHostPublicKeyFromMostRecentSyncPrefName,
-        old_host_key);
+    test_pref_service_->SetString(AccountStatusChangeDelegateNotifier::
+                                      kHostPublicKeyFromMostRecentSyncPrefName,
+                                  old_host_key);
   }
 
-  void SetMultiDeviceSetupObserverPtr() {
-    observer_notifier_->SetMultiDeviceSetupObserverPtr(
-        fake_observer_->GenerateInterfacePtr());
-    observer_notifier_->FlushForTesting();
+  void SetAccountStatusChangeDelegatePtr() {
+    delegate_notifier_->SetAccountStatusChangeDelegatePtr(
+        fake_delegate_->GenerateInterfacePtr());
+    delegate_notifier_->FlushForTesting();
   }
 
   void RecordSetupFlowCompletionAtEarlierTime(const base::Time& earlier_time) {
     fake_setup_flow_completion_recorder_->set_current_time(earlier_time);
-    observer_notifier_->setup_flow_completion_recorder_->RecordCompletion();
+    delegate_notifier_->setup_flow_completion_recorder_->RecordCompletion();
   }
 
   void NotifyNewDevicesSynced() {
     fake_device_sync_client_->NotifyNewDevicesSynced();
-    observer_notifier_->FlushForTesting();
+    delegate_notifier_->FlushForTesting();
   }
 
   // Represents setting preexisting devices on account and therefore does not
@@ -130,7 +139,7 @@ class ObserverNotifierTest : public testing::Test {
         cryptauth::RemoteDeviceRefList{BuildHostCandidate(
             kDummyKeys[0], cryptauth::SoftwareFeatureState::kEnabled)};
     SetNonLocalSyncedDevices(&device_ref_list);
-    BuildObserverNotifier();
+    BuildAccountStatusChangeDelegateNotifier();
   }
 
   // If the account as an enabled host, the local device will enable its
@@ -144,22 +153,26 @@ class ObserverNotifierTest : public testing::Test {
 
   int64_t GetNewUserPotentialHostExistsTimestamp() {
     return test_pref_service_->GetInt64(
-        ObserverNotifier::kNewUserPotentialHostExistsPrefName);
+        AccountStatusChangeDelegateNotifier::
+            kNewUserPotentialHostExistsPrefName);
   }
 
   int64_t GetExistingUserChromebookAddedTimestamp() {
     return test_pref_service_->GetInt64(
-        ObserverNotifier::kExistingUserChromebookAddedPrefName);
+        AccountStatusChangeDelegateNotifier::
+            kExistingUserChromebookAddedPrefName);
   }
 
-  FakeMultiDeviceSetupObserver* fake_observer() { return fake_observer_.get(); }
+  FakeAccountStatusChangeDelegate* fake_delegate() {
+    return fake_delegate_.get();
+  }
 
  private:
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   cryptauth::RemoteDeviceRef local_device_;
 
-  std::unique_ptr<FakeMultiDeviceSetupObserver> fake_observer_;
+  std::unique_ptr<FakeAccountStatusChangeDelegate> fake_delegate_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
@@ -168,12 +181,14 @@ class ObserverNotifierTest : public testing::Test {
       fake_setup_flow_completion_recorder_;
   std::unique_ptr<base::SimpleTestClock> test_clock_;
 
-  std::unique_ptr<ObserverNotifier> observer_notifier_;
+  std::unique_ptr<AccountStatusChangeDelegateNotifier> delegate_notifier_;
 
-  DISALLOW_COPY_AND_ASSIGN(ObserverNotifierTest);
+  DISALLOW_COPY_AND_ASSIGN(
+      MultiDeviceSetupAccountStatusChangeDelegateNotifierTest);
 };
 
-TEST_F(ObserverNotifierTest, SetObserverWithSupportedHost) {
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
+       SetObserverWithSupportedHost) {
   cryptauth::RemoteDeviceRefList device_ref_list =
       cryptauth::RemoteDeviceRefList{
           BuildHostCandidate(kDummyKeys[0],
@@ -181,22 +196,23 @@ TEST_F(ObserverNotifierTest, SetObserverWithSupportedHost) {
           BuildHostCandidate(kDummyKeys[1],
                              cryptauth::SoftwareFeatureState::kSupported)};
   SetNonLocalSyncedDevices(&device_ref_list);
-  BuildObserverNotifier();
+  BuildAccountStatusChangeDelegateNotifier();
 
-  SetMultiDeviceSetupObserverPtr();
-  EXPECT_EQ(1u, fake_observer()->num_new_user_events_handled());
+  SetAccountStatusChangeDelegatePtr();
+  EXPECT_EQ(1u, fake_delegate()->num_new_user_events_handled());
   EXPECT_EQ(kTestTimeMillis, GetNewUserPotentialHostExistsTimestamp());
 }
 
-TEST_F(ObserverNotifierTest, SupportedHostAddedLater) {
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
+       SupportedHostAddedLater) {
   cryptauth::RemoteDeviceRefList device_ref_list =
       cryptauth::RemoteDeviceRefList{BuildHostCandidate(
           kDummyKeys[0], cryptauth::SoftwareFeatureState::kNotSupported)};
   SetNonLocalSyncedDevices(&device_ref_list);
-  BuildObserverNotifier();
+  BuildAccountStatusChangeDelegateNotifier();
 
-  SetMultiDeviceSetupObserverPtr();
-  EXPECT_EQ(0u, fake_observer()->num_new_user_events_handled());
+  SetAccountStatusChangeDelegatePtr();
+  EXPECT_EQ(0u, fake_delegate()->num_new_user_events_handled());
   EXPECT_EQ(0u, GetNewUserPotentialHostExistsTimestamp());
 
   device_ref_list = cryptauth::RemoteDeviceRefList{
@@ -205,11 +221,12 @@ TEST_F(ObserverNotifierTest, SupportedHostAddedLater) {
       BuildHostCandidate(kDummyKeys[1],
                          cryptauth::SoftwareFeatureState::kSupported)};
   UpdateNonLocalSyncedDevices(&device_ref_list);
-  EXPECT_EQ(1u, fake_observer()->num_new_user_events_handled());
+  EXPECT_EQ(1u, fake_delegate()->num_new_user_events_handled());
   EXPECT_EQ(kTestTimeMillis, GetNewUserPotentialHostExistsTimestamp());
 }
 
-TEST_F(ObserverNotifierTest, ExistingEnabledHostPreventsNewUserEvent) {
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
+       ExistingEnabledHostPreventsNewUserEvent) {
   cryptauth::RemoteDeviceRefList device_ref_list =
       cryptauth::RemoteDeviceRefList{
           BuildHostCandidate(kDummyKeys[0],
@@ -219,13 +236,14 @@ TEST_F(ObserverNotifierTest, ExistingEnabledHostPreventsNewUserEvent) {
           BuildHostCandidate(kDummyKeys[2],
                              cryptauth::SoftwareFeatureState::kEnabled)};
   SetNonLocalSyncedDevices(&device_ref_list);
-  BuildObserverNotifier();
+  BuildAccountStatusChangeDelegateNotifier();
 
-  SetMultiDeviceSetupObserverPtr();
-  EXPECT_EQ(0u, fake_observer()->num_new_user_events_handled());
+  SetAccountStatusChangeDelegatePtr();
+  EXPECT_EQ(0u, fake_delegate()->num_new_user_events_handled());
 }
 
-TEST_F(ObserverNotifierTest, NoNewUserEventWithoutObserverSet) {
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
+       NoNewUserEventWithoutObserverSet) {
   cryptauth::RemoteDeviceRefList device_ref_list =
       cryptauth::RemoteDeviceRefList{
           BuildHostCandidate(kDummyKeys[0],
@@ -233,16 +251,17 @@ TEST_F(ObserverNotifierTest, NoNewUserEventWithoutObserverSet) {
           BuildHostCandidate(kDummyKeys[1],
                              cryptauth::SoftwareFeatureState::kSupported)};
   SetNonLocalSyncedDevices(&device_ref_list);
-  BuildObserverNotifier();
-  // All conditions for new user event are now satisfied except for setting an
-  // observer.
+  BuildAccountStatusChangeDelegateNotifier();
+  // All conditions for new user event are now satisfied except for setting a
+  // delegate.
 
-  // No observer is set before the sync.
+  // No delegate is set before the sync.
   NotifyNewDevicesSynced();
-  EXPECT_EQ(0u, fake_observer()->num_new_user_events_handled());
+  EXPECT_EQ(0u, fake_delegate()->num_new_user_events_handled());
 }
 
-TEST_F(ObserverNotifierTest, OldTimestampInPreferencesPreventsNewUserFlow) {
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
+       OldTimestampInPreferencesPreventsNewUserFlow) {
   cryptauth::RemoteDeviceRefList device_ref_list =
       cryptauth::RemoteDeviceRefList{
           BuildHostCandidate(kDummyKeys[0],
@@ -250,34 +269,36 @@ TEST_F(ObserverNotifierTest, OldTimestampInPreferencesPreventsNewUserFlow) {
           BuildHostCandidate(kDummyKeys[1],
                              cryptauth::SoftwareFeatureState::kSupported)};
   SetNonLocalSyncedDevices(&device_ref_list);
-  BuildObserverNotifier();
+  BuildAccountStatusChangeDelegateNotifier();
   int64_t earlier_test_time_millis = kTestTimeMillis / 2;
   SetNewUserPotentialHostExistsTimestamp(earlier_test_time_millis);
 
-  SetMultiDeviceSetupObserverPtr();
-  EXPECT_EQ(0u, fake_observer()->num_new_user_events_handled());
+  SetAccountStatusChangeDelegatePtr();
+  EXPECT_EQ(0u, fake_delegate()->num_new_user_events_handled());
   // Timestamp was not overwritten by clock.
   EXPECT_EQ(earlier_test_time_millis, GetNewUserPotentialHostExistsTimestamp());
 }
 
-TEST_F(ObserverNotifierTest, MultipleSyncsOnlyTriggerOneNewUserEvent) {
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
+       MultipleSyncsOnlyTriggerOneNewUserEvent) {
   cryptauth::RemoteDeviceRefList device_ref_list =
       cryptauth::RemoteDeviceRefList{BuildHostCandidate(
           kDummyKeys[0], cryptauth::SoftwareFeatureState::kSupported)};
   SetNonLocalSyncedDevices(&device_ref_list);
-  BuildObserverNotifier();
+  BuildAccountStatusChangeDelegateNotifier();
 
-  SetMultiDeviceSetupObserverPtr();
-  EXPECT_EQ(1u, fake_observer()->num_new_user_events_handled());
-
-  NotifyNewDevicesSynced();
-  EXPECT_EQ(1u, fake_observer()->num_new_user_events_handled());
+  SetAccountStatusChangeDelegatePtr();
+  EXPECT_EQ(1u, fake_delegate()->num_new_user_events_handled());
 
   NotifyNewDevicesSynced();
-  EXPECT_EQ(1u, fake_observer()->num_new_user_events_handled());
+  EXPECT_EQ(1u, fake_delegate()->num_new_user_events_handled());
+
+  NotifyNewDevicesSynced();
+  EXPECT_EQ(1u, fake_delegate()->num_new_user_events_handled());
 }
 
-TEST_F(ObserverNotifierTest, NotifiesObserverForHostSwitchEvents) {
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
+       NotifiesObserverForHostSwitchEvents) {
   const std::string initial_host_key = kDummyKeys[0];
   const std::string alternative_host_key_1 = kDummyKeys[1];
   const std::string alternative_host_key_2 = kDummyKeys[2];
@@ -288,13 +309,13 @@ TEST_F(ObserverNotifierTest, NotifiesObserverForHostSwitchEvents) {
           BuildHostCandidate(alternative_host_key_1,
                              cryptauth::SoftwareFeatureState::kSupported)};
   SetNonLocalSyncedDevices(&device_ref_list);
-  BuildObserverNotifier();
+  BuildAccountStatusChangeDelegateNotifier();
   EnableLocalDeviceAsClient();
 
-  SetMultiDeviceSetupObserverPtr();
-  // Verify the observer initializes to 0.
+  SetAccountStatusChangeDelegatePtr();
+  // Verify the delegate initializes to 0.
   EXPECT_EQ(0u,
-            fake_observer()->num_existing_user_host_switched_events_handled());
+            fake_delegate()->num_existing_user_host_switched_events_handled());
 
   // Switch hosts.
   device_ref_list = cryptauth::RemoteDeviceRefList{
@@ -304,7 +325,7 @@ TEST_F(ObserverNotifierTest, NotifiesObserverForHostSwitchEvents) {
                          cryptauth::SoftwareFeatureState::kEnabled)};
   UpdateNonLocalSyncedDevices(&device_ref_list);
   EXPECT_EQ(1u,
-            fake_observer()->num_existing_user_host_switched_events_handled());
+            fake_delegate()->num_existing_user_host_switched_events_handled());
 
   // Adding and enabling a new host device (counts as a switch).
   device_ref_list = cryptauth::RemoteDeviceRefList{
@@ -316,7 +337,7 @@ TEST_F(ObserverNotifierTest, NotifiesObserverForHostSwitchEvents) {
                          cryptauth::SoftwareFeatureState::kEnabled)};
   UpdateNonLocalSyncedDevices(&device_ref_list);
   EXPECT_EQ(2u,
-            fake_observer()->num_existing_user_host_switched_events_handled());
+            fake_delegate()->num_existing_user_host_switched_events_handled());
 
   // Removing new device and switching back to initial host.
   device_ref_list = cryptauth::RemoteDeviceRefList{
@@ -326,10 +347,11 @@ TEST_F(ObserverNotifierTest, NotifiesObserverForHostSwitchEvents) {
                          cryptauth::SoftwareFeatureState::kSupported)};
   UpdateNonLocalSyncedDevices(&device_ref_list);
   EXPECT_EQ(3u,
-            fake_observer()->num_existing_user_host_switched_events_handled());
+            fake_delegate()->num_existing_user_host_switched_events_handled());
 }
 
-TEST_F(ObserverNotifierTest, HostSwitchedBetweenSessions) {
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
+       HostSwitchedBetweenSessions) {
   const std::string old_host_key = kDummyKeys[0];
   const std::string new_host_key = kDummyKeys[1];
   SetHostFromPreviousSession(old_host_key);
@@ -338,15 +360,15 @@ TEST_F(ObserverNotifierTest, HostSwitchedBetweenSessions) {
       cryptauth::RemoteDeviceRefList{BuildHostCandidate(
           new_host_key, cryptauth::SoftwareFeatureState::kEnabled)};
   SetNonLocalSyncedDevices(&device_ref_list);
-  BuildObserverNotifier();
+  BuildAccountStatusChangeDelegateNotifier();
   EnableLocalDeviceAsClient();
 
-  SetMultiDeviceSetupObserverPtr();
+  SetAccountStatusChangeDelegatePtr();
   EXPECT_EQ(1u,
-            fake_observer()->num_existing_user_host_switched_events_handled());
+            fake_delegate()->num_existing_user_host_switched_events_handled());
 }
 
-TEST_F(ObserverNotifierTest,
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
        NoHostSwitchedEventWithoutLocalDeviceClientEnabled) {
   cryptauth::RemoteDeviceRefList device_ref_list =
       cryptauth::RemoteDeviceRefList{
@@ -355,9 +377,9 @@ TEST_F(ObserverNotifierTest,
           BuildHostCandidate(kDummyKeys[1],
                              cryptauth::SoftwareFeatureState::kSupported)};
   SetNonLocalSyncedDevices(&device_ref_list);
-  BuildObserverNotifier();
+  BuildAccountStatusChangeDelegateNotifier();
 
-  SetMultiDeviceSetupObserverPtr();
+  SetAccountStatusChangeDelegatePtr();
 
   // Switch hosts.
   device_ref_list = cryptauth::RemoteDeviceRefList{
@@ -368,13 +390,14 @@ TEST_F(ObserverNotifierTest,
   // All conditions for host switched event are now satisfied except for the
   // local device's Better Together client feature enabled.
 
-  // No observer is set before the update (which includes a sync).
+  // No delegate is set before the update (which includes a sync).
   UpdateNonLocalSyncedDevices(&device_ref_list);
   EXPECT_EQ(0u,
-            fake_observer()->num_existing_user_host_switched_events_handled());
+            fake_delegate()->num_existing_user_host_switched_events_handled());
 }
 
-TEST_F(ObserverNotifierTest, NoHostSwitchedEventWithoutExistingHost) {
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
+       NoHostSwitchedEventWithoutExistingHost) {
   // No enabled host initially.
   cryptauth::RemoteDeviceRefList device_ref_list =
       cryptauth::RemoteDeviceRefList{
@@ -383,9 +406,9 @@ TEST_F(ObserverNotifierTest, NoHostSwitchedEventWithoutExistingHost) {
           BuildHostCandidate(kDummyKeys[1],
                              cryptauth::SoftwareFeatureState::kSupported)};
   SetNonLocalSyncedDevices(&device_ref_list);
-  BuildObserverNotifier();
+  BuildAccountStatusChangeDelegateNotifier();
 
-  SetMultiDeviceSetupObserverPtr();
+  SetAccountStatusChangeDelegatePtr();
 
   // Enable one of the host devices.
   device_ref_list = cryptauth::RemoteDeviceRefList{
@@ -396,10 +419,11 @@ TEST_F(ObserverNotifierTest, NoHostSwitchedEventWithoutExistingHost) {
   EnableLocalDeviceAsClient();
   UpdateNonLocalSyncedDevices(&device_ref_list);
   EXPECT_EQ(0u,
-            fake_observer()->num_existing_user_host_switched_events_handled());
+            fake_delegate()->num_existing_user_host_switched_events_handled());
 }
 
-TEST_F(ObserverNotifierTest, NoHostSwitchedEventWithoutObserverSet) {
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
+       NoHostSwitchedEventWithoutObserverSet) {
   cryptauth::RemoteDeviceRefList device_ref_list =
       cryptauth::RemoteDeviceRefList{
           BuildHostCandidate(kDummyKeys[0],
@@ -407,7 +431,7 @@ TEST_F(ObserverNotifierTest, NoHostSwitchedEventWithoutObserverSet) {
           BuildHostCandidate(kDummyKeys[1],
                              cryptauth::SoftwareFeatureState::kSupported)};
   SetNonLocalSyncedDevices(&device_ref_list);
-  BuildObserverNotifier();
+  BuildAccountStatusChangeDelegateNotifier();
   EnableLocalDeviceAsClient();
 
   // Switch hosts.
@@ -417,33 +441,34 @@ TEST_F(ObserverNotifierTest, NoHostSwitchedEventWithoutObserverSet) {
       BuildHostCandidate(kDummyKeys[1],
                          cryptauth::SoftwareFeatureState::kEnabled)};
   // All conditions for host switched event are now satisfied except for setting
-  // an observer.
+  // an delegate.
 
-  // No observer is set before the update (which includes a sync).
+  // No delegate is set before the update (which includes a sync).
   UpdateNonLocalSyncedDevices(&device_ref_list);
   EXPECT_EQ(0u,
-            fake_observer()->num_existing_user_host_switched_events_handled());
+            fake_delegate()->num_existing_user_host_switched_events_handled());
 }
 
-TEST_F(ObserverNotifierTest, NotifiesObserverForChromebookAddedEvents) {
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
+       NotifiesObserverForChromebookAddedEvents) {
   PrepareToEnableLocalDeviceAsClient();
   EnableLocalDeviceAsClient();
 
-  // Verify the observer initializes to 0.
+  // Verify the delegate initializes to 0.
   EXPECT_EQ(
-      0u, fake_observer()->num_existing_user_chromebook_added_events_handled());
+      0u, fake_delegate()->num_existing_user_chromebook_added_events_handled());
 
-  SetMultiDeviceSetupObserverPtr();
+  SetAccountStatusChangeDelegatePtr();
   EXPECT_EQ(
-      1u, fake_observer()->num_existing_user_chromebook_added_events_handled());
+      1u, fake_delegate()->num_existing_user_chromebook_added_events_handled());
 
   // Another sync should not trigger an additional chromebook added event.
   NotifyNewDevicesSynced();
   EXPECT_EQ(
-      1u, fake_observer()->num_existing_user_chromebook_added_events_handled());
+      1u, fake_delegate()->num_existing_user_chromebook_added_events_handled());
 }
 
-TEST_F(ObserverNotifierTest,
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
        OldTimestampInPreferencesDoesNotPreventChromebookAddedEvent) {
   PrepareToEnableLocalDeviceAsClient();
   EnableLocalDeviceAsClient();
@@ -451,25 +476,25 @@ TEST_F(ObserverNotifierTest,
   int64_t earlier_test_time_millis = kTestTimeMillis / 2;
   SetExistingUserChromebookAddedTimestamp(earlier_test_time_millis);
 
-  SetMultiDeviceSetupObserverPtr();
+  SetAccountStatusChangeDelegatePtr();
   EXPECT_EQ(
-      1u, fake_observer()->num_existing_user_chromebook_added_events_handled());
+      1u, fake_delegate()->num_existing_user_chromebook_added_events_handled());
   // Timestamp was overwritten by clock.
   EXPECT_EQ(kTestTimeMillis, GetExistingUserChromebookAddedTimestamp());
 }
 
-TEST_F(ObserverNotifierTest,
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
        ChromebookAddedEventRequiresLocalDeviceToEnableClientFeature) {
   PrepareToEnableLocalDeviceAsClient();
 
   // Triggers event check. Note that if the local device enabled the client
   // feature, this would trigger a Chromebook added event.
-  SetMultiDeviceSetupObserverPtr();
+  SetAccountStatusChangeDelegatePtr();
   EXPECT_EQ(
-      0u, fake_observer()->num_existing_user_chromebook_added_events_handled());
+      0u, fake_delegate()->num_existing_user_chromebook_added_events_handled());
 }
 
-TEST_F(ObserverNotifierTest,
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
        NoChromebookAddedEventIfDeviceWasUsedForUnifiedSetupFlow) {
   PrepareToEnableLocalDeviceAsClient();
   EnableLocalDeviceAsClient();
@@ -479,24 +504,25 @@ TEST_F(ObserverNotifierTest,
 
   // Triggers event check. Note that if the setup flow completion had not been
   // recorded, this would trigger a Chromebook added event.
-  SetMultiDeviceSetupObserverPtr();
+  SetAccountStatusChangeDelegatePtr();
   EXPECT_EQ(
-      0u, fake_observer()->num_existing_user_chromebook_added_events_handled());
+      0u, fake_delegate()->num_existing_user_chromebook_added_events_handled());
 }
 
-TEST_F(ObserverNotifierTest, NoChromebookAddedEventWithoutObserverSet) {
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
+       NoChromebookAddedEventWithoutObserverSet) {
   PrepareToEnableLocalDeviceAsClient();
   EnableLocalDeviceAsClient();
   // All conditions for chromebook added event are now satisfied except for
-  // setting an observer.
+  // setting a delegate.
 
-  // No observer is set before the sync.
+  // No delegate is set before the sync.
   NotifyNewDevicesSynced();
   EXPECT_EQ(
-      0u, fake_observer()->num_existing_user_chromebook_added_events_handled());
+      0u, fake_delegate()->num_existing_user_chromebook_added_events_handled());
 }
 
-TEST_F(ObserverNotifierTest,
+TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
        DeviceSyncDoesNotNotifyObserverOfDisconnectedHostsAndClients) {
   cryptauth::RemoteDeviceRefList device_ref_list =
       cryptauth::RemoteDeviceRefList{
@@ -512,23 +538,23 @@ TEST_F(ObserverNotifierTest,
               .Build()};
   SetNonLocalSyncedDevices(&device_ref_list);
   EnableLocalDeviceAsClient();
-  BuildObserverNotifier();
+  BuildAccountStatusChangeDelegateNotifier();
 
-  SetMultiDeviceSetupObserverPtr();
+  SetAccountStatusChangeDelegatePtr();
 
   NotifyNewDevicesSynced();
   EXPECT_EQ(
-      0u, fake_observer()->num_existing_user_chromebook_added_events_handled());
+      0u, fake_delegate()->num_existing_user_chromebook_added_events_handled());
   EXPECT_EQ(0u,
-            fake_observer()->num_existing_user_host_switched_events_handled());
+            fake_delegate()->num_existing_user_host_switched_events_handled());
 
   device_ref_list = cryptauth::RemoteDeviceRefList{};
   UpdateNonLocalSyncedDevices(&device_ref_list);
   // No new events caused by removing devices.
   EXPECT_EQ(
-      0u, fake_observer()->num_existing_user_chromebook_added_events_handled());
+      0u, fake_delegate()->num_existing_user_chromebook_added_events_handled());
   EXPECT_EQ(0u,
-            fake_observer()->num_existing_user_host_switched_events_handled());
+            fake_delegate()->num_existing_user_host_switched_events_handled());
 }
 
 }  // namespace multidevice_setup

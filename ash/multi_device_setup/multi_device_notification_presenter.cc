@@ -157,7 +157,7 @@ void MultiDeviceNotificationPresenter::OnSessionStateChanged(
 }
 
 void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
-  // If already observing, there is nothing else to do.
+  // If already the delegate, there is nothing else to do.
   if (multidevice_setup_ptr_)
     return;
 
@@ -185,11 +185,12 @@ void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
           chromeos::multidevice_setup::mojom::kServiceName, service_user_id),
       &multidevice_setup_ptr_);
 
-  // Start observing the MultiDeviceSetup Service.
-  chromeos::multidevice_setup::mojom::MultiDeviceSetupObserverPtr observer_ptr;
-  binding_.Bind(mojo::MakeRequest(&observer_ptr));
-  multidevice_setup_ptr_->SetObserver(std::move(observer_ptr),
-                                      base::DoNothing());
+  // Add this object as the delegate of the MultiDeviceSetup Service.
+  chromeos::multidevice_setup::mojom::AccountStatusChangeDelegatePtr
+      delegate_ptr;
+  binding_.Bind(mojo::MakeRequest(&delegate_ptr));
+  multidevice_setup_ptr_->SetAccountStatusChangeDelegate(
+      std::move(delegate_ptr), base::DoNothing());
 }
 
 void MultiDeviceNotificationPresenter::OnNotificationClicked() {

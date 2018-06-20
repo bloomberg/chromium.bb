@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/services/multidevice_setup/fake_multidevice_setup_observer.h"
+#include "chromeos/services/multidevice_setup/fake_account_status_change_delegate.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -24,8 +24,8 @@ class MultiDeviceSetupServiceTest : public testing::Test {
   ~MultiDeviceSetupServiceTest() override = default;
 
   void SetUp() override {
-    fake_multidevice_setup_observer_ =
-        std::make_unique<FakeMultiDeviceSetupObserver>();
+    fake_account_status_change_delegate_ =
+        std::make_unique<FakeAccountStatusChangeDelegate>();
     connector_factory_ =
         service_manager::TestConnectorFactory::CreateForUniqueService(
             std::make_unique<MultiDeviceSetupService>());
@@ -39,21 +39,21 @@ class MultiDeviceSetupServiceTest : public testing::Test {
       connector_ = connector_factory_->CreateConnector();
       connector_->BindInterface(mojom::kServiceName, &multidevice_setup_);
 
-      // Set |fake_multidevice_setup_observer_|.
-      CallSetObserver();
+      // Set |fake_account_status_change_delegate_|.
+      CallSetAccountStatusChangeDelegate();
     }
 
     return multidevice_setup_.get();
   }
 
-  FakeMultiDeviceSetupObserver* fake_multidevice_setup_observer() {
-    return fake_multidevice_setup_observer_.get();
+  FakeAccountStatusChangeDelegate* fake_account_status_change_delegate() {
+    return fake_account_status_change_delegate_.get();
   }
 
-  void CallSetObserver() {
+  void CallSetAccountStatusChangeDelegate() {
     base::RunLoop run_loop;
-    multidevice_setup_->SetObserver(
-        fake_multidevice_setup_observer_->GenerateInterfacePtr(),
+    multidevice_setup_->SetAccountStatusChangeDelegate(
+        fake_account_status_change_delegate_->GenerateInterfacePtr(),
         base::BindOnce(
             &MultiDeviceSetupServiceTest::OnNotificationPresenterRegistered,
             base::Unretained(this), run_loop.QuitClosure()));
@@ -87,8 +87,8 @@ class MultiDeviceSetupServiceTest : public testing::Test {
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
 
-  std::unique_ptr<FakeMultiDeviceSetupObserver>
-      fake_multidevice_setup_observer_;
+  std::unique_ptr<FakeAccountStatusChangeDelegate>
+      fake_account_status_change_delegate_;
   mojom::MultiDeviceSetupPtr multidevice_setup_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupServiceTest);
@@ -99,8 +99,8 @@ TEST_F(MultiDeviceSetupServiceTest,
   CallTriggerEventForDebugging(
       mojom::EventTypeForDebugging::kNewUserPotentialHostExists);
 
-  EXPECT_EQ(1u,
-            fake_multidevice_setup_observer()->num_new_user_events_handled());
+  EXPECT_EQ(
+      1u, fake_account_status_change_delegate()->num_new_user_events_handled());
 }
 
 TEST_F(MultiDeviceSetupServiceTest,
@@ -108,7 +108,7 @@ TEST_F(MultiDeviceSetupServiceTest,
   CallTriggerEventForDebugging(
       mojom::EventTypeForDebugging::kExistingUserConnectedHostSwitched);
 
-  EXPECT_EQ(1u, fake_multidevice_setup_observer()
+  EXPECT_EQ(1u, fake_account_status_change_delegate()
                     ->num_existing_user_host_switched_events_handled());
 }
 
@@ -117,7 +117,7 @@ TEST_F(MultiDeviceSetupServiceTest,
   CallTriggerEventForDebugging(
       mojom::EventTypeForDebugging::kExistingUserNewChromebookAdded);
 
-  EXPECT_EQ(1u, fake_multidevice_setup_observer()
+  EXPECT_EQ(1u, fake_account_status_change_delegate()
                     ->num_existing_user_chromebook_added_events_handled());
 }
 
