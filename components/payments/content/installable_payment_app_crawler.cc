@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/manifest_icon_selector.h"
+#include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
@@ -209,6 +210,14 @@ bool InstallablePaymentAppCrawler::CompleteAndStorePaymentWebAppInfoIfValid(
       return false;
     }
     app_info->sw_scope = absolute_scope.spec();
+  }
+
+  std::string error_message;
+  if (!content::PaymentAppProvider::GetInstance()->IsValidInstallablePaymentApp(
+          web_app_manifest_url, GURL(app_info->sw_js_url),
+          GURL(app_info->sw_scope), &error_message)) {
+    WarnIfPossible(error_message);
+    return false;
   }
 
   // TODO(crbug.com/782270): Support multiple installable payment apps for a

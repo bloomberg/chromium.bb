@@ -79,6 +79,13 @@ class CONTENT_EXPORT PaymentAppProvider {
   // to abort payment request.
   virtual void OnClosingOpenedWindow(BrowserContext* browser_context) = 0;
 
+  // Check whether given |sw_js_url| from |manifest_url| is allowed to register
+  // with |sw_scope|.
+  virtual bool IsValidInstallablePaymentApp(const GURL& manifest_url,
+                                            const GURL& sw_js_url,
+                                            const GURL& sw_scope,
+                                            std::string* error_message) = 0;
+
  protected:
   virtual ~PaymentAppProvider() {}
 };
