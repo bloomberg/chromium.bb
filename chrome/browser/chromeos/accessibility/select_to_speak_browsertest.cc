@@ -33,6 +33,7 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/test/event_generator.h"
 #include "url/url_constants.h"
 
@@ -80,16 +81,24 @@ class SelectToSpeakTest : public InProcessBrowserTest {
   SpeechMonitor speech_monitor_;
   std::unique_ptr<ui::test::EventGenerator> generator_;
 
+  gfx::Rect GetWebContentsBounds() const {
+    // TODO(katie): Find a way to get the exact bounds programmatically.
+    gfx::Rect bounds = browser()->window()->GetBounds();
+    const int top_inset = ui::MaterialDesignController::IsRefreshUi() ? 75 : 50;
+    bounds.Inset(8, 8, top_inset, 8);
+    return bounds;
+  }
+
   void ActivateSelectToSpeakInWindowBounds(std::string url) {
     ui_test_utils::NavigateToURL(browser(), GURL(url));
-    gfx::Rect bounds = browser()->window()->GetBounds();
+    gfx::Rect bounds = GetWebContentsBounds();
 
-    // Hold down Search and click a few pixels into the window bounds.
+    // Hold down Search and drag over the web contents to select everything.
     generator_->PressKey(ui::VKEY_LWIN, 0 /* flags */);
-    generator_->MoveMouseTo(bounds.x() + 8, bounds.y() + 50);
+    generator_->MoveMouseTo(bounds.x(), bounds.y());
     generator_->PressLeftButton();
-    generator_->MoveMouseTo(bounds.x() + bounds.width() - 8,
-                            bounds.y() + bounds.height() - 8);
+    generator_->MoveMouseTo(bounds.x() + bounds.width(),
+                            bounds.y() + bounds.height());
     generator_->ReleaseLeftButton();
     generator_->ReleaseKey(ui::VKEY_LWIN, 0 /* flags */);
   }
@@ -183,11 +192,11 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, ActivatesWithTapOnSelectToSpeakTray) {
   // start speech.
   ui_test_utils::NavigateToURL(
       browser(), GURL("data:text/html;charset=utf-8,<p>This is some text</p>"));
-  gfx::Rect bounds = browser()->window()->GetBounds();
-  generator_->MoveMouseTo(bounds.x() + 8, bounds.y() + 8);
+  gfx::Rect bounds = GetWebContentsBounds();
+  generator_->MoveMouseTo(bounds.x(), bounds.y());
   generator_->PressLeftButton();
-  generator_->MoveMouseTo(bounds.x() + bounds.width() - 8,
-                          bounds.y() + bounds.height() - 8);
+  generator_->MoveMouseTo(bounds.x() + bounds.width(),
+                          bounds.y() + bounds.height());
   generator_->ReleaseLeftButton();
 
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
@@ -292,10 +301,10 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, FocusRingMovesWithMouse) {
 
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/html;charset=utf-8,"
                                                "<p>This is some text</p>"));
-  gfx::Rect bounds = browser()->window()->GetBounds();
+  gfx::Rect bounds = GetWebContentsBounds();
   PrepareToWaitForFocusRingChanged();
   generator_->PressKey(ui::VKEY_LWIN, 0 /* flags */);
-  generator_->MoveMouseTo(bounds.x() + 8, bounds.y() + 50);
+  generator_->MoveMouseTo(bounds.x(), bounds.y());
   generator_->PressLeftButton();
 
   // Expect a focus ring to have been drawn.
@@ -305,28 +314,28 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, FocusRingMovesWithMouse) {
   gfx::Rect target_bounds = focus_rings.at(0)->layer()->GetTargetBounds();
 
   // Make sure it's in a reasonable position.
-  EXPECT_LT(abs(target_bounds.x() - (bounds.x() + 8)), 50);
-  EXPECT_LT(abs(target_bounds.y() - (bounds.y() + 50)), 50);
+  EXPECT_LT(abs(target_bounds.x() - bounds.x()), 50);
+  EXPECT_LT(abs(target_bounds.y() - bounds.y()), 50);
   EXPECT_LT(target_bounds.width(), 50);
   EXPECT_LT(target_bounds.height(), 50);
 
   // Move the mouse.
   PrepareToWaitForFocusRingChanged();
-  generator_->MoveMouseTo(bounds.x() + 108, bounds.y() + 158);
+  generator_->MoveMouseTo(bounds.x() + 100, bounds.y() + 100);
 
   // Expect focus ring to have moved with the mouse.
   // The size should have grown to be over 100 (the rect is now size 100,
   // and the focus ring has some buffer). Position should be unchanged.
   WaitForFocusRingChanged();
   target_bounds = focus_rings.at(0)->layer()->GetTargetBounds();
-  EXPECT_LT(abs(target_bounds.x() - (bounds.x() + 8)), 50);
-  EXPECT_LT(abs(target_bounds.y() - (bounds.y() + 50)), 50);
+  EXPECT_LT(abs(target_bounds.x() - bounds.x()), 50);
+  EXPECT_LT(abs(target_bounds.y() - bounds.y()), 50);
   EXPECT_GT(target_bounds.width(), 100);
   EXPECT_GT(target_bounds.height(), 100);
 
   // Move the mouse smaller again, it should shrink.
   PrepareToWaitForFocusRingChanged();
-  generator_->MoveMouseTo(bounds.x() + 18, bounds.y() + 68);
+  generator_->MoveMouseTo(bounds.x() + 10, bounds.y() + 18);
   WaitForFocusRingChanged();
   target_bounds = focus_rings.at(0)->layer()->GetTargetBounds();
   EXPECT_LT(target_bounds.width(), 50);
@@ -366,7 +375,6 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, WorksWithStickyKeys) {
 
   ui_test_utils::NavigateToURL(
       browser(), GURL("data:text/html;charset=utf-8,<p>This is some text</p>"));
-  gfx::Rect bounds = browser()->window()->GetBounds();
 
   // Tap Search and click a few pixels into the window bounds.
   generator_->PressKey(ui::VKEY_LWIN, 0 /* flags */);
@@ -374,10 +382,11 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, WorksWithStickyKeys) {
 
   // Sticky keys should remember the 'search' key was clicked, so STS is
   // actually in a capturing mode now.
-  generator_->MoveMouseTo(bounds.x() + 8, bounds.y() + 50);
+  gfx::Rect bounds = GetWebContentsBounds();
+  generator_->MoveMouseTo(bounds.x(), bounds.y());
   generator_->PressLeftButton();
-  generator_->MoveMouseTo(bounds.x() + bounds.width() - 8,
-                          bounds.y() + bounds.height() - 8);
+  generator_->MoveMouseTo(bounds.x() + bounds.width(),
+                          bounds.y() + bounds.height());
   generator_->ReleaseLeftButton();
 
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
