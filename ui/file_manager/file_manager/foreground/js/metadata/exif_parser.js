@@ -4,13 +4,21 @@
 
 /**
  * Protocol + host parts of extension URL.
+ *
+ * The __FILE_NAME suffix is because the same string constant is used in
+ * multiple JS files, and JavaScript doesn't have C's #define mechanism (which
+ * only affects the file its in). Without the suffix, we'd have "constant
+ * FILE_MANAGER_HOST assigned a value more than once" compiler warnings.
+ *
  * @type {string}
  * @const
  */
-var FILE_MANAGER_HOST = 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
+var FILE_MANAGER_HOST__EXIF_PARSER =
+    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
 
 importScripts(
-    FILE_MANAGER_HOST + '/foreground/js/metadata/exif_constants.js');
+    FILE_MANAGER_HOST__EXIF_PARSER +
+    '/foreground/js/metadata/exif_constants.js');
 
 function ExifParser(parent) {
   ImageParser.call(this, parent, 'jpeg', /\.jpe?g$/i);
@@ -311,8 +319,9 @@ ExifParser.prototype.readTagValue = function(br, tag) {
    * @param {boolean=} opt_signed
    */
   function unsafeRead(size, opt_readFunction, opt_signed) {
-    var readFunction = opt_readFunction ||
-        function(size) { return br.readScalar(size, opt_signed) };
+    var readFunction = opt_readFunction || function(size) {
+      return br.readScalar(size, opt_signed);
+    };
 
     var totalSize = tag.componentCount * size;
     if (totalSize < 1) {

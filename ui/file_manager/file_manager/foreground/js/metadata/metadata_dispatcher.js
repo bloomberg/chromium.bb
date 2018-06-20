@@ -4,16 +4,27 @@
 
 /**
  * Protocol + host parts of extension URL.
+ *
+ * The __FILE_NAME suffix is because the same string constant is used in
+ * multiple JS files, and JavaScript doesn't have C's #define mechanism (which
+ * only affects the file its in). Without the suffix, we'd have "constant
+ * FILE_MANAGER_HOST assigned a value more than once" compiler warnings.
+ *
  * @type {string}
  * @const
  */
-var FILE_MANAGER_HOST = 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
+var FILE_MANAGER_HOST__METADATA_DISPATCHER =
+    'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
 
 // All of these scripts could be imported with a single call to importScripts,
 // but then load and compile time errors would all be reported from the same
 // line.
-importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/metadata_parser.js');
-importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/byte_reader.js');
+importScripts(
+    FILE_MANAGER_HOST__METADATA_DISPATCHER +
+    '/foreground/js/metadata/metadata_parser.js');
+importScripts(
+    FILE_MANAGER_HOST__METADATA_DISPATCHER +
+    '/foreground/js/metadata/byte_reader.js');
 
 /**
  * Dispatches metadata requests to the correct parser.
@@ -29,10 +40,18 @@ function MetadataDispatcher(port) {
 
   // Make sure to update component_extension_resources.grd
   // when adding new parsers.
-  importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/exif_parser.js');
-  importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/image_parsers.js');
-  importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/mpeg_parser.js');
-  importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/id3_parser.js');
+  importScripts(
+      FILE_MANAGER_HOST__METADATA_DISPATCHER +
+      '/foreground/js/metadata/exif_parser.js');
+  importScripts(
+      FILE_MANAGER_HOST__METADATA_DISPATCHER +
+      '/foreground/js/metadata/image_parsers.js');
+  importScripts(
+      FILE_MANAGER_HOST__METADATA_DISPATCHER +
+      '/foreground/js/metadata/mpeg_parser.js');
+  importScripts(
+      FILE_MANAGER_HOST__METADATA_DISPATCHER +
+      '/foreground/js/metadata/id3_parser.js');
 
   var patterns = [];
 
