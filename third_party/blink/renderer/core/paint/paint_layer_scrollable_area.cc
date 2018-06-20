@@ -682,9 +682,10 @@ IntRect PaintLayerScrollableArea::VisibleContentRect(
                                      GetLayoutBox()->Location()));
 }
 
-LayoutRect PaintLayerScrollableArea::VisibleScrollSnapportRect() const {
+LayoutRect PaintLayerScrollableArea::VisibleScrollSnapportRect(
+    IncludeScrollbarsInRect scrollbar_inclusion) const {
   const ComputedStyle* style = GetLayoutBox()->Style();
-  LayoutRect layout_content_rect(LayoutContentRect(kExcludeScrollbars));
+  LayoutRect layout_content_rect(LayoutContentRect(scrollbar_inclusion));
   layout_content_rect.MoveBy(LayoutPoint(-ScrollOrigin()));
   LayoutRectOutsets padding(MinimumValueForLength(style->ScrollPaddingTop(),
                                                   layout_content_rect.Height()),
@@ -824,12 +825,16 @@ bool PaintLayerScrollableArea::ShouldPlaceVerticalScrollbarOnLeft() const {
 }
 
 int PaintLayerScrollableArea::PageStep(ScrollbarOrientation orientation) const {
-  int length =
-      (orientation == kHorizontalScrollbar) ? VisibleWidth() : VisibleHeight();
+  // Paging scroll operations should take scroll-padding into account [1]. So we
+  // use the snapport rect to calculate the page step instead of the visible
+  // rect.
+  // [1] https://drafts.csswg.org/css-scroll-snap/#scroll-padding
+  IntSize snapport_size = VisibleScrollSnapportRect().PixelSnappedSize();
+  int length = (orientation == kHorizontalScrollbar) ? snapport_size.Width()
+                                                     : snapport_size.Height();
   int min_page_step = static_cast<float>(length) *
                       ScrollableArea::MinFractionToStepWhenPaging();
   int page_step = max(min_page_step, length - MaxOverlapBetweenPages());
-
   return max(page_step, 1);
 }
 
