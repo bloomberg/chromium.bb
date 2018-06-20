@@ -20,6 +20,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/unified/unified_system_tray_controller.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -49,13 +50,18 @@ base::string16 FormatDayOfWeek(const base::Time& time) {
 
 // A view that shows current date in short format e.g. "Mon, Mar 12". It updates
 // by observing ClockObserver.
-class DateView : public views::View, public ClockObserver {
+class DateView : public views::Button,
+                 public views::ButtonListener,
+                 public ClockObserver {
  public:
-  DateView();
+  explicit DateView(UnifiedSystemTrayController* controller);
   ~DateView() override;
 
  private:
   void Update();
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // ClockObserver:
   void OnDateFormatChanged() override;
@@ -63,12 +69,14 @@ class DateView : public views::View, public ClockObserver {
   void OnSystemClockCanSetTimeChanged(bool can_set_time) override;
   void Refresh() override;
 
+  UnifiedSystemTrayController* const controller_;
   views::Label* label_;
 
   DISALLOW_COPY_AND_ASSIGN(DateView);
 };
 
-DateView::DateView() : label_(new views::Label) {
+DateView::DateView(UnifiedSystemTrayController* controller)
+    : Button(this), controller_(controller), label_(new views::Label) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(label_);
 
@@ -78,16 +86,23 @@ DateView::DateView() : label_(new views::Label) {
   Update();
 
   Shell::Get()->system_tray_model()->clock()->AddObserver(this);
+  TrayPopupUtils::ConfigureTrayPopupButton(this);
 }
 
 DateView::~DateView() {
   Shell::Get()->system_tray_model()->clock()->RemoveObserver(this);
 }
 
+void DateView::ButtonPressed(views::Button* sender, const ui::Event& event) {
+  controller_->HandleOpenDateTimeSettingsAction();
+}
+
 void DateView::Update() {
   base::Time now = base::Time::Now();
   label_->SetText(l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DATE, FormatDayOfWeek(now), FormatDate(now)));
+  SetAccessibleName(TimeFormatFriendlyDateAndTime(now));
+  NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
 void DateView::OnDateFormatChanged() {}
@@ -304,14 +319,15 @@ SupervisedUserView::SupervisedUserView()
 
 }  // namespace
 
-UnifiedSystemInfoView::UnifiedSystemInfoView()
+UnifiedSystemInfoView::UnifiedSystemInfoView(
+    UnifiedSystemTrayController* controller)
     : enterprise_managed_(new EnterpriseManagedView()),
       supervised_(new SupervisedUserView()) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, kUnifiedMenuItemPadding,
       kUnifiedSystemInfoSpacing));
 
-  AddChildView(new DateView());
+  AddChildView(new DateView(controller));
 
   if (PowerStatus::Get()->IsBatteryPresent()) {
     auto* separator = new views::Separator();

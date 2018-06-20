@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_UNIFIED_UNIFIED_SYSTEM_INFO_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/system/unified/unified_system_tray_controller.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -15,7 +16,7 @@ namespace ash {
 // is enterprise managed or not.
 class ASH_EXPORT UnifiedSystemInfoView : public views::View {
  public:
-  UnifiedSystemInfoView();
+  explicit UnifiedSystemInfoView(UnifiedSystemTrayController* controller);
   ~UnifiedSystemInfoView() override;
 
   // views::View:
