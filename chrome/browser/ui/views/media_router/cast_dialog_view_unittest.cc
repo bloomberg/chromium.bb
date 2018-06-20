@@ -54,8 +54,8 @@ UIMediaSink CreateConnectedSink() {
 
 CastDialogModel CreateModelWithSinks(std::vector<UIMediaSink> sinks) {
   CastDialogModel model;
-  model.dialog_header = base::UTF8ToUTF16("Dialog header");
-  model.media_sinks = std::move(sinks);
+  model.set_dialog_header(base::UTF8ToUTF16("Dialog header"));
+  model.set_media_sinks(std::move(sinks));
   return model;
 }
 
@@ -112,6 +112,10 @@ class CastDialogViewTest : public ChromeViewsTestBase {
     dialog_->ButtonPressed(dialog_->sink_buttons_for_test()[1], mouse_event);
   }
 
+  size_t selected_sink_index() {
+    return dialog_->selected_sink_index_for_test();
+  }
+
   views::ScrollView* scroll_view() { return dialog_->scroll_view_for_test(); }
 
   views::View* no_sinks_view() { return dialog_->no_sinks_view_for_test(); }
@@ -163,56 +167,70 @@ TEST_F(CastDialogViewTest, PopulateDialog) {
   InitializeDialogWithModel(model);
 
   EXPECT_TRUE(dialog_->ShouldShowCloseButton());
-  EXPECT_EQ(model.dialog_header, dialog_->GetWindowTitle());
+  EXPECT_EQ(model.dialog_header(), dialog_->GetWindowTitle());
   EXPECT_EQ(ui::DIALOG_BUTTON_OK, dialog_->GetDialogButtons());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_START_CASTING_BUTTON),
             dialog_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK));
 }
 
-TEST_F(CastDialogViewTest, ChooseSinks) {
+TEST_F(CastDialogViewTest, StartCasting) {
+  std::vector<UIMediaSink> media_sinks = {CreateAvailableSink(),
+                                          CreateAvailableSink()};
+  media_sinks[0].id = "sink0";
+  media_sinks[1].id = "sink1";
+  CastDialogModel model = CreateModelWithSinks(std::move(media_sinks));
+  InitializeDialogWithModel(model);
+
+  // Activate the main action button. The sink at index 0 should be selected by
+  // default when there are no active sinks.
+  EXPECT_EQ(0u, selected_sink_index());
+  EXPECT_CALL(controller_, StartCasting(model.media_sinks()[0].id, TAB_MIRROR));
+  dialog_->Accept();
+}
+
+TEST_F(CastDialogViewTest, StopCasting) {
   CastDialogModel model =
       CreateModelWithSinks({CreateAvailableSink(), CreateConnectedSink()});
   InitializeDialogWithModel(model);
 
-  // Activate the main action button. The sink at index 0 should be selected by
-  // default.
-  EXPECT_CALL(controller_, StartCasting(model.media_sinks[0].id, TAB_MIRROR));
-  dialog_->Accept();
-
-  // The label on the main action button should be updated when a different sink
-  // is chosen.
-  SelectSinkAtIndex(1);
+  // When there is an active sink, that should be selected by default.
+  EXPECT_EQ(1u, selected_sink_index());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON),
             dialog_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK));
-  EXPECT_CALL(controller_, StopCasting(model.media_sinks[1].route_id));
+  EXPECT_CALL(controller_, StopCasting(model.media_sinks()[1].route_id));
   dialog_->Accept();
 }
 
 TEST_F(CastDialogViewTest, UpdateModel) {
-  CastDialogModel model =
-      CreateModelWithSinks({CreateAvailableSink(), CreateConnectedSink()});
+  std::vector<UIMediaSink> media_sinks = {CreateAvailableSink(),
+                                          CreateConnectedSink()};
+  CastDialogModel model = CreateModelWithSinks(media_sinks);
   InitializeDialogWithModel(model);
   SelectSinkAtIndex(1);
-  model.media_sinks[1].state = UIMediaSinkState::AVAILABLE;
-  model.media_sinks[1].route_id = "";
-  model.media_sinks[1].cast_modes = {PRESENTATION};
+  media_sinks[1].state = UIMediaSinkState::AVAILABLE;
+  media_sinks[1].route_id = "";
+  media_sinks[1].cast_modes = {PRESENTATION};
+  model.set_media_sinks(std::move(media_sinks));
   dialog_->OnModelUpdated(model);
 
   // Sink selection should be retained across a model update.
-  EXPECT_CALL(controller_, StartCasting(model.media_sinks[1].id, PRESENTATION));
+  EXPECT_CALL(controller_,
+              StartCasting(model.media_sinks()[1].id, PRESENTATION));
   dialog_->Accept();
 }
 
 TEST_F(CastDialogViewTest, ShowAlternativeSources) {
-  CastDialogModel model = CreateModelWithSinks({CreateConnectedSink()});
-  model.media_sinks[0].cast_modes = {TAB_MIRROR, PRESENTATION, LOCAL_FILE};
+  std::vector<UIMediaSink> media_sinks = {CreateConnectedSink()};
+  media_sinks[0].cast_modes = {TAB_MIRROR, PRESENTATION, LOCAL_FILE};
+  CastDialogModel model = CreateModelWithSinks(media_sinks);
   InitializeDialogWithModel(model);
   // Press the button to show the alternative sources menu.
   dialog_->ButtonPressed(sources_button(), CreateMouseEvent());
   EXPECT_EQ(1, sources_menu_model()->GetItemCount());
   EXPECT_EQ(LOCAL_FILE, sources_menu_model()->GetCommandIdAt(0));
 
-  model.media_sinks[0].cast_modes = {TAB_MIRROR, DESKTOP_MIRROR, LOCAL_FILE};
+  media_sinks[0].cast_modes = {TAB_MIRROR, DESKTOP_MIRROR, LOCAL_FILE};
+  model.set_media_sinks(std::move(media_sinks));
   dialog_->OnModelUpdated(model);
   dialog_->ButtonPressed(sources_button(), CreateMouseEvent());
   EXPECT_EQ(2, sources_menu_model()->GetItemCount());
@@ -221,18 +239,19 @@ TEST_F(CastDialogViewTest, ShowAlternativeSources) {
 }
 
 TEST_F(CastDialogViewTest, CastToAlternativeSources) {
-  CastDialogModel model = CreateModelWithSinks({CreateConnectedSink()});
-  model.media_sinks[0].cast_modes = {DESKTOP_MIRROR, LOCAL_FILE};
+  std::vector<UIMediaSink> media_sinks = {CreateConnectedSink()};
+  media_sinks[0].cast_modes = {DESKTOP_MIRROR, LOCAL_FILE};
+  CastDialogModel model = CreateModelWithSinks(std::move(media_sinks));
   InitializeDialogWithModel(model);
   // Press the button to show the alternative sources menu.
   dialog_->ButtonPressed(sources_button(), CreateMouseEvent());
   ASSERT_EQ(2, sources_menu_model()->GetItemCount());
 
   EXPECT_CALL(controller_,
-              StartCasting(model.media_sinks[0].id, DESKTOP_MIRROR));
+              StartCasting(model.media_sinks()[0].id, DESKTOP_MIRROR));
   sources_menu_model()->ActivatedAt(0);
   Mock::VerifyAndClearExpectations(&controller_);
-  EXPECT_CALL(controller_, StartCasting(model.media_sinks[0].id, LOCAL_FILE));
+  EXPECT_CALL(controller_, StartCasting(model.media_sinks()[0].id, LOCAL_FILE));
   sources_menu_model()->ActivatedAt(1);
 }
 
@@ -242,8 +261,9 @@ TEST_F(CastDialogViewTest, DisableAlternativeSourcesPicker) {
   // The picker should be disabled when there are no sinks.
   EXPECT_FALSE(sources_button()->enabled());
 
-  model.media_sinks.push_back(CreateConnectedSink());
-  model.media_sinks[0].cast_modes = {TAB_MIRROR, PRESENTATION};
+  std::vector<UIMediaSink> media_sinks = {CreateConnectedSink()};
+  media_sinks[0].cast_modes = {TAB_MIRROR, PRESENTATION};
+  model.set_media_sinks(std::move(media_sinks));
   dialog_->OnModelUpdated(model);
   // The picker should be disabled if the selected sink doesn't support non-tab
   // sources.
@@ -257,7 +277,8 @@ TEST_F(CastDialogViewTest, ShowNoDeviceView) {
   EXPECT_TRUE(no_sinks_view()->visible());
   EXPECT_FALSE(scroll_view());
 
-  model.media_sinks.push_back(CreateConnectedSink());
+  std::vector<UIMediaSink> media_sinks = {CreateConnectedSink()};
+  model.set_media_sinks(std::move(media_sinks));
   dialog_->OnModelUpdated(model);
   // The scroll view should be shown when there are sinks.
   EXPECT_FALSE(no_sinks_view());

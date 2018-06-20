@@ -86,7 +86,7 @@ TEST_F(MediaRouterViewsUITest, NotifyObserver) {
 
   EXPECT_CALL(observer, OnModelUpdated(_))
       .WillOnce(WithArg<0>(Invoke([](const CastDialogModel& model) {
-        EXPECT_TRUE(model.media_sinks.empty());
+        EXPECT_TRUE(model.media_sinks().empty());
       })));
   ui_->AddObserver(&observer);
 
@@ -95,8 +95,8 @@ TEST_F(MediaRouterViewsUITest, NotifyObserver) {
   sink_with_cast_modes.cast_modes = {MediaCastMode::TAB_MIRROR};
   EXPECT_CALL(observer, OnModelUpdated(_))
       .WillOnce(WithArg<0>(Invoke([&sink](const CastDialogModel& model) {
-        EXPECT_EQ(1u, model.media_sinks.size());
-        const UIMediaSink& ui_sink = model.media_sinks[0];
+        EXPECT_EQ(1u, model.media_sinks().size());
+        const UIMediaSink& ui_sink = model.media_sinks()[0];
         EXPECT_EQ(sink.id(), ui_sink.id);
         EXPECT_EQ(base::UTF8ToUTF16(sink.name()), ui_sink.friendly_name);
         EXPECT_EQ(UIMediaSinkState::AVAILABLE, ui_sink.state);
@@ -110,8 +110,8 @@ TEST_F(MediaRouterViewsUITest, NotifyObserver) {
   EXPECT_CALL(observer, OnModelUpdated(_))
       .WillOnce(
           WithArg<0>(Invoke([&sink, &route](const CastDialogModel& model) {
-            EXPECT_EQ(1u, model.media_sinks.size());
-            const UIMediaSink& ui_sink = model.media_sinks[0];
+            EXPECT_EQ(1u, model.media_sinks().size());
+            const UIMediaSink& ui_sink = model.media_sinks()[0];
             EXPECT_EQ(sink.id(), ui_sink.id);
             EXPECT_EQ(UIMediaSinkState::CONNECTED, ui_sink.state);
             EXPECT_EQ(route.media_route_id(), ui_sink.route_id);
@@ -152,8 +152,8 @@ TEST_F(MediaRouterViewsUITest, RemovePseudoSink) {
 
   EXPECT_CALL(observer, OnModelUpdated(_))
       .WillOnce(WithArg<0>(Invoke([&sink](const CastDialogModel& model) {
-        EXPECT_EQ(1u, model.media_sinks.size());
-        EXPECT_EQ(sink.id(), model.media_sinks[0].id);
+        EXPECT_EQ(1u, model.media_sinks().size());
+        EXPECT_EQ(sink.id(), model.media_sinks()[0].id);
       })));
   ui_->OnResultsUpdated({sink_with_cast_modes, pseudo_sink_with_cast_modes});
   ui_->RemoveObserver(&observer);
@@ -171,16 +171,16 @@ TEST_F(MediaRouterViewsUITest, ConnectingState) {
   // CONNECTING.
   EXPECT_CALL(observer, OnModelUpdated(_))
       .WillOnce(WithArg<0>(Invoke([&sink](const CastDialogModel& model) {
-        ASSERT_EQ(1u, model.media_sinks.size());
-        EXPECT_EQ(UIMediaSinkState::CONNECTING, model.media_sinks[0].state);
+        ASSERT_EQ(1u, model.media_sinks().size());
+        EXPECT_EQ(UIMediaSinkState::CONNECTING, model.media_sinks()[0].state);
       })));
   ui_->StartCasting(kSinkId, MediaCastMode::TAB_MIRROR);
 
   // Once a route is created for the sink, its state should become CONNECTED.
   EXPECT_CALL(observer, OnModelUpdated(_))
       .WillOnce(WithArg<0>(Invoke([&sink](const CastDialogModel& model) {
-        ASSERT_EQ(1u, model.media_sinks.size());
-        EXPECT_EQ(UIMediaSinkState::CONNECTED, model.media_sinks[0].state);
+        ASSERT_EQ(1u, model.media_sinks().size());
+        EXPECT_EQ(UIMediaSinkState::CONNECTED, model.media_sinks()[0].state);
       })));
   MediaRoute route(kRouteId, MediaSource(kSourceId), kSinkId, "", true, true);
   ui_->OnRoutesUpdated({route}, {});
@@ -212,19 +212,19 @@ TEST_F(MediaRouterViewsUITest, AddAndRemoveIssue) {
   EXPECT_CALL(observer, OnModelUpdated(_))
       .WillOnce(WithArg<0>(
           Invoke([&sink1, &sink2, &issue_title](const CastDialogModel& model) {
-            EXPECT_EQ(2u, model.media_sinks.size());
-            EXPECT_EQ(model.media_sinks[0].id, sink1.id());
-            EXPECT_FALSE(model.media_sinks[0].issue.has_value());
-            EXPECT_EQ(model.media_sinks[1].id, sink2.id());
-            EXPECT_EQ(model.media_sinks[1].issue->info().title, issue_title);
+            EXPECT_EQ(2u, model.media_sinks().size());
+            EXPECT_EQ(model.media_sinks()[0].id, sink1.id());
+            EXPECT_FALSE(model.media_sinks()[0].issue.has_value());
+            EXPECT_EQ(model.media_sinks()[1].id, sink2.id());
+            EXPECT_EQ(model.media_sinks()[1].issue->info().title, issue_title);
           })));
   mock_router_.GetIssueManager()->AddIssue(issue);
 
   EXPECT_CALL(observer, OnModelUpdated(_))
       .WillOnce(WithArg<0>(Invoke([&sink2](const CastDialogModel& model) {
-        EXPECT_EQ(2u, model.media_sinks.size());
-        EXPECT_EQ(model.media_sinks[1].id, sink2.id());
-        EXPECT_FALSE(model.media_sinks[1].issue.has_value());
+        EXPECT_EQ(2u, model.media_sinks().size());
+        EXPECT_EQ(model.media_sinks()[1].id, sink2.id());
+        EXPECT_FALSE(model.media_sinks()[1].issue.has_value());
       })));
   mock_router_.GetIssueManager()->ClearIssue(issue_id);
   ui_->RemoveObserver(&observer);
