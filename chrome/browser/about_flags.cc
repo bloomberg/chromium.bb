@@ -32,6 +32,7 @@
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
@@ -120,6 +121,7 @@
 #include "services/device/public/cpp/device_features.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/libaom/av1_buildflags.h"
@@ -1120,6 +1122,24 @@ const FeatureEntry::FeatureVariation
          arraysize(kTranslateForceTriggerOnEnglishGeo), nullptr},
 };
 #endif  // defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kProactiveTabFreezeAndDiscard_FreezeOnly[] = {
+    {resource_coordinator::
+         kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscard,
+     "false"}};
+const FeatureEntry::FeatureParam
+    kProactiveTabFreezeAndDiscard_FreezeAndDiscard[] = {
+        {resource_coordinator::
+             kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscard,
+         "true"}};
+
+const FeatureEntry::FeatureVariation kProactiveTabFreezeAndDiscardVariations[] =
+    {{"Freeze only", kProactiveTabFreezeAndDiscard_FreezeOnly,
+      base::size(kProactiveTabFreezeAndDiscard_FreezeOnly), nullptr},
+     {"Freeze and discard", kProactiveTabFreezeAndDiscard_FreezeAndDiscard,
+      base::size(kProactiveTabFreezeAndDiscard_FreezeAndDiscard), nullptr}};
+#endif
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -3918,6 +3938,26 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableEphemeralFlashPermissionName,
      flag_descriptions::kEnableEphemeralFlashPermissionDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableEphemeralFlashPermission)},
+
+#if !defined(OS_ANDROID)
+    {"infinite-session-restore", flag_descriptions::kInfiniteSessionRestoreName,
+     flag_descriptions::kInfiniteSessionRestoreDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kInfiniteSessionRestore)},
+    {"page-almost-idle", flag_descriptions::kPageAlmostIdleName,
+     flag_descriptions::kPageAlmostIdleDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kPageAlmostIdle)},
+    {"proactive-tab-freeze-and-discard",
+     flag_descriptions::kProactiveTabFreezeAndDiscardName,
+     flag_descriptions::kProactiveTabFreezeAndDiscardDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         features::kProactiveTabFreezeAndDiscard,
+         kProactiveTabFreezeAndDiscardVariations,
+         features::kProactiveTabFreezeAndDiscard.name)},
+    {"site-characteristics-database",
+     flag_descriptions::kSiteCharacteristicsDatabaseName,
+     flag_descriptions::kSiteCharacteristicsDatabaseDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSiteCharacteristicsDatabase)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
