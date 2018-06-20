@@ -744,6 +744,7 @@ void NetworkChangeNotifier::NotifyDataReceived(const URLRequest& request,
 void NetworkChangeNotifier::InitHistogramWatcher() {
   if (!g_network_change_notifier)
     return;
+  DCHECK(!g_network_change_notifier->histogram_watcher_);
   g_network_change_notifier->histogram_watcher_.reset(new HistogramWatcher());
   g_network_change_notifier->histogram_watcher_->Init();
 }
@@ -752,6 +753,7 @@ void NetworkChangeNotifier::InitHistogramWatcher() {
 void NetworkChangeNotifier::ShutdownHistogramWatcher() {
   if (!g_network_change_notifier)
     return;
+  DCHECK(g_network_change_notifier->histogram_watcher_);
   g_network_change_notifier->histogram_watcher_.reset();
 }
 
