@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame_ash.h"
 
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_P(BrowserTestParam,
   Browser* browser = new Browser(params);
   browser->window()->Show();
 
-  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+  if (!features::IsAshInBrowserProcess()) {
     WidgetBoundsWatcher watch(
         BrowserView::GetBrowserViewForBrowser(browser)->GetWidget(),
         original_bounds);
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_P(BrowserTestParam,
     expectation.set_y(original_bounds.y());
   }
 
-  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+  if (!features::IsAshInBrowserProcess()) {
     WidgetBoundsWatcher watch(
         BrowserView::GetBrowserViewForBrowser(browser)->GetWidget(),
         expectation);

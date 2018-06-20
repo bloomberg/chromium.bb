@@ -74,7 +74,6 @@
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -111,6 +110,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/ui_base_features.h"
 
 using content::BrowserThread;
 
@@ -275,7 +275,7 @@ WizardController::WizardController(LoginDisplayHost* host, OobeUI* oobe_ui)
   // In session OOBE was initiated from voice interaction keyboard shortcuts.
   is_in_session_oobe_ =
       session_manager::SessionManager::Get()->IsSessionStarted();
-  if (!ash_util::IsRunningInMash()) {
+  if (features::IsAshInBrowserProcess()) {
     AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
     if (accessibility_manager) {
       // accessibility_manager could be null in Tests.

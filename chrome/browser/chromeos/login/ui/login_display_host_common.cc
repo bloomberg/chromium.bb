@@ -15,11 +15,11 @@
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/wm/public/scoped_drag_drop_disabler.h"
 
 namespace chromeos {
@@ -49,7 +49,7 @@ LoginDisplayHostCommon::LoginDisplayHostCommon() : weak_factory_(this) {
 
   // Disable Drag'n'Drop for the login session.
   // ash::Shell may be null in tests.
-  if (ash::Shell::HasInstance() && !ash_util::IsRunningInMash()) {
+  if (ash::Shell::HasInstance() && features::IsAshInBrowserProcess()) {
     scoped_drag_drop_disabler_.reset(
         new wm::ScopedDragDropDisabler(ash::Shell::GetPrimaryRootWindow()));
   } else {

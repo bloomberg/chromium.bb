@@ -98,17 +98,16 @@
 #include "ui/base/ui_base_types.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_types.h"
+#include "ui/base/ui_base_features.h"
 #endif
 
 using content::BrowserThread;
@@ -282,7 +281,7 @@ void SetLockedFullscreenState(Browser* browser, bool locked) {
   // Disallow screenshots in locked fullscreen mode.
   // TODO(isandrk, 816900): ChromeScreenshotGrabber isn't implemented in Mash
   // yet, remove this conditional when it becomes available.
-  if (chromeos::GetAshConfig() != ash::Config::MASH)
+  if (features::IsAshInBrowserProcess())
     ChromeScreenshotGrabber::Get()->set_screenshots_allowed(!locked);
 
   // Reset the clipboard and kill dev tools when entering or exiting locked

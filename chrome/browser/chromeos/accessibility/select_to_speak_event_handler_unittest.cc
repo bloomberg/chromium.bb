@@ -11,7 +11,6 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/test/base/testing_profile.h"
 #include "ui/aura/test/aura_test_base.h"

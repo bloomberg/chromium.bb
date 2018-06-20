@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"

@@ -5,9 +5,8 @@
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 #include "chrome/browser/ui/views/tabs/window_finder_mus.h"
 
-#include "ash/public/cpp/config.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 
 gfx::NativeWindow GetLocalProcessWindowAtPointAsh(
     const gfx::Point& screen_point,
@@ -16,7 +15,7 @@ gfx::NativeWindow GetLocalProcessWindowAtPointAsh(
 gfx::NativeWindow WindowFinder::GetLocalProcessWindowAtPoint(
     const gfx::Point& screen_point,
     const std::set<gfx::NativeWindow>& ignore) {
-  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+  if (!features::IsAshInBrowserProcess()) {
     gfx::NativeWindow mus_result = nullptr;
     if (GetLocalProcessWindowAtPointMus(screen_point, ignore, &mus_result))
       return mus_result;

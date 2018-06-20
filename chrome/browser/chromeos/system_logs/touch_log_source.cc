@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "ash/public/cpp/config.h"
 #include "ash/touch/touch_hud_debug.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -20,9 +19,9 @@
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
+#include "ui/base/ui_base_features.h"
 
 using content::BrowserThread;
 
@@ -171,7 +170,7 @@ void OnStatusLogCollected(
 // Collect touch HUD debug logs. This needs to be done on the UI thread.
 void CollectTouchHudDebugLog(system_logs::SystemLogsResponse* response) {
   // TODO(mash): Collect this data from window server over mojo.
-  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+  if (!features::IsAshInBrowserProcess()) {
     NOTIMPLEMENTED();
     return;
   }

@@ -39,7 +39,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
-#include "chrome/browser/chromeos/ash_config.h"
+#include "ui/base/ui_base_features.h"
 #endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
@@ -272,7 +272,7 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
       content::MEDIA_DEVICE_INVALID_STATE;
 
 #if defined(OS_CHROMEOS)
-  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+  if (!features::IsAshInBrowserProcess()) {
     // TODO(crbug.com/806366): Screen capture support for mash.
     NOTIMPLEMENTED() << "Screen capture not yet implemented in --mash";
     screen_capture_enabled = false;

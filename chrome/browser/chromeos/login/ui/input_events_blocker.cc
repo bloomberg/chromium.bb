@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "base/logging.h"
-#include "chrome/browser/ui/ash/ash_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/event.h"
 
 namespace chromeos {
@@ -14,7 +14,7 @@ namespace chromeos {
 InputEventsBlocker::InputEventsBlocker() {
   // TODO(mash): Implement a mash version. This will probably need to talk to
   // the window server.
-  if (!ash_util::IsRunningInMash()) {
+  if (features::IsAshInBrowserProcess()) {
     ash::Shell::Get()->AddPreTargetHandler(this,
                                            ui::EventTarget::Priority::kSystem);
     VLOG(1) << "InputEventsBlocker " << this << " created.";
@@ -24,7 +24,7 @@ InputEventsBlocker::InputEventsBlocker() {
 }
 
 InputEventsBlocker::~InputEventsBlocker() {
-  if (!ash_util::IsRunningInMash()) {
+  if (features::IsAshInBrowserProcess()) {
     ash::Shell::Get()->RemovePreTargetHandler(this);
     VLOG(1) << "InputEventsBlocker " << this << " destroyed.";
   } else {

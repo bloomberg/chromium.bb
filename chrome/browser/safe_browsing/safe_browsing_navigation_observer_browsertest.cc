@@ -4,7 +4,6 @@
 
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -2327,7 +2326,6 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                        AppendRecentNavigationsToEmptyReferrerChain) {
-  base::test::ScopedFeatureList scoped_feature_list;
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kSingleFrameTestURL));
   GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);

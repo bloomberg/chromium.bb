@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "extensions/common/constants.h"
 #include "ui/base/models/menu_model.h"
 

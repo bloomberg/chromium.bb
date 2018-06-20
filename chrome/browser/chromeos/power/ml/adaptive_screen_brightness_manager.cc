@@ -16,7 +16,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/power/ml/adaptive_screen_brightness_ukm_logger.h"
 #include "chrome/browser/chromeos/power/ml/adaptive_screen_brightness_ukm_logger_impl.h"
 #include "chrome/browser/chromeos/power/ml/real_boot_clock.h"
@@ -37,6 +36,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/env.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
@@ -162,7 +162,7 @@ AdaptiveScreenBrightnessManager::CreateInstance() {
   // TODO(jiameng): video detector below doesn't work with MASH. Temporary
   // solution is to disable logging if we're under MASH env.
   if (chromeos::GetDeviceType() != chromeos::DeviceType::kChromebook ||
-      chromeos::GetAshConfig() == ash::Config::MASH) {
+      !features::IsAshInBrowserProcess()) {
     return nullptr;
   }
 

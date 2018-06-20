@@ -27,7 +27,6 @@
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -47,6 +46,7 @@
 #include "google_apis/google_api_keys.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -92,7 +92,7 @@ CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui,
       version_info_updater_(this) {
   DCHECK(js_calls_container);
   set_call_js_prefix(kJsScreenPath);
-  if (!ash_util::IsRunningInMash()) {
+  if (features::IsAshInBrowserProcess()) {
     AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
     CHECK(accessibility_manager);
     accessibility_subscription_ = accessibility_manager->RegisterCallback(
@@ -442,7 +442,7 @@ void CoreOobeHandler::SetLoginUserCount(int user_count) {
 }
 
 void CoreOobeHandler::UpdateA11yState() {
-  if (ash_util::IsRunningInMash()) {
+  if (!features::IsAshInBrowserProcess()) {
     NOTIMPLEMENTED();
     return;
   }
@@ -520,7 +520,7 @@ void CoreOobeHandler::UpdateDeviceRequisition() {
 void CoreOobeHandler::UpdateKeyboardState() {
   // TODO(mash): Support virtual keyboard under MASH. There is no
   // KeyboardController in the browser process under MASH.
-  if (!ash_util::IsRunningInMash()) {
+  if (features::IsAshInBrowserProcess()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->enabled()) {
       const bool is_keyboard_shown = keyboard_controller->keyboard_visible();

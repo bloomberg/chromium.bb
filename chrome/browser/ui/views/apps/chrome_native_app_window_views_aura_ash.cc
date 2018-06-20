@@ -22,7 +22,6 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -40,6 +39,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/skia_util.h"
@@ -198,8 +198,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforePanelWidgetInit(
     views::Widget* widget) {
   ChromeNativeAppWindowViewsAura::OnBeforePanelWidgetInit(init_params, widget);
 
-  if (chromeos::GetAshConfig() != ash::Config::MASH &&
-      ash::Shell::HasInstance()) {
+  if (features::IsAshInBrowserProcess() && ash::Shell::HasInstance()) {
     // Open a new panel on the target root.
     init_params->context = ash::Shell::GetRootWindowForNewWindows();
     init_params->bounds = gfx::Rect(GetPreferredSize());
@@ -230,7 +229,7 @@ bool ChromeNativeAppWindowViewsAuraAsh::ShouldRemoveStandardFrame() {
   if (IsFrameless())
     return true;
 
-  return HasFrameColor() && chromeos::GetAshConfig() != ash::Config::MASH;
+  return HasFrameColor() && features::IsAshInBrowserProcess();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -329,7 +328,7 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
   if (IsFrameless())
     return CreateNonStandardAppFrame();
 
-  if (chromeos::GetAshConfig() == ash::Config::MASH)
+  if (!features::IsAshInBrowserProcess())
     return nullptr;
 
   if (app_window()->window_type_is_panel()) {
@@ -399,7 +398,7 @@ void ChromeNativeAppWindowViewsAuraAsh::UpdateDraggableRegions(
   SkRegion* draggable_region = GetDraggableRegion();
   // Set the NativeAppWindow's draggable region on the mus window.
   if (draggable_region && !draggable_region->isEmpty() && widget() &&
-      chromeos::GetAshConfig() == ash::Config::MASH) {
+      !features::IsAshInBrowserProcess()) {
     // Supply client area insets that encompass all draggable regions.
     gfx::Insets insets(draggable_region->getBounds().bottom(), 0, 0, 0);
 

@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/highlighter_controller_client.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/profiles/profile.h"
@@ -45,6 +44,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -113,7 +113,7 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerTreeForSnapshot(
   // Exclude metalayer-related layers. This will also include other layers
   // under kShellWindowId_OverlayContainer which is fine.
   // TODO(crbug.com/757012): Mash support.
-  if (chromeos::GetAshConfig() != ash::Config::MASH) {
+  if (features::IsAshInBrowserProcess()) {
     aura::Window* overlay_container = ash::Shell::GetContainer(
         root_window, ash::kShellWindowId_OverlayContainer);
     if (overlay_container != nullptr)
@@ -284,7 +284,7 @@ void ArcVoiceInteractionFrameworkService::CaptureFullscreen(
   // Since ARC currently only runs in primary display, we restrict
   // the screenshot to it.
   // TODO(crbug.com/757012): Mash support.
-  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+  if (!features::IsAshInBrowserProcess()) {
     std::move(callback).Run(std::vector<uint8_t>{});
     return;
   }
@@ -576,7 +576,7 @@ void ArcVoiceInteractionFrameworkService::
 bool ArcVoiceInteractionFrameworkService::IsHomescreenActive() {
   // Homescreen is considered to be active if there are no active windows.
   // TODO(crbug.com/757012): Mash support.
-  if (chromeos::GetAshConfig() == ash::Config::MASH)
+  if (!features::IsAshInBrowserProcess())
     return false;
   return !ash::Shell::Get()->activation_client()->GetActiveWindow();
 }

@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/media_client.h"
@@ -37,6 +36,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
 #include "ui/wm/core/transient_window_manager.h"
@@ -719,7 +719,7 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
   if (visible) {
     // TODO(erg): When we get rid of the classic ash, get rid of the direct
     // linkage on tablet_mode_controller() here.
-    if (chromeos::GetAshConfig() == ash::Config::MASH) {
+    if (!features::IsAshInBrowserProcess()) {
       aura::WindowTreeHostMus::ForWindow(window)->PerformWmAction(
           ash::mojom::kAddWindowToTabletMode);
     } else {

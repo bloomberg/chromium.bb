@@ -12,8 +12,8 @@
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/ime/infolist_window.h"
 #include "ui/views/widget/widget.h"
 
@@ -46,7 +46,7 @@ void CandidateWindowControllerImpl::InitCandidateWindowView() {
     return;
 
   gfx::NativeView parent = nullptr;
-  if (!ash_util::IsRunningInMash()) {
+  if (features::IsAshInBrowserProcess()) {
     aura::Window* active_window = ash::wm::GetActiveWindow();
     parent = ash::Shell::GetContainer(
         active_window ? active_window->GetRootWindow()

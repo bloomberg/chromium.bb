@@ -23,7 +23,6 @@
 #include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -57,6 +56,7 @@
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -177,7 +177,7 @@ Widget* SystemTrayClient::CreateUnownedDialogWidget(
   // Place the dialog in the appropriate modal dialog container, either above
   // or below the lock screen, based on the login state.
   int container_id = GetDialogParentContainerId();
-  if (ash_util::IsRunningInMash()) {
+  if (!features::IsAshInBrowserProcess()) {
     using ui::mojom::WindowManager;
     params.mus_properties[WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(container_id);

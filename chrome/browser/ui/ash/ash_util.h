@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/config.h"
 #include "ui/views/widget/widget.h"
 
 namespace ui {
@@ -19,10 +18,6 @@ namespace ash_util {
 
 // Returns true if Ash should be run at startup.
 bool ShouldOpenAshOnStartup();
-
-// Returns true if Chrome is running in the mash shell.
-// TODO(sky): convert to chromeos::GetAshConfig() and remove.
-bool IsRunningInMash();
 
 // Returns true if the given |accelerator| has been deprecated and hence can
 // be consumed by web contents if needed.

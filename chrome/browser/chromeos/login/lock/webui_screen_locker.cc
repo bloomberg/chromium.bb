@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/chromeos/login/ui/preloaded_web_view_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -43,6 +41,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -78,7 +77,7 @@ bool WebUIScreenLocker::ShouldPreloadLockScreen() {
   // Bail for mash because IdleDetector/UserActivityDetector does not work
   // properly there.
   // TODO(xiyuan): Revisit after http://crbug.com/626899.
-  if (ash_util::IsRunningInMash())
+  if (!features::IsAshInBrowserProcess())
     return false;
 
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(
@@ -144,7 +143,7 @@ void WebUIScreenLocker::LockScreen() {
   gfx::Rect bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
   lock_time_ = base::TimeTicks::Now();
-  lock_window_ = new ash::LockWindow(chromeos::GetAshConfig());
+  lock_window_ = new ash::LockWindow();
   lock_window_->AddObserver(this);
 
   Init();

@@ -12,7 +12,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
@@ -33,6 +32,7 @@
 #include "content/public/common/content_switches.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 
 class ImmersiveModeControllerAshHostedAppBrowserTest
@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   LaunchAppBrowser();
   ASSERT_FALSE(controller()->IsEnabled());
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  DCHECK_NE(ash::Config::MASH, chromeos::GetAshConfig());
+  ASSERT_TRUE(features::IsAshInBrowserProcess());
   BrowserNonClientFrameViewAsh* frame_view =
       static_cast<BrowserNonClientFrameViewAsh*>(
           browser_view->GetWidget()->non_client_view()->frame_view());
@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
     LaunchAppBrowser(false);
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForBrowser(browser());
-    DCHECK_NE(ash::Config::MASH, chromeos::GetAshConfig());
+    ASSERT_TRUE(features::IsAshInBrowserProcess());
     frame_view = static_cast<BrowserNonClientFrameViewAsh*>(
         browser_view->GetWidget()->non_client_view()->frame_view());
 

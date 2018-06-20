@@ -27,14 +27,12 @@
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/devicemode.h"
@@ -48,6 +46,7 @@
 #include "ui/base/ime/chromeos/ime_keyboard_mus.h"
 #include "ui/base/ime/chromeos/input_method_delegate.h"
 #include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -1094,7 +1093,7 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
 
     // TODO(mash): Support virtual keyboard under MASH. There is no
     // KeyboardController in the browser process under MASH.
-    if (!ash_util::IsRunningInMash()) {
+    if (features::IsAshInBrowserProcess()) {
       auto* keyboard_controller = keyboard::KeyboardController::Get();
       if (keyboard_controller->enabled())
         keyboard_controller->Reload();

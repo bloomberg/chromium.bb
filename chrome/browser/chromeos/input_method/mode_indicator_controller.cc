@@ -9,11 +9,11 @@
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/ash_config.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/ui_base_features.h"
 
 namespace chromeos {
 namespace input_method {
@@ -96,7 +96,7 @@ void ModeIndicatorController::InitWidgetContainer(
   // though it is created by Chrome.
   // TODO(crbug.com/738531): Consider moving the ModeIndicatorView into ash.
   const int container_id = ash::kShellWindowId_SettingBubbleContainer;
-  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+  if (!features::IsAshInBrowserProcess()) {
     using ui::mojom::WindowManager;
     params->mus_properties[WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(container_id);
