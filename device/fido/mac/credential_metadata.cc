@@ -10,6 +10,7 @@
 #include "components/cbor/cbor_reader.h"
 #include "components/cbor/cbor_values.h"
 #include "components/cbor/cbor_writer.h"
+#include "device/fido/public_key_credential_user_entity.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/hkdf.h"
 #include "third_party/boringssl/src/include/openssl/rand.h"
@@ -58,6 +59,27 @@ std::string CredentialMetadata::GenerateRandomSecret() {
 CredentialMetadata::CredentialMetadata(const std::string& secret)
     : secret_(secret) {}
 CredentialMetadata::~CredentialMetadata() = default;
+
+// static
+CredentialMetadata::UserEntity
+CredentialMetadata::UserEntity::FromPublicKeyCredentialUserEntity(
+    const PublicKeyCredentialUserEntity& user) {
+  return CredentialMetadata::UserEntity(user.user_id(),
+                                        user.user_name().value_or(""),
+                                        user.user_display_name().value_or(""));
+}
+
+PublicKeyCredentialUserEntity
+CredentialMetadata::UserEntity::ToPublicKeyCredentialUserEntity() {
+  auto user_entity = PublicKeyCredentialUserEntity(id);
+  if (!name.empty()) {
+    user_entity.SetUserName(name);
+  }
+  if (!display_name.empty()) {
+    user_entity.SetDisplayName(display_name);
+  }
+  return user_entity;
+}
 
 CredentialMetadata::UserEntity::UserEntity(std::vector<uint8_t> id_,
                                            std::string name_,

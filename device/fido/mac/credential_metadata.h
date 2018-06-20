@@ -19,6 +19,9 @@
 #include "crypto/symmetric_key.h"
 
 namespace device {
+
+class PublicKeyCredentialUserEntity;
+
 namespace fido {
 namespace mac {
 
@@ -52,6 +55,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialMetadata {
   // this type should be moved whenever possible.
   struct UserEntity {
    public:
+    static UserEntity FromPublicKeyCredentialUserEntity(
+        const PublicKeyCredentialUserEntity&);
+
     UserEntity(std::vector<uint8_t> id_,
                std::string name_,
                std::string display_);
@@ -59,6 +65,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialMetadata {
     UserEntity(UserEntity&&);
     UserEntity& operator=(UserEntity&&);
     ~UserEntity();
+
+    PublicKeyCredentialUserEntity ToPublicKeyCredentialUserEntity();
 
     std::vector<uint8_t> id;
     std::string name;

@@ -16,6 +16,8 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/mac/keychain.h"
 #include "device/fido/mac/util.h"
+#include "device/fido/public_key_credential_descriptor.h"
+#include "device/fido/public_key_credential_user_entity.h"
 
 namespace device {
 namespace fido {
@@ -126,6 +128,21 @@ void GetAssertionOperation::PromptTouchIdDone(bool success, NSError* err) {
         .Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials, base::nullopt);
     return;
   }
+
+  // Decrypt the user entity from the credential ID.
+  base::Optional<CredentialMetadata::UserEntity> credential_user =
+      CredentialMetadata::UnsealCredentialId(metadata_secret(), RpId(),
+                                             credential_id);
+  if (!credential_user) {
+    // The keychain query already filtered for the RP ID encoded under this
+    // operation's metadata secret, so the credential id really should have
+    // been decryptable.
+    DVLOG(1) << "UnsealCredentialId failed";
+    std::move(callback())
+        .Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials, base::nullopt);
+    return;
+  }
+
   base::ScopedCFTypeRef<SecKeyRef> public_key(
       Keychain::GetInstance().KeyCopyPublicKey(private_key));
   if (!public_key) {
@@ -137,7 +154,7 @@ void GetAssertionOperation::PromptTouchIdDone(bool success, NSError* err) {
   }
 
   base::Optional<AuthenticatorData> authenticator_data =
-      MakeAuthenticatorData(RpId(), std::move(credential_id), public_key);
+      MakeAuthenticatorData(RpId(), credential_id, public_key);
   if (!authenticator_data) {
     DLOG(ERROR) << "MakeAuthenticatorData failed";
     std::move(callback())
@@ -152,10 +169,14 @@ void GetAssertionOperation::PromptTouchIdDone(bool success, NSError* err) {
         .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
     return;
   }
+  auto response = AuthenticatorGetAssertionResponse(
+      std::move(*authenticator_data), std::move(*signature));
+  response.SetCredential(PublicKeyCredentialDescriptor(
+      CredentialType::kPublicKey, std::move(credential_id)));
+  response.SetUserEntity(credential_user->ToPublicKeyCredentialUserEntity());
+
   std::move(callback())
-      .Run(CtapDeviceResponseCode::kSuccess,
-           AuthenticatorGetAssertionResponse(std::move(*authenticator_data),
-                                             std::move(*signature)));
+      .Run(CtapDeviceResponseCode::kSuccess, std::move(response));
 }
 
 }  // namespace mac

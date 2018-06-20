@@ -215,9 +215,8 @@ base::Optional<std::vector<uint8_t>>
 MakeCredentialOperation::GenerateCredentialIdForRequest() const {
   return CredentialMetadata::SealCredentialId(
       metadata_secret(), RpId(),
-      CredentialMetadata::UserEntity(
-          request().user().user_id(), request().user().user_name().value_or(""),
-          request().user().user_display_name().value_or("")));
+      CredentialMetadata::UserEntity::FromPublicKeyCredentialUserEntity(
+          request().user()));
 }
 
 }  // namespace mac

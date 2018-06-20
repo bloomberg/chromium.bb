@@ -83,7 +83,8 @@ base::Optional<AuthenticatorData> MakeAuthenticatorData(
   constexpr uint8_t flags =
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserVerification) |
       static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
-  std::array<uint8_t, 4> counter = {0, 0, 0, 0};  // implement
+  // TODO(martinkr): Implement signature counters.
+  std::array<uint8_t, 4> counter = {0, 0, 0, 1};
   auto ec_public_key = MakeECPublicKey(public_key);
   if (!ec_public_key) {
     LOG(ERROR) << "MakeECPublicKey failed";
