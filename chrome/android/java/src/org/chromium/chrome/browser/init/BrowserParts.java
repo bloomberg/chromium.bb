@@ -78,4 +78,12 @@ public interface BrowserParts {
      * @return Whether GPU process needs to be started during the startup.
      */
     boolean shouldStartGpuProcess();
+
+    /**
+     * @return Whether only ServiceManager should be launched during the startup, without running
+     *         remaining parts of the Chrome.
+     */
+    default boolean startServiceManagerOnly() {
+        return false;
+    }
 }
