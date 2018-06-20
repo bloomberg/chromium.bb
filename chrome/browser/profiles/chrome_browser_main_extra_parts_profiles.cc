@@ -144,6 +144,7 @@
 #include "chrome/browser/extensions/browser_context_keyed_service_factories.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/ui/bookmarks/enhanced_bookmark_key_service_factory.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_manager_factory.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #if defined(OS_CHROMEOS)
@@ -198,6 +199,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   extensions::ExtensionManagementFactory::GetInstance();
   chrome_extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   chrome_apps::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+  web_app::WebAppPolicyManagerFactory::GetInstance();
 #endif
 
 #if BUILDFLAG(ENABLE_APP_LIST)

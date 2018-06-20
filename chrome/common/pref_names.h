@@ -561,6 +561,8 @@ extern const char kWebAppCreateOnDesktop[];
 extern const char kWebAppCreateInAppsMenu[];
 extern const char kWebAppCreateInQuickLaunchBar[];
 
+extern const char kWebAppInstallForceList[];
+
 extern const char kGeolocationAccessToken[];
 
 extern const char kDefaultAudioCaptureDevice[];

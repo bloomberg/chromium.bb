@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
@@ -141,6 +142,10 @@ namespace web_app {
 // By starting this string with an underscore, we ensure that there
 // are no naming conflicts.
 static const char kCrxAppPrefix[] = "_crx_";
+
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kWebAppInstallForceList);
+}
 
 namespace internals {
 
