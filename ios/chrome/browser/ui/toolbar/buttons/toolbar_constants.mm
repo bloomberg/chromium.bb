@@ -64,7 +64,7 @@ const LayoutOffset kToolbarButtonAnimationOffset = -10.0;
 const CGFloat kExpandedLocationBarHorizontalMargin = 8;
 const CGFloat kContractedLocationBarHorizontalMargin = 19;
 
-const CGFloat kAdaptiveLocationBarCornerRadius = 11;
+const CGFloat kAdaptiveLocationBarCornerRadius = 18;
 const CGFloat kAdaptiveLocationBarBackgroundAlpha = 0.12;
 const CGFloat kAdaptiveLocationBarVerticalMargin = 6.0f;
 
@@ -93,3 +93,6 @@ const NSInteger kFontSizeTenTabsOrMore = 9;
 
 const CGFloat kToolbarShadowHeight = 2;
 const CGFloat kToolbarFullBleedShadowHeight = 10;
+
+const CGFloat kLocationBarTintBlue = 0x1A73E8;
+const CGFloat kLocationBarFontSize = 17.0f;
