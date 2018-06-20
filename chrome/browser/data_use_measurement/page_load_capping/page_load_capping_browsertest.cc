@@ -59,14 +59,6 @@ class PageLoadCappingBrowserTest : public InProcessBrowserTest {
           base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
     }
 
-    {
-      scoped_refptr<base::FieldTrial> trial =
-          base::FieldTrialList::CreateFieldTrial("TrialName3", "GroupName3");
-      feature_list->RegisterFieldTrialOverride(
-          features::kResourceLoadScheduler.name,
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    }
-
     scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
   }
 
