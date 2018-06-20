@@ -47,7 +47,9 @@ void ReadOnlySlider::OnGestureEvent(ui::GestureEvent* event) {}
 UnifiedSliderButton::UnifiedSliderButton(views::ButtonListener* listener,
                                          const gfx::VectorIcon& icon,
                                          int accessible_name_id)
-    : TopShortcutButton(listener, icon, accessible_name_id) {}
+    : TopShortcutButton(listener, accessible_name_id) {
+  SetVectorIcon(icon);
+}
 
 UnifiedSliderButton::~UnifiedSliderButton() = default;
 
