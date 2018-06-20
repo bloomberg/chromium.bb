@@ -411,7 +411,6 @@ AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
   node_object_mapping_.Set(node, ax_id);
   new_obj->Init();
   new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
-
   MaybeNewRelationTarget(node, new_obj);
 
   return new_obj;
@@ -889,12 +888,13 @@ void AXObjectCacheImpl::MaybeNewRelationTarget(Node* node, AXObject* obj) {
   // If so, fire activedescendantchanged event now.
   // This is only for ARIA active descendants, not in a native control like a
   // listbox, which has its own initial active descendant handling.
-  AXObject* focus = FocusedObject();
-  if (!focus)
-    return;
-
-  if (focus->ActiveDescendant() == obj && obj->CanBeActiveDescendant())
-    focus->HandleActiveDescendantChanged();
+  Node* focused_node = document_->FocusedElement();
+  if (focused_node) {
+    AXObject* focus = Get(focused_node);
+    if (focus && focus->ActiveDescendant() == obj &&
+        obj->CanBeActiveDescendant())
+      focus->HandleActiveDescendantChanged();
+  }
 }
 
 void AXObjectCacheImpl::HandleActiveDescendantChanged(Node* node) {
@@ -1150,7 +1150,7 @@ void AXObjectCacheImpl::HandleValueChanged(Node* node) {
 
 void AXObjectCacheImpl::HandleUpdateActiveMenuOption(LayoutMenuList* menu_list,
                                                      int option_index) {
-  AXObject* obj = GetOrCreate(menu_list);
+  AXObject* obj = Get(menu_list);
   if (!obj || !obj->IsMenuList())
     return;
 
