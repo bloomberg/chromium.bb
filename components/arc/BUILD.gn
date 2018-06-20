@@ -151,6 +151,8 @@ static_library("arc_base") {
     "arc_data_remover.h",
     "arc_features.cc",
     "arc_features.h",
+    "arc_features_parser.cc",
+    "arc_features_parser.h",
     "arc_service_manager.cc",
     "arc_service_manager.h",
     "arc_session.cc",
@@ -270,6 +272,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "arc_data_remover_unittest.cc",
+    "arc_features_parser_unittest.cc",
     "arc_session_impl_unittest.cc",
     "arc_session_runner_unittest.cc",
     "arc_util_unittest.cc",
