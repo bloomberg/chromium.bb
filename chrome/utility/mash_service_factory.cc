@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/ash_service.h"
 #include "ash/components/autoclick/autoclick_application.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/quick_launch/quick_launch_application.h"
@@ -16,11 +17,13 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/window_manager_service.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/services/font/font_service_app.h"
 #include "components/services/font/public/interfaces/constants.mojom.h"
+#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -54,9 +57,12 @@ void RecordMashServiceLaunch(MashService service) {
 
 std::unique_ptr<service_manager::Service> CreateAshService() {
   RecordMashServiceLaunch(MashService::kAsh);
-  const bool show_primary_host_on_connect = true;
-  return std::make_unique<ash::WindowManagerService>(
-      show_primary_host_on_connect);
+  if (base::FeatureList::IsEnabled(features::kMash)) {
+    const bool show_primary_host_on_connect = true;
+    return std::make_unique<ash::WindowManagerService>(
+        show_primary_host_on_connect);
+  }
+  return std::make_unique<ash::AshService>();
 }
 
 std::unique_ptr<service_manager::Service> CreateAutoclickApp() {
