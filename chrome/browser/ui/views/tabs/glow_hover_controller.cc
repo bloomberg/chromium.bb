@@ -11,7 +11,7 @@ static const double kSubtleOpacityScale = 0.45;
 static const double kPronouncedOpacityScale = 1.0;
 
 // How long the hover state takes.
-static const int kTrackHoverDurationMs = 400;
+static const int kTrackHoverDurationMs = 200;
 
 GlowHoverController::GlowHoverController(views::View* view)
     : view_(view), animation_(this), opacity_scale_(kSubtleOpacityScale) {
