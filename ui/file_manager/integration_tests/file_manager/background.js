@@ -158,8 +158,8 @@ var BASIC_DRIVE_ENTRY_SET = [
  * @const
  */
 var COMPLEX_DRIVE_ENTRY_SET = [
-  ENTRIES.hello, ENTRIES.readOnlyFolder, ENTRIES.readOnlyDocument,
-  ENTRIES.readOnlyStrictDocument, ENTRIES.readOnlyFile
+  ENTRIES.hello, ENTRIES.photos, ENTRIES.readOnlyFolder,
+  ENTRIES.readOnlyDocument, ENTRIES.readOnlyStrictDocument, ENTRIES.readOnlyFile
 ];
 
 /**

@@ -1394,7 +1394,10 @@ FileTransferController.prototype.canCopyOrDrag_ = function() {
     if (i > 0 && !util.isSiblingEntry(entries[0], entries[i]))
       return false;
   }
-  return true;
+  // Check if canCopy is true or undefined, but not false (see
+  // https://crbug.com/849999).
+  return this.metadataModel_.getCache(entries, ['canCopy'])
+      .every(item => item.canCopy !== false);
 };
 
 /**
@@ -1402,8 +1405,18 @@ FileTransferController.prototype.canCopyOrDrag_ = function() {
  * @private
  */
 FileTransferController.prototype.canCutOrDrag_ = function() {
-  return !this.directoryModel_.isReadOnly() &&
-      this.selectionHandler_.selection.entries.length > 0;
+  if (this.directoryModel_.isReadOnly() ||
+      !this.selectionHandler_.isAvailable() ||
+      this.selectionHandler_.selection.entries.length <= 0) {
+    return false;
+  }
+  var entries = this.selectionHandler_.selection.entries;
+  // All entries need the 'canDelete' permission.
+  var metadata = this.metadataModel_.getCache(entries, ['canDelete']);
+  if (metadata.some(item => item.canDelete === false)) {
+    return false;
+  }
+  return true;
 };
 
 /**
@@ -1475,6 +1488,13 @@ FileTransferController.prototype.canPasteOrDrop_ =
           destinationLocationInfo.volumeInfo.fileSystem.root.toURL() &&
       this.isMissingFileContents_(clipboardData))
     return false;
+
+  // Destination entry needs the 'canAddChildren' permission.
+  var metadata =
+      this.metadataModel_.getCache([destinationEntry], ['canAddChildren']);
+  if (metadata[0].canAddChildren === false) {
+    return false;
+  }
 
   return true;
 };
@@ -1628,6 +1648,16 @@ FileTransferController.prototype.selectDropEffect_ = function(
     // removable drives is restricted by device policy.
     return new DropEffectAndLabel(DropEffectType.NONE,
                                   strf('DEVICE_ACCESS_RESTRICTED'));
+  }
+  var destinationMetadata =
+      this.metadataModel_.getCache([destinationEntry], ['canAddChildren']);
+  if (destinationMetadata.length === 1 &&
+      destinationMetadata[0].canAddChildren === false) {
+    // TODO(sashab): Distinguish between copy/move operations and display
+    // corresponding warning text here.
+    return new DropEffectAndLabel(
+        DropEffectType.NONE,
+        strf('DROP_TARGET_FOLDER_NO_MOVE_PERMISSION', destinationEntry.name));
   }
   if (util.isDropEffectAllowed(event.dataTransfer.effectAllowed, 'move')) {
     if (!util.isDropEffectAllowed(event.dataTransfer.effectAllowed, 'copy'))

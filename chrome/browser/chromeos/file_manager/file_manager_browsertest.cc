@@ -219,14 +219,26 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     ContextMenu, /* context_menu.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("checkDeleteEnabledForReadWriteFile"),
-                      TestCase("checkDeleteDisabledForReadOnlyDocument"),
-                      TestCase("checkDeleteDisabledForReadOnlyFile"),
-                      TestCase("checkDeleteDisabledForReadOnlyFolder"),
-                      TestCase("checkRenameEnabledForReadWriteFile"),
-                      TestCase("checkRenameDisabledForReadOnlyDocument"),
-                      TestCase("checkRenameDisabledForReadOnlyFile"),
-                      TestCase("checkRenameDisabledForReadOnlyFolder")));
+    ::testing::Values(
+        TestCase("checkDeleteEnabledForReadWriteFile"),
+        TestCase("checkDeleteDisabledForReadOnlyDocument"),
+        TestCase("checkDeleteDisabledForReadOnlyFile"),
+        TestCase("checkDeleteDisabledForReadOnlyFolder"),
+        TestCase("checkRenameEnabledForReadWriteFile"),
+        TestCase("checkRenameDisabledForReadOnlyDocument"),
+        TestCase("checkRenameDisabledForReadOnlyFile"),
+        TestCase("checkRenameDisabledForReadOnlyFolder"),
+        TestCase("checkCopyEnabledForReadWriteFile"),
+        TestCase("checkCopyEnabledForReadOnlyDocument"),
+        TestCase("checkCopyDisabledForStrictReadOnlyDocument"),
+        TestCase("checkCopyEnabledForReadOnlyFile"),
+        TestCase("checkCopyEnabledForReadOnlyFolder"),
+        TestCase("checkCutEnabledForReadWriteFile"),
+        TestCase("checkCutDisabledForReadOnlyDocument"),
+        TestCase("checkCutDisabledForReadOnlyFile"),
+        TestCase("checkCutDisabledForReadOnlyFolder"),
+        TestCase("checkPasteIntoFolderEnabledForReadWriteFolder"),
+        TestCase("checkPasteIntoFolderDisabledForReadOnlyFolder")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Delete, /* delete.js */
