@@ -133,6 +133,18 @@ template("msvc_toolchain") {
       sys_include_flags = ""
     }
 
+    if (use_lld) {
+      # Invoke ninja as wrapper instead of tool wrapper, because python
+      # invocation requires higher cpu usage compared to ninja invocation, and
+      # the python wrapper is only needed to work around link.exe problems.
+      # TODO(thakis): Remove wrapper once lld-link can merge manifests without
+      # relying on mt.exe being in %PATH% on Windows.
+      linker_wrapper = "ninja -t msvc -e $env -- "  # Note trailing space.
+    } else {
+      linker_wrapper =
+          "$python_path $tool_wrapper_path link-wrapper $env False "  # Note trailing space.
+    }
+
     clflags = ""
 
     # Pass /FC flag to the compiler if needed.
@@ -196,7 +208,8 @@ template("msvc_toolchain") {
 
     tool("alink") {
       rspfile = "{{output}}.rsp"
-      command = "$python_path $tool_wrapper_path link-wrapper $env False $lib /nologo {{arflags}} /OUT:{{output}} @$rspfile"
+      command =
+          "$linker_wrapper$lib /nologo {{arflags}} /OUT:{{output}} @$rspfile"
       description = "LIB {{output}}"
       outputs = [
         # Ignore {{output_extension}} and always use .lib, there's no reason to
@@ -218,7 +231,7 @@ template("msvc_toolchain") {
       rspfile = "${dllname}.rsp"
       pool = "//build/toolchain:link_pool($default_toolchain)"
 
-      command = "$python_path $tool_wrapper_path link-wrapper $env False $link /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:$pdbname @$rspfile"
+      command = "$linker_wrapper$link /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:$pdbname @$rspfile"
 
       default_output_extension = ".dll"
       default_output_dir = "{{root_out_dir}}"
@@ -251,7 +264,7 @@ template("msvc_toolchain") {
       rspfile = "${dllname}.rsp"
       pool = "//build/toolchain:link_pool($default_toolchain)"
 
-      command = "$python_path $tool_wrapper_path link-wrapper $env False $link /nologo /DLL /OUT:$dllname /PDB:$pdbname @$rspfile"
+      command = "$linker_wrapper$link /nologo /DLL /OUT:$dllname /PDB:$pdbname @$rspfile"
 
       default_output_extension = ".dll"
       default_output_dir = "{{root_out_dir}}"
@@ -275,7 +288,8 @@ template("msvc_toolchain") {
       rspfile = "$exename.rsp"
       pool = "//build/toolchain:link_pool($default_toolchain)"
 
-      command = "$python_path $tool_wrapper_path link-wrapper $env False $link /nologo /OUT:$exename /PDB:$pdbname @$rspfile"
+      command =
+          "$linker_wrapper$link /nologo /OUT:$exename /PDB:$pdbname @$rspfile"
 
       if (host_os == "win") {
         shellprefix = "cmd /c"
