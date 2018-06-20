@@ -758,17 +758,18 @@ TEST_F(SessionSyncBridgeTest, ShouldPreserveTabbedDataIfCustomTabOnlyFound) {
   InitializeBridge();
   StartSyncing();
 
-  // The previous session should be preserved. The transient window cannot be
-  // synced because we do not have enough local data to ensure that we wouldn't
-  // vend the same sync ID if our persistent storage didn't match upon the last
-  // shutdown.
-  EXPECT_THAT(GetAllData(),
-              UnorderedElementsAre(
-                  Pair(_, EntityDataHasSpecifics(
-                              MatchesHeader(kLocalSessionTag, _, _))),
-                  Pair(_, EntityDataHasSpecifics(MatchesTab(
-                              kLocalSessionTag, _, _,
-                              /*tab_node_id=*/0, {"http://foo.com/"})))));
+  // The previous session should be preserved, together with the new custom tab.
+  EXPECT_THAT(
+      GetAllData(),
+      UnorderedElementsAre(
+          Pair(_,
+               EntityDataHasSpecifics(MatchesHeader(kLocalSessionTag, _, _))),
+          Pair(_, EntityDataHasSpecifics(MatchesTab(kLocalSessionTag, _, _,
+                                                    /*tab_node_id=*/0,
+                                                    {"http://foo.com/"}))),
+          Pair(_, EntityDataHasSpecifics(MatchesTab(kLocalSessionTag, _, _,
+                                                    /*tab_node_id=*/1,
+                                                    {"http://bar.com/"})))));
 }
 
 // Ensure that tabbed windows from a previous session are preserved and combined
@@ -815,19 +816,24 @@ TEST_F(SessionSyncBridgeTest, ShouldPreserveTabbedDataIfNewCustomTabAlsoFound) {
 }
 
 // Ensure that, in a scenario without prior sync data, encountering a custom
-// tab only ( no tabbed window) does not vend new sync IDs.
-TEST_F(SessionSyncBridgeTest, ShouldIgnoreIfCustomTabOnlyOnStartup) {
+// tab only (no tabbed window) starts syncing that tab.
+TEST_F(SessionSyncBridgeTest, ShouldAssociateIfCustomTabOnlyOnStartup) {
   const int kWindowId = 1000001;
+  const int kTabId = 1000002;
 
   AddWindow(kWindowId, sync_pb::SessionWindow_BrowserType_TYPE_CUSTOM_TAB);
-  AddTab(kWindowId, "http://foo.com/");
+  AddTab(kWindowId, "http://foo.com/", kTabId);
 
   InitializeBridge();
   StartSyncing();
 
   EXPECT_THAT(GetAllData(),
-              UnorderedElementsAre(Pair(_, EntityDataHasSpecifics(MatchesHeader(
-                                               kLocalSessionTag, _, _)))));
+              UnorderedElementsAre(
+                  Pair(_, EntityDataHasSpecifics(MatchesHeader(
+                              kLocalSessionTag, {kWindowId}, {kTabId}))),
+                  Pair(_, EntityDataHasSpecifics(MatchesTab(
+                              kLocalSessionTag, kWindowId, kTabId,
+                              /*tab_node_id=*/0, {"http://foo.com/"})))));
 }
 
 // Ensure that all tabs are exposed in a scenario where only a custom tab
@@ -840,45 +846,35 @@ TEST_F(SessionSyncBridgeTest, ShouldExposeTabbedWindowAfterCustomTabOnly) {
   const int kTabId2 = 1000004;
 
   AddWindow(kWindowId1, sync_pb::SessionWindow_BrowserType_TYPE_CUSTOM_TAB);
-  TestSyncedTabDelegate* custom_tab =
-      AddTab(kWindowId1, "http://foo.com/", kTabId1);
+  AddTab(kWindowId1, "http://foo.com/", kTabId1);
 
   InitializeBridge();
   StartSyncing();
 
   ASSERT_THAT(GetAllData(),
-              UnorderedElementsAre(Pair(_, EntityDataHasSpecifics(MatchesHeader(
-                                               kLocalSessionTag, _, _)))));
+              UnorderedElementsAre(
+                  Pair(_, EntityDataHasSpecifics(MatchesHeader(
+                              kLocalSessionTag, {kWindowId1}, {kTabId1}))),
+                  Pair(_, EntityDataHasSpecifics(MatchesTab(
+                              kLocalSessionTag, kWindowId1, kTabId1,
+                              /*tab_node_id=*/0, {"http://foo.com/"})))));
 
   // Load the actual tabbed window, now that we're syncing.
   AddWindow(kWindowId2);
   AddTab(kWindowId2, "http://bar.com/", kTabId2);
 
-  // The local change should be created and tracked correctly. This doesn't
-  // actually start syncing the custom tab yet, because the tab itself isn't
-  // associated yet.
-  EXPECT_THAT(GetAllData(),
-              UnorderedElementsAre(
-                  Pair(_, EntityDataHasSpecifics(MatchesHeader(
-                              kLocalSessionTag, {kWindowId2}, {kTabId2}))),
-                  Pair(_, EntityDataHasSpecifics(MatchesTab(
-                              kLocalSessionTag, kWindowId2, kTabId2,
-                              /*tab_node_id=*/0, {"http://bar.com/"})))));
-
-  // Now trigger OnLocalTabModified() for the custom tab again, it should sync.
-  custom_tab->Navigate("http://baz.com/");
+  // The local change should be created and tracked correctly.
   EXPECT_THAT(GetAllData(),
               UnorderedElementsAre(
                   Pair(_, EntityDataHasSpecifics(MatchesHeader(
                               kLocalSessionTag, {kWindowId1, kWindowId2},
                               {kTabId1, kTabId2}))),
                   Pair(_, EntityDataHasSpecifics(MatchesTab(
-                              kLocalSessionTag, kWindowId2, kTabId2,
-                              /*tab_node_id=*/0, {"http://bar.com/"}))),
-                  Pair(_, EntityDataHasSpecifics(MatchesTab(
                               kLocalSessionTag, kWindowId1, kTabId1,
-                              /*tab_node_id=*/1,
-                              {"http://foo.com/", "http://baz.com/"})))));
+                              /*tab_node_id=*/0, {"http://foo.com/"}))),
+                  Pair(_, EntityDataHasSpecifics(MatchesTab(
+                              kLocalSessionTag, kWindowId2, kTabId2,
+                              /*tab_node_id=*/1, {"http://bar.com/"})))));
 }
 
 TEST_F(SessionSyncBridgeTest, ShouldDisableSyncAndReenable) {

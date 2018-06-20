@@ -528,6 +528,35 @@ TEST_F(LocalSessionEventHandlerImplTest, PropagateNewTab) {
   AddTab(kWindowId1, kBar1, kTabId2);
 }
 
+TEST_F(LocalSessionEventHandlerImplTest, PropagateNewCustomTab) {
+  InitHandler();
+
+  // Tab creation triggers an update event due to the tab parented notification,
+  // so the event handler issues two commits as well (one for tab creation, one
+  // for tab update). During the first update, however, the tab is not syncable
+  // and is hence skipped.
+  auto tab_create_mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
+  EXPECT_CALL(*tab_create_mock_batch,
+              Put(Pointee(MatchesHeader(kSessionTag, {}, {}))));
+  EXPECT_CALL(*tab_create_mock_batch, Commit());
+
+  auto navigation_mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
+  EXPECT_CALL(
+      *navigation_mock_batch,
+      Put(Pointee(MatchesHeader(kSessionTag, {kWindowId1}, {kTabId1}))));
+  EXPECT_CALL(*navigation_mock_batch,
+              Put(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId1,
+                                     /*tab_node_id=*/0, /*urls=*/{kFoo1}))));
+  EXPECT_CALL(*navigation_mock_batch, Commit());
+
+  EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())
+      .WillOnce(Return(ByMove(std::move(tab_create_mock_batch))))
+      .WillOnce(Return(ByMove(std::move(navigation_mock_batch))));
+
+  AddWindow(kWindowId1, sync_pb::SessionWindow_BrowserType_TYPE_CUSTOM_TAB);
+  AddTab(kWindowId1, kFoo1, kTabId1);
+}
+
 TEST_F(LocalSessionEventHandlerImplTest, PropagateNewWindow) {
   AddWindow(kWindowId1);
   AddTab(kWindowId1, kFoo1, kTabId1);
