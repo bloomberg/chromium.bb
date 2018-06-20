@@ -488,7 +488,7 @@ VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()
       PlatformSupportsMediaFoundation() ? MFEnumDeviceSources : nullptr;
   direct_show_enum_devices_func_ =
       base::BindRepeating(&EnumerateDirectShowDevices);
-  if (!PlatformSupportsMediaFoundation()) {
+  if (use_media_foundation_ && !PlatformSupportsMediaFoundation()) {
     use_media_foundation_ = false;
     LogVideoCaptureWinBackendUsed(
         VideoCaptureWinBackendUsed::kUsingDirectShowAsFallback);
