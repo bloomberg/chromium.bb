@@ -1130,6 +1130,11 @@ void BrowserView::RotatePaneFocus(bool forwards) {
 }
 
 void BrowserView::DestroyBrowser() {
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  GetWidget()->GetNativeView()->RemovePreTargetHandler(
+      ConfirmQuitBubbleController::GetInstance());
+#endif
+
   // After this returns other parts of Chrome are going to be shutdown. Close
   // the window now so that we are deleted immediately and aren't left holding
   // references to deleted objects.
@@ -1351,14 +1356,6 @@ content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
     // in content/renderer/render_widget.cc for details.
     return content::KeyboardEventProcessingResult::NOT_HANDLED;
   }
-
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  if (base::FeatureList::IsEnabled(features::kWarnBeforeQuitting) &&
-      ConfirmQuitBubbleController::GetInstance()->HandleKeyboardEvent(
-          accelerator)) {
-    return content::KeyboardEventProcessingResult::HANDLED_WANTS_KEY_UP;
-  }
-#endif  // defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 
 #if defined(OS_CHROMEOS)
   if (ash_util::IsAcceleratorDeprecated(accelerator)) {
@@ -2123,14 +2120,6 @@ void BrowserView::OnThemeChanged() {
 // BrowserView, ui::AcceleratorTarget overrides:
 
 bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  if (base::FeatureList::IsEnabled(features::kWarnBeforeQuitting) &&
-      ConfirmQuitBubbleController::GetInstance()->HandleKeyboardEvent(
-          accelerator)) {
-    return true;
-  }
-#endif  // defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-
   int command_id;
   // Though AcceleratorManager should not send unknown |accelerator| to us, it's
   // still possible the command cannot be executed now.
@@ -2159,6 +2148,11 @@ void BrowserView::InitViews() {
   // can get it later when all we have is a native view.
   GetWidget()->SetNativeWindowProperty(Profile::kProfileKey,
                                        browser_->profile());
+
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  GetWidget()->GetNativeView()->AddPreTargetHandler(
+      ConfirmQuitBubbleController::GetInstance());
+#endif
 
 #if defined(USE_AURA)
   // Stow a pointer to the browser's profile onto the window handle so
@@ -2821,6 +2815,8 @@ bool BrowserView::CanTriggerOnMouse() const {
   return !IsImmersiveModeEnabled();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// BrowserView, extension::ExtensionKeybindingRegistry::Delegate implementation:
 extensions::ActiveTabPermissionGranter*
 BrowserView::GetActiveTabPermissionGranter() {
   content::WebContents* web_contents = GetActiveWebContents();

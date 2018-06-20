@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
 class ConfirmQuitBubbleBase;
@@ -26,26 +27,41 @@ namespace gfx {
 class SlideAnimation;
 }
 
-namespace ui {
-class Accelerator;
-}
-
 // Manages showing and hiding the confirm-to-quit bubble.  Requests Chrome to be
 // closed if the quit accelerator is held down or pressed twice in succession.
+// The singleton instance of this class is added as a PreTargetHandler for each
+// browser window.
 class ConfirmQuitBubbleController : public gfx::AnimationDelegate,
                                     public BrowserListObserver,
-                                    public content::NotificationObserver {
+                                    public content::NotificationObserver,
+                                    public ui::EventHandler {
  public:
   static ConfirmQuitBubbleController* GetInstance();
 
   ~ConfirmQuitBubbleController() override;
 
-  // Returns true if the event was handled.
-  bool HandleKeyboardEvent(const ui::Accelerator& accelerator);
+  // ui::EventHandler:
+  void OnKeyEvent(ui::KeyEvent* event) override;
+
+ protected:
+  // |animation| is used to fade out all browser windows.
+  ConfirmQuitBubbleController(std::unique_ptr<ConfirmQuitBubbleBase> bubble,
+                              std::unique_ptr<base::Timer> hide_timer,
+                              std::unique_ptr<gfx::SlideAnimation> animation);
+
+  // BrowserListObserver:
+  void OnBrowserRemoved(Browser* browser) override;
+  void OnBrowserNoLongerActive(Browser* browser) override;
+
+  // Runs the quit action now.  Virtual so tests can override the quit action.
+  virtual void DoQuit();
+
+  // Returns true if the confirm-to-quit feature is enabled.  Virtual so tests
+  // can override the setting.
+  virtual bool IsFeatureEnabled();
 
  private:
   friend struct base::DefaultSingletonTraits<ConfirmQuitBubbleController>;
-  friend class ConfirmQuitBubbleControllerTest;
 
   enum class State {
     // The accelerator has not been pressed.
@@ -66,20 +82,11 @@ class ConfirmQuitBubbleController : public gfx::AnimationDelegate,
     kQuitting,
   };
 
-  // |animation| is used to fade out all browser windows.
-  ConfirmQuitBubbleController(std::unique_ptr<ConfirmQuitBubbleBase> bubble,
-                              std::unique_ptr<base::Timer> hide_timer,
-                              std::unique_ptr<gfx::SlideAnimation> animation);
-
   ConfirmQuitBubbleController();
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
-
-  // BrowserListObserver:
-  void OnBrowserRemoved(Browser* browser) override;
-  void OnBrowserNoLongerActive(Browser* browser) override;
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -100,10 +107,8 @@ class ConfirmQuitBubbleController : public gfx::AnimationDelegate,
   // releases the accelerator.
   void ConfirmQuit();
 
-  // Runs the quit action now.
+  // Updates state and calls DoQuit().
   void Quit();
-
-  void SetQuitActionForTest(base::OnceClosure quit_action);
 
   std::unique_ptr<ConfirmQuitBubbleBase> const view_;
 
@@ -121,8 +126,6 @@ class ConfirmQuitBubbleController : public gfx::AnimationDelegate,
   std::unique_ptr<base::Timer> hide_timer_;
 
   std::unique_ptr<gfx::SlideAnimation> const browser_hide_animation_;
-
-  base::OnceClosure quit_action_;
 
   content::NotificationRegistrar registrar_;
 
