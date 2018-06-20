@@ -40,6 +40,11 @@ const bool PlatformStyle::kIsOkButtonLeading = true;
 const bool PlatformStyle::kIsOkButtonLeading = false;
 #endif
 
+// Set kFocusHaloInset to negative half of kFocusHaloThickness to draw half of
+// the focus ring inside and half outside the parent elmeent
+const float PlatformStyle::kFocusHaloThickness = 4.f;
+const float PlatformStyle::kFocusHaloInset = -2.f;
+
 #if !defined(OS_MACOSX)
 
 const int PlatformStyle::kMinLabelButtonWidth = 70;
@@ -57,9 +62,6 @@ const bool PlatformStyle::kUseRipples = true;
 const bool PlatformStyle::kTextfieldScrollsToStartOnFocusChange = false;
 const bool PlatformStyle::kTextfieldUsesDragCursorWhenDraggable = true;
 const bool PlatformStyle::kShouldElideBookmarksInBookmarksBar = false;
-const float PlatformStyle::kFocusHaloThickness = 2.f;
-const float PlatformStyle::kFocusHaloInset =
-    -PlatformStyle::kFocusHaloThickness;
 const bool PlatformStyle::kPreferFocusRings = false;
 
 // static
