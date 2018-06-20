@@ -6,4 +6,5 @@
 -SitePerProcess*
 -ScrollLatencyBrowserTest.SmoothWheelScroll
 -TouchInputBrowserTest.TouchHandlerConsume
+-TouchInputBrowserTest.TouchHandlerNoConsume
 -TouchSelectionControllerClientAndroidSiteIsolationTest.BasicSelectionIsolatedIframe

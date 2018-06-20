@@ -38,6 +38,7 @@
 -TouchInputBrowserTest.TouchHandlerConsume
 -TouchInputBrowserTest.TouchHandlerNoConsume
 -TouchSelectionControllerClientAndroidSiteIsolationTest.BasicSelectionIsolatedIframe
+-WebContentsImplBrowserTest.NotifyFullscreenAcquired_Navigate
 
 ## Base viz.content_browsertests.filter since we cannot chain filter files
 # SynchronizeVisualPropertiesMessageFilter::WaitForRect() times out.
