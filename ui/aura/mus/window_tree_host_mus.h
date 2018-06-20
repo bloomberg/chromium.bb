@@ -14,6 +14,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/aura_export.h"
+#include "ui/aura/mus/input_method_mus_delegate.h"
 #include "ui/aura/window_tree_host_platform.h"
 
 namespace display {
@@ -29,7 +30,8 @@ class WindowTreeHostMusDelegate;
 struct DisplayInitParams;
 struct WindowTreeHostMusInitParams;
 
-class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform {
+class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
+                                      public InputMethodMusDelegate {
  public:
   explicit WindowTreeHostMus(WindowTreeHostMusInitParams init_params);
 
@@ -109,6 +111,11 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform {
       const gfx::Point& location_in_pixels) override;
   gfx::Transform GetRootTransformForLocalEventCoordinates() const override;
   int64_t GetDisplayId() override;
+
+  // InputMethodMusDelegate:
+  void SetTextInputState(ui::mojom::TextInputStatePtr state) override;
+  void SetImeVisibility(bool visible,
+                        ui::mojom::TextInputStatePtr state) override;
 
  private:
   int64_t display_id_;

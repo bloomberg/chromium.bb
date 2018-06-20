@@ -186,6 +186,7 @@
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
@@ -277,10 +278,10 @@ Shell* Shell::CreateInstance(ShellInitParams init_params) {
   CHECK(!instance_);
   instance_ = new Shell(std::move(init_params.delegate),
                         std::move(init_params.shell_port));
-  instance_->Init(init_params.context_factory,
-                  init_params.context_factory_private,
-                  std::move(init_params.initial_display_prefs),
-                  std::move(init_params.gpu_interface_provider));
+  instance_->Init(
+      init_params.context_factory, init_params.context_factory_private,
+      std::move(init_params.initial_display_prefs),
+      std::move(init_params.gpu_interface_provider), init_params.connector);
   return instance_;
 }
 
@@ -403,7 +404,8 @@ Config Shell::GetAshConfig() {
 
 // static
 bool Shell::ShouldUseIMEService() {
-  return Shell::GetAshConfig() == Config::MASH;
+  return Shell::GetAshConfig() == Config::MASH ||
+         base::FeatureList::IsEnabled(::features::kOopAsh);
 }
 
 // static
@@ -959,8 +961,11 @@ void Shell::Init(
     ui::ContextFactory* context_factory,
     ui::ContextFactoryPrivate* context_factory_private,
     std::unique_ptr<base::Value> initial_display_prefs,
-    std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider) {
+    std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider,
+    service_manager::Connector* connector) {
   const Config config = shell_port_->GetAshConfig();
+
+  connector_ = connector;
 
   // This creates the MessageCenter object which is used by some other objects
   // initialized here, so it needs to come early.
@@ -1300,8 +1305,10 @@ void Shell::Init(
   if (config != Config::MASH) {
     window_service_owner_ =
         std::make_unique<WindowServiceOwner>(std::move(gpu_interface_provider));
-    ime_focus_handler_ = std::make_unique<ImeFocusHandler>(
-        focus_controller(), window_tree_host_manager_->input_method());
+    if (!ShouldUseIMEService()) {
+      ime_focus_handler_ = std::make_unique<ImeFocusHandler>(
+          focus_controller(), window_tree_host_manager_->input_method());
+    }
   }
 
   for (auto& observer : shell_observers_)

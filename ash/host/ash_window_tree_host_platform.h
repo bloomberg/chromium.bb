@@ -10,13 +10,19 @@
 #include "ash/ash_export.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/transformer_helper.h"
+#include "ui/aura/mus/input_method_mus_delegate.h"
 #include "ui/aura/window_tree_host_platform.h"
+
+namespace aura {
+class InputMethodMus;
+}
 
 namespace ash {
 
 class ASH_EXPORT AshWindowTreeHostPlatform
     : public AshWindowTreeHost,
-      public aura::WindowTreeHostPlatform {
+      public aura::WindowTreeHostPlatform,
+      public aura::InputMethodMusDelegate {
  public:
   explicit AshWindowTreeHostPlatform(const gfx::Rect& initial_bounds);
   ~AshWindowTreeHostPlatform() override;
@@ -48,13 +54,27 @@ class ASH_EXPORT AshWindowTreeHostPlatform
                          const viz::LocalSurfaceId& local_surface_id) override;
   void DispatchEvent(ui::Event* event) override;
 
+  // aura::InputMethodMusDelegate:
+  void SetTextInputState(ui::mojom::TextInputStatePtr state) override;
+  void SetImeVisibility(bool visible,
+                        ui::mojom::TextInputStatePtr state) override;
+
  private:
+  void InitInputMethodIfNecessary();
+
   // Temporarily disable the tap-to-click feature. Used on CrOS.
   void SetTapToClickPaused(bool state);
 
   TransformerHelper transformer_helper_;
 
   gfx::Rect last_cursor_confine_bounds_in_pixels_;
+
+  // Use InputMethodMus as the InputMethod implementation. InputMethodMus ends
+  // up connection to the UI Service over mojo, which is in process, but
+  // simplifies things. In particular, even though the WindowService is in
+  // process, parts of ime live in it's own process, so by using InputMethodMus
+  // those connections are correctly established.
+  std::unique_ptr<aura::InputMethodMus> input_method_;
 
   DISALLOW_COPY_AND_ASSIGN(AshWindowTreeHostPlatform);
 };

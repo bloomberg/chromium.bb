@@ -13,6 +13,10 @@ namespace base {
 class Value;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
@@ -42,6 +46,9 @@ struct ASH_EXPORT ShellInitParams {
   // Allows gpu interfaces to be injected while avoiding direct content
   // dependencies.
   std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider;
+
+  // Connector used by Shell to establish connections.
+  service_manager::Connector* connector = nullptr;
 };
 
 }  // namespace ash
