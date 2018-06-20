@@ -24,6 +24,7 @@
 /pylint*                      recipes
 /repo                         recipes
 /roll-dep*                    recipes
+/yapf*                        recipes
 
 # Symlinks
 /cbuildbot      recipes
