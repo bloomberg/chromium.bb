@@ -67,9 +67,6 @@ class TestSigninClient : public SigninClient {
   // in the default constructor.
   void SetURLRequestContext(net::URLRequestContextGetter* request_context);
 
-  // Returns true.
-  bool ShouldMergeSigninCredentialsIntoCookieJar() override;
-
   // Registers |callback| and returns the subscription.
   // Note that |callback| will never be called.
   std::unique_ptr<SigninClient::CookieChangeSubscription>

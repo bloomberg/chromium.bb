@@ -129,6 +129,15 @@ GURL GetReauthURL(signin_metrics::AccessPoint access_point,
 
 namespace signin {
 
+const char kSignInPromoQueryKeyAccessPoint[] = "access_point";
+const char kSignInPromoQueryKeyAutoClose[] = "auto_close";
+const char kSignInPromoQueryKeyContinue[] = "continue";
+const char kSignInPromoQueryKeyForceKeepData[] = "force_keep_data";
+const char kSignInPromoQueryKeyReason[] = "reason";
+const char kSignInPromoQueryKeySource[] = "source";
+const char kSignInPromoQueryKeyConstrained[] = "constrained";
+const char kSigninPromoLandingURLSuccessPage[] = "success.html";
+
 bool ShouldShowPromoAtStartup(Profile* profile, bool is_new_profile) {
   DCHECK(profile);
 
@@ -364,17 +373,6 @@ bool IsAutoCloseEnabledInURL(const GURL& url) {
     int enabled = 0;
     if (base::StringToInt(value, &enabled) && enabled == 1)
       return true;
-  }
-  return false;
-}
-
-bool ShouldShowAccountManagement(const GURL& url) {
-  std::string value;
-  if (net::GetValueForKeyInQuery(
-          url, kSignInPromoQueryKeyShowAccountManagement, &value)) {
-    int enabled = 0;
-    if (base::StringToInt(value, &enabled) && enabled == 1)
-      return IsAccountConsistencyMirrorEnabled();
   }
   return false;
 }

@@ -17,6 +17,8 @@ namespace signin_metrics {
 enum class AccessPoint;
 }
 
+extern const char kSignInPromoQueryKeyShowAccountManagement[];
+
 // The base class handler for the inline login WebUI.
 class InlineLoginHandler : public content::WebUIMessageHandler {
  public:

@@ -112,10 +112,6 @@ std::string IOSChromeSigninClient::GetSigninScopedDeviceId() {
   return GetOrCreateScopedDeviceIdPref(GetPrefs());
 }
 
-bool IOSChromeSigninClient::ShouldMergeSigninCredentialsIntoCookieJar() {
-  return false;
-}
-
 bool IOSChromeSigninClient::IsFirstRun() const {
   return false;
 }

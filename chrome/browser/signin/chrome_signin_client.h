@@ -51,7 +51,6 @@ class ChromeSigninClient
   std::string GetSigninScopedDeviceId() override;
   void OnSignedOut() override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
-  bool ShouldMergeSigninCredentialsIntoCookieJar() override;
   bool IsFirstRun() const override;
   base::Time GetInstallDate() override;
   bool AreSigninCookiesAllowed() override;

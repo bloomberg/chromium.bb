@@ -72,10 +72,6 @@ class SigninClient : public KeyedService {
   // Returns the URL request context information associated with the client.
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
 
-  // Returns whether the user's credentials should be merged into the cookie
-  // jar on signin completion.
-  virtual bool ShouldMergeSigninCredentialsIntoCookieJar() = 0;
-
   // Returns a string containing the version info of the product in which the
   // Signin component is being used.
   virtual std::string GetProductVersion() = 0;

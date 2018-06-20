@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 
@@ -34,7 +35,8 @@ KeyedService* SigninErrorControllerFactory::BuildServiceInstanceFor(
 #if defined(OS_CHROMEOS)
       SigninErrorController::AccountMode::ANY_ACCOUNT;
 #else
-      signin::IsAccountConsistencyMirrorEnabled()
+      AccountConsistencyModeManager::IsMirrorEnabledForProfile(
+          Profile::FromBrowserContext(context))
           ? SigninErrorController::AccountMode::ANY_ACCOUNT
           : SigninErrorController::AccountMode::PRIMARY_ACCOUNT;
 #endif
