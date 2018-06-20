@@ -27538,6 +27538,7 @@ from previous Chrome versions.
   <int value="-699767107" label="enable-sync-app-list"/>
   <int value="-699198009" label="KeyboardShortcutViewer:enabled"/>
   <int value="-697751423" label="disable-quickoffice-component-app"/>
+  <int value="-694372915" label="enable-ephemeral-flash-permission"/>
   <int value="-684900739" label="disable-merge-key-char-events"/>
   <int value="-684223908" label="enable-android-wallpapers-app"/>
   <int value="-680787130" label="ExperimentalVRFeatures:disabled"/>

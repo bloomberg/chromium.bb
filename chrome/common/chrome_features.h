@@ -118,6 +118,8 @@ extern const base::Feature kDownloadsForeground;
 extern const base::Feature kDownloadsLocationChange;
 #endif
 
+extern const base::Feature kEnableEphemeralFlashPermission;
+
 extern const base::Feature kExperimentalAppBanners;
 
 #if defined(OS_CHROMEOS)

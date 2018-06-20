@@ -224,6 +224,10 @@ const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Makes Flash plugin permissions persistent only through the current session.
+const base::Feature kEnableEphemeralFlashPermission{
+    "EnableEphemeralFlashPermission", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // An experimental way of showing app banners, which has modal banners and gives
 // developers more control over when to show them.
 const base::Feature kExperimentalAppBanners {
