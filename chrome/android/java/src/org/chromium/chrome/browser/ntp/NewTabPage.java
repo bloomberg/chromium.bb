@@ -79,6 +79,7 @@ public class NewTabPage
     private final int mBackgroundColor;
     private final int mThemeColor;
     private final NewTabPageView mNewTabPageView;
+    private final NewTabPageLayout mNewTabPageLayout;
     private final NewTabPageManagerImpl mNewTabPageManager;
     private final TileGroup.Delegate mTileGroupDelegate;
     private final boolean mIsTablet;
@@ -180,7 +181,7 @@ public class NewTabPage
         @Override
         public boolean isLocationBarShownInNTP() {
             if (mIsDestroyed) return false;
-            return isInSingleUrlBarMode() && !mNewTabPageView.urlFocusAnimationsDisabled();
+            return isInSingleUrlBarMode() && !mNewTabPageLayout.urlFocusAnimationsDisabled();
         }
 
         @Override
@@ -240,7 +241,7 @@ public class NewTabPage
             if (mIsDestroyed) return;
 
             super.onLoadingComplete(tiles);
-            mNewTabPageView.onTilesLoaded();
+            mNewTabPageLayout.onTilesLoaded();
         }
 
         @Override
@@ -298,7 +299,7 @@ public class NewTabPage
                 // Showing the NTP is only meaningful when the page has been loaded already.
                 if (mIsLoaded) recordNTPShown();
 
-                mNewTabPageView.getTileGroup().onSwitchToForeground(/* trackLoadTask = */ false);
+                mNewTabPageLayout.getTileGroup().onSwitchToForeground(/* trackLoadTask = */ false);
             }
 
             @Override
@@ -334,6 +335,8 @@ public class NewTabPage
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page_view, null);
+        mNewTabPageLayout = mNewTabPageView.getNewTabPageLayout();
+
         mNewTabPageView.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
                 mSearchProviderHasLogo,
                 TemplateUrlService.getInstance().isDefaultSearchEngineGoogle(),
@@ -361,7 +364,7 @@ public class NewTabPage
      * @param disable Whether to disable the animations.
      */
     public void setUrlFocusAnimationsDisabled(boolean disable) {
-        mNewTabPageView.setUrlFocusAnimationsDisabled(disable);
+        mNewTabPageLayout.setUrlFocusAnimationsDisabled(disable);
     }
 
     private boolean isInSingleUrlBarMode() {
@@ -376,7 +379,7 @@ public class NewTabPage
         updateSearchProviderHasLogo();
         mNewTabPageView.setSearchProviderInfo(mSearchProviderHasLogo,
                 TemplateUrlService.getInstance().isDefaultSearchEngineGoogle());
-        mNewTabPageView.loadSearchProviderLogo();
+        mNewTabPageLayout.loadSearchProviderLogo();
     }
 
     /**
@@ -387,7 +390,7 @@ public class NewTabPage
      * @param percent The percentage of the URL bar focus animation.
      */
     public void setUrlFocusChangeAnimationPercent(float percent) {
-        mNewTabPageView.setUrlFocusChangeAnimationPercent(percent);
+        mNewTabPageLayout.setUrlFocusChangeAnimationPercent(percent);
     }
 
     /**
@@ -407,7 +410,7 @@ public class NewTabPage
      * @param alpha opacity (alpha) value to use.
      */
     public void setSearchBoxAlpha(float alpha) {
-        mNewTabPageView.setSearchBoxAlpha(alpha);
+        mNewTabPageLayout.setSearchBoxAlpha(alpha);
     }
 
     /**
@@ -416,7 +419,7 @@ public class NewTabPage
      * @param alpha opacity (alpha) value to use.
      */
     public void setSearchProviderLogoAlpha(float alpha) {
-        mNewTabPageView.setSearchProviderLogoAlpha(alpha);
+        mNewTabPageLayout.setSearchProviderLogoAlpha(alpha);
     }
 
     /**
@@ -425,7 +428,7 @@ public class NewTabPage
      * @param drawable The search box background.
      */
     public void setSearchBoxBackground(Drawable drawable) {
-        mNewTabPageView.setSearchBoxBackground(drawable);
+        mNewTabPageLayout.setSearchBoxBackground(drawable);
     }
 
     /**
@@ -440,7 +443,7 @@ public class NewTabPage
      * @param listener The listener to be notified on changes.
      */
     public void setSearchBoxScrollListener(OnSearchBoxScrollListener listener) {
-        mNewTabPageView.setSearchBoxScrollListener(listener);
+        mNewTabPageLayout.setSearchBoxScrollListener(listener);
     }
 
     /**
@@ -453,7 +456,7 @@ public class NewTabPage
             // The toolbar can't get the reference to the native page until its initialization is
             // finished, so we can't cache it here and transfer it to the view later. We pull that
             // state from the location bar when we get a reference to it as a workaround.
-            mNewTabPageView.setUrlFocusChangeAnimationPercent(
+            mNewTabPageLayout.setUrlFocusChangeAnimationPercent(
                     fakeboxDelegate.isUrlBarFocused() ? 1f : 0f);
         }
     }
@@ -465,7 +468,7 @@ public class NewTabPage
             LocationBarVoiceRecognitionHandler voiceRecognitionHandler) {
         mVoiceRecognitionHandler = voiceRecognitionHandler;
         if (mVoiceRecognitionHandler != null) {
-            mNewTabPageView.updateVoiceSearchButtonVisibility();
+            mNewTabPageLayout.updateVoiceSearchButtonVisibility();
         }
     }
 

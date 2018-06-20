@@ -22,7 +22,8 @@ import org.chromium.ui.base.DeviceFormFactor;
  * Simple wrapper on top of a RecyclerView that will acquire focus when tapped.  Ensures the
  * New Tab page receives focus when clicked.
  */
-public class NewTabPageRecyclerView extends SuggestionsRecyclerView {
+public class NewTabPageRecyclerView
+        extends SuggestionsRecyclerView implements NewTabPageLayout.ScrollDelegate {
     private final int mToolbarHeight;
     private final int mSearchBoxTransitionLength;
 
@@ -56,7 +57,12 @@ public class NewTabPageRecyclerView extends SuggestionsRecyclerView {
         mContainsLocationBar = containsLocationBar;
     }
 
-    public void setFakeboxDelegate(FakeboxDelegate fakeboxDelegate) {
+    /**
+     * Sets the {@link FakeboxDelegate} associated with the new tab page.
+     * @param fakeboxDelegate The {@link FakeboxDelegate} used to determine whether the URL bar
+     *                        has focus.
+     */
+    public void setFakeboxDelegate(FakeboxDelegate fakeboxDelegate, View fakeBox) {
         mFakeboxDelegate = fakeboxDelegate;
     }
 
@@ -117,28 +123,14 @@ public class NewTabPageRecyclerView extends SuggestionsRecyclerView {
                 currentScroll, regionStart, regionEnd, (regionStart + regionEnd) / 2);
     }
 
-    /**
-     * Snaps the scroll point of the RecyclerView to prevent the user from scrolling to midway
-     * through a transition and to allow peeking card behaviour.
-     */
-    public void snapScroll(View fakeBox, int parentHeight) {
-        int initialScroll = computeVerticalScrollOffset();
-
-        int scrollTo = calculateSnapPosition(initialScroll, fakeBox, parentHeight);
-
-        // Calculating the snap position should be idempotent.
-        assert scrollTo == calculateSnapPosition(scrollTo, fakeBox, parentHeight);
-
-        smoothScrollBy(0, scrollTo - initialScroll);
-    }
-
     @VisibleForTesting
-    int calculateSnapPosition(int scrollPosition, View fakeBox, int parentHeight) {
+    int calculateSnapPosition(int scrollPosition, int parentHeight) {
         if (mContainsLocationBar) {
             // Snap scroll to prevent only part of the toolbar from showing.
             scrollPosition = calculateSnapPositionForRegion(scrollPosition, 0, mToolbarHeight);
 
             // Snap scroll to prevent resting in the middle of the omnibox transition.
+            View fakeBox = mAboveTheFoldView.getSearchBoxView();
             int fakeBoxUpperBound = fakeBox.getTop() + fakeBox.getPaddingTop();
             scrollPosition = calculateSnapPositionForRegion(scrollPosition,
                     fakeBoxUpperBound - mSearchBoxTransitionLength, fakeBoxUpperBound);
@@ -151,5 +143,38 @@ public class NewTabPageRecyclerView extends SuggestionsRecyclerView {
     public boolean gatherTransparentRegion(Region region) {
         ViewUtils.gatherTransparentRegionsForOpaqueView(this, region);
         return true;
+    }
+
+    // NewTabPageLayout.ScrollDelegate interface.
+
+    @Override
+    public boolean isScrollViewInitialized() {
+        // During startup the view may not be fully initialized, so we check to see if some basic
+        // view properties (height of the RecyclerView) are sane.
+        return getHeight() > 0;
+    }
+
+    @Override
+    public int getVerticalScrollOffset() {
+        return computeVerticalScrollOffset();
+    }
+
+    @Override
+    public boolean isChildVisibleAtPosition(int position) {
+        return position >= getLinearLayoutManager().findFirstVisibleItemPosition()
+                && position <= getLinearLayoutManager().findLastVisibleItemPosition();
+    }
+
+    @Override
+    public void snapScroll() {
+        int parentHeight = ((View) getParent()).getHeight();
+        int initialScroll = computeVerticalScrollOffset();
+
+        int scrollTo = calculateSnapPosition(initialScroll, parentHeight);
+
+        // Calculating the snap position should be idempotent.
+        assert scrollTo == calculateSnapPosition(scrollTo, parentHeight);
+
+        smoothScrollBy(0, scrollTo - initialScroll);
     }
 }
