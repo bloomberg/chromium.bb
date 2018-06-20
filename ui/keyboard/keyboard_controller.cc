@@ -269,6 +269,21 @@ void KeyboardController::DisableKeyboard() {
   ui_.reset();
 }
 
+void KeyboardController::ActivateKeyboardInContainer(aura::Window* parent) {
+  DCHECK(parent);
+  DCHECK(!container_->parent());
+
+  parent->AddChild(container_.get());
+}
+
+void KeyboardController::DeactivateKeyboard() {
+  DCHECK(container_->parent());
+
+  // Ensure the keyboard is not visible before deactivating it.
+  HideKeyboardExplicitlyBySystem();
+  container_->parent()->RemoveChild(container_.get());
+}
+
 // static
 KeyboardController* KeyboardController::Get() {
   DCHECK(g_keyboard_controller);
