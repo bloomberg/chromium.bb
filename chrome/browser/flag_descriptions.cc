@@ -410,6 +410,12 @@ const char kEnableCursorMotionBlurName[] = "Enable Cursor Motion Blur";
 const char kEnableCursorMotionBlurDescription[] =
     "Enable motion blur effect for the cursor.";
 
+const char kEnableEphemeralFlashPermissionName[] =
+    "Enable Ephemeral Flash Permissions";
+const char kEnableEphemeralFlashPermissionDescription[] =
+    "When enabled, Flash plugin permissions are reset at the end of the "
+    "browser session.";
+
 const char kEnableNoScriptPreviewsName[] = "NoScript previews";
 
 const char kEnableNoScriptPreviewsDescription[] =

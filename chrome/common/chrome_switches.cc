@@ -292,6 +292,10 @@ const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 // Enables Domain Reliability Monitoring.
 const char kEnableDomainReliability[] = "enable-domain-reliability";
 
+// Makes Flash plugin permissions persistent only through the current session.
+const char kEnableEphemeralFlashPermission[] =
+    "enable-ephemeral-flash-permission";
+
 // Enables logging for extension activity.
 const char kEnableExtensionActivityLogging[] =
     "enable-extension-activity-logging";
