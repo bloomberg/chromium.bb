@@ -13,6 +13,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
@@ -567,6 +568,35 @@ void PaymentAppProviderImpl::OnClosingOpenedWindow(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&AbortInvokePaymentApp, browser_context));
+}
+
+bool PaymentAppProviderImpl::IsValidInstallablePaymentApp(
+    const GURL& manifest_url,
+    const GURL& sw_js_url,
+    const GURL& sw_scope,
+    std::string* error_message) {
+  DCHECK(manifest_url.is_valid() && sw_js_url.is_valid() &&
+         sw_scope.is_valid());
+
+  // TODO(crbug.com/853924): Unify duplicated code between here and
+  // ServiceWorkerProviderHost::IsValidRegisterMessage.
+  if (ServiceWorkerUtils::ContainsDisallowedCharacter(sw_js_url, sw_scope,
+                                                      error_message)) {
+    return false;
+  }
+
+  std::vector<GURL> urls = {manifest_url, sw_js_url, sw_scope};
+  if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
+    *error_message =
+        "Origins are not matching, or some origins cannot access service "
+        "worker "
+        "(manifest:" +
+        manifest_url.spec() + " scope:" + sw_scope.spec() +
+        " sw:" + sw_js_url.spec() + ")";
+    return false;
+  }
+
+  return true;
 }
 
 PaymentAppProviderImpl::PaymentAppProviderImpl() = default;
