@@ -66,8 +66,8 @@ void LayoutNGListItem::SubtreeDidChange() {
   if (!marker_)
     return;
 
-  // Make sure marker is the direct child of ListItem.
-  if (marker_->Parent() && marker_->Parent() != this) {
+  // Make sure outside marker is the direct child of ListItem.
+  if (!IsInside() && marker_->Parent() != this) {
     marker_->Remove();
     AddChild(marker_, FirstChild());
   }
@@ -300,6 +300,23 @@ LayoutObject* LayoutNGListItem::SymbolMarkerLayoutText() const {
     return nullptr;
   DCHECK(marker_);
   return marker_->SlowFirstChild();
+}
+
+const LayoutObject* LayoutNGListItem::FindSymbolMarkerLayoutText(
+    const LayoutObject* object) {
+  if (!object)
+    return nullptr;
+
+  if (object->IsLayoutNGListItem())
+    return ToLayoutNGListItem(object)->SymbolMarkerLayoutText();
+
+  if (object->IsLayoutNGListMarker())
+    return ToLayoutNGListMarker(object)->SymbolMarkerLayoutText();
+
+  if (object->IsAnonymousBlock())
+    return FindSymbolMarkerLayoutText(object->Parent());
+
+  return nullptr;
 }
 
 }  // namespace blink
