@@ -55,10 +55,11 @@ IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, ImageCopy) {
   NavigateIframeToURL(web_contents, "copyme",
                       GetTestUrl(".", "media/blackwhite.png"));
 
-  // Run script to copy image contents and wait for completion.
-  web_contents->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
-      base::ASCIIToUTF16("frames[0].document.execCommand('copy');"
-                         "document.title = 'copied';"));
+  // Run script in child frame to copy image contents and wait for completion.
+  RenderFrameHost* child_frame = ChildFrameAt(web_contents->GetMainFrame(), 0);
+  child_frame->ExecuteJavaScriptWithUserGestureForTests(
+      base::ASCIIToUTF16("document.execCommand('copy');"
+                         "parent.document.title = 'copied';"));
   TitleWatcher watcher1(web_contents, base::ASCIIToUTF16("copied"));
   EXPECT_EQ(base::ASCIIToUTF16("copied"), watcher1.WaitAndGetTitle());
 
