@@ -1475,6 +1475,173 @@ TEST(WindowTreeTest2, CancelMoveLoop) {
             SingleChangeToDescription(*setup.changes()));
 }
 
+TEST(WindowTreeTest2, PerformDragDrop) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  const Id top_level_id =
+      setup.window_tree_test_helper()->TransportIdForWindow(top_level);
+  setup.changes()->clear();
+  setup.window_tree_test_helper()->window_tree()->PerformDragDrop(
+      12, top_level_id, gfx::Point(),
+      base::flat_map<std::string, std::vector<uint8_t>>(), gfx::ImageSkia(),
+      gfx::Vector2d(), 0, ::ui::mojom::PointerKind::MOUSE);
+
+  // Let the posted drag loop task run.
+  base::RunLoop().RunUntilIdle();
+
+  // WindowServiceDelegate should be asked to run the drag loop.
+  WindowServiceDelegate::DragDropCompletedCallback drag_loop_callback =
+      setup.delegate()->TakeDragLoopCallback();
+  ASSERT_TRUE(drag_loop_callback);
+
+  // As the drag is in progress, changes should be empty.
+  EXPECT_TRUE(setup.changes()->empty());
+
+  // Respond with a drop operation, client should be notified with success.
+  std::move(drag_loop_callback).Run(ui::DragDropTypes::DRAG_MOVE);
+  EXPECT_EQ("OnPerformDragDropCompleted id=12 success=true action=1",
+            SingleChangeToDescription(*setup.changes()));
+
+  // Starts another drag and but the drag is canceled this time.
+  setup.changes()->clear();
+  setup.window_tree_test_helper()->window_tree()->PerformDragDrop(
+      13, top_level_id, gfx::Point(),
+      base::flat_map<std::string, std::vector<uint8_t>>(), gfx::ImageSkia(),
+      gfx::Vector2d(), 0, ::ui::mojom::PointerKind::MOUSE);
+  base::RunLoop().RunUntilIdle();
+  drag_loop_callback = setup.delegate()->TakeDragLoopCallback();
+  ASSERT_TRUE(drag_loop_callback);
+
+  std::move(drag_loop_callback).Run(ui::DragDropTypes::DRAG_NONE);
+  EXPECT_EQ("OnPerformDragDropCompleted id=13 success=false action=0",
+            SingleChangeToDescription(*setup.changes()));
+}
+
+TEST(WindowTreeTest2, PerformDragDropBeforePreviousOneFinish) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  const Id top_level_id =
+      setup.window_tree_test_helper()->TransportIdForWindow(top_level);
+  setup.changes()->clear();
+  setup.window_tree_test_helper()->window_tree()->PerformDragDrop(
+      12, top_level_id, gfx::Point(),
+      base::flat_map<std::string, std::vector<uint8_t>>(), gfx::ImageSkia(),
+      gfx::Vector2d(), 0, ::ui::mojom::PointerKind::MOUSE);
+
+  // PerformDragDrop before the drag loop task runs should fail.
+  setup.window_tree_test_helper()->window_tree()->PerformDragDrop(
+      13, top_level_id, gfx::Point(),
+      base::flat_map<std::string, std::vector<uint8_t>>(), gfx::ImageSkia(),
+      gfx::Vector2d(), 0, ::ui::mojom::PointerKind::MOUSE);
+  EXPECT_EQ("OnPerformDragDropCompleted id=13 success=false action=0",
+            SingleChangeToDescription(*setup.changes()));
+
+  // Let the posted drag loop task run.
+  base::RunLoop().RunUntilIdle();
+
+  // WindowServiceDelegate should be asked to run the drag loop.
+  WindowServiceDelegate::DragDropCompletedCallback drag_loop_callback =
+      setup.delegate()->TakeDragLoopCallback();
+  ASSERT_TRUE(drag_loop_callback);
+
+  // PerformDragDrop after the drop loop task runs should fail too because
+  // the drag is not finished.
+  setup.changes()->clear();
+  setup.window_tree_test_helper()->window_tree()->PerformDragDrop(
+      14, top_level_id, gfx::Point(),
+      base::flat_map<std::string, std::vector<uint8_t>>(), gfx::ImageSkia(),
+      gfx::Vector2d(), 0, ::ui::mojom::PointerKind::MOUSE);
+  EXPECT_EQ("OnPerformDragDropCompleted id=14 success=false action=0",
+            SingleChangeToDescription(*setup.changes()));
+
+  // Finish the drop operation, client should be notified with success.
+  setup.changes()->clear();
+  std::move(drag_loop_callback).Run(ui::DragDropTypes::DRAG_MOVE);
+  EXPECT_EQ("OnPerformDragDropCompleted id=12 success=true action=1",
+            SingleChangeToDescription(*setup.changes()));
+}
+
+TEST(WindowTreeTest2, CancelDragDrop) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  const Id top_level_id =
+      setup.window_tree_test_helper()->TransportIdForWindow(top_level);
+  setup.changes()->clear();
+  setup.window_tree_test_helper()->window_tree()->PerformDragDrop(
+      12, top_level_id, gfx::Point(),
+      base::flat_map<std::string, std::vector<uint8_t>>(), gfx::ImageSkia(),
+      gfx::Vector2d(), 0, ::ui::mojom::PointerKind::MOUSE);
+
+  // Let the posted drag loop task run.
+  base::RunLoop().RunUntilIdle();
+
+  // WindowServiceDelegate should be asked to run the drag loop.
+  WindowServiceDelegate::DragDropCompletedCallback drag_loop_callback =
+      setup.delegate()->TakeDragLoopCallback();
+  ASSERT_TRUE(drag_loop_callback);
+
+  // Cancelling with an invalid id should do nothing.
+  EXPECT_FALSE(setup.delegate()->cancel_drag_loop_called());
+  setup.window_tree_test_helper()->window_tree()->CancelDragDrop(
+      kInvalidTransportId);
+  EXPECT_TRUE(setup.changes()->empty());
+  EXPECT_FALSE(setup.delegate()->cancel_drag_loop_called());
+
+  // Cancel with the real id should notify the delegate.
+  EXPECT_FALSE(setup.delegate()->cancel_drag_loop_called());
+  setup.window_tree_test_helper()->window_tree()->CancelDragDrop(top_level_id);
+  EXPECT_TRUE(setup.delegate()->cancel_drag_loop_called());
+
+  // No changes yet because the |drag_loop_callback| has not run.
+  EXPECT_TRUE(setup.changes()->empty());
+
+  // Run the closure to simulate drag cancel.
+  std::move(drag_loop_callback).Run(ui::DragDropTypes::DRAG_NONE);
+  EXPECT_EQ("OnPerformDragDropCompleted id=12 success=false action=0",
+            SingleChangeToDescription(*setup.changes()));
+}
+
+TEST(WindowTreeTest2, CancelDragDropBeforeDragLoopRun) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  const Id top_level_id =
+      setup.window_tree_test_helper()->TransportIdForWindow(top_level);
+  setup.changes()->clear();
+  setup.window_tree_test_helper()->window_tree()->PerformDragDrop(
+      12, top_level_id, gfx::Point(),
+      base::flat_map<std::string, std::vector<uint8_t>>(), gfx::ImageSkia(),
+      gfx::Vector2d(), 0, ::ui::mojom::PointerKind::MOUSE);
+
+  // Cancel the drag before the drag loop task runs.
+  EXPECT_FALSE(setup.delegate()->cancel_drag_loop_called());
+  setup.window_tree_test_helper()->window_tree()->CancelDragDrop(top_level_id);
+  EXPECT_TRUE(setup.delegate()->cancel_drag_loop_called());
+
+  // Let the posted drag loop task run.
+  base::RunLoop().RunUntilIdle();
+
+  // WindowServiceDelegate should not be notified.
+  WindowServiceDelegate::DragDropCompletedCallback drag_loop_callback =
+      setup.delegate()->TakeDragLoopCallback();
+  EXPECT_FALSE(drag_loop_callback);
+
+  // The request should fail.
+  EXPECT_EQ("OnPerformDragDropCompleted id=12 success=false action=0",
+            SingleChangeToDescription(*setup.changes()));
+}
+
 }  // namespace
 }  // namespace ws2
 }  // namespace ui

@@ -16,6 +16,7 @@
 #include "base/containers/flat_map.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 
 namespace aura {
 class PropertyConverter;
@@ -29,6 +30,7 @@ class Point;
 namespace ui {
 
 class KeyEvent;
+class OSExchangeData;
 
 namespace ws2 {
 
@@ -67,6 +69,23 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   // Called to cancel an in-progress window move loop that was started by
   // RunWindowMoveLoop().
   virtual void CancelWindowMoveLoop() {}
+
+  // Called to run a drag loop for |window|. When done, |callback| should be
+  // invoked with the |drag_result|. |drag_result| == DRAG_NONE means drag
+  // failed or is canceled. Otherwise, it the final drag operation applied at
+  // the end. If a drag is not allowed, the delegate should run |callback|
+  // immediately. Note this call blocks until the drag operation is finished or
+  // canceled.
+  using DragDropCompletedCallback = base::OnceCallback<void(int drag_result)>;
+  virtual void RunDragLoop(aura::Window* window,
+                           const ui::OSExchangeData& data,
+                           const gfx::Point& screen_location,
+                           uint32_t drag_operation,
+                           ui::DragDropTypes::DragEventSource source,
+                           DragDropCompletedCallback callback);
+
+  // Called to cancel an in-progress drag loop that was started by RunDragLoop.
+  virtual void CancelDragLoop(aura::Window* window) {}
 
  protected:
   virtual ~WindowServiceDelegate() = default;

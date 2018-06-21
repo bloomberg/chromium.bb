@@ -21,6 +21,11 @@ TestWindowServiceDelegate::TakeMoveLoopCallback() {
   return std::move(move_loop_callback_);
 }
 
+WindowServiceDelegate::DragDropCompletedCallback
+TestWindowServiceDelegate::TakeDragLoopCallback() {
+  return std::move(drag_loop_callback_);
+}
+
 std::unique_ptr<aura::Window> TestWindowServiceDelegate::NewTopLevel(
     aura::PropertyConverter* property_converter,
     const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
@@ -50,6 +55,20 @@ void TestWindowServiceDelegate::RunWindowMoveLoop(aura::Window* window,
 
 void TestWindowServiceDelegate::CancelWindowMoveLoop() {
   cancel_window_move_loop_called_ = true;
+}
+
+void TestWindowServiceDelegate::RunDragLoop(
+    aura::Window* window,
+    const ui::OSExchangeData& data,
+    const gfx::Point& screen_location,
+    uint32_t drag_operation,
+    ui::DragDropTypes::DragEventSource source,
+    DragDropCompletedCallback callback) {
+  drag_loop_callback_ = std::move(callback);
+}
+
+void TestWindowServiceDelegate::CancelDragLoop(aura::Window* window) {
+  cancel_drag_loop_called_ = true;
 }
 
 }  // namespace ws2

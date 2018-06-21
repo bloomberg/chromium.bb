@@ -278,7 +278,9 @@ void TestWindowTreeClient::OnCompleteDrop(Id window,
 
 void TestWindowTreeClient::OnPerformDragDropCompleted(uint32_t change_id,
                                                       bool success,
-                                                      uint32_t action_taken) {}
+                                                      uint32_t action_taken) {
+  tracker_.OnPerformDragDropCompleted(change_id, success, action_taken);
+}
 
 void TestWindowTreeClient::OnDragDropDone() {
   tracker_.OnDragDropDone();
