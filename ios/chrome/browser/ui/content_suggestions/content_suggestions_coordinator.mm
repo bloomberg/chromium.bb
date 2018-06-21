@@ -156,6 +156,7 @@
     self.primaryToolbarViewController =
         [[PrimaryToolbarViewController alloc] init];
     self.primaryToolbarViewController.buttonFactory = buttonFactory;
+    self.primaryToolbarViewController.dispatcher = self.dispatcher;
     [self.primaryToolbarViewController updateForSideSwipeSnapshotOnNTP:YES];
     self.headerController.toolbarViewController =
         self.primaryToolbarViewController;
