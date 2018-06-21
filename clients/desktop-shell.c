@@ -1337,19 +1337,30 @@ output_remove(struct desktop *desktop, struct output *output)
 	}
 
 	if (rep) {
-		/* If found, hand over the background and panel so they don't
-		 * get destroyed. */
-		assert(!rep->background);
-		assert(!rep->panel);
+		/* If found and it does not already have a background or panel,
+		 * hand over the background and panel so they don't get
+		 * destroyed.
+		 *
+		 * We never create multiple backgrounds or panels for clones,
+		 * but if the compositor moves outputs, a pair of wl_outputs
+		 * might become "clones". This may happen temporarily when
+		 * an output is about to be removed and the rest are reflowed.
+		 * In this case it is correct to let the background/panel be
+		 * destroyed.
+		 */
 
-		rep->background = output->background;
-		output->background = NULL;
-		rep->background->owner = rep;
+		if (!rep->background) {
+			rep->background = output->background;
+			output->background = NULL;
+			rep->background->owner = rep;
+		}
 
-		rep->panel = output->panel;
-		output->panel = NULL;
-		if (rep->panel)
-			rep->panel->owner = rep;
+		if (!rep->panel) {
+			rep->panel = output->panel;
+			output->panel = NULL;
+			if (rep->panel)
+				rep->panel->owner = rep;
+		}
 	}
 
 	output_destroy(output);
