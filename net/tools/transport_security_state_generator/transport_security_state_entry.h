@@ -5,15 +5,23 @@
 #ifndef NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_TRANSPORT_SECURITY_STATE_ENTRY_H_
 #define NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_TRANSPORT_SECURITY_STATE_ENTRY_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
+#include "net/tools/huffman_trie/trie_entry.h"
 
 namespace net {
 
 namespace transport_security_state {
 
-// TransportSecurityStateEntry represents a preloaded entry.
+// Maps a name to an index. This is used to track the index of several values
+// in the C++ code. The trie refers to the array index of the values. For
+// example; the pinsets are outputted as a C++ array and the index for the
+// pinset in that array is placed in the trie.
+using NameIDMap = std::map<std::string, uint32_t>;
+using NameIDPair = std::pair<std::string, uint32_t>;
+
 struct TransportSecurityStateEntry {
   TransportSecurityStateEntry();
   ~TransportSecurityStateEntry();
@@ -37,18 +45,24 @@ struct TransportSecurityStateEntry {
 using TransportSecurityStateEntries =
     std::vector<std::unique_ptr<TransportSecurityStateEntry>>;
 
-// ReversedEntry points to a TransportSecurityStateEntry and contains the
-// reversed hostname for that entry. This is used to construct the trie.
-struct ReversedEntry {
-  ReversedEntry(std::vector<uint8_t> reversed_name,
-                const TransportSecurityStateEntry* entry);
-  ~ReversedEntry();
+class TransportSecurityStateTrieEntry : public huffman_trie::TrieEntry {
+ public:
+  TransportSecurityStateTrieEntry(const NameIDMap& expect_ct_report_uri_map,
+                                  const NameIDMap& expect_staple_report_uri_map,
+                                  const NameIDMap& pinsets_map,
+                                  TransportSecurityStateEntry* entry);
+  ~TransportSecurityStateTrieEntry() override;
 
-  std::vector<uint8_t> reversed_name;
-  const TransportSecurityStateEntry* entry;
+  // huffman_trie::TrieEntry:
+  std::string name() const override;
+  bool WriteEntry(huffman_trie::TrieBitBuffer* writer) const override;
+
+ private:
+  const NameIDMap& expect_ct_report_uri_map_;
+  const NameIDMap& expect_staple_report_uri_map_;
+  const NameIDMap& pinsets_map_;
+  TransportSecurityStateEntry* entry_;
 };
-
-using ReversedEntries = std::vector<std::unique_ptr<ReversedEntry>>;
 
 }  // namespace transport_security_state
 

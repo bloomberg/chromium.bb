@@ -115,8 +115,8 @@ huffman_trie::HuffmanRepresentationTable ApproximateHuffman(
       huffman_builder.RecordUsage(c);
     }
 
-    huffman_builder.RecordUsage(TrieWriter::kTerminalValue);
-    huffman_builder.RecordUsage(TrieWriter::kEndOfTableValue);
+    huffman_builder.RecordUsage(huffman_trie::kTerminalValue);
+    huffman_builder.RecordUsage(huffman_trie::kEndOfTableValue);
   }
 
   return huffman_builder.ToTable();
@@ -145,6 +145,17 @@ std::string PreloadedStateGenerator::Generate(
   NameIDMap pinsets_map;
   ProcessPinsets(pinsets, &pinsets_map, &output);
 
+  std::vector<std::unique_ptr<TransportSecurityStateTrieEntry>> trie_entries;
+  std::vector<huffman_trie::TrieEntry*> raw_trie_entries;
+  for (const auto& entry : entries) {
+    std::unique_ptr<TransportSecurityStateTrieEntry> trie_entry(
+        new TransportSecurityStateTrieEntry(expect_ct_report_uri_map,
+                                            expect_staple_report_uri_map,
+                                            pinsets_map, entry.get()));
+    raw_trie_entries.push_back(trie_entry.get());
+    trie_entries.push_back(std::move(trie_entry));
+  }
+
   // The trie generation process is ran twice, the first time using an
   // approximate Huffman table. During this first run, the correct character
   // frequencies are collected which are then used to calculate the most space
@@ -152,20 +163,17 @@ std::string PreloadedStateGenerator::Generate(
   // second run.
   huffman_trie::HuffmanRepresentationTable table = ApproximateHuffman(entries);
   huffman_trie::HuffmanBuilder huffman_builder;
-  TrieWriter writer(table, expect_ct_report_uri_map,
-                    expect_staple_report_uri_map, pinsets_map,
-                    &huffman_builder);
+  huffman_trie::TrieWriter writer(table, &huffman_builder);
   uint32_t root_position;
-  if (!writer.WriteEntries(entries, &root_position)) {
+  if (!writer.WriteEntries(raw_trie_entries, &root_position)) {
     return std::string();
   }
 
   huffman_trie::HuffmanRepresentationTable optimal_table =
       huffman_builder.ToTable();
-  TrieWriter new_writer(optimal_table, expect_ct_report_uri_map,
-                        expect_staple_report_uri_map, pinsets_map, nullptr);
+  huffman_trie::TrieWriter new_writer(optimal_table, nullptr);
 
-  if (!new_writer.WriteEntries(entries, &root_position)) {
+  if (!new_writer.WriteEntries(raw_trie_entries, &root_position)) {
     return std::string();
   }
 
