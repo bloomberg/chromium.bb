@@ -598,7 +598,16 @@ message ClientDownloadRequest {
   // https://opensource.apple.com/source/xnu/xnu-2782.1.97/bsd/sys/codesign.h
   optional bytes udif_code_signature = 40;
 
-  // next available tag number: 51;
+  // Mac-only. A detached code signature contains the DER-encoded PKCS7 data
+  // of a codesigned artifact. Detached signatures are used for signing files
+  // that are not Mach-O and thus cannot have a LC_CODE_SIGNATURE load command.
+  message DetachedCodeSignature {
+    required string file_name = 1;
+    required bytes contents = 2;
+  }
+  repeated DetachedCodeSignature detached_code_signature = 59;
+
+  // next available tag number: 60;
 }
 
 message ReferrerChainOptions {

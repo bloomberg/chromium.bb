@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <unistd.h>
 
+#include <vector>
+
 #include "base/macros.h"
 
 namespace safe_browsing {
@@ -78,6 +80,10 @@ class MemoryReadStream : public ReadStream {
  private:
   DISALLOW_COPY_AND_ASSIGN(MemoryReadStream);
 };
+
+// Reads the given |stream| until end-of-stream is reached, storying the read
+// bytes into |data|. Returns true on success and false on error.
+bool ReadEntireStream(ReadStream* stream, std::vector<uint8_t>* data);
 
 }  // namespace dmg
 }  // namespace safe_browsing

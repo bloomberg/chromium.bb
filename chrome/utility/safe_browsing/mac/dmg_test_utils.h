@@ -20,10 +20,6 @@ namespace test {
 // so this should be called with ASSERT_NO_FATAL_FAILURE().
 void GetTestFile(const char* file_name, base::File* file);
 
-// Reads the given |stream| until end-of-stream is reached, storying the read
-// bytes into |data|. Returns true on success and false on error.
-bool ReadEntireStream(ReadStream* stream, std::vector<uint8_t>* data);
-
 }  // namespace test
 }  // namespace dmg
 }  // namespace safe_browsing

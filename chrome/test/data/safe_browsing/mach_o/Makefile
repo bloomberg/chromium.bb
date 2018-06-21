@@ -6,7 +6,7 @@ KEYCHAIN_PASSWORD=g0atMaster
 # This must match the commonName in codesign.cfg.
 KEYCHAIN_IDENTITY=untrusted@goat.local
 
-# Funcitons to add and remove codesigning identity to user's keychain. These 
+# Funcitons to add and remove codesigning identity to user's keychain. These
 # are necessary since the codesign utility no longer supports the -k option,
 # which reads the identity from a file.
 pre-build = security import codesign.key && security import codesign.crt
@@ -37,7 +37,7 @@ codesign.csr: codesign.key codesign.cfg
 	openssl req -new -key $< -out $@ -config codesign.cfg
 
 codesign.crt: codesign.csr codesign.key codesign.cfg
-	openssl x509 -req -signkey codesign.key -sha256 \
+	openssl x509 -req -signkey codesign.key -sha256 -days 9999 \
 		-extfile codesign.cfg -extensions req_attrs -in $< -out $@
 
 signedexecutable32: executable32 codesign.crt
@@ -71,6 +71,15 @@ zipped-app-two-executables-one-signed.zip: executablefat signedexecutablefat
 	ditto $(word 2,$^) app-with-executables.app/Contents/MacOS/
 	zip -r $@ app-with-executables.app
 	rm -r app-with-executables.app
+
+.PHONY: shell-script.app
+shell-script.app:
+	$(call pre-build)
+	ditto base-bundle.app $@
+	mkdir $@/Contents/MacOS || true
+	echo 'echo "Hello world"' > $@/Contents/MacOS/test-bundle
+	codesign -f -s $(KEYCHAIN_IDENTITY) $@
+	$(call post-build)
 
 .PHONY: test-bundle.app
 test-bundle.app: signedexecutablefat libsigned64.dylib executable32

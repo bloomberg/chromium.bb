@@ -1641,6 +1641,66 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportLargeDmg) {
   Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
 }
 
+// Verifies the results of DMG analysis end-to-end.
+TEST_F(DownloadProtectionServiceTest, DMGAnalysisEndToEnd) {
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+
+  base::FilePath dmg;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &dmg));
+  dmg = dmg.AppendASCII("chrome")
+            .AppendASCII("safe_browsing_dmg")
+            .AppendASCII("mach_o_in_dmg.dmg");
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItemWithFullPaths(
+      &item, {"http://www.evil.com/a.dmg"},                     // url_chain
+      "http://www.google.com/",                                 // referrer
+      dmg,                                                      // tmp_path
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("a.dmg")));  // final_path
+
+  RunLoop run_loop;
+  download_service_->CheckClientDownload(
+      &item,
+      base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(HasClientDownloadRequest());
+
+  auto* request = GetClientDownloadRequest();
+
+  EXPECT_TRUE(request->archive_valid());
+  EXPECT_FALSE(request->has_udif_code_signature());
+  EXPECT_EQ(ClientDownloadRequest_DownloadType_MAC_EXECUTABLE,
+            request->download_type());
+
+  ASSERT_EQ(2, request->archived_binary().size());
+  for (const auto& binary : request->archived_binary()) {
+    EXPECT_FALSE(binary.file_basename().empty());
+    EXPECT_EQ(ClientDownloadRequest_DownloadType_MAC_EXECUTABLE,
+              binary.download_type());
+    ASSERT_TRUE(binary.has_digests());
+    EXPECT_TRUE(binary.digests().has_sha256());
+    EXPECT_TRUE(binary.has_length());
+    ASSERT_TRUE(binary.has_image_headers());
+    ASSERT_FALSE(binary.image_headers().mach_o_headers().empty());
+    EXPECT_FALSE(
+        binary.image_headers().mach_o_headers().Get(0).mach_header().empty());
+    EXPECT_FALSE(
+        binary.image_headers().mach_o_headers().Get(0).load_commands().empty());
+  }
+
+  ASSERT_EQ(1, request->detached_code_signature().size());
+  EXPECT_FALSE(request->detached_code_signature().Get(0).file_name().empty());
+  EXPECT_FALSE(request->detached_code_signature().Get(0).contents().empty());
+
+  ClearClientDownloadRequest();
+
+  Mock::VerifyAndClearExpectations(sb_service_.get());
+  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+}
+
 #endif  // OS_MACOSX
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
