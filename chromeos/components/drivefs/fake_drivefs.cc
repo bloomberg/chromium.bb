@@ -153,10 +153,14 @@ void FakeDriveFs::GetMetadata(const base::FilePath& path,
   metadata->pinned = stored_metadata.pinned;
 
   metadata->content_mime_type = stored_metadata.mime_type;
-  metadata->hosted = stored_metadata.hosted;
+  metadata->type = stored_metadata.hosted
+                       ? mojom::FileMetadata::Type::kHosted
+                       : info.is_directory
+                             ? mojom::FileMetadata::Type::kDirectory
+                             : mojom::FileMetadata::Type::kFile;
 
   base::StringPiece prefix;
-  if (metadata->hosted) {
+  if (stored_metadata.hosted) {
     prefix = "https://document_alternate_link/";
   } else if (info.is_directory) {
     prefix = "https://folder_alternate_link/";
@@ -167,6 +171,7 @@ void FakeDriveFs::GetMetadata(const base::FilePath& path,
                            ? path.BaseName().value()
                            : stored_metadata.original_name;
   metadata->alternate_url = GURL(base::StrCat({prefix, suffix})).spec();
+  metadata->capabilities = mojom::Capabilities::New();
 
   std::move(callback).Run(drive::FILE_ERROR_OK, std::move(metadata));
 }
