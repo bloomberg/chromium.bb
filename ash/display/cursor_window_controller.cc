@@ -160,7 +160,8 @@ bool CursorWindowController::ShouldEnableCursorCompositing() {
         shell->display_color_manager()->displays_ctm_support();
     UMA_HISTOGRAM_ENUMERATION("Ash.NightLight.DisplayCrtcCtmSupport",
                               displays_ctm_support);
-    return displays_ctm_support != DisplayColorManager::DisplayCtmSupport::kAll;
+    if (displays_ctm_support != DisplayColorManager::DisplayCtmSupport::kAll)
+      return true;
   }
 
   return prefs->GetBoolean(prefs::kAccessibilityLargeCursorEnabled) ||

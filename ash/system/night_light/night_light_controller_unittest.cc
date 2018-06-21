@@ -929,6 +929,22 @@ TEST_F(NightLightCrtcTest, TestAllDisplaysSupportCrtcMatrix) {
   logger_actions = GetLoggerActionsAndClear();
   EXPECT_TRUE(VerifyCrtcMatrix(kId1, temperature, logger_actions));
   EXPECT_TRUE(VerifyCrtcMatrix(kId2, temperature, logger_actions));
+
+  // Test the cursor compositing behavior when Night Light is on (and doesn't
+  // require the software cursor) while other accessibility settings that affect
+  // the cursor are toggled.
+  for (const auto* const pref : {prefs::kAccessibilityLargeCursorEnabled,
+                                 prefs::kAccessibilityHighContrastEnabled}) {
+    user1_pref_service()->SetBoolean(pref, true);
+    Shell::Get()->UpdateCursorCompositingEnabled();
+    EXPECT_TRUE(IsCursorCompositingEnabled());
+
+    // Disabling the accessibility feature should revert back to the hardware
+    // cursor.
+    user1_pref_service()->SetBoolean(pref, false);
+    Shell::Get()->UpdateCursorCompositingEnabled();
+    EXPECT_FALSE(IsCursorCompositingEnabled());
+  }
 }
 
 // One display supports CRTC matrix and the other doesn't.
