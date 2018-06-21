@@ -33,7 +33,6 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
       PlatformNotificationContextImpl* notification_context,
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      int render_process_id,
       const url::Origin& origin,
       mojo::InterfaceRequest<blink::mojom::NotificationService> request);
   ~BlinkNotificationServiceImpl() override;
@@ -97,8 +96,6 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
   BrowserContext* browser_context_;
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
-
-  int render_process_id_;
 
   // The origin that this notification service is communicating with.
   url::Origin origin_;

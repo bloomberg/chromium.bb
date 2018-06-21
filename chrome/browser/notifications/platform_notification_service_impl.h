@@ -70,10 +70,6 @@ class PlatformNotificationServiceImpl
                                      base::OnceClosure completed_closure);
 
   // content::PlatformNotificationService implementation.
-  blink::mojom::PermissionStatus CheckPermission(
-      content::BrowserContext* browser_context,
-      const GURL& origin,
-      int render_process_id) override;
   void DisplayNotification(
       content::BrowserContext* browser_context,
       const std::string& notification_id,

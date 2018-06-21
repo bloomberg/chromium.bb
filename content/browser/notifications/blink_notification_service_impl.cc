@@ -15,6 +15,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_database_data.h"
+#include "content/public/browser/permission_manager.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/notification_resources.h"
@@ -38,13 +40,11 @@ BlinkNotificationServiceImpl::BlinkNotificationServiceImpl(
     PlatformNotificationContextImpl* notification_context,
     BrowserContext* browser_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    int render_process_id,
     const url::Origin& origin,
     mojo::InterfaceRequest<blink::mojom::NotificationService> request)
     : notification_context_(notification_context),
       browser_context_(browser_context),
       service_worker_context_(std::move(service_worker_context)),
-      render_process_id_(render_process_id),
       origin_(origin),
       binding_(this, std::move(request)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -127,8 +127,11 @@ void BlinkNotificationServiceImpl::CloseNonPersistentNotification(
 blink::mojom::PermissionStatus
 BlinkNotificationServiceImpl::CheckPermissionStatus() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return Service()->CheckPermission(browser_context_, origin_.GetURL(),
-                                    render_process_id_);
+  if (!browser_context_->GetPermissionManager())
+    return blink::mojom::PermissionStatus::DENIED;
+
+  return browser_context_->GetPermissionManager()->GetPermissionStatus(
+      PermissionType::NOTIFICATIONS, origin_.GetURL(), origin_.GetURL());
 }
 
 void BlinkNotificationServiceImpl::DisplayPersistentNotification(

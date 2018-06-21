@@ -24,6 +24,17 @@
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/notifications/notifier_state_tracker.h"
+#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_data.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
 namespace {
 
 // At most one of these is attached to each WebContents. It allows posting
@@ -169,6 +180,15 @@ ContentSetting NotificationPermissionContext::GetPermissionStatusInternal(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Extensions can declare the "notifications" permission in their manifest
+  // that also grant permission to use the Web Notification API.
+  ContentSetting extension_status =
+      GetPermissionStatusForExtension(requesting_origin);
+  if (extension_status != CONTENT_SETTING_ASK)
+    return extension_status;
+#endif
+
   ContentSetting setting = PermissionContextBase::GetPermissionStatusInternal(
       render_frame_host, requesting_origin, embedding_origin);
 
@@ -177,6 +197,37 @@ ContentSetting NotificationPermissionContext::GetPermissionStatusInternal(
 
   return setting;
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+ContentSetting NotificationPermissionContext::GetPermissionStatusForExtension(
+    const GURL& origin) const {
+  constexpr ContentSetting kDefaultSetting = CONTENT_SETTING_ASK;
+  if (!origin.SchemeIs(extensions::kExtensionScheme))
+    return kDefaultSetting;
+
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile())
+          ->enabled_extensions()
+          .GetByID(origin.host());
+
+  if (!extension || !extension->permissions_data()->HasAPIPermission(
+                        extensions::APIPermission::kNotifications)) {
+    // The |extension| doesn't exist, or doesn't have the "notifications"
+    // permission declared in their manifest
+    return kDefaultSetting;
+  }
+
+  NotifierStateTracker* notifier_state_tracker =
+      NotifierStateTrackerFactory::GetForProfile(profile());
+  DCHECK(notifier_state_tracker);
+
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::APPLICATION, extension->id());
+  return notifier_state_tracker->IsNotifierEnabled(notifier_id)
+             ? CONTENT_SETTING_ALLOW
+             : CONTENT_SETTING_BLOCK;
+}
+#endif
 
 void NotificationPermissionContext::ResetPermission(
     const GURL& requesting_origin,

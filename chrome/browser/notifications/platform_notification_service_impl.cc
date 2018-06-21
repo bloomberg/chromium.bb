@@ -45,6 +45,8 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_event_dispatcher.h"
+#include "content/public/browser/permission_manager.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
 #include "extensions/buildflags/buildflags.h"
@@ -64,13 +66,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/notifications/notifier_state_tracker.h"
-#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/permissions/api_permission.h"
-#include "extensions/common/permissions/permissions_data.h"
 #endif
 
 using content::BrowserContext;
@@ -78,10 +75,6 @@ using content::BrowserThread;
 using message_center::NotifierId;
 
 namespace {
-
-// Invalid id for a renderer process. Used in cases where we need to check for
-// permission without having an associated renderer process yet.
-const int kInvalidRenderProcessId = -1;
 
 // Whether a web notification should be displayed when chrome is in full
 // screen mode.
@@ -149,10 +142,11 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
     const base::Optional<base::string16>& reply,
     base::OnceClosure completed_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  blink::mojom::PermissionStatus permission_status =
-      CheckPermission(browser_context, origin, kInvalidRenderProcessId);
 
   NotificationMetricsLogger* metrics_logger = GetMetricsLogger(browser_context);
+  blink::mojom::PermissionStatus permission_status =
+      browser_context->GetPermissionManager()->GetPermissionStatus(
+          content::PermissionType::NOTIFICATIONS, origin, origin);
 
   // TODO(peter): Change this to a CHECK() when Issue 555572 is resolved.
   // Also change this method to be const again.
@@ -196,6 +190,9 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
     base::OnceClosure completed_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // TODO(peter): Should we do permission checks prior to forwarding to the
+  // NotificationEventDispatcher?
+
   // If we programatically closed this notification, don't dispatch any event.
   if (closed_notifications_.erase(notification_id) != 0) {
     std::move(completed_closure).Run();
@@ -214,57 +211,6 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
           base::BindOnce(
               &PlatformNotificationServiceImpl::OnCloseEventDispatchComplete,
               base::Unretained(this), std::move(completed_closure)));
-}
-
-blink::mojom::PermissionStatus PlatformNotificationServiceImpl::CheckPermission(
-    BrowserContext* browser_context,
-    const GURL& origin,
-    int render_process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  DCHECK(profile);
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Extensions support an API permission named "notification". This will grant
-  // not only grant permission for using the Chrome App extension API, but also
-  // for the Web Notification API.
-  if (origin.SchemeIs(extensions::kExtensionScheme)) {
-    extensions::ExtensionRegistry* registry =
-        extensions::ExtensionRegistry::Get(browser_context);
-    extensions::ProcessMap* process_map =
-        extensions::ProcessMap::Get(browser_context);
-
-    const extensions::Extension* extension =
-        registry->GetExtensionById(origin.host(),
-                                   extensions::ExtensionRegistry::ENABLED);
-
-    if (extension &&
-        extension->permissions_data()->HasAPIPermission(
-            extensions::APIPermission::kNotifications) &&
-        process_map->Contains(extension->id(), render_process_id)) {
-      NotifierStateTracker* notifier_state_tracker =
-          NotifierStateTrackerFactory::GetForProfile(profile);
-      DCHECK(notifier_state_tracker);
-
-      NotifierId notifier_id(NotifierId::APPLICATION, extension->id());
-      if (notifier_state_tracker->IsNotifierEnabled(notifier_id))
-        return blink::mojom::PermissionStatus::GRANTED;
-    }
-  }
-#endif
-
-  ContentSetting setting =
-      PermissionManager::Get(profile)
-          ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, origin,
-                                origin)
-          .content_setting;
-  if (setting == CONTENT_SETTING_ALLOW)
-    return blink::mojom::PermissionStatus::GRANTED;
-  if (setting == CONTENT_SETTING_ASK)
-    return blink::mojom::PermissionStatus::ASK;
-  DCHECK_EQ(CONTENT_SETTING_BLOCK, setting);
-  return blink::mojom::PermissionStatus::DENIED;
 }
 
 // TODO(awdf): Rename to DisplayNonPersistentNotification (Similar for Close)
