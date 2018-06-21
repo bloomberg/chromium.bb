@@ -21,6 +21,9 @@ namespace content {
 
 namespace {
 
+using ResolutionSet = media_constraints::ResolutionSet;
+using DoubleRangeSet = media_constraints::NumericRangeSet<double>;
+
 // Number of default settings to be used as final tie-breaking criteria for
 // settings that are equally good at satisfying constraints:
 // device ID, power-line frequency, noise reduction, resolution and frame rate.
@@ -125,7 +128,7 @@ class ConstrainedFormat {
   const ResolutionSet& constrained_resolution() const {
     return constrained_resolution_;
   }
-  const NumericRangeSet<double>& constrained_frame_rate() const {
+  const DoubleRangeSet& constrained_frame_rate() const {
     return constrained_frame_rate_;
   }
 
@@ -153,9 +156,8 @@ class ConstrainedFormat {
     auto resolution_intersection = constrained_resolution_.Intersection(
         ResolutionSet::FromConstraintSet(constraint_set));
     auto frame_rate_intersection = constrained_frame_rate_.Intersection(
-        NumericRangeSet<double>::FromConstraint(
-            constraint_set.frame_rate, 0.0,
-            media::limits::kMaxFramesPerSecond));
+        DoubleRangeSet::FromConstraint(constraint_set.frame_rate, 0.0,
+                                       media::limits::kMaxFramesPerSecond));
     if (resolution_intersection.IsEmpty() ||
         frame_rate_intersection.IsEmpty() ||
         frame_rate_intersection.Min().value_or(0.0) > native_frame_rate_) {
@@ -173,7 +175,7 @@ class ConstrainedFormat {
   long native_width_;
   double native_frame_rate_;
   ResolutionSet constrained_resolution_;
-  NumericRangeSet<double> constrained_frame_rate_;
+  DoubleRangeSet constrained_frame_rate_;
 };
 
 VideoCaptureSettings ComputeVideoDeviceCaptureSettings(

@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/web_media_constraints.h"
 
 namespace content {
+namespace media_constraints {
 
 using Point = ResolutionSet::Point;
 
@@ -553,4 +554,5 @@ DiscreteSet<bool> BoolSetFromConstraint(
   return DiscreteSet<bool>({constraint.Exact()});
 }
 
+}  // namespace media_constraints
 }  // namespace content
