@@ -71,7 +71,6 @@ SoftwareImageDecodeCacheUtils::DoDecodeImage(const CacheKey& key,
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCacheUtils::DoDecodeImage - "
                "decode");
-  DCHECK_EQ(key.type(), CacheKey::kOriginal);
   bool result = paint_image.Decode(target_pixels->data(), &target_info,
                                    key.target_color_space().ToSkColorSpace(),
                                    key.frame_key().frame_index());

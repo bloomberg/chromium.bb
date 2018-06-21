@@ -128,6 +128,7 @@ class CC_EXPORT SoftwareImageDecodeCache
                               CacheEntry* cache_entry);
   void AddBudgetForImage(const CacheKey& key, CacheEntry* entry);
   void RemoveBudgetForImage(const CacheKey& key, CacheEntry* entry);
+  base::Optional<CacheKey> FindCachedCandidate(const CacheKey& key);
 
   void UnrefImage(const CacheKey& key);
 
