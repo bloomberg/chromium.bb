@@ -101,7 +101,6 @@ void XDGPopupWrapperV6::Configure(void* data,
 // static
 void XDGPopupWrapperV6::PopupDone(void* data,
                                   struct zxdg_popup_v6* zxdg_popup_v6) {
-  CHECK(false);
   WaylandWindow* window =
       static_cast<XDGPopupWrapperV6*>(data)->wayland_window_;
   DCHECK(window);
