@@ -68,7 +68,19 @@ class SourceUrlRecorderWebContentsObserver
   base::flat_map<int64_t, GURL> pending_navigations_;
 
   // Holds pending DocumentCreated events.
-  using PendingEvent = std::pair<int64_t, bool>;
+  struct PendingEvent {
+    PendingEvent() = delete;
+    PendingEvent(int64_t source_id,
+                 bool is_main_frame,
+                 bool is_cross_origin_frame)
+        : source_id(source_id),
+          is_main_frame(is_main_frame),
+          is_cross_origin_frame(is_cross_origin_frame) {}
+
+    int64_t source_id;
+    bool is_main_frame;
+    bool is_cross_origin_frame;
+  };
   std::vector<PendingEvent> pending_document_created_events_;
 
   int64_t last_committed_source_id_;
@@ -138,8 +150,17 @@ ukm::SourceId SourceUrlRecorderWebContentsObserver::GetLastCommittedSourceId()
 
 void SourceUrlRecorderWebContentsObserver::SetDocumentSourceId(
     int64_t source_id) {
+  content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+  content::RenderFrameHost* current_frame = bindings_.GetCurrentTargetFrame();
+  bool is_main_frame = main_frame == current_frame;
+  bool is_cross_origin_frame =
+      is_main_frame ? false
+                    : !main_frame->GetLastCommittedOrigin().IsSameOriginWith(
+                          current_frame->GetLastCommittedOrigin());
+
   pending_document_created_events_.emplace_back(
-      source_id, !bindings_.GetCurrentTargetFrame()->GetParent());
+      source_id, !bindings_.GetCurrentTargetFrame()->GetParent(),
+      is_cross_origin_frame);
   MaybeFlushPendingEvents();
 }
 
@@ -154,9 +175,10 @@ void SourceUrlRecorderWebContentsObserver::MaybeFlushPendingEvents() {
   while (!pending_document_created_events_.empty()) {
     auto record = pending_document_created_events_.back();
 
-    ukm::builders::DocumentCreated(record.first)
+    ukm::builders::DocumentCreated(record.source_id)
         .SetNavigationSourceId(last_committed_source_id_)
-        .SetIsMainFrame(record.second)
+        .SetIsMainFrame(record.is_main_frame)
+        .SetIsCrossOriginFrame(record.is_cross_origin_frame)
         .Record(ukm_recorder);
 
     pending_document_created_events_.pop_back();

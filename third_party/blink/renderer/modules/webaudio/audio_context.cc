@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 
 #include "build/build_config.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -409,6 +411,15 @@ bool AudioContext::IsAllowedToStart() const {
 void AudioContext::RecordAutoplayMetrics() {
   if (!autoplay_status_.has_value())
     return;
+
+  ukm::UkmRecorder* ukm_recorder = GetDocument()->UkmRecorder();
+  DCHECK(ukm_recorder);
+  ukm::builders::Media_Autoplay_AudioContext(GetDocument()->UkmSourceID())
+      .SetStatus(autoplay_status_.value())
+      .SetUnlockType(autoplay_unlock_type_
+                         ? static_cast<int>(autoplay_unlock_type_.value())
+                         : -1)
+      .Record(ukm_recorder);
 
   // Record autoplay_status_ value.
   DEFINE_STATIC_LOCAL(
