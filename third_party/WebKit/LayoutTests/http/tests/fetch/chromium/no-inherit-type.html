@@ -6,7 +6,7 @@
 
 promise_test(async t => {
   Object.prototype.type = 'incorrect';
-  t.add_cleanup(() => delete Object.prototype.type);
+  t.add_cleanup(() => { delete Object.prototype.type });
   const response = await fetch('no-inherit-type.html');
   const reader = response.body.getReader();
   let done;
@@ -22,7 +22,7 @@ promise_test(async t => {
     },
     set: undefined
   });
-  t.add_cleanup(() => delete Object.prototype.type);
+  t.add_cleanup(() => { delete Object.prototype.type });
   const response = await fetch('no-inherit-type.html');
   const reader = response.body.getReader();
   let done;
