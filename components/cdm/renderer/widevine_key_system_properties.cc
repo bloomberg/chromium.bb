@@ -133,8 +133,14 @@ EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(
     return EmeConfigRule::IDENTIFIER_RECOMMENDED;
   }
 #elif defined(OS_ANDROID)
-  // Require hardware secure codecs when SW_SECURE_DECODE or above is specified.
+  // On Android, require hardware secure codecs for SW_SECURE_DECODE and above.
   if (robustness >= Robustness::SW_SECURE_DECODE) {
+    return EmeConfigRule::HW_SECURE_CODECS_REQUIRED;
+  }
+#else
+  // On Linux/Mac/Win, require hardware secure codecs for HW_SECURE_CRYPTO and
+  // above.
+  if (robustness >= Robustness::HW_SECURE_CRYPTO) {
     return EmeConfigRule::HW_SECURE_CODECS_REQUIRED;
   }
 #endif  // defined(OS_CHROMEOS)

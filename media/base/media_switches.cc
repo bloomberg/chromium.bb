@@ -155,6 +155,13 @@ const char kMSEVideoBufferSizeLimitMb[] = "mse-video-buffer-size-limit-mb";
 // kExternalClearKeyForTesting.
 const char kClearKeyCdmPathForTesting[] = "clear-key-cdm-path-for-testing";
 
+// Enables hardware secure codecs support for testing. Codecs are separated by
+// comma. Valid codecs are "vp8", "vp9" and "avc1". For example:
+// --enable-hardware-secure-codecs-for-testing=vp8,vp9
+// --enable-hardware-secure-codecs-for-testing=avc1
+const char kEnableHardwareSecureCodecsForTesting[] =
+    "enable-hardware-secure-codecs-for-testing";
+
 // Overrides the default enabled library CDM interface version(s) with the one
 // specified with this switch, which will be the only version enabled. For
 // example, on a build where CDM 8, CDM 9 and CDM 10 are all supported

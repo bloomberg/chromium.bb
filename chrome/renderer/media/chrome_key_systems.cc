@@ -139,18 +139,24 @@ static void AddExternalClearKey(
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
 static SupportedCodecs GetSupportedCodecs(
-    const std::vector<media::VideoCodec>& supported_video_codecs) {
+    const std::vector<media::VideoCodec>& supported_video_codecs,
+    bool is_secure) {
   SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
 
-  // Audio codecs are always supported.
+  // Audio codecs are always supported because the CDM only does decrypt-only
+  // for audio. The only exception is when |is_secure| is true and there's no
+  // secure video decoder available, which is a signal that secure hardware
+  // decryption is not available either.
   // TODO(sandersd): Distinguish these from those that are directly supported,
   // as those may offer a higher level of protection.
-  supported_codecs |= media::EME_CODEC_WEBM_OPUS;
-  supported_codecs |= media::EME_CODEC_WEBM_VORBIS;
-  supported_codecs |= media::EME_CODEC_MP4_FLAC;
+  if (!supported_video_codecs.empty() || !is_secure) {
+    supported_codecs |= media::EME_CODEC_WEBM_OPUS;
+    supported_codecs |= media::EME_CODEC_WEBM_VORBIS;
+    supported_codecs |= media::EME_CODEC_MP4_FLAC;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  supported_codecs |= media::EME_CODEC_MP4_AAC;
+    supported_codecs |= media::EME_CODEC_MP4_AAC;
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+  }
 
   // Video codecs are determined by what was registered for the CDM.
   for (const auto& codec : supported_video_codecs) {
@@ -238,10 +244,11 @@ static void AddWidevine(
   }
 
   // Codecs and encryption schemes.
-  auto supported_codecs = GetSupportedCodecs(capability->video_codecs);
+  auto supported_codecs =
+      GetSupportedCodecs(capability->video_codecs, /*is_secure=*/false);
   const auto& supported_encryption_schemes = capability->encryption_schemes;
-  auto supported_hw_secure_codecs =
-      GetSupportedCodecs(capability->hw_secure_video_codecs);
+  auto supported_hw_secure_codecs = GetSupportedCodecs(
+      capability->hw_secure_video_codecs, /*is_secure=*/true);
 
   // TODO(crbug.com/853261): Support capability->hw_secure_encryption_schemes
   // and pass it into WidevineKeySystemProperties.

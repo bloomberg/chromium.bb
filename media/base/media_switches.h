@@ -81,6 +81,7 @@ MEDIA_EXPORT extern const char kMSEAudioBufferSizeLimitMb[];
 MEDIA_EXPORT extern const char kMSEVideoBufferSizeLimitMb[];
 
 MEDIA_EXPORT extern const char kClearKeyCdmPathForTesting[];
+MEDIA_EXPORT extern const char kEnableHardwareSecureCodecsForTesting[];
 MEDIA_EXPORT extern const char kOverrideEnabledCdmInterfaceVersion[];
 
 #if !defined(OS_ANDROID)

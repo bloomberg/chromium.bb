@@ -333,6 +333,20 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
                                   robustness);
   }
 
+  std::string IsVideoMp4RobustnessSupported(const std::string& key_system,
+                                            const char* robustness) {
+    return IsSupportedByKeySystem(key_system, kVideoMP4MimeType,
+                                  video_mp4_codecs(), SessionType::kTemporary,
+                                  robustness);
+  }
+
+  std::string IsAudioMp4RobustnessSupported(const std::string& key_system,
+                                            const char* robustness) {
+    return IsSupportedByKeySystem(key_system, kAudioMP4MimeType,
+                                  audio_mp4_codecs(), SessionType::kTemporary,
+                                  robustness);
+  }
+
   std::string IsAudioEncryptionSchemeSupported(const std::string& key_system,
                                                const char* encryption_scheme) {
     return IsSupportedByKeySystem(key_system, kAudioWebMMimeType,
@@ -415,6 +429,27 @@ class EncryptedMediaSupportedTypesWidevineTest
     command_line->AppendSwitchASCII(
         switches::kUnsafelyAllowProtectedMediaIdentifierForDomain, "127.0.0.1");
   }
+};
+
+class EncryptedMediaSupportedTypesWidevineHwSecureTest
+    : public EncryptedMediaSupportedTypesWidevineTest {
+ protected:
+  EncryptedMediaSupportedTypesWidevineHwSecureTest() {
+    scoped_feature_list_.InitAndEnableFeature(media::kHardwareSecureDecryption);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    EncryptedMediaSupportedTypesWidevineTest::SetUpCommandLine(command_line);
+    // Pretend that we support hardware secure decryption for vp8 and vp9, but
+    // not for avc1.
+    command_line->AppendSwitchASCII(
+        switches::kEnableHardwareSecureCodecsForTesting, "vp8,vp9");
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(EncryptedMediaSupportedTypesWidevineHwSecureTest);
 };
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -1079,6 +1114,86 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest,
   EXPECT_TYPEERROR(IsAudioEncryptionSchemeSupported(kWidevine, ""));
   EXPECT_TYPEERROR(IsVideoEncryptionSchemeSupported(kWidevine, ""));
 }
+
+//
+// Widevine with hardware secure decryption support. Note that for the test
+// suite EncryptedMediaSupportedTypesWidevineHwSecureTest, feature
+// media::kHardwareSecureDecryption is enabled, and command line switch
+// kEnableHardwareSecureCodecsForTesting is used to always enable vp8 and vp9,
+// and disable avc1. With the switch, real hardware capabilities are not checked
+// for the stability of tests.
+
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineHwSecureTest,
+                       Robustness) {
+  // Robustness is recommended but not required.
+  EXPECT_WV_SUCCESS(IsVideoRobustnessSupported(kWidevine, nullptr));
+  EXPECT_WV_SUCCESS(IsVideoRobustnessSupported(kWidevine, ""));
+
+  // Video robustness.
+  EXPECT_WV_SUCCESS(IsVideoRobustnessSupported(kWidevine, "SW_SECURE_CRYPTO"));
+  EXPECT_WV_SUCCESS(IsVideoRobustnessSupported(kWidevine, "SW_SECURE_DECODE"));
+  EXPECT_WV_SUCCESS(IsVideoRobustnessSupported(kWidevine, "HW_SECURE_CRYPTO"));
+  EXPECT_WV_SUCCESS(IsVideoRobustnessSupported(kWidevine, "HW_SECURE_ALL"));
+
+  // Audio robustness.
+  EXPECT_WV_SUCCESS(IsAudioRobustnessSupported(kWidevine, "SW_SECURE_CRYPTO"));
+  EXPECT_WV_SUCCESS(IsAudioRobustnessSupported(kWidevine, "HW_SECURE_CRYPTO"));
+#if defined(OS_CHROMEOS)
+  // "SW_SECURE_DECODE" and "HW_SECURE_ALL" supported on ChromeOS when the
+  // protected media identifier permission is allowed. See
+  // kUnsafelyAllowProtectedMediaIdentifierForDomain used above.
+  EXPECT_WV_SUCCESS(IsAudioRobustnessSupported(kWidevine, "SW_SECURE_DECODE"));
+  EXPECT_WV_SUCCESS(IsAudioRobustnessSupported(kWidevine, "HW_SECURE_ALL"));
+#else
+  EXPECT_UNSUPPORTED(IsAudioRobustnessSupported(kWidevine, "SW_SECURE_DECODE"));
+  EXPECT_UNSUPPORTED(IsAudioRobustnessSupported(kWidevine, "HW_SECURE_ALL"));
+#endif
+
+  // Video proprietary codecs.
+  EXPECT_WV_PROPRIETARY(
+      IsVideoMp4RobustnessSupported(kWidevine, "SW_SECURE_CRYPTO"));
+  EXPECT_WV_PROPRIETARY(
+      IsVideoMp4RobustnessSupported(kWidevine, "SW_SECURE_DECODE"));
+#if defined(OS_CHROMEOS)
+  // "SW_SECURE_DECODE" and "HW_SECURE_ALL" supported on ChromeOS when the
+  // protected media identifier permission is allowed. See
+  // kUnsafelyAllowProtectedMediaIdentifierForDomain used above.
+  EXPECT_WV_PROPRIETARY(
+      IsVideoMp4RobustnessSupported(kWidevine, "HW_SECURE_CRYPTO"));
+  EXPECT_WV_PROPRIETARY(
+      IsVideoMp4RobustnessSupported(kWidevine, "HW_SECURE_ALL"));
+#else
+  // Not supported because hardware secure avc1 is not supported.
+  EXPECT_UNSUPPORTED(
+      IsVideoMp4RobustnessSupported(kWidevine, "HW_SECURE_CRYPTO"));
+  EXPECT_UNSUPPORTED(IsVideoMp4RobustnessSupported(kWidevine, "HW_SECURE_ALL"));
+#endif
+
+  // Audio proprietary codecs.
+  // Note that "hardware secure audio" is still supported since hardware secure
+  // decryption is supported (because hardware vp8 and vp9 are supported), and
+  // we only do decrypt-only for audio.
+  EXPECT_WV_PROPRIETARY(
+      IsAudioMp4RobustnessSupported(kWidevine, "SW_SECURE_CRYPTO"));
+  EXPECT_WV_PROPRIETARY(
+      IsAudioMp4RobustnessSupported(kWidevine, "HW_SECURE_CRYPTO"));
+#if defined(OS_CHROMEOS)
+  // "SW_SECURE_DECODE" and "HW_SECURE_ALL" supported on ChromeOS when the
+  // protected media identifier permission is allowed. See
+  // kUnsafelyAllowProtectedMediaIdentifierForDomain used above.
+  EXPECT_WV_PROPRIETARY(
+      IsAudioMp4RobustnessSupported(kWidevine, "SW_SECURE_DECODE"));
+  EXPECT_WV_PROPRIETARY(
+      IsAudioMp4RobustnessSupported(kWidevine, "HW_SECURE_ALL"));
+#else
+  EXPECT_UNSUPPORTED(
+      IsAudioMp4RobustnessSupported(kWidevine, "SW_SECURE_DECODE"));
+  EXPECT_UNSUPPORTED(IsAudioMp4RobustnessSupported(kWidevine, "HW_SECURE_ALL"));
+#endif
+}
+
+// TODO(crbug.com/853261): Add a test for hardware secure encryption scheme
+// support.
 
 //
 // Misc failure test cases.
