@@ -24,7 +24,7 @@
  *
  */
 
-#include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue.h"
 
 #include "base/macros.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -34,26 +34,23 @@
 
 namespace blink {
 
-EventQueueImpl* EventQueueImpl::Create(ExecutionContext* context,
-                                       TaskType task_type) {
-  return new EventQueueImpl(context, task_type);
+EventQueue* EventQueue::Create(ExecutionContext* context, TaskType task_type) {
+  return new EventQueue(context, task_type);
 }
 
-EventQueueImpl::EventQueueImpl(ExecutionContext* context, TaskType task_type)
+EventQueue::EventQueue(ExecutionContext* context, TaskType task_type)
     : ContextLifecycleObserver(context),
       task_type_(task_type),
       is_closed_(false) {}
 
-EventQueueImpl::~EventQueueImpl() = default;
+EventQueue::~EventQueue() = default;
 
-void EventQueueImpl::Trace(blink::Visitor* visitor) {
+void EventQueue::Trace(blink::Visitor* visitor) {
   visitor->Trace(queued_events_);
-  EventQueue::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }
 
-bool EventQueueImpl::EnqueueEvent(const base::Location& from_here,
-                                  Event* event) {
+bool EventQueue::EnqueueEvent(const base::Location& from_here, Event* event) {
   if (is_closed_)
     return false;
 
@@ -70,13 +67,13 @@ bool EventQueueImpl::EnqueueEvent(const base::Location& from_here,
   // Pass the event as a weak persistent so that GC can collect an event-related
   // object like IDBTransaction as soon as possible.
   task_runner->PostTask(
-      FROM_HERE, WTF::Bind(&EventQueueImpl::DispatchEvent, WrapPersistent(this),
+      FROM_HERE, WTF::Bind(&EventQueue::DispatchEvent, WrapPersistent(this),
                            WrapWeakPersistent(event)));
 
   return true;
 }
 
-void EventQueueImpl::CancelAllEvents() {
+void EventQueue::CancelAllEvents() {
   if (!GetExecutionContext()) {
     DCHECK(!queued_events_.size());
     return;
@@ -84,7 +81,7 @@ void EventQueueImpl::CancelAllEvents() {
   DoCancelAllEvents(GetExecutionContext());
 }
 
-bool EventQueueImpl::RemoveEvent(Event* event) {
+bool EventQueue::RemoveEvent(Event* event) {
   auto found = queued_events_.find(event);
   if (found == queued_events_.end())
     return false;
@@ -92,7 +89,7 @@ bool EventQueueImpl::RemoveEvent(Event* event) {
   return true;
 }
 
-void EventQueueImpl::DispatchEvent(Event* event) {
+void EventQueue::DispatchEvent(Event* event) {
   if (!event || !RemoveEvent(event))
     return;
 
@@ -106,22 +103,22 @@ void EventQueueImpl::DispatchEvent(Event* event) {
     target->DispatchEvent(event);
 }
 
-void EventQueueImpl::ContextDestroyed(ExecutionContext* context) {
+void EventQueue::ContextDestroyed(ExecutionContext* context) {
   Close(context);
 }
 
-void EventQueueImpl::Close(ExecutionContext* context) {
+void EventQueue::Close(ExecutionContext* context) {
   is_closed_ = true;
   DoCancelAllEvents(context);
 }
 
-void EventQueueImpl::DoCancelAllEvents(ExecutionContext* context) {
+void EventQueue::DoCancelAllEvents(ExecutionContext* context) {
   for (const auto& queued_event : queued_events_)
     probe::AsyncTaskCanceled(context, queued_event);
   queued_events_.clear();
 }
 
-bool EventQueueImpl::HasPendingEvents() const {
+bool EventQueue::HasPendingEvents() const {
   return queued_events_.size() > 0;
 }
 

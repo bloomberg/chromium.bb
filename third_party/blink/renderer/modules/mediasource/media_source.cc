@@ -36,7 +36,7 @@
 #include "third_party/blink/public/platform/web_media_source.h"
 #include "third_party/blink/public/platform/web_source_buffer.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -114,7 +114,7 @@ MediaSource::MediaSource(ExecutionContext* context)
     : ContextLifecycleObserver(context),
       ready_state_(ClosedKeyword()),
       async_event_queue_(
-          EventQueueImpl::Create(context, TaskType::kMediaElementEvent)),
+          EventQueue::Create(context, TaskType::kMediaElementEvent)),
       attached_element_(nullptr),
       source_buffers_(SourceBufferList::Create(GetExecutionContext(),
                                                async_event_queue_.Get())),

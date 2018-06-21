@@ -25,7 +25,7 @@
 
 #include "third_party/blink/renderer/core/html/track/text_track_list.h"
 
-#include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/track/inband_text_track.h"
 #include "third_party/blink/renderer/core/html/track/loadable_text_track.h"
@@ -37,9 +37,8 @@ namespace blink {
 
 TextTrackList::TextTrackList(HTMLMediaElement* owner)
     : owner_(owner),
-      async_event_queue_(EventQueueImpl::Create(GetExecutionContext(),
-                                                TaskType::kMediaElementEvent)) {
-}
+      async_event_queue_(EventQueue::Create(GetExecutionContext(),
+                                            TaskType::kMediaElementEvent)) {}
 
 TextTrackList::~TextTrackList() = default;
 

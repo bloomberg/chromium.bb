@@ -38,7 +38,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/to_v8_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_cursor_with_value.h"
@@ -138,8 +138,8 @@ IDBRequest::IDBRequest(ScriptState* script_state,
       isolate_(script_state->GetIsolate()),
       metrics_(std::move(metrics)),
       source_(source),
-      event_queue_(EventQueueImpl::Create(ExecutionContext::From(script_state),
-                                          TaskType::kInternalIndexedDB)) {}
+      event_queue_(EventQueue::Create(ExecutionContext::From(script_state),
+                                      TaskType::kInternalIndexedDB)) {}
 
 IDBRequest::~IDBRequest() {
   DCHECK((ready_state_ == DONE && metrics_.IsEmpty()) ||
