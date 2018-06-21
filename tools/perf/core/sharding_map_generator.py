@@ -73,21 +73,24 @@ from telemetry.internal.browser import browser_options
 
 
 def main(args, benchmarks):
-  story_timing_dict = _load_timing_data_from_file(benchmarks, args.timing_data)
+  story_timing_ordered_dict = _load_timing_data_from_file(
+      benchmarks, args.timing_data)
 
   all_stories = {}
   for b in benchmarks:
     all_stories[b.Name()] = _get_stories_for_benchmark(b)
 
-  sharding_map = generate_sharding_map(story_timing_dict,
+  sharding_map = generate_sharding_map(story_timing_ordered_dict,
       all_stories, args.num_shards, args.debug)
 
   with open(args.output_file, 'w') as output_file:
     json.dump(sharding_map, output_file, indent = 4, separators=(',', ': '))
 
   if args.test_data:
-    story_timing_dict = _load_timing_data_from_file(benchmarks, args.test_data)
-    print test_sharding_map(args.output_file, story_timing_dict, all_stories)
+    story_timing_ordered_dict = _load_timing_data_from_file(
+        benchmarks, args.test_data)
+    print test_sharding_map(
+        args.output_file, story_timing_ordered_dict, all_stories)
 
 
 def get_args():
@@ -116,8 +119,11 @@ def get_args():
   return parser
 
 
-def generate_sharding_map(story_timing_dict, all_stories, num_shards, debug):
-  max_time_per_shard = _get_max_time_per_shard(story_timing_dict, num_shards)
+def generate_sharding_map(
+    story_timing_ordered_dict, all_stories, num_shards, debug):
+
+  expected_time_per_shard = _get_expected_time_per_shard(
+      story_timing_ordered_dict, num_shards)
 
   total_time = 0
   sharding_map = OrderedDict()
@@ -126,27 +132,36 @@ def generate_sharding_map(story_timing_dict, all_stories, num_shards, debug):
   min_shard_index = None
   max_shard_time = 0
   max_shard_index = None
-  num_stories = len(story_timing_dict)
+  num_stories = len(story_timing_ordered_dict)
   for i in range(num_shards):
     sharding_map[str(i)] = {'benchmarks': OrderedDict()}
     debug_map[str(i)] = OrderedDict()
     time_per_shard = 0
     stories_in_shard = []
-    while total_time < max_time_per_shard * (i + 1) and len(
-        story_timing_dict) > 0:
-      (story, time) = story_timing_dict.popitem(last=False)
+    expected_total_time = expected_time_per_shard * (i + 1)
+    last_diff = abs(total_time - expected_total_time)
+    # Keep adding story to the current shard until the absolute difference
+    # between the total time of shards so far and expected total time is
+    # minimal.
+    while (story_timing_ordered_dict and
+           abs(total_time + story_timing_ordered_dict.items()[0][1] -
+               expected_total_time) <= last_diff):
+      (story, time) = story_timing_ordered_dict.popitem(last=False)
       total_time += time
       time_per_shard += time
       stories_in_shard.append(story)
       debug_map[str(i)][story] = time
+      last_diff = abs(total_time - expected_total_time)
     _add_benchmarks_to_shard(sharding_map, i, stories_in_shard, all_stories)
-    debug_map[str(i)]['full_time'] = time_per_shard
+    # Double time_per_shard to account for reference benchmark run.
+    debug_map[str(i)]['expected_total_time'] = time_per_shard * 2
     if time_per_shard > max_shard_time:
       max_shard_time = time_per_shard
       max_shard_index = i
     if time_per_shard < min_shard_time:
       min_shard_time = time_per_shard
       min_shard_index = i
+
   if debug:
     with open(debug, 'w') as output_file:
       json.dump(debug_map, output_file, indent = 4, separators=(',', ': '))
@@ -163,7 +178,7 @@ def generate_sharding_map(story_timing_dict, all_stories, num_shards, debug):
   return sharding_map
 
 
-def _get_max_time_per_shard(timing_data, num_shards):
+def _get_expected_time_per_shard(timing_data, num_shards):
   total_run_time = 0
   for story in timing_data:
     total_run_time += timing_data[story]
@@ -193,14 +208,14 @@ def _add_benchmarks_to_shard(sharding_map, shard_index, stories_in_shard,
 
 
 def _load_timing_data_from_file(benchmarks, timing_data_file):
-  story_timing_dict = _init_timing_dict_for_benchmarks(benchmarks)
+  story_timing_ordered_dict = _init_timing_dict_for_benchmarks(benchmarks)
   with open(timing_data_file, 'r') as timing_data_file:
     story_timing = json.load(timing_data_file)
     for run in story_timing:
-      if run['name'] in story_timing_dict:
+      if run['name'] in story_timing_ordered_dict:
         if run['duration']:
-          story_timing_dict[run['name']] += float(run['duration'])
-  return story_timing_dict
+          story_timing_ordered_dict[run['name']] += float(run['duration'])
+  return story_timing_ordered_dict
 
 
 def _init_timing_dict_for_benchmarks(benchmarks):

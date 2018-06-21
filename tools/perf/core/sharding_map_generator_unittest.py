@@ -37,8 +37,8 @@ class TestShardingMapGenerator(unittest.TestCase):
         json.dump(sharding_map, f)
       results = sharding_map_generator.test_sharding_map(map_path,
           timing_data_for_testing, all_stories)
-      self.assertEqual(results['0']['full_time'], 173)
-      self.assertEqual(results['1']['full_time'], 120)
+      self.assertEqual(results['0']['full_time'], 116)
+      self.assertEqual(results['1']['full_time'], 177)
       self.assertEqual(results['2']['full_time'], 140)
     finally:
       os.remove(map_path)
