@@ -766,6 +766,14 @@ extern const char kOverlayScrollbarsFlashAfterAnyScrollUpdateDescription[];
 extern const char kOverlayScrollbarsFlashWhenMouseEnterName[];
 extern const char kOverlayScrollbarsFlashWhenMouseEnterDescription[];
 
+extern const char kOverlayStrategiesName[];
+extern const char kOverlayStrategiesDescription[];
+extern const char kOverlayStrategiesDefault[];
+extern const char kOverlayStrategiesNone[];
+extern const char kOverlayStrategiesUnoccludedFullscreen[];
+extern const char kOverlayStrategiesUnoccluded[];
+extern const char kOverlayStrategiesOccludedAndUnoccluded[];
+
 extern const char kUseNewAcceptLanguageHeaderName[];
 extern const char kUseNewAcceptLanguageHeaderDescription[];
 

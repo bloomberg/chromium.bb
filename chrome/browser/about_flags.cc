@@ -228,6 +228,19 @@ const FeatureEntry::Choice kPullToRefreshChoices[] = {
 
 #endif  // USE_AURA
 
+const FeatureEntry::Choice kOverlayStrategiesChoices[] = {
+    {flag_descriptions::kOverlayStrategiesDefault, "", ""},
+    {flag_descriptions::kOverlayStrategiesNone,
+     switches::kEnableHardwareOverlays, ""},
+    {flag_descriptions::kOverlayStrategiesUnoccludedFullscreen,
+     switches::kEnableHardwareOverlays, "single-fullscreen"},
+    {flag_descriptions::kOverlayStrategiesUnoccluded,
+     switches::kEnableHardwareOverlays, "single-fullscreen,single-on-top"},
+    {flag_descriptions::kOverlayStrategiesOccludedAndUnoccluded,
+     switches::kEnableHardwareOverlays,
+     "single-fullscreen,single-on-top,underlay"},
+};
+
 const FeatureEntry::Choice kTouchTextSelectionStrategyChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kTouchSelectionStrategyCharacter,
@@ -1156,6 +1169,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"composited-layer-borders", flag_descriptions::kCompositedLayerBordersName,
      flag_descriptions::kCompositedLayerBordersDescription, kOsAll,
      SINGLE_VALUE_TYPE(cc::switches::kShowCompositedLayerBorders)},
+    {"overlay-strategies", flag_descriptions::kOverlayStrategiesName,
+     flag_descriptions::kOverlayStrategiesDescription, kOsAll,
+     MULTI_VALUE_TYPE(kOverlayStrategiesChoices)},
     {"tint-gl-composited-content",
      flag_descriptions::kTintGlCompositedContentName,
      flag_descriptions::kTintGlCompositedContentDescription, kOsAll,
