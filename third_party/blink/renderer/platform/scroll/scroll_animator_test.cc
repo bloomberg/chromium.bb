@@ -622,7 +622,7 @@ TEST(ScrollAnimatorTest, ImplOnlyAnimationUpdatesCleared) {
   animator->AdjustImplOnlyScrollOffsetAnimation(IntSize(10, -10));
 
   EXPECT_TRUE(animator->HasAnimationThatRequiresService());
-  EXPECT_EQ(FloatSize(110, 90),
+  EXPECT_EQ(IntSize(110, 90),
             animator->ImplOnlyAnimationAdjustmentForTesting());
 
   animator->UpdateCompositorAnimations();

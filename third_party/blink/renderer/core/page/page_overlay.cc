@@ -105,12 +105,12 @@ void PageOverlay::Update() {
 
 LayoutRect PageOverlay::VisualRect() const {
   DCHECK(layer_.get());
-  return LayoutRect(FloatPoint(), layer_->Size());
+  return LayoutRect(IntPoint(), layer_->Size());
 }
 
 IntRect PageOverlay::ComputeInterestRect(const GraphicsLayer* graphics_layer,
                                          const IntRect&) const {
-  return IntRect(IntPoint(), ExpandedIntSize(layer_->Size()));
+  return IntRect(IntPoint(), layer_->Size());
 }
 
 void PageOverlay::PaintContents(const GraphicsLayer* graphics_layer,

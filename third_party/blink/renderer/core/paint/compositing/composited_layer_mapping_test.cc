@@ -2559,13 +2559,13 @@ TEST_F(CompositedLayerMappingTest, ForegroundLayerSizing) {
                       ->Layer()
                       ->GetCompositedLayerMapping();
   ASSERT_TRUE(mapping);
-  EXPECT_EQ(FloatSize(120, 120), mapping->MainGraphicsLayer()->Size());
+  EXPECT_EQ(IntSize(120, 120), mapping->MainGraphicsLayer()->Size());
   ASSERT_TRUE(mapping->ClippingLayer());
   EXPECT_EQ(FloatPoint(10, 10), mapping->ClippingLayer()->GetPosition());
-  EXPECT_EQ(FloatSize(100, 100), mapping->ClippingLayer()->Size());
+  EXPECT_EQ(IntSize(100, 100), mapping->ClippingLayer()->Size());
   ASSERT_TRUE(mapping->ForegroundLayer());
   EXPECT_EQ(FloatPoint(0, 0), mapping->ForegroundLayer()->GetPosition());
-  EXPECT_EQ(FloatSize(100, 100), mapping->ForegroundLayer()->Size());
+  EXPECT_EQ(IntSize(100, 100), mapping->ForegroundLayer()->Size());
 }
 
 TEST_F(CompositedLayerMappingTest, ScrollLayerSizingSubpixelAccumulation) {
