@@ -12,6 +12,7 @@
 #include "ui/events/ozone/evdev/touch_filter/edge_touch_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/far_apart_taps_touch_noise_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/horizontally_aligned_touch_noise_filter.h"
+#include "ui/events/ozone/evdev/touch_filter/low_pressure_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/single_position_touch_noise_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/touch_filter.h"
 
@@ -25,9 +26,13 @@ std::unique_ptr<FalseTouchFinder> FalseTouchFinder::Create(
       switches::kExtraTouchNoiseFiltering);
   bool edge_filtering = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEdgeTouchFiltering);
-  if (noise_filtering || edge_filtering) {
-    return base::WrapUnique(new FalseTouchFinder(
-        noise_filtering, edge_filtering, touchscreen_size));
+  bool low_pressure_filtering =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLowPressureTouchFiltering);
+  if (noise_filtering || edge_filtering || low_pressure_filtering) {
+    return base::WrapUnique(
+        new FalseTouchFinder(noise_filtering, edge_filtering,
+                             low_pressure_filtering, touchscreen_size));
   }
   return nullptr;
 }
@@ -62,6 +67,7 @@ bool FalseTouchFinder::SlotShouldDelay(size_t slot) const {
 
 FalseTouchFinder::FalseTouchFinder(bool noise_filtering,
                                    bool edge_filtering,
+                                   bool low_pressure_filtering,
                                    gfx::Size touchscreen_size)
     : last_noise_time_(ui::EventTimeForNow()) {
   if (noise_filtering) {
@@ -74,6 +80,9 @@ FalseTouchFinder::FalseTouchFinder(bool noise_filtering,
   if (edge_filtering) {
     delay_filters_.push_back(
         std::make_unique<EdgeTouchFilter>(touchscreen_size));
+  }
+  if (low_pressure_filtering) {
+    delay_filters_.push_back(std::make_unique<LowPressureFilter>());
   }
 }
 

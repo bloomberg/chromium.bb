@@ -117,6 +117,8 @@ if (use_ozone) {
       "evdev/touch_filter/far_apart_taps_touch_noise_filter.h",
       "evdev/touch_filter/horizontally_aligned_touch_noise_filter.cc",
       "evdev/touch_filter/horizontally_aligned_touch_noise_filter.h",
+      "evdev/touch_filter/low_pressure_filter.cc",
+      "evdev/touch_filter/low_pressure_filter.h",
       "evdev/touch_filter/single_position_touch_noise_filter.cc",
       "evdev/touch_filter/single_position_touch_noise_filter.h",
       "evdev/touch_filter/touch_filter.h",
