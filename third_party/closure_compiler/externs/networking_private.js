@@ -988,7 +988,8 @@ chrome.networkingPrivate.NetworkFilter;
 /**
  * @typedef {{
  *   AllowOnlyPolicyNetworksToAutoconnect: (boolean|undefined),
- *   AllowOnlyPolicyNetworksToConnect: (boolean|undefined)
+ *   AllowOnlyPolicyNetworksToConnect: (boolean|undefined),
+ *   BlacklistedHexSSIDs: (!Array<string>|undefined)
  * }}
  */
 chrome.networkingPrivate.GlobalPolicy;

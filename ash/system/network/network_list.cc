@@ -80,28 +80,6 @@ const int64_t kBluetoothTimeoutDelaySeconds = 2;
 const int kMobileNetworkBatteryIconSize = 14;
 const int kPowerStatusPaddingRight = 10;
 
-bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
-  if (!NetworkTypePattern::WiFi().MatchesType(network->type()))
-    return false;
-  if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())
-    return false;
-  ManagedNetworkConfigurationHandler* managed_configuration_handler =
-      NetworkHandler::Get()->managed_network_configuration_handler();
-  const base::DictionaryValue* global_network_config =
-      managed_configuration_handler->GetGlobalConfigFromPolicy(
-          std::string() /* no username hash, device policy */);
-  bool policy_prohibites_unmanaged = false;
-  if (global_network_config) {
-    global_network_config->GetBooleanWithoutPathExpansion(
-        ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect,
-        &policy_prohibites_unmanaged);
-  }
-  if (!policy_prohibites_unmanaged)
-    return false;
-  return !managed_configuration_handler->FindPolicyByGuidAndProfile(
-      network->guid(), network->profile_path(), nullptr /* onc_source */);
-}
-
 bool IsCellularSimLocked() {
   const chromeos::DeviceState* cellular_device =
       NetworkHandler::Get()->network_state_handler()->GetDeviceStateByType(
@@ -582,7 +560,13 @@ void NetworkListView::UpdateNetworkIcons() {
         handler->GetNetworkStateFromGuid(info->guid);
     if (!network)
       continue;
-    bool prohibited_by_policy = IsProhibitedByPolicy(network);
+    bool prohibited_by_policy =
+        Shell::Get()->session_controller()->IsActiveUserSessionStarted() &&
+        NetworkHandler::Get()
+            ->managed_network_configuration_handler()
+            ->IsNetworkBlockedByPolicy(network->type(), network->guid(),
+                                       network->profile_path(),
+                                       network->GetHexSsid());
     info->label = network_icon::GetLabelForNetwork(
         network, network_icon::ICON_TYPE_MENU_LIST);
     info->image =
@@ -777,16 +761,17 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
 
   // Add an additional icon to the right of the label for networks
   // that require it (e.g. Tether, controlled by extension).
-  views::View* power_icon = CreatePowerStatusView(info);
-  if (power_icon) {
-    view->AddRightView(
-        power_icon, views::CreateEmptyBorder(
-                        gfx::Insets(0 /* top */, 0 /* left */, 0 /* bottom */,
-                                    kPowerStatusPaddingRight)));
+  views::View* icon = CreatePowerStatusView(info);
+  if (icon) {
+    view->AddRightView(icon, views::CreateEmptyBorder(gfx::Insets(
+                                 0 /* top */, 0 /* left */, 0 /* bottom */,
+                                 kPowerStatusPaddingRight)));
   } else {
-    views::View* controlled_icon = CreateControlledByExtensionView(info);
-    if (controlled_icon)
-      view->AddRightView(controlled_icon);
+    icon = CreatePolicyView(info);
+    if (!icon)
+      icon = CreateControlledByExtensionView(info);
+    if (icon)
+      view->AddRightView(icon);
   }
 
   needs_relayout_ = true;
@@ -816,6 +801,27 @@ views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
   icon->SetTooltipText(base::FormatPercent(network->battery_percentage()));
 
   return icon;
+}
+
+views::View* NetworkListView::CreatePolicyView(const NetworkInfo& info) {
+  // Check if the network is managed by policy.
+  const chromeos::NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
+          info.guid);
+  if (!network)
+    return nullptr;
+  const base::DictionaryValue* policy =
+      NetworkHandler::Get()
+          ->managed_network_configuration_handler()
+          ->FindPolicyByGuidAndProfile(network->guid(), network->profile_path(),
+                                       nullptr /* onc_source */);
+  if (!policy)
+    return nullptr;
+
+  views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();
+  controlled_icon->SetImage(
+      gfx::CreateVectorIcon(kSystemMenuBusinessIcon, kMenuIconColor));
+  return controlled_icon;
 }
 
 views::View* NetworkListView::CreateControlledByExtensionView(
