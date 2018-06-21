@@ -50,8 +50,8 @@ function VolumeInfoImpl(
 
   /** @type {Promise<boolean>} */
   this.isTeamDrivesEnabledPromise_ = new Promise(resolve => {
-    chrome.commandLinePrivate.hasSwitch('team-drives', enabled => {
-      resolve(enabled);
+    chrome.commandLinePrivate.hasSwitch('disable-team-drives', enabled => {
+      resolve(!enabled);
     });
   });
 

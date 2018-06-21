@@ -3142,9 +3142,10 @@ const char kTapVisualizerAppName[] = "Show taps with mojo app";
 const char kTapVisualizerAppDescription[] =
     "Use an out-of-process mojo app to show touch points.";
 
-const char kTeamDrivesName[] = "Enable Team Drives Integration";
-const char kTeamDrivesDescription[] =
-    "If enabled, files under Team Drives will appear in the Files app.";
+const char kDisableTeamDrivesName[] = "Disable Team Drives Integration";
+const char kDisableTeamDrivesDescription[] =
+    "If disabled, files under Team Drives will no longer appear in the Files "
+    "app.";
 
 const char kTetherName[] = "Instant Tethering";
 const char kTetherDescription[] =

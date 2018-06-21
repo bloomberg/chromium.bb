@@ -7,11 +7,12 @@
 
 namespace google_apis {
 // Enables or disables Team Drives integration.
-const char kEnableTeamDrives[] = "team-drives";
+const char kDisableTeamDrives[] = "disable-team-drives";
 
 TeamDrivesIntegrationStatus GetTeamDrivesIntegrationSwitch() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableTeamDrives) ?
-      TEAM_DRIVES_INTEGRATION_ENABLED : TEAM_DRIVES_INTEGRATION_DISABLED;
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableTeamDrives)
+             ? TEAM_DRIVES_INTEGRATION_DISABLED
+             : TEAM_DRIVES_INTEGRATION_ENABLED;
 }
 
 }  // namespace google_apis
