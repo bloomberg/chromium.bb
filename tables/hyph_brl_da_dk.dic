@@ -57,7 +57,6 @@ RIGHTHYPHENMIN 1
 .en2
 .2e1n4a
 .e2na6r
-.2e1ndg
 .e3n4e2n2
 .4e1ne
 .en4gs2
@@ -478,6 +477,7 @@ astø4
 a2t
 at1ef4f4
 atef4
+at2e4g
 a2t1ej4
 atekspr2es2
 ate4k4
@@ -885,7 +885,6 @@ d2e1t4a
 de4th
 d2e3t4r
 d2e3tu
-d2e3t4y4
 d2e2tå4
 dev1en4
 d2ev
@@ -1009,7 +1008,7 @@ dr2es
 2dr3e2t4n
 dr1et
 2dr3e2t2t
-3dr2e1t4y4
+3dr2e3t4y4
 2drevl4
 dr2ev
 1dré
@@ -1333,7 +1332,7 @@ ende4k4
 3en2den2
 enden3d
 2e3ndf4
-2endg
+2e1ndg
 e1ndh
 en3dj4
 4end2k4
@@ -1563,6 +1562,7 @@ e2rid4y4
 4erif4
 4erig
 4erimi
+3e2rim2p4
 4erimu
 4e4rimå4
 4er2i2n.
@@ -1617,7 +1617,7 @@ ert4e3r4a
 er4t
 ert1e2r
 2eru
-4eru.
+4e1ru.
 e1rub4
 e1ru2c2
 3erugl4
@@ -1772,7 +1772,7 @@ e3tus
 2e1tv.
 e2tve
 2etw
-2e1t4y4
+2e3t4y4
 2e3tæ
 3e4tæs
 2e1tø4
@@ -2306,6 +2306,7 @@ h2ev
 hé1m
 h1g
 h1h
+hi1g1e2
 hin4gs4
 hi4n
 hin2g
@@ -2424,7 +2425,6 @@ i2e3t4o
 ie2tri2c2
 i2e1t4r
 i2e3tu
-i2e3t4y4
 ifo2r
 if4
 ifo3r4o
@@ -2804,9 +2804,8 @@ k4e2nos2
 2ke2n2s2
 2k2e1re
 2ke2rs
-k4e1ru.
-k2eru
 ke1rude
+k2eru
 kerud2
 ke1rul4
 2k2es
@@ -3459,7 +3458,7 @@ m5e4rens4e
 m4e3r1et
 mer3ev1en2
 mer2ev
-m3er1im
+m3e2r1im2p4
 m2e1ri
 me2riu
 m4erob4
@@ -3821,7 +3820,7 @@ ne2t2t
 n3e2tud
 ne1tv4a
 n3etw
-n2e2t4y4
+n2e4t4y4
 n4e3tæ
 ne4tæ2p4
 n4e1tø4
@@ -3847,7 +3846,6 @@ ng2e1re
 ng3e3r4el4
 ng2e2ri
 ng3erid4
-ng3erim
 ng5e1r4o
 ng2etv
 ngr4e3n2d.
@@ -5142,7 +5140,6 @@ s2e3t4r
 se2ts2
 s4e3ts4e
 se1tv
-s2e3t4y4
 s2f4
 sfr4
 2s2g
@@ -5294,8 +5291,9 @@ ssus1
 st2
 s2ta.
 st4a
-stal2es1
+s2tald
 stal4
+stal2es1
 s2tali
 stand2
 sta4n
@@ -5481,9 +5479,8 @@ ta2k4
 1takst2
 takte4
 ta2kt
-2tald
-tal4
 3talf4
+tal4
 2talsku
 talsk4
 2tam2c2
@@ -6036,7 +6033,7 @@ tv4a
 2tvo
 2tvæ
 1two.
-2ty4a
+4ty4a
 t4y4
 ty2ds4
 2tyk4
@@ -6377,7 +6374,6 @@ v2e3t4o
 v2e5t4r
 v2e3tu
 v2e1tw
-v2e3t4y4
 vg6e1ne
 vg1e
 vge2n2
