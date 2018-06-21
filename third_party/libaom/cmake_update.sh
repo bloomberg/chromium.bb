@@ -155,16 +155,15 @@ all_platforms+=" -DCONFIG_LOWBITDEPTH=1"
 #all_platforms+=" -DENABLE_AVX2=0"
 toolchain="-DCMAKE_TOOLCHAIN_FILE=${SRC}/build/cmake/toolchains"
 
-reset_dirs linux/ia32
-gen_config_files linux/ia32 "${toolchain}/x86-linux.cmake ${all_platforms}"
+reset_dirs linux/generic
+gen_config_files linux/generic "-DAOM_TARGET_CPU=generic ${all_platforms}"
 # libaom_srcs.gni and aom_version.h are shared.
 cp libaom_srcs.gni "${BASE}"
-if [ ! -f "${CFG}/config/aom_version.h" ]; then
-  # These steps can be removed after the first run.
-  rm -f "${CFG}/aom_version.h"
-  mkdir -p "${CFG}/config/"
-fi
 cp config/aom_version.h "${CFG}/config/"
+gen_rtcd_header linux/generic generic
+
+reset_dirs linux/ia32
+gen_config_files linux/ia32 "${toolchain}/x86-linux.cmake ${all_platforms}"
 gen_rtcd_header linux/ia32 x86 #--disable-avx2
 
 reset_dirs linux/x64
@@ -173,6 +172,19 @@ gen_rtcd_header linux/x64 x86_64 #--disable-avx2
 
 # Windows looks like linux but with some minor tweaks. Cmake doesn't generate VS
 # project files on linux otherwise we would not resort to these hacks.
+
+reset_dirs win/ia32
+cp "${CFG}/linux/ia32/config"/* "${CFG}/win/ia32/config/"
+sed -i.bak \
+  -e 's/\(#define[[:space:]]INLINE[[:space:]]*\)inline/#define INLINE __inline/' \
+  -e 's/\(#define[[:space:]]HAVE_PTHREAD_H[[:space:]]*\)1/#define HAVE_PTHREAD_H 0/' \
+  -e 's/\(#define[[:space:]]HAVE_UNISTD_H[[:space:]]*\)1/#define HAVE_UNISTD_H 0/' \
+  -e 's/\(#define[[:space:]]CONFIG_GCC[[:space:]]*\)1/#define CONFIG_GCC 0/' \
+  -e 's/\(#define[[:space:]]CONFIG_MSVS[[:space:]]*\)0/#define CONFIG_MSVS 1/' \
+  "${CFG}/win/ia32/config/aom_config.h"
+rm "${CFG}/win/ia32/config/aom_config.h.bak"
+egrep "#define [A-Z0-9_]+ [01]" "${CFG}/win/ia32/config/aom_config.h" \
+  | awk '{print "%define " $2 " " $3}' > "${CFG}/win/ia32/config/aom_config.asm"
 
 reset_dirs win/x64
 cp "${CFG}/linux/x64/config"/* "${CFG}/win/x64/config/"
@@ -204,5 +216,8 @@ gen_rtcd_header linux/arm-neon-cpu-detect armv7
 reset_dirs linux/arm64
 gen_config_files linux/arm64 "${toolchain}/arm64-linux-gcc.cmake ${all_platforms}"
 gen_rtcd_header linux/arm64 arm64
+
+cd "${SRC}"
+update_readme
 
 clean

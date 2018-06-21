@@ -33,7 +33,7 @@ class AomVideoDecoderTest : public testing::Test {
  public:
   AomVideoDecoderTest()
       : decoder_(new AomVideoDecoder(&media_log_)),
-        i_frame_buffer_(ReadTestDataFile("av1-I-frame-352x288")) {}
+        i_frame_buffer_(ReadTestDataFile("av1-I-frame-320x240")) {}
 
   ~AomVideoDecoderTest() override { Destroy(); }
 
@@ -208,7 +208,7 @@ TEST_F(AomVideoDecoderTest, DecodeFrame_Normal) {
 // the output size was adjusted.
 // TODO(dalecurtis): Get an I-frame from a larger video.
 TEST_F(AomVideoDecoderTest, DISABLED_DecodeFrame_LargerWidth) {
-  DecodeIFrameThenTestFile("av1-I-frame-352x288", gfx::Size(1280, 720));
+  DecodeIFrameThenTestFile("av1-I-frame-320x240", gfx::Size(1280, 720));
 }
 
 // Decode a VP9 frame which should trigger a decoder error.
