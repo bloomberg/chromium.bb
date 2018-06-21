@@ -218,7 +218,7 @@
       Esta política deve estar definida para um URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> possa transferir os Termos de Utilização. Os Termos de Utilização devem estar no formato de texto simples, com o tipo de MIME texto/simples. Não é permitida qualquer marcação.</translation>
 <translation id="1750315445671978749">Bloquear todas as transferências</translation>
 <translation id="1781356041596378058">Esta política também controla o acesso às Opções de programador do Android. Se definir esta política como verdadeira, os utilizadores não poderão aceder às Opções de programador. Se definir esta política como falsa ou se não a definir, os utilizadores podem aceder às Opções de programador ao tocar sete vezes no número da compilação na aplicação de definições do Android.</translation>
-<translation id="178832255504524723">Configure o URL de alteração da palavra-passe (apenas para esquemas HTTP e HTTPS). O serviço de proteção por palavra-passe envia os utilizadores para este URL para alterarem as respetivas palavras-passe se tiverem sido alvo de phishing.
+<translation id="178832255504524723">Configure o URL de alteração da palavra-passe (só funciona em HTTP e HTTPS). O serviço de proteção por palavra-passe envia os utilizadores para este URL para alterarem as respetivas palavras-passe se tiverem sido alvo de phishing.
       Para que o <ph name="PRODUCT_NAME" /> capture a nova impressão digital da palavra-passe corretamente nesta página de alteração da palavra-passe, certifique-se de que a sua página de início de sessão de alteração da palavra-passe segue as diretrizes apresentadas em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       Se esta definição estiver ativada, o serviço de proteção por palavra-passe envia os utilizadores para este URL para alterarem as respetivas palavras-passe se tiverem sido alvo de phishing.
@@ -2434,7 +2434,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8102913158860568230">Predefinição da transmissão em sequência de multimédia</translation>
 <translation id="8104186956182795918">Permite definir se os Websites têm autorização para apresentar imagens. A apresentação de imagens pode ser autorizada ou negada para todos os Websites.
 
-          Se esta política não for definida, é utilizada a definição "AllowImages" e o utilizador pode alterá-la.
+          Se esta política não for definida, a política "AllowImages" é utilizada e o utilizador pode alterá-la.
 
            Tenha em atenção que, embora esta política tenha sido ativada por engano anteriormente no Android, a funcionalidade nunca foi totalmente suportada no Android.</translation>
 <translation id="8104962233214241919">Selecionar automaticamente certificados de cliente para estes Web sites</translation>

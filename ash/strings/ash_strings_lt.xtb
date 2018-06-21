@@ -4,6 +4,7 @@
 <translation id="1012876632442809908">USB-C įrenginys (prievadas priekyje)</translation>
 <translation id="1013923882670373915">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti. Šiame įrenginyje įveskite šį PIN kodą: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Rašiklio akumuliatorius senka</translation>
+<translation id="1056775291175587022">Nėra tinklų</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="112308213915226829">Automatiškai slėpti lentyną</translation>
 <translation id="1153356358378277386">Susieti įrenginiai</translation>
@@ -117,7 +118,6 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Apačia</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> („Bluetooth“)</translation>
-<translation id="3112378005171663295">Sutraukti</translation>
 <translation id="3126069444801937830">Paleisti iš naujo, kad būtų atnaujinta</translation>
 <translation id="3147142846278915599">Paleidimo priemonė (sinchronizuojamos programos...)</translation>
 <translation id="315116470104423982">Duomenys mobiliesiems</translation>
@@ -198,6 +198,7 @@
 <translation id="4890187583552566966">„Google“ padėjėją išjungė administratorius.</translation>
 <translation id="4895488851634969361">Akumuliatorius visiškai įkrautas.</translation>
 <translation id="4905614135390995787">Spartusis klavišas, kurį naudojant perjungiamas didelio kontrasto režimas, pakeistas. Naudokite <ph name="NEW_SHORTCUT" /> vietoj <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4917385247580444890">Stiprus</translation>
 <translation id="4918086044614829423">Priimti</translation>
 <translation id="4961318399572185831">Perduoti ekraną</translation>
 <translation id="5136175204352732067">Prijungta kita klaviatūra</translation>
@@ -221,7 +222,9 @@
 <translation id="5597451508971090205"><ph name="DATE" />, <ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">Paspauskite „Ctrl“ + „Alt“ + Z, kad išjungtumėte ekrano skaitymą balsu.</translation>
 <translation id="5648021990716966815">Mikrofono jungtis</translation>
+<translation id="5669267381087807207">Aktyvinama</translation>
 <translation id="5673434351075758678">Po nustatymų sinchronizavimo kalba pakeista iš „<ph name="FROM_LOCALE" />“ į „<ph name="TO_LOCALE" />“.</translation>
+<translation id="574392208103952083">Vidutinis</translation>
 <translation id="5744083938413354016">Vilkimas palietus</translation>
 <translation id="5777841717266010279">Nutraukti ekrano bendrinimą?</translation>
 <translation id="57838592816432529">Nutildyti</translation>
@@ -304,6 +307,7 @@
 <translation id="7076293881109082629">Prisijungimas</translation>
 <translation id="7098389117866926363">USB-C įrenginys (prievadas kairėje, užpakalinėje dalyje)</translation>
 <translation id="7131634465328662194">Būsite automatiškai atjungti.</translation>
+<translation id="7143207342074048698">Jungiama</translation>
 <translation id="7165278925115064263">„Alt“ + „Shift“ + K</translation>
 <translation id="7168224885072002358">Po <ph name="TIMEOUT_SECONDS" /> bus grąžinta sena skyra</translation>
 <translation id="7256634071279256947">Užpakalinis mikrofonas</translation>
@@ -353,6 +357,7 @@
 <translation id="8180896103888046100">Sustabdyti perdavimą į nežinomą imtuvą</translation>
 <translation id="8190698733819146287">Tinkinti kalbas ir įvestį...</translation>
 <translation id="8261506727792406068">Ištrinti</translation>
+<translation id="8297006494302853456">Silpnas</translation>
 <translation id="8308637677604853869">Ankstesnis meniu</translation>
 <translation id="8351131234907093545">Sukurti užrašą</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> skirtų parinkčių meniu</translation>
@@ -380,6 +385,7 @@
 <translation id="8841375032071747811">Mygtukas „Atgal“</translation>
 <translation id="8850991929411075241">Paieškos klavišas + „Esc“</translation>
 <translation id="8870509716567206129">Programoje nepalaikomas skaidytas ekranas.</translation>
+<translation id="8874184842967597500">Neprisijungta</translation>
 <translation id="8878886163241303700">Išplečiamas ekranas</translation>
 <translation id="8921624153894383499">„Google“ padėjėjas nekalba šia kalba.</translation>
 <translation id="8938800817013097409">USB-C įrenginys (prievadas dešinėje, užpakalinėje dalyje)</translation>

@@ -810,6 +810,7 @@
 <translation id="6891596781022320156">Raven pravilnika ni podprta.</translation>
 <translation id="6895330447102777224">Kartica je potrjena.</translation>
 <translation id="6897140037006041989">Uporabnikov posrednik</translation>
+<translation id="6903319715792422884">S pošiljanjem nekaterih <ph name="BEGIN_WHITEPAPER_LINK" />informacij o sistemu in vsebine strani<ph name="END_WHITEPAPER_LINK" /> Googlu lahko pomagate izboljšati Varno brskanje. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Uporabnik:</translation>
 <translation id="6945221475159498467">Izberi</translation>
 <translation id="6948701128805548767">Če si želite ogledati načine prevzema in zahteve, izberite naslov</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8308427013383895095">Prevod ni uspel zaradi težave s povezavo omrežja.</translation>
 <translation id="8311129316111205805">Naloži sejo</translation>
 <translation id="8332188693563227489">Dostop do spletnega mesta <ph name="HOST_NAME" /> je bil zavrnjen</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Če se zavedate varnostnega tveganja, lahko <ph name="BEGIN_LINK" />obiščete to spletno mesto<ph name="END_LINK" />, preden bodo škodljivi programi odstranjeni.</translation>
 <translation id="8349305172487531364">Vrstica z zaznamki</translation>
 <translation id="8363502534493474904">izklopiti način za letalo</translation>

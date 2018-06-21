@@ -810,6 +810,7 @@
 <translation id="6891596781022320156">Policynivån stöds inte.</translation>
 <translation id="6895330447102777224">Kortet har bekräftats</translation>
 <translation id="6897140037006041989">Användaragent</translation>
+<translation id="6903319715792422884">Hjälp oss att förbättra Säker webbsökning genom att låta <ph name="BEGIN_WHITEPAPER_LINK" />viss systeminformation och visst sidinnehåll<ph name="END_WHITEPAPER_LINK" /> skickas automatiskt till Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Användare:</translation>
 <translation id="6945221475159498467">Välj</translation>
 <translation id="6948701128805548767">Välj en adress för att visa alternativ för utlämning och krav</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8308427013383895095">Det gick inte att översätta på grund av ett nätverksfel.</translation>
 <translation id="8311129316111205805">Läs in session</translation>
 <translation id="8332188693563227489">Åtkomst nekades till <ph name="HOST_NAME" />.</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Om du är medveten om säkerhetsriskerna kan du <ph name="BEGIN_LINK" />besöka den här osäkra webbplatsen<ph name="END_LINK" /> innan de skadliga programmen har tagits bort.</translation>
 <translation id="8349305172487531364">Bokmärkesfältet</translation>
 <translation id="8363502534493474904">inaktivera flygplansläget</translation>

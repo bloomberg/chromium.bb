@@ -806,6 +806,7 @@
 <translation id="6891596781022320156">政策级别不受支持。</translation>
 <translation id="6895330447102777224">已确认您的信用卡</translation>
 <translation id="6897140037006041989">用户代理</translation>
+<translation id="6903319715792422884">您可以选择向 Google 发送一些<ph name="BEGIN_WHITEPAPER_LINK" />系统信息和网页内容<ph name="END_WHITEPAPER_LINK" />，以帮助我们改进安全浏览功能。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">用户：</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6948701128805548767">要查看取货方式和要求，请选择相应地址</translation>
@@ -1010,6 +1011,7 @@
 <translation id="8308427013383895095">由于网络连接问题，翻译失败。</translation>
 <translation id="8311129316111205805">加载会话</translation>
 <translation id="8332188693563227489">访问 <ph name="HOST_NAME" /> 的请求遭到拒绝</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">如果您了解自己将面临的安全风险，则可以在有害程序被清除之前<ph name="BEGIN_LINK" />访问此网站<ph name="END_LINK" />。</translation>
 <translation id="8349305172487531364">书签栏</translation>
 <translation id="8363502534493474904">关闭飞行模式</translation>
@@ -1109,6 +1111,7 @@
 <translation id="9148507642005240123">撤消修改(&amp;U)</translation>
 <translation id="9154194610265714752">已更新</translation>
 <translation id="9157595877708044936">正在设置...</translation>
+<translation id="9168814207360376865">允许网站检查您是否已保存付款方式</translation>
 <translation id="9169664750068251925">在此网站上始终阻止</translation>
 <translation id="9170848237812810038">撤消(&amp;U)</translation>
 <translation id="9171296965991013597">要退出应用吗？</translation>

@@ -806,6 +806,7 @@
 <translation id="6891596781022320156">Il livello della norma non è supportato.</translation>
 <translation id="6895330447102777224">La carta è stata confermata</translation>
 <translation id="6897140037006041989">User-agent</translation>
+<translation id="6903319715792422884">Contribuisci a migliorare a Navigazione sicura, grazie all'invio a Google di qualche <ph name="BEGIN_WHITEPAPER_LINK" />informazione di sistema e contenuto delle pagine<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Utente:</translation>
 <translation id="6945221475159498467">Seleziona</translation>
 <translation id="6948701128805548767">Seleziona un indirizzo per conoscere i requisiti e i metodi di ritiro</translation>
@@ -1010,6 +1011,7 @@
 <translation id="8308427013383895095">La traduzione non è riuscita a causa di un problema con la connessione di rete.</translation>
 <translation id="8311129316111205805">Carica sessione</translation>
 <translation id="8332188693563227489">Accesso a <ph name="HOST_NAME" /> negato</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Se sei consapevole dei rischi per la tua sicurezza, potresti <ph name="BEGIN_LINK" />visitare questo sito<ph name="END_LINK" /> senza aspettare che vengano rimossi i programmi pericolosi.</translation>
 <translation id="8349305172487531364">Barra dei Preferiti</translation>
 <translation id="8363502534493474904">Disattivare la modalità aereo</translation>
@@ -1108,6 +1110,7 @@
 <translation id="9148507642005240123">&amp;Annulla modifica</translation>
 <translation id="9154194610265714752">Aggiornato</translation>
 <translation id="9157595877708044936">Configurazione in corso...</translation>
+<translation id="9168814207360376865">Consenti ai siti di controllare se hai metodi di pagamento salvati</translation>
 <translation id="9169664750068251925">Blocca sempre su questo sito</translation>
 <translation id="9170848237812810038">&amp;Annulla</translation>
 <translation id="9171296965991013597">Uscire dall'app?</translation>

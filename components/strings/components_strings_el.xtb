@@ -811,6 +811,7 @@
 <translation id="6891596781022320156">Το επίπεδο πολιτικής δεν υποστηρίζεται.</translation>
 <translation id="6895330447102777224">Η κάρτα σας επιβεβαιώθηκε</translation>
 <translation id="6897140037006041989">Παράγοντας χρήστη</translation>
+<translation id="6903319715792422884">Συμβάλετε στη βελτίωση της Ασφαλούς περιήγησης στέλνοντας ορισμένες <ph name="BEGIN_WHITEPAPER_LINK" />πληροφορίες συστήματος και περιεχόμενο σελίδων<ph name="END_WHITEPAPER_LINK" /> στην Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Χρήστης</translation>
 <translation id="6945221475159498467">Επιλογή</translation>
 <translation id="6948701128805548767">Για να δείτε τρόπους και απαιτήσεις παραλαβής, επιλέξτε μια διεύθυνση</translation>
@@ -1015,6 +1016,7 @@
 <translation id="8308427013383895095">Η μετάφραση απέτυχε λόγω προβλήματος με τη σύνδεση δικτύου.</translation>
 <translation id="8311129316111205805">Φόρτωση περιόδου λειτουργίας</translation>
 <translation id="8332188693563227489">Απορρίφθηκε η πρόσβαση στο κεντρικό υπολογιστή <ph name="HOST_NAME" /></translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Εάν κατανοείτε τους κινδύνους για την ασφάλειά σας, μπορείτε να <ph name="BEGIN_LINK" />επισκεφτείτε αυτόν τον ιστότοπο<ph name="END_LINK" /> πριν από την κατάργηση των επικίνδυνων προγραμμάτων.</translation>
 <translation id="8349305172487531364">Γραμμή σελιδοδεικτών</translation>
 <translation id="8363502534493474904">Απενεργοποιήστε τη λειτουργία πτήσης</translation>

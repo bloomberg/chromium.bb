@@ -15,6 +15,7 @@
 <translation id="1121094540300013208">آمار استفاده و گزارش‌های خرابی</translation>
 <translation id="11221688409173367">برای مشاهده مقاله‌هایی که به‌طور خاص برای شما انتخاب شده است روی دکمه صفحه اصلی ضربه بزنید</translation>
 <translation id="1129510026454351943">جزئیات: <ph name="ERROR_DESCRIPTION" /></translation>
+<translation id="1141800923049248244">{FILE_COUNT,plural, =1{۱ بارگیری در انتظار است.}one{# بارگیری در انتظار است.}other{# بارگیری در انتظار است.}}</translation>
 <translation id="1145536944570833626">حذف داده‌های موجود.</translation>
 <translation id="1146678959555564648">‏VR را وارد کنید</translation>
 <translation id="114721135501989771">‏هوشمندی‌های Google را در Chrome دریافت کنید</translation>
@@ -118,6 +119,7 @@
 <translation id="1966710179511230534">لطفاً جزئیات ورود به سیستم را به‌روز کنید.</translation>
 <translation id="1974060860693918893">پیشرفته</translation>
 <translation id="1984937141057606926">مجاز، به غیر از طرف ثالث</translation>
+<translation id="1987739130650180037"><ph name="MESSAGE" /> دکمه <ph name="LINK_NAME" /></translation>
 <translation id="1989112275319619282">مشاهده محتوای موجود در فروشگاه ما</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> می‌خواهد مرتبط شود</translation>
 <translation id="1994173015038366702">نشانی وب سایت</translation>
@@ -336,6 +338,7 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> از ؟</translation>
 <translation id="3997476611815694295">فضای ذخیره غیرمهم</translation>
 <translation id="4002066346123236978">عنوان</translation>
+<translation id="4034817413553209278">{HOURS,plural, =1{# ساعت}one{# ساعت}other{# ساعت}}</translation>
 <translation id="4042870126885713738">وقتی آدرس وب شناسایی نمی‌شود یا اتصال برقرار نمی‌شود، پیشنهاداتی نشان داده می‌شود</translation>
 <translation id="4046123991198612571">آهنگ بعدی</translation>
 <translation id="4048707525896921369">‏بدون ترک کردن صفحه با موضوعات وب‌سایت‌ها آشنا شوید. «ضربه برای جستجو»، کلمه و متن اطراف آن را به «جستجوی Google» ارسال می‌کند و معانی، تصاویر، نتایج جستجو و سایر جزئیات را بازمی‌گرداند.
@@ -402,6 +405,7 @@
 <translation id="4581964774250883625">اکنون در حالت ناشناس هستید.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# دقیقه قبل}one{# دقیقه قبل}other{# دقیقه قبل}}</translation>
 <translation id="4587589328781138893">سایت‌ها</translation>
+<translation id="4594952190837476234">این صفحه آفلاین مربوط به تاریخ <ph name="CREATION_TIME" /> است و ممکن است با نسخه آنلاین متفاوت باشد.</translation>
 <translation id="4605958867780575332">مورد حذف شد: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">باز کردن <ph name="WEBAPK_NAME" /></translation>
 <translation id="4645575059429386691">مدیریت شده توسط والدین شما</translation>
@@ -422,6 +426,7 @@
 <translation id="4749960740855309258">باز کردن برگه جدید</translation>
 <translation id="4751476147751820511">حسگرهای نوری یا حرکتی</translation>
 <translation id="4759238208242260848">بارگیری‌ها</translation>
+<translation id="4763829664323285145">{FILE_COUNT,plural, =1{۱ بارگیری کامل شد.}one{# بارگیری کامل شد.}other{# بارگیری کامل شد.}}</translation>
 <translation id="4766369052440583386">صرفه‌جویی داده روشن است</translation>
 <translation id="4797039098279997504">برای برگشتن به <ph name="URL_OF_THE_CURRENT_TAB" />، لمس کنید</translation>
 <translation id="4807098396393229769">نام روی کارت</translation>
@@ -448,6 +453,7 @@
 <translation id="4961334780091921942">گذرواژه‌ها، سابقه و موارد دیگر در همه دستگاه‌ها</translation>
 <translation id="4961700429721424617">‏هم‌اکنون از حسابی که توسط <ph name="MANAGED_DOMAIN" /> مدیریت می‌شود، خارج می‌شوید. با این کار داده‌های Chrome شما از این دستگاه حذف می‌شود اما همچنان در حساب Google شما باقی می‌ماند.</translation>
 <translation id="497421865427891073">جلو رفتن</translation>
+<translation id="4988210275050210843">درحال بارگیری فایل (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">صفحات</translation>
 <translation id="4996978546172906250">اشتراک‌گذاری از طریق</translation>
 <translation id="5004339818306944878">‏تا ۶۰٪ کمتر داده مصرف کنید و به وب سرعت ببخشید. سرورهای Google صفحاتی را که بازدید می‌کنید بهینه‌سازی می‌کند.</translation>
@@ -467,6 +473,7 @@
 <translation id="515227803646670480">پاک کردن داده ذخیره شده</translation>
 <translation id="5152843274749979095">هیچ برنامه پشتیبانی‌شده‌ای نصب نشده است</translation>
 <translation id="5161254044473106830">عنوان مورد نیاز است</translation>
+<translation id="5162754098604580781">{FILE_COUNT,plural, =1{۱ بارگیری انجام نشد.}one{# بارگیری انجام نشد.}other{# بارگیری انجام نشد.}}</translation>
 <translation id="5168917394043976756">بازکردن کشوی پیمایش</translation>
 <translation id="5171365962177408781">برای بارگیری صفحه برگه جدید و مشاهده مقاله‌های پیشنهادی ضربه بزنید</translation>
 <translation id="5184329579814168207">‏باز کردن در Chrome</translation>
@@ -496,9 +503,11 @@
 <translation id="5423934151118863508">صفحاتی که بیشترین بازدید را از آنها داشته‌اید در اینجا نمایان می‌شوند</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> گیگابایت در دسترس</translation>
 <translation id="5433691172869980887">نام کاربری کپی شد</translation>
+<translation id="543509235395288790">درحال بارگیری <ph name="COUNT" /> فایل (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">رفتن به نوار نشانی</translation>
 <translation id="5447201525962359567">همه فضای ذخیره سایت‌ها، ازجمله کوکی‌ها و سایر داده‌های ذخیره‌شده در دستگاه</translation>
 <translation id="5447765697759493033">این سایت ترجمه نخواهد شد</translation>
+<translation id="545042621069398927">درحال سرعت بخشیدن به بارگیری.</translation>
 <translation id="5456381639095306749">بارگیری صفحه</translation>
 <translation id="548278423535722844">‏باز کردن در برنامه Maps</translation>
 <translation id="5487521232677179737">پاک کردن داده‌ها</translation>
@@ -558,6 +567,7 @@
 <translation id="5854790677617711513">قدیمی‌تر از ۳۰ روز</translation>
 <translation id="5858741533101922242">‏Chrome قادر به روشن کردن آداپتور بلوتوث نیست</translation>
 <translation id="5860033963881614850">خاموش</translation>
+<translation id="5864174910718532887">جزئیات: مرتب‌شده براساس نام سایت</translation>
 <translation id="5864419784173784555">در انتظار بارگیری موردی دیگر…</translation>
 <translation id="5869522115854928033">گذرواژه‌های ذخیره‌شده</translation>
 <translation id="5878455346526065919">مسدود کردن آگهی‌ها از سایت‌هایی که تمایل دارند آگهی‌های مزاحم نشان دهند</translation>
@@ -604,13 +614,16 @@
 <translation id="6255999984061454636">پیشنهادهای محتوا</translation>
 <translation id="6277522088822131679">در چاپ صفحه مشکلی پیش آمد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="6295158916970320988">همه سایت‌ها</translation>
+<translation id="629730747756840877">حساب</translation>
 <translation id="6320088164292336938">لرزش</translation>
 <translation id="6324034347079777476">‏همگام‌سازی سیستم Android غیرفعال شد</translation>
 <translation id="6333140779060797560">اشتراک‌گذاری از طریق <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">رمزگذاری</translation>
+<translation id="6341580099087024258">مکان ذخیره شدن فایل‌ها پرسیده شود</translation>
 <translation id="6343192674172527289">هیچ بارگیری‌ای پیدا نشد</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> نشانی دیگر}one{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> نشانی دیگر}other{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> نشانی دیگر}}</translation>
 <translation id="6364438453358674297">پیشنهاد از سابقه حذف شود؟</translation>
+<translation id="6378173571450987352">جزئیات: مرتب‌شده براساس مقدار داده استفاده‌شده</translation>
 <translation id="6383961787135158834">پاک کردن فضای ذخیره‌سازی سایت…</translation>
 <translation id="6388207532828177975">پاک کردن و بازنشانی</translation>
 <translation id="6393863479814692971">‏Chrome برای این سایت به مجوز دسترسی به دوربین و میکروفون نیاز دارد.</translation>
@@ -722,12 +735,14 @@
 <translation id="7253272406652746122">‏از صفحه «حساب‌ها» در برنامه «تنظیمات» دستگاه، یک حساب Google اضافه کنید.</translation>
 <translation id="7274013316676448362">سایت مسدودشده</translation>
 <translation id="729975465115245577">دستگاه شما برنامه‌ای برای ذخیره فایل گذرواژه‌ها ندارد.</translation>
+<translation id="7302081693174882195">جزئیات: مرتب‌شده براساس مقدار داده صرفه‌جویی‌شده</translation>
 <translation id="7333031090786104871">همچنان درحال افزودن سایت قبلی</translation>
 <translation id="7352939065658542140">ویدیو</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{اشتراک‌گذاری ۱ مورد انتخاب‌شده}one{اشتراک‌گذاری # مورد انتخاب‌شده}other{اشتراک‌گذاری # مورد انتخاب‌شده}}</translation>
 <translation id="7359002509206457351">دسترسی به روش‌های پرداخت</translation>
 <translation id="7366340029385295517">درحال فرستادن به <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">نوع:</translation>
+<translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">نشانی وب</translation>
 <translation id="7403691278183511381">‏اولین تجربه اجرا Chrome</translation>
 <translation id="741204030948306876">بله، موافقم</translation>
@@ -735,6 +750,7 @@
 <translation id="7423098979219808738">ابتدا سؤال شود</translation>
 <translation id="7423538860840206698">خواندن محتوای بریده‌دان مسدود شد</translation>
 <translation id="7437998757836447326">‏خروج از سیستم Chrome</translation>
+<translation id="7444811645081526538">دسته‌های بیشتر</translation>
 <translation id="7445411102860286510">اجازه به سایت‌ها برای پخش خودکار ویدیوهای صامت‌شده (توصیه می‌شود)</translation>
 <translation id="7453467225369441013">‏شما را از سیستم اکثر سایت‌ها خارج می‌‌کند. از سیستم حساب Google خارج نمی‌شوید.</translation>
 <translation id="7454641608352164238">فضای کافی وجود ندارد</translation>
@@ -789,6 +805,7 @@
 <translation id="7876243839304621966">حذف همه</translation>
 <translation id="7882131421121961860">هیچ سابقه‌ای پیدا نشد</translation>
 <translation id="7882806643839505685">پخش صدا برای سایتی خاص مجاز شود.</translation>
+<translation id="7925590027513907933">{FILE_COUNT,plural, =1{درحال بارگیری فایل.}one{درحال بارگیری # فایل.}other{درحال بارگیری # فایل.}}</translation>
 <translation id="7929962904089429003">باز کردن منو</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قدیمی است.</translation>
 <translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>
@@ -884,6 +901,7 @@
 <translation id="8812260976093120287">در بعضی از وب‌سایت‌ها، می‌توانید با برنامه‌های پرداخت پشتیبانی‌شده بالا در دستگاهتان پرداخت کنید.</translation>
 <translation id="8816439037877937734">‏<ph name="APP_NAME" /> در Chrome باز خواهد شد. درصورت ادامه دادن، با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلان حریم خصوصی<ph name="END_LINK2" /> Chrome و <ph name="BEGIN_LINK3" />اعلان حریم خصوصی برای حساب‌های Google مدیریت‌شده با Family<ph name="END_LINK3" /> موافقت می‌کنید.</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
+<translation id="8830904257167680355"><ph name="DESCRIPTION" /> - <ph name="FILE_SIZE" /></translation>
 <translation id="883806473910249246">هنگام بارگیری محتوا خطایی روی داد.</translation>
 <translation id="8840953339110955557">ممکن است این صفحه با نسخه آنلاین متفاوت باشد.</translation>
 <translation id="8847988622838149491">USB</translation>

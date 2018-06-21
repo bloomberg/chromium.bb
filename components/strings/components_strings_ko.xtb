@@ -810,6 +810,7 @@
 <translation id="6891596781022320156">정책 수준이 지원되지 않습니다.</translation>
 <translation id="6895330447102777224">카드가 확인되었습니다.</translation>
 <translation id="6897140037006041989">사용자 에이전트</translation>
+<translation id="6903319715792422884">일부 <ph name="BEGIN_WHITEPAPER_LINK" />시스템 정보와 페이지 콘텐츠를<ph name="END_WHITEPAPER_LINK" /> Google로 전송하여 세이프 브라우징을 개선하도록 도와주세요. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">사용자:</translation>
 <translation id="6945221475159498467">선택</translation>
 <translation id="6948701128805548767">수령 방법과 요구사항을 확인하려면 주소를 선택하세요.</translation>
@@ -1013,6 +1014,7 @@
 <translation id="8308427013383895095">네트워크 연결 문제로 인해 번역에 실패했습니다.</translation>
 <translation id="8311129316111205805">세션 로드</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" />에 대한 액세스가 거부됨</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_YEAR" />/<ph name="EXPIRATION_MONTH" /></translation>
 <translation id="834457929814110454">보안 관련 위험을 이해한다면 악성 프로그램이 삭제되기 전에 <ph name="BEGIN_LINK" />이 사이트를 방문<ph name="END_LINK" />해도 됩니다.</translation>
 <translation id="8349305172487531364">북마크바</translation>
 <translation id="8363502534493474904">비행기 모드 사용 중지</translation>

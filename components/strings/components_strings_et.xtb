@@ -810,6 +810,7 @@
 <translation id="6891596781022320156">Reegli taset ei toetata.</translation>
 <translation id="6895330447102777224">Teie kaart on kinnitatud</translation>
 <translation id="6897140037006041989">Kasutajaagent</translation>
+<translation id="6903319715792422884">Aidake ohutu sirvimise funktsiooni täiustada, saates Google'ile <ph name="BEGIN_WHITEPAPER_LINK" />süsteemiteavet ja lehesisu<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Kasutaja:</translation>
 <translation id="6945221475159498467">Vali</translation>
 <translation id="6948701128805548767">Kättesaamisviiside ja nõuete nägemiseks valige aadress</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8308427013383895095">Tõlkimine ebaõnnestus võrguühenduse probleemi tõttu.</translation>
 <translation id="8311129316111205805">Laadi seanss</translation>
 <translation id="8332188693563227489">Juurdepääs hostile <ph name="HOST_NAME" /> blokeeriti</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Kui mõistate, kuidas teie turvalisust ohustatakse, siis võite <ph name="BEGIN_LINK" />seda saiti külastada<ph name="END_LINK" /> enne, kui kahjulikud programmid on eemaldatud.</translation>
 <translation id="8349305172487531364">Järjehoidjariba</translation>
 <translation id="8363502534493474904">Lülitage lennurežiim välja</translation>

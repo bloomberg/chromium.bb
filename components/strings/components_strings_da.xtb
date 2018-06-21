@@ -810,6 +810,7 @@
 <translation id="6891596781022320156">Politikniveauet understøttes ikke.</translation>
 <translation id="6895330447102777224">Dit kort er bekræftet</translation>
 <translation id="6897140037006041989">Brugeragent</translation>
+<translation id="6903319715792422884">Hjælp med at forbedre Beskyttet browsing ved at sende nogle <ph name="BEGIN_WHITEPAPER_LINK" />systemoplysninger og noget sideindhold<ph name="END_WHITEPAPER_LINK" /> til Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Bruger:</translation>
 <translation id="6945221475159498467">Vælg</translation>
 <translation id="6948701128805548767">Vælg en adresse for at se afhentningsmetoder og -krav</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8308427013383895095">Oversættelsen mislykkedes på grund af problemer med netværksforbindelsen.</translation>
 <translation id="8311129316111205805">Indlæs session</translation>
 <translation id="8332188693563227489">Adgangen til <ph name="HOST_NAME" /> blev nægtet</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Hvis du er indforstået med de forbundne sikkerhedsrisici, kan du <ph name="BEGIN_LINK" />besøge dette website<ph name="END_LINK" />, inden de skadelige programmer fjernes.</translation>
 <translation id="8349305172487531364">Bogmærkelinje</translation>
 <translation id="8363502534493474904">Deaktivere flytilstand</translation>
@@ -1113,6 +1115,7 @@
 <translation id="9148507642005240123">&amp;Fortryd redigering</translation>
 <translation id="9154194610265714752">Opdateret</translation>
 <translation id="9157595877708044936">Konfigurerer...</translation>
+<translation id="9168814207360376865">Tillad, at websites tjekker, om du har nogen gemte betalingsmetoder</translation>
 <translation id="9169664750068251925">Bloker altid på dette website</translation>
 <translation id="9170848237812810038">&amp;Fortryd</translation>
 <translation id="9171296965991013597">Vil du lukke appen?</translation>

@@ -809,6 +809,7 @@
 <translation id="6891596781022320156">Richtlinienebene wird nicht unterstützt.</translation>
 <translation id="6895330447102777224">Ihre Karte wurde bestätigt</translation>
 <translation id="6897140037006041989">User-Agent</translation>
+<translation id="6903319715792422884">Sie können uns dabei helfen, Safe Browsing weiter zu verbessern, <ph name="BEGIN_WHITEPAPER_LINK" />indem Sie einige Systeminformationen und Seiteninhalte an Google senden<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Nutzer:</translation>
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6948701128805548767">Wählen Sie eine Adresse aus, um Abholoptionen und -anforderungen zu sehen</translation>
@@ -1013,6 +1014,7 @@
 <translation id="8308427013383895095">Die Übersetzung ist aufgrund eines Problems mit der Netzwerkverbindung fehlgeschlagen.</translation>
 <translation id="8311129316111205805">Sitzung laden</translation>
 <translation id="8332188693563227489">Der Zugriff auf <ph name="HOST_NAME" /> wurde verweigert</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Wenn Sie die Sicherheitsrisiken kennen, können Sie <ph name="BEGIN_LINK" />diese Website aufrufen<ph name="END_LINK" />, bevor die schädlichen Programme entfernt wurden.</translation>
 <translation id="8349305172487531364">Lesezeichenleiste</translation>
 <translation id="8363502534493474904">Flugmodus ausschalten</translation>
@@ -1113,6 +1115,7 @@
 <translation id="9148507642005240123">&amp;Bearbeiten rückgängig machen</translation>
 <translation id="9154194610265714752">Aktualisiert</translation>
 <translation id="9157595877708044936">Einrichtung läuft...</translation>
+<translation id="9168814207360376865">Ermöglicht Websites zu überprüfen, ob Sie eine Zahlungsmethode gespeichert haben</translation>
 <translation id="9169664750068251925">Auf dieser Website immer blockieren</translation>
 <translation id="9170848237812810038">&amp;Rückgängig</translation>
 <translation id="9171296965991013597">App schließen?</translation>

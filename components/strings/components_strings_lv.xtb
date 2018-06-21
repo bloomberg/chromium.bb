@@ -809,6 +809,7 @@
 <translation id="6891596781022320156">Politikas līmenis netiek atbalstīts.</translation>
 <translation id="6895330447102777224">Karte ir apstiprināta</translation>
 <translation id="6897140037006041989">Lietotāja aģents</translation>
+<translation id="6903319715792422884">Palīdziet uzlabot Drošo pārlūkošanu, nosūtot noteiktu <ph name="BEGIN_WHITEPAPER_LINK" />sistēmas informāciju un lapas saturu<ph name="END_WHITEPAPER_LINK" /> Google serveriem. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Lietotājs:</translation>
 <translation id="6945221475159498467">Atlasīt</translation>
 <translation id="6948701128805548767">Lai skatītu saņemšanas veidus un prasības, atlasiet adresi.</translation>
@@ -1013,6 +1014,7 @@
 <translation id="8308427013383895095">Tulkošana neizdevās, jo radās problēma ar tīkla savienojumu.</translation>
 <translation id="8311129316111205805">Ielādēt sesiju</translation>
 <translation id="8332188693563227489">Piekļuve vietnei <ph name="HOST_NAME" /> tika noraidīta</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ja apzināties drošības risku, varat arī <ph name="BEGIN_LINK" />apmeklēt šo vietni<ph name="END_LINK" />, pirms ir noņemtas kaitīgās programmas.</translation>
 <translation id="8349305172487531364">Grāmatzīmju josla</translation>
 <translation id="8363502534493474904">Izslēdziet lidojuma režīmu.</translation>
@@ -1112,6 +1114,7 @@
 <translation id="9148507642005240123">&amp;Atsaukt labojumu</translation>
 <translation id="9154194610265714752">Atjaunināts</translation>
 <translation id="9157595877708044936">Notiek uzstādīšana...</translation>
+<translation id="9168814207360376865">Atļaut vietnēm pārbaudīt, vai jums ir saglabāti maksājumu veidi</translation>
 <translation id="9169664750068251925">Vienmēr bloķēt šajā vietnē</translation>
 <translation id="9170848237812810038">&amp;Atsaukt</translation>
 <translation id="9171296965991013597">Vai aizvērt lietotni?</translation>

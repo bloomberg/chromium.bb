@@ -810,6 +810,7 @@
 <translation id="6891596781022320156">Nivelul politicii nu este acceptat.</translation>
 <translation id="6895330447102777224">Cardul tău este confirmat</translation>
 <translation id="6897140037006041989">User Agent</translation>
+<translation id="6903319715792422884">Ne poți ajuta să îmbunătățim Navigarea sigură dacă trimiți la Google anumite <ph name="BEGIN_WHITEPAPER_LINK" />informații despre sistem și conținutul paginii<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Utilizator:</translation>
 <translation id="6945221475159498467">Selectează</translation>
 <translation id="6948701128805548767">Pentru a vedea metodele de preluare și cerințele, selectează o adresă</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8308427013383895095">Traducerea nu a reușit din cauza unei probleme cu conexiunea la rețea.</translation>
 <translation id="8311129316111205805">Încarcă sesiunea</translation>
 <translation id="8332188693563227489">Accesul la <ph name="HOST_NAME" /> nu este permis</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Dacă îți asumi riscurile de securitate, poți să <ph name="BEGIN_LINK" />accesezi acest site<ph name="END_LINK" /> înainte ca programele periculoase să fie eliminate.</translation>
 <translation id="8349305172487531364">Bara de marcaje</translation>
 <translation id="8363502534493474904">să dezactivezi modul Avion.</translation>
@@ -1113,6 +1115,7 @@
 <translation id="9148507642005240123">&amp;Anulați editarea</translation>
 <translation id="9154194610265714752">Actualizat</translation>
 <translation id="9157595877708044936">Se configurează...</translation>
+<translation id="9168814207360376865">Permite site-urilor să verifice dacă ai salvat metode de plată</translation>
 <translation id="9169664750068251925">Blocați întotdeauna pe acest site</translation>
 <translation id="9170848237812810038">&amp;Anulează</translation>
 <translation id="9171296965991013597">Ieși din aplicație?</translation>

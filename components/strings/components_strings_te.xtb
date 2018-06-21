@@ -808,6 +808,7 @@
 <translation id="6891596781022320156">విధానం స్థాయికి మద్దతు లేదు.</translation>
 <translation id="6895330447102777224">మీ కార్డ్ నిర్ధారించబడింది</translation>
 <translation id="6897140037006041989">వినియోగదారు ప్రతినిధి</translation>
+<translation id="6903319715792422884"><ph name="BEGIN_WHITEPAPER_LINK" />కొంత సిస్టమ్ సమాచారం మరియు పేజీ కంటెంట్‌<ph name="END_WHITEPAPER_LINK" />ను Googleకి పంపడం ద్వారా సురక్షిత బ్రౌజింగ్‌ని మెరుగుపరచడంలో మీరు సహాయపడవచ్చు. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">వినియోగదారు:</translation>
 <translation id="6945221475159498467">ఎంచుకోండి</translation>
 <translation id="6948701128805548767">పికప్ పద్ధతులు మరియు అవసరాలను చూడాలంటే, చిరునామాని ఎంచుకోండి</translation>
@@ -1012,6 +1013,7 @@
 <translation id="8308427013383895095">నెట్‌వర్క్ కనెక్షన్‌తో సమస్య ఉన్నందున అనువాదం విఫలమైంది.</translation>
 <translation id="8311129316111205805">సెషన్‌ని లోడ్ చేయి</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" />కి ప్రాప్యత నిరాకరించబడింది</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">మీ భద్రతకు వాటిల్లే ఆపదల గురించి మీకు అర్థం అయ్యి ఉంటే, హానికర ప్రోగ్రామ్‌లు తీసివేయబడటానికి ముందే మీరు <ph name="BEGIN_LINK" />ఈ సైట్‌ను సందర్శించవచ్చు<ph name="END_LINK" />.</translation>
 <translation id="8349305172487531364">బుక్‌మార్క్‌ల పట్టీ</translation>
 <translation id="8363502534493474904">ఎయిర్‌ప్లైన్ మోడ్‌ను ఆఫ్ చేయడం</translation>
@@ -1111,6 +1113,7 @@
 <translation id="9148507642005240123">&amp;సవరించడాన్ని రద్దు చేయి</translation>
 <translation id="9154194610265714752">నవీకరించబడింది</translation>
 <translation id="9157595877708044936">అమర్చుతోంది...</translation>
+<translation id="9168814207360376865">మీ వద్ద సేవ్ చేయబడిన చెల్లింపు పద్ధతులు ఉన్నాయో లేదో తనిఖీ చేయడానికి సైట్‌లను అనుమతించండి</translation>
 <translation id="9169664750068251925">ఈ సైట్‌లో ఎల్లప్పుడూ బ్లాక్ చేయి</translation>
 <translation id="9170848237812810038">&amp;అన్డు</translation>
 <translation id="917450738466192189">సర్వర్ యొక్క ప్రమాణపత్రం చెల్లుబాటు కాదు.</translation>

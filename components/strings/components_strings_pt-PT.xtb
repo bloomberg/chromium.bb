@@ -810,6 +810,7 @@
 <translation id="6891596781022320156">O nível da política não é suportado.</translation>
 <translation id="6895330447102777224">O seu cartão foi confirmado</translation>
 <translation id="6897140037006041989">Agente do utilizador</translation>
+<translation id="6903319715792422884">Ajude a melhorar a Navegação segura ao enviar algumas <ph name="BEGIN_WHITEPAPER_LINK" />informações do sistema e conteúdo de páginas<ph name="END_WHITEPAPER_LINK" /> para a Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Utilizador:</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6948701128805548767">Para ver os métodos de recolha e os requisitos, selecione um endereço</translation>
@@ -1013,6 +1014,7 @@
 <translation id="8308427013383895095">A tradução falhou devido a um problema com a ligação de rede.</translation>
 <translation id="8311129316111205805">Carregar sessão</translation>
 <translation id="8332188693563227489">O acesso a <ph name="HOST_NAME" /> foi recusado</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Se compreende os riscos para a sua segurança, pode <ph name="BEGIN_LINK" />visitar este site<ph name="END_LINK" /> antes de os programas prejudiciais terem sido removidos.</translation>
 <translation id="8349305172487531364">Barra de marcadores</translation>
 <translation id="8363502534493474904">Desativar o modo de avião</translation>

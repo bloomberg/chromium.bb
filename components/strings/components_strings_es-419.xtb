@@ -811,6 +811,7 @@
 <translation id="6891596781022320156">No se admite el nivel de políticas.</translation>
 <translation id="6895330447102777224">Tu tarjeta se confirmó</translation>
 <translation id="6897140037006041989">User agent</translation>
+<translation id="6903319715792422884">Para mejorar la Navegación segura, envía <ph name="BEGIN_WHITEPAPER_LINK" />información del sistema y contenido de la página<ph name="END_WHITEPAPER_LINK" /> a Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Usuario:</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6948701128805548767">Para ver los requisitos y métodos de retiro, selecciona una dirección</translation>
@@ -1015,6 +1016,7 @@
 <translation id="8308427013383895095">Se produjo un error en la traducción a causa de un problema con la conexión de red.</translation>
 <translation id="8311129316111205805">Cargar sesión</translation>
 <translation id="8332188693563227489">Se denegó el acceso a <ph name="HOST_NAME" /></translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Si comprendes los riesgos de seguridad, puedes <ph name="BEGIN_LINK" />visitar este sitio<ph name="END_LINK" /> antes de que se hayan eliminado los programas peligrosos.</translation>
 <translation id="8349305172487531364">Barra de favoritos</translation>
 <translation id="8363502534493474904">Desactivar el modo de avión.</translation>
@@ -1114,6 +1116,7 @@
 <translation id="9148507642005240123">&amp;Deshacer Editar</translation>
 <translation id="9154194610265714752">Actualizado</translation>
 <translation id="9157595877708044936">Configurando...</translation>
+<translation id="9168814207360376865">Permitir que los sitios determinen si tienes formas de pago guardadas</translation>
 <translation id="9169664750068251925">Bloquear siempre en este sitio</translation>
 <translation id="9170848237812810038">&amp;Deshacer</translation>
 <translation id="9171296965991013597">¿Deseas salir de la app?</translation>

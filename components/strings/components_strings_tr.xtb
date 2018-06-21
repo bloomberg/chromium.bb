@@ -810,6 +810,7 @@
 <translation id="6891596781022320156">Politika düzeyi desteklenmiyor.</translation>
 <translation id="6895330447102777224">Kartınız onaylandı</translation>
 <translation id="6897140037006041989">Kullanıcı Aracısı</translation>
+<translation id="6903319715792422884">Google'a bazı <ph name="BEGIN_WHITEPAPER_LINK" />sistem bilgilerini ve sayfa içeriklerini<ph name="END_WHITEPAPER_LINK" /> göndererek Güvenli Tarama'nın iyileştirilmesine yardımcı olabilirsiniz. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Kullanıcı:</translation>
 <translation id="6945221475159498467">Seç</translation>
 <translation id="6948701128805548767">Alım yöntemlerini ve gereksinimlerini görmek için bir adres seçin</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8308427013383895095">Ağ bağlantısıyla ilgili bir sorun nedeniyle çeviri başarısız oldu.</translation>
 <translation id="8311129316111205805">Oturum yükle</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> ana makinesine erişim reddedildi</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Güvenliğinize ilişkin riskleri anladıysanız <ph name="BEGIN_LINK" />bu siteyi<ph name="END_LINK" /> zararlı programlar kaldırılmadan önce ziyaret edebilirsiniz.</translation>
 <translation id="8349305172487531364">Yer işaretleri çubuğu</translation>
 <translation id="8363502534493474904">Uçak modunu kapatma</translation>
@@ -1113,6 +1115,7 @@
 <translation id="9148507642005240123">Düzenlemeyi &amp;geri al</translation>
 <translation id="9154194610265714752">Güncellendi</translation>
 <translation id="9157595877708044936">Ayarlanıyor...</translation>
+<translation id="9168814207360376865">Sitelerin, kayıtlı ödeme yöntemleriniz olup olmadığını kontrol etmesine izin verin</translation>
 <translation id="9169664750068251925">Bu sitede her zaman engelle</translation>
 <translation id="9170848237812810038">&amp;Geri al</translation>
 <translation id="9171296965991013597">Uygulamadan çıkılsın mı?</translation>
