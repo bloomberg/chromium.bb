@@ -1009,10 +1009,9 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   sync_sessions::OpenTabsUIDelegate* openTabs =
       syncService->GetOpenTabsUIDelegate();
 
-  [self.tableViewModel removeSectionWithIdentifier:sectionIdentifier];
-  _syncedSessions->EraseSession(section - kNumberOfSectionsBeforeSessions);
-
   void (^tableUpdates)(void) = ^{
+    [self.tableViewModel removeSectionWithIdentifier:sectionIdentifier];
+    _syncedSessions->EraseSession(section - kNumberOfSectionsBeforeSessions);
     [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:section]
                   withRowAnimation:UITableViewRowAnimationLeft];
   };
