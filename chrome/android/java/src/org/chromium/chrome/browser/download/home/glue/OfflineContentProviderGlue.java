@@ -5,11 +5,8 @@
 package org.chromium.chrome.browser.download.home.glue;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
-import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
@@ -31,7 +28,6 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
     private final boolean mIncludeOffTheRecord;
 
     private final DownloadGlue mDownloadProvider;
-    private final ThumbnailProvider mThumbnailProvider;
 
     private Query mOutstandingQuery;
 
@@ -41,8 +37,6 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
         mProvider = provider;
         mIncludeOffTheRecord = includeOffTheRecord;
         mDownloadProvider = new DownloadGlue(this);
-        mThumbnailProvider = new ThumbnailProviderImpl(
-                ((ChromeApplication) ContextUtils.getApplicationContext()).getReferencePool());
 
         mProvider.addObserver(this);
     }
@@ -127,6 +121,16 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
         if (LegacyHelpers.isLegacyDownload(id)) return false;
         mProvider.getVisualsForItem(id, callback);
         return true;
+    }
+
+    /**
+     * Helper method to remove {@link OfflineItemVisuals} for a {@code id}.  Note that this might
+     * not be necessary if everything is using an {@link OfflineContentProvider}.  However the glue
+     * layer needs to determine what to do with downloads that have externally managed thumbnails.
+     */
+    public void removeVisualsForItem(ThumbnailProvider provider, ContentId id) {
+        if (!LegacyHelpers.isLegacyDownload(id)) return;
+        provider.removeThumbnailsFromDisk(id.id);
     }
 
     /** @see OfflineContentProvider#addObserver(OfflineContentProvider.Observer) */
