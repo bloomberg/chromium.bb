@@ -13,7 +13,7 @@ import os
 
 
 ENSURE_FILE_TEMPLATE = r'''
-$VerifiedPlatform linux-386 linux-amd64 linux-arm64 linux-armv6l linux-mips64
+$VerifiedPlatform linux-amd64 linux-arm64 linux-armv6l linux-mips64
 $VerifiedPlatform linux-ppc64 linux-ppc64le linux-s390x
 $VerifiedPlatform mac-amd64
 $VerifiedPlatform windows-386 windows-amd64
