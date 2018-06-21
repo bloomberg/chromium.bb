@@ -17,6 +17,7 @@ extern const base::Feature kNoScriptPreviews;
 extern const base::Feature kStalePreviewsTimestamp;
 extern const base::Feature kAMPRedirection;
 extern const base::Feature kOptimizationHints;
+extern const base::Feature kResourceLoadingHints;
 
 }  // namespace features
 }  // namespace previews

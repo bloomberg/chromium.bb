@@ -52,5 +52,9 @@ const base::Feature kAMPRedirection{"AMPRedirectionPreviews",
 const base::Feature kOptimizationHints{"OptimizationHints",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the application of the resource loading hints when loading resources.
+const base::Feature kResourceLoadingHints{"ResourceLoadingHints",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace previews
