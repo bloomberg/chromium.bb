@@ -90,7 +90,7 @@
     For added security, Chromium will encrypt your data.
   </message>
   <message name="IDS_SETTINGS_SYNC_DISCONNECT_TITLE" desc="The title of the dialog to stop syncing and sign out.">
-    Sign out of Chromium
+    Sign out of Chromium?
   </message>
 <if expr="not chromeos">
     <message name="IDS_SETTINGS_SYNC_SIGN_IN_PROMPT_WITH_NO_ACCOUNT" desc="The text displayed to prompt users to sign in to Chromium.">
