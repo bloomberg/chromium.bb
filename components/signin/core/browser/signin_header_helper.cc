@@ -65,6 +65,27 @@ DiceResponseParams::EnableSyncInfo::~EnableSyncInfo() {}
 DiceResponseParams::EnableSyncInfo::EnableSyncInfo(const EnableSyncInfo&) =
     default;
 
+RequestAdapter::RequestAdapter(net::URLRequest* request) : request_(request) {}
+
+RequestAdapter::~RequestAdapter() = default;
+
+const GURL& RequestAdapter::GetUrl() {
+  return request_->url();
+}
+
+bool RequestAdapter::HasHeader(const std::string& name) {
+  return request_->extra_request_headers().HasHeader(name);
+}
+
+void RequestAdapter::RemoveRequestHeaderByName(const std::string& name) {
+  return request_->RemoveRequestHeaderByName(name);
+}
+
+void RequestAdapter::SetExtraHeaderByName(const std::string& name,
+                                          const std::string& value) {
+  return request_->SetExtraRequestHeaderByName(name, value, false);
+}
+
 std::string BuildMirrorRequestCookieIfPossible(
     const GURL& url,
     const std::string& account_id,
@@ -76,7 +97,7 @@ std::string BuildMirrorRequestCookieIfPossible(
 }
 
 bool SigninHeaderHelper::AppendOrRemoveRequestHeader(
-    net::URLRequest* request,
+    RequestAdapter* request,
     const GURL& redirect_url,
     const char* header_name,
     const std::string& header_value) {
@@ -84,15 +105,14 @@ bool SigninHeaderHelper::AppendOrRemoveRequestHeader(
     // If the request is being redirected, and it has the account consistency
     // header, and current url is a Google URL, and the redirected one is not,
     // remove the header.
-    if (!redirect_url.is_empty() &&
-        request->extra_request_headers().HasHeader(header_name) &&
-        IsUrlEligibleForRequestHeader(request->url()) &&
+    if (!redirect_url.is_empty() && request->HasHeader(header_name) &&
+        IsUrlEligibleForRequestHeader(request->GetUrl()) &&
         !IsUrlEligibleForRequestHeader(redirect_url)) {
       request->RemoveRequestHeaderByName(header_name);
     }
     return false;
   }
-  request->SetExtraRequestHeaderByName(header_name, header_value, false);
+  request->SetExtraHeaderByName(header_name, header_value);
   return true;
 }
 
@@ -134,13 +154,13 @@ bool SigninHeaderHelper::ShouldBuildRequestHeader(
 }
 
 void AppendOrRemoveMirrorRequestHeader(
-    net::URLRequest* request,
+    RequestAdapter* request,
     const GURL& redirect_url,
     const std::string& account_id,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask) {
-  const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
+  const GURL& url = redirect_url.is_empty() ? request->GetUrl() : redirect_url;
   ChromeConnectedHeaderHelper chrome_connected_helper(account_consistency);
   std::string chrome_connected_header_value;
   if (chrome_connected_helper.ShouldBuildRequestHeader(url, cookie_settings)) {
@@ -153,7 +173,7 @@ void AppendOrRemoveMirrorRequestHeader(
 }
 
 bool AppendOrRemoveDiceRequestHeader(
-    net::URLRequest* request,
+    RequestAdapter* request,
     const GURL& redirect_url,
     const std::string& account_id,
     bool sync_enabled,
@@ -161,7 +181,7 @@ bool AppendOrRemoveDiceRequestHeader(
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
+  const GURL& url = redirect_url.is_empty() ? request->GetUrl() : redirect_url;
   DiceHeaderHelper dice_helper(
       !account_id.empty() && sync_has_auth_error && sync_enabled,
       account_consistency);

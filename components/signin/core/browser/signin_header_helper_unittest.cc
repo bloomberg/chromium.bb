@@ -58,11 +58,12 @@ class SigninHeaderHelperTest : public testing::Test {
     std::unique_ptr<net::URLRequest> url_request =
         url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                            TRAFFIC_ANNOTATION_FOR_TESTS);
+    RequestAdapter request_adapter(url_request.get());
     AppendOrRemoveMirrorRequestHeader(
-        url_request.get(), GURL(), account_id, account_consistency_,
+        &request_adapter, GURL(), account_id, account_consistency_,
         cookie_settings_.get(), PROFILE_MODE_DEFAULT);
     AppendOrRemoveDiceRequestHeader(
-        url_request.get(), GURL(), account_id, sync_enabled_,
+        &request_adapter, GURL(), account_id, sync_enabled_,
         sync_has_auth_error_, account_consistency_, cookie_settings_.get());
     return url_request;
   }
@@ -182,8 +183,9 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestGoogleComNoProfileConsistency) {
       url_request_context_.CreateRequest(GURL("https://www.google.com"),
                                          net::DEFAULT_PRIORITY, nullptr,
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
+  RequestAdapter request_adapter(url_request.get());
   AppendOrRemoveMirrorRequestHeader(
-      url_request.get(), GURL(), "0123456789", account_consistency_,
+      &request_adapter, GURL(), "0123456789", account_consistency_,
       cookie_settings_.get(), PROFILE_MODE_DEFAULT);
   CheckAccountConsistencyHeaderRequest(url_request.get(),
                                        kChromeConnectedHeader, "");
@@ -196,8 +198,9 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestGoogleComProfileConsistency) {
       url_request_context_.CreateRequest(GURL("https://www.google.com"),
                                          net::DEFAULT_PRIORITY, nullptr,
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
+  RequestAdapter request_adapter(url_request.get());
   AppendOrRemoveMirrorRequestHeader(
-      url_request.get(), GURL(), "0123456789", account_consistency_,
+      &request_adapter, GURL(), "0123456789", account_consistency_,
       cookie_settings_.get(), PROFILE_MODE_DEFAULT);
   CheckAccountConsistencyHeaderRequest(
       url_request.get(), kChromeConnectedHeader,
@@ -453,8 +456,9 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderEligibleRedirectURL) {
   std::unique_ptr<net::URLRequest> url_request =
       url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
+  RequestAdapter request_adapter(url_request.get());
   AppendOrRemoveMirrorRequestHeader(
-      url_request.get(), redirect_url, account_id, account_consistency_,
+      &request_adapter, redirect_url, account_id, account_consistency_,
       cookie_settings_.get(), PROFILE_MODE_DEFAULT);
   EXPECT_TRUE(
       url_request->extra_request_headers().HasHeader(kChromeConnectedHeader));
@@ -470,8 +474,9 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderNonEligibleRedirectURL) {
   std::unique_ptr<net::URLRequest> url_request =
       url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
+  RequestAdapter request_adapter(url_request.get());
   AppendOrRemoveMirrorRequestHeader(
-      url_request.get(), redirect_url, account_id, account_consistency_,
+      &request_adapter, redirect_url, account_id, account_consistency_,
       cookie_settings_.get(), PROFILE_MODE_DEFAULT);
   EXPECT_FALSE(
       url_request->extra_request_headers().HasHeader(kChromeConnectedHeader));
@@ -490,8 +495,9 @@ TEST_F(SigninHeaderHelperTest, TestIgnoreMirrorHeaderNonEligibleURLs) {
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
   url_request->SetExtraRequestHeaderByName(kChromeConnectedHeader, fake_header,
                                            false);
+  RequestAdapter request_adapter(url_request.get());
   AppendOrRemoveMirrorRequestHeader(
-      url_request.get(), redirect_url, account_id, account_consistency_,
+      &request_adapter, redirect_url, account_id, account_consistency_,
       cookie_settings_.get(), PROFILE_MODE_DEFAULT);
   std::string header;
   EXPECT_TRUE(url_request->extra_request_headers().GetHeader(

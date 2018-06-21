@@ -63,7 +63,9 @@ void TestMirrorRequestForProfileOnIOThread(
       profile_io->GetMainRequestContext()->CreateRequest(
           GURL(kGaiaUrl), net::DEFAULT_PRIORITY, nullptr,
           TRAFFIC_ANNOTATION_FOR_TESTS);
-  signin::FixAccountConsistencyRequestHeader(request.get(), GURL(), profile_io);
+  signin::ChromeRequestAdapter signin_request_adapter(request.get());
+  signin::FixAccountConsistencyRequestHeader(&signin_request_adapter, GURL(),
+                                             profile_io);
 
   CheckRequestHeader(request.get(), kChromeConnectedHeader,
                      expected_header_value);

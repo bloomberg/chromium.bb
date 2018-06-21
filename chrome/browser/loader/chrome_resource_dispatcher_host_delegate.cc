@@ -430,8 +430,9 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   if (io_data->policy_header_helper())
     io_data->policy_header_helper()->AddPolicyHeaders(request->url(), request);
 
-  signin::FixAccountConsistencyRequestHeader(request, GURL() /* redirect_url */,
-                                             io_data);
+  signin::ChromeRequestAdapter signin_request_adapter(request);
+  signin::FixAccountConsistencyRequestHeader(
+      &signin_request_adapter, GURL() /* redirect_url */, io_data);
 
   AppendStandardResourceThrottles(request,
                                   resource_context,
@@ -600,8 +601,9 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 
-  signin::ProcessAccountConsistencyResponseHeaders(request, GURL(),
-                                                   io_data->IsOffTheRecord());
+  signin::ResponseAdapter signin_response_adapter(request);
+  signin::ProcessAccountConsistencyResponseHeaders(
+      &signin_response_adapter, GURL(), io_data->IsOffTheRecord());
 
   // Built-in additional protection for the chrome web store origin.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -676,9 +678,12 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   // X-Chrome-Connected header to all Gaia requests from a connected profile so
   // Gaia could return a 204 response and let Chrome handle the action with
   // native UI.
-  signin::FixAccountConsistencyRequestHeader(request, redirect_url, io_data);
-  signin::ProcessAccountConsistencyResponseHeaders(request, redirect_url,
-                                                   io_data->IsOffTheRecord());
+  signin::ChromeRequestAdapter signin_request_adapter(request);
+  signin::FixAccountConsistencyRequestHeader(&signin_request_adapter,
+                                             redirect_url, io_data);
+  signin::ResponseAdapter signin_response_adapter(request);
+  signin::ProcessAccountConsistencyResponseHeaders(
+      &signin_response_adapter, redirect_url, io_data->IsOffTheRecord());
 
   if (io_data->policy_header_helper())
     io_data->policy_header_helper()->AddPolicyHeaders(redirect_url, request);
