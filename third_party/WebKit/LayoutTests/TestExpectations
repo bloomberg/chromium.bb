@@ -2834,7 +2834,6 @@ crbug.com/626703 external/wpt/infrastructure/server/order-of-metas.any.sharedwor
 crbug.com/626703 external/wpt/payment-request/PaymentMethodChangeEvent/methodName-attribute.https.html [ Timeout ]
 crbug.com/626703 external/wpt/payment-request/PaymentMethodChangeEvent/methodDetails-attribute.https.html [ Timeout ]
 crbug.com/626703 external/wpt/screen-orientation/orientation-reading.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/webaudio/idlharness.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/float-retry-push-image.html [ Failure ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_parent [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_top [ Timeout ]
