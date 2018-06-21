@@ -155,18 +155,18 @@ void FakeDriveFs::GetMetadata(const base::FilePath& path,
   metadata->content_mime_type = stored_metadata.mime_type;
   metadata->hosted = stored_metadata.hosted;
 
-  if (!stored_metadata.original_name.empty()) {
-    base::StringPiece prefix;
-    if (metadata->hosted) {
-      prefix = "https://document_alternate_link/";
-    } else if (info.is_directory) {
-      prefix = "https://folder_alternate_link/";
-    } else {
-      prefix = "https://file_alternate_link/";
-    }
-    metadata->alternate_url =
-        GURL(base::StrCat({prefix, stored_metadata.original_name})).spec();
+  base::StringPiece prefix;
+  if (metadata->hosted) {
+    prefix = "https://document_alternate_link/";
+  } else if (info.is_directory) {
+    prefix = "https://folder_alternate_link/";
+  } else {
+    prefix = "https://file_alternate_link/";
   }
+  std::string suffix = stored_metadata.original_name.empty()
+                           ? path.BaseName().value()
+                           : stored_metadata.original_name;
+  metadata->alternate_url = GURL(base::StrCat({prefix, suffix})).spec();
 
   std::move(callback).Run(drive::FILE_ERROR_OK, std::move(metadata));
 }
