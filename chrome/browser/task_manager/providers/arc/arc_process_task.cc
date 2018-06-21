@@ -39,14 +39,14 @@ base::string16 MakeTitle(const arc::ArcProcess& arc_process) {
   switch (arc_process.process_state()) {
     case arc::mojom::ProcessState::PERSISTENT:
     case arc::mojom::ProcessState::PERSISTENT_UI:
-    case arc::mojom::ProcessState::TOP:
       name_template = IDS_TASK_MANAGER_ARC_SYSTEM;
       break;
-    case arc::mojom::ProcessState::BOUND_FOREGROUND_SERVICE:
     case arc::mojom::ProcessState::FOREGROUND_SERVICE:
-    case arc::mojom::ProcessState::SERVICE:
+    case arc::mojom::ProcessState::BOUND_FOREGROUND_SERVICE:
     case arc::mojom::ProcessState::IMPORTANT_FOREGROUND:
     case arc::mojom::ProcessState::IMPORTANT_BACKGROUND:
+    case arc::mojom::ProcessState::TRANSIENT_BACKGROUND:
+    case arc::mojom::ProcessState::SERVICE:
       name_template = IDS_TASK_MANAGER_ARC_PREFIX_BACKGROUND_SERVICE;
       break;
     case arc::mojom::ProcessState::RECEIVER:
