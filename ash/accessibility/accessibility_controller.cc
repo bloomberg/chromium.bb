@@ -41,6 +41,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor_type.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -1023,7 +1024,7 @@ void AccessibilityController::UpdateVirtualKeyboardFromPref() {
 
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
 
-  if (Shell::GetAshConfig() == Config::MASH) {
+  if (!features::IsAshInBrowserProcess()) {
     // TODO(mash): Support on-screen keyboard. See https://crbug.com/646565.
     NOTIMPLEMENTED();
     return;

@@ -6,6 +6,7 @@
 #define ASH_WS_ASH_GPU_INTERFACE_PROVIDER_H_
 
 #include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
+#include "services/ui/public/interfaces/arc.mojom.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/ui/ws2/gpu_interface_provider.h"
 
@@ -34,9 +35,9 @@ class AshGpuInterfaceProvider : public ui::ws2::GpuInterfaceProvider {
       service_manager::BinderRegistry* registry) override;
 
  private:
+  void BindArcRequest(ui::mojom::ArcRequest request);
   void BindDiscardableSharedMemoryManagerRequest(
       discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request);
-
   void BindGpuRequest(ui::mojom::GpuRequest request);
 
   ui::gpu_host::GpuHost* gpu_host_;
