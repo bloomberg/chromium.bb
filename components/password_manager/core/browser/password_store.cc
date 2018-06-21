@@ -29,6 +29,7 @@
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 #include "components/password_manager/core/browser/password_store_signin_notifier.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #endif
 
 using autofill::PasswordForm;
@@ -366,6 +367,7 @@ void PasswordStore::PrepareSyncPasswordHashData(
   // the migration.
   hash_password_manager_.MaybeMigrateExistingSyncPasswordHash(sync_username);
   SchedulePasswordHashUpdate(/*should_log_metrics=*/true);
+  ScheduleEnterprisePasswordURLUpdate();
 }
 
 void PasswordStore::SaveGaiaPasswordHash(
@@ -433,6 +435,18 @@ void PasswordStore::SchedulePasswordHashUpdate(bool should_log_metrics) {
       should_log_metrics));
 }
 
+void PasswordStore::ScheduleEnterprisePasswordURLUpdate() {
+  std::vector<GURL> enterprise_login_urls;
+  safe_browsing::GetPasswordProtectionLoginURLsPref(*prefs_,
+                                                    &enterprise_login_urls);
+  GURL enterprise_change_password_url =
+      safe_browsing::GetPasswordProtectionChangePasswordURLPref(*prefs_);
+
+  ScheduleTask(base::BindRepeating(&PasswordStore::SaveEnterprisePasswordURLs,
+                                   this, base::Passed(&enterprise_login_urls),
+                                   enterprise_change_password_url));
+}
+
 #endif
 
 PasswordStore::~PasswordStore() {
@@ -454,7 +468,6 @@ void PasswordStore::InitOnBackgroundSequence(
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   reuse_detector_ = new PasswordReuseDetector;
-  reuse_detector_->SetPrefs(prefs_);
   GetAutofillableLoginsImpl(
       std::make_unique<GetLoginsRequest>(reuse_detector_));
 #endif
@@ -552,6 +565,15 @@ void PasswordStore::SaveProtectedPasswordHashImpl(
   reuse_detector_->UseGaiaPasswordHash(std::move(gaia_password_hash_list));
   reuse_detector_->UseNonGaiaEnterprisePasswordHash(
       std::move(enterprise_password_hash_list));
+}
+
+void PasswordStore::SaveEnterprisePasswordURLs(
+    const std::vector<GURL>& enterprise_login_urls,
+    const GURL& enterprise_change_password_url) {
+  if (!reuse_detector_)
+    return;
+  reuse_detector_->UseEnterprisePasswordURLs(std::move(enterprise_login_urls),
+                                             enterprise_change_password_url);
 }
 
 void PasswordStore::ClearProtectedPasswordHashImpl() {

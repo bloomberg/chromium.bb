@@ -213,18 +213,12 @@ static_library("browser") {
     "//url",
   ]
 
-  if (password_reuse_detection_support) {
-    deps += [
-      "//components/safe_browsing:features",
-      "//components/safe_browsing/common:safe_browsing_prefs",
-    ]
-  }
-
   if (!is_ios) {
     sources += [
       "hsts_query.cc",
       "hsts_query.h",
     ]
+    deps += [ "//components/safe_browsing/common:safe_browsing_prefs" ]
   }
 
   if (is_posix && !is_mac && !is_ios) {

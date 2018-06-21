@@ -483,12 +483,15 @@ bool MatchesPasswordProtectionLoginURL(const GURL& url,
 
   std::vector<GURL> login_urls;
   GetPasswordProtectionLoginURLsPref(prefs, &login_urls);
-  if (login_urls.empty())
-    return false;
+  return MatchesURLList(url, login_urls);
+}
 
-  GURL simple_url = GetSimplifiedURL(url);
-  for (const GURL& login_url : login_urls) {
-    if (GetSimplifiedURL(login_url) == simple_url) {
+bool MatchesURLList(const GURL& target_url, const std::vector<GURL> url_list) {
+  if (url_list.empty() || !target_url.is_valid())
+    return false;
+  GURL simple_target_url = GetSimplifiedURL(target_url);
+  for (const GURL& url : url_list) {
+    if (GetSimplifiedURL(url) == simple_target_url) {
       return true;
     }
   }

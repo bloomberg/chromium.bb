@@ -339,6 +339,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // enterprise password hashes.
   void OnWarningTriggerChanged();
 
+  // Informs PasswordReuseDetector that enterprise password URLs (login URL or
+  // change password URL) have been changed.
+  void OnEnterprisePasswordUrlChanged();
+
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   TriggerManager* trigger_manager_;
   // Profile associated with this instance.
