@@ -6,19 +6,21 @@
 
 #include <memory>
 
+#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/voice_interaction/voice_interaction_observer.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
 namespace {
 
-class TestVoiceInteractionObserver : public VoiceInteractionObserver {
+class TestVoiceInteractionObserver : public mojom::VoiceInteractionObserver {
  public:
-  TestVoiceInteractionObserver() = default;
+  TestVoiceInteractionObserver() : voice_interaction_binding_(this) {}
+
   ~TestVoiceInteractionObserver() override = default;
 
-  // VoiceInteractionObserver overrides:
+  // mojom::VoiceInteractionObserver overrides:
   void OnVoiceInteractionStatusChanged(
       mojom::VoiceInteractionState state) override {
     state_ = state;
@@ -32,6 +34,8 @@ class TestVoiceInteractionObserver : public VoiceInteractionObserver {
   void OnVoiceInteractionSetupCompleted(bool completed) override {
     setup_completed_ = completed;
   }
+  void OnAssistantFeatureAllowedChanged(
+      mojom::AssistantAllowedState state) override {}
 
   mojom::VoiceInteractionState voice_interaction_state() const {
     return state_;
@@ -40,11 +44,19 @@ class TestVoiceInteractionObserver : public VoiceInteractionObserver {
   bool context_enabled() const { return context_enabled_; }
   bool setup_completed() const { return setup_completed_; }
 
+  void SetVoiceInteractionController(VoiceInteractionController* controller) {
+    mojom::VoiceInteractionObserverPtr ptr;
+    voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
+    controller->AddVoiceInteractionObserver(std::move(ptr));
+  }
+
  private:
   mojom::VoiceInteractionState state_ = mojom::VoiceInteractionState::STOPPED;
   bool settings_enabled_ = false;
   bool context_enabled_ = false;
   bool setup_completed_ = false;
+
+  mojo::Binding<mojom::VoiceInteractionObserver> voice_interaction_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVoiceInteractionObserver);
 };
@@ -58,11 +70,10 @@ class VoiceInteractionControllerTest : public AshTestBase {
     AshTestBase::SetUp();
 
     observer_ = std::make_unique<TestVoiceInteractionObserver>();
-    controller()->AddObserver(observer_.get());
+    observer_->SetVoiceInteractionController(controller());
   }
 
   void TearDown() override {
-    controller()->RemoveObserver(observer_.get());
     observer_.reset();
 
     AshTestBase::TearDown();
@@ -85,6 +96,8 @@ class VoiceInteractionControllerTest : public AshTestBase {
 
 TEST_F(VoiceInteractionControllerTest, NotifyStatusChanged) {
   controller()->NotifyStatusChanged(mojom::VoiceInteractionState::RUNNING);
+  controller()->FlushForTesting();
+
   // The cached state should be updated.
   EXPECT_EQ(mojom::VoiceInteractionState::RUNNING,
             controller()->voice_interaction_state());
@@ -95,6 +108,7 @@ TEST_F(VoiceInteractionControllerTest, NotifyStatusChanged) {
 
 TEST_F(VoiceInteractionControllerTest, NotifySettingsEnabled) {
   controller()->NotifySettingsEnabled(true);
+  controller()->FlushForTesting();
   // The cached state should be updated.
   EXPECT_TRUE(controller()->settings_enabled());
   // The observers should be notified.
@@ -103,12 +117,14 @@ TEST_F(VoiceInteractionControllerTest, NotifySettingsEnabled) {
 
 TEST_F(VoiceInteractionControllerTest, NotifyContextEnabled) {
   controller()->NotifyContextEnabled(true);
+  controller()->FlushForTesting();
   // The observers should be notified.
   EXPECT_TRUE(observer()->context_enabled());
 }
 
 TEST_F(VoiceInteractionControllerTest, NotifySetupCompleted) {
   controller()->NotifySetupCompleted(true);
+  controller()->FlushForTesting();
   // The cached state should be updated.
   EXPECT_TRUE(controller()->setup_completed());
   // The observers should be notified.

@@ -24,6 +24,8 @@ class FakeVoiceInteractionController
   void NotifyContextEnabled(bool enabled) override;
   void NotifySetupCompleted(bool completed) override;
   void NotifyFeatureAllowed(ash::mojom::AssistantAllowedState state) override;
+  void IsSettingEnabled(IsSettingEnabledCallback callback) override;
+  void IsSetupCompleted(IsSetupCompletedCallback callback) override;
 
   ash::mojom::VoiceInteractionState voice_interaction_state() const {
     return voice_interaction_state_;

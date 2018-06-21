@@ -333,6 +333,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
       mojom::VoiceInteractionState::RUNNING);
   Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(true);
   Shell::Get()->voice_interaction_controller()->NotifyContextEnabled(true);
+  Shell::Get()->voice_interaction_controller()->FlushForTesting();
 
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.EnterPenPointerMode();
@@ -395,6 +396,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
   // tool.
   test_api_->palette_tool_manager()->ActivateTool(PaletteToolId::METALAYER);
   Shell::Get()->voice_interaction_controller()->NotifyContextEnabled(false);
+  Shell::Get()->voice_interaction_controller()->FlushForTesting();
   EXPECT_FALSE(metalayer_enabled());
 
   // With the metalayer disabled again, press/drag does not activate the
@@ -410,6 +412,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction,
       mojom::VoiceInteractionState::NOT_READY);
   Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(false);
   Shell::Get()->voice_interaction_controller()->NotifyContextEnabled(false);
+  Shell::Get()->voice_interaction_controller()->FlushForTesting();
 
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.EnterPenPointerMode();
@@ -430,12 +433,14 @@ TEST_F(PaletteTrayTestWithVoiceInteraction,
 
   // Enable one of the two user prefs, should not be sufficient.
   Shell::Get()->voice_interaction_controller()->NotifyContextEnabled(true);
+  Shell::Get()->voice_interaction_controller()->FlushForTesting();
   WaitDragAndAssertMetalayer("one pref enabled", origin,
                              ui::EF_LEFT_MOUSE_BUTTON, false /* no metalayer */,
                              false /* no highlighter on press */);
 
   // Enable the other user pref, still not sufficient.
   Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(true);
+  Shell::Get()->voice_interaction_controller()->FlushForTesting();
   WaitDragAndAssertMetalayer("two prefs enabled", origin,
                              ui::EF_LEFT_MOUSE_BUTTON, false /* no metalayer */,
                              false /* no highlighter on press */);
@@ -443,6 +448,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction,
   // Once the service is ready, the button should start working.
   Shell::Get()->voice_interaction_controller()->NotifyStatusChanged(
       mojom::VoiceInteractionState::RUNNING);
+  Shell::Get()->voice_interaction_controller()->FlushForTesting();
 
   // Press and drag with no button, still no highlighter.
   WaitDragAndAssertMetalayer("all enabled, no button ", origin, ui::EF_NONE,
@@ -507,6 +513,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction,
   // Disable the metalayer support.
   // This should deactivate both the palette tool and the highlighter.
   Shell::Get()->voice_interaction_controller()->NotifyContextEnabled(false);
+  Shell::Get()->voice_interaction_controller()->FlushForTesting();
   EXPECT_FALSE(test_api_->palette_tool_manager()->IsToolActive(
       PaletteToolId::METALAYER));
 

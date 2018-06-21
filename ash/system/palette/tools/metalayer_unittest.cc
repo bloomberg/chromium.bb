@@ -97,6 +97,7 @@ TEST_F(MetalayerToolTest, PaletteMenuState) {
               context);
           Shell::Get()->voice_interaction_controller()->NotifyFeatureAllowed(
               allowed_state);
+          Shell::Get()->voice_interaction_controller()->FlushForTesting();
 
           std::unique_ptr<views::View> view =
               base::WrapUnique(tool_->CreateView());
@@ -146,21 +147,26 @@ TEST_F(MetalayerToolTest, MetalayerUnsupportedDisablesPaletteTool) {
       mojom::VoiceInteractionState::RUNNING);
   Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(true);
   Shell::Get()->voice_interaction_controller()->NotifyContextEnabled(true);
+  Shell::Get()->voice_interaction_controller()->FlushForTesting();
 
   // Disabling the user prefs individually should disable the tool.
   tool_->OnEnable();
   EXPECT_CALL(*palette_tool_delegate_.get(),
               DisableTool(PaletteToolId::METALAYER));
   Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(false);
+  Shell::Get()->voice_interaction_controller()->FlushForTesting();
   testing::Mock::VerifyAndClearExpectations(palette_tool_delegate_.get());
   Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(true);
+  Shell::Get()->voice_interaction_controller()->FlushForTesting();
 
   tool_->OnEnable();
   EXPECT_CALL(*palette_tool_delegate_.get(),
               DisableTool(PaletteToolId::METALAYER));
   Shell::Get()->voice_interaction_controller()->NotifyContextEnabled(false);
+  Shell::Get()->voice_interaction_controller()->FlushForTesting();
   testing::Mock::VerifyAndClearExpectations(palette_tool_delegate_.get());
   Shell::Get()->voice_interaction_controller()->NotifyContextEnabled(true);
+  Shell::Get()->voice_interaction_controller()->FlushForTesting();
 
   // Test VoiceInteractionState changes.
   tool_->OnEnable();
@@ -174,6 +180,7 @@ TEST_F(MetalayerToolTest, MetalayerUnsupportedDisablesPaletteTool) {
       mojom::VoiceInteractionState::STOPPED);
   Shell::Get()->voice_interaction_controller()->NotifyStatusChanged(
       mojom::VoiceInteractionState::RUNNING);
+  Shell::Get()->voice_interaction_controller()->FlushForTesting();
   testing::Mock::VerifyAndClearExpectations(palette_tool_delegate_.get());
 
   // Changing the state to NOT_READY should disable the tool.
@@ -181,6 +188,7 @@ TEST_F(MetalayerToolTest, MetalayerUnsupportedDisablesPaletteTool) {
               DisableTool(PaletteToolId::METALAYER));
   Shell::Get()->voice_interaction_controller()->NotifyStatusChanged(
       mojom::VoiceInteractionState::NOT_READY);
+  Shell::Get()->voice_interaction_controller()->FlushForTesting();
   testing::Mock::VerifyAndClearExpectations(palette_tool_delegate_.get());
 }
 

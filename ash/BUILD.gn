@@ -1017,7 +1017,6 @@ component("ash") {
     "utility/transformer_util.h",
     "voice_interaction/voice_interaction_controller.cc",
     "voice_interaction/voice_interaction_controller.h",
-    "voice_interaction/voice_interaction_observer.h",
     "wallpaper/wallpaper_controller.cc",
     "wallpaper/wallpaper_controller.h",
     "wallpaper/wallpaper_controller_observer.h",
