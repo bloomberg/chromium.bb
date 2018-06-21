@@ -19028,6 +19028,11 @@ Called by update_net_error_codes.py.-->
   <int value="2478" label="RTCDataChannelInitMaxRetransmitTime"/>
   <int value="2479"
       label="RTCPeerConnectionCreateDataChannelMaxPacketLifeTime"/>
+  <int value="2480" label="V8SpeechGrammarList_AddFromUri_Method"/>
+  <int value="2481"
+      label="V8SpeechRecognitionEvent_Interpretation_AttributeGetter"/>
+  <int value="2482" label="V8SpeechRecognitionEvent_Emma_AttributeGetter"/>
+  <int value="2483" label="V8SpeechSynthesis_Speak_Method"/>
 </enum>
 
 <enum name="FeedbackSource">
