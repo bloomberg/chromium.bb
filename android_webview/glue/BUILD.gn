@@ -9,13 +9,6 @@ import("//build/config/android/rules.gni")
 import("generate_resource_rewriter.gni")
 import("glue.gni")
 
-webview_public_framework_ijar = "frameworks.public.interface.jar"
-
-generate_interface_jar("public_framework_ijar") {
-  input_jar = webview_public_framework_jar
-  output_jar = "$target_out_dir/$webview_public_framework_ijar"
-}
-
 generate_resource_rewriter("glue_resource_rewriter") {
   # Change deps? please modify glue_library_deps variable.
   deps = glue_library_deps
@@ -27,11 +20,9 @@ android_library("glue") {
   deps = glue_library_deps
   srcjar_deps = [ ":glue_resource_rewriter" ]
 
-  alternative_android_sdk_ijar_dep = ":public_framework_ijar"
-  _ijar = webview_public_framework_ijar
-  _ijar_dir = get_label_info(alternative_android_sdk_ijar_dep, "target_out_dir")
-  alternative_android_sdk_ijar = "$_ijar_dir/$_ijar"
-  alternative_android_sdk_jar = webview_public_framework_jar
+  alternative_android_sdk_dep =
+      "//third_party/android_system_sdk:public_framework_system_java"
+
   java_files = [
     "java/src/com/android/webview/chromium/ApiHelperForM.java",
     "java/src/com/android/webview/chromium/ApiHelperForN.java",

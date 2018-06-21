@@ -118,10 +118,10 @@ if (is_android || is_chromeos) {
     system_webview_apk_target = "//android_webview:system_webview_apk"
   }
 
-  webview_public_framework_jar =
-      "//third_party/android_system_sdk/android_system.jar"
-  if (!defined(webview_framework_jar)) {
-    webview_framework_jar = webview_public_framework_jar
+  webview_public_framework_dep =
+      "//third_party/android_system_sdk:public_framework_system_java"
+  if (!defined(webview_framework_dep)) {
+    webview_framework_dep = webview_public_framework_dep
   }
 
   # TODO(crbug.com/807768): Remove this extra dependency.

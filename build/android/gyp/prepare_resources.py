@@ -131,7 +131,11 @@ def _GenerateRTxt(options, dep_subdirs, gen_dir):
                      '--no-crunch',
                      '--auto-add-overlay',
                      '--no-version-vectors',
-                     '-I', options.android_sdk_jar,
+                    ]
+  for j in options.android_sdk_jars:
+    package_command += ['-I', j]
+
+  package_command += [
                      '--output-text-symbols', gen_dir,
                      '-J', gen_dir,  # Required for R.txt generation.
                      '--ignore-assets', build_utils.AAPT_IGNORE_PATTERN]
@@ -255,8 +259,8 @@ def main(args):
   possible_input_paths = [
     options.aapt_path,
     options.android_manifest,
-    options.android_sdk_jar,
   ]
+  possible_input_paths += options.android_sdk_jars
   input_paths = [x for x in possible_input_paths if x]
   input_paths.extend(options.dependencies_res_zips)
   input_paths.extend(options.extra_r_text_files)

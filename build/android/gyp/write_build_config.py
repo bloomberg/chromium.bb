@@ -512,7 +512,7 @@ from util import build_utils
 _ROOT_TYPES = ('android_apk', 'java_binary',
                'java_annotation_processor', 'junit_binary', 'resource_rewriter')
 # Types that should not allow code deps to pass through.
-_RESOURCE_TYPES = ('android_assets', 'android_resources')
+_RESOURCE_TYPES = ('android_assets', 'android_resources', 'system_java_library')
 
 
 def _ExtractMarkdownDocumentation(input_text):
@@ -817,7 +817,6 @@ def main(argv):
                     help='Path to JAR that contains java resources. Everything '
                     'from this JAR except meta-inf/ content and .class files '
                     'will be added to the final APK.')
-  parser.add_option('--bootclasspath', help='Path to custom android.jar/rt.jar')
 
   # android library options
   parser.add_option('--dex-path', help='Path to target\'s dex output.')
@@ -883,17 +882,18 @@ def main(argv):
 
   jar_path_options = ['jar_path', 'unprocessed_jar_path', 'interface_jar_path']
   required_options_map = {
-      'java_binary': ['build_config'],
-      'java_annotation_processor': ['build_config', 'main_class'],
-      'junit_binary': ['build_config'],
-      'java_library': ['build_config'] + jar_path_options,
+      'android_apk': ['build_config','dex_path'] + jar_path_options,
       'android_assets': ['build_config'],
       'android_resources': ['build_config', 'resources_zip'],
-      'android_apk': ['build_config','dex_path'] + jar_path_options,
-      'dist_jar': ['build_config'],
       'dist_aar': ['build_config'],
-      'resource_rewriter': ['build_config'],
+      'dist_jar': ['build_config'],
       'group': ['build_config'],
+      'java_annotation_processor': ['build_config', 'main_class'],
+      'java_binary': ['build_config'],
+      'java_library': ['build_config'] + jar_path_options,
+      'junit_binary': ['build_config'],
+      'resource_rewriter': ['build_config'],
+      'system_java_library': ['build_config'],
   }
   required_options = required_options_map.get(options.type)
   if not required_options:
@@ -924,7 +924,8 @@ def main(argv):
 
   is_java_target = options.type in (
       'java_binary', 'junit_binary', 'java_annotation_processor',
-      'java_library', 'android_apk', 'dist_aar', 'dist_jar')
+      'java_library', 'android_apk', 'dist_aar', 'dist_jar',
+      'system_java_library')
 
   deps = _DepsFromPaths(
       build_utils.ParseGnList(options.deps_configs), options.type)
@@ -939,6 +940,7 @@ def main(argv):
                           processor_deps.AllConfigPaths() +
                           classpath_deps.AllConfigPaths()))
 
+  system_library_deps = deps.Direct('system_java_library')
   direct_library_deps = deps.Direct('java_library')
   all_library_deps = deps.All('java_library')
   all_resources_deps = deps.All('android_resources')
@@ -985,8 +987,6 @@ def main(argv):
     gradle['dependent_java_projects'] = []
     gradle['dependent_prebuilt_jars'] = deps.GradlePrebuiltJarPaths()
 
-    if options.bootclasspath:
-      gradle['bootclasspath'] = options.bootclasspath
     if options.main_class:
       deps_info['main_class'] = options.main_class
 
@@ -1138,7 +1138,8 @@ def main(argv):
   if is_java_target:
     # The classpath used to compile this target when annotation processors are
     # present.
-    javac_classpath = [c['unprocessed_jar_path'] for c in direct_library_deps]
+    javac_classpath = [
+        c['unprocessed_jar_path'] for c in direct_library_deps]
     # The classpath used to compile this target when annotation processors are
     # not present. These are also always used to know when a target needs to be
     # rebuilt.
@@ -1148,7 +1149,8 @@ def main(argv):
     javac_full_interface_classpath = [
         c['interface_jar_path'] for c in all_library_deps]
     # The classpath used for bytecode-rewritting.
-    javac_full_classpath = [c['unprocessed_jar_path'] for c in all_library_deps]
+    javac_full_classpath = [
+        c['unprocessed_jar_path'] for c in all_library_deps]
     # The classpath to use to run this target (or as an input to ProGuard).
     java_full_classpath = []
     if options.jar_path:
@@ -1263,7 +1265,16 @@ def main(argv):
     dex_config = config['final_dex']
     dex_config['dependency_dex_files'] = deps_dex_files
 
+  system_jars = [c['jar_path'] for c in system_library_deps]
+  system_interface_jars = [c['interface_jar_path'] for c in system_library_deps]
+  if system_library_deps:
+    config['android'] = {}
+    config['android']['sdk_interface_jars'] = system_interface_jars
+    config['android']['sdk_jars'] = system_jars
+    gradle['bootclasspath'] = system_jars
+
   if is_java_target:
+    config['javac']['bootclasspath'] = system_jars
     config['javac']['classpath'] = javac_classpath
     config['javac']['interface_classpath'] = javac_interface_classpath
     # Direct() will be of type 'java_annotation_processor'.
