@@ -106,8 +106,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[TableViewTextButtonItem alloc] initWithType:ItemTypeTextButton];
   textActionButtonItem.text = @"Hello, you should do something.";
   textActionButtonItem.buttonText = @"Do something";
-  [model setFooter:textActionButtonItem
-      forSectionWithIdentifier:SectionIdentifierText];
+  [model addItem:textActionButtonItem
+      toSectionWithIdentifier:SectionIdentifierText];
 
   // SectionIdentifierURL.
   TableViewURLItem* item =
