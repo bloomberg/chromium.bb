@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.compositor.scene_layer;
 
 import android.graphics.RectF;
+import android.view.View;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
@@ -75,8 +76,11 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
     @Override
     public SceneOverlayLayer getUpdatedSceneOverlayTree(RectF viewport, RectF visibleViewport,
             LayerTitleCache layerTitleCache, ResourceManager resourceManager, float yOffset) {
+        // The composited shadow should be visible if the Android toolbar's isn't.
+        boolean isShadowVisible = mBottomView.getVisibility() != View.VISIBLE;
+
         nativeUpdateScrollingBottomViewLayer(mNativePtr, resourceManager, mResourceId,
-                mTopShadowHeightPx, viewport.height() + mCurrentOffsetPx, mCurrentOffsetPx > 0);
+                mTopShadowHeightPx, viewport.height() + mCurrentOffsetPx, isShadowVisible);
 
         return this;
     }
