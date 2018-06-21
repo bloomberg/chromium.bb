@@ -5,5 +5,6 @@
 // https://wicg.github.io/reporting/#dictdef-reportingobserveroptions
 
 dictionary ReportingObserverOptions {
+  sequence<DOMString>? types;
   boolean buffered = false;
 };

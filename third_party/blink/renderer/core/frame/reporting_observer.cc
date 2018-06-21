@@ -37,6 +37,9 @@ void ReportingObserver::ReportToCallback() {
 }
 
 void ReportingObserver::QueueReport(Report* report) {
+  if (!ObservedType(report->type()))
+    return;
+
   report_queue_.push_back(report);
 
   // When the first report of a batch is queued, make a task to report the whole
@@ -48,8 +51,13 @@ void ReportingObserver::QueueReport(Report* report) {
   }
 }
 
+bool ReportingObserver::ObservedType(const String& type) {
+  return !options_.hasTypes() || options_.types().IsEmpty() ||
+         options_.types().Find(type) != kNotFound;
+}
+
 bool ReportingObserver::Buffered() {
-  return options_.buffered();
+  return options_.hasBuffered() && options_.buffered();
 }
 
 void ReportingObserver::ClearBuffered() {

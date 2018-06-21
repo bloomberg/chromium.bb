@@ -31,6 +31,10 @@ class CORE_EXPORT ReportingObserver final : public ScriptWrappable {
   // Queues a report to be reported via callback soon (possibly in a batch).
   void QueueReport(Report* report);
 
+  // Returns whether this ReportingObserver observes reports of the type |type|,
+  // based on the |types| option.
+  bool ObservedType(const String& type);
+
   // Returns the state of the |buffered| option.
   bool Buffered();
 

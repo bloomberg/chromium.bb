@@ -4,9 +4,12 @@ function causeIntervention() {
   var targetX = rect.left + rect.width / 2;
   var targetY = rect.top + rect.height / 2;
 
-  document.body.addEventListener('touchstart', function(e) {
+  var pd = function(e) {
     e.preventDefault();
-  });
+    document.body.removeEventListener('touchstart', pd);
+  };
+
+  document.body.addEventListener('touchstart', pd);
 
   var touches = [new Touch({identifier: 1, clientX: targetX, clientY: targetY, target: target})];
   var touchEventInit = {
