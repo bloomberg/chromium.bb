@@ -25,6 +25,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/unaligned_shared_memory.h"
+#include "media/gpu/v4l2/v4l2_image_processor.h"
 #include "media/video/h264_parser.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_context.h"
@@ -1854,8 +1855,7 @@ void V4L2VideoDecodeAccelerator::DestroyTask() {
     decoder_input_queue_.pop();
   decoder_flushing_ = false;
 
-  if (image_processor_)
-    image_processor_.release()->Destroy();
+  image_processor_ = nullptr;
 
   // Set our state to kError.  Just in case.
   decoder_state_ = kError;
@@ -1976,8 +1976,7 @@ void V4L2VideoDecodeAccelerator::StartResolutionChange() {
     return;
   }
 
-  if (image_processor_)
-    image_processor_.release()->Destroy();
+  image_processor_ = nullptr;
 
   if (!DestroyOutputBuffers()) {
     VLOGF(1) << "Failed destroying output buffers.";
@@ -2394,17 +2393,18 @@ bool V4L2VideoDecodeAccelerator::ResetImageProcessor() {
 bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
   VLOGF(2);
   DCHECK(!image_processor_);
-  image_processor_.reset(new V4L2ImageProcessor(image_processor_device_));
   v4l2_memory output_memory_type =
       (output_mode_ == Config::OutputMode::ALLOCATE ? V4L2_MEMORY_MMAP
                                                     : V4L2_MEMORY_DMABUF);
+  image_processor_.reset(new V4L2ImageProcessor(
+      image_processor_device_, V4L2_MEMORY_DMABUF, output_memory_type));
   // Unretained is safe because |this| owns image processor and there will be
   // no callbacks after processor destroys.
   if (!image_processor_->Initialize(
           V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
           V4L2Device::V4L2PixFmtToVideoPixelFormat(egl_image_format_fourcc_),
-          V4L2_MEMORY_DMABUF, output_memory_type, visible_size_, coded_size_,
-          visible_size_, egl_image_size_, output_buffer_map_.size(),
+          visible_size_, coded_size_, visible_size_, egl_image_size_,
+          output_buffer_map_.size(),
           base::Bind(&V4L2VideoDecodeAccelerator::ImageProcessorError,
                      base::Unretained(this)))) {
     VLOGF(1) << "Initialize image processor failed";

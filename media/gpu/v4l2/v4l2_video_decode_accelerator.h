@@ -25,9 +25,9 @@
 #include "media/base/limits.h"
 #include "media/base/video_decoder_config.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
+#include "media/gpu/image_processor.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
-#include "media/gpu/v4l2/v4l2_image_processor.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
@@ -566,7 +566,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Image processor device, if one is in use.
   scoped_refptr<V4L2Device> image_processor_device_;
   // Image processor. Accessed on |decoder_thread_|.
-  std::unique_ptr<V4L2ImageProcessor> image_processor_;
+  std::unique_ptr<ImageProcessor> image_processor_;
 
   // The V4L2Device EGLImage is created from.
   scoped_refptr<V4L2Device> egl_image_device_;

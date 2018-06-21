@@ -105,6 +105,7 @@ component("gpu") {
     "gpu_video_decode_accelerator_factory.h",
     "gpu_video_encode_accelerator_factory.cc",
     "gpu_video_encode_accelerator_factory.h",
+    "image_processor.h",
   ]
 
   public_deps = [

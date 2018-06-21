@@ -25,6 +25,7 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/unaligned_shared_memory.h"
+#include "media/gpu/v4l2/v4l2_image_processor.h"
 #include "media/video/h264_parser.h"
 
 #define VLOGF(level) VLOG(level) << __func__ << "(): "
@@ -204,16 +205,16 @@ bool V4L2VideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
     }
 
     scoped_refptr<V4L2Device> device = V4L2Device::Create();
-    image_processor_.reset(new V4L2ImageProcessor(device));
+    image_processor_.reset(
+        new V4L2ImageProcessor(device, V4L2_MEMORY_USERPTR, V4L2_MEMORY_MMAP));
 
     // Convert from input_format to device_input_format_, keeping the size
     // at visible_size_ and requiring the output buffers to be of at least
     // input_allocated_size_. Unretained is safe because |this| owns image
     // processor and there will be no callbacks after processor destroys.
     if (!image_processor_->Initialize(
-            input_format, device_input_format_, V4L2_MEMORY_USERPTR,
-            V4L2_MEMORY_MMAP, visible_size_, visible_size_, visible_size_,
-            input_allocated_size_, kImageProcBufferCount,
+            input_format, device_input_format_, visible_size_, visible_size_,
+            visible_size_, input_allocated_size_, kImageProcBufferCount,
             base::Bind(&V4L2VideoEncodeAccelerator::ImageProcessorError,
                        base::Unretained(this)))) {
       VLOGF(1) << "Failed initializing image processor";
@@ -343,8 +344,7 @@ void V4L2VideoEncodeAccelerator::Destroy() {
   client_ptr_factory_.reset();
   weak_this_ptr_factory_.InvalidateWeakPtrs();
 
-  if (image_processor_.get())
-    image_processor_.release()->Destroy();
+  image_processor_ = nullptr;
 
   // If the encoder thread is running, destroy using posted task.
   if (encoder_thread_.IsRunning()) {
