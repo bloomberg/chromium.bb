@@ -593,21 +593,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       self.topToolbar.trailingButton.hidden = NO;
       self.bottomToolbar.hidden = YES;
       self.floatingButton.hidden = NO;
-      self.doneButton = self.topToolbar.leadingButton;
-      self.closeAllButton = self.topToolbar.trailingButton;
+      self.doneButton = self.topToolbar.trailingButton;
+      self.closeAllButton = self.topToolbar.leadingButton;
       self.newTabButton = self.floatingButton;
       break;
-  }
-  if (self.traitCollection.verticalSizeClass ==
-          UIUserInterfaceSizeClassRegular &&
-      self.traitCollection.horizontalSizeClass ==
-          UIUserInterfaceSizeClassRegular) {
-    // There is enough space for the tab view to have a tab strip,
-    // so put the done button on the trailing side where the tab
-    // switcher button is located on the tab view. This puts the buttons for
-    // entering and leaving the tab grid on the same corner.
-    self.doneButton = self.topToolbar.trailingButton;
-    self.closeAllButton = self.topToolbar.leadingButton;
   }
 
   [self.doneButton setTitle:l10n_util::GetNSString(IDS_IOS_TAB_GRID_DONE_BUTTON)
