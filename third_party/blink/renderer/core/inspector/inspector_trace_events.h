@@ -35,6 +35,7 @@ namespace blink {
 class Animation;
 class CSSStyleSheetResource;
 class ContainerNode;
+class Document;
 class DocumentLoader;
 class Element;
 class Event;
