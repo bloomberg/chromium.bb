@@ -563,6 +563,23 @@ void CalculateDrawPropertiesInternal(
         device_scale_factor_for_page_scale_node = inputs->device_scale_factor;
       }
 
+      // We should never be setting a non-unit page scale factor on an oopif
+      // subframe ... if we attempt this log it and fail.
+      // TODO(wjmaclean): Remove as part of conditions for closing the bug.
+      // https://crbug.com/845097
+      if (inputs->page_scale_factor !=
+              inputs->property_trees->transform_tree.page_scale_factor() &&
+          !inputs->page_scale_transform_node) {
+        LOG(ERROR) << "Setting PageScale on subframe: new psf = "
+                   << inputs->page_scale_factor << ", old psf = "
+                   << inputs->property_trees->transform_tree.page_scale_factor()
+                   << ", in_oopif = "
+                   << inputs->root_layer->layer_tree_impl()
+                          ->settings()
+                          .is_layer_tree_for_subframe;
+        CHECK(false);
+      }
+
       draw_property_utils::UpdatePageScaleFactor(
           inputs->property_trees, inputs->page_scale_transform_node,
           inputs->page_scale_factor, device_scale_factor_for_page_scale_node,
