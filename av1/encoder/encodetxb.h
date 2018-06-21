@@ -78,8 +78,8 @@ void av1_set_coeff_buffer(const AV1_COMP *const cpi, MACROBLOCK *const x,
 
 void hbt_destroy();
 int av1_optimize_txb_new(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
-                         int blk_row, int blk_col, int block, TX_SIZE tx_size,
-                         TXB_CTX *txb_ctx, int *rate_cost, int sharpness);
+                         int block, TX_SIZE tx_size, TX_TYPE tx_type,
+                         const TXB_CTX *txb_ctx, int *rate_cost, int sharpness);
 #ifdef __cplusplus
 }
 #endif

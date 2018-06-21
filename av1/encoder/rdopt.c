@@ -2516,8 +2516,7 @@ void model_rd_for_sb_with_dnn(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
 static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                                int block, int blk_row, int blk_col,
                                BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
-                               const ENTROPY_CONTEXT *a,
-                               const ENTROPY_CONTEXT *l,
+                               const TXB_CTX *const txb_ctx,
                                FAST_TX_SEARCH_MODE ftxs_mode,
                                int use_fast_coef_costing, int64_t ref_best_rd,
                                RD_STATS *best_rd_stats) {
@@ -2558,9 +2557,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         find_tx_size_rd_info(&x->txb_rd_record_intra, intra_hash);
     intra_txb_rd_info = &x->txb_rd_record_intra.tx_rd_info[intra_hash_idx];
 
-    TXB_CTX txb_ctx;
-    get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
-    cur_joint_ctx = (txb_ctx.dc_sign_ctx << 8) + txb_ctx.txb_skip_ctx;
+    cur_joint_ctx = (txb_ctx->dc_sign_ctx << 8) + txb_ctx->txb_skip_ctx;
     if (intra_hash_idx > 0 &&
         intra_txb_rd_info->entropy_context == cur_joint_ctx &&
         x->txb_rd_record_intra.tx_rd_info[intra_hash_idx].valid) {
@@ -2679,8 +2676,6 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     block_sse = ROUND_POWER_OF_TWO(block_sse, (xd->bd - 8) * 2);
   block_sse *= 16;
 
-  TXB_CTX txb_ctx;
-  get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
   for (TX_TYPE tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
     if (!allowed_tx_mask[tx_type]) continue;
     if (plane == 0) mbmi->txk_type[txk_type_idx] = tx_type;
@@ -2692,7 +2687,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
           cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size, tx_type,
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
       rate_cost = av1_cost_coeffs(cm, x, plane, blk_row, blk_col, block,
-                                  tx_size, &txb_ctx, use_fast_coef_costing);
+                                  tx_size, txb_ctx, use_fast_coef_costing);
     } else {
       av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, tx_type, AV1_XFORM_QUANT_FP);
@@ -2702,15 +2697,15 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         dist_block_tx_domain(x, plane, block, tx_size, &this_rd_stats.dist,
                              &this_rd_stats.sse);
         rate_cost = av1_cost_coeffs(cm, x, plane, blk_row, blk_col, block,
-                                    tx_size, &txb_ctx, use_fast_coef_costing);
+                                    tx_size, txb_ctx, use_fast_coef_costing);
         const int64_t rd_estimate =
             AOMMIN(RDCOST(x->rdmult, rate_cost, this_rd_stats.dist),
                    RDCOST(x->rdmult, 0, this_rd_stats.sse));
         if (rd_estimate - (rd_estimate >> 3) > AOMMIN(best_rd, ref_best_rd))
           continue;
       }
-      av1_optimize_b(cpi, x, plane, blk_row, blk_col, block, plane_bsize,
-                     tx_size, a, l, 1, &rate_cost);
+      av1_optimize_b(cpi, x, plane, block, tx_size, tx_type, txb_ctx, 1,
+                     &rate_cost);
     }
     if (eobs_ptr[block] == 0) {
       // When eob is 0, pixel domain distortion is more efficient and accurate.
@@ -2809,8 +2804,8 @@ RECON_INTRA:
       } else {
         av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
                         tx_size, best_tx_type, AV1_XFORM_QUANT_FP);
-        av1_optimize_b(cpi, x, plane, blk_row, blk_col, block, plane_bsize,
-                       tx_size, a, l, 1, &rate_cost);
+        av1_optimize_b(cpi, x, plane, block, tx_size, best_tx_type, txb_ctx, 1,
+                       &rate_cost);
       }
     }
 
@@ -2868,9 +2863,10 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     av1_predict_intra_block_facade(cm, xd, plane, blk_col, blk_row, tx_size);
     av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
   }
-
+  TXB_CTX txb_ctx;
+  get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
   search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  a, l, args->ftxs_mode, args->use_fast_coef_costing,
+                  &txb_ctx, args->ftxs_mode, args->use_fast_coef_costing,
                   args->best_rd - args->this_rd, &this_rd_stats);
 
   if (plane == AOM_PLANE_Y && xd->cfl.store_y) {
@@ -4191,7 +4187,7 @@ static void tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
   RD_STATS this_rd_stats;
   search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  a, l, ftxs_mode, 0, ref_rdcost, &this_rd_stats);
+                  &txb_ctx, ftxs_mode, 0, ref_rdcost, &this_rd_stats);
 
   av1_merge_rd_stats(rd_stats, &this_rd_stats);
 
