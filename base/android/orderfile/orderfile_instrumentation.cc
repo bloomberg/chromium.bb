@@ -15,12 +15,22 @@
 #include <vector>
 
 #include "base/android/library_loader/anchor_functions.h"
+#include "base/android/orderfile/orderfile_buildflags.h"
 #include "base/files/file.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+
+#if BUILDFLAG(DEVTOOLS_INSTRUMENTATION_DUMPING)
+#include <sstream>
+
+#include "base/command_line.h"
+#include "base/time/time.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/memory_dump_provider.h"
+#endif  // BUILDFLAG(DEVTOOLS_INSTRUMENTATION_DUMPING)
 
 #if !defined(ARCH_CPU_ARMEL)
 #error Only supported on ARM.
@@ -34,10 +44,15 @@ namespace android {
 namespace orderfile {
 
 namespace {
-
 // Constants used for StartDelayedDump().
 constexpr int kDelayInSeconds = 30;
 constexpr int kInitialDelayInSeconds = kPhases == 1 ? kDelayInSeconds : 5;
+
+#if BUILDFLAG(DEVTOOLS_INSTRUMENTATION_DUMPING)
+// This is defined in content/public/common/content_switches.h, which is not
+// accessible in ::base.
+constexpr const char kProcessTypeSwitch[] = "type";
+#endif  // BUILDFLAG(DEVTOOLS_INSTRUMENTATION_DUMPING)
 
 // These are large overestimates, which is not an issue, as the data is
 // allocated in .bss, and on linux doesn't take any actual memory when it's not
@@ -55,6 +70,25 @@ struct LogData {
 
 LogData g_data[kPhases];
 std::atomic<int> g_data_index;
+
+#if BUILDFLAG(DEVTOOLS_INSTRUMENTATION_DUMPING)
+// Dump offsets when a memory dump is requested. Used only if
+// switches::kDevtoolsInstrumentationDumping is set.
+class OrderfileMemoryDumpHook : public base::trace_event::MemoryDumpProvider {
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override {
+    // Disable instrumentation now to cut down on orderfile pollution.
+    if (!Disable()) {
+      return true;  // A dump has already been started.
+    }
+    std::stringstream process_type_str;
+    Dump(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        kProcessTypeSwitch));
+    return true;  // If something goes awry, a fatal error will be created
+                  // internally.
+  }
+};
+#endif  // BUILDFLAG(DEVTOOLS_INSTRUMENTATION_DUMPING)
 
 // |RecordAddress()| adds an element to a concurrent bitset and to a concurrent
 // append-only list of offsets.
@@ -134,13 +168,18 @@ __attribute__((always_inline, no_instrument_function)) void RecordAddress(
   ordered_offsets[insertion_index].store(offset, std::memory_order_relaxed);
 }
 
-NO_INSTRUMENT_FUNCTION void DumpToFile(const base::FilePath& path,
+NO_INSTRUMENT_FUNCTION bool DumpToFile(const base::FilePath& path,
                                        const LogData& data) {
   auto file =
       base::File(path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   if (!file.IsValid()) {
     PLOG(ERROR) << "Could not open " << path;
-    return;
+    return false;
+  }
+
+  if (data.index == 0) {
+    LOG(ERROR) << "No entries to dump";
+    return false;
   }
 
   size_t count = data.index - 1;
@@ -153,29 +192,44 @@ NO_INSTRUMENT_FUNCTION void DumpToFile(const base::FilePath& path,
     if (!offset)
       continue;
     auto offset_str = base::StringPrintf("%" PRIuS "\n", offset);
-    file.WriteAtCurrentPos(offset_str.c_str(),
-                           static_cast<int>(offset_str.size()));
+    if (file.WriteAtCurrentPos(offset_str.c_str(),
+                               static_cast<int>(offset_str.size())) < 0) {
+      // If the file could be opened, but writing has failed, it's likely that
+      // data was partially written. Producing incomplete profiling data would
+      // lead to a poorly performing orderfile, but might not be otherwised
+      // noticed. So we crash instead.
+      LOG(FATAL) << "Error writing profile data";
+    }
   }
+  return true;
 }
 
 // Stops recording, and outputs the data to |path|.
 NO_INSTRUMENT_FUNCTION void StopAndDumpToFile(int pid,
-                                              uint64_t start_ns_since_epoch) {
+                                              uint64_t start_ns_since_epoch,
+                                              const std::string& tag) {
   Disable();
 
   for (int phase = 0; phase < kPhases; phase++) {
+    std::string tag_str;
+    if (!tag.empty())
+      tag_str = base::StringPrintf("%s-", tag.c_str());
     auto path = base::StringPrintf(
-        "/data/local/tmp/chrome/orderfile/profile-hitmap-%d-%" PRIu64 ".txt_%d",
-        pid, start_ns_since_epoch, phase);
-    DumpToFile(base::FilePath(path), g_data[phase]);
+        "/data/local/tmp/chrome/orderfile/profile-hitmap-%s%d-%" PRIu64
+        ".txt_%d",
+        tag_str.c_str(), pid, start_ns_since_epoch, phase);
+    if (!DumpToFile(base::FilePath(path), g_data[phase])) {
+      LOG(ERROR) << "Problem with dump " << phase << " (" << tag << ")";
+    }
   }
 }
 
 }  // namespace
 
-NO_INSTRUMENT_FUNCTION void Disable() {
-  g_data_index.store(kPhases, std::memory_order_relaxed);
+NO_INSTRUMENT_FUNCTION bool Disable() {
+  auto old_phase = g_data_index.exchange(kPhases, std::memory_order_relaxed);
   std::atomic_thread_fence(std::memory_order_seq_cst);
+  return old_phase != kPhases;
 }
 
 NO_INSTRUMENT_FUNCTION void SanityChecks() {
@@ -189,7 +243,7 @@ NO_INSTRUMENT_FUNCTION bool SwitchToNextPhaseOrDump(
     uint64_t start_ns_since_epoch) {
   int before = g_data_index.fetch_add(1, std::memory_order_relaxed);
   if (before + 1 == kPhases) {
-    StopAndDumpToFile(pid, start_ns_since_epoch);
+    StopAndDumpToFile(pid, start_ns_since_epoch, "");
     return true;
   }
   return false;
@@ -205,12 +259,31 @@ NO_INSTRUMENT_FUNCTION void StartDelayedDump() {
       static_cast<uint64_t>(ts.tv_sec) * 1000 * 1000 * 1000 + ts.tv_nsec;
   int pid = getpid();
 
+#if BUILDFLAG(DEVTOOLS_INSTRUMENTATION_DUMPING)
+  static auto* g_orderfile_memory_dump_hook = new OrderfileMemoryDumpHook();
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      g_orderfile_memory_dump_hook, "Orderfile", nullptr);
+#endif  // BUILDFLAG(DEVTOOLS_INSTRUMENTATION_DUMPING)
+
   std::thread([pid, start_ns_since_epoch]() {
     sleep(kInitialDelayInSeconds);
+#if BUILDFLAG(DEVTOOLS_INSTRUMENTATION_DUMPING)
+    SwitchToNextPhaseOrDump(pid, start_ns_since_epoch);
+// Return, letting devtools tracing handle any post-startup phases.
+#else
     while (!SwitchToNextPhaseOrDump(pid, start_ns_since_epoch))
       sleep(kDelayInSeconds);
+#endif  // BUILDFLAG(DEVTOOLS_INSTRUMENTATION_DUMPING)
   })
       .detach();
+}
+
+NO_INSTRUMENT_FUNCTION void Dump(const std::string& tag) {
+  // As profiling has been disabled, none of the uses of ::base symbols below
+  // will enter the symbol dump.
+  StopAndDumpToFile(
+      getpid(), (base::Time::Now() - base::Time::UnixEpoch()).InNanoseconds(),
+      tag);
 }
 
 NO_INSTRUMENT_FUNCTION void ResetForTesting() {

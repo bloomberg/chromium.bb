@@ -8,15 +8,22 @@
 #include <cstdint>
 #include <vector>
 
+#include "base/android/orderfile/orderfile_buildflags.h"
+
 namespace base {
 namespace android {
 namespace orderfile {
+#if BUILDFLAG(DEVTOOLS_INSTRUMENTATION_DUMPING)
+constexpr int kPhases = 2;
+#else
 constexpr int kPhases = 1;
+#endif  // BUILDFLAG(DEVTOOLS_INSTRUMENTATION_DUMPING)
+
 constexpr size_t kStartOfTextForTesting = 1000;
 constexpr size_t kEndOfTextForTesting = kStartOfTextForTesting + 1000 * 1000;
 
-// Stop recording.
-void Disable();
+// Stop recording. Returns false if recording was already disabled.
+bool Disable();
 
 // CHECK()s that the offsets are correctly set up.
 void SanityChecks();
@@ -28,6 +35,11 @@ bool SwitchToNextPhaseOrDump(int pid, uint64_t start_ns_since_epoch);
 
 // Starts a thread to dump instrumentation after a delay.
 void StartDelayedDump();
+
+// Dumps all information for the current process, annotating the dump file name
+// with the given tag. Will disable instrumentation. Instrumentation must be
+// disabled before this is called.
+void Dump(const std::string& tag);
 
 // Record an |address|, if recording is enabled. Only for testing.
 void RecordAddressForTesting(size_t address);
