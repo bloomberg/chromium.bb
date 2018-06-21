@@ -2042,7 +2042,7 @@
       },
       'Chromium Mac 10.13': {
         'test_suites': {
-          'gtest_tests': 'chromium_mac_fyi_gtests',
+          'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
@@ -2369,7 +2369,7 @@
       },
       'mac-views-rel': {
         'test_suites': {
-          'gtest_tests': 'chromium_mac_fyi_gtests',
+          'gtest_tests': 'chromium_mac_gtests',
         },
         'args': [
           '--enable-features=ViewsBrowserWindows',
@@ -2441,7 +2441,7 @@
       },
       'Out of Process Profiling Mac': {
         'test_suites': {
-          'gtest_tests': 'chromium_mac_fyi_gtests',
+          'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_rel_isolated_scripts',
         },
       },
