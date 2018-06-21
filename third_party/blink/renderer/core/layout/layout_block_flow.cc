@@ -2741,9 +2741,21 @@ void LayoutBlockFlow::RemoveFloatingObjectsFromDescendants() {
   // If our children are inline, then the only boxes which could contain floats
   // are atomic inlines (e.g. inline-block, float etc.) and these create
   // formatting contexts, so can't pick up intruding floats from
-  // ancestors/siblings - making them safe to skip.
-  if (ChildrenInline())
+  // ancestors/siblings - making them safe to skip. We do need to examine the
+  // lines, though, as there may be pointers to the any of the objects that we
+  // are going to remove. Mark those lines dirty, to avoid accessing dangling
+  // pointers. Also, yikes!
+  if (ChildrenInline()) {
+    for (auto* line = FirstRootBox(); line; line = line->NextRootBox()) {
+      if (!line->IsDirty()) {
+        if (const auto* floats = line->FloatsPtr()) {
+          if (floats->size())
+            line->MarkDirty();
+        }
+      }
+    }
     return;
+  }
   for (LayoutObject* child = FirstChild(); child;
        child = child->NextSibling()) {
     // We don't skip blocks that create formatting contexts as they may have
