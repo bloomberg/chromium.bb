@@ -104,7 +104,7 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 199x26
           text run at (0,0) width 199: "Baseline Alignment"
       LayoutNGBlockFlow {DIV} at (0,388.06) size 784x28
-        LayoutInline {FONT} at (0,0) size 208x27
+        LayoutInline {FONT} at (0,0) size 212x27
           LayoutText {#text} at (0,0) size 43x27
             text run at (0,0) width 43: "text "
           LayoutButton {INPUT} at (43,5) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
@@ -145,7 +145,7 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutBlockFlow {INPUT} at (170,3) size 13x13
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {DIV} at (0,438.06) size 784x22
-        LayoutInline {FONT} at (0,0) size 174x12
+        LayoutInline {FONT} at (0,0) size 178x12
           LayoutText {#text} at (0,6) size 18x12
             text run at (0,6) width 18: "text "
           LayoutButton {INPUT} at (18,0) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
