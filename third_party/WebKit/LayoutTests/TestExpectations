@@ -2828,9 +2828,7 @@ crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-002.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/infrastructure/server/order-of-metas.any.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/infrastructure/server/order-of-metas.any.sharedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/payment-request/PaymentMethodChangeEvent/methodName-attribute.https.html [ Timeout ]
 crbug.com/626703 external/wpt/payment-request/PaymentMethodChangeEvent/methodDetails-attribute.https.html [ Timeout ]
 crbug.com/626703 external/wpt/screen-orientation/orientation-reading.html [ Timeout ]
@@ -3849,9 +3847,6 @@ crbug.com/709227 external/wpt/user-timing/invoke_with_timing_attributes.worker.h
 crbug.com/706804 external/wpt/console/console-tests-historical.any.html [ Skip ]
 crbug.com/706804 external/wpt/console/console-tests-historical.any.worker.html [ Skip ]
 
-# Timeouts
-crbug.com/709227 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-idb.any.worker.html [ Timeout ]
-
 # Crashes
 crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern.basic.nocontext.worker.html [ Crash ]
 
@@ -3920,6 +3915,7 @@ crbug.com/798864 external/wpt/html/infrastructure/safe-passing-of-structured-dat
 crbug.com/798864 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/no-transferring.html [ Failure ]
 crbug.com/798864 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-history.html [ Failure ]
 crbug.com/798864 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-idb.any.html [ Failure ]
+crbug.com/798864 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-idb.any.worker.html [ Failure ]
 crbug.com/798864 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-notifications-api.any.html [ Failure ]
 crbug.com/798864 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-notifications-api.any.worker.html [ Failure ]
 crbug.com/798864 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ Failure ]
