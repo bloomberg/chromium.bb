@@ -1052,9 +1052,12 @@ void Shell::Init(
   if (config == Config::CLASSIC) {
     // This will initialize aura::Env which requires |display_manager_| to
     // be initialized first.
-    aura::Env::GetInstance()->set_context_factory(context_factory);
-    aura::Env::GetInstance()->set_context_factory_private(
-        context_factory_private);
+    if (context_factory)
+      aura::Env::GetInstance()->set_context_factory(context_factory);
+    if (context_factory_private) {
+      aura::Env::GetInstance()->set_context_factory_private(
+          context_factory_private);
+    }
   }
 
   // Night Light depends on the display manager, the display color manager, and
@@ -1169,7 +1172,7 @@ void Shell::Init(
         std::move(user_activity_monitor), user_activity_detector_.get());
   }
 
-  if (config == Config::MASH)
+  if (!::features::IsAshInBrowserProcess())
     client_image_registry_ = std::make_unique<ClientImageRegistry>();
 
   // In mash drag and drop is handled by mus.

@@ -102,6 +102,8 @@ void WindowService::OnStart() {
       &WindowService::BindInputDeviceServerRequest, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindWindowTreeFactoryRequest, base::Unretained(this)));
+  registry_.AddInterface(base::BindRepeating(
+      &WindowService::BindUserActivityMonitorRequest, base::Unretained(this)));
 
   // |gpu_interface_provider_| may be null in tests.
   if (gpu_interface_provider_)
@@ -139,6 +141,12 @@ void WindowService::BindImeDriverRequest(mojom::IMEDriverRequest request) {
 void WindowService::BindInputDeviceServerRequest(
     mojom::InputDeviceServerRequest request) {
   input_device_server_.AddBinding(std::move(request));
+}
+
+void WindowService::BindUserActivityMonitorRequest(
+    ui::mojom::UserActivityMonitorRequest request) {
+  // TODO: https://crbug.com/854700.
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowService::BindWindowTreeFactoryRequest(

@@ -66,9 +66,11 @@ if (is_chromeos) {
       "//services/ui/public/interfaces/input_devices",
     ]
 
-    # This target is really an implementation detail of the ui service, but
-    # until Chrome is switched over to mus it needs to be visible to Chrome too.
+    # This target is really an implementation detail of the ui service, which
+    # is hosted in ash. Until Ash is switched out of process chrome needs to
+    # depend upon it too.
     visibility = [
+      "//ash:ash",
       "//chrome/browser",
       "//services/ui:lib",
     ]
