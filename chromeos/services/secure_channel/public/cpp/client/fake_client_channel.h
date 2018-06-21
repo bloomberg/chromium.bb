@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_CLIENT_FAKE_CLIENT_CHANNEL_H_
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_CLIENT_FAKE_CLIENT_CHANNEL_H_
 
+#include <queue>
+
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
@@ -22,11 +24,8 @@ class FakeClientChannel : public ClientChannel {
   using ClientChannel::NotifyDisconnected;
   using ClientChannel::NotifyMessageReceived;
 
-  void set_connection_metadata_for_next_call(
-      mojom::ConnectionMetadataPtr connection_metadata_for_next_call) {
-    connection_metadata_for_next_call_ =
-        std::move(connection_metadata_for_next_call);
-  }
+  void InvokePendingGetConnectionMetadataCallback(
+      mojom::ConnectionMetadataPtr connection_metadata);
 
   std::vector<std::pair<std::string, base::OnceClosure>>& sent_messages() {
     return sent_messages_;
@@ -41,7 +40,10 @@ class FakeClientChannel : public ClientChannel {
   void PerformSendMessage(const std::string& payload,
                           base::OnceClosure on_sent_callback) override;
 
-  mojom::ConnectionMetadataPtr connection_metadata_for_next_call_;
+  // Queues up callbacks passed into PerformGetConnectionMetadata(), to be
+  // invoked later.
+  std::queue<base::OnceCallback<void(mojom::ConnectionMetadataPtr)>>
+      get_connection_metadata_callback_queue_;
   std::vector<std::pair<std::string, base::OnceClosure>> sent_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeClientChannel);

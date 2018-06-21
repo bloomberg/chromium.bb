@@ -11,14 +11,23 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/components/proximity_auth/proximity_monitor.h"
+#include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_device.h"
 
+namespace chromeos {
+namespace secure_channel {
+class ClientChannel;
+}  // namespace secure_channel
+}  // namespace chromeos
+
 namespace device {
 class BluetoothAdapter;
-}
+}  // namespace device
 
 namespace proximity_auth {
 
@@ -29,7 +38,9 @@ class ProximityMonitorObserver;
 class ProximityMonitorImpl : public ProximityMonitor {
  public:
   // The |connection| is not owned, and must outlive |this| instance.
-  ProximityMonitorImpl(cryptauth::Connection* connection,
+  ProximityMonitorImpl(cryptauth::RemoteDeviceRef remote_device,
+                       chromeos::secure_channel::ClientChannel* channel,
+                       cryptauth::Connection* connection,
                        ProximityAuthPrefManager* pref_manager);
   ~ProximityMonitorImpl() override;
 
@@ -62,18 +73,19 @@ class ProximityMonitorImpl : public ProximityMonitor {
   // Polls the connection information.
   void Poll();
 
-  // Callback to received the polled-for connection info.
+  void OnGetConnectionMetadata(
+      chromeos::secure_channel::mojom::ConnectionMetadataPtr
+          connection_metadata);
   void OnConnectionInfo(
       const device::BluetoothDevice::ConnectionInfo& connection_info);
+  void OnGetRssi(const base::Optional<int32_t>& rssi);
 
   // Resets the proximity state to |false|, and clears all member variables
   // tracking the proximity state.
   void ClearProximityState();
 
-  // Updates the proximity state with a new |connection_info| sample of the
-  // current RSSI.
-  void AddSample(
-      const device::BluetoothDevice::ConnectionInfo& connection_info);
+  // Updates the proximity state with a new sample of the current RSSI.
+  void AddSample(int32_t rssi);
 
   // Checks whether the proximity state has changed based on the current
   // samples. Notifies |observers_| on a change.
@@ -83,9 +95,18 @@ class ProximityMonitorImpl : public ProximityMonitor {
   // RSSI value.
   void GetRssiThresholdFromPrefs();
 
-  // The current connection being monitored. Not owned and must outlive this
-  // instance.
+  // Used to get the name of the remote device that ProximitMonitor is
+  // communicating with, for metrics purposes.
+  cryptauth::RemoteDeviceRef remote_device_;
+
+  // Used to communicate with the remote device to gauge its proximity via RSSI
+  // measurement.
+  chromeos::secure_channel::ClientChannel* channel_;
   cryptauth::Connection* connection_;
+
+  // Used to get determine the user pref for how far away the phone is allowed
+  // to be.
+  ProximityAuthPrefManager* pref_manager_;
 
   // The observers attached to the ProximityMonitor.
   base::ObserverList<ProximityMonitorObserver> observers_;
@@ -109,10 +130,6 @@ class ProximityMonitorImpl : public ProximityMonitor {
   // an RSSI reading, or the most recent connection info included an invalid
   // measurement.
   std::unique_ptr<double> rssi_rolling_average_;
-
-  // Contains perferences that outlive the lifetime of this object and across
-  // process restarts. Not owned and must outlive this instance.
-  ProximityAuthPrefManager* pref_manager_;
 
   // Used to vend weak pointers for polling. Using a separate factory for these
   // weak pointers allows the weak pointers to be invalidated when polling
