@@ -67,7 +67,6 @@ const char kStatusValueLoading[] = "loading";
 
 const char kWindowTypeValueNormal[] = "normal";
 const char kWindowTypeValuePopup[] = "popup";
-const char kWindowTypeValuePanel[] = "panel";
 const char kWindowTypeValueApp[] = "app";
 const char kWindowTypeValueDevTools[] = "devtools";
 

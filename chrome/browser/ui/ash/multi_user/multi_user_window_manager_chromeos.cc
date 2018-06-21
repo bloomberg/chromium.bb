@@ -62,7 +62,7 @@ enum TeleportWindowType {
   TELEPORT_WINDOW_INCOGNITO_BROWSER,
   TELEPORT_WINDOW_V1_APP,
   TELEPORT_WINDOW_V2_APP,
-  TELEPORT_WINDOW_PANEL,
+  DEPRECATED_TELEPORT_WINDOW_PANEL,
   TELEPORT_WINDOW_POPUP,
   TELEPORT_WINDOW_UNKNOWN,
   NUM_TELEPORT_WINDOW_TYPES
@@ -98,14 +98,8 @@ void RecordUMAForTransferredWindowType(aura::Window* window) {
           extensions::AppWindowRegistry::Get(*it)->GetAppWindowForNativeWindow(
               window);
     }
-    if (app_window) {
-      if (app_window->window_type() ==
-          extensions::AppWindow::WINDOW_TYPE_PANEL) {
-        window_type = TELEPORT_WINDOW_PANEL;
-      } else {
-        window_type = TELEPORT_WINDOW_V2_APP;
-      }
-    }
+    if (app_window)
+      window_type = TELEPORT_WINDOW_V2_APP;
   }
   UMA_HISTOGRAM_ENUMERATION("MultiProfile.TeleportWindowType", window_type,
                             NUM_TELEPORT_WINDOW_TYPES);

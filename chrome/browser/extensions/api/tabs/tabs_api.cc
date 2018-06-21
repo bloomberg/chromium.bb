@@ -239,19 +239,16 @@ bool IsValidStateForWindowsCreateFunction(
 
   bool has_bound = create_data->left || create_data->top ||
                    create_data->width || create_data->height;
-  bool is_panel = create_data->type == windows::CreateType::CREATE_TYPE_PANEL;
 
   switch (create_data->state) {
     case windows::WINDOW_STATE_MINIMIZED:
       // If minimised, default focused state should be unfocused.
-      return !(create_data->focused && *create_data->focused) && !has_bound &&
-             !is_panel;
+      return !(create_data->focused && *create_data->focused) && !has_bound;
     case windows::WINDOW_STATE_MAXIMIZED:
     case windows::WINDOW_STATE_FULLSCREEN:
     case windows::WINDOW_STATE_LOCKED_FULLSCREEN:
       // If maximised/fullscreen, default focused state should be focused.
-      return !(create_data->focused && !*create_data->focused) && !has_bound &&
-             !is_panel;
+      return !(create_data->focused && !*create_data->focused) && !has_bound;
     case windows::WINDOW_STATE_NORMAL:
     case windows::WINDOW_STATE_DOCKED:
     case windows::WINDOW_STATE_NONE:
@@ -548,20 +545,12 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
     // Figure out window type before figuring out bounds so that default
     // bounds can be set according to the window type.
     switch (create_data->type) {
+      // TODO(stevenjb): Remove 'panel' from windows.json.
+      case windows::CREATE_TYPE_PANEL:
       case windows::CREATE_TYPE_POPUP:
         window_type = Browser::TYPE_POPUP;
         extension_id = extension()->id();
         break;
-
-      case windows::CREATE_TYPE_PANEL: {
-        extension_id = extension()->id();
-        // TODO(dimich): Eventually, remove the 'panel' values form valid
-        // window.create parameters. However, this is a more breaking change, so
-        // for now simply treat it as a POPUP.
-        window_type = Browser::TYPE_POPUP;
-        break;
-      }
-
       case windows::CREATE_TYPE_NONE:
       case windows::CREATE_TYPE_NORMAL:
         break;

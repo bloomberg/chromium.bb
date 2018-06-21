@@ -30,14 +30,7 @@ class ChromeNativeAppWindowViews
       const extensions::AppWindow::CreateParams& create_params,
       views::Widget::InitParams* init_params,
       views::Widget* widget);
-  // Called before views::Widget::Init() in InitializeDefaultWindow() to allow
-  // subclasses to customize the InitParams that would be passed.
-  virtual void OnBeforePanelWidgetInit(views::Widget::InitParams* init_params,
-                                       views::Widget* widget);
-
   virtual void InitializeDefaultWindow(
-      const extensions::AppWindow::CreateParams& create_params);
-  virtual void InitializePanelWindow(
       const extensions::AppWindow::CreateParams& create_params);
   virtual views::NonClientFrameView* CreateStandardDesktopAppFrame();
   virtual views::NonClientFrameView* CreateNonStandardAppFrame() = 0;

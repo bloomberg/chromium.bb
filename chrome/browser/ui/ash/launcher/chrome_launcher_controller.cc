@@ -769,8 +769,8 @@ void ChromeLauncherController::OnAppImageUpdated(const std::string& app_id,
   for (int index = 0; index < model_->item_count(); ++index) {
     ash::ShelfItem item = model_->items()[index];
     ash::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(item.id);
-    if (item.type == ash::TYPE_APP_PANEL || !delegate ||
-        delegate->image_set_by_controller() || item.id.app_id != app_id) {
+    if (!delegate || delegate->image_set_by_controller() ||
+        item.id.app_id != app_id) {
       continue;
     }
     item.image = image;
@@ -1038,8 +1038,6 @@ ash::ShelfID ChromeLauncherController::InsertAppLauncherItem(
     const base::string16& title) {
   CHECK(item_delegate);
   CHECK(!GetItem(item_delegate->shelf_id()));
-  // Ash's ShelfWindowWatcher handles app panel windows separately.
-  DCHECK_NE(ash::TYPE_APP_PANEL, shelf_item_type);
   ash::ShelfItem item;
   item.status = status;
   item.type = shelf_item_type;

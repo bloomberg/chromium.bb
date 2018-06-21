@@ -55,8 +55,6 @@ class ChromeNativeAppWindowViewsAuraAsh
       const extensions::AppWindow::CreateParams& create_params,
       views::Widget::InitParams* init_params,
       views::Widget* widget) override;
-  void OnBeforePanelWidgetInit(views::Widget::InitParams* init_params,
-                               views::Widget* widget) override;
   views::NonClientFrameView* CreateNonStandardAppFrame() override;
   bool ShouldRemoveStandardFrame() override;
 
