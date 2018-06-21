@@ -163,13 +163,6 @@ bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) const {
   zx_time_t deadline = timeout == TimeDelta::Max()
                            ? ZX_TIME_INFINITE
                            : (TimeTicks::Now() + timeout).ToZxTime();
-  // TODO(scottmg): https://crbug.com/755282
-  const bool kOnBot = getenv("CHROME_HEADLESS") != nullptr;
-  if (kOnBot) {
-    LOG(ERROR) << base::StringPrintf(
-        "going to wait for process %x (deadline=%zu, now=%zu)", process_.get(),
-        deadline, TimeTicks::Now().ToZxTime());
-  }
   zx_signals_t signals_observed = 0;
   zx_status_t status = zx_object_wait_one(process_.get(), ZX_TASK_TERMINATED,
                                           deadline, &signals_observed);

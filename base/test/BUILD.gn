@@ -187,6 +187,10 @@ static_library("test_support") {
     ]
   }
 
+  if (is_fuchsia) {
+    deps += [ "//third_party/fuchsia-sdk:zx" ]
+  }
+
   if (is_linux) {
     public_deps += [ ":fontconfig_util_linux" ]
     data_deps = [
