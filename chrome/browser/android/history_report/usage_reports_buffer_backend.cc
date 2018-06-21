@@ -98,7 +98,7 @@ UsageReportsBufferBackend::GetUsageReportsBatch(int batch_size) {
     history_report::UsageReport last_report;
     leveldb::Slice value_slice = db_iter->value();
     if (last_report.ParseFromArray(value_slice.data(), value_slice.size())) {
-      reports->push_back(last_report);
+      reports->emplace_back(std::move(last_report));
       --batch_size;
     }
     db_iter->Next();
