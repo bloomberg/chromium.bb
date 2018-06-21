@@ -10,6 +10,7 @@
 #include <utility>
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
@@ -35,6 +36,8 @@ namespace {
 const char kNormalScriptURL[] = "https://example.com/normal.js";
 const char kNormalImportedScriptURL[] =
     "https://my-awesome-cdn.com/import_script.js";
+const char kHistogramWriteResponseResult[] =
+    "ServiceWorker.DiskCache.WriteResponseResult";
 
 // MockHTTPServer is a utility to provide mocked responses for
 // ServiceWorkerNewScriptLoader.
@@ -315,6 +318,8 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Success) {
+  base::HistogramTester histogram_tester;
+
   const GURL kScriptURL(kNormalScriptURL);
   std::unique_ptr<network::TestURLLoaderClient> client;
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
@@ -334,9 +339,13 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success) {
 
   // The response should also be stored in the storage.
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
+  histogram_tester.ExpectUniqueSample(kHistogramWriteResponseResult,
+                                      ServiceWorkerMetrics::WRITE_OK, 1);
 }
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Success_EmptyBody) {
+  base::HistogramTester histogram_tester;
+
   const GURL kScriptURL("https://example.com/empty.js");
   std::unique_ptr<network::TestURLLoaderClient> client;
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
@@ -356,9 +365,13 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_EmptyBody) {
 
   // The response should also be stored in the storage.
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
+  // We don't record write response result if body is empty.
+  histogram_tester.ExpectTotalCount(kHistogramWriteResponseResult, 0);
 }
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Success_LargeBody) {
+  base::HistogramTester histogram_tester;
+
   std::unique_ptr<network::TestURLLoaderClient> client;
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
 
@@ -389,9 +402,14 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_LargeBody) {
 
   // The response should also be stored in the storage.
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
+  // WRITE_OK should be recorded twice as we record every single write success.
+  histogram_tester.ExpectUniqueSample(kHistogramWriteResponseResult,
+                                      ServiceWorkerMetrics::WRITE_OK, 2);
 }
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Error_404) {
+  base::HistogramTester histogram_tester;
+
   std::unique_ptr<network::TestURLLoaderClient> client;
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
 
@@ -409,9 +427,13 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Error_404) {
 
   // The response shouldn't be stored in the storage.
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
+  // No sample should be recorded since a write didn't occur.
+  histogram_tester.ExpectTotalCount(kHistogramWriteResponseResult, 0);
 }
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Error_Redirect) {
+  base::HistogramTester histogram_tester;
+
   std::unique_ptr<network::TestURLLoaderClient> client;
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
 
@@ -430,9 +452,13 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Error_Redirect) {
 
   // The response shouldn't be stored in the storage.
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
+  // No sample should be recorded since a write didn't occur.
+  histogram_tester.ExpectTotalCount(kHistogramWriteResponseResult, 0);
 }
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Error_CertificateError) {
+  base::HistogramTester histogram_tester;
+
   std::unique_ptr<network::TestURLLoaderClient> client;
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
 
@@ -453,9 +479,13 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Error_CertificateError) {
 
   // The response shouldn't be stored in the storage.
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
+  // No sample should be recorded since a write didn't occur.
+  histogram_tester.ExpectTotalCount(kHistogramWriteResponseResult, 0);
 }
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Error_NoMimeType) {
+  base::HistogramTester histogram_tester;
+
   std::unique_ptr<network::TestURLLoaderClient> client;
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
 
@@ -473,9 +503,13 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Error_NoMimeType) {
 
   // The response shouldn't be stored in the storage.
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
+  // No sample should be recorded since a write didn't occur.
+  histogram_tester.ExpectTotalCount(kHistogramWriteResponseResult, 0);
 }
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Error_BadMimeType) {
+  base::HistogramTester histogram_tester;
+
   std::unique_ptr<network::TestURLLoaderClient> client;
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
 
@@ -495,9 +529,13 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Error_BadMimeType) {
 
   // The response shouldn't be stored in the storage.
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
+  // No sample should be recorded since a write didn't occur.
+  histogram_tester.ExpectTotalCount(kHistogramWriteResponseResult, 0);
 }
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Success_PathRestriction) {
+  base::HistogramTester histogram_tester;
+
   std::unique_ptr<network::TestURLLoaderClient> client;
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
 
@@ -528,9 +566,13 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_PathRestriction) {
 
   // The response should also be stored in the storage.
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
+  histogram_tester.ExpectUniqueSample(kHistogramWriteResponseResult,
+                                      ServiceWorkerMetrics::WRITE_OK, 1);
 }
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Error_PathRestriction) {
+  base::HistogramTester histogram_tester;
+
   std::unique_ptr<network::TestURLLoaderClient> client;
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
 
@@ -555,9 +597,13 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Error_PathRestriction) {
 
   // The response shouldn't be stored in the storage.
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
+  // No sample should be recorded since a write didn't occur.
+  histogram_tester.ExpectTotalCount(kHistogramWriteResponseResult, 0);
 }
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Error_RedundantWorker) {
+  base::HistogramTester histogram_tester;
+
   std::unique_ptr<network::TestURLLoaderClient> client;
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
 
@@ -577,6 +623,8 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Error_RedundantWorker) {
 
   // The response shouldn't be stored in the storage.
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
+  // No sample should be recorded since a write didn't occur.
+  histogram_tester.ExpectTotalCount(kHistogramWriteResponseResult, 0);
 }
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Update) {
