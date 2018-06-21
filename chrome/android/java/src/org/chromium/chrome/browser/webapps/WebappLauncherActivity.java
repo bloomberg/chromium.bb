@@ -212,6 +212,14 @@ public class WebappLauncherActivity extends Activity {
         // Activity.
         launchIntent.setAction(Intent.ACTION_VIEW);
         launchIntent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + info.id()));
+        launchIntent.setFlags(getWebappActivityIntentFlags());
+        return launchIntent;
+    }
+
+    /**
+     * Returns the set of Intent flags required to correctly launch a WebappActivity.
+     */
+    public static int getWebappActivityIntentFlags() {
         // Setting FLAG_ACTIVITY_CLEAR_TOP handles 2 edge cases:
         // - If a legacy PWA is launching from a notification, we want to ensure that the URL being
         // launched is the URL in the intent. If a paused WebappActivity exists for this id,
@@ -222,10 +230,14 @@ public class WebappLauncherActivity extends Activity {
         // clicks a link to takes them back to the scope of a WebAPK, we want to destroy the
         // CustomTabActivity activity and go back to the WebAPK activity. It is intentional that
         // Custom Tab will not be reachable with a back button.
-        launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+
+        // In addition FLAG_ACTIVITY_NEW_DOCUMENT is required otherwise on Samsung Lollipop devices
+        // an Intent to an existing top Activity (such as sent from the Webapp Actions Notification)
+        // will trigger a new WebappActivity to be launched and onCreate called instead of
+        // onNewIntent of the existing WebappActivity being called.
+        return Intent.FLAG_ACTIVITY_NEW_TASK
                 | ApiCompatibilityUtils.getActivityNewDocumentFlag()
-                | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        return launchIntent;
+                | Intent.FLAG_ACTIVITY_CLEAR_TOP;
     }
 
     /**
