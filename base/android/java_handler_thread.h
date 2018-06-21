@@ -27,7 +27,9 @@ namespace android {
 class BASE_EXPORT JavaHandlerThread {
  public:
   // Create new thread.
-  explicit JavaHandlerThread(const char* name);
+  explicit JavaHandlerThread(
+      const char* name,
+      base::ThreadPriority priority = base::ThreadPriority::NORMAL);
   // Wrap and connect to an existing JavaHandlerThread.
   // |obj| is an instance of JavaHandlerThread.
   explicit JavaHandlerThread(

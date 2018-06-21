@@ -45,8 +45,16 @@
 
 namespace {
 
-std::unique_ptr<base::Thread> CreateAndStartCompositorThread() {
-  auto thread = std::make_unique<base::Thread>("VizCompositorThread");
+std::unique_ptr<viz::CompositorThreadType> CreateAndStartCompositorThread() {
+  const char* thread_name = "VizCompositorThread";
+
+#if defined(OS_ANDROID)
+  auto thread = std::make_unique<base::android::JavaHandlerThread>(
+      thread_name, base::ThreadPriority::DISPLAY);
+  thread->Start();
+  return thread;
+#else
+  auto thread = std::make_unique<base::Thread>(thread_name);
   base::Thread::Options thread_options;
 #if defined(OS_WIN)
   // Windows needs a UI message loop for child HWND. Other platforms can use the
@@ -54,11 +62,12 @@ std::unique_ptr<base::Thread> CreateAndStartCompositorThread() {
   thread_options.message_loop_type = base::MessageLoop::TYPE_UI;
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
   CHECK(thread->StartWithOptions(thread_options));
   return thread;
+#endif
 }
 
 std::unique_ptr<base::Thread> CreateAndStartIOThread() {
