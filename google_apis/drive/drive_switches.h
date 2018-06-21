@@ -16,7 +16,7 @@ enum TeamDrivesIntegrationStatus {
 TeamDrivesIntegrationStatus GetTeamDrivesIntegrationSwitch();
 
 // For tests which require specific commandline switch settings.
-extern const char kEnableTeamDrives[];
+extern const char kDisableTeamDrives[];
 
 }  // namespace switches
 

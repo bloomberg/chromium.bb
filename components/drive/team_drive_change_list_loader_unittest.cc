@@ -72,8 +72,6 @@ class TestChangeListLoaderObserver : public ChangeListLoaderObserver {
 class TeamDriveChangeListLoaderTest : public testing::Test {
  protected:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        google_apis::kEnableTeamDrives);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();

@@ -87,8 +87,6 @@ class TestChangeListLoaderObserver : public ChangeListLoaderObserver {
 class ChangeListLoaderTest : public testing::Test {
  protected:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        google_apis::kEnableTeamDrives);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     BuildTestObjects();
   }

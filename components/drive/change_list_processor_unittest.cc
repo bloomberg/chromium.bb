@@ -108,8 +108,6 @@ std::vector<std::unique_ptr<ChangeList>> CreateBaseChangeList() {
 class ChangeListProcessorTest : public testing::Test {
  protected:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        google_apis::kEnableTeamDrives);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     metadata_storage_.reset(new ResourceMetadataStorage(
@@ -122,8 +120,6 @@ class ChangeListProcessorTest : public testing::Test {
                                fake_free_disk_space_getter_.get()));
     ASSERT_TRUE(cache_->Initialize());
 
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        google_apis::kEnableTeamDrives);
     metadata_.reset(
         new internal::ResourceMetadata(metadata_storage_.get(), cache_.get(),
                                        base::ThreadTaskRunnerHandle::Get()));

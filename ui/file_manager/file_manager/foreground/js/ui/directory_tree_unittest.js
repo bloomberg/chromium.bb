@@ -129,8 +129,6 @@ function testCreateDirectoryTree(callback) {
  *     test result.
  */
 function testCreateDirectoryTreeWithTeamDrive(callback) {
-  mockCommandLinePrivate.addSwitch('team-drives');
-
   // Create elements.
   var parentElement = document.createElement('div');
   var directoryTree = document.createElement('div');
@@ -199,8 +197,6 @@ function testCreateDirectoryTreeWithTeamDrive(callback) {
  *     test result.
  */
 function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
-  mockCommandLinePrivate.addSwitch('team-drives');
-
   // Create elements.
   var parentElement = document.createElement('div');
   var directoryTree = document.createElement('div');
