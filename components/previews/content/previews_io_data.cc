@@ -49,6 +49,7 @@ bool AllowedOnReload(PreviewsType type) {
     case PreviewsType::LOFI:
     case PreviewsType::AMP_REDIRECTION:
     case PreviewsType::NOSCRIPT:
+    case PreviewsType::RESOURCE_LOADING_HINTS:
       return true;
     // Loading these types will always be stale when refreshed.
     case PreviewsType::OFFLINE:
@@ -66,6 +67,7 @@ bool IsServerWhitelistedType(PreviewsType type) {
   switch (type) {
     // These types check server whitelist, if available.
     case PreviewsType::NOSCRIPT:
+    case PreviewsType::RESOURCE_LOADING_HINTS:
       return true;
     case PreviewsType::OFFLINE:
     case PreviewsType::LITE_PAGE:
@@ -209,7 +211,8 @@ void PreviewsIOData::SetIgnorePreviewsBlacklistDecision(bool ignored) {
 
 bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
                                         PreviewsType type) const {
-  DCHECK(type == PreviewsType::OFFLINE || type == PreviewsType::NOSCRIPT);
+  DCHECK(type == PreviewsType::OFFLINE || type == PreviewsType::NOSCRIPT ||
+         type == PreviewsType::RESOURCE_LOADING_HINTS);
   // Consumers that need to specify a blacklist or ignore flag should use
   // ShouldAllowPreviewAtECT directly.
   return ShouldAllowPreviewAtECT(request, type,
@@ -333,7 +336,16 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
                                std::move(passed_reasons), page_id);
         return false;
       }
+    } else if (type == PreviewsType::RESOURCE_LOADING_HINTS) {
+      // RESOURCE_LOADING_HINTS optimization can be applied only when a server
+      // provided whitelist is available.
+      LogPreviewDecisionMade(
+          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER,
+          request.url(), base::Time::Now(), type, std::move(passed_reasons),
+          page_id);
+      return false;
     } else {
+      DCHECK_EQ(PreviewsType::NOSCRIPT, type);
       // Since server optimization guidance not configured, allow the preview
       // but with qualified eligibility reason.
       LogPreviewDecisionMade(
@@ -352,7 +364,8 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
 
 bool PreviewsIOData::IsURLAllowedForPreview(const net::URLRequest& request,
                                             PreviewsType type) const {
-  DCHECK_EQ(PreviewsType::NOSCRIPT, type);
+  DCHECK(PreviewsType::NOSCRIPT == type ||
+         PreviewsType::RESOURCE_LOADING_HINTS == type);
   if (previews_black_list_ && !blacklist_ignored_) {
     std::vector<PreviewsEligibilityReason> passed_reasons;
     // The blacklist will disallow certain hosts for periods of time based on

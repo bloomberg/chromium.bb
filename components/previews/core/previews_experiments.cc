@@ -149,6 +149,10 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
                                                    // ECT.
     case PreviewsType::NONE:
     case PreviewsType::UNSPECIFIED:
+    case PreviewsType::RESOURCE_LOADING_HINTS:
+      return GetParamValueAsECTByFeature(features::kResourceLoadingHints,
+                                         kEffectiveConnectionTypeThreshold,
+                                         net::EFFECTIVE_CONNECTION_TYPE_2G);
     case PreviewsType::LAST:
       break;
   }
@@ -176,6 +180,10 @@ bool IsNoScriptPreviewsEnabled() {
   return base::FeatureList::IsEnabled(features::kNoScriptPreviews);
 }
 
+bool IsResourceLoadingHintsEnabled() {
+  return base::FeatureList::IsEnabled(features::kResourceLoadingHints);
+}
+
 int OfflinePreviewsVersion() {
   return GetParamValueAsInt(kClientSidePreviewsFieldTrial, kVersion, 0);
 }
@@ -193,6 +201,11 @@ int AMPRedirectionPreviewsVersion() {
 int NoScriptPreviewsVersion() {
   return GetFieldTrialParamByFeatureAsInt(features::kNoScriptPreviews, kVersion,
                                           0);
+}
+
+int ResourceLoadingHintsVersion() {
+  return GetFieldTrialParamByFeatureAsInt(features::kResourceLoadingHints,
+                                          kVersion, 0);
 }
 
 bool IsOptimizationHintsEnabled() {
@@ -245,6 +258,8 @@ std::string GetStringNameForType(PreviewsType type) {
       return "NoScript";
     case PreviewsType::UNSPECIFIED:
       return "Unspecified";
+    case PreviewsType::RESOURCE_LOADING_HINTS:
+      return "ResourceLoadingHints";
     case PreviewsType::LAST:
       break;
   }

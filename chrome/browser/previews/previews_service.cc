@@ -44,6 +44,8 @@ bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
     case previews::PreviewsType::UNSPECIFIED:
       // Not a real previews type so treat as false.
       return false;
+    case previews::PreviewsType::RESOURCE_LOADING_HINTS:
+      return previews::params::IsResourceLoadingHintsEnabled();
     case previews::PreviewsType::NONE:
     case previews::PreviewsType::LAST:
       break;
@@ -66,6 +68,8 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
       return previews::params::AMPRedirectionPreviewsVersion();
     case previews::PreviewsType::NOSCRIPT:
       return previews::params::NoScriptPreviewsVersion();
+    case previews::PreviewsType::RESOURCE_LOADING_HINTS:
+      return previews::params::ResourceLoadingHintsVersion();
     case previews::PreviewsType::NONE:
     case previews::PreviewsType::UNSPECIFIED:
     case previews::PreviewsType::LAST:

@@ -70,6 +70,8 @@ bool IsPreviewFieldTrialEnabled(PreviewsType type) {
       return params::IsClientLoFiEnabled();
     case PreviewsType::NOSCRIPT:
       return params::IsNoScriptPreviewsEnabled();
+    case PreviewsType::RESOURCE_LOADING_HINTS:
+      return params::IsResourceLoadingHintsEnabled();
     case PreviewsType::NONE:
     case PreviewsType::UNSPECIFIED:
     case PreviewsType::LAST:
@@ -133,7 +135,17 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
   // PreviewsOptimizationGuide:
   bool IsWhitelisted(const net::URLRequest& request,
                      PreviewsType type) const override {
-    return request.url().host().compare("whitelisted.example.com") == 0;
+    EXPECT_TRUE(type == PreviewsType::NOSCRIPT ||
+                type == PreviewsType::RESOURCE_LOADING_HINTS);
+    if (type == PreviewsType::NOSCRIPT) {
+      return request.url().host().compare("whitelisted.example.com") == 0 ||
+             request.url().host().compare(
+                 "noscript_only_whitelisted.example.com") == 0;
+    }
+    if (type == PreviewsType::RESOURCE_LOADING_HINTS) {
+      return request.url().host().compare("whitelisted.example.com") == 0;
+    }
+    return false;
   }
 };
 
@@ -362,6 +374,7 @@ class PreviewsIODataTest : public testing::Test {
     allowed_types[static_cast<int>(PreviewsType::LOFI)] = 0;
     allowed_types[static_cast<int>(PreviewsType::LITE_PAGE)] = 0;
     allowed_types[static_cast<int>(PreviewsType::NOSCRIPT)] = 0;
+    allowed_types[static_cast<int>(PreviewsType::RESOURCE_LOADING_HINTS)] = 0;
     allowed_types[static_cast<int>(PreviewsType::AMP_REDIRECTION)] = 0;
     ui_service_.reset(new TestPreviewsUIService(
         io_data_.get(), scoped_task_environment_.GetMainThreadTaskRunner(),
@@ -938,6 +951,224 @@ TEST_F(PreviewsIODataTest, NoScriptCommitTimeWhitelistCheck) {
     // Expect no eligibility logging.
     histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
   }
+}
+
+TEST_F(PreviewsIODataTest, ResourceLoadingHintsDisallowedByDefault) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kResourceLoadingHints}, {});
+  InitializeUIService();
+
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  base::HistogramTester histogram_tester;
+  EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateRequest(), PreviewsType::RESOURCE_LOADING_HINTS,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::RESOURCE_LOADING_HINTS),
+      std::vector<std::string>(), false));
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(
+          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      1);
+}
+
+TEST_F(PreviewsIODataTest,
+       ResourceLoadingHintsDisallowedWithoutOptimizationHints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kResourceLoadingHints}, {});
+  InitializeUIService();
+
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  base::HistogramTester histogram_tester;
+  EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateRequestWithURL(GURL("https://whitelisted.example.com")),
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::RESOURCE_LOADING_HINTS),
+      std::vector<std::string>(), false));
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(
+          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      1);
+}
+
+TEST_F(PreviewsIODataTest, ResourceLoadingHintsAllowedByFeature) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kResourceLoadingHints,
+       features::kOptimizationHints},
+      {});
+  InitializeUIService();
+
+  const struct {
+    net::EffectiveConnectionType effective_connection_type;
+    bool expected_resource_loading_hints_allowed;
+  } tests[] = {
+      {net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN, false},
+      {net::EFFECTIVE_CONNECTION_TYPE_OFFLINE, false},
+      {net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G, true},
+      {net::EFFECTIVE_CONNECTION_TYPE_2G, true},
+      {net::EFFECTIVE_CONNECTION_TYPE_3G, false},
+  };
+
+  for (const auto& test : tests) {
+    network_quality_estimator()->set_effective_connection_type(
+        test.effective_connection_type);
+
+    base::HistogramTester histogram_tester;
+
+    // Check whitelisted URL.
+    EXPECT_EQ(
+        test.expected_resource_loading_hints_allowed,
+        io_data()->ShouldAllowPreviewAtECT(
+            *CreateRequestWithURL(GURL("https://whitelisted.example.com")),
+            PreviewsType::RESOURCE_LOADING_HINTS,
+            previews::params::GetECTThresholdForPreview(
+                previews::PreviewsType::RESOURCE_LOADING_HINTS),
+            std::vector<std::string>(), false))
+        << " effective_connection_type=" << test.effective_connection_type;
+    if (test.expected_resource_loading_hints_allowed) {
+      histogram_tester.ExpectUniqueSample(
+          "Previews.EligibilityReason.ResourceLoadingHints",
+          static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+    } else if (test.effective_connection_type ==
+               net::EFFECTIVE_CONNECTION_TYPE_3G) {
+      histogram_tester.ExpectBucketCount(
+          "Previews.EligibilityReason.ResourceLoadingHints",
+          static_cast<int>(PreviewsEligibilityReason::NETWORK_NOT_SLOW), 1);
+    } else {
+      histogram_tester.ExpectBucketCount(
+          "Previews.EligibilityReason.ResourceLoadingHints",
+          static_cast<int>(
+              PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE),
+          1);
+    }
+  }
+}
+
+TEST_F(PreviewsIODataTest, ResourceLoadingHintsAllowedByFeatureWithWhitelist) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kResourceLoadingHints,
+       features::kOptimizationHints},
+      {});
+  InitializeUIService();
+
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  base::HistogramTester histogram_tester;
+
+  // First verify no preview for non-whitelisted url.
+  EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateHttpsRequest(), PreviewsType::RESOURCE_LOADING_HINTS,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::RESOURCE_LOADING_HINTS),
+      std::vector<std::string>(), false));
+
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(
+          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      1);
+
+  // Now verify preview for whitelisted url.
+  EXPECT_TRUE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateRequestWithURL(GURL("https://whitelisted.example.com")),
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::RESOURCE_LOADING_HINTS),
+      std::vector<std::string>(), false));
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+}
+
+TEST_F(PreviewsIODataTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kResourceLoadingHints,
+       features::kOptimizationHints},
+      {});
+  InitializeUIService();
+
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  // First verify not allowed for non-whitelisted url.
+  {
+    base::HistogramTester histogram_tester;
+    EXPECT_FALSE(io_data()->IsURLAllowedForPreview(
+        *CreateHttpsRequest(), PreviewsType::RESOURCE_LOADING_HINTS));
+
+    histogram_tester.ExpectUniqueSample(
+        "Previews.EligibilityReason.ResourceLoadingHints",
+        static_cast<int>(
+            PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+        1);
+  }
+
+  // Now verify preview for whitelisted url.
+  {
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(io_data()->IsURLAllowedForPreview(
+        *CreateRequestWithURL(GURL("https://whitelisted.example.com")),
+        PreviewsType::RESOURCE_LOADING_HINTS));
+
+    // Expect no eligibility logging.
+    histogram_tester.ExpectTotalCount(
+        "Previews.EligibilityReason.ResourceLoadingHints", 0);
+  }
+}
+
+TEST_F(PreviewsIODataTest,
+       ResourceLoadingHintsAndNoScriptAllowedByFeatureWithWhitelist) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kResourceLoadingHints,
+       features::kOptimizationHints, features::kNoScriptPreviews},
+      {});
+  InitializeUIService();
+
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  base::HistogramTester histogram_tester;
+
+  // Now verify preview for url that's whitelisted only for NoScript.
+  EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateRequestWithURL(
+          GURL("https://noscript_only_whitelisted.example.com")),
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::RESOURCE_LOADING_HINTS),
+      std::vector<std::string>(), false));
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(
+          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      1);
+
+  EXPECT_TRUE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateRequestWithURL(
+          GURL("https://noscript_only_whitelisted.example.com")),
+      PreviewsType::NOSCRIPT,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::NOSCRIPT),
+      std::vector<std::string>(), false));
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.NoScript",
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
 }
 
 TEST_F(PreviewsIODataTest, LogPreviewNavigationPassInCorrectParams) {
