@@ -4,19 +4,43 @@
 
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
 
+#include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 
 namespace multidevice_setup {
 
+// static
+MultiDeviceSetupImpl::Factory* MultiDeviceSetupImpl::Factory::test_factory_ =
+    nullptr;
+
+// static
+MultiDeviceSetupImpl::Factory* MultiDeviceSetupImpl::Factory::Get() {
+  if (test_factory_)
+    return test_factory_;
+
+  static base::NoDestructor<Factory> factory;
+  return factory.get();
+}
+
+// static
+void MultiDeviceSetupImpl::Factory::SetFactoryForTesting(
+    Factory* test_factory) {
+  test_factory_ = test_factory;
+}
+
+MultiDeviceSetupImpl::Factory::~Factory() = default;
+
+std::unique_ptr<MultiDeviceSetupBase>
+MultiDeviceSetupImpl::Factory::BuildInstance() {
+  return base::WrapUnique(new MultiDeviceSetupImpl());
+}
+
 MultiDeviceSetupImpl::MultiDeviceSetupImpl() = default;
 
 MultiDeviceSetupImpl::~MultiDeviceSetupImpl() = default;
-
-void MultiDeviceSetupImpl::BindRequest(mojom::MultiDeviceSetupRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
 
 void MultiDeviceSetupImpl::SetAccountStatusChangeDelegate(
     mojom::AccountStatusChangeDelegatePtr delegate,

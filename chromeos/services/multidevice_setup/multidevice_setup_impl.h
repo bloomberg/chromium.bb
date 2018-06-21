@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -17,14 +18,23 @@ namespace chromeos {
 namespace multidevice_setup {
 
 // Concrete MultiDeviceSetup implementation.
-class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup {
+class MultiDeviceSetupImpl : public MultiDeviceSetupBase {
  public:
-  MultiDeviceSetupImpl();
+  class Factory {
+   public:
+    static Factory* Get();
+    static void SetFactoryForTesting(Factory* test_factory);
+    virtual ~Factory();
+    virtual std::unique_ptr<MultiDeviceSetupBase> BuildInstance();
+
+   private:
+    static Factory* test_factory_;
+  };
+
   ~MultiDeviceSetupImpl() override;
 
-  // Binds a request to this implementation. Should be called each time that the
-  // service receives a request.
-  void BindRequest(mojom::MultiDeviceSetupRequest request);
+ private:
+  MultiDeviceSetupImpl();
 
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
@@ -34,9 +44,7 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup {
       mojom::EventTypeForDebugging type,
       TriggerEventForDebuggingCallback callback) override;
 
- private:
   mojom::AccountStatusChangeDelegatePtr delegate_;
-  mojo::BindingSet<mojom::MultiDeviceSetup> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupImpl);
 };

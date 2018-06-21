@@ -14,6 +14,8 @@ static_library("multidevice_setup") {
     "account_status_change_delegate_notifier.h",
     "account_status_change_delegate_notifier_impl.cc",
     "account_status_change_delegate_notifier_impl.h",
+    "multidevice_setup_base.cc",
+    "multidevice_setup_base.h",
     "multidevice_setup_impl.cc",
     "multidevice_setup_impl.h",
     "multidevice_setup_service.cc",
