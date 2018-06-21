@@ -360,10 +360,6 @@ void UserSelectionScreen::InitEasyUnlock() {
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(this);
 }
 
-bool UserSelectionScreen::HasAnyUsers() const {
-  return !users_.empty();
-}
-
 // static
 void UserSelectionScreen::FillUserDictionary(
     user_manager::User* user,

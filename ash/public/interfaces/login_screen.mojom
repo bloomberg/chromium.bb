@@ -194,9 +194,6 @@ interface LoginScreenClient {
   // sign-in dialog so the user does not need to type the account email.
   ShowGaiaSignin(bool can_close, signin.mojom.AccountId? prefilled_account);
 
-  // Show the Reset (Powerwash) screen.
-  ShowResetScreen();
-
   // Notification that the remove user warning was shown.
   OnRemoveUserWarningShown();
 
