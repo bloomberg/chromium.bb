@@ -110,6 +110,8 @@ def PrintUsage():
 
 
 def DoMain(argv):
+  os.environ['cwd'] = os.getcwd()
+
   parser = optparse.OptionParser()
   parser.add_option("--inputs", action="store_true", dest="inputs")
   parser.add_option("--outputs", action="store_true", dest="outputs")
