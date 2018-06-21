@@ -2281,6 +2281,9 @@ void PaintPropertyTreeBuilder::
   LayoutView* view = object_.View();
   context_.repeating_table_section_bounding_box =
       BoundingBoxInPaginationContainer(object_, *view->Layer());
+  // Convert the bounding box into the scrolling contents space.
+  context_.repeating_table_section_bounding_box.Move(LayoutUnit(),
+                                                     view->ScrollTop());
 
   auto page_height = view->PageLogicalHeight();
   const auto& bounding_box = context_.repeating_table_section_bounding_box;
