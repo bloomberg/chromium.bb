@@ -83,11 +83,22 @@ bool IdentityManager::HasPrimaryAccount() {
   return !primary_account_info_.account_id.empty();
 }
 
+std::unique_ptr<AccessTokenFetcher>
+IdentityManager::CreateAccessTokenFetcherForAccount(
+    const std::string& account_id,
+    const std::string& oauth_consumer_name,
+    const OAuth2TokenService::ScopeSet& scopes,
+    AccessTokenFetcher::TokenCallback callback) {
+  return std::make_unique<AccessTokenFetcher>(account_id, oauth_consumer_name,
+                                              token_service_, scopes,
+                                              std::move(callback));
+}
+
 std::unique_ptr<PrimaryAccountAccessTokenFetcher>
 IdentityManager::CreateAccessTokenFetcherForPrimaryAccount(
     const std::string& oauth_consumer_name,
     const OAuth2TokenService::ScopeSet& scopes,
-    PrimaryAccountAccessTokenFetcher::TokenCallback callback,
+    AccessTokenFetcher::TokenCallback callback,
     PrimaryAccountAccessTokenFetcher::Mode mode) {
   return std::make_unique<PrimaryAccountAccessTokenFetcher>(
       oauth_consumer_name, signin_manager_, token_service_, scopes,

@@ -14,6 +14,7 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/cpp/access_token_fetcher.h"
 
 namespace identity {
 
@@ -23,19 +24,8 @@ namespace identity {
 // transient error.
 // May only be used on the UI thread.
 class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
-                                         public OAuth2TokenService::Observer,
-                                         public OAuth2TokenService::Consumer {
+                                         public OAuth2TokenService::Observer {
  public:
-  // Callback for when a request completes (successful or not). On successful
-  // requests, |error| is NONE and |access_token| contains the obtained OAuth2
-  // access token. On failed requests, |error| contains the actual error and
-  // |access_token| is empty.
-  // NOTE: At the time that this method is invoked, it is safe for the client to
-  // destroy the PrimaryAccountAccessTokenFetcher instance that is invoking
-  // this callback.
-  using TokenCallback = base::OnceCallback<void(GoogleServiceAuthError error,
-                                                std::string access_token)>;
-
   // Specifies how this instance should behave:
   // |kImmediate|: Makes one-shot immediate request.
   // |kWaitUntilAvailable|: Waits for the primary account to be available
@@ -53,7 +43,7 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
                                    SigninManagerBase* signin_manager,
                                    OAuth2TokenService* token_service,
                                    const OAuth2TokenService::ScopeSet& scopes,
-                                   TokenCallback callback,
+                                   AccessTokenFetcher::TokenCallback callback,
                                    Mode mode);
 
   ~PrimaryAccountAccessTokenFetcher() override;
@@ -76,35 +66,28 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
   // request if so. Should only be called in mode |kWaitUntilAvailable|.
   void ProcessSigninStateChange();
 
-  // OAuth2TokenService::Consumer implementation.
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
+  // Invoked by |fetcher_| when an access token request completes.
+  void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
+                                  std::string access_token);
 
-  // Invokes |callback_| with (|error|, |access_token|). Per the contract of
-  // this class, it is allowed for clients to delete this object as part of the
-  // invocation of |callback_|. Hence, this object must assume that it is dead
-  // after invoking this method and must not run any more code.
-  void RunCallbackAndMaybeDie(const GoogleServiceAuthError& error,
-                              const std::string& access_token);
-
+  std::string oauth_consumer_name_;
   SigninManagerBase* signin_manager_;
   OAuth2TokenService* token_service_;
   OAuth2TokenService::ScopeSet scopes_;
 
-  // NOTE: This callback should only be invoked from |RunCallbackAndMaybeDie|,
-  // as invoking it has the potential to destroy this object per this class's
-  // contract.
-  TokenCallback callback_;
+  // Per the contract of this class, it is allowed for clients to delete this
+  // object as part of the invocation of |callback_|. Hence, this object must
+  // assume that it is dead after invoking |callback_| and must not run any more
+  // code.
+  AccessTokenFetcher::TokenCallback callback_;
 
   ScopedObserver<SigninManagerBase, PrimaryAccountAccessTokenFetcher>
       signin_manager_observer_;
   ScopedObserver<OAuth2TokenService, PrimaryAccountAccessTokenFetcher>
       token_service_observer_;
 
-  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
+  // Internal fetcher that does the actual access token request.
+  std::unique_ptr<AccessTokenFetcher> access_token_fetcher_;
 
   // When a token request gets canceled, we want to retry once.
   bool access_token_retried_;
