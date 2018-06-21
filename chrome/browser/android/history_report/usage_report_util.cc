@@ -15,7 +15,7 @@
 namespace history_report {
 namespace usage_report_util {
 
-// Returns a levelDb key for a report. It's a concatenation of timestamp and id
+// Returns a LevelDB key for a report. It's a concatenation of timestamp and id
 // fields of a report.
 std::string ReportToKey(const history_report::UsageReport& report) {
   std::stringstream key;
