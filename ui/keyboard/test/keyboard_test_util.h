@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_KEYBOARD_KEYBOARD_TEST_UTIL_
-#define UI_KEYBOARD_KEYBOARD_TEST_UTIL_
+#ifndef UI_KEYBOARD_TEST_KEYBOARD_TEST_UTIL_H_
+#define UI_KEYBOARD_TEST_KEYBOARD_TEST_UTIL_H_
 
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -57,4 +57,4 @@ class TestKeyboardUI : public KeyboardUI {
 
 }  // namespace keyboard
 
-#endif  // UI_KEYBOARD_KEYBOARD_TEST_UTIL_
+#endif  // UI_KEYBOARD_TEST_KEYBOARD_TEST_UTIL_H_

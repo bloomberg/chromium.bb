@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/keyboard/keyboard_test_util.h"
+#include "ui/keyboard/test/keyboard_test_util.h"
 
 #include "base/run_loop.h"
 #include "ui/aura/window.h"
