@@ -27,6 +27,7 @@ class FalseTouchFinderTest : public testing::Test {
     size_t slot;
     bool touching;
     gfx::PointF location;
+    float pressure;
     bool expect_noise;
     bool expect_delay;
   };
@@ -46,6 +47,7 @@ class FalseTouchFinderTest : public testing::Test {
       touch.y = entry.location.y();
       touch.tracking_id = entry.slot;
       touch.slot = entry.slot;
+      touch.pressure = entry.pressure;
       touch.was_touching = was_touching.test(touch.slot);
       touch.touching = entry.touching;
       touches.push_back(touch);
@@ -86,6 +88,8 @@ class FalseTouchFinderTest : public testing::Test {
         switches::kExtraTouchNoiseFiltering);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEdgeTouchFiltering);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kLowPressureTouchFiltering);
     false_touch_finder_ = FalseTouchFinder::Create(touchscreen_size);
   }
 
@@ -97,15 +101,15 @@ class FalseTouchFinderTest : public testing::Test {
 // Test that taps which are far apart in quick succession are considered noise.
 TEST_F(FalseTouchFinderTest, FarApartTaps) {
   const TouchEntry kTestData[] = {
-      {10, 1, true, gfx::PointF(10, 10), false, false},
-      {20, 1, true, gfx::PointF(10, 11), false, false},
-      {30, 1, true, gfx::PointF(10, 12), false, false},
-      {30, 2, true, gfx::PointF(2500, 1000), true, false},
-      {40, 1, true, gfx::PointF(10, 13), true, false},
-      {40, 2, true, gfx::PointF(2500, 1001), true, false},
-      {50, 1, true, gfx::PointF(10, 14), true, false},
-      {50, 2, false, gfx::PointF(2500, 1002), true, false},
-      {60, 1, false, gfx::PointF(10, 15), true, false}};
+      {10, 1, true, gfx::PointF(10, 10), 0.35, false, false},
+      {20, 1, true, gfx::PointF(10, 11), 0.35, false, false},
+      {30, 1, true, gfx::PointF(10, 12), 0.35, false, false},
+      {30, 2, true, gfx::PointF(2500, 1000), 0.35, true, false},
+      {40, 1, true, gfx::PointF(10, 13), 0.35, true, false},
+      {40, 2, true, gfx::PointF(2500, 1001), 0.35, true, false},
+      {50, 1, true, gfx::PointF(10, 14), 0.35, true, false},
+      {50, 2, false, gfx::PointF(2500, 1002), 0.35, true, false},
+      {60, 1, false, gfx::PointF(10, 15), 0.35, true, false}};
   EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
 }
 
@@ -113,55 +117,55 @@ TEST_F(FalseTouchFinderTest, FarApartTaps) {
 // not considered noise.
 TEST_F(FalseTouchFinderTest, FarApartTapsSlow) {
   const TouchEntry kTestData[] = {
-      {1000, 1, true, gfx::PointF(10, 10), false, false},
-      {1500, 1, true, gfx::PointF(10, 11), false, false},
-      {2000, 1, true, gfx::PointF(10, 12), false, false},
-      {2500, 1, true, gfx::PointF(10, 13), false, false},
-      {2500, 2, true, gfx::PointF(2500, 1000), false, false},
-      {3000, 1, true, gfx::PointF(10, 14), false, false},
-      {3000, 2, false, gfx::PointF(2500, 1001), false, false},
-      {3500, 1, false, gfx::PointF(10, 15), false, false}};
+      {1000, 1, true, gfx::PointF(10, 10), 0.35, false, false},
+      {1500, 1, true, gfx::PointF(10, 11), 0.35, false, false},
+      {2000, 1, true, gfx::PointF(10, 12), 0.35, false, false},
+      {2500, 1, true, gfx::PointF(10, 13), 0.35, false, false},
+      {2500, 2, true, gfx::PointF(2500, 1000), 0.35, false, false},
+      {3000, 1, true, gfx::PointF(10, 14), 0.35, false, false},
+      {3000, 2, false, gfx::PointF(2500, 1001), 0.35, false, false},
+      {3500, 1, false, gfx::PointF(10, 15), 0.35, false, false}};
   EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
 }
 
 // Test that touches which are horizontally aligned are considered noise.
 TEST_F(FalseTouchFinderTest, HorizontallyAligned) {
   const TouchEntry kTestData[] = {
-      {10, 1, true, gfx::PointF(10, 10), false, false},
-      {20, 1, true, gfx::PointF(10, 10), false, false},
-      {20, 2, true, gfx::PointF(10, 25), true, false},
-      {30, 1, false, gfx::PointF(10, 10), false, false},
-      {30, 2, true, gfx::PointF(10, 25), true, false},
-      {40, 2, false, gfx::PointF(10, 25), true, false}};
+      {10, 1, true, gfx::PointF(10, 10), 0.35, false, false},
+      {20, 1, true, gfx::PointF(10, 10), 0.35, false, false},
+      {20, 2, true, gfx::PointF(10, 25), 0.35, true, false},
+      {30, 1, false, gfx::PointF(10, 10), 0.35, false, false},
+      {30, 2, true, gfx::PointF(10, 25), 0.35, true, false},
+      {40, 2, false, gfx::PointF(10, 25), 0.35, true, false}};
   EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
 }
 
 // Test that touches in the same position are considered noise.
 TEST_F(FalseTouchFinderTest, SamePosition) {
   const TouchEntry kTestData[] = {
-      {1000, 1, true, gfx::PointF(10, 10), false, false},
-      {1500, 1, false, gfx::PointF(10, 10), false, false},
-      {2000, 1, true, gfx::PointF(10, 10), false, false},
-      {2500, 1, false, gfx::PointF(10, 10), false, false},
-      {3000, 1, true, gfx::PointF(50, 50), false, false},
-      {3500, 1, true, gfx::PointF(50, 51), false, false},
-      {3500, 2, true, gfx::PointF(10, 10), true, false},
-      {4000, 1, false, gfx::PointF(50, 52), false, false},
-      {4000, 2, false, gfx::PointF(10, 10), true, false},
-      {4500, 1, true, gfx::PointF(10, 10), true, false},
-      {5000, 1, false, gfx::PointF(10, 10), true, false}};
+      {1000, 1, true, gfx::PointF(10, 10), 0.35, false, false},
+      {1500, 1, false, gfx::PointF(10, 10), 0.35, false, false},
+      {2000, 1, true, gfx::PointF(10, 10), 0.35, false, false},
+      {2500, 1, false, gfx::PointF(10, 10), 0.35, false, false},
+      {3000, 1, true, gfx::PointF(50, 50), 0.35, false, false},
+      {3500, 1, true, gfx::PointF(50, 51), 0.35, false, false},
+      {3500, 2, true, gfx::PointF(10, 10), 0.35, true, false},
+      {4000, 1, false, gfx::PointF(50, 52), 0.35, false, false},
+      {4000, 2, false, gfx::PointF(10, 10), 0.35, true, false},
+      {4500, 1, true, gfx::PointF(10, 10), 0.35, true, false},
+      {5000, 1, false, gfx::PointF(10, 10), 0.35, true, false}};
   EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
 }
 
 // Test that a multi-second touch is considered noise.
 TEST_F(FalseTouchFinderTest, MultiSecondTouch) {
   const TouchEntry kTestData[] = {
-      {1000, 1, true, gfx::PointF(10, 10), false, false},
-      {2000, 1, true, gfx::PointF(10, 11), false, false},
-      {3000, 1, true, gfx::PointF(10, 10), false, false},
-      {4000, 1, true, gfx::PointF(10, 11), true, false},
-      {5000, 1, true, gfx::PointF(10, 10), true, false},
-      {6000, 1, true, gfx::PointF(10, 11), true, false}};
+      {1000, 1, true, gfx::PointF(10, 10), 0.35, false, false},
+      {2000, 1, true, gfx::PointF(10, 11), 0.35, false, false},
+      {3000, 1, true, gfx::PointF(10, 10), 0.35, false, false},
+      {4000, 1, true, gfx::PointF(10, 11), 0.35, true, false},
+      {5000, 1, true, gfx::PointF(10, 10), 0.35, true, false},
+      {6000, 1, true, gfx::PointF(10, 11), 0.35, true, false}};
   EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
 }
 
@@ -171,18 +175,18 @@ TEST_F(FalseTouchFinderTest, EdgeTap) {
   int ts_width = touchscreen_size.width();
   int ts_height = touchscreen_size.height();
   const TouchEntry kTestData[] = {
-      {10, 1, true, gfx::PointF(0, 100), false, true},
-      {20, 1, true, gfx::PointF(0, 100), false, true},
-      {30, 1, false, gfx::PointF(0, 100), false, true},
-      {40, 2, true, gfx::PointF(ts_width - 1, 100), false, true},
-      {50, 2, true, gfx::PointF(ts_width - 1, 100), false, true},
-      {60, 2, false, gfx::PointF(ts_width - 1, 100), false, true},
-      {70, 3, true, gfx::PointF(100, 0), false, true},
-      {80, 3, true, gfx::PointF(100, 0), false, true},
-      {90, 3, false, gfx::PointF(100, 0), false, true},
-      {100, 4, true, gfx::PointF(100, ts_height - 1), false, true},
-      {110, 4, true, gfx::PointF(100, ts_height - 1), false, true},
-      {120, 4, false, gfx::PointF(100, ts_height - 1), false, true}};
+      {10, 1, true, gfx::PointF(0, 100), 0.35, false, true},
+      {20, 1, true, gfx::PointF(0, 100), 0.35, false, true},
+      {30, 1, false, gfx::PointF(0, 100), 0.35, false, true},
+      {40, 2, true, gfx::PointF(ts_width - 1, 100), 0.35, false, true},
+      {50, 2, true, gfx::PointF(ts_width - 1, 100), 0.35, false, true},
+      {60, 2, false, gfx::PointF(ts_width - 1, 100), 0.35, false, true},
+      {70, 3, true, gfx::PointF(100, 0), 0.35, false, true},
+      {80, 3, true, gfx::PointF(100, 0), 0.35, false, true},
+      {90, 3, false, gfx::PointF(100, 0), 0.35, false, true},
+      {100, 4, true, gfx::PointF(100, ts_height - 1), 0.35, false, true},
+      {110, 4, true, gfx::PointF(100, ts_height - 1), 0.35, false, true},
+      {120, 4, false, gfx::PointF(100, ts_height - 1), 0.35, false, true}};
   EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
 }
 
@@ -190,14 +194,14 @@ TEST_F(FalseTouchFinderTest, EdgeTap) {
 // as soon as it moves.
 TEST_F(FalseTouchFinderTest, MoveFromEdge) {
   const TouchEntry kTestData[] = {
-      {10, 1, true, gfx::PointF(0, 100), false, true},
-      {20, 1, true, gfx::PointF(0, 100), false, true},
-      {30, 1, true, gfx::PointF(1, 100), false, false},
-      {40, 1, false, gfx::PointF(1, 100), false, false},
-      {50, 1, true, gfx::PointF(0, 100), false, true},
-      {60, 1, true, gfx::PointF(0, 100), false, true},
-      {70, 1, true, gfx::PointF(0, 101), false, false},
-      {80, 1, false, gfx::PointF(0, 101), false, false}};
+      {10, 1, true, gfx::PointF(0, 100), 0.35, false, true},
+      {20, 1, true, gfx::PointF(0, 100), 0.35, false, true},
+      {30, 1, true, gfx::PointF(1, 100), 0.35, false, false},
+      {40, 1, false, gfx::PointF(1, 100), 0.35, false, false},
+      {50, 1, true, gfx::PointF(0, 100), 0.35, false, true},
+      {60, 1, true, gfx::PointF(0, 100), 0.35, false, true},
+      {70, 1, true, gfx::PointF(0, 101), 0.35, false, false},
+      {80, 1, false, gfx::PointF(0, 101), 0.35, false, false}};
   EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
 }
 
@@ -205,10 +209,34 @@ TEST_F(FalseTouchFinderTest, MoveFromEdge) {
 // cancelled when it moves to the edge.
 TEST_F(FalseTouchFinderTest, MoveToEdge) {
   const TouchEntry kTestData[] = {
-      {10, 1, true, gfx::PointF(100, 100), false, false},
-      {20, 1, true, gfx::PointF(100, 100), false, false},
-      {30, 1, true, gfx::PointF(0, 100), false, false},
-      {40, 1, false, gfx::PointF(0, 100), false, false}};
+      {10, 1, true, gfx::PointF(100, 100), 0.35, false, false},
+      {20, 1, true, gfx::PointF(100, 100), 0.35, false, false},
+      {30, 1, true, gfx::PointF(0, 100), 0.35, false, false},
+      {40, 1, false, gfx::PointF(0, 100), 0.35, false, false}};
+  EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
+}
+
+// Test that a pencil with a wide tip should be filtered out. Based on real
+// logs.
+TEST_F(FalseTouchFinderTest, FatPencilPressure) {
+  const TouchEntry kTestData[] = {
+      {10, 1, true, gfx::PointF(10, 10), 0.180392, false, true},
+      {20, 1, true, gfx::PointF(10, 10), 0.176471, false, true},
+      {30, 1, true, gfx::PointF(10, 10), 0.180392, false, true},
+      {40, 1, true, gfx::PointF(10, 10), 0.164706, false, true},
+      {50, 1, true, gfx::PointF(10, 10), 0.101961, false, true}};
+  EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
+}
+
+// Test that a pinky finger lightly pressed is not filtered out. Based on real
+// logs.
+TEST_F(FalseTouchFinderTest, LightPinkyPressure) {
+  const TouchEntry kTestData[] = {
+      {10, 1, true, gfx::PointF(10, 10), 0.243137, false, false},
+      {20, 1, true, gfx::PointF(10, 10), 0.231373, false, false},
+      {30, 1, true, gfx::PointF(10, 10), 0.215686, false, false},
+      {40, 1, true, gfx::PointF(10, 10), 0.211765, false, false},
+      {50, 1, true, gfx::PointF(10, 10), 0.203922, false, false}};
   EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
 }
 

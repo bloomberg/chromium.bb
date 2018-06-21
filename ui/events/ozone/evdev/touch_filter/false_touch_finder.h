@@ -45,6 +45,7 @@ class EVENTS_OZONE_EVDEV_EXPORT FalseTouchFinder {
  private:
   FalseTouchFinder(bool touch_noise_filtering,
                    bool edge_filtering,
+                   bool low_pressure_filtering,
                    gfx::Size touchscreen_size);
 
   // Records how frequently noisy touches occur to UMA.
