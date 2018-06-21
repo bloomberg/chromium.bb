@@ -510,7 +510,7 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       // No role description.
       break;
     case ax::mojom::Role::kCell:
-      message_id = IDS_AX_ROLE_CELL;
+      // No role description.
       break;
     case ax::mojom::Role::kCheckBox:
       message_id = IDS_AX_ROLE_CHECK_BOX;

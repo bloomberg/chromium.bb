@@ -476,9 +476,6 @@ below:
         <message name="IDS_AX_ROLE_BUTTON" desc="Accessibility role description for a button">
           button
         </message>
-        <message name="IDS_AX_ROLE_CELL" desc="Accessibility role description for a cell, like in a table or grid">
-          cell
-        </message>
         <message name="IDS_AX_ROLE_COLOR_WELL" desc="Accessibility role description for a color picker">
           color picker
         </message>
