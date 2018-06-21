@@ -30,8 +30,13 @@ void SurfaceLayer::SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
     return;
   }
   primary_surface_id_ = surface_id;
-  if (!deadline_policy.use_existing_deadline())
+  // We should never block or set a deadline on an invalid
+  // |primary_surface_id_|.
+  if (!primary_surface_id_.is_valid()) {
+    deadline_in_frames_ = 0u;
+  } else if (!deadline_policy.use_existing_deadline()) {
     deadline_in_frames_ = deadline_policy.deadline_in_frames();
+  }
   UpdateDrawsContent(HasDrawableContent());
   SetNeedsCommit();
 }

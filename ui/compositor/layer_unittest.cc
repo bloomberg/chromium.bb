@@ -1892,10 +1892,12 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
   EXPECT_EQ(before.get(), child->cc_layer_for_testing());
 
   // Showing surface content changes the underlying cc layer.
+  viz::FrameSinkId frame_sink_id(1u, 1u);
+  viz::ParentLocalSurfaceIdAllocator allocator;
   before = child->cc_layer_for_testing();
-  child->SetShowPrimarySurface(viz::SurfaceId(), gfx::Size(10, 10),
-                               SK_ColorWHITE,
-                               cc::DeadlinePolicy::UseDefaultDeadline(), false);
+  child->SetShowPrimarySurface(
+      viz::SurfaceId(frame_sink_id, allocator.GenerateId()), gfx::Size(10, 10),
+      SK_ColorWHITE, cc::DeadlinePolicy::UseDefaultDeadline(), false);
   scoped_refptr<cc::Layer> after = child->cc_layer_for_testing();
   const auto* surface = static_cast<cc::SurfaceLayer*>(after.get());
   EXPECT_TRUE(after.get());
@@ -1903,8 +1905,8 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
   EXPECT_EQ(base::nullopt, surface->deadline_in_frames());
 
   child->SetShowPrimarySurface(
-      viz::SurfaceId(), gfx::Size(10, 10), SK_ColorWHITE,
-      cc::DeadlinePolicy::UseSpecifiedDeadline(4u), false);
+      viz::SurfaceId(frame_sink_id, allocator.GenerateId()), gfx::Size(10, 10),
+      SK_ColorWHITE, cc::DeadlinePolicy::UseSpecifiedDeadline(4u), false);
   EXPECT_EQ(4u, surface->deadline_in_frames());
 }
 

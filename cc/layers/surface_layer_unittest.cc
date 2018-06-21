@@ -98,6 +98,25 @@ TEST_F(SurfaceLayerTest, UseInfiniteDeadlineForNewSurfaceLayer) {
   EXPECT_EQ(std::numeric_limits<uint32_t>::max(), layer->deadline_in_frames());
 }
 
+// This test verifies that if an invalid primary surface ID is set then the
+// deadline will be reset to 0 frames.
+TEST_F(SurfaceLayerTest, ResetDeadlineOnInvalidSurfaceId) {
+  scoped_refptr<SurfaceLayer> layer = SurfaceLayer::Create();
+  layer_tree_host_->SetRootLayer(layer);
+  viz::SurfaceId primary_id(
+      kArbitraryFrameSinkId,
+      viz::LocalSurfaceId(1, base::UnguessableToken::Create()));
+  layer->SetPrimarySurfaceId(primary_id,
+                             DeadlinePolicy::UseSpecifiedDeadline(3u));
+  EXPECT_EQ(3u, layer->deadline_in_frames());
+
+  // Reset the surface layer to an invalid SurfaceId. Verify that the deadline
+  // is reset.
+  layer->SetPrimarySurfaceId(viz::SurfaceId(),
+                             DeadlinePolicy::UseSpecifiedDeadline(3u));
+  EXPECT_EQ(0u, layer->deadline_in_frames());
+}
+
 // This test verifies that SurfaceLayer properties are pushed across to
 // SurfaceLayerImpl.
 TEST_F(SurfaceLayerTest, PushProperties) {
