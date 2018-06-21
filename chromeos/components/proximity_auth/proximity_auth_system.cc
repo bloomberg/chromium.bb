@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/default_clock.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_client.h"
 #include "chromeos/components/proximity_auth/proximity_auth_profile_pref_manager.h"
@@ -16,20 +15,11 @@
 
 namespace proximity_auth {
 
-namespace {
-
-// The maximum number of hours permitted before the user is forced is use their
-// password to authenticate.
-const int64_t kPasswordReauthPeriodHours = 20;
-
-}  // namespace
-
 ProximityAuthSystem::ProximityAuthSystem(
     ScreenlockType screenlock_type,
     ProximityAuthClient* proximity_auth_client)
     : screenlock_type_(screenlock_type),
       proximity_auth_client_(proximity_auth_client),
-      clock_(base::DefaultClock::GetInstance()),
       pref_manager_(proximity_auth_client->GetPrefManager()),
       unlock_manager_(new UnlockManagerImpl(screenlock_type,
                                             proximity_auth_client_,
@@ -42,11 +32,9 @@ ProximityAuthSystem::ProximityAuthSystem(
     ScreenlockType screenlock_type,
     ProximityAuthClient* proximity_auth_client,
     std::unique_ptr<UnlockManager> unlock_manager,
-    base::Clock* clock,
     ProximityAuthPrefManager* pref_manager)
     : screenlock_type_(screenlock_type),
       proximity_auth_client_(proximity_auth_client),
-      clock_(clock),
       pref_manager_(pref_manager),
       unlock_manager_(std::move(unlock_manager)),
       suspended_(false),
@@ -172,13 +160,6 @@ void ProximityAuthSystem::OnFocusedUserChanged(const AccountId& account_id) {
     return;
   }
 
-  if (ShouldForcePassword()) {
-    PA_LOG(INFO) << "Forcing password reauth.";
-    proximity_auth_client_->UpdateScreenlockState(
-        ScreenlockState::PASSWORD_REAUTH);
-    return;
-  }
-
   // TODO(tengs): We currently assume each user has only one RemoteDevice, so we
   // can simply take the first item in the list.
   cryptauth::RemoteDeviceRef remote_device = remote_devices_map_[account_id][0];
@@ -190,31 +171,6 @@ void ProximityAuthSystem::OnFocusedUserChanged(const AccountId& account_id) {
     remote_device_life_cycle_->AddObserver(this);
     remote_device_life_cycle_->Start();
   }
-}
-
-bool ProximityAuthSystem::ShouldForcePassword() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableForcePasswordReauth))
-    return false;
-
-  // TODO(tengs): We need to properly propagate the last login time to the login
-  // screen.
-  if (screenlock_type_ == ScreenlockType::SIGN_IN)
-    return false;
-
-  // TODO(tengs): Put this force password reauth logic behind an enterprise
-  // policy. See https://crbug.com/724717.
-  int64_t now_ms = clock_->Now().ToJavaTime();
-  int64_t last_password_ms = pref_manager_->GetLastPasswordEntryTimestampMs();
-
-  if (now_ms < last_password_ms) {
-    PA_LOG(ERROR) << "Invalid last password timestamp: now=" << now_ms
-                  << ", last_password=" << last_password_ms;
-    return true;
-  }
-
-  return base::TimeDelta::FromMilliseconds(now_ms - last_password_ms) >
-         base::TimeDelta::FromHours(kPasswordReauthPeriodHours);
 }
 
 }  // namespace proximity_auth

@@ -45,17 +45,6 @@ void ProximityAuthLocalStatePrefManager::SetActiveUser(
   active_user_ = active_user;
 }
 
-void ProximityAuthLocalStatePrefManager::SetLastPasswordEntryTimestampMs(
-    int64_t timestamp_ms) {
-  NOTREACHED();
-}
-
-int64_t ProximityAuthLocalStatePrefManager::GetLastPasswordEntryTimestampMs()
-    const {
-  NOTREACHED();
-  return 0;
-}
-
 void ProximityAuthLocalStatePrefManager::SetLastPromotionCheckTimestampMs(
     int64_t timestamp_ms) {
   NOTREACHED();

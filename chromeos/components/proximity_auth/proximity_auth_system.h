@@ -72,7 +72,6 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   ProximityAuthSystem(ScreenlockType screenlock_type,
                       ProximityAuthClient* proximity_auth_client,
                       std::unique_ptr<UnlockManager> unlock_manager,
-                      base::Clock* clock,
                       ProximityAuthPrefManager* pref_manager);
 
   // Creates the RemoteDeviceLifeCycle for |remote_device|.
@@ -96,10 +95,6 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   // timeout.
   void ResumeAfterWakeUpTimeout();
 
-  // Returns true if the user should be forced to use a password to authenticate
-  // rather than EasyUnlock.
-  bool ShouldForcePassword();
-
   // The type of the screenlock (i.e. login or unlock).
   ScreenlockType screenlock_type_;
 
@@ -112,9 +107,6 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   // Responsible for the life cycle of connecting and authenticating to
   // the RemoteDevice of the currently focused user.
   std::unique_ptr<RemoteDeviceLifeCycle> remote_device_life_cycle_;
-
-  // Used to get the current timestamp.
-  base::Clock* clock_;
 
   // Fetches EasyUnlock preferences. Must outlive this instance.
   ProximityAuthPrefManager* pref_manager_;

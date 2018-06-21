@@ -32,8 +32,6 @@ void ProximityAuthProfilePrefManager::RegisterPrefs(
   registry->RegisterBooleanPref(prefs::kEasyUnlockAllowed, true);
   registry->RegisterBooleanPref(prefs::kEasyUnlockEnabled, false);
   registry->RegisterBooleanPref(prefs::kEasyUnlockEnabledStateSet, false);
-  registry->RegisterInt64Pref(prefs::kProximityAuthLastPasswordEntryTimestampMs,
-                              0L);
   registry->RegisterInt64Pref(
       prefs::kProximityAuthLastPromotionCheckTimestampMs, 0L);
   registry->RegisterIntegerPref(prefs::kProximityAuthPromotionShownCount, 0);
@@ -110,18 +108,6 @@ void ProximityAuthProfilePrefManager::SetEasyUnlockEnabledStateSet() const {
 
 bool ProximityAuthProfilePrefManager::IsEasyUnlockEnabledStateSet() const {
   return pref_service_->GetBoolean(prefs::kEasyUnlockEnabledStateSet);
-}
-
-void ProximityAuthProfilePrefManager::SetLastPasswordEntryTimestampMs(
-    int64_t timestamp_ms) {
-  pref_service_->SetInt64(prefs::kProximityAuthLastPasswordEntryTimestampMs,
-                          timestamp_ms);
-}
-
-int64_t ProximityAuthProfilePrefManager::GetLastPasswordEntryTimestampMs()
-    const {
-  return pref_service_->GetInt64(
-      prefs::kProximityAuthLastPasswordEntryTimestampMs);
 }
 
 void ProximityAuthProfilePrefManager::SetLastPromotionCheckTimestampMs(

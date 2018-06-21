@@ -22,9 +22,6 @@ namespace {
 
 const char kUserEmail[] = "testuser@example.com";
 
-const int64_t kPasswordEntryTimestampMs1 = 123456789L;
-const int64_t kPasswordEntryTimestampMs2 = 987654321L;
-
 const int64_t kPromotionCheckTimestampMs1 = 1111111111L;
 const int64_t kPromotionCheckTimestampMs2 = 2222222222L;
 
@@ -67,17 +64,6 @@ TEST_F(ProximityAuthProfilePrefManagerTest, IsEasyUnlockEnabled) {
 
   pref_manager.SetIsEasyUnlockEnabled(false);
   EXPECT_FALSE(pref_manager.IsEasyUnlockEnabled());
-}
-
-TEST_F(ProximityAuthProfilePrefManagerTest, LastPasswordEntryTimestamp) {
-  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
-  EXPECT_EQ(0L, pref_manager.GetLastPasswordEntryTimestampMs());
-  pref_manager.SetLastPasswordEntryTimestampMs(kPasswordEntryTimestampMs1);
-  EXPECT_EQ(kPasswordEntryTimestampMs1,
-            pref_manager.GetLastPasswordEntryTimestampMs());
-  pref_manager.SetLastPasswordEntryTimestampMs(kPasswordEntryTimestampMs2);
-  EXPECT_EQ(kPasswordEntryTimestampMs2,
-            pref_manager.GetLastPasswordEntryTimestampMs());
 }
 
 TEST_F(ProximityAuthProfilePrefManagerTest, LastPromotionCheckTimestamp) {
