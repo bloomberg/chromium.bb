@@ -13,11 +13,36 @@
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
-#include "components/sync/model/fake_model_type_change_processor.h"
+#include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/model_type_store_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+using testing::_;
+
+MATCHER_P3(MatchesSpecifics,
+           expected_title,
+           expected_url,
+           expected_status,
+           "") {
+  const sync_pb::ReadingListSpecifics& specifics =
+      arg->specifics.reading_list();
+  if (specifics.title() != expected_title) {
+    *result_listener << "which has title \"" << specifics.title();
+    return false;
+  }
+  if (specifics.url() != expected_url) {
+    *result_listener << "which has URL " << specifics.url();
+    return false;
+  }
+  if (specifics.status() != expected_status) {
+    *result_listener << "which has unexpected status";
+    return false;
+  }
+  return true;
+}
 
 // Tests that the transition from |entryA| to |entryB| is possible (|possible|
 // is true) or not.
@@ -62,82 +87,33 @@ class FakeModelTypeChangeProcessorObserver {
                       syncer::MetadataChangeList* metadata_change_list) = 0;
 };
 
-class TestModelTypeChangeProcessor
-    : public syncer::FakeModelTypeChangeProcessor {
- public:
-  void SetObserver(FakeModelTypeChangeProcessorObserver* observer) {
-    observer_ = observer;
-  }
-
-  void Put(const std::string& client_tag,
-           std::unique_ptr<syncer::EntityData> entity_data,
-           syncer::MetadataChangeList* metadata_change_list) override {
-    observer_->Put(client_tag, std::move(entity_data), metadata_change_list);
-  }
-
-  void Delete(const std::string& client_tag,
-              syncer::MetadataChangeList* metadata_change_list) override {
-    observer_->Delete(client_tag, metadata_change_list);
-  }
-
- private:
-  FakeModelTypeChangeProcessorObserver* observer_;
-};
-
 class ReadingListStoreTest : public testing::Test,
-                             public FakeModelTypeChangeProcessorObserver,
                              public ReadingListStoreDelegate {
  protected:
   ReadingListStoreTest()
       : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {
+    ON_CALL(processor_, IsTrackingMetadata())
+        .WillByDefault(testing::Return(true));
     ClearState();
     reading_list_store_ = std::make_unique<ReadingListStore>(
         base::BindOnce(&syncer::ModelTypeStoreTestUtil::MoveStoreToCallback,
                        std::move(store_)),
-        CreateModelTypeChangeProcessor());
+        processor_.CreateForwardingProcessor());
     model_ = std::make_unique<ReadingListModelImpl>(nullptr, nullptr, &clock_);
     reading_list_store_->SetReadingListModel(model_.get(), this, &clock_);
 
     base::RunLoop().RunUntilIdle();
   }
 
-  std::unique_ptr<syncer::ModelTypeChangeProcessor>
-  CreateModelTypeChangeProcessor() {
-    auto processor = std::make_unique<TestModelTypeChangeProcessor>();
-    processor->SetObserver(this);
-    return processor;
-  }
-
-  void Put(const std::string& storage_key,
-           std::unique_ptr<syncer::EntityData> entity_data,
-           syncer::MetadataChangeList* metadata_changes) override {
-    put_multimap_.insert(std::make_pair(storage_key, std::move(entity_data)));
-    put_called_++;
-  }
-
-  void Delete(const std::string& storage_key,
-              syncer::MetadataChangeList* metadata_changes) override {
-    delete_set_.insert(storage_key);
-    delete_called_++;
-  }
-
-  void AssertCounts(int put_called,
-                    int delete_called,
-                    int sync_add_called,
+  void AssertCounts(int sync_add_called,
                     int sync_remove_called,
                     int sync_merge_called) {
-    EXPECT_EQ(put_called, put_called_);
-    EXPECT_EQ(delete_called, delete_called_);
     EXPECT_EQ(sync_add_called, sync_add_called_);
     EXPECT_EQ(sync_remove_called, sync_remove_called_);
     EXPECT_EQ(sync_merge_called, sync_merge_called_);
   }
 
   void ClearState() {
-    delete_called_ = 0;
-    put_called_ = 0;
-    delete_set_.clear();
-    put_multimap_.clear();
     sync_add_called_ = 0;
     sync_remove_called_ = 0;
     sync_merge_called_ = 0;
@@ -170,17 +146,15 @@ class ReadingListStoreTest : public testing::Test,
   // In memory model type store needs a MessageLoop.
   base::MessageLoop message_loop_;
 
+  testing::NiceMock<syncer::MockModelTypeChangeProcessor> processor_;
   std::unique_ptr<syncer::ModelTypeStore> store_;
   std::unique_ptr<ReadingListModelImpl> model_;
   base::SimpleTestClock clock_;
   std::unique_ptr<ReadingListStore> reading_list_store_;
-  int put_called_;
-  int delete_called_;
+
   int sync_add_called_;
   int sync_remove_called_;
   int sync_merge_called_;
-  std::map<std::string, std::unique_ptr<syncer::EntityData>> put_multimap_;
-  std::set<std::string> delete_set_;
   std::map<std::string, bool> sync_added_;
   std::set<std::string> sync_removed_;
   std::map<std::string, bool> sync_merged_;
@@ -195,30 +169,30 @@ TEST_F(ReadingListStoreTest, SaveOneRead) {
                          AdvanceAndGetTime(&clock_));
   entry.SetRead(true, AdvanceAndGetTime(&clock_));
   AdvanceAndGetTime(&clock_);
+  EXPECT_CALL(processor_,
+              Put("http://read.example.com/",
+                  MatchesSpecifics("read title", "http://read.example.com/",
+                                   sync_pb::ReadingListSpecifics::READ),
+                  _));
   reading_list_store_->SaveEntry(entry);
-  AssertCounts(1, 0, 0, 0, 0);
-  syncer::EntityData* data = put_multimap_["http://read.example.com/"].get();
-  const sync_pb::ReadingListSpecifics& specifics =
-      data->specifics.reading_list();
-  EXPECT_EQ(specifics.title(), "read title");
-  EXPECT_EQ(specifics.url(), "http://read.example.com/");
-  EXPECT_EQ(specifics.status(), sync_pb::ReadingListSpecifics::READ);
+  AssertCounts(0, 0, 0);
 }
 
 TEST_F(ReadingListStoreTest, SaveOneUnread) {
   ReadingListEntry entry(GURL("http://unread.example.com/"), "unread title",
                          AdvanceAndGetTime(&clock_));
+  EXPECT_CALL(processor_,
+              Put("http://unread.example.com/",
+                  MatchesSpecifics("unread title", "http://unread.example.com/",
+                                   sync_pb::ReadingListSpecifics::UNSEEN),
+                  _));
   reading_list_store_->SaveEntry(entry);
-  AssertCounts(1, 0, 0, 0, 0);
-  syncer::EntityData* data = put_multimap_["http://unread.example.com/"].get();
-  const sync_pb::ReadingListSpecifics& specifics =
-      data->specifics.reading_list();
-  EXPECT_EQ(specifics.title(), "unread title");
-  EXPECT_EQ(specifics.url(), "http://unread.example.com/");
-  EXPECT_EQ(specifics.status(), sync_pb::ReadingListSpecifics::UNSEEN);
+  AssertCounts(0, 0, 0);
 }
 
 TEST_F(ReadingListStoreTest, SyncMergeOneEntry) {
+  EXPECT_CALL(processor_, Put(_, _, _)).Times(0);
+
   syncer::EntityChangeList remote_input;
   ReadingListEntry entry(GURL("http://read.example.com/"), "read title",
                          AdvanceAndGetTime(&clock_));
@@ -237,13 +211,15 @@ TEST_F(ReadingListStoreTest, SyncMergeOneEntry) {
       reading_list_store_->CreateMetadataChangeList());
   auto error = reading_list_store_->MergeSyncData(std::move(metadata_changes),
                                                   remote_input);
-  AssertCounts(0, 0, 1, 0, 0);
+  AssertCounts(1, 0, 0);
   EXPECT_EQ(sync_added_.size(), 1u);
   EXPECT_EQ(sync_added_.count("http://read.example.com/"), 1u);
   EXPECT_EQ(sync_added_["http://read.example.com/"], true);
 }
 
 TEST_F(ReadingListStoreTest, ApplySyncChangesOneAdd) {
+  EXPECT_CALL(processor_, Put(_, _, _)).Times(0);
+
   ReadingListEntry entry(GURL("http://read.example.com/"), "read title",
                          AdvanceAndGetTime(&clock_));
   entry.SetRead(true, AdvanceAndGetTime(&clock_));
@@ -259,7 +235,7 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneAdd) {
       "http://read.example.com/", data.PassToPtr()));
   auto error = reading_list_store_->ApplySyncChanges(
       reading_list_store_->CreateMetadataChangeList(), add_changes);
-  AssertCounts(0, 0, 1, 0, 0);
+  AssertCounts(1, 0, 0);
   EXPECT_EQ(sync_added_.size(), 1u);
   EXPECT_EQ(sync_added_.count("http://read.example.com/"), 1u);
   EXPECT_EQ(sync_added_["http://read.example.com/"], true);
@@ -279,12 +255,14 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneMerge) {
   data.client_tag_hash = "http://unread.example.com/";
   *data.specifics.mutable_reading_list() = *specifics;
 
+  EXPECT_CALL(processor_, Put("http://unread.example.com/", _, _));
+
   syncer::EntityChangeList add_changes;
   add_changes.push_back(syncer::EntityChange::CreateAdd(
       "http://unread.example.com/", data.PassToPtr()));
   auto error = reading_list_store_->ApplySyncChanges(
       reading_list_store_->CreateMetadataChangeList(), add_changes);
-  AssertCounts(1, 0, 0, 0, 1);
+  AssertCounts(0, 0, 1);
   EXPECT_EQ(sync_merged_.size(), 1u);
   EXPECT_EQ(sync_merged_.count("http://unread.example.com/"), 1u);
   EXPECT_EQ(sync_merged_["http://unread.example.com/"], true);
@@ -299,7 +277,7 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneIgnored) {
   AdvanceAndGetTime(&clock_);
   model_->AddEntry(GURL("http://unread.example.com/"), "new unread title",
                    reading_list::ADDED_VIA_CURRENT_APP);
-  AssertCounts(0, 0, 0, 0, 0);
+  AssertCounts(0, 0, 0);
 
   std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =
       old_entry.AsReadingListSpecifics();
@@ -307,12 +285,14 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneIgnored) {
   data.client_tag_hash = "http://unread.example.com/";
   *data.specifics.mutable_reading_list() = *specifics;
 
+  EXPECT_CALL(processor_, Put("http://unread.example.com/", _, _));
+
   syncer::EntityChangeList add_changes;
   add_changes.push_back(syncer::EntityChange::CreateAdd(
       "http://unread.example.com/", data.PassToPtr()));
   auto error = reading_list_store_->ApplySyncChanges(
       reading_list_store_->CreateMetadataChangeList(), add_changes);
-  AssertCounts(1, 0, 0, 0, 1);
+  AssertCounts(0, 0, 1);
   EXPECT_EQ(sync_merged_.size(), 1u);
 }
 
@@ -322,7 +302,7 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneRemove) {
       syncer::EntityChange::CreateDelete("http://read.example.com/"));
   auto error = reading_list_store_->ApplySyncChanges(
       reading_list_store_->CreateMetadataChangeList(), delete_changes);
-  AssertCounts(0, 0, 0, 1, 0);
+  AssertCounts(0, 1, 0);
   EXPECT_EQ(sync_removed_.size(), 1u);
   EXPECT_EQ(sync_removed_.count("http://read.example.com/"), 1u);
 }
