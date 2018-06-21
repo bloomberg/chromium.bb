@@ -201,33 +201,53 @@ void NGPaintFragmentTraversal::MoveToNext() {
 }
 
 void NGPaintFragmentTraversal::MoveToNextSiblingOrAncestor() {
-  if (IsAtEnd())
-    return;
-
-  while (true) {
+  while (!IsAtEnd()) {
     // Check if we have a next sibling.
     auto& stack_top = stack_.back();
     if (++stack_top.index < stack_top.parent->Children().size()) {
       current_ = stack_top.parent->Children()[stack_top.index].get();
       return;
     }
-
-    // Check the next parent in the stack. If the stack is not empty, traverse
-    // its next sibiling.
-    stack_.pop_back();
-    if (!stack_.IsEmpty())
-      continue;
-
-    // We might have started with |MoveTo()|, and thus computing parent stack
-    // was deferred. Check parents until we reach the |root_|.
-    const NGPaintFragment* parent = current_->Parent();
-    DCHECK(parent);
-    if (parent == &root_) {
-      current_ = nullptr;
-      return;
-    }
-    Push(*parent);
+    MoveToParent();
   }
+}
+
+void NGPaintFragmentTraversal::MoveToParent() {
+  if (IsAtEnd())
+    return;
+  DCHECK(!stack_.IsEmpty());
+  const NGPaintFragment& parent = *stack_.back().parent;
+  stack_.pop_back();
+  if (&parent == &root_) {
+    DCHECK(stack_.IsEmpty());
+    current_ = nullptr;
+    return;
+  }
+  if (stack_.IsEmpty()) {
+    // We might have started with |MoveTo()|, and thus computing parent stack
+    // was deferred.
+    Push(parent);
+    return;
+  }
+  DCHECK_EQ(&parent,
+            stack_.back().parent->Children()[stack_.back().index].get());
+  current_ = &parent;
+}
+
+void NGPaintFragmentTraversal::MoveToPrevious() {
+  if (IsAtEnd())
+    return;
+  DCHECK(!stack_.IsEmpty());
+  auto& stack_top = stack_.back();
+  if (stack_top.index == 0) {
+    // There is no previous sibling of |current_|. We move to parent.
+    MoveToParent();
+    return;
+  }
+  --stack_top.index;
+  current_ = stack_top.parent->Children()[stack_top.index].get();
+  while (!current_->Children().IsEmpty())
+    Push(*current_, current_->Children().size() - 1);
 }
 
 Vector<NGPaintFragmentWithContainerOffset>
