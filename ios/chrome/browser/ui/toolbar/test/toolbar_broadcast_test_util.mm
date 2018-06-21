@@ -21,19 +21,25 @@ const CGFloat kHeightDelta = 100.0;
 class TestToolbarUIStateModifier {
  public:
   TestToolbarUIStateModifier(ToolbarUIState* toolbar_ui)
-      : toolbar_ui_(toolbar_ui), original_height_(toolbar_ui_.toolbarHeight) {
-    toolbar_ui_.toolbarHeight += kHeightDelta;
+      : toolbar_ui_(toolbar_ui),
+        original_collapsed_height_(toolbar_ui_.collapsedHeight),
+        original_expanded_height_(toolbar_ui_.expandedHeight) {
+    toolbar_ui_.collapsedHeight += kHeightDelta;
+    toolbar_ui_.expandedHeight += kHeightDelta;
   }
   ~TestToolbarUIStateModifier() {
-    toolbar_ui_.toolbarHeight = original_height_;
+    toolbar_ui_.collapsedHeight = original_collapsed_height_;
+    toolbar_ui_.expandedHeight = original_expanded_height_;
   }
 
   // The original values of the UI state.
-  CGFloat original_height() { return original_height_; }
+  CGFloat original_collapsed_height() { return original_collapsed_height_; }
+  CGFloat original_expanded_height() { return original_expanded_height_; }
 
  private:
   __strong ToolbarUIState* toolbar_ui_ = nil;
-  CGFloat original_height_ = 0.0;
+  CGFloat original_collapsed_height_ = 0.0;
+  CGFloat original_expanded_height_ = 0.0;
 };
 }  // namespace
 
@@ -49,10 +55,14 @@ void VerifyToolbarUIBroadcast(ToolbarUIState* toolbar_ui,
   // Verify whether the changed or original UI elements are observed.
   if (should_broadcast) {
     EXPECT_TRUE(
-        AreCGFloatsEqual(observer.toolbarHeight, toolbar_ui.toolbarHeight));
-  } else {
+        AreCGFloatsEqual(observer.collapsedHeight, toolbar_ui.collapsedHeight));
     EXPECT_TRUE(
-        AreCGFloatsEqual(observer.toolbarHeight, modifier.original_height()));
+        AreCGFloatsEqual(observer.expandedHeight, toolbar_ui.expandedHeight));
+  } else {
+    EXPECT_TRUE(AreCGFloatsEqual(observer.collapsedHeight,
+                                 modifier.original_collapsed_height()));
+    EXPECT_TRUE(AreCGFloatsEqual(observer.expandedHeight,
+                                 modifier.original_expanded_height()));
   }
   // Stop observing |broadcaster|.
   observer.broadcaster = nil;

@@ -10,18 +10,27 @@
 
 @implementation TestToolbarUIObserver
 @synthesize broadcaster = _broadcaster;
-@synthesize toolbarHeight = _toolbarHeight;
+@synthesize collapsedHeight = _collapsedHeight;
+@synthesize expandedHeight = _expandedHeight;
 
 - (void)setBroadcaster:(ChromeBroadcaster*)broadcaster {
   [_broadcaster removeObserver:self
-                   forSelector:@selector(broadcastToolbarHeight:)];
+                   forSelector:@selector(broadcastCollapsedToolbarHeight:)];
+  [_broadcaster removeObserver:self
+                   forSelector:@selector(broadcastExpandedToolbarHeight:)];
   _broadcaster = broadcaster;
   [_broadcaster addObserver:self
-                forSelector:@selector(broadcastToolbarHeight:)];
+                forSelector:@selector(broadcastCollapsedToolbarHeight:)];
+  [_broadcaster addObserver:self
+                forSelector:@selector(broadcastExpandedToolbarHeight:)];
 }
 
-- (void)broadcastToolbarHeight:(CGFloat)toolbarHeight {
-  _toolbarHeight = toolbarHeight;
+- (void)broadcastCollapsedToolbarHeight:(CGFloat)toolbarHeight {
+  _collapsedHeight = toolbarHeight;
+}
+
+- (void)broadcastExpandedToolbarHeight:(CGFloat)toolbarHeight {
+  _expandedHeight = toolbarHeight;
 }
 
 @end

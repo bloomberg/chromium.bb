@@ -122,10 +122,11 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
 }
 
 - (void)setContentInset:(UIEdgeInsets)contentInset {
-  CGFloat delta = std::fabs(_contentInset.top - contentInset.top) +
-                  std::fabs(_contentInset.left - contentInset.left) +
-                  std::fabs(_contentInset.bottom - contentInset.bottom) +
-                  std::fabs(_contentInset.right - contentInset.right);
+  UIEdgeInsets oldInsets = self.contentInset;
+  CGFloat delta = std::fabs(oldInsets.top - contentInset.top) +
+                  std::fabs(oldInsets.left - contentInset.left) +
+                  std::fabs(oldInsets.bottom - contentInset.bottom) +
+                  std::fabs(oldInsets.right - contentInset.right);
   if (delta <= std::numeric_limits<CGFloat>::epsilon())
     return;
   if (self.shouldUseViewContentInset) {

@@ -13,11 +13,17 @@
 
 void StartBroadcastingToolbarUI(id<ToolbarUI> toolbar,
                                 ChromeBroadcaster* broadcaster) {
-  [broadcaster broadcastValue:@"toolbarHeight"
+  [broadcaster broadcastValue:@"collapsedHeight"
                      ofObject:toolbar
-                     selector:@selector(broadcastToolbarHeight:)];
+                     selector:@selector(broadcastCollapsedToolbarHeight:)];
+  [broadcaster broadcastValue:@"expandedHeight"
+                     ofObject:toolbar
+                     selector:@selector(broadcastExpandedToolbarHeight:)];
 }
 
 void StopBroadcastingToolbarUI(ChromeBroadcaster* broadcaster) {
-  [broadcaster stopBroadcastingForSelector:@selector(broadcastToolbarHeight:)];
+  [broadcaster
+      stopBroadcastingForSelector:@selector(broadcastCollapsedToolbarHeight:)];
+  [broadcaster
+      stopBroadcastingForSelector:@selector(broadcastExpandedToolbarHeight:)];
 }

@@ -29,7 +29,8 @@ class FullscreenModelTest : public PlatformTest {
     model_.AddObserver(&observer_);
     // Set the toolbar height to kToolbarHeight, and simulate a page load that
     // finishes with a 0.0 y content offset.
-    model_.SetToolbarHeight(kToolbarHeight);
+    model_.SetCollapsedToolbarHeight(0.0);
+    model_.SetExpandedToolbarHeight(kToolbarHeight);
     model_.SetScrollViewHeight(kScrollViewHeight);
     model_.SetContentHeight(kContentHeight);
     model_.ResetForNavigation();
@@ -114,7 +115,7 @@ TEST_F(FullscreenModelTest, AnimationEnded) {
 TEST_F(FullscreenModelTest, UpdateToolbarHeight) {
   // Reset the toolbar height and verify that the base offset is reset and that
   // the toolbar is fully visible.
-  model().SetToolbarHeight(2.0 * kToolbarHeight);
+  model().SetExpandedToolbarHeight(2.0 * kToolbarHeight);
   EXPECT_FALSE(model().has_base_offset());
   EXPECT_EQ(observer().progress(), 1.0);
   // Simulate a page load to a 0.0 y content offset.
@@ -173,7 +174,7 @@ TEST_F(FullscreenModelTest, ZoomScroll) {
 // Tests that updating the y content offset while the toolbar height is 0 only
 // updates the model's base offset.
 TEST_F(FullscreenModelTest, NoToolbarScroll) {
-  model().SetToolbarHeight(0.0);
+  model().SetExpandedToolbarHeight(0.0);
   model().SetYContentOffset(100);
   EXPECT_EQ(observer().progress(), 1.0);
   EXPECT_EQ(model().base_offset(), 100);
