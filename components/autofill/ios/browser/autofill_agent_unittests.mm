@@ -58,12 +58,7 @@ class AutofillAgentTests : public PlatformTest {
 // Tests that form's name and fields' identifiers, values, and whether they are
 // autofilled are sent to the JS. Fields with empty values and those that are
 // not autofilled are skipped.
-#if TARGET_OS_SIMULATOR
-#define MAYBE_OnFormDataFilledTest OnFormDataFilledTest
-#else
-#define MAYBE_OnFormDataFilledTest DISABLED_OnFormDataFilledTest
-#endif
-TEST_F(AutofillAgentTests, MAYBE_OnFormDataFilledTest) {
+TEST_F(AutofillAgentTests, OnFormDataFilledTest) {
   autofill::FormData form;
   form.origin = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
@@ -98,8 +93,10 @@ TEST_F(AutofillAgentTests, MAYBE_OnFormDataFilledTest) {
   // Fields are in alphabetical order.
   [[mock_js_injection_receiver_ expect]
       executeJavaScript:
-          @"__gCrWeb.autofill.fillForm({\"fields\":{\"name\":\"name_value\","
-          @"\"number\":\"number_value\"},\"formName\":\"CC form\"}, \"\");"
+          @"__gCrWeb.autofill.fillForm({\"fields\":{\"name\":{\"section\":\"\","
+          @"\"value\":\"name_value\"},"
+          @"\"number\":{\"section\":\"\",\"value\":\"number_value\"}},"
+          @"\"formName\":\"CC form\"}, \"\");"
       completionHandler:[OCMArg any]];
   [autofill_agent_ onFormDataFilled:form];
   test_web_state_.WasShown();
@@ -109,14 +106,7 @@ TEST_F(AutofillAgentTests, MAYBE_OnFormDataFilledTest) {
 
 // Tests that in the case of conflict in fields' identifiers, the last seen
 // value of a given field is used.
-#if TARGET_OS_SIMULATOR
-#define MAYBE_OnFormDataFilledWithNameCollisionTest \
-  OnFormDataFilledWithNameCollisionTest
-#else
-#define MAYBE_OnFormDataFilledWithNameCollisionTest \
-  DISABLED_OnFormDataFilledWithNameCollisionTest
-#endif
-TEST_F(AutofillAgentTests, MAYBE_OnFormDataFilledWithNameCollisionTest) {
+TEST_F(AutofillAgentTests, OnFormDataFilledWithNameCollisionTest) {
   autofill::FormData form;
   form.origin = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
@@ -144,8 +134,10 @@ TEST_F(AutofillAgentTests, MAYBE_OnFormDataFilledWithNameCollisionTest) {
   // Fields are in alphabetical order.
   [[mock_js_injection_receiver_ expect]
       executeJavaScript:
-          @"__gCrWeb.autofill.fillForm({\"fields\":{\"field1\":\"value "
-          @"2\",\"region\":\"California\"},\"formName\":\"\"}, \"\");"
+          @"__gCrWeb.autofill.fillForm({\"fields\":{\"field1\":{\"section\":"
+          @"\"\",\"value\":\"value "
+          @"2\"},\"region\":{\"section\":\"\",\"value\":\"California\"}},"
+          @"\"formName\":\"\"}, \"\");"
       completionHandler:[OCMArg any]];
   [autofill_agent_ onFormDataFilled:form];
   test_web_state_.WasShown();
