@@ -4,7 +4,7 @@
     "href": "/extensions",
     "items": [
       {
-        "title": "Learn Extension Basics",
+        "title": "Extend the Browser",
         "href": "/extensions",
         "items": [
           {
@@ -28,17 +28,27 @@
                 "href": "/extensions/background_pages"
               },
               {
-                "title": "Content Scripts",
-                "href": "/extensions/content_scripts"
-              },
-              {
                 "title": "Design User Interface",
                 "href": "/extensions/user_interface"
+              },
+              {
+                "title": "Content Scripts",
+                "href": "/extensions/content_scripts"
               },
               {
                 "title": "Declare Permissions and Warn Users",
                 "href": "/extensions/permission_warnings"
               },
+              {
+                "title": "Give Users Options",
+                "href": "/extensions/options"
+              }
+            ]
+          },
+          {
+            "title": "Developer Guide",
+            "href": "/extensions/devguide",
+            "items": [
               {
                 "title": "Reach Peak Performance",
                 "href": "/extensions/performance"
@@ -52,14 +62,50 @@
                 "href": "/extensions/security"
               },
               {
+                "title": "Debugging",
+                "href": "/extensions/tut_debugging"
+              },
+              {
                 "title": "OAuth",
                 "href": "/extensions/tut_oauth"
               },
               {
-                "title": "Give Users Options",
-                "href": "/extensions/options"
+                "title": "Accessibility",
+                "href": "/extensions/a11y"
+              },
+              {
+                "title": "Content Security Policy",
+                "href": "/extensions/contentSecurityPolicy"
+              },
+              {
+                "title": "Cross-Origin XHR",
+                "href": "/extensions/xhr"
+              },
+              {
+                "title": "Internationalization",
+                "href": "/extensions/i18n"
+              },
+              {
+                "title": "Message Passing",
+                "href": "/extensions/messaging"
+              },
+              {
+                "title": "Native Messaging",
+                "href": "/extensions/nativeMessaging"
+              },
+              {
+                "title": "Match Patterns",
+                "href": "/extensions/match_patterns"
+              },
+              {
+                "title": "Extension Quality Guidelines FAQ",
+                "href": "/extensions/single_purpose"
               }
             ]
+          },
+          {
+            "title": "Samples",
+            "href": "/extensions/samples"
           },
           {
             "title": "Help",
@@ -86,85 +132,7 @@
         ]
       },
       {
-        "title": "Start Development",
-        "href": "/extensions/devguide",
-        "items": [
-          {
-            "title": "Developer Guide",
-            "href": "/extensions/devguide",
-            "items": [
-              {
-                "title": "Accessibility",
-                "href": "/extensions/a11y"
-              },
-              {
-                "title": "Content Security Policy",
-                "href": "/extensions/contentSecurityPolicy"
-              },
-              {
-                "title": "Cross-Origin XHR",
-                "href": "/extensions/xhr"
-              },
-              {
-                "title": "Debugging",
-                "href": "/extensions/tut_debugging"
-              },
-              {
-                "title": "Extension Quality Guidelines FAQ",
-                "href": "/extensions/single_purpose"
-              },
-              {
-                "title": "Internationalization",
-                "href": "/extensions/i18n"
-              },
-              {
-                "title": "Message Passing",
-                "href": "/extensions/messaging"
-              },
-              {
-                "title": "Native Messaging",
-                "href": "/extensions/nativeMessaging"
-              },
-              {
-                "title": "Migrate to Manifest 2",
-                "href": "/extensions/tut_migration_to_manifest_v2"
-              },
-              {
-                "title": "Permission Warnings",
-                "href": "/extensions/permission_warnings"
-              },
-              {
-                "title": "Optional Permissions",
-                "href": "/extensions/permissions"
-              },
-              {
-                "title": "Match Patterns",
-                "href": "/extensions/match_patterns"
-              }
-            ]
-          },
-          {
-            "title": "Chrome Platform APIs",
-            "href": "/extensions/api_index",
-            "items": [
-              {
-                "title": "JavaScript APIs",
-                "href": "/extensions/api_index"
-              },
-              {
-                "title": "Web APIs",
-                "href": "/extensions/api_other"
-              }
-            ]
-          },
-          {
-            "title": "Samples",
-            "href": "/extensions/samples"
-          }
-        ]
-      },
-      {
-        "title": "Publish and Distribute",
+        "title": "Web Store Publishing and Distribution",
         "href": "/webstore",
         "items": [
           {
@@ -175,36 +143,6 @@
                 "title": "Distributing Products Built for Chrome",
                 "href": "/webstore"
               },
-              {
-                "title": "Hosting and Updating",
-                "href": "/extensions/hosting"
-              },
-              {
-                "title": "Hosting Policy Changes",
-                "href": "/extensions/hosting_changes"
-              },
-              {
-                "title": "One-Time Payments",
-                "href": "/webstore/one_time_payments"
-              },
-              {
-                "title": "Google Analytics",
-                "href": "/extensions/tut_analytics"
-              },
-              {
-                "title": "Publishing Themes",
-                "href": "/extensions/themes"
-              },
-              {
-                "title": "Other Deployment Options",
-                "href": "/extensions/external_extensions"
-              }
-            ]
-          },
-          {
-            "title": "Publish Extensions",
-            "href": "/webstore/about_webstore",
-            "items": [
               {
                 "title": "What Is the Chrome Web Store?",
                 "href": "/webstore/about_webstore"
@@ -220,6 +158,32 @@
               {
                 "title": "Samples",
                 "href": "/webstore/samples"
+              }
+            ]
+          },
+          {
+            "title": "Publish Extensions",
+            "href": "/extensions/hosting",
+            "items": [
+              {
+                "title": "Hosting and Updating",
+                "href": "/extensions/hosting"
+              },
+              {
+                "title": "Hosting Policy Changes",
+                "href": "/extensions/hosting_changes"
+              },
+              {
+                "title": "Google Analytics",
+                "href": "/extensions/tut_analytics"
+              },
+              {
+                "title": "Publishing Themes",
+                "href": "/extensions/themes"
+              },
+              {
+                "title": "Other Deployment Options",
+                "href": "/extensions/external_extensions"
               }
             ]
           },
@@ -281,6 +245,96 @@
               }
             ]
           }
+        ]
+      },
+      {
+        "title": "Mobile Chrome",
+        "href": "/multidevice",
+        "items": [
+          {
+            "title": "Chrome for a Multi-Device World",
+            "href": "/multidevice",
+            "items": [
+              {
+               "title": "User Agents",
+               "href": "/multidevice/user-agent"
+             },
+             {
+              "title": "Chrome Custom Tabs",
+              "href": "/multidevice/android/customtabs"
+             },
+             {
+                "title": "Mobile Emulation",
+                "href": "/devtools/docs/mobile-emulation"
+              },
+              {
+                "title": "Remote Debugging",
+                "href": "/devtools/docs/remote-debugging"
+              }
+            ]
+          },
+          {
+           "title": "Chrome for Android",
+           "href": "/multidevice/android/overview",
+           "items": [
+             {
+               "title": "Overview",
+               "href": "/multidevice/android/overview"
+             },
+             {
+               "title": "Android Intents with Chrome",
+               "href": "/multidevice/android/intents"
+             },
+             {
+               "title": "Chrome Custom Tabs",
+               "href": "/multidevice/android/customtabs"
+             }
+           ]
+         },
+         {
+           "title": "Chrome WebView",
+           "href": "/multidevice/webview/overview",
+           "items": [
+             {
+               "title": "WebView for Android",
+               "href": "/multidevice/webview/overview"
+             },
+             {
+               "title": "Getting Started",
+               "href": "/multidevice/webview/gettingstarted"
+             },
+             {
+               "title": "Pixel-Perfect UI",
+               "href": "/multidevice/webview/pixelperfect"
+             },
+             {
+               "title": "WebView Workflow",
+               "href": "/multidevice/webview/workflow"
+             },
+             {
+               "title": "Tips & Tricks",
+               "href": "/multidevice/webview/tipsandtricks"
+             }
+           ]
+         },
+         {
+           "title": "Chrome for iOS",
+           "href": "/multidevice/ios/links",
+           "items": [
+             {
+               "title": "Opening Links in Chrome",
+               "href": "/multidevice/ios/links"
+             },
+             {
+               "title": "User Agent",
+               "href": "/multidevice/user-agent#chrome_for_ios_user_agent"
+             }
+           ]
+         },
+         {
+           "title": "FAQ",
+           "href": "/multidevice/faq"
+         }
         ]
       }
     ]
@@ -470,12 +524,8 @@
           },
           {
             "title": "Chrome Platform APIs",
-            "href": "/apps/api_index",
+            "href": "/apps/manifest",
             "items": [
-              {
-                "title": "JavaScript APIs",
-                "href": "/apps/api_index"
-              },
               {
                 "title": "Manifest File Format",
                 "href": "/apps/manifest"
@@ -757,97 +807,25 @@
     ]
   },
   {
-    "title": "Multi-device",
+    "title": "Chrome APIs",
     "items": [
       {
-        "title": "Getting Started",
-        "href": "/multidevice",
+        "title": "Extensions APIs",
+        "href": "/extensions/api_index",
         "items": [
           {
-            "title": "Chrome for a Multi-Device World",
-            "href": "/multidevice"
-          },
-          {
-            "title": "Data Compression Proxy",
-            "href": "/multidevice/data-compression"
-          },
-          {
-            "title": "User Agents",
-            "href": "/multidevice/user-agent"
-          },
-          {
-            "title": "Mobile Emulation",
-            "href": "/devtools/docs/mobile-emulation"
-          },
-          {
-            "title": "Remote Debugging",
-            "href": "/devtools/docs/remote-debugging"
-          },
-          {
-            "title": "FAQ",
-            "href": "/multidevice/faq"
+            "title": "Extension APIs",
+            "href": "/extensions/api_index"
           }
         ]
       },
       {
-        "title": "Chrome for Android",
-        "href": "/multidevice/android/overview",
+        "title": "Apps APIs",
+        "href": "/apps/api_index",
         "items": [
           {
-            "title": "Overview",
-            "href": "/multidevice/android/overview"
-          },
-          {
-            "title": "Android Intents with Chrome",
-            "href": "/multidevice/android/intents"
-          },
-          {
-            "title": "Add to Homescreen",
-            "href": "/multidevice/android/installtohomescreen"
-          },
-          {
-            "title": "Chrome Custom Tabs",
-            "href": "/multidevice/android/customtabs"
-          }
-        ]
-      },
-      {
-        "title": "Chrome WebView",
-        "href": "/multidevice/webview/overview",
-        "items": [
-          {
-            "title": "WebView for Android",
-            "href": "/multidevice/webview/overview"
-          },
-          {
-            "title": "Getting Started",
-            "href": "/multidevice/webview/gettingstarted"
-          },
-          {
-            "title": "Pixel-Perfect UI",
-            "href": "/multidevice/webview/pixelperfect"
-          },
-          {
-            "title": "WebView Workflow",
-            "href": "/multidevice/webview/workflow"
-          },
-          {
-            "title": "Tips & Tricks",
-            "href": "/multidevice/webview/tipsandtricks"
-          }
-        ]
-      },
-      {
-        "title": "Chrome for iOS",
-        "href": "/multidevice/ios/links",
-        "items": [
-          {
-            "title": "Opening Links in Chrome",
-            "href": "/multidevice/ios/links"
-          },
-          {
-            "title": "User Agent",
-            "href": "/multidevice/user-agent#chrome_for_ios_user_agent"
+            "title": "Apps APIs",
+            "href": "/apps/api_index"
           }
         ]
       }
