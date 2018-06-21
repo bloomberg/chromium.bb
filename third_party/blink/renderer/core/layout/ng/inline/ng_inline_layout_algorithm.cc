@@ -516,8 +516,16 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(NGLineInfo* line_info) {
                        shape_result->StartIndexForResult());
       item_result.inline_size = shape_result->SnappedWidth();
       item_result.shape_result = std::move(shape_result);
-    } else {
-      // TODO(kojii): Implement atomic inline.
+    } else if (item_result.item->Type() == NGInlineItem::kAtomicInline) {
+      float offset = 0.f;
+      DCHECK_LE(line_info->StartOffset(), item_result.start_offset);
+      unsigned line_text_offset =
+          item_result.start_offset - line_info->StartOffset();
+      DCHECK_EQ(kObjectReplacementCharacter, line_text[line_text_offset]);
+      float space = spacing.ComputeSpacing(line_text_offset, offset);
+      item_result.inline_size += space;
+      // |offset| is non-zero only before CJK characters.
+      DCHECK_EQ(offset, 0.f);
     }
   }
   return true;
