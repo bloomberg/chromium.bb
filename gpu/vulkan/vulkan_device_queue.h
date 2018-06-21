@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "gpu/vulkan/vulkan_export.h"
+#include "ui/gfx/extension_set.h"
 
 namespace gpu {
 
@@ -34,7 +35,12 @@ class VULKAN_EXPORT VulkanDeviceQueue {
                                    uint32_t queue_family_index)>;
   bool Initialize(
       uint32_t options,
+      const std::vector<const char*>& required_extensions,
       const GetPresentationSupportCallback& get_presentation_support);
+
+  const gfx::ExtensionSet& enabled_extensions() const {
+    return enabled_extensions_;
+  }
 
   void Destroy();
 
@@ -61,6 +67,7 @@ class VULKAN_EXPORT VulkanDeviceQueue {
   std::unique_ptr<gpu::VulkanCommandPool> CreateCommandPool();
 
  private:
+  gfx::ExtensionSet enabled_extensions_;
   VkPhysicalDevice vk_physical_device_ = VK_NULL_HANDLE;
   VkDevice vk_device_ = VK_NULL_HANDLE;
   VkQueue vk_queue_ = VK_NULL_HANDLE;

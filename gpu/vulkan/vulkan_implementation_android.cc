@@ -16,8 +16,8 @@ VulkanImplementationAndroid::VulkanImplementationAndroid() {}
 VulkanImplementationAndroid::~VulkanImplementationAndroid() {}
 
 bool VulkanImplementationAndroid::InitializeVulkanInstance() {
-  std::vector<const char*> required_extensions;
-  required_extensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+  std::vector<const char*> required_extensions = {
+      VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_ANDROID_SURFACE_EXTENSION_NAME};
 
   VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
@@ -76,6 +76,11 @@ bool VulkanImplementationAndroid::GetPhysicalDevicePresentationSupport(
   // presentation with any native window.
   // As a result there is no Android-specific query for these capabilities.
   return true;
+}
+
+std::vector<const char*>
+VulkanImplementationAndroid::GetRequiredDeviceExtensions() {
+  return {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 }
 
 }  // namespace gpu

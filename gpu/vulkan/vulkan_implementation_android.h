@@ -28,6 +28,7 @@ class VULKAN_EXPORT VulkanImplementationAndroid : public VulkanImplementation {
       VkPhysicalDevice device,
       const std::vector<VkQueueFamilyProperties>& queue_family_properties,
       uint32_t queue_family_index) override;
+  std::vector<const char*> GetRequiredDeviceExtensions() override;
 
  private:
   VulkanInstance vulkan_instance_;

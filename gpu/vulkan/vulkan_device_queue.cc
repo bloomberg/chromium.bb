@@ -23,6 +23,7 @@ VulkanDeviceQueue::~VulkanDeviceQueue() {
 
 bool VulkanDeviceQueue::Initialize(
     uint32_t options,
+    const std::vector<const char*>& required_extensions,
     const GetPresentationSupportCallback& get_presentation_support) {
   VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
@@ -94,8 +95,6 @@ bool VulkanDeviceQueue::Initialize(
   queue_create_info.queueCount = 1;
   queue_create_info.pQueuePriorities = &queue_priority;
 
-  const char* device_extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-
   std::vector<const char*> enabled_layer_names;
 #if DCHECK_IS_ON()
   uint32_t num_device_layers = 0;
@@ -125,21 +124,32 @@ bool VulkanDeviceQueue::Initialize(
   }
 #endif
 
+  std::vector<const char*> enabled_extensions;
+  enabled_extensions.insert(std::end(enabled_extensions),
+                            std::begin(required_extensions),
+                            std::end(required_extensions));
+
   VkDeviceCreateInfo device_create_info = {};
   device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
   device_create_info.queueCreateInfoCount = 1;
   device_create_info.pQueueCreateInfos = &queue_create_info;
   device_create_info.enabledLayerCount = enabled_layer_names.size();
   device_create_info.ppEnabledLayerNames = enabled_layer_names.data();
-  device_create_info.enabledExtensionCount = arraysize(device_extensions);
-  device_create_info.ppEnabledExtensionNames = device_extensions;
+  device_create_info.enabledExtensionCount = enabled_extensions.size();
+  device_create_info.ppEnabledExtensionNames = enabled_extensions.data();
 
   result = vulkan_function_pointers->vkCreateDevice(
       vk_physical_device_, &device_create_info, nullptr, &vk_device_);
   if (VK_SUCCESS != result)
     return false;
 
+  enabled_extensions_ = gfx::ExtensionSet(std::begin(enabled_extensions),
+                                          std::end(enabled_extensions));
+
   vulkan_function_pointers->BindDeviceFunctionPointers(vk_device_);
+
+  if (gfx::HasExtension(enabled_extensions_, VK_KHR_SWAPCHAIN_EXTENSION_NAME))
+    vulkan_function_pointers->BindSwapchainFunctionPointers(vk_device_);
 
   vulkan_function_pointers->vkGetDeviceQueue(vk_device_, queue_index, 0,
                                              &vk_queue_);
