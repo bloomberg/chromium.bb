@@ -396,6 +396,8 @@ void ServiceWorkerNewScriptLoader::OnWriteHeadersComplete(net::Error error) {
   DCHECK_EQ(WriterState::kWriting, header_writer_state_);
   DCHECK_NE(net::ERR_IO_PENDING, error);
   if (error != net::OK) {
+    ServiceWorkerMetrics::CountWriteResponseResult(
+        ServiceWorkerMetrics::WRITE_HEADERS_ERROR);
     CommitCompleted(network::URLLoaderCompletionStatus(error),
                     kServiceWorkerFetchScriptError);
     return;
@@ -480,6 +482,8 @@ void ServiceWorkerNewScriptLoader::WriteData(
     case MOJO_RESULT_OK:
       break;
     case MOJO_RESULT_FAILED_PRECONDITION:
+      ServiceWorkerMetrics::CountWriteResponseResult(
+          ServiceWorkerMetrics::WRITE_DATA_ERROR);
       CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_FAILED),
                       kServiceWorkerFetchScriptError);
       return;
@@ -518,11 +522,15 @@ void ServiceWorkerNewScriptLoader::OnWriteDataComplete(
     net::Error error) {
   DCHECK_NE(net::ERR_IO_PENDING, error);
   if (error != net::OK) {
+    ServiceWorkerMetrics::CountWriteResponseResult(
+        ServiceWorkerMetrics::WRITE_DATA_ERROR);
     CommitCompleted(network::URLLoaderCompletionStatus(error),
                     kServiceWorkerFetchScriptError);
     return;
   }
   DCHECK(pending_buffer);
+  ServiceWorkerMetrics::CountWriteResponseResult(
+      ServiceWorkerMetrics::WRITE_OK);
   pending_buffer->CompleteRead(bytes_written);
   // Get the consumer handle from a previous read operation if we have one.
   network_consumer_ = pending_buffer->ReleaseHandle();
@@ -557,8 +565,6 @@ void ServiceWorkerNewScriptLoader::CommitCompleted(
   version_->script_cache_map()->NotifyFinishedCaching(
       request_url_, bytes_written, error_code, status_message);
 
-  // TODO(nhiroki): Record ServiceWorkerMetrics::CountWriteResponseResult().
-  // (https://crbug.com/762357)
   client_->OnComplete(status);
   client_producer_.reset();
 
