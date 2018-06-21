@@ -5,8 +5,14 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_BAD_MESSAGE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_BAD_MESSAGE_H_
 
+#include <vector>
+
+namespace autofill {
+struct PasswordForm;
+}
+
 namespace content {
-class RenderProcessHost;
+class RenderFrameHost;
 }
 
 namespace password_manager {
@@ -38,11 +44,19 @@ enum class BadMessageReason {
 };
 
 namespace bad_message {
-// Called when the browser receives a bad IPC message from a renderer process on
-// the UI thread. Logs the event, records a histogram metric for the |reason|,
-// and terminates the process for |host|.
-void ReceivedBadMessage(content::RenderProcessHost* host,
-                        BadMessageReason reason);
+// Returns true if the renderer for |frame| is allowed to perform an operation
+// on |password_form|. If the origin mismatches, the process for |frame| is
+// terminated and the function returns false.
+bool CheckChildProcessSecurityPolicy(
+    content::RenderFrameHost* frame,
+    const autofill::PasswordForm& password_form,
+    BadMessageReason reason);
+
+// Same as above but checks every form in |forms|.
+bool CheckChildProcessSecurityPolicy(
+    content::RenderFrameHost* frame,
+    const std::vector<autofill::PasswordForm>& forms,
+    BadMessageReason reason);
 
 }  // namespace bad_message
 }  // namespace password_manager
