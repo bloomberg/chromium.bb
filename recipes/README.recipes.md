@@ -53,7 +53,7 @@ Wrapper for easy calling of bot_update.
 Deapplies a patch, taking care of DEPS and solution revisions properly.
     
 
-&mdash; **def [ensure\_checkout](/recipes/recipe_modules/bot_update/api.py#68)(self, gclient_config=None, suffix=None, patch=True, update_presentation=True, patch_root=None, no_shallow=False, with_branch_heads=False, with_tags=False, refs=None, patch_oauth2=None, oauth2_json=None, use_site_config_creds=None, clobber=False, root_solution_revision=None, rietveld=None, issue=None, patchset=None, gerrit_no_reset=False, gerrit_no_rebase_patch_ref=False, disable_syntax_validation=False, manifest_name=None, \*\*kwargs):**
+&mdash; **def [ensure\_checkout](/recipes/recipe_modules/bot_update/api.py#68)(self, gclient_config=None, suffix=None, patch=True, update_presentation=True, patch_root=None, no_shallow=True, with_branch_heads=False, with_tags=False, refs=None, patch_oauth2=None, oauth2_json=None, use_site_config_creds=None, clobber=False, root_solution_revision=None, rietveld=None, issue=None, patchset=None, gerrit_no_reset=False, gerrit_no_rebase_patch_ref=False, disable_syntax_validation=False, manifest_name=None, \*\*kwargs):**
 
 Args:
   gclient_config: The gclient configuration to use when running bot_update.

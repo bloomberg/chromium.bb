@@ -1038,9 +1038,9 @@ def parse_args():
                    help='Delete checkout first, always')
   parse.add_option('--output_json',
                    help='Output JSON information into a specified file')
-  parse.add_option('--no_shallow', action='store_true',
-                   help='Bypass disk detection and never shallow clone. '
-                        'Does not override the --shallow flag')
+  parse.add_option('--maybe_shallow', action='store_true',
+                   help='Enables turning on shallow mode if total disk '
+                        'space is low.')
   parse.add_option('--refs', action='append',
                    help='Also fetch this refspec for the main solution(s). '
                         'Eg. +refs/branch-heads/*')
@@ -1126,7 +1126,7 @@ def prepare(options, git_slns, active):
                                            total_disk_space_gb,
                                            percent_used)
   shallow = (total_disk_space < SHALLOW_CLONE_THRESHOLD
-             and not options.no_shallow)
+             and options.maybe_shallow)
 
   # The first solution is where the primary DEPS file resides.
   first_sln = dir_names[0]

@@ -18,7 +18,7 @@
       "/path/to/tmp/json",
       "--revision",
       "src@HEAD",
-      "--no_shallow",
+      "--maybe_shallow",
       "--disable-syntax-validation"
     ],
     "env_prefixes": {
