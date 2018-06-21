@@ -5,6 +5,7 @@
 #include "ash/app_menu/app_menu_model_adapter.h"
 
 #include "ash/app_menu/notification_menu_controller.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_features.h"
@@ -13,6 +14,20 @@
 #include "ui/views/controls/menu/menu_runner.h"
 
 namespace ash {
+
+namespace {
+
+// The UMA histogram that logs the commands which are executed on non-app
+// context menus.
+constexpr char kNonAppContextMenuExecuteCommand[] =
+    "Apps.ContextMenuExecuteCommand.NotFromApp";
+
+// The UMA histogram that logs the commands which are executed on app context
+// menus.
+constexpr char kAppContextMenuExecuteCommand[] =
+    "Apps.ContextMenuExecuteCommand.FromApp";
+
+}  // namespace
 
 AppMenuModelAdapter::AppMenuModelAdapter(
     const std::string& app_id,
@@ -66,12 +81,23 @@ base::TimeTicks AppMenuModelAdapter::GetClosingEventTime() {
   return menu_runner_->closing_event_time();
 }
 
+void AppMenuModelAdapter::ExecuteCommand(int id, int mouse_event_flags) {
+  views::MenuModelAdapter::ExecuteCommand(id, mouse_event_flags);
+  RecordExecuteCommandHistogram(id);
+}
+
 void AppMenuModelAdapter::OnMenuClosed(views::MenuItemView* menu) {
   DCHECK_NE(base::TimeTicks(), menu_open_time_);
-  RecordHistogram();
+  RecordHistogramOnMenuClosed();
 
   if (on_menu_closed_callback_)
     std::move(on_menu_closed_callback_).Run();
+}
+
+void AppMenuModelAdapter::RecordExecuteCommandHistogram(int command_id) {
+  base::UmaHistogramSparse(app_id().empty() ? kNonAppContextMenuExecuteCommand
+                                            : kAppContextMenuExecuteCommand,
+                           command_id);
 }
 
 }  // namespace ash

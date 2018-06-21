@@ -22,7 +22,7 @@ class ASH_EXPORT ShelfMenuModelAdapter : public AppMenuModelAdapter {
   ~ShelfMenuModelAdapter() override;
 
   // Overridden from AppMenuModelAdapter:
-  void RecordHistogram() override;
+  void RecordHistogramOnMenuClosed() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfMenuModelAdapter);

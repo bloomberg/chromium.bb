@@ -24,7 +24,8 @@ class APP_LIST_EXPORT AppListMenuModelAdapter
     : public ash::AppMenuModelAdapter {
  public:
   // The kinds of apps which show menus. This enum is used to record
-  // metrics, if a new value is added make sure to modify RecordHistogram().
+  // metrics, if a new value is added make sure to modify
+  // RecordHistogramOnMenuClosed().
   enum AppListViewAppType {
     FULLSCREEN_SEARCH_RESULT,
     FULLSCREEN_SUGGESTED,
@@ -54,7 +55,7 @@ class APP_LIST_EXPORT AppListMenuModelAdapter
   void Build(std::vector<ash::mojom::MenuItemPtr> items);
 
   // Overridden from AppMenuModelAdapter:
-  void RecordHistogram() override;
+  void RecordHistogramOnMenuClosed() override;
 
   // Overridden from views::MenuModelAdapter:
   bool IsItemChecked(int id) const override;
