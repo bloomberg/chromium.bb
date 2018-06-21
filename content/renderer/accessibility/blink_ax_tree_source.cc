@@ -214,9 +214,20 @@ ScopedFreezeBlinkAXTreeSource::~ScopedFreezeBlinkAXTreeSource() {
 
 BlinkAXTreeSource::BlinkAXTreeSource(RenderFrameImpl* render_frame,
                                      ui::AXMode mode)
-    : render_frame_(render_frame), accessibility_mode_(mode), frozen_(false) {}
+    : render_frame_(render_frame),
+      accessibility_mode_(mode),
+      frozen_(false),
+      hidden_(false) {}
 
 BlinkAXTreeSource::~BlinkAXTreeSource() {
+}
+
+void BlinkAXTreeSource::WasHidden() {
+  hidden_ = true;
+}
+
+void BlinkAXTreeSource::WasShown() {
+  hidden_ = false;
 }
 
 void BlinkAXTreeSource::Freeze() {
@@ -372,6 +383,9 @@ void BlinkAXTreeSource::GetChildren(
     std::vector<WebAXObject>* out_children) const {
   CHECK(frozen_);
 
+  if (hidden_)
+    return;
+
   if ((parent.Role() == blink::kWebAXRoleStaticText ||
        parent.Role() == blink::kWebAXRoleLineBreak) &&
       ShouldLoadInlineTextBoxes(parent)) {
@@ -402,6 +416,9 @@ void BlinkAXTreeSource::GetChildren(
 WebAXObject BlinkAXTreeSource::GetParent(WebAXObject node) const {
   CHECK(frozen_);
 
+  if (hidden_)
+    return WebAXObject();
+
   // Blink returns ignored objects when walking up the parent chain,
   // we have to skip those here. Also, stop when we get to the root
   // element.
@@ -415,6 +432,9 @@ WebAXObject BlinkAXTreeSource::GetParent(WebAXObject node) const {
 }
 
 bool BlinkAXTreeSource::IsValid(WebAXObject node) const {
+  if (hidden_ && !node.Equals(root()))
+    return false;
+
   return !node.IsDetached();  // This also checks if it's null.
 }
 

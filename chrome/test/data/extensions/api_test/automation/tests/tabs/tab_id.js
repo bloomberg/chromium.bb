@@ -1,15 +1,14 @@
-
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function createBackgroundTab(url, callback) {
+function createTabInNewInactiveWindow(url, callback) {
   chrome.tabs.query({ active: true }, function(tabs) {
     chrome.test.assertEq(1, tabs.length);
     var originalActiveTab = tabs[0];
-    createTab(url, function(tab) {
+    chrome.windows.create({"url": url, "focused": false}, function(win) {
       chrome.tabs.update(originalActiveTab.id, { active: true }, function() {
-        callback(tab);
+        callback(win.tabs[0]);
       });
     })
   });
@@ -26,7 +25,7 @@ var allTests = [
     getUrlFromConfig('index.html', function(url) {
       // Keep the NTP as the active tab so that we know we're requesting the
       // tab by ID rather than just getting the active tab still.
-      createBackgroundTab(url, function(tab) {
+      createTabInNewInactiveWindow(url, function(tab) {
         chrome.automation.getTree(tab.id, function(rootNode) {
           if (rootNode.docLoaded) {
             assertCorrectTab(rootNode);

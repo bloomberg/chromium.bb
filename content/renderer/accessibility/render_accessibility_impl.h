@@ -75,6 +75,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   // RenderFrameObserver implementation.
   void AccessibilityModeChanged() override;
   bool OnMessageReceived(const IPC::Message& message) override;
+  void WasHidden() override;
+  void WasShown() override;
 
   // Called when an accessibility notification occurs in Blink.
   void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
