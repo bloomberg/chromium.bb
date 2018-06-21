@@ -2651,6 +2651,7 @@ crbug.com/654477 virtual/video-surface-layer/media/controls-focus-ring.html [ Fa
 crbug.com/654477 [ Mac10.10 Mac10.11 Retina ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 crbug.com/638621 [ Win7 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 
+crbug.com/855166 svg/as-background-image/svg-as-background-5.html [ Pass Failure ]
 
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
 
