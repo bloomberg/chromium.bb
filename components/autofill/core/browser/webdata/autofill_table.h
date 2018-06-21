@@ -581,7 +581,6 @@ class AutofillTable : public WebDatabaseTable,
 
   bool InitMainTable();
   bool InitCreditCardsTable();
-  bool InitDatesTable();
   bool InitProfilesTable();
   bool InitProfileNamesTable();
   bool InitProfileEmailsTable();
