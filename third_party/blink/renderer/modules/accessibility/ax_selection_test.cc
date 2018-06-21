@@ -22,6 +22,7 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInText) {
   SetBodyInnerHTML(R"HTML(<p id='paragraph'>Hello</p>)HTML");
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
+  ASSERT_TRUE(text->IsTextNode());
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
@@ -46,6 +47,7 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInTextWithWhiteSpace) {
   SetBodyInnerHTML(R"HTML(<p id='paragraph'>     Hello</p>)HTML");
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
+  ASSERT_TRUE(text->IsTextNode());
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);

@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_POSITION_H_
 
 #include <base/logging.h>
-#include <base/optional.h>
 #include <stdint.h>
 #include <ostream>
 
@@ -20,14 +19,22 @@ namespace blink {
 
 class AXObject;
 
-// When converting to a DOM position from an |AXPosition| and the corresponding
-// DOM position is invalid or doesn't exist, determines how to adjust the
-// |AXPosition| in order to make it valid.
+// When converting to a DOM position from an |AXPosition| or vice versa, and the
+// corresponding position is invalid, doesn't exist, or is inside an ignored
+// object or a range of ignored objects, determines how to adjust the new
+// position in order to make it valid.
 enum class AXPositionAdjustmentBehavior { kMoveLeft, kMoveRight };
 
 // Describes a position in the Blink accessibility tree.
 // A position is either anchored to before or after a child object inside a
 // container object, or is anchored to a character inside a text object.
+// The former are called tree positions, and the latter text positions.
+// Tree positions are never located on a specific |AXObject|. Rather, they are
+// always between two objects, or an object and the start / end of their
+// container's children, known as "before children" and "after children"
+// positions respectively. They should be thought of like a caret that is always
+// between two characters. Another way of calling these types of positions is
+// object anchored and text anchored.
 class MODULES_EXPORT AXPosition final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -50,15 +57,32 @@ class MODULES_EXPORT AXPosition final {
   AXPosition& operator=(const AXPosition&) = default;
   ~AXPosition() = default;
 
+  // The |AXObject| in which the tree position is located, or in whose text the
+  // text position is found.
   const AXObject* ContainerObject() const { return container_object_; }
-  const AXObject* ObjectAfterPosition() const;
+
+  // Returns |nullptr| for text, and "after children" or equivalent positions.
+  const AXObject* ChildAfterTreePosition() const;
+
+  // Only valid for tree positions.
   int ChildIndex() const;
+
+  // Only valid for text positions.
   int TextOffset() const;
+
+  // If this is a text position, the length of the text in its container object.
+  int MaxTextOffset() const;
+
+  // When the same character offset could correspond to two possible caret
+  // positions, upstream means it's on the previous line rather than the next
+  // line.
   TextAffinity Affinity() const { return affinity_; }
 
   // Verifies if the anchor is present and if it's set to a live object with a
   // connected node.
   bool IsValid() const;
+
+  operator bool() const { return IsValid(); }
 
   // Returns whether this is a position anchored to a character inside a text
   // object.
@@ -67,12 +91,32 @@ class MODULES_EXPORT AXPosition final {
   const AXPosition CreateNextPosition() const;
   const AXPosition CreatePreviousPosition() const;
 
+  // Returns an adjusted position by skipping over any ignored objects in the
+  // case of a "before object" or "after object" position, or skipping over any
+  // ignored children in the case of a "before children" or "after children"
+  // position. If a text object is ignored, returns a position anchored at the
+  // nearest object, which might not be a text object. If the container object
+  // is ignored, tries to find if an equivalent position exists in its unignored
+  // parent, since all the children of an ignored object in the accessibility
+  // tree appear as children of its immediate unignored parent.
+  const AXPosition AsUnignoredPosition(
+      const AXPositionAdjustmentBehavior =
+          AXPositionAdjustmentBehavior::kMoveLeft) const;
+
+  // Adjusts the position by skipping over any objects that don't have a
+  // corresponding |node| in the DOM tree, e.g. list bullets.
+  const AXPosition AsValidDOMPosition(
+      const AXPositionAdjustmentBehavior =
+          AXPositionAdjustmentBehavior::kMoveLeft) const;
+
+  // Converts to a DOM position.
   const PositionWithAffinity ToPositionWithAffinity(
       const AXPositionAdjustmentBehavior =
           AXPositionAdjustmentBehavior::kMoveLeft) const;
 
  private:
   AXPosition();
+  // Only used by static Create... methods.
   explicit AXPosition(const AXObject& container);
 
   // The |AXObject| in which the position is present.
@@ -86,15 +130,14 @@ class MODULES_EXPORT AXPosition final {
   // of |container_object_| before the position. The canonical text is the DOM
   // node's text but with, e.g., whitespace collapsed and any transformations
   // applied.
-  base::Optional<int> text_offset_or_child_index_;
+  int text_offset_or_child_index_;
 
   // When the same character offset could correspond to two possible caret
-  // positions, upstream means it's on the previous line rather than the next
-  // line.
+  // positions.
   TextAffinity affinity_;
 
 #if DCHECK_IS_ON()
-  // TODO(ax-dev): Use layout tree version in place of DOM and style versions.
+  // TODO(nektar): Use layout tree version in place of DOM and style versions.
   uint64_t dom_tree_version_;
   uint64_t style_version_;
 #endif
