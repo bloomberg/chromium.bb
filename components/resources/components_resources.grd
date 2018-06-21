@@ -16,6 +16,9 @@
       <part file="net_log_resources.grdp" />
       <part file="neterror_resources.grdp" />
       <part file="ntp_tiles_resources.grdp" />
+      <if expr="enable_nux_google_apps">
+        <part file="nux_google_apps.grdp" />
+      </if>
       <part file="offline_pages_resources.grdp" />
       <part file="password_manager_internals_resources.grdp" />
       <part file="printing_resources.grdp" />
