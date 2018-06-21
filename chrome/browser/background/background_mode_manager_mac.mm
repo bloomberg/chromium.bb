@@ -12,10 +12,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 
@@ -154,10 +152,6 @@ void BackgroundModeManager::DisplayClientInstalledNotification(
     const base::string16& name) {
   // TODO(atwilson): Display a platform-appropriate notification here.
   // http://crbug.com/74970
-}
-
-base::string16 BackgroundModeManager::GetPreferencesMenuLabel() {
-  return l10n_util::GetStringUTF16(IDS_OPTIONS);
 }
 
 scoped_refptr<base::SequencedTaskRunner>
