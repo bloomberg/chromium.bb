@@ -802,6 +802,9 @@ def DefaultSettings():
       # failures.
       vm_test_runs=1,
 
+      # If True, run SkylabHWTestStage instead of HWTestStage.
+      enable_skylab_hw_tests=False,
+
       # A list of HWTestConfig objects to run.
       hw_tests=[],
 

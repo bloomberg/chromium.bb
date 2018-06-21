@@ -2639,6 +2639,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'guado',
   ])
 
+  _paladin_enable_skylab_hwtest = frozenset([
+      'nyan_blaze',
+  ])
+
   ### Master paladin (CQ builder).
   master_config = site_config.Add(
       'master-paladin',
@@ -2686,6 +2690,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
               models.append(config_lib.ModelTestConfig(name, lab_board_name))
 
           customizations.update(models=models)
+
+    if board in _paladin_enable_skylab_hwtest:
+      customizations.update(enable_skylab_hw_tests=True)
 
     if board in _paladin_moblab_hwtest_boards:
       customizations.update(
