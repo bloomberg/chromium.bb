@@ -52,6 +52,7 @@ class VR_EXPORT Repositioner : public UiElement {
 
   bool enabled_ = false;
   bool has_moved_beyond_threshold_ = false;
+  bool reset_yaw_ = false;
   gfx::Transform transform_;
   gfx::Vector3dF laser_direction_;
 

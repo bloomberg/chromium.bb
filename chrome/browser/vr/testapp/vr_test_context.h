@@ -112,6 +112,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   bool show_web_vr_splash_screen_ = false;
   bool voice_search_enabled_ = false;
   bool touching_touchpad_ = false;
+  bool recentered_ = false;
   base::TimeTicks page_load_start_;
   int tab_id_ = 0;
 
