@@ -1946,9 +1946,15 @@ void Element::RemovedFrom(ContainerNode* insertion_point) {
 void Element::AttachLayoutTree(AttachContext& context) {
   DCHECK(GetDocument().InStyleRecalc());
 
-  // We've already been through detach when doing an attach, but we might
-  // need to clear any state that's been added since then.
-  if (HasRareData() && NeedsAttach()) {
+  if (HasRareData() && NeedsAttach() && !IsPseudoElement()) {
+    // We have already been through detach when doing an attach, but we may have
+    // done a getComputedStyle() in between storing the ComputedStyle on rare
+    // data if the detach was a LazyReattachIfAttached().
+    //
+    // We do not clear it for pseudo elements because we store the original
+    // style in rare data for display:contents when the ComputedStyle used for
+    // the LayoutObject is an inline only inheriting properties from the element
+    // parent.
     ElementRareData* data = GetElementRareData();
     data->ClearComputedStyle();
   }
