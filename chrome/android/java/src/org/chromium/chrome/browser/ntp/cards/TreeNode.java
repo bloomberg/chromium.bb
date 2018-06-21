@@ -56,9 +56,12 @@ public interface TreeNode {
     void dismissItem(int position, Callback<String> itemRemovedCallback);
 
     /**
-     * Iterates over all items under this subtree and visits them with the given
-     * {@link NodeVisitor}.
-     * @param visitor The {@link NodeVisitor} with which to visit all items under this subtree.
+     * Describe the item at the given {@code position}. As the description is used in tests for
+     * dumping state and equality checks, different items should have distinct descriptions,
+     * but for items that are unique or don't have interesting state it can be sufficient to return
+     * e.g. a string that describes the type of the item.
+     * @param position The position of the item to be described.
+     * @return A string description of the item.
      */
-    void visitItems(NodeVisitor visitor);
+    String describeItemForTesting(int position);
 }

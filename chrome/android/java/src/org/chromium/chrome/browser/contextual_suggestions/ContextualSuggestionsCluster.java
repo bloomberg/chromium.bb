@@ -12,7 +12,6 @@ import org.chromium.chrome.browser.ntp.cards.ChildNode;
 import org.chromium.chrome.browser.ntp.cards.InnerNode;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
-import org.chromium.chrome.browser.ntp.cards.NodeVisitor;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
@@ -28,6 +27,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /** A node in a tree that groups contextual suggestions in a cluster of related items. */
@@ -127,13 +127,6 @@ class ContextualSuggestionsCluster extends InnerNode {
         }
 
         @Override
-        public void visitItems(NodeVisitor visitor) {
-            for (SnippetArticle suggestion : mSuggestions) {
-                visitor.visitSuggestion(suggestion);
-            }
-        }
-
-        @Override
         public Set<Integer> getItemDismissalGroup(int position) {
             // Contextual suggestions are not dismissible.
             assert false;
@@ -145,6 +138,12 @@ class ContextualSuggestionsCluster extends InnerNode {
         public void dismissItem(int position, Callback<String> itemRemovedCallback) {
             // Contextual suggestions are not dismissible.
             assert false;
+        }
+
+        @Override
+        public String describeItemForTesting(int position) {
+            return String.format(
+                    Locale.US, "SUGGESTION(%1.42s)", mSuggestions.get(position).mTitle);
         }
 
         @NonNull

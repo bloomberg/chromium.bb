@@ -4,30 +4,28 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsUnitTestUtils.makeUiConfig;
 import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.createDummySuggestions;
 import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.registerCategory;
-import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.stringify;
 
 import android.accounts.Account;
 import android.content.res.Resources;
@@ -43,13 +41,8 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.exceptions.base.MockitoAssertionError;
-import org.mockito.internal.verification.Times;
-import org.mockito.internal.verification.api.VerificationDataInOrder;
-import org.mockito.verification.VerificationMode;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -94,6 +87,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Unit tests for {@link NewTabPageAdapter}. {@link AccountManagerFacade} uses AsyncTasks, thus
@@ -101,11 +95,9 @@ import java.util.List;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
-
 @DisableFeatures({ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
         ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER,
         ChromeFeatureList.SIMPLIFIED_NTP, ChromeFeatureList.CHROME_DUPLEX})
-
 public class NewTabPageAdapterTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
@@ -187,82 +179,67 @@ public class NewTabPageAdapterTest {
      * expressed as a sequence of calls to the {@code expect...()} methods.
      */
     private static class ItemsMatcher { // TODO(pke): Find better name.
-        private final TreeNode mRoot;
-        private final NodeVisitor mVisitor = mock(NodeVisitor.class);
-        private final InOrder mInOrder = inOrder(mVisitor);
-
-        /**
-         * The {@link org.mockito.internal.verification.Description} verification mode doesn't
-         * support in-order verification, so we use a custom verification mode that derives from the
-         * default one.
-         */
-        private final VerificationMode mVerification = new Times(1) {
-            @Override
-            public void verifyInOrder(VerificationDataInOrder data) {
-                try {
-                    super.verifyInOrder(data);
-                } catch (MockitoAssertionError e) {
-                    throw new MockitoAssertionError(e, stringify(mRoot));
-                }
-            }
-        };
+        private final List<String> mExpectedDescriptions = new ArrayList<>();
+        private final List<String> mActualDescriptions = new ArrayList<>();
 
         public ItemsMatcher(TreeNode root) {
-            mRoot = root;
-            root.visitItems(mVisitor);
+            for (int i = 0; i < root.getItemCount(); i++) {
+                mActualDescriptions.add(root.describeItemForTesting(i));
+            }
+        }
+
+        private void expectDescription(String description) {
+            mExpectedDescriptions.add(description);
         }
 
         public void expectSection(SectionDescriptor descriptor) {
             if (descriptor.mIsSignInPromo) {
-                mInOrder.verify(mVisitor, mVerification).visitSignInPromo();
+                expectDescription("SIGN_IN_PROMO");
                 return;
             }
 
             if (descriptor.mHeader) {
-                mInOrder.verify(mVisitor, mVerification).visitHeader();
+                expectDescription("HEADER");
             }
 
             for (SnippetArticle suggestion : descriptor.mSuggestions) {
-                mInOrder.verify(mVisitor, mVerification).visitSuggestion(eq(suggestion));
+                expectDescription(
+                        String.format(Locale.US, "SUGGESTION(%1.42s)", suggestion.mTitle));
             }
 
             if (descriptor.mStatusCard) {
-                mInOrder.verify(mVisitor, mVerification).visitNoSuggestionsItem();
+                expectDescription("NO_SUGGESTIONS");
             }
 
             if (descriptor.mViewAllButton) {
-                mInOrder.verify(mVisitor, mVerification)
-                        .visitActionItem(ContentSuggestionsAdditionalAction.VIEW_ALL);
+                expectDescription(String.format(
+                        Locale.US, "ACTION(%d)", ContentSuggestionsAdditionalAction.VIEW_ALL));
             }
 
             if (descriptor.mFetchButton) {
-                mInOrder.verify(mVisitor, mVerification)
-                        .visitActionItem(ContentSuggestionsAdditionalAction.FETCH);
+                expectDescription(String.format(
+                        Locale.US, "ACTION(%d)", ContentSuggestionsAdditionalAction.FETCH));
             }
 
             if (descriptor.mProgressItem) {
-                mInOrder.verify(mVisitor, mVerification).visitProgressItem();
+                expectDescription("PROGRESS");
             }
         }
 
         public void expectAboveTheFoldItem() {
-            mInOrder.verify(mVisitor, mVerification).visitAboveTheFoldItem();
+            expectDescription("ABOVE_THE_FOLD");
         }
 
         public void expectAllDismissedItem() {
-            mInOrder.verify(mVisitor, mVerification).visitAllDismissedItem();
+            expectDescription("ALL_DISMISSED");
         }
 
         public void expectFooter() {
-            mInOrder.verify(mVisitor, mVerification).visitFooter();
+            expectDescription("FOOTER");
         }
 
-        public void expectEnd() {
-            try {
-                verifyNoMoreInteractions(mVisitor);
-            } catch (MockitoAssertionError e) {
-                throw new MockitoAssertionError(e, stringify(mRoot));
-            }
+        public void finish() {
+            assertThat(mActualDescriptions, is(mExpectedDescriptions));
         }
     }
 
@@ -1175,7 +1152,7 @@ public class NewTabPageAdapterTest {
     private void assertSectionMatches(SectionDescriptor descriptor, SuggestionsSection section) {
         ItemsMatcher matcher = new ItemsMatcher(section);
         matcher.expectSection(descriptor);
-        matcher.expectEnd();
+        matcher.finish();
     }
 
     /**
@@ -1194,7 +1171,7 @@ public class NewTabPageAdapterTest {
         } else {
             matcher.expectFooter();
         }
-        matcher.expectEnd();
+        matcher.finish();
     }
 
     /**

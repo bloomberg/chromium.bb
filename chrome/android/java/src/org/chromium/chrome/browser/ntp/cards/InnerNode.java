@@ -95,10 +95,10 @@ public class InnerNode extends ChildNode implements ListObserver<PartialBindCall
     }
 
     @Override
-    public void visitItems(NodeVisitor visitor) {
-        for (TreeNode child : getChildren()) {
-            child.visitItems(visitor);
-        }
+    public String describeItemForTesting(int position) {
+        int index = getChildIndexForPosition(position);
+        return getChildren().get(index).describeItemForTesting(
+                position - getStartingOffsetForChildIndex(index));
     }
 
     @Override

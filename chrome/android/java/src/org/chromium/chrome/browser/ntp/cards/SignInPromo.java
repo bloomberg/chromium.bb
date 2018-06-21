@@ -151,8 +151,8 @@ public class SignInPromo extends OptionalLeaf {
     }
 
     @Override
-    protected void visitOptionalItem(NodeVisitor visitor) {
-        visitor.visitSignInPromo();
+    public String describeForTesting() {
+        return "SIGN_IN_PROMO";
     }
 
     private void updateVisibility() {

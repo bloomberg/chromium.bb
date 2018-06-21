@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.test.util.browser.suggestions;
 
-import org.chromium.chrome.browser.ntp.cards.NodeVisitor;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.ntp.cards.TreeNode;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
@@ -139,63 +138,11 @@ public final class ContentSuggestionsTestUtils {
     public static String stringify(TreeNode root) {
         final StringBuilder stringBuilder = new StringBuilder();
 
-        root.visitItems(new NodeVisitor() {
-            private int mPosition;
+        for (int i = 0; i < root.getItemCount(); i++) {
+            stringBuilder.append(
+                    String.format(Locale.US, "%s - %s%n", i, root.describeItemForTesting(i)));
+        }
 
-            @Override
-            public void visitAboveTheFoldItem() {
-                describeItem("ABOVE_THE_FOLD");
-            }
-
-            @Override
-            public void visitActionItem(@ContentSuggestionsAdditionalAction int currentAction) {
-                describeItem("ACTION(%d)", currentAction);
-            }
-
-            @Override
-            public void visitAllDismissedItem() {
-                describeItem("ALL_DISMISSED");
-            }
-
-            @Override
-            public void visitFooter() {
-                describeItem("FOOTER");
-            }
-
-            @Override
-            public void visitProgressItem() {
-                describeItem("PROGRESS");
-            }
-
-            @Override
-            public void visitSignInPromo() {
-                describeItem("SIGN_IN_PROMO");
-            }
-
-            @Override
-            public void visitNoSuggestionsItem() {
-                describeItem("NO_SUGGESTIONS");
-            }
-
-            @Override
-            public void visitSuggestion(SnippetArticle suggestion) {
-                describeItem("SUGGESTION(%1.42s)", suggestion.mTitle);
-            }
-
-            @Override
-            public void visitHeader() {
-                describeItem("HEADER");
-            }
-
-            private void describeItem(String description) {
-                stringBuilder.append(
-                        String.format(Locale.US, "%s - %s%n", mPosition++, description));
-            }
-
-            private void describeItem(String template, Object... args) {
-                describeItem(String.format(Locale.US, template, args));
-            }
-        });
         return stringBuilder.toString();
     }
 }

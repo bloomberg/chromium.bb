@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
-import org.chromium.chrome.browser.ntp.cards.NodeVisitor;
 import org.chromium.chrome.browser.ntp.cards.OptionalLeaf;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
@@ -73,8 +72,10 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
     }
 
     @Override
-    protected void visitOptionalItem(NodeVisitor visitor) {
-        assert false;
+    public String describeForTesting() {
+        // Throw an exception instead of just `assert false` to avoid compiler warnings about the
+        // return value.
+        throw new IllegalStateException();
     }
 
     @Override

@@ -52,9 +52,12 @@ public abstract class OptionalLeaf extends ChildNode {
     }
 
     @Override
-    public final void visitItems(NodeVisitor visitor) {
-        if (mVisible) visitOptionalItem(visitor);
+    public String describeItemForTesting(int position) {
+        checkIndex(position);
+        return describeForTesting();
     }
+
+    protected abstract String describeForTesting();
 
     /** @return Whether the optional item is currently visible. */
     public final boolean isVisible() {
@@ -110,10 +113,4 @@ public abstract class OptionalLeaf extends ChildNode {
     protected void dismiss(Callback<String> itemRemovedCallback) {
         assert false;
     }
-
-    /**
-     * Visits this item. This method is called iff the optional item is currently visible.
-     * @param visitor The visitor with which to visit this item.
-     */
-    protected abstract void visitOptionalItem(NodeVisitor visitor);
 }

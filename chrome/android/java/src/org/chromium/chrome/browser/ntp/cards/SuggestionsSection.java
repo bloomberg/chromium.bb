@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -192,10 +193,9 @@ public class SuggestionsSection extends InnerNode {
         }
 
         @Override
-        public void visitItems(NodeVisitor visitor) {
-            for (SnippetArticle suggestion : mSuggestions) {
-                visitor.visitSuggestion(suggestion);
-            }
+        public String describeItemForTesting(int position) {
+            return String.format(
+                    Locale.US, "SUGGESTION(%1.42s)", mSuggestions.get(position).mTitle);
         }
 
         @Override
@@ -340,6 +340,10 @@ public class SuggestionsSection extends InnerNode {
 
     public int getSuggestionsCount() {
         return mSuggestionsList.getItemCount();
+    }
+
+    public SnippetArticle getSuggestionForTesting(int index) {
+        return mSuggestionsList.getSuggestionAt(index);
     }
 
     public boolean isDataStale() {

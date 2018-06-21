@@ -33,8 +33,8 @@ public class AllDismissedItem extends OptionalLeaf {
     }
 
     @Override
-    public void visitOptionalItem(NodeVisitor visitor) {
-        visitor.visitAllDismissedItem();
+    public String describeForTesting() {
+        return "ALL_DISMISSED";
     }
 
     public void setVisible(boolean visible) {
