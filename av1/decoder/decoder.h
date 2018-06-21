@@ -33,6 +33,26 @@
 extern "C" {
 #endif
 
+typedef void (*intra_block_visitor_fn_t)(AV1_COMMON *cm, MACROBLOCKD *const xd,
+                                         aom_reader *const r, int plane,
+                                         int row, int col, TX_SIZE tx_size);
+
+typedef void (*read_coeffs_tx_inter_block_visitor_fn_t)(
+    const AV1_COMMON *const cm, MACROBLOCKD *const xd, aom_reader *const r,
+    const int row, const int col, const int plane, const TX_SIZE tx_size);
+
+typedef void (*inverse_tx_inter_block_visitor_fn_t)(
+    const AV1_COMMON *const cm, MACROBLOCKD *const xd, aom_reader *const r,
+    const int row, const int col, const int plane, const TX_SIZE tx_size);
+
+typedef void (*predict_inter_block_visitor_fn_t)(AV1_COMMON *const cm,
+                                                 MACROBLOCKD *const xd,
+                                                 int mi_row, int mi_col,
+                                                 BLOCK_SIZE bsize);
+
+typedef void (*cfl_store_inter_block_visitor_fn_t)(AV1_COMMON *const cm,
+                                                   MACROBLOCKD *const xd);
+
 typedef struct ThreadData {
   aom_reader *bit_reader;
   DECLARE_ALIGNED(32, MACROBLOCKD, xd);
@@ -167,6 +187,11 @@ typedef struct AV1Decoder {
   size_t tile_list_size;
   uint8_t *tile_list_output;
   size_t buffer_sz;
+
+  intra_block_visitor_fn_t intra_block_visit;
+  inverse_tx_inter_block_visitor_fn_t inverse_tx_inter_block_visit;
+  predict_inter_block_visitor_fn_t predict_inter_block_visit;
+  cfl_store_inter_block_visitor_fn_t cfl_store_inter_block_visit;
 } AV1Decoder;
 
 int av1_receive_compressed_data(struct AV1Decoder *pbi, size_t size,
@@ -238,6 +263,10 @@ typedef void (*palette_visitor_fn_t)(MACROBLOCKD *const xd, int plane,
 void av1_visit_palette(AV1Decoder *const pbi, MACROBLOCKD *const xd, int mi_row,
                        int mi_col, aom_reader *r, BLOCK_SIZE bsize,
                        palette_visitor_fn_t visit);
+
+typedef void (*block_visitor_fn_t)(AV1Decoder *const pbi, MACROBLOCKD *const xd,
+                                   int mi_row, int mi_col, aom_reader *r,
+                                   PARTITION_TYPE partition, BLOCK_SIZE bsize);
 
 #ifdef __cplusplus
 }  // extern "C"
