@@ -70,9 +70,9 @@ void BarcodeDetector::OnDetectBarcodes(
     }
     detected_barcodes.push_back(DetectedBarcode::Create(
         barcode->raw_value,
-        DOMRect::Create(barcode->bounding_box.x, barcode->bounding_box.y,
-                        barcode->bounding_box.width,
-                        barcode->bounding_box.height),
+        DOMRectReadOnly::Create(
+            barcode->bounding_box.x, barcode->bounding_box.y,
+            barcode->bounding_box.width, barcode->bounding_box.height),
         corner_points));
   }
 
