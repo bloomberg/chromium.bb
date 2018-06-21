@@ -182,10 +182,10 @@ void HeaderChecker::RunCheckOverFiles(const FileMap& files, bool force_check) {
 }
 
 void HeaderChecker::DoWork(const Target* target, const SourceFile& file) {
-  Err err;
-  if (!CheckFile(target, file, &err)) {
+  std::vector<Err> errors;
+  if (!CheckFile(target, file, &errors)) {
     base::AutoLock lock(lock_);
-    errors_.push_back(err);
+    errors_.insert(errors_.end(), errors.begin(), errors.end());
   }
 
   if (!task_count_.Decrement()) {
@@ -264,7 +264,7 @@ SourceFile HeaderChecker::SourceFileForInclude(
 
 bool HeaderChecker::CheckFile(const Target* from_target,
                               const SourceFile& file,
-                              Err* err) const {
+                              std::vector<Err>* errors) const {
   ScopedTrace trace(TraceItem::TRACE_CHECK_HEADER, file.value());
 
   // Sometimes you have generated source files included as sources in another
@@ -277,10 +277,11 @@ bool HeaderChecker::CheckFile(const Target* from_target,
   base::FilePath path = build_settings_->GetFullPath(file);
   std::string contents;
   if (!base::ReadFileToString(path, &contents)) {
-    *err = Err(from_target->defined_from(), "Source file not found.",
-        "The target:\n  " + from_target->label().GetUserVisibleName(false) +
-        "\nhas a source file:\n  " + file.value() +
-        "\nwhich was not found.");
+    errors->emplace_back(from_target->defined_from(), "Source file not found.",
+                         "The target:\n  " +
+                             from_target->label().GetUserVisibleName(false) +
+                             "\nhas a source file:\n  " + file.value() +
+                             "\nwhich was not found.");
     return false;
   }
 
@@ -296,19 +297,23 @@ bool HeaderChecker::CheckFile(const Target* from_target,
                         target_include_dirs.end());
   }
 
+  bool has_errors = false;
   CIncludeIterator iter(&input_file);
   base::StringPiece current_include;
   LocationRange range;
   while (iter.GetNextIncludeString(&current_include, &range)) {
+    Err err;
     SourceFile include = SourceFileForInclude(current_include, include_dirs,
-                                              input_file, range, err);
+                                              input_file, range, &err);
     if (!include.is_null()) {
-      if (!CheckInclude(from_target, input_file, include, range, err))
-        return false;
+      if (!CheckInclude(from_target, input_file, include, range, &err)) {
+        errors->emplace_back(std::move(err));
+        has_errors = true;
+      }
     }
   }
 
-  return true;
+  return !has_errors;
 }
 
 // If the file exists:
