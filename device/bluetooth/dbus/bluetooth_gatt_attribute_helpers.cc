@@ -12,32 +12,28 @@
 
 namespace bluez {
 
-namespace {
-
-constexpr char kDeviceField[] = "device";
-
-}  // namespace
-
-dbus::ObjectPath ReadDevicePath(dbus::MessageReader* reader) {
+bool ReadOptions(dbus::MessageReader* reader,
+                 std::map<std::string, dbus::MessageReader>* options) {
   dbus::MessageReader array_reader(nullptr);
-  if (!reader->PopArray(&array_reader))
-    return dbus::ObjectPath();
+  if (!reader->PopArray(&array_reader) || options == nullptr)
+    return false;
 
-  // Go through all the keys in the dictionary to find the device key.
+  dbus::MessageReader dict_entry_reader(nullptr);
+  std::string key;
   while (array_reader.HasMoreData()) {
-    dbus::MessageReader dict_entry_reader(nullptr);
-    std::string key;
     if (!array_reader.PopDictEntry(&dict_entry_reader) ||
         !dict_entry_reader.PopString(&key)) {
-      return dbus::ObjectPath();
-    } else if (key == kDeviceField) {
-      dbus::ObjectPath device_path;
-      dict_entry_reader.PopVariantOfObjectPath(&device_path);
-      return device_path;
+      options->clear();
+      return false;
+    }
+
+    options->emplace(key, nullptr);
+    if (!dict_entry_reader.PopVariant(&options->at(key))) {
+      options->clear();
+      return false;
     }
   }
-
-  return dbus::ObjectPath();
+  return true;
 }
 
 }  // namespace bluez

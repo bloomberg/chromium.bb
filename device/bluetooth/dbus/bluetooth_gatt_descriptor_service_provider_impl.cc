@@ -252,7 +252,13 @@ void BluetoothGattDescriptorServiceProviderImpl::ReadValue(
   DCHECK(OnOriginThread());
 
   dbus::MessageReader reader(method_call);
-  dbus::ObjectPath device_path = ReadDevicePath(&reader);
+  std::map<std::string, dbus::MessageReader> options;
+  dbus::ObjectPath device_path;
+  ReadOptions(&reader, &options);
+  auto it = options.find(bluetooth_gatt_descriptor::kOptionDevice);
+  if (it != options.end())
+    it->second.PopObjectPath(&device_path);
+
   if (device_path.value().empty()) {
     LOG(WARNING) << "ReadValue called with incorrect parameters: "
                  << method_call->ToString();
@@ -289,7 +295,13 @@ void BluetoothGattDescriptorServiceProviderImpl::WriteValue(
   if (bytes)
     value.assign(bytes, bytes + length);
 
-  dbus::ObjectPath device_path = ReadDevicePath(&reader);
+  std::map<std::string, dbus::MessageReader> options;
+  dbus::ObjectPath device_path;
+  ReadOptions(&reader, &options);
+  auto it = options.find(bluetooth_gatt_descriptor::kOptionDevice);
+  if (it != options.end())
+    it->second.PopObjectPath(&device_path);
+
   if (device_path.value().empty()) {
     LOG(WARNING) << "WriteValue called with incorrect parameters: "
                  << method_call->ToString();
