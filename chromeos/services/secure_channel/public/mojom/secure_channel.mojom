@@ -65,19 +65,19 @@ enum ConnectionPriority {
   HIGH
 };
 
-struct ConnectionMetadata {
-  const double kNoRssiAvailable = 1000;
+struct BluetoothConnectionMetadata {
+  // RSSI at the exact time that this metadata was requested. Note that RSSI
+  // may change drastically in a short period; this is only a snapshot.
+  int32 current_rssi;
+};
 
+struct ConnectionMetadata {
   // Details which describe how the connection was created. If no
   // ConnectionCreationDetails apply to this connection, the array is empty.
   array<ConnectionCreationDetail> creation_details;
 
-  // Rolling average of the RSSI of the channel. This value is only valid if
-  // the corresponding connection is in BLE central role.
-  //
-  // If no RSSI is available (e.g., if this is not a BLE central connection),
-  // this value is set to kNoRssiAvailable.
-  double rssi_rolling_average;
+  // Only available for connections over Bluetooth.
+  BluetoothConnectionMetadata? bluetooth_connection_metadata;
 };
 
 interface Channel {

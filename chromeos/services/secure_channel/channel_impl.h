@@ -30,7 +30,7 @@ class ChannelImpl : public mojom::Channel {
     virtual void OnSendMessageRequested(const std::string& message,
                                         base::OnceClosure on_sent_callback) = 0;
     virtual void GetConnectionMetadata(
-        base::OnceCallback<void(mojom::ConnectionMetadata)> callback) = 0;
+        base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) = 0;
     virtual void OnClientDisconnected() = 0;
   };
 
@@ -53,7 +53,7 @@ class ChannelImpl : public mojom::Channel {
 
   void OnConnectionMetadataFetchedFromDelegate(
       GetConnectionMetadataCallback callback,
-      mojom::ConnectionMetadata connection_metadata_from_delegate);
+      mojom::ConnectionMetadataPtr connection_metadata_from_delegate);
 
   void OnBindingDisconnected();
 

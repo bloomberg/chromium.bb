@@ -116,6 +116,16 @@ void SecureChannel::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void SecureChannel::GetConnectionRssi(
+    base::OnceCallback<void(base::Optional<int32_t>)> callback) {
+  if (!connection_) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  connection_->GetConnectionRssi(std::move(callback));
+}
+
 void SecureChannel::OnConnectionStatusChanged(
     Connection* connection,
     Connection::Status old_status,

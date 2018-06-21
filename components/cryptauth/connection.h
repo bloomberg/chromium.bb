@@ -8,9 +8,11 @@
 #include <memory>
 #include <ostream>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "components/cryptauth/remote_device_ref.h"
 
 namespace cryptauth {
@@ -47,6 +49,11 @@ class Connection {
   virtual void RemoveObserver(ConnectionObserver* observer);
 
   RemoteDeviceRef remote_device() const { return remote_device_; }
+
+  // Returns the RSSI of the connection; if no derived class overrides this
+  // function, base::nullopt is returned.
+  virtual void GetConnectionRssi(
+      base::OnceCallback<void(base::Optional<int32_t>)> callback);
 
   // Abstract methods that subclasses should implement:
 

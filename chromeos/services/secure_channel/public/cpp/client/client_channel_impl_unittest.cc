@@ -52,8 +52,8 @@ class SecureChannelClientChannelImplTest : public testing::Test {
     client_channel_->RemoveObserver(fake_observer_.get());
   }
 
-  mojom::ConnectionMetadata CallGetConnectionMetadata() {
-    connection_metadata_.reset();
+  mojom::ConnectionMetadataPtr CallGetConnectionMetadata() {
+    EXPECT_FALSE(connection_metadata_);
 
     base::RunLoop run_loop;
     EXPECT_TRUE(client_channel_->GetConnectionMetadata(base::BindOnce(
@@ -61,7 +61,7 @@ class SecureChannelClientChannelImplTest : public testing::Test {
         base::Unretained(this), run_loop.QuitClosure())));
     run_loop.Run();
 
-    return *connection_metadata_;
+    return std::move(connection_metadata_);
   }
 
   int CallSendMessage(const std::string& message) {
@@ -103,16 +103,17 @@ class SecureChannelClientChannelImplTest : public testing::Test {
   mojom::MessageReceiverPtr message_receiver_ptr_;
   std::unique_ptr<FakeClientChannelObserver> fake_observer_;
 
-  base::Optional<mojom::ConnectionMetadata> connection_metadata_;
+  mojom::ConnectionMetadataPtr connection_metadata_;
   base::OnceClosure message_sent_callback_;
   std::set<int> message_counters_received_;
 
   std::unique_ptr<ClientChannel> client_channel_;
 
  private:
-  void OnGetConnectionMetadata(base::OnceClosure callback,
-                               mojom::ConnectionMetadata connection_metadata) {
-    connection_metadata_ = connection_metadata;
+  void OnGetConnectionMetadata(
+      base::OnceClosure callback,
+      mojom::ConnectionMetadataPtr connection_metadata) {
+    connection_metadata_ = std::move(connection_metadata);
     std::move(callback).Run();
   }
 
@@ -125,19 +126,18 @@ class SecureChannelClientChannelImplTest : public testing::Test {
 };
 
 TEST_F(SecureChannelClientChannelImplTest, TestGetConnectionMetadata) {
-  std::vector<mojom::ConnectionCreationDetail> details{
+  std::vector<mojom::ConnectionCreationDetail> creation_details{
       mojom::ConnectionCreationDetail::
           REMOTE_DEVICE_USED_BACKGROUND_BLE_ADVERTISING};
-  mojom::ConnectionMetadata expected_connection_metadata(
-      details, mojom::ConnectionMetadata::kNoRssiAvailable);
 
-  fake_channel_->set_connection_metadata(expected_connection_metadata);
+  mojom::ConnectionMetadataPtr metadata = mojom::ConnectionMetadata::New(
+      creation_details,
+      mojom::BluetoothConnectionMetadata::New(-24 /* current_rssi */));
+  fake_channel_->set_connection_metadata_for_next_call(std::move(metadata));
 
-  mojom::ConnectionMetadata connection_metadata = CallGetConnectionMetadata();
-
-  EXPECT_EQ(details, connection_metadata.creation_details);
-  EXPECT_EQ(mojom::ConnectionMetadata::kNoRssiAvailable,
-            connection_metadata.rssi_rolling_average);
+  metadata = CallGetConnectionMetadata();
+  EXPECT_EQ(creation_details, metadata->creation_details);
+  EXPECT_EQ(-24, metadata->bluetooth_connection_metadata->current_rssi);
 }
 
 TEST_F(SecureChannelClientChannelImplTest, TestSendMessage) {

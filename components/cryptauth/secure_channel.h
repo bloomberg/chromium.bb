@@ -93,6 +93,11 @@ class SecureChannel : public ConnectionObserver {
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
 
+  // Returns the RSSI of the connection; if no derived class overrides this
+  // function, base::nullopt is returned.
+  virtual void GetConnectionRssi(
+      base::OnceCallback<void(base::Optional<int32_t>)> callback);
+
   Status status() const {
     return status_;
   }

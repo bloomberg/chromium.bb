@@ -118,7 +118,7 @@ void MultiplexedChannelImpl::OnSendMessageRequested(
 }
 
 void MultiplexedChannelImpl::GetConnectionMetadata(
-    base::OnceCallback<void(mojom::ConnectionMetadata)> callback) {
+    base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) {
   authenticated_channel_->GetConnectionMetadata(std::move(callback));
 }
 

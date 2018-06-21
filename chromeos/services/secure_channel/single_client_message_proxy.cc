@@ -26,7 +26,7 @@ void SingleClientMessageProxy::NotifyClientDisconnected() {
 }
 
 void SingleClientMessageProxy::GetConnectionMetadataFromDelegate(
-    base::OnceCallback<void(mojom::ConnectionMetadata)> callback) {
+    base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) {
   delegate_->GetConnectionMetadata(std::move(callback));
 }
 

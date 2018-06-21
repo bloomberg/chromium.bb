@@ -41,7 +41,7 @@ class ClientChannelImpl : public ClientChannel, public mojom::MessageReceiver {
 
   // ClientChannel:
   void PerformGetConnectionMetadata(
-      base::OnceCallback<void(mojom::ConnectionMetadata)> callback) override;
+      base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) override;
   void PerformSendMessage(const std::string& payload,
                           base::OnceClosure on_sent_callback) override;
 
@@ -49,7 +49,7 @@ class ClientChannelImpl : public ClientChannel, public mojom::MessageReceiver {
   void OnMessageReceived(const std::string& message) override;
 
   void OnGetConnectionMetadata(
-      base::OnceCallback<void(mojom::ConnectionMetadata)> callback,
+      base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback,
       mojom::ConnectionMetadataPtr connection_metadata_ptr);
 
   void OnChannelDisconnected(uint32_t disconnection_reason,

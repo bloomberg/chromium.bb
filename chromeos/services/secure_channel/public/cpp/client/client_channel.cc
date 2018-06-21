@@ -18,7 +18,7 @@ ClientChannel::ClientChannel() = default;
 ClientChannel::~ClientChannel() = default;
 
 bool ClientChannel::GetConnectionMetadata(
-    base::OnceCallback<void(mojom::ConnectionMetadata)> callback) {
+    base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) {
   if (is_disconnected_)
     return false;
 

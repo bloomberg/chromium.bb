@@ -34,7 +34,7 @@ void FakeChannel::SendMessage(const std::string& message,
 
 void FakeChannel::GetConnectionMetadata(
     GetConnectionMetadataCallback callback) {
-  std::move(callback).Run(connection_metadata_.Clone());
+  std::move(callback).Run(std::move(connection_metadata_for_next_call_));
 }
 
 }  // namespace secure_channel

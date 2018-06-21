@@ -22,8 +22,10 @@ class FakeClientChannel : public ClientChannel {
   using ClientChannel::NotifyDisconnected;
   using ClientChannel::NotifyMessageReceived;
 
-  void set_connection_metadata(mojom::ConnectionMetadata connection_metadata) {
-    connection_metadata_ = connection_metadata;
+  void set_connection_metadata_for_next_call(
+      mojom::ConnectionMetadataPtr connection_metadata_for_next_call) {
+    connection_metadata_for_next_call_ =
+        std::move(connection_metadata_for_next_call);
   }
 
   std::vector<std::pair<std::string, base::OnceClosure>>& sent_messages() {
@@ -35,11 +37,11 @@ class FakeClientChannel : public ClientChannel {
 
   // ClientChannel:
   void PerformGetConnectionMetadata(
-      base::OnceCallback<void(mojom::ConnectionMetadata)> callback) override;
+      base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) override;
   void PerformSendMessage(const std::string& payload,
                           base::OnceClosure on_sent_callback) override;
 
-  mojom::ConnectionMetadata connection_metadata_;
+  mojom::ConnectionMetadataPtr connection_metadata_for_next_call_;
   std::vector<std::pair<std::string, base::OnceClosure>> sent_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeClientChannel);

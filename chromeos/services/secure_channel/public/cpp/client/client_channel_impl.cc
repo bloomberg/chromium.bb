@@ -51,7 +51,7 @@ ClientChannelImpl::ClientChannelImpl(
 ClientChannelImpl::~ClientChannelImpl() = default;
 
 void ClientChannelImpl::PerformGetConnectionMetadata(
-    base::OnceCallback<void(mojom::ConnectionMetadata)> callback) {
+    base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) {
   channel_->GetConnectionMetadata(
       base::BindOnce(&ClientChannelImpl::OnGetConnectionMetadata,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -62,9 +62,9 @@ void ClientChannelImpl::OnMessageReceived(const std::string& message) {
 }
 
 void ClientChannelImpl::OnGetConnectionMetadata(
-    base::OnceCallback<void(mojom::ConnectionMetadata)> callback,
+    base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback,
     mojom::ConnectionMetadataPtr connection_metadata_ptr) {
-  std::move(callback).Run(*connection_metadata_ptr);
+  std::move(callback).Run(std::move(connection_metadata_ptr));
 }
 
 void ClientChannelImpl::PerformSendMessage(const std::string& payload,

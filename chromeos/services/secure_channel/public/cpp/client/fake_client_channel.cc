@@ -15,8 +15,8 @@ FakeClientChannel::FakeClientChannel() = default;
 FakeClientChannel::~FakeClientChannel() = default;
 
 void FakeClientChannel::PerformGetConnectionMetadata(
-    base::OnceCallback<void(mojom::ConnectionMetadata)> callback) {
-  std::move(callback).Run(connection_metadata_);
+    base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) {
+  std::move(callback).Run(std::move(connection_metadata_for_next_call_));
 }
 
 void FakeClientChannel::PerformSendMessage(const std::string& payload,

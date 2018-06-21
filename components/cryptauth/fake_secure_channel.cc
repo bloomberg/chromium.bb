@@ -79,4 +79,9 @@ void FakeSecureChannel::RemoveObserver(Observer* observer) {
                    observers_.end());
 }
 
+void FakeSecureChannel::GetConnectionRssi(
+    base::OnceCallback<void(base::Optional<int32_t>)> callback) {
+  std::move(callback).Run(rssi_to_return_);
+}
+
 }  // namespace cryptauth

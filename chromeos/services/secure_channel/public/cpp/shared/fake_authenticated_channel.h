@@ -34,14 +34,15 @@ class FakeAuthenticatedChannel : public AuthenticatedChannel {
     return has_disconnection_been_requested_;
   }
 
-  void set_connection_metadata(
-      const mojom::ConnectionMetadata& connection_metadata) {
-    connection_metadata_ = connection_metadata;
+  void set_connection_metadata_for_next_call(
+      mojom::ConnectionMetadataPtr connection_metadata_for_next_call) {
+    connection_metadata_for_next_call_ =
+        std::move(connection_metadata_for_next_call);
   }
 
   // AuthenticatedChannel:
   void GetConnectionMetadata(
-      base::OnceCallback<void(mojom::ConnectionMetadata)> callback) override;
+      base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) override;
   void PerformSendMessage(const std::string& feature,
                           const std::string& payload,
                           base::OnceClosure on_sent_callback) override;
@@ -52,7 +53,7 @@ class FakeAuthenticatedChannel : public AuthenticatedChannel {
   using AuthenticatedChannel::NotifyMessageReceived;
 
  private:
-  mojom::ConnectionMetadata connection_metadata_;
+  mojom::ConnectionMetadataPtr connection_metadata_for_next_call_;
   bool has_disconnection_been_requested_ = false;
   std::vector<std::tuple<std::string, std::string, base::OnceClosure>>
       sent_messages_;

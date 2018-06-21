@@ -345,6 +345,20 @@ class CryptAuthSecureChannelTest : public testing::Test {
     EXPECT_EQ(expected_payload, wire_message->payload());
   }
 
+  void VerifyRssi(base::Optional<int32_t> expected_rssi) {
+    fake_connection_->set_rssi_to_return(expected_rssi);
+
+    secure_channel_->GetConnectionRssi(base::Bind(
+        &CryptAuthSecureChannelTest::OnConnectionRssi, base::Unretained(this)));
+
+    base::Optional<int32_t> rssi = rssi_;
+    rssi_.reset();
+
+    EXPECT_EQ(expected_rssi, rssi);
+  }
+
+  void OnConnectionRssi(base::Optional<int32_t> rssi) { rssi_ = rssi; }
+
   // Owned by secure_channel_.
   FakeConnection* fake_connection_;
 
@@ -366,9 +380,10 @@ class CryptAuthSecureChannelTest : public testing::Test {
 
   const RemoteDeviceRef test_device_;
 
+  base::Optional<int32_t> rssi_;
+
   base::WeakPtrFactory<CryptAuthSecureChannelTest> weak_ptr_factory_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(CryptAuthSecureChannelTest);
 };
 
@@ -631,6 +646,13 @@ TEST_F(CryptAuthSecureChannelTest, ObserverDeletesChannel) {
   // fix for crbug.com/751884.
   StartAndFinishSendingMessage("feature", "request1", /* success */ true);
   EXPECT_FALSE(secure_channel_);
+}
+
+TEST_F(CryptAuthSecureChannelTest, GetRssi) {
+  // Test a few different values.
+  VerifyRssi(-50 /* expected_rssi */);
+  VerifyRssi(-40 /* expected_rssi */);
+  VerifyRssi(-30 /* expected_rssi */);
 }
 
 }  // namespace cryptauth
