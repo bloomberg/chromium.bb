@@ -4,12 +4,16 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_mac.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -26,7 +30,13 @@ constexpr int kTabstripTopInset = 8;
 BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
     BrowserFrame* frame,
     BrowserView* browser_view)
-    : BrowserNonClientFrameView(frame, browser_view) {}
+    : BrowserNonClientFrameView(frame, browser_view) {
+  pref_registrar_.Init(browser_view->GetProfile()->GetPrefs());
+  pref_registrar_.Add(
+      prefs::kShowFullscreenToolbar,
+      base::BindRepeating(&BrowserNonClientFrameViewMac::UpdateFullscreenTopUI,
+                          base::Unretained(this), false));
+}
 
 BrowserNonClientFrameViewMac::~BrowserNonClientFrameViewMac() {
 }
@@ -66,6 +76,40 @@ int BrowserNonClientFrameViewMac::GetTabStripRightInset() const {
 
 int BrowserNonClientFrameViewMac::GetThemeBackgroundXInset() const {
   return 0;
+}
+
+void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI(
+    bool is_exiting_fullscreen) {
+  FullscreenToolbarStyle old_style = toolbar_style_;
+
+  // Update to the new toolbar style if needed.
+  FullscreenController* controller =
+      browser_view()->GetExclusiveAccessManager()->fullscreen_controller();
+  if ((controller->IsWindowFullscreenForTabOrPending() ||
+       controller->IsExtensionFullscreenOrPending()) &&
+      !is_exiting_fullscreen) {
+    toolbar_style_ = FullscreenToolbarStyle::kToolbarNone;
+  } else {
+    PrefService* prefs = browser_view()->GetProfile()->GetPrefs();
+    toolbar_style_ = prefs->GetBoolean(prefs::kShowFullscreenToolbar)
+                         ? FullscreenToolbarStyle::kToolbarPresent
+                         : FullscreenToolbarStyle::kToolbarHidden;
+  }
+
+  if (old_style != toolbar_style_) {
+    // Re-layout if toolbar style changes in fullscreen mode.
+    if (frame()->IsFullscreen())
+      browser_view()->Layout();
+    UMA_HISTOGRAM_ENUMERATION(
+        "OSX.Fullscreen.ToolbarStyle", toolbar_style_,
+        static_cast<int>(FullscreenToolbarStyle::kToolbarLast) + 1);
+  }
+}
+
+bool BrowserNonClientFrameViewMac::ShouldHideTopUIForFullscreen() const {
+  return frame()->IsFullscreen()
+             ? toolbar_style_ != FullscreenToolbarStyle::kToolbarPresent
+             : false;
 }
 
 void BrowserNonClientFrameViewMac::UpdateThrobber(bool running) {

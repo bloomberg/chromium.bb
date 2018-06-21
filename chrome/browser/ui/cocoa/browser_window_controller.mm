@@ -1919,7 +1919,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
 - (void)updateUIForTabFullscreen:
     (ExclusiveAccessContext::TabFullscreenState)state {
-  DCHECK([self isInAnyFullscreenMode]);
+  // Only need to update and layout toolbar in fullscreen mode.
+  if (![self isInAnyFullscreenMode])
+    return;
   [fullscreenToolbarController_
       layoutToolbarStyleIsExitingTabFullscreen:
           state == ExclusiveAccessContext::STATE_EXIT_TAB_FULLSCREEN];
