@@ -73,11 +73,23 @@ class CORE_EXPORT NGPaintFragmentTraversal {
   void MoveTo(const NGPaintFragment& fragment);
 
   // Move to the next node using the pre-order depth-first-search.
+  // Note: When |IsAtEnd()| is true, this function does nothing.
   void MoveToNext();
 
   // Move to the next sibling, or next ancestor node using the pre-order
   // depth-first-search, skipping children of the current node.
   void MoveToNextSiblingOrAncestor();
+
+  // Move to the parent of current fragment. When |current_| is a child of
+  // |root_|, this function makes |IsAtEnd()| to true.
+  // Note: When |IsAtEnd()| is true, this function does nothing.
+  void MoveToParent();
+
+  // Move to the previous node using the pre-order depth-first-search. When
+  // |current_| is the first child of |root_|, this function makes |IsAtEnd()|
+  // to true.
+  // Note: When |IsAtEnd()| is true, this function does nothing.
+  void MoveToPrevious();
 
   //
   // Following functions are static, similar to DOM traversal utilities.
@@ -119,7 +131,12 @@ class CORE_EXPORT NGPaintFragmentTraversal {
   void Push(const NGPaintFragment& parent, unsigned index);
   void Push(const NGPaintFragment& fragment);
 
+  // |current_| holds a |NGPaintFragment| specified by |index|th child of
+  // |parent| of the last element of |stack_|.
   const NGPaintFragment* current_ = nullptr;
+
+  // The root of subtree where traversing is taken place. |root_| is excluded
+  // from traversal. |current_| can't |root_|.
   const NGPaintFragment& root_;
 
   // The stack of parent and its child index up to the root. Each stack entry

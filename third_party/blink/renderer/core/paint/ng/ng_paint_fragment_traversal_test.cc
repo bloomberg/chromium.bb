@@ -41,6 +41,16 @@ class NGPaintFragmentTraversalTest : public RenderingTest,
     return results;
   }
 
+  Vector<const NGPaintFragment*> ToReverseDepthFirstList(
+      NGPaintFragmentTraversal* traversal) const {
+    Vector<const NGPaintFragment*> results;
+    for (; *traversal; traversal->MoveToPrevious()) {
+      const NGPaintFragment& fragment = **traversal;
+      results.push_back(&fragment);
+    }
+    return results;
+  }
+
   LayoutBlockFlow* layout_block_flow_;
   NGPaintFragment* root_fragment_;
 };
@@ -81,6 +91,46 @@ TEST_F(NGPaintFragmentTraversalTest, MoveToNextWithRoot) {
   EXPECT_THAT(ToDepthFirstList(&traversal),
               ElementsAreArray({line0->Children()[0].get(), span,
                                 span->Children()[0].get(), br}));
+}
+
+TEST_F(NGPaintFragmentTraversalTest, MoveToPrevious) {
+  SetUpHtml("t", R"HTML(
+    <div id=t>
+      line0
+      <span style="background: red">red</span>
+      <br>
+      line1
+    </div>
+  )HTML");
+  NGPaintFragmentTraversal traversal(*root_fragment_);
+  NGPaintFragment* line0 = root_fragment_->Children()[0].get();
+  NGPaintFragment* line1 = root_fragment_->Children()[1].get();
+  NGPaintFragment* span = line0->Children()[1].get();
+  NGPaintFragment* br = line0->Children()[2].get();
+  traversal.MoveTo(*line1->Children()[0].get());
+  EXPECT_THAT(ToReverseDepthFirstList(&traversal),
+              ElementsAreArray({line1->Children()[0].get(), line1, br,
+                                span->Children()[0].get(), span,
+                                line0->Children()[0].get(), line0}));
+}
+
+TEST_F(NGPaintFragmentTraversalTest, MoveToPreviousWithRoot) {
+  SetUpHtml("t", R"HTML(
+    <div id=t>
+      line0
+      <span style="background: red">red</span>
+      <br>
+      line1
+    </div>
+  )HTML");
+  NGPaintFragment* line0 = root_fragment_->Children()[0].get();
+  NGPaintFragment* span = line0->Children()[1].get();
+  NGPaintFragment* br = line0->Children()[2].get();
+  NGPaintFragmentTraversal traversal(*line0);
+  traversal.MoveTo(*br);
+  EXPECT_THAT(ToReverseDepthFirstList(&traversal),
+              ElementsAreArray({br, span->Children()[0].get(), span,
+                                line0->Children()[0].get()}));
 }
 
 TEST_F(NGPaintFragmentTraversalTest, MoveTo) {
