@@ -241,12 +241,12 @@ TEST_F(UiTest, UiUpdatesForIncognito) {
             fullscreen_background);
 
   model_->incognito = true;
-  // Make sure background has changed for incognito.
+  // Make sure background remains fullscreen colored.
   SkColor incognito_background = SK_ColorBLACK;
   GetBackgroundColor(&incognito_background);
-  EXPECT_EQ(
-      ColorScheme::GetColorScheme(ColorScheme::kModeIncognito).world_background,
-      incognito_background);
+  EXPECT_EQ(ColorScheme::GetColorScheme(ColorScheme::kModeFullscreen)
+                .world_background,
+            incognito_background);
 
   model_->incognito = false;
   SkColor no_longer_incognito_background = SK_ColorBLACK;
@@ -258,10 +258,13 @@ TEST_F(UiTest, UiUpdatesForIncognito) {
   GetBackgroundColor(&no_longer_fullscreen_background);
   EXPECT_EQ(initial_background, no_longer_fullscreen_background);
 
+  // Incognito, but not fullscreen, should show incognito colors.
   model_->incognito = true;
   SkColor incognito_again_background = SK_ColorBLACK;
   GetBackgroundColor(&incognito_again_background);
-  EXPECT_EQ(incognito_background, incognito_again_background);
+  EXPECT_EQ(
+      ColorScheme::GetColorScheme(ColorScheme::kModeIncognito).world_background,
+      incognito_again_background);
 
   model_->incognito = false;
   SkColor no_longer_incognito_again_background = SK_ColorBLACK;
@@ -1045,7 +1048,7 @@ TEST_F(UiTest, CloseButtonColorBindings) {
       ui_->SetIncognito(false);
       ui_->SetFullscreen(true);
     }
-    ColorScheme scheme = ColorScheme::GetColorScheme(mode);
+    ColorScheme scheme = model_->color_scheme();
     RunForMs(kAnimationTimeMs);
     VerifyButtonColor(button, scheme.disc_button_colors.foreground,
                       scheme.disc_button_colors.background, "normal");
