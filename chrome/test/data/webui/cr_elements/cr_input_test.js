@@ -7,12 +7,16 @@ suite('cr-input', function() {
   let input;
 
   setup(function() {
+    regenerateNewInput();
+  });
+
+  function regenerateNewInput() {
     PolymerTest.clearBody();
     crInput = document.createElement('cr-input');
     document.body.appendChild(crInput);
     input = crInput.$.input;
     Polymer.dom.flush();
-  });
+  }
 
   test('AttributesCorrectlySupported', function() {
     const attributesToTest = [
@@ -25,15 +29,28 @@ suite('cr-input', function() {
       ['pattern', 'pattern', '', '[a-z]+'],
       ['readonly', 'readOnly', false, true],
       ['required', 'required', false, true],
-      ['tab-index', 'tabIndex', 0, -1],
+      ['tabindex', 'tabIndex', 0, -1],
       ['type', 'type', 'text', 'password'],
     ];
 
     attributesToTest.forEach(attr => {
+      regenerateNewInput();
       assertEquals(attr[2], input[attr[1]]);
       crInput.setAttribute(attr[0], attr[3]);
       assertEquals(attr[3], input[attr[1]]);
     });
+  });
+
+  test('togglingDisableModifiesTabIndexCorrectly', function() {
+    crInput.tabindex = 14;
+    assertEquals('14', crInput.getAttribute('tabindex'));
+    assertEquals(14, input.tabIndex);
+    crInput.disabled = true;
+    assertEquals('-1', crInput.getAttribute('tabindex'));
+    assertEquals(-1, input.tabIndex);
+    crInput.disabled = false;
+    assertEquals('14', crInput.getAttribute('tabindex'));
+    assertEquals(14, input.tabIndex);
   });
 
   test('placeholderCorrectlyBound', function() {
