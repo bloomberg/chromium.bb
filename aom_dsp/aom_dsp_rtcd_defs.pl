@@ -294,16 +294,17 @@ specialize qw/aom_dc_predictor_64x16 sse2 avx2/;
 
   # TODO(yunqingwang): optimize rectangular DC_PRED to replace division
   # by multiply and shift.
-  specialize qw/aom_highbd_dc_predictor_4x4 sse2/;
+  specialize qw/aom_highbd_dc_predictor_4x4 sse2 neon/;
   specialize qw/aom_highbd_dc_predictor_4x8 sse2/;
   specialize qw/aom_highbd_dc_predictor_8x4 sse2/;;
-  specialize qw/aom_highbd_dc_predictor_8x8 sse2/;;
+  specialize qw/aom_highbd_dc_predictor_8x8 sse2 neon/;;
   specialize qw/aom_highbd_dc_predictor_8x16 sse2/;;
   specialize qw/aom_highbd_dc_predictor_16x8 sse2/;
-  specialize qw/aom_highbd_dc_predictor_16x16 sse2/;
+  specialize qw/aom_highbd_dc_predictor_16x16 sse2 neon/;
   specialize qw/aom_highbd_dc_predictor_16x32 sse2/;
   specialize qw/aom_highbd_dc_predictor_32x16 sse2/;
-  specialize qw/aom_highbd_dc_predictor_32x32 sse2/;
+  specialize qw/aom_highbd_dc_predictor_32x32 sse2 neon/;
+  specialize qw/aom_highbd_dc_predictor_64x64 neon/;
 
   specialize qw/aom_highbd_h_predictor_4x4 sse2/;
   specialize qw/aom_highbd_h_predictor_4x8 sse2/;
