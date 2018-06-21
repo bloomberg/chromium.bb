@@ -143,12 +143,20 @@ TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDMG) {
           "2012CE4987B0FA4A5D285DF7E810560E841CFAB3054BC19E1AAB345F862A6C4E",
           actual_sha256);
     } else {
-      ADD_FAILURE() << "Unepxected result file " << binary.file_basename();
+      ADD_FAILURE() << "Unexpected result file " << binary.file_basename();
     }
   }
 
   EXPECT_TRUE(got_executable);
   EXPECT_TRUE(got_dylib);
+
+  ASSERT_EQ(1, results.detached_code_signatures.size());
+  const safe_browsing::ClientDownloadRequest_DetachedCodeSignature
+      detached_signature = results.detached_code_signatures.Get(0);
+  EXPECT_EQ(
+      "Mach-O in DMG/shell-script.app/Contents/_CodeSignature/CodeSignature",
+      detached_signature.file_name());
+  EXPECT_EQ(1842u, detached_signature.contents().size());
 }
 
 TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDmgNoSignature) {

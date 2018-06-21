@@ -79,6 +79,8 @@ generate_test_data() {
   mkdir "${DMG_SOURCE}/.hidden"
   cp "${THIS_DIR}/../mach_o/lib64.dylib" "${DMG_SOURCE}/.hidden/"
 
+  cp -r "${THIS_DIR}/../mach_o/shell-script.app" "${DMG_SOURCE}"
+
   hdiutil create -srcfolder "${DMG_SOURCE}" \
     -format UDZO -layout SPUD -volname "Mach-O in DMG" -ov \
     -fs JHFS+ "${OUT_DIR}/mach_o_in_dmg"

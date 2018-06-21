@@ -78,5 +78,19 @@ off_t MemoryReadStream::Seek(off_t offset, int whence) {
   return offset_;
 }
 
+bool ReadEntireStream(ReadStream* stream, std::vector<uint8_t>* data) {
+  DCHECK(data->empty());
+  uint8_t buffer[1024];
+  size_t bytes_read = 0;
+  do {
+    if (!stream->Read(buffer, sizeof(buffer), &bytes_read))
+      return false;
+
+    data->insert(data->end(), buffer, &buffer[bytes_read]);
+  } while (bytes_read != 0);
+
+  return true;
+}
+
 }  // namespace dmg
 }  // namespace safe_browsing

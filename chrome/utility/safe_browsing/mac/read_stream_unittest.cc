@@ -134,7 +134,7 @@ TYPED_TEST(ReadStreamTest, ReadAll) {
       ReadStreamTest<TypeParam>::CreateStream(kStreamSize);
 
   std::vector<uint8_t> data;
-  EXPECT_TRUE(test::ReadEntireStream(stream.get(), &data));
+  EXPECT_TRUE(ReadEntireStream(stream.get(), &data));
   EXPECT_EQ(kStreamSize, data.size());
 }
 

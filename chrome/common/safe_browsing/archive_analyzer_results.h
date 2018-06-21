@@ -25,6 +25,9 @@ struct ArchiveAnalyzerResults {
   std::vector<base::FilePath> archived_archive_filenames;
 #if defined(OS_MACOSX)
   std::vector<uint8_t> signature_blob;
+  google::protobuf::RepeatedPtrField<
+      ClientDownloadRequest_DetachedCodeSignature>
+      detached_code_signatures;
 #endif  // OS_MACOSX
   ArchiveAnalyzerResults();
   ArchiveAnalyzerResults(const ArchiveAnalyzerResults& other);

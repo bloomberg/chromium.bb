@@ -696,6 +696,8 @@ void CheckClientDownloadRequest::OnDmgAnalysisFinished(
         std::make_unique<std::vector<uint8_t>>(results.signature_blob);
   }
 
+  detached_code_signatures_.CopyFrom(results.detached_code_signatures);
+
   // Even if !results.success, some of the DMG may have been parsed.
   archive_is_valid_ =
       (results.success ? ArchiveValid::VALID : ArchiveValid::INVALID);
@@ -974,10 +976,16 @@ void CheckClientDownloadRequest::SendRequest() {
       "SBClientDownload."
       "DownloadFileHasDmgSignature",
       disk_image_signature_ != nullptr);
+  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.DownloadFileHasDetachedSignatures",
+                        !detached_code_signatures_.empty());
 
   if (disk_image_signature_) {
     request->set_udif_code_signature(disk_image_signature_->data(),
                                      disk_image_signature_->size());
+  }
+  if (!detached_code_signatures_.empty()) {
+    request->mutable_detached_code_signature()->Swap(
+        &detached_code_signatures_);
   }
 #endif
 
