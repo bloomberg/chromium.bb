@@ -63,7 +63,9 @@ base::Optional<AnchorElementMetrics> AnchorElementMetrics::From(
   target_location = local_frame_view->ConvertToRootFrame(target_location);
 
   // Calculate features of the anchor element.
-  float ratio_area = FloatSize(target_rect.Size()).Area() / visible_size.Area();
+  // Limit the element size to the viewport size.
+  float ratio_area = std::min(
+      1.0f, FloatSize(target_rect.Size()).Area() / visible_size.Area());
   float ratio_distance_root_top =
       float(target_location.Y() +
             AccumulatedScrollOffset(anchor_element).Height()) /
@@ -82,11 +84,11 @@ void AnchorElementMetrics::RecordMetrics() const {
 
   UMA_HISTOGRAM_COUNTS_10000(
       "AnchorElementMetrics.Clicked.RatioDistanceRootTop",
-      int(ratio_distance_root_top * 100));
+      int(std::min(ratio_distance_root_top, 100.0f) * 100));
 
-  UMA_HISTOGRAM_PERCENTAGE(
+  UMA_HISTOGRAM_COUNTS_10000(
       "AnchorElementMetrics.Clicked.RatioDistanceVisibleTop",
-      int(ratio_distance_visible_top * 100));
+      int(std::min(ratio_distance_visible_top, 100.0f) * 100));
 
   UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Clicked.IsInIFrame",
                         is_in_iframe);
