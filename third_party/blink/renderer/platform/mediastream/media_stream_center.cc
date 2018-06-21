@@ -39,7 +39,6 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_center.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_web_audio_source.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -111,6 +110,13 @@ MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
 void MediaStreamCenter::DidStopMediaStreamSource(MediaStreamSource* source) {
   if (private_)
     private_->DidStopMediaStreamSource(source);
+}
+
+void MediaStreamCenter::GetSourceSettings(
+    MediaStreamSource* source,
+    WebMediaStreamTrack::Settings& settings) {
+  if (private_)
+    private_->GetSourceSettings(source, settings);
 }
 
 }  // namespace blink

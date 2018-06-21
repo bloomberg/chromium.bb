@@ -29,6 +29,8 @@
  */
 
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
+
+#include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -146,6 +148,8 @@ void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
     settings.auto_gain_control = *auto_gain_control_;
   if (noise_supression_)
     settings.noise_supression = *noise_supression_;
+
+  MediaStreamCenter::Instance().GetSourceSettings(this, settings);
 }
 
 void MediaStreamSource::SetAudioFormat(size_t number_of_channels,

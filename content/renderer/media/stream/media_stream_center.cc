@@ -18,8 +18,10 @@
 #include "content/renderer/media/stream/media_stream_source.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
+#include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/stream/webaudio_media_stream_source.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
+#include "media/base/sample_format.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -187,6 +189,30 @@ void MediaStreamCenter::DidStopMediaStreamSource(
       static_cast<MediaStreamSource*>(web_source.GetExtraData());
   DCHECK(source);
   source->StopSource();
+}
+
+void MediaStreamCenter::GetSourceSettings(
+    const blink::WebMediaStreamSource& web_source,
+    blink::WebMediaStreamTrack::Settings& settings) {
+  MediaStreamAudioSource* const source =
+      MediaStreamAudioSource::From(web_source);
+  if (!source)
+    return;
+
+  media::AudioParameters audio_parameters = source->GetAudioParameters();
+  settings.sample_rate = audio_parameters.sample_rate();
+  // kSampleFormatS16 is the format used for all audio input streams.
+  settings.sample_size =
+      media::SampleFormatToBitsPerChannel(media::kSampleFormatS16);
+  settings.channel_count = audio_parameters.channels();
+  settings.latency = audio_parameters.GetBufferDuration().InSecondsF();
+
+  ProcessedLocalAudioSource* const processed_source =
+      ProcessedLocalAudioSource::From(source);
+  settings.volume = processed_source
+                        ? static_cast<double>(processed_source->Volume()) /
+                              processed_source->MaxVolume()
+                        : 1.0;
 }
 
 }  // namespace content
