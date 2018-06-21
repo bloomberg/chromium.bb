@@ -88,7 +88,7 @@ class DOMTreeMutationDetector {
         original_node_document_version_(node_document_->DomTreeVersion()),
         original_parent_document_version_(parent_document_->DomTreeVersion()) {}
 
-  bool HadAtMostOneDOMMutation() {
+  bool NeedsRecheck() {
     if (node_document_->DomTreeVersion() > original_node_document_version_ + 1)
       return false;
     if (parent_document_ != parent_->GetDocument())
@@ -397,7 +397,7 @@ Node* ContainerNode::InsertBefore(Node* new_child,
   if (!CollectChildrenAndRemoveFromOldParent(*new_child, targets,
                                              exception_state))
     return new_child;
-  if (!detector.HadAtMostOneDOMMutation()) {
+  if (!detector.NeedsRecheck()) {
     if (!RecheckNodeInsertionStructuralPrereq(targets, ref_child,
                                               exception_state))
       return new_child;
@@ -548,7 +548,7 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
     new_child_parent->RemoveChild(new_child, exception_state);
     if (exception_state.HadException())
       return nullptr;
-    if (!detector.HadAtMostOneDOMMutation())
+    if (!detector.NeedsRecheck())
       needs_recheck = true;
   }
 
@@ -570,7 +570,7 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
       old_child_parent->RemoveChild(old_child, exception_state);
       if (exception_state.HadException())
         return nullptr;
-      if (!detector.HadAtMostOneDOMMutation())
+      if (!detector.NeedsRecheck())
         needs_recheck = true;
     }
 
@@ -585,7 +585,7 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
     if (!CollectChildrenAndRemoveFromOldParent(*new_child, targets,
                                                exception_state))
       return old_child;
-    if (!detector.HadAtMostOneDOMMutation() || needs_recheck) {
+    if (!detector.NeedsRecheck() || needs_recheck) {
       if (!RecheckNodeInsertionStructuralPrereq(targets, next, exception_state))
         return old_child;
     }
@@ -837,7 +837,7 @@ Node* ContainerNode::AppendChild(Node* new_child,
   if (!CollectChildrenAndRemoveFromOldParent(*new_child, targets,
                                              exception_state))
     return new_child;
-  if (!detector.HadAtMostOneDOMMutation()) {
+  if (!detector.NeedsRecheck()) {
     if (!RecheckNodeInsertionStructuralPrereq(targets, nullptr,
                                               exception_state))
       return new_child;
