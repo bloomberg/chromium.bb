@@ -17,7 +17,6 @@
 @class AutofillController;
 @class CastController;
 @class ExternalAppLauncher;
-@class FormInputAccessoryViewController;
 class GURL;
 @class OpenInController;
 @class OverscrollActionsController;

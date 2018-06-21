@@ -8,7 +8,6 @@
 
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/app/main_controller_private.h"
-#import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #import "ios/chrome/browser/tabs/tab.h"
