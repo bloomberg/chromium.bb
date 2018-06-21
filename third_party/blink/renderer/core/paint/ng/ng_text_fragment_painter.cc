@@ -73,6 +73,11 @@ DocumentMarkerVector ComputeMarkersToPaint(
   Node* const node = paint_fragment.GetNode();
   if (!node)
     return DocumentMarkerVector();
+  // We don't paint any marker on ellipsis.
+  if (paint_fragment.PhysicalFragment().StyleVariant() ==
+      NGStyleVariant::kEllipsis)
+    return DocumentMarkerVector();
+
   DocumentMarkerController& document_marker_controller =
       node->GetDocument().Markers();
   return document_marker_controller.ComputeMarkersToPaint(*node);
