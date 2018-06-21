@@ -78,6 +78,7 @@ class LocationBarLegacyCoordinatorTest : public PlatformTest {
     browser_state_ = test_cbs_builder.Build();
 
     auto web_state = std::make_unique<web::TestWebState>();
+    web_state->SetBrowserState(browser_state_.get());
     web_state->SetCurrentURL(GURL("http://test/"));
     web_state_list_.InsertWebState(0, std::move(web_state),
                                    WebStateList::INSERT_FORCE_INDEX,

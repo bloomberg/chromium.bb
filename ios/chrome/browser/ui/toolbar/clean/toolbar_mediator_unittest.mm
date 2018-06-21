@@ -112,6 +112,7 @@ class ToolbarMediatorTest : public PlatformTest {
         std::make_unique<ToolbarTestNavigationManager>();
     navigation_manager_ = navigation_manager.get();
     test_web_state_ = std::make_unique<ToolbarTestWebState>();
+    test_web_state_->SetBrowserState(chrome_browser_state_.get());
     test_web_state_->SetNavigationManager(std::move(navigation_manager));
     test_web_state_->SetLoading(true);
     web_state_ = test_web_state_.get();
@@ -148,6 +149,9 @@ class ToolbarMediatorTest : public PlatformTest {
 
   void InsertNewWebState(int index) {
     auto web_state = std::make_unique<web::TestWebState>();
+    web_state->SetBrowserState(chrome_browser_state_.get());
+    web_state->SetNavigationManager(
+        std::make_unique<web::TestNavigationManager>());
     GURL url("http://test/" + std::to_string(index));
     web_state->SetCurrentURL(url);
     web_state_list_->InsertWebState(index, std::move(web_state),
