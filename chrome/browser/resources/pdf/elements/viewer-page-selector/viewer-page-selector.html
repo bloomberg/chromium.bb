@@ -1,13 +1,13 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-input/iron-input.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 
 <dom-module id="viewer-page-selector">
   <template>
     <style>
       :host {
         color: #fff;
-        font-size: 1.23rem;
+        font-size: 0.81rem;
       }
 
       :host ::selection {
@@ -15,27 +15,31 @@
       }
 
       #pageselector {
-        --container: { display: none; };
-        --paper-input-container-underline: var(--container);
-        --paper-input-container-underline-focus: var(--container);
-        padding: 0;
+        --cr-input-focus-color: transparent;
+        --cr-input-container: {
+          overflow: initial;
+        }
+        --cr-input-error-display: none;
+        --cr-input-background-color: transparent;
+        --cr-input-input: {
+          -webkit-margin-start: -3px;
+          -webkit-padding-end: 3px;
+          -webkit-padding-start: 3px;
+          padding-bottom: 0;
+          padding-top: 0;
+          text-align: end;
+          caret-color: #fff;
+          border-radius: 2px;
+          box-sizing: content-box;
+        }
+        -webkit-margin-start: -3px;
+        height: 100%;
         width: 1ch;
       }
 
-      #input {
-        -webkit-margin-start: -3px;
-        color: #fff;
-        height: 100%;
-        line-height: 18px;
-        padding: 3px;
-        text-align: end;
-        vertical-align: baseline;
-      }
-
-      #input:focus,
-      #input:hover {
-        background-color: rgba(0, 0, 0, 0.5);
-        border-radius: 2px;
+      #pageselector[focused_],
+      #pageselector:hover {
+        --cr-input-background-color: rgba(0, 0, 0, 0.5);
       }
 
       #slash {
@@ -44,7 +48,6 @@
 
       #pagelength-spacer {
         -webkit-margin-start: -2px;
-        padding-bottom: 1px;
         text-align: start;
       }
 
@@ -52,27 +55,12 @@
       #slash,
       #pagelength-spacer {
         display: inline-block;
-        margin-bottom: 2px;
-        vertical-align: middle;
-      }
-
-      #input,
-      #slash,
-      #pagelength {
-        font-size: 0.81rem;
-      }
-
-      iron-input input {
-        @apply --paper-input-container-shared-input-style;
       }
     </style>
-    <paper-input-container id="pageselector" no-label-float>
-      <iron-input slot="input" bind-value="[[pageNo]]" allowed-pattern="\d">
-        <input id="input" prevent-invalid-input value="{{value::input}}"
-            on-mouseup="select" on-change="pageNoCommitted"
-            aria-label$="{{strings.labelPageNumber}}">
-      </iron-input>
-    </paper-input-container>
+    <cr-input id="pageselector" value="[[pageNo]]" on-mouseup="select"
+        on-value-changed="onInputValueChange_" on-change="pageNoCommitted"
+        aria-label$="{{strings.labelPageNumber}}">
+    </cr-input>
     <span id="slash"> / </span>
     <span id="pagelength-spacer">
       <span id="pagelength">{{docLength}}</span>

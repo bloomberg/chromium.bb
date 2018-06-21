@@ -39,7 +39,7 @@ var tests = [
         Polymer.Base.create('viewer-page-selector', {docLength: 1234});
     document.body.appendChild(selector);
 
-    var input = selector.$.input;
+    var input = selector.pageSelector;
     // Simulate entering text into `input` and pressing enter.
     function changeInput(newValue) {
       input.value = newValue;
@@ -65,7 +65,8 @@ var tests = [
     chrome.test.assertEq(999, navigatedPages[0]);
     chrome.test.assertEq(1233, navigatedPages[1]);
     chrome.test.assertEq(11, navigatedPages[2]);
-    chrome.test.assertEq(2, navigatedPages[3]);
+    // If the user types 3.14, the . will be ignored but 14 will be captured.
+    chrome.test.assertEq(313, navigatedPages[3]);
 
     chrome.test.succeed();
   },
@@ -78,7 +79,7 @@ var tests = [
         Polymer.Base.create('viewer-page-selector', {docLength: 1234});
     document.body.appendChild(selector);
     chrome.test.assertEq('1234', selector.$.pagelength.textContent);
-    chrome.test.assertEq('4ch', selector.$.pageselector.style.width);
+    chrome.test.assertEq('4ch', selector.pageSelector.style.width);
     chrome.test.succeed();
   },
 
