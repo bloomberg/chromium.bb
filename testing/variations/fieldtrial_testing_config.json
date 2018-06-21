@@ -3755,18 +3755,24 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_NoScrollToLoad",
                     "enable_features": [
                         "SimplifiedNTP"
+                    ],
+                    "disable_features": [
+                        "ContentSuggestionsScrollToLoad"
                     ]
                 },
                 {
-                    "name": "Enabled_Ablation",
+                    "name": "Enabled_Ablation_NoScrollToLoad",
                     "params": {
                         "simplified_ntp_ablation": "true"
                     },
                     "enable_features": [
                         "SimplifiedNTP"
+                    ],
+                    "disable_features": [
+                        "ContentSuggestionsScrollToLoad"
                     ]
                 }
             ]
