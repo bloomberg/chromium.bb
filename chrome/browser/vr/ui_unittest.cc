@@ -1228,11 +1228,16 @@ TEST_F(UiTest, ResetRepositioner) {
 
   repositioner->set_laser_direction(kForwardVector);
   repositioner->SetEnabled(true);
-  repositioner->set_laser_direction({0, 1, 0});
+  repositioner->set_laser_direction({1, 0, 0});
   OnBeginFrame();
 
   EXPECT_NE(original, repositioner->world_space_transform());
   repositioner->SetEnabled(false);
+
+  model_->controller.recentered = true;
+
+  OnBeginFrame();
+  EXPECT_EQ(original, repositioner->world_space_transform());
 }
 
 // No element in the controller root's subtree should be hit testable.

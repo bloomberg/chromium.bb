@@ -69,8 +69,7 @@ void Repositioner::SetEnabled(bool enabled) {
 }
 
 void Repositioner::Reset() {
-  transform_.MakeIdentity();
-  set_world_space_transform_dirty();
+  reset_yaw_ = true;
 }
 
 void Repositioner::UpdateTransform(const gfx::Transform& head_pose) {
@@ -79,9 +78,16 @@ void Repositioner::UpdateTransform(const gfx::Transform& head_pose) {
   gfx::Vector3dF head_up = vr::GetUpVector(head_pose);
   gfx::Vector3dF head_forward = vr::GetForwardVector(head_pose);
 
-  transform_ = initial_transform_;
-  transform_.ConcatTransform(gfx::Transform(
-      gfx::Quaternion(initial_laser_direction_, laser_direction_)));
+  if (reset_yaw_) {
+    gfx::Vector3dF current_right = {1, 0, 0};
+    transform_.TransformVector(&current_right);
+    transform_.ConcatTransform(
+        gfx::Transform(gfx::Quaternion(current_right, {1, 0, 0})));
+  } else {
+    transform_ = initial_transform_;
+    transform_.ConcatTransform(gfx::Transform(
+        gfx::Quaternion(initial_laser_direction_, laser_direction_)));
+  }
 
   gfx::Vector3dF new_right = {1, 0, 0};
   transform_.TransformVector(&new_right);
@@ -127,8 +133,9 @@ void Repositioner::UpdateTransform(const gfx::Transform& head_pose) {
 }
 
 bool Repositioner::OnBeginFrame(const gfx::Transform& head_pose) {
-  if (enabled_) {
+  if (enabled_ || reset_yaw_) {
     UpdateTransform(head_pose);
+    reset_yaw_ = false;
     return true;
   }
   return false;

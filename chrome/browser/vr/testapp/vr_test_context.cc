@@ -254,6 +254,9 @@ void VrTestContext::HandleInput(ui::Event* event) {
       case ui::DomCode::US_P:
         model_->toggle_mode(kModeRepositionWindow);
         break;
+      case ui::DomCode::US_G:
+        recentered_ = true;
+        break;
       case ui::DomCode::US_X:
         ui_->OnAppButtonClicked();
         break;
@@ -389,6 +392,8 @@ ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info,
       touchpad_pressed_ ? UiInputManager::DOWN : UiInputManager::UP;
   controller_model.touchpad_touch_position = touchpad_touch_position_;
   controller_model.touching_touchpad = touching_touchpad_;
+  controller_model.recentered = recentered_;
+  recentered_ = false;
 
   controller_model.laser_origin = mouse_point_near;
   controller_model.laser_direction = mouse_point_far - mouse_point_near;
