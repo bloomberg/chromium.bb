@@ -19,9 +19,11 @@
 
 namespace content {
 
+namespace media_constraints {
 class ResolutionSet;
 template <typename T>
 class NumericRangeSet;
+}  // namespace media_constraints
 
 // This class represents the output the SelectSettings algorithm for video
 // constraints (see https://w3c.github.io/mediacapture-main/#dfn-selectsettings)
@@ -350,8 +352,8 @@ bool IsDeviceCapture(const blink::WebMediaConstraints& constraints);
 // |frame_rate_set| are empty.
 VideoTrackAdapterSettings CONTENT_EXPORT SelectVideoTrackAdapterSettings(
     const blink::WebMediaTrackConstraintSet& basic_constraint_set,
-    const ResolutionSet& resolution_set,
-    const NumericRangeSet<double>& frame_rate_set,
+    const media_constraints::ResolutionSet& resolution_set,
+    const media_constraints::NumericRangeSet<double>& frame_rate_set,
     const media::VideoCaptureFormat& source_format);
 
 // Generic distance function between two values for numeric constraints. Based

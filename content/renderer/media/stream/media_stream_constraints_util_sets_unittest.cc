@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
+namespace media_constraints {
 
 using Point = ResolutionSet::Point;
 
@@ -1266,4 +1267,5 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetBool) {
   EXPECT_TRUE(intersection.IsEmpty());
 }
 
+}  // namespace media_constraints
 }  // namespace content

@@ -256,12 +256,13 @@ bool IsDeviceCapture(const blink::WebMediaConstraints& constraints) {
 
 VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
     const blink::WebMediaTrackConstraintSet& basic_constraint_set,
-    const ResolutionSet& resolution_set,
-    const NumericRangeSet<double>& frame_rate_set,
+    const media_constraints::ResolutionSet& resolution_set,
+    const media_constraints::NumericRangeSet<double>& frame_rate_set,
     const media::VideoCaptureFormat& source_format) {
-  ResolutionSet::Point resolution = resolution_set.SelectClosestPointToIdeal(
-      basic_constraint_set, source_format.frame_size.height(),
-      source_format.frame_size.width());
+  media_constraints::ResolutionSet::Point resolution =
+      resolution_set.SelectClosestPointToIdeal(
+          basic_constraint_set, source_format.frame_size.height(),
+          source_format.frame_size.width());
   int track_max_height = static_cast<int>(std::round(resolution.height()));
   int track_max_width = static_cast<int>(std::round(resolution.width()));
   double track_min_aspect_ratio =

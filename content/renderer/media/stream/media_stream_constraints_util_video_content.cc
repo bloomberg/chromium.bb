@@ -39,9 +39,11 @@ const double kDefaultScreenCastFrameRate =
 
 namespace {
 
+using ResolutionSet = media_constraints::ResolutionSet;
 using Point = ResolutionSet::Point;
-using StringSet = DiscreteSet<std::string>;
-using BoolSet = DiscreteSet<bool>;
+using StringSet = media_constraints::DiscreteSet<std::string>;
+using BoolSet = media_constraints::DiscreteSet<bool>;
+using DoubleRangeSet = media_constraints::NumericRangeSet<double>;
 
 constexpr double kMinScreenCastAspectRatio =
     static_cast<double>(kMinScreenCastDimension) /
@@ -50,7 +52,6 @@ constexpr double kMaxScreenCastAspectRatio =
     static_cast<double>(kMaxScreenCastDimension) /
     static_cast<double>(kMinScreenCastDimension);
 
-using DoubleRangeSet = NumericRangeSet<double>;
 
 class VideoContentCaptureCandidates {
  public:
@@ -69,9 +70,10 @@ class VideoContentCaptureCandidates {
             DoubleRangeSet::FromConstraint(constraint_set.frame_rate,
                                            0.0,
                                            kMaxScreenCastFrameRate)),
-        device_id_set_(StringSetFromConstraint(constraint_set.device_id)),
-        noise_reduction_set_(
-            BoolSetFromConstraint(constraint_set.goog_noise_reduction)) {}
+        device_id_set_(media_constraints::StringSetFromConstraint(
+            constraint_set.device_id)),
+        noise_reduction_set_(media_constraints::BoolSetFromConstraint(
+            constraint_set.goog_noise_reduction)) {}
 
   VideoContentCaptureCandidates(VideoContentCaptureCandidates&& other) =
       default;

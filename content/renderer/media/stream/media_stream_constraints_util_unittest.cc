@@ -29,7 +29,8 @@ namespace content {
 
 class MediaStreamConstraintsUtilTest : public testing::Test {
  protected:
-  using DoubleRangeSet = NumericRangeSet<double>;
+  using DoubleRangeSet = media_constraints::NumericRangeSet<double>;
+  using ResolutionSet = media_constraints::ResolutionSet;
 };
 
 TEST_F(MediaStreamConstraintsUtilTest, BooleanConstraints) {

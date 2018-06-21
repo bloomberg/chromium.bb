@@ -24,6 +24,9 @@ namespace content {
 
 namespace {
 
+template <class T>
+using DiscreteSet = media_constraints::DiscreteSet<T>;
+
 enum BoolConstraint {
   // Constraints not related to audio processing.
   HOTWORD_ENABLED,
@@ -310,29 +313,31 @@ class SingleDeviceCandidateSet {
   void ApplyConstraintSet(
       const blink::WebMediaTrackConstraintSet& constraint_set) {
     device_id_set_ = device_id_set_.Intersection(
-        StringSetFromConstraint(constraint_set.device_id));
+        media_constraints::StringSetFromConstraint(constraint_set.device_id));
     if (device_id_set_.IsEmpty()) {
       failed_constraint_name_ = constraint_set.device_id.GetName();
       return;
     }
 
     group_id_set_ = group_id_set_.Intersection(
-        StringSetFromConstraint(constraint_set.group_id));
+        media_constraints::StringSetFromConstraint(constraint_set.group_id));
     if (group_id_set_.IsEmpty()) {
       failed_constraint_name_ = constraint_set.group_id.GetName();
       return;
     }
 
     goog_array_geometry_set_ = goog_array_geometry_set_.Intersection(
-        StringSetFromConstraint(constraint_set.goog_array_geometry));
+        media_constraints::StringSetFromConstraint(
+            constraint_set.goog_array_geometry));
     if (goog_array_geometry_set_.IsEmpty()) {
       failed_constraint_name_ = constraint_set.goog_array_geometry.GetName();
       return;
     }
 
     for (size_t i = 0; i < NUM_BOOL_CONSTRAINTS; ++i) {
-      bool_sets_[i] = bool_sets_[i].Intersection(
-          BoolSetFromConstraint(constraint_set.*kBlinkBoolConstraintFields[i]));
+      bool_sets_[i] =
+          bool_sets_[i].Intersection(media_constraints::BoolSetFromConstraint(
+              constraint_set.*kBlinkBoolConstraintFields[i]));
       if (bool_sets_[i].IsEmpty()) {
         failed_constraint_name_ =
             (constraint_set.*kBlinkBoolConstraintFields[i]).GetName();
@@ -352,7 +357,8 @@ class SingleDeviceCandidateSet {
     }
 
     echo_cancellation_type_set_ = echo_cancellation_type_set_.Intersection(
-        StringSetFromConstraint(constraint_set.echo_cancellation_type));
+        media_constraints::StringSetFromConstraint(
+            constraint_set.echo_cancellation_type));
     if (echo_cancellation_type_set_.IsEmpty()) {
       failed_constraint_name_ = constraint_set.echo_cancellation_type.GetName();
       return;

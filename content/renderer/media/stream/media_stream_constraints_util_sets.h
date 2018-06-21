@@ -22,6 +22,7 @@ struct WebMediaTrackConstraintSet;
 }
 
 namespace content {
+namespace media_constraints {
 
 // This class template represents a set of candidates suitable for a numeric
 // range-based constraint.
@@ -392,6 +393,7 @@ class CONTENT_EXPORT ResolutionSet {
 ResolutionSet::Point CONTENT_EXPORT operator*(double d,
                                               const ResolutionSet::Point& p);
 
+}  // namespace media_constraints
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_SETS_H_
