@@ -128,8 +128,8 @@ Polymer({
         // Select the whole password if user entered an incorrect password.
         // Return focus to the password input if it lost focus while being
         // checked (user pressed confirm button).
-        this.$.passwordInput.inputElement.select();
         this.$.passwordInput.focus();
+        this.$.passwordInput.inputElement.select();
         return;
       }
 

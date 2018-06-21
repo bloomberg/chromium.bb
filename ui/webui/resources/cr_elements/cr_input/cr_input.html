@@ -95,14 +95,14 @@
         -webkit-appearance: none;
       }
     </style>
-    <div id="label" hidden="[[!label]]">[[label]]</div>
+    <div id="label" hidden="[[!label]]" aria-hidden="true">[[label]]</div>
     <div id="row-container">
       <div id="input-container">
         <!-- Only attributes that are named inconsistently between html and js
              need to use attr$="", such as |tabindex| vs .tabIndex and
              |readonly| vs .readOnly. -->
         <input id="input" disabled="[[disabled]]" autofocus="[[autofocus]]"
-            value="{{value::input}}" tabindex$="[[tabIndex]]" type="[[type]]"
+            value="{{value::input}}" tabindex$="[[tabindex]]" type="[[type]]"
             readonly$="[[readonly]]" maxlength$="[[maxlength]]"
             pattern="[[pattern]]" required="[[required]]"
             incremental="[[incremental]]" minlength$="[[minlength]]">
