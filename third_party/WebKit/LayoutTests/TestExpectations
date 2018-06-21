@@ -4734,3 +4734,7 @@ crbug.com/853852 [ Linux ] virtual/threaded/external/wpt/feature-policy/experime
 crbug.com/854053 [ Mac10.13 Debug ] virtual/threaded/fast/animationworklet/animation-worklet-scroll-timeline.html [ Pass Crash ]
 
 crbug.com/854538 [ Win7 ] http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored-with-redirect.html [ Skip ]
+
+# Sheriff 2018-06-21
+crbug.com/854910 [ Mac ] fast/scroll-behavior/smooth-scroll/track-scroll.html [ Failure Pass ]
+crbug.com/854910 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Failure Pass ]
