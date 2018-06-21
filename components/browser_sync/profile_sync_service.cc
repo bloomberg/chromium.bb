@@ -1189,7 +1189,19 @@ std::string ProfileSyncService::QuerySyncStatusSummaryString() {
 
 std::string ProfileSyncService::GetEngineInitializationStateString() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return startup_controller_->GetEngineInitializationStateString();
+  switch (startup_controller_->GetState()) {
+    case syncer::StartupController::State::NOT_STARTED:
+      DCHECK(!engine_);
+      return "Not started";
+    case syncer::StartupController::State::STARTING_DEFERRED:
+      DCHECK(!engine_);
+      return "Deferred";
+    case syncer::StartupController::State::STARTED:
+      DCHECK(engine_);
+      return "Started";
+  }
+  NOTREACHED();
+  return std::string();
 }
 
 bool ProfileSyncService::IsSetupInProgress() const {
