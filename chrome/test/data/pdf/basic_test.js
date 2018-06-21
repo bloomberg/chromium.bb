@@ -41,7 +41,7 @@ var tests = [
   function testIgnoreKeyEvents() {
     // Test that the traversal through the shadow DOM works correctly.
     var toolbar = document.getElementById('toolbar');
-    toolbar.$.pageselector.$.input.focus();
+    toolbar.$.pageselector.pageSelector.focus();
     chrome.test.assertTrue(shouldIgnoreKeyEvents(toolbar));
 
     // Test case where the active element has a shadow root of its own.
