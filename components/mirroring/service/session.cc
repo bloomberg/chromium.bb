@@ -294,7 +294,7 @@ Session::Session(int32_t session_id,
   network_context_->CreateURLLoaderFactory(
       mojo::MakeRequest(&url_loader_factory),
       network::mojom::URLLoaderFactoryParams::New(
-          network::mojom::kBrowserProcessId, false, std::string()));
+          network::mojom::kBrowserProcessId, false, -1, std::string()));
 
   // Generate session level tags.
   base::Value session_tags(base::Value::Type::DICTIONARY);

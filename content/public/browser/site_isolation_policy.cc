@@ -87,6 +87,8 @@ void SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(
   if (!params->is_corb_enabled)
     return;
 
+  params->corb_excluded_resource_type = RESOURCE_TYPE_PLUGIN_RESOURCE;
+
   const char* initiator_scheme_exception =
       GetContentClient()
           ->browser()

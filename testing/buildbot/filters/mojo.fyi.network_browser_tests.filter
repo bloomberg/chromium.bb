@@ -404,9 +404,6 @@
 -NativeBindings/ExternallyConnectableMessagingTest.WebConnectableWithNonEmptyTlsChannelId/0
 -NativeBindings/MessagingApiTest.DifferentStoragePartitionTLSChannelID/0
 
-# https://crbug.com/846339: CORB: Don't block requests from plugins.
--OutOfProcessPPAPITest.URLLoaderTrusted
-
 # https://crbug.com/845559
 # Reporting needs to check BACKGROUND_SYNC permission before uploading reports
 # about an origin.
