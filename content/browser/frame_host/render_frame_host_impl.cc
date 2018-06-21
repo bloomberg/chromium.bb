@@ -391,6 +391,15 @@ base::Histogram::Sample HashInterfaceNameToHistogramSample(
       static_cast<int32_t>(base::HashMetricName(name) & 0x7fffffffull));
 }
 
+// Set crash keys that will help understand the circumstances of a renderer
+// kill.  Note that the commit URL is already reported in a crash key, and
+// additional keys are logged in RenderProcessHostImpl::ShutdownForBadMessage.
+void LogRendererKillCrashKeys(const GURL& site_url) {
+  static auto* site_url_key = base::debug::AllocateCrashKeyString(
+      "current_site_url", base::debug::CrashKeySize::Size64);
+  base::debug::SetCrashKeyString(site_url_key, site_url.spec());
+}
+
 }  // namespace
 
 class RenderFrameHostImpl::DroppedInterfaceRequestLogger
@@ -4996,6 +5005,8 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   // should be killed.
   if (!is_permitted_error_page && !CanCommitURL(validated_params->url)) {
     VLOG(1) << "Blocked URL " << validated_params->url.spec();
+    LogRendererKillCrashKeys(GetSiteInstance()->GetSiteURL());
+
     // Kills the process.
     bad_message::ReceivedBadMessage(process,
                                     bad_message::RFH_CAN_COMMIT_URL_BLOCKED);
@@ -5006,6 +5017,9 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   // be allowed to commit in this RenderFrameHost.
   if (!CanCommitOrigin(validated_params->origin, validated_params->url)) {
     DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
+    LogRendererKillCrashKeys(GetSiteInstance()->GetSiteURL());
+
+    // Kills the process.
     bad_message::ReceivedBadMessage(process,
                                     bad_message::RFH_INVALID_ORIGIN_ON_COMMIT);
     return false;
