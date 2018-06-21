@@ -21,6 +21,7 @@
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/base/default_theme_provider.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -28,7 +29,6 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/widget/widget.h"
-
 #if defined(OS_WIN)
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/win/hwnd_util.h"
@@ -518,7 +518,10 @@ SkColor NewTabButton::GetButtonFillColor() const {
 
 void NewTabButton::InitButtonIcons() {
   DCHECK(MD::IsNewerMaterialUi());
-  const SkColor icon_color = tab_strip_->GetTabForegroundColor(TAB_INACTIVE);
+  const SkColor icon_color =
+      color_utils::IsDark(tab_strip_->GetTabForegroundColor(TAB_INACTIVE))
+          ? gfx::kChromeIconGrey
+          : SK_ColorWHITE;
   // TODO(b/851041): is there a better source for these icon sizes?
   const int size = MD::IsTouchOptimizedUiEnabled() ? 14 : 12;
   plus_icon_ = gfx::CreateVectorIcon(kNewTabButtonPlusIcon, size, icon_color);

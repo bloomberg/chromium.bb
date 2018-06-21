@@ -189,9 +189,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // default theme properties.
   SkColor GetThemeOrDefaultColor(int color_id) const;
 
-  // Returns a color that contrasts well with the frame.
-  SkColor GetContrastingColorAgainstFrame(SkAlpha alpha) const;
-
   // The frame that hosts this view.
   BrowserFrame* frame_;
 
