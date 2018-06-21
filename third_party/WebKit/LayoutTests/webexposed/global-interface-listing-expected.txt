@@ -5580,6 +5580,7 @@ interface ReportingObserver
     method constructor
     method disconnect
     method observe
+    method takeRecords
 interface Request
     attribute @@toStringTag
     getter bodyUsed
