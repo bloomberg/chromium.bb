@@ -728,27 +728,11 @@ void ThreadState::PerformIdleLazySweep(TimeTicks deadline) {
 
 void ThreadState::ScheduleIncrementalMarkingStep() {
   CHECK(!IsSweepingInProgress());
-
-  // BlinkGC::kTesting incremental marking tasks are executed by
-  // RunScheduledGC().
-  if (current_gc_data_.reason != BlinkGC::kTesting) {
-    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-        FROM_HERE, WTF::Bind(&ThreadState::RunIncrementalMarkingStepTask,
-                             WTF::Unretained(this)));
-  }
   SetGCState(kIncrementalMarkingStepScheduled);
 }
 
 void ThreadState::ScheduleIncrementalMarkingFinalize() {
   CHECK(!IsSweepingInProgress());
-
-  // BlinkGC::kTesting incremental marking tasks are executed by
-  // RunScheduledGC().
-  if (current_gc_data_.reason != BlinkGC::kTesting) {
-    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-        FROM_HERE, WTF::Bind(&ThreadState::RunIncrementalMarkingFinalizeTask,
-                             WTF::Unretained(this)));
-  }
   SetGCState(kIncrementalMarkingFinalizeScheduled);
 }
 
@@ -930,12 +914,10 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
       // Idle time GC will be scheduled by Blink Scheduler.
       break;
     case kIncrementalMarkingStepScheduled:
-      if (current_gc_data_.reason == BlinkGC::kTesting)
-        RunIncrementalMarkingStepTask();
+      IncrementalMarkingStep();
       break;
     case kIncrementalMarkingFinalizeScheduled:
-      if (current_gc_data_.reason == BlinkGC::kTesting)
-        RunIncrementalMarkingFinalizeTask();
+      IncrementalMarkingFinalize();
       break;
     case kIncrementalGCScheduled:
       IncrementalMarkingStart(reason_for_scheduled_gc_);
@@ -1455,18 +1437,6 @@ void ThreadState::DisableWrapperTracingBarrier() {
   CHECK(IsWrapperTracing());
   base::subtle::Barrier_AtomicIncrement(&wrapper_tracing_counter_, -1);
   SetWrapperTracing(false);
-}
-
-void ThreadState::RunIncrementalMarkingStepTask() {
-  if (GetGCState() != kIncrementalMarkingStepScheduled)
-    return;
-  IncrementalMarkingStep();
-}
-
-void ThreadState::RunIncrementalMarkingFinalizeTask() {
-  if (GetGCState() != kIncrementalMarkingFinalizeScheduled)
-    return;
-  IncrementalMarkingFinalize();
 }
 
 void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
