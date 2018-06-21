@@ -573,9 +573,6 @@ if (is_android) {
 
     data_deps = [
       ":pak",
-    ]
-
-    public_deps = [
       "//tools/v8_context_snapshot:v8_context_snapshot",
     ]
 
