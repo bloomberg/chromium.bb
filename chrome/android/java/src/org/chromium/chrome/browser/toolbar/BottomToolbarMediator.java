@@ -72,8 +72,8 @@ class BottomToolbarMediator
      */
     public void destroy() {
         mFullscreenManager.removeListener(this);
-        mOverviewModeBehavior.removeOverviewModeObserver(this);
         if (mContextualSearchManger != null) mContextualSearchManger.removeObserver(this);
+        if (mOverviewModeBehavior != null) mOverviewModeBehavior.removeOverviewModeObserver(this);
     }
 
     @Override
