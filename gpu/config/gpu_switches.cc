@@ -33,6 +33,11 @@ const char kGpuBlacklistTestGroup[] = "gpu-blacklist-test-group";
 // test_group ID.
 const char kGpuDriverBugListTestGroup[] = "gpu-driver-bug-list-test-group";
 
+// Allows explicitly specifying the shader disk cache size for embedded devices.
+// Default value is 6MB. On Android, 2MB is default and 128KB for low-end
+// devices.
+const char kShaderDiskCacheSizeKB[] = "shader-disk-cache-size-kb";
+
 // Use GpuFence objects to synchronize display of overlay planes.
 const char kUseGpuFencesForOverlayPlanes[] =
     "use-gpu-fences-for-overlay-planes";
