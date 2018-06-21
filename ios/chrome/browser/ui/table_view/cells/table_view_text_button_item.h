@@ -24,6 +24,9 @@
 // Text for cell button.
 @property(nonatomic, readwrite, strong) NSString* buttonText;
 
+// Button background color. Default is custom blue color.
+@property(nonatomic, strong) UIColor* buttonBackgroundColor;
+
 @end
 
 // TableViewTextButtonCell contains a textLabel and a UIbutton

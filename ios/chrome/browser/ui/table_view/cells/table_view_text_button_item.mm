@@ -31,9 +31,10 @@ const CGFloat buttonCornerRadius = 8;
 }  // namespace
 
 @implementation TableViewTextButtonItem
+@synthesize buttonBackgroundColor = _buttonBackgroundColor;
+@synthesize buttonText = _buttonText;
 @synthesize delegate = _delegate;
 @synthesize text = _text;
-@synthesize buttonText = _buttonText;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -51,6 +52,9 @@ const CGFloat buttonCornerRadius = 8;
   cell.delegate = self.delegate;
   cell.textLabel.text = self.text;
   [cell.button setTitle:self.buttonText forState:UIControlStateNormal];
+  cell.button.backgroundColor = self.buttonBackgroundColor
+                                    ? self.buttonBackgroundColor
+                                    : UIColorFromRGB(blueHexColor);
   [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
 }
 
@@ -76,7 +80,6 @@ const CGFloat buttonCornerRadius = 8;
 
     // Create button.
     self.button = [[UIButton alloc] init];
-    self.button.backgroundColor = UIColorFromRGB(blueHexColor);
     [self.button setTitleColor:[UIColor whiteColor]
                       forState:UIControlStateNormal];
     self.button.translatesAutoresizingMaskIntoConstraints = NO;
