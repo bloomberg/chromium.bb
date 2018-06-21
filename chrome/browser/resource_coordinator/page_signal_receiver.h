@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_PAGE_SIGNAL_RECEIVER_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_PAGE_SIGNAL_RECEIVER_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -83,6 +84,8 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
   void RemoveCoordinationUnitID(const CoordinationUnitID& cu_id);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PageSignalReceiverUnitTest,
+                           NotifyObserversThatCanRemoveCoordinationUnitID);
   template <typename Method, typename... Params>
   void NotifyObserversIfKnownCu(const CoordinationUnitID& page_cu_id,
                                 Method m,
@@ -90,8 +93,11 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
     auto web_contents_iter = cu_id_web_contents_map_.find(page_cu_id);
     if (web_contents_iter == cu_id_web_contents_map_.end())
       return;
+    // An observer can make web_contents_iter invalid by mutating
+    // the cu_id_web_contents_map_.
+    content::WebContents* web_contents = web_contents_iter->second;
     for (auto& observer : observers_)
-      (observer.*m)(web_contents_iter->second, std::forward<Params>(params)...);
+      (observer.*m)(web_contents, std::forward<Params>(params)...);
   }
 
   mojo::Binding<mojom::PageSignalReceiver> binding_;
