@@ -2702,7 +2702,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   //   avg_sr_coded_error:      average of the SSE per pixel of each frame;
   //   avg_raw_err_stdev:       average of the standard deviation of (0,0)
   //                            motion error per block of each frame.
-  assert(num_mbs > 0);
   const int disable_bwd_extarf =
       (zero_motion_accumulator > MIN_ZERO_MOTION &&
        avg_sr_coded_error / num_mbs < MAX_SR_CODED_ERROR &&
