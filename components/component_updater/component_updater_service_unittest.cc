@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -128,6 +129,16 @@ class MockServiceObserver : public ServiceObserver {
   MOCK_METHOD2(OnEvent, void(Events event, const std::string&));
 };
 
+class MockUpdateScheduler : public UpdateScheduler {
+ public:
+  MOCK_METHOD4(Schedule,
+               void(const base::TimeDelta& initial_delay,
+                    const base::TimeDelta& delay,
+                    const UserTask& user_task,
+                    const OnStopTaskCallback& on_stop));
+  MOCK_METHOD0(Stop, void());
+};
+
 class ComponentUpdaterTest : public testing::Test {
  public:
   ComponentUpdaterTest();
@@ -144,17 +155,25 @@ class ComponentUpdaterTest : public testing::Test {
   ComponentUpdateService& component_updater() { return *component_updater_; }
   scoped_refptr<TestConfigurator> configurator() const { return config_; }
   base::OnceClosure quit_closure() { return runloop_.QuitClosure(); }
+  MockUpdateScheduler& scheduler() { return *scheduler_; }
   static void ReadyCallback() {}
 
  protected:
   void RunThreads();
 
  private:
+  void RunUpdateTask(const UpdateScheduler::UserTask& user_task);
+  void Schedule(const base::TimeDelta& initial_delay,
+                const base::TimeDelta& delay,
+                const UpdateScheduler::UserTask& user_task,
+                const UpdateScheduler::OnStopTaskCallback& on_stop);
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::RunLoop runloop_;
 
   scoped_refptr<TestConfigurator> config_ =
       base::MakeRefCounted<TestConfigurator>();
+  MockUpdateScheduler* scheduler_;
   scoped_refptr<MockUpdateClient> update_client_ =
       base::MakeRefCounted<MockUpdateClient>();
   std::unique_ptr<ComponentUpdateService> component_updater_;
@@ -206,13 +225,18 @@ std::unique_ptr<ComponentUpdateService> TestComponentUpdateServiceFactory(
     scoped_refptr<Configurator> config) {
   DCHECK(config);
   return std::make_unique<CrxUpdateService>(
-      config, base::MakeRefCounted<MockUpdateClient>());
+      config, std::make_unique<MockUpdateScheduler>(),
+      base::MakeRefCounted<MockUpdateClient>());
 }
 
 ComponentUpdaterTest::ComponentUpdaterTest() {
   EXPECT_CALL(update_client(), AddObserver(_)).Times(1);
-  component_updater_ =
-      std::make_unique<CrxUpdateService>(config_, update_client_);
+  auto scheduler = std::make_unique<MockUpdateScheduler>();
+  scheduler_ = scheduler.get();
+  ON_CALL(*scheduler_, Schedule(_, _, _, _))
+      .WillByDefault(Invoke(this, &ComponentUpdaterTest::Schedule));
+  component_updater_ = std::make_unique<CrxUpdateService>(
+      config_, std::move(scheduler), update_client_);
 }
 
 ComponentUpdaterTest::~ComponentUpdaterTest() {
@@ -230,10 +254,35 @@ void ComponentUpdaterTest::RunThreads() {
   runloop_.Run();
 }
 
+void ComponentUpdaterTest::RunUpdateTask(
+    const UpdateScheduler::UserTask& user_task) {
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindRepeating(
+                     [](const UpdateScheduler::UserTask& user_task,
+                        ComponentUpdaterTest* test) {
+                       user_task.Run(base::BindOnce(
+                           [](const UpdateScheduler::UserTask& user_task,
+                              ComponentUpdaterTest* test) {
+                             test->RunUpdateTask(user_task);
+                           },
+                           user_task, base::Unretained(test)));
+                     },
+                     user_task, base::Unretained(this)));
+}
+
+void ComponentUpdaterTest::Schedule(
+    const base::TimeDelta& initial_delay,
+    const base::TimeDelta& delay,
+    const UpdateScheduler::UserTask& user_task,
+    const UpdateScheduler::OnStopTaskCallback& on_stop) {
+  RunUpdateTask(user_task);
+}
+
 TEST_F(ComponentUpdaterTest, AddObserver) {
   MockServiceObserver observer;
   EXPECT_CALL(update_client(), AddObserver(&observer)).Times(1);
   EXPECT_CALL(update_client(), Stop()).Times(1);
+  EXPECT_CALL(scheduler(), Stop()).Times(1);
   component_updater().AddObserver(&observer);
 }
 
@@ -241,6 +290,7 @@ TEST_F(ComponentUpdaterTest, RemoveObserver) {
   MockServiceObserver observer;
   EXPECT_CALL(update_client(), RemoveObserver(&observer)).Times(1);
   EXPECT_CALL(update_client(), Stop()).Times(1);
+  EXPECT_CALL(scheduler(), Stop()).Times(1);
   component_updater().RemoveObserver(&observer);
 }
 
@@ -297,6 +347,8 @@ TEST_F(ComponentUpdaterTest, RegisterComponent) {
 
   EXPECT_CALL(update_client(), IsUpdating(id1)).Times(1);
   EXPECT_CALL(update_client(), Stop()).Times(1);
+  EXPECT_CALL(scheduler(), Schedule(_, _, _, _)).Times(1);
+  EXPECT_CALL(scheduler(), Stop()).Times(1);
 
   EXPECT_TRUE(component_updater().RegisterComponent(crx_component1));
   EXPECT_TRUE(component_updater().RegisterComponent(crx_component2));
@@ -333,8 +385,8 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
 
   base::HistogramTester ht;
 
-  auto config = configurator();
-  config->SetInitialDelay(3600);
+  // Don't run periodic update task.
+  ON_CALL(scheduler(), Schedule(_, _, _, _)).WillByDefault(Return());
 
   auto& cus = component_updater();
 
@@ -357,6 +409,8 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
   EXPECT_CALL(update_client(), DoInstall("jebgalgnebhfojomionfpkfelancnnkf", _))
       .WillOnce(Invoke(&loop_handler, &LoopHandler::OnInstall));
   EXPECT_CALL(update_client(), Stop()).Times(1);
+  EXPECT_CALL(scheduler(), Schedule(_, _, _, _)).Times(1);
+  EXPECT_CALL(scheduler(), Stop()).Times(1);
 
   EXPECT_TRUE(cus.RegisterComponent(crx_component));
   OnDemandTester ondemand_tester;
@@ -394,8 +448,8 @@ TEST_F(ComponentUpdaterTest, MaybeThrottle) {
 
   base::HistogramTester ht;
 
-  auto config = configurator();
-  config->SetInitialDelay(3600);
+  // Don't run periodic update task.
+  ON_CALL(scheduler(), Schedule(_, _, _, _)).WillByDefault(Return());
 
   scoped_refptr<MockInstaller> installer =
       base::MakeRefCounted<MockInstaller>();
@@ -410,6 +464,8 @@ TEST_F(ComponentUpdaterTest, MaybeThrottle) {
   EXPECT_CALL(update_client(), DoInstall("jebgalgnebhfojomionfpkfelancnnkf", _))
       .WillOnce(Invoke(&loop_handler, &LoopHandler::OnInstall));
   EXPECT_CALL(update_client(), Stop()).Times(1);
+  EXPECT_CALL(scheduler(), Schedule(_, _, _, _)).Times(1);
+  EXPECT_CALL(scheduler(), Stop()).Times(1);
 
   EXPECT_TRUE(component_updater().RegisterComponent(crx_component));
   component_updater().MaybeThrottle(

@@ -18,6 +18,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/component_updater/timer_update_scheduler.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -314,7 +315,8 @@ ApplicationContextImpl::GetComponentUpdateService() {
     // be registered and Start() needs to be called.
     component_updater_ = component_updater::ComponentUpdateServiceFactory(
         component_updater::MakeIOSComponentUpdaterConfigurator(
-            base::CommandLine::ForCurrentProcess()));
+            base::CommandLine::ForCurrentProcess()),
+        std::make_unique<component_updater::TimerUpdateScheduler>());
   }
   return component_updater_.get();
 }

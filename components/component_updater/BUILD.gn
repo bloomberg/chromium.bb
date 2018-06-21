@@ -23,6 +23,9 @@ static_library("component_updater") {
     "pref_names.h",
     "timer.cc",
     "timer.h",
+    "timer_update_scheduler.cc",
+    "timer_update_scheduler.h",
+    "update_scheduler.h",
   ]
 
   deps = [

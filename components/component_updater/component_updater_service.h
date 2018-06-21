@@ -39,6 +39,7 @@ namespace component_updater {
 using Callback = update_client::Callback;
 
 class OnDemandUpdater;
+class UpdateScheduler;
 
 using Configurator = update_client::Configurator;
 using CrxComponent = update_client::CrxComponent;
@@ -175,7 +176,8 @@ class OnDemandUpdater {
 
 // Creates the component updater.
 std::unique_ptr<ComponentUpdateService> ComponentUpdateServiceFactory(
-    scoped_refptr<Configurator> config);
+    scoped_refptr<Configurator> config,
+    std::unique_ptr<UpdateScheduler> scheduler);
 
 }  // namespace component_updater
 
