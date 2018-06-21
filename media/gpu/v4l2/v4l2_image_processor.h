@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/image_processor.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 
@@ -25,9 +26,11 @@ namespace media {
 // Handles image processing accelerators that expose a V4L2 memory-to-memory
 // interface. The threading model of this class is the same as for other V4L2
 // hardware accelerators (see V4L2VideoDecodeAccelerator) for more details.
-class MEDIA_GPU_EXPORT V4L2ImageProcessor {
+class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
  public:
-  explicit V4L2ImageProcessor(const scoped_refptr<V4L2Device>& device);
+  explicit V4L2ImageProcessor(const scoped_refptr<V4L2Device>& device,
+                              v4l2_memory input_memory_type,
+                              v4l2_memory output_memory_type);
   virtual ~V4L2ImageProcessor();
 
   // Initializes the processor to convert from |input_format| to |output_format|
@@ -39,14 +42,12 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor {
   // configuration is supported.
   bool Initialize(VideoPixelFormat input_format,
                   VideoPixelFormat output_format,
-                  v4l2_memory input_memory_type,
-                  v4l2_memory output_memory_type,
                   gfx::Size input_visible_size,
                   gfx::Size input_allocated_size,
                   gfx::Size output_visible_size,
                   gfx::Size output_allocated_size,
                   int num_buffers,
-                  const base::Closure& error_cb);
+                  const base::Closure& error_cb) override;
 
   // Returns true if image processing is supported on this platform.
   static bool IsSupported();
@@ -66,14 +67,12 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor {
                               gfx::Size* size,
                               size_t* num_planes);
 
-  // Returns input allocated size required by the processor to be fed with.
-  gfx::Size input_allocated_size() const { return input_allocated_size_; }
-
-  // Returns output allocated size required by the processor.
-  gfx::Size output_allocated_size() const { return output_allocated_size_; }
-
-  // Callback to be used to return the processed image to the client.
-  typedef base::OnceCallback<void(scoped_refptr<VideoFrame>)> FrameReadyCB;
+  gfx::Size input_allocated_size() const override {
+    return input_allocated_size_;
+  }
+  gfx::Size output_allocated_size() const override {
+    return output_allocated_size_;
+  }
 
   // Called by client to process |frame|. The resulting processed frame will be
   // stored in |output_buffer_index| output buffer and notified via |cb|. The
@@ -85,16 +84,11 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor {
   bool Process(const scoped_refptr<VideoFrame>& frame,
                int output_buffer_index,
                std::vector<base::ScopedFD> output_dmabuf_fds,
-               FrameReadyCB cb);
+               FrameReadyCB cb) override;
 
   // Reset all processing frames. After this method returns, no more callbacks
   // will be invoked. V4L2ImageProcessor is ready to process more frames.
-  bool Reset();
-
-  // Stop all processing and clean up. After this method returns no more
-  // callbacks will be invoked.  Deletes |this| unconditionally, so make sure
-  // to drop all pointers to it!
-  void Destroy();
+  bool Reset() override;
 
  private:
   // Record for input buffers.
@@ -158,6 +152,10 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor {
 
   // A processed frame is ready.
   void FrameReady(FrameReadyCB cb, scoped_refptr<VideoFrame> frame);
+
+  // Stop all processing and clean up. After this method returns no more
+  // callbacks will be invoked.
+  void Destroy();
 
   // Size and format-related members remain constant after initialization.
   // The visible/allocated sizes of the input frame.

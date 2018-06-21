@@ -63,11 +63,13 @@ V4L2ImageProcessor::JobRecord::JobRecord() : output_buffer_index(-1) {}
 
 V4L2ImageProcessor::JobRecord::~JobRecord() {}
 
-V4L2ImageProcessor::V4L2ImageProcessor(const scoped_refptr<V4L2Device>& device)
+V4L2ImageProcessor::V4L2ImageProcessor(const scoped_refptr<V4L2Device>& device,
+                                       v4l2_memory input_memory_type,
+                                       v4l2_memory output_memory_type)
     : input_format_(PIXEL_FORMAT_UNKNOWN),
       output_format_(PIXEL_FORMAT_UNKNOWN),
-      input_memory_type_(V4L2_MEMORY_USERPTR),
-      output_memory_type_(V4L2_MEMORY_MMAP),
+      input_memory_type_(input_memory_type),
+      output_memory_type_(output_memory_type),
       input_format_fourcc_(0),
       output_format_fourcc_(0),
       input_planes_count_(0),
@@ -82,11 +84,18 @@ V4L2ImageProcessor::V4L2ImageProcessor(const scoped_refptr<V4L2Device>& device)
       output_buffer_queued_count_(0),
       num_buffers_(0),
       weak_this_factory_(this) {
+  DCHECK(input_memory_type == V4L2_MEMORY_USERPTR ||
+         input_memory_type == V4L2_MEMORY_DMABUF);
+  DCHECK(output_memory_type == V4L2_MEMORY_MMAP ||
+         output_memory_type == V4L2_MEMORY_DMABUF);
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
 V4L2ImageProcessor::~V4L2ImageProcessor() {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
+
+  Destroy();
+
   DCHECK(!device_thread_.IsRunning());
   DCHECK(!device_poll_thread_.IsRunning());
 
@@ -110,8 +119,6 @@ void V4L2ImageProcessor::NotifyErrorOnChildThread(
 
 bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
                                     VideoPixelFormat output_format,
-                                    v4l2_memory input_memory_type,
-                                    v4l2_memory output_memory_type,
                                     gfx::Size input_visible_size,
                                     gfx::Size input_allocated_size,
                                     gfx::Size output_visible_size,
@@ -121,10 +128,6 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
   VLOGF(2);
   DCHECK(!error_cb.is_null());
   DCHECK_GT(num_buffers, 0);
-  DCHECK(input_memory_type == V4L2_MEMORY_USERPTR ||
-         input_memory_type == V4L2_MEMORY_DMABUF);
-  DCHECK(output_memory_type == V4L2_MEMORY_MMAP ||
-         output_memory_type == V4L2_MEMORY_DMABUF);
   error_cb_ = error_cb;
 
   input_format_ = input_format;
@@ -139,8 +142,6 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
     return false;
   }
 
-  input_memory_type_ = input_memory_type;
-  output_memory_type_ = output_memory_type;
   input_visible_size_ = input_visible_size;
   input_allocated_size_ = input_allocated_size;
   output_visible_size_ = output_visible_size;
@@ -291,8 +292,8 @@ bool V4L2ImageProcessor::Process(const scoped_refptr<VideoFrame>& frame,
     return false;
 
   device_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2ImageProcessor::ProcessTask,
-                            base::Unretained(this), base::Passed(&job_record)));
+      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::ProcessTask,
+                                base::Unretained(this), std::move(job_record)));
   return true;
 }
 
@@ -345,8 +346,6 @@ void V4L2ImageProcessor::Destroy() {
     // Otherwise DestroyTask() is not needed.
     DCHECK(!device_poll_thread_.IsRunning());
   }
-
-  delete this;
 }
 
 bool V4L2ImageProcessor::CreateInputBuffers() {
