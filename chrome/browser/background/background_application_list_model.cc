@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <set>
+#include <utility>
 
 #include "base/strings/string_number_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -106,15 +107,10 @@ void GetServiceApplications(extensions::ExtensionService* service,
 
 }  // namespace
 
-void
-BackgroundApplicationListModel::Observer::OnApplicationDataChanged(
-    const Extension* extension, Profile* profile) {
-}
+void BackgroundApplicationListModel::Observer::OnApplicationDataChanged() {}
 
-void
-BackgroundApplicationListModel::Observer::OnApplicationListChanged(
-    Profile* profile) {
-}
+void BackgroundApplicationListModel::Observer::OnApplicationListChanged(
+    const Profile* profile) {}
 
 BackgroundApplicationListModel::Observer::~Observer() {
 }
@@ -132,7 +128,7 @@ void BackgroundApplicationListModel::Application::OnImageLoaded(
   if (image.IsEmpty())
     return;
   icon_.reset(image.CopyImageSkia());
-  model_->SendApplicationDataChangedNotifications(extension_);
+  model_->SendApplicationDataChangedNotifications();
 }
 
 void BackgroundApplicationListModel::Application::RequestIcon(
@@ -304,10 +300,9 @@ void BackgroundApplicationListModel::Observe(
   }
 }
 
-void BackgroundApplicationListModel::SendApplicationDataChangedNotifications(
-    const Extension* extension) {
+void BackgroundApplicationListModel::SendApplicationDataChangedNotifications() {
   for (auto& observer : observers_)
-    observer.OnApplicationDataChanged(extension, profile_);
+    observer.OnApplicationDataChanged();
 }
 
 void BackgroundApplicationListModel::OnExtensionLoaded(

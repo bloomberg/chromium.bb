@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -43,15 +44,13 @@ class BackgroundApplicationListModel
   // Observers of the model.
   class Observer {
    public:
-    // Invoked when data that the model associates with the extension, such as
+    // Invoked when data that the model associates with an extension, such as
     // the Icon, has changed.
-    virtual void OnApplicationDataChanged(
-        const extensions::Extension* extension,
-        Profile* profile);
+    virtual void OnApplicationDataChanged();
 
     // Invoked when the model detects a previously unknown extension and/or when
     // it no longer detects a previously known extension.
-    virtual void OnApplicationListChanged(Profile* profile);
+    virtual void OnApplicationListChanged(const Profile* profile);
 
    protected:
     virtual ~Observer();
@@ -140,9 +139,8 @@ class BackgroundApplicationListModel
   void OnExtensionSystemReady();
 
   // Notifies observers that some of the data associated with this background
-  // application, e. g. the Icon, has changed.
-  void SendApplicationDataChangedNotifications(
-      const extensions::Extension* extension);
+  // application, e.g. the Icon, has changed.
+  void SendApplicationDataChangedNotifications();
 
   // Notifies observers that at least one background application has been added
   // or removed.
@@ -162,7 +160,7 @@ class BackgroundApplicationListModel
 
   extensions::ExtensionList extensions_;
   base::ObserverList<Observer, true> observers_;
-  Profile* profile_;
+  Profile* const profile_;
   content::NotificationRegistrar registrar_;
   bool ready_;
 
