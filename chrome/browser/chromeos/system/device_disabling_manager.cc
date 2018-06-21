@@ -18,6 +18,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -132,6 +133,10 @@ void DeviceDisablingManager::CheckWhetherDeviceDisabledDuringOOBE(
           policy::kDeviceStateManagementDomain,
           &enrollment_domain_);
 
+  // Update the serial number.
+  serial_number_ = chromeos::system::StatisticsProvider::GetInstance()
+                       ->GetEnterpriseMachineID();
+
   // Update the disabled message.
   std::string disabled_message;
   g_browser_process->local_state()->GetDictionary(
@@ -230,6 +235,10 @@ void DeviceDisablingManager::UpdateFromCrosSettings() {
   // Cache the enrollment domain.
   enrollment_domain_ =
       browser_policy_connector_->GetEnterpriseEnrollmentDomain();
+
+  // Cache the device serial number.
+  serial_number_ = chromeos::system::StatisticsProvider::GetInstance()
+                       ->GetEnterpriseMachineID();
 
   // If no session or login is in progress, show the device disabled screen.
   delegate_->ShowDeviceDisabledScreen();

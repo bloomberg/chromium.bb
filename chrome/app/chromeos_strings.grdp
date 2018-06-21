@@ -3506,10 +3506,10 @@
     Locked
   </message>
   <message name="IDS_DEVICE_DISABLED_EXPLANATION_WITH_DOMAIN" desc="Explanation shown to the user when the device has been disabled by its owner. This version is used when the domain that owns the device is known.">
-    This device was locked by the <ph name="SAML_DOMAIN">$1<ex>example.com</ex></ph> administrator.
+    This device (SN: <ph name="SERIAL_NUMBER">$1<ex>1234</ex></ph>) was locked by the <ph name="SAML_DOMAIN">$2<ex>example.com</ex></ph> administrator.
   </message>
   <message name="IDS_DEVICE_DISABLED_EXPLANATION_WITHOUT_DOMAIN" desc="Explanation shown to the user when the device has been disabled by its owner. This version is used when the domain that owns the device is not known.">
-    This device was locked by the owner.
+    This device (SN: <ph name="SERIAL_NUMBER">$1<ex>1234</ex></ph>) was locked by the owner.
   </message>
 
   <!-- Encryption migration dialog -->

@@ -61,6 +61,10 @@ const std::string& DeviceDisabledScreen::GetMessage() const {
   return device_disabling_manager_->disabled_message();
 }
 
+const std::string& DeviceDisabledScreen::GetSerialNumber() const {
+  return device_disabling_manager_->serial_number();
+}
+
 void DeviceDisabledScreen::OnDisabledMessageChanged(
     const std::string& disabled_message) {
   if (view_)
