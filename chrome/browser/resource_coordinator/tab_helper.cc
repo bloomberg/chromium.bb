@@ -114,7 +114,7 @@ void ResourceCoordinatorTabHelper::WebContentsDestroyed() {
 
 void ResourceCoordinatorTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->HasCommitted() || navigation_handle->IsErrorPage() ||
+  if (!navigation_handle->HasCommitted() ||
       navigation_handle->IsSameDocument()) {
     return;
   }
