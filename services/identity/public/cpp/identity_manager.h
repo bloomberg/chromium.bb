@@ -143,7 +143,7 @@ class IdentityManager : public SigninManagerBase::Observer,
 
  private:
   // These clients need to call SetPrimaryAccountSynchronouslyForTests().
-  friend std::string SetPrimaryAccount(SigninManagerBase* signin_manager,
+  friend AccountInfo SetPrimaryAccount(SigninManagerBase* signin_manager,
                                        IdentityManager* identity_manager,
                                        const std::string& email);
   friend MultiProfileDownloadNotificationTest;
