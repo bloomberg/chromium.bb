@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "components/translate/core/browser/translate_prefs.h"
 
 #if defined(OS_ANDROID)
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -40,6 +41,8 @@ CreateIncognitoPrefServiceSyncable(
   overlay_pref_names.push_back(prefs::kBrowserWindowPlacement);
   overlay_pref_names.push_back(prefs::kMediaRouterTabMirroringSources);
   overlay_pref_names.push_back(prefs::kSaveFileDefaultDirectory);
+  overlay_pref_names.push_back(
+      translate::TranslatePrefs::kPrefTranslateSiteBlacklist);
 #if defined(OS_ANDROID)
   overlay_pref_names.push_back(proxy_config::prefs::kProxy);
 #endif
