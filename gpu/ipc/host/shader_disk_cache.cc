@@ -4,12 +4,15 @@
 
 #include "gpu/ipc/host/shader_disk_cache.h"
 
+#include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/config/gpu_switches.h"
 #include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -20,6 +23,22 @@ namespace {
 
 static const base::FilePath::CharType kGpuCachePath[] =
     FILE_PATH_LITERAL("GPUCache");
+
+#if !defined(OS_ANDROID)
+size_t GetCustomCacheSizeBytesIfExists(base::StringPiece switch_string) {
+  const base::CommandLine& process_command_line =
+      *base::CommandLine::ForCurrentProcess();
+  size_t cache_size;
+  if (process_command_line.HasSwitch(switch_string)) {
+    if (base::StringToSizeT(
+            process_command_line.GetSwitchValueASCII(switch_string),
+            &cache_size)) {
+      return cache_size * 1024;  // Bytes
+    }
+  }
+  return 0;
+}
+#endif
 
 }  // namespace
 
@@ -637,6 +656,10 @@ int ShaderDiskCache::SetCacheCompleteCallback(
 // static
 size_t ShaderDiskCache::CacheSizeBytes() {
 #if !defined(OS_ANDROID)
+  size_t custom_cache_size =
+      GetCustomCacheSizeBytesIfExists(switches::kShaderDiskCacheSizeKB);
+  if (custom_cache_size)
+    return custom_cache_size;
   return kDefaultMaxProgramCacheMemoryBytes;
 #else   // !defined(OS_ANDROID)
   if (!base::SysInfo::IsLowEndDevice())
