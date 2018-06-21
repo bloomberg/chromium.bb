@@ -46,7 +46,8 @@
 //   },
 //   {
 //     "driveApp": false,
-//     "iconUrl": "chrome://extension-icon/hhaomjibdihmijegdhdafkllkbggdgoj/16/1",
+//     "iconUrl":
+//       "chrome://extension-icon/hhaomjibdihmijegdhdafkllkbggdgoj/16/1",
 //     "isDefault": true,
 //     "taskId": "hhaomjibdihmijegdhdafkllkbggdgoj|file|gallery",
 //     "title": "__MSG_OPEN_ACTION__"
@@ -85,12 +86,13 @@
 // - "app" - File handler - app declaring "file_handlers" in manifest.json.
 // - "drive" - Drive App
 // - "arc" - ARC App
+// - "crostini" - Crostini App
 //
 // <task-action-id> is an ID string used for identifying actions provided
 // from a single Chrome Extension/App. In other words, a single
 // Chrome/Extension can provide multiple file handlers hence each of them
-// needs to have a unique action ID.  For Drive apps, <task-action-id> is
-// always "open-with".
+// needs to have a unique action ID. For Drive and Crostini apps,
+// <task-action-id> is always "open-with".
 //
 // HOW TASKS ARE EXECUTED?
 //
@@ -146,6 +148,7 @@ enum TaskType {
   TASK_TYPE_FILE_HANDLER,
   TASK_TYPE_DRIVE_APP,
   TASK_TYPE_ARC_APP,
+  TASK_TYPE_CROSTINI_APP,
   // The enum values must be kept in sync with FileManagerTaskType in
   // tools/metrics/histograms/enums.xml. Since enums for histograms are
   // append-only (for keeping the number consistent across versions), new values

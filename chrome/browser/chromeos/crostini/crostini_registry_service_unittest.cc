@@ -81,7 +81,7 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
   std::string container_name = "awesomecontainer";
   std::map<std::string, std::string> name = {{"", "Vim"}};
   std::map<std::string, std::string> comment = {{"", "Edit text files"}};
-  std::vector<std::string> mime_types = {"text/plain", "text/x-python"};
+  std::set<std::string> mime_types = {"text/plain", "text/x-python"};
   bool no_display = true;
 
   std::string app_id = CrostiniTestHelper::GenerateAppId(

@@ -17,15 +17,23 @@ using vm_tools::apps::ApplicationList;
 namespace crostini {
 
 CrostiniTestHelper::CrostiniTestHelper(Profile* profile)
-    : registry_service_(
+    : profile_(profile),
+      registry_service_(
           crostini::CrostiniRegistryServiceFactory::GetForProfile(profile)) {
+  SetCrostiniUIAllowedForTesting(true);
   EnableCrostini(profile);
+  current_apps_.set_vm_name(kCrostiniDefaultVmName);
+  current_apps_.set_container_name(kCrostiniDefaultContainerName);
+}
+
+CrostiniTestHelper::~CrostiniTestHelper() {
+  DisableCrostini(profile_);
+  SetCrostiniUIAllowedForTesting(false);
 }
 
 void CrostiniTestHelper::SetupDummyApps() {
-  current_apps_ = BasicAppList("dummy1", kCrostiniDefaultVmName,
-                               kCrostiniDefaultContainerName);
   // This updates the registry for us.
+  AddApp(BasicApp("dummy1"));
   AddApp(BasicApp("dummy2"));
 }
 

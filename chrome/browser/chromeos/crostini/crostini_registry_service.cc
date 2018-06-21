@@ -83,12 +83,12 @@ base::Value ProtoToDictionary(const App::LocaleString& locale_string) {
   return result;
 }
 
-std::vector<std::string> ListToStringVector(const base::Value* list) {
-  std::vector<std::string> result;
+std::set<std::string> ListToStringSet(const base::Value* list) {
+  std::set<std::string> result;
   if (!list)
     return result;
   for (const base::Value& value : list->GetList())
-    result.emplace_back(value.GetString());
+    result.insert(value.GetString());
   return result;
 }
 
@@ -254,11 +254,10 @@ std::string CrostiniRegistryService::Registration::Comment() const {
   return LocalizedString(kAppCommentKey);
 }
 
-std::vector<std::string> CrostiniRegistryService::Registration::MimeTypes()
-    const {
+std::set<std::string> CrostiniRegistryService::Registration::MimeTypes() const {
   if (pref_.is_none())
     return {};
-  return ListToStringVector(
+  return ListToStringSet(
       pref_.FindKeyOfType(kAppMimeTypesKey, base::Value::Type::LIST));
 }
 

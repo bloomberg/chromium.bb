@@ -9,6 +9,10 @@
 
 #include "base/optional.h"
 
+namespace base {
+class FilePath;
+}  // namespace base
+
 class Profile;
 
 // Enables/disables overriding IsCrostiniUIAllowedForProfile's normal
@@ -33,12 +37,23 @@ void LaunchCrostiniApp(Profile* profile,
                        const std::string& app_id,
                        int64_t display_id);
 
+// Launch a Crostini App with a given set of files, given as absolute paths in
+// the container. For apps which can only be launched with a single file,
+// launch multiple instances.
+void LaunchCrostiniApp(Profile* profile,
+                       const std::string& app_id,
+                       int64_t display_id,
+                       const std::vector<std::string>& files);
+
 // Retrieves cryptohome_id from profile.
 std::string CryptohomeIdForProfile(Profile* profile);
 
 // Retrieves username from profile.  This is the text until '@' in
 // profile->GetProfileUserName() email address.
 std::string ContainerUserNameForProfile(Profile* profile);
+
+// Returns the home directory within the container for a given profile.
+base::FilePath HomeDirectoryForProfile(Profile* profile);
 
 // The Terminal opens Crosh but overrides the Browser's app_name so that we can
 // identify it as the Crostini Terminal. In the future, we will also use these

@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_app_launch_observer.h"
@@ -99,7 +100,8 @@ void LaunchContainerApplication(
     Profile* profile,
     const std::string& app_id,
     crostini::CrostiniRegistryService::Registration registration,
-    int64_t display_id) {
+    int64_t display_id,
+    const std::vector<std::string>& files) {
   ChromeLauncherController* chrome_launcher_controller =
       ChromeLauncherController::instance();
   DCHECK_NE(chrome_launcher_controller, nullptr);
@@ -109,7 +111,7 @@ void LaunchContainerApplication(
   observer->OnAppLaunchRequested(registration.DesktopFileId(), display_id);
   crostini::CrostiniManager::GetInstance()->LaunchContainerApplication(
       profile, registration.VmName(), registration.ContainerName(),
-      registration.DesktopFileId(),
+      registration.DesktopFileId(), files,
       base::BindOnce(OnContainerApplicationLaunched, app_id));
 }
 
@@ -147,6 +149,13 @@ bool IsCrostiniEnabled(Profile* profile) {
 void LaunchCrostiniApp(Profile* profile,
                        const std::string& app_id,
                        int64_t display_id) {
+  LaunchCrostiniApp(profile, app_id, display_id, std::vector<std::string>());
+}
+
+void LaunchCrostiniApp(Profile* profile,
+                       const std::string& app_id,
+                       int64_t display_id,
+                       const std::vector<std::string>& files) {
   auto* crostini_manager = crostini::CrostiniManager::GetInstance();
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
@@ -165,6 +174,7 @@ void LaunchCrostiniApp(Profile* profile,
   base::OnceClosure launch_closure;
   Browser* browser = nullptr;
   if (app_id == kCrostiniTerminalId) {
+    DCHECK(files.empty());
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
 
     if (!crostini_manager->IsCrosTerminaInstalled() ||
@@ -187,7 +197,7 @@ void LaunchCrostiniApp(Profile* profile,
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
     launch_closure =
         base::BindOnce(&LaunchContainerApplication, profile, app_id,
-                       std::move(*registration), display_id);
+                       std::move(*registration), display_id, std::move(files));
   }
 
   // Update the last launched time.
@@ -222,6 +232,10 @@ std::string ContainerUserNameForProfile(Profile* profile) {
     return container_username.substr(0, container_username.find('@'));
   }
   return container_username;
+}
+
+base::FilePath HomeDirectoryForProfile(Profile* profile) {
+  return base::FilePath("/home/" + ContainerUserNameForProfile(profile));
 }
 
 std::string AppNameFromCrostiniAppId(const std::string& id) {

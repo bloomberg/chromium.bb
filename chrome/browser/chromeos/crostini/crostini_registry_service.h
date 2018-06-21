@@ -79,7 +79,7 @@ class CrostiniRegistryService : public KeyedService {
 
     std::string Name() const;
     std::string Comment() const;
-    std::vector<std::string> MimeTypes() const;
+    std::set<std::string> MimeTypes() const;
     bool NoDisplay() const;
 
     base::Time InstallTime() const;
