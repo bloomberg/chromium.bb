@@ -27,7 +27,8 @@ class CONTENT_EXPORT SharedWorkerConnectorImpl
       mojom::SharedWorkerInfoPtr info,
       mojom::SharedWorkerClientPtr client,
       blink::mojom::SharedWorkerCreationContextType creation_context_type,
-      mojo::ScopedMessagePipeHandle message_port) override;
+      mojo::ScopedMessagePipeHandle message_port,
+      blink::mojom::BlobURLTokenPtr blob_url_token) override;
 
   const int process_id_;
   const int frame_id_;

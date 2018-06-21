@@ -58,6 +58,7 @@ class WebSharedWorkerRepositoryClient {
       mojom::IPAddressSpace,
       mojom::SharedWorkerCreationContextType,
       MessagePortChannel,
+      mojo::ScopedMessagePipeHandle blob_url_token,
       std::unique_ptr<blink::WebSharedWorkerConnectListener>) = 0;
 
   // Invoked when a document has been detached. DocumentID can be re-used after

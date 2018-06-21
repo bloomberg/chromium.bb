@@ -53,7 +53,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       mojom::SharedWorkerInfoPtr info,
       mojom::SharedWorkerClientPtr client,
       blink::mojom::SharedWorkerCreationContextType creation_context_type,
-      const blink::MessagePortChannel& port);
+      const blink::MessagePortChannel& port,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
 
   void DestroyHost(SharedWorkerHost* host);
 
@@ -63,11 +64,13 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   friend class SharedWorkerServiceImplTest;
   friend class SharedWorkerHostTest;
 
-  void CreateWorker(std::unique_ptr<SharedWorkerInstance> instance,
-                    mojom::SharedWorkerClientPtr client,
-                    int process_id,
-                    int frame_id,
-                    const blink::MessagePortChannel& message_port);
+  void CreateWorker(
+      std::unique_ptr<SharedWorkerInstance> instance,
+      mojom::SharedWorkerClientPtr client,
+      int process_id,
+      int frame_id,
+      const blink::MessagePortChannel& message_port,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
   void StartWorker(std::unique_ptr<SharedWorkerInstance> instance,
                    base::WeakPtr<SharedWorkerHost> host,
                    mojom::SharedWorkerClientPtr client,

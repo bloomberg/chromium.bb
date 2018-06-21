@@ -44,6 +44,7 @@ class SharedWorkerRepository final
       blink::mojom::IPAddressSpace,
       blink::mojom::SharedWorkerCreationContextType,
       blink::MessagePortChannel channel,
+      mojo::ScopedMessagePipeHandle blob_url_token,
       std::unique_ptr<blink::WebSharedWorkerConnectListener> listener) override;
   void DocumentDetached(DocumentID document_id) override;
 
