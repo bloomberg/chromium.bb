@@ -1005,6 +1005,11 @@ TEST(WindowTreeTest2, Embed) {
   // OnFrameSinkIdAllocated() should called on the parent tree.
   ASSERT_EQ(1u, setup.changes()->size());
   EXPECT_EQ(CHANGE_TYPE_FRAME_SINK_ID_ALLOCATED, (*setup.changes())[0].type);
+  const Id embed_window_transport_id =
+      setup.window_tree_test_helper()->TransportIdForWindow(embed_window);
+  EXPECT_EQ(embed_window_transport_id, (*setup.changes())[0].window_id);
+  EXPECT_EQ(ServerWindow::GetMayBeNull(embed_window)->frame_sink_id(),
+            (*setup.changes())[0].frame_sink_id);
 }
 
 // Base class for ScheduleEmbed() related tests. This creates a Window and
