@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/process/kill.h"
 #include "chrome/test/chromedriver/capabilities.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
@@ -18,6 +19,7 @@ class DevToolsEventListener;
 namespace base {
 class DictionaryValue;
 class FilePath;
+enum TerminationStatus;
 }
 
 class Chrome;
@@ -46,8 +48,8 @@ Status PrepareUserDataDir(
     const base::DictionaryValue* custom_local_state);
 Status ParseDevToolsActivePortFile(const base::FilePath& user_data_dir,
                                    int* port);
-Status ReadInPort(const base::FilePath& port_filepath, int* port);
 Status RemoveOldDevToolsActivePortFile(const base::FilePath& user_data_dir);
+std::string GetTerminationReason(base::TerminationStatus status);
 }  // namespace internal
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_LAUNCHER_H_
