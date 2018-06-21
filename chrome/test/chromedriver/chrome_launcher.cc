@@ -142,12 +142,16 @@ Status PrepareCommandLine(const Capabilities& capabilities,
     switches.SetUnparsedSwitch(common_switch);
   for (auto* desktop_switch : kDesktopSwitches)
     switches.SetUnparsedSwitch(desktop_switch);
-  switches.SetSwitch("remote-debugging-port", "0");
   for (const auto& excluded_switch : capabilities.exclude_switches) {
     switches.RemoveSwitch(excluded_switch);
   }
   switches.SetFromSwitches(capabilities.switches);
-
+  if (switches.HasSwitch("remote-debugging-port")) {
+    return Status(kUnknownError,
+                  "Argument 'remote-debugging-port' is not allowed. "
+                  "You must let Chrome pick a remote debug port for you.");
+  }
+  switches.SetSwitch("remote-debugging-port", "0");
   if (capabilities.exclude_switches.count("user-data-dir") > 0)
     LOG(WARNING) << "excluding user-data-dir switch is not supported";
   if (switches.HasSwitch("user-data-dir")) {
@@ -408,49 +412,58 @@ Status LaunchDesktopChrome(URLRequestContextGetter* context_getter,
   VLOG(0) << "Launching chrome: " << command_string;
   base::Process process = base::LaunchProcess(command, options);
   if (!process.IsValid())
-    return Status(kUnknownError, "chrome failed to start");
+    return Status(kUnknownError, "Failed to create a Chrome process.");
 
+  // Attempt to connect to devtools in order to send commands to Chrome. If
+  // attempts fail, check if Chrome has crashed and return error.
   std::unique_ptr<DevToolsHttpClient> devtools_http_client;
   int devtools_port;
-  status = internal::ParseDevToolsActivePortFile(user_data_dir, &devtools_port);
-  if (status.IsError()) {
-    return status;
-  }
-  status = WaitForDevToolsAndCheckVersion(NetAddress(devtools_port),
-                                          context_getter, socket_factory,
-                                          &capabilities, &devtools_http_client);
-  if (status.IsError()) {
-    int exit_code;
-    base::TerminationStatus chrome_status =
-        base::GetTerminationStatus(process.Handle(), &exit_code);
-    if (chrome_status != base::TERMINATION_STATUS_STILL_RUNNING) {
-      std::string termination_reason;
-      switch (chrome_status) {
-        case base::TERMINATION_STATUS_NORMAL_TERMINATION:
-          termination_reason = "exited normally";
-          break;
-        case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
-          termination_reason = "exited abnormally";
-          break;
-        case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
-#if defined(OS_CHROMEOS)
-        case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
-#endif
-          termination_reason = "was killed";
-          break;
-        case base::TERMINATION_STATUS_PROCESS_CRASHED:
-          termination_reason = "crashed";
-          break;
-        case base::TERMINATION_STATUS_LAUNCH_FAILED:
-          termination_reason = "failed to launch";
-          break;
-        default:
-          termination_reason = "unknown";
-          break;
-      }
-      return Status(kUnknownError,
-                    "Chrome failed to start: " + termination_reason);
+  int exit_code;
+  base::TerminationStatus chrome_status =
+      base::TERMINATION_STATUS_STILL_RUNNING;
+  base::TimeTicks deadline =
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(60);
+  while (base::TimeTicks::Now() < deadline) {
+    status =
+        internal::ParseDevToolsActivePortFile(user_data_dir, &devtools_port);
+    if (status.IsOk()) {
+      status = WaitForDevToolsAndCheckVersion(
+          NetAddress(devtools_port), context_getter, socket_factory,
+          &capabilities, &devtools_http_client);
     }
+    if (status.IsOk()) {
+      break;
+    }
+    chrome_status = base::GetTerminationStatus(process.Handle(), &exit_code);
+    if (chrome_status != base::TERMINATION_STATUS_STILL_RUNNING) {
+      std::string termination_reason =
+          internal::GetTerminationReason(chrome_status);
+      Status failure_status = Status(
+          kUnknownError, "Chrome failed to start: " + termination_reason);
+      failure_status.AddDetails(status.message());
+      // There is a use case of someone passing a path to a binary to us in
+      // capabilities that is not an actual Chrome binary but a script that
+      // intercepts our arguments and then starts Chrome itself. This method
+      // of starting Chrome should be done carefully. The right way to do it
+      // is to do an exec of Chrome at the end of the script so that Chrome
+      // remains a subprocess of ChromeDriver. This allows us to have the
+      // correct process handle so that we can terminate Chrome after the
+      // test has finished or in the case of any failure. If you can't exec the
+      // Chrome binary at the end of your script, you must find a way to
+      // properly handle our termination signal so that you don't have zombie
+      // Chrome processes running after the test is completed.
+      failure_status.AddDetails(
+          "The process started from chrome location " +
+          command.GetProgram().AsUTF8Unsafe() +
+          " is no longer running, so ChromeDriver is assuming that Chrome has "
+          "crashed.");
+      return failure_status;
+    }
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+  }
+
+  if (status.IsError()) {
+    VLOG(0) << "Failed to connect to Chrome. Attempting to kill it.";
     if (!process.Terminate(0, true)) {
       int exit_code;
       if (base::GetTerminationStatus(process.Handle(), &exit_code) ==
@@ -570,6 +583,8 @@ Status LaunchChrome(URLRequestContextGetter* context_getter,
                     std::unique_ptr<Chrome>* chrome,
                     bool w3c_compliant) {
   if (capabilities.IsRemoteBrowser()) {
+    // TODO(johnchen): Clean up naming for ChromeDriver sessions created
+    // by connecting to an already-running Chrome at a given debuggerAddress.
     return LaunchRemoteChromeSession(
         context_getter, socket_factory, capabilities,
         std::move(devtools_event_listeners), chrome);
@@ -878,7 +893,9 @@ Status PrepareUserDataDir(
   return Status(kOk);
 }
 
-Status ReadInPort(const base::FilePath& port_filepath, int* port) {
+Status ParseDevToolsActivePortFile(const base::FilePath& user_data_dir,
+                                   int* port) {
+  base::FilePath port_filepath = user_data_dir.Append(kDevToolsActivePort);
   if (!base::PathExists(port_filepath)) {
     return Status(kUnknownError, "DevToolsActivePort file doesn't exist");
   }
@@ -901,23 +918,6 @@ Status ReadInPort(const base::FilePath& port_filepath, int* port) {
   return Status(kOk);
 }
 
-Status ParseDevToolsActivePortFile(const base::FilePath& user_data_dir,
-                                   int* port) {
-  base::FilePath port_filepath = user_data_dir.Append(kDevToolsActivePort);
-  base::TimeTicks deadline =
-      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(60);
-  Status result =
-      Status(kUnknownError, "This should not happen: increase the deadline");
-  while (base::TimeTicks::Now() < deadline) {
-    result = ReadInPort(port_filepath, port);
-    if (result.IsOk()) {
-      return result;
-    }
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
-  }
-  return result;
-}
-
 Status RemoveOldDevToolsActivePortFile(const base::FilePath& user_data_dir) {
   base::FilePath port_filepath = user_data_dir.Append(kDevToolsActivePort);
   // Note that calling DeleteFile on a path that doesn't exist returns True.
@@ -931,6 +931,26 @@ Status RemoveOldDevToolsActivePortFile(const base::FilePath& user_data_dir) {
           user_data_dir.AsUTF8Unsafe() +
           std::string(" is still attached to a running Chrome or Chromium "
                       "process."));
+}
+
+std::string GetTerminationReason(base::TerminationStatus status) {
+  switch (status) {
+    case base::TERMINATION_STATUS_NORMAL_TERMINATION:
+      return "exited normally";
+    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+      return "exited abnormally";
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+#if defined(OS_CHROMEOS)
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
+#endif
+      return "was killed";
+    case base::TERMINATION_STATUS_PROCESS_CRASHED:
+      return "crashed";
+    case base::TERMINATION_STATUS_LAUNCH_FAILED:
+      return "failed to launch";
+    default:
+      return "unknown";
+  }
 }
 
 }  // namespace internal

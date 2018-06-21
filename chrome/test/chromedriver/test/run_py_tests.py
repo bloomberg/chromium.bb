@@ -205,8 +205,8 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testCloseWindowUsingJavascript',
         # Android doesn't support headless mode
         'HeadlessInvalidCertificateTest.*',
-        # Android doesn't support user-data-dir switch
-        'ExistingUserDataDirTest.*',
+        # Tests of the desktop Chrome launch process.
+        'LaunchDesktopTest.*',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -2029,6 +2029,22 @@ class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
         None,
         driver.ExecuteScript('return window.domAutomationController'))
 
+  def testRemoteDebugPortSwitchError(self):
+    """Tests that passing --remote-debugging-port through capabilities raises a
+    ChromeDriver error."""
+    exception_raised = False
+    try:
+      driver = self.CreateDriver(chrome_switches=['remote-debugging-port=5'])
+    except Exception as e:
+      self.assertIn(
+          '\'remote-debugging-port\' is not allowed', e.message,
+          'ChromeDriver should provide a useful error message for '
+          'remote-debugging-port users.')
+      exception_raised = True
+    self.assertTrue(
+        exception_raised,
+        'ChromeDriver should not allow the --remote-debugging-port flag.')
+
 
 class ChromeDesiredCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes desired capabilities."""
@@ -2621,25 +2637,99 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
     raise RuntimeError('Cannot find open port')
 
 
-class ExistingUserDataDirTest(ChromeDriverBaseTest):
+class LaunchDesktopTest(ChromeDriverBaseTest):
+  """Tests that launching desktop Chrome works."""
 
-  def setUp(self):
-    self.user_data_dir = tempfile.mkdtemp()
+  def testExistingDevToolsPortFile(self):
+    """If a DevTools port file already exists before startup, then we should
+    ignore it and get our debug port number from the new file."""
+    user_data_dir = tempfile.mkdtemp()
+    try:
+      dev_tools_port_file = os.path.join(user_data_dir, 'DevToolsActivePort')
+      with open(dev_tools_port_file, 'w') as fd:
+        fd.write('34\n/devtools/browser/2dab5fb1-5571-40d8-a6ad-98823bc5ff84')
+      driver = self.CreateDriver(
+          chrome_switches=['user-data-dir=' + user_data_dir])
+      with open(dev_tools_port_file, 'r') as fd:
+        port = int(fd.readlines()[0])
+      # Ephemeral ports are always high numbers.
+      self.assertTrue(port > 100)
+    finally:
+      shutil.rmtree(user_data_dir, ignore_errors=True)
 
-  def tearDown(self):
-    super(ExistingUserDataDirTest, self).tearDown()
-    shutil.rmtree(self.user_data_dir, ignore_errors=True)
+  def testHelpfulErrorMessage_AbnormalExit(self):
+    """If Chrome fails to start abnormally, we should provide a useful error
+    message."""
+    file_descriptor, path = tempfile.mkstemp()
+    try:
+      os.close(file_descriptor)
+      exception_raised = False
+      try:
+        driver = chromedriver.ChromeDriver(_CHROMEDRIVER_SERVER_URL,
+                                           chrome_binary=path,
+                                           test_name=self.id())
+      except Exception as e:
+        self.assertIn('Chrome failed to start', e.message)
+        self.assertIn('exited abnormally', e.message)
+        self.assertIn('ChromeDriver is assuming that Chrome has crashed',
+                      e.message)
+        exception_raised = True
+      self.assertTrue(exception_raised)
+      try:
+        driver.Quit()
+      except:
+        pass
+    finally:
+      pass
+      os.remove(path)
 
-  def testStartUpWithExistingDevToolsPortFile(self):
-    dev_tools_port_file = os.path.join(self.user_data_dir, 'DevToolsActivePort')
-    with open(dev_tools_port_file, 'w') as fd:
-      fd.write('34\n/devtools/browser/2dab5fb1-5571-40d8-a6ad-98823bc5ff84')
-    driver = self.CreateDriver(
-        chrome_switches=['user-data-dir=' + self.user_data_dir])
-    with open(dev_tools_port_file, 'r') as fd:
-      port = int(fd.readlines()[0])
-    # Ephemeral ports are always high numbers.
-    self.assertTrue(port > 100)
+  def testHelpfulErrorMessage_NormalExit(self):
+    """If Chrome fails to start, we should provide a useful error message."""
+    if util.IsWindows():
+      # Not bothering implementing a Windows test since then I would have
+      # to implement Windows-specific code for a program that quits and ignores
+      # any arguments. Linux and Mac should be good enough coverage.
+      return
+
+    file_descriptor, path = tempfile.mkstemp()
+    try:
+      os.write(file_descriptor, '#!/bin/bash\nexit 0')
+      os.close(file_descriptor)
+      os.chmod(path, 0777)
+      exception_raised = False
+      try:
+        driver = chromedriver.ChromeDriver(_CHROMEDRIVER_SERVER_URL,
+                                           chrome_binary=path,
+                                           test_name=self.id())
+      except Exception as e:
+        self.assertIn('Chrome failed to start', e.message)
+        self.assertIn('exited normally', e.message)
+        self.assertIn('ChromeDriver is assuming that Chrome has crashed',
+                      e.message)
+        exception_raised = True
+      self.assertTrue(exception_raised)
+      try:
+        driver.Quit()
+      except:
+        pass
+    finally:
+      pass
+      os.remove(path)
+
+  def testNoBinaryErrorMessage(self):
+    temp_dir = tempfile.mkdtemp()
+    exception_raised = False
+    try:
+      driver = chromedriver.ChromeDriver(
+          _CHROMEDRIVER_SERVER_URL,
+          chrome_binary=os.path.join(temp_dir, 'this_file_should_not_exist'),
+          test_name=self.id())
+    except Exception as e:
+      self.assertIn('no chrome binary', e.message)
+      exception_raised = True
+    finally:
+      shutil.rmtree(temp_dir)
+    self.assertTrue(exception_raised)
 
 
 class PerfTest(ChromeDriverBaseTest):
