@@ -65,8 +65,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
 
   // Creates a BlinkNotificationServiceImpl that is owned by this context. Must
   // be called on the UI thread.
-  void CreateService(int render_process_id,
-                     const url::Origin& origin,
+  void CreateService(const url::Origin& origin,
                      blink::mojom::NotificationServiceRequest request);
 
   // Removes |service| from the list of owned services, for example because the

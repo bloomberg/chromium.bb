@@ -122,13 +122,12 @@ void PlatformNotificationContextImpl::ShutdownOnIO() {
 }
 
 void PlatformNotificationContextImpl::CreateService(
-    int render_process_id,
     const url::Origin& origin,
     blink::mojom::NotificationServiceRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   services_.push_back(std::make_unique<BlinkNotificationServiceImpl>(
-      this, browser_context_, service_worker_context_, render_process_id,
-      origin, std::move(request)));
+      this, browser_context_, service_worker_context_, origin,
+      std::move(request)));
 }
 
 void PlatformNotificationContextImpl::RemoveService(

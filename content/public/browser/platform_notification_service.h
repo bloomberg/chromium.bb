@@ -35,13 +35,6 @@ class CONTENT_EXPORT PlatformNotificationService {
       base::Callback<void(std::unique_ptr<std::set<std::string>>,
                           bool /* supports synchronization */)>;
 
-  // Checks if |origin| has permission to display Web Notifications.
-  // This method must only be called on the UI thread.
-  virtual blink::mojom::PermissionStatus CheckPermission(
-      BrowserContext* browser_context,
-      const GURL& origin,
-      int render_process_id) = 0;
-
   // Displays the notification described in |notification_data| to the user.
   // This method must be called on the UI thread.
   virtual void DisplayNotification(
