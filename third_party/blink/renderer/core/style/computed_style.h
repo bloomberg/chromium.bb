@@ -2218,6 +2218,21 @@ class ComputedStyle : public ComputedStyleBase,
 
   InterpolationQuality GetInterpolationQuality() const;
 
+  bool CanGeneratePseudoElement(PseudoId pseudo) const {
+    // The first letter pseudo element has to look up the tree and see if any
+    // of the ancestors are first letter.
+    if (pseudo != kPseudoIdFirstLetter && !HasPseudoStyle(pseudo))
+      return false;
+    if (Display() == EDisplay::kNone)
+      return false;
+    if (Display() != EDisplay::kContents)
+      return true;
+    // For display: contents elements, we still need to generate ::before and
+    // ::after, but the rest of the pseudo-elements should only be used for
+    // elements with an actual layout object.
+    return pseudo == kPseudoIdBefore || pseudo == kPseudoIdAfter;
+  }
+
  private:
   void SetVisitedLinkBackgroundColor(const StyleColor& v) {
     SetVisitedLinkBackgroundColorInternal(v);

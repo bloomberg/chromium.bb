@@ -809,20 +809,13 @@ PseudoElement* StyleResolver::CreatePseudoElementIfNeeded(Element& parent,
   if (!parent.CanGeneratePseudoElement(pseudo_id))
     return nullptr;
 
-  ComputedStyle* parent_style = parent.MutableComputedStyle();
-  DCHECK(parent_style);
-
-  // The first letter pseudo element has to look up the tree and see if any
-  // of the ancestors are first letter.
-  if (pseudo_id < kFirstInternalPseudoId && pseudo_id != kPseudoIdFirstLetter &&
-      !parent_style->HasPseudoStyle(pseudo_id)) {
-    return nullptr;
-  }
-
   if (pseudo_id == kPseudoIdFirstLetter &&
       (parent.IsSVGElement() ||
        !FirstLetterPseudoElement::FirstLetterTextLayoutObject(parent)))
     return nullptr;
+
+  ComputedStyle* parent_style = parent.MutableComputedStyle();
+  DCHECK(parent_style);
 
   if (ComputedStyle* cached_style =
           parent_style->GetCachedPseudoStyle(pseudo_id)) {
