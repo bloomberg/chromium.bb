@@ -120,7 +120,7 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
   // error messages.
   bool CheckFile(const Target* from_target,
                  const SourceFile& file,
-                 Err* err) const;
+                 std::vector<Err>* errors) const;
 
   // Checks that the given file in the given target can include the given
   // include file. If disallowed, returns false and sets the error. The
