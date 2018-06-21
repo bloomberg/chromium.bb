@@ -622,7 +622,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
                 parent=self,
                 name=name,
                 url=url,
-                managed=None,
+                managed=True,
                 custom_deps=None,
                 custom_vars=self.custom_vars,
                 custom_hooks=None,
@@ -855,6 +855,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     file_list = [] if not options.nohooks else None
     revision_override = revision_overrides.pop(
         self.FuzzyMatchUrl(revision_overrides), None)
+    if not revision_override and not self.managed:
+      revision_override = 'unmanaged'
     if run_scm and self.url:
       # Create a shallow copy to mutate revision.
       options = copy.copy(options)
@@ -1477,10 +1479,6 @@ it or fix the checkout.
     revision_overrides = {}
     if self._options.head:
       return revision_overrides
-    if not self._options.revisions:
-      for s in self.dependencies:
-        if not s.managed:
-          self._options.revisions.append('%s@unmanaged' % s.name)
     if not self._options.revisions:
       return revision_overrides
     solutions_names = [s.name for s in self.dependencies]

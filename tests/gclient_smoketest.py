@@ -530,6 +530,26 @@ class GClientSmokeGIT(GClientSmokeBase):
         ['sync', '-v', '-v', '-v', '--revision', 'refs/changes/1212'])
     self.assertEquals(0, rc)
 
+  def testSyncUnmanaged(self):
+    if not self.enabled:
+      return
+    self.gclient([
+        'config', '--spec',
+        'solutions=[{"name":"src", "url": "%s", "managed": False}]' % (
+            self.git_base + 'repo_5')])
+    self.gclient([
+        'sync', '--revision', 'src@' + self.githash('repo_5', 2)])
+    self.gclient([
+        'sync', '--revision', 'src/repo1@%s' % self.githash('repo_1', 1)])
+    # src is unmanaged, so gclient shouldn't have updated it. It should've
+    # stayed synced at @2
+    tree = self.mangle_git_tree(('repo_5@2', 'src'),
+                                ('repo_1@1', 'src/repo1'),
+                                ('repo_2@1', 'src/repo2'))
+    tree['src/git_pre_deps_hooked'] = 'git_pre_deps_hooked'
+    self.maxDiff = None
+    self.assertTree(tree)
+
   def testSyncUrl(self):
     if not self.enabled:
       return
