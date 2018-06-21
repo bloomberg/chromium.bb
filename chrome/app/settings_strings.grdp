@@ -612,6 +612,10 @@
   <message name="IDS_SETTINGS_AUTOFILL" desc="Name for the autofill section and toggle.">
     Autofill settings
   </message>
+  <!-- TODO(https://crbug.com/854562): Rename this to "IDS_SETTINGS_AUTOFILL" once Autofill Home is fully launched. -->
+  <message name="IDS_SETTINGS_AUTOFILL_AUTOFILL_HOME" desc="Name for the addresses and payment methods section used for Autofill Home.">
+    Addresses &amp; Payment methods
+  </message>
   <message name="IDS_SETTINGS_GOOGLE_PAYMENTS" desc="Label used to differentiate when an address or credit card entry comes from Google Pay. This should follow the casing of the 'Google Pay' brand. 'Google Pay' should not be translated as it is the product name.">
     Google Pay
   </message>
@@ -636,8 +640,12 @@
   <message name="IDS_SETTINGS_AUTOFILL_ADDRESSES_EMAIL" desc="This is the label for the field that lets a user modify the email address that will be used when auto-filling forms on the web.">
     Email
   </message>
+  <!-- TODO(https://crbug.com/854562): Remove this string (and use "IDS_SETTINGS_AUTOFILL_PAYMENT_METHODS" instead) once Autofill Home is fully launched. -->
   <message name="IDS_SETTINGS_AUTOFILL_CREDIT_CARD_HEADING" desc="Title for the list of saved passwords that can be used to fill in forms.">
     Credit cards
+  </message>
+  <message name="IDS_SETTINGS_AUTOFILL_PAYMENT_METHODS" desc="Title for the list of saved payment methods that can be used to fill in forms.">
+    Payment methods
   </message>
   <message name="IDS_SETTINGS_AUTOFILL_CREDIT_CARD_TYPE_COLUMN_LABEL" desc="Label for the column containing the type of credit card that is saved. The type is in the format: `Visa ****1234`.">
     Type
@@ -680,6 +688,10 @@
   </message>
   <message name="IDS_SETTINGS_PASSWORDS" desc="Name for the password section and toggle">
     Manage passwords
+  </message>
+  <!-- TODO(https://crbug.com/854562): Rename this to "IDS_SETTINGS_PASSWORDS" once Autofill Home is fully launched. -->
+  <message name="IDS_SETTINGS_PASSWORDS_AUTOFILL_HOME" desc="Name for the password section and settings entry used for Autofill Home.">
+    Passwords
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_SAVE_PASSWORDS_TOGGLE_LABEL" desc="Label for a toggle that allows users to be prompted if they want to save their passwords when logging into webpages.">
     Offer to save passwords
@@ -732,11 +744,19 @@
   <message name="IDS_SETTINGS_ADDRESS_NONE" desc="Placeholder that is shown when there are no addresses in the list of saved addresses.">
     Saved addresses will appear here
   </message>
+  <!-- TODO(https://crbug.com/854562): Remove this string (and use "IDS_SETTINGS_PAYMENT_METHODS_NONE" instead) once Autofill Home is fully launched. -->
   <message name="IDS_SETTINGS_CREDIT_CARD_NONE" desc="Placeholder that is shown when there are no credit cards in the list of saved credit cards.">
     Saved cards will appear here
   </message>
+  <message name="IDS_SETTINGS_PAYMENT_METHODS_NONE" desc="Placeholder that is shown when there are no payment methods in the list of saved payment methods.">
+    Saved payment methods will appear here
+  </message>
+  <!-- TODO(https://crbug.com/854562): Remove this string (and use "IDS_SETTINGS_PAYMENT_METHODS_DISABLED" instead) once Autofill Home is fully launched. -->
   <message name="IDS_SETTINGS_CREDIT_CARD_DISABLED" desc="Placeholder that is shown when credit card autofill has been disabled by policy.">
     Saved cards are disabled by your administrator
+  </message>
+  <message name="IDS_SETTINGS_PAYMENT_METHODS_DISABLED" desc="Placeholder that is shown when payment methods autofill has been disabled by policy.">
+    Saved payment methods are disabled by your administrator
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_NONE" desc="Placeholder that is shown when there are no passwords in the list of saved passwords.">
     Saved passwords will appear here
@@ -3486,6 +3506,10 @@
   </message>
   <message name="IDS_SETTINGS_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL" desc="Label for the checkbox that controls the Autofill/Payments integration feature.">
     Credit cards and addresses using Google Pay.
+  </message>
+  <!-- TODO(https://crbug.com/854562): Rename this to "IDS_SETTINGS_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL" once Autofill Home is fully launched. -->
+  <message name="IDS_SETTINGS_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL_AUTOFILL_HOME" desc="Label for the checkbox that controls the Autofill/Payments integration feature used for Autofill Home.">
+    Payment methods and addresses using Google Pay.
   </message>
   <message name="IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing open tabs between multiple browser instances.">
     Open Tabs
