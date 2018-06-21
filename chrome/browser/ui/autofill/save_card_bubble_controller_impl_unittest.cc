@@ -43,10 +43,6 @@ class TestSaveCardBubbleControllerImpl : public SaveCardBubbleControllerImpl {
 
   void set_elapsed(base::TimeDelta elapsed) { elapsed_ = elapsed; }
 
-  void set_security_level(security_state::SecurityLevel security_level) {
-    security_level_ = security_level;
-  }
-
   void SimulateNavigation() {
     content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
     std::unique_ptr<content::NavigationHandle> navigation_handle =
@@ -58,13 +54,8 @@ class TestSaveCardBubbleControllerImpl : public SaveCardBubbleControllerImpl {
  protected:
   base::TimeDelta Elapsed() const override { return elapsed_; }
 
-  security_state::SecurityLevel GetSecurityLevel() const override {
-    return security_level_;
-  }
-
  private:
   base::TimeDelta elapsed_;
-  security_state::SecurityLevel security_level_;
 };
 
 class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
@@ -680,37 +671,6 @@ TEST_F(SaveCardBubbleControllerImplTest, OnlyOneActiveBubble_UploadThenLocal) {
   EXPECT_TRUE(
       histogram_tester
           .GetAllSamples("Autofill.SaveCreditCardPrompt.Local.FirstShow")
-          .empty());
-}
-
-TEST_F(SaveCardBubbleControllerImplTest,
-       LogSaveCardPromptMetricBySecurityLevel_Local) {
-  base::HistogramTester histogram_tester;
-  controller()->set_security_level(security_state::SecurityLevel::SECURE);
-  ShowLocalBubble();
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "Security.SaveCardPromptMetric.Local.SECURE"),
-      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
-                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
-  EXPECT_TRUE(histogram_tester
-                  .GetAllSamples("Security.SaveCardPromptMetric.Upload.SECURE")
-                  .empty());
-}
-
-TEST_F(SaveCardBubbleControllerImplTest,
-       LogSaveCardPromptMetricBySecurityLevel_Upload) {
-  base::HistogramTester histogram_tester;
-  controller()->set_security_level(security_state::SecurityLevel::EV_SECURE);
-  ShowUploadBubble();
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "Security.SaveCardPromptMetric.Upload.EV_SECURE"),
-      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
-                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
-  EXPECT_TRUE(
-      histogram_tester
-          .GetAllSamples("Security.SaveCardPromptMetric.Local.EV_SECURE")
           .empty());
 }
 

@@ -11,7 +11,6 @@
 #include "base/timer/elapsed_timer.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
-#include "components/security_state/core/security_state.h"
 #include "components/signin/core/browser/account_info.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -82,9 +81,6 @@ class SaveCardBubbleControllerImpl
   void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
 
-  // Gets the security level of the page.
-  virtual security_state::SecurityLevel GetSecurityLevel() const;
-
  private:
   friend class content::WebContentsUserData<SaveCardBubbleControllerImpl>;
 
@@ -139,9 +135,6 @@ class SaveCardBubbleControllerImpl
   // Used to measure the amount of time on a page; if it's less than some
   // reasonable limit, then don't close the bubble upon navigation.
   std::unique_ptr<base::ElapsedTimer> timer_;
-
-  // The security level for the current context.
-  security_state::SecurityLevel security_level_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleControllerImpl);
 };

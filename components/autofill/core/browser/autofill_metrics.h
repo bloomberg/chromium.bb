@@ -21,7 +21,6 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/signatures_util.h"
-#include "components/security_state/core/security_state.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace autofill {
@@ -769,12 +768,7 @@ class AutofillMetrics {
       SaveCardPromptMetric metric,
       bool is_uploading,
       bool is_reshow,
-      int previous_save_credit_card_prompt_user_decision,
-      security_state::SecurityLevel security_level);
-  static void LogSaveCardPromptMetricBySecurityLevel(
-      SaveCardPromptMetric metric,
-      bool is_uploading,
-      security_state::SecurityLevel security_level);
+      int previous_save_credit_card_prompt_user_decision);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
 
   // Should be called when credit card scan is finished. |duration| should be
@@ -807,20 +801,11 @@ class AutofillMetrics {
 
   static void LogServerQueryMetric(ServerQueryMetric metric);
 
-  static void LogUserHappinessMetric(
-      UserHappinessMetric metric,
-      FieldTypeGroup field_type_group,
-      security_state::SecurityLevel security_level);
+  static void LogUserHappinessMetric(UserHappinessMetric metric,
+                                     FieldTypeGroup field_type_group);
 
-  static void LogUserHappinessMetric(
-      UserHappinessMetric metric,
-      const std::set<FormType>& form_types,
-      security_state::SecurityLevel security_level);
-
-  static void LogUserHappinessBySecurityLevel(
-      UserHappinessMetric metric,
-      FormType form_type,
-      security_state::SecurityLevel security_level);
+  static void LogUserHappinessMetric(UserHappinessMetric metric,
+                                     const std::set<FormType>& form_types);
 
   // Logs |event| to the unmask prompt events histogram.
   static void LogUnmaskPromptEvent(UnmaskPromptEvent event);

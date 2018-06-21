@@ -28,7 +28,6 @@
 #include "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
-#include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #include "ios/chrome/browser/ui/autofill/save_card_infobar_controller.h"
@@ -118,20 +117,6 @@ AddressNormalizer* ChromeAutofillClientIOS::GetAddressNormalizer() {
   if (base::FeatureList::IsEnabled(features::kAutofillAddressNormalizer))
     return AddressNormalizerFactory::GetInstance();
   return nullptr;
-}
-
-security_state::SecurityLevel
-ChromeAutofillClientIOS::GetSecurityLevelForUmaHistograms() {
-  auto* ios_security_state_tab_helper =
-      IOSSecurityStateTabHelper::FromWebState(web_state_);
-
-  // If there is no helper, return SECURITY_LEVEL_COUNT which won't be logged.
-  if (!ios_security_state_tab_helper)
-    return security_state::SecurityLevel::SECURITY_LEVEL_COUNT;
-
-  security_state::SecurityInfo result;
-  ios_security_state_tab_helper->GetSecurityInfo(&result);
-  return result.security_level;
 }
 
 void ChromeAutofillClientIOS::ShowAutofillSettings() {

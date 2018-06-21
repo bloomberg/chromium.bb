@@ -91,13 +91,6 @@ autofill::AddressNormalizer* AwAutofillClient::GetAddressNormalizer() {
   return nullptr;
 }
 
-security_state::SecurityLevel
-AwAutofillClient::GetSecurityLevelForUmaHistograms() {
-  // The metrics are not recorded for Android webview, so return the count value
-  // which will not be recorded.
-  return security_state::SecurityLevel::SECURITY_LEVEL_COUNT;
-}
-
 autofill::PersonalDataManager* AwAutofillClient::GetPersonalDataManager() {
   return nullptr;
 }
