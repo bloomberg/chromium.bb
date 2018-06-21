@@ -67,9 +67,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-// TODO(scottmg): For temporary code in OnOutputTimeout().
-#include <zircon/syscalls.h>
-#include <zircon/syscalls/object.h>
+#include <lib/zx/job.h>
 #include "base/fuchsia/default_job.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #endif
@@ -152,10 +150,7 @@ void CreateAndStartTaskScheduler(int num_parallel_jobs) {
        {num_parallel_jobs, kSuggestedReclaimTime}});
 }
 
-// TODO(fuchsia): Fuchsia does not have POSIX signals, but equivalent
-// functionality will probably be necessary eventually. See
-// https://crbug.com/706592.
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 // Self-pipe that makes it possible to do complex shutdown handling
 // outside of the signal handler.
 int g_shutdown_pipe[2] = { -1, -1 };
@@ -199,7 +194,7 @@ void KillSpawnedTestProcesses() {
   fprintf(stdout, "done.\n");
   fflush(stdout);
 }
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
 // Parses the environment variable var as an Int32.  If it is unset, returns
 // true.  If it is set, unsets it then converts it to Int32 before
@@ -287,9 +282,6 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
                                       ProcessLifetimeObserver* observer,
                                       bool* was_timeout) {
   TimeTicks start_time(TimeTicks::Now());
-#if defined(OS_FUCHSIA)  // TODO(scottmg): https://crbug.com/755282
-  const bool kOnBot = getenv("CHROME_HEADLESS") != nullptr;
-#endif  // OS_FUCHSIA
 
 #if defined(OS_POSIX)
   // Make sure an option we rely on is present - see LaunchChildGTestProcess.
@@ -328,8 +320,8 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 #elif defined(OS_FUCHSIA)
   DCHECK(!new_options.job_handle);
 
-  ScopedZxHandle job_handle;
-  zx_status_t result = zx_job_create(GetDefaultJob(), 0, job_handle.receive());
+  zx::job job_handle;
+  zx_status_t result = zx::job::create(GetDefaultJob(), 0, &job_handle);
   ZX_CHECK(ZX_OK == result, result) << "zx_job_create";
   new_options.job_handle = job_handle.get();
 #endif  // defined(OS_FUCHSIA)
@@ -372,13 +364,6 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     if (!process.IsValid())
       return -1;
 
-#if defined(OS_FUCHSIA)  // TODO(scottmg): https://crbug.com/755282
-    if (kOnBot) {
-      LOG(ERROR) << base::StringPrintf("adding %x to live process list",
-                                       process.Handle());
-    }
-#endif  // OS_FUCHSIA
-
     // TODO(rvargas) crbug.com/417532: Don't store process handles.
     GetLiveProcesses()->insert(std::make_pair(process.Handle(), command_line));
   }
@@ -401,23 +386,6 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     *was_timeout = true;
     exit_code = -1;  // Set a non-zero exit code to signal a failure.
 
-#if defined(OS_FUCHSIA)  // TODO(scottmg): https://crbug.com/755282
-    if (kOnBot) {
-      LOG(ERROR) << base::StringPrintf("about to process.Terminate() %x",
-                                       process.Handle());
-    }
-
-    // TODO(crbug.com/799268): Remove once we have debugged timed-out/hung
-    // test job processes.
-    LOG(ERROR) << "Dumping threads in process " << process.Pid();
-
-    CommandLine threads_cmdline(base::FilePath("/boot/bin/threads"));
-    threads_cmdline.AppendArg(IntToString(process.Pid()));
-
-    LaunchOptions threads_options;
-    threads_options.wait = true;
-    LaunchProcess(threads_cmdline, threads_options);
-#endif  // OS_FUCHSIA
     {
       base::ScopedAllowBaseSyncPrimitivesForTesting allow_base_sync_primitives;
       // Ensure that the process terminates.
@@ -432,13 +400,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     AutoLock lock(*GetLiveProcessesLock());
 
 #if defined(OS_FUCHSIA)
-    // TODO(scottmg): https://crbug.com/755282
-    if (kOnBot) {
-      LOG(ERROR) << base::StringPrintf("going to zx_task_kill(job) for %x",
-                                       process.Handle());
-    }
-
-    CHECK_EQ(zx_task_kill(job_handle.get()), ZX_OK);
+    CHECK_EQ(job_handle.kill(), ZX_OK);
 #elif defined(OS_POSIX)
     if (exit_code != 0) {
       // On POSIX, in case the test does not exit cleanly, either due to a crash
@@ -449,12 +411,6 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     }
 #endif
 
-#if defined(OS_FUCHSIA)  // TODO(scottmg): https://crbug.com/755282
-    if (kOnBot) {
-      LOG(ERROR) << base::StringPrintf("removing %x from live process list",
-                                       process.Handle());
-    }
-#endif  // OS_FUCHSIA
     GetLiveProcesses()->erase(process.Handle());
   }
 
@@ -609,9 +565,7 @@ bool TestLauncher::Run() {
   // original value.
   int requested_cycles = cycles_;
 
-// TODO(fuchsia): Fuchsia does not have POSIX signals. Something similiar to
-// this will likely need to be implemented. See https://crbug.com/706592.
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
   CHECK_EQ(0, pipe(g_shutdown_pipe));
 
   struct sigaction action;
@@ -626,7 +580,7 @@ bool TestLauncher::Run() {
   auto controller = base::FileDescriptorWatcher::WatchReadable(
       g_shutdown_pipe[0],
       base::Bind(&TestLauncher::OnShutdownPipeReadable, Unretained(this)));
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
   // Start the watchdog timer.
   watchdog_timer_.Reset();
@@ -768,9 +722,9 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
             test_broken_count_);
     fflush(stdout);
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
     KillSpawnedTestProcesses();
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
     MaybeSaveSummaryAsJSON({"BROKEN_TEST_EARLY_EXIT", kUnreliableResultsTag});
 
@@ -1250,7 +1204,7 @@ void TestLauncher::RunTestIteration() {
       FROM_HERE, BindOnce(&TestLauncher::RunTests, Unretained(this)));
 }
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 // I/O watcher for the reading end of the self-pipe above.
 // Terminates any launched child processes and exits the process.
 void TestLauncher::OnShutdownPipeReadable() {
@@ -1323,26 +1277,6 @@ void TestLauncher::OnOutputTimeout() {
 #else
     fprintf(stdout, "\t%s\n", pair.second.GetCommandLineString().c_str());
 #endif
-
-#if defined(OS_FUCHSIA)
-    // TODO(scottmg): Temporary code to try to identify why child processes
-    // appear to not be terminated after a timeout correctly.
-    // https://crbug.com/750370 and https://crbug.com/738275.
-
-    zx_info_process_t proc_info = {};
-    zx_status_t status =
-        zx_object_get_info(pair.first, ZX_INFO_PROCESS, &proc_info,
-                           sizeof(proc_info), nullptr, nullptr);
-    if (status != ZX_OK) {
-      fprintf(stdout, "zx_object_get_info failed for '%s', status=%d\n",
-              pair.second.GetCommandLineString().c_str(), status);
-    } else {
-      fprintf(stdout, "  return_code=%ld\n", proc_info.return_code);
-      fprintf(stdout, "  started=%d\n", proc_info.started);
-      fprintf(stdout, "  exited=%d\n", proc_info.exited);
-      fprintf(stdout, "  debugger_attached=%d\n", proc_info.debugger_attached);
-    }
-#endif  // OS_FUCHSIA
   }
 
   fflush(stdout);
