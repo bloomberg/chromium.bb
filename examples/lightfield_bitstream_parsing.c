@@ -15,12 +15,10 @@
 // This is an lightfield bitstream parsing example. It takes an input file
 // containing the whole compressed lightfield bitstream(ivf file), and parses it
 // and constructs and outputs a new bitstream that can be decoded by an AV1
-// decoder. The output bitstream contains tile list OBUs. The lf_width and
-// lf_height arguments are the number of lightfield images in each dimension.
-// The lf_blocksize determines the number of reference images used.
+// decoder. The output bitstream contains tile list OBUs.  num_references is
+// the number of references encoded at the beginning of the light field file.
 // After running the lightfield encoder, run lightfield bitstream parsing:
-// examples/lightfield_bitstream_parsing vase10x10.ivf vase_tile_list.ivf 10 10
-// 5
+// examples/lightfield_bitstream_parsing vase10x10.ivf vase_tile_list.ivf 64
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,10 +36,8 @@
 static const char *exec_name;
 
 void usage_exit(void) {
-  fprintf(
-      stderr,
-      "Usage: %s <infile> <outfile> <lf_width> <lf_height> <lf_blocksize> \n",
-      exec_name);
+  fprintf(stderr, "Usage: %s <infile> <outfile> <num_references> \n",
+          exec_name);
   exit(EXIT_FAILURE);
 }
 
@@ -101,30 +97,18 @@ int main(int argc, char **argv) {
   AvxVideoWriter *writer = NULL;
   const AvxInterface *decoder = NULL;
   const AvxVideoInfo *info = NULL;
-  const char *lf_width_arg;
-  const char *lf_height_arg;
-  const char *lf_blocksize_arg;
   int width, height;
-  int lf_width, lf_height;
-  int lf_blocksize;
-  int u_blocks, v_blocks;
+  int num_references;
   int n, i;
   aom_codec_pts_t pts;
 
   exec_name = argv[0];
-  if (argc != 6) die("Invalid number of arguments.");
+  if (argc != 4) die("Invalid number of arguments.");
 
   reader = aom_video_reader_open(argv[1]);
   if (!reader) die("Failed to open %s for reading.", argv[1]);
 
-  lf_width_arg = argv[3];
-  lf_height_arg = argv[4];
-  lf_blocksize_arg = argv[5];
-
-  lf_width = (int)strtol(lf_width_arg, NULL, 0);
-  lf_height = (int)strtol(lf_height_arg, NULL, 0);
-  lf_blocksize = (int)strtol(lf_blocksize_arg, NULL, 0);
-
+  num_references = (int)strtol(argv[3], NULL, 0);
   info = aom_video_reader_get_info(reader);
   width = info->frame_width;
   height = info->frame_height;
@@ -144,11 +128,6 @@ int main(int argc, char **argv) {
   // Decode anchor frames.
   aom_codec_control_(&codec, AV1_SET_TILE_MODE, 0);
 
-  // How many anchor frames we have.
-  u_blocks = (lf_width + lf_blocksize - 1) / lf_blocksize;
-  v_blocks = (lf_height + lf_blocksize - 1) / lf_blocksize;
-
-  int num_references = v_blocks * u_blocks;
   for (i = 0; i < num_references; ++i) {
     aom_video_reader_read_frame(reader);
 
