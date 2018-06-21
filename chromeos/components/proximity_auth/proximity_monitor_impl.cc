@@ -16,6 +16,7 @@
 #include "chromeos/components/proximity_auth/metrics.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_manager.h"
 #include "chromeos/components/proximity_auth/proximity_monitor_observer.h"
+#include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
@@ -33,13 +34,17 @@ const double kRssiSampleWeight = 0.3;
 const int kDefaultRssiThreshold = -70;
 
 ProximityMonitorImpl::ProximityMonitorImpl(
+    cryptauth::RemoteDeviceRef remote_device,
+    chromeos::secure_channel::ClientChannel* channel,
     cryptauth::Connection* connection,
     ProximityAuthPrefManager* pref_manager)
-    : connection_(connection),
+    : remote_device_(remote_device),
+      channel_(channel),
+      connection_(connection),
+      pref_manager_(pref_manager),
       remote_device_is_in_proximity_(false),
       is_active_(false),
       rssi_threshold_(kDefaultRssiThreshold),
-      pref_manager_(pref_manager),
       polling_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
   if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
@@ -76,7 +81,7 @@ void ProximityMonitorImpl::RecordProximityMetricsOnAuthSuccess() {
                                     : metrics::kUnknownProximityValue;
 
   std::string remote_device_model = metrics::kUnknownDeviceModel;
-  cryptauth::RemoteDeviceRef remote_device = connection_->remote_device();
+  cryptauth::RemoteDeviceRef remote_device = remote_device_;
   if (!remote_device.name().empty())
     remote_device_model = remote_device.name();
 
@@ -131,37 +136,69 @@ bool ProximityMonitorImpl::ShouldPoll() const {
 void ProximityMonitorImpl::Poll() {
   DCHECK(ShouldPoll());
 
-  std::string address = connection_->GetDeviceAddress();
-  BluetoothDevice* device = bluetooth_adapter_->GetDevice(address);
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+    if (channel_->is_disconnected()) {
+      PA_LOG(ERROR) << "Channel is disconnected.";
+      ClearProximityState();
+      return;
+    }
 
-  if (!device) {
-    PA_LOG(ERROR) << "Unknown Bluetooth device with address " << address;
-    ClearProximityState();
-    return;
-  }
-  if (!device->IsConnected()) {
-    PA_LOG(ERROR) << "Bluetooth device with address " << address
-                  << " is not connected.";
-    ClearProximityState();
-    return;
-  }
+    channel_->GetConnectionMetadata(
+        base::BindOnce(&ProximityMonitorImpl::OnGetConnectionMetadata,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    std::string address = connection_->GetDeviceAddress();
+    BluetoothDevice* device = bluetooth_adapter_->GetDevice(address);
 
-  device->GetConnectionInfo(base::Bind(&ProximityMonitorImpl::OnConnectionInfo,
-                                       weak_ptr_factory_.GetWeakPtr()));
+    if (!device) {
+      PA_LOG(ERROR) << "Unknown Bluetooth device with address " << address;
+      ClearProximityState();
+      return;
+    }
+    if (!device->IsConnected()) {
+      PA_LOG(ERROR) << "Bluetooth device with address " << address
+                    << " is not connected.";
+      ClearProximityState();
+      return;
+    }
+
+    device->GetConnectionInfo(
+        base::BindRepeating(&ProximityMonitorImpl::OnConnectionInfo,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void ProximityMonitorImpl::OnGetConnectionMetadata(
+    chromeos::secure_channel::mojom::ConnectionMetadataPtr
+        connection_metadata) {
+  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
+
+  if (connection_metadata->bluetooth_connection_metadata)
+    OnGetRssi(connection_metadata->bluetooth_connection_metadata->current_rssi);
+  else
+    OnGetRssi(base::nullopt);
 }
 
 void ProximityMonitorImpl::OnConnectionInfo(
     const BluetoothDevice::ConnectionInfo& connection_info) {
+  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
+
+  if (connection_info.rssi == BluetoothDevice::kUnknownPower)
+    OnGetRssi(base::nullopt);
+  else
+    OnGetRssi(connection_info.rssi);
+}
+
+void ProximityMonitorImpl::OnGetRssi(const base::Optional<int32_t>& rssi) {
   if (!is_active_) {
-    PA_LOG(INFO) << "[Proximity] Got connection info after stopping";
+    PA_LOG(INFO) << "Received RSSI after stopping.";
     return;
   }
 
-  if (connection_info.rssi != BluetoothDevice::kUnknownPower) {
-    AddSample(connection_info);
+  if (rssi) {
+    AddSample(*rssi);
   } else {
-    PA_LOG(WARNING) << "[Proximity] Unknown values received from API: "
-                    << connection_info.rssi;
+    PA_LOG(WARNING) << "Received invalid RSSI value.";
     rssi_rolling_average_.reset();
     CheckForProximityStateChange();
   }
@@ -177,14 +214,13 @@ void ProximityMonitorImpl::ClearProximityState() {
   rssi_rolling_average_.reset();
 }
 
-void ProximityMonitorImpl::AddSample(
-    const BluetoothDevice::ConnectionInfo& connection_info) {
+void ProximityMonitorImpl::AddSample(int32_t rssi) {
   double weight = kRssiSampleWeight;
   if (!rssi_rolling_average_) {
-    rssi_rolling_average_.reset(new double(connection_info.rssi));
+    rssi_rolling_average_.reset(new double(rssi));
   } else {
     *rssi_rolling_average_ =
-        weight * connection_info.rssi + (1 - weight) * (*rssi_rolling_average_);
+        weight * rssi + (1 - weight) * (*rssi_rolling_average_);
   }
 
   CheckForProximityStateChange();
