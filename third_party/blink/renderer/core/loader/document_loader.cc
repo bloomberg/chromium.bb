@@ -1002,6 +1002,10 @@ void DocumentLoader::DidCommitNavigation(
   // Report legacy Symantec certificates after Page::DidCommitLoad, because the
   // latter clears the console.
   if (response_.IsLegacySymantecCert()) {
+    UseCounter::Count(
+        frame_, frame_->Tree().Parent()
+                    ? WebFeature::kLegacySymantecCertInSubframeMainResource
+                    : WebFeature::kLegacySymantecCertMainFrameResource);
     GetLocalFrameClient().ReportLegacySymantecCert(response_.Url(),
                                                    false /* did_fail */);
   }

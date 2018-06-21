@@ -1947,6 +1947,9 @@ enum WebFeature {
   kV8SpeechRecognitionEvent_Interpretation_AttributeGetter = 2481,
   kV8SpeechRecognitionEvent_Emma_AttributeGetter = 2482,
   kV8SpeechSynthesis_Speak_Method = 2483,
+  kLegacySymantecCertMainFrameResource = 2484,
+  kLegacySymantecCertInSubresource = 2485,
+  kLegacySymantecCertInSubframeMainResource = 2486,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

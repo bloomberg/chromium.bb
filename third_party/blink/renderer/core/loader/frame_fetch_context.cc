@@ -138,6 +138,15 @@ void MaybeRecordCTPolicyComplianceUseCounter(
                 kCertificateTransparencyNonCompliantSubresourceInMainFrame);
 }
 
+void RecordLegacySymantecCertUseCounter(LocalFrame* frame,
+                                        Resource::Type resource_type) {
+  // Main resources are counted in DocumentLoader.
+  if (resource_type == Resource::kMainResource) {
+    return;
+  }
+  UseCounter::Count(frame, WebFeature::kLegacySymantecCertInSubresource);
+}
+
 // Determines FetchCacheMode for a main resource, or FetchCacheMode that is
 // corresponding to WebFrameLoadType.
 // TODO(toyoshim): Probably, we should split WebFrameLoadType to FetchCacheMode
@@ -596,6 +605,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   }
 
   if (response.IsLegacySymantecCert()) {
+    RecordLegacySymantecCertUseCounter(GetFrame(), resource->GetType());
     GetLocalFrameClient()->ReportLegacySymantecCert(response.Url(),
                                                     false /* did_fail */);
   }
