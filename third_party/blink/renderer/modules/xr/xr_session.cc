@@ -91,7 +91,8 @@ class XRSession::XRSessionResizeObserverDelegate final
 
 XRSession::XRSession(XRDevice* device,
                      bool exclusive,
-                     XRPresentationContext* output_context)
+                     XRPresentationContext* output_context,
+                     EnvironmentBlendMode environment_blend_mode)
     : device_(device),
       exclusive_(exclusive),
       output_context_(output_context),
@@ -114,6 +115,21 @@ XRSession::XRSession(XRDevice* device,
       // Get the initial canvas dimensions
       UpdateCanvasDimensions(canvas);
     }
+  }
+
+  switch (environment_blend_mode) {
+    case kBlendModeOpaque:
+      blend_mode_string_ = "opaque";
+      break;
+    case kBlendModeAdditive:
+      blend_mode_string_ = "additive";
+      break;
+    case kBlendModeAlphaBlend:
+      blend_mode_string_ = "alpha-blend";
+      break;
+    default:
+      NOTREACHED() << "Unknown environment blend mode: "
+                   << environment_blend_mode;
   }
 }
 

@@ -228,7 +228,14 @@ void XRDevice::OnRequestSessionReturned(
     output_context = options.outputContext();
   }
 
-  XRSession* session = new XRSession(this, options.exclusive(), output_context);
+  XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
+  // TODO(https://crbug.com/828321): Use session options instead of the flag.
+  if (RuntimeEnabledFeatures::WebXRHitTestEnabled()) {
+    blend_mode = XRSession::kBlendModeAlphaBlend;
+  }
+
+  XRSession* session =
+      new XRSession(this, options.exclusive(), output_context, blend_mode);
   sessions_.insert(session);
 
   if (options.exclusive()) {

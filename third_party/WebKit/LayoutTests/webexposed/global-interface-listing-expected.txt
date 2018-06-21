@@ -9152,6 +9152,7 @@ interface XRSession : EventTarget
     getter depthFar
     getter depthNear
     getter device
+    getter environmentBlendMode
     getter exclusive
     getter onblur
     getter onend

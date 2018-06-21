@@ -38,12 +38,22 @@ class XRSession final : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRSession(XRDevice*, bool exclusive, XRPresentationContext* output_context);
+  enum EnvironmentBlendMode {
+    kBlendModeOpaque = 1,
+    kBlendModeAdditive = 2,
+    kBlendModeAlphaBlend = 3
+  };
+
+  XRSession(XRDevice*,
+            bool exclusive,
+            XRPresentationContext* output_context,
+            EnvironmentBlendMode environment_blend_mode);
   ~XRSession() override = default;
 
   XRDevice* device() const { return device_; }
   bool exclusive() const { return exclusive_; }
   XRPresentationContext* outputContext() const { return output_context_; }
+  const String& environmentBlendMode() const { return blend_mode_string_; }
 
   // Near and far depths are used when computing projection matrices for this
   // Session's views. Changes will propegate to the appropriate matrices on the
@@ -158,6 +168,7 @@ class XRSession final : public EventTargetWithInlineData {
   const Member<XRDevice> device_;
   const bool exclusive_;
   const Member<XRPresentationContext> output_context_;
+  String blend_mode_string_;
   Member<XRLayer> base_layer_;
   HeapVector<Member<XRView>> views_;
   InputSourceMap input_sources_;
