@@ -7,10 +7,6 @@
 namespace proximity_auth {
 namespace switches {
 
-// Enables forcing the user to reauth with their password after X hours (e.g.
-// 20) without password entry.
-const char kEnableForcePasswordReauth[] = "force-password-reauth";
-
 // Force easy unlock app loading in test.
 // TODO(xiyuan): Remove this when app could be bundled with Chrome.
 const char kForceLoadEasyUnlockAppInTests[] =

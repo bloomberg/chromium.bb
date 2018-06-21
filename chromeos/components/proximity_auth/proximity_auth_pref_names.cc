@@ -34,11 +34,6 @@ const char kEasyUnlockLocalStateUserPrefs[] = "easy_unlock.user_prefs";
 const char kProximityAuthIsChromeOSLoginEnabled[] =
     "proximity_auth.is_chromeos_login_enabled";
 
-// The timestamp of the last password entry in milliseconds, used to enforce
-// reauthing with the password after a given time period has elapsed.
-const char kProximityAuthLastPasswordEntryTimestampMs[] =
-    "proximity_auth.last_password_entry_timestamp_ms";
-
 // The timestamp of the last promotion check in milliseconds.
 const char kProximityAuthLastPromotionCheckTimestampMs[] =
     "proximity_auth.last_promotion_check_timestamp_ms";

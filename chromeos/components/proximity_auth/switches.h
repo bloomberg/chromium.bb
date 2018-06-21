@@ -8,7 +8,6 @@
 namespace proximity_auth {
 namespace switches {
 
-extern const char kEnableForcePasswordReauth[];
 extern const char kForceLoadEasyUnlockAppInTests[];
 
 }  // namespace switches

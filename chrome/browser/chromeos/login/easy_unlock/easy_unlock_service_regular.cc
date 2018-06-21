@@ -644,16 +644,6 @@ void EasyUnlockServiceRegular::OnScreenDidLock(
 
 void EasyUnlockServiceRegular::OnScreenDidUnlock(
     proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
-  if (!will_unlock_using_easy_unlock_ && pref_manager_ &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableForcePasswordReauth)) {
-    // If a password was used, then record the current timestamp. This timestamp
-    // is used to enforce password reauths after a certain time has elapsed.
-    // Note: This code path is also triggered by the login flow.
-    pref_manager_->SetLastPasswordEntryTimestampMs(
-        base::Time::Now().ToJavaTime());
-  }
-
   // If we tried to load remote devices (e.g. after a sync or the
   // service was initialized) while the screen was locked, we can now
   // load the new remote devices.

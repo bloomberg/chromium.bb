@@ -13,7 +13,6 @@ extern const char kEasyUnlockEnabled[];
 extern const char kEasyUnlockEnabledStateSet[];
 extern const char kEasyUnlockProximityThreshold[];
 extern const char kEasyUnlockLocalStateUserPrefs[];
-extern const char kProximityAuthLastPasswordEntryTimestampMs[];
 extern const char kProximityAuthLastPromotionCheckTimestampMs[];
 extern const char kProximityAuthPromotionShownCount[];
 extern const char kProximityAuthRemoteBleDevices[];

@@ -38,12 +38,6 @@ class ProximityAuthPrefManager {
   virtual void SetEasyUnlockEnabledStateSet() const = 0;
   virtual bool IsEasyUnlockEnabledStateSet() const = 0;
 
-  // Setter and getter for the timestamp of the last password entry. This
-  // preference is used to enforce reauthing with the password after a given
-  // time period has elapsed.
-  virtual void SetLastPasswordEntryTimestampMs(int64_t timestamp_ms) = 0;
-  virtual int64_t GetLastPasswordEntryTimestampMs() const = 0;
-
   // Setter and getter for the timestamp of the last time the promotion was
   // shown to the user.
   virtual void SetLastPromotionCheckTimestampMs(int64_t timestamp_ms) = 0;
