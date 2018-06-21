@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_tooltip_icon.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/util.html">
@@ -32,9 +33,10 @@
 
       /* This toggle needs special styling because it's on blue background. */
       cr-toolbar cr-toggle {
-        --cr-toggle-checked-bar-color: white;
+        --cr-toggle-checked-bar-color: var(--google-grey-refresh-100);
         --cr-toggle-checked-button-color: white;
         --cr-toggle-checked-ink-color: white;
+        --cr-toggle-unchecked-bar-color: var(--google-grey-600);
         --cr-toggle-unchecked-ink-color: white;
       }
 
