@@ -39,7 +39,7 @@ function ImageView(container, viewport, metadataModel) {
 
   /**
    * The content image or canvas element.
-   * @type {(HTMLCanvasElement|HTMLImageElement)}
+   * @type {(HTMLCanvasElement|HTMLImageElement|HTMLVideoElement)}
    * @private
    */
   this.contentImage_ = null;
@@ -209,7 +209,18 @@ ImageView.prototype.invalidateCaches = function() {
 /**
  * @return {!HTMLCanvasElement|!HTMLImageElement} The content image(or canvas).
  */
-ImageView.prototype.getImage = function() {
+ImageView.prototype.getEditableImage = function() {
+  assert(
+      this.contentImage_ instanceof HTMLCanvasElement ||
+      this.contentImage_ instanceof HTMLImageElement);
+  return assert(this.contentImage_);
+};
+
+/**
+ * @return {!HTMLCanvasElement|!HTMLImageElement|!HTMLVideoElement} The content
+ *     image, canvas or video.
+ */
+ImageView.prototype.getMedia = function() {
   return assert(this.contentImage_);
 };
 
@@ -255,7 +266,7 @@ ImageView.prototype.paintDeviceRect = function(canvas, imageRect) {
       imageRect.width * scaleX,
       imageRect.height * scaleY);
 
-  var canvas = ImageUtil.ensureCanvas(assert(this.contentImage_));
+  var canvas = ImageUtil.ensureCanvas(assert(this.getEditableImage()));
   if (canvas !== this.contentImage_) {
     this.replaceContent_(canvas);
   }
@@ -522,7 +533,8 @@ ImageView.prototype.unload = function(opt_zoomToRect) {
 };
 
 /**
- * @param {!(HTMLCanvasElement|HTMLImageElement)} content The image element.
+ * @param {!(HTMLCanvasElement|HTMLImageElement|HTMLVideoElement)} content The
+ *     image, canvas or video element.
  * @param {number=} opt_width Image width.
  * @param {number=} opt_height Image height.
  * @param {boolean=} opt_preview True if the image is a preview (not full res).
@@ -535,6 +547,7 @@ ImageView.prototype.replaceContent_ = function(
     this.container_.removeChild(this.contentImage_);
 
   this.contentImage_ = content;
+  this.preview_ = opt_preview || false;
   this.container_.appendChild(content);
   ImageUtil.setAttribute(this.contentImage_, 'fade', false);
   this.invalidateCaches();
@@ -543,15 +556,24 @@ ImageView.prototype.replaceContent_ = function(
       opt_height || this.contentImage_.height);
   this.draw();
 
-  this.preview_ = opt_preview || false;
+  // Use the video-container class (in addition to image-container). This is
+  // currently just to center the content without needing a transform.
+  ImageUtil.setClass(
+      this.container_, 'video-container', content instanceof HTMLVideoElement);
+
   // If this is not a thumbnail, cache the content and the screen-scale image.
   if (this.hasValidImage()) {
     // Insert the full resolution canvas into DOM so that it can be printed.
     this.contentImage_.classList.add('image');
     this.setTransform_(this.contentImage_, this.viewport_, null, 0);
 
-    this.contentItem_.contentImage = this.contentImage_;
-
+    // Keep video out of the contentItem media cache.
+    if (!(content instanceof HTMLVideoElement)) {
+      assert(
+          content instanceof HTMLCanvasElement ||
+          content instanceof HTMLImageElement);
+      this.contentItem_.contentImage = content;
+    }
     this.updateThumbnail_(this.contentImage_);
 
     this.contentRevision_++;
@@ -576,11 +598,15 @@ ImageView.prototype.addContentCallback = function(callback) {
 /**
  * Updates the cached thumbnail image.
  *
- * @param {!HTMLCanvasElement|!HTMLImageElement} image The source image or
- *     canvas.
+ * @param {!HTMLCanvasElement|!HTMLImageElement|!HTMLVideoElement} image The
+ *     source image, canvas or video.
  * @private
  */
 ImageView.prototype.updateThumbnail_ = function(image) {
+  // Ignore video. TODO(tapted): Support updating from the poster?
+  if (image instanceof HTMLVideoElement)
+    return;
+
   ImageUtil.trace.resetTimer('thumb');
   var pixelCount = 10000;
   var downScale =
@@ -612,7 +638,11 @@ ImageView.prototype.replace = function(
   var oldContentImage = this.contentImage_;
   var oldViewport = this.viewport_.clone();
   this.replaceContent_(newContentImage, opt_width, opt_height, opt_preview);
-  if (!opt_effect) {
+
+  // Don't use transitions on video elements for now. Animating the video
+  // controls looks silly and positioning the video with display:flex causes
+  // jank. TODO(tapted): Support this (maybe) after input from UX.
+  if (!opt_effect || oldContentImage instanceof HTMLVideoElement) {
     return;
   }
 
@@ -660,8 +690,8 @@ ImageView.prototype.replace = function(
 };
 
 /**
- * @param {!HTMLCanvasElement|!HTMLImageElement} element The element to
- *     transform.
+ * @param {!HTMLCanvasElement|!HTMLImageElement|!HTMLVideoElement} element The
+ *     element to transform.
  * @param {!Viewport} viewport Viewport to be used for calculating
  *     transformation.
  * @param {ImageView.Effect=} opt_effect The effect to apply.
@@ -820,8 +850,8 @@ ImageView.Effect.prototype.getTiming = function() { return this.timing_; };
 
 /**
  * Obtains the CSS transformation string of the effect.
- * @param {!HTMLCanvasElement|!HTMLImageElement} element Canvas element to be
- *     applied the transformation.
+ * @param {!HTMLCanvasElement|!HTMLImageElement|HTMLVideoElement} element Canvas
+ *     or image/video element to be applied the transformation.
  * @param {!Viewport} viewport Current viewport.
  * @return {string} CSS transformation description.
  */

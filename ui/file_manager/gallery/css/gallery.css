@@ -41,8 +41,8 @@ button:focus {
 }
 
 html[dir='rtl'] .bubble .pointer {
-  margin: 0 -5px 0 0;
   left: auto;
+  margin: 0 -5px 0 0;
   right: 24px;
 }
 
@@ -68,8 +68,8 @@ html[dir='rtl'] .bubble .pointer {
 }
 
 html[dir='rtl'] .bubble .close-x {
-  right: auto;
   left: 3px;
+  right: auto;
 }
 
 .bubble .close-x:hover {
@@ -102,6 +102,15 @@ paper-ripple {
   height: 100%;
   position: absolute;
   width: 100%;
+}
+
+.gallery .video-container {
+  /*
+   * Videos don't use transforms (so the controls do not morph). Use flex to
+   * center within the container. Note that this makes transitions janky, but
+   * transitions with video controls look silly, so they're disabled.
+   */
+  display: flex;
 }
 
 .gallery[tools] .image-container[cursor='default'] {
@@ -157,6 +166,14 @@ paper-ripple {
 
 .gallery .image-container > .image[fade] {
   opacity: 0;
+}
+
+.gallery .video-container > .video {
+  margin: auto auto;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: 50% 50%;
 }
 
 @media print {
@@ -794,7 +811,7 @@ button[disabled] {
   width: 100%;
 }
 
-.gallery[editor-mode="resize"] .edit-modal {
+.gallery[editor-mode='resize'] .edit-modal {
   height: 56px;
 }
 
@@ -1051,10 +1068,10 @@ paper-slider {
 }
 
 .edit-modal .lockicon:not([locked]) {
-  opacity: 0.54;
   background-image: -webkit-image-set(
       url(../images/100/ratio_unlocked.png) 1x,
       url(../images/200/ratio_unlocked.png) 2x);
+  opacity: 0.54;
 }
 
 /* Prompt/notification panel */
@@ -1339,8 +1356,8 @@ files-toast {
   -webkit-padding-end: 4px;
   -webkit-padding-start: 0;
   margin: 0;
-  padding-top: 52px; /* Toolbar height (48px) + Margin (4px) */
   padding-bottom: 0;
+  padding-top: 52px; /* Toolbar height (48px) + Margin (4px) */
 }
 
 .thumbnail-view .thumbnail {

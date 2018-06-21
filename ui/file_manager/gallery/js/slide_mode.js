@@ -1002,12 +1002,13 @@ SlideMode.prototype.loadItem_ = function(
     displayCallback();
   }.bind(this);
 
-  this.editor_.openSession(
-      item,
-      effect,
-      this.saveCurrentImage_.bind(this, item),
-      displayDone,
-      loadDone);
+  if (item.isEditable()) {
+    this.editor_.openSession(
+        item, effect, this.saveCurrentImage_.bind(this, item), displayDone,
+        loadDone);
+  } else {
+    this.imageView_.load(item, effect, displayDone, loadDone);
+  }
 };
 
 /**
@@ -1051,7 +1052,7 @@ SlideMode.prototype.itemLoaded_ = function(
         toMillions(metadata.size));
   }
 
-  var image = this.imageView_.getImage();
+  var image = this.imageView_.getMedia();
   metrics.recordSmallCount(ImageUtil.getMetricName('Size.MPix'),
       toMillions(image.width * image.height));
 
@@ -1307,9 +1308,8 @@ SlideMode.prototype.saveCurrentImage_ = function(item, callback) {
   this.showSpinner_(true);
 
   var savedPromise = this.dataModel_.saveItem(
-      this.volumeManager_,
-      item,
-      ImageUtil.ensureCanvas(this.imageView_.getImage()),
+      this.volumeManager_, item,
+      ImageUtil.ensureCanvas(this.imageView_.getEditableImage()),
       this.overwriteOriginalCheckbox_.checked);
 
   savedPromise.then(function() {
@@ -1616,7 +1616,11 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
 
   this.stopSlideshow_();
 
-  ImageUtil.setAttribute(this.container_, 'editing', !this.isEditing());
+  // Disable entering edit mode for videos.
+  var item = assert(this.getItem(this.getSelectedIndex()));
+  var startEditing = !this.isEditing() && item.isEditable();
+
+  ImageUtil.setAttribute(this.container_, 'editing', startEditing);
   this.editButtonToggleRipple_.activated = this.isEditing();
 
   if (this.isEditing()) { // isEditing has just been flipped to a new value.
@@ -1632,16 +1636,16 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
     this.touchHandlers_.enabled = false;
 
     // Show editor warning message.
-    SlideMode.getEditorWarningMessage(
-        assert(this.getItem(this.getSelectedIndex())),
-        this.context_.readonlyDirName,
-        assert(this.dataModel_.fallbackSaveDirectory)
-        ).then(function(warningMessage) {
-      if (!warningMessage)
-        return;
+    SlideMode
+        .getEditorWarningMessage(
+            item, this.context_.readonlyDirName,
+            assert(this.dataModel_.fallbackSaveDirectory))
+        .then(function(warningMessage) {
+          if (!warningMessage)
+            return;
 
-      this.filesToast_.show(warningMessage);
-    }.bind(this));
+          this.filesToast_.show(warningMessage);
+        }.bind(this));
 
     // Show overwrite original bubble if it hasn't been shown for max times.
     this.getOverwriteBubbleCount_().then(function(count) {

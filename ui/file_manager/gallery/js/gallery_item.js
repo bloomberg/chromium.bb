@@ -57,7 +57,7 @@ function GalleryItem(
    * @private
    */
   this.original_ = original;
-};
+}
 
 /**
  * Types of metadata Gallery uses (to query the metadata cache).
@@ -213,6 +213,13 @@ GalleryItem.prototype.createCopyName_ = function(
   }
 
   tryNext(10);
+};
+
+/**
+ * @return {boolean} True if this item can be edited by the ImageEditor.
+ */
+GalleryItem.prototype.isEditable = function() {
+  return FileType.isImage(this.entry_) || FileType.isRaw(this.entry_);
 };
 
 /**

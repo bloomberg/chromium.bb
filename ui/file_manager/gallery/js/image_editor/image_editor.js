@@ -227,7 +227,7 @@ ImageEditor.prototype.openSession = function(
 
         self.commandQueue_ = new CommandQueue(
             assert(self.container_.ownerDocument),
-            assert(self.imageView_.getImage()), saveFunction);
+            assert(self.imageView_.getEditableImage()), saveFunction);
         self.commandQueue_.attachUI(
             self.getImageView(), self.getPrompt(), self.filesToast_,
             self.updateUndoRedo.bind(self), self.lockUI.bind(self));
@@ -334,7 +334,7 @@ ImageEditor.prototype.updateUndoRedo = function() {
  * @return {HTMLCanvasElement|HTMLImageElement} The current image.
  */
 ImageEditor.prototype.getImage = function() {
-  return this.getImageView().getImage();
+  return this.getImageView().getEditableImage();
 };
 
 /**

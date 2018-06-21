@@ -7,13 +7,10 @@ var fileSystem;
 function setUp() {
   fileSystem = new MockFileSystem('fake-media-volume');
   var filenames = [
-    '/DCIM/photos0/IMG00001.jpg',
-    '/DCIM/photos0/IMG00002.jpg',
-    '/DCIM/photos0/IMG00003.jpg',
-    '/DCIM/photos0/MyNote.txt',
-    '/DCIM/photos0/.HiddenFile.jpg',
-    '/DCIM/photos1/IMG00001.jpg',
-    '/DCIM/photos1/IMG00002.jpg',
+    '/DCIM/photos0/IMG00001.jpg', '/DCIM/photos0/IMG00002.jpg',
+    '/DCIM/photos0/IMG00003.jpg', '/DCIM/photos0/MyNote.txt',
+    '/DCIM/photos0/MyVideo.avi', '/DCIM/photos0/.HiddenFile.jpg',
+    '/DCIM/photos1/IMG00001.jpg', '/DCIM/photos1/IMG00002.jpg',
     '/DCIM/photos1/IMG00003.jpg'
   ];
   fileSystem.populate(filenames);
@@ -25,25 +22,29 @@ function testcreateEntrySet(callback) {
     assertEquals(0, results.length);
   });
 
-  var singleSelectionPromise = GalleryUtil.createEntrySet([
-    fileSystem.entries['/DCIM/photos0/IMG00002.jpg']
-  ]).then(function(results) {
-    assertEquals(3, results.length);
-    assertEquals('/DCIM/photos0/IMG00001.jpg', results[0].fullPath);
-    assertEquals('/DCIM/photos0/IMG00002.jpg', results[1].fullPath);
-    assertEquals('/DCIM/photos0/IMG00003.jpg', results[2].fullPath);
-  });
+  var singleSelectionPromise =
+      GalleryUtil
+          .createEntrySet([fileSystem.entries['/DCIM/photos0/IMG00002.jpg']])
+          .then(function(results) {
+            assertEquals(4, results.length);
+            assertEquals('/DCIM/photos0/IMG00001.jpg', results[0].fullPath);
+            assertEquals('/DCIM/photos0/IMG00002.jpg', results[1].fullPath);
+            assertEquals('/DCIM/photos0/IMG00003.jpg', results[2].fullPath);
+            assertEquals('/DCIM/photos0/MyVideo.avi', results[3].fullPath);
+          });
 
   // If a hidden file is selected directly by users, includes it.
-  var singleHiddenSelectionPromise = GalleryUtil.createEntrySet([
-    fileSystem.entries['/DCIM/photos0/.HiddenFile.jpg']
-  ]).then(function(results) {
-    assertEquals(4, results.length);
-    assertEquals('/DCIM/photos0/.HiddenFile.jpg', results[0].fullPath);
-    assertEquals('/DCIM/photos0/IMG00001.jpg', results[1].fullPath);
-    assertEquals('/DCIM/photos0/IMG00002.jpg', results[2].fullPath);
-    assertEquals('/DCIM/photos0/IMG00003.jpg', results[3].fullPath);
-  });
+  var singleHiddenSelectionPromise =
+      GalleryUtil
+          .createEntrySet([fileSystem.entries['/DCIM/photos0/.HiddenFile.jpg']])
+          .then(function(results) {
+            assertEquals(5, results.length);
+            assertEquals('/DCIM/photos0/.HiddenFile.jpg', results[0].fullPath);
+            assertEquals('/DCIM/photos0/IMG00001.jpg', results[1].fullPath);
+            assertEquals('/DCIM/photos0/IMG00002.jpg', results[2].fullPath);
+            assertEquals('/DCIM/photos0/IMG00003.jpg', results[3].fullPath);
+            assertEquals('/DCIM/photos0/MyVideo.avi', results[4].fullPath);
+          });
 
   var multipleSelectionPromise = GalleryUtil.createEntrySet([
     fileSystem.entries['/DCIM/photos0/IMG00001.jpg'],
