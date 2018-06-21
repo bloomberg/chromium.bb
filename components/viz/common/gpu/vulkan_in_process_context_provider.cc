@@ -53,27 +53,26 @@ bool VulkanInProcessContextProvider::Initialize() {
   const uint32_t extension_flags =
       kEXT_debug_report_GrVkExtensionFlag | kKHR_surface_GrVkExtensionFlag |
       kKHR_swapchain_GrVkExtensionFlag | kKHR_xcb_surface_GrVkExtensionFlag;
-  GrVkBackendContext* backend_context = new GrVkBackendContext();
-  backend_context->fInstance = device_queue_->GetVulkanInstance();
-  backend_context->fPhysicalDevice = device_queue_->GetVulkanPhysicalDevice();
-  backend_context->fDevice = device_queue_->GetVulkanDevice();
-  backend_context->fQueue = device_queue_->GetVulkanQueue();
-  backend_context->fGraphicsQueueIndex = device_queue_->GetVulkanQueueIndex();
-  backend_context->fMinAPIVersion = VK_MAKE_VERSION(1, 0, 8);
-  backend_context->fExtensions = extension_flags;
-  backend_context->fFeatures = feature_flags;
+  GrVkBackendContext backend_context;
+  backend_context.fInstance = device_queue_->GetVulkanInstance();
+  backend_context.fPhysicalDevice = device_queue_->GetVulkanPhysicalDevice();
+  backend_context.fDevice = device_queue_->GetVulkanDevice();
+  backend_context.fQueue = device_queue_->GetVulkanQueue();
+  backend_context.fGraphicsQueueIndex = device_queue_->GetVulkanQueueIndex();
+  backend_context.fMinAPIVersion = VK_MAKE_VERSION(1, 0, 8);
+  backend_context.fExtensions = extension_flags;
+  backend_context.fFeatures = feature_flags;
 
   gpu::VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
   auto interface = sk_make_sp<GrVkInterface>(
       make_unified_getter(vulkan_function_pointers->vkGetInstanceProcAddr,
                           vulkan_function_pointers->vkGetDeviceProcAddr),
-      backend_context->fInstance, backend_context->fDevice,
-      backend_context->fExtensions);
-  backend_context->fInterface.reset(interface.release());
-  backend_context->fOwnsInstanceAndDevice = false;
-  backend_context_.reset(backend_context);
-  gr_context_ = GrContext::MakeVulkan(backend_context_);
+      backend_context.fInstance, backend_context.fDevice,
+      backend_context.fExtensions);
+  backend_context.fInterface.reset(interface.release());
+  backend_context.fOwnsInstanceAndDevice = false;
+  gr_context_ = GrContext::MakeVulkan(backend_context);
   return true;
 }
 
@@ -84,7 +83,6 @@ void VulkanInProcessContextProvider::Destroy() {
   if (device_queue_) {
     device_queue_->Destroy();
     device_queue_.reset();
-    backend_context_.reset();
   }
 }
 
