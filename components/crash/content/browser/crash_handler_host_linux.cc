@@ -48,7 +48,7 @@
 
 #if !defined(OS_CHROMEOS)
 #include "components/crash/content/app/crashpad.h"
-#include "third_party/crashpad/crashpad/client/crashpad_client.h"
+#include "third_party/crashpad/crashpad/client/crashpad_client.h"  // nogncheck
 #endif
 
 using content::BrowserThread;

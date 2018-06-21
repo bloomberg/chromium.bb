@@ -171,6 +171,17 @@ bool CrashReporterClient::ShouldEnableBreakpadMicrodumps() {
 }
 #endif
 
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+void CrashReporterClient::GetSanitizationInformation(
+    const char* const** annotations_whitelist,
+    void** target_module,
+    bool* sanitize_stacks) {
+  *annotations_whitelist = nullptr;
+  *target_module = nullptr;
+  *sanitize_stacks = false;
+}
+#endif
+
 bool CrashReporterClient::ShouldMonitorCrashHandlerExpensively() {
   return false;
 }
