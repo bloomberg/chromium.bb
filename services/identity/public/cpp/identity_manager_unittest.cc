@@ -12,6 +12,7 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace identity {
@@ -24,7 +25,6 @@ using SigninManagerForTest = FakeSigninManager;
 #endif  // OS_CHROMEOS
 
 const char kTestGaiaId[] = "dummyId";
-const char kTestGaiaId2[] = "dummyId2";
 const char kTestEmail[] = "me@gmail.com";
 const char kTestEmail2[] = "me2@gmail.com";
 
@@ -625,11 +625,7 @@ TEST_F(IdentityManagerTest,
        CallbackSentOnPrimaryAccountRefreshTokenUpdateWithValidToken) {
   std::string account_id = signin_manager()->GetAuthenticatedAccountId();
 
-  base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      run_loop.QuitClosure());
-  token_service()->UpdateCredentials(account_id, "refresh_token");
-  run_loop.Run();
+  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
 
   AccountInfo account_info =
       identity_manager_observer()
@@ -645,12 +641,7 @@ TEST_F(IdentityManagerTest,
        CallbackSentOnPrimaryAccountRefreshTokenUpdateWithInvalidToken) {
   std::string account_id = signin_manager()->GetAuthenticatedAccountId();
 
-  base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      run_loop.QuitClosure());
-  token_service()->UpdateCredentials(
-      account_id, OAuth2TokenServiceDelegate::kInvalidRefreshToken);
-  run_loop.Run();
+  SetInvalidRefreshTokenForPrimaryAccount(token_service(), identity_manager());
 
   AccountInfo account_info =
       identity_manager_observer()
@@ -665,17 +656,9 @@ TEST_F(IdentityManagerTest,
 TEST_F(IdentityManagerTest, CallbackSentOnPrimaryAccountRefreshTokenRemoval) {
   std::string account_id = signin_manager()->GetAuthenticatedAccountId();
 
-  base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      run_loop.QuitClosure());
-  token_service()->UpdateCredentials(account_id, "refresh_token");
-  run_loop.Run();
+  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
 
-  base::RunLoop run_loop2;
-  identity_manager_observer()->set_on_refresh_token_removed_callback(
-      run_loop2.QuitClosure());
-  token_service()->RevokeCredentials(account_id);
-  run_loop2.Run();
+  RemoveRefreshTokenForPrimaryAccount(token_service(), identity_manager());
 
   AccountInfo account_info =
       identity_manager_observer()
@@ -686,21 +669,16 @@ TEST_F(IdentityManagerTest, CallbackSentOnPrimaryAccountRefreshTokenRemoval) {
 
 TEST_F(IdentityManagerTest,
        CallbackSentOnSecondaryAccountRefreshTokenUpdateWithValidToken) {
-  account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
-  std::string account_id =
-      account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
-
-  base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      run_loop.QuitClosure());
-  token_service()->UpdateCredentials(account_id, "refresh_token");
-  run_loop.Run();
+  AccountInfo expected_account_info = MakeAccountAvailable(
+      account_tracker(), token_service(), identity_manager(), kTestEmail2);
+  EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
   AccountInfo account_info =
       identity_manager_observer()
           ->account_from_refresh_token_updated_callback();
-  EXPECT_EQ(kTestGaiaId2, account_info.gaia);
-  EXPECT_EQ(kTestEmail2, account_info.email);
+  EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
+  EXPECT_EQ(expected_account_info.gaia, account_info.gaia);
+  EXPECT_EQ(expected_account_info.email, account_info.email);
 
   EXPECT_TRUE(identity_manager_observer()
                   ->validity_from_refresh_token_updated_callback());
@@ -708,49 +686,38 @@ TEST_F(IdentityManagerTest,
 
 TEST_F(IdentityManagerTest,
        CallbackSentOnSecondaryAccountRefreshTokenUpdateWithInvalidToken) {
-  account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
-  std::string account_id =
-      account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
+  AccountInfo expected_account_info = MakeAccountAvailable(
+      account_tracker(), token_service(), identity_manager(), kTestEmail2);
+  EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
-  base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      run_loop.QuitClosure());
-  token_service()->UpdateCredentials(
-      account_id, OAuth2TokenServiceDelegate::kInvalidRefreshToken);
-  run_loop.Run();
+  SetInvalidRefreshTokenForAccount(token_service(), identity_manager(),
+                                   expected_account_info.account_id);
 
   AccountInfo account_info =
       identity_manager_observer()
           ->account_from_refresh_token_updated_callback();
-  EXPECT_EQ(kTestGaiaId2, account_info.gaia);
-  EXPECT_EQ(kTestEmail2, account_info.email);
+  EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
+  EXPECT_EQ(expected_account_info.gaia, account_info.gaia);
+  EXPECT_EQ(expected_account_info.email, account_info.email);
 
   EXPECT_FALSE(identity_manager_observer()
                    ->validity_from_refresh_token_updated_callback());
 }
 
 TEST_F(IdentityManagerTest, CallbackSentOnSecondaryAccountRefreshTokenRemoval) {
-  account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
-  std::string account_id =
-      account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
+  AccountInfo expected_account_info = MakeAccountAvailable(
+      account_tracker(), token_service(), identity_manager(), kTestEmail2);
+  EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
-  base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      run_loop.QuitClosure());
-  token_service()->UpdateCredentials(account_id, "refresh_token");
-  run_loop.Run();
-
-  base::RunLoop run_loop2;
-  identity_manager_observer()->set_on_refresh_token_removed_callback(
-      run_loop2.QuitClosure());
-  token_service()->RevokeCredentials(account_id);
-  run_loop2.Run();
+  RemoveRefreshTokenForAccount(token_service(), identity_manager(),
+                               expected_account_info.account_id);
 
   AccountInfo account_info =
       identity_manager_observer()
           ->account_from_refresh_token_removed_callback();
-  EXPECT_EQ(kTestGaiaId2, account_info.gaia);
-  EXPECT_EQ(kTestEmail2, account_info.email);
+  EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
+  EXPECT_EQ(expected_account_info.gaia, account_info.gaia);
+  EXPECT_EQ(expected_account_info.email, account_info.email);
 }
 
 #if !defined(OS_CHROMEOS)
@@ -763,21 +730,16 @@ TEST_F(
   signin_manager()->ForceSignOut();
   run_loop.Run();
 
-  account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
-  std::string account_id =
-      account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
-
-  base::RunLoop run_loop2;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      run_loop2.QuitClosure());
-  token_service()->UpdateCredentials(account_id, "refresh_token");
-  run_loop2.Run();
+  AccountInfo expected_account_info = MakeAccountAvailable(
+      account_tracker(), token_service(), identity_manager(), kTestEmail2);
+  EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
   AccountInfo account_info =
       identity_manager_observer()
           ->account_from_refresh_token_updated_callback();
-  EXPECT_EQ(kTestGaiaId2, account_info.gaia);
-  EXPECT_EQ(kTestEmail2, account_info.email);
+  EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
+  EXPECT_EQ(expected_account_info.gaia, account_info.gaia);
+  EXPECT_EQ(expected_account_info.email, account_info.email);
 
   EXPECT_TRUE(identity_manager_observer()
                   ->validity_from_refresh_token_updated_callback());
@@ -785,29 +747,26 @@ TEST_F(
 
 TEST_F(
     IdentityManagerTest,
-    CallbackSentOnSecondaryAccountRefreshTokenUpdateWithInvalidTokeWhenNoPrimaryAccount) {
+    CallbackSentOnSecondaryAccountRefreshTokenUpdateWithInvalidTokenWhenNoPrimaryAccount) {
   base::RunLoop run_loop;
   identity_manager_observer()->set_on_primary_account_cleared_callback(
       run_loop.QuitClosure());
   signin_manager()->ForceSignOut();
   run_loop.Run();
 
-  account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
-  std::string account_id =
-      account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
+  AccountInfo expected_account_info = MakeAccountAvailable(
+      account_tracker(), token_service(), identity_manager(), kTestEmail2);
+  EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
-  base::RunLoop run_loop2;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      run_loop2.QuitClosure());
-  token_service()->UpdateCredentials(
-      account_id, OAuth2TokenServiceDelegate::kInvalidRefreshToken);
-  run_loop2.Run();
+  SetInvalidRefreshTokenForAccount(token_service(), identity_manager(),
+                                   expected_account_info.account_id);
 
   AccountInfo account_info =
       identity_manager_observer()
           ->account_from_refresh_token_updated_callback();
-  EXPECT_EQ(kTestGaiaId2, account_info.gaia);
-  EXPECT_EQ(kTestEmail2, account_info.email);
+  EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
+  EXPECT_EQ(expected_account_info.gaia, account_info.gaia);
+  EXPECT_EQ(expected_account_info.email, account_info.email);
 
   EXPECT_FALSE(identity_manager_observer()
                    ->validity_from_refresh_token_updated_callback());
@@ -821,27 +780,19 @@ TEST_F(IdentityManagerTest,
   signin_manager()->ForceSignOut();
   run_loop.Run();
 
-  account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
-  std::string account_id =
-      account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
+  AccountInfo expected_account_info = MakeAccountAvailable(
+      account_tracker(), token_service(), identity_manager(), kTestEmail2);
+  EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
-  base::RunLoop run_loop2;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      run_loop2.QuitClosure());
-  token_service()->UpdateCredentials(account_id, "refresh_token");
-  run_loop2.Run();
-
-  base::RunLoop run_loop3;
-  identity_manager_observer()->set_on_refresh_token_removed_callback(
-      run_loop3.QuitClosure());
-  token_service()->RevokeCredentials(account_id);
-  run_loop3.Run();
+  RemoveRefreshTokenForAccount(token_service(), identity_manager(),
+                               expected_account_info.account_id);
 
   AccountInfo account_info =
       identity_manager_observer()
           ->account_from_refresh_token_removed_callback();
-  EXPECT_EQ(kTestGaiaId2, account_info.gaia);
-  EXPECT_EQ(kTestEmail2, account_info.email);
+  EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
+  EXPECT_EQ(expected_account_info.gaia, account_info.gaia);
+  EXPECT_EQ(expected_account_info.email, account_info.email);
 }
 #endif
 
