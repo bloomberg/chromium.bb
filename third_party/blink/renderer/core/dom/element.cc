@@ -3963,15 +3963,14 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
   DCHECK(!parent_style || !is_before_or_after);
 
   if (is_before_or_after) {
-    LayoutObject* parent_layout_object = GetLayoutObject();
-    if (!parent_layout_object && HasDisplayContentsStyle()) {
-      parent_layout_object =
-          LayoutTreeBuilderTraversal::ParentLayoutObject(*this);
+    const ComputedStyle* layout_parent_style = style;
+    if (style->Display() == EDisplay::kContents) {
+      Node* layout_parent = LayoutTreeBuilderTraversal::LayoutParent(*this);
+      DCHECK(layout_parent);
+      layout_parent_style = layout_parent->GetComputedStyle();
     }
-    if (!parent_layout_object)
-      return nullptr;
     return GetDocument().EnsureStyleResolver().PseudoStyleForElement(
-        this, request, style, parent_layout_object->Style());
+        this, request, style, layout_parent_style);
   }
 
   if (!GetLayoutObject())
