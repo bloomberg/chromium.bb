@@ -20,8 +20,10 @@ class CrostiniRegistryService;
 // simple interface to add, update, and remove apps from the registry.
 class CrostiniTestHelper {
  public:
-  // For convenience, instantiating this enables Crostini.
+  // For convenience, instantiating this enables Crostini and also calls
+  // SetCrostiniUIAllowedForTesting(true). The destructor resets these.
   explicit CrostiniTestHelper(Profile*);
+  ~CrostiniTestHelper();
 
   // Creates the apps named "dummy1" and "dummy2" in the default container.
   void SetupDummyApps();
@@ -56,6 +58,7 @@ class CrostiniTestHelper {
  private:
   void UpdateRegistry();
 
+  Profile* profile_;
   vm_tools::apps::ApplicationList current_apps_;
   CrostiniRegistryService* registry_service_;
 };

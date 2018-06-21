@@ -12,8 +12,10 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -21,6 +23,8 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_concierge_client.h"
 #include "components/drive/drive_app_registry.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -1245,6 +1249,123 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTask_Verbs) {
   EXPECT_EQ(kFooId, tasks[0].task_descriptor().app_id);
   EXPECT_EQ("Foo", tasks[0].task_title());
   EXPECT_EQ(Verb::VERB_PACK_WITH, tasks[0].task_verb());
+}
+
+// Test using the test extension system, which needs lots of setup.
+class FileManagerFileTasksCrostiniTest
+    : public FileManagerFileTasksComplexTest {
+ protected:
+  FileManagerFileTasksCrostiniTest()
+      : crostini_test_helper_(&test_profile_),
+        crostini_folder_(util::GetCrostiniMountDirectory(&test_profile_)) {
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetConciergeClient(
+        std::make_unique<chromeos::FakeConciergeClient>());
+
+    vm_tools::apps::App text_app =
+        crostini::CrostiniTestHelper::BasicApp("text_app");
+    *text_app.add_mime_types() = "text/plain";
+    crostini_test_helper_.AddApp(text_app);
+
+    vm_tools::apps::App image_app =
+        crostini::CrostiniTestHelper::BasicApp("image_app");
+    *image_app.add_mime_types() = "image/gif";
+    *image_app.add_mime_types() = "image/jpeg";
+    *image_app.add_mime_types() = "image/jpg";
+    *image_app.add_mime_types() = "image/png";
+    crostini_test_helper_.AddApp(image_app);
+
+    vm_tools::apps::App gif_app =
+        crostini::CrostiniTestHelper::BasicApp("gif_app");
+    *gif_app.add_mime_types() = "image/gif";
+    crostini_test_helper_.AddApp(gif_app);
+
+    text_app_id_ = crostini::CrostiniTestHelper::GenerateAppId("text_app");
+    image_app_id_ = crostini::CrostiniTestHelper::GenerateAppId("image_app");
+    gif_app_id_ = crostini::CrostiniTestHelper::GenerateAppId("gif_app");
+  }
+
+  crostini::CrostiniTestHelper crostini_test_helper_;
+  base::FilePath crostini_folder_;
+  std::string text_app_id_;
+  std::string image_app_id_;
+  std::string gif_app_id_;
+};
+
+TEST_F(FileManagerFileTasksCrostiniTest, BasicFiles) {
+  std::vector<extensions::EntryInfo> entries{
+      {crostini_folder_.Append("foo.txt"), "text/plain", false}};
+  std::vector<GURL> file_urls{
+      GURL("filesystem:chrome-extension://id/dir/foo.txt")};
+
+  std::vector<FullTaskDescriptor> tasks;
+  FindAllTypesOfTasksSynchronousWrapper().Call(&test_profile_, nullptr, entries,
+                                               file_urls, &tasks);
+  ASSERT_EQ(1U, tasks.size());
+  EXPECT_EQ(text_app_id_, tasks[0].task_descriptor().app_id);
+
+  // Multiple text files
+  entries.emplace_back(crostini_folder_.Append("bar.txt"), "text/plain", false);
+  file_urls.emplace_back("filesystem:chrome-extension://id/dir/bar.txt");
+  FindAllTypesOfTasksSynchronousWrapper().Call(&test_profile_, nullptr, entries,
+                                               file_urls, &tasks);
+  ASSERT_EQ(1U, tasks.size());
+  EXPECT_EQ(text_app_id_, tasks[0].task_descriptor().app_id);
+}
+
+TEST_F(FileManagerFileTasksCrostiniTest, Directories) {
+  std::vector<extensions::EntryInfo> entries{
+      {crostini_folder_.Append("dir"), "", true}};
+  std::vector<GURL> file_urls{GURL("filesystem:chrome-extension://id/dir/dir")};
+  std::vector<FullTaskDescriptor> tasks;
+  FindAllTypesOfTasksSynchronousWrapper().Call(&test_profile_, nullptr, entries,
+                                               file_urls, &tasks);
+  EXPECT_EQ(0U, tasks.size());
+
+  entries.emplace_back(crostini_folder_.Append("foo.txt"), "text/plain", false);
+  file_urls.emplace_back("filesystem:chrome-extension://id/dir/foo.txt");
+  FindAllTypesOfTasksSynchronousWrapper().Call(&test_profile_, nullptr, entries,
+                                               file_urls, &tasks);
+  EXPECT_EQ(0U, tasks.size());
+}
+
+TEST_F(FileManagerFileTasksCrostiniTest, MultipleMatches) {
+  std::vector<extensions::EntryInfo> entries{
+      {crostini_folder_.Append("foo.gif"), "image/gif", false},
+      {crostini_folder_.Append("bar.gif"), "image/gif", false}};
+  std::vector<GURL> file_urls{
+      GURL("filesystem:chrome-extension://id/dir/foo.gif"),
+      GURL("filesystem:chrome-extension://id/dir/bar.gif")};
+
+  std::vector<FullTaskDescriptor> tasks;
+  FindAllTypesOfTasksSynchronousWrapper().Call(&test_profile_, nullptr, entries,
+                                               file_urls, &tasks);
+  // The returned values happen to be ordered alphabetically by app_id, so we
+  // rely on this to keep the test simple.
+  EXPECT_LT(gif_app_id_, image_app_id_);
+  ASSERT_EQ(2U, tasks.size());
+  EXPECT_EQ(gif_app_id_, tasks[0].task_descriptor().app_id);
+  EXPECT_EQ(image_app_id_, tasks[1].task_descriptor().app_id);
+}
+
+TEST_F(FileManagerFileTasksCrostiniTest, MultipleTypes) {
+  std::vector<extensions::EntryInfo> entries{
+      {crostini_folder_.Append("foo.gif"), "image/gif", false},
+      {crostini_folder_.Append("bar.png"), "image/png", false}};
+  std::vector<GURL> file_urls{
+      GURL("filesystem:chrome-extension://id/dir/foo.gif"),
+      GURL("filesystem:chrome-extension://id/dir/bar.png")};
+
+  std::vector<FullTaskDescriptor> tasks;
+  FindAllTypesOfTasksSynchronousWrapper().Call(&test_profile_, nullptr, entries,
+                                               file_urls, &tasks);
+  ASSERT_EQ(1U, tasks.size());
+  EXPECT_EQ(image_app_id_, tasks[0].task_descriptor().app_id);
+
+  entries.emplace_back(crostini_folder_.Append("qux.mp4"), "video/mp4", false);
+  file_urls.emplace_back("filesystem:chrome-extension://id/dir/qux.mp4");
+  FindAllTypesOfTasksSynchronousWrapper().Call(&test_profile_, nullptr, entries,
+                                               file_urls, &tasks);
+  EXPECT_EQ(0U, tasks.size());
 }
 
 }  // namespace file_tasks

@@ -706,12 +706,16 @@ void CrostiniManager::LaunchContainerApplication(
     std::string vm_name,
     std::string container_name,
     std::string desktop_file_id,
+    const std::vector<std::string>& files,
     LaunchContainerApplicationCallback callback) {
   vm_tools::cicerone::LaunchContainerApplicationRequest request;
   request.set_owner_id(CryptohomeIdForProfile(profile));
   request.set_vm_name(std::move(vm_name));
   request.set_container_name(std::move(container_name));
   request.set_desktop_file_id(std::move(desktop_file_id));
+  std::copy(
+      files.begin(), files.end(),
+      google::protobuf::RepeatedFieldBackInserter(request.mutable_files()));
 
   GetCiceroneClient()->LaunchContainerApplication(
       std::move(request),

@@ -197,6 +197,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
                                   std::string vm_name,
                                   std::string container_name,
                                   std::string desktop_file_id,
+                                  const std::vector<std::string>& files,
                                   LaunchContainerApplicationCallback callback);
 
   // Asynchronously gets app icons as specified by their desktop file ids.

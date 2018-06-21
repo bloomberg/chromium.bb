@@ -123,6 +123,10 @@ std::string GetCrostiniMountPointName(Profile* profile) {
       "_");
 }
 
+base::FilePath GetCrostiniMountDirectory(Profile* profile) {
+  return base::FilePath("/media/fuse/" + GetCrostiniMountPointName(profile));
+}
+
 bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
