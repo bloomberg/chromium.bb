@@ -28,7 +28,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
-import org.chromium.chrome.browser.widget.FadingBackgroundView;
+import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -69,8 +69,7 @@ public class BottomSheetControllerTest {
                                    .findViewById(org.chromium.chrome.R.id.bottom_sheet);
             mBottomSheet.init(coordinator, activity);
 
-            FadingBackgroundView scrim =
-                    new FadingBackgroundView(mActivityTestRule.getActivity(), null, coordinator);
+            ScrimView scrim = new ScrimView(mActivityTestRule.getActivity(), null, coordinator);
 
             mSheetController = new BottomSheetController(activity, activity.getTabModelSelector(),
                     activity.getCompositorViewHolder().getLayoutManager(), scrim,

@@ -141,7 +141,7 @@ import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.webapps.AddToHomescreenManager;
 import org.chromium.chrome.browser.widget.ControlContainer;
-import org.chromium.chrome.browser.widget.FadingBackgroundView;
+import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
@@ -264,7 +264,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private BottomSheetController mBottomSheetController;
     private BottomSheet mBottomSheet;
     private ContextualSuggestionsCoordinator mContextualSuggestionsCoordinator;
-    private FadingBackgroundView mFadingBackgroundView;
+    private ScrimView mScrimView;
     private ManualFillingCoordinator mManualFillingController;
     private float mStatusBarScrimFraction;
     private int mBaseStatusBarColor;
@@ -753,8 +753,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     /**
      * @return The View used to obscure content and bring focus to a foreground view.
      */
-    public FadingBackgroundView getFadingBackgroundView() {
-        return mFadingBackgroundView;
+    public ScrimView getScrim() {
+        return mScrimView;
     }
 
     /**
@@ -1398,7 +1398,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         super.finishNativeInitialization();
 
         ViewGroup coordinator = findViewById(R.id.coordinator);
-        mFadingBackgroundView = new FadingBackgroundView(this, (fraction) -> {
+        mScrimView = new ScrimView(this, (fraction) -> {
             mStatusBarScrimFraction = fraction;
             setStatusBarColor(null, mBaseStatusBarColor);
         }, coordinator);
@@ -1408,7 +1408,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 findViewById(R.id.keyboard_accessory_sheet_stub));
 
         if (mToolbarManager != null && mToolbarManager.getToolbar() != null) {
-            mToolbarManager.getToolbar().setScrim(mFadingBackgroundView);
+            mToolbarManager.getToolbar().setScrim(mScrimView);
         }
 
         if (supportsContextualSuggestionsBottomSheet()
@@ -1420,7 +1420,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             ((BottomContainer) findViewById(R.id.bottom_container)).setBottomSheet(mBottomSheet);
 
             mBottomSheetController = new BottomSheetController(this, getTabModelSelector(),
-                    getCompositorViewHolder().getLayoutManager(), mFadingBackgroundView,
+                    getCompositorViewHolder().getLayoutManager(), mScrimView,
                     getContextualSearchManager(), mBottomSheet);
 
             mContextualSuggestionsCoordinator = new ContextualSuggestionsCoordinator(

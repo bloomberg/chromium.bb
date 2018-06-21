@@ -8,7 +8,7 @@ import android.graphics.Rect;
 import android.view.View;
 
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
-import org.chromium.chrome.browser.widget.FadingBackgroundView;
+import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 
 /**
@@ -116,5 +116,5 @@ public interface Toolbar {
     /**
      * @param scrim The scrim for this location bar to use.
      */
-    void setScrim(FadingBackgroundView scrim);
+    void setScrim(ScrimView scrim);
 }

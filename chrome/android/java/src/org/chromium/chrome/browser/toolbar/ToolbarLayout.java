@@ -40,8 +40,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.ViewUtils;
-import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.PulseDrawable;
+import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -981,7 +981,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     }
 
     @Override
-    public void setScrim(FadingBackgroundView scrim) {
+    public void setScrim(ScrimView scrim) {
         getLocationBar().setScrim(scrim);
     }
 }
