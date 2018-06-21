@@ -88,13 +88,12 @@ inline IntSize FlooredIntSize(const DoubleSize& p) {
 }
 
 inline IntSize RoundedIntSize(const DoubleSize& p) {
-  return IntSize(clampTo<int>(roundf(p.Width())),
-                 clampTo<int>(roundf(p.Height())));
+  return IntSize(clampTo<int>(round(p.Width())),
+                 clampTo<int>(round(p.Height())));
 }
 
 inline IntSize ExpandedIntSize(const DoubleSize& p) {
-  return IntSize(clampTo<int>(ceilf(p.Width())),
-                 clampTo<int>(ceilf(p.Height())));
+  return IntSize(clampTo<int>(ceil(p.Width())), clampTo<int>(ceil(p.Height())));
 }
 
 inline FloatSize ToFloatSize(const DoubleSize& p) {
