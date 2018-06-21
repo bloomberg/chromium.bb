@@ -5,7 +5,7 @@
 <body></body>
 <script>
 async_test(t => {
-  window.addEventListener('message', e => {
+  window.addEventListener('message', t.step_func(e => {
     switch (e.data.msg) {
       case 'clickme':
         if (!('eventSender' in window))
@@ -37,7 +37,7 @@ async_test(t => {
       default:
         assert_unreached();
     }
-  });
+  }));
 
   var f = document.createElement('iframe');
   f.src = 'http://localhost:8000/webaudio/resources/autoplay-crossorigin-iframe.html';

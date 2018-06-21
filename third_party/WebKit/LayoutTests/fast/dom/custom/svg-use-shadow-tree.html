@@ -23,6 +23,8 @@
 <script>
 "use strict";
 
+var t = async_test("SVG <use> shadow trees should not be exposed through custom elements.");
+
 var instances = [];
 
 function createPrototype(superClass) {
@@ -34,40 +36,48 @@ function createPrototype(superClass) {
             return scope;
         }
         createdCallback() {
-            this.instanceId = instances.length;
-            instances[this.instanceId] = this;
-            assert_false(this.ownerScope instanceof ShadowRoot,
-                "Should not call createdCallback in UA ShadowRoot.");
+            t.step(() => {
+                this.instanceId = instances.length;
+                instances[this.instanceId] = this;
+                assert_false(this.ownerScope instanceof ShadowRoot,
+                    "Should not call createdCallback in UA ShadowRoot.");
+            });
         }
         attachedCallback() {
-            assert_false(this.ownerScope instanceof ShadowRoot,
-                "Should not call attachedCallback in UA ShadowRoot.");
-            assert_equals(instances[this.instanceId], this);
+            t.step(() => {
+                assert_false(this.ownerScope instanceof ShadowRoot,
+                    "Should not call attachedCallback in UA ShadowRoot.");
+                assert_equals(instances[this.instanceId], this);
+            });
         }
         detachedCallback() {
-            assert_false(this.ownerScope instanceof ShadowRoot,
-                "Should not call detachedCallback in UA ShadowRoot.");
-            assert_equals(instances[this.instanceId], this);
+            t.step(() => {
+                assert_false(this.ownerScope instanceof ShadowRoot,
+                    "Should not call detachedCallback in UA ShadowRoot.");
+                assert_equals(instances[this.instanceId], this);
+            });
         }
         attributeChangedCallback() {
-            assert_unreached("attributeChangedCallback should never be called.");
+            t.step(() => {
+                assert_unreached("attributeChangedCallback should never be called.");
+            });
         }
     };
     return ElementType.prototype;
 }
 
-// <rect is=x-rect>
-var XRectElement = document.registerElement('x-rect', {
-    extends: 'rect',
-    prototype: createPrototype(SVGRectElement),
-});
+t.step(function () {
+    // <rect is=x-rect>
+    var XRectElement = document.registerElement('x-rect', {
+        extends: 'rect',
+        prototype: createPrototype(SVGRectElement),
+    });
 
-// <x-test>
-var XTestElement = document.registerElement('x-test', {
-    prototype: createPrototype(HTMLElement),
-});
+    // <x-test>
+    var XTestElement = document.registerElement('x-test', {
+        prototype: createPrototype(HTMLElement),
+    });
 
-test(function () {
     var template = document.getElementById("template");
     var svg = document.importNode(template.content, true).firstElementChild;
     var usedGroup = svg.getElementById("used-group");
@@ -97,5 +107,9 @@ test(function () {
         assert_true(instances[i].ownerScope instanceof Document,
             "No instances should be inside a ShadowRoot.");
     }
-}, "SVG <use> shadow trees should not be exposed through custom elements.");
+
+    // Any callbacks will have been scheduled and run in microtasks,
+    // so end test after that.
+    t.step_timeout(t.step_func_done());
+});
 </script>
