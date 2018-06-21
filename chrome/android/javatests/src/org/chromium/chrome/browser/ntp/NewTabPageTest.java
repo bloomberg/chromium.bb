@@ -12,6 +12,7 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
 import android.graphics.Canvas;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
@@ -163,6 +164,11 @@ public class NewTabPageTest {
 
     @ParameterAnnotations.UseMethodParameterBefore(InterestFeedParams.class)
     public void setupInterestFeed(boolean interestFeedEnabled) {
+        // TODO(twellington): Re-enable interest Feed test on arm64 M. See https://crbug.com/854866.
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M
+                && Arrays.asList(Build.SUPPORTED_ABIS).contains("arm64-v8a")) {
+            interestFeedEnabled = false;
+        }
         if (interestFeedEnabled) {
             Features.getInstance().enable(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
         } else {
