@@ -37,7 +37,8 @@ CWV_EXPORT
 @protocol CWVScriptCommandHandler<NSObject>
 
 - (BOOL)webView:(CWVWebView*)webView
-    handleScriptCommand:(CWVScriptCommand*)command;
+    handleScriptCommand:(CWVScriptCommand*)command
+          fromMainFrame:(BOOL)fromMainFrame;
 
 @end
 

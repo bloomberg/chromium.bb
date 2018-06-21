@@ -87,8 +87,9 @@ TEST_F(WebStateTest, LoadingProgress) {
 TEST_F(WebStateTest, OverridingWebKitObject) {
   // Add a script command handler.
   __block bool message_received = false;
-  const web::WebState::ScriptCommandCallback callback = base::BindRepeating(
-      ^bool(const base::DictionaryValue&, const GURL&, bool) {
+  const web::WebState::ScriptCommandCallback callback =
+      base::BindRepeating(^bool(const base::DictionaryValue&, const GURL&,
+                                /*interacted*/ bool, /*is_main_frame*/ bool) {
         message_received = true;
         return true;
       });
@@ -171,6 +172,78 @@ TEST_F(WebStateTest, Snapshot) {
   WaitForCondition(^{
     return snapshot_complete;
   });
+}
+
+// Tests that message sent from main frame triggers the ScriptCommandCallback
+// with |is_main_frame| = true.
+TEST_F(WebStateTest, MessageFromMainFrame) {
+  // Add a script command handler.
+  __block bool message_received = false;
+  __block bool message_from_main_frame = false;
+  __block base::Value message_value;
+  const web::WebState::ScriptCommandCallback callback =
+      base::BindRepeating(^bool(const base::DictionaryValue& value, const GURL&,
+                                bool user_interacted, bool is_main_frame) {
+        message_received = true;
+        message_from_main_frame = is_main_frame;
+        message_value = value.Clone();
+        return true;
+      });
+  web_state()->AddScriptCommandCallback(callback, "test");
+
+  ASSERT_TRUE(LoadHtml(
+      "<script>"
+      "  __gCrWeb.message.invokeOnHost({'command': 'test.from-main-frame'});"
+      "</script>"));
+
+  WaitForCondition(^{
+    return message_received;
+  });
+  web_state()->RemoveScriptCommandCallback("test");
+  EXPECT_TRUE(message_from_main_frame);
+  EXPECT_TRUE(message_value.is_dict());
+  EXPECT_EQ(message_value.DictSize(), size_t(1));
+  base::Value* command = message_value.FindKey("command");
+  EXPECT_NE(command, nullptr);
+  EXPECT_TRUE(command->is_string());
+  EXPECT_EQ(command->GetString(), "test.from-main-frame");
+}
+
+// Tests that message sent from main frame triggers the ScriptCommandCallback
+// with |is_main_frame| = false.
+TEST_F(WebStateTest, MessageFromIFrame) {
+  // Add a script command handler.
+  __block bool message_received = false;
+  __block bool message_from_main_frame = false;
+  __block base::Value message_value;
+  const web::WebState::ScriptCommandCallback callback =
+      base::BindRepeating(^bool(const base::DictionaryValue& value, const GURL&,
+                                bool user_interacted, bool is_main_frame) {
+        message_received = true;
+        message_from_main_frame = is_main_frame;
+        message_value = value.Clone();
+        return true;
+      });
+  web_state()->AddScriptCommandCallback(callback, "test");
+
+  ASSERT_TRUE(LoadHtml(
+      "<iframe srcdoc='"
+      "<script>"
+      "  __gCrWeb.message.invokeOnHost({\"command\": \"test.from-iframe\"});"
+      "</script>"
+      "'/>"));
+
+  WaitForCondition(^{
+    return message_received;
+  });
+  web_state()->RemoveScriptCommandCallback("test");
+  EXPECT_FALSE(message_from_main_frame);
+  EXPECT_TRUE(message_value.is_dict());
+  EXPECT_EQ(message_value.DictSize(), size_t(1));
+  base::Value* command = message_value.FindKey("command");
+  EXPECT_NE(command, nullptr);
+  EXPECT_TRUE(command->is_string());
+  EXPECT_EQ(command->GetString(), "test.from-iframe");
 }
 
 // Tests that the web state has an opener after calling SetHasOpener().

@@ -173,12 +173,15 @@ bool HandleScriptCommand(bool* is_called,
                          bool should_handle,
                          base::DictionaryValue* expected_value,
                          const GURL& expected_url,
+                         bool expected_is_main_frame,
                          const base::DictionaryValue& value,
                          const GURL& url,
-                         bool user_is_interacting) {
+                         bool user_is_interacting,
+                         bool is_main_frame) {
   *is_called = true;
   EXPECT_TRUE(expected_value->Equals(&value));
   EXPECT_EQ(expected_url, url);
+  EXPECT_EQ(expected_is_main_frame, is_main_frame);
   return should_handle;
 }
 
@@ -789,7 +792,7 @@ TEST_F(WebStateImplTest, PolicyDeciderTest) {
 
 // Tests that script command callbacks are called correctly.
 TEST_F(WebStateImplTest, ScriptCommand) {
-  // Set up two script command callbacks.
+  // Set up three script command callbacks.
   const std::string kPrefix1("prefix1");
   const std::string kCommand1("prefix1.command1");
   base::DictionaryValue value_1;
@@ -797,7 +800,9 @@ TEST_F(WebStateImplTest, ScriptCommand) {
   const GURL kUrl1("http://foo");
   bool is_called_1 = false;
   web_state_->AddScriptCommandCallback(
-      base::Bind(&HandleScriptCommand, &is_called_1, true, &value_1, kUrl1),
+      base::BindRepeating(&HandleScriptCommand, &is_called_1,
+                          /*should_handle*/ true, &value_1, kUrl1,
+                          /*expected_is_main_frame*/ true),
       kPrefix1);
 
   const std::string kPrefix2("prefix2");
@@ -807,42 +812,76 @@ TEST_F(WebStateImplTest, ScriptCommand) {
   const GURL kUrl2("http://bar");
   bool is_called_2 = false;
   web_state_->AddScriptCommandCallback(
-      base::Bind(&HandleScriptCommand, &is_called_2, false, &value_2, kUrl2),
+      base::BindRepeating(&HandleScriptCommand, &is_called_2,
+                          /*should_handle*/ false, &value_2, kUrl2,
+                          /*expected_is_main_frame*/ true),
       kPrefix2);
 
+  const std::string kPrefix3("prefix3");
+  const std::string kCommand3("prefix3.command3");
+  base::DictionaryValue value_3;
+  value_3.SetString("e", "f");
+  const GURL kUrl3("http://iframe");
+  bool is_called_3 = false;
+  web_state_->AddScriptCommandCallback(
+      base::BindRepeating(&HandleScriptCommand, &is_called_3,
+                          /*should_handle*/ true, &value_3, kUrl3,
+                          /*expected_is_main_frame*/ false),
+      kPrefix3);
+
   // Check that a irrelevant or invalid command does not trigger the callbacks.
-  EXPECT_FALSE(
-      web_state_->OnScriptCommandReceived("wohoo.blah", value_1, kUrl1, false));
+  EXPECT_FALSE(web_state_->OnScriptCommandReceived(
+      "wohoo.blah", value_1, kUrl1,
+      /*user_is_interacting*/ false, /*is_main_frame*/ true));
   EXPECT_FALSE(is_called_1);
   EXPECT_FALSE(is_called_2);
+  EXPECT_FALSE(is_called_3);
 
   EXPECT_FALSE(web_state_->OnScriptCommandReceived(
-      "prefix1ButMissingDot", value_1, kUrl1, false));
+      "prefix1ButMissingDot", value_1, kUrl1, /*user_is_interacting*/ false,
+      /*is_main_frame*/ true));
   EXPECT_FALSE(is_called_1);
   EXPECT_FALSE(is_called_2);
+  EXPECT_FALSE(is_called_3);
 
   // Check that only the callback matching the prefix is called, with the
   // expected parameters and return value;
-  EXPECT_TRUE(
-      web_state_->OnScriptCommandReceived(kCommand1, value_1, kUrl1, false));
+  EXPECT_TRUE(web_state_->OnScriptCommandReceived(kCommand1, value_1, kUrl1,
+                                                  /*user_is_interacting*/ false,
+                                                  /*is_main_frame*/ true));
   EXPECT_TRUE(is_called_1);
   EXPECT_FALSE(is_called_2);
-
-  // Remove the callback and check it is no longer called.
+  EXPECT_FALSE(is_called_3);
   is_called_1 = false;
-  web_state_->RemoveScriptCommandCallback(kPrefix1);
-  EXPECT_FALSE(
-      web_state_->OnScriptCommandReceived(kCommand1, value_1, kUrl1, false));
+
+  // Check that sending message from iframe sets |is_main_frame| to false.
+  EXPECT_TRUE(web_state_->OnScriptCommandReceived(kCommand3, value_3, kUrl3,
+                                                  /*user_is_interacting*/ false,
+                                                  /*is_main_frame*/ false));
   EXPECT_FALSE(is_called_1);
   EXPECT_FALSE(is_called_2);
+  EXPECT_TRUE(is_called_3);
+  is_called_3 = false;
+
+  // Remove the callback and check it is no longer called.
+  web_state_->RemoveScriptCommandCallback(kPrefix1);
+  EXPECT_FALSE(web_state_->OnScriptCommandReceived(
+      kCommand1, value_1, kUrl1,
+      /*user_is_interacting*/ false, /*is_main_frame*/ true));
+  EXPECT_FALSE(is_called_1);
+  EXPECT_FALSE(is_called_2);
+  EXPECT_FALSE(is_called_3);
 
   // Check that a false return value is forwarded correctly.
-  EXPECT_FALSE(
-      web_state_->OnScriptCommandReceived(kCommand2, value_2, kUrl2, false));
+  EXPECT_FALSE(web_state_->OnScriptCommandReceived(
+      kCommand2, value_2, kUrl2,
+      /*user_is_interacting*/ false, /*is_main_frame*/ true));
   EXPECT_FALSE(is_called_1);
   EXPECT_TRUE(is_called_2);
+  EXPECT_FALSE(is_called_3);
 
   web_state_->RemoveScriptCommandCallback(kPrefix2);
+  web_state_->RemoveScriptCommandCallback(kPrefix3);
 }
 
 // Tests that WebState::CreateParams::created_with_opener is translated to

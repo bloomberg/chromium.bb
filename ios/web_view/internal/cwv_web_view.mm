@@ -433,13 +433,15 @@ static NSString* gUserAgentProduct = nil;
   CWVWebView* __weak weakSelf = self;
   const web::WebState::ScriptCommandCallback callback = base::BindRepeating(
       ^bool(const base::DictionaryValue& content, const GURL& mainDocumentURL,
-            bool userInteracting) {
+            bool userInteracting, bool isMainFrame) {
         NSDictionary* nsContent = NSDictionaryFromDictionaryValue(content);
         CWVScriptCommand* command = [[CWVScriptCommand alloc]
             initWithContent:nsContent
             mainDocumentURL:net::NSURLWithGURL(mainDocumentURL)
             userInteracting:userInteracting];
-        return [handler webView:weakSelf handleScriptCommand:command];
+        return [handler webView:weakSelf
+            handleScriptCommand:command
+                  fromMainFrame:isMainFrame];
       });
 
   std::string stdCommandPrefix = base::SysNSStringToUTF8(commandPrefix);

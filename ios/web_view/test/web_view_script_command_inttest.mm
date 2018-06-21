@@ -21,7 +21,8 @@
 @property(nonatomic) CWVScriptCommand* lastReceivedCommand;
 
 - (BOOL)webView:(CWVWebView*)webView
-    handleScriptCommand:(CWVScriptCommand*)command;
+    handleScriptCommand:(CWVScriptCommand*)command
+          fromMainFrame:(BOOL)fromMainFrame;
 
 @end
 
@@ -30,7 +31,8 @@
 @synthesize lastReceivedCommand = _lastReceivedCommand;
 
 - (BOOL)webView:(CWVWebView*)webView
-    handleScriptCommand:(CWVScriptCommand*)command {
+    handleScriptCommand:(CWVScriptCommand*)command
+          fromMainFrame:(BOOL)fromMainFrame {
   self.lastReceivedCommand = command;
   return YES;
 }

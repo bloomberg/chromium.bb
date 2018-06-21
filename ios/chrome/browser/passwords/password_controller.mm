@@ -363,12 +363,16 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     }
 
     __weak PasswordController* weakSelf = self;
-    auto callback = base::BindRepeating(^bool(const base::DictionaryValue& JSON,
-                                              const GURL& originURL,
-                                              bool userIsInteracting) {
-      // |originURL| and |isInteracting| aren't used.
-      return [weakSelf handleScriptCommand:JSON];
-    });
+    auto callback = base::BindRepeating(
+        ^bool(const base::DictionaryValue& JSON, const GURL& originURL,
+              bool interacting, bool isMainFrame) {
+          if (!isMainFrame) {
+            // Passwords is only supported on main frame.
+            return false;
+          }
+          // |originURL| and |isInteracting| aren't used.
+          return [weakSelf handleScriptCommand:JSON];
+        });
     webState_->AddScriptCommandCallback(callback, kCommandPrefix);
   }
   return self;

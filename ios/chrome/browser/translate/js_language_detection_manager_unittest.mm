@@ -272,8 +272,9 @@ class JsLanguageDetectionManagerDetectLanguageTest
   }
   // Called when "languageDetection" command is received.
   bool CommandReceived(const base::DictionaryValue& command,
-                       const GURL&,
-                       bool) {
+                       const GURL& url,
+                       bool interacting,
+                       bool is_main_frame) {
     commands_received_.push_back(command.CreateDeepCopy());
     return true;
   }

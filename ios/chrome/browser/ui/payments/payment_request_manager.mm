@@ -325,12 +325,16 @@ struct PendingPaymentResponse {
 
   if (_activeWebState) {
     __weak PaymentRequestManager* weakSelf = self;
-    auto callback = base::BindRepeating(^bool(const base::DictionaryValue& JSON,
-                                              const GURL& originURL,
-                                              bool userIsInteracting) {
-      // |originURL| and |userIsInteracting| aren't used.
-      return [weakSelf handleScriptCommand:JSON];
-    });
+    auto callback = base::BindRepeating(
+        ^bool(const base::DictionaryValue& JSON, const GURL& originURL,
+              bool interacting, bool isMainFrame) {
+          if (!isMainFrame) {
+            // Payment request is only supported on main frame.
+            return false;
+          }
+          // |originURL| and |userIsInteracting| aren't used.
+          return [weakSelf handleScriptCommand:JSON];
+        });
     _activeWebState->AddObserver(_activeWebStateObserver.get());
     _activeWebState->AddScriptCommandCallback(callback, kCommandPrefix);
 

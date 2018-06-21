@@ -74,7 +74,12 @@ void TranslateController::SetJsTranslateManagerForTesting(
 bool TranslateController::OnJavascriptCommandReceived(
     const base::DictionaryValue& command,
     const GURL& url,
-    bool interacting) {
+    bool interacting,
+    bool is_main_frame) {
+  if (!is_main_frame) {
+    // Translate is only supported on main frame.
+    return false;
+  }
   const base::Value* value = nullptr;
   command.Get("command", &value);
   if (!value) {
