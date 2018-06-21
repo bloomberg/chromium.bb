@@ -238,6 +238,16 @@ void av1_visit_palette(AV1Decoder *const pbi, MACROBLOCKD *const xd, int mi_row,
                        int mi_col, aom_reader *r, BLOCK_SIZE bsize,
                        palette_visitor_fn_t visit);
 
+typedef void (*block_visitor_fn_t)(AV1Decoder *const pbi, MACROBLOCKD *const xd,
+                                   int mi_row, int mi_col, aom_reader *r,
+                                   PARTITION_TYPE partition, BLOCK_SIZE bsize);
+
+typedef void (*tx_inter_block_visitor_fn_t)(const AV1_COMMON *const cm,
+                                            MACROBLOCKD *const xd,
+                                            aom_reader *const r, const int row,
+                                            const int col, const int plane,
+                                            const TX_SIZE tx_size);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
