@@ -7,15 +7,16 @@
 <org.chromium.chrome.browser.explore_sites.ExploreSitesCategoryTileView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="10dp"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content" >
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_weight="0.33" >
 
     <!-- Main icon/image -->
     <ImageView
         android:id="@+id/explore_sites_category_tile_icon"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="@dimen/tile_view_icon_margin_top_modern"
+        android:layout_marginTop="@dimen/explore_sites_padding"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@null" />
@@ -26,5 +27,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:textAppearance="@style/BlackCaption" />
+        android:textAppearance="@style/BlackCaptionDefault" />
 </org.chromium.chrome.browser.explore_sites.ExploreSitesCategoryTileView>
