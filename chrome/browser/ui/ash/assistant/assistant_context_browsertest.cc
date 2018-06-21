@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/assistant/assistant_context.h"
+#include "chrome/browser/ui/ash/assistant/assistant_client.h"
 
 #include <string>
 #include <vector>

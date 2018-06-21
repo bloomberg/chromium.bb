@@ -8,6 +8,7 @@
 
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
+#include "chrome/browser/ui/ash/assistant/assistant_context_util.h"
 #include "chrome/browser/ui/ash/assistant/assistant_image_downloader.h"
 #include "chrome/browser/ui/ash/assistant/assistant_setup.h"
 #include "chrome/browser/ui/ash/assistant/web_contents_manager.h"
@@ -25,10 +26,7 @@ AssistantClient* AssistantClient::Get() {
   return g_instance;
 }
 
-AssistantClient::AssistantClient()
-    : client_binding_(this),
-      audio_input_binding_(&audio_input_),
-      context_binding_(&context_) {
+AssistantClient::AssistantClient() : client_binding_(this) {
   DCHECK_EQ(nullptr, g_instance);
   g_instance = this;
 }
@@ -36,7 +34,6 @@ AssistantClient::AssistantClient()
 AssistantClient::~AssistantClient() {
   DCHECK(g_instance);
   g_instance = nullptr;
-  context_binding_.Close();
 }
 
 void AssistantClient::MaybeInit(service_manager::Connector* connector) {
@@ -46,17 +43,10 @@ void AssistantClient::MaybeInit(service_manager::Connector* connector) {
   initialized_ = true;
   connector->BindInterface(chromeos::assistant::mojom::kServiceName,
                            &assistant_connection_);
-  chromeos::assistant::mojom::AudioInputPtr audio_input_ptr;
-  audio_input_binding_.Bind(mojo::MakeRequest(&audio_input_ptr));
 
   chromeos::assistant::mojom::ClientPtr client_ptr;
   client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-
-  chromeos::assistant::mojom::ContextPtr context_ptr;
-  context_binding_.Bind(mojo::MakeRequest(&context_ptr));
-
-  assistant_connection_->Init(std::move(client_ptr), std::move(context_ptr),
-                              std::move(audio_input_ptr));
+  assistant_connection_->Init(std::move(client_ptr));
 
   assistant_image_downloader_ =
       std::make_unique<AssistantImageDownloader>(connector);
@@ -68,4 +58,9 @@ void AssistantClient::OnAssistantStatusChanged(bool running) {
   arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
       running ? ash::mojom::VoiceInteractionState::RUNNING
               : ash::mojom::VoiceInteractionState::STOPPED);
+}
+
+void AssistantClient::RequestAssistantStructure(
+    RequestAssistantStructureCallback callback) {
+  RequestAssistantStructureForActiveBrowserWindow(std::move(callback));
 }

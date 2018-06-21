@@ -8,8 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/assistant/assistant_context.h"
-#include "chrome/browser/ui/ash/assistant/platform_audio_input_host.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -33,18 +31,12 @@ class AssistantClient : chromeos::assistant::mojom::Client {
 
   // assistant::mojom::Client overrides:
   void OnAssistantStatusChanged(bool running) override;
+  void RequestAssistantStructure(
+      RequestAssistantStructureCallback callback) override;
 
  private:
   mojo::Binding<chromeos::assistant::mojom::Client> client_binding_;
-
   chromeos::assistant::mojom::AssistantPlatformPtr assistant_connection_;
-  mojo::Binding<chromeos::assistant::mojom::AudioInput> audio_input_binding_;
-
-  mojo::Binding<chromeos::assistant::mojom::Context> context_binding_;
-
-  PlatformAudioInputHost audio_input_;
-
-  AssistantContext context_;
 
   std::unique_ptr<AssistantImageDownloader> assistant_image_downloader_;
   std::unique_ptr<AssistantSetup> assistant_setup_;
