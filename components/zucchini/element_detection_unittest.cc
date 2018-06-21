@@ -4,6 +4,7 @@
 
 #include "components/zucchini/element_detection.h"
 
+#include <map>
 #include <vector>
 
 #include "base/bind.h"

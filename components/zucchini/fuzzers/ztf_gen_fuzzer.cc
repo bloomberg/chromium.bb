@@ -57,7 +57,7 @@ DEFINE_BINARY_PROTO_FUZZER(const zucchini::fuzzers::FilePair& file_pair) {
   zucchini::EnsemblePatchWriter patch_writer(old_image, new_image);
 
   // Fuzz Target.
-  zucchini::GenerateEnsemble(old_image, new_image, &patch_writer);
+  zucchini::GenerateBuffer(old_image, new_image, &patch_writer);
 
   // Write to buffer to avoid IO.
   size_t patch_size = patch_writer.SerializedSize();

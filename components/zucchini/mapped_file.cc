@@ -12,7 +12,7 @@
 
 namespace zucchini {
 
-MappedFileReader::MappedFileReader(base::File&& file) {
+MappedFileReader::MappedFileReader(base::File file) {
   if (!file.IsValid()) {
     error_ = "Invalid file.";
     return;  // |buffer_| will be uninitialized, and therefore invalid.
@@ -23,7 +23,7 @@ MappedFileReader::MappedFileReader(base::File&& file) {
 }
 
 MappedFileWriter::MappedFileWriter(const base::FilePath& file_path,
-                                   base::File&& file,
+                                   base::File file,
                                    size_t length)
     : file_path_(file_path), delete_behavior_(kManualDeleteOnClose) {
   if (!file.IsValid()) {

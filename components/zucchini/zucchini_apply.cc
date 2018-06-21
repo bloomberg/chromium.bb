@@ -188,9 +188,9 @@ bool ApplyElement(ExecutableType exe_type,
 
 /******** Exported Functions ********/
 
-status::Code Apply(ConstBufferView old_image,
-                   const EnsemblePatchReader& patch_reader,
-                   MutableBufferView new_image) {
+status::Code ApplyBuffer(ConstBufferView old_image,
+                         const EnsemblePatchReader& patch_reader,
+                         MutableBufferView new_image) {
   if (!patch_reader.CheckOldFile(old_image)) {
     LOG(ERROR) << "Invalid old_image.";
     return status::kStatusInvalidOldImage;

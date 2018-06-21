@@ -49,8 +49,8 @@ void TestGenApply(const std::string& old_filename,
 
   // Generate patch from "old" to "new".
   ASSERT_EQ(status::kStatusSuccess,
-            raw ? GenerateRaw(old_region, new_region, &patch_writer)
-                : GenerateEnsemble(old_region, new_region, &patch_writer));
+            raw ? GenerateBufferRaw(old_region, new_region, &patch_writer)
+                : GenerateBuffer(old_region, new_region, &patch_writer));
 
   size_t patch_size = patch_writer.SerializedSize();
   EXPECT_GE(patch_size, 80U);  // Minimum size is empty patch.
@@ -73,9 +73,9 @@ void TestGenApply(const std::string& old_filename,
 
   // Apply patch to "old" to get "patched new", ensure it's identical to "new".
   std::vector<uint8_t> patched_new_buffer(new_region.size());
-  ASSERT_EQ(status::kStatusSuccess,
-            Apply(old_region, *patch_reader,
-                  {patched_new_buffer.data(), patched_new_buffer.size()}));
+  ASSERT_EQ(status::kStatusSuccess, ApplyBuffer(old_region, *patch_reader,
+                                                {patched_new_buffer.data(),
+                                                 patched_new_buffer.size()}));
 
   // Note that |new_region| and |patched_new_buffer| are the same size.
   EXPECT_TRUE(std::equal(new_region.begin(), new_region.end(),

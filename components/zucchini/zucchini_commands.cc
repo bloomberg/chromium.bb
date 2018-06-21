@@ -38,67 +38,11 @@ constexpr char kSwitchRaw[] = "raw";
 
 zucchini::status::Code MainGen(MainParams params) {
   CHECK_EQ(3U, params.file_paths.size());
-
-  // TODO(huangs): Move implementation to zucchini_integration.cc.
-  using base::File;
-  File old_file(params.file_paths[0], File::FLAG_OPEN | File::FLAG_READ);
-  zucchini::MappedFileReader old_image(std::move(old_file));
-  if (old_image.HasError()) {
-    LOG(ERROR) << "Error with file " << params.file_paths[0].value() << ": "
-               << old_image.error();
-    return zucchini::status::kStatusFileReadError;
-  }
-  File new_file(params.file_paths[1], File::FLAG_OPEN | File::FLAG_READ);
-  zucchini::MappedFileReader new_image(std::move(new_file));
-  if (new_image.HasError()) {
-    LOG(ERROR) << "Error with file " << params.file_paths[1].value() << ": "
-               << new_image.error();
-    return zucchini::status::kStatusFileReadError;
-  }
-  zucchini::EnsemblePatchWriter patch_writer(old_image.region(),
-                                             new_image.region());
-
-  zucchini::status::Code result = zucchini::status::kStatusSuccess;
-  if (params.command_line.HasSwitch(kSwitchRaw)) {
-    result = GenerateRaw(old_image.region(), new_image.region(), &patch_writer);
-  } else {
-    // May be empty.
-    std::string imposed_matches =
-        params.command_line.GetSwitchValueASCII(kSwitchImpose);
-    result = GenerateEnsembleWithImposedMatches(
-        old_image.region(), new_image.region(), std::move(imposed_matches),
-        &patch_writer);
-  }
-
-  if (result != zucchini::status::kStatusSuccess) {
-    params.out << "Fatal error encountered when generating patch." << std::endl;
-    return result;
-  }
-
-  // By default, delete patch on destruction, to avoid having lingering files in
-  // case of a failure. On Windows deletion can be done by the OS.
-  File patch_file(params.file_paths[2], File::FLAG_CREATE_ALWAYS |
-                                            File::FLAG_READ | File::FLAG_WRITE |
-                                            File::FLAG_SHARE_DELETE |
-                                            File::FLAG_CAN_DELETE_ON_CLOSE);
-  zucchini::MappedFileWriter patch(params.file_paths[2], std::move(patch_file),
-                                   patch_writer.SerializedSize());
-  if (patch.HasError()) {
-    LOG(ERROR) << "Error with file " << params.file_paths[2].value() << ": "
-               << patch.error();
-    return zucchini::status::kStatusFileWriteError;
-  }
-
-  if (params.command_line.HasSwitch(kSwitchKeep))
-    patch.Keep();
-
-  if (!patch_writer.SerializeInto(patch.region()))
-    return zucchini::status::kStatusPatchWriteError;
-
-  // Successfully created patch. Explicitly request file to be kept.
-  if (!patch.Keep())
-    return zucchini::status::kStatusFileWriteError;
-  return zucchini::status::kStatusSuccess;
+  return zucchini::Generate(
+      params.file_paths[0], params.file_paths[1], params.file_paths[2],
+      params.command_line.HasSwitch(kSwitchKeep),
+      params.command_line.HasSwitch(kSwitchRaw),
+      params.command_line.GetSwitchValueASCII(kSwitchImpose));
 }
 
 zucchini::status::Code MainApply(MainParams params) {
