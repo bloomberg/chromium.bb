@@ -218,11 +218,12 @@ class PLATFORM_EXPORT ResourceResponse final {
   bool CacheControlContainsMustRevalidate() const;
   bool HasCacheValidatorFields() const;
   double CacheControlMaxAge() const;
-  double CacheControlStaleWhileRevalidate() const;
   double Date() const;
   double Age() const;
   double Expires() const;
   double LastModified() const;
+  // Will always return values >= 0.
+  double CacheControlStaleWhileRevalidate() const;
 
   unsigned ConnectionID() const;
   void SetConnectionID(unsigned);
