@@ -47,6 +47,8 @@ class CORE_EXPORT PseudoElement : public Element {
   PseudoId GetPseudoId() const override { return pseudo_id_; }
   const ComputedStyle* VirtualEnsureComputedStyle(
       PseudoId pseudo_element_specifier = kPseudoIdNone) final;
+  scoped_refptr<ComputedStyle> StoreOriginalAndReturnLayoutStyle(
+      scoped_refptr<ComputedStyle>);
 
   static String PseudoElementNameForEvents(PseudoId);
 
