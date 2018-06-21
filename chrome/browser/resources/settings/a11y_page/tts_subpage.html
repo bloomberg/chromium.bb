@@ -38,30 +38,33 @@
 
     <h2>$i18n{textToSpeechProperties}</h2>
     <div class="settings-box first">
-      <div class="start">$i18n{textToSpeechRate}</div>
+      <div class="start" id="rate">$i18n{textToSpeechRate}</div>
       <display-size-slider
           pref="{{prefs.settings.tts.speech_rate}}"
           ticks="[[speechRateTicks_()]]"
           min-label="$i18n{textToSpeechRateMinimumLabel}"
-          max-label="$i18n{textToSpeechRateMaximumLabel}">
+          max-label="$i18n{textToSpeechRateMaximumLabel}"
+          aria-describedby="rate">
       </display-size-slider>
     </div>
     <div class="settings-box continuation">
-      <div class="start">$i18n{textToSpeechPitch}</div>
+      <div class="start" id="pitch">$i18n{textToSpeechPitch}</div>
       <display-size-slider
           pref="{{prefs.settings.tts.speech_pitch}}"
           ticks="[[speechPitchTicks_()]]"
           min-label="$i18n{textToSpeechPitchMinimumLabel}"
-          max-label="$i18n{textToSpeechPitchMaximumLabel}">
+          max-label="$i18n{textToSpeechPitchMaximumLabel}"
+          aria-describeby="pitch">
       </display-size-slider>
     </div>
     <div class="settings-box continuation">
-      <div class="start">$i18n{textToSpeechVolume}</div>
+      <div class="start" id="volume">$i18n{textToSpeechVolume}</div>
       <display-size-slider
           pref="{{prefs.settings.tts.speech_volume}}"
           ticks="[[speechVolumeTicks_()]]"
           min-label="$i18n{textToSpeechVolumeMinimumLabel}"
-          max-label="$i18n{textToSpeechVolumeMaximumLabel}">
+          max-label="$i18n{textToSpeechVolumeMaximumLabel}"
+          aria-describedby="volume">
       </display-size-slider>
     </div>
 
@@ -114,7 +117,7 @@
          hidden="[[!hasVoices]]">
       <div class="start">$i18n{textToSpeechMoreLanguages}</div>
       <cr-expand-button expanded="{{languagesOpened}}"
-          alt="$18n{textToSpeechMoreLanguages}">
+          alt="$i18n{textToSpeechMoreLanguages}">
       </cr-expand-button>
     </div>
     <iron-collapse id="moreLanguages" opened="[[languagesOpened]]">
@@ -147,8 +150,9 @@
         <a href="[[extension.optionsPage]]"
             tabindex=-1
             target="_blank"
+            aria-describedby$="extension_name_[[index]]"
             hidden$="[[!extension.optionsPage]]">
-          <paper-button aria-describedby="extension_name_[[index]]">
+          <paper-button>
             $i18n{settings}
           </paper-button>
         </a>
