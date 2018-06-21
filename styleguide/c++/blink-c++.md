@@ -47,13 +47,10 @@ FrameLoader::FrameLoader(LocalFrame* frame)
 }
 ```
 
-## Prefer WTF types over STL types
+## Prefer WTF types over STL and base types
 
-Outside of `//third_party/blink/common`, Blink should use WTF types. STL string
-and container types should only be used at the boundary to interoperate with
-'//base', `//third_party/blink/common`, and other Chromium-side code.
-Similarly, Blink should prefer `KURL` over `GURL` and `SecurityOrigin` over
-`url::Origin`.
+See [Blink readme](../../third_party/blink/renderer/README.md#Type-dependencies)
+for more details on Blink directories and their type usage.
 
 **Good:**
 ```c++
