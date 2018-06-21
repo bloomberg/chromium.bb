@@ -3705,6 +3705,21 @@ drm_device_validate_flags(uint32_t flags)
         return (flags & ~DRM_DEVICE_GET_PCI_REVISION);
 }
 
+static bool
+drm_device_has_rdev(drmDevicePtr device, dev_t find_rdev)
+{
+    struct stat sbuf;
+
+    for (int i = 0; i < DRM_NODE_MAX; i++) {
+        if (device->available_nodes & 1 << i) {
+            if (stat(device->nodes[i], &sbuf) == 0 &&
+                sbuf.st_rdev == find_rdev)
+                return true;
+        }
+    }
+    return false;
+}
+
 /**
  * Get information about the opened drm device
  *
@@ -3889,21 +3904,22 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
             local_devices = temp;
         }
 
-        /* store target at local_devices[0] for ease to use below */
-        if (find_rdev == sbuf.st_rdev && i) {
-            local_devices[i] = local_devices[0];
-            local_devices[0] = d;
-        }
-        else
-            local_devices[i] = d;
+        local_devices[i] = d;
         i++;
     }
     node_count = i;
 
     drmFoldDuplicatedDevices(local_devices, node_count);
 
-    *device = local_devices[0];
-    drmFreeDevices(&local_devices[1], node_count - 1);
+    for (i = 0; i < node_count; i++) {
+        if (!local_devices[i])
+            continue;
+
+        if (drm_device_has_rdev(local_devices[i], find_rdev))
+            *device = local_devices[i];
+        else
+            drmFreeDevice(&local_devices[i]);
+    }
 
     closedir(sysdir);
     free(local_devices);
