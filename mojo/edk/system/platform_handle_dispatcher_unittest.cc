@@ -12,8 +12,8 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/edk/system/platform_handle_utils.h"
 #include "mojo/edk/test/test_utils.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,29 +21,6 @@
 namespace mojo {
 namespace edk {
 namespace {
-
-ScopedInternalPlatformHandle PlatformHandleToScopedInternalPlatformHandle(
-    PlatformHandle platform_handle) {
-  MojoPlatformHandle handle;
-  PlatformHandleToMojoPlatformHandle(std::move(platform_handle), &handle);
-  ScopedInternalPlatformHandle internal_handle;
-  MojoResult result = MojoPlatformHandleToScopedInternalPlatformHandle(
-      &handle, &internal_handle);
-  if (result != MOJO_RESULT_OK)
-    return ScopedInternalPlatformHandle();
-  return internal_handle;
-}
-
-PlatformHandle ScopedInternalPlatformHandleToPlatformHandle(
-    ScopedInternalPlatformHandle internal_handle) {
-  MojoPlatformHandle handle;
-  handle.struct_size = sizeof(handle);
-  MojoResult result = ScopedInternalPlatformHandleToMojoPlatformHandle(
-      std::move(internal_handle), &handle);
-  if (result != MOJO_RESULT_OK)
-    return PlatformHandle();
-  return MojoPlatformHandleToPlatformHandle(&handle);
-}
 
 TEST(PlatformHandleDispatcherTest, Basic) {
   base::ScopedTempDir temp_dir;
@@ -63,13 +40,11 @@ TEST(PlatformHandleDispatcherTest, Basic) {
   ASSERT_TRUE(h.is_valid());
 
   scoped_refptr<PlatformHandleDispatcher> dispatcher =
-      PlatformHandleDispatcher::Create(
-          PlatformHandleToScopedInternalPlatformHandle(std::move(h)));
+      PlatformHandleDispatcher::Create(std::move(h));
   EXPECT_FALSE(h.is_valid());
   EXPECT_EQ(Dispatcher::Type::PLATFORM_HANDLE, dispatcher->GetType());
 
-  h = ScopedInternalPlatformHandleToPlatformHandle(
-      dispatcher->PassInternalPlatformHandle());
+  h = dispatcher->TakePlatformHandle();
   EXPECT_TRUE(h.is_valid());
 
   fp = test::FILEFromPlatformHandle(std::move(h), "rb");
@@ -83,7 +58,7 @@ TEST(PlatformHandleDispatcherTest, Basic) {
   EXPECT_STREQ(kHelloWorld, read_buffer);
 
   // Try getting the handle again. (It should fail cleanly.)
-  auto internal_handle = dispatcher->PassInternalPlatformHandle();
+  auto internal_handle = dispatcher->TakePlatformHandle();
   EXPECT_FALSE(internal_handle.is_valid());
 
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher->Close());
@@ -102,8 +77,7 @@ TEST(PlatformHandleDispatcherTest, Serialization) {
 
   scoped_refptr<PlatformHandleDispatcher> dispatcher =
       PlatformHandleDispatcher::Create(
-          PlatformHandleToScopedInternalPlatformHandle(
-              test::PlatformHandleFromFILE(std::move(fp))));
+          test::PlatformHandleFromFILE(std::move(fp)));
 
   uint32_t num_bytes = 0;
   uint32_t num_ports = 0;
@@ -122,8 +96,7 @@ TEST(PlatformHandleDispatcherTest, Serialization) {
 
   EXPECT_TRUE(received_handle.is_valid());
 
-  ScopedInternalPlatformHandle handle =
-      dispatcher->PassInternalPlatformHandle();
+  PlatformHandle handle = dispatcher->TakePlatformHandle();
   EXPECT_FALSE(handle.is_valid());
 
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, dispatcher->Close());
@@ -137,10 +110,7 @@ TEST(PlatformHandleDispatcherTest, Serialization) {
   EXPECT_FALSE(received_handle.is_valid());
   EXPECT_TRUE(dispatcher->GetType() == Dispatcher::Type::PLATFORM_HANDLE);
 
-  fp = test::FILEFromPlatformHandle(
-      ScopedInternalPlatformHandleToPlatformHandle(
-          dispatcher->PassInternalPlatformHandle()),
-      "rb");
+  fp = test::FILEFromPlatformHandle(dispatcher->TakePlatformHandle(), "rb");
   EXPECT_TRUE(fp);
 
   rewind(fp.get());

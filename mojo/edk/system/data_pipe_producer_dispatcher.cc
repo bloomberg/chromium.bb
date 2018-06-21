@@ -12,11 +12,11 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/data_pipe_control_message.h"
 #include "mojo/edk/system/node_controller.h"
+#include "mojo/edk/system/platform_handle_utils.h"
 #include "mojo/edk/system/request_context.h"
 #include "mojo/edk/system/user_message_impl.h"
 #include "mojo/public/c/system/data_pipe.h"
@@ -279,13 +279,15 @@ bool DataPipeProducerDispatcher::EndSerialize(
 
   ports[0] = control_port_.name();
 
-  ScopedInternalPlatformHandle ignored_handle;
-  ExtractInternalPlatformHandlesFromSharedMemoryRegionHandle(
-      region_handle.PassPlatformHandle(), &platform_handles[0],
-      &ignored_handle);
-  if (!platform_handles[0].is_valid() || ignored_handle.is_valid())
+  PlatformHandle handle;
+  PlatformHandle ignored_handle;
+  ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+      region_handle.PassPlatformHandle(), &handle, &ignored_handle);
+  if (!handle.is_valid() || ignored_handle.is_valid())
     return false;
 
+  platform_handles[0] =
+      PlatformHandleToScopedInternalPlatformHandle(std::move(handle));
   return true;
 }
 
@@ -340,11 +342,10 @@ DataPipeProducerDispatcher::Deserialize(const void* data,
   if (node_controller->node()->GetPort(ports[0], &port) != ports::OK)
     return nullptr;
 
-  ScopedInternalPlatformHandle buffer_handle;
-  std::swap(buffer_handle, handles[0]);
-  auto region_handle =
-      CreateSharedMemoryRegionHandleFromInternalPlatformHandles(
-          std::move(buffer_handle), ScopedInternalPlatformHandle());
+  auto buffer_handle =
+      ScopedInternalPlatformHandleToPlatformHandle(std::move(handles[0]));
+  auto region_handle = CreateSharedMemoryRegionHandleFromPlatformHandles(
+      std::move(buffer_handle), PlatformHandle());
   auto region = base::subtle::PlatformSharedMemoryRegion::Take(
       std::move(region_handle),
       base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,

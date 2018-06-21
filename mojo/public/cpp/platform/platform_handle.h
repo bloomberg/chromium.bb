@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "mojo/public/c/system/platform_handle.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
@@ -40,6 +41,18 @@ namespace mojo {
 // NOTE: This assumes ownership if the handle it represents.
 class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
  public:
+  enum class Type {
+    kNone,
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
+    kHandle,
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+    kMachPort,
+#endif
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+    kFd,
+#endif
+  };
+
   PlatformHandle();
   PlatformHandle(PlatformHandle&& other);
 
@@ -59,7 +72,20 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
 
   PlatformHandle& operator=(PlatformHandle&& other);
 
+  // Takes ownership of |handle|'s underlying platform handle and fills in
+  // |mojo_handle| with a representation of it. The caller assumes ownership of
+  // the platform handle.
+  static void ToMojoPlatformHandle(PlatformHandle handle,
+                                   MojoPlatformHandle* mojo_handle);
+
   // Closes the underlying platform handle.
+  // Assumes ownership of the platform handle described by |handle|, and returns
+  // it as a new PlatformHandle.
+  static PlatformHandle FromMojoPlatformHandle(
+      const MojoPlatformHandle* handle);
+
+  Type type() const { return type_; }
+
   void reset();
 
   // Duplicates the underlying platform handle, returning a new PlatformHandle
@@ -67,21 +93,23 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
   PlatformHandle Clone() const;
 
 #if defined(OS_WIN)
-  bool is_valid() const { return handle_.IsValid(); }
+  bool is_valid() const { return is_valid_handle(); }
+  bool is_valid_handle() const { return handle_.IsValid(); }
+  bool is_handle() const { return type_ == Type::kHandle; }
   const base::win::ScopedHandle& GetHandle() const { return handle_; }
   base::win::ScopedHandle TakeHandle() { return std::move(handle_); }
   HANDLE ReleaseHandle() WARN_UNUSED_RESULT { return handle_.Take(); }
 #elif defined(OS_FUCHSIA)
   bool is_valid() const { return is_valid_fd() || is_valid_handle(); }
-
   bool is_valid_handle() const { return handle_.is_valid(); }
+  bool is_handle() const { return type_ == Type::kHandle; }
   const base::ScopedZxHandle& GetHandle() const { return handle_; }
   base::ScopedZxHandle TakeHandle() { return std::move(handle_); }
   zx_handle_t ReleaseHandle() WARN_UNUSED_RESULT { return handle_.release(); }
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   bool is_valid() const { return is_valid_fd() || is_valid_mach_port(); }
-
   bool is_valid_mach_port() const { return mach_port_.is_valid(); }
+  bool is_mach_port() const { return type_ == Type::kMachPort; }
   const base::mac::ScopedMachSendRight& GetMachPort() const {
     return mach_port_;
   }
@@ -99,12 +127,15 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   bool is_valid_fd() const { return fd_.is_valid(); }
+  bool is_fd() const { return type_ == Type::kFd; }
   const base::ScopedFD& GetFD() const { return fd_; }
   base::ScopedFD TakeFD() { return std::move(fd_); }
   int ReleaseFD() WARN_UNUSED_RESULT { return fd_.release(); }
 #endif
 
  private:
+  Type type_ = Type::kNone;
+
 #if defined(OS_WIN)
   base::win::ScopedHandle handle_;
 #elif defined(OS_FUCHSIA)

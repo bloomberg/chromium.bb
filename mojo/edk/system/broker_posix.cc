@@ -13,10 +13,10 @@
 #include "base/memory/platform_shared_memory_region.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
-#include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/broker_messages.h"
 #include "mojo/edk/system/channel.h"
+#include "mojo/edk/system/platform_handle_utils.h"
 
 namespace mojo {
 namespace edk {
@@ -127,13 +127,18 @@ base::WritableSharedMemoryRegion Broker::GetWritableSharedMemoryRegion(
     if (!GetBrokerMessageData(message.get(), &data))
       return base::WritableSharedMemoryRegion();
 
-    if (incoming_platform_handles.size() == 1)
-      incoming_platform_handles.emplace_back();
+    PlatformHandle handles[2];
+    handles[0] = ScopedInternalPlatformHandleToPlatformHandle(
+        std::move(incoming_platform_handles[0]));
+    if (incoming_platform_handles.size() > 1) {
+      handles[1] = ScopedInternalPlatformHandleToPlatformHandle(
+          std::move(incoming_platform_handles[1]));
+    }
+
     return base::WritableSharedMemoryRegion::Deserialize(
         base::subtle::PlatformSharedMemoryRegion::Take(
-            CreateSharedMemoryRegionHandleFromInternalPlatformHandles(
-                std::move(incoming_platform_handles[0]),
-                std::move(incoming_platform_handles[1])),
+            CreateSharedMemoryRegionHandleFromPlatformHandles(
+                std::move(handles[0]), std::move(handles[1])),
             base::subtle::PlatformSharedMemoryRegion::Mode::kWritable,
             num_bytes,
             base::UnguessableToken::Deserialize(data->guid_high,

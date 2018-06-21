@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/time/time.h"
-#include "mojo/edk/embedder/entrypoints.h"
 #include "mojo/edk/system/core.h"
+#include "mojo/edk/system/entrypoints.h"
 #include "mojo/public/c/system/core.h"
 #include "mojo/public/c/system/thunks.h"
 

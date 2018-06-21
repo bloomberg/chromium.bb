@@ -5,19 +5,18 @@
 #include "mojo/edk/system/platform_handle_dispatcher.h"
 
 #include "base/synchronization/lock.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/edk/system/platform_handle_utils.h"
 
 namespace mojo {
 namespace edk {
 
 // static
 scoped_refptr<PlatformHandleDispatcher> PlatformHandleDispatcher::Create(
-    ScopedInternalPlatformHandle platform_handle) {
+    PlatformHandle platform_handle) {
   return new PlatformHandleDispatcher(std::move(platform_handle));
 }
 
-ScopedInternalPlatformHandle
-PlatformHandleDispatcher::PassInternalPlatformHandle() {
+PlatformHandle PlatformHandleDispatcher::TakePlatformHandle() {
   return std::move(platform_handle_);
 }
 
@@ -49,7 +48,8 @@ bool PlatformHandleDispatcher::EndSerialize(
   base::AutoLock lock(lock_);
   if (is_closed_)
     return false;
-  handles[0] = ScopedInternalPlatformHandle(platform_handle_.get());
+  handles[0] =
+      PlatformHandleToScopedInternalPlatformHandle(std::move(platform_handle_));
   return true;
 }
 
@@ -63,12 +63,8 @@ bool PlatformHandleDispatcher::BeginTransit() {
 
 void PlatformHandleDispatcher::CompleteTransitAndClose() {
   base::AutoLock lock(lock_);
-
   in_transit_ = false;
   is_closed_ = true;
-
-  // The system has taken ownership of our handle.
-  ignore_result(platform_handle_.release());
 }
 
 void PlatformHandleDispatcher::CancelTransit() {
@@ -87,11 +83,12 @@ scoped_refptr<PlatformHandleDispatcher> PlatformHandleDispatcher::Deserialize(
   if (num_bytes || num_ports || num_handles != 1)
     return nullptr;
 
-  return PlatformHandleDispatcher::Create(std::move(handles[0]));
+  return PlatformHandleDispatcher::Create(
+      ScopedInternalPlatformHandleToPlatformHandle(std::move(handles[0])));
 }
 
 PlatformHandleDispatcher::PlatformHandleDispatcher(
-    ScopedInternalPlatformHandle platform_handle)
+    PlatformHandle platform_handle)
     : platform_handle_(std::move(platform_handle)) {}
 
 PlatformHandleDispatcher::~PlatformHandleDispatcher() {

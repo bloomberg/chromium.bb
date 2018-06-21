@@ -181,7 +181,7 @@ base::subtle::PlatformSharedMemoryRegion UnwrapPlatformSharedMemoryRegion(
 
 ScopedHandle WrapPlatformHandle(PlatformHandle handle) {
   MojoPlatformHandle platform_handle;
-  PlatformHandleToMojoPlatformHandle(std::move(handle), &platform_handle);
+  PlatformHandle::ToMojoPlatformHandle(std::move(handle), &platform_handle);
 
   MojoHandle wrapped_handle;
   MojoResult result =
@@ -198,78 +198,7 @@ PlatformHandle UnwrapPlatformHandle(ScopedHandle handle) {
                                                nullptr, &platform_handle);
   if (result != MOJO_RESULT_OK)
     return PlatformHandle();
-  return MojoPlatformHandleToPlatformHandle(&platform_handle);
-}
-
-void PlatformHandleToMojoPlatformHandle(PlatformHandle handle,
-                                        MojoPlatformHandle* out_handle) {
-  DCHECK(out_handle);
-  out_handle->struct_size = sizeof(MojoPlatformHandle);
-  if (!handle.is_valid()) {
-    out_handle->type = MOJO_PLATFORM_HANDLE_TYPE_INVALID;
-    out_handle->value = 0;
-    return;
-  }
-
-  do {
-#if defined(OS_WIN)
-    out_handle->type = MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE;
-    out_handle->value =
-        static_cast<uint64_t>(HandleToLong(handle.TakeHandle().Take()));
-    break;
-#elif defined(OS_FUCHSIA)
-    if (handle.is_valid_handle()) {
-      out_handle->type = MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE;
-      out_handle->value = handle.TakeHandle().release();
-      break;
-    }
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-    if (handle.is_valid_mach_port()) {
-      out_handle->type = MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT;
-      out_handle->value =
-          static_cast<uint64_t>(handle.TakeMachPort().release());
-      break;
-    }
-#endif
-
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
-    DCHECK(handle.is_valid_fd());
-    out_handle->type = MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR;
-    out_handle->value = static_cast<uint64_t>(handle.TakeFD().release());
-#endif
-  } while (false);
-
-  // One of the above cases must take ownership of |handle|.
-  DCHECK(!handle.is_valid());
-}
-
-PlatformHandle MojoPlatformHandleToPlatformHandle(
-    const MojoPlatformHandle* handle) {
-  if (handle->struct_size < sizeof(*handle) ||
-      handle->type == MOJO_PLATFORM_HANDLE_TYPE_INVALID) {
-    return PlatformHandle();
-  }
-
-#if defined(OS_WIN)
-  if (handle->type != MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE)
-    return PlatformHandle();
-  return PlatformHandle(
-      base::win::ScopedHandle(LongToHandle(static_cast<long>(handle->value))));
-#elif defined(OS_FUCHSIA)
-  if (handle->type == MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE)
-    return PlatformHandle(base::ScopedZxHandle(handle->value));
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-  if (handle->type == MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT) {
-    return PlatformHandle(base::mac::ScopedMachSendRight(
-        static_cast<mach_port_t>(handle->value)));
-  }
-#endif
-
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
-  if (handle->type != MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR)
-    return PlatformHandle();
-  return PlatformHandle(base::ScopedFD(static_cast<int>(handle->value)));
-#endif
+  return PlatformHandle::FromMojoPlatformHandle(&platform_handle);
 }
 
 // Wraps a PlatformFile as a Mojo handle. Takes ownership of the file object.

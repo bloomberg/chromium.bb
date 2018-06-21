@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_EMBEDDER_ENTRYPOINTS_H_
-#define MOJO_EDK_EMBEDDER_ENTRYPOINTS_H_
+#ifndef MOJO_EDK_SYSTEM_ENTRYPOINTS_H_
+#define MOJO_EDK_SYSTEM_ENTRYPOINTS_H_
 
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/thunks.h"
@@ -22,4 +22,4 @@ MOJO_SYSTEM_IMPL_EXPORT const MojoSystemThunks& GetSystemThunks();
 }  // namespace edk
 }  // namespace mojo
 
-#endif  // MOJO_EDK_EMBEDDER_ENTRYPOINTS_H_
+#endif  // MOJO_EDK_SYSTEM_ENTRYPOINTS_H_

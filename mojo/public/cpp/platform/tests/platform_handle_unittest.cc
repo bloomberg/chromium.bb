@@ -237,9 +237,9 @@ TEST_P(PlatformHandleTest, CStructConversion) {
   EXPECT_EQ(kTestData, GetObjectContents(test_handle()));
 
   MojoPlatformHandle c_handle;
-  PlatformHandleToMojoPlatformHandle(std::move(test_handle()), &c_handle);
+  PlatformHandle::ToMojoPlatformHandle(std::move(test_handle()), &c_handle);
 
-  PlatformHandle handle = MojoPlatformHandleToPlatformHandle(&c_handle);
+  PlatformHandle handle = PlatformHandle::FromMojoPlatformHandle(&c_handle);
   EXPECT_EQ(kTestData, GetObjectContents(handle));
 }
 
