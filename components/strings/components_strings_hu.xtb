@@ -808,6 +808,7 @@
 <translation id="6891596781022320156">Ezt a házirendszintet a rendszer nem támogatja.</translation>
 <translation id="6895330447102777224">Kártyáját ellenőriztük</translation>
 <translation id="6897140037006041989">User agent</translation>
+<translation id="6903319715792422884">A Biztonságos Böngészés fejlesztésének segítése bizonyos <ph name="BEGIN_WHITEPAPER_LINK" />rendszer-információknak és oldaltartalmaknak<ph name="END_WHITEPAPER_LINK" /> a Google-nak való elküldésével. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Felhasználó:</translation>
 <translation id="6945221475159498467">Kiválasztás</translation>
 <translation id="6948701128805548767">Az átvételi módok és követelmények megtekintéséhez válassza ki a címet</translation>
@@ -1012,6 +1013,7 @@
 <translation id="8308427013383895095">A fordítás a hálózati kapcsolat problémája miatt nem sikerült.</translation>
 <translation id="8311129316111205805">Munkamenet betöltése</translation>
 <translation id="8332188693563227489">A hozzáférés megtagadva a következőhöz: <ph name="HOST_NAME" /></translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Ha tisztában van a biztonságát fenyegető kockázatokkal, a veszélyes programok eltávolítása előtt is <ph name="BEGIN_LINK" />felkeresheti ezt a webhelyet<ph name="END_LINK" />.</translation>
 <translation id="8349305172487531364">Könyvjelzősáv</translation>
 <translation id="8363502534493474904">Repülős üzemmód kikapcsolása</translation>
@@ -1111,6 +1113,7 @@
 <translation id="9148507642005240123">&amp;Szerkesztés visszavonása</translation>
 <translation id="9154194610265714752">Frissítve</translation>
 <translation id="9157595877708044936">Előkészítés...</translation>
+<translation id="9168814207360376865">Engedélyezés a webhelyek számára, hogy ellenőrizzék, van-e elmentett fizetési módja</translation>
 <translation id="9169664750068251925">Mindig tiltsa ezen az oldalon</translation>
 <translation id="9170848237812810038">&amp;Visszavonás</translation>
 <translation id="9171296965991013597">Bezárja az alkalmazást?</translation>

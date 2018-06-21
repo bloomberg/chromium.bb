@@ -4,6 +4,7 @@
 <translation id="1012876632442809908">Уређај са USB прикључком типа C (предњи порт)</translation>
 <translation id="1013923882670373915">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Унесите овај PIN кôд на том уређају: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Батерија писаљке је скоро празна</translation>
+<translation id="1056775291175587022">Нема мрежа</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="112308213915226829">Аутоматски сакриј полицу</translation>
 <translation id="1153356358378277386">Упарени уређаји</translation>
@@ -20,6 +21,7 @@
 <translation id="1346748346194534595">Удесно</translation>
 <translation id="1383876407941801731">Претражи</translation>
 <translation id="1467432559032391204">Улево</translation>
+<translation id="1479743070547893297">Цртајте писаљком да бисте изабрали</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Покретач</translation>
 <translation id="1525508553941733066">ОДБАЦИ</translation>
@@ -50,8 +52,10 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Подесите језик</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1993072747612765854">Сазнајте више о најновијем ажурирању за: <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Искључи</translation>
 <translation id="2012624427112548395">Ctrl + тастер за претрагу + H</translation>
+<translation id="2016340657076538683">Унесите поруку</translation>
 <translation id="2049639323467105390">Овим уређајем управља домен <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Вертикално</translation>
 <translation id="2067602449040652523">Осветљеност тастатуре</translation>
@@ -75,6 +79,7 @@
 <translation id="2359808026110333948">Настави</translation>
 <translation id="2365393535144473978">Ако омогућите мобилне податке, омогућавате Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
+<translation id="2412593942846481727">Доступно је ажурирање</translation>
 <translation id="2429753432712299108">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Пре него што му је дате, уверите се да је ова шифра приказана на том уређају: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Обавештења</translation>
 <translation id="2484513351006226581">Притисните <ph name="KEYBOARD_SHORTCUT" /> да бисте променили распоред тастатуре.</translation>
@@ -82,6 +87,7 @@
 <translation id="2509468283778169019">CAPS LOCK је укључен</translation>
 <translation id="2532589005999780174">Режим високог контраста</translation>
 <translation id="2575685495496069081">Онемогућено је вишеструко пријављивање</translation>
+<translation id="2582112259361606227">Рестартујте да бисте ажурирали</translation>
 <translation id="2597972630681408282">Ноћно светло: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM картица је закључана</translation>
 <translation id="2653659639078652383">Пошаљи</translation>
@@ -103,6 +109,7 @@
 <translation id="2911940648265863620">Делите екран</translation>
 <translation id="2942516765047364088">Положај полице</translation>
 <translation id="2946119680249604491">Додај везу</translation>
+<translation id="2961963223658824723">Нешто није у реду. Пробајте поново за пар секунди.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> је јавна сесија којом управља <ph name="DOMAIN" /></translation>
 <translation id="3000461861112256445">Моно звук</translation>
@@ -111,7 +118,6 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Дно</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
-<translation id="3112378005171663295">Скупите</translation>
 <translation id="3126069444801937830">Покрените поново да бисте ажурирали</translation>
 <translation id="3147142846278915599">Покретач (апликације се синхронизују...)</translation>
 <translation id="315116470104423982">Мобилни подаци</translation>
@@ -147,6 +153,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Закључај</translation>
 <translation id="3798670284305777884">Звучник (интерни)</translation>
+<translation id="380165613292957338">Здраво, како могу да помогнем?</translation>
 <translation id="3846575436967432996">Нису доступне информације о мрежи</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3891340733213178823">Двапут притисните Ctrl+Shift+Q да бисте се одјавили.</translation>
@@ -159,6 +166,7 @@
 <translation id="3995138139523574647">Уређај са USB прикључком типа C (десни задњи порт)</translation>
 <translation id="4017989525502048489">Ласерски показивач</translation>
 <translation id="4072264167173457037">Сигнал средње јачине</translation>
+<translation id="4200057768455216496">Притиснули сте пречицу за монтирану лупу екрана. Желите ли да је укључите?</translation>
 <translation id="4217571870635786043">Диктирање</translation>
 <translation id="4279490309300973883">Пресликавање</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -189,6 +197,7 @@
 <translation id="4890187583552566966">Администратор је онемогућио Google помоћник.</translation>
 <translation id="4895488851634969361">Батерија је пуна.</translation>
 <translation id="4905614135390995787">Пречица за укључивање и искључивање режима високог контраста је промењена. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4917385247580444890">Јак</translation>
 <translation id="4918086044614829423">Прихвати</translation>
 <translation id="4961318399572185831">Пребацивање екрана</translation>
 <translation id="5136175204352732067">Нека друга тастатура је повезана</translation>
@@ -212,7 +221,9 @@
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" /> <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Притисните Ctrl + Alt + Z да бисте онемогућили говорне повратне информације.</translation>
 <translation id="5648021990716966815">Утикач за микрофон</translation>
+<translation id="5669267381087807207">Активирање</translation>
 <translation id="5673434351075758678">Са језика „<ph name="FROM_LOCALE" />“ на „<ph name="TO_LOCALE" />“ после синхронизације уређаја.</translation>
+<translation id="574392208103952083">Средња</translation>
 <translation id="5744083938413354016">Превлачење додиром</translation>
 <translation id="5777841717266010279">Желите ли да прекинете дељење екрана?</translation>
 <translation id="57838592816432529">Искључи звук</translation>
@@ -257,6 +268,7 @@
 <translation id="6452181791372256707">Одбиј</translation>
 <translation id="6453179446719226835">Језик је промењен</translation>
 <translation id="6459472438155181876">Проширивање екрана у <ph name="DISPLAY_NAME" /></translation>
+<translation id="6482559668224714696">Лупа за цео екран</translation>
 <translation id="6490471652906364588">Уређај са USB прикључком типа C (десни порт)</translation>
 <translation id="6501401484702599040">Екран се пребацује на <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Унос рукописа</translation>
@@ -281,17 +293,20 @@
 <translation id="6820676911989879663">Направите паузу!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Активирај <ph name="NETWORKSERVICE" /></translation>
+<translation id="6910714959251846841">Ово ажурирање захтева да обавите powerwash на уређају. Сазнајте више о најновијем ажурирању за: <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Придружи ме другој...</translation>
 <translation id="6981982820502123353">Приступачност</translation>
 <translation id="698231206551913481">Све датотеке и локални подаци повезани са овим корисником ће бити трајно избрисани када уклоните овог корисника.</translation>
 <translation id="7015766095477679451">Вратите се у <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Изађи из сесије</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> се пребацује на <ph name="RECEIVER_NAME" /></translation>
+<translation id="7037152028959403492">Притиснули сте пречицу за високи контраст. Желите ли да је укључите?</translation>
 <translation id="7066646422045619941">Ову мрежу је онемогућио администратор.</translation>
 <translation id="7067196344162293536">Аутоматски ротирај</translation>
 <translation id="7076293881109082629">Пријављивање</translation>
 <translation id="7098389117866926363">Уређај са USB прикључком типа C (леви задњи порт)</translation>
 <translation id="7131634465328662194">Одјавићемо вас аутоматски.</translation>
+<translation id="7143207342074048698">Повезивање</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Враћање на стару резолуцију за <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Задњи микрофон</translation>
@@ -337,9 +352,11 @@
 <translation id="8132793192354020517">Успостављена је веза са <ph name="NAME" /></translation>
 <translation id="813913629614996137">Покреће се…</translation>
 <translation id="8142699993796781067">Приватна мрежа</translation>
+<translation id="8152119955266188852">Притиснули сте пречицу за лупу за цео екран. Желите ли да је укључите?</translation>
 <translation id="8180896103888046100">Заустави пребацивање на непознати пријемник</translation>
 <translation id="8190698733819146287">Прилагоди језике и унос...</translation>
 <translation id="8261506727792406068">Избриши</translation>
+<translation id="8297006494302853456">Слаб</translation>
 <translation id="8308637677604853869">Претходни мени</translation>
 <translation id="8351131234907093545">Направите белешку</translation>
 <translation id="8392451568018454956">Мени са опцијама за <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -367,12 +384,14 @@
 <translation id="8841375032071747811">Дугме Назад</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">Апликација не подржава подељени екран.</translation>
+<translation id="8874184842967597500">Није повезано</translation>
 <translation id="8878886163241303700">Проширени екран</translation>
 <translation id="8921624153894383499">Google помоћник не говори овај језик.</translation>
 <translation id="8938800817013097409">Уређај са USB прикључком типа C (задњи десни порт)</translation>
 <translation id="8940956008527784070">Батерија је скоро празна (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">Брзо покретање</translation>
 <translation id="8995603266996330174">Управља <ph name="DOMAIN" /></translation>
+<translation id="9029474291399787231">Доступно је ажурирање за Adobe Flash Player</translation>
 <translation id="9033907480196064950">Тренутно пребацујете <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
@@ -385,6 +404,7 @@
 <translation id="9194617393863864469">Пријавите још једног корисника...</translation>
 <translation id="9201131092683066720">Батерија је <ph name="PERCENTAGE" />% пуна.</translation>
 <translation id="9210037371811586452">Излазак из режима спојених радних површина</translation>
+<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Подеси позадину</translation>
 <translation id="923686485342484400">Двапут притисните Control Shift Q да бисте се одјавили.</translation>
 <translation id="945522503751344254">Пошаљи повратне информације</translation>

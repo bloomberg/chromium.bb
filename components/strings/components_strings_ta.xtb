@@ -806,6 +806,7 @@
 <translation id="6891596781022320156">கொள்கையின் நிலை ஆதரிக்கப்படவில்லை.</translation>
 <translation id="6895330447102777224">கார்டு உறுதிசெய்யப்பட்டது</translation>
 <translation id="6897140037006041989">பயனர் முகவர்</translation>
+<translation id="6903319715792422884">Googleக்கு சில <ph name="BEGIN_WHITEPAPER_LINK" />சாதனத் தகவல்களையும் பக்க உள்ளடக்கத்தையும்<ph name="END_WHITEPAPER_LINK" /> அனுப்புவதன் மூலம் பாதுகாப்பான உலாவலை மேம்படுத்த உதவுங்கள். <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">பயனர்:</translation>
 <translation id="6945221475159498467">தேர்ந்தெடு</translation>
 <translation id="6948701128805548767">பிக்அப் முறைகளையும் தேவைகளையும் பார்க்க, முகவரியைத் தேர்ந்தெடுக்கவும்</translation>
@@ -1010,6 +1011,7 @@
 <translation id="8308427013383895095">பிணைய இணைப்பில் ஒரு சிக்கல் இருப்பதால் மொழிப்பெயர்ப்பு தோல்வியடைந்தது.</translation>
 <translation id="8311129316111205805">அமர்வை ஏற்று</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> க்கான அணுகல் மறுக்கப்பட்டது</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">உங்கள் பாதுகாப்பிற்கான ஆபத்தைப் புரிந்துகொண்டால், தீங்கான நிரல்களை அகற்றும் முன் <ph name="BEGIN_LINK" />இந்தத் தளத்தைப் பார்வையிடலாம்<ph name="END_LINK" />.</translation>
 <translation id="8349305172487531364">புக்மார்க் பட்டி</translation>
 <translation id="8363502534493474904">விமானப் பயன்முறையை முடக்குதல்</translation>

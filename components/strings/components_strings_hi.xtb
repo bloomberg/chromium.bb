@@ -810,6 +810,7 @@
 <translation id="6891596781022320156">नीति स्तर समर्थित नहीं है.</translation>
 <translation id="6895330447102777224">आपके कार्ड की पुष्टि हो गई है</translation>
 <translation id="6897140037006041989">उपयोगकर्ता एजेंट</translation>
+<translation id="6903319715792422884">Google को कुछ <ph name="BEGIN_WHITEPAPER_LINK" />सिस्टम जानकारी और पेज सामग्री<ph name="END_WHITEPAPER_LINK" /> भेजकर सुरक्षित ब्राउज़िंग को बेहतर बनाने में मदद करें. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">उपयोगकर्ता:</translation>
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6948701128805548767">पिकअप के तरीके और ज़रूरतें देखने के लिए, कोई पता चुनें</translation>
@@ -854,7 +855,7 @@
 <translation id="7271803869921933038">स्वीकार किए जाने वाले प्रीपेड कार्ड</translation>
 <translation id="7275334191706090484">प्रबंधित बुकमार्क</translation>
 <translation id="7298195798382681320">सुझाए गए</translation>
-<translation id="7309308571273880165">क्रैैश रिपोर्ट <ph name="CRASH_TIME" /> बजे कैप्चर की गई (उपयोगकर्ता द्वारा अपलोड करने का अनुरोध किया गया, अभी तक अपलोड नहीं किया गया)</translation>
+<translation id="7309308571273880165">खराबी की रिपोर्ट <ph name="CRASH_TIME" /> बजे दर्ज की गई (उपयोगकर्ता ने अपलोड करने का अनुरोध किया, अभी तक अपलोड नहीं किया गया)</translation>
 <translation id="7320336641823683070">कनेक्शन संबंधी सहायता</translation>
 <translation id="7334320624316649418">&amp;पुन: क्रमित करना फिर से करें</translation>
 <translation id="733923710415886693">प्रमाणपत्र पारदर्शिता के माध्यम से सर्वर के प्रमाणपत्र को प्रकट नहीं किया गया.</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8308427013383895095">नेटवर्क कनेक्शन में कोई समस्या होने के कारण अनुवाद विफल हुआ.</translation>
 <translation id="8311129316111205805">सत्र लोड करें</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> का एक्सेस अस्वीकृत किया गया</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">अगर आप अपनी सुरक्षा संबंधी जोखिमों को समझते हैं तो, खतरनाक प्रोग्राम हटाए जाने से पहले आप <ph name="BEGIN_LINK" />इस साइट पर विज़िट<ph name="END_LINK" /> कर सकते हैं.</translation>
 <translation id="8349305172487531364">बुकमार्क बार</translation>
 <translation id="8363502534493474904">हवाई जहाज़ मोड बंद करें</translation>
@@ -1113,6 +1115,7 @@
 <translation id="9148507642005240123">&amp;संपादन वापस लाएं</translation>
 <translation id="9154194610265714752">अपडेट किया गया</translation>
 <translation id="9157595877708044936">सेट अप कर रहा है...</translation>
+<translation id="9168814207360376865">साइट को यह देखने दें कि आपके भुगतान के तरीके सेव किए गए हैं या नहीं</translation>
 <translation id="9169664750068251925">इस साइट पर हमेशा अवरोधित करें</translation>
 <translation id="9170848237812810038">&amp;पूर्ववत् करें</translation>
 <translation id="9171296965991013597">ऐप्लिकेशन छोड़ें?</translation>
