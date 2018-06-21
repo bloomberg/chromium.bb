@@ -3704,7 +3704,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       if (!frame_bufs[frame_to_show].showable_frame) {
         aom_merge_corrupted_flag(&xd->corrupted, 1);
       }
-      frame_bufs[frame_to_show].showable_frame = 0;
+      if (cm->reset_decoder_state) frame_bufs[frame_to_show].showable_frame = 0;
+
       cm->film_grain_params = frame_bufs[frame_to_show].film_grain_params;
 
       if (cm->reset_decoder_state) {
@@ -3723,7 +3724,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                          "Still pictures must be coded as shown keyframes");
     }
-    cm->showable_frame = 0;
+    cm->showable_frame = cm->frame_type != KEY_FRAME;
     if (cm->show_frame) {
       if (cm->seq_params.decoder_model_info_present_flag &&
           cm->timing_info.equal_picture_interval == 0)
