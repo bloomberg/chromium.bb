@@ -66,8 +66,7 @@ struct ReceivedMessage {
 class MockTimerFactory : public TimerFactory {
  public:
   std::unique_ptr<base::Timer> CreateOneShotTimer() override {
-    return std::make_unique<base::MockTimer>(false /* retains_user_task */,
-                                             false /* is_repeating */);
+    return std::make_unique<base::MockOneShotTimer>();
   }
 };
 
@@ -292,7 +291,8 @@ class BleConnectionManagerTest : public testing::Test {
  protected:
   class FakeSecureChannel : public cryptauth::FakeSecureChannel {
    public:
-    FakeSecureChannel(std::unique_ptr<cryptauth::Connection> connection)
+    explicit FakeSecureChannel(
+        std::unique_ptr<cryptauth::Connection> connection)
         : cryptauth::FakeSecureChannel(std::move(connection)) {}
     ~FakeSecureChannel() override = default;
 
@@ -489,7 +489,7 @@ class BleConnectionManagerTest : public testing::Test {
     EXPECT_TRUE(connection_metadata);
     EXPECT_TRUE(
         connection_metadata->connection_attempt_timeout_timer_->IsRunning());
-    static_cast<base::MockTimer*>(
+    static_cast<base::MockOneShotTimer*>(
         connection_metadata->connection_attempt_timeout_timer_.get())
         ->Fire();
   }

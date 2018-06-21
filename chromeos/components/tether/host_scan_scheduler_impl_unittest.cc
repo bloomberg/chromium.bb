@@ -75,10 +75,8 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
         network_state_handler(), fake_host_scanner_.get(),
         session_manager_.get());
 
-    mock_host_scan_batch_timer_ = new base::MockTimer(
-        true /* retain_user_task */, false /* is_repeating */);
-    mock_delay_scan_after_unlock_timer_ = new base::MockTimer(
-        true /* retain_user_task */, false /* is_repeating */);
+    mock_host_scan_batch_timer_ = new base::MockOneShotTimer();
+    mock_delay_scan_after_unlock_timer_ = new base::MockOneShotTimer();
 
     // Advance the clock by an arbitrary value to ensure that when Now() is
     // called, the Unix epoch will not be returned.
@@ -170,8 +168,8 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
   std::unique_ptr<FakeHostScanner> fake_host_scanner_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;
 
-  base::MockTimer* mock_host_scan_batch_timer_;
-  base::MockTimer* mock_delay_scan_after_unlock_timer_;
+  base::MockOneShotTimer* mock_host_scan_batch_timer_;
+  base::MockOneShotTimer* mock_delay_scan_after_unlock_timer_;
   base::SimpleTestClock test_clock_;
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 

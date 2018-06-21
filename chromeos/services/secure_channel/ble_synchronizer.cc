@@ -150,7 +150,7 @@ void BleSynchronizer::ProcessQueue() {
 }
 
 void BleSynchronizer::SetTestDoubles(
-    std::unique_ptr<base::Timer> test_timer,
+    std::unique_ptr<base::OneShotTimer> test_timer,
     base::Clock* test_clock,
     scoped_refptr<base::TaskRunner> test_task_runner) {
   timer_ = std::move(test_timer);

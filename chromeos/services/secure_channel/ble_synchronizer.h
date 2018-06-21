@@ -45,7 +45,8 @@ class BleSynchronizer : public BleSynchronizerBase {
   ~BleSynchronizer() override;
 
  protected:
-  BleSynchronizer(scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
+  explicit BleSynchronizer(
+      scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
   void ProcessQueue() override;
 
  private:
@@ -66,7 +67,7 @@ class BleSynchronizer : public BleSynchronizerBase {
     BLUETOOTH_ADVERTISEMENT_RESULT_MAX
   };
 
-  void SetTestDoubles(std::unique_ptr<base::Timer> test_timer,
+  void SetTestDoubles(std::unique_ptr<base::OneShotTimer> test_timer,
                       base::Clock* test_clock,
                       scoped_refptr<base::TaskRunner> test_task_runner);
 
@@ -98,7 +99,7 @@ class BleSynchronizer : public BleSynchronizerBase {
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 
   std::unique_ptr<Command> current_command_;
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
   base::Clock* clock_;
   scoped_refptr<base::TaskRunner> task_runner_;
   base::Time last_command_end_timestamp_;

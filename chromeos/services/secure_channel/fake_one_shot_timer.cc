@@ -12,7 +12,7 @@ namespace secure_channel {
 
 FakeOneShotTimer::FakeOneShotTimer(
     base::OnceCallback<void(const base::UnguessableToken&)> destructor_callback)
-    : base::MockTimer(true /* retain_user_task */, false /* is_repeating */),
+    : base::MockOneShotTimer(),
       destructor_callback_(std::move(destructor_callback)),
       id_(base::UnguessableToken::Create()) {}
 
