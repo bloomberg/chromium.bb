@@ -38,9 +38,8 @@ if (enable_java_templates) {
     ]
   }
 
-  generate_interface_jar("android_ijar") {
-    input_jar = android_sdk_jar
-    output_jar = "$root_out_dir/lib.java/android.interface.jar"
+  android_system_java_prebuilt("android_sdk_java") {
+    jar_path = android_sdk_jar
   }
 
   # Write to a file some GN vars that are useful to scripts that use the output

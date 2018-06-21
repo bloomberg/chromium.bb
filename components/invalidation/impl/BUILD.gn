@@ -271,6 +271,7 @@ if (is_android) {
       "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
       "//third_party/junit",
     ]
+    deps += android_extra_test_deps
     java_files = [
       "android/javatests/src/org/chromium/components/invalidation/InvalidationClientServiceTest.java",
       "android/javatests/src/org/chromium/components/invalidation/TestableInvalidationClientService.java",

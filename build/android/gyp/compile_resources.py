@@ -296,10 +296,11 @@ def _CreateLinkApkArgs(options):
     '--version-name', options.version_name,
     '--auto-add-overlay',
     '--no-version-vectors',
-    '-I', options.android_sdk_jar,
     '-o', options.apk_path,
   ]
 
+  for j in options.android_sdk_jars:
+    link_command += ['-I', j]
   if options.proguard_file:
     link_command += ['--proguard', options.proguard_file]
   if options.proguard_file_main_dex:
@@ -336,7 +337,9 @@ def _ExtractVersionFromSdk(aapt_path, sdk_path):
   Returns:
     A (version_code, version_name) pair of strings.
   """
-  output = subprocess.check_output([aapt_path, 'dump', 'badging', sdk_path])
+  output = build_utils.CheckOutput(
+      [aapt_path, 'dump', 'badging', sdk_path],
+      print_stdout=False, print_stderr=False)
   version_code = re.search(r"versionCode='(.*?)'", output).group(1)
   version_name = re.search(r"versionName='(.*?)'", output).group(1)
   return version_code, version_name,
@@ -362,8 +365,23 @@ def _FixManifest(options, temp_dir):
   ElementTree.register_namespace('tools', _TOOLS_NAMESPACE)
   original_manifest = ElementTree.parse(options.android_manifest)
 
-  version_code, version_name = _ExtractVersionFromSdk(
-      options.aapt_path, options.android_sdk_jar)
+  def maybe_extract_version(j):
+    try:
+      return _ExtractVersionFromSdk(options.aapt_path, j)
+    except build_utils.CalledProcessError:
+      return None
+
+  extract_all = [maybe_extract_version(j) for j in options.android_sdk_jars]
+  successful_extractions = [x for x in extract_all if x]
+  if len(successful_extractions) == 0:
+    raise Exception(
+        'Unable to find android SDK jar among candidates: %s'
+            % ', '.join(options.android_sdk_jars))
+  elif len(successful_extractions) > 1:
+    raise Exception(
+        'Found multiple android SDK jars among candidates: %s'
+            % ', '.join(options.android_sdk_jars))
+  version_code, version_name = successful_extractions.pop()
 
   # ElementTree.find does not work if the required tag is the root.
   if original_manifest.getroot().tag == 'manifest':
@@ -635,9 +653,9 @@ def main(args):
   possible_input_paths = [
     options.aapt_path,
     options.android_manifest,
-    options.android_sdk_jar,
     options.shared_resources_whitelist,
   ]
+  possible_input_paths += options.android_sdk_jars
   input_paths = [x for x in possible_input_paths if x]
   input_paths.extend(options.dependencies_res_zips)
   input_paths.extend(options.extra_r_text_files)

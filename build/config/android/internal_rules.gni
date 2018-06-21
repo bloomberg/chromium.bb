@@ -376,12 +376,6 @@ template("write_build_config") {
         invoker.main_class,
       ]
     }
-    if (defined(invoker.alternative_android_sdk_ijar)) {
-      args += [
-        "--bootclasspath",
-        rebase_path(invoker.alternative_android_sdk_ijar, root_build_dir),
-      ]
-    }
     if (current_toolchain != default_toolchain) {
       # This has to be a built-time error rather than a GN assert because many
       # packages have a mix of java and non-java targets. For example, the
@@ -902,14 +896,10 @@ if (enable_java_templates) {
       if (defined(invoker.proguard_jar_path)) {
         _proguard_jar_path = invoker.proguard_jar_path
       }
-      _android_sdk_jar = android_sdk_jar
-      if (defined(invoker.alternative_android_sdk_jar)) {
-        _android_sdk_jar = invoker.alternative_android_sdk_jar
-      }
 
       inputs = [
-        _android_sdk_jar,
         _proguard_jar_path,
+        invoker.build_config,
       ]
       if (defined(invoker.inputs)) {
         inputs += invoker.inputs
@@ -922,6 +912,7 @@ if (enable_java_templates) {
         "$_output_jar_path.seeds",
         "$_output_jar_path.usage",
       ]
+      _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
       args = [
         "--depfile",
         rebase_path(depfile, root_build_dir),
@@ -930,7 +921,7 @@ if (enable_java_templates) {
         "--output-path",
         rebase_path(_output_jar_path, root_build_dir),
         "--classpath",
-        rebase_path(_android_sdk_jar, root_build_dir),
+        "@FileArg($_rebased_build_config:android:sdk_jars)",
       ]
       if (proguard_verbose) {
         args += [ "--verbose" ]
@@ -1215,9 +1206,6 @@ if (enable_java_templates) {
   #  jar_included_patterns: OPtional list of .class file patterns to include
   #    in the final .jar file. jar_excluded_patterns take precedence over this.
   #  strip_resource_classes:
-  #  alternative_android_sdk_ijar:
-  #  alternative_android_sdk_ijar_dep:
-  #  alternative_android_sdk:
   #  deps:
   #  java_files:
   #  java_sources_file:
@@ -1263,13 +1251,6 @@ if (enable_java_templates) {
     _deps = []
     _previous_output_jar = _input_jar_path
 
-    assert(!defined(invoker.alternative_android_sdk_ijar) ||
-           invoker.alternative_android_sdk_ijar != "")
-    assert(!defined(invoker.alternative_android_sdk_ijar_dep) ||
-           invoker.alternative_android_sdk_ijar_dep != "")
-    assert(!defined(invoker.alternative_android_sdk_jar) ||
-           invoker.alternative_android_sdk_jar != "")
-
     if (_enable_assert || _enable_custom_resources) {
       _java_bytecode_rewriter_target = "${target_name}__bytecode_rewrite"
       _java_bytecode_rewriter_input_jar = _previous_output_jar
@@ -1285,12 +1266,7 @@ if (enable_java_templates) {
         if (defined(invoker.deps)) {
           deps += invoker.deps
         }
-        _android_sdk_jar = android_sdk_jar
-        if (defined(invoker.alternative_android_sdk_jar)) {
-          _android_sdk_jar = invoker.alternative_android_sdk_jar
-        }
         inputs = [
-          _android_sdk_jar,
           _bytecode_rewriter_script,
           _java_bytecode_rewriter_input_jar,
           _build_config,
@@ -1316,7 +1292,7 @@ if (enable_java_templates) {
         }
         args += [
           "--extra-classpath-jar",
-          rebase_path(_android_sdk_jar, root_build_dir),
+          "@FileArg($_rebased_build_config:android:sdk_jars)",
           "--extra-classpath-jar",
           "@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
         ]
@@ -1346,14 +1322,6 @@ if (enable_java_templates) {
         outputs = [
           _desugar_output_jar,
         ]
-        if (defined(invoker.alternative_android_sdk_ijar)) {
-          deps += [ invoker.alternative_android_sdk_ijar_dep ]
-          _android_sdk_ijar = invoker.alternative_android_sdk_ijar
-        } else {
-          deps += [ "//build/android:android_ijar" ]
-          _android_sdk_ijar = "$root_out_dir/lib.java/android.interface.jar"
-        }
-        inputs += [ _android_sdk_ijar ]
         args = [
           "--depfile",
           rebase_path(depfile, root_build_dir),
@@ -1362,8 +1330,7 @@ if (enable_java_templates) {
           "--output-jar",
           rebase_path(_desugar_output_jar, root_build_dir),
           "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)",
-          "--bootclasspath-entry",
-          rebase_path(_android_sdk_ijar, root_build_dir),
+          "--bootclasspath=@FileArg($_rebased_build_config:android:sdk_interface_jars)",
         ]
       }
 
@@ -1535,8 +1502,6 @@ if (enable_java_templates) {
   #     The default is to use 'aapt' to generate the file from the content
   #     of the resource directories.
   #
-  #   alternative_android_sdk_jar: Alternative system android.jar to use.
-  #
   #   shared_resources: (optional)
   #     If true, generate an R.java file that uses non-final resource ID
   #     variables and an onResourcesLoaded() method.
@@ -1596,15 +1561,9 @@ if (enable_java_templates) {
 
       _android_aapt_path = android_default_aapt_path
 
-      _android_sdk_jar = android_sdk_jar
-      if (defined(invoker.alternative_android_sdk_jar)) {
-        _android_sdk_jar = invoker.alternative_android_sdk_jar
-      }
-
       inputs = [
         invoker.build_config,
         _android_aapt_path,
-        _android_sdk_jar,
       ]
 
       _rebased_all_resource_dirs =
@@ -1614,8 +1573,7 @@ if (enable_java_templates) {
       args = [
         "--depfile",
         rebase_path(depfile, root_build_dir),
-        "--android-sdk-jar",
-        rebase_path(_android_sdk_jar, root_build_dir),
+        "--android-sdk-jars=@FileArg($_rebased_build_config:android:sdk_jars)",
         "--aapt-path",
         rebase_path(_android_aapt_path, root_build_dir),
         "--dependencies-res-zips=@FileArg($_rebased_build_config:resources:dependency_zips)",
@@ -1624,6 +1582,9 @@ if (enable_java_templates) {
       ]
 
       if (defined(invoker.android_manifest)) {
+        if (defined(invoker.android_manifest_dep)) {
+          deps += [ invoker.android_manifest_dep ]
+        }
         inputs += [ invoker.android_manifest ]
         args += [
           "--android-manifest",
@@ -1703,8 +1664,6 @@ if (enable_java_templates) {
   #   version_code: (optional)
   #
   #   version_name: (optional)
-  #
-  #   alternative_android_sdk_jar: Alternative system android.jar to use.
   #
   #   shared_resources: (optional)
   #     If true, make all variables in each generated R.java file non-final,
@@ -1797,15 +1756,9 @@ if (enable_java_templates) {
         _android_aapt_path = "$android_sdk_app_bundle_build_tools/aapt"
       }
 
-      _android_sdk_jar = android_sdk_jar
-      if (defined(invoker.alternative_android_sdk_jar)) {
-        _android_sdk_jar = invoker.alternative_android_sdk_jar
-      }
-
       inputs = [
         invoker.build_config,
         _android_aapt_path,
-        _android_sdk_jar,
       ]
 
       _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
@@ -1813,8 +1766,7 @@ if (enable_java_templates) {
       args = [
         "--depfile",
         rebase_path(depfile, root_build_dir),
-        "--android-sdk-jar",
-        rebase_path(_android_sdk_jar, root_build_dir),
+        "--android-sdk-jars=@FileArg($_rebased_build_config:android:sdk_jars)",
         "--aapt-path",
         rebase_path(_android_aapt_path, root_build_dir),
         "--dependencies-res-zips=@FileArg($_rebased_build_config:resources:dependency_zips)",
@@ -2318,6 +2270,8 @@ if (enable_java_templates) {
     _incremental_android_manifest =
         get_label_info(_incremental_compile_resources_target_name,
                        "target_gen_dir") + "/AndroidManifest.xml"
+    _rebased_build_config =
+        rebase_path(invoker.assets_build_config, root_build_dir)
     action(_incremental_compile_resources_target_name) {
       deps = _incremental_deps
       script =
@@ -2335,10 +2289,6 @@ if (enable_java_templates) {
         _incremental_compiled_resources_path,
       ]
 
-      _android_sdk_jar = android_sdk_jar
-      if (defined(invoker.alternative_android_sdk_jar)) {
-        _android_sdk_jar = invoker.alternative_android_sdk_jar
-      }
       args = [
         "--src-manifest",
         rebase_path(_android_manifest, root_build_dir),
@@ -2350,8 +2300,7 @@ if (enable_java_templates) {
         rebase_path(_incremental_compiled_resources_path, root_build_dir),
         "--aapt-path",
         rebase_path(android_default_aapt_path, root_build_dir),
-        "--android-sdk-jar",
-        rebase_path(_android_sdk_jar, root_build_dir),
+        "--android-sdk-jars=@FileArg($_rebased_build_config:android:sdk_jars)",
       ]
       if (disable_incremental_isolated_processes) {
         args += [ "--disable-isolated-processes" ]
@@ -2459,11 +2408,6 @@ if (enable_java_templates) {
   #  javac_args: Optional list of extra arguments to pass to javac.
   #  chromium_code: Whether this corresponds to Chromium-specific sources.
   #  requires_android: True if these sources can only run on Android.
-  #  alternative_android_sdk_ijar: Optional path to alternative Android system
-  #    interface jar file (android.jar). Ignored it !requires_android.
-  #  alternative_android_sdk_ijar_dep: If alternative_android_sdk_ijar is
-  #    provided, this should be the dependency target that generates the
-  #    alternative .jar file.
   #  additional_jar_files: Optional list of files to copy into the resulting
   #    .jar file (by default, only .class files are put there). Each entry
   #    has the 'srcPath:dstPath' format.
@@ -2492,7 +2436,6 @@ if (enable_java_templates) {
 
     _build_config = invoker.build_config
     _chromium_code = invoker.chromium_code
-    _requires_android = invoker.requires_android
 
     if (defined(invoker.enable_errorprone)) {
       _enable_errorprone = invoker.enable_errorprone
@@ -2582,18 +2525,8 @@ if (enable_java_templates) {
         inputs += [ "$root_build_dir/bin/jmake" ]
         outputs += [ "${invoker.javac_jar_path}.pdb" ]
       }
-      if (_requires_android) {
-        if (defined(invoker.alternative_android_sdk_ijar)) {
-          deps += [ invoker.alternative_android_sdk_ijar_dep ]
-          _android_sdk_ijar = invoker.alternative_android_sdk_ijar
-        } else {
-          deps += [ "//build/android:android_ijar" ]
-          _android_sdk_ijar = "$root_out_dir/lib.java/android.interface.jar"
-        }
-        inputs += [ _android_sdk_ijar ]
-        _rebased_android_sdk_ijar =
-            rebase_path(_android_sdk_ijar, root_build_dir)
-        args += [ "--bootclasspath=$_rebased_android_sdk_ijar" ]
+      if (invoker.requires_android) {
+        args += [ "--bootclasspath=@FileArg($_rebased_build_config:android:sdk_interface_jars)" ]
       }
       if (_chromium_code) {
         args += [ "--chromium-code=1" ]
@@ -2730,13 +2663,11 @@ if (enable_java_templates) {
   #    instrumentation with the Emma coverage processor. If not provided,
   #    this is controlled by the global emma_coverage build arg variable
   #    and only used for non-test Chromium code.
-  #  alternative_android_sdk_jar: Optional. Alternative Android system
-  #    android.jar to use.
-  #  alternative_android_sdk_ijar: Optional alternative Android system
-  #    interface jar path (i.e. the alternative_android_sdk_jar file processed
-  #    by the ijar tool).
-  #  alternative_android_sdk_ijar_dep: Optional. Dependency target that
-  #    generates alternative_android_sdk_ijar (if the latter is provided).
+  #  include_android_sdk: Optional. Whether or not the android SDK dep
+  #    should be added to deps. Defaults to true for non-system libraries
+  #    that support android.
+  #  alternative_android_sdk_dep: Optional. Alternative Android system
+  #    android java target to use.
   #  annotation_processor_deps: Optional list of dependencies corresponding
   #    to annotation processors used to compile these sources.
   #  input_jars_paths: Optional list of additional .jar file paths, which will
@@ -2807,6 +2738,7 @@ if (enable_java_templates) {
     _is_annotation_processor = invoker.type == "java_annotation_processor"
     _is_java_binary =
         invoker.type == "java_binary" || invoker.type == "junit_binary"
+    _is_system_library = invoker.type == "system_java_library"
     _supports_android =
         defined(invoker.supports_android) && invoker.supports_android
     _requires_android =
@@ -2949,6 +2881,18 @@ if (enable_java_templates) {
       write_file(_java_sources_file, rebase_path(_java_files, root_build_dir))
     }
 
+    _include_android_sdk = !_is_system_library && _supports_android
+    if (defined(invoker.include_android_sdk)) {
+      _include_android_sdk = invoker.include_android_sdk
+    }
+    if (_include_android_sdk) {
+      if (defined(invoker.alternative_android_sdk_dep)) {
+        _accumulated_deps += [ invoker.alternative_android_sdk_dep ]
+      } else {
+        _accumulated_deps += [ "//build/android:android_sdk_java" ]
+      }
+    }
+
     # Define build_config_deps which will be a list of targets required to
     # build the _build_config.
     _build_config = "$target_gen_dir/$_main_target_name.build_config"
@@ -2957,7 +2901,6 @@ if (enable_java_templates) {
     write_build_config(_build_config_target_name) {
       forward_variables_from(invoker,
                              [
-                               "alternative_android_sdk_ijar",
                                "annotation_processor_deps",
                                "classpath_deps",
                                "gradle_treat_as_prebuilt",
@@ -3048,8 +2991,6 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "additional_jar_files",
-                                 "alternative_android_sdk_ijar",
-                                 "alternative_android_sdk_ijar_dep",
                                  "apk_name",
                                  "enable_errorprone",
                                  "enable_incremental_javac_override",
@@ -3112,44 +3053,58 @@ if (enable_java_templates) {
     }  # _has_sources
 
     if (defined(_final_jar_path)) {
-      _process_prebuilt_target_name = "${target_name}__process_prebuilt"
-      process_java_prebuilt(_process_prebuilt_target_name) {
-        forward_variables_from(invoker,
-                               [
-                                 "alternative_android_sdk_ijar",
-                                 "alternative_android_sdk_ijar_dep",
-                                 "alternative_android_sdk_jar",
-                                 "jar_excluded_patterns",
-                                 "jar_included_patterns",
-                               ])
-        supports_android = _supports_android
-        enable_build_hooks = _enable_build_hooks
-        enable_build_hooks_android = _enable_build_hooks_android
-        build_config = _build_config
-        input_jar_path = _unprocessed_jar_path
-        emma_instrument = _emma_instrument
-        if (_emma_instrument) {
-          java_files = _java_files
-          java_sources_file = _java_sources_file
-        }
-        output_jar_path = _final_jar_path
-        if (_has_sources) {
-          deps = _accumulated_public_deps  # compile & build_config
-        } else {
-          deps = _accumulated_deps + _accumulated_public_deps
-        }
-      }
-      _accumulated_public_deps += [ ":$_process_prebuilt_target_name" ]
+      if (_is_system_library) {
+        _copy_system_library_target_name = "${target_name}__copy_system_library"
 
-      if (defined(_dex_path)) {
-        dex("${target_name}__dex") {
-          input_jars = [ _final_jar_path ]
-          output = _dex_path
-          deps = [
-            ":$_process_prebuilt_target_name",
+        # Use copy_ex rather than copy to ensure that we copy symlink targets
+        # rather than the symlink itself.
+        copy_ex(_copy_system_library_target_name) {
+          sources = [
+            _unprocessed_jar_path,
+          ]
+          dest = _final_jar_path
+          outputs = [
+            _final_jar_path,
           ]
         }
-        _accumulated_public_deps += [ ":${target_name}__dex" ]
+        _accumulated_public_deps += [ ":$_copy_system_library_target_name" ]
+      } else {
+        _process_prebuilt_target_name = "${target_name}__process_prebuilt"
+        process_java_prebuilt(_process_prebuilt_target_name) {
+          forward_variables_from(invoker,
+                                 [
+                                   "jar_excluded_patterns",
+                                   "jar_included_patterns",
+                                 ])
+          supports_android = _supports_android
+          enable_build_hooks = _enable_build_hooks
+          enable_build_hooks_android = _enable_build_hooks_android
+          build_config = _build_config
+          input_jar_path = _unprocessed_jar_path
+          emma_instrument = _emma_instrument
+          if (_emma_instrument) {
+            java_files = _java_files
+            java_sources_file = _java_sources_file
+          }
+          output_jar_path = _final_jar_path
+          if (_has_sources) {
+            deps = _accumulated_public_deps  # compile & build_config
+          } else {
+            deps = _accumulated_deps + _accumulated_public_deps
+          }
+        }
+        _accumulated_public_deps += [ ":$_process_prebuilt_target_name" ]
+
+        if (defined(_dex_path)) {
+          dex("${target_name}__dex") {
+            input_jars = [ _final_jar_path ]
+            output = _dex_path
+            deps = [
+              ":$_process_prebuilt_target_name",
+            ]
+          }
+          _accumulated_public_deps += [ ":${target_name}__dex" ]
+        }
       }
 
       if (!_is_java_binary) {

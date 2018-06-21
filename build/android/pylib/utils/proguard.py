@@ -213,7 +213,7 @@ class _ParseState(object):
     # There can be no nested constant element values.
     assert parent.ftype in [_ELEMENT_ARRAY, _ELEMENT_ANNOTATION]
     field = self._annotation_stack[-1]
-    if type(value) is str and not field.ftype == _ELEMENT_PRIMITIVE:
+    if isinstance(value, str) and not field.ftype == _ELEMENT_PRIMITIVE:
       # The value comes from the output parser via
       # UpdateCurrentAnnotationFieldValue, and should be a value of a constant
       # element. If it isn't, just skip it.

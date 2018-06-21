@@ -42,7 +42,7 @@ def _AddNamespace(name):
   """Adds the android namespace prefix to the given identifier."""
   return '{%s}%s' % (_ANDROID_NAMESPACE, name)
 
-def _ParseArgs():
+def _ParseArgs(args):
   parser = argparse.ArgumentParser()
   parser.add_argument('--src-manifest',
                       help='The main manifest of the app',
@@ -57,12 +57,15 @@ def _ParseArgs():
   parser.add_argument('--out-apk', help='Path to output .ap_ file')
   parser.add_argument('--in-apk', help='Path to non-incremental .ap_ file')
   parser.add_argument('--aapt-path', help='Path to the Android aapt tool')
-  parser.add_argument('--android-sdk-jar', help='Path to the Android SDK jar.')
+  parser.add_argument('--android-sdk-jars', help='Path to the Android SDK jar.')
 
-  ret = parser.parse_args()
-  if ret.out_apk and not (ret.in_apk and ret.aapt_path and ret.android_sdk_jar):
+  ret = parser.parse_args(build_utils.ExpandFileArgs(args))
+  if ret.out_apk and not (ret.in_apk and ret.aapt_path
+                          and ret.android_sdk_jars):
     parser.error(
-        '--out-apk requires --in-apk, --aapt-path, and --android-sdk-jar.')
+        '--out-apk requires --in-apk, --aapt-path, and --android-sdk-jars.')
+  ret.android_sdk_jars = build_utils.ParseGnList(ret.android_sdk_jars)
+
   return ret
 
 
@@ -122,8 +125,8 @@ def _ExtractVersionFromApk(aapt_path, apk_path):
   return version_code, version_name,
 
 
-def main():
-  options = _ParseArgs()
+def main(raw_args):
+  options = _ParseArgs(raw_args)
   with open(options.src_manifest) as f:
     main_manifest_data = f.read()
   new_manifest_data = _ProcessManifest(main_manifest_data,
@@ -136,10 +139,12 @@ def main():
         options.aapt_path, options.in_apk)
     with tempfile.NamedTemporaryFile() as f:
       cmd = [options.aapt_path, 'package', '-f', '-F', f.name,
-             '-M', options.out_manifest, '-I', options.android_sdk_jar,
+             '-M', options.out_manifest,
              '-I', options.in_apk, '--replace-version',
              '--version-code', version_code, '--version-name', version_name,
              '--debug-mode']
+      for j in options.android_sdk_jars:
+        cmd += ['-I', j]
       subprocess.check_call(cmd)
       with zipfile.ZipFile(f.name, 'a') as z:
         path_transform = lambda p: None if p == 'AndroidManifest.xml' else p
@@ -147,6 +152,8 @@ def main():
             z, [options.in_apk], path_transform=path_transform)
       shutil.copyfile(f.name, options.out_apk)
 
+  return 0
+
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main(sys.argv[1:]))

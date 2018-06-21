@@ -719,6 +719,7 @@ instrumentation_test_apk("cronet_test_instrumentation_apk") {
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/hamcrest:hamcrest_core_java",
   ]
+  deps += android_extra_test_deps
   additional_apks = [ "//net/android:net_test_support_apk" ]
 
   data_deps = [
@@ -778,6 +779,7 @@ instrumentation_test_apk(
     "//base:base_java_test_support",
     "//third_party/android_support_test_runner:runner_java",
   ]
+  deps += android_extra_test_deps
 
   proguard_enabled = true
 
@@ -827,6 +829,7 @@ instrumentation_test_apk(
   deps = [
     ":cronet_smoketests_missing_native_library_java",
   ]
+  deps += android_extra_test_deps
 
   proguard_enabled = true
 
@@ -863,6 +866,7 @@ android_apk("cronet_perf_test_apk") {
     ":cronet_test_apk_java",
     "//base:base_java",
   ]
+  deps += android_extra_test_deps
 
   proguard_enabled = true
   proguard_configs = [

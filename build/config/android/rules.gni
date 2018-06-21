@@ -782,6 +782,8 @@ if (enable_java_templates) {
   #   deps: Specifies the dependencies of this target. Any Android resources
   #     listed in deps will be included by libraries/apks that depend on this
   #     target.
+  #   alternative_android_sdk_dep: Optional. Alternative Android system
+  #     android java target to use.
   #   resource_dirs: List of directories containing resources for this target.
   #   generated_resource_dirs: List of directories containing resources for this
   #     target which are *generated* by a dependency. |generated_resource_files|
@@ -831,6 +833,17 @@ if (enable_java_templates) {
       _srcjar_path = _base_path + ".srcjar"
     }
 
+    _deps = []
+    if (defined(invoker.deps)) {
+      _deps += invoker.deps
+    }
+
+    if (defined(invoker.alternative_android_sdk_dep)) {
+      _deps += [ invoker.alternative_android_sdk_dep ]
+    } else {
+      _deps += [ "//build/android:android_sdk_java" ]
+    }
+
     write_build_config(_build_config_target_name) {
       type = "android_resources"
       build_config = _build_config
@@ -859,9 +872,7 @@ if (enable_java_templates) {
         srcjar = _srcjar_path
       }
 
-      if (defined(invoker.deps)) {
-        possible_config_deps = invoker.deps
-      }
+      possible_config_deps = _deps
     }
 
     prepare_resources(target_name) {
@@ -869,15 +880,12 @@ if (enable_java_templates) {
                              [
                                "android_manifest",
                                "custom_package",
-                               "deps",
                                "generated_resource_dirs",
                                "generated_resource_files",
                                "resource_dirs",
                                "v14_skip",
                              ])
-      if (!defined(deps)) {
-        deps = []
-      }
+      deps = _deps
       deps += [ ":$_build_config_target_name" ]
       if (defined(invoker.android_manifest_dep)) {
         deps += [ invoker.android_manifest_dep ]
@@ -1241,6 +1249,9 @@ if (enable_java_templates) {
       type = "junit_binary"
       main_target_name = invoker.target_name
 
+      # Include the android SDK jar(s) for resource processing.
+      include_android_sdk = true
+
       # Robolectric can handle deps that set !supports_android as well those
       # that set requires_android.
       bypass_platform_checks = true
@@ -1435,6 +1446,9 @@ if (enable_java_templates) {
     if (defined(invoker.deps)) {
       _deps = invoker.deps
     }
+    if (_supports_android) {
+      _deps += [ "//build/android:android_sdk_java" ]
+    }
     _enable_build_hooks =
         _supports_android &&
         (!defined(invoker.no_build_hooks) || !invoker.no_build_hooks)
@@ -1469,18 +1483,16 @@ if (enable_java_templates) {
       proguard(_jar_target_name) {
         forward_variables_from(invoker,
                                [
-                                 "alternative_android_sdk_jar",
                                  "data",
                                  "proguard_jar_path",
                                ])
+        build_config = _build_config
         deps = _deps
-        inputs = [
-          _build_config,
-        ]
 
         # Although these will be listed as deps in the depfile, they must also
         # appear here so that "gn analyze" knows about them.
         # https://crbug.com/827197
+        inputs = []
         if (defined(invoker.proguard_configs)) {
           inputs += invoker.proguard_configs
         }
@@ -1705,11 +1717,6 @@ if (enable_java_templates) {
     java_library(target_name) {
       forward_variables_from(invoker, "*")
 
-      if (defined(alternative_android_sdk_ijar)) {
-        assert(defined(alternative_android_sdk_ijar_dep))
-        assert(defined(alternative_android_sdk_jar))
-      }
-
       supports_android = true
       requires_android = true
 
@@ -1743,6 +1750,15 @@ if (enable_java_templates) {
   template("android_java_prebuilt") {
     android_library(target_name) {
       forward_variables_from(invoker, "*")
+    }
+  }
+
+  template("android_system_java_prebuilt") {
+    java_library_impl(target_name) {
+      forward_variables_from(invoker, "*")
+      no_build_hooks = true
+      supports_android = true
+      type = "system_java_library"
     }
   }
 
@@ -2146,7 +2162,6 @@ if (enable_java_templates) {
     compile_apk_resources(_compile_resources_target) {
       forward_variables_from(invoker,
                              [
-                               "alternative_android_sdk_jar",
                                "app_as_shared_lib",
                                "shared_resources",
                                "support_zh_hk",
@@ -2316,6 +2331,7 @@ if (enable_java_templates) {
     java_library_impl(_java_target) {
       forward_variables_from(invoker,
                              [
+                               "alternative_android_sdk_dep",
                                "android_manifest",
                                "android_manifest_dep",
                                "apk_under_test",
@@ -2396,18 +2412,14 @@ if (enable_java_templates) {
     if (_proguard_enabled) {
       _proguard_target = "${_template_name}__proguard"
       proguard(_proguard_target) {
-        forward_variables_from(invoker,
-                               [
-                                 "alternative_android_sdk_jar",
-                                 "proguard_jar_path",
-                               ])
+        forward_variables_from(invoker, [ "proguard_jar_path" ])
+        build_config = _build_config
         deps = _deps + [
                  ":$_build_config_target",
                  ":$_compile_resources_target",
                  ":$_java_target",
                ]
         inputs = [
-          _build_config,
           _jar_path,
         ]
 
@@ -2570,7 +2582,6 @@ if (enable_java_templates) {
     create_apk("${_template_name}__create") {
       forward_variables_from(invoker,
                              [
-                               "alternative_android_sdk_jar",
                                "public_deps",
                                "secondary_native_libs",
                                "shared_resources",

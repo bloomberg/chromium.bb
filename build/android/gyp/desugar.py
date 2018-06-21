@@ -17,21 +17,21 @@ _DESUGAR_JAR_PATH = os.path.normpath(os.path.join(
     _SRC_ROOT, 'third_party', 'bazel', 'desugar', 'Desugar.jar'))
 
 
-def _OnStaleMd5(input_jar, output_jar, classpath, bootclasspath_entry):
+def _OnStaleMd5(input_jar, output_jar, classpath, bootclasspath):
   cmd = [
       'java',
       '-jar',
       _DESUGAR_JAR_PATH,
       '--input',
       input_jar,
-      '--bootclasspath_entry',
-      bootclasspath_entry,
       '--output',
       output_jar,
       # Don't include try-with-resources files in every .jar. Instead, they
       # are included via //third_party/bazel/desugar:desugar_runtime_java.
       '--desugar_try_with_resources_omit_runtime_classes',
   ]
+  for path in bootclasspath:
+    cmd += ['--bootclasspath_entry', path]
   for path in classpath:
     cmd += ['--classpath_entry', path]
   build_utils.CheckOutput(cmd, print_stdout=False)
@@ -47,21 +47,19 @@ def main():
                       help='Jar output path.')
   parser.add_argument('--classpath', required=True,
                       help='Classpath.')
-  parser.add_argument('--bootclasspath-entry', required=True,
+  parser.add_argument('--bootclasspath', required=True,
                       help='Path to javac bootclasspath interface jar.')
   options = parser.parse_args(args)
 
+  options.bootclasspath = build_utils.ParseGnList(options.bootclasspath)
   options.classpath = build_utils.ParseGnList(options.classpath)
-  input_paths = options.classpath + [
-      options.bootclasspath_entry,
-      options.input_jar,
-  ]
+  input_paths = options.classpath + options.bootclasspath + [options.input_jar]
   output_paths = [options.output_jar]
   depfile_deps = options.classpath + [_DESUGAR_JAR_PATH]
 
   build_utils.CallAndWriteDepfileIfStale(
       lambda: _OnStaleMd5(options.input_jar, options.output_jar,
-                          options.classpath, options.bootclasspath_entry),
+                          options.classpath, options.bootclasspath),
       options,
       input_paths=input_paths,
       input_strings=[],
