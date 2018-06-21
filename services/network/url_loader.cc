@@ -609,7 +609,8 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
                  base::Unretained(this)));
 
   // Figure out if we need to sniff (for MIME type detection or for CORB).
-  if (factory_params_->is_corb_enabled) {
+  if (factory_params_->is_corb_enabled &&
+      resource_type_ != factory_params_->corb_excluded_resource_type) {
     CrossOriginReadBlocking::LogAction(
         CrossOriginReadBlocking::Action::kResponseStarted);
 
