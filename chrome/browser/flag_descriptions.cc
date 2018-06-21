@@ -1231,6 +1231,19 @@ const char kOverlayScrollbarsFlashWhenMouseEnterDescription[] =
     "Flash Overlay Scrollbars When Mouse Enter a scrollable area. You must also"
     " enable Overlay Scrollbars.";
 
+const char kOverlayStrategiesName[] = "Select HW overlay strategies";
+const char kOverlayStrategiesDescription[] =
+    "Select strategies used to promote quads to HW overlays.";
+const char kOverlayStrategiesDefault[] = "Default";
+const char kOverlayStrategiesNone[] = "None";
+const char kOverlayStrategiesUnoccludedFullscreen[] =
+    "Unoccluded fullscreen buffers (single-fullscreen)";
+const char kOverlayStrategiesUnoccluded[] =
+    "Unoccluded buffers (single-fullscreen,single-on-top)";
+const char kOverlayStrategiesOccludedAndUnoccluded[] =
+    "Occluded and unoccluded buffers "
+    "(single-fullscreen,single-on-top,underlay)";
+
 const char kUseNewAcceptLanguageHeaderName[] = "Use new Accept-Language header";
 const char kUseNewAcceptLanguageHeaderDescription[] =
     "Adds the base language code after other corresponding language+region "
