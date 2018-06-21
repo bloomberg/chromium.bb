@@ -58,6 +58,12 @@ class GamepadDeviceMac : public AbstractHapticGamepad {
   // Stop vibration and release held resources.
   void DoShutdown() override;
 
+  // Initialize button capabilities for |gamepad|.
+  bool AddButtons(Gamepad* gamepad);
+
+  // Initialize axis capabilities for |gamepad|.
+  bool AddAxes(Gamepad* gamepad);
+
   // Return true if this element has a parent collection with a usage page that
   // suggests it could be a gamepad.
   static bool CheckCollection(IOHIDElementRef element);

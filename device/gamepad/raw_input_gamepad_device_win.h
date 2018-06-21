@@ -13,6 +13,7 @@
 #include <windows.h>
 
 #include <memory>
+#include <vector>
 
 #include "device/gamepad/abstract_haptic_gamepad.h"
 #include "device/gamepad/dualshock4_controller_win.h"
@@ -87,6 +88,12 @@ class RawInputGamepadDeviceWin : public AbstractHapticGamepad {
   // on the device.
   bool QueryDeviceCapabilities();
   void QueryButtonCapabilities(uint16_t button_count);
+  void QueryNormalButtonCapabilities(HIDP_BUTTON_CAPS button_caps[],
+                                     uint16_t button_count,
+                                     std::vector<bool>* button_indices_used);
+  void QuerySpecialButtonCapabilities(HIDP_BUTTON_CAPS button_caps[],
+                                      uint16_t button_count,
+                                      std::vector<bool>* button_indices_used);
   void QueryAxisCapabilities(uint16_t axis_count);
 
   // True if the device described by this object is a valid RawInput gamepad.
@@ -97,6 +104,9 @@ class RawInputGamepadDeviceWin : public AbstractHapticGamepad {
 
   // The index assigned to this gamepad by the data fetcher.
   int source_id_ = 0;
+
+  // The last time the pad state was updated.
+  int64_t last_update_timestamp_;
 
   // Functions loaded from hid.dll. Not owned.
   HidDllFunctionsWin* hid_functions_ = nullptr;
@@ -114,6 +124,11 @@ class RawInputGamepadDeviceWin : public AbstractHapticGamepad {
 
   size_t buttons_length_ = 0;
   bool buttons_[Gamepad::kButtonsLengthCap];
+
+  // Mapping from "Special" usage index (defined by the kSpecialUsages table)
+  // to an index within the |buttons_| array, or -1 if the special usage is not
+  // mapped for this device.
+  std::vector<int> special_button_map_;
 
   size_t axes_length_ = 0;
   RawGamepadAxis axes_[Gamepad::kAxesLengthCap];

@@ -4,6 +4,7 @@
 
 #include "raw_input_gamepad_device_win.h"
 
+#include "base/stl_util.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 
 namespace device {
@@ -18,13 +19,40 @@ unsigned long GetBitmask(unsigned short bits) {
   return (1 << bits) - 1;
 }
 
-const uint32_t kAxisMinimumUsageNumber = 0x30;
+const uint32_t kGenericDesktopUsagePage = 0x01;
 const uint32_t kGameControlsUsagePage = 0x05;
 const uint32_t kButtonUsagePage = 0x09;
+const uint32_t kConsumerUsagePage = 0x0c;
+
+const uint32_t kAxisMinimumUsageNumber = 0x30;
+const uint32_t kSystemMainMenuUsageNumber = 0x85;
+const uint32_t kPowerUsageNumber = 0x30;
+const uint32_t kSearchUsageNumber = 0x0221;
+const uint32_t kHomeUsageNumber = 0x0223;
+const uint32_t kBackUsageNumber = 0x0224;
 
 // Blacklisted vendor IDs.
 const uint32_t kVendorOculus = 0x2833;
 const uint32_t kVendorBlue = 0xb58e;
+
+// The fetcher will collect all HID usages from the Button usage page and any
+// additional usages listed below.
+struct SpecialUsages {
+  const uint16_t usage_page;
+  const uint16_t usage;
+} kSpecialUsages[] = {
+    // Xbox One S pre-FW update reports Xbox button as SystemMainMenu over BT.
+    {kGenericDesktopUsagePage, kSystemMainMenuUsageNumber},
+    // Power is used for the Guide button on the Nvidia Shield 2015 gamepad.
+    {kConsumerUsagePage, kPowerUsageNumber},
+    // Search is used for the Guide button on the Nvidia Shield 2017 gamepad.
+    {kConsumerUsagePage, kSearchUsageNumber},
+    // Start, Back, and Guide buttons are often reported as Consumer Home or
+    // Back.
+    {kConsumerUsagePage, kHomeUsageNumber},
+    {kConsumerUsagePage, kBackUsageNumber},
+};
+const size_t kSpecialUsagesLen = base::size(kSpecialUsages);
 
 }  // namespace
 
@@ -34,6 +62,7 @@ RawInputGamepadDeviceWin::RawInputGamepadDeviceWin(
     HidDllFunctionsWin* hid_functions)
     : handle_(device_handle),
       source_id_(source_id),
+      last_update_timestamp_(GamepadDataFetcher::CurrentTimeInMicroseconds()),
       hid_functions_(hid_functions) {
   ::ZeroMemory(buttons_, sizeof(buttons_));
   ::ZeroMemory(axes_, sizeof(axes_));
@@ -87,11 +116,24 @@ void RawInputGamepadDeviceWin::UpdateGamepad(RAWINPUT* input) {
 
     if (status == HIDP_STATUS_SUCCESS) {
       // Set each reported button to true.
-      for (uint32_t j = 0; j < buttons_length; j++) {
-        int32_t button_index = usages[j].Usage - 1;
-        if (usages[j].UsagePage == kButtonUsagePage && button_index >= 0 &&
-            button_index < static_cast<int>(Gamepad::kButtonsLengthCap)) {
-          buttons_[button_index] = true;
+      for (size_t j = 0; j < buttons_length; j++) {
+        uint16_t usage_page = usages[j].UsagePage;
+        uint16_t usage = usages[j].Usage;
+        if (usage_page == kButtonUsagePage && usage > 0) {
+          size_t button_index = size_t{usage - 1};
+          if (button_index < Gamepad::kButtonsLengthCap)
+            buttons_[button_index] = true;
+        } else if (usage_page != kButtonUsagePage &&
+                   !special_button_map_.empty()) {
+          for (size_t special_index = 0; special_index < kSpecialUsagesLen;
+               ++special_index) {
+            int button_index = special_button_map_[special_index];
+            if (button_index < 0)
+              continue;
+            const auto& special = kSpecialUsages[special_index];
+            if (usage_page == special.usage_page && usage == special.usage)
+              buttons_[button_index] = true;
+          }
         }
       }
     }
@@ -128,12 +170,14 @@ void RawInputGamepadDeviceWin::UpdateGamepad(RAWINPUT* input) {
       }
     }
   }
+
+  last_update_timestamp_ = GamepadDataFetcher::CurrentTimeInMicroseconds();
 }
 
 void RawInputGamepadDeviceWin::ReadPadState(Gamepad* pad) const {
   DCHECK(pad);
 
-  pad->timestamp = GamepadDataFetcher::CurrentTimeInMicroseconds();
+  pad->timestamp = last_update_timestamp_;
   pad->buttons_length = buttons_length_;
   pad->axes_length = axes_length_;
 
@@ -305,14 +349,96 @@ void RawInputGamepadDeviceWin::QueryButtonCapabilities(uint16_t button_count) {
         HidP_Input, button_caps.get(), &button_count, preparsed_data_);
     DCHECK_EQ(HIDP_STATUS_SUCCESS, status);
 
-    for (size_t i = 0; i < button_count; ++i) {
-      if (button_caps[i].Range.UsageMin <= Gamepad::kButtonsLengthCap &&
-          button_caps[i].UsagePage == kButtonUsagePage) {
-        size_t max_index =
-            std::min(Gamepad::kButtonsLengthCap,
-                     static_cast<size_t>(button_caps[i].Range.UsageMax));
-        buttons_length_ = std::max(buttons_length_, max_index);
+    // Keep track of which button indices are in use.
+    std::vector<bool> button_indices_used(Gamepad::kButtonsLengthCap, false);
+
+    // Collect all inputs from the Button usage page.
+    QueryNormalButtonCapabilities(button_caps.get(), button_count,
+                                  &button_indices_used);
+
+    // Check for common gamepad buttons that are not on the Button usage page.
+    QuerySpecialButtonCapabilities(button_caps.get(), button_count,
+                                   &button_indices_used);
+  }
+}
+
+void RawInputGamepadDeviceWin::QueryNormalButtonCapabilities(
+    HIDP_BUTTON_CAPS button_caps[],
+    uint16_t button_count,
+    std::vector<bool>* button_indices_used) {
+  DCHECK(button_caps);
+  DCHECK(button_indices_used);
+
+  // Collect all inputs from the Button usage page and assign button indices
+  // based on the usage value.
+  for (size_t i = 0; i < button_count; ++i) {
+    uint16_t usage_page = button_caps[i].UsagePage;
+    uint16_t usage_min = button_caps[i].Range.UsageMin;
+    uint16_t usage_max = button_caps[i].Range.UsageMax;
+    if (usage_min == 0 || usage_max == 0)
+      continue;
+    size_t button_index_min = size_t{usage_min - 1};
+    size_t button_index_max = size_t{usage_max - 1};
+    if (usage_page == kButtonUsagePage &&
+        button_index_min < Gamepad::kButtonsLengthCap) {
+      button_index_max =
+          std::min(Gamepad::kButtonsLengthCap - 1, button_index_max);
+      buttons_length_ = std::max(buttons_length_, button_index_max + 1);
+      for (size_t j = button_index_min; j <= button_index_max; ++j)
+        (*button_indices_used)[j] = true;
+    }
+  }
+}
+
+void RawInputGamepadDeviceWin::QuerySpecialButtonCapabilities(
+    HIDP_BUTTON_CAPS button_caps[],
+    uint16_t button_count,
+    std::vector<bool>* button_indices_used) {
+  DCHECK(button_caps);
+  DCHECK(button_indices_used);
+
+  // Check for common gamepad buttons that are not on the Button usage page.
+  std::vector<bool> has_special_usage(kSpecialUsagesLen, false);
+  size_t unmapped_button_count = 0;
+  for (size_t i = 0; i < button_count; ++i) {
+    uint16_t usage_page = button_caps[i].UsagePage;
+    uint16_t usage_min = button_caps[i].Range.UsageMin;
+    uint16_t usage_max = button_caps[i].Range.UsageMax;
+    for (size_t special_index = 0; special_index < kSpecialUsagesLen;
+         ++special_index) {
+      const auto& special = kSpecialUsages[special_index];
+      if (usage_page == special.usage_page && usage_min <= special.usage &&
+          usage_max >= special.usage) {
+        has_special_usage[special_index] = true;
+        ++unmapped_button_count;
       }
+    }
+  }
+
+  special_button_map_.clear();
+  if (unmapped_button_count > 0) {
+    // Insert special buttons at unused button indices.
+    special_button_map_.resize(kSpecialUsagesLen, -1);
+    size_t button_index = 0;
+    for (size_t special_index = 0; special_index < kSpecialUsagesLen;
+         ++special_index) {
+      if (!has_special_usage[special_index])
+        continue;
+
+      // Advance to the next unused button index.
+      while (button_index < Gamepad::kButtonsLengthCap &&
+             (*button_indices_used)[button_index]) {
+        ++button_index;
+      }
+      if (button_index >= Gamepad::kButtonsLengthCap)
+        break;
+
+      special_button_map_[special_index] = button_index;
+      (*button_indices_used)[button_index] = true;
+      ++button_index;
+
+      if (--unmapped_button_count == 0)
+        break;
     }
   }
 }

@@ -5,6 +5,10 @@
 #ifndef DEVICE_GAMEPAD_GAMEPAD_DEVICE_LINUX_
 #define DEVICE_GAMEPAD_GAMEPAD_DEVICE_LINUX_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "device/gamepad/abstract_haptic_gamepad.h"
 #include "device/gamepad/dualshock4_controller_linux.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
@@ -48,7 +52,19 @@ class GamepadDeviceLinux : public AbstractHapticGamepad {
   bool SupportsVibration() const;
 
   // Reads the current gamepad state into |pad|.
-  void ReadPadState(Gamepad* pad) const;
+  void ReadPadState(Gamepad* pad);
+
+  // Reads the state of gamepad buttons and axes using joydev. Returns true if
+  // |pad| was updated.
+  bool ReadJoydevState(Gamepad* pad);
+
+  // Discovers and assigns button indices for key codes that are outside the
+  // normal gamepad button range.
+  void InitializeEvdevSpecialKeys();
+
+  // Reads the state of keys outside the normal button range using evdev.
+  // Returns true if |pad| was updated.
+  bool ReadEvdevSpecialKeys(Gamepad* pad);
 
   // Returns true if |pad_info| describes this device.
   bool IsSameDevice(const UdevGamepadLinux& pad_info);
@@ -90,13 +106,17 @@ class GamepadDeviceLinux : public AbstractHapticGamepad {
 
   // The file descriptor for the device's joydev node, or -1 if no joydev node
   // is associated with this device.
-  int joydev_fd_;
+  int joydev_fd_ = -1;
 
   // The index of the device's joydev node, or -1 if unknown.
   // The joydev index is the integer at the end of the joydev node path and is
   // used to assign the gamepad to a slot. For example, a device with path
   // /dev/input/js2 has index 2 and will be assigned to the 3rd gamepad slot.
-  int joydev_index_;
+  int joydev_index_ = -1;
+
+  // Maps from indices in the Gamepad buttons array to a boolean value
+  // indicating whether the button index is already mapped.
+  std::vector<bool> button_indices_used_;
 
   // The vendor ID of the device.
   std::string vendor_id_;
@@ -112,17 +132,25 @@ class GamepadDeviceLinux : public AbstractHapticGamepad {
 
   // The file descriptor for the device's evdev node, or -1 if no evdev node is
   // associated with this device.
-  int evdev_fd_;
+  int evdev_fd_ = -1;
 
   // The ID of the haptic effect stored on the device, or -1 if none is stored.
-  int effect_id_;
+  int effect_id_ = -1;
 
   // True if the device supports rumble effects through the evdev device node.
-  bool supports_force_feedback_;
+  bool supports_force_feedback_ = false;
+
+  // Set to true once the evdev button capabilities have been checked.
+  bool evdev_special_keys_initialized_ = false;
+
+  // Mapping from "special" index (an index within the kSpecialKeys table) to
+  // button index (an index within the Gamepad buttons array), or -1 if the
+  // button is not mapped. Empty if no special buttons are mapped.
+  std::vector<int> special_button_map_;
 
   // The file descriptor for the device's hidraw node, or -1 if no hidraw node
   // is associated with this device.
-  int hidraw_fd_;
+  int hidraw_fd_ = -1;
 
   // The type of the bus through which the device is connected, or
   // GAMEPAD_BUS_UNKNOWN if the bus type could not be determined.
