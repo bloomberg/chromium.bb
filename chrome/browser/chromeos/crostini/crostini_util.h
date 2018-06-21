@@ -19,12 +19,13 @@ class Profile;
 // behaviour and returning true instead.
 void SetCrostiniUIAllowedForTesting(bool enabled);
 
-// Returns true if crostini is allowed to run.
+// Returns true if crostini is allowed to run for |profile|.
 // Otherwise, returns false, e.g. if crostini is not available on the device,
 // or it is in the flow to set up managed account creation.
-bool IsCrostiniAllowed();
+bool IsCrostiniAllowedForProfile(Profile* profile);
 
-// Returns true if crostini UI can be shown. Implies crostini is allowed to run.
+// Returns true if crostini UI can be shown. Implies crostini is allowed to
+// run.
 bool IsCrostiniUIAllowedForProfile(Profile* profile);
 
 // Returns whether if Crostini has been enabled, i.e. the user has launched it

@@ -40,7 +40,7 @@ class CHROMEOS_EXPORT ChromeFeaturesServiceProvider
     Delegate() {}
     virtual ~Delegate() {}
 
-    virtual bool IsCrostiniEnabled() = 0;
+    virtual bool IsCrostiniEnabled(const std::string& user_id_hash) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);

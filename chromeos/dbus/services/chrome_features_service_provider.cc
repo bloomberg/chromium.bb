@@ -42,10 +42,16 @@ void ChromeFeaturesServiceProvider::OnExported(
 void ChromeFeaturesServiceProvider::IsCrostiniEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
+  dbus::MessageReader reader(method_call);
+  std::string user_id_hash;
+  // TODO(nverne): Make it an error to fail to PopString once callers have been
+  // updated.
+  reader.PopString(&user_id_hash);
+
   std::unique_ptr<dbus::Response> response =
       dbus::Response::FromMethodCall(method_call);
   dbus::MessageWriter writer(response.get());
-  writer.AppendBool(delegate_->IsCrostiniEnabled());
+  writer.AppendBool(delegate_->IsCrostiniEnabled(user_id_hash));
   response_sender.Run(std::move(response));
 }
 
