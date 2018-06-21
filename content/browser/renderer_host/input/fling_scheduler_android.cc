@@ -29,7 +29,7 @@ void FlingSchedulerAndroid::ScheduleFlingProgress(
     // If the root window does not have a Compositor (happens on Android
     // WebView), we'll never receive an OnAnimate call. In this case fall back
     // to BeginFrames coming from the host.
-    if (!window->GetCompositor()) {
+    if (!window || !window->GetCompositor()) {
       host_->SetNeedsBeginFrameForFlingProgress();
       return;
     }
