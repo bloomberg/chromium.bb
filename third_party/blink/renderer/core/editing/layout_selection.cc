@@ -76,13 +76,49 @@ base::Optional<unsigned> SelectionPaintRange::EndOffset() const {
   return end_offset_;
 }
 
+static LayoutTextFragment* FirstLetterPartFor(
+    const LayoutObject* layout_object) {
+  if (!layout_object->IsText())
+    return nullptr;
+  if (!ToLayoutText(layout_object)->IsTextFragment())
+    return nullptr;
+  return ToLayoutTextFragment(const_cast<LayoutObject*>(
+      AssociatedLayoutObjectOf(*layout_object->GetNode(), 0)));
+}
+
+static LayoutObject* NextLayoutObjectOnFlatTree(
+    const LayoutObject& layout_object) {
+  // If |layout_object| is a first letter part, return remaining part.
+  if (layout_object.IsText() && ToLayoutText(layout_object).IsTextFragment() &&
+      !ToLayoutTextFragment(layout_object).IsRemainingTextLayoutObject()) {
+    const Node* associated_node =
+        ToLayoutTextFragment(layout_object).AssociatedTextNode();
+    if (!associated_node)
+      return nullptr;
+    return associated_node->GetLayoutObject();
+  }
+  // Otherwise, find the first layouted object of following nodes.
+  const Node* node = layout_object.GetNode();
+  DCHECK(node);
+  for (const Node* next = FlatTreeTraversal::Next(*node); next;
+       next = FlatTreeTraversal::Next(*next)) {
+    LayoutObject* layout_object = next->GetLayoutObject();
+    if (!layout_object)
+      continue;
+    if (LayoutObject* first_letter = FirstLetterPartFor(layout_object))
+      return first_letter;
+    return layout_object;
+  }
+  return nullptr;
+}
+
 SelectionPaintRange::Iterator::Iterator(const SelectionPaintRange* range) {
   if (!range || range->IsNull()) {
     current_ = nullptr;
     return;
   }
   current_ = range->StartLayoutObject();
-  stop_ = range->EndLayoutObject()->NextInPreOrder();
+  stop_ = NextLayoutObjectOnFlatTree(*range->EndLayoutObject());
 }
 
 LayoutObject* SelectionPaintRange::Iterator::operator*() const {
@@ -92,7 +128,7 @@ LayoutObject* SelectionPaintRange::Iterator::operator*() const {
 
 SelectionPaintRange::Iterator& SelectionPaintRange::Iterator::operator++() {
   DCHECK(current_);
-  current_ = current_->NextInPreOrder();
+  current_ = NextLayoutObjectOnFlatTree(*current_);
   if (current_ && current_ != stop_)
     return *this;
 
@@ -423,15 +459,6 @@ static base::Optional<unsigned> ComputeEndOffset(
   if (layout_node == position.AnchorNode())
     return position.OffsetInContainerNode();
   return ToText(layout_node)->length();
-}
-
-static LayoutTextFragment* FirstLetterPartFor(LayoutObject* layout_object) {
-  if (!layout_object->IsText())
-    return nullptr;
-  if (!ToLayoutText(layout_object)->IsTextFragment())
-    return nullptr;
-  return ToLayoutTextFragment(const_cast<LayoutObject*>(
-      AssociatedLayoutObjectOf(*layout_object->GetNode(), 0)));
 }
 
 static void MarkSelected(SelectedLayoutObjects* selected_objects,
