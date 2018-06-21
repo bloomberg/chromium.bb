@@ -3,5 +3,4 @@ include_rules = [
   '+aom',
   '+aom_dsp',
   '+aom_ports',
-  '+config',
 ]
