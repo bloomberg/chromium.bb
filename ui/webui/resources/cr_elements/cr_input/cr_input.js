@@ -119,7 +119,6 @@ Polymer({
 
   hostAttributes: {
     'aria-disabled': 'false',
-    role: 'textbox',
   },
 
   listeners: {
