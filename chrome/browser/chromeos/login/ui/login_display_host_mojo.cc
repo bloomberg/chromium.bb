@@ -254,7 +254,7 @@ void LoginDisplayHostMojo::UpdateGaiaDialogVisibility(
 
 void LoginDisplayHostMojo::UpdateGaiaDialogSize(int width, int height) {
   if (dialog_)
-    dialog_->SetSize(width, height);
+    dialog_->UpdateSizeAndPosition(width, height);
 }
 
 const user_manager::UserList LoginDisplayHostMojo::GetUsers() {

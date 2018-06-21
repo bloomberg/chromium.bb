@@ -786,7 +786,9 @@ cr.define('cr.ui.login', function() {
       if (this.showingViewsLogin) {
         chrome.send('updateGaiaDialogSize', [width, height]);
         $('scroll-container').classList.toggle('disable-scroll', true);
-        $('scroll-container').scrollTop = $('inner-container').offsetTop;
+        $('inner-container').classList.toggle('disable-scroll', true);
+        $('inner-container').style.top =
+            cr.ui.toCssPx($('scroll-container').scrollTop);
       }
     },
 
