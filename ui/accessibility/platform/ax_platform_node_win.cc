@@ -2659,6 +2659,11 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       result->parray = CreateUIAElementsArrayForRelation(relation_attribute);
       break;
 
+    case UIA_ControlTypePropertyId:
+      result->vt = VT_I4;
+      result->lVal = ComputeUIAControlType();
+      break;
+
     case UIA_CulturePropertyId:
       result->vt = VT_BSTR;
       GetStringAttributeAsBstr(ax::mojom::StringAttribute::kLanguage,
@@ -2749,7 +2754,6 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     case UIA_AnnotationObjectsPropertyId:
     case UIA_AnnotationTypesPropertyId:
     case UIA_CenterPointPropertyId:
-    case UIA_ControlTypePropertyId:
     case UIA_CustomControlTypeId:
     case UIA_FillColorPropertyId:
     case UIA_FillTypePropertyId:
@@ -4492,6 +4496,477 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
 
   base::string16 result = base::JoinString(properties, L";");
   return result;
+}
+
+long AXPlatformNodeWin::ComputeUIAControlType() {
+  // If this is a web area for a presentational iframe, give it a role of
+  // something other than document so that the fact that it's a separate doc
+  // is not exposed to AT.
+  if (IsWebAreaForPresentationalIframe())
+    return UIA_GroupControlTypeId;
+
+  switch (GetData().role) {
+    case ax::mojom::Role::kAlert:
+      return UIA_TextControlTypeId;
+
+    case ax::mojom::Role::kAlertDialog:
+      // Our MSAA implementation suggests the use of
+      // |UIA_TextControlTypeId|, not |UIA_PaneControlTypeId| because some
+      // Windows screen readers are not compatible with
+      // |ax::mojom::Role::kAlertDialog| yet.
+      return UIA_TextControlTypeId;
+
+    case ax::mojom::Role::kAnchor:
+      return UIA_HyperlinkControlTypeId;
+
+    case ax::mojom::Role::kApplication:
+      return UIA_PaneControlTypeId;
+
+    case ax::mojom::Role::kArticle:
+      return UIA_DocumentControlTypeId;
+
+    case ax::mojom::Role::kAudio:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kBanner:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kBlockquote:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kButton:
+      return UIA_ButtonControlTypeId;
+
+    case ax::mojom::Role::kCanvas:
+      return UIA_ImageControlTypeId;
+
+    case ax::mojom::Role::kCaption:
+      return UIA_TextControlTypeId;
+
+    case ax::mojom::Role::kCaret:
+      return UIA_PaneControlTypeId;
+
+    case ax::mojom::Role::kCell:
+      return UIA_DataItemControlTypeId;
+
+    case ax::mojom::Role::kCheckBox:
+      return UIA_CheckBoxControlTypeId;
+
+    case ax::mojom::Role::kClient:
+      return UIA_PaneControlTypeId;
+
+    case ax::mojom::Role::kColorWell:
+      return UIA_DocumentControlTypeId;
+
+    case ax::mojom::Role::kColumn:
+      return UIA_PaneControlTypeId;
+
+    case ax::mojom::Role::kColumnHeader:
+      return UIA_DataItemControlTypeId;
+
+    case ax::mojom::Role::kComboBoxGrouping:
+    case ax::mojom::Role::kComboBoxMenuButton:
+      return UIA_ComboBoxControlTypeId;
+
+    case ax::mojom::Role::kComplementary:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kContentDeletion:
+    case ax::mojom::Role::kContentInsertion:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kContentInfo:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kDate:
+    case ax::mojom::Role::kDateTime:
+      return UIA_ListControlTypeId;
+
+    case ax::mojom::Role::kDefinition:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kDescriptionListDetail:
+      return UIA_TextControlTypeId;
+
+    case ax::mojom::Role::kDescriptionList:
+      return UIA_ListControlTypeId;
+
+    case ax::mojom::Role::kDescriptionListTerm:
+      return UIA_ListItemControlTypeId;
+
+    case ax::mojom::Role::kDesktop:
+      return UIA_DocumentControlTypeId;
+
+    case ax::mojom::Role::kDetails:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kDialog:
+      return UIA_PaneControlTypeId;
+
+    case ax::mojom::Role::kDisclosureTriangle:
+      return UIA_ButtonControlTypeId;
+
+    case ax::mojom::Role::kDirectory:
+      return UIA_ListControlTypeId;
+
+    case ax::mojom::Role::kDocCover:
+      return UIA_ImageControlTypeId;
+
+    case ax::mojom::Role::kDocBackLink:
+    case ax::mojom::Role::kDocBiblioRef:
+    case ax::mojom::Role::kDocGlossRef:
+    case ax::mojom::Role::kDocNoteRef:
+      return UIA_HyperlinkControlTypeId;
+
+    case ax::mojom::Role::kDocBiblioEntry:
+    case ax::mojom::Role::kDocEndnote:
+    case ax::mojom::Role::kDocFootnote:
+      return UIA_ListItemControlTypeId;
+
+    case ax::mojom::Role::kDocPageBreak:
+      return UIA_SeparatorControlTypeId;
+
+    case ax::mojom::Role::kDocAbstract:
+    case ax::mojom::Role::kDocAcknowledgments:
+    case ax::mojom::Role::kDocAfterword:
+    case ax::mojom::Role::kDocAppendix:
+    case ax::mojom::Role::kDocBibliography:
+    case ax::mojom::Role::kDocChapter:
+    case ax::mojom::Role::kDocColophon:
+    case ax::mojom::Role::kDocConclusion:
+    case ax::mojom::Role::kDocCredit:
+    case ax::mojom::Role::kDocCredits:
+    case ax::mojom::Role::kDocDedication:
+    case ax::mojom::Role::kDocEndnotes:
+    case ax::mojom::Role::kDocEpigraph:
+    case ax::mojom::Role::kDocEpilogue:
+    case ax::mojom::Role::kDocErrata:
+    case ax::mojom::Role::kDocExample:
+    case ax::mojom::Role::kDocForeword:
+    case ax::mojom::Role::kDocGlossary:
+    case ax::mojom::Role::kDocIndex:
+    case ax::mojom::Role::kDocIntroduction:
+    case ax::mojom::Role::kDocNotice:
+    case ax::mojom::Role::kDocPageList:
+    case ax::mojom::Role::kDocPart:
+    case ax::mojom::Role::kDocPreface:
+    case ax::mojom::Role::kDocPrologue:
+    case ax::mojom::Role::kDocPullquote:
+    case ax::mojom::Role::kDocQna:
+    case ax::mojom::Role::kDocSubtitle:
+    case ax::mojom::Role::kDocTip:
+    case ax::mojom::Role::kDocToc:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kDocument:
+    case ax::mojom::Role::kRootWebArea:
+    case ax::mojom::Role::kWebArea:
+      return UIA_DocumentControlTypeId;
+
+    case ax::mojom::Role::kEmbeddedObject:
+      if (delegate_->GetChildCount()) {
+        return UIA_GroupControlTypeId;
+      } else {
+        return UIA_DocumentControlTypeId;
+      }
+
+    case ax::mojom::Role::kFeed:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kFigcaption:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kFigure:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kFooter:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kForm:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kGenericContainer:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kGraphicsDocument:
+      return UIA_DocumentControlTypeId;
+
+    case ax::mojom::Role::kGraphicsObject:
+      return UIA_PaneControlTypeId;
+
+    case ax::mojom::Role::kGraphicsSymbol:
+      return UIA_ImageControlTypeId;
+
+    case ax::mojom::Role::kGrid:
+      return UIA_DataGridControlTypeId;
+
+    case ax::mojom::Role::kGroup:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kHeading:
+      return UIA_TextControlTypeId;
+
+    case ax::mojom::Role::kIframe:
+      return UIA_DocumentControlTypeId;
+
+    case ax::mojom::Role::kIframePresentational:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kImage:
+      return UIA_ImageControlTypeId;
+
+    case ax::mojom::Role::kImageMap:
+      return UIA_DocumentControlTypeId;
+
+    case ax::mojom::Role::kInputTime:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kInlineTextBox:
+      return UIA_DocumentControlTypeId;
+
+    case ax::mojom::Role::kLabelText:
+    case ax::mojom::Role::kLegend:
+      return UIA_TextControlTypeId;
+
+    case ax::mojom::Role::kLayoutTable:
+      return UIA_DataGridControlTypeId;
+
+    case ax::mojom::Role::kLayoutTableCell:
+      return UIA_DataItemControlTypeId;
+
+    case ax::mojom::Role::kLayoutTableColumn:
+      return UIA_PaneControlTypeId;
+
+    case ax::mojom::Role::kLayoutTableRow:
+      return UIA_DataItemControlTypeId;
+
+    case ax::mojom::Role::kLink:
+      return UIA_HyperlinkControlTypeId;
+
+    case ax::mojom::Role::kList:
+      return UIA_ListControlTypeId;
+
+    case ax::mojom::Role::kListItem:
+      return UIA_ListItemControlTypeId;
+
+    case ax::mojom::Role::kListBox:
+      return UIA_ListControlTypeId;
+
+    case ax::mojom::Role::kListBoxOption:
+      return UIA_ListItemControlTypeId;
+
+    case ax::mojom::Role::kLocationBar:  // TODO(accessibility) Remove.
+      NOTREACHED();
+      return UIA_DocumentControlTypeId;
+
+    case ax::mojom::Role::kLog:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kMain:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kMark:
+      return UIA_TextControlTypeId;
+
+    case ax::mojom::Role::kMarquee:
+      return UIA_TextControlTypeId;
+
+    case ax::mojom::Role::kMath:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kMenu:
+    case ax::mojom::Role::kMenuButton:
+      return UIA_MenuControlTypeId;
+
+    case ax::mojom::Role::kMenuBar:
+      return UIA_MenuBarControlTypeId;
+
+    case ax::mojom::Role::kMenuItem:
+      return UIA_MenuItemControlTypeId;
+
+    case ax::mojom::Role::kMenuItemCheckBox:
+      return UIA_CheckBoxControlTypeId;
+
+    case ax::mojom::Role::kMenuItemRadio:
+      return UIA_RadioButtonControlTypeId;
+
+    case ax::mojom::Role::kMenuListPopup:
+      if (IsAncestorComboBox())
+        return UIA_ListControlTypeId;
+      return UIA_MenuControlTypeId;
+
+    case ax::mojom::Role::kMenuListOption:
+      if (IsAncestorComboBox())
+        return UIA_ListItemControlTypeId;
+      return UIA_MenuItemControlTypeId;
+
+    case ax::mojom::Role::kMeter:
+      return UIA_ProgressBarControlTypeId;
+
+    case ax::mojom::Role::kNavigation:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kNote:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kParagraph:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kPopUpButton: {
+      std::string html_tag =
+          GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
+      if (html_tag == "select")
+        return UIA_ComboBoxControlTypeId;
+      return UIA_MenuControlTypeId;
+    }
+
+    case ax::mojom::Role::kPre:
+      return UIA_PaneControlTypeId;
+
+    case ax::mojom::Role::kProgressIndicator:
+      return UIA_ProgressBarControlTypeId;
+
+    case ax::mojom::Role::kRadioButton:
+      return UIA_RadioButtonControlTypeId;
+
+    case ax::mojom::Role::kRadioGroup:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kRegion: {
+      std::string html_tag =
+          GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
+      if (html_tag == "section" &&
+          GetData()
+              .GetString16Attribute(ax::mojom::StringAttribute::kName)
+              .empty()) {
+        // Do not use ARIA mapping for nameless <section>.
+        return UIA_GroupControlTypeId;
+      }
+      // Use ARIA mapping.
+      return UIA_PaneControlTypeId;
+    }
+
+    case ax::mojom::Role::kRow: {
+      // Role changes depending on whether row is inside a treegrid
+      // https://www.w3.org/TR/core-aam-1.1/#role-map-row
+      return IsInTreeGrid() ? UIA_TreeItemControlTypeId
+                            : UIA_DataItemControlTypeId;
+    }
+
+    case ax::mojom::Role::kRowHeader:
+      return UIA_DataItemControlTypeId;
+
+    case ax::mojom::Role::kRuby:
+      return UIA_PaneControlTypeId;
+
+    case ax::mojom::Role::kScrollBar:
+      return UIA_ScrollBarControlTypeId;
+
+    case ax::mojom::Role::kScrollView:
+      return UIA_PaneControlTypeId;
+
+    case ax::mojom::Role::kSearch:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kSlider:
+      return UIA_SliderControlTypeId;
+
+    case ax::mojom::Role::kSliderThumb:
+      return UIA_SliderControlTypeId;
+
+    case ax::mojom::Role::kSpinButton:
+      return UIA_SpinnerControlTypeId;
+
+    case ax::mojom::Role::kSwitch:
+      return UIA_CheckBoxControlTypeId;
+
+    case ax::mojom::Role::kAnnotation:
+    case ax::mojom::Role::kListMarker:
+    case ax::mojom::Role::kStaticText:
+      return UIA_TextControlTypeId;
+
+    case ax::mojom::Role::kStatus:
+      return UIA_StatusBarControlTypeId;
+
+    case ax::mojom::Role::kSplitter:
+      return UIA_SeparatorControlTypeId;
+
+    case ax::mojom::Role::kSvgRoot:
+      return UIA_ImageControlTypeId;
+
+    case ax::mojom::Role::kTab:
+      return UIA_TabItemControlTypeId;
+
+    case ax::mojom::Role::kTable:
+      return UIA_DataGridControlTypeId;
+
+    case ax::mojom::Role::kTableHeaderContainer:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kTabList:
+      return UIA_TabControlTypeId;
+
+    case ax::mojom::Role::kTabPanel:
+      return UIA_PaneControlTypeId;
+
+    case ax::mojom::Role::kTerm:
+      return UIA_ListItemControlTypeId;
+
+    case ax::mojom::Role::kTitleBar:
+      return UIA_DocumentControlTypeId;
+
+    case ax::mojom::Role::kToggleButton:
+      return UIA_ButtonControlTypeId;
+
+    case ax::mojom::Role::kTextField:
+    case ax::mojom::Role::kSearchBox:
+      return UIA_DocumentControlTypeId;
+
+    case ax::mojom::Role::kTextFieldWithComboBox:
+      return UIA_ComboBoxControlTypeId;
+
+    case ax::mojom::Role::kAbbr:
+    case ax::mojom::Role::kTime:
+      return UIA_TextControlTypeId;
+
+    case ax::mojom::Role::kTimer:
+      return UIA_PaneControlTypeId;
+
+    case ax::mojom::Role::kToolbar:
+      return UIA_ToolBarControlTypeId;
+
+    case ax::mojom::Role::kTooltip:
+      return UIA_ToolTipControlTypeId;
+
+    case ax::mojom::Role::kTree:
+      return UIA_TreeControlTypeId;
+
+    case ax::mojom::Role::kTreeGrid:
+      return UIA_DataGridControlTypeId;
+
+    case ax::mojom::Role::kTreeItem:
+      return UIA_TreeItemControlTypeId;
+
+    case ax::mojom::Role::kLineBreak:
+      return UIA_SeparatorControlTypeId;
+
+    case ax::mojom::Role::kVideo:
+      return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kWebView:
+      return UIA_DocumentControlTypeId;
+
+    case ax::mojom::Role::kPane:
+    case ax::mojom::Role::kWindow:
+    case ax::mojom::Role::kIgnored:
+    case ax::mojom::Role::kNone:
+    case ax::mojom::Role::kPresentational:
+    case ax::mojom::Role::kUnknown:
+      return UIA_PaneControlTypeId;
+  }
+
+  NOTREACHED();
+  return UIA_DocumentControlTypeId;
 }
 
 base::string16 AXPlatformNodeWin::GetValue() {
