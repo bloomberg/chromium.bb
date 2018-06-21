@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <algorithm>
+#include <array>
 #include <cmath>
 
 #include "base/logging.h"

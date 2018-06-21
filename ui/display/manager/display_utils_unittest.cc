@@ -4,6 +4,7 @@
 
 #include "ui/display/manager/display_util.h"
 
+#include <array>
 #include <vector>
 
 #include "base/macros.h"
