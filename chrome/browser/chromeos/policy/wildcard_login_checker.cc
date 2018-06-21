@@ -9,8 +9,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace policy {
 
@@ -46,6 +48,8 @@ void WildcardLoginChecker::StartWithSigninContext(
   token_fetcher_.reset(PolicyOAuth2TokenFetcher::CreateInstance());
   token_fetcher_->StartWithSigninContext(
       signin_context.get(), g_browser_process->system_request_context(),
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory(),
       base::Bind(&WildcardLoginChecker::OnPolicyTokenFetched,
                  base::Unretained(this)));
 }
@@ -62,6 +66,8 @@ void WildcardLoginChecker::StartWithRefreshToken(
   token_fetcher_.reset(PolicyOAuth2TokenFetcher::CreateInstance());
   token_fetcher_->StartWithRefreshToken(
       refresh_token, g_browser_process->system_request_context(),
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory(),
       base::Bind(&WildcardLoginChecker::OnPolicyTokenFetched,
                  base::Unretained(this)));
 }

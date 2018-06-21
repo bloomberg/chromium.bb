@@ -28,6 +28,9 @@
 namespace net {
 class URLRequestContextGetter;
 }
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace policy {
 
@@ -104,13 +107,15 @@ class POLICY_EXPORT CloudPolicyClient {
   // requests. |device_dm_token_callback| is used to retrieve device DMToken for
   // affiliated users. Could be null if it's not possible to use
   // device DMToken for user policy fetches.
-  CloudPolicyClient(const std::string& machine_id,
-                    const std::string& machine_model,
-                    const std::string& brand_code,
-                    DeviceManagementService* service,
-                    scoped_refptr<net::URLRequestContextGetter> request_context,
-                    SigningService* signing_service,
-                    DeviceDMTokenCallback device_dm_token_callback);
+  CloudPolicyClient(
+      const std::string& machine_id,
+      const std::string& machine_model,
+      const std::string& brand_code,
+      DeviceManagementService* service,
+      scoped_refptr<net::URLRequestContextGetter> request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      SigningService* signing_service,
+      DeviceDMTokenCallback device_dm_token_callback);
   virtual ~CloudPolicyClient();
 
   // Sets the DMToken, thereby establishing a registration with the server. A
@@ -349,6 +354,8 @@ class POLICY_EXPORT CloudPolicyClient {
 
   scoped_refptr<net::URLRequestContextGetter> GetRequestContext();
 
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
+
   // Returns the number of active requests.
   int GetActiveRequestCountForTest() const;
 
@@ -513,7 +520,9 @@ class POLICY_EXPORT CloudPolicyClient {
   DeviceDMTokenCallback device_dm_token_callback_;
 
   base::ObserverList<Observer, true> observers_;
+
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
  private:
   void SetClientId(const std::string& client_id);

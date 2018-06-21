@@ -13,3 +13,9 @@ include_rules = [
   "+net",
   "+sql",
 ]
+
+specific_include_rules = {
+  "test_signin_client\.h": [
+    "+services/network/test"
+  ]
+}

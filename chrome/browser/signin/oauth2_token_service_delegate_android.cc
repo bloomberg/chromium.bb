@@ -261,6 +261,7 @@ OAuth2AccessTokenFetcher*
 OAuth2TokenServiceDelegateAndroid::CreateAccessTokenFetcher(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_factory,
     OAuth2AccessTokenConsumer* consumer) {
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::CreateAccessTokenFetcher"
            << " account= " << account_id;

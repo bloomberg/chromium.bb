@@ -17,6 +17,10 @@
 
 class PrefService;
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace policy {
 class MachineLevelUserCloudPolicyManager;
 class MachineLevelUserCloudPolicyFetcher;
@@ -55,7 +59,8 @@ class MachineLevelUserCloudPolicyController {
   CreatePolicyManager();
 
   void Init(PrefService* local_state,
-            scoped_refptr<net::URLRequestContextGetter> request_context);
+            scoped_refptr<net::URLRequestContextGetter> request_context,
+            scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   RegisterResult WaitUntilPolicyEnrollmentFinished();
 

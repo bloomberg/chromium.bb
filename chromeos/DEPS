@@ -12,6 +12,7 @@ include_rules = [
   "+google_apis/gaia",
   "+media/base/video_facing.h",
   "+net",
+  "+services/network/public",
   "+third_party/cros_system_api",
   "+third_party/protobuf",
 

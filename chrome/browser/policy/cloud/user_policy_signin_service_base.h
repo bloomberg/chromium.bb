@@ -27,6 +27,9 @@ class Profile;
 namespace net {
 class URLRequestContextGetter;
 }
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace policy {
 
@@ -69,7 +72,8 @@ class UserPolicySigninServiceBase : public KeyedService,
       DeviceManagementService* device_management_service,
       UserCloudPolicyManager* policy_manager,
       SigninManager* signin_manager,
-      scoped_refptr<net::URLRequestContextGetter> system_request_context);
+      scoped_refptr<net::URLRequestContextGetter> system_request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory);
   ~UserPolicySigninServiceBase() override;
 
   // Initiates a policy fetch as part of user signin, using a |dm_token| and
@@ -82,6 +86,7 @@ class UserPolicySigninServiceBase : public KeyedService,
       const std::string& dm_token,
       const std::string& client_id,
       scoped_refptr<net::URLRequestContextGetter> profile_request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> profile_url_loader_factory,
       const PolicyFetchCallback& callback);
 
   // SigninManagerBase::Observer implementation:
@@ -135,7 +140,9 @@ class UserPolicySigninServiceBase : public KeyedService,
   // user signs-in and an OAuth2 login refresh token becomes available.
   void InitializeForSignedInUser(
       const AccountId& account_id,
-      scoped_refptr<net::URLRequestContextGetter> profile_request_context);
+      scoped_refptr<net::URLRequestContextGetter> profile_request_context,
+      scoped_refptr<network::SharedURLLoaderFactory>
+          profile_url_loader_factory);
 
   // Initializes the cloud policy manager with the passed |client|. This is
   // called from InitializeForSignedInUser() when the Profile already has a
@@ -171,6 +178,7 @@ class UserPolicySigninServiceBase : public KeyedService,
   PrefService* local_state_;
   DeviceManagementService* device_management_service_;
   scoped_refptr<net::URLRequestContextGetter> system_request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory_;
 
   base::WeakPtrFactory<UserPolicySigninServiceBase> weak_factory_;
 

@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation.pb.h"
@@ -68,6 +69,11 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
 void DeviceCloudPolicyInitializer::SetSigningServiceForTesting(
     std::unique_ptr<policy::SigningService> signing_service) {
   signing_service_ = std::move(signing_service);
+}
+
+void DeviceCloudPolicyInitializer::SetSystemURLLoaderFactoryForTesting(
+    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory) {
+  system_url_loader_factory_for_testing_ = system_url_loader_factory;
 }
 
 DeviceCloudPolicyInitializer::~DeviceCloudPolicyInitializer() {
@@ -297,6 +303,10 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
   return std::make_unique<CloudPolicyClient>(
       statistics_provider_->GetEnterpriseMachineID(), machine_model, brand_code,
       device_management_service, g_browser_process->system_request_context(),
+      system_url_loader_factory_for_testing_
+          ? system_url_loader_factory_for_testing_
+          : g_browser_process->system_network_context_manager()
+                ->GetSharedURLLoaderFactory(),
       signing_service_.get(), CloudPolicyClient::DeviceDMTokenCallback());
 }
 

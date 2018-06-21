@@ -7,9 +7,16 @@
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
  public:
@@ -19,6 +26,7 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       net::URLRequestContextGetter* getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_factory,
       OAuth2AccessTokenConsumer* consumer) override;
 
   // Overriden to make sure it works on Android.
@@ -38,12 +46,18 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
   void RevokeCredentials(const std::string& account_id) override;
 
   net::URLRequestContextGetter* GetRequestContext() const override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      const override;
 
   void set_request_context(net::URLRequestContextGetter* request_context) {
     request_context_ = request_context;
   }
 
   std::string GetRefreshToken(const std::string& account_id) const;
+
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
+  }
 
  private:
   struct AccountInfo {
@@ -61,6 +75,9 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
   AccountInfoMap refresh_tokens_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeOAuth2TokenServiceDelegate);
 };

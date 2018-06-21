@@ -43,6 +43,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/sync/base/sync_prefs.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -266,6 +267,8 @@ void OneClickSigninSyncStarter::LoadPolicyWithCachedCredentials() {
                        : AccountId::FromUserEmailGaiaId(username, gaia_id);
   policy_service->FetchPolicyForSignedInUser(
       account_id, dm_token_, client_id_, profile_->GetRequestContext(),
+      content::BrowserContext::GetDefaultStoragePartition(profile_)
+          ->GetURLLoaderFactoryForBrowserProcess(),
       base::Bind(&OneClickSigninSyncStarter::OnPolicyFetchComplete,
                  weak_pointer_factory_.GetWeakPtr()));
 }

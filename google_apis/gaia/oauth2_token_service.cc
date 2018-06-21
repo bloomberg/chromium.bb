@@ -24,6 +24,7 @@
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 int OAuth2TokenService::max_fetch_retry_num_ = 5;
 
@@ -124,6 +125,7 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
       OAuth2TokenService* oauth2_token_service,
       const std::string& account_id,
       net::URLRequestContextGetter* getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,
       const ScopeSet& scopes,
@@ -159,6 +161,7 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
   Fetcher(OAuth2TokenService* oauth2_token_service,
           const std::string& account_id,
           net::URLRequestContextGetter* getter,
+          scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
           const std::string& client_id,
           const std::string& client_secret,
           const OAuth2TokenService::ScopeSet& scopes,
@@ -175,6 +178,7 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
   // (whichever comes first).
   OAuth2TokenService* const oauth2_token_service_;
   scoped_refptr<net::URLRequestContextGetter> getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const std::string account_id_;
   const ScopeSet scopes_;
   std::vector<base::WeakPtr<RequestImpl> > waiting_requests_;
@@ -203,13 +207,14 @@ OAuth2TokenService::Fetcher::CreateAndStart(
     OAuth2TokenService* oauth2_token_service,
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
     const OAuth2TokenService::ScopeSet& scopes,
     base::WeakPtr<RequestImpl> waiting_request) {
   std::unique_ptr<OAuth2TokenService::Fetcher> fetcher = base::WrapUnique(
-      new Fetcher(oauth2_token_service, account_id, getter, client_id,
-                  client_secret, scopes, waiting_request));
+      new Fetcher(oauth2_token_service, account_id, getter, url_loader_factory,
+                  client_id, client_secret, scopes, waiting_request));
 
   fetcher->Start();
   return fetcher;
@@ -219,12 +224,14 @@ OAuth2TokenService::Fetcher::Fetcher(
     OAuth2TokenService* oauth2_token_service,
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
     const OAuth2TokenService::ScopeSet& scopes,
     base::WeakPtr<RequestImpl> waiting_request)
     : oauth2_token_service_(oauth2_token_service),
       getter_(getter),
+      url_loader_factory_(url_loader_factory),
       account_id_(account_id),
       scopes_(scopes),
       retry_number_(0),
@@ -243,7 +250,7 @@ OAuth2TokenService::Fetcher::~Fetcher() {
 
 void OAuth2TokenService::Fetcher::Start() {
   fetcher_.reset(oauth2_token_service_->CreateAccessTokenFetcher(
-      account_id_, getter_.get(), this));
+      account_id_, getter_.get(), url_loader_factory_, this));
   DCHECK(fetcher_);
 
   // Stop the timer before starting the fetch, as defense in depth against the
@@ -420,12 +427,9 @@ std::unique_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer) {
   return StartRequestForClientWithContext(
-      account_id,
-      GetRequestContext(),
+      account_id, GetRequestContext(), delegate_->GetURLLoaderFactory(),
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-      GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
-      scopes,
-      consumer);
+      GaiaUrls::GetInstance()->oauth2_chrome_client_secret(), scopes, consumer);
 }
 
 std::unique_ptr<OAuth2TokenService::Request>
@@ -436,12 +440,8 @@ OAuth2TokenService::StartRequestForClient(
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer) {
   return StartRequestForClientWithContext(
-      account_id,
-      GetRequestContext(),
-      client_id,
-      client_secret,
-      scopes,
-      consumer);
+      account_id, GetRequestContext(), delegate_->GetURLLoaderFactory(),
+      client_id, client_secret, scopes, consumer);
 }
 
 net::URLRequestContextGetter* OAuth2TokenService::GetRequestContext() const {
@@ -452,21 +452,20 @@ std::unique_ptr<OAuth2TokenService::Request>
 OAuth2TokenService::StartRequestWithContext(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const ScopeSet& scopes,
     Consumer* consumer) {
   return StartRequestForClientWithContext(
-      account_id,
-      getter,
+      account_id, getter, url_loader_factory,
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-      GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
-      scopes,
-      consumer);
+      GaiaUrls::GetInstance()->oauth2_chrome_client_secret(), scopes, consumer);
 }
 
 std::unique_ptr<OAuth2TokenService::Request>
 OAuth2TokenService::StartRequestForClientWithContext(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
     const ScopeSet& scopes,
@@ -500,22 +499,20 @@ OAuth2TokenService::StartRequestForClientWithContext(
     InformConsumerWithCacheEntry(cache_entry, request.get(),
                                  request_parameters);
   } else {
-    FetchOAuth2Token(request.get(),
-                     account_id,
-                     getter,
-                     client_id,
-                     client_secret,
-                     scopes);
+    FetchOAuth2Token(request.get(), account_id, getter, url_loader_factory,
+                     client_id, client_secret, scopes);
   }
   return std::move(request);
 }
 
-void OAuth2TokenService::FetchOAuth2Token(RequestImpl* request,
-                                          const std::string& account_id,
-                                          net::URLRequestContextGetter* getter,
-                                          const std::string& client_id,
-                                          const std::string& client_secret,
-                                          const ScopeSet& scopes) {
+void OAuth2TokenService::FetchOAuth2Token(
+    RequestImpl* request,
+    const std::string& account_id,
+    net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    const std::string& client_id,
+    const std::string& client_secret,
+    const ScopeSet& scopes) {
   // If there is already a pending fetcher for |scopes| and |account_id|,
   // simply register this |request| for those results rather than starting
   // a new fetcher.
@@ -528,21 +525,18 @@ void OAuth2TokenService::FetchOAuth2Token(RequestImpl* request,
     return;
   }
 
-  pending_fetchers_[request_parameters] =
-      Fetcher::CreateAndStart(this,
-                              account_id,
-                              getter,
-                              client_id,
-                              client_secret,
-                              scopes,
-                              request->AsWeakPtr());
+  pending_fetchers_[request_parameters] = Fetcher::CreateAndStart(
+      this, account_id, getter, url_loader_factory, client_id, client_secret,
+      scopes, request->AsWeakPtr());
 }
 
 OAuth2AccessTokenFetcher* OAuth2TokenService::CreateAccessTokenFetcher(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
-  return delegate_->CreateAccessTokenFetcher(account_id, getter, consumer);
+  return delegate_->CreateAccessTokenFetcher(account_id, getter,
+                                             url_loader_factory, consumer);
 }
 
 void OAuth2TokenService::InformConsumerWithCacheEntry(

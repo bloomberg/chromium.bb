@@ -29,6 +29,9 @@ class Observer;
 namespace net {
 class URLRequestContextGetter;
 }
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace network {
 class SharedURLLoaderFactory;

@@ -68,17 +68,6 @@ void UnblockOnProfileCreation(base::RunLoop* run_loop,
     run_loop->Quit();
 }
 
-Profile* CreateNonSyncProfile() {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  base::FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
-  base::RunLoop run_loop;
-  profile_manager->CreateProfileAsync(
-      new_path, base::Bind(&UnblockOnProfileCreation, &run_loop),
-      base::string16(), std::string(), std::string());
-  run_loop.Run();
-  return profile_manager->GetProfileByPath(new_path);
-}
-
 Profile* CreateGuestProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::FilePath new_path = profile_manager->GetGuestProfilePath();
@@ -215,6 +204,20 @@ class UkmBrowserTest : public SyncTest {
     return harness;
   }
 
+  Profile* CreateNonSyncProfile() {
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    base::FilePath new_path =
+        profile_manager->GenerateNextProfileDirectoryPath();
+    base::RunLoop run_loop;
+    profile_manager->CreateProfileAsync(
+        new_path, base::Bind(&UnblockOnProfileCreation, &run_loop),
+        base::string16(), std::string(), std::string());
+    run_loop.Run();
+    Profile* profile = profile_manager->GetProfileByPath(new_path);
+    SetupMockGaiaResponsesForProfile(profile);
+    return profile;
+  }
+
  private:
   ukm::UkmService* ukm_service() const {
     return g_browser_process->GetMetricsServicesManager()->GetUkmService();
@@ -229,7 +232,7 @@ class UkmBrowserTest : public SyncTest {
 class UkmConsentParamBrowserTest : public UkmBrowserTest,
                                    public testing::WithParamInterface<bool> {
  public:
-  UkmConsentParamBrowserTest() : UkmBrowserTest() {}
+  UkmConsentParamBrowserTest() {}
 
   static bool IsMetricsAndCrashReportingEnabled() {
     return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();

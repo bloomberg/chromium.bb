@@ -124,6 +124,7 @@ class DriveBackendSyncTest : public testing::Test,
         nullptr,  // signin_manager
         nullptr,  // token_service
         nullptr,  // request_context
+        nullptr,  // url_loader_factory
         nullptr,  // drive_service
         in_memory_env_.get()));
     remote_sync_service_->AddServiceObserver(this);

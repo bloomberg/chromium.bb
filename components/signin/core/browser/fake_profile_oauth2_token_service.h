@@ -87,12 +87,14 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
 
  protected:
   // OAuth2TokenService overrides.
-  void FetchOAuth2Token(RequestImpl* request,
-                        const std::string& account_id,
-                        net::URLRequestContextGetter* getter,
-                        const std::string& client_id,
-                        const std::string& client_secret,
-                        const ScopeSet& scopes) override;
+  void FetchOAuth2Token(
+      RequestImpl* request,
+      const std::string& account_id,
+      net::URLRequestContextGetter* getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const std::string& client_id,
+      const std::string& client_secret,
+      const ScopeSet& scopes) override;
 
   void InvalidateAccessTokenImpl(const std::string& account_id,
                                  const std::string& client_id,

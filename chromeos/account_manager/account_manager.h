@@ -33,7 +33,11 @@ class ImportantFileWriter;
 
 namespace net {
 class URLRequestContextGetter;
-}  // namespace net
+}
+
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace chromeos {
 
@@ -132,7 +136,7 @@ class CHROMEOS_EXPORT AccountManager {
   // |account_key|, otherwise a |nullptr| is returned.
   std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const AccountKey& account_key,
-      net::URLRequestContextGetter* getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) const;
 
   // Returns |true| if an LST is available for |account_key|.

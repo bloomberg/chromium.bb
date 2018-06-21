@@ -25,6 +25,7 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -270,7 +271,7 @@ class CloudPolicyClientTest : public testing::Test {
         new net::TestURLRequestContextGetter(loop_.task_runner());
     client_ = std::make_unique<CloudPolicyClient>(
         kMachineID, kMachineModel, kBrandCode, &service_, request_context_,
-        &fake_signing_service_,
+        /*url_loader_factory_*/ nullptr, &fake_signing_service_,
         base::BindRepeating(
             &MockDeviceDMTokenCallbackObserver::OnDeviceDMTokenRequested,
             base::Unretained(&device_dmtoken_callback_observer_)));

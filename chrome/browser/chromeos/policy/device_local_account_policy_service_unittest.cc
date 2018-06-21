@@ -47,6 +47,7 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::AnyNumber;
@@ -167,8 +168,8 @@ void DeviceLocalAccountPolicyServiceTestBase::CreatePolicyService() {
       &affiliated_invalidation_service_provider_,
       base::ThreadTaskRunnerHandle::Get(), extension_cache_task_runner_,
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      new net::TestURLRequestContextGetter(
-          base::ThreadTaskRunnerHandle::Get())));
+      new net::TestURLRequestContextGetter(base::ThreadTaskRunnerHandle::Get()),
+      /*url_loader_factory=*/nullptr));
 }
 
 void DeviceLocalAccountPolicyServiceTestBase::

@@ -35,6 +35,7 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/sync_prefs.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
@@ -253,6 +254,8 @@ void DiceTurnSyncOnHelper::LoadPolicyWithCachedCredentials() {
   policy_service->FetchPolicyForSignedInUser(
       account_info_.GetAccountId(), dm_token_, client_id_,
       profile_->GetRequestContext(),
+      content::BrowserContext::GetDefaultStoragePartition(profile_)
+          ->GetURLLoaderFactoryForBrowserProcess(),
       base::Bind(&DiceTurnSyncOnHelper::OnPolicyFetchComplete,
                  weak_pointer_factory_.GetWeakPtr()));
 }

@@ -25,6 +25,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace em = enterprise_management;
 
@@ -48,17 +49,18 @@ UserPolicySigninService::UserPolicySigninService(
     UserCloudPolicyManager* policy_manager,
     SigninManager* signin_manager,
     scoped_refptr<net::URLRequestContextGetter> system_request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
     ProfileOAuth2TokenService* token_service)
     : UserPolicySigninServiceBase(profile,
                                   local_state,
                                   device_management_service,
                                   policy_manager,
                                   signin_manager,
-                                  system_request_context),
+                                  system_request_context,
+                                  system_url_loader_factory),
       oauth2_token_service_(token_service),
       profile_prefs_(profile->GetPrefs()),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 UserPolicySigninService::~UserPolicySigninService() {}
 

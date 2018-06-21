@@ -77,6 +77,12 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
   // servicing requests themselves, whenever possible.
   std::vector<PendingRequest>* pending_requests() { return &pending_requests_; }
 
+  // Sends a response for |request| that can be retrieved from
+  // pending_requests(). Prefer using AddResponse.
+  static void SimulateResponse(PendingRequest request,
+                               std::string content,
+                               int net_error = net::OK);
+
   // mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(mojom::URLLoaderRequest request,
                             int32_t routing_id,
@@ -91,6 +97,12 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
  private:
   bool CreateLoaderAndStartInternal(const GURL& url,
                                     mojom::URLLoaderClient* client);
+
+  static void SimulateResponseImpl(mojom::URLLoaderClient* client,
+                                   Redirects redirects,
+                                   ResourceResponseHead head,
+                                   std::string content,
+                                   URLLoaderCompletionStatus status);
 
   struct Response {
     Response();

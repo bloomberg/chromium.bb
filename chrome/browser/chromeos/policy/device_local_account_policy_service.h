@@ -25,6 +25,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_service.h"
 #include "components/policy/core/common/schema_registry.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -107,7 +108,8 @@ class DeviceLocalAccountPolicyBroker
   void ConnectIfPossible(
       chromeos::DeviceSettingsService* device_settings_service,
       DeviceManagementService* device_management_service,
-      scoped_refptr<net::URLRequestContextGetter> request_context);
+      scoped_refptr<net::URLRequestContextGetter> request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   // Reads the refresh delay from policy and configures the refresh scheduler.
   void UpdateRefreshDelay();
@@ -175,7 +177,8 @@ class DeviceLocalAccountPolicyService {
       scoped_refptr<base::SequencedTaskRunner>
           external_data_service_backend_task_runner,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-      scoped_refptr<net::URLRequestContextGetter> request_context);
+      scoped_refptr<net::URLRequestContextGetter> request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   virtual ~DeviceLocalAccountPolicyService();
 
   // Shuts down the service and prevents further policy fetches from the cloud.
@@ -273,6 +276,7 @@ class DeviceLocalAccountPolicyService {
   std::unique_ptr<DeviceLocalAccountExternalDataService> external_data_service_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   const std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       local_accounts_subscription_;

@@ -6,11 +6,15 @@
 #define GOOGLE_APIS_GAIA_FAKE_OAUTH2_TOKEN_SERVICE_H_
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 namespace net {
 class URLRequestContextGetter;
+}
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 // Do-nothing implementation of OAuth2TokenService.
@@ -35,12 +39,14 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
 
  protected:
   // OAuth2TokenService overrides.
-  void FetchOAuth2Token(RequestImpl* request,
-                        const std::string& account_id,
-                        net::URLRequestContextGetter* getter,
-                        const std::string& client_id,
-                        const std::string& client_secret,
-                        const ScopeSet& scopes) override;
+  void FetchOAuth2Token(
+      RequestImpl* request,
+      const std::string& account_id,
+      net::URLRequestContextGetter* getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const std::string& client_id,
+      const std::string& client_secret,
+      const ScopeSet& scopes) override;
 
   void InvalidateAccessTokenImpl(const std::string& account_id,
                                  const std::string& client_id,

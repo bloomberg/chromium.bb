@@ -21,6 +21,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
 namespace chromeos {
@@ -355,7 +356,7 @@ net::URLRequestContextGetter* AccountManager::GetUrlRequestContext() {
 std::unique_ptr<OAuth2AccessTokenFetcher>
 AccountManager::CreateAccessTokenFetcher(
     const AccountKey& account_key,
-    net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -364,8 +365,8 @@ AccountManager::CreateAccessTokenFetcher(
     return nullptr;
   }
 
-  return std::make_unique<OAuth2AccessTokenFetcherImpl>(consumer, getter,
-                                                        it->second);
+  return std::make_unique<OAuth2AccessTokenFetcherImpl>(
+      consumer, url_loader_factory, it->second);
 }
 
 bool AccountManager::IsTokenAvailable(const AccountKey& account_key) const {

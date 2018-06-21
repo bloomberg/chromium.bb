@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/cloud/remote_commands_invalidator_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
@@ -56,6 +57,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 namespace em = enterprise_management;
@@ -179,12 +181,18 @@ void UserCloudPolicyManagerChromeOS::ForceTimeoutForTest() {
   OnPolicyRefreshTimeout();
 }
 
+void UserCloudPolicyManagerChromeOS::SetSystemURLLoaderFactoryForTests(
+    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory) {
+  system_url_loader_factory_for_tests_ = system_url_loader_factory;
+}
+
 UserCloudPolicyManagerChromeOS::~UserCloudPolicyManagerChromeOS() {}
 
 void UserCloudPolicyManagerChromeOS::Connect(
     PrefService* local_state,
     DeviceManagementService* device_management_service,
-    scoped_refptr<net::URLRequestContextGetter> system_request_context) {
+    scoped_refptr<net::URLRequestContextGetter> system_request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory) {
   DCHECK(device_management_service);
   DCHECK(local_state);
 
@@ -209,7 +217,8 @@ void UserCloudPolicyManagerChromeOS::Connect(
       std::make_unique<CloudPolicyClient>(
           std::string() /* machine_id */, std::string() /* machine_model */,
           std::string() /* brand_code */, device_management_service,
-          system_request_context, nullptr /* signing_service */,
+          system_request_context, system_url_loader_factory,
+          nullptr /* signing_service */,
           chromeos::GetDeviceDMTokenForUserPolicyGetter(account_id_));
   CreateComponentCloudPolicyService(
       dm_protocol::kChromeExtensionPolicyType, component_policy_cache_path_,
@@ -535,6 +544,17 @@ void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthToken() {
     return;
   }
 
+  // TODO(jcivelli): Connect() is passed a SharedURLLoaderFactory but here we
+  // retrieve it from |g_browser_process|. We should move away from retrieving
+  // it from |g_browser_process| at which point we can remove
+  // SetSystemURLLoaderFactoryForTests().
+  scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory =
+      system_url_loader_factory_for_tests_;
+  if (!system_url_loader_factory) {
+    system_url_loader_factory =
+        g_browser_process->system_network_context_manager()
+            ->GetSharedURLLoaderFactory();
+  }
   const std::string& refresh_token = chromeos::UserSessionManager::GetInstance()
                                          ->user_context()
                                          .GetRefreshToken();
@@ -542,6 +562,7 @@ void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthToken() {
     token_fetcher_.reset(PolicyOAuth2TokenFetcher::CreateInstance());
     token_fetcher_->StartWithRefreshToken(
         refresh_token, g_browser_process->system_request_context(),
+        system_url_loader_factory,
         base::Bind(&UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched,
                    base::Unretained(this)));
     return;
@@ -559,6 +580,7 @@ void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthToken() {
   token_fetcher_.reset(PolicyOAuth2TokenFetcher::CreateInstance());
   token_fetcher_->StartWithSigninContext(
       signin_context.get(), g_browser_process->system_request_context(),
+      system_url_loader_factory,
       base::Bind(&UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched,
                  base::Unretained(this)));
 }

@@ -27,6 +27,7 @@
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_WIN)
 #include "chrome/install_static/install_util.h"
@@ -90,7 +91,8 @@ MachineLevelUserCloudPolicyController::CreatePolicyManager() {
 
 void MachineLevelUserCloudPolicyController::Init(
     PrefService* local_state,
-    scoped_refptr<net::URLRequestContextGetter> request_context) {
+    scoped_refptr<net::URLRequestContextGetter> request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   MachineLevelUserCloudPolicyManager* policy_manager =
       g_browser_process->browser_policy_connector()
           ->machine_level_user_cloud_policy_manager();
@@ -111,8 +113,8 @@ void MachineLevelUserCloudPolicyController::Init(
 
   if (!dm_token.empty()) {
     policy_fetcher_ = std::make_unique<MachineLevelUserCloudPolicyFetcher>(
-        policy_manager, local_state, device_management_service,
-        request_context);
+        policy_manager, local_state, device_management_service, request_context,
+        url_loader_factory);
     return;
   }
 
@@ -123,9 +125,10 @@ void MachineLevelUserCloudPolicyController::Init(
   DCHECK(!client_id.empty());
 
   policy_registrar_ = std::make_unique<MachineLevelUserCloudPolicyRegistrar>(
-      device_management_service, request_context);
+      device_management_service, request_context, url_loader_factory);
   policy_fetcher_ = std::make_unique<MachineLevelUserCloudPolicyFetcher>(
-      policy_manager, local_state, device_management_service, request_context);
+      policy_manager, local_state, device_management_service, request_context,
+      url_loader_factory);
 
   if (dm_token.empty()) {
     policy_register_watcher_ =

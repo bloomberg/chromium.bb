@@ -11,11 +11,13 @@
 #include "base/run_loop.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_test_util.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -35,11 +37,15 @@ class RetryingTestingOAuth2TokenServiceConsumer
 
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override {
+    if (retry_counter_ <= 0)
+      return;
+    retry_counter_--;
     TestingOAuth2TokenServiceConsumer::OnGetTokenFailure(request, error);
     request_ = oauth2_service_->StartRequest(
         account_id_, OAuth2TokenService::ScopeSet(), this);
   }
 
+  int retry_counter_ = 2;
   OAuth2TokenService* oauth2_service_;
   std::string account_id_;
   std::unique_ptr<OAuth2TokenService::Request> request_;
@@ -65,10 +71,12 @@ class TestOAuth2TokenService : public OAuth2TokenService {
 class OAuth2TokenServiceTest : public testing::Test {
  public:
   void SetUp() override {
-    oauth2_service_.reset(new TestOAuth2TokenService(
-        std::make_unique<FakeOAuth2TokenServiceDelegate>(
-            new net::TestURLRequestContextGetter(
-                message_loop_.task_runner()))));
+    mojo::edk::Init();
+    auto delegate = std::make_unique<FakeOAuth2TokenServiceDelegate>(
+        new net::TestURLRequestContextGetter(message_loop_.task_runner()));
+    test_url_loader_factory_ = delegate->test_url_loader_factory();
+    oauth2_service_ =
+        std::make_unique<TestOAuth2TokenService>(std::move(delegate));
     account_id_ = "test_user@gmail.com";
   }
 
@@ -77,9 +85,15 @@ class OAuth2TokenServiceTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void SimulateOAuthTokenResponse(const std::string& token,
+                                  net::HttpStatusCode status = net::HTTP_OK) {
+    test_url_loader_factory_->AddResponse(
+        GaiaUrls::GetInstance()->oauth2_token_url().spec(), token, status);
+  }
+
  protected:
   base::MessageLoopForIO message_loop_;  // net:: stuff needs IO message loop.
-  net::TestURLFetcherFactory factory_;
+  network::TestURLLoaderFactory* test_url_loader_factory_ = nullptr;
   std::unique_ptr<TestOAuth2TokenService> oauth2_service_;
   std::string account_id_;
   TestingOAuth2TokenServiceConsumer consumer_;
@@ -101,18 +115,14 @@ TEST_F(OAuth2TokenServiceTest, FailureShouldNotRetry) {
   std::unique_ptr<OAuth2TokenService::Request> request(
       oauth2_service_->StartRequest(account_id_, OAuth2TokenService::ScopeSet(),
                                     &consumer_));
+
+  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
+  SimulateOAuthTokenResponse("", net::HTTP_UNAUTHORIZED);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
-  EXPECT_EQ(0, consumer_.number_of_errors_);
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
-  fetcher->SetResponseString(std::string());
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
-  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(1, consumer_.number_of_errors_);
-  EXPECT_EQ(fetcher, factory_.GetFetcherByID(0));
+  EXPECT_EQ(0, test_url_loader_factory_->NumPending());
 }
 
 TEST_F(OAuth2TokenServiceTest, SuccessWithoutCaching) {
@@ -121,15 +131,12 @@ TEST_F(OAuth2TokenServiceTest, SuccessWithoutCaching) {
   std::unique_ptr<OAuth2TokenService::Request> request(
       oauth2_service_->StartRequest(account_id_, OAuth2TokenService::ScopeSet(),
                                     &consumer_));
-  base::RunLoop().RunUntilIdle();
-
   EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("token", 3600));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("token", consumer_.last_token_);
@@ -149,17 +156,13 @@ TEST_F(OAuth2TokenServiceTest, SuccessWithCaching) {
       account_id_, "refreshToken");
 
   // First request.
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
   std::unique_ptr<OAuth2TokenService::Request> request(
       oauth2_service_->StartRequest(account_id_, scopes1, &consumer_));
-  base::RunLoop().RunUntilIdle();
-
   EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("token", 3600));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("token", consumer_.last_token_);
@@ -176,16 +179,13 @@ TEST_F(OAuth2TokenServiceTest, SuccessWithCaching) {
   EXPECT_EQ("token", consumer_.last_token_);
 
   // Third request to a new set of scopes, should return another token.
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token2", 3600));
   std::unique_ptr<OAuth2TokenService::Request> request3(
       oauth2_service_->StartRequest(account_id_, scopes2, &consumer_));
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
-  fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("token2", 3600));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(3, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("token2", consumer_.last_token_);
@@ -196,35 +196,27 @@ TEST_F(OAuth2TokenServiceTest, SuccessAndExpirationAndFailure) {
       account_id_, "refreshToken");
 
   // First request.
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 0));
   std::unique_ptr<OAuth2TokenService::Request> request(
       oauth2_service_->StartRequest(account_id_, OAuth2TokenService::ScopeSet(),
                                     &consumer_));
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("token", 0));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("token", consumer_.last_token_);
 
   // Second request must try to access the network as the token has expired.
+  SimulateOAuthTokenResponse("", net::HTTP_UNAUTHORIZED);  // Network failure.
   std::unique_ptr<OAuth2TokenService::Request> request2(
       oauth2_service_->StartRequest(account_id_, OAuth2TokenService::ScopeSet(),
                                     &consumer_));
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
+  base::RunLoop().RunUntilIdle();
 
-  // Network failure.
-  fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
-  fetcher->SetResponseString(std::string());
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(1, consumer_.number_of_errors_);
 }
@@ -234,34 +226,25 @@ TEST_F(OAuth2TokenServiceTest, SuccessAndExpirationAndSuccess) {
       account_id_, "refreshToken");
 
   // First request.
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 0));
   std::unique_ptr<OAuth2TokenService::Request> request(
       oauth2_service_->StartRequest(account_id_, OAuth2TokenService::ScopeSet(),
                                     &consumer_));
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("token", 0));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("token", consumer_.last_token_);
 
   // Second request must try to access the network as the token has expired.
+  SimulateOAuthTokenResponse(GetValidTokenResponse("another token", 0));
   std::unique_ptr<OAuth2TokenService::Request> request2(
       oauth2_service_->StartRequest(account_id_, OAuth2TokenService::ScopeSet(),
                                     &consumer_));
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
-
-  fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("another token", 0));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("another token", consumer_.last_token_);
@@ -277,14 +260,12 @@ TEST_F(OAuth2TokenServiceTest, RequestDeletedBeforeCompletion) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(1, test_url_loader_factory_->NumPending());
 
   request.reset();
 
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("token", 3600));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
+
   EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
 }
@@ -293,15 +274,11 @@ TEST_F(OAuth2TokenServiceTest, RequestDeletedAfterCompletion) {
   oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
       account_id_, "refreshToken");
 
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
   std::unique_ptr<OAuth2TokenService::Request> request(
       oauth2_service_->StartRequest(account_id_, OAuth2TokenService::ScopeSet(),
                                     &consumer_));
   base::RunLoop().RunUntilIdle();
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("token", 3600));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("token", consumer_.last_token_);
@@ -328,11 +305,9 @@ TEST_F(OAuth2TokenServiceTest, MultipleRequestsForTheSameScopesWithOneDeleted) {
 
   request.reset();
 
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("token", 3600));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
 }
@@ -344,12 +319,8 @@ TEST_F(OAuth2TokenServiceTest, ClearedRefreshTokenFailsSubsequentRequests) {
   std::unique_ptr<OAuth2TokenService::Request> request(
       oauth2_service_->StartRequest(account_id_, OAuth2TokenService::ScopeSet(),
                                     &consumer_));
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
   base::RunLoop().RunUntilIdle();
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("token", 3600));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("token", consumer_.last_token_);
@@ -378,8 +349,7 @@ TEST_F(OAuth2TokenServiceTest,
   std::unique_ptr<OAuth2TokenService::Request> request(
       oauth2_service_->StartRequest(account_id_, scopes, &consumer_));
   base::RunLoop().RunUntilIdle();
-  net::TestURLFetcher* fetcher1 = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher1);
+  ASSERT_EQ(1, test_url_loader_factory_->NumPending());
 
   // Note |request| is still pending when the refresh token changes.
   oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
@@ -392,17 +362,25 @@ TEST_F(OAuth2TokenServiceTest,
       oauth2_service_->StartRequest(account_id_, scopes1, &consumer2));
   base::RunLoop().RunUntilIdle();
 
-  net::TestURLFetcher* fetcher2 = factory_.GetFetcherByID(0);
-  fetcher2->set_response_code(net::HTTP_OK);
-  fetcher2->SetResponseString(GetValidTokenResponse("second token", 3600));
-  fetcher2->delegate()->OnURLFetchComplete(fetcher2);
+  std::vector<network::TestURLLoaderFactory::PendingRequest>* pending_requests =
+      test_url_loader_factory_->pending_requests();
+  ASSERT_EQ(2U, pending_requests->size());
+  network::TestURLLoaderFactory::PendingRequest second_request =
+      std::move((*pending_requests)[1]);
+  network::TestURLLoaderFactory::PendingRequest first_request =
+      std::move((*pending_requests)[0]);
+  pending_requests->clear();
+
+  network::TestURLLoaderFactory::SimulateResponse(
+      std::move(second_request), GetValidTokenResponse("second token", 3600));
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, consumer2.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer2.number_of_errors_);
   EXPECT_EQ("second token", consumer2.last_token_);
 
-  fetcher1->set_response_code(net::HTTP_OK);
-  fetcher1->SetResponseString(GetValidTokenResponse("first token", 3600));
-  fetcher1->delegate()->OnURLFetchComplete(fetcher1);
+  network::TestURLLoaderFactory::SimulateResponse(
+      std::move(first_request), GetValidTokenResponse("first token", 3600));
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("first token", consumer_.last_token_);
@@ -433,23 +411,11 @@ TEST_F(OAuth2TokenServiceTest, RetryingConsumer) {
   std::unique_ptr<OAuth2TokenService::Request> request(
       oauth2_service_->StartRequest(account_id_, OAuth2TokenService::ScopeSet(),
                                     &consumer));
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, consumer.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer.number_of_errors_);
 
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
-  fetcher->SetResponseString(std::string());
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
-  EXPECT_EQ(0, consumer.number_of_successful_tokens_);
-  EXPECT_EQ(1, consumer.number_of_errors_);
-
-  fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
-  fetcher->SetResponseString(std::string());
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  SimulateOAuthTokenResponse("", net::HTTP_UNAUTHORIZED);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, consumer.number_of_successful_tokens_);
   EXPECT_EQ(2, consumer.number_of_errors_);
 }
@@ -466,11 +432,10 @@ TEST_F(OAuth2TokenServiceTest, InvalidateToken) {
 
   EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("token", 3600));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("token", consumer_.last_token_);
@@ -486,19 +451,23 @@ TEST_F(OAuth2TokenServiceTest, InvalidateToken) {
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("token", consumer_.last_token_);
 
+  // Clear previous response so the token request will be pending and we can
+  // simulate a response after it started.
+  test_url_loader_factory_->ClearResponses();
+
   // Invalidating the token should return a new token on the next request.
   oauth2_service_->InvalidateAccessToken(account_id_, scopes,
                                          consumer_.last_token_);
   std::unique_ptr<OAuth2TokenService::Request> request3(
       oauth2_service_->StartRequest(account_id_, scopes, &consumer_));
   base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(2, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
-  fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("token2", 3600));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token2", 3600));
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(3, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("token2", consumer_.last_token_);
@@ -640,12 +609,9 @@ TEST_F(OAuth2TokenServiceTest, UpdateClearsCache) {
       kEmail, "refreshToken");
   std::unique_ptr<OAuth2TokenService::Request> request(
       oauth2_service_->StartRequest(kEmail, scope_list, &consumer_));
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
   base::RunLoop().RunUntilIdle();
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("token", 3600));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("token", consumer_.last_token_);
@@ -657,13 +623,9 @@ TEST_F(OAuth2TokenServiceTest, UpdateClearsCache) {
   EXPECT_EQ(0, (int)oauth2_service_->token_cache_.size());
   oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
       kEmail, "refreshToken");
+  SimulateOAuthTokenResponse(GetValidTokenResponse("another token", 3600));
   request = oauth2_service_->StartRequest(kEmail, scope_list, &consumer_);
   base::RunLoop().RunUntilIdle();
-  fetcher = factory_.GetFetcherByID(0);
-  // ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("another token", 3600));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(2, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("another token", consumer_.last_token_);

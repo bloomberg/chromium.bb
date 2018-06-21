@@ -12,11 +12,6 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-#include "net/url_request/url_request_context_getter.h"
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 class PrefRegistrySimple;
 
@@ -51,12 +46,15 @@ class DeviceOAuth2TokenService
 
  protected:
   // Implementation of OAuth2TokenService.
-  void FetchOAuth2Token(RequestImpl* request,
-                        const std::string& account_id,
-                        net::URLRequestContextGetter* getter,
-                        const std::string& client_id,
-                        const std::string& client_secret,
-                        const ScopeSet& scopes) override;
+  void FetchOAuth2Token(
+      RequestImpl* request,
+      const std::string& account_id,
+      net::URLRequestContextGetter* getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const std::string& client_id,
+      const std::string& client_secret,
+      const ScopeSet& scopes) override;
+
  private:
   friend class DeviceOAuth2TokenServiceFactory;
   friend class DeviceOAuth2TokenServiceTest;

@@ -21,6 +21,9 @@ class ProfileOAuth2TokenService;
 namespace net {
 class URLRequestContextGetter;
 }
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace policy {
 
@@ -40,6 +43,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase,
       UserCloudPolicyManager* policy_manager,
       SigninManager* signin_manager,
       scoped_refptr<net::URLRequestContextGetter> system_request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
       ProfileOAuth2TokenService* oauth2_token_service);
   ~UserPolicySigninService() override;
 

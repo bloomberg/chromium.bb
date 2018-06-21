@@ -23,6 +23,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
 
@@ -33,20 +34,21 @@ void DeviceOAuth2TokenServiceDelegate::OnServiceAccountIdentityChanged() {
 
 DeviceOAuth2TokenServiceDelegate::DeviceOAuth2TokenServiceDelegate(
     net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     PrefService* local_state)
     : url_request_context_getter_(getter),
+      url_loader_factory_(url_loader_factory),
       local_state_(local_state),
       state_(STATE_LOADING),
       max_refresh_token_validation_retries_(3),
       validation_requested_(false),
       validation_status_delegate_(nullptr),
       service_account_identity_subscription_(
-          CrosSettings::Get()
-              ->AddSettingsObserver(
-                  kServiceAccountIdentity,
-                  base::Bind(&DeviceOAuth2TokenServiceDelegate::
-                                 OnServiceAccountIdentityChanged,
-                             base::Unretained(this)))),
+          CrosSettings::Get()->AddSettingsObserver(
+              kServiceAccountIdentity,
+              base::Bind(&DeviceOAuth2TokenServiceDelegate::
+                             OnServiceAccountIdentityChanged,
+                         base::Unretained(this)))),
       weak_ptr_factory_(this) {
   // Pull in the system salt.
   SystemSaltGetter::Get()->GetSystemSalt(
@@ -163,14 +165,21 @@ DeviceOAuth2TokenServiceDelegate::GetRequestContext() const {
   return url_request_context_getter_.get();
 }
 
+scoped_refptr<network::SharedURLLoaderFactory>
+DeviceOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
+  return url_loader_factory_;
+}
+
 OAuth2AccessTokenFetcher*
 DeviceOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   std::string refresh_token = GetRefreshToken(account_id);
   DCHECK(!refresh_token.empty());
-  return new OAuth2AccessTokenFetcherImpl(consumer, getter, refresh_token);
+  return new OAuth2AccessTokenFetcherImpl(consumer, url_loader_factory,
+                                          refresh_token);
 }
 
 void DeviceOAuth2TokenServiceDelegate::DidGetSystemSalt(

@@ -1130,7 +1130,9 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   // requires that threads are running; this Init() call lets the connector
   // resume its initialization now that the loops are spinning and the
   // system request context is available for the fetchers.
-  browser_policy_connector()->Init(local_state(), system_request_context());
+  browser_policy_connector()->Init(
+      local_state(), system_request_context(),
+      system_network_context_manager()->GetSharedURLLoaderFactory());
 
   if (local_state_->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled))
     ApplyDefaultBrowserPolicy();

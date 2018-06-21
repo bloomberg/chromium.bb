@@ -51,6 +51,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
@@ -98,6 +99,7 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
@@ -1067,10 +1069,17 @@ void ExistingUserController::OnOldEncryptionDetected(
   // Use signin profile request context
   net::URLRequestContextGetter* const signin_profile_context =
       ProfileHelper::GetSigninProfile()->GetRequestContext();
+  scoped_refptr<network::SharedURLLoaderFactory>
+      sigin_profile_url_loader_factory =
+          content::BrowserContext::GetDefaultStoragePartition(
+              ProfileHelper::GetSigninProfile())
+              ->GetURLLoaderFactoryForBrowserProcess();
+
   auto cloud_policy_client = std::make_unique<policy::CloudPolicyClient>(
       std::string() /* machine_id */, std::string() /* machine_model */,
       std::string() /* brand_code */, device_management_service,
-      signin_profile_context, nullptr /* signing_service */,
+      signin_profile_context, sigin_profile_url_loader_factory,
+      nullptr /* signing_service */,
       chromeos::GetDeviceDMTokenForUserPolicyGetter(
           user_context.GetAccountId()));
   pre_signin_policy_fetcher_ = std::make_unique<policy::PreSigninPolicyFetcher>(

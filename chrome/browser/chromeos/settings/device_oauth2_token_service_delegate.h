@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -24,6 +25,9 @@ class GaiaOAuthClient;
 namespace net {
 class URLRequestContextGetter;
 }
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 class PrefService;
 
@@ -33,8 +37,10 @@ class DeviceOAuth2TokenServiceDelegate
     : public OAuth2TokenServiceDelegate,
       public gaia::GaiaOAuthClient::Delegate {
  public:
-  DeviceOAuth2TokenServiceDelegate(net::URLRequestContextGetter* getter,
-                                   PrefService* local_state);
+  DeviceOAuth2TokenServiceDelegate(
+      net::URLRequestContextGetter* getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefService* local_state);
   ~DeviceOAuth2TokenServiceDelegate() override;
 
   typedef base::Callback<void(bool)> StatusCallback;
@@ -53,9 +59,13 @@ class DeviceOAuth2TokenServiceDelegate
 
   net::URLRequestContextGetter* GetRequestContext() const override;
 
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      const override;
+
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       net::URLRequestContextGetter* getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
 
   // gaia::GaiaOAuthClient::Delegate implementation.
@@ -122,6 +132,7 @@ class DeviceOAuth2TokenServiceDelegate
 
   // Dependencies.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   PrefService* local_state_;
 
   // Current operational state.

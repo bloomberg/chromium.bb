@@ -35,6 +35,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -63,6 +64,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "google_apis/drive/auth_service.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -374,7 +376,10 @@ bool FileManagerPrivateRequestWebStoreAccessTokenFunction::RunAsync() {
       SigninManagerFactory::GetForProfile(GetProfile());
   auth_service_ = std::make_unique<google_apis::AuthService>(
       oauth_service, signin_manager->GetAuthenticatedAccountId(),
-      url_request_context_getter, scopes);
+      url_request_context_getter,
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory(),
+      scopes);
   auth_service_->StartAuthentication(base::Bind(
       &FileManagerPrivateRequestWebStoreAccessTokenFunction::
           OnAccessTokenFetched,
