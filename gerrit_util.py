@@ -393,9 +393,9 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
       raise GerritAuthenticationError(response.status, reason)
 
     # If response.status < 500 then the result is final; break retry loop.
-    # If the response is 404, it might be because of replication lag, so
+    # If the response is 404/409, it might be because of replication lag, so
     # keep trying anyway.
-    if ((response.status < 500 and response.status != 404)
+    if ((response.status < 500 and response.status not in [404, 409])
         or response.status in accept_statuses):
       LOGGER.debug('got response %d for %s %s', response.status,
                    conn.req_params['method'], conn.req_params['uri'])

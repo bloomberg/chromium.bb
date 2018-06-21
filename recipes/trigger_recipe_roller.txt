@@ -6,7 +6,8 @@ All they had was one poor machine under a desk, and its name was Batty,
 the Build and Test Yeti.
 
 As the CI needs of the browser grew, Batty, the Build and Test Yeti, got
-a new friend:
+a new friend, but this information was marked RVG, so it was months before
+any details were revealed.
 
 
 The End!
