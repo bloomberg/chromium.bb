@@ -1413,6 +1413,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           storage_partition_impl_->GetURLRequestContext(),
           storage_partition_impl_->GetIndexedDBContext(),
           ChromeBlobStorageContext::GetFor(browser_context_))),
+      service_worker_dispatcher_host_(new ServiceWorkerDispatcherHost(
+          storage_partition_impl_->GetServiceWorkerContext(),
+          id_)),
       channel_connected_(false),
       sent_render_process_ready_(false),
 #if defined(OS_ANDROID)
@@ -1449,6 +1452,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       GetID(), storage_partition_impl_->GetServiceWorkerContext()));
 
   AddObserver(indexed_db_factory_.get());
+  AddObserver(service_worker_dispatcher_host_.get());
 #if defined(OS_MACOSX)
   AddObserver(MachBroker::GetInstance());
 #endif
@@ -1840,11 +1844,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new TextInputClientMessageFilter());
 #endif
 
-  auto service_worker_filter =
-      base::MakeRefCounted<ServiceWorkerDispatcherHost>(
-          storage_partition_impl_->GetServiceWorkerContext(), GetID());
-  AddFilter(service_worker_filter.get());
-
   p2p_socket_dispatcher_host_ = new P2PSocketDispatcherHost(
       resource_context, request_context.get());
   AddFilter(p2p_socket_dispatcher_host_.get());
@@ -1904,6 +1903,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   channel_->AddAssociatedInterfaceForIOThread(
       base::Bind(&IndexedDBDispatcherHost::AddBinding,
                  base::Unretained(indexed_db_factory_.get())));
+
+  channel_->AddAssociatedInterfaceForIOThread(base::BindRepeating(
+      &ServiceWorkerDispatcherHost::AddBinding,
+      base::Unretained(service_worker_dispatcher_host_.get())));
 
   AddUIThreadInterface(
       registry.get(), base::Bind(&ForwardRequest<device::mojom::BatteryMonitor>,
