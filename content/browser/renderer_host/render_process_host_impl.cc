@@ -2383,8 +2383,9 @@ void RenderProcessHostImpl::ShutdownForBadMessage(
   if (crash_report_mode == CrashReportMode::GENERATE_CRASH_DUMP) {
     // Set crash keys to understand renderer kills related to site isolation.
     auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+    std::string lock_url = policy->GetOriginLock(GetID()).spec();
     base::debug::SetCrashKeyString(bad_message::GetKilledProcessOriginLockKey(),
-                                   policy->GetOriginLock(GetID()).spec());
+                                   lock_url.empty() ? "(none)" : lock_url);
 
     std::string site_isolation_mode;
     if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
@@ -2393,6 +2394,8 @@ void RenderProcessHostImpl::ShutdownForBadMessage(
       site_isolation_mode += "tdi ";
     if (SiteIsolationPolicy::AreIsolatedOriginsEnabled())
       site_isolation_mode += "io ";
+    if (site_isolation_mode.empty())
+      site_isolation_mode = "(none)";
 
     static auto* isolation_mode_key = base::debug::AllocateCrashKeyString(
         "site_isolation_mode", base::debug::CrashKeySize::Size32);
