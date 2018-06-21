@@ -32,6 +32,6 @@
     readonly attribute unsigned long resultIndex;
     readonly attribute SpeechRecognitionResultList? results;
 
-    readonly attribute Document? interpretation;
-    readonly attribute Document? emma;
+    [Measure] readonly attribute Document? interpretation;
+    [Measure] readonly attribute Document? emma;
 };
