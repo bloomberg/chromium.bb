@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "content/public/browser/web_contents.h"
@@ -31,7 +32,12 @@ constexpr int kGaiaDialogWidth = 768;
 OobeUIDialogDelegate::OobeUIDialogDelegate(
     base::WeakPtr<LoginDisplayHostMojo> controller)
     : controller_(controller),
-      size_(gfx::Size(kGaiaDialogWidth, kGaiaDialogHeight)) {}
+      size_(gfx::Size(kGaiaDialogWidth, kGaiaDialogHeight)),
+      display_observer_(this),
+      tablet_mode_observer_(this) {
+  display_observer_.Add(display::Screen::GetScreen());
+  tablet_mode_observer_.Add(TabletModeClient::Get());
+}
 
 OobeUIDialogDelegate::~OobeUIDialogDelegate() {
   if (controller_)
@@ -71,7 +77,7 @@ void OobeUIDialogDelegate::Show(bool closable_by_esc) {
 void OobeUIDialogDelegate::ShowFullScreen() {
   const gfx::Size& size =
       display::Screen::GetScreen()->GetPrimaryDisplay().size();
-  SetSize(size.width(), size.height());
+  UpdateSizeAndPosition(size.width(), size.height());
   Show(false /*closable_by_esc*/);
 }
 
@@ -85,10 +91,7 @@ void OobeUIDialogDelegate::Close() {
     dialog_widget_->Close();
 }
 
-void OobeUIDialogDelegate::SetSize(int width, int height) {
-  if (size_ == gfx::Size(width, height))
-    return;
-
+void OobeUIDialogDelegate::UpdateSizeAndPosition(int width, int height) {
   size_.SetSize(width, height);
   if (!dialog_widget_)
     return;
@@ -116,6 +119,26 @@ OobeUI* OobeUIDialogDelegate::GetOobeUI() const {
 
 gfx::NativeWindow OobeUIDialogDelegate::GetNativeWindow() const {
   return dialog_widget_ ? dialog_widget_->GetNativeWindow() : nullptr;
+}
+
+void OobeUIDialogDelegate::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  if (!dialog_widget_)
+    return;
+
+  const display::Display this_display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          dialog_widget_->GetNativeWindow());
+  if (this_display.id() == display.id())
+    UpdateSizeAndPosition(size_.width(), size_.height());
+}
+
+void OobeUIDialogDelegate::OnTabletModeToggled(bool enabled) {
+  if (!dialog_widget_)
+    return;
+
+  UpdateSizeAndPosition(size_.width(), size_.height());
 }
 
 ui::ModalType OobeUIDialogDelegate::GetDialogModalType() const {

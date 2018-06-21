@@ -9,11 +9,20 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
+
+class TabletModeClient;
 
 namespace content {
 class WebContents;
+}
+
+namespace display {
+class Screen;
 }
 
 namespace ui {
@@ -37,7 +46,9 @@ class OobeUI;
 //         |
 //         V
 //   clientView---->Widget's view hierarchy
-class OobeUIDialogDelegate : public ui::WebDialogDelegate {
+class OobeUIDialogDelegate : public display::DisplayObserver,
+                             public TabletModeClientObserver,
+                             public ui::WebDialogDelegate {
  public:
   explicit OobeUIDialogDelegate(base::WeakPtr<LoginDisplayHostMojo> controller);
   ~OobeUIDialogDelegate() override;
@@ -61,11 +72,17 @@ class OobeUIDialogDelegate : public ui::WebDialogDelegate {
 
   content::WebContents* GetWebContents();
 
-  void SetSize(int width, int height);
+  void UpdateSizeAndPosition(int width, int height);
   OobeUI* GetOobeUI() const;
   gfx::NativeWindow GetNativeWindow() const;
 
  private:
+  // display::DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
+  // TabletModeClientObserver:
+  void OnTabletModeToggled(bool enabled) override;
+
   // ui::WebDialogDelegate:
   ui::ModalType GetDialogModalType() const override;
   base::string16 GetDialogTitle() const override;
@@ -92,6 +109,10 @@ class OobeUIDialogDelegate : public ui::WebDialogDelegate {
   views::WebDialogView* dialog_view_ = nullptr;
   gfx::Size size_;
   bool closable_by_esc_ = true;
+
+  ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
+  ScopedObserver<TabletModeClient, TabletModeClientObserver>
+      tablet_mode_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeUIDialogDelegate);
 };
