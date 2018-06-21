@@ -158,12 +158,12 @@ void StartupController::OnFallbackStartupTimerExpired() {
   TryStart();
 }
 
-std::string StartupController::GetEngineInitializationStateString() const {
+StartupController::State StartupController::GetState() const {
   if (!start_engine_time_.is_null())
-    return "Started";
+    return State::STARTED;
   if (!start_up_time_.is_null())
-    return "Deferred";
-  return "Not started";
+    return State::STARTING_DEFERRED;
+  return State::NOT_STARTED;
 }
 
 void StartupController::OnDataTypeRequestsSyncStartup(ModelType type) {

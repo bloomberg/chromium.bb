@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_SYNC_DRIVER_STARTUP_CONTROLLER_H_
 #define COMPONENTS_SYNC_DRIVER_STARTUP_CONTROLLER_H_
 
-#include <string>
-
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -20,6 +18,17 @@ class SyncPrefs;
 // pertaining to initialization of the SyncEngine.
 class StartupController {
  public:
+  enum class State {
+    // Startup has not been triggered yet.
+    NOT_STARTED,
+    // Startup has been triggered but is deferred. The actual startup will
+    // happen once the deferred delay expires (or when immediate startup is
+    // requested, whichever happens first).
+    STARTING_DEFERRED,
+    // Startup has happened, i.e. |start_engine| has been run.
+    STARTED
+  };
+
   StartupController(const SyncPrefs* sync_prefs,
                     base::RepeatingCallback<bool()> can_start,
                     base::RepeatingClosure start_engine);
@@ -50,9 +59,10 @@ class StartupController {
   // Sets the setup in progress flag and tries to start sync if it's true.
   void SetSetupInProgress(bool setup_in_progress);
 
+  State GetState() const;
+
   bool IsSetupInProgress() const { return setup_in_progress_; }
   base::Time start_engine_time() const { return start_engine_time_; }
-  std::string GetEngineInitializationStateString() const;
 
  private:
   enum StartUpDeferredOption { STARTUP_DEFERRED, STARTUP_IMMEDIATE };

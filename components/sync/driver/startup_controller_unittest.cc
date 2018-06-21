@@ -16,14 +16,6 @@
 
 namespace syncer {
 
-// These are coupled to the implementation of StartupController's
-// GetEngineInitializationStateString which is used by about:sync. We use it
-// as a convenient way to verify internal state and that the class is
-// outputting the correct values for the debug string.
-static const char kStateStringStarted[] = "Started";
-static const char kStateStringDeferred[] = "Deferred";
-static const char kStateStringNotStarted[] = "Not started";
-
 class StartupControllerTest : public testing::Test {
  public:
   StartupControllerTest() : can_start_(false), started_(false) {}
@@ -46,23 +38,18 @@ class StartupControllerTest : public testing::Test {
 
   void ExpectStarted() {
     EXPECT_TRUE(started());
-    EXPECT_EQ(kStateStringStarted,
-              controller()->GetEngineInitializationStateString());
+    EXPECT_EQ(StartupController::State::STARTED, controller()->GetState());
   }
 
   void ExpectStartDeferred() {
-    const bool deferred_start =
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSyncDisableDeferredStartup);
-    EXPECT_EQ(!deferred_start, started());
-    EXPECT_EQ(deferred_start ? kStateStringDeferred : kStateStringStarted,
-              controller()->GetEngineInitializationStateString());
+    EXPECT_FALSE(started());
+    EXPECT_EQ(StartupController::State::STARTING_DEFERRED,
+              controller()->GetState());
   }
 
   void ExpectNotStarted() {
     EXPECT_FALSE(started());
-    EXPECT_EQ(kStateStringNotStarted,
-              controller()->GetEngineInitializationStateString());
+    EXPECT_EQ(StartupController::State::NOT_STARTED, controller()->GetState());
   }
 
   bool started() const { return started_; }
@@ -72,11 +59,7 @@ class StartupControllerTest : public testing::Test {
 
  private:
   bool CanStart() { return can_start_; }
-
-  void FakeStartBackend() {
-    started_ = true;
-    sync_prefs()->SetFirstSetupComplete();
-  }
+  void FakeStartBackend() { started_ = true; }
 
   bool can_start_;
   bool started_;
