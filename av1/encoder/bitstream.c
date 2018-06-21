@@ -2513,8 +2513,6 @@ static void write_timing_info_header(AV1_COMMON *const cm,
 
 static void write_decoder_model_info(AV1_COMMON *const cm,
                                      struct aom_write_bit_buffer *wb) {
-  aom_wb_write_literal(wb, cm->buffer_model.bitrate_scale, 4);
-  aom_wb_write_literal(wb, cm->buffer_model.buffer_size_scale, 4);
   aom_wb_write_literal(
       wb, cm->buffer_model.encoder_decoder_buffer_delay_length - 1, 5);
   aom_wb_write_unsigned_literal(wb, cm->buffer_model.num_units_in_decoding_tick,
@@ -2534,12 +2532,6 @@ static void write_dec_model_op_parameters(AV1_COMMON *const cm,
 
   //  aom_wb_write_bit(wb, cm->op_params[op_num].has_parameters);
   //  if (!cm->op_params[op_num].has_parameters) return;
-
-  aom_wb_write_uvlc(wb, cm->op_params[op_num].bitrate - 1);
-
-  aom_wb_write_uvlc(wb, cm->op_params[op_num].buffer_size - 1);
-
-  aom_wb_write_bit(wb, cm->op_params[op_num].cbr_flag);
 
   aom_wb_write_literal(wb, cm->op_params[op_num].decoder_buffer_delay,
                        cm->buffer_model.encoder_decoder_buffer_delay_length);

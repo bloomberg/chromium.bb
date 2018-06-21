@@ -276,6 +276,7 @@ typedef struct AV1EncoderConfig {
   int timing_info_present;
   aom_timing_info_t timing_info;
   int decoder_model_info_present_flag;
+  int display_model_info_present_flag;
   int buffer_removal_delay_present;
   aom_dec_model_info_t buffer_model;
   aom_dec_model_op_parameters_t op_params[MAX_NUM_OPERATING_POINTS + 1];

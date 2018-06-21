@@ -3334,8 +3334,6 @@ void av1_read_timing_info_header(AV1_COMMON *cm,
 
 void av1_read_decoder_model_info(AV1_COMMON *cm,
                                  struct aom_read_bit_buffer *rb) {
-  cm->buffer_model.bitrate_scale = aom_rb_read_literal(rb, 4);
-  cm->buffer_model.buffer_size_scale = aom_rb_read_literal(rb, 4);
   cm->buffer_model.encoder_decoder_buffer_delay_length =
       aom_rb_read_literal(rb, 5) + 1;
   cm->buffer_model.num_units_in_decoding_tick = aom_rb_read_unsigned_literal(
@@ -3353,12 +3351,6 @@ void av1_read_op_parameters_info(AV1_COMMON *const cm,
                        "AV1 does not support %d decoder model operating points",
                        op_num + 1);
   }
-
-  cm->op_params[op_num].bitrate = aom_rb_read_uvlc(rb) + 1;
-
-  cm->op_params[op_num].buffer_size = aom_rb_read_uvlc(rb) + 1;
-
-  cm->op_params[op_num].cbr_flag = aom_rb_read_bit(rb);
 
   cm->op_params[op_num].decoder_buffer_delay = aom_rb_read_literal(
       rb, cm->buffer_model.encoder_decoder_buffer_delay_length);

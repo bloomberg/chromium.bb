@@ -18,6 +18,7 @@
 #include "aom_ports/mem_ops.h"
 
 #include "av1/common/common.h"
+#include "av1/common/timing.h"
 #include "av1/decoder/decoder.h"
 #include "av1/decoder/decodeframe.h"
 #include "av1/decoder/obu.h"
@@ -247,6 +248,27 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
       } else {
         cm->op_params[i].decoder_model_param_present_flag = 0;
       }
+      if (cm->timing_info_present &&
+          (cm->timing_info.equal_picture_interval ||
+           cm->op_params[i].decoder_model_param_present_flag)) {
+        cm->op_params[i].bitrate = max_level_bitrate(
+            cm->profile, major_minor_to_seq_level_idx(seq_params->level[i]),
+            seq_params->tier[i]);
+        if (cm->op_params[i].bitrate == 0)
+          aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                             "AV1 does not support this combination of "
+                             "profile, level, and tier.");
+        cm->op_params[i].buffer_size = cm->op_params[i].bitrate;
+      }
+      if (cm->timing_info_present && cm->timing_info.equal_picture_interval &&
+          !cm->op_params[i].decoder_model_param_present_flag) {
+        // When the decoder_model_parameters are not sent for this op, set
+        // the default ones that can be used with the resource availability mode
+        cm->op_params[i].decoder_buffer_delay = 70000;
+        cm->op_params[i].encoder_buffer_delay = 20000;
+        cm->op_params[i].low_delay_mode_flag = 0;
+      }
+
       if (seq_params->display_model_info_present_flag) {
         cm->op_params[i].display_model_param_present_flag = aom_rb_read_bit(rb);
         if (cm->op_params[i].display_model_param_present_flag) {

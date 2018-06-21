@@ -866,7 +866,7 @@ static INLINE int does_level_match(int width, int height, double fps,
          height <= lvl_height * lvl_dim_mult;
 }
 
-static void set_bitstream_level_tier(SequenceHeader *seq,
+static void set_bitstream_level_tier(SequenceHeader *seq, AV1_COMMON *cm,
                                      const AV1EncoderConfig *oxcf) {
   // TODO(any): This is a placeholder function that only addresses dimensions
   // and max display sample rates.
@@ -938,10 +938,20 @@ static void set_bitstream_level_tier(SequenceHeader *seq,
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
     seq->level[i] = bl;
     seq->tier[i] = 0;  // setting main tier by default
+    // Set the maximum parameters for bitrate and buffer size for this profile,
+    // level, and tier
+    cm->op_params[i].bitrate = max_level_bitrate(
+        cm->profile, major_minor_to_seq_level_idx(seq->level[i]), seq->tier[i]);
+    if (cm->op_params[i].bitrate == 0)
+      aom_internal_error(
+          &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+          "AV1 does not support this combination of profile, level, and tier.");
+    cm->op_params[i].buffer_size = cm->op_params[i].bitrate;
   }
 }
 
-void init_seq_coding_tools(SequenceHeader *seq, const AV1EncoderConfig *oxcf) {
+static void init_seq_coding_tools(SequenceHeader *seq, AV1_COMMON *cm,
+                                  const AV1EncoderConfig *oxcf) {
   seq->still_picture = (oxcf->limit == 1);
   seq->reduced_still_picture_hdr = seq->still_picture;
   seq->reduced_still_picture_hdr &= !oxcf->full_still_picture_hdr;
@@ -972,7 +982,7 @@ void init_seq_coding_tools(SequenceHeader *seq, const AV1EncoderConfig *oxcf) {
   seq->enable_intra_edge_filter = 1;
   seq->enable_filter_intra = 1;
 
-  set_bitstream_level_tier(seq, oxcf);
+  set_bitstream_level_tier(seq, cm, oxcf);
 
   if (seq->operating_points_cnt_minus_1 == 0) {
     seq->operating_point_idc[0] = 0;
@@ -985,7 +995,6 @@ void init_seq_coding_tools(SequenceHeader *seq, const AV1EncoderConfig *oxcf) {
       seq->operating_point_idc[i] =
           (~(~0u << (seq->operating_points_cnt_minus_1 + 1 - i)) << 8) | 1;
   }
-  seq->display_model_info_present_flag = 0;
 }
 
 static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
@@ -1012,15 +1021,22 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   cm->timing_info.num_ticks_per_picture =
       oxcf->timing_info.num_ticks_per_picture;
 
+  cm->seq_params.display_model_info_present_flag =
+      oxcf->display_model_info_present_flag;
   cm->seq_params.decoder_model_info_present_flag =
       oxcf->decoder_model_info_present_flag;
   if (oxcf->decoder_model_info_present_flag) {
+    // set the decoder model parameters in schedule mode
     cm->buffer_model.num_units_in_decoding_tick =
         oxcf->buffer_model.num_units_in_decoding_tick;
     cm->buffer_removal_delay_present = 1;
     set_aom_dec_model_info(&cm->buffer_model);
-    set_dec_model_op_parameters(&cm->op_params[0], &cm->buffer_model,
-                                oxcf->target_bandwidth);
+    set_dec_model_op_parameters(&cm->op_params[0]);
+  } else if (cm->timing_info_present &&
+             cm->timing_info.equal_picture_interval &&
+             !cm->seq_params.decoder_model_info_present_flag) {
+    // set the decoder model parameters in resource availability mode
+    set_resource_availability_parameters(&cm->op_params[0]);
   }
   cm->width = oxcf->width;
   cm->height = oxcf->height;
@@ -2254,15 +2270,22 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cm->timing_info.num_ticks_per_picture =
       oxcf->timing_info.num_ticks_per_picture;
 
+  cm->seq_params.display_model_info_present_flag =
+      oxcf->display_model_info_present_flag;
   cm->seq_params.decoder_model_info_present_flag =
       oxcf->decoder_model_info_present_flag;
   if (oxcf->decoder_model_info_present_flag) {
+    // set the decoder model parameters in schedule mode
     cm->buffer_model.num_units_in_decoding_tick =
         oxcf->buffer_model.num_units_in_decoding_tick;
     cm->buffer_removal_delay_present = 1;
     set_aom_dec_model_info(&cm->buffer_model);
-    set_dec_model_op_parameters(&cm->op_params[0], &cm->buffer_model,
-                                oxcf->target_bandwidth);
+    set_dec_model_op_parameters(&cm->op_params[0]);
+  } else if (cm->timing_info_present &&
+             cm->timing_info.equal_picture_interval &&
+             !cm->seq_params.decoder_model_info_present_flag) {
+    // set the decoder model parameters in resource availability mode
+    set_resource_availability_parameters(&cm->op_params[0]);
   }
 
   update_film_grain_parameters(cpi, oxcf);
@@ -2364,7 +2387,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   if (!cpi->seq_params_locked) {
     cm->seq_params.operating_points_cnt_minus_1 =
         cm->number_spatial_layers > 1 ? cm->number_spatial_layers - 1 : 0;
-    init_seq_coding_tools(&cm->seq_params, oxcf);
+    init_seq_coding_tools(&cm->seq_params, cm, oxcf);
   }
 }
 
