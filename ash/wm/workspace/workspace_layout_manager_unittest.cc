@@ -1820,7 +1820,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
   kb_controller->NotifyContentsLoaded();
 
   int shift =
-      work_area.height() - kb_controller->GetContainerWindow()->bounds().y();
+      work_area.height() - kb_controller->GetContentsWindow()->bounds().y();
   gfx::Rect changed_window_bounds(orig_window_bounds);
   changed_window_bounds.Offset(0, -shift);
   // Window should be shifted up.

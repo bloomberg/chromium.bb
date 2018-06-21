@@ -99,46 +99,6 @@ bool isAllowedStateTransition(keyboard::KeyboardControllerState from,
   return kAllowedStateTransition.count(std::make_pair(from, to)) == 1;
 };
 
-// The KeyboardWindowDelegate makes sure the keyboard-window does not get focus.
-// This is necessary to make sure that the synthetic key-events reach the target
-// window.
-// The delegate deletes itself when the window is destroyed.
-class KeyboardWindowDelegate : public aura::WindowDelegate {
- public:
-  KeyboardWindowDelegate() {}
-  ~KeyboardWindowDelegate() override {}
-
- private:
-  // Overridden from aura::WindowDelegate:
-  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
-  gfx::Size GetMaximumSize() const override { return gfx::Size(); }
-  void OnBoundsChanged(const gfx::Rect& old_bounds,
-                       const gfx::Rect& new_bounds) override {}
-  gfx::NativeCursor GetCursor(const gfx::Point& point) override {
-    return gfx::kNullCursor;
-  }
-  int GetNonClientComponent(const gfx::Point& point) const override {
-    return HTNOWHERE;
-  }
-  bool ShouldDescendIntoChildForEventHandling(
-      aura::Window* child,
-      const gfx::Point& location) override {
-    return true;
-  }
-  bool CanFocus() override { return false; }
-  void OnCaptureLost() override {}
-  void OnPaint(const ui::PaintContext& context) override {}
-  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
-                                  float new_device_scale_factor) override {}
-  void OnWindowDestroying(aura::Window* window) override {}
-  void OnWindowDestroyed(aura::Window* window) override { delete this; }
-  void OnWindowTargetVisibilityChanged(bool visible) override {}
-  bool HasHitTestMask() const override { return false; }
-  void GetHitTestMask(gfx::Path* mask) const override {}
-
-  DISALLOW_COPY_AND_ASSIGN(KeyboardWindowDelegate);
-};
-
 void SetTouchEventLogging(bool enable) {
   // TODO(moshayedi): crbug.com/642863. Revisit when we have mojo interface for
   // InputController for processes that aren't mus-ws.
@@ -223,16 +183,6 @@ void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
 
   ui_ = std::move(ui);
 
-  // TODO(https://crbug.com/845780): Move |container_| and friends to a separate
-  // class that manages the container window.
-  container_ = std::make_unique<aura::Window>(new KeyboardWindowDelegate());
-  container_->SetName("KeyboardContainer");
-  container_->set_owned_by_parent(false);
-  container_->Init(ui::LAYER_NOT_DRAWN);
-  container_->AddObserver(this);
-  container_->SetLayoutManager(new KeyboardLayoutManager(this));
-  container_->AddPreTargetHandler(&event_filter_);
-
   layout_delegate_ = delegate;
   show_on_content_update_ = false;
   keyboard_locked_ = false;
@@ -249,18 +199,15 @@ void KeyboardController::DisableKeyboard() {
   if (!enabled())
     return;
 
+  if (parent_container_)
+    DeactivateKeyboard();
+
   // TODO(https://crbug.com/731537): Move KeyboardController members into a
   // subobject so we can just put this code into the subobject destructor.
   queued_display_change_.reset();
   queued_container_type_.reset();
   container_behavior_.reset();
   animation_observer_.reset();
-
-  if (container_->GetRootWindow())
-    container_->GetRootWindow()->RemoveObserver(this);
-  container_->RemoveObserver(this);
-  container_->RemovePreTargetHandler(&event_filter_);
-  container_.reset();
 
   ui_->GetInputMethod()->RemoveObserver(this);
   for (KeyboardControllerObserver& observer : observer_list_)
@@ -271,17 +218,29 @@ void KeyboardController::DisableKeyboard() {
 
 void KeyboardController::ActivateKeyboardInContainer(aura::Window* parent) {
   DCHECK(parent);
-  DCHECK(!container_->parent());
+  DCHECK(!parent_container_);
+  parent_container_ = parent;
+  // Observe changes to root window bounds.
+  parent_container_->GetRootWindow()->AddObserver(this);
 
-  parent->AddChild(container_.get());
+  if (GetContentsWindow()) {
+    DCHECK(!GetContentsWindow()->parent());
+    parent_container_->AddChild(GetContentsWindow());
+  }
 }
 
 void KeyboardController::DeactivateKeyboard() {
-  DCHECK(container_->parent());
+  DCHECK(parent_container_);
 
   // Ensure the keyboard is not visible before deactivating it.
   HideKeyboardExplicitlyBySystem();
-  container_->parent()->RemoveChild(container_.get());
+
+  if (GetContentsWindow() && GetContentsWindow()->parent()) {
+    DCHECK_EQ(parent_container_, GetContentsWindow()->parent());
+    parent_container_->RemoveChild(GetContentsWindow());
+  }
+  parent_container_->GetRootWindow()->RemoveObserver(this);
+  parent_container_ = nullptr;
 }
 
 // static
@@ -299,16 +258,12 @@ bool KeyboardController::keyboard_visible() const {
   return state_ == KeyboardControllerState::SHOWN;
 }
 
-aura::Window* KeyboardController::GetContainerWindow() {
-  return container_.get();
-}
-
 aura::Window* KeyboardController::GetContentsWindow() {
-  return ui_->HasContentsWindow() ? ui_->GetContentsWindow() : nullptr;
+  return ui_ && ui_->HasContentsWindow() ? ui_->GetContentsWindow() : nullptr;
 }
 
 aura::Window* KeyboardController::GetRootWindow() {
-  return container_->GetRootWindow();
+  return parent_container_ ? parent_container_->GetRootWindow() : nullptr;
 }
 
 void KeyboardController::NotifyContentsBoundsChanging(
@@ -336,12 +291,12 @@ void KeyboardController::MoveKeyboard(const gfx::Rect& new_bounds) {
 }
 
 void KeyboardController::SetContainerBounds(const gfx::Rect& new_bounds) {
-  ui::LayerAnimator* animator = container_->layer()->GetAnimator();
+  ui::LayerAnimator* animator = GetContentsWindow()->layer()->GetAnimator();
   // Stops previous animation if a window resize is requested during animation.
   if (animator->is_animating())
     animator->StopAnimating();
 
-  container_->SetBounds(new_bounds);
+  GetContentsWindow()->SetBounds(new_bounds);
 
   // We need to send out this notification only if keyboard is visible since
   // the contents window is resized even if keyboard is hidden.
@@ -361,7 +316,7 @@ void KeyboardController::NotifyContentsLoaded() {
       // Do not move the keyboard to another display after switch to an IME in
       // a different extension.
       ShowKeyboardInDisplay(
-          display_util_.GetNearestDisplayToWindow(GetContainerWindow()));
+          display_util_.GetNearestDisplayToWindow(GetContentsWindow()));
     } else {
       ShowKeyboard(false /* lock */);
     }
@@ -436,14 +391,15 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 
       set_keyboard_locked(false);
 
+      aura::Window* window = GetContentsWindow();
+      DCHECK(window);
+
       animation_observer_ = std::make_unique<CallbackAnimationObserver>(
           base::BindOnce(&KeyboardController::HideAnimationFinished,
                          base::Unretained(this)));
       ui::ScopedLayerAnimationSettings layer_animation_settings(
-          container_->layer()->GetAnimator());
+          window->layer()->GetAnimator());
       layer_animation_settings.AddObserver(animation_observer_.get());
-
-      aura::Window* window = container_.get();
 
       {
         // Scoped settings go into effect when scope ends.
@@ -509,7 +465,7 @@ void KeyboardController::HideAnimationFinished() {
 
     if (queued_display_change_) {
       ShowKeyboardInDisplay(queued_display_change_->new_display());
-      container_->SetBounds(queued_display_change_->new_bounds_in_local());
+      SetContainerBounds(queued_display_change_->new_bounds_in_local());
       queued_display_change_ = nullptr;
     }
   }
@@ -554,7 +510,7 @@ bool KeyboardController::IsKeyboardWindowCreated() {
 
 void KeyboardController::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
-  if (params.new_parent && params.target == container_.get())
+  if (params.new_parent && params.target == GetContentsWindow())
     OnTextInputStateChanged(ui_->GetInputMethod()->GetTextInputClient());
 }
 
@@ -582,7 +538,7 @@ void KeyboardController::OnWindowBoundsChanged(
   if (!ui_->HasContentsWindow())
     return;
 
-  container_behavior_->SetCanonicalBounds(GetContainerWindow(), new_bounds);
+  container_behavior_->SetCanonicalBounds(GetContentsWindow(), new_bounds);
 }
 
 void KeyboardController::Reload() {
@@ -675,12 +631,10 @@ void KeyboardController::PopulateKeyboardContent(
 
   TRACE_EVENT0("vk", "PopulateKeyboardContent");
 
-  if (container_->children().empty()) {
+  if (parent_container_->children().empty()) {
     DCHECK_EQ(state_, KeyboardControllerState::INITIAL);
     aura::Window* contents = ui_->GetContentsWindow();
-    contents->Show();
-    container_->AddChild(contents);
-    contents->set_owned_by_parent(false);
+    parent_container_->AddChild(contents);
   }
 
   DCHECK(ui_->HasContentsWindow());
@@ -690,6 +644,9 @@ void KeyboardController::PopulateKeyboardContent(
     else
       layout_delegate_->MoveKeyboardToTouchableDisplay();
   }
+
+  aura::Window* contents = ui_->GetContentsWindow();
+  DCHECK_EQ(parent_container_, contents->parent());
 
   switch (state_) {
     case KeyboardControllerState::SHOWN:
@@ -702,11 +659,6 @@ void KeyboardController::PopulateKeyboardContent(
   }
 
   ui_->ReloadKeyboardIfNeeded();
-
-  ui::LayerAnimator* container_animator = container_->layer()->GetAnimator();
-
-  // Ensure that the keyboard is either hidden or is in the process of hiding.
-  DCHECK(!container_->IsVisible() || container_animator->is_animating());
 
   SetTouchEventLogging(!show_keyboard /* enable */);
 
@@ -722,8 +674,7 @@ void KeyboardController::PopulateKeyboardContent(
     case KeyboardControllerState::HIDDEN: {
       // If the container is not animating, makes sure the position and opacity
       // are at begin states for animation.
-      container_behavior_->InitializeShowAnimationStartingState(
-          container_.get());
+      container_behavior_->InitializeShowAnimationStartingState(contents);
       break;
     }
     default:
@@ -734,10 +685,11 @@ void KeyboardController::PopulateKeyboardContent(
 
   keyboard::LogKeyboardControlEvent(keyboard::KEYBOARD_CONTROL_SHOW);
 
+  ui::LayerAnimator* container_animator = contents->layer()->GetAnimator();
   container_animator->set_preemption_strategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
-  ui_->ShowKeyboardContainer(container_.get());
+  ui_->ShowKeyboardContainer(contents);
 
   animation_observer_ =
       std::make_unique<CallbackAnimationObserver>(base::BindOnce(
@@ -745,7 +697,7 @@ void KeyboardController::PopulateKeyboardContent(
   ui::ScopedLayerAnimationSettings settings(container_animator);
   settings.AddObserver(animation_observer_.get());
 
-  container_behavior_->DoShowingAnimation(container_.get(), &settings);
+  container_behavior_->DoShowingAnimation(contents, &settings);
 
   // the queued container behavior will notify JS to change layout when it
   // gets destroyed.
@@ -764,9 +716,9 @@ void KeyboardController::
     NotifyKeyboardBoundsChangingAndEnsureCaretInWorkArea() {
   // Notify observers after animation finished to prevent reveal desktop
   // background during animation.
-  NotifyContentsBoundsChanging(container_->bounds());
+  NotifyContentsBoundsChanging(GetContentsWindow()->bounds());
   ui_->EnsureCaretInWorkArea(
-      container_behavior_->GetOccludedBounds(container_->bounds()));
+      container_behavior_->GetOccludedBounds(GetContentsWindow()->bounds()));
 }
 
 void KeyboardController::NotifyKeyboardConfigChanged() {
@@ -775,8 +727,8 @@ void KeyboardController::NotifyKeyboardConfigChanged() {
 }
 
 void KeyboardController::AdjustKeyboardBounds() {
-  container_behavior_->SetCanonicalBounds(
-      GetContainerWindow(), container_->GetRootWindow()->bounds());
+  container_behavior_->SetCanonicalBounds(GetContentsWindow(),
+                                          GetRootWindow()->bounds());
 }
 
 void KeyboardController::CheckStateTransition(KeyboardControllerState prev,
@@ -876,7 +828,7 @@ bool KeyboardController::IsOverscrollAllowed() const {
 
 bool KeyboardController::HandlePointerEvent(const ui::LocatedEvent& event) {
   const display::Display& current_display =
-      display_util_.GetNearestDisplayToWindow(container_->GetRootWindow());
+      display_util_.GetNearestDisplayToWindow(GetRootWindow());
   return container_behavior_->HandlePointerEvent(event, current_display);
 }
 

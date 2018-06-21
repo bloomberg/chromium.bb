@@ -94,10 +94,6 @@ class KEYBOARD_EXPORT KeyboardController
   // keyboard if it is currently visible.
   void DeactivateKeyboard();
 
-  // Returns the container for the keyboard, which is owned by
-  // KeyboardController.
-  aura::Window* GetContainerWindow();
-
   // Returns the KeyboardUI contents window, or null if the keyboard contents
   // window has not been created yet.
   aura::Window* GetContentsWindow();
@@ -339,7 +335,10 @@ class KEYBOARD_EXPORT KeyboardController
 
   std::unique_ptr<KeyboardUI> ui_;
   KeyboardLayoutDelegate* layout_delegate_;
-  std::unique_ptr<aura::Window> container_;
+
+  // Container window that the keyboard UI contents window is a child of.
+  aura::Window* parent_container_ = nullptr;
+
   // CallbackAnimationObserver should destructed before container_ because it
   // uses container_'s animator.
   std::unique_ptr<CallbackAnimationObserver> animation_observer_;

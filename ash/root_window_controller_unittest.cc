@@ -740,7 +740,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   keyboard_container->Show();
 
   aura::Window* contents_window =
-      keyboard::KeyboardController::Get()->ui()->GetContentsWindow();
+      keyboard::KeyboardController::Get()->GetContentsWindow();
   contents_window->SetBounds(gfx::Rect());
   contents_window->Show();
 
@@ -766,20 +766,21 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   root_window->RemovePreTargetHandler(&handler);
 }
 
-// Test for http://crbug.com/299787. RootWindowController should delete
-// the old container since the keyboard controller creates a new window in
-// GetWindowContainer().
+// Test for http://crbug.com/299787. RootWindowController should remove
+// the old keyboard window when we activate it elsewhere.
+// TODO(https://crbug.com/849995): This test no longer belongs here, but in
+// KeyboardController.
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        DeleteOldContainerOnVirtualKeyboardInit) {
   auto* controller = keyboard::KeyboardController::Get();
-  aura::Window* keyboard_container = controller->GetContainerWindow();
-  // Track the keyboard container window.
+  aura::Window* keyboard_window = controller->GetContentsWindow();
+  // Track the keyboard contents window.
   aura::WindowTracker tracker;
-  tracker.Add(keyboard_container);
+  tracker.Add(keyboard_window);
   // Reinitialize the keyboard.
   Shell::Get()->EnableKeyboard();
-  // keyboard_container should no longer be present.
-  EXPECT_FALSE(tracker.Contains(keyboard_container));
+  // keyboard_window should no longer be present.
+  EXPECT_FALSE(tracker.Contains(keyboard_window));
 }
 
 // Test for crbug.com/342524. After user login, the work space should restore to
@@ -790,7 +791,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
       Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
   keyboard_container->Show();
   auto* controller = keyboard::KeyboardController::Get();
-  aura::Window* contents_window = controller->ui()->GetContentsWindow();
+  aura::Window* contents_window = controller->GetContentsWindow();
   contents_window->SetBounds(
       keyboard::KeyboardBoundsFromRootBounds(root_window->bounds(), 100));
   contents_window->Show();
@@ -820,15 +821,13 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
 TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
   auto* controller = keyboard::KeyboardController::Get();
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  aura::Window* container_window = controller->GetContainerWindow();
-  ASSERT_TRUE(container_window);
   ASSERT_EQ(root_window, controller->GetRootWindow());
-  container_window->Show();
 
-  aura::Window* contents_window = controller->ui()->GetContentsWindow();
+  aura::Window* contents_window = controller->GetContentsWindow();
   contents_window->SetName("KeyboardContentsWindow");
   contents_window->SetBounds(
       keyboard::KeyboardBoundsFromRootBounds(root_window->bounds(), 100));
+  contents_window->Show();
 
   ui::test::TestEventHandler handler;
   root_window->AddPreTargetHandler(&handler);
@@ -867,8 +866,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
   input_method->SetFocusedTextInputClient(&text_input_client);
 
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  ASSERT_TRUE(keyboard_controller->GetContainerWindow());
-  keyboard_controller->GetContainerWindow()->Show();
 
   const int keyboard_height = 100;
   aura::Window* contents_window = ui->GetContentsWindow();
@@ -908,9 +905,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   const int keyboard_height = 100;
   // Check that the keyboard on the primary screen doesn't cover the window on
   // the secondary screen.
-  aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
-  ASSERT_TRUE(keyboard_container);
-  keyboard_container->Show();
   aura::Window* contents_window = ui->GetContentsWindow();
   contents_window->SetBounds(keyboard::KeyboardBoundsFromRootBounds(
       primary_root_window->bounds(), keyboard_height));
@@ -947,15 +941,11 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 TEST_F(VirtualKeyboardRootWindowControllerTest, ZOrderTest) {
   UpdateDisplay("800x600");
   auto* keyboard_controller = keyboard::KeyboardController::Get();
-  keyboard::KeyboardUI* ui = keyboard_controller->ui();
 
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
-  ASSERT_TRUE(keyboard_container);
-  keyboard_container->Show();
 
   const int keyboard_height = 200;
-  aura::Window* contents_window = ui->GetContentsWindow();
+  aura::Window* contents_window = keyboard_controller->GetContentsWindow();
   gfx::Rect keyboard_bounds = keyboard::KeyboardBoundsFromRootBounds(
       root_window->bounds(), keyboard_height);
   contents_window->SetBounds(keyboard_bounds);
@@ -1026,14 +1016,81 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ZOrderTest) {
 TEST_F(VirtualKeyboardRootWindowControllerTest, DisplayRotation) {
   UpdateDisplay("800x600");
   auto* keyboard_controller = keyboard::KeyboardController::Get();
-  aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
   keyboard_controller->ShowKeyboard(false);
-  keyboard_controller->ui()->GetContentsWindow()->SetBounds(
-      gfx::Rect(0, 400, 800, 200));
-  EXPECT_EQ("0,400 800x200", keyboard_container->bounds().ToString());
+
+  aura::Window* keyboard_window = keyboard_controller->GetContentsWindow();
+
+  keyboard_window->SetBounds(gfx::Rect(0, 400, 800, 200));
+  EXPECT_EQ("0,400 800x200", keyboard_window->bounds().ToString());
 
   UpdateDisplay("600x800");
-  EXPECT_EQ("0,600 600x200", keyboard_container->bounds().ToString());
+  EXPECT_EQ("0,600 600x200", keyboard_window->bounds().ToString());
+}
+
+// Keeps a count of all the events a window receives.
+class EventObserver : public ui::EventHandler {
+ public:
+  EventObserver() = default;
+  ~EventObserver() override = default;
+
+  int GetEventCount(ui::EventType type) { return event_counts_[type]; }
+  void ResetAllEventCounts() { event_counts_.clear(); }
+
+ private:
+  // Overridden from ui::EventHandler:
+  void OnEvent(ui::Event* event) override {
+    ui::EventHandler::OnEvent(event);
+    event_counts_[event->type()]++;
+  }
+
+  std::map<ui::EventType, int> event_counts_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventObserver);
+};
+
+// Tests that tapping/clicking inside the keyboard does not give it focus.
+TEST_F(VirtualKeyboardRootWindowControllerTest, ClickDoesNotFocusKeyboard) {
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+
+  // Create a test window in the background with the same size as the screen.
+  aura::test::EventCountDelegate delegate;
+  std::unique_ptr<aura::Window> background_window(
+      CreateTestWindowInShellWithDelegate(&delegate, 0, root_window->bounds()));
+  background_window->Focus();
+  EXPECT_TRUE(background_window->IsVisible());
+  EXPECT_TRUE(background_window->HasFocus());
+
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard_controller->ShowKeyboard(false);
+  keyboard_controller->NotifyContentsLoaded();
+
+  aura::Window* keyboard_window = keyboard_controller->GetContentsWindow();
+  keyboard_window->SetBounds(gfx::Rect(100, 100, 100, 100));
+  EXPECT_TRUE(keyboard_window->IsVisible());
+  EXPECT_FALSE(keyboard_window->HasFocus());
+
+  // Click on the keyboard. Make sure the keyboard receives the event, but does
+  // not get focus.
+  EventObserver observer;
+  keyboard_window->AddPreTargetHandler(&observer);
+
+  ui::test::EventGenerator generator(root_window);
+  generator.MoveMouseTo(keyboard_window->bounds().CenterPoint());
+  generator.ClickLeftButton();
+  EXPECT_TRUE(background_window->HasFocus());
+  EXPECT_FALSE(keyboard_window->HasFocus());
+  EXPECT_EQ("0 0", delegate.GetMouseButtonCountsAndReset());
+  EXPECT_EQ(1, observer.GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_EQ(1, observer.GetEventCount(ui::ET_MOUSE_RELEASED));
+
+  // Click outside of the keyboard. It should reach the window behind.
+  observer.ResetAllEventCounts();
+  generator.MoveMouseTo(gfx::Point());
+  generator.ClickLeftButton();
+  EXPECT_EQ("1 1", delegate.GetMouseButtonCountsAndReset());
+  EXPECT_EQ(0, observer.GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_EQ(0, observer.GetEventCount(ui::ET_MOUSE_RELEASED));
+  keyboard_window->RemovePreTargetHandler(&observer);
 }
 
 }  // namespace ash
