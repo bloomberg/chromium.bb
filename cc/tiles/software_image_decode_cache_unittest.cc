@@ -1777,5 +1777,138 @@ TEST(SoftwareImageDecodeCacheTest, DISABLED_ContentIdCaching) {
   }
 }
 
+TEST(SoftwareImageDecodeCacheTest, DecodeToScale) {
+  TestSoftwareImageDecodeCache cache;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  SkISize full_size = SkISize::Make(100, 100);
+  std::vector<SkISize> supported_sizes = {SkISize::Make(25, 25),
+                                          SkISize::Make(50, 50)};
+  std::vector<FrameMetadata> frames = {FrameMetadata()};
+  sk_sp<FakePaintImageGenerator> generator =
+      sk_make_sp<FakePaintImageGenerator>(
+          SkImageInfo::MakeN32Premul(full_size.width(), full_size.height(),
+                                     DefaultColorSpace().ToSkColorSpace()),
+          frames, true, supported_sizes);
+  PaintImage paint_image = PaintImageBuilder::WithDefault()
+                               .set_id(PaintImage::GetNextId())
+                               .set_paint_image_generator(generator)
+                               .set_frame_index(0u)
+                               .TakePaintImage();
+
+  // Scale to mip level 1, there should be a single entry in the cache from
+  // the direct decode.
+  DrawImage draw_image1(
+      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
+      quality, CreateMatrix(SkSize::Make(0.5, 0.5), is_decomposable),
+      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  DecodedDrawImage decoded_image1 = cache.GetDecodedImageForDraw(draw_image1);
+  ASSERT_TRUE(decoded_image1.image());
+  EXPECT_EQ(decoded_image1.image()->width(), 50);
+  EXPECT_EQ(decoded_image1.image()->height(), 50);
+  EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), 1u);
+
+  // We should have requested a scaled decode from the generator.
+  ASSERT_EQ(generator->decode_infos().size(), 1u);
+  EXPECT_EQ(generator->decode_infos().at(0).width(), 50);
+  EXPECT_EQ(generator->decode_infos().at(0).height(), 50);
+
+  // Scale to mip level 2, we should be using the existing entry instead of
+  // re-decoding.
+  DrawImage draw_image2(
+      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
+      quality, CreateMatrix(SkSize::Make(0.25, 0.25), is_decomposable),
+      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  DecodedDrawImage decoded_image2 = cache.GetDecodedImageForDraw(draw_image2);
+  ASSERT_TRUE(decoded_image2.image());
+  EXPECT_EQ(decoded_image2.image()->width(), 25);
+  EXPECT_EQ(decoded_image2.image()->height(), 25);
+  EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), 2u);
+
+  // Since we scaled from the existing entry, no new decodes should be
+  // requested from the generator.
+  ASSERT_EQ(generator->decode_infos().size(), 1u);
+  EXPECT_EQ(generator->decode_infos().at(0).width(), 50);
+  EXPECT_EQ(generator->decode_infos().at(0).height(), 50);
+
+  cache.DrawWithImageFinished(draw_image1, decoded_image1);
+  cache.DrawWithImageFinished(draw_image2, decoded_image2);
+}
+
+TEST(SoftwareImageDecodeCacheTest, DecodeToScaleSubrect) {
+  TestSoftwareImageDecodeCache cache;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  SkISize full_size = SkISize::Make(100, 100);
+  std::vector<SkISize> supported_sizes = {SkISize::Make(25, 25),
+                                          SkISize::Make(50, 50)};
+  std::vector<FrameMetadata> frames = {FrameMetadata()};
+  sk_sp<FakePaintImageGenerator> generator =
+      sk_make_sp<FakePaintImageGenerator>(
+          SkImageInfo::MakeN32Premul(full_size.width(), full_size.height(),
+                                     DefaultColorSpace().ToSkColorSpace()),
+          frames, true, supported_sizes);
+  PaintImage paint_image = PaintImageBuilder::WithDefault()
+                               .set_id(PaintImage::GetNextId())
+                               .set_paint_image_generator(generator)
+                               .set_frame_index(0u)
+                               .TakePaintImage();
+
+  // Scale to mip level 1, there should be 2 entries in the cache, since the
+  // subrect vetoes decode to scale.
+  DrawImage draw_image(paint_image, SkIRect::MakeWH(50, 50), quality,
+                       CreateMatrix(SkSize::Make(0.5, 0.5), is_decomposable),
+                       PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  DecodedDrawImage decoded_image = cache.GetDecodedImageForDraw(draw_image);
+  ASSERT_TRUE(decoded_image.image());
+  EXPECT_EQ(decoded_image.image()->width(), 25);
+  EXPECT_EQ(decoded_image.image()->height(), 25);
+  EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), 2u);
+
+  // We should have requested the original decode from the generator.
+  ASSERT_EQ(generator->decode_infos().size(), 1u);
+  EXPECT_EQ(generator->decode_infos().at(0).width(), 100);
+  EXPECT_EQ(generator->decode_infos().at(0).height(), 100);
+  cache.DrawWithImageFinished(draw_image, decoded_image);
+}
+
+TEST(SoftwareImageDecodeCacheTest, DecodeToScaleNoneQuality) {
+  TestSoftwareImageDecodeCache cache;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kNone_SkFilterQuality;
+
+  SkISize full_size = SkISize::Make(100, 100);
+  std::vector<SkISize> supported_sizes = {SkISize::Make(25, 25),
+                                          SkISize::Make(50, 50)};
+  std::vector<FrameMetadata> frames = {FrameMetadata()};
+  sk_sp<FakePaintImageGenerator> generator =
+      sk_make_sp<FakePaintImageGenerator>(
+          SkImageInfo::MakeN32Premul(full_size.width(), full_size.height(),
+                                     DefaultColorSpace().ToSkColorSpace()),
+          frames, true, supported_sizes);
+  PaintImage paint_image = PaintImageBuilder::WithDefault()
+                               .set_id(PaintImage::GetNextId())
+                               .set_paint_image_generator(generator)
+                               .set_frame_index(0u)
+                               .TakePaintImage();
+
+  DrawImage draw_image(
+      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
+      quality, CreateMatrix(SkSize::Make(0.5, 0.5), is_decomposable),
+      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  DecodedDrawImage decoded_image = cache.GetDecodedImageForDraw(draw_image);
+  ASSERT_TRUE(decoded_image.image());
+  EXPECT_EQ(decoded_image.image()->width(), 100);
+  EXPECT_EQ(decoded_image.image()->height(), 100);
+
+  // We should have requested the original decode from the generator.
+  ASSERT_EQ(generator->decode_infos().size(), 1u);
+  EXPECT_EQ(generator->decode_infos().at(0).width(), 100);
+  EXPECT_EQ(generator->decode_infos().at(0).height(), 100);
+  cache.DrawWithImageFinished(draw_image, decoded_image);
+}
+
 }  // namespace
 }  // namespace cc

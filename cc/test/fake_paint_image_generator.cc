@@ -35,7 +35,9 @@ bool FakePaintImageGenerator::GetPixels(const SkImageInfo& info,
     frames_decoded_count_[frame_index] = 1;
   else
     frames_decoded_count_[frame_index]++;
-  CHECK(image_pixmap_.readPixels(info, pixels, row_bytes, 0, 0));
+  SkPixmap dst(info, pixels, row_bytes);
+  CHECK(image_pixmap_.scalePixels(dst, kMedium_SkFilterQuality));
+  decode_infos_.push_back(info);
   return true;
 }
 

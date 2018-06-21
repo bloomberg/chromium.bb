@@ -141,16 +141,23 @@ bool DrawAndScaleImage(const DrawImage& draw_image, SkPixmap* target_pixmap) {
   SkISize supported_size =
       paint_image.GetSupportedDecodeSize(pixmap.bounds().size());
 
-  if (supported_size == pixmap.bounds().size()) {
+  const bool is_nearest_neighbor =
+      draw_image.filter_quality() == kNone_SkFilterQuality;
+  if (supported_size == pixmap.bounds().size() && !is_nearest_neighbor) {
     SkImageInfo info = pixmap.info();
     return paint_image.Decode(pixmap.writable_addr(), &info, color_space,
                               draw_image.frame_index());
   }
 
   // If we can't decode/scale directly, we will handle this in up to 3 steps.
-  // Step 1: Decode at the nearest (larger) directly supported size.
-  SkImageInfo decode_info = SkImageInfo::MakeN32Premul(supported_size.width(),
-                                                       supported_size.height());
+  // Step 1: Decode at the nearest (larger) directly supported size or the
+  // original size if nearest neighbor quality is requested.
+  SkISize decode_size =
+      is_nearest_neighbor
+          ? SkISize::Make(paint_image.width(), paint_image.height())
+          : supported_size;
+  SkImageInfo decode_info =
+      SkImageInfo::MakeN32Premul(decode_size.width(), decode_size.height());
   SkBitmap decode_bitmap;
   if (!decode_bitmap.tryAllocPixels(decode_info))
     return false;

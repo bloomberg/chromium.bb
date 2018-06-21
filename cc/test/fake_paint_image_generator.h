@@ -36,6 +36,7 @@ class FakePaintImageGenerator : public PaintImageGenerator {
   const base::flat_map<size_t, int>& frames_decoded() const {
     return frames_decoded_count_;
   }
+  const std::vector<SkImageInfo>& decode_infos() const { return decode_infos_; }
   void reset_frames_decoded() { frames_decoded_count_.clear(); }
 
  private:
@@ -43,6 +44,7 @@ class FakePaintImageGenerator : public PaintImageGenerator {
   SkPixmap image_pixmap_;
   base::flat_map<size_t, int> frames_decoded_count_;
   std::vector<SkISize> supported_sizes_;
+  std::vector<SkImageInfo> decode_infos_;
 };
 
 }  // namespace cc

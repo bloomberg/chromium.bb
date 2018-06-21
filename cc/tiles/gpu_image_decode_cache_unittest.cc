@@ -2387,6 +2387,82 @@ TEST_P(GpuImageDecodeCacheTest, KeepOnlyLast2ContentIds) {
   }
 }
 
+TEST_P(GpuImageDecodeCacheTest, DecodeToScale) {
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  SkFilterQuality quality = kMedium_SkFilterQuality;
+
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  SkISize full_size = SkISize::Make(100, 100);
+  std::vector<SkISize> supported_sizes = {SkISize::Make(25, 25),
+                                          SkISize::Make(50, 50)};
+  std::vector<FrameMetadata> frames = {FrameMetadata()};
+  sk_sp<FakePaintImageGenerator> generator =
+      sk_make_sp<FakePaintImageGenerator>(
+          SkImageInfo::MakeN32Premul(full_size.width(), full_size.height(),
+                                     DefaultColorSpace().ToSkColorSpace()),
+          frames, true, supported_sizes);
+  PaintImage paint_image = PaintImageBuilder::WithDefault()
+                               .set_id(PaintImage::GetNextId())
+                               .set_paint_image_generator(generator)
+                               .set_frame_index(0u)
+                               .TakePaintImage();
+
+  DrawImage draw_image1(
+      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
+      quality, CreateMatrix(SkSize::Make(0.5, 0.5), is_decomposable),
+      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  DecodedDrawImage decoded_image1 =
+      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image1));
+  ASSERT_TRUE(decoded_image1.image());
+  EXPECT_EQ(decoded_image1.image()->width(), 50);
+  EXPECT_EQ(decoded_image1.image()->height(), 50);
+
+  // We should have requested a scaled decode from the generator.
+  ASSERT_EQ(generator->decode_infos().size(), 1u);
+  EXPECT_EQ(generator->decode_infos().at(0).width(), 50);
+  EXPECT_EQ(generator->decode_infos().at(0).height(), 50);
+  cache->DrawWithImageFinished(draw_image1, decoded_image1);
+}
+
+TEST_P(GpuImageDecodeCacheTest, DecodeToScaleNoneQuality) {
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  SkFilterQuality quality = kNone_SkFilterQuality;
+
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  SkISize full_size = SkISize::Make(100, 100);
+  std::vector<SkISize> supported_sizes = {SkISize::Make(25, 25),
+                                          SkISize::Make(50, 50)};
+  std::vector<FrameMetadata> frames = {FrameMetadata()};
+  sk_sp<FakePaintImageGenerator> generator =
+      sk_make_sp<FakePaintImageGenerator>(
+          SkImageInfo::MakeN32Premul(full_size.width(), full_size.height(),
+                                     DefaultColorSpace().ToSkColorSpace()),
+          frames, true, supported_sizes);
+  PaintImage paint_image = PaintImageBuilder::WithDefault()
+                               .set_id(PaintImage::GetNextId())
+                               .set_paint_image_generator(generator)
+                               .set_frame_index(0u)
+                               .TakePaintImage();
+
+  DrawImage draw_image(
+      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
+      quality, CreateMatrix(SkSize::Make(0.5, 0.5), is_decomposable),
+      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  DecodedDrawImage decoded_image =
+      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  ASSERT_TRUE(decoded_image.image());
+  EXPECT_EQ(decoded_image.image()->width(), 50);
+  EXPECT_EQ(decoded_image.image()->height(), 50);
+
+  // We should have requested the original decode from the generator.
+  ASSERT_EQ(generator->decode_infos().size(), 1u);
+  EXPECT_EQ(generator->decode_infos().at(0).width(), 100);
+  EXPECT_EQ(generator->decode_infos().at(0).height(), 100);
+  cache->DrawWithImageFinished(draw_image, decoded_image);
+}
+
 INSTANTIATE_TEST_CASE_P(
     GpuImageDecodeCacheTests,
     GpuImageDecodeCacheTest,
