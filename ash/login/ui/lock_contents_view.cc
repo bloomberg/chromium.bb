@@ -38,13 +38,10 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_manager/user_type.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
-#include "ui/events/event_constants.h"
-#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -1341,9 +1338,6 @@ void LockContentsView::RegisterAccelerators() {
   // TODO: Add more accelerators that are applicable to login screen.
   accel_map_[ui::Accelerator(ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)] =
       AcceleratorAction::kShowFeedback;
-  accel_map_[ui::Accelerator(
-      ui::VKEY_R, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
-      AcceleratorAction::kShowReset;
 
   AcceleratorController* controller = Shell::Get()->accelerator_controller();
   for (const auto& item : accel_map_)
@@ -1354,9 +1348,6 @@ void LockContentsView::PerformAction(AcceleratorAction action) {
   switch (action) {
     case AcceleratorAction::kShowFeedback:
       Shell::Get()->login_screen_controller()->ShowFeedback();
-      return;
-    case AcceleratorAction::kShowReset:
-      Shell::Get()->login_screen_controller()->ShowResetScreen();
       return;
     default:
       NOTREACHED();

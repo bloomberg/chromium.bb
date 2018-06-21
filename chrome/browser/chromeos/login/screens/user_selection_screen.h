@@ -65,11 +65,10 @@ class UserSelectionScreen
   void AttemptEasyUnlock(const AccountId& account_id);
   void RecordClickOnLockIcon(const AccountId& account_id);
 
-  void InitEasyUnlock();
-  bool HasAnyUsers() const;
-
   // ui::UserActivityDetector implementation:
   void OnUserActivity(const ui::Event* event) override;
+
+  void InitEasyUnlock();
 
   // proximity_auth::ScreenlockBridge::LockHandler implementation:
   void ShowBannerMessage(const base::string16& message,

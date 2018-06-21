@@ -118,13 +118,6 @@ void LoginScreenClient::ShowGaiaSignin(
   }
 }
 
-void LoginScreenClient::ShowResetScreen() {
-  if (chromeos::LoginDisplayHost::default_host()) {
-    chromeos::LoginDisplayHost::default_host()->StartWizard(
-        chromeos::OobeScreen::SCREEN_OOBE_RESET);
-  }
-}
-
 void LoginScreenClient::OnRemoveUserWarningShown() {
   ProfileMetrics::LogProfileDeleteUser(
       ProfileMetrics::DELETE_PROFILE_USER_MANAGER_SHOW_WARNING);
