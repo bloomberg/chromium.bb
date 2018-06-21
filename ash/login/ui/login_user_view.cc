@@ -490,6 +490,10 @@ void LoginUserView::Layout() {
   tap_button_->SetBoundsRect(GetLocalBounds());
 }
 
+void LoginUserView::RequestFocus() {
+  tap_button_->RequestFocus();
+}
+
 void LoginUserView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   // Handle click on the dropdown arrow.

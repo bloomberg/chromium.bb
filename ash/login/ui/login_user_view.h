@@ -76,6 +76,7 @@ class ASH_EXPORT LoginUserView : public views::View,
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
+  void RequestFocus() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
