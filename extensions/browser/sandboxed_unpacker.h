@@ -62,6 +62,9 @@ class SandboxedUnpackerClient
   // dnr_ruleset_checksum - Checksum for the indexed ruleset corresponding to
   // the Declarative Net Request API. Optional since it's only valid for
   // extensions which provide a declarative ruleset.
+  //
+  // Note: OnUnpackSuccess/Failure may be called either synchronously or
+  // asynchronously from SandboxedUnpacker::StartWithCrx/Directory.
   virtual void OnUnpackSuccess(
       const base::FilePath& temp_dir,
       const base::FilePath& extension_root,
@@ -163,9 +166,9 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
                         const base::Optional<std::string>& error);
   void UnpackExtensionSucceeded(
       std::unique_ptr<base::DictionaryValue> manifest);
-  void UnpackExtensionFailed(const base::string16& error);
 
-  void ReportUnpackingError(base::StringPiece error);
+  // Helper which calls ReportFailure.
+  void ReportUnpackExtensionFailed(base::StringPiece error);
 
   void ImageSanitizationDone(std::unique_ptr<base::DictionaryValue> manifest,
                              ImageSanitizer::Status status,

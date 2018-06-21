@@ -437,11 +437,11 @@ void SandboxedUnpacker::ReadManifestDone(
     const base::Optional<std::string>& error) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   if (error) {
-    ReportUnpackingError(*error);
+    ReportUnpackExtensionFailed(*error);
     return;
   }
   if (!manifest || !manifest->is_dict()) {
-    ReportUnpackingError(manifest_errors::kInvalidManifest);
+    ReportUnpackExtensionFailed(manifest_errors::kInvalidManifest);
     return;
   }
 
@@ -454,13 +454,13 @@ void SandboxedUnpacker::ReadManifestDone(
       Extension::Create(extension_root_, location_, *manifest_dict,
                         creation_flags_, extension_id_, &error_msg));
   if (!extension) {
-    ReportUnpackingError(error_msg);
+    ReportUnpackExtensionFailed(error_msg);
     return;
   }
 
   std::vector<InstallWarning> warnings;
   if (!file_util::ValidateExtension(extension.get(), &error_msg, &warnings)) {
-    ReportUnpackingError(error_msg);
+    ReportUnpackExtensionFailed(error_msg);
     return;
   }
   extension->AddInstallWarnings(warnings);
@@ -702,12 +702,13 @@ void SandboxedUnpacker::ReadJSONRulesetDone(
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
   if (error) {
-    ReportUnpackingError(*error);
+    ReportUnpackExtensionFailed(*error);
     return;
   }
 
   if (json_ruleset && !json_ruleset->is_list()) {
-    ReportUnpackingError(manifest_errors::kDeclarativeNetRequestListNotPassed);
+    ReportUnpackExtensionFailed(
+        manifest_errors::kDeclarativeNetRequestListNotPassed);
     return;
   }
 
@@ -776,17 +777,11 @@ data_decoder::mojom::JsonParser* SandboxedUnpacker::GetJsonParserPtr() {
   return json_parser_ptr_.get();
 }
 
-void SandboxedUnpacker::ReportUnpackingError(base::StringPiece error) {
-  unpacker_io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SandboxedUnpacker::UnpackExtensionFailed, this,
-                                base::UTF8ToUTF16(error)));
-}
-
-void SandboxedUnpacker::UnpackExtensionFailed(const base::string16& error) {
+void SandboxedUnpacker::ReportUnpackExtensionFailed(base::StringPiece error) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
-  ReportFailure(
-      SandboxedUnpackerFailureReason::UNPACKER_CLIENT_FAILED,
-      l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_MESSAGE, error));
+  ReportFailure(SandboxedUnpackerFailureReason::UNPACKER_CLIENT_FAILED,
+                l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_MESSAGE,
+                                           base::UTF8ToUTF16(error)));
 }
 
 base::string16 SandboxedUnpacker::FailureReasonToString16(
