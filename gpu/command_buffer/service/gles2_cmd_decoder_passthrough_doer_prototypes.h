@@ -1045,6 +1045,7 @@ error::Error DoUnpremultiplyAndDitherCopyCHROMIUM(GLuint src_texture,
                                                   GLsizei height);
 error::Error DoSetReadbackBufferShadowAllocationINTERNAL(GLuint buffer_id,
                                                          GLuint shm_id,
-                                                         GLuint shm_offset);
+                                                         GLuint shm_offset,
+                                                         GLuint size);
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_PASSTHROUGH_DOER_PROTOTYPES_H_

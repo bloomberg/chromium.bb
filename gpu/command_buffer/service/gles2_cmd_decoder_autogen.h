@@ -5279,7 +5279,9 @@ error::Error GLES2DecoderImpl::HandleSetReadbackBufferShadowAllocationINTERNAL(
   GLuint buffer_id = c.buffer_id;
   GLint shm_id = static_cast<GLint>(c.shm_id);
   GLuint shm_offset = static_cast<GLuint>(c.shm_offset);
-  DoSetReadbackBufferShadowAllocationINTERNAL(buffer_id, shm_id, shm_offset);
+  GLuint size = static_cast<GLuint>(c.size);
+  DoSetReadbackBufferShadowAllocationINTERNAL(buffer_id, shm_id, shm_offset,
+                                              size);
   return error::kNoError;
 }
 
