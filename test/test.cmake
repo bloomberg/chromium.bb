@@ -186,6 +186,7 @@ if(NOT BUILD_SHARED_LIBS)
               "${AOM_ROOT}/test/obmc_variance_test.cc"
               "${AOM_ROOT}/test/sad_test.cc"
               "${AOM_ROOT}/test/subtract_test.cc"
+              "${AOM_ROOT}/test/reconinter_test.cc"
               "${AOM_ROOT}/test/sum_squares_test.cc"
               "${AOM_ROOT}/test/variance_test.cc")
 
@@ -194,7 +195,6 @@ if(NOT BUILD_SHARED_LIBS)
               "${AOM_ROOT}/test/av1_quantize_test.cc"
               "${AOM_ROOT}/test/corner_match_test.cc"
               "${AOM_ROOT}/test/quantize_func_test.cc"
-              "${AOM_ROOT}/test/reconinter_test.cc"
               "${AOM_ROOT}/test/simd_cmp_sse4.cc")
 
   if(HAVE_SSE4_1)

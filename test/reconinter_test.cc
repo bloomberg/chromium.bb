@@ -48,13 +48,14 @@ typedef void (*buildcompdiffwtdmaskd16_func)(
 typedef ::testing::tuple<int, buildcompdiffwtdmaskd16_func, BLOCK_SIZE>
     BuildCompDiffwtdMaskD16Param;
 
+#if HAVE_SSE4_1 || HAVE_NEON
 ::testing::internal::ParamGenerator<BuildCompDiffwtdMaskD16Param> BuildParams(
     buildcompdiffwtdmaskd16_func filter) {
   return ::testing::Combine(::testing::Range(8, 13, 2),
                             ::testing::Values(filter),
                             ::testing::Range(BLOCK_4X4, BLOCK_SIZES_ALL));
 }
-
+#endif
 class BuildCompDiffwtdMaskD16Test
     : public ::testing::TestWithParam<BuildCompDiffwtdMaskD16Param> {
  public:
@@ -157,7 +158,7 @@ void BuildCompDiffwtdMaskD16Test::RunSpeedTest(
   printf("av1_build_compound_diffwtd_mask_d16 test_code %3dx%-3d: %7.2f us\n",
          width, height, 1000.0 * elapsed_time1 / num_loops);
 }
-
+#if HAVE_SSE4_1
 void BuildCompDiffwtdMaskTest::RunTest(const int sb_type, const int is_speed,
                                        const DIFFWTD_MASK_TYPE type) {
   const int width = block_size_wide[sb_type];
@@ -206,7 +207,7 @@ TEST_P(BuildCompDiffwtdMaskTest, DISABLED_Speed) {
   RunTest(GetParam(), 1, DIFFWTD_38);
   RunTest(GetParam(), 1, DIFFWTD_38_INV);
 }
-
+#endif
 TEST_P(BuildCompDiffwtdMaskD16Test, CheckOutput) {
   RunCheckOutput(GET_PARAM(1));
 }
@@ -223,6 +224,11 @@ INSTANTIATE_TEST_CASE_P(SSE4_1, BuildCompDiffwtdMaskTest,
 INSTANTIATE_TEST_CASE_P(
     SSE4_1, BuildCompDiffwtdMaskD16Test,
     BuildParams(av1_build_compound_diffwtd_mask_d16_sse4_1));
+#endif
+
+#if HAVE_NEON
+INSTANTIATE_TEST_CASE_P(NEON, BuildCompDiffwtdMaskD16Test,
+                        BuildParams(av1_build_compound_diffwtd_mask_d16_neon));
 #endif
 
 }  // namespace
