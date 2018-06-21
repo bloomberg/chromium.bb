@@ -273,7 +273,7 @@ You can improve GDB load time significantly at the cost of link time by
 splitting symbols from the object files. In GN, set `use_debug_fission=false` in
 your "gn args".
 
-### Source level debug with -fdebug-prefix-map
+### Source level debug with -fdebug-compilation-dir
 
 When you enable GN config `strip_absolute_paths_from_debug_symbols`, this is
 enabled by default for goma on Linux build, you need to add following command

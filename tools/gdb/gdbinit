@@ -1,5 +1,5 @@
-# This is gdbinit for source level debugging with -fdebug-prefix-map compile
-# option.
+# This is gdbinit for source level debugging with -fdebug-compilation-dir
+# compile option.
 
 python
 
