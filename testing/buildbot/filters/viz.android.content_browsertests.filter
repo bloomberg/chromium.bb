@@ -56,11 +56,3 @@
 
 # /2 Variant does not handle overlapping surfaces: https://crbug.com/846798
 -SitePerProcessHitTestBrowserTest.HitTestStaleDataDeletedView*
-
-### Mac
-# BrowserSideFlingBrowserTest timing out https://crbug.com/842325
--BrowserSideFlingBrowserTest.AutoscrollFling
--BrowserSideFlingBrowserTest.TouchpadFling
--BrowserSideFlingBrowserTest.TouchscreenFling
--SitePerProcessBrowserTest.TouchpadGestureFlingStart
--SitePerProcessBrowserTest.TouchscreenGestureFlingStart
