@@ -421,4 +421,70 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   EXPECT_FALSE(resource->IsAlive());
 }
 
+TEST(ResourceTest, StaleWhileRevalidateCacheControl) {
+  ScopedTestingPlatformSupport<MockPlatform> mock;
+  const KURL url("http://127.0.0.1:8000/foo.html");
+  ResourceResponse response(url);
+  response.SetHTTPStatusCode(200);
+  response.SetHTTPHeaderField(HTTPNames::Cache_Control,
+                              "max-age=0, stale-while-revalidate=40");
+
+  MockResource* resource = MockResource::Create(url);
+  resource->ResponseReceived(response, nullptr);
+  resource->FinishForTest();
+
+  EXPECT_FALSE(resource->MustRevalidateDueToCacheHeaders(false));
+  EXPECT_FALSE(resource->MustRevalidateDueToCacheHeaders(true));
+  EXPECT_FALSE(resource->ShouldRevalidateStaleResponse());
+
+  mock->AdvanceClockSeconds(1);
+  EXPECT_TRUE(resource->MustRevalidateDueToCacheHeaders(false));
+  EXPECT_FALSE(resource->MustRevalidateDueToCacheHeaders(true));
+  EXPECT_TRUE(resource->ShouldRevalidateStaleResponse());
+
+  mock->AdvanceClockSeconds(40);
+  EXPECT_TRUE(resource->MustRevalidateDueToCacheHeaders(false));
+  EXPECT_TRUE(resource->MustRevalidateDueToCacheHeaders(true));
+  EXPECT_TRUE(resource->ShouldRevalidateStaleResponse());
+}
+
+TEST(ResourceTest, StaleWhileRevalidateCacheControlWithRedirect) {
+  ScopedTestingPlatformSupport<MockPlatform> mock;
+  const KURL url("http://127.0.0.1:8000/foo.html");
+  const KURL redirect_target_url("http://127.0.0.1:8000/food.html");
+  ResourceResponse response(url);
+  response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=50");
+  response.SetHTTPStatusCode(200);
+
+  // The revalidating request is redirected.
+  ResourceResponse redirect_response(url);
+  redirect_response.SetHTTPHeaderField(
+      "location", AtomicString(redirect_target_url.GetString()));
+  redirect_response.SetHTTPStatusCode(302);
+  redirect_response.SetHTTPHeaderField(HTTPNames::Cache_Control,
+                                       "max-age=0, stale-while-revalidate=40");
+  redirect_response.SetAsyncRevalidationRequested(true);
+  ResourceRequest redirected_revalidating_request(redirect_target_url);
+
+  MockResource* resource = MockResource::Create(url);
+  resource->WillFollowRedirect(redirected_revalidating_request,
+                               redirect_response);
+  resource->ResponseReceived(response, nullptr);
+  resource->FinishForTest();
+
+  EXPECT_FALSE(resource->MustRevalidateDueToCacheHeaders(false));
+  EXPECT_FALSE(resource->MustRevalidateDueToCacheHeaders(true));
+  EXPECT_FALSE(resource->ShouldRevalidateStaleResponse());
+
+  mock->AdvanceClockSeconds(41);
+
+  // MustRevalidateDueToCacheHeaders only looks at the stored response not
+  // any redirects but ShouldRevalidate and AsyncRevalidationRequest look
+  // at the entire redirect chain.
+  EXPECT_FALSE(resource->MustRevalidateDueToCacheHeaders(false));
+  EXPECT_FALSE(resource->MustRevalidateDueToCacheHeaders(true));
+  EXPECT_TRUE(resource->ShouldRevalidateStaleResponse());
+  EXPECT_TRUE(resource->AsyncRevalidationRequested());
+}
+
 }  // namespace blink

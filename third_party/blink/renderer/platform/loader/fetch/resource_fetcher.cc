@@ -1267,7 +1267,8 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   // Check if the cache headers requires us to revalidate (cache expiration for
   // example).
   if (request.GetCacheMode() == mojom::FetchCacheMode::kValidateCache ||
-      existing_resource.MustRevalidateDueToCacheHeaders() ||
+      existing_resource.MustRevalidateDueToCacheHeaders(
+          false /* allow_stale */) ||
       request.CacheControlContainsNoCache()) {
     // Revalidation is harmful for non-matched preloads because it may lead to
     // sharing one preloaded resource among multiple ResourceFetchers.

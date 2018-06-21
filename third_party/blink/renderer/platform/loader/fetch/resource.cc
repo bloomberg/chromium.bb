@@ -470,6 +470,7 @@ static double FreshnessLifetime(const ResourceResponse& response,
 }
 
 static bool CanUseResponse(const ResourceResponse& response,
+                           bool allow_stale,
                            double response_timestamp) {
   if (response.IsNull())
     return false;
@@ -492,8 +493,11 @@ static bool CanUseResponse(const ResourceResponse& response,
       return false;
   }
 
-  return CurrentAge(response, response_timestamp) <=
-         FreshnessLifetime(response, response_timestamp);
+  double max_life = FreshnessLifetime(response, response_timestamp);
+  if (allow_stale)
+    max_life += response.CacheControlStaleWhileRevalidate();
+
+  return CurrentAge(response, response_timestamp) <= max_life;
 }
 
 const ResourceRequest& Resource::LastResourceRequest() const {
@@ -1034,7 +1038,8 @@ bool Resource::MatchPreload(const FetchParameters& params,
 
 bool Resource::CanReuseRedirectChain() const {
   for (auto& redirect : redirect_chain_) {
-    if (!CanUseResponse(redirect.redirect_response_, response_timestamp_))
+    if (!CanUseResponse(redirect.redirect_response_, false /*allow_stale*/,
+                        response_timestamp_))
       return false;
     if (redirect.request_.CacheControlContainsNoCache() ||
         redirect.request_.CacheControlContainsNoStore())
@@ -1068,10 +1073,47 @@ bool Resource::MustReloadDueToVaryHeader(
   return false;
 }
 
-bool Resource::MustRevalidateDueToCacheHeaders() const {
-  return !CanUseResponse(GetResponse(), response_timestamp_) ||
+bool Resource::MustRevalidateDueToCacheHeaders(bool allow_stale) const {
+  return !CanUseResponse(GetResponse(), allow_stale, response_timestamp_) ||
          GetResourceRequest().CacheControlContainsNoCache() ||
          GetResourceRequest().CacheControlContainsNoStore();
+}
+
+static bool ShouldRevalidateStaleResponse(const ResourceRequest& request,
+                                          const ResourceResponse& response,
+                                          double response_timestamp) {
+  double staleness = response.CacheControlStaleWhileRevalidate();
+  if (staleness == 0)
+    return false;
+
+  return CurrentAge(response, response_timestamp) >
+         FreshnessLifetime(response, response_timestamp);
+}
+
+bool Resource::ShouldRevalidateStaleResponse() const {
+  for (auto& redirect : redirect_chain_) {
+    // Use |response_timestamp_| since we don't store the timestamp
+    // of each redirect response.
+    if (blink::ShouldRevalidateStaleResponse(redirect.request_,
+                                             redirect.redirect_response_,
+                                             response_timestamp_)) {
+      return true;
+    }
+  }
+
+  return blink::ShouldRevalidateStaleResponse(
+      GetResourceRequest(), GetResponse(), response_timestamp_);
+}
+
+bool Resource::AsyncRevalidationRequested() const {
+  if (GetResponse().AsyncRevalidationRequested())
+    return true;
+
+  for (auto& redirect : redirect_chain_) {
+    if (redirect.redirect_response_.AsyncRevalidationRequested())
+      return true;
+  }
+  return false;
 }
 
 bool Resource::CanUseCacheValidator() const {

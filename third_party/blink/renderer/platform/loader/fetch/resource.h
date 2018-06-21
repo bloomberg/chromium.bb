@@ -261,11 +261,16 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
                             base::SingleThreadTaskRunner*);
 
   bool CanReuseRedirectChain() const;
-  bool MustRevalidateDueToCacheHeaders() const;
+  bool MustRevalidateDueToCacheHeaders(bool allow_stale) const;
+  bool ShouldRevalidateStaleResponse() const;
   virtual bool CanUseCacheValidator() const;
   bool IsCacheValidator() const { return is_revalidating_; }
   bool HasCacheControlNoStoreHeader() const;
   bool MustReloadDueToVaryHeader(const ResourceRequest& new_request) const;
+
+  // Returns true if any resource in the request chain has revalidation
+  // requested.
+  bool AsyncRevalidationRequested() const;
 
   const IntegrityMetadataSet& IntegrityMetadata() const {
     return options_.integrity_metadata;

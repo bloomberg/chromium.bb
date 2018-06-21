@@ -410,6 +410,10 @@ double ResourceResponse::CacheControlStaleWhileRevalidate() const {
         http_header_fields_.Get(kCacheControlHeader),
         http_header_fields_.Get(kPragmaHeader));
   }
+  if (!std::isfinite(cache_control_header_.stale_while_revalidate) ||
+      cache_control_header_.stale_while_revalidate < 0) {
+    return 0;
+  }
   return cache_control_header_.stale_while_revalidate;
 }
 
