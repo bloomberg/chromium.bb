@@ -4,12 +4,18 @@
 
 package org.chromium.chrome.browser.download;
 
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Environment;
 import android.support.annotation.IntDef;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 
+import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 
 /**
  * Denotes a given option for directory selection; includes name, location, and space.
@@ -27,9 +33,62 @@ public class DirectoryOption {
     public static final int OPTION_COUNT = 3;
 
     /**
+     * Asynchronous task to retrieve all download directories on a background thread.
+     */
+    public static class AllDirectoriesTask
+            extends AsyncTask<Void, Void, ArrayList<DirectoryOption>> {
+        @Override
+        protected ArrayList<DirectoryOption> doInBackground(Void... params) {
+            ArrayList<DirectoryOption> dirs = new ArrayList<>();
+
+            // Retrieve default directory.
+            File defaultDirectory =
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+
+            // If no default directory, return an error option.
+            if (defaultDirectory == null) {
+                dirs.add(new DirectoryOption(null, 0, 0, DirectoryOption.ERROR_OPTION));
+                return dirs;
+            }
+
+            DirectoryOption defaultOption =
+                    toDirectoryOption(defaultDirectory, DirectoryOption.DEFAULT_OPTION);
+            dirs.add(defaultOption);
+
+            // Retrieve additional directories, i.e. the external SD card directory.
+            String primaryStorageDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+            File[] files;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                files = ContextUtils.getApplicationContext().getExternalFilesDirs(
+                        Environment.DIRECTORY_DOWNLOADS);
+            } else {
+                files = new File[] {Environment.getExternalStorageDirectory()};
+            }
+
+            if (files.length <= 1) return dirs;
+
+            for (int i = 0; i < files.length; ++i) {
+                if (files[i] == null) continue;
+                // Skip primary storage directory.
+                if (files[i].getAbsolutePath().contains(primaryStorageDir)) continue;
+                dirs.add(toDirectoryOption(files[i], DirectoryOption.ADDITIONAL_OPTION));
+            }
+            return dirs;
+        }
+
+        private DirectoryOption toDirectoryOption(
+                File dir, @DownloadLocationDirectoryType int type) {
+            if (dir == null) return null;
+            return new DirectoryOption(
+                    dir.getAbsolutePath(), dir.getUsableSpace(), dir.getTotalSpace(), type);
+        }
+    }
+
+    /**
      * Name of the current download directory.
      */
-    public final String name;
+    public String name;
 
     /**
      * The absolute path of the download location.
@@ -49,11 +108,16 @@ public class DirectoryOption {
     /**
      * The type of the directory option.
      */
-    public final int type;
+    public final @DownloadLocationDirectoryType int type;
 
     public DirectoryOption(String name, String location, long availableSpace, long totalSpace,
             @DownloadLocationDirectoryType int type) {
+        this(location, availableSpace, totalSpace, type);
         this.name = name;
+    }
+
+    public DirectoryOption(String location, long availableSpace, long totalSpace,
+            @DownloadLocationDirectoryType int type) {
         this.location = location;
         this.availableSpace = availableSpace;
         this.totalSpace = totalSpace;
