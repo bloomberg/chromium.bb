@@ -28,6 +28,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -164,14 +165,15 @@ class GaiaCookieManagerServiceTest : public testing::Test {
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
-  void SimulateGetCheckConnctionInfoResult(net::URLFetcher* fetcher,
-                                           const std::string& result) {
-    net::TestURLFetcher* test_fetcher =
-        static_cast<net::TestURLFetcher*>(fetcher);
-    test_fetcher->set_status(net::URLRequestStatus());
-    test_fetcher->set_response_code(200);
-    test_fetcher->SetResponseString(result);
-    test_fetcher->delegate()->OnURLFetchComplete(fetcher);
+  void SimulateGetCheckConnectionInfoResult(const std::string& url,
+                                            const std::string& result) {
+    signin_client_->test_url_loader_factory()->AddResponse(url, result);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  bool IsLoadPending(const std::string& url) {
+    return signin_client_->test_url_loader_factory()->IsPending(
+        GURL(url).spec());
   }
 
   const GoogleServiceAuthError& no_error() { return no_error_; }
@@ -713,18 +715,16 @@ TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcher) {
       " {\"carryBackToken\": \"bl\", \"url\": \"http://www.bl.com\"}]");
 
   // Simulate responses for the two connection URLs.
-  GaiaCookieManagerService::ExternalCcResultFetcher::URLToTokenAndFetcher
-      fetchers = result_fetcher.get_fetcher_map_for_testing();
-  ASSERT_EQ(2u, fetchers.size());
-  ASSERT_EQ(1u, fetchers.count(GURL("http://www.yt.com")));
-  ASSERT_EQ(1u, fetchers.count(GURL("http://www.bl.com")));
+  GaiaCookieManagerService::ExternalCcResultFetcher::LoaderToToken loaders =
+      result_fetcher.get_loader_map_for_testing();
+  ASSERT_EQ(2u, loaders.size());
+  ASSERT_TRUE(IsLoadPending("http://www.yt.com"));
+  ASSERT_TRUE(IsLoadPending("http://www.bl.com"));
 
   ASSERT_EQ("bl:null,yt:null", result_fetcher.GetExternalCcResult());
-  SimulateGetCheckConnctionInfoResult(
-      fetchers[GURL("http://www.yt.com")].second, "yt_result");
+  SimulateGetCheckConnectionInfoResult("http://www.yt.com", "yt_result");
   ASSERT_EQ("bl:null,yt:yt_result", result_fetcher.GetExternalCcResult());
-  SimulateGetCheckConnctionInfoResult(
-      fetchers[GURL("http://www.bl.com")].second, "bl_result");
+  SimulateGetCheckConnectionInfoResult("http://www.bl.com", "bl_result");
   ASSERT_EQ("bl:bl_result,yt:yt_result", result_fetcher.GetExternalCcResult());
 }
 
@@ -742,23 +742,22 @@ TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcherTimeout) {
       "[{\"carryBackToken\": \"yt\", \"url\": \"http://www.yt.com\"},"
       " {\"carryBackToken\": \"bl\", \"url\": \"http://www.bl.com\"}]");
 
-  GaiaCookieManagerService::ExternalCcResultFetcher::URLToTokenAndFetcher
-      fetchers = result_fetcher.get_fetcher_map_for_testing();
-  ASSERT_EQ(2u, fetchers.size());
-  ASSERT_EQ(1u, fetchers.count(GURL("http://www.yt.com")));
-  ASSERT_EQ(1u, fetchers.count(GURL("http://www.bl.com")));
+  GaiaCookieManagerService::ExternalCcResultFetcher::LoaderToToken loaders =
+      result_fetcher.get_loader_map_for_testing();
+  ASSERT_EQ(2u, loaders.size());
+  ASSERT_TRUE(IsLoadPending("http://www.yt.com"));
+  ASSERT_TRUE(IsLoadPending("http://www.bl.com"));
 
   // Simulate response only for "yt".
   ASSERT_EQ("bl:null,yt:null", result_fetcher.GetExternalCcResult());
-  SimulateGetCheckConnctionInfoResult(
-      fetchers[GURL("http://www.yt.com")].second, "yt_result");
+  SimulateGetCheckConnectionInfoResult("http://www.yt.com", "yt_result");
   ASSERT_EQ("bl:null,yt:yt_result", result_fetcher.GetExternalCcResult());
 
   // Now timeout.
   result_fetcher.TimeoutForTests();
   ASSERT_EQ("bl:null,yt:yt_result", result_fetcher.GetExternalCcResult());
-  fetchers = result_fetcher.get_fetcher_map_for_testing();
-  ASSERT_EQ(0u, fetchers.size());
+  loaders = result_fetcher.get_loader_map_for_testing();
+  ASSERT_EQ(0u, loaders.size());
 }
 
 TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcherTruncate) {
@@ -774,14 +773,14 @@ TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcherTruncate) {
       fetcher,
       "[{\"carryBackToken\": \"yt\", \"url\": \"http://www.yt.com\"}]");
 
-  GaiaCookieManagerService::ExternalCcResultFetcher::URLToTokenAndFetcher
-      fetchers = result_fetcher.get_fetcher_map_for_testing();
-  ASSERT_EQ(1u, fetchers.size());
-  ASSERT_EQ(1u, fetchers.count(GURL("http://www.yt.com")));
+  GaiaCookieManagerService::ExternalCcResultFetcher::LoaderToToken loaders =
+      result_fetcher.get_loader_map_for_testing();
+  ASSERT_EQ(1u, loaders.size());
+  ASSERT_TRUE(IsLoadPending("http://www.yt.com"));
 
   // Simulate response for "yt" with a string that is too long.
-  SimulateGetCheckConnctionInfoResult(
-      fetchers[GURL("http://www.yt.com")].second, "1234567890123456trunc");
+  SimulateGetCheckConnectionInfoResult("http://www.yt.com",
+                                       "1234567890123456trunc");
   ASSERT_EQ("yt:1234567890123456", result_fetcher.GetExternalCcResult());
 }
 
@@ -802,10 +801,10 @@ TEST_F(GaiaCookieManagerServiceTest, UbertokenSuccessFetchesExternalCC) {
       "[{\"carryBackToken\": \"bl\", \"url\": \"http://www.bl.com\"}]");
   GaiaCookieManagerService::ExternalCcResultFetcher* result_fetcher =
       helper.external_cc_result_fetcher_for_testing();
-  GaiaCookieManagerService::ExternalCcResultFetcher::URLToTokenAndFetcher
-      fetchers = result_fetcher->get_fetcher_map_for_testing();
-  ASSERT_EQ(1u, fetchers.size());
-  ASSERT_EQ(1u, fetchers.count(GURL("http://www.bl.com")));
+  GaiaCookieManagerService::ExternalCcResultFetcher::LoaderToToken loaders =
+      result_fetcher->get_loader_map_for_testing();
+  ASSERT_EQ(1u, loaders.size());
+  ASSERT_TRUE(IsLoadPending("http://www.bl.com"));
 }
 
 TEST_F(GaiaCookieManagerServiceTest, UbertokenSuccessFetchesExternalCCOnce) {

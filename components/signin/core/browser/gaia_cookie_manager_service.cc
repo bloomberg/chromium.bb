@@ -26,13 +26,15 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace {
 
-// In case of an error while fetching using the GaiaAuthFetcher or URLFetcher,
-// retry with exponential backoff. Try up to 7 times within 15 minutes.
+// In case of an error while fetching using the GaiaAuthFetcher or
+// SimpleURLLoader, retry with exponential backoff. Try up to 7 times within 15
+// minutes.
 const net::BackoffEntry::Policy kBackoffPolicy = {
     // Number of initial errors (in sequence) to ignore before applying
     // exponential back-off rules.
@@ -140,7 +142,7 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::Start() {
 }
 
 bool GaiaCookieManagerService::ExternalCcResultFetcher::IsRunning() {
-  return helper_->gaia_auth_fetcher_ || fetchers_.size() > 0u ||
+  return helper_->gaia_auth_fetcher_ || loaders_.size() > 0u ||
          timer_.IsRunning();
 }
 
@@ -174,9 +176,9 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
       if (dict->GetString("carryBackToken", &token) &&
           dict->GetString("url", &url)) {
         results_[token] = "null";
-        net::URLFetcher* fetcher = CreateFetcher(GURL(url)).release();
-        fetchers_[fetcher->GetOriginalURL()] = std::make_pair(token, fetcher);
-        fetcher->Start();
+        network::SimpleURLLoader* loader =
+            CreateAndStartLoader(GURL(url)).release();
+        loaders_[loader] = token;
       }
     }
   }
@@ -199,8 +201,8 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
   GetCheckConnectionInfoCompleted(false);
 }
 
-std::unique_ptr<net::URLFetcher>
-GaiaCookieManagerService::ExternalCcResultFetcher::CreateFetcher(
+std::unique_ptr<network::SimpleURLLoader>
+GaiaCookieManagerService::ExternalCcResultFetcher::CreateAndStartLoader(
     const GURL& url) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation(
@@ -229,47 +231,63 @@ GaiaCookieManagerService::ExternalCcResultFetcher::CreateFetcher(
               "support for child accounts). It makes sense to control top "
               "level features that use the GaiaCookieManager."
           })");
-  std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
-      0, url, net::URLFetcher::GET, this, traffic_annotation);
-  fetcher->SetRequestContext(helper_->request_context());
-  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SAVE_COOKIES);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher.get(), data_use_measurement::DataUseUserData::SIGNIN);
+
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = url;
+  request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  // TODO(https://crbug.com/808498) re-add data use measurement once
+  // SimpleURLLoader supports it: data_use_measurement::DataUseUserData::SIGNIN
+
+  std::unique_ptr<network::SimpleURLLoader> loader =
+      network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
 
   // Fetchers are sometimes cancelled because a network change was detected,
   // especially at startup and after sign-in on ChromeOS.
-  fetcher->SetAutomaticallyRetryOnNetworkChanges(1);
-  return fetcher;
+  loader->SetRetryOptions(1, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+
+  loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      helper_->GetURLLoaderFactory().get(),
+      base::BindOnce(&ExternalCcResultFetcher::OnURLLoadComplete,
+                     base::Unretained(this), loader.get()));
+
+  return loader;
 }
 
-void GaiaCookieManagerService::ExternalCcResultFetcher::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  const GURL& url = source->GetOriginalURL();
-  const net::URLRequestStatus& status = source->GetStatus();
-  int response_code = source->GetResponseCode();
-  if (status.is_success() && response_code == net::HTTP_OK &&
-      fetchers_.count(url) > 0) {
-    std::string data;
-    source->GetResponseAsString(&data);
-    // Only up to the first 16 characters of the response are important to GAIA.
-    // Truncate if needed to keep amount data sent back to GAIA down.
-    if (data.size() > 16)
-      data.resize(16);
-    results_[fetchers_[url].first] = data;
+void GaiaCookieManagerService::ExternalCcResultFetcher::OnURLLoadComplete(
+    const network::SimpleURLLoader* source,
+    std::unique_ptr<std::string> body) {
+  if (source->NetError() != net::OK || !source->ResponseInfo() ||
+      !source->ResponseInfo()->headers ||
+      source->ResponseInfo()->headers->response_code() != net::HTTP_OK) {
+    return;
+  }
 
-    // Clean up tracking of this fetcher.  The rest will be cleaned up after
-    // the timer expires in CleanupTransientState().
-    DCHECK_EQ(source, fetchers_[url].second);
-    fetchers_.erase(url);
-    delete source;
+  LoaderToToken::iterator it = loaders_.find(source);
+  if (it == loaders_.end())
+    return;
 
-    // If all expected responses have been received, cancel the timer and
-    // report the result.
-    if (fetchers_.empty()) {
-      CleanupTransientState();
-      GetCheckConnectionInfoCompleted(true);
-    }
+  std::string data;
+  if (body)
+    data = std::move(*body);
+
+  // Only up to the first 16 characters of the response are important to GAIA.
+  // Truncate if needed to keep amount data sent back to GAIA down.
+  if (data.size() > 16)
+    data.resize(16);
+  results_[it->second] = data;
+
+  // Clean up tracking of this fetcher.  The rest will be cleaned up after
+  // the timer expires in CleanupTransientState().
+  DCHECK_EQ(source, it->first);
+  loaders_.erase(it);
+  delete source;
+
+  // If all expected responses have been received, cancel the timer and
+  // report the result.
+  if (loaders_.empty()) {
+    CleanupTransientState();
+    GetCheckConnectionInfoCompleted(true);
   }
 }
 
@@ -284,11 +302,10 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
   timer_.Stop();
   helper_->gaia_auth_fetcher_.reset();
 
-  for (URLToTokenAndFetcher::const_iterator it = fetchers_.begin();
-       it != fetchers_.end(); ++it) {
-    delete it->second.second;
+  for (const auto& loader_token_pair : loaders_) {
+    delete loader_token_pair.first;
   }
-  fetchers_.clear();
+  loaders_.clear();
 }
 
 void GaiaCookieManagerService::ExternalCcResultFetcher::
@@ -488,6 +505,11 @@ void GaiaCookieManagerService::CancelAll() {
   uber_token_fetcher_.reset();
   requests_.clear();
   fetcher_timer_.Stop();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+GaiaCookieManagerService::GetURLLoaderFactory() {
+  return signin_client_->GetURLLoaderFactory();
 }
 
 std::string GaiaCookieManagerService::GetSourceForRequest(
