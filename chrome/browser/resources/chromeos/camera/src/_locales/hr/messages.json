@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Pokretanje snimanja nije uspjelo.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Fotografije i videozapisi snimljeni fotoaparatom premjestit će se u mapu Preuzimanja. Možete im pristupiti u Datotekama.\n\nAplikacije s dopuštenjima za pohranu imat će pristup vašim fotografijama i videozapisima.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Snimanje slike nije uspjelo.",
+    "description": "Error message shown when failing to take photo."
   }
 }

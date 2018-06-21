@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Δεν είναι δυνατή η έναρξη της εγγραφής.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Οι φωτογραφίες και τα βίντεο που λήφθηκαν με την κάμερα θα μετακινηθούν στον φάκελο \"Λήψεις\". Μπορείτε να τα δείτε στα Αρχεία.\n\nΟι εφαρμογές με άδειες αποθηκευτικού χώρου θα έχουν πρόσβαση στις φωτογραφίες και τα βίντεό σας.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Δεν είναι δυνατή η λήψη φωτογραφίας.",
+    "description": "Error message shown when failing to take photo."
   }
 }

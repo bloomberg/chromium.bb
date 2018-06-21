@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Nem sikerült elindítani a felvételt.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "A kamerával készített fotók és videók a Letöltések mappába kerülnek. A Fájlok alkalmazásban érheti el őket.\n\nA tárhelyengedéllyel rendelkező alkalmazások hozzáférnek fotóihoz és videóihoz.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Nem sikerült képet készíteni.",
+    "description": "Error message shown when failing to take photo."
   }
 }

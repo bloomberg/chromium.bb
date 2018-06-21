@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Opname kan niet worden gestart.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Foto's en video's die met de camera zijn gemaakt, worden verplaatst naar de map Downloads. Je kunt ze vinden via Bestanden.\n\nApps met opslagmachtiging hebben toegang tot je foto's en video's.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Kan geen foto maken.",
+    "description": "Error message shown when failing to take photo."
   }
 }

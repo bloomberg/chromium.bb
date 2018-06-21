@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Nie udało się rozpocząć nagrywania.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Zdjęcia i filmy pochodzące z aparatu zostaną przeniesione do folderu Pobrane pliki. Będziesz mieć do nich dostęp w aplikacji Pliki.\n\nZ Twoich zdjęć i filmów będą mogły korzystać aplikacje z uprawnieniami dostępu do pamięci.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Nie udało się zrobić zdjęcia.",
+    "description": "Error message shown when failing to take photo."
   }
 }

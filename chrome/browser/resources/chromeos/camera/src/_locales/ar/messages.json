@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "يتعذّر بدء التسجيل.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "سيتم نقل الصور والفيديوهات الملتقَطة بالكاميرا إلى مجلد \"التنزيلات\" ويمكنك الوصول إليها من خلال تطبيق \"الملفات\".\n\nستتمكن التطبيقات من الوصول إلى صورك وفيديوهاتك في حال تزويدها بأذونات الاطّلاع على سعة التخزين.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "يتعذّر التقاط صورة.",
+    "description": "Error message shown when failing to take photo."
   }
 }

@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Nu se poate porni înregistrarea.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Fotografiile și videoclipurile făcute cu camera foto vor fi mutate în dosarul Descărcări. Le puteți accesa în Fișiere.\n\nAplicațiile cu permisiuni de stocare vor avea acces la fotografiile și videoclipurile dvs.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Nu se poate fotografia.",
+    "description": "Error message shown when failing to take photo."
   }
 }

@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "பதிவுசெய்ய முடியவில்லை.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "கேமராவில் எடுக்கப்படும் படங்களும் வீடியோக்களும் பதிவிறக்கங்கள் கோப்புறைக்கு நகர்த்தப்படும். அவற்றை ‘கோப்புகள்’ என்பதில் பார்க்கலாம்.\n\nசேமிப்பக அனுமதிகள் உள்ள ஆப்ஸால் உங்கள் படங்களையும் வீடியோக்களையும் அணுக முடியும்.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "படம் எடுக்க முடியவில்லை.",
+    "description": "Error message shown when failing to take photo."
   }
 }

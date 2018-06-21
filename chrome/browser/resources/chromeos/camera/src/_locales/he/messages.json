@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "לא ניתן להתחיל בצילום.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "תמונות וסרטונים שצולמו באמצעות המצלמה יועברו אל התיקייה 'הורדות'. אפשר לגשת אליהם דרך 'קבצים'.\nאפליקציות עם הרשאות אחסון יקבלו גישה אל התמונות והסרטונים שלך.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "לא ניתן לצלם תמונה.",
+    "description": "Error message shown when failing to take photo."
   }
 }

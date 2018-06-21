@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "No es posible comenzar a grabar.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Las fotos y los videos que tomes con la cámara se moverán a la carpeta Descargas, que puedes abrir con la app de Archivos.\n\nLas apps que tengan permiso de almacenamiento podrán acceder a tus fotos y videos.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "No es posible tomar fotos.",
+    "description": "Error message shown when failing to take photo."
   }
 }

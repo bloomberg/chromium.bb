@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Không thể bắt đầu quay video.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Ảnh và video được chụp và quay bằng máy ảnh sẽ được chuyển đến thư mục Tài nguyên đã tải xuống. Bạn có thể truy cập vào ảnh và video trong Tệp.\n\nỨng dụng có quyền truy cập vào bộ nhớ sẽ có quyền truy cập vào ảnh và video của bạn.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Không thể chụp ảnh.",
+    "description": "Error message shown when failing to take photo."
   }
 }

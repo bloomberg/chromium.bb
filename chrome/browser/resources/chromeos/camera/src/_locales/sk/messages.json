@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Zaznamenávanie sa nedá spustiť.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Fotky a videá nasnímané fotoaparátom budú presunuté do priečinka stiahnutých súborov. Prístup k nim získate v priečinku Súbory.\nK fotkám a videám budú mať prístup aplikácie s povoleniami pre úložisko.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Nedá sa odfotiť.",
+    "description": "Error message shown when failing to take photo."
   }
 }

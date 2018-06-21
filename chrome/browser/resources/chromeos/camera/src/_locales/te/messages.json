@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "రికార్డింగ్‌ను ప్రారంభించడం సాధ్యపడలేదు.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "కెమెరాతో తీసిన ఫోటోలు మరియు వీడియోలు డౌన్‌లోడ్‌లు ఫోల్డర్‌కు తరలించబడతాయి. మీరు వాటిని ఫైల్స్‌లో యాక్సెస్ చేయవచ్చు. నిల్వ అనుమతులు కలిగిన యాప్‌లు మీ ఫోటోలు మరియు వీడియోలను యాక్సెస్ చేయగలుగుతాయి.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "చిత్రాన్ని తీయడం సాధ్యపడలేదు.",
+    "description": "Error message shown when failing to take photo."
   }
 }

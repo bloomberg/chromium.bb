@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "شروع ضبط امکان‌پذیر نیست.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "عکس‌ها و ویدیوهایی که با دوربین گرفته شده است به پوشه «بارگیری‌ها» منتقل خواهد شد. می‌توانید در Files به آن‌ها دسترسی داشته باشید.\n\nبرنامه‌هایی که مجوز فضای ذخیره‌سازی دارند به عکس‌ها و ویدیوهای شما دسترسی خواهند داشت.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "عکس‌برداری امکان‌پذیر نیست.",
+    "description": "Error message shown when failing to take photo."
   }
 }

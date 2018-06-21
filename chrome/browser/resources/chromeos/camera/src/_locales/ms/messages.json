@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Tidak dapat memulakan rakaman.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Foto dan video yang diambil dengan kamera akan dialihkan ke folder Muat turun. Anda boleh mengaksesnya dalam Fail.\n\nApl dengan kebenaran storan akan memiliki akses kepada foto dan video anda.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Tidak dapat mengambil gambar.",
+    "description": "Error message shown when failing to take photo."
   }
 }
