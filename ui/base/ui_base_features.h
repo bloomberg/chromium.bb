@@ -32,7 +32,6 @@ UI_BASE_EXPORT bool IsNotificationIndicatorEnabled();
 UI_BASE_EXPORT bool IsUiGpuRasterizationEnabled();
 
 #if defined(OS_WIN)
-UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
 UI_BASE_EXPORT extern const base::Feature kInputPaneOnScreenKeyboard;
 UI_BASE_EXPORT extern const base::Feature kPointerEventsForTouch;
 UI_BASE_EXPORT extern const base::Feature kPrecisionTouchpad;
@@ -42,6 +41,10 @@ UI_BASE_EXPORT extern const base::Feature kTSFImeSupport;
 // Returns true if the system should use WM_POINTER events for touch events.
 UI_BASE_EXPORT bool IsUsingWMPointerForTouch();
 #endif  // defined(OS_WIN)
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 // NOTE: this feature will either go away (and be replaced by kOopAsh), or
 // kOopAsh will go away in place of this.

@@ -3330,12 +3330,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kClickToOpenPDFDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kClickToOpenPDFPlaceholder)},
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
     {"direct-manipulation-stylus",
      flag_descriptions::kDirectManipulationStylusName,
-     flag_descriptions::kDirectManipulationStylusDescription, kOsWin,
+     flag_descriptions::kDirectManipulationStylusDescription,
+     kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(features::kDirectManipulationStylus)},
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if !defined(OS_ANDROID)
     {"remove-deprecared-gaia-signin-endpoint",

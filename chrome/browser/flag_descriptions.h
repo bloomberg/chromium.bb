@@ -1603,9 +1603,6 @@ extern const char kGoogleBrandedContextMenuDescription[];
 extern const char kCloudPrintXpsName[];
 extern const char kCloudPrintXpsDescription[];
 
-extern const char kDirectManipulationStylusName[];
-extern const char kDirectManipulationStylusDescription[];
-
 extern const char kDisablePostscriptPrinting[];
 extern const char kDisablePostscriptPrintingDescription[];
 
@@ -2008,6 +2005,13 @@ extern const char kAutomaticTabDiscardingName[];
 extern const char kAutomaticTabDiscardingDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+
+extern const char kDirectManipulationStylusName[];
+extern const char kDirectManipulationStylusDescription[];
+
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 // Feature flags --------------------------------------------------------------
 
