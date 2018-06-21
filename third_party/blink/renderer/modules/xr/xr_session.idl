@@ -3,6 +3,12 @@
 // found in the LICENSE file.
 
 // https://immersive-web.github.io/webxr/#xrsession-interface
+enum XREnvironmentBlendMode {
+  "opaque",
+  "additive",
+  "alpha-blend",
+};
+
 [
     SecureContext,
     OriginTrialEnabled=WebXR
@@ -10,6 +16,7 @@
   readonly attribute XRDevice device;
   readonly attribute boolean exclusive;
   readonly attribute XRPresentationContext outputContext;
+  readonly attribute XREnvironmentBlendMode environmentBlendMode;
 
   attribute double depthNear;
   attribute double depthFar;
