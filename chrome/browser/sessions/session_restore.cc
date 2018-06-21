@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/url_constants.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
@@ -61,6 +62,7 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_state.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
@@ -84,6 +86,70 @@ bool HasSingleNewTabPage(Browser* browser) {
   return active_tab->GetURL() == chrome::kChromeUINewTabURL ||
          search::IsInstantNTP(active_tab);
 }
+
+// WebContentsDestructionChecker crashes if the WebContents that it's observing
+// gets destroyed.
+// TODO(crbug.com/850626): Remove after bug is fixed.
+class WebContentsDestructionChecker : public content::WebContentsObserver {
+ public:
+  explicit WebContentsDestructionChecker(content::WebContents* contents)
+      : WebContentsObserver(contents) {}
+  ~WebContentsDestructionChecker() override = default;
+
+  const WebContents* contents() const { return web_contents(); }
+
+  // content::WebContentsObserver:
+  void WebContentsDestroyed() override {
+    LOG(FATAL) << "Restored WebContents " << web_contents() << " destroyed";
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebContentsDestructionChecker);
+};
+
+// TabStripRestoreObserver watches the next WebContents that's added to a
+// TabStripModel and crashes if it's closed or detached.
+// TODO(crbug.com/850626): Remove after bug is fixed.
+class TabStripRestoreObserver : public TabStripModelObserver {
+ public:
+  explicit TabStripRestoreObserver(TabStripModel* tab_strip)
+      : tab_strip_(tab_strip) {
+    DCHECK(tab_strip_);
+    tab_strip_->AddObserver(this);
+  }
+  ~TabStripRestoreObserver() override { tab_strip_->RemoveObserver(this); }
+
+  // TabStripModelObserver:
+  void TabInsertedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* contents,
+                     int index,
+                     bool foreground) override {
+    if (!destruction_checker_) {
+      destruction_checker_ =
+          std::make_unique<WebContentsDestructionChecker>(contents);
+    }
+  }
+  void TabClosingAt(TabStripModel* tab_strip_model,
+                    content::WebContents* contents,
+                    int index) override {
+    if (destruction_checker_ && contents == destruction_checker_->contents())
+      LOG(FATAL) << "Restored WebContents " << contents << " closing";
+  }
+  void TabDetachedAt(content::WebContents* contents,
+                     int previous_index,
+                     bool was_active) override {
+    if (destruction_checker_ && contents == destruction_checker_->contents())
+      LOG(FATAL) << "Restored WebContents " << contents << " detached";
+  }
+
+ private:
+  TabStripModel* tab_strip_;  // owned by caller
+
+  // Initialized after a WebContents is inserted into the strip.
+  std::unique_ptr<WebContentsDestructionChecker> destruction_checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabStripRestoreObserver);
+};
 
 // Pointers to SessionRestoreImpls which are currently restoring the session.
 std::set<SessionRestoreImpl*>* active_session_restorers = nullptr;
@@ -583,6 +649,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
               ->RecreateSessionStorage(tab.session_storage_persistent_id);
     }
 
+    // TODO(crbug.com/850626): Remove this after bug is fixed.
+    TabStripRestoreObserver tab_strip_observer(browser->tab_strip_model());
+
     WebContents* web_contents = chrome::AddRestoredTab(
         browser, tab.navigations, tab_index, selected_index,
         tab.extension_app_id, is_selected_tab, tab.pinned, true,
@@ -607,8 +676,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     ShowBrowser(browser, browser->tab_strip_model()->GetIndexOfWebContents(
                              web_contents));
-    // TODO(sky): remove. For debugging 368236.
-    CHECK_EQ(browser->tab_strip_model()->GetActiveWebContents(), web_contents);
   }
 
   Browser* CreateRestoredBrowser(Browser::Type type,
@@ -641,8 +708,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
     browser->window()->Show();
     browser->set_is_session_restore(false);
 
-    // TODO(jcampan): http://crbug.com/8123 we should not need to set the
-    //                initial focus explicitly.
     browser->tab_strip_model()->GetActiveWebContents()->SetInitialFocus();
   }
 
