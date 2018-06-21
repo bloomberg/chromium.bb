@@ -672,7 +672,6 @@ typedef struct AV1_COMP {
   int global_motion_search_done;
   tran_low_t *tcoeff_buf[MAX_MB_PLANE];
   int extra_arf_allowed;
-  int bwd_ref_allowed;
   // A flag to indicate if intrabc is ever used in current frame.
   int intrabc_used;
   int dv_cost[2][MV_VALS];

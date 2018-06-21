@@ -2153,7 +2153,7 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
   // (3) The bi-predictive group interval is strictly smaller than the
   //     golden group interval.
   const int is_bipred_enabled =
-      cpi->bwd_ref_allowed && rc->source_alt_ref_pending &&
+      cpi->extra_arf_allowed && rc->source_alt_ref_pending &&
       rc->bipred_group_interval &&
       rc->bipred_group_interval <=
           (rc->baseline_gf_interval - rc->source_alt_ref_pending);
@@ -2524,7 +2524,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   const int arf_active_or_kf = is_key_frame || rc->source_alt_ref_active;
 
   cpi->extra_arf_allowed = 1;
-  cpi->bwd_ref_allowed = 1;
 
   // Reset the GF group data structures unless this is a key
   // frame in which case it will already have been done.
@@ -2707,7 +2706,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
        avg_sr_coded_error / num_mbs < MAX_SR_CODED_ERROR &&
        avg_raw_err_stdev < MAX_RAW_ERR_VAR);
 
-  if (disable_bwd_extarf) cpi->extra_arf_allowed = cpi->bwd_ref_allowed = 0;
+  if (disable_bwd_extarf) cpi->extra_arf_allowed = 0;
 
   if (!cpi->extra_arf_allowed) {
     cpi->num_extra_arfs = 0;
