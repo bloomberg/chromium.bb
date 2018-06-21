@@ -615,49 +615,44 @@ function renderMaterialDesignTile(data) {
 
   let mdFavicon = document.createElement('div');
   mdFavicon.className = CLASSES.MD_FAVICON;
-  // Determine if a fallback icon should be displayed instead.
-  if (!data.fallbackBackgroundColorRgba || !data.fallbackTextColorRgba) {
-    let fi = document.createElement('img');
-    fi.src = data.faviconUrl;
-    // Set title and alt to empty so screen readers won't say the image name.
-    fi.title = '';
-    fi.alt = '';
-    loadedCounter += 1;
-    fi.addEventListener('load', function(ev) {
-      // Store the type for a potential later navigation.
-      tileType = TileVisualType.ICON_REAL;
-      logMostVisitedImpression(
-          position, data.tileTitleSource, data.tileSource, tileType,
-          data.dataGenerationTime);
-      // Note: It's important to call countLoad last, because that might emit
-      // the NTP_ALL_TILES_LOADED event, which must happen after the impression
-      // log.
-      countLoad();
-    });
-    fi.addEventListener('error', function(ev) {
-      mdFavicon.classList.add(CLASSES.FAILED_FAVICON);
-      mdFavicon.removeChild(fi);
-      // Store the type for a potential later navigation.
-      tileType = TileVisualType.ICON_DEFAULT;
-      logMostVisitedImpression(
-          position, data.tileTitleSource, data.tileSource, tileType,
-          data.dataGenerationTime);
-      // Note: It's important to call countLoad last, because that might emit
-      // the NTP_ALL_TILES_LOADED event, which must happen after the impression
-      // log.
-      countLoad();
-    });
-    mdFavicon.appendChild(fi);
-  } else {
-    mdIconBackground.style.backgroundColor =
-        convertToRGBAColor(data.fallbackBackgroundColorRgba);
-    mdFavicon.classList.add(CLASSES.FALLBACK);
-    let fallbackLetter = document.createElement('div');
-    fallbackLetter.className = CLASSES.FALLBACK_LETTER;
-    fallbackLetter.style.color = convertToRGBAColor(data.fallbackTextColorRgba);
-    fallbackLetter.innerText = data.title.charAt(0);
-    mdFavicon.appendChild(fallbackLetter);
-  }
+  let fi = document.createElement('img');
+  // TODO(crbug.com/853780): Use data.fallbackBackgroundColorRgba and
+  // data.fallbackTextColorRgba;
+  fi.src = 'chrome-search://ntpicon/size/16@' + window.devicePixelRatio + 'x/' +
+      data.url;
+  // Set title and alt to empty so screen readers won't say the image name.
+  fi.title = '';
+  fi.alt = '';
+  // Images from this source may come as multiples of 16dp or multiples of 40dp.
+  // We display them as full size (e.g. 48px for 3x) but zoom accordingly to
+  // keep the right visual appearance.
+  fi.style = 'zoom: ' + 100 / window.devicePixelRatio + '%;';
+  loadedCounter += 1;
+  fi.addEventListener('load', function(ev) {
+    // Store the type for a potential later navigation.
+    tileType = TileVisualType.ICON_REAL;
+    logMostVisitedImpression(
+        position, data.tileTitleSource, data.tileSource, tileType,
+        data.dataGenerationTime);
+    // Note: It's important to call countLoad last, because that might emit
+    // the NTP_ALL_TILES_LOADED event, which must happen after the impression
+    // log.
+    countLoad();
+  });
+  fi.addEventListener('error', function(ev) {
+    mdFavicon.classList.add(CLASSES.FAILED_FAVICON);
+    mdFavicon.removeChild(fi);
+    // Store the type for a potential later navigation.
+    tileType = TileVisualType.ICON_DEFAULT;
+    logMostVisitedImpression(
+        position, data.tileTitleSource, data.tileSource, tileType,
+        data.dataGenerationTime);
+    // Note: It's important to call countLoad last, because that might emit
+    // the NTP_ALL_TILES_LOADED event, which must happen after the impression
+    // log.
+    countLoad();
+  });
+  mdFavicon.appendChild(fi);
 
   mdIconBackground.appendChild(mdFavicon);
   mdIcon.appendChild(mdIconBackground);

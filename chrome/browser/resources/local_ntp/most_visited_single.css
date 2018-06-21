@@ -461,9 +461,9 @@ body.dark-theme .md-tile:active .md-menu::after {
 }
 
 .md-favicon {
-  height: var(--md-favicon-size);
+  min-height: var(--md-favicon-size);
+  min-width: var(--md-favicon-size);
   pointer-events: none;
-  width: var(--md-favicon-size);
 }
 
 .md-favicon img {

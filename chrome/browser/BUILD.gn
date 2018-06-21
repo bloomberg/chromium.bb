@@ -1289,6 +1289,8 @@ jumbo_split_static_library("browser") {
     "resources_util.h",
     "search/instant_io_context.cc",
     "search/instant_io_context.h",
+    "search/ntp_icon_source.cc",
+    "search/ntp_icon_source.h",
     "search/search.cc",
     "search/search.h",
     "search/suggestions/image_decoder_impl.cc",
