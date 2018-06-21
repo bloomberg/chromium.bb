@@ -72,22 +72,22 @@ class ContentPasswordManagerDriver
       const autofill::PasswordFormFillData& form_data) override;
   void ClearPreviewedForm() override;
   void ForceSavePassword() override;
-  void ShowManualFallbackForSaving(const autofill::PasswordForm& form) override;
-  void HideManualFallbackForSaving() override;
   void GeneratePassword() override;
+  PasswordGenerationManager* GetPasswordGenerationManager() override;
+  PasswordManager* GetPasswordManager() override;
+  PasswordAutofillManager* GetPasswordAutofillManager() override;
   void SendLoggingAvailability() override;
   void AllowToRunFormClassifier() override;
   autofill::AutofillDriver* GetAutofillDriver() override;
   bool IsMainFrame() const override;
   void MatchingBlacklistedFormFound() override;
 
-  PasswordGenerationManager* GetPasswordGenerationManager() override;
-  PasswordManager* GetPasswordManager() override;
-  PasswordAutofillManager* GetPasswordAutofillManager() override;
-
   void DidNavigateFrame(content::NavigationHandle* navigation_handle);
 
   // autofill::mojom::PasswordManagerDriver:
+  // Note that these messages received from a potentially compromised renderer.
+  // For that reason, any access to form data should be validated via
+  // bad_message::CheckChildProcessSecurityPolicy.
   void PasswordFormsParsed(
       const std::vector<autofill::PasswordForm>& forms) override;
   void PasswordFormsRendered(
@@ -95,6 +95,8 @@ class ContentPasswordManagerDriver
       bool did_stop_loading) override;
   void PasswordFormSubmitted(
       const autofill::PasswordForm& password_form) override;
+  void ShowManualFallbackForSaving(const autofill::PasswordForm& form) override;
+  void HideManualFallbackForSaving() override;
   void SameDocumentNavigation(
       const autofill::PasswordForm& password_form) override;
   void ShowPasswordSuggestions(int key,
@@ -112,13 +114,8 @@ class ContentPasswordManagerDriver
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override;
 
-  void OnPasswordFormsParsedNoRenderCheck(
-      const std::vector<autofill::PasswordForm>& forms);
-  void OnFocusedPasswordFormFound(const autofill::PasswordForm& password_form);
-
  private:
-  bool CheckChildProcessSecurityPolicy(const GURL& url,
-                                       BadMessageReason reason);
+  void OnFocusedPasswordFormFound(const autofill::PasswordForm& password_form);
 
   const autofill::mojom::AutofillAgentPtr& GetAutofillAgent();
 
