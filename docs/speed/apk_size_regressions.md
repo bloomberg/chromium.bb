@@ -29,8 +29,13 @@
 
      tools/binary_size/diagnose_bloat.py AFTER_GIT_REV --reference-rev BEFORE_GIT_REV --subrepo v8 --all
 
-You can usually find the before and after revs in the roll commit message
+ * You can usually find the before and after revs in the roll commit message
 ([example](https://chromium.googlesource.com/chromium/src/+/10c40fd863f4ae106650bba93b845f25c9b733b1))
+    * Note that you may need to click through the link for the list of changes
+      in order to find the actual first commit hash and use that one instead
+      since some rollers (including v8) use extra commits for tagging not in
+      master. In the linked example `BEFORE_GIT_REV` would actually be
+      `876f37c` and not `c1dec05f`.
 
 ### Monochrome.apk Alerts
 
