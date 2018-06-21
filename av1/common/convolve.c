@@ -198,9 +198,7 @@ void av1_convolve_2d_copy_sr_c(const uint8_t *src, int src_stride, uint8_t *dst,
   (void)conv_params;
 
   for (int y = 0; y < h; ++y) {
-    for (int x = 0; x < w; ++x) {
-      dst[y * dst_stride + x] = src[y * src_stride + x];
-    }
+    memcpy(dst + y * dst_stride, src + y * src_stride, w * sizeof(src[0]));
   }
 }
 
