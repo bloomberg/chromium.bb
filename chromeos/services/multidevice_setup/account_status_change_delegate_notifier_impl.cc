@@ -154,7 +154,7 @@ void AccountStatusChangeDelegateNotifierImpl::CheckForMultiDeviceEvents() {
   if (!delegate()) {
     PA_LOG(INFO) << "AccountStatusChangeDelegateNotifierImpl::"
                  << "CheckForMultiDeviceEvents(): Tried to check for potential "
-                 << "events, but no delegatd was set.";
+                 << "events, but no delegate was set.";
     return;
   }
 
