@@ -31,6 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_CENTER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_CENTER_H_
 
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+
 namespace blink {
 
 class WebAudioSourceProvider;
@@ -51,6 +53,8 @@ class WebMediaStreamCenter {
 
   // Source functionality.
   virtual void DidStopMediaStreamSource(const WebMediaStreamSource&) {}
+  virtual void GetSourceSettings(const WebMediaStreamSource&,
+                                 WebMediaStreamTrack::Settings&) {}
 
   // Caller must take the ownership of the returned |WebAudioSourceProvider|
   // object.

@@ -10,19 +10,17 @@ dictionary MediaTrackSettings {
     double aspectRatio;
     double frameRate;
     DOMString facingMode;
-    // volume, sampleRate and sampleSize are not implemented.
-    // double volume;
-    // long sampleRate;
-    // long sampleSize;
+    double volume;
+    long sampleRate;
+    long sampleSize;
     boolean echoCancellation;
     boolean autoGainControl;
     boolean noiseSuppression;
-    [OriginTrialEnabled=ExperimentalHardwareEchoCancellation] DOMString echoCancellationType;
-    // latency and channelCount are not implemented.
-    // double latency;
-    // long channelCount;
+    double latency;
+    long channelCount;
     DOMString deviceId;
     DOMString groupId;
+    [OriginTrialEnabled=ExperimentalHardwareEchoCancellation] DOMString echoCancellationType;
     // Media Capture Depth Stream Extensions
     // https://w3c.github.io/mediacapture-depth/#mediatracksettings-dictionary
     // TODO(aleksandar.stojiljkovic): videoKind, depthNear, depthFar,

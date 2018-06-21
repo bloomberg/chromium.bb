@@ -35,6 +35,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -67,6 +68,8 @@ class PLATFORM_EXPORT MediaStreamCenter {
   void DidCreateMediaStreamAndTracks(MediaStreamDescriptor*);
 
   void DidStopMediaStreamSource(MediaStreamSource*);
+
+  void GetSourceSettings(MediaStreamSource*, WebMediaStreamTrack::Settings&);
 
  private:
   MediaStreamCenter();

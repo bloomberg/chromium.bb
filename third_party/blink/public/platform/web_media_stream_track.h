@@ -50,6 +50,11 @@ class WebMediaStreamTrack {
     bool HasHeight() const { return height >= 0; }
     bool HasAspectRatio() const { return aspect_ratio >= 0.0; }
     bool HasFacingMode() const { return facing_mode != FacingMode::kNone; }
+    bool HasSampleRate() const { return sample_rate >= 0; }
+    bool HasSampleSize() const { return sample_size >= 0; }
+    bool HasChannelCount() const { return channel_count >= 0; }
+    bool HasLatency() const { return latency >= 0; }
+    bool HasVolume() const { return volume >= 0; }
     bool HasVideoKind() const { return !video_kind.IsNull(); }
     bool HasFocalLengthX() const { return focal_length_x >= 0.0; }
     bool HasFocalLengthY() const { return focal_length_y >= 0.0; }
@@ -68,6 +73,12 @@ class WebMediaStreamTrack {
     base::Optional<bool> auto_gain_control;
     base::Optional<bool> noise_supression;
     WebString echo_cancellation_type;
+    long sample_rate = -1;
+    long sample_size = -1;
+    long channel_count = -1;
+    double latency = -1.0;
+    double volume = -1.0;
+
     // Media Capture Depth Stream Extensions.
     WebString video_kind;
     double focal_length_x = -1.0;

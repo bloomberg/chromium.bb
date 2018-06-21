@@ -475,6 +475,17 @@ void MediaStreamTrack::getSettings(MediaTrackSettings& settings) {
     settings.setEchoCancellationType(platform_settings.echo_cancellation_type);
   }
 
+  if (platform_settings.HasSampleRate())
+    settings.setSampleRate(platform_settings.sample_rate);
+  if (platform_settings.HasSampleSize())
+    settings.setSampleSize(platform_settings.sample_size);
+  if (platform_settings.HasChannelCount())
+    settings.setChannelCount(platform_settings.channel_count);
+  if (platform_settings.HasLatency())
+    settings.setLatency(platform_settings.latency);
+  if (platform_settings.HasVolume())
+    settings.setVolume(platform_settings.volume);
+
   if (image_capture_)
     image_capture_->GetMediaTrackSettings(settings);
 }

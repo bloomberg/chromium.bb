@@ -44,6 +44,10 @@ class CONTENT_EXPORT MediaStreamCenter : public blink::WebMediaStreamCenter {
   void DidStopMediaStreamSource(
       const blink::WebMediaStreamSource& web_source) override;
 
+  void GetSourceSettings(
+      const blink::WebMediaStreamSource& web_source,
+      blink::WebMediaStreamTrack::Settings& settings) override;
+
   DISALLOW_COPY_AND_ASSIGN(MediaStreamCenter);
 };
 
