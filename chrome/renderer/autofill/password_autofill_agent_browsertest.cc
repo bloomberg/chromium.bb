@@ -2363,6 +2363,9 @@ TEST_F(PasswordAutofillAgentTest,
                                          GetMainFrame()->GetDocument(), 0, 2);
 
   base::string16 password = base::ASCIIToUTF16("NewPass22");
+  EXPECT_CALL(fake_pw_client_,
+              PresaveGeneratedPassword(testing::Field(
+                  &autofill::PasswordForm::password_value, password)));
   password_generation_->GeneratedPasswordAccepted(password);
 
   SaveAndSubmitForm();
@@ -2377,12 +2380,15 @@ TEST_F(PasswordAutofillAgentTest,
   SetAccountCreationFormsDetectedMessage(password_generation_,
                                          GetMainFrame()->GetDocument(), 0, 2);
   base::string16 password = base::ASCIIToUTF16("NewPass22");
+  EXPECT_CALL(fake_pw_client_,
+              PresaveGeneratedPassword(testing::Field(
+                  &autofill::PasswordForm::password_value, password)));
   password_generation_->GeneratedPasswordAccepted(password);
 
   // A user fills username and password, the generated value is gone.
+  EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_));
   SimulateOnFillPasswordForm(fill_data_);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(fake_driver_.called_password_no_longer_generated());
 
   // The password field shoudln't reveal the value on focusing.
   WebDocument document = GetMainFrame()->GetDocument();
@@ -3280,11 +3286,10 @@ TEST_F(PasswordAutofillAgentTest, NoForm_MultipleAJAXEventsWithoutSubmission) {
 }
 
 TEST_F(PasswordAutofillAgentTest, ManualFallbackForSaving) {
+  EXPECT_CALL(fake_pw_client_, PresaveGeneratedPassword(testing::_)).Times(0);
   // The users enters a username. No password - no fallback.
   SimulateUsernameTyping(kUsernameName);
   EXPECT_EQ(0, fake_driver_.called_show_manual_fallback_for_saving_count());
-  EXPECT_FALSE(
-      fake_driver_.last_fallback_for_saving_was_for_generated_password());
 
   // The user enters a password.
   SimulatePasswordTyping(kPasswordName);

@@ -725,6 +725,16 @@ void ChromePasswordManagerClient::PasswordGenerationRejectedByTyping() {
   HidePasswordGenerationPopup();
 }
 
+void ChromePasswordManagerClient::PresaveGeneratedPassword(
+    const autofill::PasswordForm& password_form) {
+  password_manager_.OnPresaveGeneratedPassword(password_form);
+}
+
+void ChromePasswordManagerClient::PasswordNoLongerGenerated(
+    const autofill::PasswordForm& password_form) {
+  password_manager_.OnPasswordNoLongerGenerated(password_form);
+}
+
 const GURL& ChromePasswordManagerClient::GetMainFrameURL() const {
   return web_contents()->GetVisibleURL();
 }

@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 class FakePasswordManagerClient
     : public autofill::mojom::PasswordManagerClient {
@@ -59,6 +60,13 @@ class FakePasswordManagerClient
     called_password_generation_rejected_by_typing_ = false;
   }
 
+  // TODO(crbug.com/851021): move all the methods to GMock.
+  // autofill::mojom::PasswordManagerClient:
+  MOCK_METHOD1(PresaveGeneratedPassword,
+               void(const autofill::PasswordForm& password_form));
+  MOCK_METHOD1(PasswordNoLongerGenerated,
+               void(const autofill::PasswordForm& password_form));
+
  private:
   // autofill::mojom::PasswordManagerClient:
   void AutomaticGenerationStatusChanged(
@@ -91,6 +99,8 @@ class FakePasswordManagerClient
   bool called_password_generation_rejected_by_typing_ = false;
 
   mojo::AssociatedBinding<autofill::mojom::PasswordManagerClient> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakePasswordManagerClient);
 };
 
 #endif  // CHROME_RENDERER_AUTOFILL_FAKE_PASSWORD_MANAGER_CLIENT_H_

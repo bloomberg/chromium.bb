@@ -41,20 +41,6 @@ void FakeContentPasswordManagerDriver::SameDocumentNavigation(
   password_form_same_document_navigation_ = password_form;
 }
 
-void FakeContentPasswordManagerDriver::PresaveGeneratedPassword(
-    const autofill::PasswordForm& password_form) {
-  called_presave_generated_password_ = true;
-  password_is_generated_ = true;
-  EXPECT_EQ(autofill::PasswordForm::TYPE_GENERATED, password_form.type);
-}
-
-void FakeContentPasswordManagerDriver::PasswordNoLongerGenerated(
-    const autofill::PasswordForm& password_form) {
-  called_password_no_longer_generated_ = true;
-  password_is_generated_ = false;
-  EXPECT_EQ(autofill::PasswordForm::TYPE_GENERATED, password_form.type);
-}
-
 void FakeContentPasswordManagerDriver::ShowPasswordSuggestions(
     int key,
     base::i18n::TextDirection text_direction,
@@ -98,7 +84,6 @@ void FakeContentPasswordManagerDriver::CheckSafeBrowsingReputation(
 void FakeContentPasswordManagerDriver::ShowManualFallbackForSaving(
     const autofill::PasswordForm& password_form) {
   called_show_manual_fallback_for_saving_count_++;
-  last_fallback_for_saving_was_for_generated_password_ = password_is_generated_;
 }
 
 void FakeContentPasswordManagerDriver::HideManualFallbackForSaving() {

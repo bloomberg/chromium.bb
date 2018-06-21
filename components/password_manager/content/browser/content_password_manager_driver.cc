@@ -259,24 +259,6 @@ void ContentPasswordManagerDriver::SameDocumentNavigation(
   GetPasswordManager()->OnSameDocumentNavigation(this, password_form);
 }
 
-void ContentPasswordManagerDriver::PresaveGeneratedPassword(
-    const autofill::PasswordForm& password_form) {
-  if (!CheckChildProcessSecurityPolicy(
-          password_form.origin,
-          BadMessageReason::CPMD_BAD_ORIGIN_PRESAVE_GENERATED_PASSWORD))
-    return;
-  GetPasswordManager()->OnPresaveGeneratedPassword(password_form);
-}
-
-void ContentPasswordManagerDriver::PasswordNoLongerGenerated(
-    const autofill::PasswordForm& password_form) {
-  if (!CheckChildProcessSecurityPolicy(
-          password_form.origin,
-          BadMessageReason::CPMD_BAD_ORIGIN_PASSWORD_NO_LONGER_GENERATED))
-    return;
-  GetPasswordManager()->OnPasswordNoLongerGenerated(password_form);
-}
-
 void ContentPasswordManagerDriver::SaveGenerationFieldDetectedByClassifier(
     const autofill::PasswordForm& password_form,
     const base::string16& generation_field) {
