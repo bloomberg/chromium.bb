@@ -38,7 +38,9 @@
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -55,6 +57,8 @@ namespace {
 // Maximum number of times to show a notice about other forms of browsing
 // history.
 const int kMaxTimesHistoryNoticeShown = 1;
+// The tableView button red background color.
+const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 
 }  // namespace
 
@@ -309,6 +313,8 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
 - (ListItem*)clearButtonItem {
   ListItem* clearButtonItem;
+  // Create a CollectionViewTextItem for CollectionView models and a
+  // TableViewTextButtonItem for TableView models.
   if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
     CollectionViewTextItem* collectionClearButtonItem =
         [[CollectionViewTextItem alloc]
@@ -319,10 +325,14 @@ const int kMaxTimesHistoryNoticeShown = 1;
     collectionClearButtonItem.textColor = [[MDCPalette cr_redPalette] tint500];
     clearButtonItem = collectionClearButtonItem;
   } else {
-    // TODO(crbug.com/853402): Implement using TableviewTextButtonItem.
-    TableViewTextItem* tableViewDummyItem = [[TableViewTextItem alloc]
-        initWithType:ItemTypeClearBrowsingDataButton];
-    clearButtonItem = tableViewDummyItem;
+    TableViewTextButtonItem* tableViewClearButtonItem =
+        [[TableViewTextButtonItem alloc]
+            initWithType:ItemTypeClearBrowsingDataButton];
+    tableViewClearButtonItem.buttonText =
+        l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON);
+    tableViewClearButtonItem.buttonBackgroundColor =
+        UIColorFromRGB(kTableViewButtonBackgroundColor);
+    clearButtonItem = tableViewClearButtonItem;
   }
   return clearButtonItem;
 }
@@ -393,6 +403,8 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
 - (ListItem*)footerGoogleAccountItem {
   ListItem* footerItem;
+  // Use CollectionViewFooterItem for CollectionView models and
+  // TableViewTextLinkItem for TableView models.
   if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
     CollectionViewFooterItem* collectionFooterItem =
         [[CollectionViewFooterItem alloc]
@@ -405,10 +417,11 @@ const int kMaxTimesHistoryNoticeShown = 1;
     collectionFooterItem.image = image;
     footerItem = collectionFooterItem;
   } else {
-    // TODO(crbug.com/853402): Implement using TableviewLinkTextItem.
-    TableViewTextItem* dummyItem =
-        [[TableViewTextItem alloc] initWithType:ItemTypeFooterGoogleAccount];
-    footerItem = dummyItem;
+    TableViewTextLinkItem* tableViewFooterItem = [[TableViewTextLinkItem alloc]
+        initWithType:ItemTypeFooterGoogleAccount];
+    tableViewFooterItem.text =
+        l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_ACCOUNT);
+    footerItem = tableViewFooterItem;
   }
   return footerItem;
 }
@@ -451,6 +464,8 @@ const int kMaxTimesHistoryNoticeShown = 1;
                             URL:(const char[])URL
                           image:(UIImage*)image {
   ListItem* footerItem;
+  // Use CollectionViewFooterItem for CollectionView models and
+  // TableViewTextLinkItem for TableView models.
   if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
     CollectionViewFooterItem* collectionFooterItem =
         [[CollectionViewFooterItem alloc] initWithType:itemType];
@@ -461,10 +476,12 @@ const int kMaxTimesHistoryNoticeShown = 1;
     collectionFooterItem.image = image;
     footerItem = collectionFooterItem;
   } else {
-    // TODO(crbug.com/853402): Implement using TableviewLinkTextItem.
-    TableViewTextItem* dummyItem =
-        [[TableViewTextItem alloc] initWithType:itemType];
-    footerItem = dummyItem;
+    TableViewTextLinkItem* tableViewFooterItem =
+        [[TableViewTextLinkItem alloc] initWithType:itemType];
+    tableViewFooterItem.text = l10n_util::GetNSString(titleMessageID);
+    tableViewFooterItem.linkURL = google_util::AppendGoogleLocaleParam(
+        GURL(URL), GetApplicationContext()->GetApplicationLocale());
+    footerItem = tableViewFooterItem;
   }
 
   return footerItem;
