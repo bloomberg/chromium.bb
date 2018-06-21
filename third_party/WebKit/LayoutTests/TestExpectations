@@ -4180,10 +4180,6 @@ crbug.com/845973 virtual/display-compositor-pixel-dump/fast/canvas/display-compo
 crbug.com/817175 compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
 crbug.com/817175 virtual/prefer_compositing_to_lcd_text/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
 
-# These tests are intrinsically slow. Even when marked as [ Slow ], they can still time out.
-crbug.com/787971 external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.https.worker.html [ Pass Timeout ]
-crbug.com/787971 external/wpt/WebCryptoAPI/derive_bits_keys/pbkdf2.https.worker.html [ Pass Timeout ]
-
 # Tests occasionaly timing out (flaky) on WebKit Win7 dbg builder
 crbug.com/757955 [ Win7 Debug ] http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/mozilla/cursors.html [ Pass Timeout ]
