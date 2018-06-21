@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -18,7 +17,6 @@
 namespace resource_coordinator {
 
 class PageResourceCoordinator;
-class LocalSiteCharacteristicsWebContentsObserver;
 
 class ResourceCoordinatorTabHelper
     : public content::WebContentsObserver,
@@ -64,11 +62,6 @@ class ResourceCoordinatorTabHelper
   std::unique_ptr<resource_coordinator::PageResourceCoordinator>
       page_resource_coordinator_;
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
-
-#if !defined(OS_ANDROID)
-  std::unique_ptr<LocalSiteCharacteristicsWebContentsObserver>
-      local_site_characteristics_wc_observer_;
-#endif
 
   // Favicon and title are set when a page is loaded, we only want to send
   // signals to GRC about title and favicon update from the previous title and
