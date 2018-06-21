@@ -1107,18 +1107,25 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
   gfx::Size child_size = GetChildPreferredSize();
 
   MenuItemDimensions dimensions;
-  // Get the container height.
   dimensions.children_width = child_size.width();
   const MenuConfig& menu_config = MenuConfig::instance();
 
   if (GetMenuController() && GetMenuController()->use_touchable_layout()) {
-    // Touchable layout uses a fixed size, but adjusts the height for icons.
     dimensions.height = menu_config.touchable_menu_height;
+
+    // For container MenuItemViews, the width components should only include the
+    // |children_width|. Setting a |standard_width| would result in additional
+    // width being added to the container because the total width used in layout
+    // is |children_width| + |standard_width|.
+    if (IsContainer())
+      return dimensions;
+
+    dimensions.standard_width = menu_config.touchable_menu_width;
+
     if (icon_view_) {
       dimensions.height = icon_view_->height() +
                           2 * menu_config.vertical_touchable_menu_item_padding;
     }
-    dimensions.standard_width = menu_config.touchable_menu_width;
     return dimensions;
   }
 
