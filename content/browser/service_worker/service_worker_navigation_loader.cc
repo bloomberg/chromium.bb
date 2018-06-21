@@ -167,7 +167,8 @@ void ServiceWorkerNavigationLoader::StartRequest() {
       net::NetLogWithSource() /* TODO(scottmg): net log? */,
       base::BindOnce(&ServiceWorkerNavigationLoader::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(),
-                     base::WrapRefCounted(active_worker)),
+                     base::WrapRefCounted(active_worker),
+                     active_worker->running_status()),
       base::BindOnce(&ServiceWorkerNavigationLoader::DidDispatchFetchEvent,
                      weak_factory_.GetWeakPtr()));
   did_navigation_preload_ =
@@ -208,8 +209,19 @@ void ServiceWorkerNavigationLoader::ReturnNetworkError() {
 }
 
 void ServiceWorkerNavigationLoader::DidPrepareFetchEvent(
-    scoped_refptr<ServiceWorkerVersion> version) {
+    scoped_refptr<ServiceWorkerVersion> version,
+    EmbeddedWorkerStatus initial_worker_status) {
   response_head_.service_worker_ready_time = base::TimeTicks::Now();
+
+  // Note that we don't record worker preparation time in S13nServiceWorker
+  // path for now. If we want to measure worker preparation time we can
+  // calculate it from response_head_.service_worker_ready_time and
+  // response_head_.load_timing.request_start.
+  // https://crbug.com/852664
+  ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
+      base::TimeDelta(), initial_worker_status,
+      version->embedded_worker()->start_situation(), did_navigation_preload_,
+      resource_request_.url);
 }
 
 void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(

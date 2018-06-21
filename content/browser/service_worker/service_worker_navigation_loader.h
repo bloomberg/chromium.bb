@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_response_type.h"
@@ -101,7 +102,8 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
 
   // For FORWARD_TO_SERVICE_WORKER case.
   void StartRequest();
-  void DidPrepareFetchEvent(scoped_refptr<ServiceWorkerVersion> version);
+  void DidPrepareFetchEvent(scoped_refptr<ServiceWorkerVersion> version,
+                            EmbeddedWorkerStatus initial_worker_status);
   void DidDispatchFetchEvent(
       ServiceWorkerStatusCode status,
       ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
