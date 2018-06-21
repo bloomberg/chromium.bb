@@ -13,7 +13,6 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/background/background_application_list_model.h"
@@ -262,16 +261,8 @@ class BackgroundModeManager : public content::NotificationObserver,
     std::set<BackgroundTrigger*> registered_triggers_;
   };
 
-  // Ideally we would want our BackgroundModeData to be scoped_ptrs,
-  // but since maps copy their entries, we can't used scoped_ptrs.
-  // Similarly, we can't just have a map of BackgroundModeData objects,
-  // since BackgroundModeData contains a scoped_ptr which once again
-  // can't be copied. So rather than using BackgroundModeData* which
-  // we'd have to remember to delete, we use the ref-counted linked_ptr
-  // which is similar to a shared_ptr.
-  using BackgroundModeInfo = linked_ptr<BackgroundModeData>;
-
-  using BackgroundModeInfoMap = std::map<const Profile*, BackgroundModeInfo>;
+  using BackgroundModeInfoMap =
+      std::map<const Profile*, std::unique_ptr<BackgroundModeData>>;
 
   // content::NotificationObserver implementation.
   void Observe(int type,
