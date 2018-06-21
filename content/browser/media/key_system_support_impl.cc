@@ -6,10 +6,12 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_split.h"
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/common/cdm_info.h"
 #include "media/base/key_system_names.h"
@@ -26,6 +28,32 @@ void SendCdmAvailableUMA(const std::string& key_system, bool available) {
                                 media::GetKeySystemNameForUMA(key_system) +
                                 ".LibraryCdmAvailable",
                             available);
+}
+
+std::vector<media::VideoCodec> GetEnabledHardwareSecureCodecsFromCommandLine() {
+  std::vector<media::VideoCodec> result;
+
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line)
+    return result;
+
+  auto codecs_string = command_line->GetSwitchValueASCII(
+      switches::kEnableHardwareSecureCodecsForTesting);
+  const auto supported_codecs = base::SplitStringPiece(
+      codecs_string, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  for (const auto& codec : supported_codecs) {
+    if (codec == "vp8")
+      result.push_back(media::VideoCodec::kCodecVP8);
+    else if (codec == "vp9")
+      result.push_back(media::VideoCodec::kCodecVP9);
+    else if (codec == "avc1")
+      result.push_back(media::VideoCodec::kCodecH264);
+    else
+      DVLOG(1) << "Unsupported codec specified on command line: " << codec;
+  }
+
+  return result;
 }
 
 }  // namespace
@@ -80,6 +108,9 @@ void KeySystemSupportImpl::IsKeySystemSupported(
       std::vector<media::EncryptionMode>(schemes.begin(), schemes.end());
 
   if (base::FeatureList::IsEnabled(media::kHardwareSecureDecryption)) {
+    capability->hw_secure_video_codecs =
+        GetEnabledHardwareSecureCodecsFromCommandLine();
+
     // TODO(xhwang): Call into GetContentClient()->browser() to get key system
     // specific hardware secure decryption capability on Windows.
     NOTIMPLEMENTED();

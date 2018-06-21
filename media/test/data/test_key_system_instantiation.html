@@ -18,7 +18,7 @@
       // if they match, an error message if they don't.
       function verifyCapabilitiesAreEqual(actual, expected) {
         if (actual.length != expected.length)
-          return "mismatched lengths";
+          return "mismatched lengths; not all capabilities are supported";
         for (var i = 0; i < actual.length; i++) {
           // Only compare |contentType|. Other properties are ignored.
           if (actual[i].contentType !== expected[i].contentType)
