@@ -58,7 +58,7 @@ class DeviceDisablingManager {
     virtual ~Observer();
 
     virtual void OnDisabledMessageChanged(
-     const std::string& disabled_message) = 0;
+        const std::string& disabled_message) = 0;
 
    private:
     DISALLOW_ASSIGN(Observer);
@@ -98,6 +98,10 @@ class DeviceDisablingManager {
   // Returns the cached disabled message. The message is only guaranteed to be
   // up to date if the disabled screen was triggered.
   const std::string& disabled_message() const { return disabled_message_; }
+
+  // Returns the cached serial_number. The value is only guaranteed to be
+  // up to date if the disabled screen was triggered.
+  const std::string& serial_number() const { return serial_number_; }
 
   // Performs a check whether the device is disabled during OOBE. |callback|
   // will be invoked with the result of the check.
@@ -140,6 +144,9 @@ class DeviceDisablingManager {
 
   // A cached copy of the message to show on the device disabled screen.
   std::string disabled_message_;
+
+  // A cached copy of the serial number to show on the device disabled screen.
+  std::string serial_number_;
 
   base::WeakPtrFactory<DeviceDisablingManager> weak_factory_;
 

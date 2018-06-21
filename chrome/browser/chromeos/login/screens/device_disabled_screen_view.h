@@ -27,6 +27,9 @@ class DeviceDisabledScreenView {
 
     // Returns the message that should be shown to the user.
     virtual const std::string& GetMessage() const = 0;
+
+    // Returns the device serial number that should be shown to the user.
+    virtual const std::string& GetSerialNumber() const = 0;
   };
 
   constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_DEVICE_DISABLED;
