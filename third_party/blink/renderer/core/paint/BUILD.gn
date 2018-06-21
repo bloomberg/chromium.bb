@@ -201,8 +201,6 @@ blink_core_sources("paint") {
     "scroll_recorder.h",
     "scrollable_area_painter.cc",
     "scrollable_area_painter.h",
-    "scrollbar_manager.cc",
-    "scrollbar_manager.h",
     "scrollbar_painter.cc",
     "scrollbar_painter.h",
     "selection_painting_utils.cc",

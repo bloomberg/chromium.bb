@@ -2334,20 +2334,6 @@ void PaintLayerScrollableArea::GetTickmarks(Vector<IntRect>& tickmarks) const {
     tickmarks = ToLayoutView(GetLayoutBox())->GetTickmarks();
 }
 
-PaintLayerScrollableArea*
-PaintLayerScrollableArea::ScrollbarManager::ScrollableArea() {
-  return ToPaintLayerScrollableArea(scrollable_area_.Get());
-}
-
-void PaintLayerScrollableArea::ScrollbarManager::DestroyDetachedScrollbars() {
-  DCHECK(!h_bar_is_attached_ || h_bar_);
-  DCHECK(!v_bar_is_attached_ || v_bar_);
-  if (h_bar_ && !h_bar_is_attached_)
-    DestroyScrollbar(kHorizontalScrollbar);
-  if (v_bar_ && !v_bar_is_attached_)
-    DestroyScrollbar(kVerticalScrollbar);
-}
-
 void PaintLayerScrollableArea::ScrollbarManager::SetHasHorizontalScrollbar(
     bool has_scrollbar) {
   if (has_scrollbar) {
@@ -2442,6 +2428,28 @@ void PaintLayerScrollableArea::ScrollbarManager::DestroyScrollbar(
       scrollbar);
   scrollbar->DisconnectFromScrollableArea();
   scrollbar = nullptr;
+}
+
+void PaintLayerScrollableArea::ScrollbarManager::DestroyDetachedScrollbars() {
+  DCHECK(!h_bar_is_attached_ || h_bar_);
+  DCHECK(!v_bar_is_attached_ || v_bar_);
+  if (h_bar_ && !h_bar_is_attached_)
+    DestroyScrollbar(kHorizontalScrollbar);
+  if (v_bar_ && !v_bar_is_attached_)
+    DestroyScrollbar(kVerticalScrollbar);
+}
+
+void PaintLayerScrollableArea::ScrollbarManager::Dispose() {
+  h_bar_is_attached_ = v_bar_is_attached_ = 0;
+  DestroyScrollbar(kHorizontalScrollbar);
+  DestroyScrollbar(kVerticalScrollbar);
+}
+
+void PaintLayerScrollableArea::ScrollbarManager::Trace(
+    blink::Visitor* visitor) {
+  visitor->Trace(scrollable_area_);
+  visitor->Trace(h_bar_);
+  visitor->Trace(v_bar_);
 }
 
 uint64_t PaintLayerScrollableArea::Id() const {

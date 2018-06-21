@@ -51,7 +51,6 @@
 #include "third_party/blink/renderer/core/page/scrolling/sticky_position_scrolling_constraints.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidation_capable_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_fragment.h"
-#include "third_party/blink/renderer/core/paint/scrollbar_manager.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
@@ -120,7 +119,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   friend class Internals;
 
  private:
-  class ScrollbarManager : public blink::ScrollbarManager {
+  class ScrollbarManager {
     DISALLOW_NEW();
 
     // Helper class to manage the life cycle of Scrollbar objects.  Some layout
@@ -136,19 +135,43 @@ class CORE_EXPORT PaintLayerScrollableArea final
     // previously "deleted" scrollbar will be restored, rather than constructing
     // a new one.
    public:
-    ScrollbarManager(PaintLayerScrollableArea& scroller)
-        : blink::ScrollbarManager(scroller) {}
+    ScrollbarManager(PaintLayerScrollableArea& scrollable_area)
+        : scrollable_area_(scrollable_area),
+          h_bar_is_attached_(0),
+          v_bar_is_attached_(0) {}
 
-    void SetHasHorizontalScrollbar(bool has_scrollbar) override;
-    void SetHasVerticalScrollbar(bool has_scrollbar) override;
+    PaintLayerScrollableArea* ScrollableArea() const {
+      return scrollable_area_.Get();
+    }
+    Scrollbar* HorizontalScrollbar() const {
+      return h_bar_is_attached_ ? h_bar_.Get() : nullptr;
+    }
+    Scrollbar* VerticalScrollbar() const {
+      return v_bar_is_attached_ ? v_bar_.Get() : nullptr;
+    }
+    bool HasHorizontalScrollbar() const { return HorizontalScrollbar(); }
+    bool HasVerticalScrollbar() const { return VerticalScrollbar(); }
 
+    void SetHasHorizontalScrollbar(bool has_scrollbar);
+    void SetHasVerticalScrollbar(bool has_scrollbar);
+
+    Scrollbar* CreateScrollbar(ScrollbarOrientation);
     void DestroyDetachedScrollbars();
-    Scrollbar* CreateScrollbar(ScrollbarOrientation) override;
+    void Dispose();
 
-   protected:
-    void DestroyScrollbar(ScrollbarOrientation) override;
+    void Trace(blink::Visitor*);
 
-    PaintLayerScrollableArea* ScrollableArea();
+   private:
+    void DestroyScrollbar(ScrollbarOrientation);
+
+    Member<PaintLayerScrollableArea> scrollable_area_;
+
+    // The scrollbars associated with scrollable_area_. Both can nullptr.
+    Member<Scrollbar> h_bar_;
+    Member<Scrollbar> v_bar_;
+
+    unsigned h_bar_is_attached_ : 1;
+    unsigned v_bar_is_attached_ : 1;
   };
 
  public:
