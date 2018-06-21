@@ -49,9 +49,18 @@
 
 #pragma mark - Toolbar UI
 
-// Observer method for objects that care about the current height of the
-// toolbar.
-- (void)broadcastToolbarHeight:(CGFloat)height;
+// Observer method for objects that care about the collapsed toolbar height.
+// The value broadcast by this method is the distance by which the toolbar
+// overlaps the browser content area after the toolbar has been collapsed due
+// to scroll events.
+- (void)broadcastCollapsedToolbarHeight:(CGFloat)height;
+
+// Observer method for objects that care about the fully expanded toolbar
+// height.  The value broadcast by this method is the distance by which the
+// toolbar overlaps the browser content area after the toolbar when the toolbar
+// is fully visible (i.e. after a page load).  When scrolling occurs, the
+// toolbar overlap distance will be reduced to the collapsed height.
+- (void)broadcastExpandedToolbarHeight:(CGFloat)height;
 
 @end
 

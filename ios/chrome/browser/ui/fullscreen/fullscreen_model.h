@@ -42,6 +42,11 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   // The base offset against which the fullscreen progress is being calculated.
   CGFloat base_offset() const { return base_offset_; }
 
+  // Returns the difference between the max and min toolbar heights.
+  CGFloat toolbar_height_delta() const {
+    return expanded_toolbar_height_ - collapsed_toolbar_height_;
+  }
+
   // Increments and decrements |disabled_counter_| for features that require the
   // toolbar be completely visible.
   void IncrementDisabledCounter();
@@ -54,10 +59,15 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   // progress corresponding to the final state of the aniamtion.
   void AnimationEndedWithProgress(CGFloat progress);
 
-  // Setter for the toolbar height to use in calculations.  Setting this resets
-  // the model to a fully visible state.
-  void SetToolbarHeight(CGFloat toolbar_height);
-  CGFloat GetToolbarHeight() const;
+  // Setter for the minimum toolbar height to use in calculations.  Setting this
+  // resets the model to a fully visible state.
+  void SetCollapsedToolbarHeight(CGFloat height);
+  CGFloat GetCollapsedToolbarHeight() const;
+
+  // Setter for the maximum toolbar height to use in calculations.  Setting this
+  // resets the model to a fully visible state.
+  void SetExpandedToolbarHeight(CGFloat height);
+  CGFloat GetExpandedToolbarHeight() const;
 
   // Setter for the height of the scroll view displaying the main content.
   void SetScrollViewHeight(CGFloat scroll_view_height);
@@ -122,7 +132,8 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   void OnScrollViewIsScrollingBroadcasted(bool scrolling) override;
   void OnScrollViewIsZoomingBroadcasted(bool zooming) override;
   void OnScrollViewIsDraggingBroadcasted(bool dragging) override;
-  void OnToolbarHeightBroadcasted(CGFloat toolbar_height) override;
+  void OnCollapsedToolbarHeightBroadcasted(CGFloat height) override;
+  void OnExpandedToolbarHeightBroadcasted(CGFloat height) override;
 
   // The observers for this model.
   base::ObserverList<FullscreenModelObserver> observers_;
@@ -133,7 +144,8 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   // is false, it is reset to the current offset after each scroll event.
   CGFloat base_offset_ = NAN;
   // The height of the toolbar being shown or hidden by this model.
-  CGFloat toolbar_height_ = 0.0;
+  CGFloat collapsed_toolbar_height_ = 0.0;
+  CGFloat expanded_toolbar_height_ = 0.0;
   // The current vertical content offset of the main content.
   CGFloat y_content_offset_ = 0.0;
   // The height of the scroll view displaying the current page.

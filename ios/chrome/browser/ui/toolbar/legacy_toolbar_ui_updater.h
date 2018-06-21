@@ -12,9 +12,10 @@
 class WebStateList;
 
 @protocol ToolbarHeightProviderForFullscreen
-// Returns the height of the part of the toolbar that is only displayed when not
-// in fullscreen.
-- (CGFloat)nonFullscreenToolbarHeight;
+// The minimum and maximum amount by which the top toolbar overlaps the browser
+// content area.
+- (CGFloat)collapsedTopToolbarHeight;
+- (CGFloat)expandedTopToolbarHeight;
 @end
 
 // Helper object that uses navigation events to update a ToolbarUIState.

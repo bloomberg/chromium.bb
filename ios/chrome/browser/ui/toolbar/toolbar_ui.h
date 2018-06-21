@@ -10,9 +10,13 @@
 // Protocol for the UI displaying the toolbar.
 @protocol ToolbarUI<NSObject>
 
-// The height of the toolbar, not including the safe area inset.
-// This should be broadcast using |-broadcastToolbarHeight:|.
-@property(nonatomic, readonly) CGFloat toolbarHeight;
+// The minimum height of the toolbar relative to the browser content area.
+// This should be broadcast using |-broadcastCollapsedToolbarHeight:|.
+@property(nonatomic, readonly) CGFloat collapsedHeight;
+
+// The minimum height of the toolbar relative to the browser content area.
+// This should be broadcast using |-broadcastExpandedToolbarHeight:|.
+@property(nonatomic, readonly) CGFloat expandedHeight;
 
 @end
 
@@ -21,7 +25,8 @@
 @interface ToolbarUIState : NSObject<ToolbarUI>
 
 // Redefine properties as readwrite.
-@property(nonatomic, assign) CGFloat toolbarHeight;
+@property(nonatomic, assign) CGFloat collapsedHeight;
+@property(nonatomic, assign) CGFloat expandedHeight;
 
 @end
 

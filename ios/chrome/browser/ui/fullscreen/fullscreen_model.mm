@@ -72,16 +72,28 @@ void FullscreenModel::AnimationEndedWithProgress(CGFloat progress) {
   progress_ = progress;
 }
 
-void FullscreenModel::SetToolbarHeight(CGFloat toolbar_height) {
-  if (AreCGFloatsEqual(toolbar_height_, toolbar_height))
+void FullscreenModel::SetCollapsedToolbarHeight(CGFloat height) {
+  if (AreCGFloatsEqual(collapsed_toolbar_height_, height))
     return;
-  DCHECK_GE(toolbar_height, 0.0);
-  toolbar_height_ = toolbar_height;
+  DCHECK_GE(height, 0.0);
+  collapsed_toolbar_height_ = height;
   ResetForNavigation();
 }
 
-CGFloat FullscreenModel::GetToolbarHeight() const {
-  return toolbar_height_;
+CGFloat FullscreenModel::GetCollapsedToolbarHeight() const {
+  return collapsed_toolbar_height_;
+}
+
+void FullscreenModel::SetExpandedToolbarHeight(CGFloat height) {
+  if (AreCGFloatsEqual(expanded_toolbar_height_, height))
+    return;
+  DCHECK_GE(height, 0.0);
+  expanded_toolbar_height_ = height;
+  ResetForNavigation();
+}
+
+CGFloat FullscreenModel::GetExpandedToolbarHeight() const {
+  return expanded_toolbar_height_;
 }
 
 void FullscreenModel::SetScrollViewHeight(CGFloat scroll_view_height) {
@@ -183,7 +195,7 @@ FullscreenModel::ScrollAction FullscreenModel::ActionForScrollFromOffset(
   // - there is no toolbar,
   // - the scroll offset doesn't change.
   if (!enabled() || !scrolling_ || zooming_ || observer_callback_count_ ||
-      AreCGFloatsEqual(toolbar_height_, 0.0) ||
+      AreCGFloatsEqual(toolbar_height_delta(), 0.0) ||
       AreCGFloatsEqual(y_content_offset_, from_offset)) {
     return ScrollAction::kUpdateBaseOffset;
   }
@@ -211,11 +223,11 @@ FullscreenModel::ScrollAction FullscreenModel::ActionForScrollFromOffset(
 
 void FullscreenModel::UpdateProgress() {
   CGFloat delta = base_offset_ - y_content_offset_;
-  SetProgress(1.0 + delta / toolbar_height_);
+  SetProgress(1.0 + delta / toolbar_height_delta());
 }
 
 void FullscreenModel::UpdateBaseOffset() {
-  base_offset_ = y_content_offset_ - (1.0 - progress_) * toolbar_height_;
+  base_offset_ = y_content_offset_ - (1.0 - progress_) * toolbar_height_delta();
 }
 
 void FullscreenModel::SetProgress(CGFloat progress) {
@@ -260,6 +272,10 @@ void FullscreenModel::OnScrollViewIsDraggingBroadcasted(bool dragging) {
   SetScrollViewIsDragging(dragging);
 }
 
-void FullscreenModel::OnToolbarHeightBroadcasted(CGFloat toolbar_height) {
-  SetToolbarHeight(toolbar_height);
+void FullscreenModel::OnCollapsedToolbarHeightBroadcasted(CGFloat height) {
+  SetCollapsedToolbarHeight(height);
+}
+
+void FullscreenModel::OnExpandedToolbarHeightBroadcasted(CGFloat height) {
+  SetExpandedToolbarHeight(height);
 }

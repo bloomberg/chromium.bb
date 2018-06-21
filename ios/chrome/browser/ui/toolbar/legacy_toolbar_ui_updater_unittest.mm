@@ -21,13 +21,16 @@
 #endif
 
 @interface TestToolbarOwner : NSObject<ToolbarHeightProviderForFullscreen>
-// Define writable property with same name as |-nonFullscreenToolbarHeight|
-// getter defined in ToolbarHeightProviderForFullscreen.
-@property(nonatomic, assign) CGFloat nonFullscreenToolbarHeight;
+// Define writable property with same name as |-collapsedTopToolbarHeight| and
+// |-expandedTopToolbarHeight| getters defined in
+// ToolbarHeightProviderForFullscreen.
+@property(nonatomic, assign) CGFloat collapsedTopToolbarHeight;
+@property(nonatomic, assign) CGFloat expandedTopToolbarHeight;
 @end
 
 @implementation TestToolbarOwner
-@synthesize nonFullscreenToolbarHeight = _nonFullscreenToolbarHeight;
+@synthesize collapsedTopToolbarHeight = _collapsedTopToolbarHeight;
+@synthesize expandedTopToolbarHeight = _expandedTopToolbarHeight;
 @end
 
 class LegacyToolbarUIUpdaterTest : public PlatformTest {
@@ -46,7 +49,7 @@ class LegacyToolbarUIUpdaterTest : public PlatformTest {
   // Getters.
   WebStateList* web_state_list() { return &web_state_list_; }
   TestToolbarOwner* toolbar_owner() { return toolbar_owner_; }
-  CGFloat toolbar_height() { return toolbar_ui_.toolbarHeight; }
+  CGFloat expanded_toolbar_height() { return toolbar_ui_.expandedHeight; }
 
   // Start or stop updating the state.
   void StartUpdating() {
@@ -85,11 +88,11 @@ class LegacyToolbarUIUpdaterTest : public PlatformTest {
 
 // Tests that |-startUpdating| resets the state's height when starting.
 TEST_F(LegacyToolbarUIUpdaterTest, StartUpdating) {
-  EXPECT_EQ(toolbar_height(), 0.0);
+  EXPECT_EQ(expanded_toolbar_height(), 0.0);
   const CGFloat kHeight = 150.0;
-  toolbar_owner().nonFullscreenToolbarHeight = kHeight;
+  toolbar_owner().expandedTopToolbarHeight = kHeight;
   StartUpdating();
-  EXPECT_EQ(toolbar_height(), kHeight);
+  EXPECT_EQ(expanded_toolbar_height(), kHeight);
 }
 
 // Tests that the state is not updated after calling |-stopUpdating|.
@@ -97,15 +100,15 @@ TEST_F(LegacyToolbarUIUpdaterTest, StopUpdating) {
   web::TestWebState* web_state = InsertActiveWebState();
   StartUpdating();
   const CGFloat kHeight = 150.0;
-  toolbar_owner().nonFullscreenToolbarHeight = kHeight;
+  toolbar_owner().expandedTopToolbarHeight = kHeight;
   web::FakeNavigationContext context;
   web_state->OnNavigationFinished(&context);
-  EXPECT_EQ(toolbar_height(), kHeight);
+  EXPECT_EQ(expanded_toolbar_height(), kHeight);
   const CGFloat kNonUpdatedHeight = 500.0;
   StopUpdating();
-  toolbar_owner().nonFullscreenToolbarHeight = kNonUpdatedHeight;
+  toolbar_owner().expandedTopToolbarHeight = kNonUpdatedHeight;
   web_state->OnNavigationFinished(&context);
-  EXPECT_EQ(toolbar_height(), kHeight);
+  EXPECT_EQ(expanded_toolbar_height(), kHeight);
 }
 
 // Tests that the updater polls for the new height when the active WebState
@@ -113,10 +116,10 @@ TEST_F(LegacyToolbarUIUpdaterTest, StopUpdating) {
 TEST_F(LegacyToolbarUIUpdaterTest, UpdateActiveWebState) {
   StartUpdating();
   const CGFloat kHeight = 150.0;
-  toolbar_owner().nonFullscreenToolbarHeight = kHeight;
-  EXPECT_EQ(toolbar_height(), 0.0);
+  toolbar_owner().expandedTopToolbarHeight = kHeight;
+  EXPECT_EQ(expanded_toolbar_height(), 0.0);
   InsertActiveWebState();
-  EXPECT_EQ(toolbar_height(), kHeight);
+  EXPECT_EQ(expanded_toolbar_height(), kHeight);
 }
 
 // Tests that the updater polls for the new height when the active WebState
@@ -125,12 +128,12 @@ TEST_F(LegacyToolbarUIUpdaterTest, UserInitiatedNavigation) {
   web::TestWebState* web_state = InsertActiveWebState();
   StartUpdating();
   const CGFloat kHeight = 150.0;
-  toolbar_owner().nonFullscreenToolbarHeight = kHeight;
-  EXPECT_EQ(toolbar_height(), 0.0);
+  toolbar_owner().expandedTopToolbarHeight = kHeight;
+  EXPECT_EQ(expanded_toolbar_height(), 0.0);
   web::FakeNavigationContext context;
   context.SetIsRendererInitiated(false);
   web_state->OnNavigationStarted(&context);
-  EXPECT_EQ(toolbar_height(), kHeight);
+  EXPECT_EQ(expanded_toolbar_height(), kHeight);
 }
 
 // Tests that the updater waits until a render-initiated navigation is committed
@@ -139,12 +142,12 @@ TEST_F(LegacyToolbarUIUpdaterTest, RendererInitiatedNavigation) {
   web::TestWebState* web_state = InsertActiveWebState();
   StartUpdating();
   const CGFloat kHeight = 150.0;
-  toolbar_owner().nonFullscreenToolbarHeight = kHeight;
-  EXPECT_EQ(toolbar_height(), 0.0);
+  toolbar_owner().expandedTopToolbarHeight = kHeight;
+  EXPECT_EQ(expanded_toolbar_height(), 0.0);
   web::FakeNavigationContext context;
   context.SetIsRendererInitiated(true);
   web_state->OnNavigationStarted(&context);
-  EXPECT_EQ(toolbar_height(), 0.0);
+  EXPECT_EQ(expanded_toolbar_height(), 0.0);
   web_state->OnNavigationFinished(&context);
-  EXPECT_EQ(toolbar_height(), kHeight);
+  EXPECT_EQ(expanded_toolbar_height(), kHeight);
 }

@@ -17,7 +17,8 @@ class TestChromeBroadcastObserver : public ChromeBroadcastObserverInterface {
   CGFloat scroll_offset() const { return scroll_offset_; }
   bool scroll_view_scrolling() const { return scroll_view_scrolling_; }
   bool scroll_view_dragging() const { return scroll_view_dragging_; }
-  CGFloat toolbar_height() const { return toolbar_height_; }
+  CGFloat collapsed_height() const { return collapsed_height_; }
+  CGFloat expanded_height() const { return expanded_height_; }
 
  private:
   // ChromeBroadcastObserverInterface:
@@ -30,14 +31,19 @@ class TestChromeBroadcastObserver : public ChromeBroadcastObserverInterface {
   void OnScrollViewIsDraggingBroadcasted(bool dragging) override {
     scroll_view_dragging_ = dragging;
   }
-  void OnToolbarHeightBroadcasted(CGFloat toolbar_height) override {
-    toolbar_height_ = toolbar_height;
+  void OnCollapsedToolbarHeightBroadcasted(CGFloat height) override {
+    collapsed_height_ = height;
+    ;
+  }
+  void OnExpandedToolbarHeightBroadcasted(CGFloat height) override {
+    expanded_height_ = height;
   }
 
   CGFloat scroll_offset_ = 0.0;
   bool scroll_view_scrolling_ = false;
   bool scroll_view_dragging_ = false;
-  CGFloat toolbar_height_ = 0.0;
+  CGFloat collapsed_height_ = 0.0;
+  CGFloat expanded_height_ = 0.0;
 };
 
 // Test fixture for ChromeBroadcastOberverBridge.
@@ -84,8 +90,12 @@ TEST_F(ChromeBroadcastObserverBridgeTest, ScrollViewIsDragging) {
 // Tests that |-broadcastToolbarHeight:| is correctly forwarded to the
 // observer.
 TEST_F(ChromeBroadcastObserverBridgeTest, ToolbarHeight) {
-  ASSERT_EQ(observer().toolbar_height(), 0.0);
-  const CGFloat kHeight = 50.0;
-  [bridge() broadcastToolbarHeight:kHeight];
-  EXPECT_EQ(observer().toolbar_height(), kHeight);
+  ASSERT_EQ(observer().collapsed_height(), 0.0);
+  ASSERT_EQ(observer().expanded_height(), 0.0);
+  const CGFloat kCollapsedHeight = 10.0;
+  const CGFloat kExpandedHeight = 50.0;
+  [bridge() broadcastCollapsedToolbarHeight:kCollapsedHeight];
+  [bridge() broadcastExpandedToolbarHeight:kExpandedHeight];
+  EXPECT_EQ(observer().collapsed_height(), kCollapsedHeight);
+  EXPECT_EQ(observer().expanded_height(), kExpandedHeight);
 }

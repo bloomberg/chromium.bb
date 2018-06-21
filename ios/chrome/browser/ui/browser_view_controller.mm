@@ -2572,8 +2572,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (CGFloat)headerHeightForTab:(Tab*)tab {
   id nativeController = [self nativeControllerForTab:tab];
   if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)] &&
-      [nativeController respondsToSelector:@selector(toolbarHeight)] &&
-      [nativeController toolbarHeight] > 0.0 && ![self canShowTabStrip]) {
+      [nativeController respondsToSelector:@selector(toolbarFrame)] &&
+      CGRectGetHeight([nativeController toolbarFrame]) > 0.0 &&
+      ![self canShowTabStrip]) {
     // On iPhone, don't add any header height for ToolbarOwner native
     // controllers when they're displaying their own toolbar.
     if (self.usesFullscreenContainer)
@@ -3152,8 +3153,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   CGFloat headerHeight = [self headerHeightForTab:tab];
   id nativeController = [self nativeControllerForTab:tab];
-  if ([nativeController respondsToSelector:@selector(toolbarHeight)])
-    headerHeight += [nativeController toolbarHeight];
+  if ([nativeController respondsToSelector:@selector(toolbarFrame)])
+    headerHeight += CGRectGetHeight([nativeController toolbarFrame]);
   return UIEdgeInsetsMake(headerHeight, 0.0, 0.0, 0.0);
 }
 
@@ -3866,15 +3867,29 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 #pragma mark - ToolbarHeightProviderForFullscreen
 
+- (CGFloat)collapsedTopToolbarHeight {
+  // For the legacy UI, the toolbar is completely hidden when in fullscreen
+  // mode.  After the UI refresh, kToolbarHeightFullscreen is still visible
+  // after scroll events.
+  CGFloat minHeight =
+      IsUIRefreshPhase1Enabled() ? kToolbarHeightFullscreen : 0.0;
+  // |minHeight| describes the distance past the top safe area.  If the browser
+  // container view is laid out using the full screen, it extends past the
+  // status bar, so that additional overlap is added here.
+  if (self.usesFullscreenContainer)
+    minHeight += StatusBarHeight();
+  return minHeight;
+}
+
+- (CGFloat)expandedTopToolbarHeight {
+  return self.headerHeight;
+}
+
+#pragma mark - Toolbar height helpers
+
 - (CGFloat)nonFullscreenToolbarHeight {
-  CGFloat toolbarHeightFullscreen = 0;
-  if (IsUIRefreshPhase1Enabled()) {
-    toolbarHeightFullscreen = kToolbarHeightFullscreen;
-  }
-  if (self.usesFullscreenContainer) {
-    toolbarHeightFullscreen += StatusBarHeight();
-  }
-  return MAX(0, self.headerHeight - toolbarHeightFullscreen);
+  return MAX(
+      0, [self expandedTopToolbarHeight] - [self collapsedTopToolbarHeight]);
 }
 
 #pragma mark - FullscreenUIElement methods
