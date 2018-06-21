@@ -127,16 +127,33 @@ See [this diagram](https://docs.google.com/document/d/1yYei-V76q3Mb-5LeJfNUMitmj
 
 ### Type dependencies
 
-`core/`, `modules/`, `bindings/`, `platform/` and `controller/` can use `std::` types and
-types defined in Chromium. The philosophy is that we should
-share as much code between Chromium and Blink as possible.
+Member variables of the following types are strongly discouraged in Blink:
+  - STL strings and containers. Use `WTF::String` and WTF containers instead.
+  - `GURL` and `url::Origin`. Use `KURL` and `SecurityOrigin` respectively.
+  - Any `//base` type which has a matching type in `platform/wtf`. The number of
+  duplicated types between WTF and base is continuously shrinking,
+  but always look at WTF first.
 
-However, there are a couple of types that really need to be optimized
-for Blink's workload (e.g., `Vector`, `HashTable`, `Bind`, `AtomicString`).
-These types are defined in `platform/wtf`. If there is an equivalent in
-`platform/wtf`, Blink must use the type in `platform/wtf` instead of the type
-defined in Chromium. For example, Blink should not use `std::vector`
-(except places where a conversion between `std::vector` and `WTF::Vector` is needed).
+The types above could only be used at the boundary to interoperate
+with `//base`, `//services`, `//third_party/blink/common` and other
+Chromium-side or third-party code. It is also allowed to use local variables
+of these types when convenient, as long as the result is not stored
+in a member variable.
+For example, calling an utility function on an `std::string` which came
+from `//net` and then converting to `WTF::String` to store in a field
+is allowed.
+
+We try to share as much code between Chromium and Blink as possible,
+so the number of these types should go down. However, some types
+really need to be optimized for Blink's workload (e.g., `Vector`,
+`HashTable`, `AtomicString`).
+
+Exceptions to this rule:
+  - Code in `//third_party/blink/common` and `//third_party/blink/public/common`
+  also runs in the browser process, and should use STL and base instead of WTF.
+  - Selected types in `public/platform` and `public/web`,
+  whole purpose of which is conversion between WTF and STL,
+  for example `WebString` or `WebVector`.
 
 To prevent use of random types, we control allowed types by whitelisting
 them in DEPS and a [presubmit script](../tools/audit_non_blink_usage.py).
