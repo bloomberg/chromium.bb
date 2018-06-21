@@ -25,6 +25,7 @@
 #include "components/sync/test/local_sync_test_server.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/test/test_url_loader_factory.h"
 
 #if BUILDFLAG(ENABLE_APP_LIST)
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -72,6 +73,10 @@ namespace net {
 class FakeURLFetcherFactory;
 class URLFetcherImplFactory;
 }  // namespace net
+
+namespace network {
+class WeakWrapperSharedURLLoaderFactory;
+}  // namespace network
 
 // This is the base class for integration tests for all sync data types. Derived
 // classes must be defined for each sync data type. Individual tests are defined
@@ -287,6 +292,11 @@ class SyncTest : public InProcessBrowserTest {
   // Stops notificatinos being sent to a client.
   void DisableNotificationsForClient(int index);
 
+  // Sets up fake responses for kClientLoginUrl, kIssueAuthTokenUrl,
+  // kGetUserInfoUrl and kSearchDomainCheckUrl in order to mock out calls to
+  // GAIA servers.
+  void SetupMockGaiaResponsesForProfile(Profile* profile);
+
   base::test::ScopedFeatureList feature_list_;
 
   // GAIA account used by the test case.
@@ -462,6 +472,13 @@ class SyncTest : public InProcessBrowserTest {
 
   // Used to start and stop the local test server.
   base::Process test_server_;
+
+  // The factory used to mock out GAIA signin.
+  network::TestURLLoaderFactory test_url_loader_factory_;
+
+  // The shared URLLoaderFactory backed by |test_url_loader_factory_|.
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      test_shared_url_loader_factory_;
 
   // Fake URLFetcher factory used to mock out GAIA signin.
   std::unique_ptr<net::FakeURLFetcherFactory> fake_factory_;

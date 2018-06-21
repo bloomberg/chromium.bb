@@ -158,6 +158,7 @@ source_set("internal") {
     "//extensions/buildflags",
     "//google_apis",
     "//net",
+    "//services/network/public/cpp",
     "//third_party/libxml",
     "//third_party/re2",
     "//url",
@@ -289,6 +290,7 @@ static_library("test_support") {
     "//components/policy/proto",
     "//crypto",
     "//net",
+    "//services/network/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
   ]

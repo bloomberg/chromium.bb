@@ -25,6 +25,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace policy {
 
 // Helper class that registers a CloudPolicyClient. It fetches an OAuth2 token
@@ -108,6 +112,7 @@ class POLICY_EXPORT CloudPolicyClientRegistrationHelper
   std::string oauth_access_token_;
 
   scoped_refptr<net::URLRequestContextGetter> context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   CloudPolicyClient* client_;
   enterprise_management::DeviceRegisterRequest::Type registration_type_;
   base::Closure callback_;

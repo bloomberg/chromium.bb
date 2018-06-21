@@ -45,6 +45,7 @@
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/signin_switches.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -206,6 +207,9 @@ net::URLRequestContextGetter* ChromeSigninClient::GetURLRequestContext() {
 
 scoped_refptr<network::SharedURLLoaderFactory>
 ChromeSigninClient::GetURLLoaderFactory() {
+  if (url_loader_factory_for_testing_)
+    return url_loader_factory_for_testing_;
+
   return content::BrowserContext::GetDefaultStoragePartition(profile_)
       ->GetURLLoaderFactoryForBrowserProcess();
 }
@@ -476,6 +480,11 @@ void ChromeSigninClient::SetReadyForDiceMigration(bool is_ready) {
 #else
   NOTREACHED();
 #endif
+}
+
+void ChromeSigninClient::SetURLLoaderFactoryForTest(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  url_loader_factory_for_testing_ = url_loader_factory;
 }
 
 void ChromeSigninClient::OnCloseBrowsersSuccess(

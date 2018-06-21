@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -49,6 +50,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using user_manager::known_user::ProfileRequiresPolicy;
 namespace policy {
@@ -419,7 +421,9 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
         SchemaRegistryServiceFactory::GetForContext(profile)->registry());
     manager->Connect(g_browser_process->local_state(),
                      device_management_service,
-                     g_browser_process->system_request_context());
+                     g_browser_process->system_request_context(),
+                     g_browser_process->system_network_context_manager()
+                         ->GetSharedURLLoaderFactory());
 
     cloud_managers_[profile] = manager.get();
     return std::move(manager);

@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/enterprise_reporting_private/chrome_desktop_report_request_helper.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +20,7 @@
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace em = enterprise_management;
 
@@ -40,17 +42,25 @@ const char kDeviceNotEnrolled[] = "This device has not been enrolled yet.";
 }  // namespace enterprise_reporting
 
 EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
-    EnterpriseReportingPrivateUploadChromeDesktopReportFunction() {
+    EnterpriseReportingPrivateUploadChromeDesktopReportFunction()
+    : EnterpriseReportingPrivateUploadChromeDesktopReportFunction(
+          g_browser_process->system_network_context_manager()
+              ->GetSharedURLLoaderFactory()) {}
+
+EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
+    EnterpriseReportingPrivateUploadChromeDesktopReportFunction(
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   policy::DeviceManagementService* device_management_service =
       g_browser_process->browser_policy_connector()
           ->device_management_service();
   // Initial the DeviceManagementService if it exist and hasn't been initialized
   if (device_management_service)
     device_management_service->ScheduleInitialization(0);
+
   cloud_policy_client_ = std::make_unique<policy::CloudPolicyClient>(
       std::string() /* machine_id */, std::string() /* machine_model */,
       std::string() /* brand_code */, device_management_service,
-      g_browser_process->system_request_context(), nullptr,
+      g_browser_process->system_request_context(), url_loader_factory, nullptr,
       policy::CloudPolicyClient::DeviceDMTokenCallback());
   dm_token_ = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
   client_id_ = policy::BrowserDMTokenStorage::Get()->RetrieveClientId();
@@ -58,6 +68,14 @@ EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
 
 EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
     ~EnterpriseReportingPrivateUploadChromeDesktopReportFunction() {}
+
+// static
+EnterpriseReportingPrivateUploadChromeDesktopReportFunction*
+EnterpriseReportingPrivateUploadChromeDesktopReportFunction::CreateForTesting(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  return new EnterpriseReportingPrivateUploadChromeDesktopReportFunction(
+      url_loader_factory);
+}
 
 ExtensionFunction::ResponseAction
 EnterpriseReportingPrivateUploadChromeDesktopReportFunction::Run() {

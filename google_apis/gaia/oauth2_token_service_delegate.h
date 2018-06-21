@@ -6,6 +6,7 @@
 #define GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -13,6 +14,9 @@
 
 namespace net {
 class URLRequestContextGetter;
+}
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 // Abstract base class to fetch and maintain refresh tokens from various
@@ -41,6 +45,7 @@ class OAuth2TokenServiceDelegate {
   virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       net::URLRequestContextGetter* getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_factory,
       OAuth2AccessTokenConsumer* consumer) = 0;
 
   virtual bool RefreshTokenIsAvailable(const std::string& account_id) const = 0;
@@ -63,6 +68,8 @@ class OAuth2TokenServiceDelegate {
                                  const std::string& refresh_token) {}
   virtual void RevokeCredentials(const std::string& account_id) {}
   virtual net::URLRequestContextGetter* GetRequestContext() const;
+  virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      const;
 
   bool ValidateAccountId(const std::string& account_id) const;
 

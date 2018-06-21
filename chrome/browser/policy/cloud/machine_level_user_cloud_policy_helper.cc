@@ -20,6 +20,7 @@
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
 #include "components/prefs/pref_service.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace policy {
 
@@ -34,9 +35,11 @@ void OnPolicyFetchCompleted(bool success) {
 /* MachineLevelUserCloudPolicyRegistrar */
 MachineLevelUserCloudPolicyRegistrar::MachineLevelUserCloudPolicyRegistrar(
     DeviceManagementService* device_management_service,
-    scoped_refptr<net::URLRequestContextGetter> system_request_context)
+    scoped_refptr<net::URLRequestContextGetter> system_request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : device_management_service_(device_management_service),
-      system_request_context_(system_request_context) {}
+      system_request_context_(system_request_context),
+      url_loader_factory_(url_loader_factory) {}
 
 MachineLevelUserCloudPolicyRegistrar::~MachineLevelUserCloudPolicyRegistrar() {}
 
@@ -59,7 +62,7 @@ void MachineLevelUserCloudPolicyRegistrar::RegisterForPolicyWithEnrollmentToken(
       std::make_unique<CloudPolicyClient>(
           std::string() /* machine_id */, std::string() /* machine_model */,
           std::string() /* brand_code */, device_management_service_,
-          system_request_context_, nullptr,
+          system_request_context_, url_loader_factory_, nullptr,
           CloudPolicyClient::DeviceDMTokenCallback());
 
   // Fire off the registration process. Callback keeps the CloudPolicyClient
@@ -88,16 +91,18 @@ MachineLevelUserCloudPolicyFetcher::MachineLevelUserCloudPolicyFetcher(
     MachineLevelUserCloudPolicyManager* policy_manager,
     PrefService* local_state,
     DeviceManagementService* device_management_service,
-    scoped_refptr<net::URLRequestContextGetter> system_request_context)
+    scoped_refptr<net::URLRequestContextGetter> system_request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : policy_manager_(policy_manager),
       local_state_(local_state),
       device_management_service_(device_management_service),
-      system_request_context_(system_request_context) {
+      system_request_context_(system_request_context),
+      url_loader_factory_(url_loader_factory) {
   std::unique_ptr<CloudPolicyClient> client =
       std::make_unique<CloudPolicyClient>(
           std::string() /* machine_id */, std::string() /* machine_model */,
           std::string() /* brand_code */, device_management_service_,
-          system_request_context_, nullptr,
+          system_request_context_, url_loader_factory, nullptr,
           CloudPolicyClient::DeviceDMTokenCallback());
   InitializeManager(std::move(client));
 }

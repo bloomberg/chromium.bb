@@ -11,79 +11,42 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "build/build_config.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_fetcher_factory.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_status.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using net::ScopedURLFetcherFactory;
-using net::TestURLFetcher;
-using net::URLFetcher;
-using net::URLFetcherDelegate;
-using net::URLFetcherFactory;
-using net::URLRequestStatus;
 using testing::_;
-using testing::Return;
 
 namespace {
 
-typedef std::vector<std::string> ScopeList;
+using ScopeList = std::vector<std::string>;
 
-static const char kValidTokenResponse[] =
-    "{"
-    "  \"access_token\": \"at1\","
-    "  \"expires_in\": 3600,"
-    "  \"token_type\": \"Bearer\""
-    "}";
-static const char kTokenResponseNoAccessToken[] =
-    "{"
-    "  \"expires_in\": 3600,"
-    "  \"token_type\": \"Bearer\""
-    "}";
+constexpr char kValidTokenResponse[] = R"(
+    {
+      "access_token": "at1",
+      "expires_in": 3600,
+      "token_type": "Bearer"
+    })";
 
-static const char kValidFailureTokenResponse[] =
-    "{"
-    "  \"error\": \"invalid_grant\""
-    "}";
+constexpr char kTokenResponseNoAccessToken[] = R"(
+    {
+      "expires_in": 3600,
+      "token_type": "Bearer"
+    })";
 
-class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
-                              public URLFetcherFactory {
- public:
-  MockUrlFetcherFactory() : ScopedURLFetcherFactory(this) {}
-  ~MockUrlFetcherFactory() override {}
-
-  MOCK_METHOD5(
-      CreateURLFetcherMock,
-      URLFetcher*(int id,
-                  const GURL& url,
-                  URLFetcher::RequestType request_type,
-                  URLFetcherDelegate* d,
-                  net::NetworkTrafficAnnotationTag traffic_annotation));
-
-  std::unique_ptr<URLFetcher> CreateURLFetcher(
-      int id,
-      const GURL& url,
-      URLFetcher::RequestType request_type,
-      URLFetcherDelegate* d,
-      net::NetworkTrafficAnnotationTag traffic_annotation) override {
-    return std::unique_ptr<URLFetcher>(
-        CreateURLFetcherMock(id, url, request_type, d, traffic_annotation));
-  }
-};
+constexpr char kValidFailureTokenResponse[] = R"(
+    {
+      "error": "invalid_grant"
+    })";
 
 class MockOAuth2AccessTokenConsumer : public OAuth2AccessTokenConsumer {
  public:
@@ -96,186 +59,168 @@ class MockOAuth2AccessTokenConsumer : public OAuth2AccessTokenConsumer {
   MOCK_METHOD1(OnGetTokenFailure, void(const GoogleServiceAuthError& error));
 };
 
+class URLLoaderFactoryInterceptor {
+ public:
+  MOCK_METHOD1(Intercept, void(const network::ResourceRequest&));
+};
+
+MATCHER_P(resourceRequestUrlEquals, url, "") {
+  return arg.url == url;
+}
+
 }  // namespace
 
 class OAuth2AccessTokenFetcherImplTest : public testing::Test {
  public:
   OAuth2AccessTokenFetcherImplTest()
-      : request_context_getter_(new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get())),
-        fetcher_(&consumer_, request_context_getter_.get(), "refresh_token") {
+      : shared_url_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &url_loader_factory_)),
+        fetcher_(&consumer_, shared_url_loader_factory_, "refresh_token") {
+    url_loader_factory_.SetInterceptor(base::BindRepeating(
+        &URLLoaderFactoryInterceptor::Intercept,
+        base::Unretained(&url_loader_factory_interceptor_)));
+    mojo::edk::Init();
     base::RunLoop().RunUntilIdle();
   }
 
-  ~OAuth2AccessTokenFetcherImplTest() override {}
+  ~OAuth2AccessTokenFetcherImplTest() override {
+    shared_url_loader_factory_->Detach();
+  }
 
-  virtual TestURLFetcher* SetupGetAccessToken(bool fetch_succeeds,
-                                              int response_code,
-                                              const std::string& body) {
+  void SetupGetAccessToken(int net_error_code,
+                           net::HttpStatusCode http_response_code,
+                           const std::string& body) {
     GURL url(GaiaUrls::GetInstance()->oauth2_token_url());
-    TestURLFetcher* url_fetcher = new TestURLFetcher(0, url, &fetcher_);
-    net::Error error = fetch_succeeds ? net::OK : net::ERR_FAILED;
-    url_fetcher->set_status(URLRequestStatus::FromError(error));
+    if (net_error_code == net::OK) {
+      url_loader_factory_.AddResponse(url.spec(), body, http_response_code);
+    } else {
+      url_loader_factory_.AddResponse(
+          url, network::ResourceResponseHead(), body,
+          network::URLLoaderCompletionStatus(net_error_code));
+    }
 
-    if (response_code != 0)
-      url_fetcher->set_response_code(response_code);
-
-    if (!body.empty())
-      url_fetcher->SetResponseString(body);
-
-    EXPECT_CALL(factory_, CreateURLFetcherMock(_, url, _, _, _))
-        .WillOnce(Return(url_fetcher));
-    return url_fetcher;
+    EXPECT_CALL(url_loader_factory_interceptor_,
+                Intercept(resourceRequestUrlEquals(url)));
   }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  MockUrlFetcherFactory factory_;
   MockOAuth2AccessTokenConsumer consumer_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+  URLLoaderFactoryInterceptor url_loader_factory_interceptor_;
+  network::TestURLLoaderFactory url_loader_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      shared_url_loader_factory_;
   OAuth2AccessTokenFetcherImpl fetcher_;
 };
 
 // These four tests time out, see http://crbug.com/113446.
-TEST_F(OAuth2AccessTokenFetcherImplTest,
-       DISABLED_GetAccessTokenRequestFailure) {
-  TestURLFetcher* url_fetcher = SetupGetAccessToken(false, 0, std::string());
+TEST_F(OAuth2AccessTokenFetcherImplTest, GetAccessTokenRequestFailure) {
+  SetupGetAccessToken(net::ERR_FAILED, net::HTTP_OK, std::string());
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
   fetcher_.Start("client_id", "client_secret", ScopeList());
-  fetcher_.OnURLFetchComplete(url_fetcher);
+  base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(OAuth2AccessTokenFetcherImplTest,
-       DISABLED_GetAccessTokenResponseCodeFailure) {
-  TestURLFetcher* url_fetcher =
-      SetupGetAccessToken(true, net::HTTP_FORBIDDEN, std::string());
+TEST_F(OAuth2AccessTokenFetcherImplTest, GetAccessTokenResponseCodeFailure) {
+  SetupGetAccessToken(net::OK, net::HTTP_FORBIDDEN, std::string());
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
   fetcher_.Start("client_id", "client_secret", ScopeList());
-  fetcher_.OnURLFetchComplete(url_fetcher);
+  base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(OAuth2AccessTokenFetcherImplTest, DISABLED_Success) {
-  TestURLFetcher* url_fetcher =
-      SetupGetAccessToken(true, net::HTTP_OK, kValidTokenResponse);
+TEST_F(OAuth2AccessTokenFetcherImplTest, Success) {
+  SetupGetAccessToken(net::OK, net::HTTP_OK, kValidTokenResponse);
   EXPECT_CALL(consumer_, OnGetTokenSuccess("at1", _)).Times(1);
   fetcher_.Start("client_id", "client_secret", ScopeList());
-  fetcher_.OnURLFetchComplete(url_fetcher);
+  base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(OAuth2AccessTokenFetcherImplTest, DISABLED_MakeGetAccessTokenBody) {
-  {  // No scope.
-    std::string body =
-        "client_id=cid1&"
-        "client_secret=cs1&"
-        "grant_type=refresh_token&"
-        "refresh_token=rt1";
-    EXPECT_EQ(body,
-              OAuth2AccessTokenFetcherImpl::MakeGetAccessTokenBody(
-                  "cid1", "cs1", "rt1", ScopeList()));
-  }
-
-  {  // One scope.
-    std::string body =
-        "client_id=cid1&"
-        "client_secret=cs1&"
-        "grant_type=refresh_token&"
-        "refresh_token=rt1&"
-        "scope=https://www.googleapis.com/foo";
-    ScopeList scopes;
-    scopes.push_back("https://www.googleapis.com/foo");
-    EXPECT_EQ(body,
-              OAuth2AccessTokenFetcherImpl::MakeGetAccessTokenBody(
-                  "cid1", "cs1", "rt1", scopes));
-  }
-
-  {  // Multiple scopes.
-    std::string body =
-        "client_id=cid1&"
-        "client_secret=cs1&"
-        "grant_type=refresh_token&"
-        "refresh_token=rt1&"
-        "scope=https://www.googleapis.com/foo+"
-        "https://www.googleapis.com/bar+"
-        "https://www.googleapis.com/baz";
-    ScopeList scopes;
-    scopes.push_back("https://www.googleapis.com/foo");
-    scopes.push_back("https://www.googleapis.com/bar");
-    scopes.push_back("https://www.googleapis.com/baz");
-    EXPECT_EQ(body,
-              OAuth2AccessTokenFetcherImpl::MakeGetAccessTokenBody(
-                  "cid1", "cs1", "rt1", scopes));
-  }
+TEST_F(OAuth2AccessTokenFetcherImplTest, MakeGetAccessTokenBodyNoScope) {
+  std::string body =
+      "client_id=cid1&"
+      "client_secret=cs1&"
+      "grant_type=refresh_token&"
+      "refresh_token=rt1";
+  EXPECT_EQ(body, OAuth2AccessTokenFetcherImpl::MakeGetAccessTokenBody(
+                      "cid1", "cs1", "rt1", ScopeList()));
 }
 
-// http://crbug.com/114215
-#if defined(OS_WIN)
-#define MAYBE_ParseGetAccessTokenResponse DISABLED_ParseGetAccessTokenResponse
-#else
-#define MAYBE_ParseGetAccessTokenResponse ParseGetAccessTokenResponse
-#endif  // defined(OS_WIN)
-TEST_F(OAuth2AccessTokenFetcherImplTest, MAYBE_ParseGetAccessTokenResponse) {
-  {  // No body.
-    TestURLFetcher url_fetcher(0, GURL("http://www.google.com"), NULL);
+TEST_F(OAuth2AccessTokenFetcherImplTest, MakeGetAccessTokenBodyOneScope) {
+  std::string body =
+      "client_id=cid1&"
+      "client_secret=cs1&"
+      "grant_type=refresh_token&"
+      "refresh_token=rt1&"
+      "scope=https://www.googleapis.com/foo";
+  ScopeList scopes = {"https://www.googleapis.com/foo"};
+  EXPECT_EQ(body, OAuth2AccessTokenFetcherImpl::MakeGetAccessTokenBody(
+                      "cid1", "cs1", "rt1", scopes));
+}
 
-    std::string at;
-    int expires_in;
-    EXPECT_FALSE(
-        OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenSuccessResponse(
-            &url_fetcher, &at, &expires_in));
-    EXPECT_TRUE(at.empty());
-  }
-  {  // Bad json.
-    TestURLFetcher url_fetcher(0, GURL("http://www.google.com"), NULL);
-    url_fetcher.SetResponseString("foo");
+TEST_F(OAuth2AccessTokenFetcherImplTest, MakeGetAccessTokenBodyMultipleScopes) {
+  std::string body =
+      "client_id=cid1&"
+      "client_secret=cs1&"
+      "grant_type=refresh_token&"
+      "refresh_token=rt1&"
+      "scope=https://www.googleapis.com/foo+"
+      "https://www.googleapis.com/bar+"
+      "https://www.googleapis.com/baz";
+  ScopeList scopes = {"https://www.googleapis.com/foo",
+                      "https://www.googleapis.com/bar",
+                      "https://www.googleapis.com/baz"};
+  EXPECT_EQ(body, OAuth2AccessTokenFetcherImpl::MakeGetAccessTokenBody(
+                      "cid1", "cs1", "rt1", scopes));
+}
 
-    std::string at;
-    int expires_in;
-    EXPECT_FALSE(
-        OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenSuccessResponse(
-            &url_fetcher, &at, &expires_in));
-    EXPECT_TRUE(at.empty());
-  }
-  {  // Valid json: access token missing.
-    TestURLFetcher url_fetcher(0, GURL("http://www.google.com"), NULL);
-    url_fetcher.SetResponseString(kTokenResponseNoAccessToken);
+TEST_F(OAuth2AccessTokenFetcherImplTest, ParseGetAccessTokenResponseNoBody) {
+  std::string at;
+  int expires_in;
+  auto empty_body = std::make_unique<std::string>("");
+  EXPECT_FALSE(OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenSuccessResponse(
+      std::move(empty_body), &at, &expires_in));
+  EXPECT_TRUE(at.empty());
+}
 
-    std::string at;
-    int expires_in;
-    EXPECT_FALSE(
-        OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenSuccessResponse(
-            &url_fetcher, &at, &expires_in));
-    EXPECT_TRUE(at.empty());
-  }
-  {  // Valid json: all good.
-    TestURLFetcher url_fetcher(0, GURL("http://www.google.com"), NULL);
-    url_fetcher.SetResponseString(kValidTokenResponse);
+TEST_F(OAuth2AccessTokenFetcherImplTest, ParseGetAccessTokenResponseBadJson) {
+  std::string at;
+  int expires_in;
+  EXPECT_FALSE(OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenSuccessResponse(
+      std::make_unique<std::string>("foo"), &at, &expires_in));
+  EXPECT_TRUE(at.empty());
+}
 
-    std::string at;
-    int expires_in;
-    EXPECT_TRUE(
-        OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenSuccessResponse(
-            &url_fetcher, &at, &expires_in));
-    EXPECT_EQ("at1", at);
-    EXPECT_EQ(3600, expires_in);
-  }
-  {  // Valid json: invalid error response.
-    TestURLFetcher url_fetcher(0, GURL("http://www.google.com"), NULL);
-    url_fetcher.SetResponseString(kTokenResponseNoAccessToken);
+TEST_F(OAuth2AccessTokenFetcherImplTest,
+       ParseGetAccessTokenResponseNoAccessToken) {
+  std::string at;
+  int expires_in;
+  EXPECT_FALSE(OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenSuccessResponse(
+      std::make_unique<std::string>(kTokenResponseNoAccessToken), &at,
+      &expires_in));
+  EXPECT_TRUE(at.empty());
+}
 
-    std::string error;
-    EXPECT_FALSE(
-        OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenFailureResponse(
-            &url_fetcher, &error));
-    EXPECT_TRUE(error.empty());
-  }
-  {  // Valid json: error response.
-    TestURLFetcher url_fetcher(0, GURL("http://www.google.com"), NULL);
-    url_fetcher.SetResponseString(kValidFailureTokenResponse);
+TEST_F(OAuth2AccessTokenFetcherImplTest, ParseGetAccessTokenResponseSuccess) {
+  std::string at;
+  int expires_in;
+  EXPECT_TRUE(OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenSuccessResponse(
+      std::make_unique<std::string>(kValidTokenResponse), &at, &expires_in));
+  EXPECT_EQ("at1", at);
+  EXPECT_EQ(3600, expires_in);
+}
 
-    std::string error;
-    EXPECT_TRUE(
-        OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenFailureResponse(
-            &url_fetcher, &error));
-    EXPECT_EQ("invalid_grant", error);
-  }
+TEST_F(OAuth2AccessTokenFetcherImplTest,
+       ParseGetAccessTokenFailureInvalidError) {
+  std::string error;
+  EXPECT_FALSE(OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenFailureResponse(
+      std::make_unique<std::string>(kTokenResponseNoAccessToken), &error));
+  EXPECT_TRUE(error.empty());
+}
+
+TEST_F(OAuth2AccessTokenFetcherImplTest, ParseGetAccessTokenFailure) {
+  std::string error;
+  EXPECT_TRUE(OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenFailureResponse(
+      std::make_unique<std::string>(kValidFailureTokenResponse), &error));
+  EXPECT_EQ("invalid_grant", error);
 }

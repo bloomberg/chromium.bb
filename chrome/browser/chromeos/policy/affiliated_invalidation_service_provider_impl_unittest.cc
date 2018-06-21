@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -35,6 +36,8 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -137,6 +140,9 @@ class AffiliatedInvalidationServiceProviderImplTest : public testing::Test {
   std::unique_ptr<chromeos::ScopedTestDeviceSettingsService>
       test_device_settings_service_;
   std::unique_ptr<chromeos::ScopedTestCrosSettings> test_cros_settings_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      test_shared_loader_factory_;
   TestingProfileManager profile_manager_;
 };
 
@@ -197,6 +203,9 @@ AffiliatedInvalidationServiceProviderImplTest::
           chromeos::ScopedStubInstallAttributes::CreateCloudManaged(
               "example.com",
               "device_id")),
+      test_shared_loader_factory_(
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              &test_url_loader_factory_)),
       profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
 void AffiliatedInvalidationServiceProviderImplTest::SetUp() {
@@ -207,7 +216,8 @@ void AffiliatedInvalidationServiceProviderImplTest::SetUp() {
   test_device_settings_service_.reset(new
       chromeos::ScopedTestDeviceSettingsService);
   test_cros_settings_.reset(new chromeos::ScopedTestCrosSettings);
-  chromeos::DeviceOAuth2TokenServiceFactory::Initialize();
+  chromeos::DeviceOAuth2TokenServiceFactory::Initialize(
+      test_shared_loader_factory_);
 
   invalidation::ProfileInvalidationProviderFactory::GetInstance()->
       RegisterTestingFactory(BuildProfileInvalidationProvider);
@@ -219,6 +229,7 @@ void AffiliatedInvalidationServiceProviderImplTest::TearDown() {
   consumer_.reset();
   provider_->Shutdown();
   provider_.reset();
+  test_shared_loader_factory_->Detach();
 
   invalidation::ProfileInvalidationProviderFactory::GetInstance()->
       RegisterTestingFactory(nullptr);

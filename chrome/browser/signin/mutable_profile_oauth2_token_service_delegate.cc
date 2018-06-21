@@ -26,6 +26,7 @@
 #include "google_apis/gaia/oauth2_access_token_fetcher_immediate_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 
@@ -376,6 +377,7 @@ OAuth2AccessTokenFetcher*
 MutableProfileOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   ValidateAccountId(account_id);
   // check whether the account has persistent error.
@@ -392,7 +394,8 @@ MutableProfileOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
   }
   std::string refresh_token = GetRefreshToken(account_id);
   DCHECK(!refresh_token.empty());
-  return new OAuth2AccessTokenFetcherImpl(consumer, getter, refresh_token);
+  return new OAuth2AccessTokenFetcherImpl(consumer, url_loader_factory,
+                                          refresh_token);
 }
 
 GoogleServiceAuthError MutableProfileOAuth2TokenServiceDelegate::GetAuthError(
@@ -465,6 +468,11 @@ MutableProfileOAuth2TokenServiceDelegate::GetAccounts() {
 net::URLRequestContextGetter*
 MutableProfileOAuth2TokenServiceDelegate::GetRequestContext() const {
   return client_->GetURLRequestContext();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+MutableProfileOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
+  return client_->GetURLLoaderFactory();
 }
 
 OAuth2TokenServiceDelegate::LoadCredentialsState

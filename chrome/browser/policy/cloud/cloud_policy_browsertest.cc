@@ -64,6 +64,7 @@
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #else
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
@@ -223,11 +224,14 @@ class CloudPolicyTest : public InProcessBrowserTest,
         UserCloudPolicyManagerFactory::GetForBrowserContext(
             browser()->profile());
     ASSERT_TRUE(policy_manager);
-    policy_manager->Connect(g_browser_process->local_state(),
-                            g_browser_process->system_request_context(),
-                            UserCloudPolicyManager::CreateCloudPolicyClient(
-                                connector->device_management_service(),
-                                g_browser_process->system_request_context()));
+    policy_manager->Connect(
+        g_browser_process->local_state(),
+        g_browser_process->system_request_context(),
+        UserCloudPolicyManager::CreateCloudPolicyClient(
+            connector->device_management_service(),
+            g_browser_process->system_request_context(),
+            g_browser_process->system_network_context_manager()
+                ->GetSharedURLLoaderFactory()));
 #endif  // defined(OS_CHROMEOS)
 
     ASSERT_TRUE(policy_manager->core()->client());

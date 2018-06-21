@@ -39,6 +39,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/fake_server_invalidation_service.h"
 #include "chrome/browser/sync/test/integration/p2p_invalidation_forwarder.h"
@@ -87,9 +88,9 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -198,7 +199,10 @@ SyncTest::SyncTest(TestType test_type)
       previous_profile_(nullptr),
       num_clients_(-1),
       use_verifier_(true),
-      create_gaia_account_at_runtime_(false) {
+      create_gaia_account_at_runtime_(false),
+      test_shared_url_loader_factory_(
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              &test_url_loader_factory_)) {
   sync_datatype_helper::AssociateWithTest(this);
   switch (test_type_) {
     case SINGLE_CLIENT:
@@ -274,6 +278,7 @@ void SyncTest::TearDown() {
   // Return OSCrypt to its real behaviour
   OSCryptMocker::TearDown();
 
+  test_shared_url_loader_factory_->Detach();
   fake_server_.reset();
 }
 
@@ -359,7 +364,10 @@ bool SyncTest::CreateProfile(int index) {
     profile_delegates_[index] =
         std::make_unique<SyncProfileDelegate>(base::Bind(
             &SyncTest::InitializeProfile, base::Unretained(this), index));
-    MakeTestProfile(profile_path, index);
+    Profile* profile = MakeTestProfile(profile_path, index);
+    ChromeSigninClient* signin_client = static_cast<ChromeSigninClient*>(
+        ChromeSigninClientFactory::GetForProfile(profile));
+    signin_client->SetURLLoaderFactoryForTest(test_shared_url_loader_factory_);
   }
 
   // Once profile initialization has kicked off, wait for it to finish.
@@ -624,6 +632,12 @@ void SyncTest::DisableNotificationsForClient(int index) {
   fake_server_->RemoveObserver(fake_server_invalidation_services_[index]);
 }
 
+void SyncTest::SetupMockGaiaResponsesForProfile(Profile* profile) {
+  ChromeSigninClient* signin_client = static_cast<ChromeSigninClient*>(
+      ChromeSigninClientFactory::GetForProfile(profile));
+  signin_client->SetURLLoaderFactoryForTest(test_shared_url_loader_factory_);
+}
+
 void SyncTest::InitializeInvalidations(int index) {
   configuration_refresher_ = std::make_unique<ConfigurationRefresher>();
   if (UsingExternalServers()) {
@@ -798,6 +812,9 @@ void SyncTest::TearDownOnMainThread() {
 }
 
 void SyncTest::SetUpOnMainThread() {
+  if (!UsingExternalServers())
+    SetupMockGaiaResponsesForProfile(ProfileManager::GetActiveUserProfile());
+
   // Allows google.com as well as country-specific TLDs.
   host_resolver()->AllowDirectLookup("*.google.com");
   host_resolver()->AllowDirectLookup("accounts.google.*");
@@ -845,74 +862,55 @@ void SyncTest::ReadPasswordFile() {
 }
 
 void SyncTest::SetupMockGaiaResponses() {
-  factory_ = std::make_unique<net::URLFetcherImplFactory>();
-  fake_factory_ = std::make_unique<net::FakeURLFetcherFactory>(factory_.get());
-  fake_factory_->SetFakeResponse(
-      GaiaUrls::GetInstance()->get_user_info_url(),
-      "email=user@gmail.com\ndisplayEmail=user@gmail.com",
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
-  fake_factory_->SetFakeResponse(
-      GaiaUrls::GetInstance()->issue_auth_token_url(),
-      "auth",
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
-  fake_factory_->SetFakeResponse(
-      GURL(GoogleURLTracker::kSearchDomainCheckURL),
-      ".google.com",
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
-  fake_factory_->SetFakeResponse(
-      GaiaUrls::GetInstance()->deprecated_client_login_to_oauth2_url(),
-      "some_response", net::HTTP_OK, net::URLRequestStatus::SUCCESS);
-  fake_factory_->SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_token_url(),
-      "{"
-      "  \"refresh_token\": \"rt1\","
-      "  \"access_token\": \"at1\","
-      "  \"expires_in\": 3600,"
-      "  \"token_type\": \"Bearer\""
-      "}",
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
-  fake_factory_->SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth_user_info_url(),
-      "{"
-      "  \"id\": \"12345\""
-      "}",
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
-  fake_factory_->SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth1_login_url(),
-      "SID=sid\nLSID=lsid\nAuth=auth_token",
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
-  fake_factory_->SetFakeResponse(
-      GaiaUrls::GetInstance()->oauth2_revoke_url(),
-      "",
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  test_url_loader_factory_.AddResponse(
+      GaiaUrls::GetInstance()->get_user_info_url().spec(),
+      "email=user@gmail.com\ndisplayEmail=user@gmail.com");
+  test_url_loader_factory_.AddResponse(
+      GaiaUrls::GetInstance()->issue_auth_token_url().spec(), "auth");
+  test_url_loader_factory_.AddResponse(GoogleURLTracker::kSearchDomainCheckURL,
+                                       ".google.com");
+  test_url_loader_factory_.AddResponse(
+      GaiaUrls::GetInstance()->deprecated_client_login_to_oauth2_url().spec(),
+      "some_response");
+
+  test_url_loader_factory_.AddResponse(
+      GaiaUrls::GetInstance()->oauth2_token_url().spec(),
+      R"({
+            "refresh_token": "rt1",
+            "access_token": "at1",
+            "expires_in": 3600,
+            "token_type": "Bearer"
+         })");
+  test_url_loader_factory_.AddResponse(
+      GaiaUrls::GetInstance()->oauth_user_info_url().spec(),
+      "{ \"id\": \"12345\" }");
+  test_url_loader_factory_.AddResponse(
+      GaiaUrls::GetInstance()->oauth1_login_url().spec(),
+      "SID=sid\nLSID=lsid\nAuth=auth_token");
+  test_url_loader_factory_.AddResponse(
+      GaiaUrls::GetInstance()->oauth2_revoke_url().spec(), "");
 }
 
 void SyncTest::SetOAuth2TokenResponse(const std::string& response_data,
-                                      net::HttpStatusCode response_code,
+                                      net::HttpStatusCode status_code,
                                       net::URLRequestStatus::Status status) {
-  ASSERT_NE(nullptr, fake_factory_.get());
-  fake_factory_->SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
-                                 response_data, response_code, status);
+  network::URLLoaderCompletionStatus completion_status(status);
+  completion_status.decoded_body_length = response_data.size();
+
+  std::string response = base::StringPrintf("HTTP/1.1 %d %s\r\n", status_code,
+                                            GetHttpReasonPhrase(status_code));
+  network::ResourceResponseHead resource_response;
+  resource_response.headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>(response);
+  test_url_loader_factory_.AddResponse(
+      GaiaUrls::GetInstance()->oauth2_token_url(), resource_response,
+      response_data, completion_status);
+  base::RunLoop().RunUntilIdle();
 }
 
 void SyncTest::ClearMockGaiaResponses() {
   // Clear any mock gaia responses that might have been set.
-  if (fake_factory_) {
-    fake_factory_->ClearFakeResponses();
-    fake_factory_.reset();
-  }
-
-  // Cancel any outstanding URL fetches and destroy the URLFetcherImplFactory we
-  // created.
-  net::URLFetcher::CancelAll();
-  factory_.reset();
+  test_url_loader_factory_.ClearResponses();
 }
 
 void SyncTest::DecideServerType() {

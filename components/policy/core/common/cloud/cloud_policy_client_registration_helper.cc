@@ -15,6 +15,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(OS_ANDROID)
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -102,9 +103,11 @@ class CloudPolicyClientRegistrationHelper::LoginTokenHelper
  public:
   LoginTokenHelper();
 
-  void FetchAccessToken(const std::string& login_refresh_token,
-                        net::URLRequestContextGetter* context,
-                        const StringCallback& callback);
+  void FetchAccessToken(
+      const std::string& login_refresh_token,
+      net::URLRequestContextGetter* context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const StringCallback& callback);
 
  private:
   // OAuth2AccessTokenConsumer implementation:
@@ -121,14 +124,15 @@ CloudPolicyClientRegistrationHelper::LoginTokenHelper::LoginTokenHelper() {}
 void CloudPolicyClientRegistrationHelper::LoginTokenHelper::FetchAccessToken(
     const std::string& login_refresh_token,
     net::URLRequestContextGetter* context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const StringCallback& callback) {
   DCHECK(!oauth2_access_token_fetcher_);
   callback_ = callback;
 
   // Start fetching an OAuth2 access token for the device management and
   // userinfo services.
-  oauth2_access_token_fetcher_.reset(
-      new OAuth2AccessTokenFetcherImpl(this, context, login_refresh_token));
+  oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcherImpl(
+      this, url_loader_factory, login_refresh_token));
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   oauth2_access_token_fetcher_->Start(
       gaia_urls->oauth2_chrome_client_id(),
@@ -153,9 +157,11 @@ CloudPolicyClientRegistrationHelper::CloudPolicyClientRegistrationHelper(
     CloudPolicyClient* client,
     enterprise_management::DeviceRegisterRequest::Type registration_type)
     : context_(client->GetRequestContext()),
+      url_loader_factory_(client->GetURLLoaderFactory()),
       client_(client),
       registration_type_(registration_type) {
   DCHECK(context_);
+  DCHECK(url_loader_factory_);
   DCHECK(client_);
 }
 
@@ -207,8 +213,7 @@ void CloudPolicyClientRegistrationHelper::StartRegistrationWithLoginToken(
   login_token_helper_.reset(
       new CloudPolicyClientRegistrationHelper::LoginTokenHelper());
   login_token_helper_->FetchAccessToken(
-      login_refresh_token,
-      context_.get(),
+      login_refresh_token, context_.get(), url_loader_factory_,
       base::Bind(&CloudPolicyClientRegistrationHelper::OnTokenFetched,
                  base::Unretained(this)));
 }

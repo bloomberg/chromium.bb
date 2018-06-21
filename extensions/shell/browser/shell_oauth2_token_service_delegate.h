@@ -30,6 +30,7 @@ class ShellOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       net::URLRequestContextGetter* getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
   net::URLRequestContextGetter* GetRequestContext() const override;
 

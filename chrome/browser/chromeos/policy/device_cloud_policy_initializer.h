@@ -19,6 +19,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/signing_service.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 class PrefService;
 
@@ -121,6 +122,8 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   // Allows testing code to set a signing service tailored to its needs.
   void SetSigningServiceForTesting(
       std::unique_ptr<policy::SigningService> signing_service);
+  void SetSystemURLLoaderFactoryForTesting(
+      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory);
 
  private:
   // Signing class implementing the policy::SigningService interface to
@@ -179,6 +182,10 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
 
   // Our signing service.
   std::unique_ptr<SigningService> signing_service_;
+
+  // The URLLoaderFactory set in tests.
+  scoped_refptr<network::SharedURLLoaderFactory>
+      system_url_loader_factory_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyInitializer);
 };

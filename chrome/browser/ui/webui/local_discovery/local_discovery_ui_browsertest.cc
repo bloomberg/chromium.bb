@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -20,6 +21,8 @@
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
 #include "chrome/browser/media/router/test/noop_dual_media_sink_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -36,6 +39,9 @@
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/common/pref_names.h"
@@ -347,10 +353,12 @@ class MockableFakeURLFetcherCreator {
 
 class LocalDiscoveryUITest : public WebUIBrowserTest {
  public:
-  LocalDiscoveryUITest() : fake_fetcher_factory_(
-      &fetcher_impl_factory_,
-      fake_url_fetcher_creator_.callback()) {
-  }
+  LocalDiscoveryUITest()
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)),
+        fake_fetcher_factory_(&fetcher_impl_factory_,
+                              fake_url_fetcher_creator_.callback()) {}
   ~LocalDiscoveryUITest() override {
   }
 
@@ -376,6 +384,11 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
         .WillOnce(InvokeWithoutArgs(&condition_devices_listed_,
                                     &TestMessageLoopCondition::Signal))
         .WillRepeatedly(Return());
+
+    test_url_loader_factory_.AddResponse(
+        GaiaUrls::GetInstance()->oauth2_token_url().spec(), kResponseGaiaToken);
+    test_url_loader_factory_.AddResponse(
+        GaiaUrls::GetInstance()->oauth_user_info_url().spec(), kResponseGaiaId);
 
     fake_fetcher_factory().SetFakeResponse(
         GURL(kURLInfo),
@@ -433,10 +446,16 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
         kSampleUser);
 
     AddLibrary(base::FilePath(FILE_PATH_LITERAL("local_discovery_ui_test.js")));
+
+    ChromeSigninClient* signin_client = static_cast<ChromeSigninClient*>(
+        ChromeSigninClientFactory::GetForProfile(
+            ProfileManager::GetActiveUserProfile()));
+    signin_client->SetURLLoaderFactoryForTest(test_shared_loader_factory_);
   }
 
   void TearDownOnMainThread() override {
     test_service_discovery_client_ = nullptr;
+    test_shared_loader_factory_->Detach();
     WebUIBrowserTest::TearDownOnMainThread();
   }
 
@@ -483,6 +502,10 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
   scoped_refptr<TestServiceDiscoveryClient> test_service_discovery_client_;
   TestMessageLoopCondition condition_devices_listed_;
 
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      test_shared_loader_factory_;
+
   net::URLFetcherImplFactory fetcher_impl_factory_;
   StrictMock<MockableFakeURLFetcherCreator> fake_url_fetcher_creator_;
   net::FakeURLFetcherFactory fake_fetcher_factory_;
@@ -521,8 +544,7 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, AddRowTest) {
 IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
   TestMessageLoopCondition condition_token_claimed;
 
-  ui_test_utils::NavigateToURL(browser(), GURL(
-      chrome::kChromeUIDevicesURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDevicesURL));
   condition_devices_listed().Wait();
 
   test_service_discovery_client()->SimulateReceive(

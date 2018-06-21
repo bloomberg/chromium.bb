@@ -5,10 +5,15 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_ENTERPRISE_REPORTING_PRIVATE_ENTERPRISE_REPORTING_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_ENTERPRISE_REPORTING_PRIVATE_ENTERPRISE_REPORTING_PRIVATE_API_H_
 
+#include "base/memory/ref_counted.h"
 #include "extensions/browser/extension_function.h"
 
 namespace policy {
 class CloudPolicyClient;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace extensions {
@@ -36,7 +41,16 @@ class EnterpriseReportingPrivateUploadChromeDesktopReportFunction
   void SetRegistrationInfoForTesting(const std::string& dm_token,
                                      const std::string& client_id);
 
+  // Used by tests that want to overrode the URLLoaderFactory used to simulate
+  // network requests.
+  static EnterpriseReportingPrivateUploadChromeDesktopReportFunction*
+  CreateForTesting(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
  private:
+  explicit EnterpriseReportingPrivateUploadChromeDesktopReportFunction(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
   ~EnterpriseReportingPrivateUploadChromeDesktopReportFunction() override;
 
   // ExtensionFunction

@@ -39,6 +39,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AtLeast;
@@ -133,6 +134,7 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
                                 nullptr,
                                 signin_manager,
                                 nullptr,
+                                nullptr,
                                 oauth2_token_service) {}
 
   void set_dm_token(const std::string& dm_token) { dm_token_ = dm_token; }
@@ -158,6 +160,7 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
       const std::string& dm_token,
       const std::string& client_id,
       scoped_refptr<net::URLRequestContextGetter> profile_request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory,
       const PolicyFetchCallback& callback) override {
     callback.Run(true);
   }

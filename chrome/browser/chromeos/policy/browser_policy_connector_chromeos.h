@@ -30,10 +30,6 @@ class AttestationFlow;
 
 }  // namespace chromeos
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace policy {
 
 class AffiliatedCloudPolicyInvalidator;
@@ -60,9 +56,10 @@ class BrowserPolicyConnectorChromeOS
   ~BrowserPolicyConnectorChromeOS() override;
 
   // ChromeBrowserPolicyConnector:
-  void Init(
-      PrefService* local_state,
-      scoped_refptr<net::URLRequestContextGetter> request_context) override;
+  void Init(PrefService* local_state,
+            scoped_refptr<net::URLRequestContextGetter> request_context,
+            scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      override;
 
   // Checks whether this devices is under any kind of enterprise management.
   bool IsEnterpriseManaged() const override;

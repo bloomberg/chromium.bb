@@ -5,6 +5,7 @@
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 // static
 const char OAuth2TokenServiceDelegate::kInvalidRefreshToken[] =
@@ -98,6 +99,11 @@ void OAuth2TokenServiceDelegate::FireAuthErrorChanged(
 
 net::URLRequestContextGetter* OAuth2TokenServiceDelegate::GetRequestContext()
     const {
+  return nullptr;
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+OAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return nullptr;
 }
 

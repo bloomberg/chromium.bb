@@ -20,6 +20,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using content::BrowserThread;
 
@@ -48,13 +49,17 @@ class PolicyOAuth2TokenFetcherImpl : public PolicyOAuth2TokenFetcher,
   void StartWithSigninContext(
       net::URLRequestContextGetter* auth_context_getter,
       net::URLRequestContextGetter* system_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
       const TokenCallback& callback) override;
-  void StartWithAuthCode(const std::string& auth_code,
-                         net::URLRequestContextGetter* system_context_getter,
-                         const TokenCallback& callback) override;
+  void StartWithAuthCode(
+      const std::string& auth_code,
+      net::URLRequestContextGetter* system_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
+      const TokenCallback& callback) override;
   void StartWithRefreshToken(
       const std::string& oauth2_refresh_token,
       net::URLRequestContextGetter* system_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
       const TokenCallback& callback) override;
 
   // Returns true if we have previously attempted to fetch tokens with this
@@ -100,6 +105,7 @@ class PolicyOAuth2TokenFetcherImpl : public PolicyOAuth2TokenFetcher,
 
   scoped_refptr<net::URLRequestContextGetter> auth_context_getter_;
   scoped_refptr<net::URLRequestContextGetter> system_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory_;
   std::unique_ptr<GaiaAuthFetcher> refresh_token_fetcher_;
   std::unique_ptr<OAuth2AccessTokenFetcher> access_token_fetcher_;
 
@@ -132,11 +138,13 @@ PolicyOAuth2TokenFetcherImpl::~PolicyOAuth2TokenFetcherImpl() {}
 void PolicyOAuth2TokenFetcherImpl::StartWithSigninContext(
     net::URLRequestContextGetter* auth_context_getter,
     net::URLRequestContextGetter* system_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
     const TokenCallback& callback) {
   DCHECK(!refresh_token_fetcher_ && !access_token_fetcher_);
 
   auth_context_getter_ = auth_context_getter;
   system_context_getter_ = system_context_getter;
+  system_url_loader_factory_ = system_url_loader_factory;
   callback_ = callback;
   StartFetchingRefreshToken();
 }
@@ -144,11 +152,13 @@ void PolicyOAuth2TokenFetcherImpl::StartWithSigninContext(
 void PolicyOAuth2TokenFetcherImpl::StartWithAuthCode(
     const std::string& auth_code,
     net::URLRequestContextGetter* system_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
     const TokenCallback& callback) {
   DCHECK(!refresh_token_fetcher_ && !access_token_fetcher_);
 
   auth_code_ = auth_code;
   system_context_getter_ = system_context_getter;
+  system_url_loader_factory_ = system_url_loader_factory;
   callback_ = callback;
   StartFetchingRefreshToken();
 }
@@ -156,11 +166,13 @@ void PolicyOAuth2TokenFetcherImpl::StartWithAuthCode(
 void PolicyOAuth2TokenFetcherImpl::StartWithRefreshToken(
     const std::string& oauth2_refresh_token,
     net::URLRequestContextGetter* system_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
     const TokenCallback& callback) {
   DCHECK(!refresh_token_fetcher_ && !access_token_fetcher_);
 
   oauth2_refresh_token_ = oauth2_refresh_token;
   system_context_getter_ = system_context_getter;
+  system_url_loader_factory_ = system_url_loader_factory;
   callback_ = callback;
   StartFetchingAccessToken();
 }
@@ -192,10 +204,8 @@ void PolicyOAuth2TokenFetcherImpl::StartFetchingAccessToken() {
   std::vector<std::string> scopes;
   scopes.push_back(GaiaConstants::kDeviceManagementServiceOAuth);
   scopes.push_back(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
-  access_token_fetcher_.reset(
-      new OAuth2AccessTokenFetcherImpl(this,
-                                       system_context_getter_.get(),
-                                       oauth2_refresh_token_));
+  access_token_fetcher_.reset(new OAuth2AccessTokenFetcherImpl(
+      this, system_url_loader_factory_, oauth2_refresh_token_));
   access_token_fetcher_->Start(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
       GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
@@ -277,19 +287,23 @@ class PolicyOAuth2TokenFetcherFake : public PolicyOAuth2TokenFetcher {
   void StartWithSigninContext(
       net::URLRequestContextGetter* auth_context_getter,
       net::URLRequestContextGetter* system_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
       const TokenCallback& callback) override {
     ForwardPolicyToken(callback);
   }
 
-  void StartWithAuthCode(const std::string& auth_code,
-                         net::URLRequestContextGetter* system_context_getter,
-                         const TokenCallback& callback) override {
+  void StartWithAuthCode(
+      const std::string& auth_code,
+      net::URLRequestContextGetter* system_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
+      const TokenCallback& callback) override {
     ForwardPolicyToken(callback);
   }
 
   void StartWithRefreshToken(
       const std::string& oauth2_refresh_token,
       net::URLRequestContextGetter* system_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
       const TokenCallback& callback) override {
     ForwardPolicyToken(callback);
   }

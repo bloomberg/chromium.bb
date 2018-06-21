@@ -191,6 +191,7 @@ template("google_apis_tmpl") {
 google_apis_tmpl("google_apis") {
   deps = [
     "//net",
+    "//services/network/public/cpp",
   ]
 }
 
@@ -213,6 +214,8 @@ static_library("test_support") {
     "//base",
     "//base/test:test_support",
     "//net:test_support",
+    "//services/network:test_support",
+    "//services/network/public/cpp",
   ]
 
   if (enable_extensions) {
@@ -254,6 +257,7 @@ test("google_apis_unittests") {
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",
+    "//mojo/edk",
     "//testing/gmock",
     "//testing/gtest",
   ]

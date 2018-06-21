@@ -18,6 +18,9 @@
 namespace net {
 class URLRequestContextGetter;
 }
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace google_apis {
 
@@ -37,6 +40,7 @@ class AuthService : public AuthServiceInterface,
   AuthService(OAuth2TokenService* oauth2_token_service,
               const std::string& account_id,
               net::URLRequestContextGetter* url_request_context_getter,
+              scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
               const std::vector<std::string>& scopes);
   ~AuthService() override;
 
@@ -67,6 +71,7 @@ class AuthService : public AuthServiceInterface,
   OAuth2TokenService* oauth2_token_service_;
   std::string account_id_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   bool has_refresh_token_;
   std::string access_token_;
   std::vector<std::string> scopes_;

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
 
@@ -30,6 +31,7 @@ OAuth2AccessTokenFetcher*
 ChromeOSOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state_);
@@ -41,7 +43,7 @@ ChromeOSOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
 
   // |OAuth2TokenService| will manage the lifetime of the released pointer.
   return account_manager_
-      ->CreateAccessTokenFetcher(account_key, getter, consumer)
+      ->CreateAccessTokenFetcher(account_key, url_loader_factory, consumer)
       .release();
 }
 

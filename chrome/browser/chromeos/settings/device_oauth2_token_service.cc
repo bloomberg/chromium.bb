@@ -17,6 +17,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
 
@@ -75,6 +76,7 @@ void DeviceOAuth2TokenService::FetchOAuth2Token(
     RequestImpl* request,
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
     const ScopeSet& scopes) {
@@ -98,8 +100,9 @@ void DeviceOAuth2TokenService::FetchOAuth2Token(
       return;
     case DeviceOAuth2TokenServiceDelegate::STATE_TOKEN_VALID:
       // Pass through to OAuth2TokenService to satisfy the request.
-      OAuth2TokenService::FetchOAuth2Token(
-          request, account_id, getter, client_id, client_secret, scopes);
+      OAuth2TokenService::FetchOAuth2Token(request, account_id, getter,
+                                           url_loader_factory, client_id,
+                                           client_secret, scopes);
       return;
   }
 
@@ -122,7 +125,8 @@ void DeviceOAuth2TokenService::FlushPendingRequests(
       OAuth2TokenService::FetchOAuth2Token(
           scoped_request->request.get(),
           scoped_request->request->GetAccountId(),
-          GetDeviceDelegate()->GetRequestContext(), scoped_request->client_id,
+          GetDeviceDelegate()->GetRequestContext(),
+          GetDeviceDelegate()->GetURLLoaderFactory(), scoped_request->client_id,
           scoped_request->client_secret, scoped_request->scopes);
     } else {
       FailRequest(scoped_request->request.get(), error);

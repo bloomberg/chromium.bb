@@ -44,6 +44,7 @@ class MutableProfileOAuth2TokenServiceDelegate
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       net::URLRequestContextGetter* getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
 
   // Updates the internal cache of the result from the most-recently-completed
@@ -56,6 +57,8 @@ class MutableProfileOAuth2TokenServiceDelegate
       const std::string& account_id) const override;
   std::vector<std::string> GetAccounts() override;
   net::URLRequestContextGetter* GetRequestContext() const override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      const override;
 
   void LoadCredentials(const std::string& primary_account_id) override;
   void UpdateCredentials(const std::string& account_id,

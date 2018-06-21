@@ -44,6 +44,7 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "jni/SigninManager_jni.h"
@@ -172,11 +173,15 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
   if (!dm_token_.empty()) {
     policy::UserPolicySigninService* service =
         policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+        content::BrowserContext::GetDefaultStoragePartition(profile_)
+            ->GetURLLoaderFactoryForBrowserProcess();
     service->FetchPolicyForSignedInUser(
         AccountTrackerServiceFactory::GetForProfile(profile_)
             ->FindAccountInfoByEmail(username_)
             .GetAccountId(),
         dm_token_, client_id_, profile_->GetRequestContext(),
+        url_loader_factory,
         base::Bind(&SigninManagerAndroid::OnPolicyFetchDone,
                    weak_factory_.GetWeakPtr()));
     dm_token_.clear();

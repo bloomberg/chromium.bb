@@ -41,6 +41,9 @@ class BatchUploadRequest;
 namespace net {
 class URLRequestContextGetter;
 }  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace drive {
 
@@ -95,6 +98,8 @@ class DriveAPIService : public DriveServiceInterface,
  public:
   // |oauth2_token_service| is used for obtaining OAuth2 access tokens.
   // |url_request_context_getter| is used to initialize URLFetcher.
+  // |url_loader_factory| is used to create SimpleURLLoaders used to create
+  // OAuth tokens.
   // |blocking_task_runner| is used to run blocking tasks (like parsing JSON).
   // |base_url| is used to generate URLs for communication with the drive API.
   // |base_thumbnail_url| is used to generate URLs for downloading thumbnail
@@ -103,13 +108,15 @@ class DriveAPIService : public DriveServiceInterface,
   // requests issues through the service if the value is not empty.
   // |traffic_annotation| will be used to annotate the network request that will
   // be created to perform this service.
-  DriveAPIService(OAuth2TokenService* oauth2_token_service,
-                  net::URLRequestContextGetter* url_request_context_getter,
-                  base::SequencedTaskRunner* blocking_task_runner,
-                  const GURL& base_url,
-                  const GURL& base_thumbnail_url,
-                  const std::string& custom_user_agent,
-                  const net::NetworkTrafficAnnotationTag& traffic_annotation);
+  DriveAPIService(
+      OAuth2TokenService* oauth2_token_service,
+      net::URLRequestContextGetter* url_request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      base::SequencedTaskRunner* blocking_task_runner,
+      const GURL& base_url,
+      const GURL& base_thumbnail_url,
+      const std::string& custom_user_agent,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~DriveAPIService() override;
 
   // DriveServiceInterface Overrides
@@ -276,6 +283,7 @@ class DriveAPIService : public DriveServiceInterface,
 
   OAuth2TokenService* oauth2_token_service_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   std::unique_ptr<google_apis::RequestSender> sender_;
   std::unique_ptr<google_apis::FilesListRequestRunner>

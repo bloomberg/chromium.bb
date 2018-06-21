@@ -98,10 +98,12 @@ std::unique_ptr<drive::DriveServiceInterface>
 SyncEngine::DriveServiceFactory::CreateDriveService(
     OAuth2TokenService* oauth2_token_service,
     net::URLRequestContextGetter* url_request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::SequencedTaskRunner* blocking_task_runner) {
   return std::unique_ptr<
       drive::DriveServiceInterface>(new drive::DriveAPIService(
-      oauth2_token_service, url_request_context_getter, blocking_task_runner,
+      oauth2_token_service, url_request_context_getter, url_loader_factory,
+      blocking_task_runner,
       GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
       GURL(google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction),
       std::string(), /* custom_user_agent */
@@ -218,13 +220,16 @@ std::unique_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
   scoped_refptr<net::URLRequestContextGetter> request_context =
       content::BrowserContext::GetDefaultStoragePartition(context)->
             GetURLRequestContext();
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(context)
+          ->GetURLLoaderFactoryForBrowserProcess();
 
   std::unique_ptr<drive_backend::SyncEngine> sync_engine(new SyncEngine(
       ui_task_runner.get(), worker_task_runner.get(), drive_task_runner.get(),
       GetSyncFileSystemDir(context->GetPath()), task_logger,
       notification_manager, extension_service, signin_manager, token_service,
-      request_context.get(), std::make_unique<DriveServiceFactory>(),
-      nullptr /* env_override */));
+      request_context.get(), url_loader_factory,
+      std::make_unique<DriveServiceFactory>(), nullptr /* env_override */));
 
   sync_engine->Initialize();
   return sync_engine;
@@ -277,7 +282,8 @@ void SyncEngine::Initialize() {
   DCHECK(drive_service_factory_);
   std::unique_ptr<drive::DriveServiceInterface> drive_service =
       drive_service_factory_->CreateDriveService(
-          token_service_, request_context_.get(), drive_task_runner_.get());
+          token_service_, request_context_.get(), url_loader_factory_,
+          drive_task_runner_.get());
 
   device::mojom::WakeLockProviderPtr wake_lock_provider(nullptr);
   DCHECK(content::ServiceManagerConnection::GetForProcess());
@@ -725,6 +731,7 @@ SyncEngine::SyncEngine(
     SigninManagerBase* signin_manager,
     OAuth2TokenService* token_service,
     net::URLRequestContextGetter* request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<DriveServiceFactory> drive_service_factory,
     leveldb::Env* env_override)
     : ui_task_runner_(ui_task_runner),
@@ -737,6 +744,7 @@ SyncEngine::SyncEngine(
       signin_manager_(signin_manager),
       token_service_(token_service),
       request_context_(request_context),
+      url_loader_factory_(url_loader_factory),
       drive_service_factory_(std::move(drive_service_factory)),
       remote_change_processor_(nullptr),
       service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),

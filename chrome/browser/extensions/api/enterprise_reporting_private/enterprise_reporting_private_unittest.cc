@@ -9,6 +9,9 @@
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
@@ -54,12 +57,18 @@ class MockCloudPolicyClient : public policy::MockCloudPolicyClient {
 
 class EnterpriseReportingPrivateTest : public ExtensionApiUnittest {
  public:
-  EnterpriseReportingPrivateTest() = default;
+  EnterpriseReportingPrivateTest()
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {}
+
+  void TearDown() override { test_shared_loader_factory_->Detach(); }
 
   UIThreadExtensionFunction* CreateChromeDesktopReportingFunction(
       const std::string& dm_token) {
     EnterpriseReportingPrivateUploadChromeDesktopReportFunction* function =
-        new EnterpriseReportingPrivateUploadChromeDesktopReportFunction();
+        EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
+            CreateForTesting(test_shared_loader_factory_);
     std::unique_ptr<MockCloudPolicyClient> client =
         std::make_unique<MockCloudPolicyClient>();
     client_ = client.get();
@@ -83,6 +92,10 @@ class EnterpriseReportingPrivateTest : public ExtensionApiUnittest {
   MockCloudPolicyClient* client_;
 
  private:
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      test_shared_loader_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(EnterpriseReportingPrivateTest);
 };
 

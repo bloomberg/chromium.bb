@@ -14,6 +14,21 @@
 
 namespace network {
 
+namespace {
+
+ResourceResponseHead CreateResourceResponseHead(
+    net::HttpStatusCode http_status) {
+  ResourceResponseHead head;
+  std::string headers(base::StringPrintf(
+      "HTTP/1.1 %d %s\nContent-type: text/html\n\n",
+      static_cast<int>(http_status), net::GetHttpReasonPhrase(http_status)));
+  head.headers = new net::HttpResponseHeaders(
+      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  return head;
+}
+
+}  // namespace
+
 TestURLLoaderFactory::PendingRequest::PendingRequest() = default;
 TestURLLoaderFactory::PendingRequest::~PendingRequest() = default;
 
@@ -55,12 +70,7 @@ void TestURLLoaderFactory::AddResponse(const GURL& url,
 void TestURLLoaderFactory::AddResponse(const std::string& url,
                                        const std::string& content,
                                        net::HttpStatusCode http_status) {
-  ResourceResponseHead head;
-  std::string headers(base::StringPrintf(
-      "HTTP/1.1 %d %s\nContent-type: text/html\n\n",
-      static_cast<int>(http_status), GetHttpReasonPhrase(http_status)));
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  ResourceResponseHead head = CreateResourceResponseHead(http_status);
   head.mime_type = "text/html";
   URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
@@ -131,20 +141,44 @@ bool TestURLLoaderFactory::CreateLoaderAndStartInternal(
   if (it == responses_.end())
     return false;
 
-  for (const auto& redirect : it->second.redirects)
+  SimulateResponseImpl(client, it->second.redirects, it->second.head,
+                       it->second.content, it->second.status);
+  return true;
+}
+
+// static
+void TestURLLoaderFactory::SimulateResponse(
+    TestURLLoaderFactory::PendingRequest request,
+    std::string content,
+    int net_error) {
+  network::URLLoaderCompletionStatus status(net::OK);
+  ResourceResponseHead head = CreateResourceResponseHead(net::HTTP_OK);
+  status.decoded_body_length = content.size();
+  SimulateResponseImpl(request.client.get(), TestURLLoaderFactory::Redirects(),
+                       head, content, status);
+  base::RunLoop().RunUntilIdle();
+}
+
+// static
+void TestURLLoaderFactory::SimulateResponseImpl(
+    mojom::URLLoaderClient* client,
+    TestURLLoaderFactory::Redirects redirects,
+    ResourceResponseHead head,
+    std::string content,
+    URLLoaderCompletionStatus status) {
+  for (const auto& redirect : redirects)
     client->OnReceiveRedirect(redirect.first, redirect.second);
 
-  if (it->second.status.error_code == net::OK) {
-    client->OnReceiveResponse(it->second.head);
-    mojo::DataPipe data_pipe(it->second.content.size());
-    uint32_t bytes_written = it->second.content.size();
+  if (status.error_code == net::OK) {
+    client->OnReceiveResponse(head);
+    mojo::DataPipe data_pipe(content.size());
+    uint32_t bytes_written = content.size();
     CHECK_EQ(MOJO_RESULT_OK, data_pipe.producer_handle->WriteData(
-                                 it->second.content.data(), &bytes_written,
+                                 content.data(), &bytes_written,
                                  MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
     client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
   }
-  client->OnComplete(it->second.status);
-  return true;
+  client->OnComplete(status);
 }
 
 }  // namespace network

@@ -39,6 +39,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace policy {
 
 class AppInstallEventLogUploader;
@@ -114,7 +118,8 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   void Connect(
       PrefService* local_state,
       DeviceManagementService* device_management_service,
-      scoped_refptr<net::URLRequestContextGetter> system_request_context);
+      scoped_refptr<net::URLRequestContextGetter> system_request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory);
 
   // This class is one of the policy providers, and must be ready for the
   // creation of the Profile's PrefService; all the other KeyedServices depend
@@ -162,6 +167,11 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // Return the StatusUploader used to communicate consumer device status to the
   // policy server.
   StatusUploader* GetStatusUploader() const { return status_uploader_.get(); }
+
+  // Sets a SharedURLLoaderFactory that should be used for tests instead of
+  // retrieving one from the BrowserProcess object in FetchPolicyOAuthToken().
+  void SetSystemURLLoaderFactoryForTests(
+      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory);
 
  protected:
   // CloudPolicyManager:
@@ -294,6 +304,10 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // Listening to notification that profile is destroyed.
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
       shutdown_notifier_;
+
+  // The SharedURLLoaderFactory used in some tests to simulate network requests.
+  scoped_refptr<network::SharedURLLoaderFactory>
+      system_url_loader_factory_for_tests_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerChromeOS);
 };

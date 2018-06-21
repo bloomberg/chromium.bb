@@ -17,6 +17,10 @@
 
 class PrefService;
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace policy {
 
 class CloudPolicyClient;
@@ -29,7 +33,8 @@ class MachineLevelUserCloudPolicyRegistrar {
  public:
   MachineLevelUserCloudPolicyRegistrar(
       DeviceManagementService* device_management_service,
-      scoped_refptr<net::URLRequestContextGetter> system_request_context);
+      scoped_refptr<net::URLRequestContextGetter> system_request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~MachineLevelUserCloudPolicyRegistrar();
 
   // The callback invoked once policy registration is complete. Passed
@@ -53,6 +58,7 @@ class MachineLevelUserCloudPolicyRegistrar {
   std::unique_ptr<CloudPolicyClientRegistrationHelper> registration_helper_;
   DeviceManagementService* device_management_service_;
   scoped_refptr<net::URLRequestContextGetter> system_request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyRegistrar);
 };
@@ -64,7 +70,8 @@ class MachineLevelUserCloudPolicyFetcher : public CloudPolicyService::Observer {
       MachineLevelUserCloudPolicyManager* policy_manager,
       PrefService* local_state,
       DeviceManagementService* device_management_service,
-      scoped_refptr<net::URLRequestContextGetter> system_request_context);
+      scoped_refptr<net::URLRequestContextGetter> system_request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~MachineLevelUserCloudPolicyFetcher() override;
 
   // Initialize the cloud policy client and policy store then fetch
@@ -84,6 +91,7 @@ class MachineLevelUserCloudPolicyFetcher : public CloudPolicyService::Observer {
   PrefService* local_state_;
   DeviceManagementService* device_management_service_;
   scoped_refptr<net::URLRequestContextGetter> system_request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyFetcher);
 };

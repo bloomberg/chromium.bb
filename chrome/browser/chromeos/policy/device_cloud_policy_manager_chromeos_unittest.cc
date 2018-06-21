@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
@@ -59,6 +60,8 @@
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -118,7 +121,10 @@ class DeviceCloudPolicyManagerChromeOSTest
   DeviceCloudPolicyManagerChromeOSTest()
       : fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
         state_keys_broker_(&fake_session_manager_client_),
-        store_(NULL) {
+        store_(nullptr),
+        test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {
     fake_statistics_provider_.SetMachineStatistic(
         chromeos::system::kSerialNumberKeyForTest, "test_sn");
     fake_statistics_provider_.SetMachineStatistic(
@@ -165,7 +171,9 @@ class DeviceCloudPolicyManagerChromeOSTest
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
     // SystemSaltGetter is used in DeviceOAuth2TokenService.
     chromeos::SystemSaltGetter::Initialize();
-    chromeos::DeviceOAuth2TokenServiceFactory::Initialize();
+    chromeos::DeviceOAuth2TokenServiceFactory::Initialize(
+        test_shared_loader_factory_);
+
     url_fetcher_response_code_ = 200;
     url_fetcher_response_string_ = "{\"access_token\":\"accessToken4Test\","
                                    "\"expires_in\":1234,"
@@ -196,6 +204,7 @@ class DeviceCloudPolicyManagerChromeOSTest
     chromeos::DeviceOAuth2TokenServiceFactory::Shutdown();
     chromeos::SystemSaltGetter::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
+    test_shared_loader_factory_->Detach();
   }
 
   void LockDevice() {
@@ -224,6 +233,8 @@ class DeviceCloudPolicyManagerChromeOSTest
         &fake_statistics_provider_);
     initializer_->SetSigningServiceForTesting(
         std::make_unique<FakeSigningService>());
+    initializer_->SetSystemURLLoaderFactoryForTesting(
+        test_shared_loader_factory_);
     initializer_->Init();
   }
 
@@ -275,6 +286,10 @@ class DeviceCloudPolicyManagerChromeOSTest
   std::unique_ptr<DeviceCloudPolicyInitializer> initializer_;
 
  private:
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      test_shared_loader_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyManagerChromeOSTest);
 };
 

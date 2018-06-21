@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +19,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
@@ -33,6 +35,11 @@ namespace {
 DeviceManagementService* g_device_management_service = NULL;
 
 }  // namespace
+
+// static
+base::LazyInstance<scoped_refptr<network::SharedURLLoaderFactory>>::Leaky
+    UserPolicySigninServiceFactory::system_url_loader_factory_for_tests_ =
+        LAZY_INSTANCE_INITIALIZER;
 
 UserPolicySigninServiceFactory::UserPolicySigninServiceFactory()
     : BrowserContextKeyedServiceFactory(
@@ -63,6 +70,12 @@ void UserPolicySigninServiceFactory::SetDeviceManagementServiceForTesting(
   g_device_management_service = device_management_service;
 }
 
+// static
+void UserPolicySigninServiceFactory::SetSystemURLLoaderFactoryForTesting(
+    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory) {
+  system_url_loader_factory_for_tests_.Get() = system_url_loader_factory;
+}
+
 KeyedService* UserPolicySigninServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
@@ -71,13 +84,21 @@ KeyedService* UserPolicySigninServiceFactory::BuildServiceInstanceFor(
   DeviceManagementService* device_management_service =
       g_device_management_service ? g_device_management_service
                                   : connector->device_management_service();
+
+  scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory =
+      system_url_loader_factory_for_tests_.Get();
+  if (!system_url_loader_factory &&
+      g_browser_process->system_network_context_manager()) {
+    system_url_loader_factory =
+        g_browser_process->system_network_context_manager()
+            ->GetSharedURLLoaderFactory();
+  }
+
   UserPolicySigninService* service = new UserPolicySigninService(
-      profile,
-      g_browser_process->local_state(),
-      device_management_service,
+      profile, g_browser_process->local_state(), device_management_service,
       UserCloudPolicyManagerFactory::GetForBrowserContext(context),
       SigninManagerFactory::GetForProfile(profile),
-      g_browser_process->system_request_context(),
+      g_browser_process->system_request_context(), system_url_loader_factory,
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
   return service;
 }

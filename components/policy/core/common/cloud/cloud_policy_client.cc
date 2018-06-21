@@ -21,6 +21,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace em = enterprise_management;
 
@@ -100,6 +101,7 @@ CloudPolicyClient::CloudPolicyClient(
     const std::string& brand_code,
     DeviceManagementService* service,
     scoped_refptr<net::URLRequestContextGetter> request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     SigningService* signing_service,
     DeviceDMTokenCallback device_dm_token_callback)
     : machine_id_(machine_id),
@@ -109,6 +111,7 @@ CloudPolicyClient::CloudPolicyClient(
       signing_service_(signing_service),
       device_dm_token_callback_(device_dm_token_callback),
       request_context_(request_context),
+      url_loader_factory_(url_loader_factory),
       weak_ptr_factory_(this) {}
 
 CloudPolicyClient::~CloudPolicyClient() {
@@ -680,6 +683,11 @@ const em::PolicyFetchResponse* CloudPolicyClient::GetPolicyFor(
 scoped_refptr<net::URLRequestContextGetter>
 CloudPolicyClient::GetRequestContext() {
   return request_context_;
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+CloudPolicyClient::GetURLLoaderFactory() {
+  return url_loader_factory_;
 }
 
 int CloudPolicyClient::GetActiveRequestCountForTest() const {

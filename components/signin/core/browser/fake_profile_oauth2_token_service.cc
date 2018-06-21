@@ -123,6 +123,7 @@ void FakeProfileOAuth2TokenService::FetchOAuth2Token(
     RequestImpl* request,
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
     const ScopeSet& scopes) {

@@ -1,4 +1,15 @@
 include_rules = [
+  "+services/network/public/cpp",
   # Needed to support typemaps of core types for the Identity Service.
   "+mojo/public/cpp/bindings/struct_traits.h",
 ]
+
+specific_include_rules = {
+  r"(fake_oauth2_token_service_delegate\.h"
+  r"|oauth2_access_token_fetcher_impl_unittest\.cc"
+  r"|oauth2_token_service_unittest\.cc"
+  r")": [
+    "+services/network/test/test_url_loader_factory.h",
+    "+mojo/edk",
+  ],
+}

@@ -34,10 +34,12 @@ OAuth2AccessTokenFetcher*
 ShellOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   DCHECK_EQ(account_id, account_id_);
   DCHECK(!refresh_token_.empty());
-  return new OAuth2AccessTokenFetcherImpl(consumer, getter, refresh_token_);
+  return new OAuth2AccessTokenFetcherImpl(consumer, url_loader_factory,
+                                          refresh_token_);
 }
 
 net::URLRequestContextGetter*

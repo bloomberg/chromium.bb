@@ -191,7 +191,8 @@ void CloudExternalDataPolicyObserverTest::SetUp() {
           base::ThreadTaskRunnerHandle::Get(),
           base::ThreadTaskRunnerHandle::Get(),
           base::ThreadTaskRunnerHandle::Get(),
-          base::ThreadTaskRunnerHandle::Get(), nullptr));
+          base::ThreadTaskRunnerHandle::Get(), /*request_context=*/nullptr,
+          /*url_loader_factory=*/nullptr));
   url_fetcher_factory_.set_remove_fetcher_on_delete(true);
 
   EXPECT_CALL(user_policy_provider_, IsInitializationComplete(_))

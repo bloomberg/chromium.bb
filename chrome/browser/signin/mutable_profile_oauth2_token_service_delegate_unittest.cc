@@ -34,6 +34,7 @@
 #include "google_apis/gaia/oauth2_token_service_test_util.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Defining constant here to handle backward compatiblity tests, but this
@@ -105,6 +106,8 @@ class MutableProfileOAuth2TokenServiceDelegateTest
     client_.reset(new TestSigninClient(&pref_service_));
     client_->SetURLRequestContext(new net::TestURLRequestContextGetter(
         base::ThreadTaskRunnerHandle::Get()));
+    client_->test_url_loader_factory()->AddResponse(
+        GaiaUrls::GetInstance()->oauth2_revoke_url().spec(), "");
     client_->LoadTokenDatabase();
     account_tracker_service_.Initialize(client_.get());
   }
@@ -113,6 +116,12 @@ class MutableProfileOAuth2TokenServiceDelegateTest
     oauth2_service_delegate_->RemoveObserver(this);
     oauth2_service_delegate_->Shutdown();
     OSCryptMocker::TearDown();
+  }
+
+  void AddSuccessfulOAuhTokenResponse() {
+    client_->test_url_loader_factory()->AddResponse(
+        GaiaUrls::GetInstance()->oauth2_token_url().spec(),
+        GetValidTokenResponse("token", 3600));
   }
 
   void CreateOAuth2ServiceDelegate(
@@ -853,9 +862,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, FetchPersistentError) {
             oauth2_service_delegate_->GetAuthError(kEmail));
 
   // Create a "success" fetch we don't expect to get called.
-  factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
-                           GetValidTokenResponse("token", 3600), net::HTTP_OK,
-                           net::URLRequestStatus::SUCCESS);
+  AddSuccessfulOAuhTokenResponse();
 
   EXPECT_EQ(0, access_token_success_count_);
   EXPECT_EQ(0, access_token_failure_count_);
@@ -863,7 +870,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, FetchPersistentError) {
   scope_list.push_back("scope");
   std::unique_ptr<OAuth2AccessTokenFetcher> fetcher(
       oauth2_service_delegate_->CreateAccessTokenFetcher(
-          kEmail, oauth2_service_delegate_->GetRequestContext(), this));
+          kEmail, oauth2_service_delegate_->GetRequestContext(),
+          oauth2_service_delegate_->GetURLLoaderFactory(), this));
   fetcher->Start("foo", "bar", scope_list);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, access_token_success_count_);
@@ -886,9 +894,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RetryBackoff) {
             oauth2_service_delegate_->GetAuthError(kEmail));
 
   // Create a "success" fetch we don't expect to get called just yet.
-  factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
-                           GetValidTokenResponse("token", 3600), net::HTTP_OK,
-                           net::URLRequestStatus::SUCCESS);
+  AddSuccessfulOAuhTokenResponse();
 
   // Transient error will repeat until backoff period expires.
   EXPECT_EQ(0, access_token_success_count_);
@@ -897,7 +903,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RetryBackoff) {
   scope_list.push_back("scope");
   std::unique_ptr<OAuth2AccessTokenFetcher> fetcher1(
       oauth2_service_delegate_->CreateAccessTokenFetcher(
-          kEmail, oauth2_service_delegate_->GetRequestContext(), this));
+          kEmail, oauth2_service_delegate_->GetRequestContext(),
+          oauth2_service_delegate_->GetURLLoaderFactory(), this));
   fetcher1->Start("foo", "bar", scope_list);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, access_token_success_count_);
@@ -911,7 +918,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RetryBackoff) {
       base::TimeTicks());
   std::unique_ptr<OAuth2AccessTokenFetcher> fetcher2(
       oauth2_service_delegate_->CreateAccessTokenFetcher(
-          kEmail, oauth2_service_delegate_->GetRequestContext(), this));
+          kEmail, oauth2_service_delegate_->GetRequestContext(),
+          oauth2_service_delegate_->GetURLLoaderFactory(), this));
   fetcher2->Start("foo", "bar", scope_list);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, access_token_success_count_);
@@ -934,9 +942,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ResetBackoff) {
             oauth2_service_delegate_->GetAuthError(kEmail));
 
   // Create a "success" fetch we don't expect to get called just yet.
-  factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
-                           GetValidTokenResponse("token", 3600), net::HTTP_OK,
-                           net::URLRequestStatus::SUCCESS);
+  AddSuccessfulOAuhTokenResponse();
 
   // Transient error will repeat until backoff period expires.
   EXPECT_EQ(0, access_token_success_count_);
@@ -945,7 +951,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ResetBackoff) {
   scope_list.push_back("scope");
   std::unique_ptr<OAuth2AccessTokenFetcher> fetcher1(
       oauth2_service_delegate_->CreateAccessTokenFetcher(
-          kEmail, oauth2_service_delegate_->GetRequestContext(), this));
+          kEmail, oauth2_service_delegate_->GetRequestContext(),
+          oauth2_service_delegate_->GetURLLoaderFactory(), this));
   fetcher1->Start("foo", "bar", scope_list);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, access_token_success_count_);
@@ -956,7 +963,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ResetBackoff) {
       net::NetworkChangeNotifier::CONNECTION_WIFI);
   std::unique_ptr<OAuth2AccessTokenFetcher> fetcher2(
       oauth2_service_delegate_->CreateAccessTokenFetcher(
-          kEmail, oauth2_service_delegate_->GetRequestContext(), this));
+          kEmail, oauth2_service_delegate_->GetRequestContext(),
+          oauth2_service_delegate_->GetURLLoaderFactory(), this));
   fetcher2->Start("foo", "bar", scope_list);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, access_token_success_count_);

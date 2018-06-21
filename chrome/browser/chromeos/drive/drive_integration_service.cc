@@ -23,6 +23,7 @@
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -56,6 +57,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -362,9 +364,15 @@ DriveIntegrationService::DriveIntegrationService(
   if (test_drive_service) {
     drive_service_.reset(test_drive_service);
   } else {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
+    if (g_browser_process->system_network_context_manager()) {
+      // system_network_context_manager() returns nullptr in unit-tests.
+      url_loader_factory = g_browser_process->system_network_context_manager()
+                               ->GetSharedURLLoaderFactory();
+    }
     drive_service_.reset(new DriveAPIService(
         oauth_service, g_browser_process->system_request_context(),
-        blocking_task_runner_.get(),
+        url_loader_factory, blocking_task_runner_.get(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
         GURL(google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction),
         GetDriveUserAgent(), NO_TRAFFIC_ANNOTATION_YET));

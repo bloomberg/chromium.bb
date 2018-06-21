@@ -17,10 +17,6 @@
 
 class PrefService;
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace policy {
 class ConfigurationPolicyProvider;
 
@@ -47,9 +43,10 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
   // class to notify observers.
   void OnResourceBundleCreated();
 
-  void Init(
-      PrefService* local_state,
-      scoped_refptr<net::URLRequestContextGetter> request_context) override;
+  void Init(PrefService* local_state,
+            scoped_refptr<net::URLRequestContextGetter> request_context,
+            scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      override;
 
   bool IsEnterpriseManaged() const override;
 

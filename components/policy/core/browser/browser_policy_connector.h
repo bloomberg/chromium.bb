@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
 #include "components/policy/policy_export.h"
 
@@ -18,6 +19,10 @@ class PrefService;
 
 namespace net {
 class URLRequestContextGetter;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace policy {
@@ -36,7 +41,8 @@ class POLICY_EXPORT BrowserPolicyConnector : public BrowserPolicyConnectorBase {
   // tests that don't require the full policy system running.
   virtual void Init(
       PrefService* local_state,
-      scoped_refptr<net::URLRequestContextGetter> request_context) = 0;
+      scoped_refptr<net::URLRequestContextGetter> request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) = 0;
 
   // Checks whether this device is under any kind of enterprise management.
   virtual bool IsEnterpriseManaged() const = 0;
