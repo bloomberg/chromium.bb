@@ -56,6 +56,11 @@ std::vector<media::VideoCodec> GetEnabledHardwareSecureCodecsFromCommandLine() {
   return result;
 }
 
+template <typename T>
+std::vector<T> SetToVector(const base::flat_set<T>& s) {
+  return std::vector<T>(s.begin(), s.end());
+}
+
 }  // namespace
 
 // static
@@ -102,10 +107,9 @@ void KeySystemSupportImpl::IsKeySystemSupported(
 
   // Supported codecs and encryption schemes.
   auto capability = media::mojom::KeySystemCapability::New();
-  const auto& schemes = cdm_info->supported_encryption_schemes;
   capability->video_codecs = cdm_info->supported_video_codecs;
   capability->encryption_schemes =
-      std::vector<media::EncryptionMode>(schemes.begin(), schemes.end());
+      SetToVector(cdm_info->supported_encryption_schemes);
 
   if (base::FeatureList::IsEnabled(media::kHardwareSecureDecryption)) {
     capability->hw_secure_video_codecs =
@@ -116,14 +120,7 @@ void KeySystemSupportImpl::IsKeySystemSupported(
     NOTIMPLEMENTED();
   }
 
-  // Temporary session is always supported.
-  // TODO(xhwang): Populate this from CdmInfo.
-  capability->session_types.push_back(media::CdmSessionType::TEMPORARY_SESSION);
-
-  if (cdm_info->supports_persistent_license) {
-    capability->session_types.push_back(
-        media::CdmSessionType::PERSISTENT_LICENSE_SESSION);
-  }
+  capability->session_types = SetToVector(cdm_info->supported_session_types);
 
   std::move(callback).Run(true, std::move(capability));
 }

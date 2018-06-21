@@ -327,14 +327,22 @@ void RegisterWidevineCdmWithChrome(
 
   VLOG(1) << "Register Widevine CDM with Chrome";
 
+  // Temporary session is always supported.
+  base::flat_set<media::CdmSessionType> supported_session_types = {
+      media::CdmSessionType::TEMPORARY_SESSION};
+  if (supports_persistent_license) {
+    supported_session_types.insert(
+        media::CdmSessionType::PERSISTENT_LICENSE_SESSION);
+  }
+
   const base::FilePath cdm_path =
       GetPlatformDirectory(cdm_install_dir)
           .AppendASCII(base::GetNativeLibraryName(kWidevineCdmLibraryName));
+
   CdmRegistry::GetInstance()->RegisterCdm(content::CdmInfo(
       kWidevineCdmDisplayName, kWidevineCdmGuid, cdm_version, cdm_path,
-      kWidevineCdmFileSystemId, supported_video_codecs,
-      supports_persistent_license, supported_encryption_schemes,
-      kWidevineKeySystem, false));
+      kWidevineCdmFileSystemId, supported_video_codecs, supported_session_types,
+      supported_encryption_schemes, kWidevineKeySystem, false));
 }
 
 }  // namespace

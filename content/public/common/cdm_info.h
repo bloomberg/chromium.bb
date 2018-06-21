@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/version.h"
 #include "content/common/content_export.h"
+#include "media/base/content_decryption_module.h"
 // TODO(crbug.com/825041): Move EncryptionMode out of decrypt_config and
 // rename it to EncryptionScheme.
 #include "media/base/decrypt_config.h"
@@ -28,7 +29,7 @@ struct CONTENT_EXPORT CdmInfo {
       const base::FilePath& path,
       const std::string& file_system_id,
       const std::vector<media::VideoCodec>& supported_video_codecs,
-      bool supports_persistent_license,
+      const base::flat_set<media::CdmSessionType>& supported_session_types,
       const base::flat_set<media::EncryptionMode>& supported_encryption_schemes,
       const std::string& supported_key_system,
       bool supports_sub_key_systems);
@@ -60,11 +61,10 @@ struct CONTENT_EXPORT CdmInfo {
   // TODO(crbug.com/796725) Find a way to include profiles and levels.
   std::vector<media::VideoCodec> supported_video_codecs;
 
-  // Whether this CDM supports persistent licenses.
-  bool supports_persistent_license;
+  // List of session types supported by the CDM.
+  base::flat_set<media::CdmSessionType> supported_session_types;
 
-  // List of encryption schemes supported by the CDM (e.g. cenc). This is the
-  // set of encryption schemes that the CDM supports.
+  // List of encryption schemes supported by the CDM (e.g. cenc).
   base::flat_set<media::EncryptionMode> supported_encryption_schemes;
 
   // The key system supported by this CDM.
