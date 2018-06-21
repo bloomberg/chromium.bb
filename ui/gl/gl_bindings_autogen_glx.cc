@@ -110,21 +110,24 @@ void DriverGLX::InitializeStaticBindings() {
 
 void DriverGLX::InitializeExtensionBindings() {
   std::string platform_extensions(GetPlatformExtensions());
-  ExtensionSet extensions(MakeExtensionSet(platform_extensions));
+  gfx::ExtensionSet extensions(gfx::MakeExtensionSet(platform_extensions));
   ALLOW_UNUSED_LOCAL(extensions);
 
   ext.b_GLX_ARB_create_context =
-      HasExtension(extensions, "GLX_ARB_create_context");
-  ext.b_GLX_EXT_swap_control = HasExtension(extensions, "GLX_EXT_swap_control");
+      gfx::HasExtension(extensions, "GLX_ARB_create_context");
+  ext.b_GLX_EXT_swap_control =
+      gfx::HasExtension(extensions, "GLX_EXT_swap_control");
   ext.b_GLX_EXT_texture_from_pixmap =
-      HasExtension(extensions, "GLX_EXT_texture_from_pixmap");
+      gfx::HasExtension(extensions, "GLX_EXT_texture_from_pixmap");
   ext.b_GLX_MESA_copy_sub_buffer =
-      HasExtension(extensions, "GLX_MESA_copy_sub_buffer");
+      gfx::HasExtension(extensions, "GLX_MESA_copy_sub_buffer");
   ext.b_GLX_MESA_swap_control =
-      HasExtension(extensions, "GLX_MESA_swap_control");
-  ext.b_GLX_OML_sync_control = HasExtension(extensions, "GLX_OML_sync_control");
-  ext.b_GLX_SGIX_fbconfig = HasExtension(extensions, "GLX_SGIX_fbconfig");
-  ext.b_GLX_SGI_video_sync = HasExtension(extensions, "GLX_SGI_video_sync");
+      gfx::HasExtension(extensions, "GLX_MESA_swap_control");
+  ext.b_GLX_OML_sync_control =
+      gfx::HasExtension(extensions, "GLX_OML_sync_control");
+  ext.b_GLX_SGIX_fbconfig = gfx::HasExtension(extensions, "GLX_SGIX_fbconfig");
+  ext.b_GLX_SGI_video_sync =
+      gfx::HasExtension(extensions, "GLX_SGI_video_sync");
 
   if (ext.b_GLX_EXT_texture_from_pixmap) {
     fn.glXBindTexImageEXTFn = reinterpret_cast<glXBindTexImageEXTProc>(

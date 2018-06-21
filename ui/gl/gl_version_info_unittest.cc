@@ -55,7 +55,7 @@ TEST(GLVersionInfoTest, ParseGLVersionStringTest) {
        false, false, "", "23.20.782.0"},
       // This is a non spec compliant string from Nexus6 on Android N.
       {"OpenGL ES 3.1V@104.0", 3, 1, true, false, true, "", "104.0"}};
-  ExtensionSet extensions;
+  gfx::ExtensionSet extensions;
   for (size_t ii = 0; ii < base::size(kTestData); ++ii) {
     GLVersionInfo version_info(kTestData[ii].gl_version, nullptr, extensions);
     EXPECT_EQ(kTestData[ii].expected_gl_major, version_info.major_version);

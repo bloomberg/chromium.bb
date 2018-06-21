@@ -104,12 +104,12 @@ class GpuCommandBufferTestEGL {
 
   // Returns whether the current context supports the named EGL extension.
   bool HasEGLExtension(const base::StringPiece& extension) {
-    return gl::HasExtension(egl_extensions_, extension);
+    return gfx::HasExtension(egl_extensions_, extension);
   }
 
   // Returns whether the current context supports the named GL extension.
   bool HasGLExtension(const base::StringPiece& extension) {
-    return gl::HasExtension(gl_extensions_, extension);
+    return gfx::HasExtension(gl_extensions_, extension);
   }
 
 #if defined(OS_LINUX)
@@ -130,8 +130,8 @@ class GpuCommandBufferTestEGL {
   bool gl_reinitialized_;
   GLManager gl_;
   gl::GLWindowSystemBindingInfo window_system_binding_info_;
-  gl::ExtensionSet egl_extensions_;
-  gl::ExtensionSet gl_extensions_;
+  gfx::ExtensionSet egl_extensions_;
+  gfx::ExtensionSet gl_extensions_;
 };
 
 }  // namespace gpu

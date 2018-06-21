@@ -188,7 +188,7 @@ void GLContext::ForceReleaseVirtuallyCurrent() {
 }
 
 bool GLContext::HasExtension(const char* name) {
-  return gl::HasExtension(GetExtensions(), name);
+  return gfx::HasExtension(GetExtensions(), name);
 }
 
 const GLVersionInfo* GLContext::GetVersionInfo() {
@@ -368,7 +368,7 @@ scoped_refptr<GPUTimingClient> GLContextReal::CreateGPUTimingClient() {
   return gpu_timing_->CreateGPUTimingClient();
 }
 
-const ExtensionSet& GLContextReal::GetExtensions() {
+const gfx::ExtensionSet& GLContextReal::GetExtensions() {
   DCHECK(IsCurrent(nullptr));
   if (!extensions_initialized_) {
     SetExtensionsFromString(GetGLExtensionsFromCurrentContext(gl_api()));
@@ -396,7 +396,7 @@ scoped_refptr<GLContext> InitializeGLContext(scoped_refptr<GLContext> context,
 
 void GLContextReal::SetExtensionsFromString(std::string extensions) {
   extensions_string_ = std::move(extensions);
-  extensions_ = MakeExtensionSet(extensions_string_);
+  extensions_ = gfx::MakeExtensionSet(extensions_string_);
   extensions_initialized_ = true;
 }
 

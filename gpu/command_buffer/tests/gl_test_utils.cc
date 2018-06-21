@@ -404,9 +404,9 @@ bool GpuCommandBufferTestEGL::InitializeEGLGLES2(int width, int height) {
   DCHECK(result);
 
   egl_extensions_ =
-      gl::MakeExtensionSet(window_system_binding_info_.extensions);
+      gfx::MakeExtensionSet(window_system_binding_info_.extensions);
   gl_extensions_ =
-      gl::MakeExtensionSet(gl::GetGLExtensionsFromCurrentContext());
+      gfx::MakeExtensionSet(gl::GetGLExtensionsFromCurrentContext());
 
   return true;
 }

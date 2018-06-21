@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/extension_set.h"
+#include "ui/gfx/extension_set.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
-namespace gl {
+namespace gfx {
 
 ExtensionSet MakeExtensionSet(const base::StringPiece& extensions_string) {
   return ExtensionSet(SplitStringPiece(
@@ -24,4 +24,4 @@ std::string MakeExtensionString(const ExtensionSet& extension_set) {
   return base::JoinString(extension_list, " ");
 }
 
-}  // namespace gl
+}  // namespace gfx

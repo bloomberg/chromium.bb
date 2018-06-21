@@ -60,7 +60,7 @@ class GLApiTest : public testing::Test {
 
     std::string extensions_string =
         GetGLExtensionsFromCurrentContext(api_.get());
-    ExtensionSet extension_set = MakeExtensionSet(extensions_string);
+    gfx::ExtensionSet extension_set = gfx::MakeExtensionSet(extensions_string);
 
     auto version = std::make_unique<GLVersionInfo>(
         reinterpret_cast<const char*>(api_->glGetStringFn(GL_VERSION)),

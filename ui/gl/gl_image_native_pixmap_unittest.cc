@@ -24,8 +24,8 @@ class GLImageNativePixmapTestDelegate : public GLImageTestDelegateBase {
   bool SkipTest() const override {
     const std::string dmabuf_import_ext = "EGL_MESA_image_dma_buf_export";
     std::string platform_extensions(DriverEGL::GetPlatformExtensions());
-    ExtensionSet extensions(MakeExtensionSet(platform_extensions));
-    if (!HasExtension(extensions, dmabuf_import_ext)) {
+    gfx::ExtensionSet extensions(gfx::MakeExtensionSet(platform_extensions));
+    if (!gfx::HasExtension(extensions, dmabuf_import_ext)) {
       LOG(WARNING) << "Skip test, missing extension " << dmabuf_import_ext;
       return true;
     }

@@ -185,8 +185,8 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info,
   std::string glsl_version_string = GetGLString(GL_SHADING_LANGUAGE_VERSION);
 
   gpu_info->gl_extensions = gl::GetGLExtensionsFromCurrentContext();
-  gl::ExtensionSet extension_set =
-      gl::MakeExtensionSet(gpu_info->gl_extensions);
+  gfx::ExtensionSet extension_set =
+      gfx::MakeExtensionSet(gpu_info->gl_extensions);
 
   gl::GLVersionInfo gl_info(gpu_info->gl_version.c_str(),
                             gpu_info->gl_renderer.c_str(), extension_set);
@@ -198,12 +198,12 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info,
 
   GLint max_samples = 0;
   if (gl_info.IsAtLeastGL(3, 0) || gl_info.IsAtLeastGLES(3, 0) ||
-      gl::HasExtension(extension_set, "GL_ANGLE_framebuffer_multisample") ||
-      gl::HasExtension(extension_set, "GL_APPLE_framebuffer_multisample") ||
-      gl::HasExtension(extension_set, "GL_EXT_framebuffer_multisample") ||
-      gl::HasExtension(extension_set,
-                       "GL_EXT_multisampled_render_to_texture") ||
-      gl::HasExtension(extension_set, "GL_NV_framebuffer_multisample")) {
+      gfx::HasExtension(extension_set, "GL_ANGLE_framebuffer_multisample") ||
+      gfx::HasExtension(extension_set, "GL_APPLE_framebuffer_multisample") ||
+      gfx::HasExtension(extension_set, "GL_EXT_framebuffer_multisample") ||
+      gfx::HasExtension(extension_set,
+                        "GL_EXT_multisampled_render_to_texture") ||
+      gfx::HasExtension(extension_set, "GL_NV_framebuffer_multisample")) {
     glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
   }
   gpu_info->max_msaa_samples = base::IntToString(max_samples);
@@ -214,7 +214,7 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info,
       gl::GLSurfaceEGL::HasEGLExtension("EGL_KHR_fence_sync") &&
       gl::GLSurfaceEGL::HasEGLExtension("EGL_KHR_image_base") &&
       gl::GLSurfaceEGL::HasEGLExtension("EGL_KHR_gl_texture_2D_image") &&
-      gl::HasExtension(extension_set, "GL_OES_EGL_image");
+      gfx::HasExtension(extension_set, "GL_OES_EGL_image");
 #else
   gl::GLWindowSystemBindingInfo window_system_binding_info;
   if (gl::init::GetGLWindowSystemBindingInfo(&window_system_binding_info)) {
@@ -226,9 +226,9 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info,
 #endif  // OS_ANDROID
 
   bool supports_robustness =
-      gl::HasExtension(extension_set, "GL_EXT_robustness") ||
-      gl::HasExtension(extension_set, "GL_KHR_robustness") ||
-      gl::HasExtension(extension_set, "GL_ARB_robustness");
+      gfx::HasExtension(extension_set, "GL_EXT_robustness") ||
+      gfx::HasExtension(extension_set, "GL_KHR_robustness") ||
+      gfx::HasExtension(extension_set, "GL_ARB_robustness");
   if (supports_robustness) {
     glGetIntegerv(GL_RESET_NOTIFICATION_STRATEGY_ARB,
         reinterpret_cast<GLint*>(&gpu_info->gl_reset_notification_strategy));

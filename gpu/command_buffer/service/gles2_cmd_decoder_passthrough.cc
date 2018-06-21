@@ -68,11 +68,11 @@ void ResizeRenderbuffer(gl::GLApi* api,
 }
 
 void RequestExtensions(gl::GLApi* api,
-                       const gl::ExtensionSet& requestable_extensions,
+                       const gfx::ExtensionSet& requestable_extensions,
                        const char* const* extensions_to_request,
                        size_t count) {
   for (size_t i = 0; i < count; i++) {
-    if (gl::HasExtension(requestable_extensions, extensions_to_request[i])) {
+    if (gfx::HasExtension(requestable_extensions, extensions_to_request[i])) {
       // Request the intersection of the two sets
       api->glRequestExtensionANGLEFn(extensions_to_request[i]);
     }
@@ -626,7 +626,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
   // basic command buffer functionality.  Make sure they are always enabled.
   if (IsWebGLContextType(attrib_helper.context_type)) {
     // Grab the extensions that are requestable
-    gl::ExtensionSet requestable_extensions(
+    gfx::ExtensionSet requestable_extensions(
         gl::GetRequestableGLExtensionsFromCurrentContext());
 
     static constexpr const char* kRequiredFunctionalityExtensions[] = {

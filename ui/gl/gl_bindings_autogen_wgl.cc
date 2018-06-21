@@ -56,18 +56,20 @@ void DriverWGL::InitializeStaticBindings() {
 
 void DriverWGL::InitializeExtensionBindings() {
   std::string platform_extensions(GetPlatformExtensions());
-  ExtensionSet extensions(MakeExtensionSet(platform_extensions));
+  gfx::ExtensionSet extensions(gfx::MakeExtensionSet(platform_extensions));
   ALLOW_UNUSED_LOCAL(extensions);
 
   ext.b_WGL_ARB_create_context =
-      HasExtension(extensions, "WGL_ARB_create_context");
+      gfx::HasExtension(extensions, "WGL_ARB_create_context");
   ext.b_WGL_ARB_extensions_string =
-      HasExtension(extensions, "WGL_ARB_extensions_string");
-  ext.b_WGL_ARB_pbuffer = HasExtension(extensions, "WGL_ARB_pbuffer");
-  ext.b_WGL_ARB_pixel_format = HasExtension(extensions, "WGL_ARB_pixel_format");
+      gfx::HasExtension(extensions, "WGL_ARB_extensions_string");
+  ext.b_WGL_ARB_pbuffer = gfx::HasExtension(extensions, "WGL_ARB_pbuffer");
+  ext.b_WGL_ARB_pixel_format =
+      gfx::HasExtension(extensions, "WGL_ARB_pixel_format");
   ext.b_WGL_EXT_extensions_string =
-      HasExtension(extensions, "WGL_EXT_extensions_string");
-  ext.b_WGL_EXT_swap_control = HasExtension(extensions, "WGL_EXT_swap_control");
+      gfx::HasExtension(extensions, "WGL_EXT_extensions_string");
+  ext.b_WGL_EXT_swap_control =
+      gfx::HasExtension(extensions, "WGL_EXT_swap_control");
 
   if (ext.b_WGL_ARB_pixel_format) {
     fn.wglChoosePixelFormatARBFn =

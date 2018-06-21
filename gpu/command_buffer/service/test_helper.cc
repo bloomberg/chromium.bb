@@ -205,7 +205,7 @@ void TestHelper::SetupTextureManagerInitExpectations(
     bool is_es3_enabled,
     bool is_es3_capable,
     bool is_desktop_core_profile,
-    const gl::ExtensionSet& extensions,
+    const gfx::ExtensionSet& extensions,
     bool use_default_textures) {
   InSequence sequence;
 
@@ -228,10 +228,10 @@ void TestHelper::SetupTextureManagerInitExpectations(
   }
 
   bool ext_image_external =
-      gl::HasExtension(extensions, "GL_OES_EGL_image_external");
+      gfx::HasExtension(extensions, "GL_OES_EGL_image_external");
   bool arb_texture_rectangle =
       is_desktop_core_profile ||
-      gl::HasExtension(extensions, "GL_ARB_texture_rectangle");
+      gfx::HasExtension(extensions, "GL_ARB_texture_rectangle");
 
   if (ext_image_external) {
     SetupTextureInitializationExpectations(
@@ -283,7 +283,7 @@ void TestHelper::SetupTextureManagerDestructionExpectations(
     ::gl::MockGLInterface* gl,
     bool is_es3_enabled,
     bool is_desktop_core_profile,
-    const gl::ExtensionSet& extensions,
+    const gfx::ExtensionSet& extensions,
     bool use_default_textures) {
   SetupTextureDestructionExpectations(gl, GL_TEXTURE_2D, use_default_textures);
   SetupTextureDestructionExpectations(
@@ -297,10 +297,10 @@ void TestHelper::SetupTextureManagerDestructionExpectations(
   }
 
   bool ext_image_external =
-      gl::HasExtension(extensions, "GL_OES_EGL_image_external");
+      gfx::HasExtension(extensions, "GL_OES_EGL_image_external");
   bool arb_texture_rectangle =
       is_desktop_core_profile ||
-      gl::HasExtension(extensions, "GL_ARB_texture_rectangle");
+      gfx::HasExtension(extensions, "GL_ARB_texture_rectangle");
 
   if (ext_image_external) {
     SetupTextureDestructionExpectations(
@@ -328,7 +328,7 @@ void TestHelper::SetupContextGroupInitExpectations(
   bool enable_es3 = !(context_type == CONTEXT_TYPE_OPENGLES2 ||
                       context_type == CONTEXT_TYPE_WEBGL1);
 
-  gl::ExtensionSet extension_set(gl::MakeExtensionSet(extensions));
+  gfx::ExtensionSet extension_set(gfx::MakeExtensionSet(extensions));
   gl::GLVersionInfo gl_info(gl_version, "", extension_set);
 
   SetupFeatureInfoInitExpectationsWithGLVersion(gl, extensions, "", gl_version,
@@ -336,16 +336,16 @@ void TestHelper::SetupContextGroupInitExpectations(
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_RENDERBUFFER_SIZE, _))
       .WillOnce(SetArgPointee<1>(kMaxRenderbufferSize))
       .RetiresOnSaturation();
-  if (gl::HasExtension(extension_set, "GL_ARB_framebuffer_object") ||
-      gl::HasExtension(extension_set, "GL_EXT_framebuffer_multisample") ||
-      gl::HasExtension(extension_set,
-                       "GL_EXT_multisampled_render_to_texture") ||
+  if (gfx::HasExtension(extension_set, "GL_ARB_framebuffer_object") ||
+      gfx::HasExtension(extension_set, "GL_EXT_framebuffer_multisample") ||
+      gfx::HasExtension(extension_set,
+                        "GL_EXT_multisampled_render_to_texture") ||
       gl_info.is_es3 || gl_info.is_desktop_core_profile) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_SAMPLES, _))
         .WillOnce(SetArgPointee<1>(kMaxSamples))
         .RetiresOnSaturation();
-  } else if (gl::HasExtension(extension_set,
-                              "GL_IMG_multisampled_render_to_texture")) {
+  } else if (gfx::HasExtension(extension_set,
+                               "GL_IMG_multisampled_render_to_texture")) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_SAMPLES_IMG, _))
         .WillOnce(SetArgPointee<1>(kMaxSamples))
         .RetiresOnSaturation();
@@ -354,10 +354,10 @@ void TestHelper::SetupContextGroupInitExpectations(
   if (enable_es3 ||
       (!enable_es3 &&
        (gl_info.is_desktop_core_profile ||
-        gl::HasExtension(extension_set, "GL_EXT_draw_buffers") ||
-        gl::HasExtension(extension_set, "GL_ARB_draw_buffers") ||
+        gfx::HasExtension(extension_set, "GL_EXT_draw_buffers") ||
+        gfx::HasExtension(extension_set, "GL_ARB_draw_buffers") ||
         (gl_info.is_es3 &&
-         gl::HasExtension(extension_set, "GL_NV_draw_buffers"))))) {
+         gfx::HasExtension(extension_set, "GL_NV_draw_buffers"))))) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, _))
         .WillOnce(SetArgPointee<1>(8))
         .RetiresOnSaturation();
@@ -368,9 +368,9 @@ void TestHelper::SetupContextGroupInitExpectations(
 
   if (gl_info.IsAtLeastGL(3, 3) ||
       (gl_info.IsAtLeastGL(3, 2) &&
-       gl::HasExtension(extension_set, "GL_ARB_blend_func_extended")) ||
+       gfx::HasExtension(extension_set, "GL_ARB_blend_func_extended")) ||
       (gl_info.is_es &&
-       gl::HasExtension(extension_set, "GL_EXT_blend_func_extended"))) {
+       gfx::HasExtension(extension_set, "GL_EXT_blend_func_extended"))) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT, _))
         .WillOnce(SetArgPointee<1>(8))
         .RetiresOnSaturation();
@@ -410,7 +410,7 @@ void TestHelper::SetupContextGroupInitExpectations(
         .WillOnce(SetArgPointee<1>(kMaxArrayTextureLayers))
         .RetiresOnSaturation();
   }
-  if (gl::HasExtension(extension_set, "GL_ARB_texture_rectangle") ||
+  if (gfx::HasExtension(extension_set, "GL_ARB_texture_rectangle") ||
       gl_info.is_desktop_core_profile) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_RECTANGLE_TEXTURE_SIZE, _))
         .WillOnce(SetArgPointee<1>(kMaxRectangleTextureSize))
@@ -489,7 +489,7 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
       .WillOnce(Return(reinterpret_cast<const uint8_t*>(gl_version)))
       .RetiresOnSaturation();
 
-  gl::ExtensionSet extension_set(gl::MakeExtensionSet(extensions));
+  gfx::ExtensionSet extension_set(gfx::MakeExtensionSet(extensions));
   // Persistent storage is needed for the split extension string.
   split_extensions_ =
       std::vector<std::string>(extension_set.begin(), extension_set.end());
@@ -518,17 +518,17 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
       .RetiresOnSaturation();
 
   if (enable_es3 ||
-      gl::HasExtension(extension_set, "GL_NV_pixel_buffer_object")) {
+      gfx::HasExtension(extension_set, "GL_NV_pixel_buffer_object")) {
     EXPECT_CALL(*gl, GetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, _))
       .WillOnce(SetArgPointee<1>(0))
       .RetiresOnSaturation();
   }
 
-  if ((gl::HasExtension(extension_set, "GL_ARB_texture_float") ||
+  if ((gfx::HasExtension(extension_set, "GL_ARB_texture_float") ||
        gl_info.is_desktop_core_profile) ||
       (gl_info.is_es3 &&
-       gl::HasExtension(extension_set, "GL_OES_texture_float") &&
-       gl::HasExtension(extension_set, "GL_EXT_color_buffer_float"))) {
+       gfx::HasExtension(extension_set, "GL_OES_texture_float") &&
+       gfx::HasExtension(extension_set, "GL_EXT_color_buffer_float"))) {
     static const GLuint tx_ids[] = {101, 102};
     static const GLuint fb_ids[] = {103, 104};
     const GLsizei width = 16;
@@ -625,7 +625,7 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
           .RetiresOnSaturation();
     }
     if (!enable_es3 &&
-        !gl::HasExtension(extension_set, "GL_EXT_color_buffer_half_float") &&
+        !gfx::HasExtension(extension_set, "GL_EXT_color_buffer_half_float") &&
         (gl_info.IsAtLeastGLES(3, 0) || gl_info.IsAtLeastGL(3, 0))) {
       EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, width, 0,
                                   GL_RGBA, GL_HALF_FLOAT, nullptr))
@@ -658,10 +658,10 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
   if (enable_es3 ||
       (!enable_es3 &&
        (gl_info.is_desktop_core_profile ||
-        gl::HasExtension(extension_set, "GL_EXT_draw_buffers") ||
-        gl::HasExtension(extension_set, "GL_ARB_draw_buffers") ||
+        gfx::HasExtension(extension_set, "GL_EXT_draw_buffers") ||
+        gfx::HasExtension(extension_set, "GL_ARB_draw_buffers") ||
         (gl_info.is_es3 &&
-         gl::HasExtension(extension_set, "GL_NV_draw_buffers"))))) {
+         gfx::HasExtension(extension_set, "GL_NV_draw_buffers"))))) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, _))
         .WillOnce(SetArgPointee<1>(8))
         .RetiresOnSaturation();
@@ -671,8 +671,8 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
   }
 
   if (gl_info.is_es3 || gl_info.is_desktop_core_profile ||
-      gl::HasExtension(extension_set, "GL_EXT_texture_rg") ||
-      (gl::HasExtension(extension_set, "GL_ARB_texture_rg"))) {
+      gfx::HasExtension(extension_set, "GL_EXT_texture_rg") ||
+      (gfx::HasExtension(extension_set, "GL_ARB_texture_rg"))) {
 #if DCHECK_IS_ON()
     EXPECT_CALL(*gl, GetError())
         .WillOnce(Return(GL_NO_ERROR))
