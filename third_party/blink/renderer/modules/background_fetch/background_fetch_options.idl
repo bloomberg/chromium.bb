@@ -5,7 +5,7 @@
 // https://wicg.github.io/background-fetch/#background-fetch-manager
 
 dictionary BackgroundFetchOptions {
-    sequence<IconDefinition> icons = [];
+    sequence<ImageResource> icons = [];
     DOMString title = "";
     [ImplementedAs=downloadTotal] unsigned long long totalDownloadSize = 0;
     unsigned long long downloadTotal = 0;

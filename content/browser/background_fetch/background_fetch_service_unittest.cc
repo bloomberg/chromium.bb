@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
@@ -23,6 +24,8 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace content {
 namespace {
@@ -31,13 +34,13 @@ const char kExampleUniqueId[] = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
 const char kExampleDeveloperId[] = "my-background-fetch";
 const char kAlternativeDeveloperId[] = "my-alternative-fetch";
 
-IconDefinition CreateIcon(std::string src,
-                          std::string sizes,
-                          std::string type) {
-  IconDefinition icon;
-  icon.src = std::move(src);
+blink::Manifest::ImageResource CreateIcon(const std::string& src,
+                                          std::vector<gfx::Size> sizes,
+                                          const std::string& type) {
+  blink::Manifest::ImageResource icon;
+  icon.src = GURL(src);
   icon.sizes = std::move(sizes);
-  icon.type = std::move(type);
+  icon.type = base::ASCIIToUTF16(type);
 
   return icon;
 }
@@ -350,8 +353,10 @@ TEST_F(BackgroundFetchServiceTest, FetchRegistrationProperties) {
   requests.emplace_back();  // empty, but valid
 
   BackgroundFetchOptions options;
-  options.icons.push_back(CreateIcon("funny_cat.png", "256x256", "image/png"));
-  options.icons.push_back(CreateIcon("silly_cat.gif", "512x512", "image/gif"));
+  options.icons.push_back(
+      CreateIcon("funny_cat.png", {{256, 256}}, "image/png"));
+  options.icons.push_back(
+      CreateIcon("silly_cat.gif", {{512, 512}}, "image/gif"));
   options.title = "My Background Fetch!";
   options.download_total = 9001;
 
@@ -1020,8 +1025,10 @@ TEST_F(BackgroundFetchServiceTest, UnregisterServiceWorker) {
   requests.emplace_back();  // empty, but valid
 
   BackgroundFetchOptions options;
-  options.icons.push_back(CreateIcon("funny_cat.png", "256x256", "image/png"));
-  options.icons.push_back(CreateIcon("silly_cat.gif", "512x512", "image/gif"));
+  options.icons.push_back(
+      CreateIcon("funny_cat.png", {{256, 256}}, "image/png"));
+  options.icons.push_back(
+      CreateIcon("silly_cat.gif", {{512, 512}}, "image/gif"));
   options.title = "My Background Fetch!";
   options.download_total = 9001;
 

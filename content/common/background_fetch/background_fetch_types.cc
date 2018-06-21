@@ -6,12 +6,6 @@
 
 namespace content {
 
-IconDefinition::IconDefinition() = default;
-
-IconDefinition::IconDefinition(const IconDefinition& other) = default;
-
-IconDefinition::~IconDefinition() = default;
-
 BackgroundFetchOptions::BackgroundFetchOptions() = default;
 
 BackgroundFetchOptions::BackgroundFetchOptions(

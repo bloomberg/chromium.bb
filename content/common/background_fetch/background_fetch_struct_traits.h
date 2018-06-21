@@ -11,6 +11,7 @@
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 namespace content {
@@ -24,7 +25,7 @@ namespace mojo {
 template <>
 struct CONTENT_EXPORT StructTraits<blink::mojom::BackgroundFetchOptionsDataView,
                                    content::BackgroundFetchOptions> {
-  static const std::vector<content::IconDefinition>& icons(
+  static const std::vector<blink::Manifest::ImageResource>& icons(
       const content::BackgroundFetchOptions& options) {
     return options.icons;
   }
@@ -89,23 +90,6 @@ struct CONTENT_EXPORT
 
   static bool Read(content::mojom::BackgroundFetchSettledFetchDataView data,
                    content::BackgroundFetchSettledFetch* definition);
-};
-
-template <>
-struct CONTENT_EXPORT StructTraits<blink::mojom::IconDefinitionDataView,
-                                   content::IconDefinition> {
-  static const std::string& src(const content::IconDefinition& definition) {
-    return definition.src;
-  }
-  static const std::string& sizes(const content::IconDefinition& definition) {
-    return definition.sizes;
-  }
-  static const std::string& type(const content::IconDefinition& definition) {
-    return definition.type;
-  }
-
-  static bool Read(blink::mojom::IconDefinitionDataView data,
-                   content::IconDefinition* definition);
 };
 
 }  // namespace mojo
