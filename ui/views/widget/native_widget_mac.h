@@ -51,9 +51,6 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // from the bottom of the window.
   virtual int SheetPositionY();
 
-  // Notifies that the widget starts to enter or exit fullscreen mode.
-  virtual void OnWindowFullscreenStateChange() {}
-
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override;
   void OnWidgetInitDone() override;

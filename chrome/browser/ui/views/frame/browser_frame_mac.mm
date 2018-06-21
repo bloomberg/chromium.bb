@@ -62,10 +62,6 @@ int BrowserFrameMac::SheetPositionY() {
   return host_view_y - dialog_host->GetDialogPosition(gfx::Size()).y();
 }
 
-void BrowserFrameMac::OnWindowFullscreenStateChange() {
-  browser_view_->FullscreenStateChanged();
-}
-
 void BrowserFrameMac::InitNativeWidget(
     const views::Widget::InitParams& params) {
   views::NativeWidgetMac::InitNativeWidget(params);

@@ -26,7 +26,6 @@ class BrowserFrameMac : public views::NativeWidgetMac,
 
   // Overridden from views::NativeWidgetMac:
   int SheetPositionY() override;
-  void OnWindowFullscreenStateChange() override;
   void InitNativeWidget(const views::Widget::InitParams& params) override;
 
   // Overridden from NativeBrowserFrame:

@@ -7,11 +7,9 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/views/scoped_macviews_browser_mode.h"
-#include "content/public/browser/web_contents.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/browser_commands_mac.h"
@@ -56,8 +54,8 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, MAYBE_FullscreenClearsFocus) {
 }
 
 // Test whether the top view including toolbar and tab strip shows up or hides
-// correctly in browser full screen mode.
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserFullscreenShowTopView) {
+// correctly in full screen mode.
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, FullscreenShowTopView) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
 
   // The top view should always show up in regular mode.
@@ -82,11 +80,6 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserFullscreenShowTopView) {
   chrome::ToggleFullscreenMode(browser());
   EXPECT_TRUE(browser_view->IsFullscreen());
   EXPECT_FALSE(browser_view->IsTabStripVisible());
-
-  // Test toggling toolbar while being in fullscreen mode.
-  chrome::ToggleFullscreenToolbar(browser());
-  EXPECT_TRUE(browser_view->IsFullscreen());
-  EXPECT_TRUE(browser_view->IsTabStripVisible());
 #else
   // In immersive full screen mode, the top view should show up; otherwise, it
   // always hides.
@@ -95,47 +88,4 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserFullscreenShowTopView) {
   else
     EXPECT_FALSE(browser_view->IsTabStripVisible());
 #endif
-
-  // Enter into tab full screen mode from browser fullscreen mode.
-  FullscreenController* controller =
-      browser()->exclusive_access_manager()->fullscreen_controller();
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  controller->EnterFullscreenModeForTab(web_contents, GURL());
-  EXPECT_TRUE(browser_view->IsFullscreen());
-  if (browser_view->immersive_mode_controller()->IsEnabled())
-    EXPECT_TRUE(browser_view->IsTabStripVisible());
-  else
-    EXPECT_FALSE(browser_view->IsTabStripVisible());
-
-  // Return back to regular mode.
-  chrome::ToggleFullscreenMode(browser());
-  EXPECT_FALSE(browser_view->IsFullscreen());
-  EXPECT_TRUE(browser_view->IsTabStripVisible());
-}
-
-// Test whether the top view including toolbar and tab strip appears or hides
-// correctly in tab full screen mode.
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, TabFullscreenShowTopView) {
-  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-
-  // The top view should always show up in regular mode.
-  EXPECT_FALSE(browser_view->IsFullscreen());
-  EXPECT_TRUE(browser_view->IsTabStripVisible());
-
-  // Enter into tab full screen mode.
-  FullscreenController* controller =
-      browser()->exclusive_access_manager()->fullscreen_controller();
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  controller->EnterFullscreenModeForTab(web_contents, GURL());
-  EXPECT_TRUE(browser_view->IsFullscreen());
-
-  // The top view should not show up.
-  EXPECT_FALSE(browser_view->IsTabStripVisible());
-
-  // After exiting the fullscreen mode, the top view should show up again.
-  controller->ExitFullscreenModeForTab(web_contents);
-  EXPECT_FALSE(browser_view->IsFullscreen());
-  EXPECT_TRUE(browser_view->IsTabStripVisible());
 }
