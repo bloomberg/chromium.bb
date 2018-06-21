@@ -1279,6 +1279,8 @@ interface Document : Node
     getter onwebkitfullscreenerror
     getter onwheel
     getter origin
+    getter pictureInPictureElement
+    getter pictureInPictureEnabled
     getter plugins
     getter pointerLockElement
     getter readyState
@@ -1326,6 +1328,7 @@ interface Document : Node
     method elementsFromPoint
     method evaluate
     method execCommand
+    method exitPictureInPicture
     method exitPointerLock
     method getElementById
     method getElementsByClassName
@@ -3278,7 +3281,10 @@ interface HTMLUnknownElement : HTMLElement
     method constructor
 interface HTMLVideoElement : HTMLMediaElement
     attribute @@toStringTag
+    getter disablePictureInPicture
     getter height
+    getter onenterpictureinpicture
+    getter onleavepictureinpicture
     getter poster
     getter videoHeight
     getter videoWidth
@@ -3288,11 +3294,15 @@ interface HTMLVideoElement : HTMLMediaElement
     getter webkitSupportsFullscreen
     getter width
     method constructor
+    method requestPictureInPicture
     method webkitEnterFullScreen
     method webkitEnterFullscreen
     method webkitExitFullScreen
     method webkitExitFullscreen
+    setter disablePictureInPicture
     setter height
+    setter onenterpictureinpicture
+    setter onleavepictureinpicture
     setter poster
     setter width
 interface HashChangeEvent : Event
@@ -4457,6 +4467,13 @@ interface PhotoCapabilities
     getter imageWidth
     getter redEyeReduction
     method constructor
+interface PictureInPictureWindow : EventTarget
+    attribute @@toStringTag
+    getter height
+    getter onresize
+    getter width
+    method constructor
+    setter onresize
 interface Plugin
     attribute @@toStringTag
     getter description
@@ -6092,6 +6109,7 @@ interface ShadowRoot : DocumentFragment
     getter host
     getter innerHTML
     getter mode
+    getter pictureInPictureElement
     getter pointerLockElement
     getter styleSheets
     method constructor

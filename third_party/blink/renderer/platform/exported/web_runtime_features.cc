@@ -288,6 +288,10 @@ void WebRuntimeFeatures::EnablePictureInPicture(bool enable) {
   RuntimeEnabledFeatures::SetPictureInPictureEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnablePictureInPictureAPI(bool enable) {
+  RuntimeEnabledFeatures::SetPictureInPictureAPIEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnablePreloadDefaultIsMetadata(bool enable) {
   RuntimeEnabledFeatures::SetPreloadDefaultIsMetadataEnabled(enable);
 }
