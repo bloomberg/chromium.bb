@@ -95,7 +95,7 @@ declare_args() {
   # default only when goma is enabled on Linux because setting this to true may
   # make it harder to debug binaries.
   # See below reference for detail.
-  # https://chromium.googlesource.com/chromium/src/+/master/docs/linux_debugging.md#Source-level-debug-with-fdebug_prefix_map
+  # https://chromium.googlesource.com/chromium/src/+/master/docs/linux_debugging.md#Source-level-debug-with-fdebug_compilation_dir
   strip_absolute_paths_from_debug_symbols = is_linux && use_goma
 
   # Allow projects that wish to stay on C++11 to override Chromium's default.
@@ -513,16 +513,17 @@ config("compiler") {
   # TODO(zforman): Once nacl's toolchain is updated, remove check.
   if (symbol_level != 0 && is_clang && !is_nacl && !is_win && !is_mac &&
       !is_ios && strip_absolute_paths_from_debug_symbols) {
-    # This is resolved to path like "$HOME/chromium/src/out/Release".
     # If debug option is given, clang includes $cwd in debug info.
     # In such build, this flag generates reproducible obj files
     # even we use build directory like "out/feature_a" and "out/feature_b" if
     # we build same files with same compile flag other than this.
-    # Other paths are already givne in relative, no need to normalize it by
-    # using -fdebug-prefix-map.
-    absolute_path = rebase_path(root_out_dir)
-
-    cflags += [ "-fdebug-prefix-map=$absolute_path=." ]
+    # Other paths are already givne in relative, no need to normalize them.
+    cflags += [
+      "-Xclang",
+      "-fdebug-compilation-dir",
+      "-Xclang",
+      ".",
+    ]
   }
 
   # Tells the compiler not to use absolute paths when passing the default
