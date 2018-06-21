@@ -2595,10 +2595,9 @@
   'webkit_layout_tests': {
     'remove_from': [
       # chromium.fyi
-      'Chromium Mac 10.13',  # no need to run this here.
       'Out of Process Profiling Mac',
       # chromium.linux
-      'Linux Tests (dbg)(1)(32)', # 32-bit linux is unsupported by the layout tests.
+      'Linux Tests (dbg)(1)(32)', # 32-bit linux is unsupported
       # chromium.win
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
       'Win10 Tests x64 (dbg)',
@@ -2761,13 +2760,40 @@
         },
       },
       'Mac10.13 Tests': {
-        # TODO(crbug.com/853356): Ramp to 100% non-experimental.
-        'experiment_percentage': 50,
+        # TODO(jbudorick,dpranke): Switch this to 10.13.
+
+        # TODO(kbr): if the Swarming dimensions were explicitly specified for
+        # all jobs then this wouldn't be needed. However, note that this bot
+        # implicitly specifies gpu:none rather than gpu:8086:0a2e.
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '8086:0a2e',
+              'hidpi': '0',
+              'os': 'Mac-10.12.6',
+            },
+          ],
+          'shards': 12,
+        },
       },
       'Mac10.13 Tests (dbg)': {
         'args': [
           '--debug',
         ],
+      },
+      # chromium.clang
+      'ToTMac': {
+        # TODO(thakis): Remove this once Mac10.13 Tests no longer runs tests on 10.12.
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '8086:0a2e',
+              'hidpi': '0',
+              'os': 'Mac-10.12.6',
+            },
+          ],
+          'shards': 12,
+        },
       },
 
       # chromium.webkit.
