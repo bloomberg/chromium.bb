@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "无法开始录制。",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "使用此相机拍摄的照片和视频将被移至“下载内容”文件夹。您可在“文件”中访问它们。\n\n具有存储权限的应用将有权访问您的照片和视频。",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "无法拍照。",
+    "description": "Error message shown when failing to take photo."
   }
 }

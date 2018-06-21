@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Kayıt başlatılamıyor.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Kamerayla çekilen fotoğraflar ve videolar, İndirilenler klasörüne taşınacaktır. Bunlara Dosyalar uygulamasından erişebilirsiniz.\n\nDepolama iznine sahip uygulamalar fotoğraflarınıza ve videolarınıza erişebilecektir.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Fotoğraf çekilemiyor.",
+    "description": "Error message shown when failing to take photo."
   }
 }

@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Записването не може да се стартира.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Направените с камерата снимки и видеоклипове ще бъдат преместени в папката „Изтегляния“. Можете да осъществите достъп до тях от „Файлове“.\n\nПриложенията с разрешения за хранилището ще имат достъп до снимките и видеоклиповете ви.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Снимката не може да се направи.",
+    "description": "Error message shown when failing to take photo."
   }
 }

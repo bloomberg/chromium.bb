@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "রেকর্ডিং শুরু করা যায়নি।",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "ক্যামেরায় তোলা ফটো এবং ভিডিও ডাউনলোড ফোল্ডারে সরিয়ে দেওয়া হবে। আপনি সেগুলি ফাইল বিকল্প থেকে অ্যাক্সেস করতে পারবেন।\n\nযে অ্যাপগুলিকে স্টোরেজ ব্যবহারের অনুমতি দেওয়া আছে সেগুলি আপনার ফটো এবং ভিডিও অ্যাক্সেস করতে পারবে।",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "ছবি তোলা যায়নি।",
+    "description": "Error message shown when failing to take photo."
   }
 }

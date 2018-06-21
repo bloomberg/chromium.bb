@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "No es pot iniciar la gravació.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Les fotos i els vídeos que es facin amb la càmera es mouran a la carpeta Baixades. Pots accedir-hi des de Fitxers.\n\nLes aplicacions amb permisos d'emmagatzematge tindran accés a les fotos i als vídeos.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "No es pot fer la foto.",
+    "description": "Error message shown when failing to take photo."
   }
 }

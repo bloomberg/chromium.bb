@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "રેકોર્ડિંગ શરૂ કરવામાં અસમર્થ છીએ.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "કૅમેરા વડે લીધેલા ફોટા અને વીડિઓ ડાઉનલોડ ફોલ્ડરમાં ખસેડવામાં આવશે. તમે તેઓને ફાઇલોમાંથી ઍક્સેસ કરી શકશો.\n\nસ્ટોરેજ માટે પરવાનગી ધરાવતી ઍપ તમારા ફોટા તથા વીડિઓને ઍક્સેસ કરી શકશે.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "ફોટો લેવામાં અસમર્થ છીએ.",
+    "description": "Error message shown when failing to take photo."
   }
 }

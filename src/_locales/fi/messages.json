@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Tallennuksen aloittaminen epäonnistui.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Kameralla otetut kuvat ja videot siirretään Lataukset-kansioon. Voit käyttää niitä avaamalla Tiedostot.\n\nJos sovelluksella on tallennustilan käyttöoikeus, se voi käyttää kuvia ja videoita.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Kuvan ottaminen epäonnistui.",
+    "description": "Error message shown when failing to take photo."
   }
 }

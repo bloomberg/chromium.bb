@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Nepavyko pradėti įrašymo.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Nuotraukos ir vaizdo įrašai, sukurti naudojant fotoaparatą, bus perkelti į aplanką „Atsisiuntimai“. Juos galite pasiekti Failų programoje.\n\nProgramos su saugyklos leidimais turės prieigą prie nuotraukų ir vaizdo įrašų.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Nepavyko padaryti nuotraukos.",
+    "description": "Error message shown when failing to take photo."
   }
 }

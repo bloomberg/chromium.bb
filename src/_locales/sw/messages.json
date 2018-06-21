@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Imeshindwa kuanza kurekodi.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Picha na video zinazopigwa kwa kamera zitahamishiwa kwenye folda ya Vipakuliwa. Unaweza kuzifikia kwenye Faili.\n\nProgramu zilizo na ruhusa za hifadhi zitaweza kufikia picha na video zako.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Imeshindwa kupiga picha.",
+    "description": "Error message shown when failing to take photo."
   }
 }

@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "መቅዳት መጀመር አልተቻለም።",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "በካሜራው የተነሱ ፎቶዎች ወይም የተቀረጹ ቪዲዮዎች ወደ የውርዶች አቃፊው ይወሰዳሉ። በፋይሎች ውስጥ ሊደርሱባቸው ይችላሉ። የማከማቻ ፈቃዶች ያላቸው መተግበሪያዎች የእርስዎን ፎቶዎች እና ቪዲዮዎች መዳረሻ ይኖራቸዋል።",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "ፎቶ ማንሳት አልተቻለም።",
+    "description": "Error message shown when failing to take photo."
   }
 }

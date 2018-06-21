@@ -272,5 +272,17 @@
         "example": "20."
       }
     }
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Det gick inte att starta inspelningen.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "migratePicturesMsg": {
+    "message": "Videor och foton du tagit med kameran flyttas till mappen Nedladdningar. Du kan öppna dem i Filer.\n\nFotona och videorna blir tillgängliga för appar som har åtkomstbehörighet till lagringsutrymmet.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Det gick inte att ta bilden.",
+    "description": "Error message shown when failing to take photo."
   }
 }
