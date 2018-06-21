@@ -35,15 +35,20 @@ const int kMaxStrokeGapWhenWritingMs = 1000;
 }  // namespace
 
 MetalayerMode::MetalayerMode(Delegate* delegate)
-    : CommonPaletteTool(delegate), weak_factory_(this) {
+    : CommonPaletteTool(delegate),
+      voice_interaction_binding_(this),
+      weak_factory_(this) {
   Shell::Get()->AddPreTargetHandler(this);
-  Shell::Get()->voice_interaction_controller()->AddObserver(this);
+
+  mojom::VoiceInteractionObserverPtr ptr;
+  voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
+  Shell::Get()->voice_interaction_controller()->AddVoiceInteractionObserver(
+      std::move(ptr));
   Shell::Get()->highlighter_controller()->AddObserver(this);
 }
 
 MetalayerMode::~MetalayerMode() {
   Shell::Get()->highlighter_controller()->RemoveObserver(this);
-  Shell::Get()->voice_interaction_controller()->RemoveObserver(this);
   Shell::Get()->RemovePreTargetHandler(this);
 }
 

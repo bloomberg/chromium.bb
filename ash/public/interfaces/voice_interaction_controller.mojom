@@ -43,6 +43,25 @@ enum AssistantAllowedState {
   DISALLOWED_BY_INCOGNITO
 };
 
+// Allows observing changes to voice interaction status and settings.
+interface VoiceInteractionObserver {
+  // Called when voice interaction session state changes.
+  OnVoiceInteractionStatusChanged(VoiceInteractionState state);
+
+  // Called when voice interaction is enabled/disabled in settings.
+  OnVoiceInteractionSettingsEnabled(bool enabled);
+
+  // Called when voice interaction service is allowed/disallowed to access
+  // the "context" (text and graphic content that is currently on screen).
+  OnVoiceInteractionContextEnabled(bool enabled);
+
+  // Called when voice interaction setup flow completed.
+  OnVoiceInteractionSetupCompleted(bool completed);
+
+  // Called when assistant feature allowed state has changed.
+  OnAssistantFeatureAllowedChanged(AssistantAllowedState state);
+};
+
 // Interface for ash client (Chrome) to connect to the voice interaction
 // controller, which notifies changes of voice interaction related flags.
 interface VoiceInteractionController {
@@ -63,4 +82,10 @@ interface VoiceInteractionController {
   // Notify if voice interaction feature is allowed or not. e.g. not allowed
   // if disabled by policy.
   NotifyFeatureAllowed(AssistantAllowedState state);
+
+  // Return if the voice interaction setting is enabled/disabled.
+  IsSettingEnabled() => (bool enabled);
+
+  // Return the voice interaction setup complete status.
+  IsSetupCompleted() => (bool completed);
 };

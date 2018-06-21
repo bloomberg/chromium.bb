@@ -40,4 +40,14 @@ void FakeVoiceInteractionController::NotifyFeatureAllowed(
   assistant_allowed_state_ = state;
 }
 
+void FakeVoiceInteractionController::IsSettingEnabled(
+    IsSettingEnabledCallback callback) {
+  std::move(callback).Run(voice_interaction_settings_enabled_);
+}
+
+void FakeVoiceInteractionController::IsSetupCompleted(
+    IsSetupCompletedCallback callback) {
+  std::move(callback).Run(voice_interaction_setup_completed_);
+}
+
 }  // namespace arc

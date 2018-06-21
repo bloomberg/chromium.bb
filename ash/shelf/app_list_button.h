@@ -8,10 +8,11 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
-#include "ash/voice_interaction/voice_interaction_observer.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/button/image_button.h"
 
@@ -30,7 +31,7 @@ class ShelfView;
 class ASH_EXPORT AppListButton : public views::ImageButton,
                                  public ShellObserver,
                                  public SessionObserver,
-                                 public VoiceInteractionObserver {
+                                 public mojom::VoiceInteractionObserver {
  public:
   AppListButton(InkDropButtonListener* listener,
                 ShelfView* shelf_view,
@@ -68,11 +69,14 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   void OnAppListVisibilityChanged(bool shown,
                                   aura::Window* root_window) override;
 
-  // VoiceInteractionObserver:
+  // mojom::VoiceInteractionObserver:
   void OnVoiceInteractionStatusChanged(
       mojom::VoiceInteractionState state) override;
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
+  void OnVoiceInteractionContextEnabled(bool enabled) override {}
   void OnVoiceInteractionSetupCompleted(bool completed) override;
+  void OnAssistantFeatureAllowedChanged(
+      mojom::AssistantAllowedState state) override {}
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
@@ -98,6 +102,8 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   std::unique_ptr<base::OneShotTimer> assistant_animation_delay_timer_;
   std::unique_ptr<base::OneShotTimer> assistant_animation_hide_delay_timer_;
   base::TimeTicks voice_interaction_start_timestamp_;
+
+  mojo::Binding<mojom::VoiceInteractionObserver> voice_interaction_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButton);
 };

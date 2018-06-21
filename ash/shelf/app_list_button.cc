@@ -60,13 +60,18 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
     : views::ImageButton(nullptr),
       listener_(listener),
       shelf_view_(shelf_view),
-      shelf_(shelf) {
+      shelf_(shelf),
+      voice_interaction_binding_(this) {
   DCHECK(listener_);
   DCHECK(shelf_view_);
   DCHECK(shelf_);
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
-  Shell::Get()->voice_interaction_controller()->AddObserver(this);
+
+  mojom::VoiceInteractionObserverPtr ptr;
+  voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
+  Shell::Get()->voice_interaction_controller()->AddVoiceInteractionObserver(
+      std::move(ptr));
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   set_ink_drop_base_color(kShelfInkDropBaseColor);
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
@@ -86,7 +91,6 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
 }
 
 AppListButton::~AppListButton() {
-  Shell::Get()->voice_interaction_controller()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
 }

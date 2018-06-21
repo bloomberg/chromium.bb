@@ -9,8 +9,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
-#include "ash/voice_interaction/voice_interaction_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace ash {
 
@@ -22,8 +22,7 @@ class ASH_EXPORT VoiceInteractionController
 
   void BindRequest(mojom::VoiceInteractionControllerRequest request);
 
-  void AddObserver(VoiceInteractionObserver* observer);
-  void RemoveObserver(VoiceInteractionObserver* observer);
+  void AddVoiceInteractionObserver(mojom::VoiceInteractionObserverPtr observer);
 
   // ash::mojom::VoiceInteractionController:
   void NotifyStatusChanged(mojom::VoiceInteractionState state) override;
@@ -31,6 +30,8 @@ class ASH_EXPORT VoiceInteractionController
   void NotifyContextEnabled(bool enabled) override;
   void NotifySetupCompleted(bool completed) override;
   void NotifyFeatureAllowed(mojom::AssistantAllowedState state) override;
+  void IsSettingEnabled(IsSettingEnabledCallback callback) override;
+  void IsSetupCompleted(IsSetupCompletedCallback callback) override;
 
   mojom::VoiceInteractionState voice_interaction_state() const {
     return voice_interaction_state_;
@@ -41,6 +42,8 @@ class ASH_EXPORT VoiceInteractionController
   bool setup_completed() const { return setup_completed_; }
 
   mojom::AssistantAllowedState allowed_state() const { return allowed_state_; }
+
+  void FlushForTesting();
 
  private:
   // Voice interaction state. The initial value should be set to STOPPED to make
@@ -58,9 +61,9 @@ class ASH_EXPORT VoiceInteractionController
   mojom::AssistantAllowedState allowed_state_ =
       mojom::AssistantAllowedState::ALLOWED;
 
-  base::ObserverList<VoiceInteractionObserver> observers_;
-
   mojo::Binding<mojom::VoiceInteractionController> binding_;
+
+  mojo::InterfacePtrSet<mojom::VoiceInteractionObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(VoiceInteractionController);
 };

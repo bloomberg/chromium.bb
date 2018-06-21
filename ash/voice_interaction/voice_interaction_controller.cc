@@ -17,45 +17,59 @@ void VoiceInteractionController::BindRequest(
   binding_.Bind(std::move(request));
 }
 
-void VoiceInteractionController::AddObserver(
-    VoiceInteractionObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void VoiceInteractionController::RemoveObserver(
-    VoiceInteractionObserver* observer) {
-  observers_.RemoveObserver(observer);
+void VoiceInteractionController::AddVoiceInteractionObserver(
+    mojom::VoiceInteractionObserverPtr observer) {
+  observers_.AddPtr(std::move(observer));
 }
 
 void VoiceInteractionController::NotifyStatusChanged(
     mojom::VoiceInteractionState state) {
   voice_interaction_state_ = state;
-  for (auto& observer : observers_)
-    observer.OnVoiceInteractionStatusChanged(state);
+  observers_.ForAllPtrs([state](auto* observer) {
+    observer->OnVoiceInteractionStatusChanged(state);
+  });
 }
 
 void VoiceInteractionController::NotifySettingsEnabled(bool enabled) {
   settings_enabled_ = enabled;
-  for (auto& observer : observers_)
-    observer.OnVoiceInteractionSettingsEnabled(enabled);
+  observers_.ForAllPtrs([enabled](auto* observer) {
+    observer->OnVoiceInteractionSettingsEnabled(enabled);
+  });
 }
 
 void VoiceInteractionController::NotifyContextEnabled(bool enabled) {
-  for (auto& observer : observers_)
-    observer.OnVoiceInteractionContextEnabled(enabled);
+  observers_.ForAllPtrs([enabled](auto* observer) {
+    observer->OnVoiceInteractionContextEnabled(enabled);
+  });
 }
 
 void VoiceInteractionController::NotifySetupCompleted(bool completed) {
   setup_completed_ = completed;
-  for (auto& observer : observers_)
-    observer.OnVoiceInteractionSetupCompleted(completed);
+  observers_.ForAllPtrs([completed](auto* observer) {
+    observer->OnVoiceInteractionSetupCompleted(completed);
+  });
 }
 
 void VoiceInteractionController::NotifyFeatureAllowed(
     mojom::AssistantAllowedState state) {
   allowed_state_ = state;
-  for (auto& observer : observers_)
-    observer.OnAssistantFeatureAllowedChanged(state);
+  observers_.ForAllPtrs([state](auto* observer) {
+    observer->OnAssistantFeatureAllowedChanged(state);
+  });
+}
+
+void VoiceInteractionController::IsSettingEnabled(
+    IsSettingEnabledCallback callback) {
+  std::move(callback).Run(settings_enabled_);
+}
+
+void VoiceInteractionController::IsSetupCompleted(
+    IsSetupCompletedCallback callback) {
+  std::move(callback).Run(setup_completed_);
+}
+
+void VoiceInteractionController::FlushForTesting() {
+  observers_.FlushForTesting();
 }
 
 }  // namespace ash
