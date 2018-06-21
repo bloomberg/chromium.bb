@@ -786,9 +786,9 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   void TestMigrationOnNetworkMadeDefault(IoMode write_mode);
   void TestMigrationOnPathDegrading(bool async_write_before);
   void TestMigrationOnWriteErrorPauseBeforeConnected(IoMode write_error_mode);
-  void TestMigrationOnWriteErrorWithNetworkAddedBeforeNotification(
+  void TestMigrationOnWriteErrorWithMultipleNotifications(
       IoMode write_error_mode,
-      bool disconnected);
+      bool disconnect_before_connect);
 
   QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   MockHostResolver host_resolver_;
@@ -4662,10 +4662,57 @@ TEST_P(QuicStreamFactoryTest,
   TestMigrationOnWriteErrorPauseBeforeConnected(ASYNC);
 }
 
+// Migrate on asynchronous write error, old network disconnects after alternate
+// network connects.
+TEST_P(QuicStreamFactoryTest,
+       MigrateSessionOnWriteErrorWithDisconnectAfterConnectAysnc) {
+  TestMigrationOnWriteErrorWithMultipleNotifications(
+      ASYNC, /*disconnect_before_connect*/ false);
+}
+
+// Migrate on synchronous write error, old network disconnects after alternate
+// network connects.
+TEST_P(QuicStreamFactoryTest,
+       MigrateSessionOnWriteErrorWithDisconnectAfterConnectSync) {
+  TestMigrationOnWriteErrorWithMultipleNotifications(
+      SYNCHRONOUS, /*disconnect_before_connect*/ false);
+}
+
+// Migrate on asynchronous write error, old network disconnects before alternate
+// network connects.
+TEST_P(QuicStreamFactoryTest,
+       MigrateSessionOnWriteErrorWithDisconnectBeforeConnectAysnc) {
+  TestMigrationOnWriteErrorWithMultipleNotifications(
+      ASYNC, /*disconnect_before_connect*/ true);
+}
+
+// Migrate on synchronous write error, old network disconnects before alternate
+// network connects.
+TEST_P(QuicStreamFactoryTest,
+       MigrateSessionOnWriteErrorWithDisconnectBeforeConnectSync) {
+  TestMigrationOnWriteErrorWithMultipleNotifications(
+      SYNCHRONOUS, /*disconnect_before_connect*/ true);
+}
+
+// Setps up test which verifies that session successfully migrate to alternate
+// network with signals delivered in the following order:
+// *NOTE* Signal (A) and (B) can reverse order based on
+// |disconnect_before_connect|.
+// - (No alternate network is connected) session connects to
+//   kDefaultNetworkForTests.
+// - An async/sync write error is encountered based on |write_error_mode|:
+//   session posted task to migrate session on write error.
+// - Posted task is executed, miration moves to pending state due to lack of
+//   alternate network.
+// - (A) An alternate network is connected, pending migration completes.
+// - (B) Old default network disconnects, no migration will be attempted as
+// session
+//   has already migrate to the alternate network.
+// - The alternate network is made default.
 void QuicStreamFactoryTestBase::
-    TestMigrationOnWriteErrorWithNetworkAddedBeforeNotification(
+    TestMigrationOnWriteErrorWithMultipleNotifications(
         IoMode write_error_mode,
-        bool disconnected) {
+        bool disconnect_before_connect) {
   InitializeConnectionMigrationTest({kDefaultNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -4676,7 +4723,7 @@ void QuicStreamFactoryTestBase::
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data.AddWrite(
       SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
-  socket_data.AddWrite(SYNCHRONOUS, ERR_FAILED);
+  socket_data.AddWrite(write_error_mode, ERR_FAILED);  // Write error.
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.
@@ -4710,9 +4757,8 @@ void QuicStreamFactoryTestBase::
   HttpRequestHeaders request_headers;
   EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
                                     callback_.callback()));
-
-  // Run the message loop so that data queued in the new socket is read by the
-  // packet reader.
+  // Run the message loop so that posted task to migrate to socket will be
+  // executed. A new task will be posted to wait for a new network.
   base::RunLoop().RunUntilIdle();
 
   // In this particular code path, the network will not yet be marked
@@ -4742,17 +4788,26 @@ void QuicStreamFactoryTestBase::
   scoped_mock_network_change_notifier_->mock_network_change_notifier()
       ->SetConnectedNetworksList(
           {kDefaultNetworkForTests, kNewNetworkForTests});
-
-  // A notification triggers and completes migration.
-  if (disconnected) {
+  if (disconnect_before_connect) {
+    // Now deliver a DISCONNECT notification.
     scoped_mock_network_change_notifier_->mock_network_change_notifier()
         ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
-  } else {
+
+    // Now deliver a CONNECTED notification and completes migration.
     scoped_mock_network_change_notifier_->mock_network_change_notifier()
-        ->NotifyNetworkMadeDefault(kNewNetworkForTests);
+        ->NotifyNetworkConnected(kNewNetworkForTests);
+  } else {
+    // Now deliver a CONNECTED notification and completes migration.
+    scoped_mock_network_change_notifier_->mock_network_change_notifier()
+        ->NotifyNetworkConnected(kNewNetworkForTests);
+
+    // Now deliver a DISCONNECT notification.
+    scoped_mock_network_change_notifier_->mock_network_change_notifier()
+        ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
   }
-  // The session should now be marked as going away. Ensure that
-  // while it is still alive, it is no longer active.
+  // The session should now be marked as going away because the migration is
+  // caused by write error. Ensure that while it is still alive, it is no
+  // longer active.
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
   EXPECT_EQ(1u, session->GetNumActiveStreams());
@@ -4763,10 +4818,9 @@ void QuicStreamFactoryTestBase::
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   EXPECT_EQ(200, response.headers->response_code());
 
-  // Now deliver a CONNECTED notification. Nothing happens since
-  // migration was already finished earlier.
+  // Deliver a MADEDEFAULT notification.
   scoped_mock_network_change_notifier_->mock_network_change_notifier()
-      ->NotifyNetworkConnected(kNewNetworkForTests);
+      ->NotifyNetworkMadeDefault(kNewNetworkForTests);
 
   // Create a new request for the same destination and verify that a
   // new session is created.
@@ -4798,28 +4852,6 @@ void QuicStreamFactoryTestBase::
   EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data2.AllReadDataConsumed());
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
-}
-
-TEST_P(QuicStreamFactoryTest,
-       MigrateSessionOnWriteErrorWithNetworkAddedBeforeDisconnectedSync) {
-  TestMigrationOnWriteErrorWithNetworkAddedBeforeNotification(SYNCHRONOUS,
-                                                              true);
-}
-
-TEST_P(QuicStreamFactoryTest,
-       MigrateSessionOnWriteErrorWithNetworkAddedBeforeDisconnectedAsync) {
-  TestMigrationOnWriteErrorWithNetworkAddedBeforeNotification(ASYNC, true);
-}
-
-TEST_P(QuicStreamFactoryTest,
-       MigrateSessionOnWriteErrorWithNetworkAddedBeforeMadeDefaultSync) {
-  TestMigrationOnWriteErrorWithNetworkAddedBeforeNotification(SYNCHRONOUS,
-                                                              false);
-}
-
-TEST_P(QuicStreamFactoryTest,
-       MigrateSessionOnWriteErrorWithNetworkAddedBeforeMadeDefaultAsync) {
-  TestMigrationOnWriteErrorWithNetworkAddedBeforeNotification(ASYNC, false);
 }
 
 TEST_P(QuicStreamFactoryTest, ServerMigration) {
