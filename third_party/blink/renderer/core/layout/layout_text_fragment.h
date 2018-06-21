@@ -94,6 +94,7 @@ class CORE_EXPORT LayoutTextFragment final : public LayoutText {
   }
 
   Text* AssociatedTextNode() const;
+  LayoutText* GetFirstLetterPart() override;
 
  protected:
   void WillBeDestroyed() override;

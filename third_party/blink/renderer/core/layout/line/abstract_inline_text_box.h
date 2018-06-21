@@ -47,19 +47,6 @@ class InlineTextBox;
 // get information about InlineTextBoxes without tight coupling.
 class CORE_EXPORT AbstractInlineTextBox
     : public RefCounted<AbstractInlineTextBox> {
- private:
-  AbstractInlineTextBox(LineLayoutText line_layout_item,
-                        InlineTextBox* inline_text_box)
-      : line_layout_item_(line_layout_item),
-        inline_text_box_(inline_text_box) {}
-
-  static scoped_refptr<AbstractInlineTextBox> GetOrCreate(LineLayoutText,
-                                                          InlineTextBox*);
-  static void WillDestroy(InlineTextBox*);
-
-  friend class LayoutText;
-  friend class InlineTextBox;
-
  public:
   struct WordBoundaries {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -71,34 +58,71 @@ class CORE_EXPORT AbstractInlineTextBox
 
   enum Direction { kLeftToRight, kRightToLeft, kTopToBottom, kBottomToTop };
 
-  ~AbstractInlineTextBox();
+  virtual ~AbstractInlineTextBox();
 
   LineLayoutText GetLineLayoutItem() const { return line_layout_item_; }
 
-  scoped_refptr<AbstractInlineTextBox> NextInlineTextBox() const;
-  LayoutRect LocalBounds() const;
-  unsigned Len() const;
-  Direction GetDirection() const;
+  virtual void Detach();
+  virtual scoped_refptr<AbstractInlineTextBox> NextInlineTextBox() const = 0;
+  virtual LayoutRect LocalBounds() const = 0;
+  virtual unsigned Len() const = 0;
+  virtual Direction GetDirection() const = 0;
   Node* GetNode() const;
-  void CharacterWidths(Vector<float>&) const;
+  virtual void CharacterWidths(Vector<float>&) const = 0;
   void GetWordBoundaries(Vector<WordBoundaries>&) const;
-  String GetText() const;
-  bool IsFirst() const;
-  bool IsLast() const;
-  scoped_refptr<AbstractInlineTextBox> NextOnLine() const;
-  scoped_refptr<AbstractInlineTextBox> PreviousOnLine() const;
+  virtual String GetText() const = 0;
+  virtual bool IsFirst() const = 0;
+  virtual bool IsLast() const = 0;
+  virtual scoped_refptr<AbstractInlineTextBox> NextOnLine() const = 0;
+  virtual scoped_refptr<AbstractInlineTextBox> PreviousOnLine() const = 0;
+
+ protected:
+  explicit AbstractInlineTextBox(LineLayoutText line_layout_item);
 
  private:
-  void Detach();
-
   // Weak ptrs; these are nulled when InlineTextBox::destroy() calls
   // AbstractInlineTextBox::willDestroy.
   LineLayoutText line_layout_item_;
+};
+
+// The implementation of |AbstractInlineTextBox| for legacy layout.
+// See also |NGAbstractInlineTextBox| for LayoutNG.
+class CORE_EXPORT LegacyAbstractInlineTextBox final
+    : public AbstractInlineTextBox {
+ private:
+  LegacyAbstractInlineTextBox(LineLayoutText line_layout_item,
+                              InlineTextBox* inline_text_box);
+
+  static scoped_refptr<AbstractInlineTextBox> GetOrCreate(LineLayoutText,
+                                                          InlineTextBox*);
+  static void WillDestroy(InlineTextBox*);
+
+  friend class LayoutText;
+  friend class InlineTextBox;
+
+ public:
+  ~LegacyAbstractInlineTextBox() final;
+
+ private:
+  // Implementations of AbstractInlineTextBox member functions.
+  void Detach() final;
+  scoped_refptr<AbstractInlineTextBox> NextInlineTextBox() const final;
+  LayoutRect LocalBounds() const final;
+  unsigned Len() const final;
+  Direction GetDirection() const final;
+  void CharacterWidths(Vector<float>&) const final;
+  String GetText() const final;
+  bool IsFirst() const final;
+  bool IsLast() const final;
+  scoped_refptr<AbstractInlineTextBox> NextOnLine() const final;
+  scoped_refptr<AbstractInlineTextBox> PreviousOnLine() const final;
+
   InlineTextBox* inline_text_box_;
 
   typedef HashMap<InlineTextBox*, scoped_refptr<AbstractInlineTextBox>>
-      InlineToAbstractInlineTextBoxHashMap;
-  static InlineToAbstractInlineTextBoxHashMap* g_abstract_inline_text_box_map_;
+      InlineToLegacyAbstractInlineTextBoxHashMap;
+  static InlineToLegacyAbstractInlineTextBoxHashMap*
+      g_abstract_inline_text_box_map_;
 };
 
 }  // namespace blink

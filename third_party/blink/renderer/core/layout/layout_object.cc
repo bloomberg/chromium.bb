@@ -4029,14 +4029,7 @@ const LayoutObject* AssociatedLayoutObjectOf(const Node& node,
     if (static_cast<unsigned>(offset_in_node) >= threshold)
       return layout_object;
   }
-  LayoutObject* first_letter_layout_object =
-      layout_text_fragment->GetFirstLetterPseudoElement()->GetLayoutObject();
-  // TODO(yosin): We're not sure when |firstLetterLayoutObject| has
-  // multiple child layout object.
-  LayoutObject* child = first_letter_layout_object->SlowFirstChild();
-  CHECK(child && child->IsText());
-  DCHECK_EQ(child, first_letter_layout_object->SlowLastChild());
-  return child;
+  return layout_text_fragment->GetFirstLetterPart();
 }
 
 bool LayoutObject::CanBeSelectionLeaf() const {

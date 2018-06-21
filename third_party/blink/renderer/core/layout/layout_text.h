@@ -94,6 +94,9 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   virtual unsigned TextStartOffset() const { return 0; }
   String PlainText() const;
 
+  // Returns first letter part of |LayoutTextFragment|.
+  virtual LayoutText* GetFirstLetterPart() { return nullptr; }
+
   InlineTextBox* CreateInlineTextBox(int start, unsigned short length);
   void DirtyOrDeleteLineBoxesIfNeeded(bool full_layout);
   void DirtyLineBoxes();
@@ -201,6 +204,9 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   const InlineTextBoxList& TextBoxes() const { return text_boxes_; }
 
+  // Returns first |InlineTextBox| produces for associated |Node|.
+  // Note: When |this| is remaining part of ::first-letter, this function
+  // returns first-letter part of |InlineTextBox| instead of remaining part.
   InlineTextBox* FirstTextBox() const { return text_boxes_.First(); }
   InlineTextBox* LastTextBox() const { return text_boxes_.Last(); }
 

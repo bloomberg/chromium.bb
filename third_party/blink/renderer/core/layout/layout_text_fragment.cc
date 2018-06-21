@@ -160,6 +160,19 @@ Text* LayoutTextFragment::AssociatedTextNode() const {
   return (node && node->IsTextNode()) ? ToText(node) : nullptr;
 }
 
+LayoutText* LayoutTextFragment::GetFirstLetterPart() {
+  if (!is_remaining_text_layout_object_)
+    return nullptr;
+  // Node: We assume first letter pseudo element has only one child and it
+  // is LayoutTextFragment.
+  LayoutObject* const first_letter_container =
+      GetFirstLetterPseudoElement()->GetLayoutObject();
+  LayoutObject* const child = first_letter_container->SlowFirstChild();
+  CHECK(child->IsText());
+  DCHECK_EQ(child, first_letter_container->SlowLastChild());
+  return ToLayoutTextFragment(child);
+}
+
 void LayoutTextFragment::UpdateHitTestResult(HitTestResult& result,
                                              const LayoutPoint& point) const {
   if (result.InnerNode())

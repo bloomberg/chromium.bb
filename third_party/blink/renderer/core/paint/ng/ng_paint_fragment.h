@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_PAINT_FRAGMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_PAINT_FRAGMENT_H_
 
+#include <iterator>
+
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
@@ -36,6 +38,7 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
                                     public ImageResourceObserver {
  public:
   NGPaintFragment(scoped_refptr<const NGPhysicalFragment>, NGPaintFragment*);
+  ~NGPaintFragment() override;
   static std::unique_ptr<NGPaintFragment> Create(
       scoped_refptr<const NGPhysicalFragment>);
 
@@ -148,7 +151,8 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
 
     bool IsEmpty() const { return !first_; }
 
-    class iterator {
+    class iterator final
+        : public std::iterator<std::forward_iterator_tag, NGPaintFragment*> {
      public:
       explicit iterator(NGPaintFragment* first) : current_(first) {}
 

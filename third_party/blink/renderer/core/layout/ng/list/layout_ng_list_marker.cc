@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 
+#include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 
 namespace blink {
@@ -62,6 +63,10 @@ bool LayoutNGListMarker::IsContentImage() const {
 
 LayoutObject* LayoutNGListMarker::SymbolMarkerLayoutText() const {
   return ListItem()->SymbolMarkerLayoutText();
+}
+
+String LayoutNGListMarker::TextAlternative() const {
+  return ToLayoutText(FirstChild())->GetText();
 }
 
 }  // namespace blink

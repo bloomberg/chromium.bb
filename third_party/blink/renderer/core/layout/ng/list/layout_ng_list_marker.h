@@ -35,6 +35,9 @@ class CORE_EXPORT LayoutNGListMarker final
 
   LayoutObject* SymbolMarkerLayoutText() const;
 
+  // Marker text with suffix, e.g. "1. ", for use in accessibility.
+  String TextAlternative() const;
+
   const char* GetName() const override { return "LayoutNGListMarker"; }
 
  private:
