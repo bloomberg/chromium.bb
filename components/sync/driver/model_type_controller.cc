@@ -117,6 +117,7 @@ void ModelTypeController::LoadModels(
     return;
   }
 
+  DVLOG(1) << "Sync starting for " << ModelTypeToString(type());
   state_ = MODEL_STARTING;
 
   // Callback that posts back to the UI thread.
@@ -154,6 +155,10 @@ void ModelTypeController::LoadModelsDone(ConfigureResult result,
   if (state_ == NOT_RUNNING) {
     // The callback arrived on the UI thread after the type has been already
     // stopped.
+    DVLOG(1) << "Sync start completion received late for "
+             << ModelTypeToString(type()) << ", it has been stopped meanwhile";
+    // TODO(mastiz): Call to Stop() here, but think through if that's enough,
+    // because perhaps the datatype was reenabled.
     RecordStartFailure(ABORTED);
     return;
   }
@@ -161,6 +166,7 @@ void ModelTypeController::LoadModelsDone(ConfigureResult result,
   if (IsSuccessfulResult(result)) {
     DCHECK_EQ(MODEL_STARTING, state_);
     state_ = MODEL_LOADED;
+    DVLOG(1) << "Sync start completed for " << ModelTypeToString(type());
   } else {
     RecordStartFailure(result);
   }
@@ -206,6 +212,7 @@ void ModelTypeController::StartAssociating(
   DCHECK_EQ(MODEL_LOADED, state_);
 
   state_ = RUNNING;
+  DVLOG(1) << "Sync running for " << ModelTypeToString(type());
 
   // There is no association, just call back promptly.
   SyncMergeResult merge_result(type());
@@ -240,8 +247,15 @@ void ModelTypeController::Stop(SyncStopMetadataFate metadata_fate) {
   // Only call StopSync if the delegate is ready to handle it (controller is
   // in loaded state).
   if (state() == MODEL_LOADED || state() == RUNNING) {
+    DVLOG(1) << "Stopping sync for " << ModelTypeToString(type());
     PostModelTask(FROM_HERE,
                   base::BindOnce(&StopSyncHelperOnModelThread, metadata_fate));
+  } else {
+    DCHECK_EQ(MODEL_STARTING, state_);
+    DVLOG(1) << "Shortcutting stop for " << ModelTypeToString(type())
+             << " because it's still starting";
+    // TODO(mastiz): Enter STOPPING state here and/or queue pending stops,
+    // together with |metadata_fate|.
   }
 
   state_ = NOT_RUNNING;
