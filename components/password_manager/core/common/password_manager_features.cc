@@ -14,6 +14,11 @@ namespace features {
 const base::Feature kAffiliationBasedMatching = {
     "AffiliationBasedMatching", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables links to the setting pages from the Chrome profile menu for Passwords
+// and Autofill.
+const base::Feature kAutofillHome = {"AutofillHome",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Use HTML based username detector.
 const base::Feature kHtmlBasedUsernameDetector = {
     "HtmlBaseUsernameDetector", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -57,6 +57,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
@@ -110,6 +111,7 @@ constexpr int kButtonHeight = 32;
 constexpr int kFixedAccountRemovalViewWidth = 280;
 constexpr int kFixedMenuWidthPreDice = 240;
 constexpr int kFixedMenuWidthDice = 288;
+constexpr int kIconSize = 20;
 
 // Spacing between the edge of the material design user menu and the
 // top/bottom or left/right of the menu items.
@@ -402,6 +404,9 @@ void ProfileChooserView::ResetView() {
   account_removal_cancel_button_ = nullptr;
   sync_to_another_account_button_ = nullptr;
   dice_signin_button_view_ = nullptr;
+  passwords_button_ = nullptr;
+  credit_cards_button_ = nullptr;
+  addresses_button_ = nullptr;
 }
 
 void ProfileChooserView::Init() {
@@ -596,7 +601,13 @@ bool ProfileChooserView::HandleContextMenu(
 
 void ProfileChooserView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
-  if (sender == guest_profile_button_) {
+  if (sender == passwords_button_) {
+    chrome::ShowSettingsSubPage(browser_, chrome::kPasswordManagerSubPage);
+  } else if (sender == credit_cards_button_) {
+    chrome::ShowSettingsSubPage(browser_, chrome::kAutofillSubPage);
+  } else if (sender == addresses_button_) {
+    chrome::ShowSettingsSubPage(browser_, chrome::kAutofillSubPage);
+  } else if (sender == guest_profile_button_) {
     PrefService* service = g_browser_process->local_state();
     DCHECK(service);
     DCHECK(service->GetBoolean(prefs::kBrowserGuestModeEnabled));
@@ -780,10 +791,12 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   views::GridLayout* layout = CreateSingleColumnLayout(view, menu_width_);
   // Separate items into active and alternatives.
   Indexes other_profiles;
-  views::View* sync_error_view = NULL;
-  views::View* current_profile_view = NULL;
-  views::View* current_profile_accounts = NULL;
-  views::View* option_buttons_view = NULL;
+  views::View* sync_error_view = nullptr;
+  views::View* current_profile_view = nullptr;
+  views::View* current_profile_accounts = nullptr;
+  views::View* option_buttons_view = nullptr;
+  views::View* autofill_home_view = nullptr;
+  bool current_profile_signed_in = false;
   for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
     const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
     if (item.active) {
@@ -791,6 +804,8 @@ views::View* ProfileChooserView::CreateProfileChooserView(
           item.signed_in && profiles::IsLockAvailable(browser_->profile()),
           avatar_menu);
       current_profile_view = CreateCurrentProfileView(item, false);
+      autofill_home_view = CreateAutofillHomeView();
+      current_profile_signed_in = item.signed_in;
       if (!IsProfileChooser(view_mode_))
         current_profile_accounts = CreateCurrentProfileAccountsView(item);
       sync_error_view = CreateSyncErrorViewIfNeeded(item);
@@ -828,6 +843,17 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   if (browser_->profile()->IsSupervised()) {
     layout->StartRow(1, 0);
     layout->AddView(CreateSupervisedUserDisclaimerView());
+  }
+
+  if (autofill_home_view) {
+    if (!current_profile_signed_in) {
+      // If the user is signed in then the autofill data is a part of the
+      // account logically. Otherwise, use a separator.
+      layout->StartRow(0, 0);
+      layout->AddView(new views::Separator());
+    }
+    layout->StartRow(0, 0);
+    layout->AddView(autofill_home_view);
   }
 
   layout->StartRow(0, 0);
@@ -869,7 +895,7 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded(
   // Adds the sync problem icon.
   views::ImageView* sync_problem_icon = new views::ImageView();
   sync_problem_icon->SetImage(
-      gfx::CreateVectorIcon(kSyncProblemIcon, 20, gfx::kGoogleRed700));
+      gfx::CreateVectorIcon(kSyncProblemIcon, kIconSize, gfx::kGoogleRed700));
   view->AddChildView(sync_problem_icon);
 
   // Adds a vertical view to organize the error title, message, and button.
@@ -1217,7 +1243,6 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
   views::GridLayout* layout = CreateSingleColumnLayout(view, menu_width_);
 
   const bool is_guest = browser_->profile()->IsGuestSession();
-  const int kIconSize = 20;
   // Add the user switching buttons.
   // Order them such that the active user profile comes first (for Dice).
   layout->StartRowWithPadding(1, 0, 0, content_list_vert_spacing);
@@ -1315,6 +1340,40 @@ views::View* ProfileChooserView::CreateSupervisedUserDisclaimerView() {
   layout->StartRow(1, 0);
   layout->AddView(disclaimer);
 
+  return view;
+}
+
+views::View* ProfileChooserView::CreateAutofillHomeView() {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kAutofillHome) ||
+      browser_->profile()->IsGuestSession()) {
+    return nullptr;
+  }
+
+  views::View* view = new views::View();
+  view->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+
+  // Passwords.
+  passwords_button_ = new HoverButton(
+      this, gfx::CreateVectorIcon(kKeyIcon, kIconSize, gfx::kChromeIconGrey),
+      l10n_util::GetStringUTF16(IDS_PROFILES_PASSWORDS_LINK));
+  view->AddChildView(passwords_button_);
+
+  // Credit cards.
+  credit_cards_button_ = new HoverButton(
+      this,
+      gfx::CreateVectorIcon(kCreditCardIcon, kIconSize, gfx::kChromeIconGrey),
+      l10n_util::GetStringUTF16(IDS_PROFILES_CREDIT_CARDS_LINK));
+  view->AddChildView(credit_cards_button_);
+
+  // Addresses.
+  addresses_button_ =
+      new HoverButton(this,
+                      gfx::CreateVectorIcon(vector_icons::kLocationOnIcon,
+                                            kIconSize, gfx::kChromeIconGrey),
+                      l10n_util::GetStringUTF16(IDS_PROFILES_ADDRESSES_LINK));
+  view->AddChildView(addresses_button_);
   return view;
 }
 
