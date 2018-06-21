@@ -103,6 +103,7 @@ class TestWebState : public WebState {
   void SetIsCrashed(bool value);
   void SetIsEvicted(bool value);
   void SetWebViewProxy(CRWWebViewProxyType web_view_proxy);
+  void ClearLastExecutedJavascript();
 
   // Getters for test data.
   CRWContentView* GetTransientContentView();
@@ -114,6 +115,7 @@ class TestWebState : public WebState {
   // Uses |policy_deciders| to return whether the navigation corresponding to
   // |response| should be allowed. Defaults to true.
   bool ShouldAllowResponse(NSURLResponse* response, bool for_main_frame);
+  base::string16 GetLastExecutedJavascript() const;
 
   // Notifier for tests.
   void OnPageLoaded(PageLoadCompletionStatus load_completion_status);
@@ -139,6 +141,7 @@ class TestWebState : public WebState {
   CRWContentView* transient_content_view_;
   GURL url_;
   base::string16 title_;
+  base::string16 last_executed_javascript_;
   URLVerificationTrustLevel trust_level_;
   bool content_is_html_;
   std::string mime_type_;

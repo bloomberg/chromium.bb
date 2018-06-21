@@ -149,10 +149,13 @@ CRWJSInjectionReceiver* TestWebState::GetJSInjectionReceiver() const {
   return injection_receiver_;
 }
 
-void TestWebState::ExecuteJavaScript(const base::string16& javascript) {}
+void TestWebState::ExecuteJavaScript(const base::string16& javascript) {
+  last_executed_javascript_ = javascript;
+}
 
 void TestWebState::ExecuteJavaScript(const base::string16& javascript,
                                      JavaScriptResultCallback callback) {
+  last_executed_javascript_ = javascript;
   std::move(callback).Run(nullptr);
 }
 
@@ -323,6 +326,10 @@ bool TestWebState::ShouldAllowResponse(NSURLResponse* response,
   return true;
 }
 
+base::string16 TestWebState::GetLastExecutedJavascript() const {
+  return last_executed_javascript_;
+}
+
 void TestWebState::SetCurrentURL(const GURL& url) {
   url_ = url;
 }
@@ -333,6 +340,10 @@ void TestWebState::SetVisibleURL(const GURL& url) {
 
 void TestWebState::SetTrustLevel(URLVerificationTrustLevel trust_level) {
   trust_level_ = trust_level;
+}
+
+void TestWebState::ClearLastExecutedJavascript() {
+  last_executed_javascript_.clear();
 }
 
 CRWWebViewProxyType TestWebState::GetWebViewProxy() const {

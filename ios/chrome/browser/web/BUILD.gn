@@ -11,6 +11,8 @@ source_set("web") {
     "dom_altering_lock.mm",
     "error_page_util.h",
     "error_page_util.mm",
+    "font_size_tab_helper.h",
+    "font_size_tab_helper.mm",
     "load_timing_tab_helper.h",
     "load_timing_tab_helper.mm",
     "mailto_handler.h",
@@ -82,6 +84,8 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "error_page_util_unittest.mm",
+    "font_size_js_unittest.mm",
+    "font_size_tab_helper_unittest.mm",
     "load_timing_tab_helper_unittest.mm",
     "mailto_handler_gmail_unittest.mm",
     "mailto_handler_inbox_unittest.mm",
@@ -95,6 +99,7 @@ source_set("unit_tests") {
     "tab_id_tab_helper_unittest.mm",
   ]
   deps = [
+    ":accessibility",
     ":tab_helper_delegates",
     ":test_support",
     ":web",
@@ -120,6 +125,7 @@ js_compile_bundle("chrome_bundle_all_frames") {
   closure_entry_point = "__crWeb.chromeBundleAllFrames"
   sources = [
     "//components/autofill/ios/fill/resources/form.js",
+    "resources/accessibility.js",
     "resources/chrome_bundle_all_frames.js",
   ]
 }
@@ -149,6 +155,12 @@ js_compile_checked("payment_request") {
 js_compile_checked("credential_manager") {
   sources = [
     "resources/credential_manager.js",
+  ]
+}
+
+js_compile_checked("accessibility") {
+  sources = [
+    "resources/accessibility.js",
   ]
 }
 
