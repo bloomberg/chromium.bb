@@ -5,6 +5,7 @@
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
 
 namespace chromeos {
@@ -12,14 +13,16 @@ namespace chromeos {
 namespace multidevice_setup {
 
 MultiDeviceSetupService::MultiDeviceSetupService()
-    : multidevice_setup_impl_(std::make_unique<MultiDeviceSetupImpl>()) {}
+    : multidevice_setup_(
+          MultiDeviceSetupImpl::Factory::Get()->BuildInstance()) {}
 
 MultiDeviceSetupService::~MultiDeviceSetupService() = default;
 
 void MultiDeviceSetupService::OnStart() {
   PA_LOG(INFO) << "MultiDeviceSetupService::OnStart()";
-  registry_.AddInterface(base::Bind(&MultiDeviceSetupService::BindRequest,
-                                    base::Unretained(this)));
+  registry_.AddInterface(
+      base::BindRepeating(&MultiDeviceSetupBase::BindRequest,
+                          base::Unretained(multidevice_setup_.get())));
 }
 
 void MultiDeviceSetupService::OnBindInterface(
@@ -29,11 +32,6 @@ void MultiDeviceSetupService::OnBindInterface(
   PA_LOG(INFO) << "MultiDeviceSetupService::OnBindInterface() from interface "
                << interface_name << ".";
   registry_.BindInterface(interface_name, std::move(interface_pipe));
-}
-
-void MultiDeviceSetupService::BindRequest(
-    mojom::MultiDeviceSetupRequest request) {
-  multidevice_setup_impl_->BindRequest(std::move(request));
 }
 
 }  // namespace multidevice_setup
