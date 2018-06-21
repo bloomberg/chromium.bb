@@ -482,10 +482,8 @@ ArcBluetoothBridge::ArcBluetoothBridge(content::BrowserContext* context,
 ArcBluetoothBridge::~ArcBluetoothBridge() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (bluetooth_adapter_) {
-    bluetooth_adapter_->RemovePairingDelegate(this);
+  if (bluetooth_adapter_)
     bluetooth_adapter_->RemoveObserver(this);
-  }
 
   arc_bridge_service_->bluetooth()->RemoveObserver(this);
   arc_bridge_service_->bluetooth()->SetHost(nullptr);
@@ -503,8 +501,6 @@ void ArcBluetoothBridge::OnAdapterInitialized(
 
   if (!bluetooth_adapter_->HasObserver(this))
     bluetooth_adapter_->AddObserver(this);
-  bluetooth_adapter_->AddPairingDelegate(
-      this, device::BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
 }
 
 void ArcBluetoothBridge::OnConnectionReady() {
@@ -551,22 +547,6 @@ void ArcBluetoothBridge::SendDevice(const BluetoothDevice* device,
   addr = mojom::BluetoothAddress::From(device->GetAddress());
   btle_instance->OnLEDeviceFound(std::move(addr), rssi.value_or(DEFAULT_RSSI),
                                  std::move(adv_data));
-}
-
-device::BluetoothDevice::PairingDelegate* ArcBluetoothBridge::ShowPairingDialog(
-    device::BluetoothDevice* device) {
-  chromeos::BluetoothPairingDialog::ShowDialog(
-      device::BluetoothDevice::CanonicalizeAddress(device->GetAddress()),
-      device->GetNameForDisplay(), device->IsPaired(), device->IsConnected());
-
-  BluetoothDevice::PairingDelegate* delegate =
-      bluetooth_adapter_->DefaultPairingDelegate();
-  if (!delegate || delegate == this) {
-    OnPairedError(mojom::BluetoothAddress::From(device->GetAddress()),
-                  BluetoothDevice::ERROR_FAILED);
-    return nullptr;
-  }
-  return delegate;
 }
 
 void ArcBluetoothBridge::AdapterPoweredChanged(BluetoothAdapter* adapter,
@@ -1236,12 +1216,11 @@ void ArcBluetoothBridge::CreateBond(mojom::BluetoothAddressPtr addr,
     return;
   }
 
-  // Use this object as the pairing delegate to handle pairing requests.
-  // If pairing finished successfully, DevicePairedChanged will notify Android
-  // on paired state change event, so DoNothing is passed as a success callback.
-  device->Pair(this, base::DoNothing(),
-               base::Bind(&ArcBluetoothBridge::OnPairedError,
-                          weak_factory_.GetWeakPtr(), base::Passed(&addr)));
+  // BluetoothPairingDialog will automatically pair the device and handle all
+  // the incoming pairing requests.
+  chromeos::BluetoothPairingDialog::ShowDialog(
+      device::BluetoothDevice::CanonicalizeAddress(device->GetAddress()),
+      device->GetNameForDisplay(), device->IsPaired(), device->IsConnected());
 }
 
 void ArcBluetoothBridge::RemoveBond(mojom::BluetoothAddressPtr addr) {
@@ -2092,73 +2071,6 @@ void ArcBluetoothBridge::RemoveSdpRecord(uint32_t service_handle,
       service_handle,
       base::Bind(&OnRemoveServiceRecordDone, repeating_callback),
       base::Bind(&OnRemoveServiceRecordError, repeating_callback));
-}
-
-void ArcBluetoothBridge::RequestPinCode(device::BluetoothDevice* device) {
-  BluetoothDevice::PairingDelegate* delegate = ShowPairingDialog(device);
-
-  // Forward RequestPinCode to extension's pairing delegate to update the UI
-  // dialog properly.
-  if (delegate)
-    delegate->RequestPinCode(device);
-}
-
-void ArcBluetoothBridge::RequestPasskey(device::BluetoothDevice* device) {
-  BluetoothDevice::PairingDelegate* delegate = ShowPairingDialog(device);
-
-  // Forward RequestPasskey to extension's pairing delegate to update the UI
-  // dialog properly.
-  if (delegate)
-    delegate->RequestPasskey(device);
-}
-
-void ArcBluetoothBridge::DisplayPinCode(device::BluetoothDevice* device,
-                                        const std::string& pincode) {
-  BluetoothDevice::PairingDelegate* delegate = ShowPairingDialog(device);
-
-  // Forward DisplayPinCode to extension's pairing delegate to update the UI
-  // dialog properly.
-  if (delegate)
-    delegate->DisplayPinCode(device, pincode);
-}
-
-void ArcBluetoothBridge::DisplayPasskey(device::BluetoothDevice* device,
-                                        uint32_t passkey) {
-  BluetoothDevice::PairingDelegate* delegate = ShowPairingDialog(device);
-
-  // Forward DisplayPasskey to extension's pairing delegate to update the UI
-  // dialog properly.
-  if (delegate)
-    delegate->DisplayPasskey(device, passkey);
-}
-
-void ArcBluetoothBridge::KeysEntered(device::BluetoothDevice* device,
-                                     uint32_t entered) {
-  BluetoothDevice::PairingDelegate* delegate = ShowPairingDialog(device);
-
-  // Forward KeysEntered to extension's pairing delegate to update the UI
-  // dialog properly.
-  if (delegate)
-    delegate->KeysEntered(device, entered);
-}
-
-void ArcBluetoothBridge::ConfirmPasskey(device::BluetoothDevice* device,
-                                        uint32_t passkey) {
-  BluetoothDevice::PairingDelegate* delegate = ShowPairingDialog(device);
-
-  // Forward ConfirmPasskey to extension's pairing delegate to update the UI
-  // dialog properly.
-  if (delegate)
-    delegate->ConfirmPasskey(device, passkey);
-}
-
-void ArcBluetoothBridge::AuthorizePairing(device::BluetoothDevice* device) {
-  BluetoothDevice::PairingDelegate* delegate = ShowPairingDialog(device);
-
-  // Forward AuthorizePairing to extension's pairing delegate to update the UI
-  // dialog properly.
-  if (delegate)
-    delegate->AuthorizePairing(device);
 }
 
 template <typename... Args>

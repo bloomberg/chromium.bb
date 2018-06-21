@@ -54,8 +54,7 @@ class ArcBluetoothBridge
       public device::BluetoothAdapter::Observer,
       public device::BluetoothAdapterFactory::AdapterCallback,
       public device::BluetoothLocalGattService::Delegate,
-      public mojom::BluetoothHost,
-      public device::BluetoothDevice::PairingDelegate {
+      public mojom::BluetoothHost {
  public:
   using GattStatusCallback =
       base::OnceCallback<void(mojom::BluetoothGattStatus)>;
@@ -307,18 +306,6 @@ class ArcBluetoothBridge
   void RemoveSdpRecord(uint32_t service_handle,
                        RemoveSdpRecordCallback callback) override;
 
-  // device::BluetoothDevice::PairingDelegate:
-  void RequestPinCode(device::BluetoothDevice* device) override;
-  void RequestPasskey(device::BluetoothDevice* device) override;
-  void DisplayPinCode(device::BluetoothDevice* device,
-                      const std::string& pincode) override;
-  void DisplayPasskey(device::BluetoothDevice* device,
-                      uint32_t passkey) override;
-  void KeysEntered(device::BluetoothDevice* device, uint32_t entered) override;
-  void ConfirmPasskey(device::BluetoothDevice* device,
-                      uint32_t passkey) override;
-  void AuthorizePairing(device::BluetoothDevice* device) override;
-
   // Set up or disable multiple advertising.
   void ReserveAdvertisementHandle(
       ReserveAdvertisementHandleCallback callback) override;
@@ -532,11 +519,6 @@ class ArcBluetoothBridge
 
   void SendDevice(const device::BluetoothDevice* device,
                   bool include_cached_device) const;
-
-  // Shows a pairing dialog to handle incoming pairing requests.
-  // Returns the pairing delegate of the dialog UI.
-  device::BluetoothDevice::PairingDelegate* ShowPairingDialog(
-      device::BluetoothDevice* device);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
