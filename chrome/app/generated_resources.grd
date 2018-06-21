@@ -6923,7 +6923,7 @@ I don't think this site should be blocked!
         Passwords
       </message>
       <message name="IDS_PROFILES_CREDIT_CARDS_LINK" desc="Text of the menu item leading to the list of saved credit cards.">
-        Credit cards
+        Payment methods
       </message>
       <message name="IDS_PROFILES_ADDRESSES_LINK" desc="Text of the menu item leading to the list of autofill addresses.">
         Addresses

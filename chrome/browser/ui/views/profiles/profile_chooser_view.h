@@ -143,6 +143,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
   views::View* CreateGuestProfileView();
   views::View* CreateOptionsView(bool display_lock, AvatarMenu* avatar_menu);
   views::View* CreateSupervisedUserDisclaimerView();
+  views::View* CreateAutofillHomeView();
 
   // Account Management view for the profile |avatar_item|.
   views::View* CreateCurrentProfileAccountsView(
@@ -218,6 +219,9 @@ class ProfileChooserView : public content::WebContentsDelegate,
   views::LabelButton* lock_button_;
   views::LabelButton* close_all_windows_button_;
   views::Link* add_account_link_;
+  views::LabelButton* passwords_button_;
+  views::LabelButton* credit_cards_button_;
+  views::LabelButton* addresses_button_;
 
   // Buttons displayed in the gaia signin view.
   views::ImageButton* gaia_signin_cancel_button_;
