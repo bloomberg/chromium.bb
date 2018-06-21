@@ -319,13 +319,13 @@ bool GenerateExecutableElement(ExecutableType exe_type,
                           reference_bytes_mixer.get(), patch_writer);
 }
 
-status::Code GenerateEnsembleCommon(ConstBufferView old_image,
-                                    ConstBufferView new_image,
-                                    std::unique_ptr<EnsembleMatcher> matcher,
-                                    EnsemblePatchWriter* patch_writer) {
+status::Code GenerateBufferCommon(ConstBufferView old_image,
+                                  ConstBufferView new_image,
+                                  std::unique_ptr<EnsembleMatcher> matcher,
+                                  EnsemblePatchWriter* patch_writer) {
   if (!matcher->RunMatch(old_image, new_image)) {
     LOG(INFO) << "RunMatch() failed, generating raw patch.";
-    return GenerateRaw(old_image, new_image, patch_writer);
+    return GenerateBufferRaw(old_image, new_image, patch_writer);
   }
 
   const std::vector<ElementMatch>& matches = matcher->matches();
@@ -335,7 +335,7 @@ status::Code GenerateEnsembleCommon(ConstBufferView old_image,
   size_t num_elements = matches.size();
   if (num_elements == 0) {
     LOG(INFO) << "No nontrival matches, generating raw patch.";
-    return GenerateRaw(old_image, new_image, patch_writer);
+    return GenerateBufferRaw(old_image, new_image, patch_writer);
   }
 
   // "Gaps" are |new_image| bytes not covered by new_elements in |matches|.
@@ -421,30 +421,29 @@ status::Code GenerateEnsembleCommon(ConstBufferView old_image,
 
 /******** Exported Functions ********/
 
-status::Code GenerateEnsemble(ConstBufferView old_image,
-                              ConstBufferView new_image,
-                              EnsemblePatchWriter* patch_writer) {
-  return GenerateEnsembleCommon(
+status::Code GenerateBuffer(ConstBufferView old_image,
+                            ConstBufferView new_image,
+                            EnsemblePatchWriter* patch_writer) {
+  return GenerateBufferCommon(
       old_image, new_image, std::make_unique<HeuristicEnsembleMatcher>(nullptr),
       patch_writer);
 }
 
-status::Code GenerateEnsembleWithImposedMatches(
-    ConstBufferView old_image,
-    ConstBufferView new_image,
-    std::string imposed_matches,
-    EnsemblePatchWriter* patch_writer) {
+status::Code GenerateBufferImposed(ConstBufferView old_image,
+                                   ConstBufferView new_image,
+                                   std::string imposed_matches,
+                                   EnsemblePatchWriter* patch_writer) {
   if (imposed_matches.empty())
-    return GenerateEnsemble(old_image, new_image, patch_writer);
+    return GenerateBuffer(old_image, new_image, patch_writer);
 
-  return GenerateEnsembleCommon(
+  return GenerateBufferCommon(
       old_image, new_image,
       std::make_unique<ImposedEnsembleMatcher>(imposed_matches), patch_writer);
 }
 
-status::Code GenerateRaw(ConstBufferView old_image,
-                         ConstBufferView new_image,
-                         EnsemblePatchWriter* patch_writer) {
+status::Code GenerateBufferRaw(ConstBufferView old_image,
+                               ConstBufferView new_image,
+                               EnsemblePatchWriter* patch_writer) {
   ImageIndex old_image_index(old_image);
   EncodedView old_view(old_image_index);
   std::vector<offset_t> old_sa =

@@ -56,7 +56,7 @@ DEFINE_BINARY_PROTO_FUZZER(const zucchini::fuzzers::FilePair& file_pair) {
   zucchini::EnsemblePatchWriter patch_writer(old_image, new_image);
 
   // Fuzz Target.
-  zucchini::GenerateRaw(old_image, new_image, &patch_writer);
+  zucchini::GenerateBufferRaw(old_image, new_image, &patch_writer);
 
   // Check that the patch size is sane. Crash the fuzzer if this isn't the case
   // as it is a failure in Zucchini's patch performance that is worth

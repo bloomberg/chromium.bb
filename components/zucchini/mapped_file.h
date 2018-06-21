@@ -23,7 +23,7 @@ class MappedFileReader {
  public:
   // Maps |file| to memory for reading. Also validates |file|. Errors are
   // available via HasError() and error().
-  explicit MappedFileReader(base::File&& file);
+  explicit MappedFileReader(base::File file);
 
   const uint8_t* data() const { return buffer_.data(); }
   size_t length() const { return buffer_.length(); }
@@ -47,7 +47,7 @@ class MappedFileWriter {
   // UNIX systems, but can be empty if auto delete is not needed. Errors are
   // available via HasError() and error().
   MappedFileWriter(const base::FilePath& file_path,
-                   base::File&& file,
+                   base::File file,
                    size_t length);
   ~MappedFileWriter();
 

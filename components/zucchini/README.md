@@ -145,6 +145,17 @@ values that describe content on a higher level of abstraction, masking away
 undesirable noise in raw content. Notably, the projection encodes references
 based on their associated label.
 
+## Interfaces
+
+zucchini_lib: Core Zucchini library that operate on buffers to generate and
+apply patches.
+
+zucchini_io: Wrapper on zucchini_lib that handles file I/O, using memory-mapped
+I/O to interface with zucchini_lib.
+
+zucchini: Stand-alone executable that parses command-line arguments, and passes
+the results to zucchini_io. Also implements various helper flows.
+
 ## Zucchini Ensemble Patch Format
 
 ### Types

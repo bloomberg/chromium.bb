@@ -54,6 +54,6 @@ DEFINE_BINARY_PROTO_FUZZER(const zucchini::fuzzers::FilePair& file_pair) {
   zucchini::MutableBufferView new_image(new_data.data(), new_size);
 
   // Fuzz target.
-  zucchini::Apply(old_image, *patch_reader, new_image);
+  zucchini::ApplyBuffer(old_image, *patch_reader, new_image);
   // No need to check whether output exist, or if so, whether it's valid.
 }
