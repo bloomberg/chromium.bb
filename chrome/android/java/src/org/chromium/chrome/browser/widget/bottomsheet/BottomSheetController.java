@@ -26,9 +26,9 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
-import org.chromium.chrome.browser.widget.FadingBackgroundView;
-import org.chromium.chrome.browser.widget.FadingBackgroundView.FadingViewObserver;
-import org.chromium.chrome.browser.widget.FadingBackgroundView.ScrimParams;
+import org.chromium.chrome.browser.widget.ScrimView;
+import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
+import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 
@@ -82,12 +82,12 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
      * Build a new controller of the bottom sheet.
      * @param tabModelSelector A tab model selector to track events on tabs open in the browser.
      * @param layoutManager A layout manager for detecting changes in the active layout.
-     * @param fadingBackgroundView The scrim that shows when the bottom sheet is opened.
+     * @param scrim The scrim that shows when the bottom sheet is opened.
      * @param contextualSearchManager The manager for Contextual Search to attach listeners to.
      * @param bottomSheet The bottom sheet that this class will be controlling.
      */
     public BottomSheetController(final Activity activity, final TabModelSelector tabModelSelector,
-            final LayoutManager layoutManager, final FadingBackgroundView fadingBackgroundView,
+            final LayoutManager layoutManager, final ScrimView scrim,
             ContextualSearchManager contextualSearchManager, BottomSheet bottomSheet) {
         mBottomSheet = bottomSheet;
         mLayoutManager = layoutManager;
@@ -160,36 +160,36 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             }
         });
 
-        FadingViewObserver scrimObserver = new FadingViewObserver() {
+        ScrimObserver scrimObserver = new ScrimObserver() {
             @Override
-            public void onFadingViewClick() {
+            public void onScrimClick() {
                 if (!mBottomSheet.isSheetOpen()) return;
                 mBottomSheet.setSheetState(
                         BottomSheet.SHEET_STATE_PEEK, true, StateChangeReason.TAP_SCRIM);
             }
 
             @Override
-            public void onFadingViewVisibilityChanged(boolean visible) {}
+            public void onScrimVisibilityChanged(boolean visible) {}
         };
         mScrimParams = new ScrimParams(mBottomSheet, false, true, 0, scrimObserver);
 
         mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
             @Override
             public void onSheetOpened(@StateChangeReason int reason) {
-                fadingBackgroundView.showFadingOverlay(mScrimParams);
-                fadingBackgroundView.setViewAlpha(0);
+                scrim.showScrim(mScrimParams);
+                scrim.setViewAlpha(0);
             }
 
             @Override
             public void onSheetClosed(@StateChangeReason int reason) {
-                fadingBackgroundView.hideFadingOverlay(false);
+                scrim.hideScrim(false);
             }
 
             @Override
             public void onTransitionPeekToHalf(float transitionFraction) {
                 // TODO(mdjones): This event should not occur after the bottom sheet is closed.
-                if (fadingBackgroundView.getVisibility() == View.VISIBLE) {
-                    fadingBackgroundView.setViewAlpha(transitionFraction);
+                if (scrim.getVisibility() == View.VISIBLE) {
+                    scrim.setViewAlpha(transitionFraction);
                 }
             }
 

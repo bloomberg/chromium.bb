@@ -73,8 +73,8 @@ import org.chromium.chrome.browser.toolbar.ToolbarPhone;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
-import org.chromium.chrome.browser.widget.FadingBackgroundView;
-import org.chromium.chrome.browser.widget.FadingBackgroundView.ScrimParams;
+import org.chromium.chrome.browser.widget.ScrimView;
+import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -94,10 +94,9 @@ import java.util.List;
  * This class represents the location bar where the user types in URLs and
  * search terms.
  */
-public class LocationBarLayout
-        extends FrameLayout implements OnClickListener, OnSuggestionsReceivedListener, LocationBar,
-                                       FakeboxDelegate, FadingBackgroundView.FadingViewObserver,
-                                       LocationBarVoiceRecognitionHandler.Delegate {
+public class LocationBarLayout extends FrameLayout
+        implements OnClickListener, OnSuggestionsReceivedListener, LocationBar, FakeboxDelegate,
+                   ScrimView.ScrimObserver, LocationBarVoiceRecognitionHandler.Delegate {
     private static final String TAG = "cr_LocationBar";
 
     // Delay triggering the omnibox results upon key press to allow the location bar to repaint
@@ -156,7 +155,7 @@ public class LocationBarLayout
     private Runnable mRequestSuggestions;
 
     private ViewGroup mOmniboxResultsContainer;
-    private FadingBackgroundView mFadingView;
+    private ScrimView mScrim;
 
     private boolean mSuggestionsShown;
     private boolean mUrlHasFocus;
@@ -1997,28 +1996,28 @@ public class LocationBarLayout
     }
 
     @Override
-    public void onFadingViewClick() {
+    public void onScrimClick() {
         setUrlBarFocus(false);
         updateFadingBackgroundView(false, false);
     }
 
     @Override
-    public void onFadingViewVisibilityChanged(boolean visible) {
+    public void onScrimVisibilityChanged(boolean visible) {
         Activity activity = mWindowAndroid.getActivity().get();
         if (!(activity instanceof ChromeActivity)) return;
         ChromeActivity chromeActivity = (ChromeActivity) activity;
 
         if (visible) {
-            chromeActivity.addViewObscuringAllTabs(mFadingView);
+            chromeActivity.addViewObscuringAllTabs(mScrim);
         } else {
-            chromeActivity.removeViewObscuringAllTabs(mFadingView);
+            chromeActivity.removeViewObscuringAllTabs(mScrim);
             updateOmniboxResultsContainerVisibility(false);
         }
     }
 
     @Override
-    public void setScrim(FadingBackgroundView scrim) {
-        mFadingView = scrim;
+    public void setScrim(ScrimView scrim) {
+        mScrim = scrim;
 
         // In some cases, users can start chrome and immediately start tapping the omnibox. In that
         // case, the omnibox will focus, but there is no scrim. This checks if the scrim needs to
@@ -2034,16 +2033,16 @@ public class LocationBarLayout
      *                        scrim.
      */
     protected void updateFadingBackgroundView(boolean visible, boolean ignoreNtpChecks) {
-        if (mFadingView == null) return;
+        if (mScrim == null) return;
         NewTabPage ntp = mToolbarDataProvider.getNewTabPageForCurrentTab();
         boolean locationBarShownInNTP = ntp != null && ntp.isLocationBarShownInNTP();
 
         if (visible && (!locationBarShownInNTP || ignoreNtpChecks)) {
             // If the location bar is shown in the NTP, the toolbar will eventually trigger a
             // fade in.
-            mFadingView.showFadingOverlay(mScrimParams);
+            mScrim.showScrim(mScrimParams);
         } else {
-            mFadingView.hideFadingOverlay(!locationBarShownInNTP);
+            mScrim.hideScrim(!locationBarShownInNTP);
         }
     }
 

@@ -17,7 +17,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.Toolbar;
 import org.chromium.chrome.browser.toolbar.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
-import org.chromium.chrome.browser.widget.FadingBackgroundView;
+import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -198,5 +198,5 @@ public interface LocationBar extends UrlBarDelegate {
     /**
      * @param scrim The scrim for this location bar to use.
      */
-    void setScrim(FadingBackgroundView scrim);
+    void setScrim(ScrimView scrim);
 }

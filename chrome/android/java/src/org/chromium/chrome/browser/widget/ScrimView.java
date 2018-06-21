@@ -27,12 +27,12 @@ import javax.annotation.Nullable;
  *
  * If the view is disabled, then its alpha will be set to 0f and it will not receive touch events.
  *
- * To use the scrim, {@link #showFadingOverlay(ScrimParams)} must be called to set the params for
- * how the scrimm will behave. After that, users can either allow the default animation to run or
+ * To use the scrim, {@link #showScrim(ScrimParams)} must be called to set the params for
+ * how the scrim will behave. After that, users can either allow the default animation to run or
  * change the view's alpha manually using {@link #setViewAlpha(float)}. Once the scrim is done being
- * used, {@link #hideFadingOverlay(boolean)} should be called.
+ * used, {@link #hideScrim(boolean)} should be called.
  */
-public class FadingBackgroundView extends View implements View.OnClickListener {
+public class ScrimView extends View implements View.OnClickListener {
     /** Params that define the behavior of the scrim for a single user. */
     public static class ScrimParams {
         /**
@@ -51,7 +51,7 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
         public final boolean showInFrontOfAnchorView;
 
         /** An observer for visibility and input related events. */
-        public final FadingViewObserver observer;
+        public final ScrimObserver observer;
 
         /**
          * Build a new set of params to control the scrim.
@@ -63,7 +63,7 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
          * @param observer n observer for visibility and input related events.
          */
         public ScrimParams(View anchorView, boolean showInFrontOfAnchorView,
-                boolean affectsStatusBar, int topMargin, FadingViewObserver observer) {
+                boolean affectsStatusBar, int topMargin, ScrimObserver observer) {
             this.topMargin = topMargin;
             this.affectsStatusBar = affectsStatusBar;
             this.anchorView = anchorView;
@@ -89,18 +89,18 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
     /**
      * An interface for listening to events on the fading view.
      */
-    public interface FadingViewObserver {
+    public interface ScrimObserver {
         /**
          * An event that triggers when the view is clicked.
          */
-        void onFadingViewClick();
+        void onScrimClick();
 
         /**
          * An event that triggers when the visibility of the overlay has changed. Visibility is true
          * if the overlay's opacity is > 0f.
          * @param visible True if the overlay has become visible.
          */
-        void onFadingViewVisibilityChanged(boolean visible);
+        void onScrimVisibilityChanged(boolean visible);
     }
 
     /** The duration for the fading animation. */
@@ -129,7 +129,7 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
      * @param scrimDelegate A means of changing the scrim over the status bar.
      * @param parent The {@link ViewGroup} the scrim should exist in.
      */
-    public FadingBackgroundView(
+    public ScrimView(
             Context context, @Nullable StatusBarScrimDelegate scrimDelegate, ViewGroup parent) {
         super(context);
         mStatusBarScrimDelegate = scrimDelegate;
@@ -170,7 +170,7 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
      * @param alpha The desired alpha for this view.
      */
     public void setViewAlpha(float alpha) {
-        assert mActiveParams != null : "#showFadingOverlay must be called before setting alpha!";
+        assert mActiveParams != null : "#showScrim must be called before setting alpha!";
 
         if (!isEnabled() || MathUtils.areFloatsEqual(alpha, getAlpha())) return;
 
@@ -221,26 +221,25 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
     /**
      * Triggers a fade in of the omnibox results background creating a new animation if necessary.
      */
-    public void showFadingOverlay(ScrimParams params) {
+    public void showScrim(ScrimParams params) {
         onParamsChanged(params);
         setVisibility(View.VISIBLE);
         if (mActiveParams.observer != null) {
-            mActiveParams.observer.onFadingViewVisibilityChanged(true);
+            mActiveParams.observer.onScrimVisibilityChanged(true);
         }
         if (mOverlayFadeInAnimator == null) {
             mOverlayFadeInAnimator = ObjectAnimator.ofFloat(this, ALPHA, 1f);
             mOverlayFadeInAnimator.setDuration(FADE_DURATION_MS);
-            mOverlayFadeInAnimator.setInterpolator(
-                    BakedBezierInterpolator.FADE_IN_CURVE);
+            mOverlayFadeInAnimator.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
         }
 
-        runFadeOverlayAnimation(mOverlayFadeInAnimator);
+        runFadeAnimation(mOverlayFadeInAnimator);
     }
 
     /**
      * Triggers a fade out of the omnibox results background creating a new animation if necessary.
      */
-    public void hideFadingOverlay(boolean fadeOut) {
+    public void hideScrim(boolean fadeOut) {
         if (mOverlayFadeOutAnimator == null) {
             mOverlayFadeOutAnimator = ObjectAnimator.ofFloat(this, ALPHA, 0f);
             mOverlayFadeOutAnimator.setDuration(FADE_DURATION_MS);
@@ -250,7 +249,7 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
                 public void onAnimationEnd(Animator animation) {
                     setVisibility(View.GONE);
                     if (mActiveParams != null && mActiveParams.observer != null) {
-                        mActiveParams.observer.onFadingViewVisibilityChanged(false);
+                        mActiveParams.observer.onScrimVisibilityChanged(false);
                     }
                     onParamsChanged(null);
                 }
@@ -258,7 +257,7 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
         }
 
         mOverlayFadeOutAnimator.setFloatValues(getAlpha(), 0f);
-        runFadeOverlayAnimation(mOverlayFadeOutAnimator);
+        runFadeAnimation(mOverlayFadeOutAnimator);
         if (!fadeOut) mOverlayFadeOutAnimator.end();
     }
 
@@ -266,7 +265,7 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
      * Runs an animation for this view. If one is running, the existing one will be canceled.
      * @param fadeAnimation The animation to run.
      */
-    private void runFadeOverlayAnimation(Animator fadeAnimation) {
+    private void runFadeAnimation(Animator fadeAnimation) {
         if (mOverlayAnimator == fadeAnimation && mOverlayAnimator.isRunning()) {
             return;
         } else if (mOverlayAnimator != null) {
@@ -279,6 +278,6 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         if (mActiveParams == null || mActiveParams.observer == null) return;
-        mActiveParams.observer.onFadingViewClick();
+        mActiveParams.observer.onScrimClick();
     }
 }

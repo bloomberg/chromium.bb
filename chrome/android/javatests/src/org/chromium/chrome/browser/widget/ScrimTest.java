@@ -28,8 +28,8 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.chrome.browser.widget.FadingBackgroundView.FadingViewObserver;
-import org.chromium.chrome.browser.widget.FadingBackgroundView.ScrimParams;
+import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
+import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -52,7 +52,7 @@ public class ScrimTest {
 
     private BottomSheet mBottomSheet;
     private BottomSheetController mSheetController;
-    private FadingBackgroundView mScrim;
+    private ScrimView mScrim;
 
     @Before
     public void setUp() throws Exception {
@@ -67,7 +67,7 @@ public class ScrimTest {
                                    .findViewById(org.chromium.chrome.R.id.bottom_sheet);
             mBottomSheet.init(coordinator, activity);
 
-            mScrim = activity.getFadingBackgroundView();
+            mScrim = activity.getScrim();
 
             mSheetController = new BottomSheetController(activity, activity.getTabModelSelector(),
                     activity.getCompositorViewHolder().getLayoutManager(), mScrim,
@@ -80,12 +80,12 @@ public class ScrimTest {
     @Feature({"Scrim"})
     public void testScrimVisibility() throws InterruptedException, TimeoutException {
         CallbackHelper visibilityHelper = new CallbackHelper();
-        FadingViewObserver observer = new FadingViewObserver() {
+        ScrimObserver observer = new ScrimObserver() {
             @Override
-            public void onFadingViewClick() {}
+            public void onScrimClick() {}
 
             @Override
-            public void onFadingViewVisibilityChanged(boolean visible) {
+            public void onScrimVisibilityChanged(boolean visible) {
                 visibilityHelper.notifyCalled();
             }
         };
@@ -96,7 +96,7 @@ public class ScrimTest {
 
         int callCount = visibilityHelper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mScrim.showFadingOverlay(params);
+            mScrim.showScrim(params);
             // Skip the animation and set the scrim opacity to 50%.
             mScrim.setViewAlpha(0.5f);
         });
@@ -104,7 +104,7 @@ public class ScrimTest {
         assertScrimVisibility(true);
 
         callCount = visibilityHelper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(() -> mScrim.hideFadingOverlay(false));
+        ThreadUtils.runOnUiThreadBlocking(() -> mScrim.hideScrim(false));
         visibilityHelper.waitForCallback(callCount, 1);
         assertScrimVisibility(false);
     }
