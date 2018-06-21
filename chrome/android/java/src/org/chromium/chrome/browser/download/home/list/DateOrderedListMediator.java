@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download.home.list;
 
 import android.os.Handler;
 
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.download.home.OfflineItemSource;
@@ -17,6 +18,7 @@ import org.chromium.chrome.browser.download.home.filter.SearchOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.TypeOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.glue.OfflineContentProviderGlue;
 import org.chromium.chrome.browser.download.home.glue.ThumbnailRequestGlue;
+import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator.DeleteController;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.browser.widget.ThumbnailProvider.ThumbnailRequest;
 import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
@@ -25,6 +27,8 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
 import java.io.Closeable;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * A Mediator responsible for converting an OfflineContentProvider to a list of items in downloads
@@ -35,6 +39,7 @@ class DateOrderedListMediator {
 
     private final OfflineContentProviderGlue mProvider;
     private final ListItemModel mModel;
+    private final DeleteController mDeleteController;
 
     private final OfflineItemSource mSource;
     private final DateOrderedListMutator mListMutator;
@@ -48,12 +53,13 @@ class DateOrderedListMediator {
     /**
      * Creates an instance of a DateOrderedListMediator that will push {@code provider} into
      * {@code model}.
-     * @param offTheRecord Whether or not to include off the record items.
-     * @param provider     The {@link OfflineContentProvider} to visually represent.
-     * @param model        The {@link ListItemModel} to push {@code provider} into.
+     * @param offTheRecord     Whether or not to include off the record items.
+     * @param provider         The {@link OfflineContentProvider} to visually represent.
+     * @param deleteController A class to manage whether or not items can be deleted.
+     * @param model            The {@link ListItemModel} to push {@code provider} into.
      */
-    public DateOrderedListMediator(
-            boolean offTheRecord, OfflineContentProvider provider, ListItemModel model) {
+    public DateOrderedListMediator(boolean offTheRecord, OfflineContentProvider provider,
+            DeleteController deleteController, ListItemModel model) {
         // Build a chain from the data source to the model.  The chain will look like:
         // [OfflineContentProvider] ->
         //     [OfflineItemSource] ->
@@ -66,6 +72,7 @@ class DateOrderedListMediator {
 
         mProvider = new OfflineContentProviderGlue(provider, offTheRecord);
         mModel = model;
+        mDeleteController = deleteController;
 
         mSource = new OfflineItemSource(mProvider);
         mOffTheRecordFilter = new OffTheRecordOfflineItemFilter(offTheRecord, mSource);
@@ -84,7 +91,8 @@ class DateOrderedListMediator {
         mModel.getProperties().setCancelCallback(item -> mProvider.cancelDownload(item));
         mModel.getProperties().setShareCallback(item -> {});
         // TODO(dtrainor): Pipe into the undo snackbar and the DeleteUndoOfflineItemFilter.
-        mModel.getProperties().setRemoveCallback(item -> mProvider.removeItem(item));
+        mModel.getProperties().setRemoveCallback(
+                item -> onDeleteItems(CollectionUtil.newArrayList(item)));
         mModel.getProperties().setVisualsProvider(
                 (item, w, h, callback) -> { return getVisuals(item, w, h, callback); });
     }
@@ -122,6 +130,27 @@ class DateOrderedListMediator {
      */
     public OfflineItemFilterSource getFilterSource() {
         return mDeleteUndoFilter;
+    }
+
+    private void onDeleteItems(List<OfflineItem> items) {
+        // Calculate the real offline items we are going to remove here.
+        final Collection<OfflineItem> itemsToDelete =
+                ItemUtils.findItemsWithSameFilePath(items, mSource.getItems());
+
+        mDeleteUndoFilter.addPendingDeletions(itemsToDelete);
+        mDeleteController.canDelete(items, delete -> {
+            if (delete) {
+                for (OfflineItem item : itemsToDelete) {
+                    mProvider.removeItem(item);
+
+                    // Remove and have a single decision path for cleaning up thumbnails when the
+                    // glue layer is no longer needed.
+                    mProvider.removeVisualsForItem(mThumbnailProvider, item.id);
+                }
+            } else {
+                mDeleteUndoFilter.removePendingDeletions(itemsToDelete);
+            }
+        });
     }
 
     private Runnable getVisuals(

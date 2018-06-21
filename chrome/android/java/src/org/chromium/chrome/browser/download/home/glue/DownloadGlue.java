@@ -19,6 +19,7 @@ import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,7 +101,9 @@ public class DownloadGlue implements DownloadObserver {
 
     /** @see OfflineContentProvider#removeItem(ContentId) */
     public void removeItem(OfflineItem item) {
-        // TODO(dtrainor): Implement deletion.
+        DownloadManagerService.getDownloadManagerService().removeDownload(
+                item.id.id, item.isOffTheRecord, item.externallyRemoved);
+        FileDeletionQueue.get().delete(new File(item.filePath));
     }
 
     /** @see OfflineContentProvider#cancelDownload(ContentId) */
