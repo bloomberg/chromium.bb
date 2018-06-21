@@ -727,9 +727,6 @@
     'components_deps': {
       'filepath': 'components/([^/]*/)*DEPS',
     },
-    'content': {
-      'filepath': 'content/',
-    },
     'content_bluetooth': {
       'filepath': 'content/.*bluetooth'
     },
@@ -988,9 +985,6 @@
     },
     'ios_web': {
       'filepath': 'ios/web(_view)?/',
-    },
-    'ipc': {
-      'filepath': 'ipc/ipc',
     },
     'libaom': {
       'filepath': 'third_party/libaom/',
@@ -1316,10 +1310,6 @@
     },
     'picture_in_picture': {
       'filepath': 'third_party/blink/renderer/modules/picture_in_picture/'
-    },
-    'plugin': {
-      'filepath': 'chrome/browser/plugin|chrome/plugin/|'\
-        'chrome/common/plugin',
     },
     'polymer': {
       'filepath': 'third_party/polymer/|'\
@@ -2010,7 +2000,6 @@
     'components_deps': ['blundell+watchlist@chromium.org',
                         'droger+watchlist@chromium.org',
                         'sdefresne+watchlist@chromium.org'],
-    'content': ['jam@chromium.org'],
     'content_bluetooth': ['mattreynolds+watch@chromium.org',
                           'ortuno+watch@chromium.org'],
     'content_loader': ['loading-reviews@chromium.org'],
@@ -2124,7 +2113,6 @@
                      'marq+watch@chromium.org'],
     'ios_web': ['ios-reviews+web@chromium.org',
                 'eugenebut@chromium.org'],
-    'ipc': ['jam@chromium.org'],
     'libaom': ['fgalligan@chromium.org',
                'johannkoenig@chromium.org',
                'jzern@chromium.org',
@@ -2172,10 +2160,7 @@
     'metrics': ['asvitkine+watch@chromium.org'],
     'metrics_xml_files': ['asvitkine+watch@chromium.org'],
     'midi': ['toyoshim+midi@chromium.org'],
-    'mojo': ['aa@chromium.org',
-             'darin@chromium.org',
-             'qsr+mojo@chromium.org',
-             'viettrungluu+watch@chromium.org'],
+    'mojo': ['darin@chromium.org'],
     'multidevice': ['jhawkins+watch-multidevice@chromium.org',
                     'jlklein+watch-multidevice@chromium.org',
                     'jordynass+watch-multidevice@chromium.org',
@@ -2249,7 +2234,6 @@
                     'raymes+watch@chromium.org',
                     'timloh+watch@chromium.org'],
     'picture_in_picture': ['beaufort.francois+pip@gmail.com'],
-    'plugin': ['jam@chromium.org'],
     'polymer': ['michaelpg+watch-polymer@chromium.org'],
     'popup_blocker': ['csharrison+watch-popups@chromium.org'],
     'precache': ['wifiprefetch-reviews@google.com'],
