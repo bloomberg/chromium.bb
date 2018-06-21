@@ -436,12 +436,14 @@ Polymer({
       return;
     if (!this.pref)
       return;
-    for (let i = 0; i < this.ticks.length; i++)
-      if (this.ticks[i].value == this.pref.value)
+    for (let i = 0; i < this.ticks.length; i++) {
+      if (this.ticks[i].value == this.pref.value) {
         this._setIndex(i);
-    this.setAttribute('aria-valuenow', this.ticks[this.index].value);
-    this.setAttribute(
-        'aria-valuetext', this.getLabelForIndex_(this.ticks, this.index));
+        this.setAttribute('aria-valuenow', this.ticks[this.index].value);
+        this.setAttribute(
+            'aria-valuetext', this.getLabelForIndex_(this.ticks, this.index));
+      }
+    }
   },
 
   /**
