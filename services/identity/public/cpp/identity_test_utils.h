@@ -8,6 +8,7 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "components/signin/core/browser/account_info.h"
 
 class AccountTrackerService;
 class FakeSigninManagerBase;
@@ -36,10 +37,10 @@ class IdentityManager;
 // Sets the primary account for the given email address, generating a GAIA ID
 // that corresponds uniquely to that email address. On non-ChromeOS, results in
 // the firing of the IdentityManager and SigninManager callbacks for signin
-// success. Blocks until the primary account is set. Returns the account ID
+// success. Blocks until the primary account is set. Returns the AccountInfo
 // of the newly-set account.
 // NOTE: See disclaimer at top of file re: direct usage.
-std::string SetPrimaryAccount(SigninManagerBase* signin_manager,
+AccountInfo SetPrimaryAccount(SigninManagerBase* signin_manager,
                               IdentityManager* identity_manager,
                               const std::string& email);
 
@@ -67,9 +68,9 @@ void RemoveRefreshTokenForPrimaryAccount(
 // GAIA ID and refresh token that correspond uniquely to that email address. On
 // non-ChromeOS, results in the firing of the IdentityManager and SigninManager
 // callbacks for signin success. Blocks until the primary account is available.
-// Returns the account ID of the newly-available account.
+// Returns the AccountInfo of the newly-available account.
 // NOTE: See disclaimer at top of file re: direct usage.
-std::string MakePrimaryAccountAvailable(
+AccountInfo MakePrimaryAccountAvailable(
     SigninManagerBase* signin_manager,
     ProfileOAuth2TokenService* token_service,
     IdentityManager* identity_manager,
@@ -87,13 +88,34 @@ void ClearPrimaryAccount(SigninManagerForTest* signin_manager,
 
 // Makes an account available for the given email address, generating a GAIA ID
 // and refresh token that correspond uniquely to that email address. Blocks
-// until the account is available. Returns the account ID of the
+// until the account is available. Returns the AccountInfo of the
 // newly-available account.
 // NOTE: See disclaimer at top of file re: direct usage.
-std::string MakeAccountAvailable(AccountTrackerService* account_tracker_service,
+AccountInfo MakeAccountAvailable(AccountTrackerService* account_tracker_service,
                                  ProfileOAuth2TokenService* token_service,
                                  IdentityManager* identity_manager,
                                  const std::string& email);
+
+// Sets a refresh token for the given account (which must already be available).
+// Blocks until the refresh token is set.
+// NOTE: See disclaimer at top of file re: direct usage.
+void SetRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
+                               IdentityManager* identity_manager,
+                               const std::string& account_id);
+
+// Sets a special invalid refresh token for the given account (which must
+// already be available). Blocks until the refresh token is set.
+// NOTE: See disclaimer at top of file re: direct usage.
+void SetInvalidRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
+                                      IdentityManager* identity_manager,
+                                      const std::string& account_id);
+
+// Removes any refresh token for the given account (which must already be
+// available). Blocks until the refresh token is removed. NOTE: See disclaimer
+// at top of file re: direct usage.
+void RemoveRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
+                                  IdentityManager* identity_manager,
+                                  const std::string& account_id);
 
 }  // namespace identity
 

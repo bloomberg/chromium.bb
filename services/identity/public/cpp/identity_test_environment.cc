@@ -102,7 +102,7 @@ IdentityManager* IdentityTestEnvironment::identity_manager() {
   return internals_->identity_manager();
 }
 
-std::string IdentityTestEnvironment::SetPrimaryAccount(
+AccountInfo IdentityTestEnvironment::SetPrimaryAccount(
     const std::string& email) {
   return identity::SetPrimaryAccount(internals_->signin_manager(),
                                      internals_->identity_manager(), email);
@@ -123,7 +123,7 @@ void IdentityTestEnvironment::RemoveRefreshTokenForPrimaryAccount() {
                                                 internals_->identity_manager());
 }
 
-std::string IdentityTestEnvironment::MakePrimaryAccountAvailable(
+AccountInfo IdentityTestEnvironment::MakePrimaryAccountAvailable(
     const std::string& email) {
   return identity::MakePrimaryAccountAvailable(
       internals_->signin_manager(), internals_->token_service(),
@@ -135,11 +135,29 @@ void IdentityTestEnvironment::ClearPrimaryAccount() {
                                 internals_->identity_manager());
 }
 
-std::string IdentityTestEnvironment::MakeAccountAvailable(
+AccountInfo IdentityTestEnvironment::MakeAccountAvailable(
     const std::string& email) {
   return identity::MakeAccountAvailable(internals_->account_tracker_service(),
                                         internals_->token_service(),
                                         internals_->identity_manager(), email);
+}
+
+void IdentityTestEnvironment::SetRefreshTokenForAccount(
+    const std::string& account_id) {
+  return identity::SetRefreshTokenForAccount(
+      internals_->token_service(), internals_->identity_manager(), account_id);
+}
+
+void IdentityTestEnvironment::SetInvalidRefreshTokenForAccount(
+    const std::string& account_id) {
+  return identity::SetInvalidRefreshTokenForAccount(
+      internals_->token_service(), internals_->identity_manager(), account_id);
+}
+
+void IdentityTestEnvironment::RemoveRefreshTokenForAccount(
+    const std::string& account_id) {
+  return identity::RemoveRefreshTokenForAccount(
+      internals_->token_service(), internals_->identity_manager(), account_id);
 }
 
 void IdentityTestEnvironment::SetAutomaticIssueOfAccessTokens(bool grant) {

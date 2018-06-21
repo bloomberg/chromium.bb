@@ -89,7 +89,7 @@ TEST_F(SyncAuthManagerTest, IgnoresEventsIfNotRegistered) {
   // Fire some auth events. We haven't called RegisterForAuthNotifications, so
   // none of this should result in any callback calls.
   std::string account_id =
-      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
   identity_env()->SetRefreshTokenForPrimaryAccount();
   identity_env()->ClearPrimaryAccount();
@@ -99,7 +99,7 @@ TEST_F(SyncAuthManagerTest, IgnoresEventsIfNotRegistered) {
 TEST_F(SyncAuthManagerTest, ForwardsPrimaryAccountEvents) {
   // Start out already signed in before the SyncAuthManager is created.
   std::string account_id =
-      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
 
   base::MockCallback<AccountStateChangedCallback> account_state_changed;
   base::MockCallback<CredentialsChangedCallback> credentials_changed;
@@ -124,7 +124,7 @@ TEST_F(SyncAuthManagerTest, ForwardsPrimaryAccountEvents) {
   // Sign in to a different account.
   EXPECT_CALL(account_state_changed, Run());
   std::string second_account_id =
-      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
   EXPECT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id,
             second_account_id);
 }
@@ -133,7 +133,7 @@ TEST_F(SyncAuthManagerTest, ForwardsPrimaryAccountEvents) {
 TEST_F(SyncAuthManagerTest, ForwardsCredentialsEvents) {
   // Start out already signed in before the SyncAuthManager is created.
   std::string account_id =
-      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
 
   base::MockCallback<AccountStateChangedCallback> account_state_changed;
   base::MockCallback<CredentialsChangedCallback> credentials_changed;
@@ -179,7 +179,7 @@ TEST_F(SyncAuthManagerTest, ForwardsCredentialsEvents) {
 
 TEST_F(SyncAuthManagerTest, RequestsAccessTokenOnSyncStartup) {
   std::string account_id =
-      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
   auto auth_manager = CreateAuthManager();
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
   auth_manager->RegisterForAuthNotifications();
@@ -199,7 +199,7 @@ TEST_F(SyncAuthManagerTest, RequestsAccessTokenOnSyncStartup) {
 TEST_F(SyncAuthManagerTest,
        RetriesAccessTokenFetchWithBackoffOnTransientFailure) {
   std::string account_id =
-      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
   auto auth_manager = CreateAuthManager();
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
   auth_manager->RegisterForAuthNotifications();
@@ -222,7 +222,7 @@ TEST_F(SyncAuthManagerTest,
 
 TEST_F(SyncAuthManagerTest, AbortsAccessTokenFetchOnPersistentFailure) {
   std::string account_id =
-      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
   auto auth_manager = CreateAuthManager();
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
   auth_manager->RegisterForAuthNotifications();
@@ -247,7 +247,7 @@ TEST_F(SyncAuthManagerTest, AbortsAccessTokenFetchOnPersistentFailure) {
 
 TEST_F(SyncAuthManagerTest, FetchesNewAccessTokenWithBackoffOnServerError) {
   std::string account_id =
-      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
   auto auth_manager = CreateAuthManager();
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
   auth_manager->RegisterForAuthNotifications();
@@ -274,7 +274,7 @@ TEST_F(SyncAuthManagerTest, FetchesNewAccessTokenWithBackoffOnServerError) {
 
 TEST_F(SyncAuthManagerTest, ExposesServerError) {
   std::string account_id =
-      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
   auto auth_manager = CreateAuthManager();
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
   auth_manager->RegisterForAuthNotifications();
@@ -301,7 +301,7 @@ TEST_F(SyncAuthManagerTest, ExposesServerError) {
 
 TEST_F(SyncAuthManagerTest, RequestsNewAccessTokenOnExpiry) {
   std::string account_id =
-      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
   auto auth_manager = CreateAuthManager();
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
   auth_manager->RegisterForAuthNotifications();
@@ -334,7 +334,7 @@ TEST_F(SyncAuthManagerTest, RequestsNewAccessTokenOnExpiry) {
 
 TEST_F(SyncAuthManagerTest, RequestsNewAccessTokenOnRefreshTokenUpdate) {
   std::string account_id =
-      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
   auto auth_manager = CreateAuthManager();
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
   auth_manager->RegisterForAuthNotifications();
@@ -367,7 +367,7 @@ TEST_F(SyncAuthManagerTest, RequestsNewAccessTokenOnRefreshTokenUpdate) {
 
 TEST_F(SyncAuthManagerTest, DoesNotRequestAccessTokenAutonomously) {
   std::string account_id =
-      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
   auto auth_manager = CreateAuthManager();
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
   auth_manager->RegisterForAuthNotifications();
@@ -393,7 +393,7 @@ TEST_F(SyncAuthManagerTest, DoesNotRequestAccessTokenAutonomously) {
 
 TEST_F(SyncAuthManagerTest, ClearsCredentialsOnRefreshTokenRemoval) {
   std::string account_id =
-      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
   auto auth_manager = CreateAuthManager();
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
   auth_manager->RegisterForAuthNotifications();
@@ -433,7 +433,7 @@ TEST_F(SyncAuthManagerTest, ClearsCredentialsOnRefreshTokenRemoval) {
 
 TEST_F(SyncAuthManagerTest, ClearsCredentialsOnInvalidRefreshToken) {
   std::string account_id =
-      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
   auto auth_manager = CreateAuthManager();
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
   auth_manager->RegisterForAuthNotifications();

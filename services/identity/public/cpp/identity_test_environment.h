@@ -26,9 +26,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Sets the primary account for the given email address, generating a GAIA ID
   // that corresponds uniquely to that email address. On non-ChromeOS, results
   // in the firing of the IdentityManager and SigninManager callbacks for signin
-  // success. Blocks until the primary account is set. Returns the account ID
+  // success. Blocks until the primary account is set. Returns the AccountInfo
   // of the newly-set account.
-  std::string SetPrimaryAccount(const std::string& email);
+  AccountInfo SetPrimaryAccount(const std::string& email);
 
   // Sets a refresh token for the primary account (which must already be set).
   // Blocks until the refresh token is set.
@@ -47,7 +47,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // On non-ChromeOS platforms, this will also result in the firing of the
   // IdentityManager and SigninManager callbacks for signin success. On all
   // platforms, this method blocks until the primary account is available.
-  std::string MakePrimaryAccountAvailable(const std::string& email);
+  // Returns the AccountInfo of the newly-available account.
+  AccountInfo MakePrimaryAccountAvailable(const std::string& email);
 
   // Clears the primary account. On non-ChromeOS, results in the firing of the
   // IdentityManager and SigninManager callbacks for signout. Blocks until the
@@ -56,9 +57,24 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
 
   // Makes an account available for the given email address, generating a GAIA
   // ID and refresh token that correspond uniquely to that email address. Blocks
-  // until the account is available. Returns the account ID of the
+  // until the account is available. Returns the AccountInfo of the
   // newly-available account.
-  std::string MakeAccountAvailable(const std::string& email);
+  AccountInfo MakeAccountAvailable(const std::string& email);
+
+  // Sets a refresh token for the given account (which must already be
+  // available). Blocks until the refresh token is set. NOTE: See disclaimer at
+  // top of file re: direct usage.
+  void SetRefreshTokenForAccount(const std::string& account_id);
+
+  // Sets a special invalid refresh token for the given account (which must
+  // already be available). Blocks until the refresh token is set. NOTE: See
+  // disclaimer at top of file re: direct usage.
+  void SetInvalidRefreshTokenForAccount(const std::string& account_id);
+
+  // Removes any refresh token for the given account (which must already be
+  // available). Blocks until the refresh token is removed. NOTE: See disclaimer
+  // at top of file re: direct usage.
+  void RemoveRefreshTokenForAccount(const std::string& account_id);
 
   // When this is set, access token requests will be automatically granted with
   // an access token value of "access_token".
