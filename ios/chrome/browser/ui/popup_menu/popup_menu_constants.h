@@ -16,4 +16,7 @@ extern const CGFloat kSelectedItemBackgroundAlpha;
 // Duration of the highlight animation of the popup menu.
 extern const CGFloat kHighlightAnimationDuration;
 
+// Radius for the rounded corner of the popup menu.
+extern const CGFloat kPopupMenuCornerRadius;
+
 #endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_CONSTANTS_H_
