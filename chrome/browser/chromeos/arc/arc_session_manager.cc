@@ -51,6 +51,7 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/types/display_constants.h"
@@ -94,6 +95,18 @@ chromeos::SessionManagerClient* GetSessionManagerClient() {
 }
 
 void ShowUMAConsentMessageBox() {
+  session_manager::SessionManager* manager =
+      session_manager::SessionManager::Get();
+  // SessionManager may not be available in unittests.
+  // TODO(lgcheng@) Temporarily drop this warning if login screen is still
+  // present. Fix this when we have full spec what EDU requests.
+  if (!manager ||
+      manager->session_state() != session_manager::SessionState::ACTIVE) {
+    LOG(ERROR) << "Login screen is still present. Dropping request to show UMA "
+                  "consent message box";
+    return;
+  }
+
   chrome::ShowWarningMessageBox(
       nullptr,
       l10n_util::GetStringUTF16(
