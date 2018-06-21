@@ -13,4 +13,7 @@ callback ReportingObserverCallback = void (sequence<Report> reports, ReportingOb
 ] interface ReportingObserver {
     void observe();
     void disconnect();
+    ReportList takeRecords();
 };
+
+typedef sequence<Report> ReportList;

@@ -44,6 +44,7 @@ class CORE_EXPORT ReportingObserver final : public ScriptWrappable {
 
   void observe();
   void disconnect();
+  HeapVector<Member<Report>> takeRecords();
 
   void Trace(blink::Visitor*) override;
 

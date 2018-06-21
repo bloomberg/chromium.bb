@@ -72,6 +72,12 @@ void ReportingObserver::disconnect() {
   ReportingContext::From(execution_context_)->UnregisterObserver(this);
 }
 
+HeapVector<Member<Report>> ReportingObserver::takeRecords() {
+  auto reports = report_queue_;
+  report_queue_.clear();
+  return reports;
+}
+
 void ReportingObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
   visitor->Trace(callback_);
