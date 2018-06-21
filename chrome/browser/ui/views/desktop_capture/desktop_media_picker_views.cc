@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
 
 #include "base/callback.h"
-#include "build/build_config.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -21,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -33,19 +33,11 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/wm/core/shadow_types.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/window_tree_host.h"
-#endif
-
-#if defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/media_picker/create_desktop_media_picker_cocoa.h"
-#endif
-
 using content::DesktopMediaID;
 
 namespace {
 
-#if !defined(OS_CHROMEOS) && defined(USE_AURA)
+#if !defined(OS_CHROMEOS)
 DesktopMediaID::Id AcceleratedWidgetToDesktopMediaId(
     gfx::AcceleratedWidget accelerated_widget) {
 #if defined(OS_WIN)
@@ -231,7 +223,6 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   // the Id is passed to DesktopMediaList.
   DesktopMediaID dialog_window_id;
   if (!modal_dialog) {
-#if defined(USE_AURA)
     dialog_window_id = DesktopMediaID::RegisterAuraWindow(
         DesktopMediaID::TYPE_WINDOW, widget->GetNativeWindow());
 
@@ -239,8 +230,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 #if !defined(OS_CHROMEOS)
     dialog_window_id.id = AcceleratedWidgetToDesktopMediaId(
         widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
-#endif  // !defined(OS_CHROMEOS)
-#endif  // defined(USE_AURA)
+#endif
   }
 
   for (auto* list_view : list_views_)
@@ -459,11 +449,5 @@ void DesktopMediaPickerViews::NotifyDialogResult(DesktopMediaID source) {
 
 // static
 std::unique_ptr<DesktopMediaPicker> DesktopMediaPicker::Create() {
-#if defined(OS_MACOSX)
-  std::unique_ptr<DesktopMediaPicker> cocoa_ui =
-      CreateDesktopMediaPickerCocoa();
-  if (cocoa_ui)
-    return cocoa_ui;
-#endif
-  return std::make_unique<DesktopMediaPickerViews>();
+  return std::unique_ptr<DesktopMediaPicker>(new DesktopMediaPickerViews());
 }

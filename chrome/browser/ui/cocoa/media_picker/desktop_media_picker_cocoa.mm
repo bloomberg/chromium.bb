@@ -27,3 +27,8 @@ void DesktopMediaPickerCocoa::Show(
              requestAudio:params.request_audio]);
   [controller_ showWindow:nil];
 }
+
+// static
+std::unique_ptr<DesktopMediaPicker> DesktopMediaPicker::Create() {
+  return std::unique_ptr<DesktopMediaPicker>(new DesktopMediaPickerCocoa());
+}
