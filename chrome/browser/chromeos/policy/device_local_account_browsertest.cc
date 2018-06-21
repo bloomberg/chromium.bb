@@ -474,12 +474,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
 
     chromeos::LoginDisplayHost* host =
         chromeos::LoginDisplayHost::default_host();
-    ASSERT_TRUE(host);
-    chromeos::WebUILoginView* web_ui_login_view = host->GetWebUILoginView();
-    ASSERT_TRUE(web_ui_login_view);
-    content::WebUI* web_ui = web_ui_login_view->GetWebUI();
-    ASSERT_TRUE(web_ui);
-    contents_ = web_ui->GetWebContents();
+    contents_ = host->GetOobeWebContents();
     ASSERT_TRUE(contents_);
 
     // Wait for the login UI to be ready.

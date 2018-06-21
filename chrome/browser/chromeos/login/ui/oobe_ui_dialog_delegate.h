@@ -12,6 +12,10 @@
 #include "base/strings/string16.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace ui {
 class Accelerator;
 }
@@ -54,6 +58,8 @@ class OobeUIDialogDelegate : public ui::WebDialogDelegate {
 
   // Initialize the dialog widget.
   void Init();
+
+  content::WebContents* GetWebContents();
 
   void SetSize(int width, int height);
   OobeUI* GetOobeUI() const;

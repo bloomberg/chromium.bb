@@ -59,6 +59,10 @@ void OobeUIDialogDelegate::Init() {
       dialog_view_->web_contents());
 }
 
+content::WebContents* OobeUIDialogDelegate::GetWebContents() {
+  return dialog_view_->web_contents();
+}
+
 void OobeUIDialogDelegate::Show(bool closable_by_esc) {
   closable_by_esc_ = closable_by_esc;
   dialog_widget_->Show();

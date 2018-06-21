@@ -22,6 +22,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD0(GetLoginDisplay, LoginDisplay*());
   MOCK_CONST_METHOD0(GetNativeWindow, gfx::NativeWindow(void));
   MOCK_CONST_METHOD0(GetOobeUI, OobeUI*(void));
+  MOCK_CONST_METHOD0(GetOobeWebContents, content::WebContents*(void));
   MOCK_CONST_METHOD0(GetWebUILoginView, WebUILoginView*(void));
   MOCK_METHOD0(BeforeSessionStart, void(void));
 

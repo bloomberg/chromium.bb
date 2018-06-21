@@ -184,9 +184,7 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
   // show the login screen. Simulate this.
   const LoginDisplayHost* host = LoginDisplayHost::default_host();
   ASSERT_TRUE(host);
-  WebUILoginView* webui_login_view = host->GetWebUILoginView();
-  ASSERT_TRUE(webui_login_view);
-  content::WebContents* web_contents = webui_login_view->GetWebContents();
+  content::WebContents* web_contents = host->GetOobeWebContents();
   ASSERT_TRUE(web_contents);
   ASSERT_TRUE(content::ExecuteScript(web_contents,
                                      "Oobe.showAddUserForTesting();"));

@@ -19,6 +19,10 @@
 
 class AccountId;
 
+namespace content {
+class WebContents;
+}
+
 namespace chromeos {
 
 class AppLaunchController;
@@ -60,6 +64,9 @@ class LoginDisplayHost {
 
   // Returns instance of the OOBE WebUI.
   virtual OobeUI* GetOobeUI() const = 0;
+
+  // Return the WebContents instance of OOBE, if any.
+  virtual content::WebContents* GetOobeWebContents() const = 0;
 
   // Returns the current login view.
   virtual WebUILoginView* GetWebUILoginView() const = 0;

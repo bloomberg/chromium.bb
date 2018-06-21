@@ -94,10 +94,6 @@ IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
 // Flaky: https://crbug.com/481651 and https://crbug.com/772072
 IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
                        DISABLED_ProxyAuthDialogOnUserBoardScreen) {
-  LoginDisplayHost* login_display_host = LoginDisplayHost::default_host();
-  WebUILoginView* web_ui_login_view = login_display_host->GetWebUILoginView();
-  OobeUI* oobe_ui = web_ui_login_view->GetOobeUI();
-
   {
     OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ACCOUNT_PICKER);
     ProxyAuthDialogWaiter auth_dialog_waiter;
@@ -111,8 +107,9 @@ IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
   {
     OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_GAIA_SIGNIN);
     ProxyAuthDialogWaiter auth_dialog_waiter;
-    ASSERT_TRUE(content::ExecuteScript(oobe_ui->web_ui()->GetWebContents(),
-                                       "$('add-user-button').click()"));
+    ASSERT_TRUE(content::ExecuteScript(
+        LoginDisplayHost::default_host()->GetOobeWebContents(),
+        "$('add-user-button').click()"));
     screen_waiter.Wait();
     auth_dialog_waiter.Wait();
     ASSERT_TRUE(auth_dialog_waiter.login_handler());

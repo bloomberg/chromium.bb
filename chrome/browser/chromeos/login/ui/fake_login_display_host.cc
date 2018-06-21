@@ -41,6 +41,10 @@ OobeUI* FakeLoginDisplayHost::GetOobeUI() const {
   return nullptr;
 }
 
+content::WebContents* FakeLoginDisplayHost::GetOobeWebContents() const {
+  return nullptr;
+}
+
 WebUILoginView* FakeLoginDisplayHost::GetWebUILoginView() const {
   return nullptr;
 }
