@@ -249,7 +249,7 @@ void DrmThreadMessageProxy::OnSetGammaCorrection(
 }
 
 void DrmThreadMessageProxy::OnCheckOverlayCapabilitiesCallback(
-    const gfx::AcceleratedWidget& widget,
+    gfx::AcceleratedWidget widget,
     const OverlaySurfaceCandidateList& candidates,
     const OverlayStatusList& returns) const {
   auto param_overlays = CreateParamsFromOverlaySurfaceCandidate(candidates);

@@ -92,9 +92,9 @@ class DrmThread : public base::Thread,
 
   // ozone::mojom::DrmDevice
   void StartDrmDevice(StartDrmDeviceCallback callback) override;
-  void CreateWindow(const gfx::AcceleratedWidget& widget) override;
-  void DestroyWindow(const gfx::AcceleratedWidget& widget) override;
-  void SetWindowBounds(const gfx::AcceleratedWidget& widget,
+  void CreateWindow(gfx::AcceleratedWidget widget) override;
+  void DestroyWindow(gfx::AcceleratedWidget widget) override;
+  void SetWindowBounds(gfx::AcceleratedWidget widget,
                        const gfx::Rect& bounds) override;
   void TakeDisplayControl(base::OnceCallback<void(bool)> callback) override;
   void RelinquishDisplayControl(
@@ -124,18 +124,18 @@ class DrmThread : public base::Thread,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut) override;
   void CheckOverlayCapabilities(
-      const gfx::AcceleratedWidget& widget,
+      gfx::AcceleratedWidget widget,
       const OverlaySurfaceCandidateList& overlays,
-      base::OnceCallback<void(const gfx::AcceleratedWidget&,
+      base::OnceCallback<void(gfx::AcceleratedWidget,
                               const OverlaySurfaceCandidateList&,
                               const OverlayStatusList&)> callback) override;
 
   // ozone::mojom::DeviceCursor
-  void SetCursor(const gfx::AcceleratedWidget& widget,
+  void SetCursor(gfx::AcceleratedWidget widget,
                  const std::vector<SkBitmap>& bitmaps,
                  const gfx::Point& location,
                  int32_t frame_delay_ms) override;
-  void MoveCursor(const gfx::AcceleratedWidget& widget,
+  void MoveCursor(gfx::AcceleratedWidget widget,
                   const gfx::Point& location) override;
 
   // base::Thread:

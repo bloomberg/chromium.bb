@@ -121,7 +121,7 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   void RunObservers();
 
   void GpuCheckOverlayCapabilitiesCallback(
-      const gfx::AcceleratedWidget& widget,
+      gfx::AcceleratedWidget widget,
       const OverlaySurfaceCandidateList& overlays,
       const OverlayStatusList& returns) const;
 

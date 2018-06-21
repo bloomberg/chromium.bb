@@ -13,9 +13,6 @@ import "ui/gfx/mojo/transform.mojom";
 // serialization and deserialization.
 interface TraitsTestService {
   [Sync]
-  EchoAcceleratedWidget(AcceleratedWidget w) => (AcceleratedWidget pass);
-
-  [Sync]
   EchoSelectionBound(SelectionBound s) => (SelectionBound pass);
 
   [Sync]

@@ -81,7 +81,7 @@ class DrmThreadMessageProxy : public IPC::MessageFilter,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut);
 
   void OnCheckOverlayCapabilitiesCallback(
-      const gfx::AcceleratedWidget& widget,
+      gfx::AcceleratedWidget widget,
       const OverlaySurfaceCandidateList& overlays,
       const OverlayStatusList& returns) const;
   void OnRefreshNativeDisplaysCallback(MovableDisplaySnapshots displays) const;
