@@ -18,7 +18,8 @@ namespace syncer {
 
 class StartupControllerTest : public testing::Test {
  public:
-  StartupControllerTest() : can_start_(false), started_(false) {}
+  StartupControllerTest()
+      : preferred_types_(UserTypes()), can_start_(false), started_(false) {}
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -28,10 +29,17 @@ class StartupControllerTest : public testing::Test {
     sync_prefs_ = std::make_unique<SyncPrefs>(&pref_service_);
     controller_ = std::make_unique<StartupController>(
         sync_prefs_.get(),
-        base::Bind(&StartupControllerTest::CanStart, base::Unretained(this)),
-        base::Bind(&StartupControllerTest::FakeStartBackend,
-                   base::Unretained(this)));
-    controller_->Reset(UserTypes());
+        base::BindRepeating(&StartupControllerTest::GetPreferredDataTypes,
+                            base::Unretained(this)),
+        base::BindRepeating(&StartupControllerTest::CanStart,
+                            base::Unretained(this)),
+        base::BindRepeating(&StartupControllerTest::FakeStartBackend,
+                            base::Unretained(this)));
+    controller_->Reset();
+  }
+
+  void SetPreferredDataTypes(const ModelTypeSet& types) {
+    preferred_types_ = types;
   }
 
   void SetCanStart(bool can_start) { can_start_ = can_start; }
@@ -58,9 +66,11 @@ class StartupControllerTest : public testing::Test {
   SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
 
  private:
+  ModelTypeSet GetPreferredDataTypes() { return preferred_types_; }
   bool CanStart() { return can_start_; }
   void FakeStartBackend() { started_ = true; }
 
+  ModelTypeSet preferred_types_;
   bool can_start_;
   bool started_;
   base::MessageLoop message_loop_;
@@ -133,9 +143,7 @@ TEST_F(StartupControllerTest, NoDeferralWithoutSessionsSync) {
   types.Remove(PROXY_TABS);
   types.Remove(TYPED_URLS);
   types.Remove(SUPERVISED_USER_SETTINGS);
-  sync_prefs()->SetKeepEverythingSynced(false);
-  sync_prefs()->SetPreferredDataTypes(UserTypes(), types);
-  controller()->Reset(UserTypes());
+  SetPreferredDataTypes(types);
 
   sync_prefs()->SetFirstSetupComplete();
   SetCanStart(true);
@@ -187,7 +195,7 @@ TEST_F(StartupControllerTest, ResetDuringSetup) {
   controller()->SetSetupInProgress(true);
 
   // This could happen if the UI triggers a stop-syncing permanently call.
-  controller()->Reset(UserTypes());
+  controller()->Reset();
 
   // From the UI's point of view, setup is still in progress.
   EXPECT_TRUE(controller()->IsSetupInProgress());
