@@ -80,7 +80,7 @@ class CDM_CLASS_API CdmProxyClient {
 
   enum Protocol : uint32_t {
     kNone = 0,  // No protocol supported. Can be used in failure cases.
-    kIntelConvergedSecurityAndManageabilityEngine,  // Method using Intel CSME.
+    kIntel,  // Method using Intel CSME.
     // There will be more values in the future e.g. kD3D11RsaHardware,
     // kD3D11RsaSoftware to use the D3D11 RSA method.
   };
