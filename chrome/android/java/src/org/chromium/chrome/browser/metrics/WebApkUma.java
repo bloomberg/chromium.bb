@@ -291,7 +291,7 @@ public class WebApkUma {
         WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(
                 new UnimportantStorageSizeCalculator(availableSpaceInByte, cacheSizeInByte));
         fetcher.fetchPreferencesForCategory(
-                SiteSettingsCategory.fromString(SiteSettingsCategory.CATEGORY_USE_STORAGE));
+                SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.USE_STORAGE));
     }
 
     private static void logSpaceUsageUMAOnDataAvailable(

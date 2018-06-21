@@ -28,14 +28,13 @@ public class Website implements Serializable {
     private final WebsiteAddress mOrigin;
     private final WebsiteAddress mEmbedder;
 
-    private ContentSettingException mAdsException;
-    private ContentSettingException mAutoplayExceptionInfo;
-    private ContentSettingException mBackgroundSyncExceptionInfo;
-    private ContentSettingException mCookieException;
-    private ContentSettingException mJavaScriptException;
-    private ContentSettingException mPopupException;
-    private ContentSettingException mSoundException;
-
+    /**
+     * Indexed by ContentSettingException.Type.
+     */
+    private ContentSettingException mContentSettingException[];
+    /**
+     * Indexed by PermissionInfo.Type.
+     */
     private PermissionInfo[] mPermissionInfo;
 
     private LocalStorageInfo mLocalStorageInfo;
@@ -51,6 +50,8 @@ public class Website implements Serializable {
         mOrigin = origin;
         mEmbedder = embedder;
         mPermissionInfo = new PermissionInfo[PermissionInfo.Type.NUM_PERMISSIONS];
+        mContentSettingException =
+                new ContentSettingException[ContentSettingException.Type.NUM_EXCEPTIONS];
     }
 
     public WebsiteAddress getAddress() {
@@ -91,107 +92,6 @@ public class Website implements Serializable {
     }
 
     /**
-     * Sets the Ads exception info for this Website.
-     */
-    public void setAdsException(ContentSettingException exception) {
-        mAdsException = exception;
-    }
-
-    /**
-     * Returns the Ads exception info for this Website.
-     */
-    public ContentSettingException getAdsException() {
-        return mAdsException;
-    }
-
-    /**
-     * Returns what permission governs the Ads setting.
-     */
-    public ContentSetting getAdsPermission() {
-        if (mAdsException != null) {
-            return mAdsException.getContentSetting();
-        }
-        return null;
-    }
-
-    /**
-     * Sets the Ads permission.
-     */
-    public void setAdsPermission(ContentSetting value) {
-        // It is possible to set the permission without having an existing exception, because we can
-        // show the BLOCK state even when this permission is set to the default. In that case, just
-        // set an exception now to BLOCK to enable changing the permission.
-        if (mAdsException == null) {
-            setAdsException(
-                    new ContentSettingException(ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS,
-                            getAddress().getOrigin(), ContentSetting.BLOCK, ""));
-        }
-        mAdsException.setContentSetting(value);
-    }
-
-    /**
-     * Returns what permission governs Autoplay access.
-     */
-    public ContentSetting getAutoplayPermission() {
-        return mAutoplayExceptionInfo != null ? mAutoplayExceptionInfo.getContentSetting() : null;
-    }
-
-    /**
-     * Configure Autoplay permission access setting for this site.
-     */
-    public void setAutoplayPermission(ContentSetting value) {
-        if (mAutoplayExceptionInfo != null) {
-            mAutoplayExceptionInfo.setContentSetting(value);
-        }
-    }
-
-    /**
-     * Returns the Autoplay exception info for this Website.
-     */
-    public ContentSettingException getAutoplayException() {
-        return mAutoplayExceptionInfo;
-    }
-
-    /**
-     * Sets the Autoplay exception info for this Website.
-     */
-    public void setAutoplayException(ContentSettingException exception) {
-        mAutoplayExceptionInfo = exception;
-    }
-
-    /**
-     * Returns the background sync exception info for this Website.
-     */
-    public ContentSettingException getBackgroundSyncException() {
-        return mBackgroundSyncExceptionInfo;
-    }
-
-    /**
-     * Sets the background sync setting exception info for this website.
-     */
-    public void setBackgroundSyncException(ContentSettingException exception) {
-        mBackgroundSyncExceptionInfo = exception;
-    }
-
-    /**
-     * @return what permission governs background sync.
-     */
-    public ContentSetting getBackgroundSyncPermission() {
-        return mBackgroundSyncExceptionInfo != null
-                ? mBackgroundSyncExceptionInfo.getContentSetting()
-                : null;
-    }
-
-    /**
-     * Configures the background sync setting for this site.
-     */
-    public void setBackgroundSyncPermission(ContentSetting value) {
-        if (mBackgroundSyncExceptionInfo != null) {
-            mBackgroundSyncExceptionInfo.setContentSetting(value);
-        }
-    }
-
-    /**
      * @return PermissionInfo with permission details of specified type
      *         (Camera, Clipboard, etc.).
      */
@@ -224,130 +124,63 @@ public class Website implements Serializable {
     }
 
     /**
-     * Sets the Cookie exception info for this site.
+     * Returns the exception info for this Website for specified type.
      */
-    public void setCookieException(ContentSettingException exception) {
-        mCookieException = exception;
-    }
-
-    public ContentSettingException getCookieException() {
-        return mCookieException;
+    public ContentSettingException getContentSettingException(
+            @ContentSettingException.Type int type) {
+        return mContentSettingException[type];
     }
 
     /**
-     * Gets the permission that governs cookie preferences.
+     * Sets the exception info for this Website for specified type.
      */
-    public ContentSetting getCookiePermission() {
-        return mCookieException != null ? mCookieException.getContentSetting() : null;
+    public void setContentSettingException(
+            @ContentSettingException.Type int type, ContentSettingException exception) {
+        mContentSettingException[type] = exception;
     }
 
     /**
-     * Sets the permission that govers cookie preferences for this site.
+     * Returns what ContentSettingException governs the setting of specified type.
      */
-    public void setCookiePermission(ContentSetting value) {
-        if (mCookieException != null) {
-            mCookieException.setContentSetting(value);
+    public ContentSetting getContentSettingPermission(@ContentSettingException.Type int type) {
+        return mContentSettingException[type] != null
+                ? mContentSettingException[type].getContentSetting()
+                : null;
+    }
+
+    /**
+     * Sets the permission.
+     */
+    public void setContentSettingPermission(
+            @ContentSettingException.Type int type, ContentSetting value) {
+        if (type == ContentSettingException.Type.ADS) {
+            // It is possible to set the permission without having an existing exception,
+            // because we can show the BLOCK state even when this permission is set to the
+            // default. In that case, just set an exception now to BLOCK to enable changing the
+            // permission.
+            if (mContentSettingException[type] == null) {
+                mContentSettingException[type] =
+                        new ContentSettingException(ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS,
+                                getAddress().getOrigin(), ContentSetting.BLOCK, "");
+            }
+        } else if (type == ContentSettingException.Type.SOUND) {
+            // It is possible to set the permission without having an existing exception,
+            // because we always show the sound permission in Site Settings.
+            if (mContentSettingException[type] == null) {
+                mContentSettingException[type] =
+                        new ContentSettingException(ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND,
+                                getAddress().getHost(), value, "");
+            }
+            if (value == ContentSetting.BLOCK) {
+                RecordUserAction.record("SoundContentSetting.MuteBy.SiteSettings");
+            } else {
+                RecordUserAction.record("SoundContentSetting.UnmuteBy.SiteSettings");
+            }
+            // We want setContentSetting to be called even after calling setSoundException
+            // above because this will trigger the actual change on the PrefServiceBridge.
         }
-    }
-
-    /**
-     * Returns what permission governs JavaScript access.
-     */
-    public ContentSetting getJavaScriptPermission() {
-        return mJavaScriptException != null ? mJavaScriptException.getContentSetting() : null;
-    }
-
-    /**
-     * Configure JavaScript permission access setting for this site.
-     */
-    public void setJavaScriptPermission(ContentSetting value) {
-        if (mJavaScriptException != null) {
-            mJavaScriptException.setContentSetting(value);
-        }
-    }
-
-    /**
-     * Sets the JavaScript exception info for this Website.
-     */
-    public void setJavaScriptException(ContentSettingException exception) {
-        mJavaScriptException = exception;
-    }
-
-    /**
-     * Returns the JavaScript exception info for this Website.
-     */
-    public ContentSettingException getJavaScriptException() {
-        return mJavaScriptException;
-    }
-
-    /**
-     * Returns what permission governs Sound access.
-     */
-    public ContentSetting getSoundPermission() {
-        return mSoundException != null ? mSoundException.getContentSetting() : null;
-    }
-
-    /**
-     * Configure Sound permission access setting for this site.
-     */
-    public void setSoundPermission(ContentSetting value) {
-        // It is possible to set the permission without having an existing exception, because we
-        // always show the sound permission in Site Settings.
-        if (mSoundException == null) {
-            setSoundException(
-                    new ContentSettingException(ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND,
-                            getAddress().getHost(), value, ""));
-        }
-        // We want this to be called even after calling setSoundException above because this will
-        // trigger the actual change on the PrefServiceBridge.
-        mSoundException.setContentSetting(value);
-        if (value == ContentSetting.BLOCK) {
-            RecordUserAction.record("SoundContentSetting.MuteBy.SiteSettings");
-        } else {
-            RecordUserAction.record("SoundContentSetting.UnmuteBy.SiteSettings");
-        }
-    }
-
-    /**
-     * Sets the Sound exception info for this Website.
-     */
-    public void setSoundException(ContentSettingException exception) {
-        mSoundException = exception;
-    }
-
-    /**
-     * Returns the Sound exception info for this Website.
-     */
-    public ContentSettingException getSoundException() {
-        return mSoundException;
-    }
-
-    /**
-     * Sets the Popup exception info for this Website.
-     */
-    public void setPopupException(ContentSettingException exception) {
-        mPopupException = exception;
-    }
-
-    public ContentSettingException getPopupException() {
-        return mPopupException;
-    }
-
-    /**
-     * Returns what permission governs Popup permission.
-     */
-    public ContentSetting getPopupPermission() {
-        if (mPopupException != null) return mPopupException.getContentSetting();
-        return null;
-    }
-
-    /**
-     * Configure Popup permission access setting for this site.
-     */
-    public void setPopupPermission(ContentSetting value) {
-        if (mPopupException != null) {
-            mPopupException.setContentSetting(value);
-        }
+        if (mContentSettingException[type] != null)
+            mContentSettingException[type].setContentSetting(value);
     }
 
     public void setLocalStorageInfo(LocalStorageInfo info) {
@@ -367,7 +200,8 @@ public class Website implements Serializable {
     }
 
     public void clearAllStoredData(final StoredDataClearedCallback callback) {
-        // Wait for callbacks from each mStorageInfo and another callback from mLocalStorageInfo.
+        // Wait for callbacks from each mStorageInfo and another callback from
+        // mLocalStorageInfo.
         mStorageInfoCallbacksLeft = mStorageInfo.size() + 1;
         StorageInfoClearedCallback clearedCallback = () -> {
             if (--mStorageInfoCallbacksLeft == 0) callback.onStoredDataCleared();
@@ -387,9 +221,7 @@ public class Website implements Serializable {
     /**
      * An interface to implement to get a callback when storage info has been cleared.
      */
-    public interface StoredDataClearedCallback {
-        public void onStoredDataCleared();
-    }
+    public interface StoredDataClearedCallback { public void onStoredDataCleared(); }
 
     public long getTotalUsage() {
         long usage = 0;

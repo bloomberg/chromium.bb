@@ -20,18 +20,18 @@ public class PermissionInfo implements Serializable {
     public @interface Type {
         // Values used in Website and other places to address permission
         // array index. Should be enumerated from 0 and can't have gaps.
-        static final int CAMERA = 0;
-        static final int CLIPBOARD = 1;
-        static final int GEOLOCATION = 2;
-        static final int MICROPHONE = 3;
-        static final int MIDI = 4;
-        static final int NOTIFICATION = 5;
-        static final int PROTECTED_MEDIA_IDENTIFIER = 6;
-        static final int SENSORS = 7;
+        int CAMERA = 0;
+        int CLIPBOARD = 1;
+        int GEOLOCATION = 2;
+        int MICROPHONE = 3;
+        int MIDI = 4;
+        int NOTIFICATION = 5;
+        int PROTECTED_MEDIA_IDENTIFIER = 6;
+        int SENSORS = 7;
         /**
          * Number of handled permissions used for example inside for loops.
          */
-        static final int NUM_PERMISSIONS = 8;
+        int NUM_PERMISSIONS = 8;
     }
 
     private final boolean mIsIncognito;

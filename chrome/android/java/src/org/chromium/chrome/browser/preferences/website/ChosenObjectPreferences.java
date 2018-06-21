@@ -58,7 +58,7 @@ public class ChosenObjectPreferences
         listView.setDivider(null);
 
         int contentSettingsType = getArguments().getInt(EXTRA_CATEGORY);
-        mCategory = SiteSettingsCategory.fromContentSettingsType(contentSettingsType);
+        mCategory = SiteSettingsCategory.createFromContentSettingsType(contentSettingsType);
         mObjectInfos =
                 (ArrayList<ChosenObjectInfo>) getArguments().getSerializable(EXTRA_OBJECT_INFOS);
         checkObjectConsistency();

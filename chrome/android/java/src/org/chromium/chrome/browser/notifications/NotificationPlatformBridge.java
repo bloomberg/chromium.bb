@@ -282,7 +282,7 @@ public class NotificationPlatformBridge {
             // Notification preferences for all origins.
             fragmentArguments = new Bundle();
             fragmentArguments.putString(SingleCategoryPreferences.EXTRA_CATEGORY,
-                    SiteSettingsCategory.CATEGORY_NOTIFICATIONS);
+                    SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.NOTIFICATIONS));
             fragmentArguments.putString(SingleCategoryPreferences.EXTRA_TITLE,
                     applicationContext.getResources().getString(
                             R.string.push_notifications_permission_title));

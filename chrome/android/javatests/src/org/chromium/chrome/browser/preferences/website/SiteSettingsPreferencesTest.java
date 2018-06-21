@@ -66,7 +66,7 @@ public class SiteSettingsPreferencesTest {
     private void setAllowLocation(final boolean enabled) {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         final Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsPreferences.LOCATION_KEY);
+                startSiteSettingsCategory(SiteSettingsCategory.Type.DEVICE_LOCATION);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -151,9 +151,10 @@ public class SiteSettingsPreferencesTest {
         return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
     }
 
-    private Preferences startSiteSettingsCategory(String category) {
+    private Preferences startSiteSettingsCategory(@SiteSettingsCategory.Type int type) {
         Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putString(SingleCategoryPreferences.EXTRA_CATEGORY, category);
+        fragmentArgs.putString(
+                SingleCategoryPreferences.EXTRA_CATEGORY, SiteSettingsCategory.preferenceKey(type));
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
                 InstrumentationRegistry.getTargetContext(),
                 SingleCategoryPreferences.class.getName());
@@ -218,8 +219,9 @@ public class SiteSettingsPreferencesTest {
         });
     }
 
-    private void setGlobalToggleForCategory(final String category, final boolean enabled) {
-        final Preferences preferenceActivity = startSiteSettingsCategory(category);
+    private void setGlobalToggleForCategory(
+            final @SiteSettingsCategory.Type int type, final boolean enabled) {
+        final Preferences preferenceActivity = startSiteSettingsCategory(type);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -235,7 +237,7 @@ public class SiteSettingsPreferencesTest {
     }
 
     private void setEnablePopups(final boolean enabled) {
-        setGlobalToggleForCategory(SiteSettingsCategory.CATEGORY_POPUPS, enabled);
+        setGlobalToggleForCategory(SiteSettingsCategory.Type.POPUPS, enabled);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -247,7 +249,7 @@ public class SiteSettingsPreferencesTest {
     }
 
     private void setEnableCamera(final boolean enabled) {
-        setGlobalToggleForCategory(SiteSettingsCategory.CATEGORY_CAMERA, enabled);
+        setGlobalToggleForCategory(SiteSettingsCategory.Type.CAMERA, enabled);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -269,7 +271,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testThirdPartyCookieToggleGetsDisabled() throws Exception {
         Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsPreferences.COOKIES_KEY);
+                startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setCookiesEnabled(preferenceActivity, true);
         setThirdPartyCookiesEnabled(preferenceActivity, false);
         setThirdPartyCookiesEnabled(preferenceActivity, true);
@@ -285,7 +287,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testCookiesNotBlocked() throws Exception {
         Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsPreferences.COOKIES_KEY);
+                startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setCookiesEnabled(preferenceActivity, true);
         preferenceActivity.finish();
 
@@ -312,7 +314,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testCookiesBlocked() throws Exception {
         Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsPreferences.COOKIES_KEY);
+                startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setCookiesEnabled(preferenceActivity, false);
         preferenceActivity.finish();
 
@@ -391,16 +393,22 @@ public class SiteSettingsPreferencesTest {
                 SiteSettingsPreferences siteSettings = (SiteSettingsPreferences)
                         preferenceActivity.getFragmentForTest();
 
-                SiteSettingsPreference allSites  = (SiteSettingsPreference)
-                        siteSettings.findPreference(SiteSettingsPreferences.ALL_SITES_KEY);
+                SiteSettingsPreference allSites =
+                        (SiteSettingsPreference) siteSettings.findPreference(
+                                SiteSettingsCategory.preferenceKey(
+                                        SiteSettingsCategory.Type.ALL_SITES));
                 Assert.assertEquals(null, allSites);
 
-                SiteSettingsPreference autoplay  = (SiteSettingsPreference)
-                        siteSettings.findPreference(SiteSettingsPreferences.AUTOPLAY_KEY);
+                SiteSettingsPreference autoplay =
+                        (SiteSettingsPreference) siteSettings.findPreference(
+                                SiteSettingsCategory.preferenceKey(
+                                        SiteSettingsCategory.Type.AUTOPLAY));
                 Assert.assertFalse(autoplay == null);
 
-                SiteSettingsPreference protectedContent = (SiteSettingsPreference)
-                        siteSettings.findPreference(SiteSettingsPreferences.PROTECTED_CONTENT_KEY);
+                SiteSettingsPreference protectedContent =
+                        (SiteSettingsPreference) siteSettings.findPreference(
+                                SiteSettingsCategory.preferenceKey(
+                                        SiteSettingsCategory.Type.PROTECTED_MEDIA));
                 Assert.assertFalse(protectedContent == null);
 
                 preferenceActivity.finish();
@@ -464,7 +472,7 @@ public class SiteSettingsPreferencesTest {
     @CommandLineFlags.Add({ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM,
             "disable-features=" + ChromeFeatureList.MODAL_PERMISSION_PROMPTS})
     public void testMicBlocked() throws Exception {
-        setGlobalToggleForCategory(SiteSettingsCategory.CATEGORY_MICROPHONE, false);
+        setGlobalToggleForCategory(SiteSettingsCategory.Type.MICROPHONE, false);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -540,7 +548,7 @@ public class SiteSettingsPreferencesTest {
      * @param enabled true to test enabling background sync, false to test disabling the feature.
      */
     private void doTestBackgroundSyncPermission(final boolean enabled) {
-        setGlobalToggleForCategory(SiteSettingsCategory.CATEGORY_BACKGROUND_SYNC, enabled);
+        setGlobalToggleForCategory(SiteSettingsCategory.Type.BACKGROUND_SYNC, enabled);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -570,7 +578,7 @@ public class SiteSettingsPreferencesTest {
      * @param enabled true to test enabling the USB chooser, false to test disabling the feature.
      */
     private void doTestUsbGuardPermission(final boolean enabled) {
-        setGlobalToggleForCategory(SiteSettingsCategory.CATEGORY_USB, enabled);
+        setGlobalToggleForCategory(SiteSettingsCategory.Type.USB, enabled);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
