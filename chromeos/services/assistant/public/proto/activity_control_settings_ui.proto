@@ -8,8 +8,6 @@ option optimize_for = LITE_RUNTIME;
 
 package chromeos.assistant;
 
-import "activity_control_settings_common.proto";
-
 message ActivityControlSettingsUiSelector {
   // An ID that uniquely identifies a single consent screen / client integration
   // with consent flow.

@@ -1,0 +1,48 @@
+/* Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#main-container {
+  height: 372px;
+  overflow: hidden;
+  padding: 48px 48px 0 48px;
+  position: absolute;
+  width: 480px;
+}
+
+img {
+  display: block;
+  height: 100px;
+  margin: auto;
+}
+
+.title {
+  font-size: 18px;
+  padding: 32px 0 18px 0;
+}
+
+.sub-title {
+  font-size: 12px;
+}
+
+.content {
+  color: rgba(0, 0, 0, .8);
+  font-size: 11px;
+  padding-top: 6px;
+}
+
+.extra-content {
+  color: rgba(0, 0, 0, .54);
+  font-size: 10px;
+  padding-top: 6px;
+}
+
+#accept,
+#reject {
+  align-items: unset;
+  padding: 10px 0 10px 0;
+}
+
+#next-button {
+  -webkit-margin-end: 18px;
+}
