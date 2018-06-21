@@ -676,11 +676,12 @@ class SingleEntryPropertiesGetterForDriveFs {
         std::make_unique<bool>(metadata->available_offline);
     properties_->present = std::make_unique<bool>(metadata->available_offline);
     properties_->dirty = std::make_unique<bool>(metadata->dirty);
-    properties_->hosted = std::make_unique<bool>(metadata->hosted);
-    properties_->present =
-        std::make_unique<bool>(metadata->available_offline || metadata->hosted);
-    properties_->available_when_metered =
-        std::make_unique<bool>(metadata->available_offline || metadata->hosted);
+    properties_->hosted = std::make_unique<bool>(
+        metadata->type == drivefs::mojom::FileMetadata::Type::kHosted);
+    properties_->present = std::make_unique<bool>(metadata->available_offline ||
+                                                  *properties_->hosted);
+    properties_->available_when_metered = std::make_unique<bool>(
+        metadata->available_offline || *properties_->hosted);
     properties_->pinned = std::make_unique<bool>(metadata->pinned);
     properties_->shared = std::make_unique<bool>(metadata->shared);
     properties_->starred = std::make_unique<bool>(metadata->starred);
@@ -721,6 +722,21 @@ class SingleEntryPropertiesGetterForDriveFs {
             std::make_unique<int32_t>(metadata->image_metadata->rotation);
       }
     }
+
+    properties_->can_delete =
+        std::make_unique<bool>(metadata->capabilities->can_delete);
+    properties_->can_rename =
+        std::make_unique<bool>(metadata->capabilities->can_rename);
+    properties_->can_add_children =
+        std::make_unique<bool>(metadata->capabilities->can_add_children);
+
+    // Only set the |can_copy| capability for hosted documents; for other files,
+    // we must have read access, so |can_copy| is implicitly true.
+    properties_->can_copy = std::make_unique<bool>(
+        !*properties_->hosted || metadata->capabilities->can_copy);
+    properties_->can_share =
+        std::make_unique<bool>(metadata->capabilities->can_share);
+
     if (metadata->thumbnail) {
       base::PostTaskAndReplyWithResult(
           FROM_HERE,

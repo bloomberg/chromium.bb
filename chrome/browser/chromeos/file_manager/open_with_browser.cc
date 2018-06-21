@@ -143,7 +143,7 @@ void OpenHostedDriveFsFile(const base::FilePath& file_path,
                            drivefs::mojom::FileMetadataPtr metadata) {
   if (error != drive::FILE_ERROR_OK)
     return;
-  if (!metadata->hosted) {
+  if (metadata->type != drivefs::mojom::FileMetadata::Type::kHosted) {
     OpenGDocUrlFromFile(file_path, profile);
     return;
   }

@@ -85,6 +85,18 @@ enum FileError {
 };
 
 struct FileMetadata {
+  enum Type {
+    // A regular file.
+    kFile,
+
+    // A hosted document (e.g. a gdoc).
+    kHosted,
+
+    // A directory.
+    kDirectory,
+  };
+  Type type;
+
   int64 size;
 
   string content_mime_type;
@@ -102,7 +114,6 @@ struct FileMetadata {
 
   bool available_offline;
   bool dirty;
-  bool hosted;
   bool pinned;
   bool shared;
   bool starred;
@@ -113,6 +124,8 @@ struct FileMetadata {
   // The thumbnail as a PNG. It is only set if |want_thumbnail| is true in the
   // request and the file has a thumbnail available.
   array<uint8>? thumbnail;
+
+  Capabilities capabilities;
 };
 
 struct ImageMetadata {
@@ -122,6 +135,15 @@ struct ImageMetadata {
 
   // Rotation in clockwise degrees.
   int32 rotation = 0;
+};
+
+// Drive capabilities:
+struct Capabilities {
+  bool can_share = true;
+  bool can_copy = true;
+  bool can_delete = true;
+  bool can_rename = true;
+  bool can_add_children = true;
 };
 
 struct ItemEvent {
