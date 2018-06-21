@@ -66,16 +66,21 @@ class HWTestList(object):
           config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT)
 
     # BVT + INSTALLER suite.
-    return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
-                                    **bvt_inline_kwargs),
-            config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
-                                    **bvt_inline_kwargs),
-            config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
-                                    blocking=True, **installer_kwargs),
-            config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
-                                    **async_kwargs),
-            config_lib.HWTestConfig(constants.HWTEST_CANARY_SUITE,
-                                    **async_kwargs)]
+    return [
+        config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
+                                **bvt_inline_kwargs),
+        config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
+                                **bvt_inline_kwargs),
+        # TODO(derat): Make HWTEST_TAST_SUITE run in DefaultListNonCanary.
+        config_lib.HWTestConfig(constants.HWTEST_TAST_SUITE,
+                                warn_only=True, **bvt_inline_kwargs),
+        config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
+                                blocking=True, **installer_kwargs),
+        config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
+                                **async_kwargs),
+        config_lib.HWTestConfig(constants.HWTEST_CANARY_SUITE,
+                                **async_kwargs),
+    ]
 
   def DefaultListCanary(self, **kwargs):
     """Returns a default list of config_lib.HWTestConfig's for a canary build.
