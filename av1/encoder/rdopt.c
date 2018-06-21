@@ -8105,7 +8105,8 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
       }
       *disable_skip = 0;
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-      if (cpi->sf.inter_mode_rd_model_estimation) {
+      if (cpi->sf.inter_mode_rd_model_estimation && cm->tile_cols == 1 &&
+          cm->tile_rows == 1) {
 #if INTER_MODE_RD_TEST
         if (md->ready) {
           int64_t real_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
