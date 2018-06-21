@@ -338,7 +338,7 @@ bool HostDrmDevice::GpuSetGammaCorrection(
 }
 
 void HostDrmDevice::GpuCheckOverlayCapabilitiesCallback(
-    const gfx::AcceleratedWidget& widget,
+    gfx::AcceleratedWidget widget,
     const OverlaySurfaceCandidateList& overlays,
     const OverlayStatusList& returns) const {
   DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);

@@ -238,24 +238,24 @@ void DrmThread::GetVSyncParameters(
     window->GetVSyncParameters(callback);
 }
 
-void DrmThread::CreateWindow(const gfx::AcceleratedWidget& widget) {
+void DrmThread::CreateWindow(gfx::AcceleratedWidget widget) {
   std::unique_ptr<DrmWindow> window(
       new DrmWindow(widget, device_manager_.get(), screen_manager_.get()));
   window->Initialize(buffer_generator_.get());
   screen_manager_->AddWindow(widget, std::move(window));
 }
 
-void DrmThread::DestroyWindow(const gfx::AcceleratedWidget& widget) {
+void DrmThread::DestroyWindow(gfx::AcceleratedWidget widget) {
   std::unique_ptr<DrmWindow> window = screen_manager_->RemoveWindow(widget);
   window->Shutdown();
 }
 
-void DrmThread::SetWindowBounds(const gfx::AcceleratedWidget& widget,
+void DrmThread::SetWindowBounds(gfx::AcceleratedWidget widget,
                                 const gfx::Rect& bounds) {
   screen_manager_->GetWindow(widget)->SetBounds(bounds);
 }
 
-void DrmThread::SetCursor(const gfx::AcceleratedWidget& widget,
+void DrmThread::SetCursor(gfx::AcceleratedWidget widget,
                           const std::vector<SkBitmap>& bitmaps,
                           const gfx::Point& location,
                           int32_t frame_delay_ms) {
@@ -263,15 +263,15 @@ void DrmThread::SetCursor(const gfx::AcceleratedWidget& widget,
       ->SetCursor(bitmaps, location, frame_delay_ms);
 }
 
-void DrmThread::MoveCursor(const gfx::AcceleratedWidget& widget,
+void DrmThread::MoveCursor(gfx::AcceleratedWidget widget,
                            const gfx::Point& location) {
   screen_manager_->GetWindow(widget)->MoveCursor(location);
 }
 
 void DrmThread::CheckOverlayCapabilities(
-    const gfx::AcceleratedWidget& widget,
+    gfx::AcceleratedWidget widget,
     const OverlaySurfaceCandidateList& overlays,
-    base::OnceCallback<void(const gfx::AcceleratedWidget&,
+    base::OnceCallback<void(gfx::AcceleratedWidget,
                             const OverlaySurfaceCandidateList&,
                             const OverlayStatusList&)> callback) {
   TRACE_EVENT0("drm,hwoverlays", "DrmThread::CheckOverlayCapabilities");

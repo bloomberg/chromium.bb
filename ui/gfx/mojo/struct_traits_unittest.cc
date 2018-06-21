@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/mojo/accelerated_widget_struct_traits.h"
 #include "ui/gfx/mojo/buffer_types_struct_traits.h"
 #include "ui/gfx/mojo/presentation_feedback.mojom.h"
 #include "ui/gfx/mojo/presentation_feedback_struct_traits.h"
@@ -20,7 +21,7 @@ namespace gfx {
 
 namespace {
 
-gfx::AcceleratedWidget castToAcceleratedWidget(int i) {
+gfx::AcceleratedWidget CastToAcceleratedWidget(int i) {
 #if defined(USE_OZONE) || defined(USE_X11) || defined(OS_MACOSX)
   return static_cast<gfx::AcceleratedWidget>(i);
 #else
@@ -57,11 +58,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
   void EchoTransform(const Transform& t,
                      EchoTransformCallback callback) override {
-    std::move(callback).Run(t);
-  }
-
-  void EchoAcceleratedWidget(const AcceleratedWidget& t,
-                             EchoAcceleratedWidgetCallback callback) override {
     std::move(callback).Run(t);
   }
 
@@ -141,18 +137,18 @@ TEST_F(StructTraitsTest, Transform) {
   EXPECT_EQ(col4row4, output.matrix().get(3, 3));
 }
 
-// AcceleratedWidgets can only be sent between processes on X11, Ozone, Win
-#if defined(OS_WIN) || defined(USE_OZONE) || defined(USE_X11)
+// AcceleratedWidgets can only be sent between processes on some platforms.
+#if defined(OS_WIN) || defined(USE_OZONE) || defined(USE_X11) || \
+    defined(OS_MACOSX)
 #define MAYBE_AcceleratedWidget AcceleratedWidget
 #else
 #define MAYBE_AcceleratedWidget DISABLED_AcceleratedWidget
 #endif
 
 TEST_F(StructTraitsTest, MAYBE_AcceleratedWidget) {
-  gfx::AcceleratedWidget input(castToAcceleratedWidget(1001));
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  gfx::AcceleratedWidget input(CastToAcceleratedWidget(1001));
   gfx::AcceleratedWidget output;
-  proxy->EchoAcceleratedWidget(input, &output);
+  SerializeAndDeserialize<gfx::mojom::AcceleratedWidget>(input, &output);
   EXPECT_EQ(input, output);
 }
 

@@ -38,7 +38,7 @@ class DrmOverlayManager : public OverlayManagerOzone {
 
   // Communication-free implementations of actions performed in response to
   // messages from the GPU thread.
-  void GpuSentOverlayResult(const gfx::AcceleratedWidget& widget,
+  void GpuSentOverlayResult(gfx::AcceleratedWidget widget,
                             const OverlaySurfaceCandidateList& params,
                             const OverlayStatusList& returns);
 

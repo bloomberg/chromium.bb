@@ -136,7 +136,7 @@ void DrmOverlayManager::SendOverlayValidationRequest(
 }
 
 void DrmOverlayManager::GpuSentOverlayResult(
-    const gfx::AcceleratedWidget& widget,
+    gfx::AcceleratedWidget widget,
     const OverlaySurfaceCandidateList& candidates,
     const OverlayStatusList& returns) {
   TRACE_EVENT_ASYNC_END0(
