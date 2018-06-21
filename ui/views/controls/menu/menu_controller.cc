@@ -311,8 +311,8 @@ class MenuController::MenuScrollTask {
 
     if (!scrolling_timer_.IsRunning()) {
       scrolling_timer_.Start(FROM_HERE,
-                             TimeDelta::FromMilliseconds(kScrollTimerMS),
-                             this, &MenuScrollTask::Run);
+                             TimeDelta::FromMilliseconds(kScrollTimerMS), this,
+                             &MenuScrollTask::Run);
     }
   }
 
@@ -333,9 +333,10 @@ class MenuController::MenuScrollTask {
     const int delta_y = static_cast<int>(
         (base::Time::Now() - start_scroll_time_).InMilliseconds() *
         pixels_per_second_ / 1000);
-    vis_rect.set_y(is_scrolling_up_ ?
-        std::max(0, start_y_ - delta_y) :
-        std::min(submenu_->height() - vis_rect.height(), start_y_ + delta_y));
+    vis_rect.set_y(is_scrolling_up_
+                       ? std::max(0, start_y_ - delta_y)
+                       : std::min(submenu_->height() - vis_rect.height(),
+                                  start_y_ + delta_y));
     submenu_->ScrollRectToVisible(vis_rect);
   }
 
@@ -367,8 +368,7 @@ struct MenuController::SelectByCharDetails {
       : first_match(-1),
         has_multiple(false),
         index_of_item(-1),
-        next_match(-1) {
-  }
+        next_match(-1) {}
 
   // Index of the first menu with the specified mnemonic.
   int first_match;
@@ -392,8 +392,7 @@ MenuController::State::State()
       hot_button(nullptr),
       submenu_open(false),
       anchor(MENU_ANCHOR_TOPLEFT),
-      context_menu(false) {
-}
+      context_menu(false) {}
 
 MenuController::State::State(const State& other) = default;
 
@@ -432,8 +431,8 @@ void MenuController::Run(Widget* parent,
       if (event && event->type() == ui::ET_MOUSE_PRESSED) {
         gfx::Point screen_loc(
             static_cast<const ui::MouseEvent*>(event)->location());
-        View::ConvertPointToScreen(
-            static_cast<View*>(event->target()), &screen_loc);
+        View::ConvertPointToScreen(static_cast<View*>(event->target()),
+                                   &screen_loc);
         menu_start_mouse_press_loc_ = screen_loc;
       }
     }
@@ -679,8 +678,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     MenuItemView* menu = part.menu;
     // |menu| is NULL means this event is from an empty menu or a separator.
     // If it is from an empty menu, use parent context menu instead of that.
-    if (menu == NULL &&
-        part.submenu->child_count() == 1 &&
+    if (menu == NULL && part.submenu->child_count() == 1 &&
         part.submenu->child_at(0)->id() == MenuItemView::kEmptyMenuItemViewID) {
       menu = part.parent;
     }
@@ -750,6 +748,14 @@ void MenuController::OnMouseMoved(SubmenuView* source,
     return;
   }
 
+  // Ignore mouse move events whose location is the same as where the mouse
+  // was when a menu was opened. This fixes the issue of opening a menu
+  // with the keyboard and having the menu item under the current mouse
+  // position incorrectly selected.
+  if (menu_open_mouse_loc_ && *menu_open_mouse_loc_ == event.location())
+    return;
+
+  menu_open_mouse_loc_.reset();
   MenuHostRootView* root_view = GetRootView(source, event.location());
   if (root_view) {
     root_view->ProcessMouseMoved(event);
@@ -759,8 +765,7 @@ void MenuController::OnMouseMoved(SubmenuView* source,
     // mouse and keyboard are used to navigate the menu.
     ui::MouseEvent event_for_root(event);
     ConvertLocatedEventForRootView(source, root_view, &event_for_root);
-    View* view =
-        root_view->GetEventHandlerForPoint(event_for_root.location());
+    View* view = root_view->GetEventHandlerForPoint(event_for_root.location());
     Button* button = Button::AsButton(view);
     if (button && button->IsHotTracked())
       SetHotTrackedButton(button);
@@ -806,8 +811,7 @@ void MenuController::OnGestureEvent(SubmenuView* source,
     // Reset hot-tracking if a different view is getting a touch event.
     ui::GestureEvent event_for_root(*event);
     ConvertLocatedEventForRootView(source, root_view, &event_for_root);
-    View* view =
-        root_view->GetEventHandlerForPoint(event_for_root.location());
+    View* view = root_view->GetEventHandlerForPoint(event_for_root.location());
     Button* button = Button::AsButton(view);
     if (hot_button_ && hot_button_ != button)
       SetHotTrackedButton(nullptr);
@@ -828,8 +832,7 @@ void MenuController::OnGestureEvent(SubmenuView* source,
   } else if (event->type() == ui::ET_GESTURE_TAP) {
     if (!part.is_scroll() && part.menu &&
         !(part.should_submenu_show && part.menu->HasSubmenu())) {
-      if (part.menu->GetDelegate()->IsTriggerableEvent(
-          part.menu, *event)) {
+      if (part.menu->GetDelegate()->IsTriggerableEvent(part.menu, *event)) {
         item_selected_by_touch_ = true;
         Accept(part.menu, event->flags());
       }
@@ -840,14 +843,13 @@ void MenuController::OnGestureEvent(SubmenuView* source,
                    SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
       event->StopPropagation();
     }
-  } else if (event->type() == ui::ET_GESTURE_TAP_CANCEL &&
-             part.menu &&
+  } else if (event->type() == ui::ET_GESTURE_TAP_CANCEL && part.menu &&
              part.type == MenuPart::MENU_ITEM) {
     // Move the selection to the parent menu so that the selection in the
     // current menu is unset. Make sure the submenu remains open by sending the
     // appropriate SetSelectionTypes flags.
     SetSelection(part.menu->GetParentMenuItem(),
-        SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
+                 SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
     event->StopPropagation();
   }
 
@@ -899,9 +901,9 @@ void MenuController::ViewHierarchyChanged(
 }
 
 bool MenuController::GetDropFormats(
-      SubmenuView* source,
-      int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types) {
+    SubmenuView* source,
+    int* formats,
+    std::set<ui::Clipboard::FormatType>* format_types) {
   return source->GetMenuItem()->GetDelegate()->GetDropFormats(
       source->GetMenuItem(), formats, format_types);
 }
@@ -953,8 +955,9 @@ int MenuController::OnDragUpdated(SubmenuView* source,
            menu_item_loc.y() < (menu_item_height - kDropBetweenPixels))) {
         drop_position = MenuDelegate::DROP_ON;
       } else {
-        drop_position = (menu_item_loc.y() < menu_item_height / 2) ?
-            MenuDelegate::DROP_BEFORE : MenuDelegate::DROP_AFTER;
+        drop_position = (menu_item_loc.y() < menu_item_height / 2)
+                            ? MenuDelegate::DROP_BEFORE
+                            : MenuDelegate::DROP_AFTER;
       }
       query_menu_item = menu_item;
     } else {
@@ -965,8 +968,8 @@ int MenuController::OnDragUpdated(SubmenuView* source,
         query_menu_item, event, &drop_position);
 
     // If the menu has a submenu, schedule the submenu to open.
-    SetSelection(menu_item, menu_item->HasSubmenu() ? SELECTION_OPEN_SUBMENU :
-                 SELECTION_DEFAULT);
+    SetSelection(menu_item, menu_item->HasSubmenu() ? SELECTION_OPEN_SUBMENU
+                                                    : SELECTION_DEFAULT);
 
     if (drop_position == MenuDelegate::DROP_NONE ||
         drop_operation == ui::DragDropTypes::DRAG_NONE)
@@ -1020,8 +1023,8 @@ int MenuController::OnPerformDrop(SubmenuView* source,
 
   // WARNING: the call to MenuClosed deletes us.
 
-  return drop_target->GetDelegate()->OnPerformDrop(
-      drop_target, drop_position, event);
+  return drop_target->GetDelegate()->OnPerformDrop(drop_target, drop_position,
+                                                   event);
 }
 
 void MenuController::OnDragEnteredScrollButton(SubmenuView* source,
@@ -1129,8 +1132,8 @@ void MenuController::UpdateSubmenuSelection(SubmenuView* submenu) {
     gfx::Point point = display::Screen::GetScreen()->GetCursorScreenPoint();
     const SubmenuView* root_submenu =
         submenu->GetMenuItem()->GetRootMenuItem()->GetSubmenu();
-    View::ConvertPointFromScreen(
-        root_submenu->GetWidget()->GetRootView(), &point);
+    View::ConvertPointFromScreen(root_submenu->GetWidget()->GetRootView(),
+                                 &point);
     HandleMouseLocation(submenu, point);
   }
 }
@@ -1314,7 +1317,7 @@ void MenuController::StartDrag(SubmenuView* source,
   base::WeakPtr<MenuController> this_ref = AsWeakPtr();
   // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
   item->GetWidget()->RunShellDrag(NULL, data, widget_loc, drag_ops,
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+                                  ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   // MenuController may have been deleted so check before accessing member
   // variables.
   if (this_ref)
@@ -1534,18 +1537,15 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
     return false;
 
   View* source_view = source->GetScrollViewContainer();
-  if (mouse_location.x() >= 0 &&
-      mouse_location.x() < source_view->width() &&
-      mouse_location.y() >= 0 &&
-      mouse_location.y() < source_view->height()) {
+  if (mouse_location.x() >= 0 && mouse_location.x() < source_view->width() &&
+      mouse_location.y() >= 0 && mouse_location.y() < source_view->height()) {
     // The mouse is over the menu, no need to continue.
     return false;
   }
 
   // TODO(oshima): Replace with views only API.
-  if (!owner_ ||
-      !display::Screen::GetScreen()->IsWindowUnderCursor(
-          owner_->GetNativeWindow())) {
+  if (!owner_ || !display::Screen::GetScreen()->IsWindowUnderCursor(
+                     owner_->GetNativeWindow())) {
     return false;
   }
 
@@ -1556,9 +1556,9 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
   MenuAnchorPosition anchor;
   bool has_mnemonics;
   MenuButton* button = NULL;
-  MenuItemView* alt_menu = source->GetMenuItem()->GetDelegate()->
-      GetSiblingMenu(source->GetMenuItem()->GetRootMenuItem(),
-                     screen_point, &anchor, &has_mnemonics, &button);
+  MenuItemView* alt_menu = source->GetMenuItem()->GetDelegate()->GetSiblingMenu(
+      source->GetMenuItem()->GetRootMenuItem(), screen_point, &anchor,
+      &has_mnemonics, &button);
   if (!alt_menu || (state_.item && state_.item->GetRootMenuItem() == alt_menu))
     return false;
 
@@ -1883,9 +1883,11 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
   bool prefer_leading =
       state_.open_leading.empty() ? true : state_.open_leading.back();
   bool resulting_direction;
-  gfx::Rect bounds = MenuItemView::IsBubble(state_.anchor) ?
-      CalculateBubbleMenuBounds(item, prefer_leading, &resulting_direction) :
-      CalculateMenuBounds(item, prefer_leading, &resulting_direction);
+  gfx::Rect bounds =
+      MenuItemView::IsBubble(state_.anchor)
+          ? CalculateBubbleMenuBounds(item, prefer_leading,
+                                      &resulting_direction)
+          : CalculateMenuBounds(item, prefer_leading, &resulting_direction);
   state_.open_leading.push_back(resulting_direction);
   bool do_capture = (!did_capture_ && !for_drop_);
   showing_submenu_ = true;
@@ -1893,7 +1895,22 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
     // Menus are the only place using kGroupingPropertyKey, so any value (other
     // than 0) is fine.
     const int kGroupingId = 1001;
+
     item->GetSubmenu()->ShowAt(owner_, bounds, do_capture);
+    // Figure out if the mouse is under the menu; if so, remember the mouse
+    // location so we can ignore the first mouse move event(s) with that
+    // location. We do this after ShowAt because ConvertPointFromScreen
+    // doesn't work correctly if the widget isn't shown.
+    if (item->GetSubmenu()->GetWidget() != nullptr) {
+      gfx::Point mouse_pos =
+          display::Screen::GetScreen()->GetCursorScreenPoint();
+      View::ConvertPointFromScreen(item->submenu_->GetWidget()->GetRootView(),
+                                   &mouse_pos);
+      MenuPart part_under_mouse = GetMenuPart(item->submenu_, mouse_pos);
+      if (part_under_mouse.type != MenuPart::NONE)
+        menu_open_mouse_loc_ = mouse_pos;
+    }
+
     item->GetSubmenu()->GetWidget()->SetNativeWindowProperty(
         TooltipManager::kGroupingPropertyKey,
         reinterpret_cast<void*>(kGroupingId));
@@ -1969,8 +1986,8 @@ void MenuController::StopShowTimer() {
 
 void MenuController::StartCancelAllTimer() {
   cancel_all_timer_.Start(FROM_HERE,
-                          TimeDelta::FromMilliseconds(kCloseOnExitTime),
-                          this, &MenuController::CancelAll);
+                          TimeDelta::FromMilliseconds(kCloseOnExitTime), this,
+                          &MenuController::CancelAll);
 }
 
 void MenuController::StopCancelAllTimer() {
@@ -2047,8 +2064,8 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       // In all other requested position styles it will be flipped above and
       // the height will be shrunken to the usable height.
       if (item->actual_menu_position() == MenuItemView::POSITION_BELOW_BOUNDS) {
-        pref.set_height(std::min(pref.height(),
-                                 state_.monitor_bounds.bottom() - y));
+        pref.set_height(
+            std::min(pref.height(), state_.monitor_bounds.bottom() - y));
       } else if (item->actual_menu_position() ==
                  MenuItemView::POSITION_BEST_FIT) {
         MenuItemView::MenuPosition orientation =
@@ -2058,7 +2075,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
           pref.set_height(state_.monitor_bounds.height());
           y = state_.monitor_bounds.y();
         } else if (state_.monitor_bounds.y() + pref.height() <
-            state_.initial_bounds.y()) {
+                   state_.initial_bounds.y()) {
           // Flipping upwards if there is enough space.
           y = state_.initial_bounds.y() - pref.height();
           orientation = MenuItemView::POSITION_ABOVE_BOUNDS;
@@ -2090,15 +2107,15 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
         }
         item->set_actual_menu_position(orientation);
       } else {
-        pref.set_height(std::min(pref.height(),
-            state_.initial_bounds.y() - state_.monitor_bounds.y()));
+        pref.set_height(std::min(pref.height(), state_.initial_bounds.y() -
+                                                    state_.monitor_bounds.y()));
         y = state_.initial_bounds.y() - pref.height();
         item->set_actual_menu_position(MenuItemView::POSITION_ABOVE_BOUNDS);
       }
     } else if (item->actual_menu_position() ==
                MenuItemView::POSITION_ABOVE_BOUNDS) {
-      pref.set_height(std::min(pref.height(),
-          state_.initial_bounds.y() - state_.monitor_bounds.y()));
+      pref.set_height(std::min(pref.height(), state_.initial_bounds.y() -
+                                                  state_.monitor_bounds.y()));
       y = state_.initial_bounds.y() - pref.height();
     } else {
       item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
@@ -2352,9 +2369,9 @@ void MenuController::IncrementSelection(
       SetHotTrackedButton(nullptr);
     }
     bool direction_is_down = direction == INCREMENT_SELECTION_DOWN;
-    View* to_make_hot = button
-        ? GetNextFocusableView(item, button, direction_is_down)
-        : GetInitialFocusableView(item, direction_is_down);
+    View* to_make_hot =
+        button ? GetNextFocusableView(item, button, direction_is_down)
+               : GetInitialFocusableView(item, direction_is_down);
     Button* hot_button = Button::AsButton(to_make_hot);
     if (hot_button) {
       SetHotTrackedButton(hot_button);
@@ -2488,8 +2505,7 @@ void MenuController::AcceptOrSelect(MenuItemView* parent,
     SetSelection(submenu->GetMenuItemAt(details.first_match),
                  SELECTION_DEFAULT);
   } else {
-    SetSelection(submenu->GetMenuItemAt(details.next_match),
-                 SELECTION_DEFAULT);
+    SetSelection(submenu->GetMenuItemAt(details.next_match), SELECTION_DEFAULT);
   }
 }
 
@@ -2500,7 +2516,7 @@ void MenuController::SelectByChar(base::char16 character) {
   if (!character)
     return;
 
-  base::char16 char_array[] = { character, 0 };
+  base::char16 char_array[] = {character, 0};
   base::char16 key = base::i18n::ToLower(char_array)[0];
   MenuItemView* item = pending_state_.item;
   if (!item->SubmenuIsShowing())
@@ -2581,9 +2597,8 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
   Cancel(exit_type);
 }
 
-void MenuController::SetDropMenuItem(
-    MenuItemView* new_target,
-    MenuDelegate::DropPosition new_position) {
+void MenuController::SetDropMenuItem(MenuItemView* new_target,
+                                     MenuDelegate::DropPosition new_position) {
   if (new_target == drop_target_ && new_position == drop_position_)
     return;
 
@@ -2636,8 +2651,7 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
     active_mouse_view_tracker_->SetView(active_mouse_view);
     if (active_mouse_view) {
       gfx::Point target_point(target_menu_loc);
-      View::ConvertPointToTarget(
-          target_menu, active_mouse_view, &target_point);
+      View::ConvertPointToTarget(target_menu, active_mouse_view, &target_point);
       ui::MouseEvent mouse_entered_event(ui::ET_MOUSE_ENTERED, target_point,
                                          target_point, ui::EventTimeForNow(), 0,
                                          0);
