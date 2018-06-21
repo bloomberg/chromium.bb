@@ -191,7 +191,6 @@ class QuicSimpleServerSessionTest
                        TlsServerHandshaker::CreateSslCtx()),
         compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize) {
-    config_.SetMaxStreamsPerConnection(kMaxStreamsForTest, kMaxStreamsForTest);
     config_.SetMaxIncomingDynamicStreamsToSend(kMaxStreamsForTest);
     QuicConfigPeer::SetReceivedMaxIncomingDynamicStreams(&config_,
                                                          kMaxStreamsForTest);
@@ -464,8 +463,6 @@ class QuicSimpleServerSessionServerPushTest
   const size_t kStreamFlowControlWindowSize = 32 * 1024;  // 32KB.
 
   QuicSimpleServerSessionServerPushTest() : QuicSimpleServerSessionTest() {
-    config_.SetMaxStreamsPerConnection(kMaxStreamsForTest, kMaxStreamsForTest);
-
     // Reset stream level flow control window to be 32KB.
     QuicConfigPeer::SetReceivedInitialStreamFlowControlWindow(
         &config_, kStreamFlowControlWindowSize);
@@ -514,8 +511,6 @@ class QuicSimpleServerSessionServerPushTest
     // To prevent push streams from being closed the response need to be larger
     // than stream flow control window so stream won't send the full body.
     size_t body_size = 2 * kStreamFlowControlWindowSize;  // 64KB.
-
-    config_.SetMaxStreamsPerConnection(kMaxStreamsForTest, kMaxStreamsForTest);
 
     QuicString request_url = "mail.google.com/";
     spdy::SpdyHeaderBlock request_headers;

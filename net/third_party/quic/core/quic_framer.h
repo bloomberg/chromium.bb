@@ -470,6 +470,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
     return version_.transport_version == QUIC_VERSION_99;
   }
 
+  QuicString VerboseDebugString() const;
+
  private:
   friend class test::QuicFramerPeer;
 
@@ -793,6 +795,11 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   // Latched value of quic_reloadable_flag_quic_use_incremental_ack_processing4.
   const bool use_incremental_ack_processing_;
+
+  // If the framer is processing a decrypted payload of a data packet,
+  // |decrypted_payload_reader_| will be set to the reader of that payload,
+  // otherwise nullptr.
+  QuicDataReader* decrypted_payload_reader_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicFramer);
 };

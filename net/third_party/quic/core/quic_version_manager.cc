@@ -60,16 +60,12 @@ void QuicVersionManager::RefilterSupportedVersions() {
   filtered_transport_versions_.clear();
   for (ParsedQuicVersion version : filtered_supported_versions_) {
     auto transport_version = version.transport_version;
-    if (!GetQuicReloadableFlag(
-            quic_version_manager_dedupe_transport_versions) ||
-        std::find(filtered_transport_versions_.begin(),
+    if (std::find(filtered_transport_versions_.begin(),
                   filtered_transport_versions_.end(),
                   transport_version) == filtered_transport_versions_.end()) {
       filtered_transport_versions_.push_back(transport_version);
     }
   }
-  QUIC_FLAG_COUNT(
-      quic_reloadable_flag_quic_version_manager_dedupe_transport_versions);
 }
 
 }  // namespace quic

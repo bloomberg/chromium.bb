@@ -210,7 +210,6 @@ QuicConnection::QuicConnection(
               perspective),
       current_packet_content_(NO_FRAMES_RECEIVED),
       is_current_packet_connectivity_probing_(false),
-      current_peer_migration_type_(NO_CHANGE),
       current_effective_peer_migration_type_(NO_CHANGE),
       helper_(helper),
       alarm_factory_(alarm_factory),
@@ -223,8 +222,6 @@ QuicConnection::QuicConnection(
       connection_id_(connection_id),
       peer_address_(initial_peer_address),
       direct_peer_address_(initial_peer_address),
-      active_peer_migration_type_(NO_CHANGE),
-      highest_packet_sent_before_peer_migration_(0),
       active_effective_peer_migration_type_(NO_CHANGE),
       highest_packet_sent_before_effective_peer_migration_(0),
       last_packet_decrypted_(false),
@@ -297,7 +294,8 @@ QuicConnection::QuicConnection(
           clock_,
           &stats_,
           GetQuicReloadableFlag(quic_default_to_bbr) ? kBBR : kCubicBytes,
-          kNack),
+          kNack,
+          this),
       version_negotiation_state_(START_NEGOTIATION),
       perspective_(perspective),
       connected_(true),
@@ -320,9 +318,10 @@ QuicConnection::QuicConnection(
       supports_release_time_(writer->SupportsReleaseTime()),
       pace_time_into_future_(QuicTime::Delta::FromMilliseconds(
           GetQuicFlag(FLAGS_quic_pace_time_into_future_ms))),
-      enable_server_proxy_(GetQuicReloadableFlag(quic_enable_server_proxy2)),
       deprecate_scheduler_(
-          GetQuicReloadableFlag(quic_deprecate_scoped_scheduler2)) {
+          GetQuicReloadableFlag(quic_deprecate_scoped_scheduler2)),
+      no_send_alarm_in_process_packet_if_write_blocked_(GetQuicReloadableFlag(
+          quic_no_send_alarm_in_process_packet_if_write_blocked)) {
   if (ack_mode_ == ACK_DECIMATION) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_ack_decimation);
   }
@@ -501,6 +500,15 @@ bool QuicConnection::SelectMutualVersion(
   }
 
   return false;
+}
+
+QuicString QuicConnection::DebugStringForAckProcessing() const {
+  return QuicStrCat(
+      "{sent_packet_manager: ",
+      sent_packet_manager_.DebugStringForAckProcessing(),
+      ", largest_seen_pkn_with_ack: ", largest_seen_packet_with_ack_,
+      ", max_generated_pkn: ", packet_generator_.packet_number(),
+      ", framer: ", framer_.VerboseDebugString(), "}");
 }
 
 void QuicConnection::OnError(QuicFramer* framer) {
@@ -751,7 +759,6 @@ void QuicConnection::OnDecryptedPacket(EncryptionLevel level) {
 
 QuicSocketAddress QuicConnection::GetEffectivePeerAddressFromCurrentPacket()
     const {
-  DCHECK(enable_server_proxy_);
   // By default, the connection is not proxied, and the effective peer address
   // is the packet's source address, i.e. the direct peer address.
   return last_packet_source_address_;
@@ -772,66 +779,38 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
   // Initialize the current packet content stats.
   current_packet_content_ = NO_FRAMES_RECEIVED;
   is_current_packet_connectivity_probing_ = false;
+  current_effective_peer_migration_type_ = NO_CHANGE;
 
-  if (!enable_server_proxy_) {
-    current_peer_migration_type_ = NO_CHANGE;
-
-    AddressChangeType peer_migration_type =
-        QuicUtils::DetermineAddressChangeType(peer_address_,
-                                              last_packet_source_address_);
-    // Initiate connection migration if a non-reordered packet is received from
-    // a new address.
-    if (header.packet_number > received_packet_manager_.GetLargestObserved() &&
-        peer_migration_type != NO_CHANGE) {
-      QUIC_DLOG(INFO) << ENDPOINT << "Peer's ip:port changed from "
-                      << peer_address_.ToString() << " to "
-                      << last_packet_source_address_.ToString();
-      if (perspective_ == Perspective::IS_CLIENT) {
-        peer_address_ = last_packet_source_address_;
-      } else if (active_peer_migration_type_ == NO_CHANGE) {
-        // Only migrate connection to a new peer address if there is no
-        // pending change underway.
-        // Cache the current migration change type, which will start peer
-        // migration immediately if this packet is not a connectivity probing
-        // packet.
-        current_peer_migration_type_ = peer_migration_type;
-      }
+  if (perspective_ == Perspective::IS_CLIENT) {
+    if (header.packet_number > received_packet_manager_.GetLargestObserved()) {
+      // Update peer_address_ and effective_peer_address_ immediately for
+      // client connections.
+      direct_peer_address_ = last_packet_source_address_;
+      effective_peer_address_ = GetEffectivePeerAddressFromCurrentPacket();
     }
   } else {
-    current_effective_peer_migration_type_ = NO_CHANGE;
+    // At server, remember the address change type of effective_peer_address
+    // in current_effective_peer_migration_type_. But this variable alone
+    // doesn't necessarily starts a migration. A migration will be started
+    // later, once the current packet is confirmed to meet the following
+    // conditions:
+    // 1) current_effective_peer_migration_type_ is not NO_CHANGE.
+    // 2) The current packet is not a connectivity probing.
+    // 3) The current packet is not reordered, i.e. its packet number is the
+    //    largest of this connection so far.
+    // Once the above conditions are confirmed, a new migration will start
+    // even if there is an active migration underway.
+    current_effective_peer_migration_type_ =
+        QuicUtils::DetermineAddressChangeType(
+            effective_peer_address_,
+            GetEffectivePeerAddressFromCurrentPacket());
 
-    if (perspective_ == Perspective::IS_CLIENT) {
-      if (header.packet_number >
-          received_packet_manager_.GetLargestObserved()) {
-        // Update peer_address_ and effective_peer_address_ immediately for
-        // client connections.
-        direct_peer_address_ = last_packet_source_address_;
-        effective_peer_address_ = GetEffectivePeerAddressFromCurrentPacket();
-      }
-    } else {
-      // At server, remember the address change type of effective_peer_address
-      // in current_effective_peer_migration_type_. But this variable alone
-      // doesn't necessarily starts a migration. A migration will be started
-      // later, once the current packet is confirmed to meet the following
-      // conditions:
-      // 1) current_effective_peer_migration_type_ is not NO_CHANGE.
-      // 2) The current packet is not a connectivity probing.
-      // 3) The current packet is not reordered, i.e. its packet number is the
-      //    largest of this connection so far.
-      // Once the above conditions are confirmed, a new migration will start
-      // even if there is an active migration underway.
-      current_effective_peer_migration_type_ =
-          QuicUtils::DetermineAddressChangeType(
-              effective_peer_address_,
-              GetEffectivePeerAddressFromCurrentPacket());
-
-      QUIC_DLOG_IF(INFO, current_effective_peer_migration_type_ != NO_CHANGE)
-          << ENDPOINT << "Effective peer's ip:port changed from "
-          << effective_peer_address_.ToString() << " to "
-          << GetEffectivePeerAddressFromCurrentPacket().ToString()
-          << ", active_effective_peer_migration_type is "
-          << active_effective_peer_migration_type_;
-    }
+    QUIC_DLOG_IF(INFO, current_effective_peer_migration_type_ != NO_CHANGE)
+        << ENDPOINT << "Effective peer's ip:port changed from "
+        << effective_peer_address_.ToString() << " to "
+        << GetEffectivePeerAddressFromCurrentPacket().ToString()
+        << ", active_effective_peer_migration_type is "
+        << active_effective_peer_migration_type_;
   }
 
   --stats_.packets_dropped;
@@ -958,10 +937,15 @@ bool QuicConnection::OnAckFrameStart(QuicPacketNumber largest_acked,
     return true;
   }
 
-  if (largest_acked > packet_generator_.packet_number()) {
+  QuicPacketNumber largest_sent_packet = packet_generator_.packet_number();
+  if (GetQuicReloadableFlag(quic_validate_ack_largest_observed)) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_validate_ack_largest_observed);
+    largest_sent_packet = sent_packet_manager_.GetLargestSentPacket();
+  }
+  if (largest_acked > largest_sent_packet) {
     QUIC_DLOG(WARNING) << ENDPOINT
                        << "Peer's observed unsent packet:" << largest_acked
-                       << " vs " << packet_generator_.packet_number();
+                       << " vs " << largest_sent_packet;
     // We got an error for data we have not sent.
     CloseConnection(QUIC_INVALID_ACK_DATA, "Largest observed too high.",
                     ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
@@ -1309,26 +1293,16 @@ void QuicConnection::OnPacketComplete() {
     visitor_->OnConnectivityProbeReceived(last_packet_destination_address_,
                                           last_packet_source_address_);
   } else {
-    if (!enable_server_proxy_) {
-      if (current_peer_migration_type_ != NO_CHANGE) {
-        StartPeerMigration(current_peer_migration_type_);
-      }
-    } else {
-      if (last_header_.packet_number ==
-          received_packet_manager_.GetLargestObserved()) {
-        direct_peer_address_ = last_packet_source_address_;
-        if (current_effective_peer_migration_type_ != NO_CHANGE) {
-          StartEffectivePeerMigration(current_effective_peer_migration_type_);
-        }
+    if (last_header_.packet_number ==
+        received_packet_manager_.GetLargestObserved()) {
+      direct_peer_address_ = last_packet_source_address_;
+      if (current_effective_peer_migration_type_ != NO_CHANGE) {
+        StartEffectivePeerMigration(current_effective_peer_migration_type_);
       }
     }
   }
 
-  if (!enable_server_proxy_) {
-    current_peer_migration_type_ = NO_CHANGE;
-  } else {
-    current_effective_peer_migration_type_ = NO_CHANGE;
-  }
+  current_effective_peer_migration_type_ = NO_CHANGE;
 
   // An ack will be sent if a missing retransmittable packet was received;
   const bool was_missing =
@@ -1488,7 +1462,13 @@ void QuicConnection::MaybeSendInResponseToPacket() {
   // Now that we have received an ack, we might be able to send packets which
   // are queued locally, or drain streams which are blocked.
   if (defer_send_in_response_to_packets_) {
-    send_alarm_->Update(clock_->ApproximateNow(), QuicTime::Delta::Zero());
+    if (!no_send_alarm_in_process_packet_if_write_blocked_ ||
+        !writer_->IsWriteBlocked()) {
+      send_alarm_->Update(clock_->ApproximateNow(), QuicTime::Delta::Zero());
+    } else {
+      QUIC_FLAG_COUNT(
+          quic_reloadable_flag_quic_no_send_alarm_in_process_packet_if_write_blocked);  // NOLINT
+    }
   } else {
     WriteAndBundleAcksIfNotBlocked();
   }
@@ -1641,27 +1621,20 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
     self_address_ = last_packet_destination_address_;
   }
 
-  if (!enable_server_proxy_) {
-    if (!peer_address_.IsInitialized()) {
-      peer_address_ = last_packet_source_address_;
-    }
-  } else {
-    if (!direct_peer_address_.IsInitialized()) {
-      direct_peer_address_ = last_packet_source_address_;
-    }
+  if (!direct_peer_address_.IsInitialized()) {
+    direct_peer_address_ = last_packet_source_address_;
+  }
 
-    if (!effective_peer_address_.IsInitialized()) {
-      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_enable_server_proxy2, 1, 3);
-      const QuicSocketAddress effective_peer_addr =
-          GetEffectivePeerAddressFromCurrentPacket();
+  if (!effective_peer_address_.IsInitialized()) {
+    const QuicSocketAddress effective_peer_addr =
+        GetEffectivePeerAddressFromCurrentPacket();
 
-      // effective_peer_address_ must be initialized at the beginning of the
-      // first packet processed(here). If effective_peer_addr is uninitialized,
-      // just set effective_peer_address_ to the direct peer address.
-      effective_peer_address_ = effective_peer_addr.IsInitialized()
-                                    ? effective_peer_addr
-                                    : direct_peer_address_;
-    }
+    // effective_peer_address_ must be initialized at the beginning of the
+    // first packet processed(here). If effective_peer_addr is uninitialized,
+    // just set effective_peer_address_ to the direct peer address.
+    effective_peer_address_ = effective_peer_addr.IsInitialized()
+                                  ? effective_peer_addr
+                                  : direct_peer_address_;
   }
 
   stats_.bytes_received += packet.length();
@@ -1700,28 +1673,20 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
   }
 
   ++stats_.packets_processed;
-  if (!enable_server_proxy_) {
-    if (active_peer_migration_type_ != NO_CHANGE &&
-        sent_packet_manager_.GetLargestObserved() >
-            highest_packet_sent_before_peer_migration_) {
-      if (perspective_ == Perspective::IS_SERVER) {
-        OnPeerMigrationValidated();
-      }
-    }
-  } else {
-    QUIC_DLOG_IF(INFO, active_effective_peer_migration_type_ != NO_CHANGE)
-        << "sent_packet_manager_.GetLargestObserved() = "
-        << sent_packet_manager_.GetLargestObserved()
-        << ", highest_packet_sent_before_effective_peer_migration_ = "
-        << highest_packet_sent_before_effective_peer_migration_;
-    if (active_effective_peer_migration_type_ != NO_CHANGE &&
-        sent_packet_manager_.GetLargestObserved() >
-            highest_packet_sent_before_effective_peer_migration_) {
-      if (perspective_ == Perspective::IS_SERVER) {
-        OnEffectivePeerMigrationValidated();
-      }
+
+  QUIC_DLOG_IF(INFO, active_effective_peer_migration_type_ != NO_CHANGE)
+      << "sent_packet_manager_.GetLargestObserved() = "
+      << sent_packet_manager_.GetLargestObserved()
+      << ", highest_packet_sent_before_effective_peer_migration_ = "
+      << highest_packet_sent_before_effective_peer_migration_;
+  if (active_effective_peer_migration_type_ != NO_CHANGE &&
+      sent_packet_manager_.GetLargestObserved() >
+          highest_packet_sent_before_effective_peer_migration_) {
+    if (perspective_ == Perspective::IS_SERVER) {
+      OnEffectivePeerMigrationValidated();
     }
   }
+
   MaybeProcessUndecryptablePackets();
   MaybeSendInResponseToPacket();
   SetPingAlarm();
@@ -3027,49 +2992,7 @@ void QuicConnection::DiscoverMtu() {
   DCHECK(!mtu_discovery_alarm_->IsSet());
 }
 
-void QuicConnection::OnPeerMigrationValidated() {
-  DCHECK(!enable_server_proxy_);
-  if (active_peer_migration_type_ == NO_CHANGE) {
-    QUIC_BUG << "No migration underway.";
-    return;
-  }
-  highest_packet_sent_before_peer_migration_ = 0;
-  active_peer_migration_type_ = NO_CHANGE;
-}
-
-// TODO(b/77906482): Modify method to start migration whenever a new IP address
-// is seen
-// from a packet with sequence number > the one that triggered the previous
-// migration. This should happen even if a migration is underway, since the
-// most recent migration is the one that we should pay attention to.
-void QuicConnection::StartPeerMigration(AddressChangeType peer_migration_type) {
-  DCHECK(!enable_server_proxy_);
-  // TODO(fayang): Currently, all peer address change type are allowed. Need to
-  // add a method ShouldAllowPeerAddressChange(PeerAddressChangeType type) to
-  // determine whether |type| is allowed.
-  if (active_peer_migration_type_ != NO_CHANGE ||
-      peer_migration_type == NO_CHANGE) {
-    QUIC_BUG << "Migration underway or no new migration started.";
-    return;
-  }
-  QUIC_DLOG(INFO) << ENDPOINT << "Peer's ip:port changed from "
-                  << peer_address_.ToString() << " to "
-                  << last_packet_source_address_.ToString()
-                  << ", migrating connection.";
-
-  highest_packet_sent_before_peer_migration_ =
-      sent_packet_manager_.GetLargestSentPacket();
-  peer_address_ = last_packet_source_address_;
-  active_peer_migration_type_ = peer_migration_type;
-
-  // TODO(b/77907041): Move these calls to OnPeerMigrationValidated. Rename
-  // OnConnectionMigration methods to OnPeerMigration.
-  OnConnectionMigration(peer_migration_type);
-}
-
 void QuicConnection::OnEffectivePeerMigrationValidated() {
-  DCHECK(enable_server_proxy_);
-  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_enable_server_proxy2, 3, 3);
   if (active_effective_peer_migration_type_ == NO_CHANGE) {
     QUIC_BUG << "No migration underway.";
     return;
@@ -3078,13 +3001,7 @@ void QuicConnection::OnEffectivePeerMigrationValidated() {
   active_effective_peer_migration_type_ = NO_CHANGE;
 }
 
-// TODO(wub): Modify method to start migration whenever a new IP address is seen
-// from a packet with sequence number > the one that triggered the previous
-// migration. This should happen even if a migration is underway, since the
-// most recent migration is the one that we should pay attention to.
 void QuicConnection::StartEffectivePeerMigration(AddressChangeType type) {
-  DCHECK(enable_server_proxy_);
-  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_enable_server_proxy2, 2, 3);
   // TODO(fayang): Currently, all peer address change type are allowed. Need to
   // add a method ShouldAllowPeerAddressChange(PeerAddressChangeType type) to
   // determine whether |type| is allowed.
@@ -3113,16 +3030,7 @@ void QuicConnection::OnConnectionMigration(AddressChangeType addr_change_type) {
 }
 
 bool QuicConnection::IsCurrentPacketConnectivityProbing() const {
-  if (enable_server_proxy_) {
-    return is_current_packet_connectivity_probing_;
-  }
-
-  if (current_packet_content_ != SECOND_FRAME_IS_PADDING) {
-    return false;
-  }
-
-  return last_packet_source_address_ != peer_address_ ||
-         last_packet_destination_address_ != self_address_;
+  return is_current_packet_connectivity_probing_;
 }
 
 bool QuicConnection::ack_frame_updated() const {
@@ -3229,42 +3137,29 @@ void QuicConnection::UpdatePacketContent(PacketContent type) {
   if (type == SECOND_FRAME_IS_PADDING) {
     if (current_packet_content_ == FIRST_FRAME_IS_PING) {
       current_packet_content_ = SECOND_FRAME_IS_PADDING;
-      if (enable_server_proxy_) {
-        if (perspective_ == Perspective::IS_SERVER) {
-          is_current_packet_connectivity_probing_ =
-              current_effective_peer_migration_type_ != NO_CHANGE;
-        } else {
-          is_current_packet_connectivity_probing_ =
-              (last_packet_source_address_ != peer_address_) ||
-              (last_packet_destination_address_ != self_address_);
-        }
+      if (perspective_ == Perspective::IS_SERVER) {
+        is_current_packet_connectivity_probing_ =
+            current_effective_peer_migration_type_ != NO_CHANGE;
+      } else {
+        is_current_packet_connectivity_probing_ =
+            (last_packet_source_address_ != peer_address_) ||
+            (last_packet_destination_address_ != self_address_);
       }
       return;
     }
   }
 
   current_packet_content_ = NOT_PADDED_PING;
-  if (!enable_server_proxy_) {
-    if (current_peer_migration_type_ == NO_CHANGE) {
-      return;
+  if (last_header_.packet_number ==
+      received_packet_manager_.GetLargestObserved()) {
+    direct_peer_address_ = last_packet_source_address_;
+    if (current_effective_peer_migration_type_ != NO_CHANGE) {
+      // Start effective peer migration immediately when the current packet is
+      // confirmed not a connectivity probing packet.
+      StartEffectivePeerMigration(current_effective_peer_migration_type_);
     }
-
-    // Start peer migration immediately when the current packet is confirmed not
-    // a connectivity probing packet.
-    StartPeerMigration(current_peer_migration_type_);
-    current_peer_migration_type_ = NO_CHANGE;
-  } else {
-    if (last_header_.packet_number ==
-        received_packet_manager_.GetLargestObserved()) {
-      direct_peer_address_ = last_packet_source_address_;
-      if (current_effective_peer_migration_type_ != NO_CHANGE) {
-        // Start effective peer migration immediately when the current packet is
-        // confirmed not a connectivity probing packet.
-        StartEffectivePeerMigration(current_effective_peer_migration_type_);
-      }
-    }
-    current_effective_peer_migration_type_ = NO_CHANGE;
   }
+  current_effective_peer_migration_type_ = NO_CHANGE;
 }
 
 void QuicConnection::MaybeEnableSessionDecidesWhatToWrite() {

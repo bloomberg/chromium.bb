@@ -291,17 +291,10 @@ QuicSpdySession::QuicSpdySession(QuicConnection* connection,
       frame_len_(0),
       uncompressed_frame_len_(0),
       supports_push_promise_(perspective() == Perspective::IS_CLIENT),
-      use_h2_deframer_(GetQuicReloadableFlag(quic_enable_h2_deframer)),
       spdy_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
       spdy_framer_visitor_(new SpdyFramerVisitor(this)) {
-  if (use_h2_deframer_) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_h2_deframer);
-    h2_deframer_.set_visitor(spdy_framer_visitor_.get());
-    h2_deframer_.set_debug_visitor(spdy_framer_visitor_.get());
-  } else {
-    hq_deframer_.set_visitor(spdy_framer_visitor_.get());
-    hq_deframer_.set_debug_visitor(spdy_framer_visitor_.get());
-  }
+  h2_deframer_.set_visitor(spdy_framer_visitor_.get());
+  h2_deframer_.set_debug_visitor(spdy_framer_visitor_.get());
   spdy_framer_.set_debug_visitor(spdy_framer_visitor_.get());
 }
 
@@ -393,11 +386,7 @@ void QuicSpdySession::OnPriorityFrame(QuicStreamId stream_id,
 }
 
 size_t QuicSpdySession::ProcessHeaderData(const struct iovec& iov) {
-  if (use_h2_deframer_) {
-    return h2_deframer_.ProcessInput(static_cast<char*>(iov.iov_base),
-                                     iov.iov_len);
-  }
-  return hq_deframer_.ProcessInput(static_cast<char*>(iov.iov_base),
+  return h2_deframer_.ProcessInput(static_cast<char*>(iov.iov_base),
                                    iov.iov_len);
 }
 
@@ -584,15 +573,9 @@ void QuicSpdySession::SetHpackEncoderDebugVisitor(
 
 void QuicSpdySession::SetHpackDecoderDebugVisitor(
     std::unique_ptr<QuicHpackDebugVisitor> visitor) {
-  if (use_h2_deframer_) {
-    h2_deframer_.SetDecoderHeaderTableDebugVisitor(
-        QuicMakeUnique<HeaderTableDebugVisitor>(
-            connection()->helper()->GetClock(), std::move(visitor)));
-  } else {
-    hq_deframer_.SetDecoderHeaderTableDebugVisitor(
-        QuicMakeUnique<HeaderTableDebugVisitor>(
-            connection()->helper()->GetClock(), std::move(visitor)));
-  }
+  h2_deframer_.SetDecoderHeaderTableDebugVisitor(
+      QuicMakeUnique<HeaderTableDebugVisitor>(
+          connection()->helper()->GetClock(), std::move(visitor)));
 }
 
 void QuicSpdySession::UpdateHeaderEncoderTableSize(uint32_t value) {

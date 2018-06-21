@@ -9,15 +9,6 @@
 
 namespace net {
 namespace test {
-
-// static
-void QuicChromiumClientSessionPeer::SetMaxOpenStreams(
-    QuicChromiumClientSession* session,
-    size_t max_streams,
-    size_t default_streams) {
-  session->config()->SetMaxStreamsPerConnection(max_streams, default_streams);
-}
-
 // static
 void QuicChromiumClientSessionPeer::SetHostname(
     QuicChromiumClientSession* session,

@@ -13,7 +13,6 @@
 #include "net/third_party/quic/core/quic_headers_stream.h"
 #include "net/third_party/quic/core/quic_session.h"
 #include "net/third_party/quic/core/quic_spdy_stream.h"
-#include "net/third_party/quic/http/decoder/quic_http_frame_decoder_adapter.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
@@ -183,13 +182,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // Sets how much encoded data the hpack decoder of h2_deframer_ is willing to
   // buffer.
   void set_max_decode_buffer_size_bytes(size_t max_decode_buffer_size_bytes) {
-    if (use_h2_deframer_) {
-      h2_deframer_.GetHpackDecoder()->set_max_decode_buffer_size_bytes(
-          max_decode_buffer_size_bytes);
-    } else {
-      hq_deframer_.GetHpackDecoder()->set_max_decode_buffer_size_bytes(
-          max_decode_buffer_size_bytes);
-    }
+    h2_deframer_.GetHpackDecoder()->set_max_decode_buffer_size_bytes(
+        max_decode_buffer_size_bytes);
   }
 
   void set_max_uncompressed_header_bytes(
@@ -241,12 +235,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
 
   bool supports_push_promise_;
 
-  // TODO(rch): remove |use_h2_deframer_| and |hq_deframer_| when
-  // FLAGS_quic_reloadable_flag_quic_enable_h2_deframer is deprecated.
-  const bool use_h2_deframer_;
   spdy::SpdyFramer spdy_framer_;
   http2::Http2DecoderAdapter h2_deframer_;
-  QuicHttpDecoderAdapter hq_deframer_;
   std::unique_ptr<SpdyFramerVisitor> spdy_framer_visitor_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSpdySession);

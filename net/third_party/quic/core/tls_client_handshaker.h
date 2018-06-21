@@ -28,7 +28,8 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
                       ProofVerifier* proof_verifier,
                       SSL_CTX* ssl_ctx,
                       // Takes ownership of |verify_context|.
-                      ProofVerifyContext* verify_context);
+                      ProofVerifyContext* verify_context,
+                      const QuicString& user_agent_id);
 
   ~TlsClientHandshaker() override;
 
@@ -105,6 +106,8 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
   // constructor.
   ProofVerifier* proof_verifier_;
   std::unique_ptr<ProofVerifyContext> verify_context_;
+
+  QuicString user_agent_id_;
 
   // ProofVerifierCallback used for async certificate verification. This object
   // is owned by |proof_verifier_|.

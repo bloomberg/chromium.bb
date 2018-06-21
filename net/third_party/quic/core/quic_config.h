@@ -305,10 +305,6 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
 
   bool SilentClose() const;
 
-  void SetMaxStreamsPerConnection(size_t max_streams, size_t default_streams);
-
-  uint32_t MaxStreamsPerConnection() const;
-
   void SetMaxIncomingDynamicStreamsToSend(
       uint32_t max_incoming_dynamic_streams);
 
@@ -437,8 +433,6 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
                                            HelloType hello_type,
                                            QuicString* error_details);
 
-  bool do_not_use_mspc() { return do_not_use_mspc_; }
-
  private:
   friend class test::QuicConfigPeer;
 
@@ -462,11 +456,6 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   QuicNegotiableUint32 idle_network_timeout_seconds_;
   // Whether to use silent close.  Defaults to 0 (false) and is otherwise true.
   QuicNegotiableUint32 silent_close_;
-  // Latched value of quic_reloadable_flag_quic_no_mspc.
-  const bool do_not_use_mspc_;
-  // Maximum number of streams that the connection can support.
-  // TODO(rch): Remove when removing quic_reloadable_flag_quic_no_mspc.
-  QuicNegotiableUint32 max_streams_per_connection_;
   // Maximum number of incoming dynamic streams that the connection can support.
   QuicFixedUint32 max_incoming_dynamic_streams_;
   // The number of bytes required for the connection ID.

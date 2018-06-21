@@ -17,10 +17,6 @@ class QuicTimeWaitListManagerPeer {
 
   static QuicTime::Delta time_wait_period(QuicTimeWaitListManager* manager);
 
-  static QuicTransportVersion GetQuicVersionFromConnectionId(
-      QuicTimeWaitListManager* manager,
-      QuicConnectionId connection_id);
-
   static QuicAlarm* expiration_alarm(QuicTimeWaitListManager* manager);
 
   static void set_clock(QuicTimeWaitListManager* manager,

@@ -53,6 +53,11 @@ const QuicStreamId kStreamId = UINT64_C(0x01020304);
 const QuicStreamOffset kStreamOffset = UINT64_C(0x3A98FEDC32107654);
 const QuicPublicResetNonceProof kNonceProof = UINT64_C(0xABCDEF0123456789);
 
+// In testing that we can ack the full range of packets...
+// This is the largest packet number that can be represented in IETF QUIC
+// varint62 format.
+const QuicPacketNumber kLargestIetfLargestObserved =
+    UINT64_C(0x3fffffffffffffff);
 // Encodings for the two bits in a VarInt62 that
 // describe the length of the VarInt61. For binary packet
 // formats in this file, the convention is to code the
@@ -381,7 +386,6 @@ class QuicFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
                 start_,
                 Perspective::IS_SERVER) {
     SetQuicFlag(&FLAGS_quic_supports_tls_handshake, true);
-    SetQuicReloadableFlag(quic_respect_ietf_header, true);
     framer_.set_version(version_);
     framer_.SetDecrypter(ENCRYPTION_NONE,
                          std::unique_ptr<QuicDecrypter>(decrypter_));
@@ -3054,6 +3058,265 @@ TEST_P(QuicFramerTest, FirstAckFrameUnderflow) {
   CheckFramingBoundaries(fragments, QUIC_INVALID_ACK_DATA);
 }
 
+// This test checks that the ack frame processor correctly identifies
+// and handles the case where the third ack block's gap is larger than the
+// available space in the ack range.
+TEST_P(QuicFramerTest, ThirdAckBlockUnderflowGap) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // for now, only v99
+    return;
+  }
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x56, 0x78}},
+       // frame type (ack frame)
+       {"",
+        {0x0d}},
+       // largest acked
+       {"Unable to read largest acked.",
+        {kVarInt62OneByte  + 63}},
+       // Zero delta time.
+       {"Unable to read ack delay time.",
+        {kVarInt62OneByte + 0x00}},
+       // Ack block count (2 -- 2 blocks after the first)
+       {"Unable to read ack block count.",
+        {kVarInt62OneByte + 0x02}},
+       // first ack block length.
+       {"Unable to read first ack block length.",
+        {kVarInt62OneByte + 13}},  // Ack 14 packets, range 50..63 (inclusive)
+
+       {"Unable to read gap block value.",
+        {kVarInt62OneByte + 9}},  // Gap 10 packets, 40..49 (inclusive)
+       {"Unable to read ack block value.",
+        {kVarInt62OneByte + 9}},  // Ack 10 packets, 30..39 (inclusive)
+       {"Unable to read gap block value.",
+        {kVarInt62OneByte + 29}},  // A gap of 30 packets (0..29 inclusive)
+                                   // should be too big, leaving no room
+                                   // for the ack.
+       {"Underflow with gap block length 30 previous ack block start is 30.",
+        {kVarInt62OneByte + 10}},  // Don't care
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
+  EXPECT_EQ(
+      framer_.detailed_error(),
+      "Underflow with gap block length 30 previous ack block start is 30.");
+  CheckFramingBoundaries(packet99, QUIC_INVALID_ACK_DATA);
+}
+
+// This test checks that the ack frame processor correctly identifies
+// and handles the case where the third ack block's length is larger than the
+// available space in the ack range.
+TEST_P(QuicFramerTest, ThirdAckBlockUnderflowAck) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // for now, only v99
+    return;
+  }
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x56, 0x78}},
+       // frame type (ack frame)
+       {"",
+        {0x0d}},
+       // largest acked
+       {"Unable to read largest acked.",
+        {kVarInt62OneByte  + 63}},
+       // Zero delta time.
+       {"Unable to read ack delay time.",
+        {kVarInt62OneByte + 0x00}},
+       // Ack block count (2 -- 2 blocks after the first)
+       {"Unable to read ack block count.",
+        {kVarInt62OneByte + 0x02}},
+       // first ack block length.
+       {"Unable to read first ack block length.",
+        {kVarInt62OneByte + 13}},  // only 50 packet numbers "left"
+
+       {"Unable to read gap block value.",
+        {kVarInt62OneByte + 10}},  // Only 40 packet numbers left
+       {"Unable to read ack block value.",
+        {kVarInt62OneByte + 10}},  // only 30 packet numbers left.
+       {"Unable to read gap block value.",
+        {kVarInt62OneByte + 1}},  // Gap is OK, 29 packet numbers left
+      {"Unable to read ack block value.",
+        {kVarInt62OneByte + 30}},  // Use up all 30, should be an error
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
+  EXPECT_EQ(framer_.detailed_error(),
+            "Underflow with ack block length 31 latest ack block end is 25.");
+  CheckFramingBoundaries(packet99, QUIC_INVALID_ACK_DATA);
+}
+
+// Tests a variety of ack block wrap scenarios. For example, if the
+// N-1th block causes packet 0 to be acked, then a gap would wrap
+// around to 0x3fffffff ffffffff... Make sure we detect this
+// condition.
+TEST_P(QuicFramerTest, AckBlockUnderflowGapWrap) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // for now, only v99
+    return;
+  }
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x56, 0x78}},
+       // frame type (ack frame)
+       {"",
+        {0x0d}},
+       // largest acked
+       {"Unable to read largest acked.",
+        {kVarInt62OneByte  + 10}},
+       // Zero delta time.
+       {"Unable to read ack delay time.",
+        {kVarInt62OneByte + 0x00}},
+       // Ack block count (1 -- 1 blocks after the first)
+       {"Unable to read ack block count.",
+        {kVarInt62OneByte + 1}},
+       // first ack block length.
+       {"Unable to read first ack block length.",
+        {kVarInt62OneByte + 9}},  // Ack packets 1..10 (inclusive)
+
+       {"Unable to read gap block value.",
+        {kVarInt62OneByte + 1}},  // Gap of 2 packets (-1...0), should wrap
+       {"Underflow with gap block length 2 previous ack block start is 1.",
+        {kVarInt62OneByte + 9}},  // irrelevant
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
+  EXPECT_EQ(framer_.detailed_error(),
+            "Underflow with gap block length 2 previous ack block start is 1.");
+  CheckFramingBoundaries(packet99, QUIC_INVALID_ACK_DATA);
+}
+
+// As AckBlockUnderflowGapWrap, but in this test, it's the ack
+// component of the ack-block that causes the wrap, not the gap.
+TEST_P(QuicFramerTest, AckBlockUnderflowAckWrap) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // for now, only v99
+    return;
+  }
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x56, 0x78}},
+       // frame type (ack frame)
+       {"",
+        {0x0d}},
+       // largest acked
+       {"Unable to read largest acked.",
+        {kVarInt62OneByte  + 10}},
+       // Zero delta time.
+       {"Unable to read ack delay time.",
+        {kVarInt62OneByte + 0x00}},
+       // Ack block count (1 -- 1 blocks after the first)
+       {"Unable to read ack block count.",
+        {kVarInt62OneByte + 1}},
+       // first ack block length.
+       {"Unable to read first ack block length.",
+        {kVarInt62OneByte + 6}},  // Ack packets 4..10 (inclusive)
+
+       {"Unable to read gap block value.",
+        {kVarInt62OneByte + 1}},  // Gap of 2 packets (2..3)
+       {"Unable to read ack block value.",
+        {kVarInt62OneByte + 9}},  // Should wrap.
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
+  EXPECT_EQ(framer_.detailed_error(),
+            "Underflow with ack block length 10 latest ack block end is 1.");
+  CheckFramingBoundaries(packet99, QUIC_INVALID_ACK_DATA);
+}
+
+// An ack block that acks the entire range, 0...0x3fffffffffffffff
+TEST_P(QuicFramerTest, AckBlockAcksEverything) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // for now, only v99
+    return;
+  }
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x56, 0x78}},
+       // frame type (ack frame)
+       {"",
+        {0x0d}},
+       // largest acked
+       {"Unable to read largest acked.",
+        {kVarInt62EightBytes  + 0x3f, 0xff, 0xff, 0xff,
+         0xff, 0xff, 0xff, 0xff}},
+       // Zero delta time.
+       {"Unable to read ack delay time.",
+        {kVarInt62OneByte + 0x00}},
+       // Ack block count No additional blocks
+       {"Unable to read ack block count.",
+        {kVarInt62OneByte + 0}},
+       // first ack block length.
+       {"Unable to read first ack block length.",
+        {kVarInt62EightBytes  + 0x3f, 0xff, 0xff, 0xff,
+         0xff, 0xff, 0xff, 0xff}},
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+  EXPECT_EQ(1u, visitor_.ack_frames_.size());
+  const QuicAckFrame& frame = *visitor_.ack_frames_[0];
+  EXPECT_EQ(1u, frame.packets.NumIntervals());
+  EXPECT_EQ(kLargestIetfLargestObserved, LargestAcked(frame));
+  // +1 because it's 0..Largest, inclusive.
+  EXPECT_EQ(kLargestIetfLargestObserved + 1, frame.packets.NumPacketsSlow());
+}
+
 // This test looks for a malformed ack where
 //  - There is a largest-acked value (that is, the frame is acking
 //    something,
@@ -3801,7 +4064,7 @@ TEST_P(QuicFramerTest, AckFrameTwoTimeStampsMultipleAckBlocks) {
 }
 
 TEST_P(QuicFramerTest, NewStopWaitingFrame) {
-  if (version_.transport_version > QUIC_VERSION_43) {
+  if (version_.transport_version == QUIC_VERSION_99) {
     return;
   }
   // clang-format off
@@ -3853,7 +4116,7 @@ TEST_P(QuicFramerTest, NewStopWaitingFrame) {
        {0x12, 0x34, 0x56, 0x78}},
       // frame type (stop waiting frame)
       {"",
-       {0xf2}},
+       {0x06}},
       // least packet number awaiting an ack, delta from packet number.
       {"Unable to read least unacked delta.",
         {0x00, 0x00, 0x00, 0x08}}
@@ -3883,7 +4146,7 @@ TEST_P(QuicFramerTest, NewStopWaitingFrame) {
 }
 
 TEST_P(QuicFramerTest, InvalidNewStopWaitingFrame) {
-  if (version_.transport_version > QUIC_VERSION_43) {
+  if (version_.transport_version == QUIC_VERSION_99) {
     return;
   }
   // clang-format off
@@ -3923,7 +4186,7 @@ TEST_P(QuicFramerTest, InvalidNewStopWaitingFrame) {
     // packet number
     0x12, 0x34, 0x56, 0x78,
     // frame type (stop waiting frame)
-    0xf2,
+    0x06,
     // least packet number awaiting an ack, delta from packet number.
     0x57, 0x78, 0x9A, 0xA8,
   };
@@ -4295,6 +4558,10 @@ TEST_P(QuicFramerTest, ApplicationCloseFrame) {
 }
 
 TEST_P(QuicFramerTest, GoAwayFrame) {
+  if (framer_.transport_version() == QUIC_VERSION_99) {
+    // This frame is not supported in version 99.
+    return;
+  }
   // clang-format off
   PacketFragments packet = {
       // public flags (8 byte connection_id)
@@ -4390,47 +4657,12 @@ TEST_P(QuicFramerTest, GoAwayFrame) {
          'n'}
       }
   };
-
-  PacketFragments packet99 = {
-      // type (short header, 4 byte packet number)
-      {"",
-       {0x32}},
-      // connection_id
-      {"",
-       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
-      // packet number
-      {"",
-       {0x12, 0x34, 0x9A, 0xBC}},
-      // frame type (go away frame)
-      {"",
-       {0xf0}},
-      // error code
-      {"Unable to read go away error code.",
-       {0x00, 0x00, 0x00, 0x09}},
-      // stream id
-      {"Unable to read last good stream id.",
-       {0x01, 0x02, 0x03, 0x04}},
-      // stream id
-      {"Unable to read goaway reason.",
-       {
-         // error details length
-         0x0, 0x0d,
-         // error details
-         'b',  'e',  'c',  'a',
-         'u',  's',  'e',  ' ',
-         'I',  ' ',  'c',  'a',
-         'n'}
-      }
-  };
   // clang-format on
 
   PacketFragments& fragments =
-      framer_.transport_version() == QUIC_VERSION_99
-          ? packet99
-          : (framer_.transport_version() > QUIC_VERSION_43
-                 ? packet44
-                 : (framer_.transport_version() > QUIC_VERSION_38 ? packet39
-                                                                  : packet));
+      framer_.transport_version() > QUIC_VERSION_43
+          ? packet44
+          : (framer_.transport_version() > QUIC_VERSION_38 ? packet39 : packet);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -4449,6 +4681,11 @@ TEST_P(QuicFramerTest, GoAwayFrame) {
 }
 
 TEST_P(QuicFramerTest, WindowUpdateFrame) {
+  if (framer_.transport_version() == QUIC_VERSION_99) {
+    // This frame is not in version 99, see MaxDataFrame and MaxStreamDataFrame
+    // for Version 99 equivalents.
+    return;
+  }
   // clang-format off
   PacketFragments packet = {
       // public flags (8 byte connection_id)
@@ -4516,36 +4753,12 @@ TEST_P(QuicFramerTest, WindowUpdateFrame) {
         0x32, 0x10, 0x76, 0x54}},
   };
 
-  PacketFragments packet99 = {
-      // type (short header, 4 byte packet number)
-      {"",
-       {0x32}},
-      // connection_id
-      {"",
-       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
-      // packet number
-      {"",
-       {0x12, 0x34, 0x56, 0x78}},
-      // frame type (window update frame)
-      {"",
-       {0xf1}},
-      // stream id
-      {"Unable to read stream_id.",
-       {0x01, 0x02, 0x03, 0x04}},
-      // byte offset
-      {"Unable to read window byte_offset.",
-       {0x3A, 0x98, 0xFE, 0xDC,
-        0x32, 0x10, 0x76, 0x54}},
-  };
   // clang-format on
 
   PacketFragments& fragments =
-      framer_.transport_version() == QUIC_VERSION_99
-          ? packet99
-          : (framer_.transport_version() > QUIC_VERSION_43
-                 ? packet44
-                 : (framer_.transport_version() > QUIC_VERSION_38 ? packet39
-                                                                  : packet));
+      framer_.transport_version() > QUIC_VERSION_43
+          ? packet44
+          : (framer_.transport_version() > QUIC_VERSION_38 ? packet39 : packet);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -6997,25 +7210,10 @@ TEST_P(QuicFramerTest, BuildNewStopWaitingPacket) {
     0x00, 0x00, 0x00, 0x08,
   };
 
-  unsigned char packet44[] = {
-    // type (short header, 4 byte packet number)
-    0x32,
-    // connection_id
-    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-    // packet number
-    0x12, 0x34, 0x56, 0x78,
-
-    // frame type (stop waiting frame)
-    0xf2,
-    // least packet number awaiting an ack, delta from packet number.
-    0x00, 0x00, 0x00, 0x08,
-  };
   // clang-format on
 
   unsigned char* p = packet;
-  if (framer_.transport_version() > QUIC_VERSION_43) {
-    p = packet44;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  if (framer_.transport_version() > QUIC_VERSION_38) {
     p = packet39;
   }
 
@@ -7024,7 +7222,7 @@ TEST_P(QuicFramerTest, BuildNewStopWaitingPacket) {
 
   test::CompareCharArraysWithHexError(
       "constructed packet", data->data(), data->length(), AsChars(p),
-      framer_.transport_version() > QUIC_VERSION_43 ? QUIC_ARRAYSIZE(packet44)
+      framer_.transport_version() > QUIC_VERSION_38 ? QUIC_ARRAYSIZE(packet39)
                                                     : QUIC_ARRAYSIZE(packet));
 }
 
@@ -7647,6 +7845,10 @@ TEST_P(QuicFramerTest, BuildTruncatedApplicationCloseFramePacket) {
 }
 
 TEST_P(QuicFramerTest, BuildGoAwayPacket) {
+  if (framer_.transport_version() == QUIC_VERSION_99) {
+    // This frame type is not supported in version 99.
+    return;
+  }
   QuicPacketHeader header;
   header.destination_connection_id = kConnectionId;
   header.reset_flag = false;
@@ -7730,36 +7932,11 @@ TEST_P(QuicFramerTest, BuildGoAwayPacket) {
     'n',
   };
 
-  unsigned char packet99[] = {
-    // type (short header, 4 byte packet number)
-    0x32,
-    // connection_id
-    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-    // packet number
-    0x12, 0x34, 0x56, 0x78,
-
-    // frame type (go away frame)
-    0xf0,
-    // error code
-    0x05, 0x06, 0x07, 0x08,
-    // stream id
-    0x01, 0x02, 0x03, 0x04,
-    // error details length
-    0x00, 0x0d,
-    // error details
-    'b',  'e',  'c',  'a',
-    'u',  's',  'e',  ' ',
-    'I',  ' ',  'c',  'a',
-    'n',
-  };
   // clang-format on
 
   unsigned char* p = packet;
   size_t p_size = QUIC_ARRAYSIZE(packet);
-  if (framer_.transport_version() == QUIC_VERSION_99) {
-    p = packet99;
-    p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_43) {
+  if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
   } else if (framer_.transport_version() > QUIC_VERSION_38) {
@@ -7774,6 +7951,10 @@ TEST_P(QuicFramerTest, BuildGoAwayPacket) {
 }
 
 TEST_P(QuicFramerTest, BuildTruncatedGoAwayPacket) {
+  if (framer_.transport_version() == QUIC_VERSION_99) {
+    // This frame type is not supported in version 99.
+    return;
+  }
   QuicPacketHeader header;
   header.destination_connection_id = kConnectionId;
   header.reset_flag = false;
@@ -7940,65 +8121,11 @@ TEST_P(QuicFramerTest, BuildTruncatedGoAwayPacket) {
     'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
     'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
   };
-
-  unsigned char packet99[] = {
-    // type (short header, 4 byte packet number)
-    0x32,
-    // connection_id
-    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-    // packet number
-    0x12, 0x34, 0x56, 0x78,
-
-    // frame type (go away frame)
-    0xf0,
-    // error code
-    0x05, 0x06, 0x07, 0x08,
-    // stream id
-    0x01, 0x02, 0x03, 0x04,
-    // error details length
-    0x01, 0x00,
-    // error details (truncated to 256 bytes)
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
-  };
   // clang-format on
 
   unsigned char* p = packet;
   size_t p_size = QUIC_ARRAYSIZE(packet);
-  if (framer_.transport_version() == QUIC_VERSION_99) {
-    p = packet99;
-    p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_43) {
+  if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
   } else if (framer_.transport_version() > QUIC_VERSION_38) {

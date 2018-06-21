@@ -331,7 +331,6 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // list with |action|.
   void StatelesslyTerminateConnection(
       QuicConnectionId connection_id,
-      const ParsedQuicVersion& version,
       PacketHeaderFormat format,
       QuicErrorCode error_code,
       const QuicString& error_details,
@@ -347,8 +346,6 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   friend class StatelessRejectorProcessDoneCallback;
 
   typedef QuicUnorderedSet<QuicConnectionId> QuicConnectionIdSet;
-
-  bool HandlePacketForTimeWait(const QuicPacketHeader& header);
 
   // Attempts to reject the connection statelessly, if stateless rejects are
   // possible and if the current packet contains a CHLO message.  Determines a

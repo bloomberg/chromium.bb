@@ -186,6 +186,21 @@ std::unique_ptr<QuartcSessionInterface> QuartcFactory::CreateQuartcSession(
     }
   }
   QuicConfig quic_config;
+
+  // Use the limits for the session & stream flow control. The default 16KB
+  // limit leads to significantly undersending (not reaching BWE on the outgoing
+  // bitrate) due to blocked frames, and it leads to high latency (and one-way
+  // delay). Setting it to its limits is not going to cause issues (our streams
+  // are small generally, and if we were to buffer 24MB it wouldn't be the end
+  // of the world). We can consider setting different limits in future (e.g. 1MB
+  // stream, 1.5MB session). It's worth noting that on 1mbps bitrate, limit of
+  // 24MB can capture approx 4 minutes of the call, and the default increase in
+  // size of the window (half of the window size) is approximately 2 minutes of
+  // the call.
+  quic_config.SetInitialSessionFlowControlWindowToSend(
+      kSessionReceiveWindowLimit);
+  quic_config.SetInitialStreamFlowControlWindowToSend(
+      kStreamReceiveWindowLimit);
   quic_config.SetConnectionOptionsToSend(copt);
   quic_config.SetClientConnectionOptions(copt);
   if (quartc_session_config.max_time_before_crypto_handshake_secs > 0) {
@@ -203,6 +218,10 @@ std::unique_ptr<QuartcSessionInterface> QuartcFactory::CreateQuartcSession(
         quartc_session_config.idle_network_timeout,
         quartc_session_config.idle_network_timeout);
   }
+
+  // The ICE transport provides a unique 5-tuple for each connection. Save
+  // overhead by omitting the connection id.
+  quic_config.SetBytesForConnectionIdToSend(0);
   return QuicMakeUnique<QuartcSession>(
       std::move(quic_connection), quic_config,
       quartc_session_config.unique_remote_server_id, perspective,

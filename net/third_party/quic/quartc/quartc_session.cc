@@ -176,10 +176,10 @@ QuartcSession::QuartcSession(std::unique_ptr<QuicConnection> connection,
     : QuicSession(connection.get(), nullptr /*visitor*/, config),
       unique_remote_server_id_(unique_remote_server_id),
       perspective_(perspective),
+      packet_writer_(std::move(packet_writer)),
       connection_(std::move(connection)),
       helper_(helper),
-      clock_(clock),
-      packet_writer_(std::move(packet_writer)) {
+      clock_(clock) {
   packet_writer_->set_connection(connection_.get());
 
   // Initialization with default crypto configuration.

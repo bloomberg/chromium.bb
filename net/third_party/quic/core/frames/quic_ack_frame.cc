@@ -241,8 +241,8 @@ QuicPacketNumber PacketNumberQueue::Max() const {
   return packet_number_deque_.back().max() - 1;
 }
 
-size_t PacketNumberQueue::NumPacketsSlow() const {
-  int n_packets = 0;
+QuicPacketCount PacketNumberQueue::NumPacketsSlow() const {
+  QuicPacketCount n_packets = 0;
   for (net::Interval<QuicPacketNumber> interval : packet_number_deque_) {
     n_packets += interval.Length();
   }

@@ -424,7 +424,6 @@ class QuartcSessionTest : public QuicTest,
   ~QuartcSessionTest() override {}
 
   void Init() {
-    SetQuicReloadableFlag(quic_respect_ietf_header, true);
     // Quic crashes if packets are sent at time 0, and the clock defaults to 0.
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1000));
     client_channel_ =

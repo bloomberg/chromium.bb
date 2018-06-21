@@ -281,7 +281,6 @@ QuicString CryptoHandshakeMessage::DebugStringInternal(
       case kCFCW:
       case kSFCW:
       case kIRTT:
-      case kMSPC:
       case kMIDS:
       case kSCLS:
       case kTCID:

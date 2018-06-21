@@ -5,8 +5,10 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_CRYPTO_TRANSPORT_PARAMETERS_H_
 #define NET_THIRD_PARTY_QUIC_CORE_CRYPTO_TRANSPORT_PARAMETERS_H_
 
+#include <memory>
 #include <vector>
 
+#include "net/third_party/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_versions.h"
 
@@ -17,7 +19,6 @@ namespace quic {
 // section 6.4 of draft-ietf-quic-transport-11.
 struct QUIC_EXPORT_PRIVATE TransportParameters {
   TransportParameters();
-  TransportParameters(const TransportParameters& transport_params);
   ~TransportParameters();
 
   // When |perspective| is Perspective::IS_CLIENT, this struct is being used in
@@ -58,6 +59,11 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
   OptionalParam<uint16_t> initial_max_uni_streams;
   OptionalParam<uint16_t> max_packet_size;
   OptionalParam<uint8_t> ack_delay_exponent;
+
+  // Transport parameters used by Google QUIC but not IETF QUIC. This is
+  // serialized into a TransportParameter struct with a TransportParameterId of
+  // 18257.
+  std::unique_ptr<CryptoHandshakeMessage> google_quic_params;
 
   // Returns true if the contents of this struct are valid.
   bool is_valid() const;

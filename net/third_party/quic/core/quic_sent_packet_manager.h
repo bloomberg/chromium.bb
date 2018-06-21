@@ -19,6 +19,7 @@
 #include "net/third_party/quic/core/congestion_control/pacing_sender.h"
 #include "net/third_party/quic/core/congestion_control/rtt_stats.h"
 #include "net/third_party/quic/core/congestion_control/send_algorithm_interface.h"
+#include "net/third_party/quic/core/quic_debug_info_provider_interface.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_pending_retransmission.h"
 #include "net/third_party/quic/core/quic_sustained_bandwidth_recorder.h"
@@ -45,7 +46,8 @@ struct QuicConnectionStats;
 // retransmittable data associated with each packet. If a packet is
 // retransmitted, it will keep track of each version of a packet so that if a
 // previous transmission is acked, the data will not be retransmitted.
-class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
+class QUIC_EXPORT_PRIVATE QuicSentPacketManager
+    : public QuicDebugInfoProviderInterface {
  public:
   // Interface which gets callbacks from the QuicSentPacketManager at
   // interesting points.  Implementations must not mutate the state of
@@ -89,7 +91,18 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
                         QuicConnectionStats* stats,
                         CongestionControlType congestion_control_type,
                         LossDetectionType loss_type);
+
+  QuicSentPacketManager(Perspective perspective,
+                        const QuicClock* clock,
+                        QuicConnectionStats* stats,
+                        CongestionControlType congestion_control_type,
+                        LossDetectionType loss_type,
+                        QuicDebugInfoProviderInterface* debug_info_provider);
+
   virtual ~QuicSentPacketManager();
+
+  // From QuicDebugInfoProviderInterface
+  QuicString DebugStringForAckProcessing() const override;
 
   virtual void SetFromConfig(const QuicConfig& config);
 
@@ -331,6 +344,10 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     delayed_ack_time_ = delayed_ack_time;
   }
 
+  const QuicUnackedPacketMap& unacked_packets() const {
+    return unacked_packets_;
+  }
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicSentPacketManagerPeer;
@@ -554,6 +571,10 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // Record whether RTT gets updated by last largest acked. This is only used
   // when quic_reloadable_flag_quic_use_incremental_ack_processing4 is true.
   bool rtt_updated_;
+
+  // Latched value of quic_reloadable_flag_quic_extra_checks_in_ack_processing.
+  const bool extra_checks_in_ack_processing_;
+  QuicDebugInfoProviderInterface* debug_info_provider_;
 
   // A reverse iterator of last_ack_frame_.packets. This is reset in
   // OnAckRangeStart, and gradually moves in OnAckRange. This is only used

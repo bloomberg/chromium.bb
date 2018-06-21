@@ -4,6 +4,7 @@
 
 #include "net/third_party/quic/core/crypto/transport_parameters.h"
 
+#include "net/third_party/quic/core/crypto/crypto_framer.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 
 namespace quic {
@@ -14,17 +15,21 @@ namespace {
 // draft-ietf-quic-transport-08 section 7.4. When parameters are encoded, one of
 // these enum values is used to indicate which parameter is encoded.
 enum TransportParameterId : uint16_t {
-  kInitialMaxStreamData = 0,
-  kInitialMaxData = 1,
-  kInitialMaxBidiStreams = 2,
-  kIdleTimeout = 3,
-  kMaxPacketSize = 5,
-  kStatelessResetToken = 6,
-  kAckDelayExponent = 7,
-  kInitialMaxUniStreams = 8,
+  kInitialMaxStreamDataId = 0,
+  kInitialMaxDataId = 1,
+  kInitialMaxBidiStreamsId = 2,
+  kIdleTimeoutId = 3,
+  kMaxPacketSizeId = 5,
+  kStatelessResetTokenId = 6,
+  kAckDelayExponentId = 7,
+  kInitialMaxUniStreamsId = 8,
 
   kMaxKnownParameterId = 9,
 };
+
+// Value for the TransportParameterId to use for non-standard Google QUIC params
+// in Transport Parameters.
+const uint16_t kGoogleQuicParamId = 18257;
 
 // The following constants define minimum and maximum allowed values for some of
 // the parameters. These come from draft-ietf-quic-transport-08 section 7.4.1.
@@ -40,15 +45,13 @@ static_assert(kMaxKnownParameterId <= 32, "too many parameters to bit pack");
 // used to keep track of which parameter have been seen so far, and that bitmask
 // will be compared to this mask to check that all of the required parameters
 // were present.
-static constexpr uint16_t kRequiredParamsMask =
-    (1 << kInitialMaxStreamData) | (1 << kInitialMaxData) | (1 << kIdleTimeout);
+static constexpr uint16_t kRequiredParamsMask = (1 << kInitialMaxStreamDataId) |
+                                                (1 << kInitialMaxDataId) |
+                                                (1 << kIdleTimeoutId);
 
 }  // namespace
 
 TransportParameters::TransportParameters() = default;
-
-TransportParameters::TransportParameters(
-    const TransportParameters& transport_params) = default;
 
 TransportParameters::~TransportParameters() = default;
 
@@ -100,16 +103,16 @@ bool SerializeTransportParameters(const TransportParameters& in,
   // required parameters
   if (!CBB_add_u16_length_prefixed(cbb.get(), &params) ||
       // initial_max_stream_data
-      !CBB_add_u16(&params, kInitialMaxStreamData) ||
+      !CBB_add_u16(&params, kInitialMaxStreamDataId) ||
       !CBB_add_u16_length_prefixed(&params, &initial_max_stream_data_param) ||
       !CBB_add_u32(&initial_max_stream_data_param,
                    in.initial_max_stream_data) ||
       // initial_max_data
-      !CBB_add_u16(&params, kInitialMaxData) ||
+      !CBB_add_u16(&params, kInitialMaxDataId) ||
       !CBB_add_u16_length_prefixed(&params, &initial_max_data_param) ||
       !CBB_add_u32(&initial_max_data_param, in.initial_max_data) ||
       // idle_timeout
-      !CBB_add_u16(&params, kIdleTimeout) ||
+      !CBB_add_u16(&params, kIdleTimeoutId) ||
       !CBB_add_u16_length_prefixed(&params, &idle_timeout_param) ||
       !CBB_add_u16(&idle_timeout_param, in.idle_timeout)) {
     return false;
@@ -117,7 +120,7 @@ bool SerializeTransportParameters(const TransportParameters& in,
 
   CBB stateless_reset_token_param;
   if (!in.stateless_reset_token.empty()) {
-    if (!CBB_add_u16(&params, kStatelessResetToken) ||
+    if (!CBB_add_u16(&params, kStatelessResetTokenId) ||
         !CBB_add_u16_length_prefixed(&params, &stateless_reset_token_param) ||
         !CBB_add_bytes(&stateless_reset_token_param,
                        in.stateless_reset_token.data(),
@@ -128,7 +131,7 @@ bool SerializeTransportParameters(const TransportParameters& in,
 
   CBB initial_max_bidi_streams_param;
   if (in.initial_max_bidi_streams.present) {
-    if (!CBB_add_u16(&params, kInitialMaxBidiStreams) ||
+    if (!CBB_add_u16(&params, kInitialMaxBidiStreamsId) ||
         !CBB_add_u16_length_prefixed(&params,
                                      &initial_max_bidi_streams_param) ||
         !CBB_add_u16(&initial_max_bidi_streams_param,
@@ -138,7 +141,7 @@ bool SerializeTransportParameters(const TransportParameters& in,
   }
   CBB initial_max_uni_streams_param;
   if (in.initial_max_uni_streams.present) {
-    if (!CBB_add_u16(&params, kInitialMaxUniStreams) ||
+    if (!CBB_add_u16(&params, kInitialMaxUniStreamsId) ||
         !CBB_add_u16_length_prefixed(&params, &initial_max_uni_streams_param) ||
         !CBB_add_u16(&initial_max_uni_streams_param,
                      in.initial_max_uni_streams.value)) {
@@ -147,7 +150,7 @@ bool SerializeTransportParameters(const TransportParameters& in,
   }
   CBB max_packet_size_param;
   if (in.max_packet_size.present) {
-    if (!CBB_add_u16(&params, kMaxPacketSize) ||
+    if (!CBB_add_u16(&params, kMaxPacketSizeId) ||
         !CBB_add_u16_length_prefixed(&params, &max_packet_size_param) ||
         !CBB_add_u16(&max_packet_size_param, in.max_packet_size.value)) {
       return false;
@@ -155,9 +158,22 @@ bool SerializeTransportParameters(const TransportParameters& in,
   }
   CBB ack_delay_exponent_param;
   if (in.ack_delay_exponent.present) {
-    if (!CBB_add_u16(&params, kAckDelayExponent) ||
+    if (!CBB_add_u16(&params, kAckDelayExponentId) ||
         !CBB_add_u16_length_prefixed(&params, &ack_delay_exponent_param) ||
         !CBB_add_u8(&ack_delay_exponent_param, in.ack_delay_exponent.value)) {
+      return false;
+    }
+  }
+  CBB google_quic_params;
+  if (in.google_quic_params) {
+    const QuicData& serialized_google_quic_params =
+        in.google_quic_params->GetSerialized(in.perspective);
+    if (!CBB_add_u16(&params, kGoogleQuicParamId) ||
+        !CBB_add_u16_length_prefixed(&params, &google_quic_params) ||
+        !CBB_add_bytes(&google_quic_params,
+                       reinterpret_cast<const uint8_t*>(
+                           serialized_google_quic_params.data()),
+                       serialized_google_quic_params.length())) {
       return false;
     }
   }
@@ -195,6 +211,7 @@ bool ParseTransportParameters(const uint8_t* in,
   out->perspective = perspective;
 
   uint32_t present_params = 0;
+  bool has_google_quic_params = false;
   CBS params;
   if (!CBS_get_u16_length_prefixed(&cbs, &params)) {
     return false;
@@ -214,57 +231,67 @@ bool ParseTransportParameters(const uint8_t* in,
       present_params |= mask;
     }
     switch (param_id) {
-      case kInitialMaxStreamData:
+      case kInitialMaxStreamDataId:
         if (!CBS_get_u32(&value, &out->initial_max_stream_data) ||
             CBS_len(&value) != 0) {
           return false;
         }
         break;
-      case kInitialMaxData:
+      case kInitialMaxDataId:
         if (!CBS_get_u32(&value, &out->initial_max_data) ||
             CBS_len(&value) != 0) {
           return false;
         }
         break;
-      case kInitialMaxBidiStreams:
+      case kInitialMaxBidiStreamsId:
         if (!CBS_get_u16(&value, &out->initial_max_bidi_streams.value) ||
             CBS_len(&value) != 0) {
           return false;
         }
         out->initial_max_bidi_streams.present = true;
         break;
-      case kIdleTimeout:
+      case kIdleTimeoutId:
         if (!CBS_get_u16(&value, &out->idle_timeout) || CBS_len(&value) != 0) {
           return false;
         }
         break;
-      case kMaxPacketSize:
+      case kMaxPacketSizeId:
         if (!CBS_get_u16(&value, &out->max_packet_size.value) ||
             CBS_len(&value) != 0) {
           return false;
         }
         out->max_packet_size.present = true;
         break;
-      case kStatelessResetToken:
+      case kStatelessResetTokenId:
         if (CBS_len(&value) == 0) {
           return false;
         }
         out->stateless_reset_token.assign(CBS_data(&value),
                                           CBS_data(&value) + CBS_len(&value));
         break;
-      case kAckDelayExponent:
+      case kAckDelayExponentId:
         if (!CBS_get_u8(&value, &out->ack_delay_exponent.value) ||
             CBS_len(&value) != 0) {
           return false;
         }
         out->ack_delay_exponent.present = true;
         break;
-      case kInitialMaxUniStreams:
+      case kInitialMaxUniStreamsId:
         if (!CBS_get_u16(&value, &out->initial_max_uni_streams.value) ||
             CBS_len(&value) != 0) {
           return false;
         }
         out->initial_max_uni_streams.present = true;
+        break;
+      case kGoogleQuicParamId:
+        if (has_google_quic_params) {
+          return false;
+        }
+        has_google_quic_params = true;
+        QuicStringPiece serialized_params(
+            reinterpret_cast<const char*>(CBS_data(&value)), CBS_len(&value));
+        out->google_quic_params =
+            CryptoFramer::ParseMessage(serialized_params, perspective);
     }
   }
   if ((present_params & kRequiredParamsMask) != kRequiredParamsMask) {

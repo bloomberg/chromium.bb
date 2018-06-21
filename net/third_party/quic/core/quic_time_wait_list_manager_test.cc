@@ -110,8 +110,7 @@ class QuicTimeWaitListManagerTest : public QuicTest {
     termination_packets.push_back(std::unique_ptr<QuicEncryptedPacket>(
         new QuicEncryptedPacket(nullptr, 0, false)));
     time_wait_list_manager_.AddConnectionIdToTimeWait(
-        connection_id, QuicVersionMax(), false,
-        QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
+        connection_id, false, QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
         &termination_packets);
   }
 
@@ -121,8 +120,8 @@ class QuicTimeWaitListManagerTest : public QuicTest {
       QuicTimeWaitListManager::TimeWaitAction action,
       std::vector<std::unique_ptr<QuicEncryptedPacket>>* packets) {
     time_wait_list_manager_.AddConnectionIdToTimeWait(
-        connection_id, version, version.transport_version > QUIC_VERSION_43,
-        action, packets);
+        connection_id, version.transport_version > QUIC_VERSION_43, action,
+        packets);
   }
 
   bool IsConnectionIdInTimeWait(QuicConnectionId connection_id) {
@@ -396,39 +395,6 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
       .With(Args<0, 1>(PublicResetPacketEq(other_connection_id)))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, packet->length())));
   time_wait_list_manager_.OnBlockedWriterCanWrite();
-}
-
-TEST_F(QuicTimeWaitListManagerTest, GetQuicVersionFromMap) {
-  const int kConnectionId1 = 123;
-  const int kConnectionId2 = 456;
-  const int kConnectionId3 = 789;
-
-  EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(kConnectionId1));
-  EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(kConnectionId2));
-  EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(kConnectionId3));
-  AddConnectionId(kConnectionId1, QuicVersionMin(),
-                  QuicTimeWaitListManager::SEND_STATELESS_RESET, nullptr);
-  const size_t kConnectionCloseLength = 100;
-  std::vector<std::unique_ptr<QuicEncryptedPacket>> termination_packets;
-  termination_packets.push_back(
-      std::unique_ptr<QuicEncryptedPacket>(new QuicEncryptedPacket(
-          new char[kConnectionCloseLength], kConnectionCloseLength, true)));
-  AddConnectionId(kConnectionId2, QuicVersionMax(),
-                  QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
-                  &termination_packets);
-  AddConnectionId(kConnectionId3, QuicVersionMax(),
-                  QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
-                  &termination_packets);
-
-  EXPECT_EQ(QuicTransportVersionMin(),
-            QuicTimeWaitListManagerPeer::GetQuicVersionFromConnectionId(
-                &time_wait_list_manager_, kConnectionId1));
-  EXPECT_EQ(QuicTransportVersionMax(),
-            QuicTimeWaitListManagerPeer::GetQuicVersionFromConnectionId(
-                &time_wait_list_manager_, kConnectionId2));
-  EXPECT_EQ(QuicTransportVersionMax(),
-            QuicTimeWaitListManagerPeer::GetQuicVersionFromConnectionId(
-                &time_wait_list_manager_, kConnectionId3));
 }
 
 TEST_F(QuicTimeWaitListManagerTest, AddConnectionIdTwice) {

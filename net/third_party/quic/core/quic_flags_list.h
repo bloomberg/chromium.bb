@@ -69,7 +69,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_3rtos, false)
 
 // If true, enable experiment for testing PCC congestion-control.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc2, false)
 
 // When true, defaults to BBR congestion control instead of Cubic.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_to_bbr, false)
@@ -118,15 +118,9 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_clear_queued_packets_before_sending_connectivity_probing,
     false)
 
-// If true, enable server proxy support in QUIC.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_server_proxy2, true)
-
 // When true, set the initial congestion control window from connection options
 // in QuicSentPacketManager rather than TcpCubicSenderBytes.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_unified_iw_options, false)
-
-// If true, do not use QUIC's MSPC handshake tag and instead require MIDS.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_no_mspc, true)
 
 // Number of packets that the pacing sender allows in bursts during pacing.
 QUIC_FLAG(int32_t, FLAGS_quic_lumpy_pacing_size, 1)
@@ -135,14 +129,6 @@ QUIC_FLAG(int32_t, FLAGS_quic_lumpy_pacing_size, 1)
 // pacing.
 QUIC_FLAG(double, FLAGS_quic_lumpy_pacing_cwnd_fraction, 0.25f)
 
-// If true, respect IETF QUIC header format.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_respect_ietf_header, true)
-
-// If true, detect losses from last largest lost packet number.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_incremental_loss_detection,
-          true)
-
 // Default enables QUIC ack decimation and adds a connection option to disable
 // it.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_ack_decimation, false)
@@ -150,13 +136,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_ack_decimation, false)
 // Enables the 1RTO connection option which only sends one packet on QUIC
 // retransmission timeout, instead of 2.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_rto, false)
-
-// Modify QuicVersionManager so that the QuicTransportVersionVector returned by
-// GetSupportedTransportVersions contains a unique list of entries.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_version_manager_dedupe_transport_versions,
-    true)
 
 // When true, the NRTT QUIC connection option causes receivers to ignore
 // incoming initial RTT values.
@@ -172,9 +151,6 @@ QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_l1_munge, true)
 // Don't slow down the pacing rate in STARTUP upon loss if there hasn't been
 // at least one non app-limited sample.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup2, true)
-
-// If true, use deframer from third_party/http2 instead of third_party/quic/http
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_h2_deframer, true)
 
 // If true, put ScopedRetransmissionScheduler's functionality to
 // ScopedPacketFlusher.
@@ -202,3 +178,21 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_export_connection_write_packet_results,
     true)
+
+// If true, enable extra CHECKs in ack processing to debug b/110029150.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_extra_checks_in_ack_processing,
+          false)
+
+// If true, close connection if largest observed in ack frame is greater than
+// largest sent packet.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_validate_ack_largest_observed,
+          false)
+
+// If true, QuicConnection::ProcessPacket will not set send alarm if it is write
+// blocked.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_no_send_alarm_in_process_packet_if_write_blocked,
+    false)

@@ -5,6 +5,7 @@
 #include "net/third_party/quic/core/crypto/transport_parameters.h"
 
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
+#include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 
@@ -89,14 +90,18 @@ TEST_F(TransportParametersTest, IsValid) {
   EXPECT_TRUE(empty_params.is_valid());
 
   {
-    TransportParameters params = empty_params;
+    TransportParameters params;
+    params.perspective = Perspective::IS_CLIENT;
+    EXPECT_TRUE(params.is_valid());
     params.idle_timeout = 600;
     EXPECT_TRUE(params.is_valid());
     params.idle_timeout = 601;
     EXPECT_FALSE(params.is_valid());
   }
   {
-    TransportParameters params = empty_params;
+    TransportParameters params;
+    params.perspective = Perspective::IS_CLIENT;
+    EXPECT_TRUE(params.is_valid());
     params.max_packet_size.present = true;
     params.max_packet_size.value = 0;
     EXPECT_FALSE(params.is_valid());
@@ -108,7 +113,9 @@ TEST_F(TransportParametersTest, IsValid) {
     EXPECT_FALSE(params.is_valid());
   }
   {
-    TransportParameters params = empty_params;
+    TransportParameters params;
+    params.perspective = Perspective::IS_CLIENT;
+    EXPECT_TRUE(params.is_valid());
     params.ack_delay_exponent.present = true;
     params.ack_delay_exponent.value = 0;
     EXPECT_TRUE(params.is_valid());
@@ -395,6 +402,44 @@ TEST_F(TransportParametersTest, ParseServerParametersWithInvalidParams) {
   ASSERT_FALSE(ParseTransportParameters(kServerParamsMissing,
                                         QUIC_ARRAYSIZE(kServerParamsMissing),
                                         Perspective::IS_SERVER, &out_params));
+}
+
+TEST_F(TransportParametersTest, CryptoHandshakeMessageRoundtrip) {
+  TransportParameters orig_params;
+  orig_params.perspective = Perspective::IS_CLIENT;
+  orig_params.initial_max_stream_data = 12;
+  orig_params.initial_max_data = 34;
+  orig_params.idle_timeout = 56;
+
+  orig_params.google_quic_params = QuicMakeUnique<CryptoHandshakeMessage>();
+  const std::string kTestString = "test string";
+  orig_params.google_quic_params->SetStringPiece(42, kTestString);
+  const uint32_t kTestValue = 12;
+  orig_params.google_quic_params->SetValue(1337, kTestValue);
+
+  std::vector<uint8_t> serialized;
+  ASSERT_TRUE(SerializeTransportParameters(orig_params, &serialized));
+
+  TransportParameters new_params;
+  ASSERT_TRUE(ParseTransportParameters(serialized.data(), serialized.size(),
+                                       Perspective::IS_CLIENT, &new_params));
+
+  ASSERT_NE(new_params.google_quic_params.get(), nullptr);
+  EXPECT_EQ(new_params.google_quic_params->tag(),
+            orig_params.google_quic_params->tag());
+  QuicStringPiece test_string;
+  EXPECT_TRUE(new_params.google_quic_params->GetStringPiece(42, &test_string));
+  EXPECT_EQ(test_string, kTestString);
+  uint32_t test_value;
+  EXPECT_EQ(new_params.google_quic_params->GetUint32(1337, &test_value),
+            QUIC_NO_ERROR);
+  EXPECT_EQ(test_value, kTestValue);
+  LOG(ERROR) << "Original params:"
+             << orig_params.google_quic_params->DebugString(
+                    Perspective::IS_CLIENT);
+  LOG(ERROR) << "New params:"
+             << new_params.google_quic_params->DebugString(
+                    Perspective::IS_CLIENT);
 }
 
 }  // namespace test

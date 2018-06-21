@@ -93,7 +93,6 @@ QuicTimeWaitListManager::~QuicTimeWaitListManager() {
 
 void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
     QuicConnectionId connection_id,
-    ParsedQuicVersion version,
     bool ietf_quic,
     TimeWaitAction action,
     std::vector<std::unique_ptr<QuicEncryptedPacket>>* termination_packets) {
@@ -109,8 +108,8 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
   TrimTimeWaitListIfNeeded();
   DCHECK_LT(num_connections(),
             static_cast<size_t>(FLAGS_quic_time_wait_list_max_connections));
-  ConnectionIdData data(num_packets, version, ietf_quic,
-                        clock_->ApproximateNow(), action);
+  ConnectionIdData data(num_packets, ietf_quic, clock_->ApproximateNow(),
+                        action);
   if (termination_packets != nullptr) {
     data.termination_packets.swap(*termination_packets);
   }
@@ -123,13 +122,6 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
 bool QuicTimeWaitListManager::IsConnectionIdInTimeWait(
     QuicConnectionId connection_id) const {
   return QuicContainsKey(connection_id_map_, connection_id);
-}
-
-ParsedQuicVersion QuicTimeWaitListManager::GetQuicVersionFromConnectionId(
-    QuicConnectionId connection_id) {
-  ConnectionIdMap::iterator it = connection_id_map_.find(connection_id);
-  DCHECK(it != connection_id_map_.end());
-  return (it->second).version;
 }
 
 void QuicTimeWaitListManager::OnBlockedWriterCanWrite() {
@@ -325,12 +317,10 @@ void QuicTimeWaitListManager::TrimTimeWaitListIfNeeded() {
 
 QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(
     int num_packets,
-    ParsedQuicVersion version,
     bool ietf_quic,
     QuicTime time_added,
     TimeWaitAction action)
     : num_packets(num_packets),
-      version(version),
       ietf_quic(ietf_quic),
       time_added(time_added),
       action(action) {}
