@@ -449,7 +449,7 @@ void PaymentManifestParser::OnWebAppParseInstallationInfo(
     std::unique_ptr<base::Value> value) {
   // TODO(crbug.com/782270): Move this function into a static function for unit
   // test.
-  if (value->FindKey({kServiceWorker}) == nullptr) {
+  if (!value || value->FindKey({kServiceWorker}) == nullptr) {
     return std::move(callback).Run(nullptr, nullptr);
   }
 
