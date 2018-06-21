@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/paint/scroll_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -67,24 +66,16 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   const DisplayItemClient* display_item_client = &layout_view_;
 
   base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
-  base::Optional<ScrollRecorder> scroll_recorder;
   if (BoxModelObjectPainter::
           IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
               &layout_view_, paint_info)) {
     // Layout overflow, combined with the visible content size.
     background_rect.Unite(layout_view_.DocumentRect());
     display_item_client = layout_view_.Layer()->GraphicsLayerBacking();
-    if (!layout_view_.ScrolledContentOffset().IsZero()) {
-      scroll_recorder.emplace(paint_info.context, layout_view_,
-                              paint_info.phase,
-                              layout_view_.ScrolledContentOffset());
-    }
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      scoped_scroll_property.emplace(
-          paint_info.context.GetPaintController(),
-          layout_view_.FirstFragment().ContentsProperties(),
-          *display_item_client, DisplayItem::kDocumentBackground);
-    }
+    scoped_scroll_property.emplace(
+        paint_info.context.GetPaintController(),
+        layout_view_.FirstFragment().ContentsProperties(), *display_item_client,
+        DisplayItem::kDocumentBackground);
   }
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(

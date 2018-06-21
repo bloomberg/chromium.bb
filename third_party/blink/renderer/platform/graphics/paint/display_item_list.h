@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/contiguous_container.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
-#include "third_party/blink/renderer/platform/graphics/paint/transform_3d_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/wtf/alignment.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -18,12 +18,11 @@ struct PaintChunk;
 
 // kDisplayItemAlignment must be a multiple of alignof(derived display item) for
 // each derived display item; the ideal value is the least common multiple.
-// Currently the limiting factor is TransformationMatrix (in
-// BeginTransform3DDisplayItem), which requests 16-byte alignment.
+// The validity of kDisplayItemAlignment and kMaximumDisplayItemSize are checked
+// in PaintController::CreateAndAppend().
 static const size_t kDisplayItemAlignment =
-    WTF_ALIGN_OF(BeginTransform3DDisplayItem);
-static const size_t kMaximumDisplayItemSize =
-    sizeof(BeginTransform3DDisplayItem);
+    WTF_ALIGN_OF(ForeignLayerDisplayItem);
+static const size_t kMaximumDisplayItemSize = sizeof(ForeignLayerDisplayItem);
 
 // A container for a list of display items.
 class PLATFORM_EXPORT DisplayItemList

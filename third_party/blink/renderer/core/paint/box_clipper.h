@@ -13,6 +13,9 @@ namespace blink {
 
 class LayoutBox;
 
+// TODO(wangxianzhu): Combine this tiny module with box_clipper_base.h, and
+// cleanup unused flags and parameters.
+
 enum ContentsClipBehavior { kForceContentsClip, kSkipContentsClipIfPossible };
 
 class BoxClipper : public BoxClipperBase {
@@ -23,7 +26,6 @@ class BoxClipper : public BoxClipperBase {
              const PaintInfo&,
              const LayoutPoint& accumulated_offset,
              ContentsClipBehavior);
-  ~BoxClipper();
 
  private:
   const LayoutBox& box_;

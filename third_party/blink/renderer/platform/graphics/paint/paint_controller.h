@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunker.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
-#include "third_party/blink/renderer/platform/graphics/paint/transform_3d_display_item.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/alignment.h"
@@ -109,6 +108,9 @@ class PLATFORM_EXPORT PaintController {
     static_assert(
         sizeof(DisplayItemClass) <= kMaximumDisplayItemSize,
         "DisplayItem subclass is larger than kMaximumDisplayItemSize.");
+    static_assert(kDisplayItemAlignment % WTF_ALIGN_OF(DisplayItemClass) == 0,
+                  "DisplayItem subclass alignment is not a factor of "
+                  "kDisplayItemAlignment.");
 
     if (DisplayItemConstructionIsDisabled())
       return;

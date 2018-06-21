@@ -11,12 +11,12 @@
 #include "third_party/blink/renderer/core/paint/frame_paint_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
-#include "third_party/blink/renderer/core/paint/transform_recorder.h"
+#include "third_party/blink/renderer/core/paint/scrollbar_painter.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 
 namespace blink {
@@ -44,15 +44,6 @@ void FramePainter::Paint(GraphicsContext& context,
   if (document_dirty_rect.IsEmpty())
     return;
 
-  TransformRecorder transform_recorder(
-      context, *GetFrameView().GetLayoutView(),
-      AffineTransform::Translation(
-          frame_view_location.X() - GetFrameView().ScrollX(),
-          frame_view_location.Y() - GetFrameView().ScrollY()));
-
-  ClipRecorder clip_recorder(context, *GetFrameView().GetLayoutView(),
-                             DisplayItem::kClipFrameToVisibleContentRect,
-                             GetFrameView().VisibleContentRect());
   PaintContents(context, global_paint_flags, document_dirty_rect);
 }
 

@@ -19,10 +19,8 @@
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/paint/scroll_recorder.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 
@@ -87,14 +85,6 @@ void BlockPainter::PaintOverflowControlsIfNeeded(
   if (layout_block_.HasOverflowClip() &&
       layout_block_.Style()->Visibility() == EVisibility::kVisible &&
       ShouldPaintSelfBlockBackground(paint_info.phase)) {
-    base::Optional<ClipRecorder> clip_recorder;
-    if (!layout_block_.Layer()->IsSelfPaintingLayer()) {
-      LayoutRect clip_rect = layout_block_.BorderBoxRect();
-      clip_rect.MoveBy(paint_offset);
-      clip_recorder.emplace(paint_info.context, layout_block_,
-                            DisplayItem::kClipScrollbarsToBoxBounds,
-                            PixelSnappedIntRect(clip_rect));
-    }
     ScrollableAreaPainter(*layout_block_.Layer()->GetScrollableArea())
         .PaintOverflowControls(paint_info, RoundedIntPoint(paint_offset),
                                false /* painting_overlay_controls */);
@@ -268,38 +258,24 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
 
   if (paint_phase != PaintPhase::kSelfOutlineOnly) {
     base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
-    base::Optional<ScrollRecorder> scroll_recorder;
     base::Optional<PaintInfo> scrolled_paint_info;
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      if (const auto* fragment = paint_info.FragmentToPaint(layout_block_)) {
-        const auto* object_properties = fragment->PaintProperties();
-        auto* scroll_translation = object_properties
-                                       ? object_properties->ScrollTranslation()
-                                       : nullptr;
-        if (scroll_translation) {
-          scoped_scroll_property.emplace(
-              paint_info.context.GetPaintController(), scroll_translation,
-              layout_block_, DisplayItem::PaintPhaseToScrollType(paint_phase));
-          scrolled_paint_info.emplace(paint_info);
-          if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-            scrolled_paint_info->UpdateCullRectForScrollingContents(
-                EnclosingIntRect(layout_block_.OverflowClipRect(paint_offset)),
-                scroll_translation->Matrix().ToAffineTransform());
-          } else {
-            scrolled_paint_info->UpdateCullRect(
-                scroll_translation->Matrix().ToAffineTransform());
-          }
-        }
-      }
-    } else if (layout_block_.HasOverflowClip()) {
-      IntSize scroll_offset = layout_block_.ScrolledContentOffset();
-      if (layout_block_.Layer()->ScrollsOverflow() || !scroll_offset.IsZero()) {
-        scroll_recorder.emplace(paint_info.context, layout_block_, paint_phase,
-                                scroll_offset);
+    if (const auto* fragment = paint_info.FragmentToPaint(layout_block_)) {
+      const auto* object_properties = fragment->PaintProperties();
+      auto* scroll_translation =
+          object_properties ? object_properties->ScrollTranslation() : nullptr;
+      if (scroll_translation) {
+        scoped_scroll_property.emplace(
+            paint_info.context.GetPaintController(), scroll_translation,
+            layout_block_, DisplayItem::PaintPhaseToScrollType(paint_phase));
         scrolled_paint_info.emplace(paint_info);
-        AffineTransform transform;
-        transform.Translate(-scroll_offset.Width(), -scroll_offset.Height());
-        scrolled_paint_info->UpdateCullRect(transform);
+        if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+          scrolled_paint_info->UpdateCullRectForScrollingContents(
+              EnclosingIntRect(layout_block_.OverflowClipRect(paint_offset)),
+              scroll_translation->Matrix().ToAffineTransform());
+        } else {
+          scrolled_paint_info->UpdateCullRect(
+              scroll_translation->Matrix().ToAffineTransform());
+        }
       }
     }
 

@@ -5,48 +5,10 @@
 #include "third_party/blink/renderer/core/paint/layer_clip_recorder.h"
 
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/paint/clip_rect.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 
 namespace blink {
-
-LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphics_context,
-                                     const PaintLayer& paint_layer,
-                                     DisplayItem::Type clip_type,
-                                     const ClipRect& clip_rect,
-                                     const PaintLayer* clip_root,
-                                     const LayoutPoint& fragment_offset,
-                                     PaintLayerFlags paint_flags,
-                                     const DisplayItemClient& client,
-                                     BorderRadiusClippingRule rule)
-    : graphics_context_(graphics_context),
-      client_(client),
-      clip_type_(clip_type) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-  IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
-#if DCHECK_IS_ON
-  // In SPv175+ mode, clip rects are pre-snapped.
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    DCHECK(FloatRect(snapped_clip_rect) == clip_rect.Rect());
-#endif
-  bool painting_masks =
-      (paint_flags & kPaintLayerPaintingChildClippingMaskPhase ||
-       paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase);
-  Vector<FloatRoundedRect> rounded_rects;
-  if (clip_root && (clip_rect.HasRadius() || painting_masks)) {
-    CollectRoundedRectClips(paint_layer, clip_root, fragment_offset,
-                            painting_masks, rule, rounded_rects);
-  }
-
-  graphics_context_.GetPaintController().CreateAndAppend<ClipDisplayItem>(
-      client_, clip_type_, snapped_clip_rect, rounded_rects);
-}
 
 static bool InContainingBlockChain(const PaintLayer* start_layer,
                                    const PaintLayer* end_layer) {
@@ -117,13 +79,6 @@ void LayerClipRecorder::CollectRoundedRectClips(
     if (layer == clip_root)
       break;
   }
-}
-
-LayerClipRecorder::~LayerClipRecorder() {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-  graphics_context_.GetPaintController().EndItem<EndClipDisplayItem>(
-      client_, DisplayItem::ClipTypeToEndClipType(clip_type_));
 }
 
 }  // namespace blink

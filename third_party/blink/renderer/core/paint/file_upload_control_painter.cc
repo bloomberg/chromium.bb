@@ -10,35 +10,15 @@
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
-#include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
-
-const int kButtonShadowHeight = 2;
 
 void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
                                            const LayoutPoint& paint_offset) {
   if (layout_file_upload_control_.Style()->Visibility() !=
       EVisibility::kVisible)
     return;
-
-  // Push a clip.
-  base::Optional<ClipRecorder> clip_recorder;
-  if (paint_info.phase == PaintPhase::kForeground ||
-      paint_info.phase == PaintPhase::kDescendantBlockBackgroundsOnly) {
-    IntRect clip_rect = EnclosingIntRect(LayoutRect(
-        LayoutPoint(paint_offset.X() + layout_file_upload_control_.BorderLeft(),
-                    paint_offset.Y() + layout_file_upload_control_.BorderTop()),
-        layout_file_upload_control_.Size() +
-            LayoutSize(LayoutUnit(),
-                       -layout_file_upload_control_.BorderWidth() +
-                           kButtonShadowHeight)));
-    if (clip_rect.IsEmpty())
-      return;
-    clip_recorder.emplace(paint_info.context, layout_file_upload_control_,
-                          DisplayItem::kClipFileUploadControlRect, clip_rect);
-  }
 
   if (paint_info.phase == PaintPhase::kForeground &&
       !DrawingRecorder::UseCachedDrawingIfPossible(

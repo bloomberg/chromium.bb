@@ -7,8 +7,6 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/platform/graphics/paint/compositing_display_item.h"
-#include "third_party/blink/renderer/platform/graphics/paint/compositing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -27,10 +25,6 @@ bool SVGMaskPainter::PrepareEffect(const LayoutObject& object,
   if (visual_rect.IsEmpty() || !mask_.GetElement()->HasChildren())
     return false;
 
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    context.GetPaintController().CreateAndAppend<BeginCompositingDisplayItem>(
-        object, SkBlendMode::kSrcOver, 1, &visual_rect);
-  }
   return true;
 }
 
@@ -39,47 +33,26 @@ void SVGMaskPainter::FinishEffect(const LayoutObject& object,
   DCHECK(mask_.Style());
   SECURITY_DCHECK(!mask_.NeedsLayout());
 
-  FloatRect visual_rect = object.VisualRectInLocalSVGCoordinates();
-  {
-    ColorFilter mask_layer_filter =
-        mask_.Style()->SvgStyle().MaskType() == MT_LUMINANCE
-            ? kColorFilterLuminanceToAlpha
-            : kColorFilterNone;
-    CompositingRecorder mask_compositing(context, object, SkBlendMode::kDstIn,
-                                         1, &visual_rect, mask_layer_filter);
-    base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      const auto* properties = object.FirstFragment().PaintProperties();
-      // TODO(crbug.com/814815): This condition should be a DCHECK, but for now
-      // we may paint the object for filters during PrePaint before the
-      // properties are ready.
-      if (properties && properties->Mask()) {
-        scoped_paint_chunk_properties.emplace(context.GetPaintController(),
-                                              properties->Mask(), object,
-                                              DisplayItem::kSVGMask);
-      }
-    }
-
-    DrawMaskForLayoutObject(context, object, object.ObjectBoundingBox());
+  base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
+  const auto* properties = object.FirstFragment().PaintProperties();
+  // TODO(crbug.com/814815): This condition should be a DCHECK, but for now
+  // we may paint the object for filters during PrePaint before the
+  // properties are ready.
+  if (properties && properties->Mask()) {
+    scoped_paint_chunk_properties.emplace(context.GetPaintController(),
+                                          properties->Mask(), object,
+                                          DisplayItem::kSVGMask);
   }
 
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    context.GetPaintController().EndItem<EndCompositingDisplayItem>(object);
-}
-
-void SVGMaskPainter::DrawMaskForLayoutObject(
-    GraphicsContext& context,
-    const LayoutObject& layout_object,
-    const FloatRect& target_bounding_box) {
   AffineTransform content_transformation;
   sk_sp<const PaintRecord> record = mask_.CreatePaintRecord(
-      content_transformation, target_bounding_box, context);
+      content_transformation, object.ObjectBoundingBox(), context);
 
-  if (DrawingRecorder::UseCachedDrawingIfPossible(context, layout_object,
+  if (DrawingRecorder::UseCachedDrawingIfPossible(context, object,
                                                   DisplayItem::kSVGMask))
     return;
 
-  DrawingRecorder recorder(context, layout_object, DisplayItem::kSVGMask);
+  DrawingRecorder recorder(context, object, DisplayItem::kSVGMask);
   context.Save();
   context.ConcatCTM(content_transformation);
   context.DrawRecord(std::move(record));

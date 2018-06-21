@@ -7,10 +7,9 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/paint/float_clip_recorder.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/graphics/paint/clip_path_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/compositing_recorder.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
 
 namespace blink {
 
@@ -25,8 +24,6 @@ class CORE_EXPORT ClipPathClipper {
                   const LayoutObject&,
                   const LayoutPoint& paint_offset);
   ~ClipPathClipper();
-
-  bool IsIsolationInstalled() const { return !!mask_isolation_recorder_; }
 
   // Returns the reference box used by CSS clip-path. For HTML objects,
   // this is the border box of the element. For SVG objects this is the
@@ -56,10 +53,6 @@ class CORE_EXPORT ClipPathClipper {
   GraphicsContext& context_;
   const LayoutObject& layout_object_;
   LayoutPoint paint_offset_;
-
-  base::Optional<FloatClipRecorder> clip_recorder_;
-  base::Optional<ClipPathRecorder> clip_path_recorder_;
-  base::Optional<CompositingRecorder> mask_isolation_recorder_;
 };
 
 }  // namespace blink

@@ -65,18 +65,14 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
-#include "third_party/blink/renderer/core/paint/transform_recorder.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
-#include "third_party/blink/renderer/platform/graphics/paint/clip_display_item.h"
-#include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
-#include "third_party/blink/renderer/platform/graphics/paint/transform_display_item.h"
 #include "third_party/blink/renderer/platform/length_functions.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
@@ -3127,10 +3123,6 @@ void CompositedLayerMapping::DoPaintTask(
   FontCachePurgePreventer font_cache_purge_preventer;
 
   IntSize offset = paint_info.offset_from_layout_object;
-  AffineTransform translation;
-  translation.Translate(-offset.Width(), -offset.Height());
-  TransformRecorder transform_recorder(context, graphics_layer, translation);
-
   // The dirtyRect is in the coords of the painting root.
   IntRect dirty_rect(clip);
   dirty_rect.Move(offset);
@@ -3182,22 +3174,6 @@ void CompositedLayerMapping::DoPaintTask(
     PaintLayerPaintingInfo painting_info(
         paint_info.paint_layer, LayoutRect(dirty_rect), kGlobalPaintNormalPhase,
         paint_info.paint_layer->SubpixelAccumulation());
-
-    // PaintLayer::paintLayer assumes that the caller clips to the passed rect.
-    // Squashed layers need to do this clipping in software, since there is no
-    // graphics layer to clip them precisely. Furthermore, in some cases we
-    // squash layers that need clipping in software from clipping ancestors (see
-    // CompositedLayerMapping::localClipRectForSquashedLayer()).
-    // FIXME: Is it correct to clip to dirtyRect in slimming paint mode?
-    ClipRect clip_rect = paint_info.local_clip_rect_for_squashed_layer;
-    clip_rect.Intersect(LayoutRect(dirty_rect));
-
-    LayerClipRecorder layer_clip_recorder(
-        context, *paint_info.paint_layer,
-        DisplayItem::kClipLayerOverflowControls, clip_rect,
-        paint_info.local_clip_rect_root, paint_info.offset_from_clip_rect_root,
-        paint_layer_flags, graphics_layer,
-        LayerClipRecorder::kDoNotIncludeSelfForBorderRadius);
     PaintLayerPainter(*paint_info.paint_layer)
         .Paint(context, painting_info, paint_layer_flags);
   }
@@ -3514,19 +3490,10 @@ void CompositedLayerMapping::PaintScrollableArea(
     const GraphicsLayer* graphics_layer,
     GraphicsContext& context,
     const IntRect& interest_rect) const {
-  // Note the composited scrollable area painted here is never associated with a
-  // frame. For painting frame ScrollableAreas, see
-  // PaintLayerCompositor::paintContents.
-
-  // Map context and cull_rect which are in the local space of the scrollbar
-  // to the space of the containing scrollable area in which Scrollbar::Paint()
-  // will paint the scrollbar.
-  auto offset = graphics_layer->OffsetFromLayoutObject();
-  CullRect cull_rect(CullRect(interest_rect), offset);
-  TransformRecorder transform_recorder(
-      context, *graphics_layer,
-      AffineTransform::Translation(-offset.Width(), -offset.Height()));
-
+  // cull_rect is in the space of the containing scrollable area in which
+  // Scrollbar::Paint() will paint the scrollbar.
+  CullRect cull_rect(CullRect(interest_rect),
+                     graphics_layer->OffsetFromLayoutObject());
   PaintLayerScrollableArea* scrollable_area = owning_layer_.GetScrollableArea();
   if (graphics_layer == LayerForHorizontalScrollbar()) {
     if (const Scrollbar* scrollbar = scrollable_area->HorizontalScrollbar())
