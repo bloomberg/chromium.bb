@@ -6,6 +6,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -52,12 +53,12 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 }  // namespace
 
 // Tests critical user journeys for Download Manager.
-@interface DownloadManagerEGTest : ChromeTestCase {
+@interface DownloadManagerTestCase : ChromeTestCase {
   base::test::ScopedFeatureList _featureList;
 }
 @end
 
-@implementation DownloadManagerEGTest
+@implementation DownloadManagerTestCase
 
 - (void)setUp {
   [super setUp];
@@ -72,6 +73,33 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 // presented. EarlGreay does not allow testing "Open in..." dialog, because it
 // is run in a separate process.
 - (void)testSucessfullDownload {
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
+  [ChromeEarlGrey waitForWebViewContainingText:"Download"];
+  [ChromeEarlGrey tapWebViewElementWithID:@"download"];
+
+  [[EarlGrey selectElementWithMatcher:DownloadButton()]
+      performAction:grey_tap()];
+
+  // Wait until Open in... button is shown.
+  ConditionBlock openInShown = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:OpenInButton()]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return (error == nil);
+  };
+  GREYAssert(testing::WaitUntilConditionOrTimeout(
+                 testing::kWaitForDownloadTimeout, openInShown),
+             @"Open in... button did not show up");
+}
+
+// Tests sucessfull download up to the point where "Open in..." button is
+// presented. EarlGreay does not allow testing "Open in..." dialog, because it
+// is run in a separate process. Performs download in Incognito.
+- (void)testSucessfullDownloadInIncognito {
+  chrome_test_util::OpenNewIncognitoTab();
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
   [ChromeEarlGrey waitForWebViewContainingText:"Download"];
   [ChromeEarlGrey tapWebViewElementWithID:@"download"];
