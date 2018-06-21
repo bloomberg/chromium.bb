@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -43,6 +44,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   // Overrides for each FileManagerBrowserTest test extension type.
   virtual GuestMode GetGuestMode() const = 0;
+  virtual bool GetEnableDriveFs() const;
   virtual const char* GetTestCaseName() const = 0;
   virtual const char* GetTestExtensionManifestName() const = 0;
 
@@ -52,6 +54,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   // Returns true if the test requires in guest mode.
   bool IsGuestModeTest() const { return GetGuestMode() == IN_GUEST_MODE; }
+
+  // Returns true if the test requires DriveFS.
+  bool IsDriveFsTest() const { return GetEnableDriveFs(); }
 
   // Called during setup if needed, to create a drive integration service for
   // the given |profile|. Caller owns the return result.
@@ -73,6 +78,8 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   void OnCommand(const std::string& name,
                  const base::DictionaryValue& value,
                  std::string* output);
+
+  base::test::ScopedFeatureList feature_list_;
 
   std::unique_ptr<LocalTestVolume> local_volume_;
   std::map<Profile*, std::unique_ptr<DriveTestVolume>> drive_volumes_;
