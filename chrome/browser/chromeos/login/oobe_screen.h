@@ -16,7 +16,7 @@ namespace chromeos {
 // update kScreenNames in the cc file as well.
 enum class OobeScreen : unsigned int {
   SCREEN_OOBE_HID_DETECTION = 0,
-  SCREEN_OOBE_NETWORK,
+  SCREEN_OOBE_WELCOME,
   SCREEN_OOBE_EULA,
   SCREEN_OOBE_UPDATE,
   SCREEN_OOBE_ENABLE_DEBUGGING,

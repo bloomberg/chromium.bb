@@ -2,36 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_NETWORK_SCREEN_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_NETWORK_SCREEN_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_WELCOME_SCREEN_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_WELCOME_SCREEN_H_
 
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
-#include "chrome/browser/chromeos/login/screens/network_screen.h"
-#include "chrome/browser/chromeos/login/screens/network_view.h"
+#include "chrome/browser/chromeos/login/screens/welcome_screen.h"
+#include "chrome/browser/chromeos/login/screens/welcome_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
 
-class MockNetworkScreen : public NetworkScreen {
+class MockWelcomeScreen : public WelcomeScreen {
  public:
-  MockNetworkScreen(BaseScreenDelegate* base_screen_delegate,
+  MockWelcomeScreen(BaseScreenDelegate* base_screen_delegate,
                     Delegate* delegate,
-                    NetworkView* view);
-  ~MockNetworkScreen() override;
+                    WelcomeView* view);
+  ~MockWelcomeScreen() override;
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
 };
 
-class MockNetworkView : public NetworkView {
+class MockWelcomeView : public WelcomeView {
  public:
-  MockNetworkView();
-  ~MockNetworkView() override;
+  MockWelcomeView();
+  ~MockWelcomeView() override;
 
-  void Bind(NetworkScreen* screen) override;
+  void Bind(WelcomeScreen* screen) override;
   void Unbind() override;
 
-  MOCK_METHOD1(MockBind, void(NetworkScreen* screen));
+  MOCK_METHOD1(MockBind, void(WelcomeScreen* screen));
   MOCK_METHOD0(MockUnbind, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
@@ -44,9 +44,9 @@ class MockNetworkView : public NetworkView {
   MOCK_METHOD0(ReloadLocalizedContent, void());
 
  private:
-  NetworkScreen* screen_ = nullptr;
+  WelcomeScreen* screen_ = nullptr;
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_NETWORK_SCREEN_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_WELCOME_SCREEN_H_

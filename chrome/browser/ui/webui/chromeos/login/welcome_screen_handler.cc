@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 
 #include <stddef.h>
 
@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/idle_detector.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
-#include "chrome/browser/chromeos/login/screens/network_screen.h"
+#include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -46,28 +46,28 @@
 
 namespace {
 
-const char kJsScreenPath[] = "login.NetworkScreen";
+const char kJsScreenPath[] = "login.WelcomeScreen";
 
 }  // namespace
 
 namespace chromeos {
 
-// NetworkScreenHandler, public: -----------------------------------------------
+// WelcomeScreenHandler, public: -----------------------------------------------
 
-NetworkScreenHandler::NetworkScreenHandler(CoreOobeView* core_oobe_view)
+WelcomeScreenHandler::WelcomeScreenHandler(CoreOobeView* core_oobe_view)
     : BaseScreenHandler(kScreenId), core_oobe_view_(core_oobe_view) {
   set_call_js_prefix(kJsScreenPath);
   DCHECK(core_oobe_view_);
 }
 
-NetworkScreenHandler::~NetworkScreenHandler() {
+WelcomeScreenHandler::~WelcomeScreenHandler() {
   if (screen_)
     screen_->OnViewDestroyed(this);
 }
 
-// NetworkScreenHandler, NetworkScreenView implementation: ---------------------
+// WelcomeScreenHandler, WelcomeScreenView implementation: ---------------------
 
-void NetworkScreenHandler::Show() {
+void WelcomeScreenHandler::Show() {
   if (!page_is_ready()) {
     show_on_init_ = true;
     return;
@@ -92,54 +92,52 @@ void NetworkScreenHandler::Show() {
   handler->SetTechnologyEnabled(NetworkTypePattern::Physical(), true,
                                 chromeos::network_handler::ErrorCallback());
 
-  base::DictionaryValue network_screen_params;
-  network_screen_params.SetBoolean("isDeveloperMode",
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kSystemDevMode));
-  ShowScreenWithData(kScreenId, &network_screen_params);
+  base::DictionaryValue welcome_screen_params;
+  welcome_screen_params.SetBoolean(
+      "isDeveloperMode", base::CommandLine::ForCurrentProcess()->HasSwitch(
+                             chromeos::switches::kSystemDevMode));
+  ShowScreenWithData(kScreenId, &welcome_screen_params);
   core_oobe_view_->InitDemoModeDetection();
 }
 
-void NetworkScreenHandler::Hide() {
-}
+void WelcomeScreenHandler::Hide() {}
 
-void NetworkScreenHandler::Bind(NetworkScreen* screen) {
+void WelcomeScreenHandler::Bind(WelcomeScreen* screen) {
   screen_ = screen;
   BaseScreenHandler::SetBaseScreen(screen_);
 }
 
-void NetworkScreenHandler::Unbind() {
+void WelcomeScreenHandler::Unbind() {
   screen_ = nullptr;
   BaseScreenHandler::SetBaseScreen(nullptr);
 }
 
-void NetworkScreenHandler::ShowError(const base::string16& message) {
+void WelcomeScreenHandler::ShowError(const base::string16& message) {
   CallJS("showError", message);
 }
 
-void NetworkScreenHandler::ClearErrors() {
+void WelcomeScreenHandler::ClearErrors() {
   if (page_is_ready())
     core_oobe_view_->ClearErrors();
 }
 
-void NetworkScreenHandler::StopDemoModeDetection() {
+void WelcomeScreenHandler::StopDemoModeDetection() {
   core_oobe_view_->StopDemoModeDetection();
 }
 
-void NetworkScreenHandler::ShowConnectingStatus(
+void WelcomeScreenHandler::ShowConnectingStatus(
     bool connecting,
-    const base::string16& network_id) {
-}
+    const base::string16& network_id) {}
 
-void NetworkScreenHandler::ReloadLocalizedContent() {
+void WelcomeScreenHandler::ReloadLocalizedContent() {
   base::DictionaryValue localized_strings;
   GetOobeUI()->GetLocalizedStrings(&localized_strings);
   core_oobe_view_->ReloadContent(localized_strings);
 }
 
-// NetworkScreenHandler, BaseScreenHandler implementation: --------------------
+// WelcomeScreenHandler, BaseScreenHandler implementation: --------------------
 
-void NetworkScreenHandler::DeclareLocalizedValues(
+void WelcomeScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation())
     builder->Add("networkScreenGreeting", IDS_REMORA_CONFIRM_MESSAGE);
@@ -199,7 +197,7 @@ void NetworkScreenHandler::DeclareLocalizedValues(
   network_element::AddLocalizedValuesToBuilder(builder);
 }
 
-void NetworkScreenHandler::GetAdditionalParameters(
+void WelcomeScreenHandler::GetAdditionalParameters(
     base::DictionaryValue* dict) {
   const std::string application_locale =
       g_browser_process->GetApplicationLocale();
@@ -259,7 +257,7 @@ void NetworkScreenHandler::GetAdditionalParameters(
   dict->Set("timezoneList", GetTimezoneList());
 }
 
-void NetworkScreenHandler::Initialize() {
+void WelcomeScreenHandler::Initialize() {
   if (show_on_init_) {
     show_on_init_ = false;
     Show();
@@ -270,10 +268,10 @@ void NetworkScreenHandler::Initialize() {
     ReloadLocalizedContent();
 }
 
-// NetworkScreenHandler, private: ----------------------------------------------
+// WelcomeScreenHandler, private: ----------------------------------------------
 
 // static
-std::unique_ptr<base::ListValue> NetworkScreenHandler::GetTimezoneList() {
+std::unique_ptr<base::ListValue> WelcomeScreenHandler::GetTimezoneList() {
   std::string current_timezone_id;
   CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
 

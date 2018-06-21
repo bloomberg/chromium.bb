@@ -48,7 +48,6 @@
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
-#include "chrome/browser/chromeos/login/screens/network_view.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
@@ -58,6 +57,7 @@
 #include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/screens/voice_interaction_value_prop_screen.h"
 #include "chrome/browser/chromeos/login/screens/wait_for_container_ready_screen.h"
+#include "chrome/browser/chromeos/login/screens/welcome_view.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -123,7 +123,7 @@ const unsigned int kResolveTimeZoneTimeoutSeconds = 60;
 
 // Stores the list of all screens that should be shown when resuming OOBE.
 const chromeos::OobeScreen kResumableScreens[] = {
-    chromeos::OobeScreen::SCREEN_OOBE_NETWORK,
+    chromeos::OobeScreen::SCREEN_OOBE_WELCOME,
     chromeos::OobeScreen::SCREEN_OOBE_UPDATE,
     chromeos::OobeScreen::SCREEN_OOBE_EULA,
     chromeos::OobeScreen::SCREEN_OOBE_ENROLLMENT,
@@ -159,7 +159,7 @@ struct Entry {
 constexpr const Entry kLegacyUmaOobeScreenNames[] = {
     {chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE, "arc_tos"},
     {chromeos::OobeScreen::SCREEN_OOBE_ENROLLMENT, "enroll"},
-    {chromeos::OobeScreen::SCREEN_OOBE_NETWORK, "network"},
+    {chromeos::OobeScreen::SCREEN_OOBE_WELCOME, "network"},
     {chromeos::OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW,
      "supervised-user-creation-flow"},
     {chromeos::OobeScreen::SCREEN_TERMS_OF_SERVICE, "tos"},
@@ -376,8 +376,8 @@ BaseScreen* WizardController::GetScreen(OobeScreen screen) {
 }
 
 BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
-  if (screen == OobeScreen::SCREEN_OOBE_NETWORK) {
-    return new NetworkScreen(this, this, oobe_ui_->GetNetworkView());
+  if (screen == OobeScreen::SCREEN_OOBE_WELCOME) {
+    return new WelcomeScreen(this, this, oobe_ui_->GetWelcomeView());
   } else if (screen == OobeScreen::SCREEN_OOBE_UPDATE) {
     return new UpdateScreen(this, oobe_ui_->GetUpdateView(),
                             remora_controller_.get());
@@ -466,10 +466,10 @@ void WizardController::SetCurrentScreenForTesting(BaseScreen* screen) {
   current_screen_ = screen;
 }
 
-void WizardController::ShowNetworkScreen() {
-  VLOG(1) << "Showing network screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_NETWORK);
-  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_NETWORK));
+void WizardController::ShowWelcomeScreen() {
+  VLOG(1) << "Showing welcome screen.";
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_WELCOME);
+  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_WELCOME));
 
   // There are two possible screens where we listen to the incoming Bluetooth
   // connection request: the first one is the HID detection screen, which will
@@ -653,7 +653,7 @@ void WizardController::ShowHIDDetectionScreen() {
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_HID_DETECTION));
   // In HID detection screen, puts the Bluetooth in discoverable mode and waits
   // for the incoming Bluetooth connection request. See the comments in
-  // WizardController::ShowNetworkScreen() for more details.
+  // WizardController::ShowWelcomeScreen() for more details.
   MaybeStartListeningForSharkConnection();
 }
 
@@ -742,7 +742,7 @@ void WizardController::SkipUpdateEnrollAfterEula() {
 void WizardController::OnHIDDetectionCompleted() {
   // Check for tests configuration.
   if (!StartupUtils::IsOobeCompleted())
-    ShowNetworkScreen();
+    ShowWelcomeScreen();
 }
 
 void WizardController::OnNetworkConnected() {
@@ -819,7 +819,7 @@ void WizardController::OnUpdateErrorUpdating(bool is_critical_update) {
   // we do not want to block users from being able to proceed to the login
   // screen.
   if (is_out_of_box_ && is_critical_update)
-    ShowNetworkScreen();
+    ShowWelcomeScreen();
   else
     OnUpdateCompleted();
 }
@@ -1143,11 +1143,11 @@ void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
 }
 
 void WizardController::UpdateStatusAreaVisibilityForScreen(OobeScreen screen) {
-  if (screen == OobeScreen::SCREEN_OOBE_NETWORK) {
+  if (screen == OobeScreen::SCREEN_OOBE_WELCOME) {
     // Hide the status area initially; it only appears after OOBE first animates
-    // in. Keep it visible if the user goes back to the existing network screen.
+    // in. Keep it visible if the user goes back to the existing welcome screen.
     host_->SetStatusAreaVisible(
-        screen_manager_->HasScreen(OobeScreen::SCREEN_OOBE_NETWORK));
+        screen_manager_->HasScreen(OobeScreen::SCREEN_OOBE_WELCOME));
   } else if (screen == OobeScreen::SCREEN_OOBE_RESET ||
              screen == OobeScreen::SCREEN_KIOSK_ENABLE ||
              screen == OobeScreen::SCREEN_KIOSK_AUTOLAUNCH ||
@@ -1169,13 +1169,13 @@ void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
   if (screen_needed) {
     ShowHIDDetectionScreen();
   } else {
-    ShowNetworkScreen();
+    ShowWelcomeScreen();
   }
 }
 
 void WizardController::AdvanceToScreen(OobeScreen screen) {
-  if (screen == OobeScreen::SCREEN_OOBE_NETWORK) {
-    ShowNetworkScreen();
+  if (screen == OobeScreen::SCREEN_OOBE_WELCOME) {
+    ShowWelcomeScreen();
   } else if (screen == OobeScreen::SCREEN_SPECIAL_LOGIN) {
     ShowLoginScreen(LoginScreenContext());
   } else if (screen == OobeScreen::SCREEN_OOBE_UPDATE) {
@@ -1242,7 +1242,7 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
                        weak_factory_.GetWeakPtr());
         oobe_ui_->GetHIDDetectionView()->CheckIsScreenRequired(on_check);
       } else {
-        ShowNetworkScreen();
+        ShowWelcomeScreen();
       }
     } else {
       ShowLoginScreen(LoginScreenContext());
@@ -1293,7 +1293,7 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       OnEulaAccepted();
       break;
     case ScreenExitCode::EULA_BACK:
-      ShowNetworkScreen();
+      ShowWelcomeScreen();
       break;
     case ScreenExitCode::ENABLE_DEBUGGING_CANCELED:
       OnDeviceModificationCanceled();
@@ -1395,9 +1395,9 @@ bool WizardController::GetUsageStatisticsReporting() const {
 void WizardController::SetHostNetwork() {
   if (!shark_controller_)
     return;
-  NetworkScreen* network_screen = NetworkScreen::Get(screen_manager());
+  WelcomeScreen* welcome_screen = WelcomeScreen::Get(screen_manager());
   std::string onc_spec;
-  network_screen->GetConnectedWifiNetwork(&onc_spec);
+  welcome_screen->GetConnectedWifiNetwork(&onc_spec);
   if (!onc_spec.empty())
     shark_controller_->SetHostNetwork(onc_spec);
 }
@@ -1405,11 +1405,11 @@ void WizardController::SetHostNetwork() {
 void WizardController::SetHostConfiguration() {
   if (!shark_controller_)
     return;
-  NetworkScreen* network_screen = NetworkScreen::Get(screen_manager());
+  WelcomeScreen* welcome_screen = WelcomeScreen::Get(screen_manager());
   shark_controller_->SetHostConfiguration(
       true,  // Eula must be accepted before we get this far.
-      network_screen->GetApplicationLocale(), network_screen->GetTimezone(),
-      GetUsageStatisticsReporting(), network_screen->GetInputMethod());
+      welcome_screen->GetApplicationLocale(), welcome_screen->GetTimezone(),
+      GetUsageStatisticsReporting(), welcome_screen->GetInputMethod());
 }
 
 void WizardController::ConfigureHostRequested(
@@ -1424,9 +1424,9 @@ void WizardController::ConfigureHostRequested(
     StartupUtils::MarkEulaAccepted();
   SetUsageStatisticsReporting(send_reports);
 
-  NetworkScreen* network_screen = NetworkScreen::Get(screen_manager());
-  network_screen->SetApplicationLocaleAndInputMethod(lang, keyboard_layout);
-  network_screen->SetTimezone(timezone);
+  WelcomeScreen* welcome_screen = WelcomeScreen::Get(screen_manager());
+  welcome_screen->SetApplicationLocaleAndInputMethod(lang, keyboard_layout);
+  welcome_screen->SetTimezone(timezone);
 
   // Don't block the OOBE update and the following enrollment process if there
   // is available and valid network already.
@@ -1441,16 +1441,16 @@ void WizardController::AddNetworkRequested(const std::string& onc_spec) {
   remora_controller_->OnNetworkConnectivityChanged(
       pairing_chromeos::HostPairingController::CONNECTIVITY_CONNECTING);
 
-  NetworkScreen* network_screen = NetworkScreen::Get(screen_manager());
+  WelcomeScreen* welcome_screen = WelcomeScreen::Get(screen_manager());
   const chromeos::NetworkState* network_state = chromeos::NetworkHandler::Get()
                                                     ->network_state_handler()
                                                     ->DefaultNetwork();
 
   if (NetworkAllowUpdate(network_state)) {
-    network_screen->CreateAndConnectNetworkFromOnc(
+    welcome_screen->CreateAndConnectNetworkFromOnc(
         onc_spec, base::DoNothing(), network_handler::ErrorCallback());
   } else {
-    network_screen->CreateAndConnectNetworkFromOnc(
+    welcome_screen->CreateAndConnectNetworkFromOnc(
         onc_spec,
         base::Bind(&WizardController::OnSetHostNetworkSuccessful,
                    weak_factory_.GetWeakPtr()),
@@ -1535,7 +1535,7 @@ bool WizardController::IsZeroDelayEnabled() {
 // static
 bool WizardController::IsOOBEStepToTrack(OobeScreen screen_id) {
   return (screen_id == OobeScreen::SCREEN_OOBE_HID_DETECTION ||
-          screen_id == OobeScreen::SCREEN_OOBE_NETWORK ||
+          screen_id == OobeScreen::SCREEN_OOBE_WELCOME ||
           screen_id == OobeScreen::SCREEN_OOBE_UPDATE ||
           screen_id == OobeScreen::SCREEN_USER_IMAGE_PICKER ||
           screen_id == OobeScreen::SCREEN_OOBE_EULA ||

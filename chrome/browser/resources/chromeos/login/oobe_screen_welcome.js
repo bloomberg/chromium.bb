@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Oobe network screen implementation.
+ * @fileoverview OOBE welcome screen implementation.
  */
 
-login.createScreen('NetworkScreen', 'connect', function() {
+login.createScreen('WelcomeScreen', 'connect', function() {
   var CONTEXT_KEY_LOCALE = 'locale';
   var CONTEXT_KEY_INPUT_METHOD = 'input-method';
   var CONTEXT_KEY_TIMEZONE = 'timezone';

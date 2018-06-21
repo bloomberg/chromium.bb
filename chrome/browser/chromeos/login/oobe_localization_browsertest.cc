@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
-#include "chrome/browser/chromeos/login/screens/network_screen.h"
+#include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -90,19 +90,19 @@ class TimedRunLoop {
   DISALLOW_COPY_AND_ASSIGN(TimedRunLoop);
 };
 
-class LanguageListWaiter : public NetworkScreen::Observer {
+class LanguageListWaiter : public WelcomeScreen::Observer {
  public:
   LanguageListWaiter()
-      : network_screen_(NetworkScreen::Get(
+      : welcome_screen_(WelcomeScreen::Get(
             WizardController::default_controller()->screen_manager())),
         loop_(base::TimeDelta::FromSeconds(kTimeoutSeconds), "LanguageList") {
-    network_screen_->AddObserver(this);
+    welcome_screen_->AddObserver(this);
     CheckLanguageList();
   }
 
-  ~LanguageListWaiter() override { network_screen_->RemoveObserver(this); }
+  ~LanguageListWaiter() override { welcome_screen_->RemoveObserver(this); }
 
-  // NetworkScreen::Observer implementation:
+  // WelcomeScreen::Observer implementation:
   void OnLanguageListReloaded() override { CheckLanguageList(); }
 
   // Returns true on success, false on timeout.
@@ -114,14 +114,14 @@ class LanguageListWaiter : public NetworkScreen::Observer {
   }
 
  private:
-  bool LanguageListReady() const { return network_screen_->language_list(); }
+  bool LanguageListReady() const { return welcome_screen_->language_list(); }
 
   void CheckLanguageList() {
     if (LanguageListReady())
       loop_.Quit();
   }
 
-  NetworkScreen* network_screen_;
+  WelcomeScreen* welcome_screen_;
   TimedRunLoop loop_;
 };
 
@@ -160,7 +160,7 @@ struct LocalizationTestParams {
     {"de", "xkb:ch::ger", "de", "xkb:ch::ger",
      "xkb:ch::ger,[xkb:de::ger,xkb:de:neo:ger,xkb:be::ger,xkb:us::eng]"},
 
-    // NetworkScreenMultipleLocales
+    // WelcomeScreenMultipleLocales
     {"es,en-US,nl", "xkb:be::nld", "es,en-US,nl", "xkb:be::nld",
      "xkb:be::nld,[xkb:es::spa,xkb:latam::spa,xkb:us::eng]"},
 

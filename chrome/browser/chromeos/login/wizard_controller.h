@@ -25,8 +25,8 @@
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/chromeos/login/screens/host_pairing_screen.h"
-#include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
+#include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 
 class PrefService;
@@ -54,7 +54,7 @@ class WizardController : public BaseScreenDelegate,
                          public EulaScreen::Delegate,
                          public ControllerPairingScreen::Delegate,
                          public HostPairingScreen::Delegate,
-                         public NetworkScreen::Delegate,
+                         public WelcomeScreen::Delegate,
                          public HIDDetectionScreen::Delegate {
  public:
   WizardController(LoginDisplayHost* host, OobeUI* oobe_ui);
@@ -137,7 +137,7 @@ class WizardController : public BaseScreenDelegate,
 
  private:
   // Show specific screen.
-  void ShowNetworkScreen();
+  void ShowWelcomeScreen();
   void ShowUserImageScreen();
   void ShowEulaScreen();
   void ShowEnrollmentScreen();
@@ -241,7 +241,7 @@ class WizardController : public BaseScreenDelegate,
   void AddNetworkRequested(const std::string& onc_spec) override;
   void RebootHostRequested() override;
 
-  // Override from NetworkScreen::Delegate:
+  // Override from WelcomeScreen::Delegate:
   void OnEnableDebuggingScreenRequested() override;
 
   // Override from HIDDetectionScreen::Delegate

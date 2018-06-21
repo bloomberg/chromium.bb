@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/screens/network_screen.h"
+#include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 
 #include <memory>
 
@@ -41,10 +41,10 @@ class DummyButtonListener : public views::ButtonListener {
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {}
 };
 
-class NetworkScreenTest : public WizardInProcessBrowserTest {
+class WelcomeScreenTest : public WizardInProcessBrowserTest {
  public:
-  NetworkScreenTest()
-      : WizardInProcessBrowserTest(OobeScreen::SCREEN_OOBE_NETWORK),
+  WelcomeScreenTest()
+      : WizardInProcessBrowserTest(OobeScreen::SCREEN_OOBE_WELCOME),
         fake_session_manager_client_(nullptr) {}
 
  protected:
@@ -60,26 +60,26 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     WizardInProcessBrowserTest::SetUpOnMainThread();
     mock_base_screen_delegate_.reset(new MockBaseScreenDelegate());
     ASSERT_TRUE(WizardController::default_controller() != nullptr);
-    network_screen_ = NetworkScreen::Get(
+    welcome_screen_ = WelcomeScreen::Get(
         WizardController::default_controller()->screen_manager());
-    ASSERT_TRUE(network_screen_ != nullptr);
+    ASSERT_TRUE(welcome_screen_ != nullptr);
     ASSERT_EQ(WizardController::default_controller()->current_screen(),
-              network_screen_);
-    network_screen_->base_screen_delegate_ = mock_base_screen_delegate_.get();
-    ASSERT_TRUE(network_screen_->view_ != nullptr);
+              welcome_screen_);
+    welcome_screen_->base_screen_delegate_ = mock_base_screen_delegate_.get();
+    ASSERT_TRUE(welcome_screen_->view_ != nullptr);
 
     mock_network_state_helper_ = new login::MockNetworkStateHelper;
     SetDefaultNetworkStateHelperExpectations();
-    network_screen_->SetNetworkStateHelperForTest(mock_network_state_helper_);
+    welcome_screen_->SetNetworkStateHelperForTest(mock_network_state_helper_);
   }
 
-  void EmulateContinueButtonExit(NetworkScreen* network_screen) {
+  void EmulateContinueButtonExit(WelcomeScreen* welcome_screen) {
     EXPECT_CALL(*mock_base_screen_delegate_,
                 OnExit(_, ScreenExitCode::NETWORK_CONNECTED, _))
         .Times(1);
     EXPECT_CALL(*mock_network_state_helper_, IsConnected())
         .WillOnce(Return(true));
-    network_screen->OnContinueButtonPressed();
+    welcome_screen->OnContinueButtonPressed();
     content::RunAllPendingInMessageLoop();
   }
 
@@ -97,18 +97,18 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
 
   std::unique_ptr<MockBaseScreenDelegate> mock_base_screen_delegate_;
   login::MockNetworkStateHelper* mock_network_state_helper_;
-  NetworkScreen* network_screen_;
+  WelcomeScreen* welcome_screen_;
   FakeSessionManagerClient* fake_session_manager_client_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkScreenTest);
+  DISALLOW_COPY_AND_ASSIGN(WelcomeScreenTest);
 };
 
-IN_PROC_BROWSER_TEST_F(NetworkScreenTest, CanConnect) {
+IN_PROC_BROWSER_TEST_F(WelcomeScreenTest, CanConnect) {
   EXPECT_CALL(*mock_network_state_helper_, IsConnecting())
       .WillOnce((Return(true)));
   // EXPECT_FALSE(view_->IsContinueEnabled());
-  network_screen_->UpdateStatus();
+  welcome_screen_->UpdateStatus();
 
   EXPECT_CALL(*mock_network_state_helper_, IsConnected())
       .Times(2)
@@ -116,17 +116,17 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, CanConnect) {
   // TODO(nkostylev): Add integration with WebUI view http://crosbug.com/22570
   // EXPECT_FALSE(view_->IsContinueEnabled());
   // EXPECT_FALSE(view_->IsConnecting());
-  network_screen_->UpdateStatus();
+  welcome_screen_->UpdateStatus();
 
   // EXPECT_TRUE(view_->IsContinueEnabled());
-  EmulateContinueButtonExit(network_screen_);
+  EmulateContinueButtonExit(welcome_screen_);
 }
 
-IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
+IN_PROC_BROWSER_TEST_F(WelcomeScreenTest, Timeout) {
   EXPECT_CALL(*mock_network_state_helper_, IsConnecting())
       .WillOnce((Return(true)));
   // EXPECT_FALSE(view_->IsContinueEnabled());
-  network_screen_->UpdateStatus();
+  welcome_screen_->UpdateStatus();
 
   EXPECT_CALL(*mock_network_state_helper_, IsConnected())
       .Times(2)
@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
   // TODO(nkostylev): Add integration with WebUI view http://crosbug.com/22570
   // EXPECT_FALSE(view_->IsContinueEnabled());
   // EXPECT_FALSE(view_->IsConnecting());
-  network_screen_->OnConnectionTimeout();
+  welcome_screen_->OnConnectionTimeout();
 
   // Close infobubble with error message - it makes the test stable.
   // EXPECT_FALSE(view_->IsContinueEnabled());

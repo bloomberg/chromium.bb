@@ -51,7 +51,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_display_chooser.h"
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
@@ -66,6 +65,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/voice_interaction_value_prop_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wait_for_container_ready_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/user_image_source.h"
 #include "chrome/browser/ui/webui/test_files_request_filter.h"
@@ -265,7 +265,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   AddScreenHandler(std::make_unique<UpdateScreenHandler>());
 
   if (display_type_ == kOobeDisplay)
-    AddScreenHandler(std::make_unique<NetworkScreenHandler>(core_handler_));
+    AddScreenHandler(std::make_unique<WelcomeScreenHandler>(core_handler_));
 
   AddScreenHandler(std::make_unique<EnableDebuggingScreenHandler>());
 
@@ -403,8 +403,8 @@ CoreOobeView* OobeUI::GetCoreOobeView() {
   return core_handler_;
 }
 
-NetworkView* OobeUI::GetNetworkView() {
-  return GetView<NetworkScreenHandler>();
+WelcomeView* OobeUI::GetWelcomeView() {
+  return GetView<WelcomeScreenHandler>();
 }
 
 EulaView* OobeUI::GetEulaView() {

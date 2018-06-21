@@ -128,7 +128,7 @@
 
     onDebuggingLinkClicked_: function() {
       chrome.send(
-          'login.NetworkScreen.userActed', ['connect-debugging-features']);
+          'login.WelcomeScreen.userActed', ['connect-debugging-features']);
     },
 
     /*

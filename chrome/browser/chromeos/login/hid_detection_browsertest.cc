@@ -110,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(HidDetectionTest, NoDevicesConnected) {
 }
 
 IN_PROC_BROWSER_TEST_F(HidDetectionSkipTest, BothDevicesPreConnected) {
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
 }
 
 }  // namespace chromeos

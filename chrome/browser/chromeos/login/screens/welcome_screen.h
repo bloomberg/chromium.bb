@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_NETWORK_SCREEN_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_NETWORK_SCREEN_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_WELCOME_SCREEN_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_WELCOME_SCREEN_H_
 
 #include <memory>
 
@@ -25,7 +25,7 @@
 namespace chromeos {
 
 class InputEventsBlocker;
-class NetworkView;
+class WelcomeView;
 class ScreenManager;
 
 namespace locale_util {
@@ -36,7 +36,7 @@ namespace login {
 class NetworkStateHelper;
 }
 
-class NetworkScreen : public BaseScreen,
+class WelcomeScreen : public BaseScreen,
                       public NetworkStateHandlerObserver,
                       public input_method::InputMethodManager::Observer {
  public:
@@ -56,16 +56,16 @@ class NetworkScreen : public BaseScreen,
     virtual void OnLanguageListReloaded() = 0;
   };
 
-  NetworkScreen(BaseScreenDelegate* base_screen_delegate,
+  WelcomeScreen(BaseScreenDelegate* base_screen_delegate,
                 Delegate* delegate,
-                NetworkView* view);
-  ~NetworkScreen() override;
+                WelcomeView* view);
+  ~WelcomeScreen() override;
 
-  static NetworkScreen* Get(ScreenManager* manager);
+  static WelcomeScreen* Get(ScreenManager* manager);
 
   // Called when |view| has been destroyed. If this instance is destroyed before
   // the |view| it should call view->Unbind().
-  void OnViewDestroyed(NetworkView* view);
+  void OnViewDestroyed(WelcomeView* view);
 
   const std::string& language_list_locale() const {
     return language_list_locale_;
@@ -97,12 +97,12 @@ class NetworkScreen : public BaseScreen,
   void RemoveObserver(Observer* observer);
 
  private:
-  friend class NetworkScreenTest;
-  friend class NetworkScreenUnitTest;
-  FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, Timeout);
-  FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, CanConnect);
-  FRIEND_TEST_ALL_PREFIXES(NetworkScreenUnitTest, ContinuesAutomatically);
-  FRIEND_TEST_ALL_PREFIXES(NetworkScreenUnitTest, ContinuesOnlyOnce);
+  friend class WelcomeScreenTest;
+  friend class WelcomeScreenUnitTest;
+  FRIEND_TEST_ALL_PREFIXES(WelcomeScreenTest, Timeout);
+  FRIEND_TEST_ALL_PREFIXES(WelcomeScreenTest, CanConnect);
+  FRIEND_TEST_ALL_PREFIXES(WelcomeScreenUnitTest, ContinuesAutomatically);
+  FRIEND_TEST_ALL_PREFIXES(WelcomeScreenUnitTest, ContinuesOnlyOnce);
 
   // BaseScreen implementation:
   void Show() override;
@@ -125,7 +125,7 @@ class NetworkScreen : public BaseScreen,
   // Subscribe to timezone changes.
   void InitializeTimezoneObserver();
 
-  // Subscribes NetworkScreen to the network change notification,
+  // Subscribes WelcomeScreen to the network change notification,
   // forces refresh of current network state.
   void Refresh();
 
@@ -198,7 +198,7 @@ class NetworkScreen : public BaseScreen,
 
   std::unique_ptr<CrosSettings::ObserverSubscription> timezone_subscription_;
 
-  NetworkView* view_ = nullptr;
+  WelcomeView* view_ = nullptr;
   Delegate* delegate_ = nullptr;
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
@@ -215,11 +215,11 @@ class NetworkScreen : public BaseScreen,
 
   base::ObserverList<Observer> observers_;
 
-  base::WeakPtrFactory<NetworkScreen> weak_factory_;
+  base::WeakPtrFactory<WelcomeScreen> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkScreen);
+  DISALLOW_COPY_AND_ASSIGN(WelcomeScreen);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_NETWORK_SCREEN_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_WELCOME_SCREEN_H_
