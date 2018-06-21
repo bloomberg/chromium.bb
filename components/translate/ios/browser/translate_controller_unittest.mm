@@ -72,11 +72,24 @@ class TranslateControllerTest : public PlatformTest,
 TEST_F(TranslateControllerTest, OnJavascriptCommandReceived) {
   base::DictionaryValue malformed_command;
   EXPECT_FALSE(translate_controller_->OnJavascriptCommandReceived(
-      malformed_command, GURL("http://google.com"), false));
+      malformed_command, GURL("http://google.com"), /*interacting*/ false,
+      /*is_main_frame=*/true));
+}
+
+// Tests that OnJavascriptCommandReceived() returns false to iframe commands.
+TEST_F(TranslateControllerTest, OnIFrameJavascriptCommandReceived) {
+  base::DictionaryValue command;
+  command.SetString("command", "translate.ready");
+  command.SetBoolean("timeout", true);
+  command.SetDouble("loadTime", .0);
+  command.SetDouble("readyTime", .0);
+  EXPECT_FALSE(translate_controller_->OnJavascriptCommandReceived(
+      command, GURL("http://google.com"), /*interacting*/ false,
+      /*is_main_frame=*/false));
 }
 
 // Tests that OnTranslateScriptReady() is called when a timeout message is
-// recieved from the JS side.
+// received from the JS side.
 TEST_F(TranslateControllerTest, OnTranslateScriptReadyTimeoutCalled) {
   base::DictionaryValue command;
   command.SetString("command", "translate.ready");
@@ -84,7 +97,8 @@ TEST_F(TranslateControllerTest, OnTranslateScriptReadyTimeoutCalled) {
   command.SetDouble("loadTime", .0);
   command.SetDouble("readyTime", .0);
   EXPECT_TRUE(translate_controller_->OnJavascriptCommandReceived(
-      command, GURL("http://google.com"), false));
+      command, GURL("http://google.com"), /*interacting*/ false,
+      /*is_main_frame=*/true));
   EXPECT_TRUE(on_script_ready_called_);
   EXPECT_FALSE(on_translate_complete_called_);
   EXPECT_FALSE(success_);
@@ -103,7 +117,8 @@ TEST_F(TranslateControllerTest, OnTranslateScriptReadyCalled) {
   command.SetDouble("loadTime", some_load_time);
   command.SetDouble("readyTime", some_ready_time);
   EXPECT_TRUE(translate_controller_->OnJavascriptCommandReceived(
-      command, GURL("http://google.com"), false));
+      command, GURL("http://google.com"), /*interacting*/ false,
+      /*is_main_frame=*/true));
   EXPECT_TRUE(on_script_ready_called_);
   EXPECT_FALSE(on_translate_complete_called_);
   EXPECT_TRUE(success_);
@@ -124,7 +139,8 @@ TEST_F(TranslateControllerTest, TranslationSuccess) {
   command.SetString("originalPageLanguage", some_original_language);
   command.SetDouble("translationTime", some_translation_time);
   EXPECT_TRUE(translate_controller_->OnJavascriptCommandReceived(
-      command, GURL("http://google.com"), false));
+      command, GURL("http://google.com"), /*interacting*/ false,
+      /*is_main_frame=*/true));
   EXPECT_FALSE(on_script_ready_called_);
   EXPECT_TRUE(on_translate_complete_called_);
   EXPECT_TRUE(success_);
@@ -139,7 +155,8 @@ TEST_F(TranslateControllerTest, TranslationFailure) {
   command.SetString("command", "translate.status");
   command.SetBoolean("success", false);
   EXPECT_TRUE(translate_controller_->OnJavascriptCommandReceived(
-      command, GURL("http://google.com"), false));
+      command, GURL("http://google.com"), /*interacting*/ false,
+      /*is_main_frame=*/true));
   EXPECT_FALSE(on_script_ready_called_);
   EXPECT_TRUE(on_translate_complete_called_);
   EXPECT_FALSE(success_);

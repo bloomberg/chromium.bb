@@ -43,7 +43,12 @@ CredentialManager::~CredentialManager() {
 
 bool CredentialManager::HandleScriptCommand(const base::DictionaryValue& json,
                                             const GURL& origin_url,
-                                            bool user_is_interacting) {
+                                            bool user_is_interacting,
+                                            bool is_main_frame) {
+  if (!is_main_frame) {
+    // Credentials manager is only supported on main frame.
+    return false;
+  }
   double promise_id_double = -1;
   // |promiseId| field should be an integer value, but since JavaScript has only
   // one type for numbers (64-bit float), all numbers in the messages are sent

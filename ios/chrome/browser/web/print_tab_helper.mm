@@ -54,7 +54,12 @@ void PrintTabHelper::WebStateDestroyed(web::WebState* web_state) {
 bool PrintTabHelper::OnPrintCommand(web::WebState* web_state,
                                     const base::DictionaryValue& command,
                                     const GURL& page_url,
-                                    bool user_initiated) {
+                                    bool interacting,
+                                    bool is_main_frame) {
+  if (!is_main_frame) {
+    // Print is only supported on main frame.
+    return false;
+  }
   DCHECK(web_state);
   [printer_ printWebState:web_state];
   return true;

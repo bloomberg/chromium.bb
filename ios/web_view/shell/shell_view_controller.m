@@ -512,7 +512,8 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 #pragma mark CWVScriptCommandHandler
 
 - (BOOL)webView:(CWVWebView*)webView
-    handleScriptCommand:(nonnull CWVScriptCommand*)command {
+    handleScriptCommand:(nonnull CWVScriptCommand*)command
+          fromMainFrame:(BOOL)fromMainFrame {
   NSLog(@"%@ command.content=%@", NSStringFromSelector(_cmd), command.content);
   return YES;
 }

@@ -2322,8 +2322,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   SEL handler = [self selectorToHandleJavaScriptCommand:command];
   if (!handler) {
-    if (isMainFrame && self.webStateImpl->OnScriptCommandReceived(
-                           command, *message, originURL, userIsInteracting)) {
+    if (self.webStateImpl->OnScriptCommandReceived(
+            command, *message, originURL, userIsInteracting, isMainFrame)) {
       return YES;
     }
     // Message was either unexpected or not correctly handled.
@@ -2438,6 +2438,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (BOOL)handleChromeSendMessage:(base::DictionaryValue*)message
                         context:(NSDictionary*)context {
+  // Chrome message are only handled if sent from the main frame.
   if (![context[kIsMainFrame] boolValue])
     return NO;
   if (_webStateImpl->HasWebUI()) {
@@ -2454,7 +2455,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
         return NO;
       }
       _webStateImpl->OnScriptCommandReceived(
-          messageContent, *message, currentURL, context[kUserIsInteractingKey]);
+          messageContent, *message, currentURL, context[kUserIsInteractingKey],
+          [context[kIsMainFrame] boolValue]);
       _webStateImpl->ProcessWebUIMessage(currentURL, messageContent,
                                          *arguments);
       return YES;

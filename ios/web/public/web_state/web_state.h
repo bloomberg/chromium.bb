@@ -241,9 +241,11 @@ class WebState : public base::SupportsUserData {
   // In particular the callback must return false if the command is unexpected
   // or ill-formatted.
   // The first parameter is the content of the command, the second parameter is
-  // the URL of the page, and the third parameter is a bool indicating if the
-  // user is currently interacting with the page.
-  typedef base::Callback<bool(const base::DictionaryValue&, const GURL&, bool)>
+  // the URL of the page, the third parameter is a bool indicating if the
+  // user is currently interacting with the page, the fourth parameter indicates
+  // if the message was sent from the main frame.
+  typedef base::RepeatingCallback<
+      bool(const base::DictionaryValue&, const GURL&, bool, bool)>
       ScriptCommandCallback;
 
   // Registers a callback that will be called when a command matching

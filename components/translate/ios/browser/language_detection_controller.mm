@@ -73,7 +73,12 @@ void LanguageDetectionController::StartLanguageDetection() {
 bool LanguageDetectionController::OnTextCaptured(
     const base::DictionaryValue& command,
     const GURL& url,
-    bool interacting) {
+    bool interacting,
+    bool is_main_frame) {
+  if (!is_main_frame) {
+    // Translate is only supported on main frame.
+    return false;
+  }
   std::string textCapturedCommand;
   if (!command.GetString("command", &textCapturedCommand) ||
       textCapturedCommand != "languageDetection.textCaptured" ||

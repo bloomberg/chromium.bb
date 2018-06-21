@@ -102,7 +102,8 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   bool OnScriptCommandReceived(const std::string& command,
                                const base::DictionaryValue& value,
                                const GURL& url,
-                               bool user_is_interacting);
+                               bool user_is_interacting,
+                               bool is_main_frame);
 
   void SetIsLoading(bool is_loading);
 

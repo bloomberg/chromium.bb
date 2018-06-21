@@ -74,6 +74,8 @@ class TranslateController : public web::WebStateObserver {
   FRIEND_TEST_ALL_PREFIXES(TranslateControllerTest,
                            OnJavascriptCommandReceived);
   FRIEND_TEST_ALL_PREFIXES(TranslateControllerTest,
+                           OnIFrameJavascriptCommandReceived);
+  FRIEND_TEST_ALL_PREFIXES(TranslateControllerTest,
                            OnTranslateScriptReadyTimeoutCalled);
   FRIEND_TEST_ALL_PREFIXES(TranslateControllerTest,
                            OnTranslateScriptReadyCalled);
@@ -83,7 +85,8 @@ class TranslateController : public web::WebStateObserver {
   // Called when a JavaScript command is received.
   bool OnJavascriptCommandReceived(const base::DictionaryValue& command,
                                    const GURL& url,
-                                   bool interacting);
+                                   bool interacting,
+                                   bool is_main_frame);
   // Methods to handle specific JavaScript commands.
   // Return false if the command is invalid.
   bool OnTranslateReady(const base::DictionaryValue& command);
