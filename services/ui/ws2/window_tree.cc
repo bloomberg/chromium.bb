@@ -763,11 +763,9 @@ bool WindowTree::EmbedImpl(const ClientWindowId& window_id,
   if (flags & mojom::kEmbedFlagEmbedderControlsVisibility)
     embedding->embedded_tree()->can_change_root_window_visibility_ = false;
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
-  const ClientWindowId client_window_id = server_window->frame_sink_id();
   server_window->SetEmbedding(std::move(embedding));
   window_tree_client_->OnFrameSinkIdAllocated(
-      ClientWindowIdToTransportId(client_window_id),
-      server_window->frame_sink_id());
+      ClientWindowIdToTransportId(window_id), server_window->frame_sink_id());
   return true;
 }
 
