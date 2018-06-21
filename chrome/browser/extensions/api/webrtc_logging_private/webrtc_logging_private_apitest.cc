@@ -88,8 +88,11 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
     return function;
   }
 
+  // Overriding can use incognito session instead, etc.
+  virtual Browser* GetBrowser() { return browser(); }
+
   content::WebContents* web_contents() {
-    return browser()->tab_strip_model()->GetActiveWebContents();
+    return GetBrowser()->tab_strip_model()->GetActiveWebContents();
   }
 
   void AppendTabIdAndUrl(base::ListValue* parameters) {
@@ -109,7 +112,7 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
   bool RunFunction(UIThreadExtensionFunction* function,
                    const base::ListValue& parameters) {
     std::unique_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-        function, ParamsToString(parameters), browser()));
+        function, ParamsToString(parameters), GetBrowser()));
     return (result != nullptr);
   }
 
@@ -143,7 +146,7 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
     DCHECK(!expected_error.empty());
     scoped_refptr<Function> function(CreateFunction<Function>());
     const std::string error_message = utils::RunFunctionAndReturnError(
-        function.get(), ParamsToString(parameters), browser());
+        function.get(), ParamsToString(parameters), GetBrowser());
     EXPECT_EQ(error_message, expected_error);
   }
 
@@ -352,6 +355,20 @@ class WebrtcLoggingPrivateApiTestDisabledRemoteLogging
   }
 };
 
+class WebrtcLoggingPrivateApiTestInIncognitoMode
+    : public WebrtcLoggingPrivateApiTest {
+ protected:
+  Browser* GetBrowser() override {
+    if (!browser_) {
+      browser_ = CreateIncognitoBrowser();
+    }
+    return browser_;
+  }
+
+ private:
+  Browser* browser_{nullptr};  // Does not own the object.
+};
+
 // Helper class to temporarily tell the uploader to save the multipart buffer to
 // a test string instead of uploading.
 class ScopedOverrideUploadBuffer {
@@ -534,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStoreWithoutLog) {
   scoped_refptr<WebrtcLoggingPrivateStoreFunction> store(
       CreateFunction<WebrtcLoggingPrivateStoreFunction>());
   const std::string error = utils::RunFunctionAndReturnError(
-      store.get(), ParamsToString(parameters), browser());
+      store.get(), ParamsToString(parameters), GetBrowser());
   ASSERT_FALSE(error.empty());
 }
 
@@ -725,6 +742,18 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTestDisabledRemoteLogging,
+                       StartEventLoggingFails) {
+  const std::string peer_connection_id = "id";
+  SetUpPeerConnection(peer_connection_id);
+  const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
+  const std::string metadata = "metadata";
+  constexpr bool expect_success = false;
+  const std::string error_message = kStartRemoteLoggingFailureFeatureDisabled;
+  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
+                    expect_success, error_message);
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTestInIncognitoMode,
                        StartEventLoggingFails) {
   const std::string peer_connection_id = "id";
   SetUpPeerConnection(peer_connection_id);
