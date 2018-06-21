@@ -1255,6 +1255,10 @@ bool AXObject::AncestorExposesActiveDescendant() const {
   return parent->AncestorExposesActiveDescendant();
 }
 
+bool AXObject::HasIndirectChildren() const {
+  return IsTableCol() || RoleValue() == kTableHeaderContainerRole;
+}
+
 bool AXObject::CanSetSelectedAttribute() const {
   // Sub-widget elements can be selected if not disabled (native or ARIA)
   return IsSubWidget() && Restriction() != kDisabled;
@@ -1994,7 +1998,7 @@ AXObject::InOrderTraversalIterator AXObject::GetInOrderTraversalIterator() {
 }
 
 int AXObject::ChildCount() const {
-  return static_cast<int>(Children().size());
+  return HasIndirectChildren() ? 0 : static_cast<int>(Children().size());
 }
 
 const AXObject::AXObjectVector& AXObject::Children() const {

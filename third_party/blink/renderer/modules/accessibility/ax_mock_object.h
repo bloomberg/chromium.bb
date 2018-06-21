@@ -44,10 +44,9 @@ class MODULES_EXPORT AXMockObject : public AXObject {
   // AXObject overrides.
   AXObject* ComputeParent() const override { return parent_; }
   AXRestriction Restriction() const override { return kNone; }
-
- private:
   bool IsMockObject() const final { return true; }
 
+ private:
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
   DISALLOW_COPY_AND_ASSIGN(AXMockObject);

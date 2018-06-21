@@ -563,6 +563,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool HasInheritedPresentationalRole() const;
   bool IsPresentationalChild() const;
   bool CanBeActiveDescendant() const;
+  // Some objects, such as table cells, could be the children of more than one
+  // object but have only one primary parent.
+  bool HasIndirectChildren() const;
 
   //
   // Accessible name calculation

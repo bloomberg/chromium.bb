@@ -322,6 +322,16 @@ AccessibilityRole AXLayoutObject::DetermineAccessibilityRole() {
   return role == kUnknownRole ? kGenericContainerRole : role;
 }
 
+Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {
+  if (IsDetached())
+    return nullptr;
+  if (GetLayoutObject()->IsAnonymousBlock() &&
+      GetLayoutObject()->ContainingBlock()) {
+    return GetLayoutObject()->ContainingBlock()->GetNode();
+  }
+  return GetNode();
+}
+
 void AXLayoutObject::Init() {
   AXNodeObject::Init();
 }
@@ -1930,16 +1940,6 @@ double AXLayoutObject::EstimatedLoadingProgress() const {
 
 Node* AXLayoutObject::GetNode() const {
   return GetLayoutObject() ? GetLayoutObject()->GetNode() : nullptr;
-}
-
-Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {
-  if (IsDetached())
-    return nullptr;
-  if (GetLayoutObject()->IsAnonymousBlock() &&
-      GetLayoutObject()->ContainingBlock()) {
-    return GetLayoutObject()->ContainingBlock()->GetNode();
-  }
-  return GetNode();
 }
 
 Document* AXLayoutObject::GetDocument() const {
