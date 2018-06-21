@@ -4,6 +4,8 @@
 
 #include "components/viz/service/display/scoped_render_pass_texture.h"
 
+#include <algorithm>
+
 #include "base/bits.h"
 #include "base/logging.h"
 #include "components/viz/common/gpu/context_provider.h"
