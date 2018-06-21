@@ -22,8 +22,8 @@ promise_test(async t => {
 
   const idl_array = new IdlArray();
 
-  idl_array.add_untested_idls('interface Navigator {};');
-  idl_array.add_untested_idls('interface WorkerNavigator {};');
+  idl_array.add_untested_idls('[Exposed=Window] interface Navigator {};');
+  idl_array.add_untested_idls('[Exposed=Worker] interface WorkerNavigator {};');
 
   idl_array.add_idls(idls);
 
