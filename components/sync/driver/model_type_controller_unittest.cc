@@ -25,9 +25,6 @@
 #include "components/sync/engine/fake_model_type_processor.h"
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
-#include "components/sync/model/fake_model_type_change_processor.h"
-#include "components/sync/model/fake_model_type_controller_delegate.h"
-#include "components/sync/model/stub_model_type_sync_bridge.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,19 +43,44 @@ void SetBool(bool* called, bool* out, bool in) {
   *out = in;
 }
 
-// A change processor for testing that connects using a thread-jumping proxy,
-// tracks connected state, and counts DisableSync calls.
-class TestModelTypeProcessor : public FakeModelTypeControllerDelegate,
-                               public FakeModelTypeChangeProcessor,
-                               public FakeModelTypeProcessor {
+// A simple processor that trackes connected state.
+class TestModelTypeProcessor
+    : public FakeModelTypeProcessor,
+      public base::SupportsWeakPtr<TestModelTypeProcessor> {
  public:
-  explicit TestModelTypeProcessor(int* cleared_metadata_count)
-      : FakeModelTypeControllerDelegate(kTestModelType),
-        FakeModelTypeChangeProcessor(GetWeakPtr()),
-        cleared_metadata_count_(cleared_metadata_count),
-        weak_factory_(this) {}
+  TestModelTypeProcessor() {}
 
-  // ModelTypeChangeProcessor implementation.
+  bool is_connected() const { return is_connected_; }
+
+  // ModelTypeProcessor implementation.
+  void ConnectSync(std::unique_ptr<CommitQueue> commit_queue) override {
+    is_connected_ = true;
+  }
+
+  void DisconnectSync() override { is_connected_ = false; }
+
+ private:
+  bool is_connected_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestModelTypeProcessor);
+};
+
+// A delegate for testing that connects using a thread-jumping proxy, tracks
+// connected state, and counts DisableSync calls.
+class TestDelegate : public ModelTypeControllerDelegate,
+                     public base::SupportsWeakPtr<TestDelegate> {
+ public:
+  TestDelegate() {}
+
+  void set_initial_sync_done(bool initial_sync_done) {
+    initial_sync_done_ = initial_sync_done;
+  }
+
+  bool is_processor_connected() const { return processor_.is_connected(); }
+
+  int cleared_metadata_count() const { return cleared_metadata_count_; }
+
+  // ModelTypeControllerDelegate overrides.
   void OnSyncStarting(const DataTypeActivationRequest& request,
                       StartCallback callback) override {
     std::unique_ptr<DataTypeActivationResponse> activation_response =
@@ -67,33 +89,29 @@ class TestModelTypeProcessor : public FakeModelTypeControllerDelegate,
         initial_sync_done_);
     activation_response->type_processor =
         std::make_unique<ModelTypeProcessorProxy>(
-            weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get());
+            base::AsWeakPtr(&processor_), base::ThreadTaskRunnerHandle::Get());
     std::move(callback).Run(std::move(activation_response));
   }
+
   void OnSyncStopping(SyncStopMetadataFate metadata_fate) override {
     if (metadata_fate == CLEAR_METADATA) {
-      (*cleared_metadata_count_)++;
+      cleared_metadata_count_++;
     }
   }
 
-  // ModelTypeProcessor implementation.
-  void ConnectSync(std::unique_ptr<CommitQueue> commit_queue) override {
-    is_connected_ = true;
-  }
-  void DisconnectSync() override { is_connected_ = false; }
+  void GetAllNodesForDebugging(AllNodesCallback callback) override {}
 
-  void set_initial_sync_done(bool initial_sync_done) {
-    initial_sync_done_ = initial_sync_done;
+  void GetStatusCountersForDebugging(StatusCountersCallback callback) override {
   }
 
-  bool is_connected() { return is_connected_; }
+  void RecordMemoryUsageHistogram() override {}
 
  private:
+  int cleared_metadata_count_ = 0;
   bool initial_sync_done_ = false;
-  bool is_connected_ = false;
-  int* cleared_metadata_count_;
-  base::WeakPtrFactory<TestModelTypeProcessor> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(TestModelTypeProcessor);
+  TestModelTypeProcessor processor_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
 // A ModelTypeConfigurer that just connects USS types.
@@ -166,11 +184,8 @@ class TestSyncService : public FakeSyncService {
 
 class ModelTypeControllerTest : public testing::Test {
  public:
-  ModelTypeControllerTest() : model_thread_("modelthread") {}
-
-  void SetUp() override {
+  ModelTypeControllerTest() : model_thread_("modelthread") {
     model_thread_.Start();
-    InitializeModelTypeSyncBridge();
 
     AccountInfo account_info;
     account_info.account_id = kAccountId;
@@ -179,15 +194,14 @@ class ModelTypeControllerTest : public testing::Test {
     ON_CALL(sync_client_mock_, GetSyncService())
         .WillByDefault(testing::Return(&sync_service_));
     ON_CALL(sync_client_mock_, GetControllerDelegateForModelType(_))
-        .WillByDefault(testing::Return(
-            bridge_->change_processor()->GetControllerDelegateOnUIThread()));
+        .WillByDefault(testing::Return(base::AsWeakPtr(&delegate_)));
 
     controller_ = std::make_unique<ModelTypeController>(
         kTestModelType, &sync_client_mock_, model_thread_.task_runner());
   }
 
-  void TearDown() override {
-    ClearModelTypeSyncBridge();
+  ~ModelTypeControllerTest() {
+    PumpModelThread();
     PumpUIThread();
   }
 
@@ -234,8 +248,7 @@ class ModelTypeControllerTest : public testing::Test {
 
   void ExpectProcessorConnected(bool is_connected) {
     if (model_thread_.task_runner()->BelongsToCurrentThread()) {
-      DCHECK(processor_);
-      EXPECT_EQ(is_connected, processor_->is_connected());
+      EXPECT_EQ(is_connected, delegate_.is_processor_connected());
     } else {
       model_thread_.task_runner()->PostTask(
           FROM_HERE,
@@ -246,12 +259,12 @@ class ModelTypeControllerTest : public testing::Test {
   }
 
   void SetInitialSyncDone(bool initial_sync_done) {
-    processor_->set_initial_sync_done(initial_sync_done);
+    delegate_.set_initial_sync_done(initial_sync_done);
   }
 
   DataTypeController* controller() { return controller_.get(); }
   int load_models_done_count() { return load_models_done_count_; }
-  int cleared_metadata_count() { return cleared_metadata_count_; }
+  int cleared_metadata_count() { return delegate_.cleared_metadata_count(); }
   SyncError load_models_last_error() { return load_models_last_error_; }
 
  private:
@@ -271,50 +284,17 @@ class ModelTypeControllerTest : public testing::Test {
     association_callback_called_ = true;
   }
 
-  std::unique_ptr<ModelTypeChangeProcessor> CreateProcessor() {
-    std::unique_ptr<TestModelTypeProcessor> processor =
-        std::make_unique<TestModelTypeProcessor>(&cleared_metadata_count_);
-    processor_ = processor.get();
-    return std::move(processor);
-  }
-
-  void InitializeModelTypeSyncBridge() {
-    if (model_thread_.task_runner()->BelongsToCurrentThread()) {
-      bridge_ = std::make_unique<StubModelTypeSyncBridge>(CreateProcessor());
-    } else {
-      model_thread_.task_runner()->PostTask(
-          FROM_HERE,
-          base::Bind(&ModelTypeControllerTest::InitializeModelTypeSyncBridge,
-                     base::Unretained(this)));
-      PumpModelThread();
-    }
-  }
-
-  void ClearModelTypeSyncBridge() {
-    if (model_thread_.task_runner()->BelongsToCurrentThread()) {
-      bridge_.reset();
-    } else {
-      model_thread_.task_runner()->PostTask(
-          FROM_HERE,
-          base::Bind(&ModelTypeControllerTest::ClearModelTypeSyncBridge,
-                     base::Unretained(this)));
-      PumpModelThread();
-    }
-  }
-
   int load_models_done_count_ = 0;
-  int cleared_metadata_count_ = 0;
   bool association_callback_called_ = false;
   SyncError load_models_last_error_;
 
   base::MessageLoop message_loop_;
   base::Thread model_thread_;
+  TestDelegate delegate_;
   TestSyncService sync_service_;
   testing::NiceMock<SyncClientMock> sync_client_mock_;
   TestModelTypeConfigurer configurer_;
-  std::unique_ptr<StubModelTypeSyncBridge> bridge_;
   std::unique_ptr<ModelTypeController> controller_;
-  TestModelTypeProcessor* processor_;
 };
 
 TEST_F(ModelTypeControllerTest, InitialState) {
