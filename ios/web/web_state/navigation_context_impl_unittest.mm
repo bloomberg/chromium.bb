@@ -160,7 +160,7 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_EQ(WKNavigationTypeOther, context->GetWKNavigationType());
 
   // SetErrorPage
-  NSError* error = [[NSError alloc] init];
+  NSError* error = [[NSError alloc] initWithDomain:@"" code:0 userInfo:nil];
   context->SetError(error);
   EXPECT_EQ(new_url, context->GetUrl());
   EXPECT_TRUE(context->IsSameDocument());

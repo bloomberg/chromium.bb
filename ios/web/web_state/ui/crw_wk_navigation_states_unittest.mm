@@ -122,7 +122,7 @@ TEST_F(CRWWKNavigationStatesTest, Context) {
           nullptr /*web_state*/, GURL(kTestUrl2), /*has_user_gesture=*/false,
           ui::PageTransition::PAGE_TRANSITION_GENERATED,
           /*is_renderer_initiated=*/true);
-  NSError* error = [[NSError alloc] init];
+  NSError* error = [[NSError alloc] initWithDomain:@"" code:0 userInfo:nil];
   context2->SetError(error);
   [states_ setContext:std::move(context2) forNavigation:navigation1_];
   EXPECT_FALSE([states_ contextForNavigation:navigation2_]);
