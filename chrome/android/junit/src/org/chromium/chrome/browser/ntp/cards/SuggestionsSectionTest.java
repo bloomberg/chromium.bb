@@ -1011,14 +1011,11 @@ public class SuggestionsSectionTest {
         return new TreeSet<>(Arrays.asList(elements));
     }
 
-    private static List<SnippetArticle> getSuggestions(TreeNode root) {
-        final List<SnippetArticle> suggestions = new ArrayList<>();
-        root.visitItems(new NodeVisitor() {
-            @Override
-            public void visitSuggestion(SnippetArticle suggestion) {
-                suggestions.add(suggestion);
-            }
-        });
+    private static List<SnippetArticle> getSuggestions(SuggestionsSection section) {
+        ArrayList<SnippetArticle> suggestions = new ArrayList<>(section.getSuggestionsCount());
+        for (int i = 0; i < section.getSuggestionsCount(); i++) {
+            suggestions.add(section.getSuggestionForTesting(i));
+        }
         return suggestions;
     }
 

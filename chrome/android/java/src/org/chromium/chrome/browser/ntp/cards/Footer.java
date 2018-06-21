@@ -32,8 +32,8 @@ public class Footer extends OptionalLeaf {
     }
 
     @Override
-    public void visitOptionalItem(NodeVisitor visitor) {
-        visitor.visitFooter();
+    public String describeForTesting() {
+        return "FOOTER";
     }
 
     public void setVisible(boolean visible) {

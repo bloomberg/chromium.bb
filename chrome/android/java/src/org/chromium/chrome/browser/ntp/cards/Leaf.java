@@ -49,6 +49,14 @@ public abstract class Leaf extends ChildNode {
         assert false;
     }
 
+    @Override
+    public String describeItemForTesting(int position) {
+        if (position != 0) throw new IndexOutOfBoundsException();
+        return describeForTesting();
+    }
+
+    protected abstract String describeForTesting();
+
     /**
      * Display the data for this item.
      * @param holder The view holder that should be updated.
