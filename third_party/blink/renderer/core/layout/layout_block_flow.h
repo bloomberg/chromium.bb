@@ -808,6 +808,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   bool ShouldTruncateOverflowingText() const;
 
+  base::Optional<LayoutUnit> ComputeDialogYPosition(LayoutUnit height) const;
+
   int GetLayoutPassCountForTesting();
 
  protected:

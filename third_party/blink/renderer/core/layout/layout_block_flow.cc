@@ -4591,10 +4591,12 @@ LayoutBlockFlow::LayoutBlockFlowRareData& LayoutBlockFlow::EnsureRareData() {
   return *rare_data_;
 }
 
-void LayoutBlockFlow::PositionDialog() {
+base::Optional<LayoutUnit> LayoutBlockFlow::ComputeDialogYPosition(
+    LayoutUnit height) const {
+  DCHECK(IsHTMLDialogElement(GetNode()));
   HTMLDialogElement* dialog = ToHTMLDialogElement(GetNode());
   if (dialog->GetCenteringMode() == HTMLDialogElement::kNotCentered)
-    return;
+    return base::nullopt;
 
   bool can_center_dialog = (Style()->GetPosition() == EPosition::kAbsolute ||
                             Style()->GetPosition() == EPosition::kFixed) &&
@@ -4602,14 +4604,14 @@ void LayoutBlockFlow::PositionDialog() {
 
   if (dialog->GetCenteringMode() == HTMLDialogElement::kCentered) {
     if (can_center_dialog)
-      SetY(dialog->CenteredPosition());
-    return;
+      return dialog->CenteredPosition();
+    return base::nullopt;
   }
 
   DCHECK_EQ(dialog->GetCenteringMode(), HTMLDialogElement::kNeedsCentering);
   if (!can_center_dialog) {
     dialog->SetNotCentered();
-    return;
+    return base::nullopt;
   }
 
   auto* scrollable_area = GetDocument().View()->LayoutViewport();
@@ -4619,10 +4621,16 @@ void LayoutBlockFlow::PositionDialog() {
                      : scrollable_area->ScrollOffsetInt().Height());
 
   int visible_height = GetDocument().View()->Height();
-  if (Size().Height() < visible_height)
-    top += (visible_height - Size().Height()) / 2;
-  SetY(top);
+  if (height < visible_height)
+    top += (visible_height - height) / 2;
   dialog->SetCentered(top);
+  return top;
+}
+
+void LayoutBlockFlow::PositionDialog() {
+  base::Optional<LayoutUnit> y = ComputeDialogYPosition(Size().Height());
+  if (y.has_value())
+    SetY(y.value());
 }
 
 void LayoutBlockFlow::SimplifiedNormalFlowInlineLayout() {
