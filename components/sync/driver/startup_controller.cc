@@ -4,12 +4,14 @@
 
 #include "components/sync/driver/startup_controller.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
 
@@ -17,12 +19,33 @@ namespace syncer {
 
 namespace {
 
-// The amount of time we'll wait to initialize sync if no data type triggers
-// initialization via a StartSyncFlare.
-const int kDeferredInitFallbackSeconds = 10;
+// The amount of time we'll wait to initialize sync if no data type requests
+// immediately initialization.
+const int kDefaultDeferredInitDelaySeconds = 10;
 
-// Enum (for UMA, primarily) defining different events that cause us to
-// exit the "deferred" state of initialization and invoke start_engine.
+base::TimeDelta GetDeferredInitDelay() {
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(switches::kSyncDeferredStartupTimeoutSeconds)) {
+    int timeout = 0;
+    if (base::StringToInt(cmdline->GetSwitchValueASCII(
+                              switches::kSyncDeferredStartupTimeoutSeconds),
+                          &timeout)) {
+      DCHECK_GE(timeout, 0);
+      DVLOG(2) << "Sync StartupController overriding startup timeout to "
+               << timeout << " seconds.";
+      return base::TimeDelta::FromSeconds(timeout);
+    }
+  }
+  return base::TimeDelta::FromSeconds(kDefaultDeferredInitDelaySeconds);
+}
+
+bool IsDeferredStartupEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSyncDisableDeferredStartup);
+}
+
+// Enum for UMA defining different events that cause us to exit the "deferred"
+// state of initialization and invoke start_engine.
 enum DeferredInitTrigger {
   // We have received a signal from a SyncableService requesting that sync
   // starts as soon as possible.
@@ -35,35 +58,19 @@ enum DeferredInitTrigger {
 }  // namespace
 
 StartupController::StartupController(const SyncPrefs* sync_prefs,
-                                     base::Callback<bool()> can_start,
-                                     base::Closure start_engine)
-    : bypass_setup_complete_(false),
+                                     base::RepeatingCallback<bool()> can_start,
+                                     base::RepeatingClosure start_engine)
+    : sync_prefs_(sync_prefs),
+      can_start_(std::move(can_start)),
+      start_engine_(std::move(start_engine)),
+      bypass_setup_complete_(false),
       received_start_request_(false),
       setup_in_progress_(false),
-      sync_prefs_(sync_prefs),
-      can_start_(can_start),
-      start_engine_(start_engine),
-      fallback_timeout_(
-          base::TimeDelta::FromSeconds(kDeferredInitFallbackSeconds)),
-      weak_factory_(this) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSyncDeferredStartupTimeoutSeconds)) {
-    int timeout = kDeferredInitFallbackSeconds;
-    if (base::StringToInt(
-            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                switches::kSyncDeferredStartupTimeoutSeconds),
-            &timeout)) {
-      DCHECK_GE(timeout, 0);
-      DVLOG(2) << "Sync StartupController overriding startup timeout to "
-               << timeout << " seconds.";
-      fallback_timeout_ = base::TimeDelta::FromSeconds(timeout);
-    }
-  }
-}
+      weak_factory_(this) {}
 
 StartupController::~StartupController() {}
 
-void StartupController::Reset(const ModelTypeSet registered_types) {
+void StartupController::Reset(const ModelTypeSet& registered_types) {
   received_start_request_ = false;
   bypass_setup_complete_ = false;
   start_up_time_ = base::Time();
@@ -86,16 +93,14 @@ void StartupController::StartUp(StartUpDeferredOption deferred_option) {
     start_up_time_ = base::Time::Now();
   }
 
-  if (deferred_option == STARTUP_DEFERRED &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSyncDisableDeferredStartup) &&
+  if (deferred_option == STARTUP_DEFERRED && IsDeferredStartupEnabled() &&
       sync_prefs_->GetPreferredDataTypes(registered_types_).Has(SESSIONS)) {
     if (first_start) {
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&StartupController::OnFallbackStartupTimerExpired,
                      weak_factory_.GetWeakPtr()),
-          fallback_timeout_);
+          GetDeferredInitDelay());
     }
     return;
   }
@@ -104,11 +109,6 @@ void StartupController::StartUp(StartUpDeferredOption deferred_option) {
     start_engine_time_ = base::Time::Now();
     start_engine_.Run();
   }
-}
-
-void StartupController::OverrideFallbackTimeoutForTest(
-    const base::TimeDelta& timeout) {
-  fallback_timeout_ = timeout;
 }
 
 void StartupController::TryStart() {
@@ -145,8 +145,7 @@ void StartupController::RecordTimeDeferred() {
 }
 
 void StartupController::OnFallbackStartupTimerExpired() {
-  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSyncDisableDeferredStartup));
+  DCHECK(IsDeferredStartupEnabled());
 
   if (!start_engine_time_.is_null())
     return;
@@ -162,15 +161,13 @@ void StartupController::OnFallbackStartupTimerExpired() {
 std::string StartupController::GetEngineInitializationStateString() const {
   if (!start_engine_time_.is_null())
     return "Started";
-  else if (!start_up_time_.is_null())
+  if (!start_up_time_.is_null())
     return "Deferred";
-  else
-    return "Not started";
+  return "Not started";
 }
 
 void StartupController::OnDataTypeRequestsSyncStartup(ModelType type) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSyncDisableDeferredStartup)) {
+  if (!IsDeferredStartupEnabled()) {
     DVLOG(2) << "Ignoring data type request for sync startup: "
              << ModelTypeToString(type);
     return;

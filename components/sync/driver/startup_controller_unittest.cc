@@ -29,6 +29,9 @@ class StartupControllerTest : public testing::Test {
   StartupControllerTest() : can_start_(false), started_(false) {}
 
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kSyncDeferredStartupTimeoutSeconds, "0");
+
     SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
     sync_prefs_ = std::make_unique<SyncPrefs>(&pref_service_);
     controller_ = std::make_unique<StartupController>(
@@ -37,18 +40,9 @@ class StartupControllerTest : public testing::Test {
         base::Bind(&StartupControllerTest::FakeStartBackend,
                    base::Unretained(this)));
     controller_->Reset(UserTypes());
-    controller_->OverrideFallbackTimeoutForTest(
-        base::TimeDelta::FromSeconds(0));
   }
-
-  bool CanStart() { return can_start_; }
 
   void SetCanStart(bool can_start) { can_start_ = can_start; }
-
-  void FakeStartBackend() {
-    started_ = true;
-    sync_prefs()->SetFirstSetupComplete();
-  }
 
   void ExpectStarted() {
     EXPECT_TRUE(started());
@@ -77,6 +71,13 @@ class StartupControllerTest : public testing::Test {
   SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
 
  private:
+  bool CanStart() { return can_start_; }
+
+  void FakeStartBackend() {
+    started_ = true;
+    sync_prefs()->SetFirstSetupComplete();
+  }
+
   bool can_start_;
   bool started_;
   base::MessageLoop message_loop_;

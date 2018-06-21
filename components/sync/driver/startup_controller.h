@@ -21,8 +21,8 @@ class SyncPrefs;
 class StartupController {
  public:
   StartupController(const SyncPrefs* sync_prefs,
-                    base::Callback<bool()> can_start,
-                    base::Closure start_engine);
+                    base::RepeatingCallback<bool()> can_start,
+                    base::RepeatingClosure start_engine);
   ~StartupController();
 
   // Starts up sync if it is requested by the user and preconditions are met.
@@ -45,7 +45,7 @@ class StartupController {
   // touch values that are explicitly set and reset by higher layers to
   // tell this class whether a setup UI dialog is being shown to the user.
   // See setup_in_progress_.
-  void Reset(const ModelTypeSet registered_types);
+  void Reset(const ModelTypeSet& registered_types);
 
   // Sets the setup in progress flag and tries to start sync if it's true.
   void SetSetupInProgress(bool setup_in_progress);
@@ -53,8 +53,6 @@ class StartupController {
   bool IsSetupInProgress() const { return setup_in_progress_; }
   base::Time start_engine_time() const { return start_engine_time_; }
   std::string GetEngineInitializationStateString() const;
-
-  void OverrideFallbackTimeoutForTest(const base::TimeDelta& timeout);
 
  private:
   enum StartUpDeferredOption { STARTUP_DEFERRED, STARTUP_IMMEDIATE };
@@ -65,17 +63,32 @@ class StartupController {
   // Records time spent in deferred state with UMA histograms.
   void RecordTimeDeferred();
 
+  const SyncPrefs* sync_prefs_;
+
+  // A function that can be invoked repeatedly to determine whether sync can be
+  // started. |start_engine_| should not be invoked unless this returns true.
+  const base::RepeatingCallback<bool()> can_start_;
+
+  // The callback we invoke when it's time to call expensive
+  // startup routines for the sync engine.
+  const base::RepeatingClosure start_engine_;
+
+  // Used to compute preferred_types from SyncPrefs as-needed.
+  ModelTypeSet registered_types_;
+
   // If true, will bypass the FirstSetupComplete check when triggering sync
-  // startup.
+  // startup. Set in TryStartImmediately.
   bool bypass_setup_complete_;
 
-  // True if we should start sync ASAP because either a SyncableService has
-  // requested it, or we're done waiting for a sign and decided to go ahead.
+  // True if we should start sync ASAP because either a data type has
+  // requested it, or TryStartImmediately was called, or our deferred startup
+  // timer has expired.
   bool received_start_request_;
 
   // The time that StartUp() is called. This is used to calculate time spent
   // in the deferred state; that is, after StartUp and before invoking the
-  // start_engine_ callback.
+  // start_engine_ callback. If this is non-null, then a (possibly deferred)
+  // startup has been triggered.
   base::Time start_up_time_;
 
   // If |true|, there is setup UI visible so we should not start downloading
@@ -85,23 +98,9 @@ class StartupController {
   // due to explicit requests to do so via SetSetupInProgress.
   bool setup_in_progress_;
 
-  const SyncPrefs* sync_prefs_;
-
-  // A function that can be invoked repeatedly to determine whether sync can be
-  // started. |start_engine_| should not be invoked unless this returns true.
-  base::Callback<bool()> can_start_;
-
-  // The callback we invoke when it's time to call expensive
-  // startup routines for the sync engine.
-  base::Closure start_engine_;
-
-  // The time at which we invoked the start_engine_ callback.
+  // The time at which we invoked the |start_engine_| callback. If this is
+  // non-null, then |start_engine_| shouldn't be called again.
   base::Time start_engine_time_;
-
-  base::TimeDelta fallback_timeout_;
-
-  // Used to compute preferred_types from SyncPrefs as-needed.
-  ModelTypeSet registered_types_;
 
   base::WeakPtrFactory<StartupController> weak_factory_;
 };
