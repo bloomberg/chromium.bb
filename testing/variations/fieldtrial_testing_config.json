@@ -2345,6 +2345,24 @@
             ]
         }
     ],
+    "NativeCrxBindings": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NativeCrxBindings"
+                    ]
+                }
+            ]
+        }
+    ],
     "NetworkQualityEstimator": [
         {
             "platforms": [
