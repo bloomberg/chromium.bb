@@ -1839,8 +1839,12 @@ buildflag_header("debugging_buildflags") {
 buildflag_header("orderfile_buildflags") {
   header = "orderfile_buildflags.h"
   header_dir = "base/android/orderfile"
-  _using_order_profiling = is_android && use_order_profiling
-  flags = [ "ORDERFILE_INSTRUMENTATION=$_using_order_profiling" ]
+  using_order_profiling = is_android && use_order_profiling
+  using_devtools_dumping = is_android && devtools_instrumentation_dumping
+  flags = [
+    "DEVTOOLS_INSTRUMENTATION_DUMPING=$using_devtools_dumping",
+    "ORDERFILE_INSTRUMENTATION=$using_order_profiling",
+  ]
 }
 
 # Build flags for ProtectedMemory, temporary workaround for crbug.com/792777
