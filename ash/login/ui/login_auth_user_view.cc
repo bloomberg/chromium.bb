@@ -448,14 +448,15 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
   bool has_tap = HasAuthMethod(AUTH_TAP);
   bool force_online_sign_in = HasAuthMethod(AUTH_ONLINE_SIGN_IN);
   bool has_fingerprint = HasAuthMethod(AUTH_FINGERPRINT);
-  bool disabled_auth = HasAuthMethod(AUTH_DISABLED);
+  bool auth_disabled = HasAuthMethod(AUTH_DISABLED);
+  bool hide_auth = auth_disabled || force_online_sign_in;
 
   online_sign_in_message_->SetVisible(force_online_sign_in);
-  disabled_auth_message_->SetVisible(disabled_auth);
+  disabled_auth_message_->SetVisible(auth_disabled);
 
   password_view_->SetEnabled(has_password);
   password_view_->SetFocusEnabledForChildViews(has_password);
-  password_view_->SetVisible(!force_online_sign_in && !disabled_auth);
+  password_view_->SetVisible(!hide_auth);
   password_view_->layer()->SetOpacity(has_password ? 1 : 0);
 
   if (!had_password && has_password)
@@ -479,9 +480,10 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
   // Only the active auth user view has a password displayed. If that is the
   // case, then render the user view as if it was always focused, since clicking
   // on it will not do anything (such as swapping users).
-  user_view_->SetForceOpaque(has_password || force_online_sign_in ||
-                             disabled_auth);
+  user_view_->SetForceOpaque(has_password || hide_auth);
   user_view_->SetTapEnabled(!has_password);
+  if (hide_auth)
+    user_view_->RequestFocus();
 
   PreferredSizeChanged();
 }
