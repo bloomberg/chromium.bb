@@ -13,6 +13,7 @@ import android.view.ViewStub;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
@@ -77,17 +78,21 @@ public class BottomToolbarCoordinator {
      * @param tabModelSelector A {@link TabModelSelector} that the tab switcher button uses to
      *                         keep its tab count updated.
      * @param overviewModeBehavior The overview mode manager.
+     * @param contextualSearchManager The manager for Contextual Search to handle interactions when
+     *                                that feature is visible.
      */
     public void initializeWithNative(ResourceManager resourceManager, LayoutManager layoutManager,
             OnClickListener tabSwitcherListener, OnClickListener searchAcceleratorListener,
             OnClickListener homeButtonListener, OnTouchListener menuButtonListener,
-            TabModelSelector tabModelSelector, OverviewModeBehavior overviewModeBehavior) {
+            TabModelSelector tabModelSelector, OverviewModeBehavior overviewModeBehavior,
+            ContextualSearchManager contextualSearchManager) {
         mMediator.setButtonListeners(
                 searchAcceleratorListener, homeButtonListener, menuButtonListener);
         mMediator.setLayoutManager(layoutManager);
         mMediator.setResourceManager(resourceManager);
         mMediator.setOverviewModeBehavior(overviewModeBehavior);
         mMediator.setToolbarSwipeHandler(layoutManager.getToolbarSwipeHandler());
+        mMediator.setContextualSearchManager(contextualSearchManager);
 
         mTabSwitcherButtonCoordinator.setTabSwitcherListener(tabSwitcherListener);
         mTabSwitcherButtonCoordinator.setTabModelSelector(tabModelSelector);

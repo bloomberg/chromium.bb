@@ -714,7 +714,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     mActivity.getCompositorViewHolder().getResourceManager(),
                     mActivity.getCompositorViewHolder().getLayoutManager(), tabSwitcherClickHandler,
                     searchAcceleratorListener, homeButtonListener, mAppMenuButtonHelper,
-                    mTabModelSelector, mOverviewModeBehavior);
+                    mTabModelSelector, mOverviewModeBehavior,
+                    mActivity.getContextualSearchManager());
         }
 
         onNativeLibraryReady();
