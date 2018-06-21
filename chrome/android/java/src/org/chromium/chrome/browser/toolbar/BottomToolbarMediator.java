@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.Overv
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
+import org.chromium.ui.resources.ResourceManager;
 
 /**
  * This class is responsible for reacting to events from the outside world, interacting with other
@@ -109,6 +110,10 @@ class BottomToolbarMediator implements FullscreenListener, OverviewModeObserver 
 
     public void setLayoutManager(LayoutManager layoutManager) {
         mModel.setValue(BottomToolbarModel.LAYOUT_MANAGER, layoutManager);
+    }
+
+    public void setResourceManager(ResourceManager resourceManager) {
+        mModel.setValue(BottomToolbarModel.RESOURCE_MANAGER, resourceManager);
     }
 
     public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {

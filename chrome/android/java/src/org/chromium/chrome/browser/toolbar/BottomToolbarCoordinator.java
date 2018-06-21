@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.BottomToolbarViewBinder.ViewHolder;
 import org.chromium.ui.resources.ResourceManager;
-import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
 /**
  * The coordinator for the bottom toolbar. This class handles all interactions that the bottom
@@ -33,12 +32,6 @@ public class BottomToolbarCoordinator {
 
     /** The tab switcher button component that lives in the bottom toolbar. */
     private final TabSwitcherButtonCoordinator mTabSwitcherButtonCoordinator;
-
-    /** The resource ID used to reference the view bitmap in native. */
-    private final int mResourceId;
-
-    /** The resource adapter for the composited bottom toolbar view. */
-    private final ViewResourceAdapter mViewResourceAdapter;
 
     /**
      * Build the coordinator that manages the bottom toolbar.
@@ -58,9 +51,6 @@ public class BottomToolbarCoordinator {
         final ScrollingBottomViewResourceFrameLayout toolbarRoot =
                 (ScrollingBottomViewResourceFrameLayout) inflatedView;
         toolbarRoot.setTopShadowHeight(shadowHeight);
-
-        mResourceId = toolbarRoot.getId();
-        mViewResourceAdapter = toolbarRoot.getResourceAdapter();
 
         PropertyModelChangeProcessor<BottomToolbarModel, ViewHolder, PropertyKey> processor =
                 new PropertyModelChangeProcessor<>(
@@ -95,14 +85,12 @@ public class BottomToolbarCoordinator {
         mMediator.setButtonListeners(
                 searchAcceleratorListener, homeButtonListener, menuButtonListener);
         mMediator.setLayoutManager(layoutManager);
+        mMediator.setResourceManager(resourceManager);
         mMediator.setOverviewModeBehavior(overviewModeBehavior);
         mMediator.setToolbarSwipeHandler(layoutManager.getToolbarSwipeHandler());
 
         mTabSwitcherButtonCoordinator.setTabSwitcherListener(tabSwitcherListener);
         mTabSwitcherButtonCoordinator.setTabModelSelector(tabModelSelector);
-
-        resourceManager.getDynamicResourceLoader().registerResource(
-                mResourceId, mViewResourceAdapter);
     }
 
     /**

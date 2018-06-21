@@ -67,6 +67,11 @@ public class BottomToolbarViewBinder
                     view.toolbarRoot, view.toolbarRoot.getTopShadowHeight());
             model.getValue(BottomToolbarModel.LAYOUT_MANAGER)
                     .addSceneOverlayToBack(view.sceneLayer);
+        } else if (BottomToolbarModel.RESOURCE_MANAGER == propertyKey) {
+            model.getValue(BottomToolbarModel.RESOURCE_MANAGER)
+                    .getDynamicResourceLoader()
+                    .registerResource(
+                            view.toolbarRoot.getId(), view.toolbarRoot.getResourceAdapter());
         } else if (BottomToolbarModel.HOME_BUTTON_LISTENER == propertyKey) {
             view.toolbarRoot.findViewById(R.id.home_button)
                     .setOnClickListener(model.getValue(BottomToolbarModel.HOME_BUTTON_LISTENER));
