@@ -1054,6 +1054,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   mutable bool cached_has_inherited_presentational_role_ : 1;
   mutable bool cached_is_editable_root_;
   mutable Member<AXObject> cached_live_region_root_;
+  mutable int cached_aria_column_index_;
+  mutable int cached_aria_row_index_;
 
   Member<AXObjectCacheImpl> ax_object_cache_;
 
@@ -1070,6 +1072,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   static bool IncludesARIAWidgetRole(const String&);
   static bool HasInteractiveARIAAttribute(const Element&);
   AccessibilityRole RemapAriaRoleDueToParent(AccessibilityRole) const;
+  unsigned ComputeAriaColumnIndex() const;
+  unsigned ComputeAriaRowIndex() const;
 
   static unsigned number_of_live_ax_objects_;
 
