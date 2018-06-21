@@ -12,7 +12,6 @@ import sys
 from subprocess import call
 
 VULKAN_DEVICE_FUNCTIONS = [
-{ 'name': 'vkAcquireNextImageKHR' },
 { 'name': 'vkAllocateCommandBuffers' },
 { 'name': 'vkAllocateDescriptorSets' },
 { 'name': 'vkCreateCommandPool' },
@@ -25,7 +24,6 @@ VULKAN_DEVICE_FUNCTIONS = [
 { 'name': 'vkCreateSampler' },
 { 'name': 'vkCreateSemaphore' },
 { 'name': 'vkCreateShaderModule' },
-{ 'name': 'vkCreateSwapchainKHR' },
 { 'name': 'vkDestroyCommandPool' },
 { 'name': 'vkDestroyDescriptorPool' },
 { 'name': 'vkDestroyDescriptorSetLayout' },
@@ -37,19 +35,16 @@ VULKAN_DEVICE_FUNCTIONS = [
 { 'name': 'vkDestroySampler' },
 { 'name': 'vkDestroySemaphore' },
 { 'name': 'vkDestroyShaderModule' },
-{ 'name': 'vkDestroySwapchainKHR' },
 { 'name': 'vkFreeCommandBuffers' },
 { 'name': 'vkFreeDescriptorSets' },
 { 'name': 'vkGetDeviceQueue' },
 { 'name': 'vkGetFenceStatus' },
-{ 'name': 'vkGetSwapchainImagesKHR' },
 { 'name': 'vkResetFences' },
 { 'name': 'vkUpdateDescriptorSets' },
 { 'name': 'vkWaitForFences' },
 ]
 
 VULKAN_QUEUE_FUNCTIONS = [
-{ 'name': 'vkQueuePresentKHR' },
 { 'name': 'vkQueueSubmit' },
 { 'name': 'vkQueueWaitIdle' },
 ]
@@ -63,6 +58,14 @@ VULKAN_COMMAND_BUFFER_FUNCTIONS = [
 { 'name': 'vkCmdPipelineBarrier' },
 { 'name': 'vkEndCommandBuffer' },
 { 'name': 'vkResetCommandBuffer' },
+]
+
+VULKAN_SWAPCHAIN_FUNCTIONS = [
+{ 'name': 'vkAcquireNextImageKHR' },
+{ 'name': 'vkCreateSwapchainKHR' },
+{ 'name': 'vkDestroySwapchainKHR' },
+{ 'name': 'vkGetSwapchainImagesKHR' },
+{ 'name': 'vkQueuePresentKHR' },
 ]
 
 SELF_LOCATION = os.path.dirname(os.path.abspath(__file__))
@@ -81,7 +84,7 @@ LICENSE_AND_HEADER = """\
 """
 
 def GenerateHeaderFile(file, device_functions, queue_functions,
-                       command_buffer_functions):
+                       command_buffer_functions, swapchain_functions):
   """Generates gpu/vulkan/vulkan_function_pointers.h"""
 
   file.write(LICENSE_AND_HEADER +
@@ -105,8 +108,9 @@ struct VulkanFunctionPointers {
   VulkanFunctionPointers();
   ~VulkanFunctionPointers();
 
-  // This function assumes that vkGetDeviceProcAddr has been populated.
+  // These functions assume that vkGetDeviceProcAddr has been populated.
   bool BindDeviceFunctionPointers(VkDevice vk_device);
+  bool BindSwapchainFunctionPointers(VkDevice vk_device);
 
   base::NativeLibrary vulkan_loader_library_ = nullptr;
 
@@ -159,15 +163,19 @@ struct VulkanFunctionPointers {
   for func in command_buffer_functions:
     file.write('  PFN_' + func['name'] + ' ' + func['name'] + ' = nullptr;\n')
 
+  for func in swapchain_functions:
+    file.write('  PFN_' + func['name'] + ' ' + func['name'] + ' = nullptr;\n')
+
   file.write("""\
 };
 
 }  // namespace gpu
 
-#endif  // GPU_VULKAN_VULKAN_FUNCTION_POINTERS_H_""")
+#endif  // GPU_VULKAN_VULKAN_FUNCTION_POINTERS_H_
+""")
 
 def GenerateSourceFile(file, device_functions, queue_functions,
-                       command_buffer_functions):
+                       command_buffer_functions, swapchain_functions):
   """Generates gpu/vulkan/vulkan_function_pointers.cc"""
 
   file.write(LICENSE_AND_HEADER +
@@ -223,7 +231,23 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   return true;
 }
 
-}  // namespace gpu""")
+bool VulkanFunctionPointers::BindSwapchainFunctionPointers(VkDevice vk_device) {
+""")
+
+  for func in swapchain_functions:
+    file.write('  ' + func['name'] + ' = reinterpret_cast<PFN_' + func['name'] +
+      '>(vkGetDeviceProcAddr(vk_device, "' + func['name'] + '"));\n')
+    file.write('  if (!' + func['name'] + ')\n')
+    file.write('    return false;\n\n')
+
+  file.write("""\
+
+
+  return true;
+}
+
+}  // namespace gpu
+""")
 
 def main(argv):
   """This is the main function."""
@@ -244,14 +268,16 @@ def main(argv):
   header_file = open(
       os.path.join(directory, 'vulkan_function_pointers.h'), 'wb')
   GenerateHeaderFile(header_file, VULKAN_DEVICE_FUNCTIONS,
-                     VULKAN_QUEUE_FUNCTIONS, VULKAN_COMMAND_BUFFER_FUNCTIONS)
+                     VULKAN_QUEUE_FUNCTIONS, VULKAN_COMMAND_BUFFER_FUNCTIONS,
+                     VULKAN_SWAPCHAIN_FUNCTIONS)
   header_file.close()
   ClangFormat(header_file.name)
 
   source_file = open(
       os.path.join(directory, 'vulkan_function_pointers.cc'), 'wb')
   GenerateSourceFile(source_file, VULKAN_DEVICE_FUNCTIONS,
-                     VULKAN_QUEUE_FUNCTIONS, VULKAN_COMMAND_BUFFER_FUNCTIONS)
+                     VULKAN_QUEUE_FUNCTIONS, VULKAN_COMMAND_BUFFER_FUNCTIONS,
+                     VULKAN_SWAPCHAIN_FUNCTIONS)
   source_file.close()
   ClangFormat(source_file.name)
 

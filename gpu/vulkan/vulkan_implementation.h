@@ -37,6 +37,8 @@ class VULKAN_EXPORT VulkanImplementation {
       const std::vector<VkQueueFamilyProperties>& queue_family_properties,
       uint32_t queue_family_index) = 0;
 
+  virtual std::vector<const char*> GetRequiredDeviceExtensions() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(VulkanImplementation);
 };

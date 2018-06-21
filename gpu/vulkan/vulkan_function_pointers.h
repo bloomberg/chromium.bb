@@ -26,8 +26,9 @@ struct VulkanFunctionPointers {
   VulkanFunctionPointers();
   ~VulkanFunctionPointers();
 
-  // This function assumes that vkGetDeviceProcAddr has been populated.
+  // These functions assume that vkGetDeviceProcAddr has been populated.
   bool BindDeviceFunctionPointers(VkDevice vk_device);
+  bool BindSwapchainFunctionPointers(VkDevice vk_device);
 
   base::NativeLibrary vulkan_loader_library_ = nullptr;
 
@@ -59,7 +60,6 @@ struct VulkanFunctionPointers {
       vkGetPhysicalDeviceSurfaceCapabilitiesKHR = nullptr;
 
   // Device functions
-  PFN_vkAcquireNextImageKHR vkAcquireNextImageKHR = nullptr;
   PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers = nullptr;
   PFN_vkAllocateDescriptorSets vkAllocateDescriptorSets = nullptr;
   PFN_vkCreateCommandPool vkCreateCommandPool = nullptr;
@@ -72,7 +72,6 @@ struct VulkanFunctionPointers {
   PFN_vkCreateSampler vkCreateSampler = nullptr;
   PFN_vkCreateSemaphore vkCreateSemaphore = nullptr;
   PFN_vkCreateShaderModule vkCreateShaderModule = nullptr;
-  PFN_vkCreateSwapchainKHR vkCreateSwapchainKHR = nullptr;
   PFN_vkDestroyCommandPool vkDestroyCommandPool = nullptr;
   PFN_vkDestroyDescriptorPool vkDestroyDescriptorPool = nullptr;
   PFN_vkDestroyDescriptorSetLayout vkDestroyDescriptorSetLayout = nullptr;
@@ -84,18 +83,15 @@ struct VulkanFunctionPointers {
   PFN_vkDestroySampler vkDestroySampler = nullptr;
   PFN_vkDestroySemaphore vkDestroySemaphore = nullptr;
   PFN_vkDestroyShaderModule vkDestroyShaderModule = nullptr;
-  PFN_vkDestroySwapchainKHR vkDestroySwapchainKHR = nullptr;
   PFN_vkFreeCommandBuffers vkFreeCommandBuffers = nullptr;
   PFN_vkFreeDescriptorSets vkFreeDescriptorSets = nullptr;
   PFN_vkGetDeviceQueue vkGetDeviceQueue = nullptr;
   PFN_vkGetFenceStatus vkGetFenceStatus = nullptr;
-  PFN_vkGetSwapchainImagesKHR vkGetSwapchainImagesKHR = nullptr;
   PFN_vkResetFences vkResetFences = nullptr;
   PFN_vkUpdateDescriptorSets vkUpdateDescriptorSets = nullptr;
   PFN_vkWaitForFences vkWaitForFences = nullptr;
 
   // Queue functions
-  PFN_vkQueuePresentKHR vkQueuePresentKHR = nullptr;
   PFN_vkQueueSubmit vkQueueSubmit = nullptr;
   PFN_vkQueueWaitIdle vkQueueWaitIdle = nullptr;
 
@@ -108,6 +104,11 @@ struct VulkanFunctionPointers {
   PFN_vkCmdPipelineBarrier vkCmdPipelineBarrier = nullptr;
   PFN_vkEndCommandBuffer vkEndCommandBuffer = nullptr;
   PFN_vkResetCommandBuffer vkResetCommandBuffer = nullptr;
+  PFN_vkAcquireNextImageKHR vkAcquireNextImageKHR = nullptr;
+  PFN_vkCreateSwapchainKHR vkCreateSwapchainKHR = nullptr;
+  PFN_vkDestroySwapchainKHR vkDestroySwapchainKHR = nullptr;
+  PFN_vkGetSwapchainImagesKHR vkGetSwapchainImagesKHR = nullptr;
+  PFN_vkQueuePresentKHR vkQueuePresentKHR = nullptr;
 };
 
 }  // namespace gpu

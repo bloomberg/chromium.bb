@@ -30,6 +30,7 @@ class COMPONENT_EXPORT(VULKAN_X11) VulkanImplementationX11
       VkPhysicalDevice device,
       const std::vector<VkQueueFamilyProperties>& queue_family_properties,
       uint32_t queue_family_index) override;
+  std::vector<const char*> GetRequiredDeviceExtensions() override;
 
  private:
   XDisplay* const x_display_;

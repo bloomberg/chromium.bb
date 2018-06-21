@@ -88,11 +88,10 @@ bool VulkanInstance::Initialize(
   app_info.pApplicationName = "Chromium";
   app_info.apiVersion = VK_MAKE_VERSION(1, 0, 2);
 
-  std::vector<const char*> enabled_ext_names;
-  enabled_ext_names.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-  enabled_ext_names.insert(std::end(enabled_ext_names),
-                           std::begin(required_extensions),
-                           std::end(required_extensions));
+  std::vector<const char*> enabled_extensions;
+  enabled_extensions.insert(std::end(enabled_extensions),
+                            std::begin(required_extensions),
+                            std::end(required_extensions));
 
   uint32_t num_instance_exts = 0;
   result = vulkan_function_pointers->vkEnumerateInstanceExtensionProperties(
@@ -116,7 +115,7 @@ bool VulkanInstance::Initialize(
     if (strcmp(ext_property.extensionName,
                VK_EXT_DEBUG_REPORT_EXTENSION_NAME) == 0) {
       debug_report_enabled_ = true;
-      enabled_ext_names.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+      enabled_extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
     }
   }
 
@@ -158,8 +157,8 @@ bool VulkanInstance::Initialize(
   instance_create_info.pApplicationInfo = &app_info;
   instance_create_info.enabledLayerCount = enabled_layer_names.size();
   instance_create_info.ppEnabledLayerNames = enabled_layer_names.data();
-  instance_create_info.enabledExtensionCount = enabled_ext_names.size();
-  instance_create_info.ppEnabledExtensionNames = enabled_ext_names.data();
+  instance_create_info.enabledExtensionCount = enabled_extensions.size();
+  instance_create_info.ppEnabledExtensionNames = enabled_extensions.data();
 
   result = vulkan_function_pointers->vkCreateInstance(&instance_create_info,
                                                       nullptr, &vk_instance_);
@@ -167,6 +166,9 @@ bool VulkanInstance::Initialize(
     DLOG(ERROR) << "vkCreateInstance() failed: " << result;
     return false;
   }
+
+  enabled_extensions_ = gfx::ExtensionSet(std::begin(enabled_extensions),
+                                          std::end(enabled_extensions));
 
 #if DCHECK_IS_ON()
   // Register our error logging function.
@@ -215,13 +217,6 @@ bool VulkanInstance::Initialize(
   if (!vulkan_function_pointers->vkDestroyInstance)
     return false;
 
-  vulkan_function_pointers->vkDestroySurfaceKHR =
-      reinterpret_cast<PFN_vkDestroySurfaceKHR>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(
-              vk_instance_, "vkDestroySurfaceKHR"));
-  if (!vulkan_function_pointers->vkDestroySurfaceKHR)
-    return false;
-
   vulkan_function_pointers->vkEnumerateDeviceLayerProperties =
       reinterpret_cast<PFN_vkEnumerateDeviceLayerProperties>(
           vulkan_function_pointers->vkGetInstanceProcAddr(
@@ -250,26 +245,35 @@ bool VulkanInstance::Initialize(
   if (!vulkan_function_pointers->vkGetPhysicalDeviceQueueFamilyProperties)
     return false;
 
-  vulkan_function_pointers->vkGetPhysicalDeviceSurfaceCapabilitiesKHR =
-      reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(
-              vk_instance_, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"));
-  if (!vulkan_function_pointers->vkGetPhysicalDeviceSurfaceCapabilitiesKHR)
-    return false;
+  if (gfx::HasExtension(enabled_extensions_, VK_KHR_SURFACE_EXTENSION_NAME)) {
+    vulkan_function_pointers->vkDestroySurfaceKHR =
+        reinterpret_cast<PFN_vkDestroySurfaceKHR>(
+            vulkan_function_pointers->vkGetInstanceProcAddr(
+                vk_instance_, "vkDestroySurfaceKHR"));
+    if (!vulkan_function_pointers->vkDestroySurfaceKHR)
+      return false;
 
-  vulkan_function_pointers->vkGetPhysicalDeviceSurfaceFormatsKHR =
-      reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceFormatsKHR>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(
-              vk_instance_, "vkGetPhysicalDeviceSurfaceFormatsKHR"));
-  if (!vulkan_function_pointers->vkGetPhysicalDeviceSurfaceFormatsKHR)
-    return false;
+    vulkan_function_pointers->vkGetPhysicalDeviceSurfaceCapabilitiesKHR =
+        reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(
+            vulkan_function_pointers->vkGetInstanceProcAddr(
+                vk_instance_, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"));
+    if (!vulkan_function_pointers->vkGetPhysicalDeviceSurfaceCapabilitiesKHR)
+      return false;
 
-  vulkan_function_pointers->vkGetPhysicalDeviceSurfaceSupportKHR =
-      reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceSupportKHR>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(
-              vk_instance_, "vkGetPhysicalDeviceSurfaceSupportKHR"));
-  if (!vulkan_function_pointers->vkGetPhysicalDeviceSurfaceSupportKHR)
-    return false;
+    vulkan_function_pointers->vkGetPhysicalDeviceSurfaceFormatsKHR =
+        reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceFormatsKHR>(
+            vulkan_function_pointers->vkGetInstanceProcAddr(
+                vk_instance_, "vkGetPhysicalDeviceSurfaceFormatsKHR"));
+    if (!vulkan_function_pointers->vkGetPhysicalDeviceSurfaceFormatsKHR)
+      return false;
+
+    vulkan_function_pointers->vkGetPhysicalDeviceSurfaceSupportKHR =
+        reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceSupportKHR>(
+            vulkan_function_pointers->vkGetInstanceProcAddr(
+                vk_instance_, "vkGetPhysicalDeviceSurfaceSupportKHR"));
+    if (!vulkan_function_pointers->vkGetPhysicalDeviceSurfaceSupportKHR)
+      return false;
+  }
 
   return true;
 }

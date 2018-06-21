@@ -21,8 +21,8 @@ VulkanImplementationX11::VulkanImplementationX11(XDisplay* x_display)
 VulkanImplementationX11::~VulkanImplementationX11() {}
 
 bool VulkanImplementationX11::InitializeVulkanInstance() {
-  std::vector<const char*> required_extensions;
-  required_extensions.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
+  std::vector<const char*> required_extensions = {
+      VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_XLIB_SURFACE_EXTENSION_NAME};
 
   VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
@@ -89,6 +89,11 @@ bool VulkanImplementationX11::GetPhysicalDevicePresentationSupport(
       device, queue_family_index, x_display_,
       XVisualIDFromVisual(
           DefaultVisual(x_display_, DefaultScreen(x_display_))));
+}
+
+std::vector<const char*>
+VulkanImplementationX11::GetRequiredDeviceExtensions() {
+  return {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 }
 
 }  // namespace gpu

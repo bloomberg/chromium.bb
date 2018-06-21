@@ -21,7 +21,10 @@ std::unique_ptr<VulkanDeviceQueue> CreateVulkanDeviceQueue(
   auto callback = base::BindRepeating(
       &VulkanImplementation::GetPhysicalDevicePresentationSupport,
       base::Unretained(vulkan_implementation));
-  if (!device_queue->Initialize(option, callback)) {
+  std::vector<const char*> required_extensions =
+      vulkan_implementation->GetRequiredDeviceExtensions();
+  if (!device_queue->Initialize(option, std::move(required_extensions),
+                                callback)) {
     device_queue->Destroy();
     return nullptr;
   }

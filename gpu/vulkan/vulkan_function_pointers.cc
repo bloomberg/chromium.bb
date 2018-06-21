@@ -24,11 +24,6 @@ VulkanFunctionPointers::~VulkanFunctionPointers() = default;
 
 bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   // Device functions
-  vkAcquireNextImageKHR = reinterpret_cast<PFN_vkAcquireNextImageKHR>(
-      vkGetDeviceProcAddr(vk_device, "vkAcquireNextImageKHR"));
-  if (!vkAcquireNextImageKHR)
-    return false;
-
   vkAllocateCommandBuffers = reinterpret_cast<PFN_vkAllocateCommandBuffers>(
       vkGetDeviceProcAddr(vk_device, "vkAllocateCommandBuffers"));
   if (!vkAllocateCommandBuffers)
@@ -90,11 +85,6 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkCreateShaderModule)
     return false;
 
-  vkCreateSwapchainKHR = reinterpret_cast<PFN_vkCreateSwapchainKHR>(
-      vkGetDeviceProcAddr(vk_device, "vkCreateSwapchainKHR"));
-  if (!vkCreateSwapchainKHR)
-    return false;
-
   vkDestroyCommandPool = reinterpret_cast<PFN_vkDestroyCommandPool>(
       vkGetDeviceProcAddr(vk_device, "vkDestroyCommandPool"));
   if (!vkDestroyCommandPool)
@@ -151,11 +141,6 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkDestroyShaderModule)
     return false;
 
-  vkDestroySwapchainKHR = reinterpret_cast<PFN_vkDestroySwapchainKHR>(
-      vkGetDeviceProcAddr(vk_device, "vkDestroySwapchainKHR"));
-  if (!vkDestroySwapchainKHR)
-    return false;
-
   vkFreeCommandBuffers = reinterpret_cast<PFN_vkFreeCommandBuffers>(
       vkGetDeviceProcAddr(vk_device, "vkFreeCommandBuffers"));
   if (!vkFreeCommandBuffers)
@@ -176,11 +161,6 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkGetFenceStatus)
     return false;
 
-  vkGetSwapchainImagesKHR = reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(
-      vkGetDeviceProcAddr(vk_device, "vkGetSwapchainImagesKHR"));
-  if (!vkGetSwapchainImagesKHR)
-    return false;
-
   vkResetFences = reinterpret_cast<PFN_vkResetFences>(
       vkGetDeviceProcAddr(vk_device, "vkResetFences"));
   if (!vkResetFences)
@@ -197,11 +177,6 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
     return false;
 
   // Queue functions
-  vkQueuePresentKHR = reinterpret_cast<PFN_vkQueuePresentKHR>(
-      vkGetDeviceProcAddr(vk_device, "vkQueuePresentKHR"));
-  if (!vkQueuePresentKHR)
-    return false;
-
   vkQueueSubmit = reinterpret_cast<PFN_vkQueueSubmit>(
       vkGetDeviceProcAddr(vk_device, "vkQueueSubmit"));
   if (!vkQueueSubmit)
@@ -251,6 +226,35 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   vkResetCommandBuffer = reinterpret_cast<PFN_vkResetCommandBuffer>(
       vkGetDeviceProcAddr(vk_device, "vkResetCommandBuffer"));
   if (!vkResetCommandBuffer)
+    return false;
+
+  return true;
+}
+
+bool VulkanFunctionPointers::BindSwapchainFunctionPointers(VkDevice vk_device) {
+  vkAcquireNextImageKHR = reinterpret_cast<PFN_vkAcquireNextImageKHR>(
+      vkGetDeviceProcAddr(vk_device, "vkAcquireNextImageKHR"));
+  if (!vkAcquireNextImageKHR)
+    return false;
+
+  vkCreateSwapchainKHR = reinterpret_cast<PFN_vkCreateSwapchainKHR>(
+      vkGetDeviceProcAddr(vk_device, "vkCreateSwapchainKHR"));
+  if (!vkCreateSwapchainKHR)
+    return false;
+
+  vkDestroySwapchainKHR = reinterpret_cast<PFN_vkDestroySwapchainKHR>(
+      vkGetDeviceProcAddr(vk_device, "vkDestroySwapchainKHR"));
+  if (!vkDestroySwapchainKHR)
+    return false;
+
+  vkGetSwapchainImagesKHR = reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(
+      vkGetDeviceProcAddr(vk_device, "vkGetSwapchainImagesKHR"));
+  if (!vkGetSwapchainImagesKHR)
+    return false;
+
+  vkQueuePresentKHR = reinterpret_cast<PFN_vkQueuePresentKHR>(
+      vkGetDeviceProcAddr(vk_device, "vkQueuePresentKHR"));
+  if (!vkQueuePresentKHR)
     return false;
 
   return true;
