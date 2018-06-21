@@ -496,7 +496,8 @@ void Element::scrollIntoView(bool align_to_top) {
 
 static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions& options,
                                            ScrollOrientation axis,
-                                           bool is_horizontal_writing_mode) {
+                                           bool is_horizontal_writing_mode,
+                                           bool is_flipped_blocks_mode) {
   String alignment =
       ((axis == kHorizontalScroll && is_horizontal_writing_mode) ||
        (axis == kVerticalScroll && !is_horizontal_writing_mode))
@@ -508,12 +509,16 @@ static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions& options,
   if (alignment == "nearest")
     return ScrollAlignment::kAlignToEdgeIfNeeded;
   if (alignment == "start") {
-    return (axis == kHorizontalScroll) ? ScrollAlignment::kAlignLeftAlways
-                                       : ScrollAlignment::kAlignTopAlways;
+    return (axis == kHorizontalScroll)
+               ? is_flipped_blocks_mode ? ScrollAlignment::kAlignRightAlways
+                                        : ScrollAlignment::kAlignLeftAlways
+               : ScrollAlignment::kAlignTopAlways;
   }
   if (alignment == "end") {
-    return (axis == kHorizontalScroll) ? ScrollAlignment::kAlignRightAlways
-                                       : ScrollAlignment::kAlignBottomAlways;
+    return (axis == kHorizontalScroll)
+               ? is_flipped_blocks_mode ? ScrollAlignment::kAlignLeftAlways
+                                        : ScrollAlignment::kAlignRightAlways
+               : ScrollAlignment::kAlignBottomAlways;
   }
 
   // Default values
@@ -527,7 +532,11 @@ static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions& options,
 
 void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions& options) {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
+  ScrollIntoViewNoVisualUpdate(options);
+}
 
+void Element::ScrollIntoViewNoVisualUpdate(
+    const ScrollIntoViewOptions& options) {
   if (!GetLayoutObject() || !GetDocument().GetPage())
     return;
 
@@ -543,10 +552,14 @@ void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions& options) {
 
   bool is_horizontal_writing_mode =
       GetComputedStyle()->IsHorizontalWritingMode();
-  ScrollAlignment align_x = ToPhysicalAlignment(options, kHorizontalScroll,
-                                                is_horizontal_writing_mode);
+  bool is_flipped_blocks_mode =
+      GetComputedStyle()->IsFlippedBlocksWritingMode();
+  ScrollAlignment align_x =
+      ToPhysicalAlignment(options, kHorizontalScroll,
+                          is_horizontal_writing_mode, is_flipped_blocks_mode);
   ScrollAlignment align_y =
-      ToPhysicalAlignment(options, kVerticalScroll, is_horizontal_writing_mode);
+      ToPhysicalAlignment(options, kVerticalScroll, is_horizontal_writing_mode,
+                          is_flipped_blocks_mode);
 
   LayoutRect bounds = BoundingBoxForScrollIntoView();
   GetLayoutObject()->ScrollRectToVisible(

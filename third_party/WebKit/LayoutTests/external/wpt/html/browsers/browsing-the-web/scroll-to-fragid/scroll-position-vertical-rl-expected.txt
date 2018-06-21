@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Fragment Navigation: Scroll to block start position in vertical-rl writing mode assert_equals: Scroll to the right border edge of #test expected -14 but got 0
-Harness: the test ran to completion.
-

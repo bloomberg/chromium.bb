@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
+#include "third_party/blink/renderer/core/frame/scroll_into_view_options.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
@@ -2126,11 +2127,15 @@ void LocalFrameView::ScrollAndFocusFragmentAnchor() {
           ->SetSafeToPropagateScrollToParent(false);
     }
 
-    // Scroll nested layers and frames to reveal the anchor.
-    // Align to the top and to the closest side (this matches other browsers).
-    anchor_node->GetLayoutObject()->ScrollRectToVisible(
-        rect, WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
-                                      ScrollAlignment::kAlignTopAlways));
+    Element* anchor_element = anchor_node->IsElementNode()
+                                  ? ToElement(anchor_node)
+                                  : frame_->GetDocument()->documentElement();
+    if (anchor_element) {
+      ScrollIntoViewOptions options;
+      options.setBlock("start");
+      options.setInlinePosition("nearest");
+      anchor_element->ScrollIntoViewNoVisualUpdate(options);
+    }
 
     if (boundary_frame && boundary_frame->IsLocalFrame()) {
       ToLocalFrame(boundary_frame)
