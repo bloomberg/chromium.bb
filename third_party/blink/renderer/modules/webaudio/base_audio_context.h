@@ -147,12 +147,6 @@ class MODULES_EXPORT BaseAudioContext
                : ClosedContextSampleRate();
   }
 
-  float FramesPerBuffer() const {
-    return destination_node_ ? destination_node_->GetAudioDestinationHandler()
-                                   .FramesPerBuffer()
-                             : 0;
-  }
-
   size_t CallbackBufferSize() const {
     return destination_node_ ? destination_node_->Handler().CallbackBufferSize()
                              : 0;
