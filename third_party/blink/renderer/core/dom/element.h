@@ -256,6 +256,7 @@ class CORE_EXPORT Element : public ContainerNode {
   void scrollIntoView(ScrollIntoViewOptionsOrBoolean);
   void scrollIntoView(bool align_to_top = true);
   void scrollIntoViewWithOptions(const ScrollIntoViewOptions&);
+  void ScrollIntoViewNoVisualUpdate(const ScrollIntoViewOptions&);
   void scrollIntoViewIfNeeded(bool center_if_needed = true);
 
   int OffsetLeft();
