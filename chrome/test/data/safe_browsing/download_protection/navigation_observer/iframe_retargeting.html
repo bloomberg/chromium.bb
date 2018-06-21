@@ -1,6 +1,11 @@
 <html>
   <head>
-    <script> 
+    <script>
+      function clickLink(linkId) {
+        var node = document.getElementById(linkId);
+        if (node != null)
+          node.click();
+      }
       function downloadInNewTab() {
         var tab = window.open('');
         tab.opener = null;
