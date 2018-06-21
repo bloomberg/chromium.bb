@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-upstream-diff
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 11/03/2017
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 06/20/2018
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 9c2758a5
+.\"    Source: depot_tools 79d42dfb
 .\"  Language: English
 .\"
-.TH "GIT\-UPSTREAM\-DIFF" "1" "11/03/2017" "depot_tools 9c2758a5" "Chromium depot_tools Manual"
+.TH "GIT\-UPSTREAM\-DIFF" "1" "06/20/2018" "depot_tools 79d42dfb" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,12 +32,12 @@ git-upstream-diff \- Print a diff of the current branch, compared to its upstrea
 .SH "SYNOPSIS"
 .sp
 .nf
-\fIgit upstream\-diff\fR [\-\-wordwise] [branch] [<extra args for git\-diff>*]
+\fIgit upstream\-diff\fR [\-\-wordwise] [\-\-branch branch] [<extra args for git\-diff>*]
 .fi
 .sp
 .SH "DESCRIPTION"
 .sp
-Shows a diff between a branch and its upstream\&. If the branch is omitted, the tool shows the diff for the current branch\&. This is \fIroughly\fR the same as:
+Shows a diff between a branch and its upstream\&. If the \-\-branch option is omitted or "HEAD", the tool shows the diff for the current branch\&. Any additional arguments are passed through to the underlying git\-diff command\&. This is \fIroughly\fR the same as:
 .sp
 .if n \{\
 .RS 4
@@ -60,6 +60,27 @@ uses the patience\-diff algorithm, which tends to produce nicer diffs in many ca
 The difference is that branch@{upstream} is actually the tagged merge base of your branch (See \fBgit-rebase-update\fR(1))\&. This means that if your upstream branch was rebased, but you haven\(cqt yet rebased the current branch on top of it, you\(cqll still see an accurate diff compared to just diffing against @{upstream}\&.
 .sp
 The \-\-wordwise option also allows git\-diff to do word\-by\-word comparison in a semi\-intelligent way\&. However, sometimes it can produce surprising results, so it is disabled by default\&.
+.sp
+Since any additional options are passed through to git\-diff unchanged, you can use this as a general replacement for git diff for things like:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ # See what changed in a file on the current branch
+$ git upstream\-diff some/file\&.py
+\&.\&.\&.
+
+$ # Omit deleted files from the diff
+$ git upstream\-diff \-\-diff\-filter d
+\&.\&.\&.
+
+$ # etc\&.
+.fi
+.if n \{\
+.RE
+.\}
+.sp
 .SH "OPTIONS"
 .PP
 \-\-wordwise

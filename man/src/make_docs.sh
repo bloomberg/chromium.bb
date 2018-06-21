@@ -120,6 +120,12 @@ a
 .
 -1
 j
+/XMLTO_EXTRA
+a
+ --skip-validation
+.
+-1
+j
 /^\$(MAN_HTML):
 a
  asciidoc-override.css

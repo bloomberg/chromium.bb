@@ -755,7 +755,7 @@ git-upstream-diff(1) Manual Page
 <h2 id="_synopsis">SYNOPSIS</h2>
 <div class="sectionbody">
 <div class="verseblock">
-<pre class="content"><em>git upstream-diff</em> [--wordwise] [branch] [&lt;extra args for git-diff&gt;*]</pre>
+<pre class="content"><em>git upstream-diff</em> [--wordwise] [--branch branch] [&lt;extra args for git-diff&gt;*]</pre>
 <div class="attribution">
 </div></div>
 </div>
@@ -763,7 +763,10 @@ git-upstream-diff(1) Manual Page
 <div class="sect1">
 <h2 id="_description">DESCRIPTION</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>Shows a diff between a branch and its upstream. If the branch is omitted, the tool shows the diff for the current branch. This is <em>roughly</em> the same as:</p></div>
+<div class="paragraph"><p>Shows a diff between a branch and its upstream. If the --branch option is
+omitted or "HEAD", the tool shows the diff for the current branch. Any
+additional arguments are passed through to the underlying git-diff command. This
+is <em>roughly</em> the same as:</p></div>
 <div class="listingblock">
 <div class="content">
 <pre><code>git diff --patience -C -C branch@{upstream}  <b>&lt;1&gt;</b> <b>&lt;2&gt;</b></code></pre>
@@ -789,6 +792,20 @@ you&#8217;ll still see an accurate diff compared to just diffing against
 <div class="paragraph"><p>The <code>--wordwise</code> option also allows <code>git-diff</code> to do word-by-word comparison
 in a semi-intelligent way. However, sometimes it can produce surprising results,
 so it is disabled by default.</p></div>
+<div class="paragraph"><p>Since any additional options are passed through to git-diff unchanged, you can
+use this as a general replacement for <code>git diff</code> for things like:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>$ # See what changed in a file on the current branch
+$ git upstream-diff some/file.py
+...
+
+$ # Omit deleted files from the diff
+$ git upstream-diff --diff-filter d
+...
+
+$ # etc.</code></pre>
+</div></div>
 </div>
 </div>
 <div class="sect1">
@@ -895,7 +912,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2017-11-03 14:35:37 PDT
+Last updated 2018-06-20 00:12:01 PDT
 </div>
 </div>
 </body>
