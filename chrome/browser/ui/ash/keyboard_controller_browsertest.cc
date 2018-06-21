@@ -181,7 +181,8 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardAppWindowTest,
   controller->ShowKeyboard(true);
   controller->ui()->GetContentsWindow()->SetBounds(test_bounds);
   controller->NotifyContentsLoaded();
-  gfx::Rect keyboard_bounds = controller->GetContainerWindow()->bounds();
+
+  gfx::Rect keyboard_bounds = controller->GetContentsWindow()->bounds();
   // Starts overscroll.
   controller->NotifyContentsBoundsChanging(keyboard_bounds);
 

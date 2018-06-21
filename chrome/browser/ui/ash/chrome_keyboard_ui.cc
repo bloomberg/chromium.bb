@@ -283,9 +283,7 @@ void ChromeKeyboardUI::RequestAudioInput(
 }
 
 void ChromeKeyboardUI::UpdateInsetsForWindow(aura::Window* window) {
-  aura::Window* keyboard_container =
-      keyboard_controller()->GetContainerWindow();
-  if (!ShouldWindowOverscroll(window))
+  if (!ShouldWindowOverscroll(window) || !HasContentsWindow())
     return;
 
   std::unique_ptr<content::RenderWidgetHostIterator> widgets(
@@ -295,7 +293,7 @@ void ChromeKeyboardUI::UpdateInsetsForWindow(aura::Window* window) {
     if (view && window->Contains(view->GetNativeView())) {
       gfx::Rect window_bounds = view->GetNativeView()->GetBoundsInScreen();
       gfx::Rect intersect = gfx::IntersectRects(
-          window_bounds, keyboard_container->GetBoundsInScreen());
+          window_bounds, GetContentsWindow()->GetBoundsInScreen());
       int overlap = ShouldEnableInsets(window) ? intersect.height() : 0;
       if (overlap > 0 && overlap < window_bounds.height())
         view->SetInsets(gfx::Insets(0, 0, overlap, 0));
@@ -313,10 +311,16 @@ aura::Window* ChromeKeyboardUI::GetContentsWindow() {
     SetupWebContents(keyboard_contents_.get());
     LoadContents(GetVirtualKeyboardUrl());
     keyboard_contents_->GetNativeView()->AddObserver(this);
+    keyboard_contents_->GetNativeView()->set_owned_by_parent(false);
     content::RenderWidgetHostView* view =
         keyboard_contents_->GetMainFrame()->GetView();
     view->SetBackgroundColor(SK_ColorTRANSPARENT);
     view->GetNativeView()->SetTransparent(true);
+
+    // By default, layers in WebContents are clipped at the window bounds,
+    // but this causes the shadows to be clipped too, so clipping needs to
+    // be disabled.
+    keyboard_contents_->GetNativeView()->layer()->SetMasksToBounds(false);
   }
 
   return keyboard_contents_->GetNativeView();
@@ -478,17 +482,14 @@ void ChromeKeyboardUI::AddBoundsChangedObserver(aura::Window* window) {
 
 void ChromeKeyboardUI::SetShadowAroundKeyboard() {
   aura::Window* contents_window = keyboard_contents_->GetNativeView();
-  if (!contents_window->parent())
-    return;
-
   if (!shadow_) {
     shadow_ = std::make_unique<ui::Shadow>();
     shadow_->Init(wm::kShadowElevationActiveWindow);
     shadow_->layer()->SetVisible(true);
-    contents_window->parent()->layer()->Add(shadow_->layer());
+    contents_window->layer()->Add(shadow_->layer());
   }
 
-  shadow_->SetContentBounds(contents_window->bounds());
+  shadow_->SetContentBounds(gfx::Rect(contents_window->bounds().size()));
 }
 
 void ChromeKeyboardUI::SetupWebContents(content::WebContents* contents) {

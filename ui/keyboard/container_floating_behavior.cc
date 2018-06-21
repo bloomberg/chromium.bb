@@ -190,9 +190,9 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
   DCHECK(controller_);
   auto kb_offset = gfx::Vector2d(event.x(), event.y());
 
-  aura::Window* container = controller_->GetContainerWindow();
+  aura::Window* contents = controller_->GetContentsWindow();
 
-  const gfx::Rect& keyboard_bounds_in_screen = container->GetBoundsInScreen();
+  const gfx::Rect& keyboard_bounds_in_screen = contents->GetBoundsInScreen();
 
   // Don't handle events if this runs in a partially initialized state.
   if (keyboard_bounds_in_screen.height() <= 0)
@@ -277,7 +277,7 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
           controller_->MoveToDisplayWithTransition(new_display,
                                                    new_bounds_in_local);
         }
-        SavePosition(container->GetBoundsInScreen(), new_display.size());
+        SavePosition(contents->GetBoundsInScreen(), new_display.size());
         return true;
       }
       break;

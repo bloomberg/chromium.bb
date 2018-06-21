@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
+#include "ui/keyboard/keyboard_export.h"
 
 namespace keyboard {
 
@@ -16,13 +17,13 @@ class KeyboardController;
 // LayoutManager for the virtual keyboard container. Manages a single window
 // (the virtual keyboard) and keeps it positioned at the bottom of the
 // owner window.
-class KeyboardLayoutManager : public aura::LayoutManager {
+class KEYBOARD_EXPORT KeyboardLayoutManager : public aura::LayoutManager {
  public:
-  explicit KeyboardLayoutManager(KeyboardController* controller)
-      : controller_(controller), contents_window_(nullptr) {}
+  explicit KeyboardLayoutManager(KeyboardController* controller);
+  ~KeyboardLayoutManager() override;
 
   // Overridden from aura::LayoutManager
-  void OnWindowResized() override;
+  void OnWindowResized() override {}
   void OnWindowAddedToLayout(aura::Window* child) override;
   void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
   void OnWindowRemovedFromLayout(aura::Window* child) override {}
@@ -33,7 +34,6 @@ class KeyboardLayoutManager : public aura::LayoutManager {
 
  private:
   KeyboardController* controller_;
-  aura::Window* contents_window_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardLayoutManager);
 };

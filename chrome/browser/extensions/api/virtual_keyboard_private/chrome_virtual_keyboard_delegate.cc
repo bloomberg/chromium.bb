@@ -38,9 +38,9 @@ namespace keyboard_api = extensions::api::virtual_keyboard_private;
 
 namespace {
 
-aura::Window* GetKeyboardContainer() {
+aura::Window* GetKeyboardWindow() {
   auto* controller = keyboard::KeyboardController::Get();
-  return controller->enabled() ? controller->GetContainerWindow() : nullptr;
+  return controller->enabled() ? controller->GetContentsWindow() : nullptr;
 }
 
 std::string GenerateFeatureFlag(const std::string& feature, bool enabled) {
@@ -143,7 +143,7 @@ bool ChromeVirtualKeyboardDelegate::SendKeyEvent(const std::string& type,
                                                  const std::string& key_name,
                                                  int modifiers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  aura::Window* window = GetKeyboardContainer();
+  aura::Window* window = GetKeyboardWindow();
   return window && keyboard::SendKeyEvent(type, char_value, key_code, key_name,
                                           modifiers, window->GetHost());
 }

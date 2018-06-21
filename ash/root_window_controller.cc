@@ -80,6 +80,7 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_layout_manager.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -978,6 +979,8 @@ void RootWindowController::CreateContainers() {
   wm::SetSnapsChildrenToPhysicalPixelBoundary(virtual_keyboard_container);
   virtual_keyboard_container->SetProperty(::wm::kUsesScreenCoordinatesKey,
                                           true);
+  virtual_keyboard_container->SetLayoutManager(
+      new keyboard::KeyboardLayoutManager(keyboard::KeyboardController::Get()));
 
   aura::Window* menu_container =
       CreateContainer(kShellWindowId_MenuContainer, "MenuContainer",
