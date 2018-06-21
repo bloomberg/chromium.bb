@@ -38,11 +38,15 @@ if (concurrent_links == -1) {
   } else if (is_android && !is_component_build && symbol_level == 2) {
     # Full debug symbols require large memory for link.
     _args = [ "--mem_per_link_gb=25" ]
-  } else if (is_android && !is_debug && !using_sanitizer && symbol_level == 0) {
+  } else if (is_android && !is_debug && !using_sanitizer && symbol_level < 2) {
     # Increase the number of concurrent links for release bots. Debug builds
     # make heavier use of ProGuard, and so should not be raised. Sanitizers also
     # increase the memory overhead.
-    _args = [ "--mem_per_link_gb=4" ]
+    if (symbol_level == 1) {
+      _args = [ "--mem_per_link_gb=6" ]
+    } else {
+      _args = [ "--mem_per_link_gb=4" ]
+    }
   } else if (is_linux && !is_chromeos && symbol_level == 0) {
     # Memory consumption on link without debug symbols is low on linux.
     _args = [ "--mem_per_link_gb=3" ]
