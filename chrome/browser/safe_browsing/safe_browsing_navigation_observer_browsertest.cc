@@ -241,10 +241,13 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
   // This function needs javascript support from the test page hosted at
   // |page_url|. It calls "clickLink(..)" javascript function to "click" on the
   // html element with ID specified by |element_id|, and waits for
-  // |number_of_navigations| to complete.
+  // |number_of_navigations| to complete.  If a |subframe_index| is specified,
+  // |element_id| is assumed to be in corresponding subframe of the test page,
+  // and the javascript function is executed that subframe.
   void ClickTestLink(const char* element_id,
                      int number_of_navigations,
-                     const GURL& page_url) {
+                     const GURL& page_url,
+                     int subframe_index = -1) {
     TabStripModel* tab_strip = browser()->tab_strip_model();
     content::WebContents* current_web_contents =
         tab_strip->GetActiveWebContents();
@@ -254,8 +257,16 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
         content::MessageLoopRunner::QuitMode::DEFERRED);
     navigation_observer.StartWatchingNewWebContents();
     // Execute test.
-    std::string script = base::StringPrintf("clickLink('%s');", element_id);
-    ASSERT_TRUE(content::ExecuteScript(current_web_contents, script));
+    {
+      std::string script = base::StringPrintf("clickLink('%s');", element_id);
+      content::RenderFrameHost* script_executing_frame =
+          current_web_contents->GetMainFrame();
+      if (subframe_index != -1) {
+        script_executing_frame =
+            ChildFrameAt(script_executing_frame, subframe_index);
+      }
+      ASSERT_TRUE(content::ExecuteScript(script_executing_frame, script));
+    }
     // Wait for navigations on current tab and new tab (if any) to finish.
     navigation_observer.Wait();
     navigation_observer.StopWatchingNewWebContents();
@@ -1269,12 +1280,10 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
       browser(), embedded_test_server()->GetURL(kSingleFrameTestURL));
   GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
   ClickTestLink("sub_frame_download_attribution", 1, initial_url);
-  std::string test_name =
-      base::StringPrintf("%s', '%s", "iframe1", "iframe_direct_download");
   GURL multi_frame_test_url =
       embedded_test_server()->GetURL(kMultiFrameTestURL);
   GURL iframe_url = embedded_test_server()->GetURL(kIframeDirectDownloadURL);
-  ClickTestLink(test_name.c_str(), 1, iframe_url);
+  ClickTestLink("iframe_direct_download", 1, iframe_url, 0);
   GURL iframe_retargeting_url =
       embedded_test_server()->GetURL(kIframeRetargetingURL);
   GURL download_url = embedded_test_server()->GetURL(kDownloadItemURL);
@@ -1400,14 +1409,12 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
       browser(), embedded_test_server()->GetURL(kSingleFrameTestURL));
   GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
   ClickTestLink("sub_frame_download_attribution", 1, initial_url);
-  std::string test_name =
-      base::StringPrintf("%s', '%s", "iframe2", "iframe_new_tab_download");
   GURL multi_frame_test_url =
       embedded_test_server()->GetURL(kMultiFrameTestURL);
   GURL iframe_url = embedded_test_server()->GetURL(kIframeDirectDownloadURL);
   GURL iframe_retargeting_url =
       embedded_test_server()->GetURL(kIframeRetargetingURL);
-  ClickTestLink(test_name.c_str(), 2, iframe_retargeting_url);
+  ClickTestLink("iframe_new_tab_download", 2, iframe_retargeting_url, 1);
   GURL blank_url = GURL(url::kAboutBlankURL);
   GURL download_url = embedded_test_server()->GetURL(kDownloadItemURL);
   std::string test_server_ip(embedded_test_server()->host_port_pair().host());
