@@ -74,6 +74,7 @@ static_library("app") {
       "//content/public/common:result_codes",
       "//sandbox",
       "//third_party/breakpad:client",
+      "//third_party/crashpad/crashpad/snapshot",
     ]
 
     # Clang's -mstackrealign doesn't work well with
