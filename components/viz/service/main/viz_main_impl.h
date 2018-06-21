@@ -8,6 +8,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/gpu_init.h"
@@ -16,6 +17,10 @@
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
 #include "ui/gfx/font_render_params.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/java_handler_thread.h"
+#endif
 
 namespace gpu {
 class SyncPointManager;
@@ -34,6 +39,12 @@ class DisplayProvider;
 class FrameSinkManagerImpl;
 class GpuServiceImpl;
 class ServerSharedBitmapManager;
+
+#if defined(OS_ANDROID)
+using CompositorThreadType = base::android::JavaHandlerThread;
+#else
+using CompositorThreadType = base::Thread;
+#endif
 
 class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
  public:
@@ -164,7 +175,7 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
   const scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_task_runner_;
 
   // The main thread for the display compositor.
-  std::unique_ptr<base::Thread> compositor_thread_;
+  std::unique_ptr<CompositorThreadType> compositor_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner_;
 
   std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;

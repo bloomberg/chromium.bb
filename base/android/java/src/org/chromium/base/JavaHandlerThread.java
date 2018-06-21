@@ -27,13 +27,13 @@ public class JavaHandlerThread {
      * Construct a java-only instance. Can be connected with native side later.
      * Useful for cases where a java thread is needed before native library is loaded.
      */
-    public JavaHandlerThread(String name) {
-        mThread = new HandlerThread(name);
+    public JavaHandlerThread(String name, int priority) {
+        mThread = new HandlerThread(name, priority);
     }
 
     @CalledByNative
-    private static JavaHandlerThread create(String name) {
-        return new JavaHandlerThread(name);
+    private static JavaHandlerThread create(String name, int priority) {
+        return new JavaHandlerThread(name, priority);
     }
 
     public Looper getLooper() {

@@ -5,6 +5,7 @@
 package org.chromium.base;
 
 import android.os.Handler;
+import android.os.Process;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeUnchecked;
@@ -32,7 +33,8 @@ class JavaHandlerThreadHelpers {
             }
         };
 
-        JavaHandlerThread thread = new JavaHandlerThread("base_unittests_java");
+        JavaHandlerThread thread =
+                new JavaHandlerThread("base_unittests_java", Process.THREAD_PRIORITY_DEFAULT);
         thread.maybeStart();
 
         Handler handler = new Handler(thread.getLooper());

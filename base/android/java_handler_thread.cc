@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/thread_restrictions.h"
 #include "jni/JavaHandlerThread_jni.h"
 
@@ -19,10 +20,12 @@ namespace base {
 
 namespace android {
 
-JavaHandlerThread::JavaHandlerThread(const char* name)
+JavaHandlerThread::JavaHandlerThread(const char* name,
+                                     base::ThreadPriority priority)
     : JavaHandlerThread(Java_JavaHandlerThread_create(
           AttachCurrentThread(),
-          ConvertUTF8ToJavaString(AttachCurrentThread(), name))) {}
+          ConvertUTF8ToJavaString(AttachCurrentThread(), name),
+          base::internal::ThreadPriorityToNiceValue(priority))) {}
 
 JavaHandlerThread::JavaHandlerThread(
     const base::android::ScopedJavaLocalRef<jobject>& obj)

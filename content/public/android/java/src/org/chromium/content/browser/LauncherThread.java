@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Process;
 
 import org.chromium.base.JavaHandlerThread;
 import org.chromium.base.VisibleForTesting;
@@ -16,7 +17,7 @@ import org.chromium.base.annotations.JNINamespace;
 @JNINamespace("content::android")
 public final class LauncherThread {
     private static final JavaHandlerThread sThread =
-            new JavaHandlerThread("Chrome_ProcessLauncherThread");
+            new JavaHandlerThread("Chrome_ProcessLauncherThread", Process.THREAD_PRIORITY_DEFAULT);
     private static final Handler sThreadHandler;
     // Can be overritten in tests.
     private static Handler sHandler;
