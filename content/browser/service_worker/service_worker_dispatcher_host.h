@@ -7,24 +7,16 @@
 
 #include <stdint.h>
 
-#include <memory>
-#include <vector>
-
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
-#include "content/browser/service_worker/service_worker_registration_status.h"
+#include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker.mojom.h"
-#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/browser/browser_associated_interface.h"
-#include "content/public/browser/browser_message_filter.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host_observer.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 
 namespace content {
 
-class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 
 namespace service_worker_dispatcher_host_unittest {
@@ -36,31 +28,28 @@ FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash);
 }  // namespace service_worker_dispatcher_host_unittest
 
 // ServiceWorkerDispatcherHost is a browser-side endpoint for the renderer to
-// notify the browser ServiceWorkerProviderHost is created. In order to
-// associate the Mojo interface with the legacy IPC channel,
-// ServiceWorkerDispatcherHost overrides BrowserMessageFilter and
-// BrowserAssociatedInterface.
+// notify the browser a service worker provider is created.
+// Unless otherwise noted, all methods are called on the IO thread.
 //
-// ServiceWorkerDispatcherHost is created on the UI thread in
-// RenderProcessHostImpl::Init() via CreateMessageFilters(), but initialization,
-// destruction, and Mojo calls occur on the IO thread. It lives as
-// long as the renderer process lives.
-//
+// In order to keep ordering with navigation IPCs to avoid potential races,
+// currently mojom::ServiceWorkerDispatcherHost interface is associated with the
+// legacy IPC channel.
 // TODO(leonhsl): Remove this class once we can understand how to move
 // OnProviderCreated() to an isolated message pipe.
 class CONTENT_EXPORT ServiceWorkerDispatcherHost
-    : public BrowserMessageFilter,
-      public BrowserAssociatedInterface<mojom::ServiceWorkerDispatcherHost>,
-      public mojom::ServiceWorkerDispatcherHost {
+    : public mojom::ServiceWorkerDispatcherHost,
+      public RenderProcessHostObserver {
  public:
+  // Called on the UI thread.
   ServiceWorkerDispatcherHost(
       scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
       int render_process_id);
 
-  // BrowserMessageFilter implementation
-  void OnFilterRemoved() override;
-  void OnDestruct() const override;
-  bool OnMessageReceived(const IPC::Message& message) override;
+  void AddBinding(mojom::ServiceWorkerDispatcherHostAssociatedRequest request);
+
+  // Called on the UI thread.
+  void RenderProcessExited(RenderProcessHost* host,
+                           const ChildProcessTerminationInfo& info) override;
 
  protected:
   ~ServiceWorkerDispatcherHost() override;
@@ -82,11 +71,12 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   // mojom::ServiceWorkerDispatcherHost implementation
   void OnProviderCreated(ServiceWorkerProviderHostInfo info) override;
 
-  ServiceWorkerContextCore* GetContext();
+  void RemoveAllProviderHostsForProcess();
 
   const int render_process_id_;
   // Only accessed on the IO thread.
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
+  mojo::AssociatedBindingSet<mojom::ServiceWorkerDispatcherHost> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDispatcherHost);
 };

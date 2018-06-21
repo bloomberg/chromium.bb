@@ -87,6 +87,7 @@ class RenderWidgetHelper;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
 class ResourceMessageFilter;
+class ServiceWorkerDispatcherHost;
 class SiteInstance;
 class SiteInstanceImpl;
 class StoragePartition;
@@ -793,6 +794,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   std::unique_ptr<IndexedDBDispatcherHost, BrowserThread::DeleteOnIOThread>
       indexed_db_factory_;
+
+  std::unique_ptr<ServiceWorkerDispatcherHost, BrowserThread::DeleteOnIOThread>
+      service_worker_dispatcher_host_;
 
   scoped_refptr<CacheStorageDispatcherHost> cache_storage_dispatcher_host_;
 
