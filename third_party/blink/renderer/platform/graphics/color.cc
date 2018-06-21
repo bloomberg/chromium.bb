@@ -49,29 +49,24 @@ const RGBA32 Color::kLightGray;
 const RGBA32 Color::kTransparent;
 #endif
 
-static const RGBA32 kLightenedBlack = 0xFF545454;
-static const RGBA32 kDarkenedWhite = 0xFFABABAB;
+namespace {
 
-RGBA32 MakeRGB(int r, int g, int b) {
-  return 0xFF000000 | clampTo(r, 0, 255) << 16 | clampTo(g, 0, 255) << 8 |
-         clampTo(b, 0, 255);
+const RGBA32 kLightenedBlack = 0xFF545454;
+const RGBA32 kDarkenedWhite = 0xFFABABAB;
+
+const int kCStartAlpha = 153;     // 60%
+const int kCEndAlpha = 204;       // 80%;
+const int kCAlphaIncrement = 17;  // Increments in between.
+
+int BlendComponent(int c, int a) {
+  // We use white.
+  float alpha = a / 255.0f;
+  int white_blend = 255 - a;
+  c -= white_blend;
+  return static_cast<int>(c / alpha);
 }
 
-RGBA32 MakeRGBA(int r, int g, int b, int a) {
-  return clampTo(a, 0, 255) << 24 | clampTo(r, 0, 255) << 16 |
-         clampTo(g, 0, 255) << 8 | clampTo(b, 0, 255);
-}
-
-static int ColorFloatToRGBAByte(float f) {
-  return clampTo(static_cast<int>(lroundf(255.0f * f)), 0, 255);
-}
-
-RGBA32 MakeRGBA32FromFloats(float r, float g, float b, float a) {
-  return ColorFloatToRGBAByte(a) << 24 | ColorFloatToRGBAByte(r) << 16 |
-         ColorFloatToRGBAByte(g) << 8 | ColorFloatToRGBAByte(b);
-}
-
-static double CalcHue(double temp1, double temp2, double hue_val) {
+double CalcHue(double temp1, double temp2, double hue_val) {
   if (hue_val < 0.0)
     hue_val += 6.0;
   else if (hue_val >= 6.0)
@@ -83,6 +78,83 @@ static double CalcHue(double temp1, double temp2, double hue_val) {
   if (hue_val < 4.0)
     return temp1 + (temp2 - temp1) * (4.0 - hue_val);
   return temp1;
+}
+
+int ColorFloatToRGBAByte(float f) {
+  return clampTo(static_cast<int>(lroundf(255.0f * f)), 0, 255);
+}
+
+// originally moved here from the CSS parser
+template <typename CharacterType>
+inline bool ParseHexColorInternal(const CharacterType* name,
+                                  unsigned length,
+                                  RGBA32& rgb) {
+  if (length != 3 && length != 4 && length != 6 && length != 8)
+    return false;
+  if ((length == 8 || length == 4) &&
+      !RuntimeEnabledFeatures::CSSHexAlphaColorEnabled())
+    return false;
+  unsigned value = 0;
+  for (unsigned i = 0; i < length; ++i) {
+    if (!IsASCIIHexDigit(name[i]))
+      return false;
+    value <<= 4;
+    value |= ToASCIIHexValue(name[i]);
+  }
+  if (length == 6) {
+    rgb = 0xFF000000 | value;
+    return true;
+  }
+  if (length == 8) {
+    // We parsed the values into RGBA order, but the RGBA32 type
+    // expects them to be in ARGB order, so we right rotate eight bits.
+    rgb = value << 24 | value >> 8;
+    return true;
+  }
+  if (length == 4) {
+    // #abcd converts to ddaabbcc in RGBA32.
+    rgb = (value & 0xF) << 28 | (value & 0xF) << 24 | (value & 0xF000) << 8 |
+          (value & 0xF000) << 4 | (value & 0xF00) << 4 | (value & 0xF00) |
+          (value & 0xF0) | (value & 0xF0) >> 4;
+    return true;
+  }
+  // #abc converts to #aabbcc
+  rgb = 0xFF000000 | (value & 0xF00) << 12 | (value & 0xF00) << 8 |
+        (value & 0xF0) << 8 | (value & 0xF0) << 4 | (value & 0xF) << 4 |
+        (value & 0xF);
+  return true;
+}
+
+inline const NamedColor* FindNamedColor(const String& name) {
+  char buffer[64];  // easily big enough for the longest color name
+  unsigned length = name.length();
+  if (length > sizeof(buffer) - 1)
+    return nullptr;
+  for (unsigned i = 0; i < length; ++i) {
+    UChar c = name[i];
+    if (!c || c > 0x7F)
+      return nullptr;
+    buffer[i] = ToASCIILower(static_cast<char>(c));
+  }
+  buffer[length] = '\0';
+  return FindColor(buffer, length);
+}
+
+}  // namespace
+
+RGBA32 MakeRGB(int r, int g, int b) {
+  return 0xFF000000 | clampTo(r, 0, 255) << 16 | clampTo(g, 0, 255) << 8 |
+         clampTo(b, 0, 255);
+}
+
+RGBA32 MakeRGBA(int r, int g, int b, int a) {
+  return clampTo(a, 0, 255) << 24 | clampTo(r, 0, 255) << 16 |
+         clampTo(g, 0, 255) << 8 | clampTo(b, 0, 255);
+}
+
+RGBA32 MakeRGBA32FromFloats(float r, float g, float b, float a) {
+  return ColorFloatToRGBAByte(a) << 24 | ColorFloatToRGBAByte(r) << 16 |
+         ColorFloatToRGBAByte(g) << 8 | ColorFloatToRGBAByte(b);
 }
 
 // Explanation of this algorithm can be found in the CSS Color 4 Module
@@ -120,47 +192,6 @@ RGBA32 MakeRGBAFromCMYKA(float c, float m, float y, float k, float a) {
   int g = static_cast<int>(nextafter(256, 0) * (colors * (1 - m)));
   int b = static_cast<int>(nextafter(256, 0) * (colors * (1 - y)));
   return MakeRGBA(r, g, b, static_cast<float>(nextafter(256, 0) * a));
-}
-
-// originally moved here from the CSS parser
-template <typename CharacterType>
-static inline bool ParseHexColorInternal(const CharacterType* name,
-                                         unsigned length,
-                                         RGBA32& rgb) {
-  if (length != 3 && length != 4 && length != 6 && length != 8)
-    return false;
-  if ((length == 8 || length == 4) &&
-      !RuntimeEnabledFeatures::CSSHexAlphaColorEnabled())
-    return false;
-  unsigned value = 0;
-  for (unsigned i = 0; i < length; ++i) {
-    if (!IsASCIIHexDigit(name[i]))
-      return false;
-    value <<= 4;
-    value |= ToASCIIHexValue(name[i]);
-  }
-  if (length == 6) {
-    rgb = 0xFF000000 | value;
-    return true;
-  }
-  if (length == 8) {
-    // We parsed the values into RGBA order, but the RGBA32 type
-    // expects them to be in ARGB order, so we right rotate eight bits.
-    rgb = value << 24 | value >> 8;
-    return true;
-  }
-  if (length == 4) {
-    // #abcd converts to ddaabbcc in RGBA32.
-    rgb = (value & 0xF) << 28 | (value & 0xF) << 24 | (value & 0xF000) << 8 |
-          (value & 0xF000) << 4 | (value & 0xF00) << 4 | (value & 0xF00) |
-          (value & 0xF0) | (value & 0xF0) >> 4;
-    return true;
-  }
-  // #abc converts to #aabbcc
-  rgb = 0xFF000000 | (value & 0xF00) << 12 | (value & 0xF00) << 8 |
-        (value & 0xF0) << 8 | (value & 0xF0) << 4 | (value & 0xF) << 4 |
-        (value & 0xF);
-  return true;
 }
 
 bool Color::ParseHexColor(const LChar* name, unsigned length, RGBA32& rgb) {
@@ -266,21 +297,6 @@ String Color::NameForLayoutTreeAsText() const {
   return String::Format("#%02X%02X%02X", Red(), Green(), Blue());
 }
 
-static inline const NamedColor* FindNamedColor(const String& name) {
-  char buffer[64];  // easily big enough for the longest color name
-  unsigned length = name.length();
-  if (length > sizeof(buffer) - 1)
-    return nullptr;
-  for (unsigned i = 0; i < length; ++i) {
-    UChar c = name[i];
-    if (!c || c > 0x7F)
-      return nullptr;
-    buffer[i] = ToASCIILower(static_cast<char>(c));
-  }
-  buffer[length] = '\0';
-  return FindColor(buffer, length);
-}
-
 bool Color::SetNamedColor(const String& name) {
   const NamedColor* found_color = FindNamedColor(name);
   color_ = found_color ? found_color->argb_value : 0;
@@ -333,18 +349,6 @@ Color Color::CombineWithAlpha(float other_alpha) const {
   float override_alpha = (Alpha() / 255.f) * other_alpha;
   return rgb_only | ColorFloatToRGBAByte(override_alpha) << 24;
 }
-
-static int BlendComponent(int c, int a) {
-  // We use white.
-  float alpha = a / 255.0f;
-  int white_blend = 255 - a;
-  c -= white_blend;
-  return static_cast<int>(c / alpha);
-}
-
-const int kCStartAlpha = 153;     // 60%
-const int kCEndAlpha = 204;       // 80%;
-const int kCAlphaIncrement = 17;  // Increments in between.
 
 Color Color::Blend(const Color& source) const {
   if (!Alpha() || !source.HasAlpha())
