@@ -121,9 +121,12 @@ void SetCrostiniUIAllowedForTesting(bool enabled) {
   g_crostini_ui_allowed_for_testing = enabled;
 }
 
-bool IsCrostiniAllowed() {
+bool IsCrostiniAllowedForProfile(Profile* profile) {
   if (g_crostini_ui_allowed_for_testing) {
     return true;
+  }
+  if (profile && (profile->IsChild() || profile->IsLegacySupervised())) {
+    return false;
   }
   return virtual_machines::AreVirtualMachinesAllowedByVersionAndChannel() &&
          virtual_machines::AreVirtualMachinesAllowedByPolicy() &&
@@ -138,7 +141,7 @@ bool IsCrostiniUIAllowedForProfile(Profile* profile) {
     return false;
   }
 
-  return IsCrostiniAllowed() &&
+  return IsCrostiniAllowedForProfile(profile) &&
          base::FeatureList::IsEnabled(features::kExperimentalCrostiniUI);
 }
 
