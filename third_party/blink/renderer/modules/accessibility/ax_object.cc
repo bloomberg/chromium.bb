@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/accessible_node.h"
 #include "third_party/blink/renderer/core/dom/accessible_node_list.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
@@ -474,6 +475,8 @@ AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
       cached_has_inherited_presentational_role_(false),
       cached_is_editable_root_(false),
       cached_live_region_root_(nullptr),
+      cached_aria_column_index_(0),
+      cached_aria_row_index_(0),
       ax_object_cache_(&ax_object_cache) {
   ++number_of_live_ax_objects_;
 }
@@ -869,6 +872,8 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
           ? const_cast<AXObject*>(this)
           : (ParentObjectIfExists() ? ParentObjectIfExists()->LiveRegionRoot()
                                     : nullptr);
+  cached_aria_column_index_ = ComputeAriaColumnIndex();
+  cached_aria_row_index_ = ComputeAriaRowIndex();
   // TODO(dmazzoni): remove this const_cast.
   if (cached_is_ignored_ != LastKnownIsIgnoredValue()) {
     const_cast<AXObject*>(this)->ChildrenChanged();
@@ -2503,71 +2508,94 @@ unsigned AXObject::RowSpan() const {
 }
 
 unsigned AXObject::AriaColumnIndex() const {
+  UpdateCachedAttributeValuesIfNeeded();
+  return cached_aria_column_index_;
+}
+
+unsigned AXObject::AriaRowIndex() const {
+  UpdateCachedAttributeValuesIfNeeded();
+  return cached_aria_row_index_;
+}
+
+unsigned AXObject::ComputeAriaColumnIndex() const {
   if (!IsTableCellLikeRole())
     return 0;
 
+  // First see if it has an ARIA column index explicitly set.
   uint32_t col_index;
   if (HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kColIndex, col_index) &&
       col_index >= 1) {
     return col_index;
   }
 
+  // Get the previous sibling.
+  // TODO(dmazzoni): this code depends on the DOM; move this code out of Blink
+  // and make it more general.
+  AXObject* previous = nullptr;
+  if (GetNode()) {
+    Node* previousNode = ElementTraversal::PreviousSibling(*GetNode());
+    previous = AXObjectCache().GetOrCreate(previousNode);
+  }
+
+  // It has a previous sibling, so if that cell has a column index, this one's
+  // index is one greater.
+  if (previous) {
+    col_index = previous->AriaColumnIndex();
+    if (col_index)
+      return col_index + 1;
+    return 0;
+  }
+
+  // No previous cell, so check the row to see if it sets a column index.
   const AXObject* row = TableRowParent();
   if (!row)
     return 0;
-
-  if (!row->HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kColIndex,
-                                          col_index))
-    col_index = 0;
-  for (const auto& child : row->TableCellChildren()) {
-    if (child == this)
-      break;
-    unsigned child_aria_column_index = child->AriaColumnIndex();
-    if (child_aria_column_index)
-      col_index = child_aria_column_index;
-    if (col_index > 0)
-      col_index++;
+  if (row->HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kColIndex,
+                                         col_index)) {
+    return col_index;
   }
-  return col_index;
+
+  // Otherwise there's no ARIA column index.
+  return 0;
 }
 
-unsigned AXObject::AriaRowIndex() const {
-  const AXObject* row;
-  if (IsTableCellLikeRole())
-    row = TableRowParent();
-  else if (IsTableRowLikeRole())
-    row = this;
-  else
+unsigned AXObject::ComputeAriaRowIndex() const {
+  if (!IsTableCellLikeRole() && !IsTableRowLikeRole())
     return 0;
 
+  // First check if there's an ARIA row index explicitly set.
   uint32_t row_index;
   if (HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kRowIndex, row_index) &&
       row_index >= 1) {
     return row_index;
   }
 
-  if (row != this &&
-      row->HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kRowIndex,
-                                         row_index) &&
-      row_index >= 1) {
-    return row_index;
+  // If this is a cell, return the ARIA row index of the containing row.
+  if (IsTableCellLikeRole()) {
+    const AXObject* row = TableRowParent();
+    if (row)
+      return row->AriaRowIndex();
+    return 0;
   }
 
-  const AXObject* table = row->TableParent();
-  if (!table)
+  // Otherwise, this is a row. Find the previous sibling row.
+  // TODO(dmazzoni): this code depends on the DOM; move this code out of Blink
+  // and make it more general.
+  if (!GetNode())
+    return 0;
+  Node* previousNode = ElementTraversal::PreviousSibling(*GetNode());
+  AXObject* previous = AXObjectCache().GetOrCreate(previousNode);
+  if (!previous || !previous->IsTableRowLikeRole())
     return 0;
 
-  row_index = 0;
-  for (const auto& child : table->TableRowChildren()) {
-    if (child == row)
-      break;
-    unsigned child_aria_row_index = child->AriaRowIndex();
-    if (child_aria_row_index)
-      row_index = child_aria_row_index;
-    if (row_index > 0)
-      row_index++;
-  }
-  return row_index;
+  // If the previous row has an ARIA row index, this one is the same index
+  // plus one.
+  row_index = previous->AriaRowIndex();
+  if (row_index)
+    return row_index + 1;
+
+  // Otherwise there's no ARIA row index.
+  return 0;
 }
 
 AXObject::AXObjectVector AXObject::TableRowChildren() const {
