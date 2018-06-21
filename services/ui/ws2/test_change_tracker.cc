@@ -175,6 +175,11 @@ std::string ChangeToDescription(const Change& change,
                                 WindowIdToString(change.window_id).c_str());
     case CHANGE_TYPE_DRAG_DROP_DONE:
       return "DragDropDone";
+    case CHANGE_TYPE_ON_PERFORM_DRAG_DROP_COMPLETED:
+      return base::StringPrintf(
+          "OnPerformDragDropCompleted id=%d success=%s action=%d",
+          change.change_id, change.bool_value ? "true" : "false",
+          change.drag_drop_action);
   }
   return std::string();
 }
@@ -555,6 +560,17 @@ void TestChangeTracker::OnCompleteDrop(Id window_id) {
 void TestChangeTracker::OnDragDropDone() {
   Change change;
   change.type = CHANGE_TYPE_DRAG_DROP_DONE;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnPerformDragDropCompleted(uint32_t change_id,
+                                                   bool success,
+                                                   uint32_t action_taken) {
+  Change change;
+  change.type = CHANGE_TYPE_ON_PERFORM_DRAG_DROP_COMPLETED;
+  change.change_id = change_id;
+  change.bool_value = success;
+  change.drag_drop_action = action_taken;
   AddChange(change);
 }
 

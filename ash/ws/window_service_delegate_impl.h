@@ -28,6 +28,13 @@ class WindowServiceDelegateImpl : public ui::ws2::WindowServiceDelegate {
                          const gfx::Point& cursor,
                          DoneCallback callback) override;
   void CancelWindowMoveLoop() override;
+  void RunDragLoop(aura::Window* window,
+                   const ui::OSExchangeData& data,
+                   const gfx::Point& screen_location,
+                   uint32_t drag_operation,
+                   ui::DragDropTypes::DragEventSource source,
+                   DragDropCompletedCallback callback) override;
+  void CancelDragLoop(aura::Window* window) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowServiceDelegateImpl);

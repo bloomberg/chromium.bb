@@ -54,6 +54,7 @@ enum ChangeType {
   CHANGE_TYPE_DRAG_LEAVE,
   CHANGE_TYPE_COMPLETE_DROP,
   CHANGE_TYPE_DRAG_DROP_DONE,
+  CHANGE_TYPE_ON_PERFORM_DRAG_DROP_COMPLETED,
 };
 
 // TODO(sky): consider nuking and converting directly to WindowData.
@@ -111,6 +112,7 @@ struct Change {
   gfx::Point location1;
   gfx::PointF location2;
   base::flat_map<std::string, std::vector<uint8_t>> drag_data;
+  uint32_t drag_drop_action;
 };
 
 // The ChangeToDescription related functions convert a Change into a string.
@@ -226,6 +228,9 @@ class TestChangeTracker {
   void OnDragLeave(Id widnow_id);
   void OnCompleteDrop(Id window_id);
   void OnDragDropDone();
+  void OnPerformDragDropCompleted(uint32_t change_id,
+                                  bool success,
+                                  uint32_t action_taken);
   void RequestClose(Id window_id);
 
  private:

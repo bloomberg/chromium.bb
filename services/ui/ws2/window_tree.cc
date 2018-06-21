@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
@@ -25,16 +26,20 @@
 #include "services/ui/ws2/window_service_delegate.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/os_exchange_data_provider_mus.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/property_utils.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/wm/core/capture_controller.h"
 
 namespace ui {
@@ -317,6 +322,53 @@ void WindowTree::OnCaptureLost(aura::Window* lost_capture) {
 void WindowTree::OnPerformWindowMoveDone(uint32_t change_id, bool result) {
   window_moving_ = nullptr;
   window_tree_client_->OnChangeCompleted(change_id, result);
+}
+
+void WindowTree::DoPerformDragDrop(
+    uint32_t change_id,
+    Id source_window_id,
+    const gfx::Point& screen_location,
+    const base::flat_map<std::string, std::vector<uint8_t>>& drag_data,
+    const gfx::ImageSkia& drag_image,
+    const gfx::Vector2d& drag_image_offset,
+    uint32_t drag_operation,
+    ::ui::mojom::PointerKind source) {
+  if (pending_drag_source_window_id_ != source_window_id) {
+    // Pending drag is canceled before DoPerformDragDrop runs.
+    window_tree_client_->OnPerformDragDropCompleted(change_id, false,
+                                                    mojom::kDropEffectNone);
+    return;
+  }
+
+  aura::Window* source_window = GetWindowByTransportId(source_window_id);
+  if (!source_window) {
+    DVLOG(1) << "PerformDragDrop failed (no window)";
+    OnPerformDragDropDone(change_id, mojom::kDropEffectNone);
+    return;
+  }
+  if (!IsClientCreatedWindow(source_window)) {
+    DVLOG(1) << "PerformDragDrop failed (access denied)";
+    OnPerformDragDropDone(change_id, mojom::kDropEffectNone);
+    return;
+  }
+
+  ui::OSExchangeData data(std::make_unique<aura::OSExchangeDataProviderMus>(
+      mojo::FlatMapToMap(drag_data)));
+  data.provider().SetDragImage(drag_image, drag_image_offset);
+
+  window_service_->delegate()->RunDragLoop(
+      source_window, data, screen_location, drag_operation,
+      source == ::ui::mojom::PointerKind::MOUSE
+          ? ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE
+          : ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH,
+      base::BindOnce(&WindowTree::OnPerformDragDropDone,
+                     weak_factory_.GetWeakPtr(), change_id));
+}
+
+void WindowTree::OnPerformDragDropDone(uint32_t change_id, int drag_result) {
+  pending_drag_source_window_id_ = kInvalidTransportId;
+  window_tree_client_->OnPerformDragDropCompleted(
+      change_id, drag_result != ui::DragDropTypes::DRAG_NONE, drag_result);
 }
 
 aura::Window* WindowTree::AddClientCreatedWindow(
@@ -1520,11 +1572,40 @@ void WindowTree::PerformDragDrop(
     const gfx::Vector2d& drag_image_offset,
     uint32_t drag_operation,
     ::ui::mojom::PointerKind source) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  if (pending_drag_source_window_id_ != kInvalidTransportId) {
+    DVLOG(1) << "PerformDragDrop failed (only one drag allowed)";
+    window_tree_client_->OnPerformDragDropCompleted(change_id, false,
+                                                    mojom::kDropEffectNone);
+    return;
+  }
+
+  pending_drag_source_window_id_ = source_window_id;
+
+  // Runs the drag loop as a posted task to unwind mojo call stack.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WindowTree::DoPerformDragDrop, weak_factory_.GetWeakPtr(),
+                     change_id, source_window_id, screen_location, drag_data,
+                     drag_image, drag_image_offset, drag_operation, source));
 }
 
 void WindowTree::CancelDragDrop(Id window_id) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  if (pending_drag_source_window_id_ == kInvalidTransportId) {
+    DVLOG(1) << "CancelDragDrop called and a drag is not underway";
+    return;
+  }
+
+  if (pending_drag_source_window_id_ != window_id) {
+    DVLOG(1) << "CancelDragDrop called with wrong window";
+    return;
+  }
+
+  // Clear |pending_drag_source_window_id_| to cancel posted drag loop task.
+  pending_drag_source_window_id_ = kInvalidTransportId;
+
+  // Cancel the current drag loop if it is running.
+  window_service_->delegate()->CancelDragLoop(
+      GetWindowByTransportId(window_id));
 }
 
 }  // namespace ws2

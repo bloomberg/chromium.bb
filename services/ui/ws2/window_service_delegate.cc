@@ -19,5 +19,15 @@ void WindowServiceDelegate::RunWindowMoveLoop(aura::Window* window,
   std::move(callback).Run(false);
 }
 
+void WindowServiceDelegate::RunDragLoop(
+    aura::Window* window,
+    const ui::OSExchangeData& data,
+    const gfx::Point& screen_location,
+    uint32_t drag_operation,
+    ui::DragDropTypes::DragEventSource source,
+    DragDropCompletedCallback callback) {
+  std::move(callback).Run(ui::DragDropTypes::DRAG_NONE);
+}
+
 }  // namespace ws2
 }  // namespace ui

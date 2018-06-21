@@ -162,6 +162,23 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // the move loop (true for success).
   void OnPerformWindowMoveDone(uint32_t change_id, bool result);
 
+  // Scheduled from PerformDragDrop to run drag loop with mojo stack unwinded.
+  void DoPerformDragDrop(
+      uint32_t change_id,
+      Id source_window_id,
+      const gfx::Point& screen_location,
+      const base::flat_map<std::string, std::vector<uint8_t>>& drag_data,
+      const gfx::ImageSkia& drag_image,
+      const gfx::Vector2d& drag_image_offset,
+      uint32_t drag_operation,
+      ::ui::mojom::PointerKind source);
+
+  // Callback from WindowServiceDelegate::RunDragLoop(). |change_id| is
+  // the id at the time the drag loop was initiated. |result| is the result of
+  // the drag (the final drag operation performed, or DRAG_NONE when the drag
+  // fails or gets canceled).
+  void OnPerformDragDropDone(uint32_t change_id, int drag_result);
+
   // Called for windows created by the client (including top-levels).
   aura::Window* AddClientCreatedWindow(
       const ClientWindowId& id,
@@ -448,6 +465,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   // Set while a window move loop is in progress.
   aura::Window* window_moving_ = nullptr;
+
+  // Set while a drag loop is in progress.
+  Id pending_drag_source_window_id_ = kInvalidTransportId;
 
   base::WeakPtrFactory<WindowTree> weak_factory_{this};
 

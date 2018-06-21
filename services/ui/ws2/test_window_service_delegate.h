@@ -43,6 +43,10 @@ class TestWindowServiceDelegate : public WindowServiceDelegate {
 
   DoneCallback TakeMoveLoopCallback();
 
+  bool cancel_drag_loop_called() const { return cancel_drag_loop_called_; }
+
+  DragDropCompletedCallback TakeDragLoopCallback();
+
   // WindowServiceDelegate:
   std::unique_ptr<aura::Window> NewTopLevel(
       aura::PropertyConverter* property_converter,
@@ -54,6 +58,13 @@ class TestWindowServiceDelegate : public WindowServiceDelegate {
                          const gfx::Point& cursor,
                          DoneCallback callback) override;
   void CancelWindowMoveLoop() override;
+  void RunDragLoop(aura::Window* window,
+                   const ui::OSExchangeData& data,
+                   const gfx::Point& screen_location,
+                   uint32_t drag_operation,
+                   ui::DragDropTypes::DragEventSource source,
+                   DragDropCompletedCallback callback) override;
+  void CancelDragLoop(aura::Window* window) override;
 
  private:
   aura::Window* top_level_parent_;
@@ -62,10 +73,14 @@ class TestWindowServiceDelegate : public WindowServiceDelegate {
   // Callback supplied to RunWindowMoveLoop() is set here.
   DoneCallback move_loop_callback_;
 
+  // Callback supplied to RunDragLoop() is set here.
+  DragDropCompletedCallback drag_loop_callback_;
+
   // Events passed to OnUnhandledKeyEvent() are added here.
   std::vector<KeyEvent> unhandled_key_events_;
 
   bool cancel_window_move_loop_called_ = false;
+  bool cancel_drag_loop_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowServiceDelegate);
 };

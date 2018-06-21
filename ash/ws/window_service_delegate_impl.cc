@@ -34,23 +34,33 @@ void OnMoveLoopCompleted(base::OnceCallback<void(bool success)> end_closure,
       .Run(result == wm::WmToplevelWindowEventHandler::DragResult::SUCCESS);
 }
 
-// Returns true if a window move loop can be started.
-bool ShouldStartMoveLoop(aura::Window* window,
-                         ui::mojom::MoveLoopSource source) {
-  // A window move can not be started while drag and drop is in progress.
+// Returns true if there is a drag and drop in progress.
+bool InDragLoop(aura::Window* window) {
   aura::client::DragDropClient* drag_drop_client =
       aura::client::GetDragDropClient(window->GetRootWindow());
-  if (drag_drop_client && drag_drop_client->IsDragDropInProgress())
-    return false;
+  return drag_drop_client && drag_drop_client->IsDragDropInProgress();
+}
 
-  ToplevelWindowEventHandler* event_handler =
-      Shell::Get()->toplevel_window_event_handler();
-  // Only one move is allowed at a time.
-  if (event_handler->wm_toplevel_window_event_handler()
-          ->is_drag_in_progress()) {
-    return false;
-  }
-  return true;
+// Returns true if there is a window move loop in progress.
+bool InWindowMoveLoop() {
+  return Shell::Get()
+      ->toplevel_window_event_handler()
+      ->wm_toplevel_window_event_handler()
+      ->is_drag_in_progress();
+}
+
+// Returns true if a window move loop can be started.
+bool ShouldStartMoveLoop(aura::Window* window) {
+  // A window move can only be started when there is no in progress drag loop or
+  // window move loop.
+  return !InDragLoop(window) && !InWindowMoveLoop();
+}
+
+// Returns true if a drag loop can be started.
+bool ShouldStartDragLoop(aura::Window* window) {
+  // A drag loop can only be started when there is no in progress drag loop or
+  // window move loop.
+  return !InDragLoop(window) && !InWindowMoveLoop();
 }
 
 }  // namespace
@@ -94,7 +104,7 @@ void WindowServiceDelegateImpl::RunWindowMoveLoop(
     ui::mojom::MoveLoopSource source,
     const gfx::Point& cursor,
     DoneCallback callback) {
-  if (!ShouldStartMoveLoop(window, source)) {
+  if (!ShouldStartMoveLoop(window)) {
     std::move(callback).Run(false);
     return;
   }
@@ -119,6 +129,34 @@ void WindowServiceDelegateImpl::CancelWindowMoveLoop() {
       ->toplevel_window_event_handler()
       ->wm_toplevel_window_event_handler()
       ->RevertDrag();
+}
+
+void WindowServiceDelegateImpl::RunDragLoop(
+    aura::Window* window,
+    const ui::OSExchangeData& data,
+    const gfx::Point& screen_location,
+    uint32_t drag_operation,
+    ui::DragDropTypes::DragEventSource source,
+    DragDropCompletedCallback callback) {
+  if (!ShouldStartDragLoop(window)) {
+    std::move(callback).Run(ui::DragDropTypes::DRAG_NONE);
+    return;
+  }
+
+  aura::Window* const root_window = window->GetRootWindow();
+  aura::client::DragDropClient* drag_drop_client =
+      aura::client::GetDragDropClient(root_window);
+  DCHECK(drag_drop_client);
+
+  std::move(callback).Run(drag_drop_client->StartDragAndDrop(
+      data, root_window, window, screen_location, drag_operation, source));
+}
+
+void WindowServiceDelegateImpl::CancelDragLoop(aura::Window* window) {
+  if (!InDragLoop(window))
+    return;
+
+  aura::client::GetDragDropClient(window->GetRootWindow())->DragCancel();
 }
 
 }  // namespace ash
