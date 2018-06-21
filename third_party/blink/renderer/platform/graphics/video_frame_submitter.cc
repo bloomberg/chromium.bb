@@ -200,7 +200,11 @@ void VideoFrameSubmitter::SubmitFrame(
     scoped_refptr<media::VideoFrame> video_frame) {
   TRACE_EVENT0("media", "VideoFrameSubmitter::SubmitFrame");
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
-  DCHECK(compositor_frame_sink_);
+
+  // The context may have been destroyed between the call being scheduled and it
+  // running. The lack of compositor_frame_sink_ is used as a sign.
+  if (!compositor_frame_sink_)
+    return;
 
   viz::CompositorFrame compositor_frame;
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();

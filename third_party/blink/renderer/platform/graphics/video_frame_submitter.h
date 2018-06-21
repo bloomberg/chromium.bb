@@ -82,6 +82,8 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   void DidDeleteSharedBitmap(const viz::SharedBitmapId&) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest, ContextLostDuringSubmit);
+
   void StartSubmitting();
   void SubmitFrame(viz::BeginFrameAck, scoped_refptr<media::VideoFrame>);
 

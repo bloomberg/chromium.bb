@@ -483,4 +483,29 @@ TEST_F(VideoFrameSubmitterTest, WaitingForAckPreventsNewFrame) {
   scoped_task_environment_.RunUntilIdle();
 }
 
+// Test that no crash happens if the context is lost during a frame submission.
+TEST_F(VideoFrameSubmitterTest, ContextLostDuringSubmit) {
+  MakeSubmitter();
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
+
+  submitter_->StartRendering();
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(*provider_, GetCurrentFrame())
+      .WillOnce(Return(media::VideoFrame::CreateFrame(
+          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+          gfx::Size(8, 8), base::TimeDelta())));
+  EXPECT_CALL(*provider_, PutCurrentFrame());
+
+  // This will post a task that will later call SubmitFrame(). The call will
+  // happen after OnContextLost().
+  submitter_->SubmitSingleFrame();
+
+  submitter_->OnContextLost();
+
+  scoped_task_environment_.RunUntilIdle();
+}
+
 }  // namespace blink
