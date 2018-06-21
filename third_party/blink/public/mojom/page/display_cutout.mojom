@@ -4,6 +4,8 @@
 
 module blink.mojom;
 
+import "ui/gfx/geometry/mojo/geometry.mojom";
+
 enum ViewportFit {
   // No effect - the whole web page is viewable (default).
   kAuto,
@@ -21,4 +23,21 @@ enum ViewportFit {
 interface DisplayCutoutHost {
   // Notify the browser that the ViewportFit for the renderer has changed.
   ViewportFitChanged(blink.mojom.ViewportFit value);
+};
+
+// Contains the four safe areas for the display cutout. These are insets from
+// each edge of the display measured in pixels.
+// TODO(beccahughes): Replace with gfx::Insets
+struct DisplayCutoutSafeArea {
+  int32 top;
+  int32 left;
+  int32 bottom;
+  int32 right;
+};
+
+// Used for browser -> renderer calls about display cutout. This is associated
+// with a frame.
+interface DisplayCutoutClient {
+  // Notify the renderer that the safe areas have changed.
+  SetSafeArea(DisplayCutoutSafeArea safe_area);
 };

@@ -15,6 +15,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
 
 namespace content {
@@ -50,6 +51,18 @@ class TestWebContentsObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
 };
 
+const char kTestHTML[] =
+    "<!DOCTYPE html>"
+    "<style>"
+    "  #target {"
+    "    margin-top: env(safe-area-inset-top);"
+    "    margin-left: env(safe-area-inset-left);"
+    "    margin-bottom: env(safe-area-inset-bottom);"
+    "    margin-right: env(safe-area-inset-right);"
+    "  }"
+    "</style>"
+    "<div id=target></div>";
+
 }  // namespace
 
 class DisplayCutoutBrowserTest : public ContentBrowserTest {
@@ -57,8 +70,13 @@ class DisplayCutoutBrowserTest : public ContentBrowserTest {
   DisplayCutoutBrowserTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII("enable-blink-features",
-                                    "DisplayCutoutAPI,CSSViewport");
+    command_line->AppendSwitchASCII(
+        "enable-blink-features",
+        "DisplayCutoutAPI,CSSViewport,CSSEnvironmentVariables");
+  }
+
+  content::RenderFrameHost* MainFrame() {
+    return shell()->web_contents()->GetMainFrame();
   }
 
   void LoadTestPageWithViewportFitFromMeta(const std::string& value) {
@@ -97,6 +115,41 @@ class DisplayCutoutBrowserTest : public ContentBrowserTest {
         "document.getElementsByTagName('meta')[0].content = ''");
   }
 
+  void SendSafeAreaToFrame(int top, int left, int bottom, int right) {
+    blink::mojom::DisplayCutoutClientAssociatedPtr client;
+    MainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(&client);
+    client->SetSafeArea(
+        blink::mojom::DisplayCutoutSafeArea::New(top, left, bottom, right));
+  }
+
+  std::string GetCurrentSafeAreaValue(const std::string& name) {
+    std::string value;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        MainFrame(),
+        "(() => {"
+        "const e = document.getElementById('target');"
+        "const style = window.getComputedStyle(e, null);"
+        "window.domAutomationController.send("
+        "  style.getPropertyValue('margin-" +
+            name +
+            "'));"
+            "})();",
+        &value));
+    return value;
+  }
+
+  void LoadTestPageWithData(const std::string& data) {
+    GURL url("https://www.example.com");
+
+    TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
+#if defined(OS_ANDROID)
+    shell()->LoadDataAsStringWithBaseURL(url, data, url);
+#else
+    shell()->LoadDataWithBaseURL(url, data, url);
+#endif
+    same_tab_observer.Wait();
+  }
+
  private:
   void LoadSubFrameWithData(const std::string& html_data) {
     const std::string data =
@@ -114,18 +167,6 @@ class DisplayCutoutBrowserTest : public ContentBrowserTest {
     params.load_type = NavigationController::LOAD_TYPE_DATA;
     web_contents->GetController().LoadURLWithParams(params);
     web_contents->Focus();
-  }
-
-  void LoadTestPageWithData(const std::string& data) {
-    GURL url("https://www.example.com");
-
-    TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
-#if defined(OS_ANDROID)
-    shell()->LoadDataAsStringWithBaseURL(url, data, url);
-#else
-    shell()->LoadDataWithBaseURL(url, data, url);
-#endif
-    same_tab_observer.Wait();
   }
 
   DISALLOW_COPY_AND_ASSIGN(DisplayCutoutBrowserTest);
@@ -236,6 +277,24 @@ IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_CSS_Invalid) {
   TestWebContentsObserver observer(shell()->web_contents());
   LoadTestPageWithViewportFitFromCSS("invalid");
   observer.WaitForWantedValue(blink::mojom::ViewportFit::kAuto);
+}
+
+IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, PublishSafeAreaVariables) {
+  LoadTestPageWithData(kTestHTML);
+
+  // Make sure all the safe areas are currently zero.
+  EXPECT_EQ("0px", GetCurrentSafeAreaValue("top"));
+  EXPECT_EQ("0px", GetCurrentSafeAreaValue("left"));
+  EXPECT_EQ("0px", GetCurrentSafeAreaValue("bottom"));
+  EXPECT_EQ("0px", GetCurrentSafeAreaValue("right"));
+
+  SendSafeAreaToFrame(1, 2, 3, 4);
+
+  // Make sure all the safe ares are correctly set.
+  EXPECT_EQ("1px", GetCurrentSafeAreaValue("top"));
+  EXPECT_EQ("2px", GetCurrentSafeAreaValue("left"));
+  EXPECT_EQ("3px", GetCurrentSafeAreaValue("bottom"));
+  EXPECT_EQ("4px", GetCurrentSafeAreaValue("right"));
 }
 
 }  //  namespace content

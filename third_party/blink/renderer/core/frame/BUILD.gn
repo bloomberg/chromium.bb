@@ -32,6 +32,8 @@ blink_core_sources("frame") {
     "deprecation_report_body.h",
     "device_single_window_event_controller.cc",
     "device_single_window_event_controller.h",
+    "display_cutout_client_impl.cc",
+    "display_cutout_client_impl.h",
     "dom_timer.cc",
     "dom_timer.h",
     "dom_timer_coordinator.cc",
