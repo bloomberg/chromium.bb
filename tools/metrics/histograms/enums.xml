@@ -46949,6 +46949,7 @@ Full version information for the fingerprint enum values:
   <int value="-1866379343" label="service_manager"/>
   <int value="-1656677225" label="file"/>
   <int value="-1632474908" label="viz"/>
+  <int value="-1615505903" label="media_gallery_util"/>
   <int value="-1450594275" label="identity"/>
   <int value="-1307090589" label="ui"/>
   <int value="-1289115149" label="device"/>
@@ -46962,6 +46963,7 @@ Full version information for the fingerprint enum values:
   <int value="-2816355" label="profile_import"/>
   <int value="357224138" label="user_id"/>
   <int value="498331100" label="preferences"/>
+  <int value="573935755" label="removable_storage_writer"/>
   <int value="685091421" label="unzip_service"/>
   <int value="692677280" label="audio"/>
   <int value="737685379" label="file_util"/>
@@ -46969,7 +46971,11 @@ Full version information for the fingerprint enum values:
   <int value="882338710" label="metrics"/>
   <int value="1051118555" label="resource_coordinator"/>
   <int value="1395049324" label="patch_service"/>
+  <int value="1484328260" label="autoclick_app"/>
+  <int value="1803540096" label="tap_visualizer_app"/>
+  <int value="1937572987" label="shortcut_viewer_app"/>
   <int value="1967189975" label="util_win"/>
+  <int value="1968783712" label="quick_launch_app"/>
   <int value="1998508722" label="echo"/>
   <int value="2077967579" label="pdf_compositor"/>
 </enum>
