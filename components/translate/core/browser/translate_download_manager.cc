@@ -74,6 +74,7 @@ void TranslateDownloadManager::ResetForTesting() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   language_list_.reset(new TranslateLanguageList);
   script_.reset(new TranslateScript);
+  url_loader_factory_ = nullptr;
 }
 
 void TranslateDownloadManager::SetTranslateScriptExpirationDelay(int delay_ms) {
