@@ -265,7 +265,9 @@
               let prefix = 'WaveShaper';
               let output = renderedBuffer.getChannelData(0);
               let response = renderedBuffer.getChannelData(1);
-              let tailFrame = findTailFrame(response);
+              // FFT resampler introduces some very small round-off.  Use a
+              // threshold of zero to find the tail frame.
+              let tailFrame = findTailFrame(response, 0);
 
               should(tailFrame, `${prefix} tail frame (${tailFrame})`)
                   .beGreaterThan(0);
@@ -282,7 +284,7 @@
             .then(() => task.done());
       });
 
-      audit.run();
+      audit.run('waveshaper-tail');
 
       function runTest(nodeName, nodeOptions) {
         // Two-channel output.  Channel 0 is the test result; channel 1 is the
@@ -319,15 +321,15 @@
       // Starting from the end find the first frame that exceeds our threshold.
       // This assumes that everything less than the threshold is equivalent to 0
       // for our purposes.
-      function findTailFrame(response) {
+      function findTailFrame(response, zeroThreshold) {
         // Any value below this is considered to be zero for our purpose of
         // finding the first non-zero value.  Somewhat arbitrary, but the value
         // here is the size of the LSB of a 16-bit PCM sample.
-        let zeroThreshold = 1 / 32768.
+        let threshold = zeroThreshold === undefined ? 1 / 32768 : zeroThreshold;
         let tailFrame = response.length;
 
         for (let k = response.length - 1; k >= 0; --k) {
-          if (Math.abs(response[k]) > zeroThreshold) {
+          if (Math.abs(response[k]) > threshold) {
             tailFrame = k + 1;
             break;
           }
