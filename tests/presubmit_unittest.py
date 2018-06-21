@@ -1979,7 +1979,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api = self.MockInputApi(change1, False)
     affected_files = (affected_file1, affected_file2)
 
-    input_api.AffectedFiles = lambda: affected_files
+    input_api.AffectedFiles = lambda **_: affected_files
 
     self.mox.ReplayAll()
 
@@ -2389,7 +2389,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     affected_file.Action = lambda: 'M'
 
     change = self.mox.CreateMock(presubmit.Change)
-    change.AffectedFiles = lambda: [affected_file]
+    change.AffectedFiles = lambda **_: [affected_file]
 
     input_api = self.MockInputApi(None, False)
     input_api.change = change

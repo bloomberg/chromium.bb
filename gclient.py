@@ -1810,8 +1810,10 @@ class CipdDependency(Dependency):
           'Relative CIPD dependencies are not currently supported.')
     self._cipd_package = None
     self._cipd_root = cipd_root
-    self._cipd_subdir = os.path.relpath(
+    # CIPD wants /-separated paths, even on Windows.
+    native_subdir_path = os.path.relpath(
         os.path.join(self.root.root_dir, name), cipd_root.root_dir)
+    self._cipd_subdir = posixpath.join(*native_subdir_path.split(os.sep))
     self._package_name = package
     self._package_version = version
 
@@ -1869,7 +1871,9 @@ class CipdDependency(Dependency):
           '  "%s": {' % (self.name.split(':')[0],),
           '    "packages": [',
       ])
-      for p in self._cipd_root.packages(self._cipd_subdir):
+      for p in sorted(
+          self._cipd_root.packages(self._cipd_subdir),
+          cmp=lambda x, y: cmp(x.name, y.name)):
         s.extend([
             '      {',
             '        "package": "%s",' % p.name,
