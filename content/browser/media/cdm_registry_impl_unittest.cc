@@ -21,6 +21,12 @@
 
 namespace content {
 
+namespace {
+
+using VideoCodec = media::VideoCodec;
+using EncryptionMode = media::EncryptionMode;
+using CdmSessionType = media::CdmSessionType;
+
 const char kTestCdmName[] = "Test CDM";
 const char kAlternateCdmName[] = "Alternate CDM";
 const char kTestCdmGuid[] = "62FE9C4B-384E-48FD-B28A-9F6F248BC8CC";
@@ -30,6 +36,28 @@ const char kVersion2[] = "1.1.1.2";
 const char kTestKeySystem[] = "com.example.somesystem";
 const char kTestFileSystemId[] = "file_system_id";
 
+// Helper function to compare a STL container to an initializer_list.
+template <typename Container, typename T>
+bool StlEquals(const Container a, std::initializer_list<T> b) {
+  return a == Container(b);
+}
+
+#define EXPECT_STL_EQ(a, ...)                 \
+  do {                                        \
+    EXPECT_TRUE(StlEquals(a, {__VA_ARGS__})); \
+  } while (false)
+
+#define EXPECT_VIDEO_CODECS(...) \
+  EXPECT_STL_EQ(cdm.supported_video_codecs, __VA_ARGS__)
+
+#define EXPECT_ENCRYPTION_SCHEMES(...) \
+  EXPECT_STL_EQ(cdm.supported_encryption_schemes, __VA_ARGS__)
+
+#define EXPECT_SESSION_TYPES(...) \
+  EXPECT_STL_EQ(cdm.supported_session_types, __VA_ARGS__)
+
+}  // namespace
+
 // For simplicity and to make failures easier to diagnose, this test uses
 // std::string instead of base::FilePath and std::vector<std::string>.
 class CdmRegistryImplTest : public testing::Test {
@@ -38,19 +66,21 @@ class CdmRegistryImplTest : public testing::Test {
   ~CdmRegistryImplTest() override {}
 
  protected:
-  void Register(const std::string& name,
-                const std::string& version,
-                const std::string& path,
-                const std::vector<media::VideoCodec>& supported_video_codecs,
-                bool supports_persistent_license,
-                const base::flat_set<media::EncryptionMode>& supported_modes,
-                std::string supported_key_system,
-                bool supports_sub_key_systems = false) {
-    cdm_registry_.RegisterCdm(CdmInfo(
-        name, kTestCdmGuid, base::Version(version),
-        base::FilePath::FromUTF8Unsafe(path), kTestFileSystemId,
-        supported_video_codecs, supports_persistent_license, supported_modes,
-        supported_key_system, supports_sub_key_systems));
+  void Register(
+      const std::string& name,
+      const std::string& version,
+      const std::string& path,
+      const std::vector<VideoCodec>& supported_video_codecs,
+      const base::flat_set<CdmSessionType>& supported_session_types,
+      const base::flat_set<EncryptionMode>& supported_encryption_schemes,
+      std::string supported_key_system,
+      bool supports_sub_key_systems = false) {
+    cdm_registry_.RegisterCdm(
+        CdmInfo(name, kTestCdmGuid, base::Version(version),
+                base::FilePath::FromUTF8Unsafe(path), kTestFileSystemId,
+                supported_video_codecs, supported_session_types,
+                supported_encryption_schemes, supported_key_system,
+                supports_sub_key_systems));
   }
 
   bool IsRegistered(const std::string& name, const std::string& version) {
@@ -76,8 +106,10 @@ class CdmRegistryImplTest : public testing::Test {
 
 TEST_F(CdmRegistryImplTest, Register) {
   Register(kTestCdmName, kVersion1, kTestPath,
-           {media::kCodecVP8, media::kCodecVP9}, true,
-           {media::EncryptionMode::kCenc}, kTestKeySystem, true);
+           {media::kCodecVP8, media::kCodecVP9},
+           {CdmSessionType::TEMPORARY_SESSION,
+            CdmSessionType::PERSISTENT_LICENSE_SESSION},
+           {EncryptionMode::kCenc}, kTestKeySystem, true);
   std::vector<CdmInfo> cdms = cdm_registry_.GetAllRegisteredCdms();
   ASSERT_EQ(1u, cdms.size());
   CdmInfo cdm = cdms[0];
@@ -85,42 +117,45 @@ TEST_F(CdmRegistryImplTest, Register) {
   EXPECT_EQ(kVersion1, cdm.version.GetString());
   EXPECT_EQ(kTestPath, cdm.path.MaybeAsASCII());
   EXPECT_EQ(kTestFileSystemId, cdm.file_system_id);
-  EXPECT_EQ(2u, cdm.supported_video_codecs.size());
-  EXPECT_EQ(media::kCodecVP8, cdm.supported_video_codecs[0]);
-  EXPECT_EQ(media::kCodecVP9, cdm.supported_video_codecs[1]);
-  EXPECT_TRUE(cdm.supports_persistent_license);
-  EXPECT_EQ(1u, cdm.supported_encryption_schemes.size());
-  EXPECT_EQ(
-      1u, cdm.supported_encryption_schemes.count(media::EncryptionMode::kCenc));
+  EXPECT_VIDEO_CODECS(VideoCodec::kCodecVP8, VideoCodec::kCodecVP9);
+  EXPECT_SESSION_TYPES(CdmSessionType::TEMPORARY_SESSION,
+                       CdmSessionType::PERSISTENT_LICENSE_SESSION);
+  EXPECT_ENCRYPTION_SCHEMES(EncryptionMode::kCenc);
   EXPECT_EQ(kTestKeySystem, cdm.supported_key_system);
   EXPECT_TRUE(cdm.supports_sub_key_systems);
 }
 
 TEST_F(CdmRegistryImplTest, ReRegister) {
-  Register(kTestCdmName, kVersion1, "/bb/cc", {}, false,
-           {media::EncryptionMode::kCenc}, kTestKeySystem);
+  Register(kTestCdmName, kVersion1, "/bb/cc", {},
+           {CdmSessionType::TEMPORARY_SESSION}, {EncryptionMode::kCenc},
+           kTestKeySystem);
   EXPECT_TRUE(IsRegistered(kTestCdmName, kVersion1));
 
   // Now register same key system with different values.
-  Register(kTestCdmName, kVersion1, kTestPath, {}, false,
-           {media::EncryptionMode::kCenc}, kTestKeySystem);
+  Register(kTestCdmName, kVersion1, kTestPath, {},
+           {CdmSessionType::TEMPORARY_SESSION}, {EncryptionMode::kCenc},
+           kTestKeySystem);
   EXPECT_TRUE(IsRegistered(kTestCdmName, kVersion1));
 }
 
 TEST_F(CdmRegistryImplTest, MultipleVersions) {
-  Register(kTestCdmName, kVersion1, kTestPath, {}, false,
-           {media::EncryptionMode::kCenc}, kTestKeySystem);
-  Register(kTestCdmName, kVersion2, "/bb/cc", {}, false,
-           {media::EncryptionMode::kCenc}, kTestKeySystem);
+  Register(kTestCdmName, kVersion1, kTestPath, {},
+           {CdmSessionType::TEMPORARY_SESSION}, {EncryptionMode::kCenc},
+           kTestKeySystem);
+  Register(kTestCdmName, kVersion2, "/bb/cc", {},
+           {CdmSessionType::TEMPORARY_SESSION}, {EncryptionMode::kCenc},
+           kTestKeySystem);
   EXPECT_TRUE(IsRegistered(kTestCdmName, kVersion1));
   EXPECT_TRUE(IsRegistered(kTestCdmName, kVersion2));
 }
 
 TEST_F(CdmRegistryImplTest, NewVersionInsertedLast) {
-  Register(kTestCdmName, kVersion1, kTestPath, {}, false,
-           {media::EncryptionMode::kCenc}, kTestKeySystem);
-  Register(kTestCdmName, kVersion2, "/bb/cc", {}, false,
-           {media::EncryptionMode::kCenc}, kTestKeySystem);
+  Register(kTestCdmName, kVersion1, kTestPath, {},
+           {CdmSessionType::TEMPORARY_SESSION}, {EncryptionMode::kCenc},
+           kTestKeySystem);
+  Register(kTestCdmName, kVersion2, "/bb/cc", {},
+           {CdmSessionType::TEMPORARY_SESSION}, {EncryptionMode::kCenc},
+           kTestKeySystem);
 
   const std::vector<std::string> versions = GetVersions(kTestCdmGuid);
   EXPECT_EQ(2u, versions.size());
@@ -129,27 +164,25 @@ TEST_F(CdmRegistryImplTest, NewVersionInsertedLast) {
 }
 
 TEST_F(CdmRegistryImplTest, DifferentNames) {
-  Register(kTestCdmName, kVersion1, kTestPath, {}, false,
-           {media::EncryptionMode::kCenc}, kTestKeySystem);
-  Register(kAlternateCdmName, kVersion1, kTestPath, {}, false,
-           {media::EncryptionMode::kCbcs}, kTestKeySystem);
+  Register(kTestCdmName, kVersion1, kTestPath, {},
+           {CdmSessionType::TEMPORARY_SESSION}, {EncryptionMode::kCenc},
+           kTestKeySystem);
+  Register(kAlternateCdmName, kVersion1, kTestPath, {},
+           {CdmSessionType::TEMPORARY_SESSION}, {EncryptionMode::kCbcs},
+           kTestKeySystem);
   EXPECT_TRUE(IsRegistered(kTestCdmName, kVersion1));
   EXPECT_TRUE(IsRegistered(kAlternateCdmName, kVersion1));
 }
 
 TEST_F(CdmRegistryImplTest, SupportedEncryptionSchemes) {
-  Register(kTestCdmName, kVersion1, kTestPath, {}, false,
-           {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs},
-           kTestKeySystem);
+  Register(kTestCdmName, kVersion1, kTestPath, {},
+           {CdmSessionType::TEMPORARY_SESSION},
+           {EncryptionMode::kCenc, EncryptionMode::kCbcs}, kTestKeySystem);
 
   std::vector<CdmInfo> cdms = cdm_registry_.GetAllRegisteredCdms();
   ASSERT_EQ(1u, cdms.size());
   const CdmInfo& cdm = cdms[0];
-  EXPECT_EQ(2u, cdm.supported_encryption_schemes.size());
-  EXPECT_EQ(
-      1u, cdm.supported_encryption_schemes.count(media::EncryptionMode::kCenc));
-  EXPECT_EQ(
-      1u, cdm.supported_encryption_schemes.count(media::EncryptionMode::kCbcs));
+  EXPECT_ENCRYPTION_SCHEMES(EncryptionMode::kCenc, EncryptionMode::kCbcs);
 }
 
 }  // namespace content

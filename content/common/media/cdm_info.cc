@@ -16,7 +16,7 @@ CdmInfo::CdmInfo(
     const base::FilePath& path,
     const std::string& file_system_id,
     const std::vector<media::VideoCodec>& supported_video_codecs,
-    bool supports_persistent_license,
+    const base::flat_set<media::CdmSessionType>& supported_session_types,
     const base::flat_set<media::EncryptionMode>& supported_encryption_schemes,
     const std::string& supported_key_system,
     bool supports_sub_key_systems)
@@ -26,7 +26,7 @@ CdmInfo::CdmInfo(
       path(path),
       file_system_id(file_system_id),
       supported_video_codecs(supported_video_codecs),
-      supports_persistent_license(supports_persistent_license),
+      supported_session_types(supported_session_types),
       supported_encryption_schemes(supported_encryption_schemes),
       supported_key_system(supported_key_system),
       supports_sub_key_systems(supports_sub_key_systems) {

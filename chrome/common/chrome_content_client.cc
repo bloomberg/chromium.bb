@@ -541,10 +541,18 @@ void ChromeContentClient::AddContentDecryptionModules(
       const base::Version version(WIDEVINE_CDM_VERSION_STRING);
       DCHECK(version.IsValid());
 
+      // Temporary session is always supported.
+      base::flat_set<media::CdmSessionType> supported_session_types = {
+          media::CdmSessionType::TEMPORARY_SESSION};
+      if (supports_persistent_license) {
+        supported_session_types.insert(
+            media::CdmSessionType::PERSISTENT_LICENSE_SESSION);
+      }
+
       cdms->push_back(content::CdmInfo(
           kWidevineCdmDisplayName, kWidevineCdmGuid, version, cdm_path,
           kWidevineCdmFileSystemId, video_codecs_supported,
-          supports_persistent_license, encryption_modes_supported,
+          supported_session_types, encryption_modes_supported,
           kWidevineKeySystem, false));
     }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
@@ -562,8 +570,6 @@ void ChromeContentClient::AddContentDecryptionModules(
       // A variant of ECK key system that has a different GUID.
       const char kExternalClearKeyDifferentGuidTestKeySystem[] =
           "org.chromium.externalclearkey.differentguid";
-      // ECK implementation supports persistent licenses.
-      constexpr bool supports_persistent_license = true;
 
       // Register kExternalClearKeyDifferentGuidTestKeySystem first separately.
       // Otherwise, it'll be treated as a sub-key-system of normal
@@ -572,7 +578,9 @@ void ChromeContentClient::AddContentDecryptionModules(
       cdms->push_back(content::CdmInfo(
           media::kClearKeyCdmDisplayName, media::kClearKeyCdmDifferentGuid,
           base::Version("0.1.0.0"), clear_key_cdm_path,
-          media::kClearKeyCdmFileSystemId, {}, supports_persistent_license,
+          media::kClearKeyCdmFileSystemId, {},
+          {media::CdmSessionType::TEMPORARY_SESSION,
+           media::CdmSessionType::PERSISTENT_LICENSE_SESSION},
           {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs},
           kExternalClearKeyDifferentGuidTestKeySystem, false));
 
@@ -580,7 +588,9 @@ void ChromeContentClient::AddContentDecryptionModules(
       cdms->push_back(content::CdmInfo(
           media::kClearKeyCdmDisplayName, media::kClearKeyCdmGuid,
           base::Version("0.1.0.0"), clear_key_cdm_path,
-          media::kClearKeyCdmFileSystemId, {}, supports_persistent_license,
+          media::kClearKeyCdmFileSystemId, {},
+          {media::CdmSessionType::TEMPORARY_SESSION,
+           media::CdmSessionType::PERSISTENT_LICENSE_SESSION},
           {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs},
           kExternalClearKeyKeySystem, true));
     }
