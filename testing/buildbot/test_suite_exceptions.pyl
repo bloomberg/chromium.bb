@@ -1681,6 +1681,9 @@
   },
   'network_service_browser_tests': {
     'remove_from': [
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
+      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
       # chromium.win
       'Win7 Tests (1)',  # For swarming capacity reasons.
       'Win10 Tests x64 (dbg)',  # Matches browser_tests.
@@ -1688,6 +1691,9 @@
   },
   'network_service_components_browsertests': {
     'remove_from': [
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
+      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
       # chromium.win
       'Win7 Tests (1)',  # For swarming capacity reasons.
       'Win10 Tests x64 (dbg)',  # Matches components_browsertests.
@@ -1695,6 +1701,9 @@
   },
   'network_service_content_browsertests': {
     'remove_from': [
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
+      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
       # chromium.win
       'Win7 Tests (1)',  # For swarming capacity reasons.
       'Win10 Tests x64 (dbg)',  # flaky: https://crbug.com/852786
@@ -1702,6 +1711,9 @@
   },
   'network_service_extensions_browsertests': {
     'remove_from': [
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
+      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
       # chromium.win
       'Win7 Tests (1)',  # For swarming capacity reasons.
       'Win10 Tests x64 (dbg)',  # Matches extensions_browsertests.
@@ -1709,6 +1721,9 @@
   },
   'network_service_interactive_ui_tests': {
     'remove_from': [
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
+      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
       # chromium.win
       'Win7 Tests (1)',  # For swarming capacity reasons.
     ],
@@ -1825,6 +1840,9 @@
       'Site Isolation Android',
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
+      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
     ],
     'modifications': {
       'Linux Tests (dbg)(1)': {
@@ -1844,18 +1862,27 @@
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
+      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
     ],
   },
   'site_per_process_components_unittests': {
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
+      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
     ],
   },
   'site_per_process_content_browsertests': {
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
+      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
     ],
     'modifications': {
       # chromium.fyi
@@ -1870,30 +1897,45 @@
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
+      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
     ],
   },
   'site_per_process_extensions_browsertests': {
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
+      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
     ],
   },
   'site_per_process_extensions_unittests': {
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
+      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
     ],
   },
   'not_site_per_process_interactive_ui_tests': {
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
+      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
     ],
   },
   'not_site_per_process_sync_integration_tests': {
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
+      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
     ],
   },
   'not_site_per_process_unit_tests': {
@@ -1902,6 +1944,9 @@
       'Site Isolation Android',
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
+      # chromium.memory
+      'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
+      'Linux TSan Tests',  # No capacity, https://crbug.com/852442
     ],
   },
   'site_per_process_webkit_layout_tests': {

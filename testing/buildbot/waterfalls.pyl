@@ -2905,7 +2905,7 @@
       },
       'Linux ASan LSan Tests (1)': {
         'test_suites': {
-          'gtest_tests': 'chromium_memory_linux_asan_gtests',
+          'gtest_tests': 'chromium_linux_and_gl_gtests',
         },
         'args': [
           '--test-launcher-batch-limit=1',
@@ -2919,7 +2919,7 @@
       },
       'Linux CFI': {
         'test_suites': {
-          'gtest_tests': 'chromium_memory_linux_asan_gtests',
+          'gtest_tests': 'chromium_linux_and_gl_gtests',
         },
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
@@ -2934,12 +2934,12 @@
       },
       'Linux MSan Tests': {
         'test_suites': {
-          'gtest_tests': 'chromium_memory_linux_asan_gtests',
+          'gtest_tests': 'chromium_linux_and_gl_gtests',
         },
       },
       'Linux TSan Tests': {
         'test_suites': {
-          'gtest_tests': 'chromium_memory_linux_asan_gtests',
+          'gtest_tests': 'chromium_linux_and_gl_gtests',
         },
       },
       'Mac ASan 64 Tests (1)': {
