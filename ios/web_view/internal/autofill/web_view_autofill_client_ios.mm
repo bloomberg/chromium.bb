@@ -66,6 +66,13 @@ AddressNormalizer* WebViewAutofillClientIOS::GetAddressNormalizer() {
   return nullptr;
 }
 
+security_state::SecurityLevel
+WebViewAutofillClientIOS::GetSecurityLevelForUmaHistograms() {
+  // The metrics are not recorded for iOS webview, so return the count value
+  // which will not be recorded.
+  return security_state::SecurityLevel::SECURITY_LEVEL_COUNT;
+}
+
 void WebViewAutofillClientIOS::ShowAutofillSettings() {
   NOTREACHED();
 }

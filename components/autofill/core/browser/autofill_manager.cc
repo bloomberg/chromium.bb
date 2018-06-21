@@ -506,8 +506,9 @@ void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,
 
   if (!user_did_type_) {
     user_did_type_ = true;
-    AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::USER_DID_TYPE,
-                                            autofill_field->Type().group());
+    AutofillMetrics::LogUserHappinessMetric(
+        AutofillMetrics::USER_DID_TYPE, autofill_field->Type().group(),
+        client_->GetSecurityLevelForUmaHistograms());
   }
 
   if (autofill_field->is_autofilled) {
@@ -515,13 +516,15 @@ void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,
     autofill_field->set_previously_autofilled(true);
     AutofillMetrics::LogUserHappinessMetric(
         AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD,
-        autofill_field->Type().group());
+        autofill_field->Type().group(),
+        client_->GetSecurityLevelForUmaHistograms());
 
     if (!user_did_edit_autofilled_field_) {
       user_did_edit_autofilled_field_ = true;
       AutofillMetrics::LogUserHappinessMetric(
           AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD_ONCE,
-          autofill_field->Type().group());
+          autofill_field->Type().group(),
+          client_->GetSecurityLevelForUmaHistograms());
     }
   }
 
@@ -787,12 +790,14 @@ void AutofillManager::OnDidFillAutofillFormData(const FormData& form,
   if (FindCachedForm(form, &form_structure)) {
     form_types = form_structure->GetFormTypes();
   }
-  AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL,
-                                          form_types);
+  AutofillMetrics::LogUserHappinessMetric(
+      AutofillMetrics::USER_DID_AUTOFILL, form_types,
+      client_->GetSecurityLevelForUmaHistograms());
   if (!user_did_autofill_) {
     user_did_autofill_ = true;
     AutofillMetrics::LogUserHappinessMetric(
-        AutofillMetrics::USER_DID_AUTOFILL_ONCE, form_types);
+        AutofillMetrics::USER_DID_AUTOFILL_ONCE, form_types,
+        client_->GetSecurityLevelForUmaHistograms());
   }
 
   UpdateInitialInteractionTimestamp(timestamp);
@@ -809,14 +814,16 @@ void AutofillManager::DidShowSuggestions(bool has_autofill_suggestions,
     return;
 
   if (has_autofill_suggestions) {
-    AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::SUGGESTIONS_SHOWN,
-                                            autofill_field->Type().group());
+    AutofillMetrics::LogUserHappinessMetric(
+        AutofillMetrics::SUGGESTIONS_SHOWN, autofill_field->Type().group(),
+        client_->GetSecurityLevelForUmaHistograms());
 
     if (!did_show_suggestions_) {
       did_show_suggestions_ = true;
       AutofillMetrics::LogUserHappinessMetric(
           AutofillMetrics::SUGGESTIONS_SHOWN_ONCE,
-          autofill_field->Type().group());
+          autofill_field->Type().group(),
+          client_->GetSecurityLevelForUmaHistograms());
     }
 
     if (autofill_field->Type().group() == CREDIT_CARD) {
@@ -1626,8 +1633,9 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   }
 
   if (!queryable_forms.empty() || !non_queryable_forms.empty()) {
-    AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED,
-                                            form_types);
+    AutofillMetrics::LogUserHappinessMetric(
+        AutofillMetrics::FORMS_LOADED, form_types,
+        client_->GetSecurityLevelForUmaHistograms());
 
 #if defined(OS_IOS)
     // Log this from same location as AutofillMetrics::FORMS_LOADED to ensure
@@ -1929,7 +1937,8 @@ void AutofillManager::FillFieldWithValue(AutofillField* autofill_field,
     // fields with non-empty values, such as select-one fields.
     field_data->is_autofilled = true;
     AutofillMetrics::LogUserHappinessMetric(
-        AutofillMetrics::FIELD_WAS_AUTOFILLED, autofill_field->Type().group());
+        AutofillMetrics::FIELD_WAS_AUTOFILLED, autofill_field->Type().group(),
+        client_->GetSecurityLevelForUmaHistograms());
 
     if (should_notify) {
       client_->DidFillOrPreviewField(

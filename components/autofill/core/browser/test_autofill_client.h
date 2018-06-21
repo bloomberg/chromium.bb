@@ -35,6 +35,7 @@ class TestAutofillClient : public AutofillClient {
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
+  security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   void ShowAutofillSettings() override;
   void ShowUnmaskPrompt(const CreditCard& card,
                         UnmaskCardReason reason,
@@ -92,6 +93,10 @@ class TestAutofillClient : public AutofillClient {
     test_sync_service_ = test_sync_service;
   }
 
+  void set_security_level(security_state::SecurityLevel security_level) {
+    security_level_ = security_level;
+  }
+
   GURL form_origin() { return form_origin_; }
 
   static void UpdateSourceURL(ukm::UkmRecorder* ukm_recorder,
@@ -106,6 +111,9 @@ class TestAutofillClient : public AutofillClient {
   std::unique_ptr<PrefService> prefs_;
   GURL form_origin_;
   ukm::SourceId source_id_ = -1;
+
+  security_state::SecurityLevel security_level_ =
+      security_state::SecurityLevel::NONE;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillClient);
 };

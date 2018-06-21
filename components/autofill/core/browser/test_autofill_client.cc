@@ -56,6 +56,11 @@ AddressNormalizer* TestAutofillClient::GetAddressNormalizer() {
   return nullptr;
 }
 
+security_state::SecurityLevel
+TestAutofillClient::GetSecurityLevelForUmaHistograms() {
+  return security_level_;
+}
+
 void TestAutofillClient::ShowAutofillSettings() {
 }
 
