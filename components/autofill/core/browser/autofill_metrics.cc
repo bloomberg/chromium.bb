@@ -89,6 +89,31 @@ int64_t HashFieldSignature(autofill::FieldSignature field_signature) {
   return static_cast<uint64_t>(field_signature) % 1021;
 }
 
+std::string GetHistogramSuffixForSecurityLevel(
+    security_state::SecurityLevel level) {
+  switch (level) {
+    case security_state::EV_SECURE:
+      return "EV_SECURE";
+    case security_state::SECURE:
+      return "SECURE";
+    case security_state::NONE:
+      return "NONE";
+    case security_state::HTTP_SHOW_WARNING:
+      return "HTTP_SHOW_WARNING";
+    case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
+      return "SECURE_WITH_POLICY_INSTALLED_CERT";
+    case security_state::DANGEROUS:
+      return "DANGEROUS";
+    default:
+      return "OTHER";
+  }
+}
+
+std::string GetSecurityLevelHistogramName(const std::string prefix,
+                                          security_state::SecurityLevel level) {
+  return prefix + "." + GetHistogramSuffixForSecurityLevel(level);
+}
+
 }  // namespace
 
 // First, translates |field_type| to the corresponding logical |group| from
@@ -691,7 +716,8 @@ void AutofillMetrics::LogSaveCardPromptMetric(
     SaveCardPromptMetric metric,
     bool is_uploading,
     bool is_reshow,
-    int previous_save_credit_card_prompt_user_decision) {
+    int previous_save_credit_card_prompt_user_decision,
+    security_state::SecurityLevel security_level) {
   DCHECK_LT(metric, NUM_SAVE_CARD_PROMPT_METRICS);
   std::string destination = is_uploading ? ".Upload" : ".Local";
   std::string show = is_reshow ? ".Reshows" : ".FirstShow";
@@ -703,6 +729,31 @@ void AutofillMetrics::LogSaveCardPromptMetric(
           PreviousSaveCreditCardPromptUserDecisionToString(
               previous_save_credit_card_prompt_user_decision),
       metric, NUM_SAVE_CARD_PROMPT_METRICS);
+
+  LogSaveCardPromptMetricBySecurityLevel(metric, is_uploading, security_level);
+}
+
+// static
+void AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
+    SaveCardPromptMetric metric,
+    bool is_uploading,
+    security_state::SecurityLevel security_level) {
+  // Getting a SECURITY_LEVEL_COUNT security level means that it was not
+  // possible to get the real security level. Don't log.
+  if (security_level == security_state::SecurityLevel::SECURITY_LEVEL_COUNT) {
+    return;
+  }
+
+  std::string histogram_name = "Security.SaveCardPromptMetric.";
+  if (is_uploading) {
+    histogram_name += "Upload";
+  } else {
+    histogram_name += "Local";
+  }
+
+  base::UmaHistogramEnumeration(
+      GetSecurityLevelHistogramName(histogram_name, security_level), metric,
+      NUM_SAVE_CARD_PROMPT_METRICS);
 }
 
 // static
@@ -907,35 +958,80 @@ void AutofillMetrics::LogServerQueryMetric(ServerQueryMetric metric) {
 }
 
 // static
-void AutofillMetrics::LogUserHappinessMetric(UserHappinessMetric metric,
-                                             FieldTypeGroup field_type_group) {
+void AutofillMetrics::LogUserHappinessMetric(
+    UserHappinessMetric metric,
+    FieldTypeGroup field_type_group,
+    security_state::SecurityLevel security_level) {
   LogUserHappinessMetric(
-      metric, {FormTypes::FieldTypeGroupToFormType(field_type_group)});
+      metric, {FormTypes::FieldTypeGroupToFormType(field_type_group)},
+      security_level);
 }
 
 // static
 void AutofillMetrics::LogUserHappinessMetric(
     UserHappinessMetric metric,
-    const std::set<FormType>& form_types) {
+    const std::set<FormType>& form_types,
+    security_state::SecurityLevel security_level) {
   DCHECK_LT(metric, NUM_USER_HAPPINESS_METRICS);
   UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness", metric,
                             NUM_USER_HAPPINESS_METRICS);
   if (base::ContainsKey(form_types, CREDIT_CARD_FORM)) {
     UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness.CreditCard", metric,
                               NUM_USER_HAPPINESS_METRICS);
+    LogUserHappinessBySecurityLevel(metric, CREDIT_CARD_FORM, security_level);
   }
   if (base::ContainsKey(form_types, ADDRESS_FORM)) {
     UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness.Address", metric,
                               NUM_USER_HAPPINESS_METRICS);
+    LogUserHappinessBySecurityLevel(metric, ADDRESS_FORM, security_level);
   }
   if (base::ContainsKey(form_types, PASSWORD_FORM)) {
     UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness.Password", metric,
                               NUM_USER_HAPPINESS_METRICS);
+    LogUserHappinessBySecurityLevel(metric, PASSWORD_FORM, security_level);
   }
   if (base::ContainsKey(form_types, UNKNOWN_FORM_TYPE)) {
     UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness.Unknown", metric,
                               NUM_USER_HAPPINESS_METRICS);
+    LogUserHappinessBySecurityLevel(metric, UNKNOWN_FORM_TYPE, security_level);
   }
+}
+
+// static
+void AutofillMetrics::LogUserHappinessBySecurityLevel(
+    UserHappinessMetric metric,
+    FormType form_type,
+    security_state::SecurityLevel security_level) {
+  if (security_level == security_state::SecurityLevel::SECURITY_LEVEL_COUNT) {
+    return;
+  }
+
+  std::string histogram_name = "Security.UserHappiness.";
+  switch (form_type) {
+    case CREDIT_CARD_FORM:
+      histogram_name += "CreditCard";
+      break;
+
+    case ADDRESS_FORM:
+      histogram_name += "Address";
+      break;
+
+    case PASSWORD_FORM:
+      histogram_name += "Password";
+      break;
+
+    case UNKNOWN_FORM_TYPE:
+      histogram_name += "Unknown";
+      break;
+
+    default:
+      NOTREACHED();
+      return;
+  }
+
+  base::UmaHistogramEnumeration(
+      GetSecurityLevelHistogramName(histogram_name, security_level), metric,
+      NUM_USER_HAPPINESS_METRICS);
 }
 
 // static
