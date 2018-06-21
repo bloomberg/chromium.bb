@@ -9,6 +9,10 @@ issues]].
 - Fix another stack-based buffer overflow in input parsing reported by
   Henri Salo thanks to Christian Egli.
 ** Braille table improvements
+- Danish grade 2 tables: Reduced hyphenation to only the hyphens
+  necesary for correct Braille translation. Replaced the longer rules
+  with hyphenation for better cursor positioning. Corrected some words.
+  Thanks to Bue Vester-Andersen
 ** Other changes
 ** Deprecation notice
 ** Backwards incompatible changes
