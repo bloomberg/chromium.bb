@@ -174,8 +174,7 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
     wifi_hotspot_connector_ = base::WrapUnique(new WifiHotspotConnector(
         network_state_handler(), test_network_connect_.get()));
 
-    mock_timer_ = new base::MockTimer(true /* retain_user_task */,
-                                      false /* is_repeating */);
+    mock_timer_ = new base::MockOneShotTimer();
     test_clock_.SetNow(base::Time::UnixEpoch());
     test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     wifi_hotspot_connector_->SetTestDoubles(base::WrapUnique(mock_timer_),
@@ -308,7 +307,7 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
   std::string other_wifi_service_path_;
   std::vector<std::string> connection_callback_responses_;
 
-  base::MockTimer* mock_timer_;
+  base::MockOneShotTimer* mock_timer_;
   base::SimpleTestClock test_clock_;
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
   std::unique_ptr<TestNetworkConnect> test_network_connect_;

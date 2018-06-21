@@ -18,7 +18,7 @@ namespace secure_channel {
 
 // Fake base::Timer implementation, which extends MockTimer and provides a
 // mechanism for alerting its creator when it is destroyed.
-class FakeOneShotTimer : public base::MockTimer {
+class FakeOneShotTimer : public base::MockOneShotTimer {
  public:
   FakeOneShotTimer(base::OnceCallback<void(const base::UnguessableToken&)>
                        destructor_callback);

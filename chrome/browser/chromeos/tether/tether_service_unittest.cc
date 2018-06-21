@@ -410,8 +410,7 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
 
     fake_notification_presenter_ =
         new chromeos::tether::FakeNotificationPresenter();
-    mock_timer_ = new base::MockTimer(true /* retain_user_task */,
-                                      false /* is_repeating */);
+    mock_timer_ = new base::MockOneShotTimer();
     tether_service_->SetTestDoubles(
         base::WrapUnique(fake_notification_presenter_),
         base::WrapUnique(mock_timer_));
@@ -513,7 +512,7 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
   std::unique_ptr<FakeTetherHostFetcherFactory>
       fake_tether_host_fetcher_factory_;
   chromeos::tether::FakeNotificationPresenter* fake_notification_presenter_;
-  base::MockTimer* mock_timer_;
+  base::MockOneShotTimer* mock_timer_;
   std::unique_ptr<chromeos::device_sync::DeviceSyncClient>
       fake_device_sync_client_;
   std::unique_ptr<FakeDeviceSyncClientImplFactory>

@@ -139,13 +139,12 @@ class TestTimerFactory : public TimerFactory {
   // TimerFactory:
   std::unique_ptr<base::Timer> CreateOneShotTimer() override {
     EXPECT_FALSE(device_id_for_next_timer_.empty());
-    base::MockTimer* mock_timer = new base::MockTimer(
-        false /* retain_user_task */, false /* is_repeating */);
+    base::MockOneShotTimer* mock_timer = new base::MockOneShotTimer();
     device_id_to_timer_map_[device_id_for_next_timer_] = mock_timer;
     return base::WrapUnique(mock_timer);
   }
 
-  base::MockTimer* GetTimerForDeviceId(const std::string& device_id) {
+  base::MockOneShotTimer* GetTimerForDeviceId(const std::string& device_id) {
     return device_id_to_timer_map_[device_id_for_next_timer_];
   }
 
@@ -156,7 +155,7 @@ class TestTimerFactory : public TimerFactory {
 
  private:
   std::string device_id_for_next_timer_;
-  base::flat_map<std::string, base::MockTimer*> device_id_to_timer_map_;
+  base::flat_map<std::string, base::MockOneShotTimer*> device_id_to_timer_map_;
 };
 
 TetherAvailabilityResponse CreateTetherAvailabilityResponse() {
@@ -276,7 +275,8 @@ class MessageTransferOperationTest : public testing::Test {
     }
   }
 
-  base::MockTimer* GetTimerForDevice(cryptauth::RemoteDeviceRef remote_device) {
+  base::MockOneShotTimer* GetTimerForDevice(
+      cryptauth::RemoteDeviceRef remote_device) {
     return test_timer_factory_->GetTimerForDeviceId(
         remote_device.GetDeviceId());
   }

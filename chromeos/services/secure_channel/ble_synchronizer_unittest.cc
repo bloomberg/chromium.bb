@@ -226,8 +226,7 @@ class SecureChannelBleSynchronizerTest : public testing::Test {
             this,
             &SecureChannelBleSynchronizerTest::OnAdapterStartDiscoverySession));
 
-    mock_timer_ = new base::MockTimer(true /* retain_user_task */,
-                                      false /* is_repeating */);
+    mock_timer_ = new base::MockOneShotTimer();
 
     test_clock_.Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
     test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
@@ -460,7 +459,7 @@ class SecureChannelBleSynchronizerTest : public testing::Test {
 
   scoped_refptr<NiceMock<MockBluetoothAdapterWithAdvertisements>> mock_adapter_;
 
-  base::MockTimer* mock_timer_;
+  base::MockOneShotTimer* mock_timer_;
   base::SimpleTestClock test_clock_;
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 

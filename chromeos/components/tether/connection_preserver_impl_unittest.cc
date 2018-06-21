@@ -75,8 +75,7 @@ class ConnectionPreserverImplTest : public NetworkStateTest {
         fake_ble_connection_manager_.get(), network_state_handler(),
         fake_active_host_.get(), mock_tether_host_response_recorder_.get());
 
-    mock_timer_ = new base::MockTimer(false /* retain_user_task */,
-                                      false /* is_repeating */);
+    mock_timer_ = new base::MockOneShotTimer();
     connection_preserver_->SetTimerForTesting(base::WrapUnique(mock_timer_));
   }
 
@@ -119,7 +118,7 @@ class ConnectionPreserverImplTest : public NetworkStateTest {
   std::unique_ptr<FakeActiveHost> fake_active_host_;
   std::unique_ptr<NiceMock<MockTetherHostResponseRecorder>>
       mock_tether_host_response_recorder_;
-  base::MockTimer* mock_timer_;
+  base::MockOneShotTimer* mock_timer_;
 
   std::unique_ptr<ConnectionPreserverImpl> connection_preserver_;
 

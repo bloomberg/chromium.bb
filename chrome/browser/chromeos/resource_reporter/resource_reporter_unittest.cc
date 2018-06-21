@@ -62,8 +62,7 @@ constexpr size_t kTasksSize = arraysize(kTestTasks);
 class DummyTaskManager : public task_manager::TestTaskManager {
  public:
   DummyTaskManager() {
-    set_timer_for_testing(
-        std::unique_ptr<base::Timer>(new base::MockTimer(false, false)));
+    set_timer_for_testing(std::make_unique<base::MockOneShotTimer>());
   }
   ~DummyTaskManager() override {}
 

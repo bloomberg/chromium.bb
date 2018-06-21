@@ -113,8 +113,7 @@ class KeepAliveSchedulerTest : public testing::Test {
     fake_host_scan_cache_ = std::make_unique<FakeHostScanCache>();
     device_id_tether_network_guid_map_ =
         std::make_unique<DeviceIdTetherNetworkGuidMap>();
-    mock_timer_ = new base::MockTimer(true /* retain_user_task */,
-                                      true /* is_repeating */);
+    mock_timer_ = new base::MockRepeatingTimer();
 
     fake_operation_factory_ =
         base::WrapUnique(new FakeKeepAliveOperationFactory());
@@ -171,7 +170,7 @@ class KeepAliveSchedulerTest : public testing::Test {
   // TODO(hansberry): Use a fake for this when a real mapping scheme is created.
   std::unique_ptr<DeviceIdTetherNetworkGuidMap>
       device_id_tether_network_guid_map_;
-  base::MockTimer* mock_timer_;
+  base::MockRepeatingTimer* mock_timer_;
 
   std::unique_ptr<FakeKeepAliveOperationFactory> fake_operation_factory_;
 
