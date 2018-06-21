@@ -312,7 +312,18 @@ void AudioContext::StopRendering() {
 }
 
 double AudioContext::baseLatency() const {
-  return FramesPerBuffer() / static_cast<double>(sampleRate());
+  DCHECK(IsMainThread());
+  DCHECK(destination());
+
+  // TODO(hongchan): Due to the incompatible constructor between
+  // AudioDestinationNode and DefaultAudioDestinationNode, casting directly from
+  // |destination()| is impossible. This is a temporary workaround until the
+  // refactoring is completed.
+  DefaultAudioDestinationHandler& destination_handler =
+      static_cast<DefaultAudioDestinationHandler&>(
+          destination()->GetAudioDestinationHandler());
+  return destination_handler.GetFramesPerBuffer() /
+         static_cast<double>(sampleRate());
 }
 
 void AudioContext::NotifySourceNodeStart() {

@@ -171,7 +171,7 @@ double DefaultAudioDestinationHandler::SampleRate() const {
   return destination_ ? destination_->SampleRate() : 0;
 }
 
-int DefaultAudioDestinationHandler::FramesPerBuffer() const {
+int DefaultAudioDestinationHandler::GetFramesPerBuffer() const {
   return destination_ ? destination_->FramesPerBuffer() : 0;
 }
 

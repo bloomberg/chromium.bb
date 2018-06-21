@@ -58,7 +58,9 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
   // Returns the rendering callback buffer size.
   size_t CallbackBufferSize() const override;
   double SampleRate() const override;
-  int FramesPerBuffer() const override;
+
+  // Returns a given frames-per-buffer size from audio infra.
+  int GetFramesPerBuffer() const;
 
   double TailTime() const override { return 0; }
   double LatencyTime() const override { return 0; }
@@ -87,7 +89,7 @@ class DefaultAudioDestinationNode final : public AudioDestinationNode {
   static DefaultAudioDestinationNode* Create(BaseAudioContext*,
                                              const WebAudioLatencyHint&);
 
-  size_t CallbackBufferSize() const { return Handler().CallbackBufferSize(); };
+  size_t CallbackBufferSize() const { return Handler().CallbackBufferSize(); }
 
  private:
   explicit DefaultAudioDestinationNode(BaseAudioContext&,

@@ -72,9 +72,6 @@ class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
   size_t CallbackBufferSize() const override = 0;
   virtual double SampleRate() const = 0;
 
-  // Returns the audio buffer size in frames used by the AudioContext.
-  virtual int FramesPerBuffer() const = 0;
-
  protected:
   // Counts the number of sample-frames processed by the destination.
   size_t current_sample_frame_;
