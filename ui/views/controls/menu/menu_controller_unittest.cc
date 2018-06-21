@@ -250,9 +250,7 @@ class TestMenuItemViewShown : public MenuItemView {
   }
   ~TestMenuItemViewShown() override {}
 
-  void SetController(MenuController* controller) {
-    set_controller(controller);
-  }
+  void SetController(MenuController* controller) { set_controller(controller); }
 
   void AddEmptyMenusForTest() { AddEmptyMenus(); }
 
@@ -260,10 +258,23 @@ class TestMenuItemViewShown : public MenuItemView {
   DISALLOW_COPY_AND_ASSIGN(TestMenuItemViewShown);
 };
 
+class TestMenuItemViewNotShown : public MenuItemView {
+ public:
+  explicit TestMenuItemViewNotShown(MenuDelegate* delegate)
+      : MenuItemView(delegate) {
+    submenu_ = new SubmenuView(this);
+  }
+  ~TestMenuItemViewNotShown() override {}
+
+  void SetController(MenuController* controller) { set_controller(controller); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestMenuItemViewNotShown);
+};
+
 class MenuControllerTest : public ViewsTestBase {
  public:
-  MenuControllerTest() : menu_controller_(nullptr) {
-  }
+  MenuControllerTest() : menu_controller_(nullptr) {}
 
   ~MenuControllerTest() override {}
 
@@ -285,9 +296,7 @@ class MenuControllerTest : public ViewsTestBase {
     ViewsTestBase::TearDown();
   }
 
-  void ReleaseTouchId(int id) {
-    event_generator_->ReleaseTouchId(id);
-  }
+  void ReleaseTouchId(int id) { event_generator_->ReleaseTouchId(id); }
 
   void PressKey(ui::KeyboardCode key_code) {
     event_generator_->PressKey(key_code, 0);
@@ -370,9 +379,8 @@ class MenuControllerTest : public ViewsTestBase {
 
   void ResetSelection() {
     menu_controller_->SetSelection(
-        nullptr,
-        MenuController::SELECTION_EXIT |
-        MenuController::SELECTION_UPDATE_IMMEDIATELY);
+        nullptr, MenuController::SELECTION_EXIT |
+                     MenuController::SELECTION_UPDATE_IMMEDIATELY);
   }
 
   void IncrementSelection() {
@@ -1337,6 +1345,51 @@ TEST_F(MenuControllerTest, ArrowKeysAtEnds) {
 }
 
 #if defined(USE_AURA)
+// This tests that mouse moved events from the initial position of the mouse
+// when the menu was shown don't select the menu item at the mouse position.
+TEST_F(MenuControllerTest, MouseAtMenuItemOnShow) {
+  // aura::Window::MoveCursorTo check fails in Mus due to null
+  // window_manager_client_.
+  if (IsMus())
+    return;
+
+  // Most tests create an already shown menu but this test needs one that's
+  // not shown, so it can show it. The mouse position is remembered when
+  // the menu is shown.
+  std::unique_ptr<TestMenuItemViewNotShown> menu_item(
+      new TestMenuItemViewNotShown(menu_delegate()));
+  MenuItemView* first_item =
+      menu_item->AppendMenuItemWithLabel(1, base::ASCIIToUTF16("One"));
+  menu_item->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("Two"));
+  menu_item->SetController(menu_controller());
+
+  // Move the mouse to where the first menu item will be shown,
+  // and show the menu.
+  gfx::Size item_size = first_item->CalculatePreferredSize();
+  gfx::Point location(item_size.width() / 2, item_size.height() / 2);
+  owner()->GetNativeWindow()->GetRootWindow()->MoveCursorTo(location);
+  menu_controller()->Run(owner(), nullptr, menu_item.get(), gfx::Rect(),
+                         MENU_ANCHOR_TOPLEFT, false, false);
+
+  EXPECT_EQ(0, pending_state_item()->GetCommand());
+
+  // Synthesize an event at the mouse position when the menu was opened.
+  // It should be ignored, and selected item shouldn't change.
+  SubmenuView* sub_menu = menu_item->GetSubmenu();
+  View::ConvertPointFromScreen(sub_menu->GetScrollViewContainer(), &location);
+  ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location,
+                       ui::EventTimeForNow(), 0, 0);
+  ProcessMouseMoved(sub_menu, event);
+  EXPECT_EQ(0, pending_state_item()->GetCommand());
+  // Synthesize an event at a slightly different mouse position. It
+  // should cause the item under the cursor to be selected.
+  location.Offset(0, 1);
+  ui::MouseEvent second_event(ui::ET_MOUSE_MOVED, location, location,
+                              ui::EventTimeForNow(), 0, 0);
+  ProcessMouseMoved(sub_menu, second_event);
+  EXPECT_EQ(1, pending_state_item()->GetCommand());
+}
+
 // Tests that when an asynchronous menu receives a cancel event, that it closes.
 TEST_F(MenuControllerTest, AsynchronousCancelEvent) {
   ExitMenuRun();

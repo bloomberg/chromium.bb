@@ -55,6 +55,7 @@ class MenuRunnerImpl;
 namespace test {
 class MenuControllerTest;
 class MenuControllerTestApi;
+class MenuControllerUITest;
 }
 
 // MenuController -------------------------------------------------------------
@@ -221,6 +222,7 @@ class VIEWS_EXPORT MenuController
   friend class internal::MenuRunnerImpl;
   friend class test::MenuControllerTest;
   friend class test::MenuControllerTestApi;
+  friend class test::MenuControllerUITest;
   friend class MenuHostRootView;
   friend class MenuItemView;
   friend class SubmenuView;
@@ -691,6 +693,12 @@ class VIEWS_EXPORT MenuController
   // If a mouse press triggered this menu, this will have its location (in
   // screen coordinates). Otherwise this will be (0, 0).
   gfx::Point menu_start_mouse_press_loc_;
+
+  // If the mouse was under the menu when the menu was run, this will have its
+  // location. Otherwise it will be null. This is used to ignore mouse move
+  // events triggered by the menu opening, to avoid selecting the menu item
+  // over the mouse.
+  base::Optional<gfx::Point> menu_open_mouse_loc_;
 
   // Controls behavior differences between a combobox and other types of menu
   // (like a context menu).
