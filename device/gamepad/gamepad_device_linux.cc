@@ -12,6 +12,7 @@
 #include <sys/ioctl.h>
 
 #include "base/posix/eintr_wrapper.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
@@ -27,6 +28,19 @@ const char kUsbDeviceType[] = "usb_device";
 const float kMaxLinuxAxisValue = 32767.0;
 const int kInvalidEffectId = -1;
 const uint16_t kRumbleMagnitudeMax = 0xffff;
+
+const size_t kSpecialKeys[] = {
+    // Xbox One S pre-FW update reports Xbox button as SystemMainMenu over BT.
+    KEY_MENU,
+    // Power is used for the Guide button on the Nvidia Shield 2015 gamepad.
+    KEY_POWER,
+    // Search is used for the Guide button on the Nvidia Shield 2015 gamepad.
+    KEY_SEARCH,
+    // Start, Back, and Guide buttons are often reported as Consumer Home or
+    // Back.
+    KEY_HOMEPAGE, KEY_BACK,
+};
+const size_t kSpecialKeysLen = base::size(kSpecialKeys);
 
 #define LONG_BITS (CHAR_BIT * sizeof(long))
 #define BITS_TO_LONGS(x) (((x) + LONG_BITS - 1) / LONG_BITS)
@@ -60,6 +74,37 @@ bool HasRumbleCapability(int fd) {
   }
 
   return test_bit(FF_RUMBLE, ffbit);
+}
+
+// Check an evdev device for key codes which sometimes appear on gamepads but
+// aren't reported by joydev. If a special key is found, the corresponding entry
+// of the |has_special_key| vector is set to true. Returns the number of
+// special keys found.
+size_t CheckSpecialKeys(int fd, std::vector<bool>* has_special_key) {
+  DCHECK(has_special_key);
+  unsigned long evbit[BITS_TO_LONGS(EV_MAX)];
+  unsigned long keybit[BITS_TO_LONGS(KEY_MAX)];
+  size_t found_special_keys = 0;
+
+  has_special_key->clear();
+  if (HANDLE_EINTR(ioctl(fd, EVIOCGBIT(0, EV_MAX), evbit)) < 0 ||
+      HANDLE_EINTR(ioctl(fd, EVIOCGBIT(EV_KEY, KEY_MAX), keybit)) < 0) {
+    return 0;
+  }
+
+  if (!test_bit(EV_KEY, evbit)) {
+    return 0;
+  }
+
+  has_special_key->resize(kSpecialKeysLen, false);
+  for (size_t special_index = 0; special_index < kSpecialKeysLen;
+       ++special_index) {
+    (*has_special_key)[special_index] =
+        test_bit(kSpecialKeys[special_index], keybit);
+    ++found_special_keys;
+  }
+
+  return found_special_keys;
 }
 
 bool GetHidrawDevinfo(int fd,
@@ -123,11 +168,7 @@ bool StartOrStopEffect(int fd, int effect_id, bool do_start) {
 
 GamepadDeviceLinux::GamepadDeviceLinux(const std::string& syspath_prefix)
     : syspath_prefix_(syspath_prefix),
-      joydev_fd_(-1),
-      joydev_index_(-1),
-      evdev_fd_(-1),
-      effect_id_(kInvalidEffectId),
-      hidraw_fd_(-1) {}
+      button_indices_used_(Gamepad::kButtonsLengthCap, false) {}
 
 GamepadDeviceLinux::~GamepadDeviceLinux() = default;
 
@@ -153,7 +194,7 @@ bool GamepadDeviceLinux::SupportsVibration() const {
   return supports_force_feedback_ && evdev_fd_ >= 0;
 }
 
-void GamepadDeviceLinux::ReadPadState(Gamepad* pad) const {
+void GamepadDeviceLinux::ReadPadState(Gamepad* pad) {
   if (switch_pro_ && bus_type_ == GAMEPAD_BUS_USB) {
     // When connected over USB, the Switch Pro controller does not correctly
     // report its state over USB HID. Instead, fetch the state using the
@@ -164,8 +205,34 @@ void GamepadDeviceLinux::ReadPadState(Gamepad* pad) const {
 
   DCHECK_GE(joydev_fd_, 0);
 
-  js_event event;
+  // Read button and axis events from the joydev device.
+  bool pad_updated = ReadJoydevState(pad);
+
+  // Evdev special buttons must be initialized after we have read from joydev
+  // at least once to ensure we do not assign a button index already in use by
+  // joydev.
+  if (!evdev_special_keys_initialized_)
+    InitializeEvdevSpecialKeys();
+
+  // Read button events from the evdev device.
+  if (!special_button_map_.empty()) {
+    if (ReadEvdevSpecialKeys(pad))
+      pad_updated = true;
+  }
+
+  if (pad_updated)
+    pad->timestamp = GamepadDataFetcher::CurrentTimeInMicroseconds();
+}
+
+bool GamepadDeviceLinux::ReadJoydevState(Gamepad* pad) {
+  DCHECK(pad);
+
+  if (joydev_fd_ < 0)
+    return false;
+
+  // Read button and axis events from the joydev device.
   bool pad_updated = false;
+  js_event event;
   while (HANDLE_EINTR(read(joydev_fd_, &event, sizeof(struct js_event))) > 0) {
     size_t item = event.number;
     if (event.type & JS_EVENT_AXIS) {
@@ -184,13 +251,90 @@ void GamepadDeviceLinux::ReadPadState(Gamepad* pad) const {
       pad->buttons[item].pressed = event.value;
       pad->buttons[item].value = event.value ? 1.0 : 0.0;
 
+      // When a joydev device is opened, synthetic events are generated for
+      // each joystick button and axis with the JS_EVENT_INIT flag set on the
+      // event type. Use this signal to mark these button indices as used.
+      if (event.type & JS_EVENT_INIT)
+        button_indices_used_[item] = true;
+
       if (item >= pad->buttons_length)
         pad->buttons_length = item + 1;
       pad_updated = true;
     }
   }
-  if (pad_updated)
-    pad->timestamp = GamepadDataFetcher::CurrentTimeInMicroseconds();
+  return pad_updated;
+}
+
+void GamepadDeviceLinux::InitializeEvdevSpecialKeys() {
+  if (evdev_fd_ < 0)
+    return;
+
+  // Do some one-time initialization to decide indices for the evdev special
+  // buttons.
+  evdev_special_keys_initialized_ = true;
+  std::vector<bool> special_key_present;
+  size_t unmapped_button_count =
+      CheckSpecialKeys(evdev_fd_, &special_key_present);
+
+  special_button_map_.clear();
+  if (unmapped_button_count > 0) {
+    // Insert special buttons at unused button indices.
+    special_button_map_.resize(kSpecialKeysLen, -1);
+    size_t button_index = 0;
+    for (size_t special_index = 0; special_index < kSpecialKeysLen;
+         ++special_index) {
+      if (!special_key_present[special_index])
+        continue;
+
+      // Advance to the next unused button index.
+      while (button_indices_used_[button_index] &&
+             button_index < Gamepad::kButtonsLengthCap) {
+        ++button_index;
+      }
+      if (button_index >= Gamepad::kButtonsLengthCap)
+        break;
+
+      special_button_map_[special_index] = button_index;
+      button_indices_used_[button_index] = true;
+      ++button_index;
+
+      if (--unmapped_button_count == 0)
+        break;
+    }
+  }
+}
+
+bool GamepadDeviceLinux::ReadEvdevSpecialKeys(Gamepad* pad) {
+  DCHECK(pad);
+
+  if (evdev_fd_ < 0)
+    return false;
+
+  // Read special button events through evdev.
+  bool pad_updated = false;
+  input_event ev;
+  ssize_t bytes_read;
+  while ((bytes_read =
+              HANDLE_EINTR(read(evdev_fd_, &ev, sizeof(input_event)))) > 0) {
+    if (size_t{bytes_read} < sizeof(input_event))
+      break;
+    if (ev.type != EV_KEY)
+      continue;
+
+    for (size_t special_index = 0; special_index < kSpecialKeysLen;
+         ++special_index) {
+      int button_index = special_button_map_[special_index];
+      if (button_index < 0)
+        continue;
+      if (ev.code == kSpecialKeys[special_index]) {
+        pad->buttons[button_index].pressed = ev.value;
+        pad->buttons[button_index].value = ev.value ? 1.0 : 0.0;
+        pad_updated = true;
+      }
+    }
+  }
+
+  return pad_updated;
 }
 
 GamepadStandardMappingFunction GamepadDeviceLinux::GetMappingFunction() const {
@@ -276,6 +420,11 @@ void GamepadDeviceLinux::CloseJoydevNode() {
   product_id_.clear();
   version_number_.clear();
   name_.clear();
+
+  // Button indices must be recomputed once the joydev node is closed.
+  button_indices_used_.clear();
+  special_button_map_.clear();
+  evdev_special_keys_initialized_ = false;
 }
 
 bool GamepadDeviceLinux::OpenEvdevNode(const UdevGamepadLinux& pad_info) {
@@ -303,6 +452,16 @@ void GamepadDeviceLinux::CloseEvdevNode() {
     evdev_fd_ = -1;
   }
   supports_force_feedback_ = false;
+
+  // Clear any entries in |button_indices_used_| that were taken by evdev.
+  if (!special_button_map_.empty()) {
+    for (int button_index : special_button_map_) {
+      if (button_index >= 0)
+        button_indices_used_[button_index] = false;
+    }
+  }
+  special_button_map_.clear();
+  evdev_special_keys_initialized_ = false;
 }
 
 bool GamepadDeviceLinux::OpenHidrawNode(const UdevGamepadLinux& pad_info) {
