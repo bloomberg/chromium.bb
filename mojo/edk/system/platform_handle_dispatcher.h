@@ -8,9 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 
 namespace mojo {
 namespace edk {
@@ -18,9 +18,9 @@ namespace edk {
 class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher : public Dispatcher {
  public:
   static scoped_refptr<PlatformHandleDispatcher> Create(
-      ScopedInternalPlatformHandle platform_handle);
+      PlatformHandle platform_handle);
 
-  ScopedInternalPlatformHandle PassInternalPlatformHandle();
+  PlatformHandle TakePlatformHandle();
 
   // Dispatcher:
   Type GetType() const override;
@@ -44,13 +44,13 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher : public Dispatcher {
       size_t num_handles);
 
  private:
-  PlatformHandleDispatcher(ScopedInternalPlatformHandle platform_handle);
+  PlatformHandleDispatcher(PlatformHandle platform_handle);
   ~PlatformHandleDispatcher() override;
 
   base::Lock lock_;
   bool in_transit_ = false;
   bool is_closed_ = false;
-  ScopedInternalPlatformHandle platform_handle_;
+  PlatformHandle platform_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformHandleDispatcher);
 };

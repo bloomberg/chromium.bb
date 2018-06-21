@@ -31,8 +31,8 @@ void PlatformHandleToTransportEndpoint(
     PlatformHandle platform_handle,
     MojoPlatformHandle* endpoint_handle,
     MojoInvitationTransportEndpoint* endpoint) {
-  PlatformHandleToMojoPlatformHandle(std::move(platform_handle),
-                                     endpoint_handle);
+  PlatformHandle::ToMojoPlatformHandle(std::move(platform_handle),
+                                       endpoint_handle);
   CHECK_NE(endpoint_handle->type, MOJO_PLATFORM_HANDLE_TYPE_INVALID);
 
   endpoint->struct_size = sizeof(*endpoint);
@@ -216,8 +216,8 @@ IncomingInvitation& IncomingInvitation::operator=(IncomingInvitation&& other) =
 IncomingInvitation IncomingInvitation::Accept(
     PlatformChannelEndpoint channel_endpoint) {
   MojoPlatformHandle endpoint_handle;
-  PlatformHandleToMojoPlatformHandle(channel_endpoint.TakePlatformHandle(),
-                                     &endpoint_handle);
+  PlatformHandle::ToMojoPlatformHandle(channel_endpoint.TakePlatformHandle(),
+                                       &endpoint_handle);
   CHECK_NE(endpoint_handle.type, MOJO_PLATFORM_HANDLE_TYPE_INVALID);
 
   MojoInvitationTransportEndpoint transport_endpoint;
@@ -240,8 +240,8 @@ IncomingInvitation IncomingInvitation::Accept(
 ScopedMessagePipeHandle IncomingInvitation::AcceptIsolated(
     PlatformChannelEndpoint channel_endpoint) {
   MojoPlatformHandle endpoint_handle;
-  PlatformHandleToMojoPlatformHandle(channel_endpoint.TakePlatformHandle(),
-                                     &endpoint_handle);
+  PlatformHandle::ToMojoPlatformHandle(channel_endpoint.TakePlatformHandle(),
+                                       &endpoint_handle);
   CHECK_NE(endpoint_handle.type, MOJO_PLATFORM_HANDLE_TYPE_INVALID);
 
   MojoInvitationTransportEndpoint transport_endpoint;

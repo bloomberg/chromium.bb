@@ -276,11 +276,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/platform_handle.h".
-  MojoResult WrapInternalPlatformHandle(
-      const MojoPlatformHandle* platform_handle,
-      const MojoWrapPlatformHandleOptions* options,
-      MojoHandle* mojo_handle);
-  MojoResult UnwrapInternalPlatformHandle(
+  MojoResult WrapPlatformHandle(const MojoPlatformHandle* platform_handle,
+                                const MojoWrapPlatformHandleOptions* options,
+                                MojoHandle* mojo_handle);
+  MojoResult UnwrapPlatformHandle(
       MojoHandle mojo_handle,
       const MojoUnwrapPlatformHandleOptions* options,
       MojoPlatformHandle* platform_handle);

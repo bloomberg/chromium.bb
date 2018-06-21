@@ -13,9 +13,9 @@
 #include "build/build_config.h"
 #include "mojo/edk/embedder/named_platform_channel_pair.h"
 #include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/broker_messages.h"
+#include "mojo/edk/system/platform_handle_utils.h"
 
 namespace mojo {
 namespace edk {
@@ -110,8 +110,11 @@ void BrokerHost::OnBufferRequest(uint32_t num_bytes) {
 
   std::vector<ScopedInternalPlatformHandle> handles(2);
   if (region.IsValid()) {
-    ExtractInternalPlatformHandlesFromSharedMemoryRegionHandle(
-        region.PassPlatformHandle(), &handles[0], &handles[1]);
+    PlatformHandle h[2];
+    ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+        region.PassPlatformHandle(), &h[0], &h[1]);
+    handles[0] = PlatformHandleToScopedInternalPlatformHandle(std::move(h[0]));
+    handles[1] = PlatformHandleToScopedInternalPlatformHandle(std::move(h[1]));
 #if !defined(OS_POSIX) || defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
     (defined(OS_MACOSX) && !defined(OS_IOS))
     // Non-POSIX systems, as well as Android, Fuchsia, and non-iOS Mac, only use

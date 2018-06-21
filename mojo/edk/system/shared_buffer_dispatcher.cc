@@ -14,10 +14,10 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/node_controller.h"
 #include "mojo/edk/system/options_validation.h"
+#include "mojo/edk/system/platform_handle_utils.h"
 #include "mojo/edk/system/platform_shared_memory_mapping.h"
 #include "mojo/public/c/system/platform_handle.h"
 
@@ -140,14 +140,15 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
   if (num_ports)
     return nullptr;
 
-  ScopedInternalPlatformHandle handles[2];
+  PlatformHandle handles[2];
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && \
     (!defined(OS_MACOSX) || defined(OS_IOS))
   if (serialized_state->access_mode ==
       MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_WRITABLE) {
     if (num_platform_handles != 2)
       return nullptr;
-    handles[1] = std::move(platform_handles[1]);
+    handles[1] = ScopedInternalPlatformHandleToPlatformHandle(
+        std::move(platform_handles[1]));
   } else {
     if (num_platform_handles != 1)
       return nullptr;
@@ -156,7 +157,8 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
   if (num_platform_handles != 1)
     return nullptr;
 #endif
-  handles[0] = std::move(platform_handles[0]);
+  handles[0] = ScopedInternalPlatformHandleToPlatformHandle(
+      std::move(platform_handles[0]));
 
   base::UnguessableToken guid = base::UnguessableToken::Deserialize(
       serialized_state->guid_high, serialized_state->guid_low);
@@ -176,9 +178,10 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
       LOG(ERROR) << "Invalid serialized shared buffer access mode.";
       return nullptr;
   }
+
   auto region = base::subtle::PlatformSharedMemoryRegion::Take(
-      CreateSharedMemoryRegionHandleFromInternalPlatformHandles(
-          std::move(handles[0]), std::move(handles[1])),
+      CreateSharedMemoryRegionHandleFromPlatformHandles(std::move(handles[0]),
+                                                        std::move(handles[1])),
       mode, static_cast<size_t>(serialized_state->num_bytes), guid);
   if (!region.IsValid()) {
     LOG(ERROR)
@@ -356,15 +359,24 @@ bool SharedBufferDispatcher::EndSerialize(
     (!defined(OS_MACOSX) || defined(OS_IOS))
   if (region.GetMode() ==
       base::subtle::PlatformSharedMemoryRegion::Mode::kWritable) {
-    ExtractInternalPlatformHandlesFromSharedMemoryRegionHandle(
-        region.PassPlatformHandle(), &handles[0], &handles[1]);
+    PlatformHandle platform_handles[2];
+    ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+        region.PassPlatformHandle(), &platform_handles[0],
+        &platform_handles[1]);
+    handles[0] = PlatformHandleToScopedInternalPlatformHandle(
+        std::move(platform_handles[0]));
+    handles[1] = PlatformHandleToScopedInternalPlatformHandle(
+        std::move(platform_handles[1]));
     return true;
   }
 #endif
 
-  ScopedInternalPlatformHandle ignored_handle;
-  ExtractInternalPlatformHandlesFromSharedMemoryRegionHandle(
-      region.PassPlatformHandle(), &handles[0], &ignored_handle);
+  PlatformHandle platform_handle;
+  PlatformHandle ignored_handle;
+  ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+      region.PassPlatformHandle(), &platform_handle, &ignored_handle);
+  handles[0] =
+      PlatformHandleToScopedInternalPlatformHandle(std::move(platform_handle));
   return true;
 }
 

@@ -14,11 +14,11 @@
 #include "mojo/edk/embedder/named_platform_handle.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
 #include "mojo/edk/embedder/platform_handle.h"
-#include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/broker.h"
 #include "mojo/edk/system/broker_messages.h"
 #include "mojo/edk/system/channel.h"
+#include "mojo/edk/system/platform_handle_utils.h"
 
 namespace mojo {
 namespace edk {
@@ -147,8 +147,9 @@ base::WritableSharedMemoryRegion Broker::GetWritableSharedMemoryRegion(
       return base::WritableSharedMemoryRegion();
     return base::WritableSharedMemoryRegion::Deserialize(
         base::subtle::PlatformSharedMemoryRegion::Take(
-            CreateSharedMemoryRegionHandleFromInternalPlatformHandles(
-                std::move(handle), ScopedInternalPlatformHandle()),
+            CreateSharedMemoryRegionHandleFromPlatformHandles(
+                ScopedInternalPlatformHandleToPlatformHandle(std::move(handle)),
+                PlatformHandle()),
             base::subtle::PlatformSharedMemoryRegion::Mode::kWritable,
             num_bytes,
             base::UnguessableToken::Deserialize(data->guid_high,

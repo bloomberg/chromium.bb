@@ -66,13 +66,11 @@ template("core_impl_source_set") {
     public = [
       "embedder/configuration.h",
       "embedder/connection_params.h",
-      "embedder/entrypoints.h",
       "embedder/named_platform_channel_pair.h",
       "embedder/named_platform_handle.h",
       "embedder/named_platform_handle_utils.h",
       "embedder/platform_channel_pair.h",
       "embedder/platform_handle.h",
-      "embedder/platform_handle_utils.h",
       "embedder/process_error_callback.h",
       "embedder/scoped_platform_handle.h",
       "embedder/transport_protocol.h",
@@ -83,6 +81,7 @@ template("core_impl_source_set") {
       "system/data_pipe_control_message.h",
       "system/data_pipe_producer_dispatcher.h",
       "system/dispatcher.h",
+      "system/entrypoints.h",
       "system/handle_signals_state.h",
       "system/handle_table.h",
       "system/invitation_dispatcher.h",
@@ -90,6 +89,7 @@ template("core_impl_source_set") {
       "system/node_controller.h",
       "system/options_validation.h",
       "system/platform_handle_dispatcher.h",
+      "system/platform_handle_utils.h",
       "system/platform_shared_memory_mapping.h",
       "system/request_context.h",
       "system/scoped_process_handle.h",
@@ -105,13 +105,10 @@ template("core_impl_source_set") {
 
     sources = [
       "embedder/connection_params.cc",
-      "embedder/entrypoints.cc",
       "embedder/named_platform_handle_utils_win.cc",
       "embedder/platform_channel_pair.cc",
       "embedder/platform_channel_pair_win.cc",
       "embedder/platform_handle.cc",
-      "embedder/platform_handle_utils.cc",
-      "embedder/platform_handle_utils_win.cc",
       "system/atomic_flag.h",
       "system/broker.h",
       "system/broker_win.cc",
@@ -123,6 +120,7 @@ template("core_impl_source_set") {
       "system/data_pipe_control_message.cc",
       "system/data_pipe_producer_dispatcher.cc",
       "system/dispatcher.cc",
+      "system/entrypoints.cc",
       "system/handle_table.cc",
       "system/invitation_dispatcher.cc",
       "system/message_pipe_dispatcher.cc",
@@ -130,6 +128,7 @@ template("core_impl_source_set") {
       "system/node_channel.h",
       "system/node_controller.cc",
       "system/platform_handle_dispatcher.cc",
+      "system/platform_handle_utils.cc",
       "system/platform_shared_memory_mapping.cc",
       "system/request_context.cc",
       "system/scoped_process_handle.cc",
@@ -154,7 +153,6 @@ template("core_impl_source_set") {
       sources += [
         "embedder/named_platform_handle_utils_fuchsia.cc",
         "embedder/platform_channel_pair_fuchsia.cc",
-        "embedder/platform_handle_utils_fuchsia.cc",
         "system/channel_fuchsia.cc",
       ]
 
@@ -162,10 +160,7 @@ template("core_impl_source_set") {
     }
 
     if (is_posix) {
-      sources += [
-        "embedder/platform_channel_pair_posix.cc",
-        "embedder/platform_handle_utils_posix.cc",
-      ]
+      sources += [ "embedder/platform_channel_pair_posix.cc" ]
 
       if (!is_nacl || is_nacl_nonsfi) {
         public += [ "embedder/platform_channel_utils_posix.h" ]

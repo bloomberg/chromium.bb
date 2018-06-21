@@ -11,9 +11,9 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
-#include "mojo/edk/embedder/entrypoints.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
+#include "mojo/edk/system/entrypoints.h"
 #include "mojo/edk/system/node_controller.h"
 #include "mojo/public/c/system/thunks.h"
 

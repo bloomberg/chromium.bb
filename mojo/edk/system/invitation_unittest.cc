@@ -144,7 +144,7 @@ TEST_F(InvitationTest, InvalidArguments) {
   PlatformChannel channel;
   MojoPlatformHandle endpoint_handle;
   endpoint_handle.struct_size = sizeof(endpoint_handle);
-  PlatformHandleToMojoPlatformHandle(
+  PlatformHandle::ToMojoPlatformHandle(
       channel.TakeLocalEndpoint().TakePlatformHandle(), &endpoint_handle);
   ASSERT_NE(endpoint_handle.type, MOJO_PLATFORM_HANDLE_TYPE_INVALID);
 
@@ -348,7 +348,7 @@ void InvitationTest::SendInvitationToClient(
     uintptr_t error_handler_context,
     base::StringPiece isolated_invitation_name) {
   MojoPlatformHandle handle;
-  PlatformHandleToMojoPlatformHandle(std::move(endpoint_handle), &handle);
+  PlatformHandle::ToMojoPlatformHandle(std::move(endpoint_handle), &handle);
   CHECK_NE(handle.type, MOJO_PLATFORM_HANDLE_TYPE_INVALID);
 
   MojoHandle invitation;
@@ -407,8 +407,8 @@ class TestClientBase : public InvitationTest {
       }
     }
     MojoPlatformHandle endpoint_handle;
-    PlatformHandleToMojoPlatformHandle(channel_endpoint.TakePlatformHandle(),
-                                       &endpoint_handle);
+    PlatformHandle::ToMojoPlatformHandle(channel_endpoint.TakePlatformHandle(),
+                                         &endpoint_handle);
     CHECK_NE(endpoint_handle.type, MOJO_PLATFORM_HANDLE_TYPE_INVALID);
 
     MojoInvitationTransportEndpoint transport_endpoint;

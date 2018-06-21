@@ -31,6 +31,7 @@ component("platform") {
 
   public_deps = [
     "//base",
+    "//mojo/public/c/system:headers",
   ]
 
   if (is_posix && (!is_nacl && !is_fuchsia)) {
