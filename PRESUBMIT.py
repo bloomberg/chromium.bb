@@ -12,11 +12,13 @@ import fnmatch
 import os
 
 
-ENSURE_FILE_TEMPLATE = r'''
-$VerifiedPlatform linux-amd64 linux-arm64 linux-armv6l linux-mips64
-$VerifiedPlatform linux-ppc64 linux-ppc64le linux-s390x
-$VerifiedPlatform mac-amd64
-$VerifiedPlatform windows-386 windows-amd64
+# CIPD ensure manifest for checking CIPD client itself.
+CIPD_CLIENT_ENSURE_FILE_TEMPLATE = r'''
+# Full supported.
+$VerifiedPlatform linux-amd64 mac-amd64 windows-amd64 windows-386
+# Best effort support.
+$VerifiedPlatform linux-386 linux-ppc64 linux-ppc64le linux-s390x
+$VerifiedPlatform linux-arm64 linux-armv6l linux-mips64
 
 %s %s
 '''
@@ -97,7 +99,8 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
       pkg = 'infra/tools/cipd/${platform}'
       ver = input_api.ReadFile(path)
       tests.append(input_api.canned_checks.CheckCIPDManifest(
-          input_api, output_api, content=ENSURE_FILE_TEMPLATE % (pkg, ver)))
+          input_api, output_api,
+          content=CIPD_CLIENT_ENSURE_FILE_TEMPLATE % (pkg, ver)))
 
   results.extend(input_api.RunTests(tests))
   return results

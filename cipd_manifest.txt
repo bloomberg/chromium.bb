@@ -2,10 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-$VerifiedPlatform linux-amd64 linux-arm64 linux-armv6l linux-mips64
-$VerifiedPlatform linux-ppc64 linux-ppc64le linux-s390x
-$VerifiedPlatform mac-amd64
-$VerifiedPlatform windows-386 windows-amd64
+# Fully supported plaforms.
+$VerifiedPlatform linux-amd64 mac-amd64 windows-amd64 windows-386
+
+# Platform with best-effort support: we have some binaries cross-compiled for
+# them, but we do not test they work. They also may not have all necessary
+# vpython packages.
+$VerifiedPlatform linux-386 linux-ppc64 linux-ppc64le linux-s390x
+$VerifiedPlatform linux-arm64 linux-armv6l linux-mips64
 
 # vpython.
 infra/tools/luci/vpython/${platform}  git_revision:4d19637ec2c3d1efd8c6a1b05285118b786919e2
