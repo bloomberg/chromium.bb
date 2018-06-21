@@ -26,6 +26,7 @@ void SharedWorkerRepository::Connect(
     blink::mojom::IPAddressSpace creation_address_space,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     blink::MessagePortChannel channel,
+    mojo::ScopedMessagePipeHandle blob_url_token,
     std::unique_ptr<blink::WebSharedWorkerConnectListener> listener) {
   // Lazy bind the connector.
   if (!connector_)
@@ -40,8 +41,11 @@ void SharedWorkerRepository::Connect(
             std::make_unique<SharedWorkerClientImpl>(std::move(listener)),
             mojo::MakeRequest(&client));
 
-  connector_->Connect(std::move(info), std::move(client), creation_context_type,
-                      channel.ReleaseHandle());
+  connector_->Connect(
+      std::move(info), std::move(client), creation_context_type,
+      channel.ReleaseHandle(),
+      blink::mojom::BlobURLTokenPtr(blink::mojom::BlobURLTokenPtrInfo(
+          std::move(blob_url_token), blink::mojom::BlobURLToken::Version_)));
 }
 
 void SharedWorkerRepository::DocumentDetached(DocumentID document_id) {

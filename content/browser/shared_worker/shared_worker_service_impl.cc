@@ -88,6 +88,8 @@ void CreateScriptLoaderOnIO(
     std::unique_ptr<URLLoaderFactoryBundleInfo>
         factory_bundle_for_renderer_info,
     scoped_refptr<ServiceWorkerContextWrapper> context,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+        blob_url_loader_factory_info,
     int process_id,
     base::OnceCallback<void(mojom::ServiceWorkerProviderInfoForSharedWorkerPtr,
                             network::mojom::URLLoaderFactoryAssociatedPtrInfo,
@@ -100,27 +102,37 @@ void CreateScriptLoaderOnIO(
   base::WeakPtr<ServiceWorkerProviderHost> host =
       context->PreCreateHostForSharedWorker(process_id, &provider_info);
 
-  // Create the factory bundle for SharedWorkerScriptLoaderFactory to use to
-  // load the script.
-  scoped_refptr<URLLoaderFactoryBundle> factory_bundle =
-      base::MakeRefCounted<URLLoaderFactoryBundle>(
-          std::move(factory_bundle_for_browser_info));
+  // Create the URL loader factory for SharedWorkerScriptLoaderFactory to use to
+  // load the main script.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
+  if (blob_url_loader_factory_info) {
+    // If we have a blob_url_loader_factory just use that directly rather than
+    // creating a new URLLoaderFactoryBundle.
+    url_loader_factory = network::SharedURLLoaderFactory::Create(
+        std::move(blob_url_loader_factory_info));
+  } else {
+    // Create a factory bundle to use.
+    scoped_refptr<URLLoaderFactoryBundle> factory_bundle =
+        base::MakeRefCounted<URLLoaderFactoryBundle>(
+            std::move(factory_bundle_for_browser_info));
+    url_loader_factory = factory_bundle;
 
-  // Add the network factory to the bundle. The factory from
-  // CloneNetworkFactory() doesn't support reconnection to the network service
-  // after a crash, but it's OK since it's used for a single shared worker
-  // startup.
-  network::mojom::URLLoaderFactoryPtr network_factory_ptr;
-  loader_factory_getter->CloneNetworkFactory(
-      mojo::MakeRequest(&network_factory_ptr));
-  factory_bundle->SetDefaultFactory(std::move(network_factory_ptr));
+    // Add the network factory to the bundle. The factory from
+    // CloneNetworkFactory() doesn't support reconnection to the network service
+    // after a crash, but it's OK since it's used for a single shared worker
+    // startup.
+    network::mojom::URLLoaderFactoryPtr network_factory_ptr;
+    loader_factory_getter->CloneNetworkFactory(
+        mojo::MakeRequest(&network_factory_ptr));
+    factory_bundle->SetDefaultFactory(std::move(network_factory_ptr));
+  }
 
   // Create the SharedWorkerScriptLoaderFactory.
   network::mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory;
   mojo::MakeStrongAssociatedBinding(
       std::make_unique<SharedWorkerScriptLoaderFactory>(
           context.get(), host->AsWeakPtr(), context->resource_context(),
-          std::move(factory_bundle)),
+          std::move(url_loader_factory)),
       mojo::MakeRequest(&script_loader_factory));
 
   // We continue in StartWorker.
@@ -179,7 +191,8 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     mojom::SharedWorkerInfoPtr info,
     mojom::SharedWorkerClientPtr client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
-    const blink::MessagePortChannel& message_port) {
+    const blink::MessagePortChannel& message_port,
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderFrameHostImpl* render_frame_host =
@@ -231,7 +244,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
   }
 
   CreateWorker(std::move(instance), std::move(client), process_id, frame_id,
-               message_port);
+               message_port, std::move(blob_url_loader_factory));
 }
 
 void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
@@ -254,8 +267,11 @@ void SharedWorkerServiceImpl::CreateWorker(
     mojom::SharedWorkerClientPtr client,
     int process_id,
     int frame_id,
-    const blink::MessagePortChannel& message_port) {
+    const blink::MessagePortChannel& message_port,
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  DCHECK(!blob_url_loader_factory || instance->url().SchemeIsBlob());
 
   bool constructor_uses_file_url =
       instance->constructor_origin().scheme() == url::kFileScheme;
@@ -297,6 +313,8 @@ void SharedWorkerServiceImpl::CreateWorker(
                 ->url_loader_factory_getter(),
             std::move(factory_bundle_for_browser),
             std::move(factory_bundle_for_renderer), service_worker_context_,
+            blob_url_loader_factory ? blob_url_loader_factory->Clone()
+                                    : nullptr,
             process_id,
             base::BindOnce(&SharedWorkerServiceImpl::StartWorker,
                            weak_factory_.GetWeakPtr(), std::move(instance),

@@ -76,8 +76,6 @@ void SharedWorkerScriptLoader::MaybeStartLoader(
     return;
   }
 
-  // TODO(falken): Support blob urls.
-
   LoadFromNetwork();
 }
 

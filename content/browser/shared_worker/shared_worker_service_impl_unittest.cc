@@ -114,7 +114,7 @@ void ConnectToSharedWorker(mojom::SharedWorkerConnectorPtr connector,
 
   connector->Connect(std::move(info), std::move(client_proxy),
                      blink::mojom::SharedWorkerCreationContextType::kSecure,
-                     std::move(message_pipe.handle1));
+                     std::move(message_pipe.handle1), nullptr);
 }
 
 }  // namespace

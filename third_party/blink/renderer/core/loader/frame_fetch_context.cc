@@ -1359,8 +1359,20 @@ std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(
   // actually creating the URL loader here. Other subresource loading will
   // immediately create the URL loader so resolving those blob URLs here is
   // simplest.
+  // Don't resolve the URL again if this is a shared worker request though, as
+  // in that case the browser process will have already done so and the code
+  // here should just go through the normal non-blob specific code path (note
+  // that this is only strictly true if NetworkService/S13nSW is enabled, but if
+  // that isn't the case we're going to run into race conditions resolving the
+  // blob URL anyway so it doesn't matter if the blob URL gets resolved here or
+  // later in the browser process, so skipping blob URL resolution here for all
+  // shared worker loads is okay even with NetworkService/S13nSW disabled).
+  // TODO(mek): Move the RequestContext check to the worker side's relevant
+  // callsite when we make Shared Worker loading off-main-thread.
   if (document_ && request.Url().ProtocolIs("blob") &&
-      RuntimeEnabledFeatures::MojoBlobURLsEnabled() && !url_loader_factory) {
+      RuntimeEnabledFeatures::MojoBlobURLsEnabled() && !url_loader_factory &&
+      request.GetRequestContext() !=
+          WebURLRequest::kRequestContextSharedWorker) {
     document_->GetPublicURLManager().Resolve(request.Url(),
                                              MakeRequest(&url_loader_factory));
   }

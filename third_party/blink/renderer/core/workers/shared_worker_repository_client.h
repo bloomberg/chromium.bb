@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_REPOSITORY_CLIENT_H_
 
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -53,6 +54,7 @@ class CORE_EXPORT SharedWorkerRepositoryClient {
   virtual void Connect(SharedWorker*,
                        MessagePortChannel,
                        const KURL&,
+                       mojom::blink::BlobURLTokenPtr,
                        const String& name) = 0;
 
   virtual void DocumentDetached(Document*) = 0;
