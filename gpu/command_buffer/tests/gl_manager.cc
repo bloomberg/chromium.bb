@@ -220,8 +220,8 @@ GLManager::~GLManager() {
   --use_count_;
   if (!use_count_) {
     if (base_share_group_) {
-      delete base_context_;
-      base_context_ = NULL;
+      delete base_share_group_;
+      base_share_group_ = NULL;
     }
     if (base_surface_) {
       delete base_surface_;
