@@ -31,8 +31,6 @@
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/svg_filter_painter.h"
-#include "third_party/blink/renderer/core/paint/transform_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/compositing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
@@ -43,43 +41,38 @@ class LayoutSVGResourceFilter;
 class LayoutSVGResourceMasker;
 class SVGResources;
 
-// This class hooks up the correct paint property transform node when spv2 is
-// enabled, and otherwise works like a TransformRecorder which emits Transform
-// display items for spv1.
-class SVGTransformContext : public TransformRecorder {
+// Hooks up the correct paint property transform node.
+class SVGTransformContext {
   STACK_ALLOCATED();
 
  public:
   SVGTransformContext(const PaintInfo& paint_info,
                       const LayoutObject& object,
-                      const AffineTransform& transform)
-      : TransformRecorder(paint_info.context, object, transform) {
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      const auto* fragment = paint_info.FragmentToPaint(object);
-      if (!fragment)
-        return;
-      const auto* properties = fragment->PaintProperties();
-      if (!properties)
-        return;
+                      const AffineTransform& transform) {
+    const auto* fragment = paint_info.FragmentToPaint(object);
+    if (!fragment)
+      return;
+    const auto* properties = fragment->PaintProperties();
+    if (!properties)
+      return;
 
-      const TransformPaintPropertyNode* transform_node;
-      if (object.IsSVGRoot()) {
-        // If a transform exists, we can rely on a layer existing to apply it.
-        DCHECK(!properties || !properties->Transform() || object.HasLayer());
-        transform_node = properties->SvgLocalToBorderBoxTransform();
-      } else {
-        DCHECK(object.IsSVG());
-        // Should only be used by LayoutSVGRoot.
-        DCHECK(!properties->SvgLocalToBorderBoxTransform());
-        transform_node = properties->Transform();
-      }
+    const TransformPaintPropertyNode* transform_node;
+    if (object.IsSVGRoot()) {
+      // If a transform exists, we can rely on a layer existing to apply it.
+      DCHECK(!properties || !properties->Transform() || object.HasLayer());
+      transform_node = properties->SvgLocalToBorderBoxTransform();
+    } else {
+      DCHECK(object.IsSVG());
+      // Should only be used by LayoutSVGRoot.
+      DCHECK(!properties->SvgLocalToBorderBoxTransform());
+      transform_node = properties->Transform();
+    }
 
-      if (transform_node) {
-        DCHECK(transform_node->Matrix() == transform.ToTransformationMatrix());
-        transform_property_scope_.emplace(
-            paint_info.context.GetPaintController(), transform_node, object,
-            DisplayItem::PaintPhaseToSVGTransformType(paint_info.phase));
-      }
+    if (transform_node) {
+      DCHECK(transform_node->Matrix() == transform.ToTransformationMatrix());
+      transform_property_scope_.emplace(
+          paint_info.context.GetPaintController(), transform_node, object,
+          DisplayItem::PaintPhaseToSVGTransformType(paint_info.phase));
     }
   }
 
@@ -120,7 +113,6 @@ class SVGPaintContext {
       const AffineTransform* additional_paint_server_transform = nullptr);
 
  private:
-  void ApplyCompositingIfNecessary();
   void ApplyPaintPropertyState();
   void ApplyClipIfNecessary();
 
@@ -132,14 +124,11 @@ class SVGPaintContext {
   // applied.
   bool ApplyFilterIfNecessary(SVGResources*);
 
-  bool IsIsolationInstalled() const;
-
   const LayoutObject& object_;
   PaintInfo paint_info_;
   std::unique_ptr<PaintInfo> filter_paint_info_;
   LayoutSVGResourceFilter* filter_;
   LayoutSVGResourceMasker* masker_;
-  std::unique_ptr<CompositingRecorder> compositing_recorder_;
   base::Optional<ClipPathClipper> clip_path_clipper_;
   std::unique_ptr<SVGFilterRecordingContext> filter_recording_context_;
   base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties_;

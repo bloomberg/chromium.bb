@@ -9,24 +9,19 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
-#include "third_party/blink/renderer/core/paint/filter_painter.h"
 #include "third_party/blink/renderer/core/paint/layer_clip_recorder.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/paint/scroll_recorder.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
-#include "third_party/blink/renderer/core/paint/transform_3d_recorder.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/graphics/paint/compositing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_display_item_fragment.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/graphics/paint/subsequence_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/transform_3d_display_item.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -450,34 +445,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
                               visual_offset_from_root);
   }
 
-  base::Optional<CompositingRecorder> compositing_recorder;
-  // FIXME: this should be unified further into
-  // PaintLayer::paintsWithTransparency().
-  bool compositing_already_applied =
-      painting_info.root_layer == &paint_layer_ &&
-      is_painting_overflow_contents;
-  bool should_composite_for_blend_mode =
-      paint_layer_.StackingNode()->IsStackingContext() &&
-      paint_layer_.HasNonIsolatedDescendantWithBlendMode();
-  if (!compositing_already_applied &&
-      (should_composite_for_blend_mode ||
-       paint_layer_.PaintsWithTransparency(
-           painting_info.GetGlobalPaintFlags()))) {
-    FloatRect compositing_bounds = EnclosingIntRect(paint_layer_.PaintingExtent(
-        painting_info.root_layer, painting_info.sub_pixel_accumulation,
-        painting_info.GetGlobalPaintFlags()));
-    compositing_recorder.emplace(
-        context, paint_layer_.GetLayoutObject(),
-        WebCoreCompositeToSkiaComposite(
-            kCompositeSourceOver,
-            paint_layer_.GetLayoutObject().Style()->GetBlendMode()),
-        paint_layer_.GetLayoutObject().Opacity(), &compositing_bounds);
-  }
-
   PaintLayerPaintingInfo local_painting_info(painting_info);
   local_painting_info.sub_pixel_accumulation = subpixel_accumulation;
-
-  sk_sp<PaintFilter> image_filter = FilterPainter::GetImageFilter(paint_layer_);
 
   bool should_paint_content =
       paint_layer_.HasVisibleContent() &&
@@ -538,31 +507,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
           &offset_from_root, local_painting_info.sub_pixel_accumulation);
       RepeatFixedPositionObjectInPages(single_fragment[0], painting_info,
                                        layer_fragments);
-    } else if (image_filter && !paint_layer_.EnclosingPaginationLayer()) {
-      // Clipping in the presence of filters needs to happen in two phases.
-      // It proceeds like this:
-      // 1. Apply overflow clip to normal-flow contents.
-      // 2. Paint layer contents into the filter.
-      // 3. Apply all inherited clips (including dirty rect) plus CSS clip
-      //    of the current layer to the filter output.
-      //
-      // It is critical to avoid clipping to the dirty rect or any clips
-      // above the filter before applying the filter, because content which
-      // appears to be clipped may affect visual output if the filter moves
-      // pixels.
-      //
-      // #1 is applied in the lines below.  #3 is applied in FilterPainter,
-      // and computed just before construction of the FilterPainter.
-      LayoutRect foreground_clip(LayoutRect::InfiniteIntRect());
-      if (paint_layer_.GetLayoutObject().IsBox()) {
-        const LayoutBox& box = ToLayoutBox(paint_layer_.GetLayoutObject());
-        if (box.ShouldClipOverflow())
-          foreground_clip = box.OverflowClipRect(offset_from_root);
-      }
-      PaintLayerFragment& fragment = layer_fragments.emplace_back();
-      fragment.SetRects(
-          LayoutRect(offset_from_root, LayoutSize(paint_layer_.Size())),
-          LayoutRect(LayoutRect::InfiniteIntRect()), foreground_clip);
     } else {
       paint_layer_for_fragments->CollectFragments(
           layer_fragments, local_painting_info.root_layer,
@@ -603,24 +547,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   {  // Begin block for the lifetime of any filter.
     size_t display_item_list_size_before_painting =
         context.GetPaintController().NewDisplayItemList().size();
-
-    base::Optional<FilterPainter> filter_painter;
-    if (image_filter) {
-      DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-      // Compute clips outside the filter (#3, see above for discussion).
-      PaintLayerFragments filter_fragments;
-      paint_layer_.AppendSingleFragmentIgnoringPagination(
-          filter_fragments, local_painting_info.root_layer,
-          &local_painting_info.paint_dirty_rect,
-          kIgnorePlatformOverlayScrollbarSize, respect_overflow_clip,
-          &offset_from_root, local_painting_info.sub_pixel_accumulation);
-
-      filter_painter.emplace(paint_layer_, context, offset_from_root,
-                             filter_fragments.IsEmpty()
-                                 ? ClipRect()
-                                 : filter_fragments[0].background_rect,
-                             local_painting_info, paint_flags);
-    }
 
     bool is_painting_root_layer = (&paint_layer_) == painting_info.root_layer;
     bool should_paint_background =
@@ -774,33 +700,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   return result;
 }
 
-bool PaintLayerPainter::NeedsToClip(
-    const PaintLayerPaintingInfo& local_painting_info,
-    const ClipRect& clip_rect,
-    const PaintLayerFlags& paint_flags,
-    const LayoutBoxModelObject& layout_object) {
-  // Other clipping will be applied by property nodes directly for SPv175+.
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return false;
-
-  // Always clip if painting an ancestor clipping mask layer.
-  if (paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase)
-    return true;
-
-  // Embedded objects have a clip rect when border radius is present
-  // because we need it for the border radius mask with composited
-  // chidren. However, we do not want to apply the clip when painting
-  // the embedded content itself. Doing so would clip out the
-  // border because LayoutEmbeddedObject does not obey the painting phases
-  // of a normal box object.
-  if (layout_object.IsLayoutEmbeddedContent() &&
-      layout_object.GetCompositingState() == kPaintsIntoOwnBacking)
-    return paint_flags & kPaintLayerPaintingChildClippingMaskPhase;
-
-  return clip_rect.Rect() != local_painting_info.paint_dirty_rect ||
-         clip_rect.HasRadius();
-}
-
 bool PaintLayerPainter::AtLeastOneFragmentIntersectsDamageRect(
     PaintLayerFragments& fragments,
     const PaintLayerPaintingInfo& local_painting_info,
@@ -940,18 +839,6 @@ PaintResult PaintLayerPainter::PaintLayerWithAdjustedRoot(
 
   ForAllFragments(
       context, layer_fragments, [&](const PaintLayerFragment& fragment) {
-        base::Optional<LayerClipRecorder> clip_recorder;
-        if (parent_layer &&
-            !RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-          if (NeedsToClip(painting_info, fragment.background_rect, paint_flags,
-                          paint_layer_.GetLayoutObject())) {
-            clip_recorder.emplace(
-                context, *parent_layer, DisplayItem::kClipLayerParent,
-                fragment.background_rect, painting_info.root_layer,
-                fragment.pagination_offset, paint_flags,
-                paint_layer_.GetLayoutObject());
-          }
-        }
         if (paint_layer_.PaintsWithTransform(
                 painting_info.GetGlobalPaintFlags())) {
           if (PaintFragmentByApplyingTransform(context, painting_info,
@@ -991,14 +878,6 @@ PaintResult PaintLayerPainter::PaintFragmentByApplyingTransform(
     new_sub_pixel_accumulation += delta - rounded_delta;
   // Otherwise discard the sub-pixel remainder because paint offset can't be
   // transformed by a non-translation transform.
-
-  // TODO(jbroman): Put the real transform origin here, instead of using a
-  // matrix with the origin baked in.
-  FloatPoint3D transform_origin;
-  Transform3DRecorder transform3d_recorder(
-      context, paint_layer_.GetLayoutObject(),
-      DisplayItem::kTransform3DElementTransform, transform, transform_origin);
-
   return PaintSingleFragment(context, painting_info, paint_flags, fragment,
                              new_sub_pixel_accumulation);
 }
@@ -1112,26 +991,6 @@ void PaintLayerPainter::PaintOverflowControlsForFragments(
         // We need to apply the same clips and transforms that
         // paintFragmentWithPhase would have.
         LayoutRect cull_rect = fragment.background_rect.Rect();
-
-        base::Optional<LayerClipRecorder> clip_recorder;
-        if (NeedsToClip(painting_info, fragment.background_rect, paint_flags,
-                        paint_layer_.GetLayoutObject())) {
-          clip_recorder.emplace(
-              context, paint_layer_, DisplayItem::kClipLayerOverflowControls,
-              fragment.background_rect, painting_info.root_layer,
-              fragment.pagination_offset, paint_flags,
-              paint_layer_.GetLayoutObject());
-        }
-
-        base::Optional<ScrollRecorder> scroll_recorder;
-        if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-            !painting_info.scroll_offset_accumulation.IsZero()) {
-          cull_rect.Move(painting_info.scroll_offset_accumulation);
-          scroll_recorder.emplace(context, paint_layer_.GetLayoutObject(),
-                                  DisplayItem::kScrollOverflowControls,
-                                  painting_info.scroll_offset_accumulation);
-        }
-
         PaintInfo paint_info(
             context, PixelSnappedIntRect(cull_rect),
             PaintPhase::kSelfBlockBackgroundOnly,
@@ -1155,8 +1014,7 @@ void PaintLayerPainter::PaintFragmentWithPhase(
     GraphicsContext& context,
     const ClipRect& clip_rect,
     const PaintLayerPaintingInfo& painting_info,
-    PaintLayerFlags paint_flags,
-    ClipState clip_state) {
+    PaintLayerFlags paint_flags) {
   DCHECK(paint_layer_.IsSelfPaintingLayer());
 
   base::Optional<ScopedPaintChunkProperties> fragment_paint_chunk_properties;
@@ -1180,81 +1038,17 @@ void PaintLayerPainter::PaintFragmentWithPhase(
         DisplayItem::PaintPhaseToDrawingType(phase));
   }
 
-  DisplayItemClient* client = &paint_layer_.GetLayoutObject();
-  base::Optional<LayerClipRecorder> clip_recorder;
-  if (clip_state != kHasClipped &&
-      NeedsToClip(painting_info, clip_rect, paint_flags,
-                  paint_layer_.GetLayoutObject())) {
-    DisplayItem::Type clip_type =
-        DisplayItem::PaintPhaseToClipLayerFragmentType(phase);
-    LayerClipRecorder::BorderRadiusClippingRule clipping_rule;
-    switch (phase) {
-      case PaintPhase::kSelfBlockBackgroundOnly:  // Background painting will
-                                                  // handle clipping to self.
-      case PaintPhase::kSelfOutlineOnly:
-      case PaintPhase::kMask:  // Mask painting will handle clipping to self.
-        clipping_rule = LayerClipRecorder::kDoNotIncludeSelfForBorderRadius;
-        break;
-      case PaintPhase::kClippingMask:
-        if (paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase) {
-          // The ancestor is the thing that needs to clip, so do not include
-          // this layer's clips.
-          clipping_rule = LayerClipRecorder::kDoNotIncludeSelfForBorderRadius;
-          // The ancestor clipping mask may have a larger visual rect than
-          // paint_layer_, since it includes ancestor clips.
-          client = paint_layer_.GetCompositedLayerMapping()
-                       ->AncestorClippingMaskLayer();
-          break;
-        }
-        FALLTHROUGH;
-      default:
-        clipping_rule = LayerClipRecorder::kIncludeSelfForBorderRadius;
-        break;
-    }
-    clip_recorder.emplace(context, paint_layer_, clip_type, clip_rect,
-                          painting_info.root_layer, fragment.pagination_offset,
-                          paint_flags, *client, clipping_rule);
-  }
-
-  // If we are painting a mask for any reason and we have already processed the
-  // clips, there is no need to go through the remaining painting pipeline.
-  // We know that the mask just needs the area bounded by the clip rects to be
-  // filled with black.
-  if (clip_recorder && phase == PaintPhase::kClippingMask) {
-    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-    FillMaskingFragment(context, clip_rect, *client);
-    return;
-  }
-
   LayoutRect new_cull_rect(clip_rect.Rect());
-  base::Optional<ScrollRecorder> scroll_recorder;
   LayoutPoint paint_offset = -paint_layer_.LayoutBoxLocation();
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    paint_offset += fragment.fragment_data->PaintOffset();
-    // For SPv175+, we paint in the containing transform node's space. Now
-    // |new_cull_rect| is in the pixel-snapped border box space of
-    // |painting_info.root_layer|. Adjust it to the correct space.
-    // |paint_offset| is already in the correct space.
-    new_cull_rect.MoveBy(
-        RoundedIntPoint(painting_info.root_layer->GetLayoutObject()
-                            .FirstFragment()
-                            .PaintOffset()));
-  } else {
-    paint_offset += ToSize(fragment.layer_bounds.Location());
-    if (!painting_info.scroll_offset_accumulation.IsZero()) {
-      // As a descendant of the root layer, m_paintLayer's painting is not
-      // controlled by the ScrollRecorders created by BlockPainter of the
-      // ancestor layers up to the root layer, so we need to issue
-      // ScrollRecorder for this layer seperately, with the scroll offset
-      // accumulated from the root layer to the parent of this layer, to get the
-      // same result as ScrollRecorder in BlockPainter.
-      paint_offset += painting_info.scroll_offset_accumulation;
-
-      new_cull_rect.Move(painting_info.scroll_offset_accumulation);
-      scroll_recorder.emplace(context, paint_layer_.GetLayoutObject(), phase,
-                              painting_info.scroll_offset_accumulation);
-    }
-  }
+  paint_offset += fragment.fragment_data->PaintOffset();
+  // We paint in the containing transform node's space. Now |new_cull_rect| is
+  // in the pixel-snapped border box space of |painting_info.root_layer|.
+  // Adjust it to the correct space. |paint_offset| is already in the correct
+  // space.
+  new_cull_rect.MoveBy(
+      RoundedIntPoint(painting_info.root_layer->GetLayoutObject()
+                          .FirstFragment()
+                          .PaintOffset()));
   PaintInfo paint_info(context, PixelSnappedIntRect(new_cull_rect), phase,
                        painting_info.GetGlobalPaintFlags(), paint_flags,
                        &painting_info.root_layer->GetLayoutObject(),
@@ -1279,8 +1073,7 @@ void PaintLayerPainter::PaintBackgroundForFragments(
       context, layer_fragments, [&](const PaintLayerFragment& fragment) {
         PaintFragmentWithPhase(PaintPhase::kSelfBlockBackgroundOnly, fragment,
                                context, fragment.background_rect,
-                               local_painting_info, paint_flags,
-                               kHasNotClipped);
+                               local_painting_info, paint_flags);
       });
 }
 
@@ -1291,26 +1084,10 @@ void PaintLayerPainter::PaintForegroundForFragments(
     bool selection_only,
     bool force_paint_chunks,
     PaintLayerFlags paint_flags) {
-  // Optimize clipping for the single fragment case.
-  bool should_clip = layer_fragments.size() == 1 &&
-                     !layer_fragments[0].foreground_rect.IsEmpty();
-  ClipState clip_state = kHasNotClipped;
-  base::Optional<LayerClipRecorder> clip_recorder;
-  if (should_clip &&
-      NeedsToClip(local_painting_info, layer_fragments[0].foreground_rect,
-                  paint_flags, paint_layer_.GetLayoutObject())) {
-    clip_recorder.emplace(
-        context, paint_layer_, DisplayItem::kClipLayerForeground,
-        layer_fragments[0].foreground_rect, local_painting_info.root_layer,
-        layer_fragments[0].pagination_offset, paint_flags,
-        paint_layer_.GetLayoutObject());
-    clip_state = kHasClipped;
-  }
-
   if (selection_only) {
-    PaintForegroundForFragmentsWithPhase(
-        PaintPhase::kSelection, layer_fragments, context, local_painting_info,
-        paint_flags, clip_state);
+    PaintForegroundForFragmentsWithPhase(PaintPhase::kSelection,
+                                         layer_fragments, context,
+                                         local_painting_info, paint_flags);
   } else {
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
         paint_layer_.NeedsPaintPhaseDescendantBlockBackgrounds()) {
@@ -1322,7 +1099,7 @@ void PaintLayerPainter::PaintForegroundForFragments(
           context.GetPaintController().NewDisplayItemList().size();
       PaintForegroundForFragmentsWithPhase(
           PaintPhase::kDescendantBlockBackgroundsOnly, layer_fragments, context,
-          local_painting_info, paint_flags, clip_state);
+          local_painting_info, paint_flags);
       // Don't set the empty flag if we are not painting the whole background.
       if (!(paint_flags & kPaintLayerPaintingSkipRootBackground)) {
         bool phase_is_empty =
@@ -1345,7 +1122,7 @@ void PaintLayerPainter::PaintForegroundForFragments(
           context.GetPaintController().NewDisplayItemList().size();
       PaintForegroundForFragmentsWithPhase(PaintPhase::kFloat, layer_fragments,
                                            context, local_painting_info,
-                                           paint_flags, clip_state);
+                                           paint_flags);
       bool phase_is_empty =
           context.GetPaintController().NewDisplayItemList().size() ==
           size_before;
@@ -1358,17 +1135,17 @@ void PaintLayerPainter::PaintForegroundForFragments(
           paint_layer_, DisplayItem::kLayerChunkForeground);
     }
 
-    PaintForegroundForFragmentsWithPhase(
-        PaintPhase::kForeground, layer_fragments, context, local_painting_info,
-        paint_flags, clip_state);
+    PaintForegroundForFragmentsWithPhase(PaintPhase::kForeground,
+                                         layer_fragments, context,
+                                         local_painting_info, paint_flags);
 
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
         paint_layer_.NeedsPaintPhaseDescendantOutlines()) {
       size_t size_before =
           context.GetPaintController().NewDisplayItemList().size();
-      PaintForegroundForFragmentsWithPhase(
-          PaintPhase::kDescendantOutlinesOnly, layer_fragments, context,
-          local_painting_info, paint_flags, clip_state);
+      PaintForegroundForFragmentsWithPhase(PaintPhase::kDescendantOutlinesOnly,
+                                           layer_fragments, context,
+                                           local_painting_info, paint_flags);
       bool phase_is_empty =
           context.GetPaintController().NewDisplayItemList().size() ==
           size_before;
@@ -1384,14 +1161,13 @@ void PaintLayerPainter::PaintForegroundForFragmentsWithPhase(
     const PaintLayerFragments& layer_fragments,
     GraphicsContext& context,
     const PaintLayerPaintingInfo& local_painting_info,
-    PaintLayerFlags paint_flags,
-    ClipState clip_state) {
+    PaintLayerFlags paint_flags) {
   ForAllFragments(
       context, layer_fragments, [&](const PaintLayerFragment& fragment) {
         if (!fragment.foreground_rect.IsEmpty()) {
           PaintFragmentWithPhase(phase, fragment, context,
                                  fragment.foreground_rect, local_painting_info,
-                                 paint_flags, clip_state);
+                                 paint_flags);
         }
       });
 }
@@ -1406,8 +1182,7 @@ void PaintLayerPainter::PaintSelfOutlineForFragments(
         if (!fragment.background_rect.IsEmpty()) {
           PaintFragmentWithPhase(PaintPhase::kSelfOutlineOnly, fragment,
                                  context, fragment.background_rect,
-                                 local_painting_info, paint_flags,
-                                 kHasNotClipped);
+                                 local_painting_info, paint_flags);
         }
       });
 }
@@ -1417,12 +1192,12 @@ void PaintLayerPainter::PaintMaskForFragments(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& local_painting_info,
     PaintLayerFlags paint_flags) {
-  ForAllFragments(
-      context, layer_fragments, [&](const PaintLayerFragment& fragment) {
-        PaintFragmentWithPhase(PaintPhase::kMask, fragment, context,
-                               fragment.background_rect, local_painting_info,
-                               paint_flags, kHasNotClipped);
-      });
+  ForAllFragments(context, layer_fragments,
+                  [&](const PaintLayerFragment& fragment) {
+                    PaintFragmentWithPhase(PaintPhase::kMask, fragment, context,
+                                           fragment.background_rect,
+                                           local_painting_info, paint_flags);
+                  });
 }
 
 void PaintLayerPainter::PaintAncestorClippingMask(
@@ -1430,26 +1205,19 @@ void PaintLayerPainter::PaintAncestorClippingMask(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& local_painting_info,
     PaintLayerFlags paint_flags) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    const DisplayItemClient& client =
-        *paint_layer_.GetCompositedLayerMapping()->AncestorClippingMaskLayer();
-    const auto& layer_fragment = paint_layer_.GetLayoutObject().FirstFragment();
-    auto state = layer_fragment.PreEffectProperties();
-    // This is a hack to incorporate mask-based clip-path.
-    // See CompositingLayerPropertyUpdater.cpp about AncestorClippingMaskLayer.
-    state.SetEffect(layer_fragment.PreFilter());
-    ScopedPaintChunkProperties properties(
-        context.GetPaintController(), state, client,
-        DisplayItem::PaintPhaseToDrawingType(PaintPhase::kClippingMask));
-    ClipRect mask_rect = fragment.background_rect;
-    mask_rect.MoveBy(layer_fragment.PaintOffset());
-    FillMaskingFragment(context, mask_rect, client);
-    return;
-  }
-
-  PaintFragmentWithPhase(PaintPhase::kClippingMask, fragment, context,
-                         fragment.background_rect, local_painting_info,
-                         paint_flags, kHasNotClipped);
+  const DisplayItemClient& client =
+      *paint_layer_.GetCompositedLayerMapping()->AncestorClippingMaskLayer();
+  const auto& layer_fragment = paint_layer_.GetLayoutObject().FirstFragment();
+  auto state = layer_fragment.PreEffectProperties();
+  // This is a hack to incorporate mask-based clip-path.
+  // See CompositingLayerPropertyUpdater.cpp about AncestorClippingMaskLayer.
+  state.SetEffect(layer_fragment.PreFilter());
+  ScopedPaintChunkProperties properties(
+      context.GetPaintController(), state, client,
+      DisplayItem::PaintPhaseToDrawingType(PaintPhase::kClippingMask));
+  ClipRect mask_rect = fragment.background_rect;
+  mask_rect.MoveBy(layer_fragment.PaintOffset());
+  FillMaskingFragment(context, mask_rect, client);
 }
 
 void PaintLayerPainter::PaintChildClippingMaskForFragments(
@@ -1457,35 +1225,25 @@ void PaintLayerPainter::PaintChildClippingMaskForFragments(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& local_painting_info,
     PaintLayerFlags paint_flags) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    const DisplayItemClient& client =
-        *paint_layer_.GetCompositedLayerMapping()->ChildClippingMaskLayer();
-    ForAllFragments(
-        context, layer_fragments, [&](const PaintLayerFragment& fragment) {
-          // Use the LocalBorderboxProperties as a starting point to ensure that
-          // we don't include the scroll offset when painting the mask layer.
-          auto state = fragment.fragment_data->LocalBorderBoxProperties();
-          // This is a hack to incorporate mask-based clip-path.
-          // See CompositingLayerPropertyUpdater.cpp about
-          // ChildClippingMaskLayer.
-          state.SetEffect(fragment.fragment_data->PreFilter());
-          // Update the clip to be the ContentsProperties clip, since it
-          // includes the InnerBorderRadiusClip.
-          state.SetClip(fragment.fragment_data->ContentsProperties().Clip());
-          ScopedPaintChunkProperties fragment_paint_chunk_properties(
-              context.GetPaintController(), state, client,
-              DisplayItem::PaintPhaseToDrawingType(PaintPhase::kClippingMask));
-          ClipRect mask_rect = fragment.background_rect;
-          FillMaskingFragment(context, mask_rect, client);
-        });
-    return;
-  }
-
+  const DisplayItemClient& client =
+      *paint_layer_.GetCompositedLayerMapping()->ChildClippingMaskLayer();
   ForAllFragments(
       context, layer_fragments, [&](const PaintLayerFragment& fragment) {
-        PaintFragmentWithPhase(PaintPhase::kClippingMask, fragment, context,
-                               fragment.foreground_rect, local_painting_info,
-                               paint_flags, kHasNotClipped);
+        // Use the LocalBorderboxProperties as a starting point to ensure that
+        // we don't include the scroll offset when painting the mask layer.
+        auto state = fragment.fragment_data->LocalBorderBoxProperties();
+        // This is a hack to incorporate mask-based clip-path.
+        // See CompositingLayerPropertyUpdater.cpp about
+        // ChildClippingMaskLayer.
+        state.SetEffect(fragment.fragment_data->PreFilter());
+        // Update the clip to be the ContentsProperties clip, since it
+        // includes the InnerBorderRadiusClip.
+        state.SetClip(fragment.fragment_data->ContentsProperties().Clip());
+        ScopedPaintChunkProperties fragment_paint_chunk_properties(
+            context.GetPaintController(), state, client,
+            DisplayItem::PaintPhaseToDrawingType(PaintPhase::kClippingMask));
+        ClipRect mask_rect = fragment.background_rect;
+        FillMaskingFragment(context, mask_rect, client);
       });
 }
 

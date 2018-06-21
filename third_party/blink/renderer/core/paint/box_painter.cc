@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/scroll_recorder.h"
 #include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
 #include "third_party/blink/renderer/core/paint/theme_painter.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
@@ -57,7 +56,6 @@ void BoxPainter::PaintChildren(const PaintInfo& paint_info,
 void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
                                               const LayoutPoint& paint_offset) {
   LayoutRect paint_rect;
-  base::Optional<ScrollRecorder> scroll_recorder;
   base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
   if (BoxModelObjectPainter::
           IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
@@ -67,8 +65,6 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
     // overflow rect.
     paint_rect = layout_box_.PhysicalLayoutOverflowRect();
 
-    scroll_recorder.emplace(paint_info.context, layout_box_, paint_info.phase,
-                            layout_box_.ScrolledContentOffset());
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       if (const auto* fragment = paint_info.FragmentToPaint(layout_box_)) {
         scoped_scroll_property.emplace(

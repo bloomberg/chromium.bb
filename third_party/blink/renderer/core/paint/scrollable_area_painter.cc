@@ -11,11 +11,9 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/scrollbar_painter.h"
-#include "third_party/blink/renderer/core/paint/transform_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/platform_chrome_client.h"
@@ -173,46 +171,31 @@ void ScrollableAreaPainter::PaintOverflowControls(
     return;
 
   GraphicsContext& context = paint_info.context;
+  const auto& box = *GetScrollableArea().GetLayoutBox();
+  const auto* fragment = paint_info.FragmentToPaint(box);
+  if (!fragment)
+    return;
 
-  base::Optional<ClipRecorder> clip_recorder;
   base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    const auto& box = *GetScrollableArea().GetLayoutBox();
-    if (const auto* fragment = paint_info.FragmentToPaint(box)) {
-      const auto* properties = fragment->PaintProperties();
-      // TODO(crbug.com/849278): Remove either the DCHECK or the if condition
-      // when we figure out in what cases that the box doesn't have properties.
-      DCHECK(properties);
-      if (properties) {
-        if (const auto* clip = properties->OverflowControlsClip()) {
-          scoped_paint_chunk_properties.emplace(
-              context.GetPaintController(), clip, box,
-              DisplayItem::kClipLayerOverflowControls);
-        }
-      }
+  const auto* properties = fragment->PaintProperties();
+  // TODO(crbug.com/849278): Remove either the DCHECK or the if condition
+  // when we figure out in what cases that the box doesn't have properties.
+  DCHECK(properties);
+  if (properties) {
+    if (const auto* clip = properties->OverflowControlsClip()) {
+      scoped_paint_chunk_properties.emplace(
+          context.GetPaintController(), clip, box,
+          DisplayItem::kClipLayerOverflowControls);
     }
-  } else {
-    IntRect clip_rect(adjusted_paint_offset,
-                      GetScrollableArea().Layer()->PixelSnappedSize());
-    clip_recorder.emplace(context, *GetScrollableArea().GetLayoutBox(),
-                          DisplayItem::kClipLayerOverflowControls, clip_rect);
   }
 
   if (GetScrollableArea().HorizontalScrollbar() &&
       !GetScrollableArea().LayerForHorizontalScrollbar()) {
-    TransformRecorder translate_recorder(
-        context, *GetScrollableArea().HorizontalScrollbar(),
-        AffineTransform::Translation(adjusted_paint_offset.X(),
-                                     adjusted_paint_offset.Y()));
     GetScrollableArea().HorizontalScrollbar()->Paint(context,
                                                      adjusted_cull_rect);
   }
   if (GetScrollableArea().VerticalScrollbar() &&
       !GetScrollableArea().LayerForVerticalScrollbar()) {
-    TransformRecorder translate_recorder(
-        context, *GetScrollableArea().VerticalScrollbar(),
-        AffineTransform::Translation(adjusted_paint_offset.X(),
-                                     adjusted_paint_offset.Y()));
     GetScrollableArea().VerticalScrollbar()->Paint(context, adjusted_cull_rect);
   }
   if (!GetScrollableArea().LayerForScrollCorner()) {

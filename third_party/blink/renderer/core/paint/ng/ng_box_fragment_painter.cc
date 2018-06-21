@@ -28,11 +28,9 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
-#include "third_party/blink/renderer/core/paint/scroll_recorder.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
-#include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
@@ -733,17 +731,7 @@ void NGBoxFragmentPainter::PaintOverflowControlsIfNeeded(
   if (box_fragment_.HasOverflowClip() &&
       box_fragment_.Style().Visibility() == EVisibility::kVisible &&
       ShouldPaintSelfBlockBackground(paint_info.phase)) {
-    const NGPhysicalBoxFragment& fragment = PhysicalFragment();
-    base::Optional<ClipRecorder> clip_recorder;
-    if (!fragment.Layer()->IsSelfPaintingLayer()) {
-      LayoutRect clip_rect =
-          LayoutRect(LayoutPoint(), fragment.Size().ToLayoutSize());
-      clip_rect.MoveBy(paint_offset);
-      clip_recorder.emplace(paint_info.context, box_fragment_,
-                            DisplayItem::kClipScrollbarsToBoxBounds,
-                            PixelSnappedIntRect(clip_rect));
-    }
-    ScrollableAreaPainter(*fragment.Layer()->GetScrollableArea())
+    ScrollableAreaPainter(*PhysicalFragment().Layer()->GetScrollableArea())
         .PaintOverflowControls(paint_info, RoundedIntPoint(paint_offset),
                                false /* painting_overlay_controls */);
   }

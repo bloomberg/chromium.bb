@@ -214,7 +214,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/print_context.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/paint/transform_recorder.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
@@ -226,7 +225,6 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
-#include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
@@ -388,25 +386,17 @@ class ChromePrintContext : public PrintContext {
 
     auto* frame_view = GetFrame()->View();
     DCHECK(frame_view);
-    PropertyTreeState property_tree_state = PropertyTreeState::Root();
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      property_tree_state = frame_view->GetLayoutView()
-                                ->FirstFragment()
-                                .LocalBorderBoxProperties();
-    }
+    PropertyTreeState property_tree_state =
+        frame_view->GetLayoutView()->FirstFragment().LocalBorderBoxProperties();
 
     PaintRecordBuilder builder(&context.Canvas()->getMetaData(), &context);
 
     frame_view->PaintContents(builder.Context(), kGlobalPaintNormalPhase,
                               page_rect);
     {
-      base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-      if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-        scoped_paint_chunk_properties.emplace(
-            builder.Context().GetPaintController(), property_tree_state,
-            builder, DisplayItem::kPrintedContentDestinationLocations);
-      }
-
+      ScopedPaintChunkProperties scoped_paint_chunk_properties(
+          builder.Context().GetPaintController(), property_tree_state, builder,
+          DisplayItem::kPrintedContentDestinationLocations);
       DrawingRecorder line_boundary_recorder(
           builder.Context(), builder,
           DisplayItem::kPrintedContentDestinationLocations);
@@ -414,7 +404,6 @@ class ChromePrintContext : public PrintContext {
     }
 
     context.DrawRecord(builder.EndRecording(property_tree_state));
-
     context.Restore();
 
     return scale;

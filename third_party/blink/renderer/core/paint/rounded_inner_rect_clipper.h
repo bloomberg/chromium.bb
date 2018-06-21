@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_ROUNDED_INNER_RECT_CLIPPER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_ROUNDED_INNER_RECT_CLIPPER_H_
 
-#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -32,7 +31,6 @@ class RoundedInnerRectClipper {
   const DisplayItemClient& display_item_;
   const PaintInfo& paint_info_;
   bool use_paint_controller_;
-  DisplayItem::Type clip_type_;
 };
 
 }  // namespace blink

@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_viewport_container.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
-#include "third_party/blink/renderer/core/paint/float_clip_recorder.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
@@ -47,11 +46,9 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
       paint_info_before_filtering, layout_svg_container_,
       layout_svg_container_.LocalToSVGParentTransform());
   {
-    base::Optional<FloatClipRecorder> clip_recorder;
     base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
     if (layout_svg_container_.IsSVGViewportContainer() &&
         SVGLayoutSupport::IsOverflowHidden(layout_svg_container_)) {
-      if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
         const auto* fragment =
             paint_info.FragmentToPaint(layout_svg_container_);
         if (!fragment)
@@ -66,14 +63,6 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
               properties->OverflowClip(), layout_svg_container_,
               paint_info.DisplayItemTypeForClipping());
         }
-      } else {
-        FloatRect viewport =
-            layout_svg_container_.LocalToSVGParentTransform().Inverse().MapRect(
-                ToLayoutSVGViewportContainer(layout_svg_container_).Viewport());
-        clip_recorder.emplace(paint_info_before_filtering.context,
-                              layout_svg_container_,
-                              paint_info_before_filtering.phase, viewport);
-      }
     }
 
     SVGPaintContext paint_context(layout_svg_container_,
@@ -85,8 +74,7 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
     if (continue_rendering) {
       for (LayoutObject* child = layout_svg_container_.FirstChild(); child;
            child = child->NextSibling()) {
-        if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-            child->IsSVGForeignObject()) {
+        if (child->IsSVGForeignObject()) {
           SVGForeignObjectPainter(ToLayoutSVGForeignObject(*child))
               .PaintLayer(paint_context.GetPaintInfo());
         } else {

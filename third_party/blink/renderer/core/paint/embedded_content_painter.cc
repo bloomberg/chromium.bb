@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/paint/rounded_inner_rect_clipper.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
-#include "third_party/blink/renderer/core/paint/transform_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
@@ -159,10 +158,6 @@ void EmbeddedContentPainter::PaintContents(const PaintInfo& paint_info,
   // the frame rect neutralized.
   IntSize view_paint_offset =
       paint_location - embedded_content_view->FrameRect().Location();
-  TransformRecorder transform(
-      local_paint_info.context, layout_embedded_content_,
-      AffineTransform::Translation(view_paint_offset.Width(),
-                                   view_paint_offset.Height()));
   CullRect adjusted_cull_rect(local_paint_info.GetCullRect(),
                               -view_paint_offset);
   embedded_content_view->Paint(
