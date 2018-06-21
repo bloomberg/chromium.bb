@@ -8,6 +8,7 @@
 
 #include <stddef.h>
 
+#include <limits>
 #include <utility>
 #include <vector>
 
@@ -94,8 +95,12 @@ Cookie CreateCookie(const net::CanonicalCookie& canonical_cookie,
 
   cookie.session = !canonical_cookie.IsPersistent();
   if (canonical_cookie.IsPersistent()) {
-    cookie.expiration_date.reset(
-        new double(canonical_cookie.ExpiryDate().ToDoubleT()));
+    double expiration_date = canonical_cookie.ExpiryDate().ToDoubleT();
+    if (canonical_cookie.ExpiryDate().is_max() ||
+        !std::isfinite(expiration_date)) {
+      expiration_date = std::numeric_limits<double>::max();
+    }
+    cookie.expiration_date = std::make_unique<double>(expiration_date);
   }
   cookie.store_id = store_id;
 
