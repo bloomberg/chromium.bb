@@ -218,8 +218,8 @@ CORB handles the following cases for JSON:
    As such, these prefixes should trigger CORB protection in almost every case,
    no matter what follows them. This is argued to be safe because:
      * [A JSON security prefix](https://www.owasp.org/index.php/AJAX_Security_Cheat_Sheet#Protect_against_JSON_Hijacking_for_Older_Browsers)
-       would cause a syntax error (or a hang) if present
-       in an `application/javascript`.
+       would cause a syntax error (or a hang) if present in a document served
+       with a JavaScript MIME type such as `text/javascript`.
      * [JSON security prefixes](https://www.owasp.org/index.php/AJAX_Security_Cheat_Sheet#Protect_against_JSON_Hijacking_for_Older_Browsers)
        are not known to collide with binary
        resources like images, videos or fonts (which typically require
@@ -364,9 +364,9 @@ Note that the above means that the following responses are not CORB-protected:
   This avoids having to parse the content types of the nested parts.
   We recommend not supporting multipart range requests for sensitive documents.
 * Responses without a `Content-Type` header.
-* Responses labeled as `application/javascript` - this includes JSONP ("JSON
-  with padding") which unlike JSON is meant to be read and executed in a
-  cross-origin context.
+* Responses with a JavaScript MIME type such as `text/javascript`. This
+  includes JSONP ("JSON with padding") which unlike JSON is meant to be read
+  and executed in a cross-origin context.
 
 
 ## CORB and web compatibility
@@ -680,12 +680,12 @@ which are distributed via JSON (which is CORB-protected).
 In the future CORB may be extended to protect additional resources as follows:
 
 * **Covering more MIME types**.
-  Instead of blacklisting HTML, XML and JSON, CORB protection can be extended to
+  Instead of blacklisting HTML, XML, and JSON, CORB protection can be extended to
   all MIME types, except MIME types that are whitelisted as usable in `<img>`,
   `<audio>`, `<video>`, `<script>` and other similar elements that can be
   embedded cross-origin:
     * [JavaScript MIME type](https://html.spec.whatwg.org/#javascript-mime-type)
-      like `application/javascript` or `text/jscript`
+      like `text/javascript`, `application/javascript`, or `text/jscript`
     * `text/css`
     * [image types](https://mimesniff.spec.whatwg.org/#image-type) like types
       matching `image/*`
