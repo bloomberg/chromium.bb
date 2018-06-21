@@ -14,10 +14,16 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/nux_google_apps/buildflags.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if BUILDFLAG(ENABLE_NUX_GOOGLE_APPS)
+#include "components/nux_google_apps/constants.h"
+#include "components/nux_google_apps/webui.h"
+#endif  // ENABLE_NUX_GOOGLE_APPS
 
 namespace {
   const bool kIsBranded =
@@ -98,6 +104,12 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     html_source->AddResourcePath("welcome.css", IDR_WELCOME_CSS);
     html_source->SetDefaultResource(IDR_WELCOME_HTML);
   }
+
+#if BUILDFLAG(ENABLE_NUX_GOOGLE_APPS)
+  if (base::FeatureList::IsEnabled(nux_google_apps::kNuxGoogleAppsFeature)) {
+    nux_google_apps::AddSources(html_source);
+  }
+#endif  // ENABLE_NUX_GOOGLE_APPS
 
   content::WebUIDataSource::Add(profile, html_source);
 }
