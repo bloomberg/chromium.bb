@@ -117,31 +117,6 @@ void Service::SuspendDone(const base::TimeDelta& sleep_duration) {
   }
 }
 
-void Service::Init(mojom::ClientPtr client,
-                   mojom::ContextPtr assistant_context,
-                   mojom::AudioInputPtr audio_input) {
-  client_ = std::move(client);
-
-  // unit tests may set it early, so we don't need to create one.
-  if (!assistant_manager_service_) {
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-    device::mojom::BatteryMonitorPtr battery_monitor;
-    context()->connector()->BindInterface(device::mojom::kServiceName,
-                                          mojo::MakeRequest(&battery_monitor));
-
-    assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
-        std::move(audio_input), std::move(battery_monitor));
-#else
-    assistant_manager_service_ =
-        std::make_unique<FakeAssistantManagerServiceImpl>();
-#endif
-  }
-
-  // This will eventually trigger the actual start of assistant services because
-  // they all depend on it.
-  RequestAccessToken();
-}
-
 void Service::OnSessionActivated(bool activated) {
   DCHECK(client_);
   session_active_ = activated;
@@ -183,6 +158,24 @@ void Service::RetryRefreshToken() {
     ++token_refresh_error_backoff_factor;
   token_refresh_timer_->Start(FROM_HERE, backoff_delay, this,
                               &Service::RequestAccessToken);
+}
+
+void Service::Init(mojom::ClientPtr client) {
+  client_ = std::move(client);
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+  device::mojom::BatteryMonitorPtr battery_monitor;
+  context()->connector()->BindInterface(device::mojom::kServiceName,
+                                        mojo::MakeRequest(&battery_monitor));
+  assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
+      context()->connector(), std::move(battery_monitor));
+#else
+  assistant_manager_service_ =
+      std::make_unique<FakeAssistantManagerServiceImpl>();
+#endif
+
+  // This will eventually trigger the actual start of assistant services because
+  // they all depend on it.
+  RequestAccessToken();
 }
 
 void Service::GetPrimaryAccountInfoCallback(

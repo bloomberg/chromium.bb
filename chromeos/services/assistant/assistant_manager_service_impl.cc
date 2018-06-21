@@ -32,10 +32,10 @@ const char kWiFiDeviceSettingId[] = "WIFI";
 const char kBluetoothDeviceSettingId[] = "BLUETOOTH";
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
-    mojom::AudioInputPtr audio_input,
+    service_manager::Connector* connector,
     device::mojom::BatteryMonitorPtr battery_monitor)
     : platform_api_(CreateLibAssistantConfig(),
-                    std::move(audio_input),
+                    connector,
                     std::move(battery_monitor)),
       action_module_(std::make_unique<action::CrosActionModule>(this)),
       display_connection_(std::make_unique<CrosDisplayConnection>(this)),

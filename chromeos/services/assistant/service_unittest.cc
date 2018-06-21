@@ -115,33 +115,12 @@ class FakeAssistantClient : mojom::Client {
  private:
   // mojom::Client:
   void OnAssistantStatusChanged(bool running) override {}
+  void RequestAssistantStructure(
+      RequestAssistantStructureCallback callback) override {}
 
   mojo::Binding<mojom::Client> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAssistantClient);
-};
-
-class FakeAssistantContext : mojom::Context {
- public:
-  FakeAssistantContext() : binding_(this) {}
-
-  mojom::ContextPtr CreateInterfacePtrAndBind() {
-    mojom::ContextPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
-  }
-
- private:
-  // mojom::Context:
-  using RequestAssistantStructureCallback =
-      base::OnceCallback<void(::ax::mojom::AssistantExtraPtr,
-                              std::unique_ptr<ui::AssistantTree>)>;
-  void RequestAssistantStructure(
-      RequestAssistantStructureCallback callback) override {}
-
-  mojo::Binding<mojom::Context> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAssistantContext);
 };
 
 class FakeAudioInput : mojom::AudioInput {
@@ -232,9 +211,7 @@ class ServiceTest : public service_manager::test::ServiceTest {
   void SetUp() override {
     service_manager::test::ServiceTest::SetUp();
 
-    GetService()->Init(fake_assistant_client_->CreateInterfacePtrAndBind(),
-                       fake_assistant_context_->CreateInterfacePtrAndBind(),
-                       fake_audio_input_->CreateInterfacePtrAndBind());
+    GetService()->Init(fake_assistant_client_->CreateInterfacePtrAndBind());
     platform_service_.FlushForTesting();
     base::RunLoop().RunUntilIdle();
   }
@@ -245,7 +222,6 @@ class ServiceTest : public service_manager::test::ServiceTest {
   std::unique_ptr<service_manager::Service> CreateService() override {
     fake_identity_manager_ = std::make_unique<FakeIdentityManager>();
     fake_assistant_client_ = std::make_unique<FakeAssistantClient>();
-    fake_assistant_context_ = std::make_unique<FakeAssistantContext>();
     fake_audio_input_ = std::make_unique<FakeAudioInput>();
     fake_assistant_manager_ptr_ = new FakeAssistantManagerServiceImpl();
 
@@ -294,7 +270,6 @@ class ServiceTest : public service_manager::test::ServiceTest {
 
   std::unique_ptr<FakeIdentityManager> fake_identity_manager_;
   std::unique_ptr<FakeAssistantClient> fake_assistant_client_;
-  std::unique_ptr<FakeAssistantContext> fake_assistant_context_;
   std::unique_ptr<FakeAudioInput> fake_audio_input_;
 
   FakeAssistantManagerServiceImpl* fake_assistant_manager_ptr_;

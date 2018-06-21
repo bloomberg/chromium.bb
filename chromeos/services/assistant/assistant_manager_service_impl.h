@@ -28,6 +28,10 @@ class AssistantManager;
 class AssistantManagerInternal;
 }  // namespace assistant_client
 
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
+
 namespace chromeos {
 namespace assistant {
 
@@ -43,9 +47,8 @@ class AssistantManagerServiceImpl
       public assistant_client::ConversationStateListener,
       public assistant_client::AssistantManagerDelegate {
  public:
-  explicit AssistantManagerServiceImpl(
-      mojom::AudioInputPtr audio_input,
-      device::mojom::BatteryMonitorPtr battery_monitor);
+  AssistantManagerServiceImpl(service_manager::Connector* connector,
+                              device::mojom::BatteryMonitorPtr battery_monitor);
   ~AssistantManagerServiceImpl() override;
 
   // assistant::AssistantManagerService overrides

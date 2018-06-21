@@ -9,45 +9,90 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/shared/public/platform_audio_input.h"
+#include "media/base/audio_capturer_source.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
+
+namespace media {
+class AudioBus;
+}  // namespace media
 
 namespace chromeos {
 namespace assistant {
 
-class AudioInputImpl : public assistant_client::AudioInput,
-                       public mojom::AudioInputObserver {
+class AudioInputBufferImpl : public assistant_client::AudioBuffer {
  public:
-  explicit AudioInputImpl(mojom::AudioInputPtr audio_input);
+  AudioInputBufferImpl(const void* data, uint32_t frame_count);
+  ~AudioInputBufferImpl() override;
+
+  // assistant_client::AudioBuffer overrides:
+  assistant_client::BufferFormat GetFormat() const override;
+  const void* GetData() const override;
+  void* GetWritableData() override;
+  int GetFrameCount() const override;
+
+ private:
+  const void* data_;
+  int frame_count_;
+  DISALLOW_COPY_AND_ASSIGN(AudioInputBufferImpl);
+};
+
+class AudioInputImpl : public assistant_client::AudioInput,
+                       public media::AudioCapturerSource::CaptureCallback {
+ public:
+  explicit AudioInputImpl(
+      std::unique_ptr<service_manager::Connector> connector);
   ~AudioInputImpl() override;
 
-  // mojom::AudioInputObserver overrides:
-  void OnAudioInputFramesAvailable(const std::vector<int32_t>& buffer,
-                                   uint32_t frame_count,
-                                   base::TimeTicks timestamp) override;
-  void OnAudioInputClosed() override;
+  // media::AudioCapturerSource::CaptureCallback overrides:
+  void Capture(const media::AudioBus* audio_source,
+               int audio_delay_milliseconds,
+               double volume,
+               bool key_pressed) override;
+  void OnCaptureError(const std::string& message) override;
+  void OnCaptureMuted(bool is_muted) override;
 
-  // assistant_client::AudioInput overrides:
+  // assistant_client::AudioInput overrides. These function are called by
+  // assistant from assistant thread, for which we should not assume any
+  // //base related thread context to be in place.
   assistant_client::BufferFormat GetFormat() const override;
   void AddObserver(assistant_client::AudioInput::Observer* observer) override;
   void RemoveObserver(
       assistant_client::AudioInput::Observer* observer) override;
 
  private:
-  // Protects |observers_| access becase AssistantManager calls
-  // Add/RemoveObserver on its own thread.
+  void StartRecording();
+  void StopRecording();
+
+  scoped_refptr<media::AudioCapturerSource> source_;
+
+  // Guards observers_;
   base::Lock lock_;
   std::vector<assistant_client::AudioInput::Observer*> observers_;
-  mojo::Binding<mojom::AudioInputObserver> binding_;
+
+  // To be initialized on assistant thread the first call to AddObserver.
+  // It ensures that AddObserver / RemoveObserver are called on the same
+  // sequence.
+  SEQUENCE_CHECKER(observer_sequence_checker_);
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  base::WeakPtrFactory<AudioInputImpl> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AudioInputImpl);
 };
 
 class AudioInputProviderImpl : public assistant_client::AudioInputProvider {
  public:
-  explicit AudioInputProviderImpl(mojom::AudioInputPtr audio_input);
+  explicit AudioInputProviderImpl(service_manager::Connector* connector);
   ~AudioInputProviderImpl() override;
 
   // assistant_client::AudioInputProvider overrides:

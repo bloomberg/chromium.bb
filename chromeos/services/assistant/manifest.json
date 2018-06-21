@@ -6,7 +6,8 @@
       "requires": {
         "ash": [ "system_ui" ],
         "identity": [ "identity_manager" ],
-        "device": [ "device:battery_monitor" ]
+        "device": [ "device:battery_monitor" ],
+        "audio": [ "stream_factory" ]
       },
       "provides": {
         "assistant": [
