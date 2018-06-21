@@ -37,35 +37,45 @@
 
 namespace blink {
 
-AbstractInlineTextBox::InlineToAbstractInlineTextBoxHashMap*
-    AbstractInlineTextBox::g_abstract_inline_text_box_map_ = nullptr;
+AbstractInlineTextBox::AbstractInlineTextBox(LineLayoutText line_layout_item)
+    : line_layout_item_(line_layout_item) {}
 
-scoped_refptr<AbstractInlineTextBox> AbstractInlineTextBox::GetOrCreate(
+AbstractInlineTextBox::~AbstractInlineTextBox() {
+  DCHECK(!line_layout_item_);
+}
+
+// ----
+
+LegacyAbstractInlineTextBox::InlineToLegacyAbstractInlineTextBoxHashMap*
+    LegacyAbstractInlineTextBox::g_abstract_inline_text_box_map_ = nullptr;
+
+scoped_refptr<AbstractInlineTextBox> LegacyAbstractInlineTextBox::GetOrCreate(
     LineLayoutText line_layout_text,
     InlineTextBox* inline_text_box) {
   if (!inline_text_box)
     return nullptr;
 
-  if (!g_abstract_inline_text_box_map_)
+  if (!g_abstract_inline_text_box_map_) {
     g_abstract_inline_text_box_map_ =
-        new InlineToAbstractInlineTextBoxHashMap();
+        new InlineToLegacyAbstractInlineTextBoxHashMap();
+  }
 
-  InlineToAbstractInlineTextBoxHashMap::const_iterator it =
+  InlineToLegacyAbstractInlineTextBoxHashMap::const_iterator it =
       g_abstract_inline_text_box_map_->find(inline_text_box);
   if (it != g_abstract_inline_text_box_map_->end())
     return it->value;
 
   scoped_refptr<AbstractInlineTextBox> obj = base::AdoptRef(
-      new AbstractInlineTextBox(line_layout_text, inline_text_box));
+      new LegacyAbstractInlineTextBox(line_layout_text, inline_text_box));
   g_abstract_inline_text_box_map_->Set(inline_text_box, obj);
   return obj;
 }
 
-void AbstractInlineTextBox::WillDestroy(InlineTextBox* inline_text_box) {
+void LegacyAbstractInlineTextBox::WillDestroy(InlineTextBox* inline_text_box) {
   if (!g_abstract_inline_text_box_map_)
     return;
 
-  InlineToAbstractInlineTextBoxHashMap::const_iterator it =
+  InlineToLegacyAbstractInlineTextBoxHashMap::const_iterator it =
       g_abstract_inline_text_box_map_->find(inline_text_box);
   if (it != g_abstract_inline_text_box_map_->end()) {
     it->value->Detach();
@@ -73,51 +83,62 @@ void AbstractInlineTextBox::WillDestroy(InlineTextBox* inline_text_box) {
   }
 }
 
-AbstractInlineTextBox::~AbstractInlineTextBox() {
-  DCHECK(!line_layout_item_);
+LegacyAbstractInlineTextBox::LegacyAbstractInlineTextBox(
+    LineLayoutText line_layout_item,
+    InlineTextBox* inline_text_box)
+    : AbstractInlineTextBox(line_layout_item),
+      inline_text_box_(inline_text_box) {}
+
+LegacyAbstractInlineTextBox::~LegacyAbstractInlineTextBox() {
   DCHECK(!inline_text_box_);
 }
 
 void AbstractInlineTextBox::Detach() {
+  DCHECK(GetLineLayoutItem());
   if (Node* node = GetNode()) {
     if (AXObjectCache* cache = node->GetDocument().ExistingAXObjectCache())
       cache->Remove(this);
   }
 
   line_layout_item_ = LineLayoutText(nullptr);
+}
+
+void LegacyAbstractInlineTextBox::Detach() {
+  AbstractInlineTextBox::Detach();
   inline_text_box_ = nullptr;
 }
 
-scoped_refptr<AbstractInlineTextBox> AbstractInlineTextBox::NextInlineTextBox()
-    const {
+scoped_refptr<AbstractInlineTextBox>
+LegacyAbstractInlineTextBox::NextInlineTextBox() const {
   DCHECK(!inline_text_box_ ||
          !inline_text_box_->GetLineLayoutItem().NeedsLayout());
   if (!inline_text_box_)
     return nullptr;
 
-  return GetOrCreate(line_layout_item_,
+  return GetOrCreate(GetLineLayoutItem(),
                      inline_text_box_->NextForSameLayoutObject());
 }
 
-LayoutRect AbstractInlineTextBox::LocalBounds() const {
-  if (!inline_text_box_ || !line_layout_item_)
+LayoutRect LegacyAbstractInlineTextBox::LocalBounds() const {
+  if (!inline_text_box_ || !GetLineLayoutItem())
     return LayoutRect();
 
   return inline_text_box_->FrameRect();
 }
 
-unsigned AbstractInlineTextBox::Len() const {
+unsigned LegacyAbstractInlineTextBox::Len() const {
   if (!inline_text_box_)
     return 0;
 
   return inline_text_box_->Len();
 }
 
-AbstractInlineTextBox::Direction AbstractInlineTextBox::GetDirection() const {
-  if (!inline_text_box_ || !line_layout_item_)
+AbstractInlineTextBox::Direction LegacyAbstractInlineTextBox::GetDirection()
+    const {
+  if (!inline_text_box_ || !GetLineLayoutItem())
     return kLeftToRight;
 
-  if (line_layout_item_.Style()->IsHorizontalWritingMode()) {
+  if (GetLineLayoutItem().Style()->IsHorizontalWritingMode()) {
     return (inline_text_box_->Direction() == TextDirection::kRtl
                 ? kRightToLeft
                 : kLeftToRight);
@@ -127,12 +148,12 @@ AbstractInlineTextBox::Direction AbstractInlineTextBox::GetDirection() const {
 }
 
 Node* AbstractInlineTextBox::GetNode() const {
-  if (!line_layout_item_)
+  if (!GetLineLayoutItem())
     return nullptr;
-  return line_layout_item_.GetNode();
+  return GetLineLayoutItem().GetNode();
 }
 
-void AbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
+void LegacyAbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
   if (!inline_text_box_)
     return;
 
@@ -141,7 +162,7 @@ void AbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
 
 void AbstractInlineTextBox::GetWordBoundaries(
     Vector<WordBoundaries>& words) const {
-  if (!inline_text_box_)
+  if (Len() == 0)
     return;
 
   String text = GetText();
@@ -161,13 +182,13 @@ void AbstractInlineTextBox::GetWordBoundaries(
   }
 }
 
-String AbstractInlineTextBox::GetText() const {
-  if (!inline_text_box_ || !line_layout_item_)
+String LegacyAbstractInlineTextBox::GetText() const {
+  if (!inline_text_box_ || !GetLineLayoutItem())
     return String();
 
   unsigned start = inline_text_box_->Start();
   unsigned len = inline_text_box_->Len();
-  if (Node* node = line_layout_item_.GetNode()) {
+  if (Node* node = GetLineLayoutItem().GetNode()) {
     if (node->IsTextNode()) {
       return PlainText(
           EphemeralRange(Position(node, start), Position(node, start + len)),
@@ -179,7 +200,8 @@ String AbstractInlineTextBox::GetText() const {
         TextIteratorBehavior::IgnoresStyleVisibilityBehavior());
   }
 
-  String result = line_layout_item_.GetText()
+  String result = GetLineLayoutItem()
+                      .GetText()
                       .Substring(start, len)
                       .SimplifyWhiteSpace(WTF::kDoNotStripWhiteSpace);
   if (inline_text_box_->NextForSameLayoutObject() &&
@@ -190,19 +212,20 @@ String AbstractInlineTextBox::GetText() const {
   return result;
 }
 
-bool AbstractInlineTextBox::IsFirst() const {
+bool LegacyAbstractInlineTextBox::IsFirst() const {
   DCHECK(!inline_text_box_ ||
          !inline_text_box_->GetLineLayoutItem().NeedsLayout());
   return !inline_text_box_ || !inline_text_box_->PrevForSameLayoutObject();
 }
 
-bool AbstractInlineTextBox::IsLast() const {
+bool LegacyAbstractInlineTextBox::IsLast() const {
   DCHECK(!inline_text_box_ ||
          !inline_text_box_->GetLineLayoutItem().NeedsLayout());
   return !inline_text_box_ || !inline_text_box_->NextForSameLayoutObject();
 }
 
-scoped_refptr<AbstractInlineTextBox> AbstractInlineTextBox::NextOnLine() const {
+scoped_refptr<AbstractInlineTextBox> LegacyAbstractInlineTextBox::NextOnLine()
+    const {
   DCHECK(!inline_text_box_ ||
          !inline_text_box_->GetLineLayoutItem().NeedsLayout());
   if (!inline_text_box_)
@@ -216,8 +239,8 @@ scoped_refptr<AbstractInlineTextBox> AbstractInlineTextBox::NextOnLine() const {
   return nullptr;
 }
 
-scoped_refptr<AbstractInlineTextBox> AbstractInlineTextBox::PreviousOnLine()
-    const {
+scoped_refptr<AbstractInlineTextBox>
+LegacyAbstractInlineTextBox::PreviousOnLine() const {
   DCHECK(!inline_text_box_ ||
          !inline_text_box_->GetLineLayoutItem().NeedsLayout());
   if (!inline_text_box_)

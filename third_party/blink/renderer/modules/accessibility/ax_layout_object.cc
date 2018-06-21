@@ -82,6 +82,8 @@
 #include "third_party/blink/renderer/core/layout/layout_text_control.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -137,6 +139,10 @@ static inline bool IsInlineWithContinuation(LayoutObject* object) {
 
 static inline LayoutObject* FirstChildConsideringContinuation(
     LayoutObject* layout_object) {
+  if (layout_object->IsLayoutNGListMarker()) {
+    // We don't care tree structure of list marker.
+    return nullptr;
+  }
   LayoutObject* first_child = layout_object->SlowFirstChild();
 
   // CSS first-letter pseudo element is handled as continuation. Returning it
@@ -257,7 +263,7 @@ AccessibilityRole AXLayoutObject::NativeAccessibilityRoleIgnoringAria() const {
 
   if ((css_box && css_box->IsListItem()) || IsHTMLLIElement(node))
     return kListItemRole;
-  if (layout_object_->IsListMarker())
+  if (layout_object_->IsListMarkerIncludingNG())
     return kListMarkerRole;
   if (layout_object_->IsBR())
     return kLineBreakRole;
@@ -542,6 +548,15 @@ bool HasAriaAttribute(Element* element) {
   return false;
 }
 
+static bool HasLineBox(const LayoutBlockFlow& block_flow) {
+  if (!block_flow.IsLayoutNGMixin())
+    return block_flow.FirstLineBox();
+  if (block_flow.HasNGInlineNodeData())
+    return !block_flow.GetNGInlineNodeData()->items.IsEmpty();
+  // TODO(layout-dev): We should call this function after layout completion.
+  return false;
+}
+
 bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     IgnoredReasons* ignored_reasons) const {
 #if DCHECK_IS_ON()
@@ -750,7 +765,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     // to decide.
   }
 
-  if (IsWebArea() || layout_object_->IsListMarker())
+  if (IsWebArea() || layout_object_->IsListMarkerIncludingNG())
     return false;
 
   // Using the help text, title or accessibility description (so we
@@ -788,7 +803,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
       !CanSetFocusAttribute()) {
     // If the layout object has any plain text in it, that text will be
     // inside a LineBox, so the layout object will have a first LineBox.
-    bool has_any_text = !!ToLayoutBlockFlow(layout_object_)->FirstLineBox();
+    bool has_any_text = HasLineBox(ToLayoutBlockFlow(*layout_object_));
 
     // Always include interesting-looking objects.
     if (has_any_text || MouseButtonListener())
@@ -1245,7 +1260,7 @@ static bool ShouldUseLayoutNG(const LayoutObject& layout_object) {
 static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
   DCHECK(ax_object.GetLayoutObject());
   const LayoutObject& layout_object = *ax_object.GetLayoutObject();
-  DCHECK(!layout_object.IsListMarker()) << layout_object;
+  DCHECK(!layout_object.IsListMarkerIncludingNG()) << layout_object;
   DCHECK(ShouldUseLayoutNG(layout_object)) << layout_object;
   const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
   if (fragments.IsEmpty() || fragments.IsInLayoutNGInlineFormattingContext())
@@ -1271,7 +1286,7 @@ AXObject* AXLayoutObject::NextOnLine() const {
     return nullptr;
 
   AXObject* result = nullptr;
-  if (GetLayoutObject()->IsListMarker()) {
+  if (GetLayoutObject()->IsListMarkerIncludingNG()) {
     AXObject* next_sibling = RawNextSibling();
     if (!next_sibling || !next_sibling->Children().size())
       return nullptr;
@@ -1318,7 +1333,7 @@ AXObject* AXLayoutObject::NextOnLine() const {
 static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
   DCHECK(ax_object.GetLayoutObject());
   const LayoutObject& layout_object = *ax_object.GetLayoutObject();
-  DCHECK(!layout_object.IsListMarker()) << layout_object;
+  DCHECK(!layout_object.IsListMarkerIncludingNG()) << layout_object;
   DCHECK(ShouldUseLayoutNG(layout_object)) << layout_object;
   const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
   if (fragments.IsEmpty() || fragments.IsInLayoutNGInlineFormattingContext())
@@ -1476,6 +1491,10 @@ String AXLayoutObject::TextAlternative(bool recursive,
       found_text_alternative = true;
     } else if (layout_object_->IsListMarker() && !recursive) {
       text_alternative = ToLayoutListMarker(layout_object_)->TextAlternative();
+      found_text_alternative = true;
+    } else if (layout_object_->IsLayoutNGListMarker() && !recursive) {
+      text_alternative =
+          ToLayoutNGListMarker(layout_object_)->TextAlternative();
       found_text_alternative = true;
     }
 

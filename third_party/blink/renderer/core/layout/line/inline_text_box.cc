@@ -58,7 +58,7 @@ typedef WTF::HashMap<const InlineTextBox*, LayoutRect> InlineTextBoxOverflowMap;
 static InlineTextBoxOverflowMap* g_text_boxes_with_overflow;
 
 void InlineTextBox::Destroy() {
-  AbstractInlineTextBox::WillDestroy(this);
+  LegacyAbstractInlineTextBox::WillDestroy(this);
 
   if (!KnownToHaveNoOverflow() && g_text_boxes_with_overflow)
     g_text_boxes_with_overflow->erase(this);

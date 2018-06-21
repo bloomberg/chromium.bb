@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/layout/line/glyph_overflow.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_abstract_inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
@@ -2214,8 +2215,18 @@ void LayoutText::MomentarilyRevealLastTypedCharacter(
 }
 
 scoped_refptr<AbstractInlineTextBox> LayoutText::FirstAbstractInlineTextBox() {
-  return AbstractInlineTextBox::GetOrCreate(LineLayoutText(this),
-                                            FirstTextBox());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    LayoutObject* const first_letter_part = GetFirstLetterPart();
+    auto fragments = NGPaintFragment::InlineFragmentsFor(
+        first_letter_part ? first_letter_part : this);
+    if (!fragments.IsEmpty() &&
+        fragments.IsInLayoutNGInlineFormattingContext()) {
+      return NGAbstractInlineTextBox::GetOrCreate(LineLayoutText(this),
+                                                  **fragments.begin());
+    }
+  }
+  return LegacyAbstractInlineTextBox::GetOrCreate(LineLayoutText(this),
+                                                  FirstTextBox());
 }
 
 void LayoutText::InvalidateDisplayItemClients(
