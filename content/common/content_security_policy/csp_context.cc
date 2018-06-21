@@ -65,11 +65,11 @@ bool CSPContext::ShouldModifyRequestUrlForCsp(
 }
 
 void CSPContext::ModifyRequestUrlForCsp(GURL* url) {
-  if (url->scheme() == "http") {
+  if (url->SchemeIs(url::kHttpScheme)) {
+    // Updating the URL's scheme also implicitly updates the URL's port from 80
+    // to 443 if needed.
     GURL::Replacements replacements;
-    replacements.SetSchemeStr("https");
-    if (url->port() == "80")
-      replacements.SetPortStr("443");
+    replacements.SetSchemeStr(url::kHttpsScheme);
     *url = url->ReplaceComponents(replacements);
   }
 }
