@@ -23,7 +23,7 @@ ShelfMenuModelAdapter::ShelfMenuModelAdapter(
 
 ShelfMenuModelAdapter::~ShelfMenuModelAdapter() = default;
 
-void ShelfMenuModelAdapter::RecordHistogram() {
+void ShelfMenuModelAdapter::RecordHistogramOnMenuClosed() {
   base::TimeDelta user_journey_time = base::TimeTicks::Now() - menu_open_time();
   // If the menu is for a ShelfButton.
   if (!app_id().empty()) {

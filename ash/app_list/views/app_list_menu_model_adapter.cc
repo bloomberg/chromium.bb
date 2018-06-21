@@ -42,7 +42,7 @@ void AppListMenuModelAdapter::Build(
   menu_items_ = std::move(items);
 }
 
-void AppListMenuModelAdapter::RecordHistogram() {
+void AppListMenuModelAdapter::RecordHistogramOnMenuClosed() {
   const base::TimeDelta user_journey_time =
       base::TimeTicks::Now() - menu_open_time();
   switch (type_) {
@@ -97,6 +97,7 @@ bool AppListMenuModelAdapter::IsCommandEnabled(int id) const {
 
 void AppListMenuModelAdapter::ExecuteCommand(int id, int mouse_event_flags) {
   delegate_->ExecuteCommand(id, mouse_event_flags);
+  RecordExecuteCommandHistogram(id);
 }
 
 }  // namespace app_list

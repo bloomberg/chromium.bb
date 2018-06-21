@@ -48,12 +48,10 @@ class APP_MENU_EXPORT AppMenuModelAdapter : public views::MenuModelAdapter {
   // Closes the menu if one is being shown.
   void Cancel();
 
-  // Records the user journey time and show source histograms.
-  virtual void RecordHistogram() = 0;
-
   base::TimeTicks GetClosingEventTime();
 
   // Overridden from views::MenuModelAdapter:
+  void ExecuteCommand(int id, int mouse_event_flags) override;
   void OnMenuClosed(views::MenuItemView* menu) override;
 
  protected:
@@ -63,6 +61,13 @@ class APP_MENU_EXPORT AppMenuModelAdapter : public views::MenuModelAdapter {
 
   ui::SimpleMenuModel* model() { return model_.get(); }
   const ui::SimpleMenuModel* model() const { return model_.get(); }
+
+  // Helper method to record ExecuteCommand() histograms.
+  void RecordExecuteCommandHistogram(int command_id);
+
+  // Records histograms on menu closed, such as the user journey time and show
+  // source histograms.
+  virtual void RecordHistogramOnMenuClosed() = 0;
 
  private:
   // The application identifier used to fetch active notifications to display.

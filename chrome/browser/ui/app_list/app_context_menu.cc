@@ -31,7 +31,6 @@ AppContextMenu::~AppContextMenu() = default;
 void AppContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
   BuildMenu(menu_model.get());
-  menu_model->set_histogram_name("Apps.ContextMenuExecuteCommand.FromApp");
   std::move(callback).Run(std::move(menu_model));
 }
 

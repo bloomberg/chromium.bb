@@ -28,7 +28,6 @@ ArcAppContextMenu::~ArcAppContextMenu() = default;
 
 void ArcAppContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
-  menu_model->set_histogram_name("Apps.ContextMenuExecuteCommand.FromApp");
   BuildMenu(menu_model.get());
   if (!features::IsTouchableAppContextMenuEnabled()) {
     std::move(callback).Run(std::move(menu_model));

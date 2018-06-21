@@ -90,15 +90,6 @@ bool IsTabletModeEnabled() {
              ->tablet_mode_controller()
              ->IsTabletModeWindowManagerEnabled();
 }
-// The UMA histogram that logs the commands which are executed on non-app
-// context menus.
-constexpr char kNonAppContextMenuExecuteCommand[] =
-    "Apps.ContextMenuExecuteCommand.NotFromApp";
-
-// The UMA histogram that logs the commands which are executed on app context
-// menus.
-constexpr char kAppContextMenuExecuteCommand[] =
-    "Apps.ContextMenuExecuteCommand.FromApp";
 
 // A class to temporarily disable a given bounds animator.
 class BoundsAnimatorDisabler {
@@ -1941,9 +1932,6 @@ void ShelfView::AfterGetContextMenuItems(
       std::make_unique<ShelfContextMenuModel>(
           std::move(menu_items), model_->GetShelfItemDelegate(shelf_id),
           display_id);
-  menu_model->set_histogram_name(ShelfItemForView(source)
-                                     ? kAppContextMenuExecuteCommand
-                                     : kNonAppContextMenuExecuteCommand);
   ShowMenu(std::move(menu_model), source, point, true /* context_menu */,
            source_type);
 }
@@ -1959,7 +1947,6 @@ void ShelfView::ShowContextMenuForView(views::View* source,
     std::unique_ptr<ShelfContextMenuModel> menu_model =
         std::make_unique<ShelfContextMenuModel>(
             std::vector<mojom::MenuItemPtr>(), nullptr, display_id);
-    menu_model->set_histogram_name(kNonAppContextMenuExecuteCommand);
     ShowMenu(std::move(menu_model), source, point, true, source_type);
     return;
   }
