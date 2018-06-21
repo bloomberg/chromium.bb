@@ -232,6 +232,8 @@ void ProfileSyncService::Initialize() {
 
   startup_controller_ = std::make_unique<syncer::StartupController>(
       &sync_prefs_,
+      base::BindRepeating(&ProfileSyncService::GetPreferredDataTypes,
+                          base::Unretained(this)),
       base::BindRepeating(&ProfileSyncService::CanSyncStart,
                           base::Unretained(this)),
       base::BindRepeating(&ProfileSyncService::StartUpSlowEngineComponents,
@@ -338,7 +340,6 @@ void ProfileSyncService::Initialize() {
   memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
       base::BindRepeating(&ProfileSyncService::OnMemoryPressure,
                           sync_enabled_weak_factory_.GetWeakPtr()));
-  startup_controller_->Reset(GetRegisteredDataTypes());
 
   // Auto-start means the first time the profile starts up, sync should start up
   // immediately.
@@ -693,7 +694,7 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
 
   sync_enabled_weak_factory_.InvalidateWeakPtrs();
 
-  startup_controller_->Reset(GetRegisteredDataTypes());
+  startup_controller_->Reset();
 
   // If the sync DB is getting destroyed, the local DeviceInfo is no longer
   // valid and should be cleared from the cache.

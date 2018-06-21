@@ -57,12 +57,15 @@ enum DeferredInitTrigger {
 
 }  // namespace
 
-StartupController::StartupController(const SyncPrefs* sync_prefs,
-                                     base::RepeatingCallback<bool()> can_start,
-                                     base::RepeatingClosure start_engine)
+StartupController::StartupController(
+    const SyncPrefs* sync_prefs,
+    base::RepeatingCallback<ModelTypeSet()> get_preferred_data_types,
+    base::RepeatingCallback<bool()> can_start,
+    base::RepeatingClosure start_engine)
     : sync_prefs_(sync_prefs),
-      can_start_(std::move(can_start)),
-      start_engine_(std::move(start_engine)),
+      get_preferred_data_types_callback_(std::move(get_preferred_data_types)),
+      can_start_callback_(std::move(can_start)),
+      start_engine_callback_(std::move(start_engine)),
       bypass_setup_complete_(false),
       received_start_request_(false),
       setup_in_progress_(false),
@@ -70,14 +73,13 @@ StartupController::StartupController(const SyncPrefs* sync_prefs,
 
 StartupController::~StartupController() {}
 
-void StartupController::Reset(const ModelTypeSet& registered_types) {
+void StartupController::Reset() {
   received_start_request_ = false;
   bypass_setup_complete_ = false;
   start_up_time_ = base::Time();
   start_engine_time_ = base::Time();
   // Don't let previous timers affect us post-reset.
   weak_factory_.InvalidateWeakPtrs();
-  registered_types_ = registered_types;
 }
 
 void StartupController::SetSetupInProgress(bool setup_in_progress) {
@@ -94,7 +96,7 @@ void StartupController::StartUp(StartUpDeferredOption deferred_option) {
   }
 
   if (deferred_option == STARTUP_DEFERRED && IsDeferredStartupEnabled() &&
-      sync_prefs_->GetPreferredDataTypes(registered_types_).Has(SESSIONS)) {
+      get_preferred_data_types_callback_.Run().Has(SESSIONS)) {
     if (first_start) {
       base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
@@ -107,12 +109,12 @@ void StartupController::StartUp(StartUpDeferredOption deferred_option) {
 
   if (start_engine_time_.is_null()) {
     start_engine_time_ = base::Time::Now();
-    start_engine_.Run();
+    start_engine_callback_.Run();
   }
 }
 
 void StartupController::TryStart() {
-  if (!can_start_.Run()) {
+  if (!can_start_callback_.Run()) {
     return;
   }
 

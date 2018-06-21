@@ -29,9 +29,11 @@ class StartupController {
     STARTED
   };
 
-  StartupController(const SyncPrefs* sync_prefs,
-                    base::RepeatingCallback<bool()> can_start,
-                    base::RepeatingClosure start_engine);
+  StartupController(
+      const SyncPrefs* sync_prefs,
+      base::RepeatingCallback<ModelTypeSet()> get_preferred_data_types,
+      base::RepeatingCallback<bool()> can_start,
+      base::RepeatingClosure start_engine);
   ~StartupController();
 
   // Starts up sync if it is requested by the user and preconditions are met.
@@ -54,7 +56,7 @@ class StartupController {
   // touch values that are explicitly set and reset by higher layers to
   // tell this class whether a setup UI dialog is being shown to the user.
   // See setup_in_progress_.
-  void Reset(const ModelTypeSet& registered_types);
+  void Reset();
 
   // Sets the setup in progress flag and tries to start sync if it's true.
   void SetSetupInProgress(bool setup_in_progress);
@@ -75,16 +77,16 @@ class StartupController {
 
   const SyncPrefs* sync_prefs_;
 
+  const base::RepeatingCallback<ModelTypeSet()>
+      get_preferred_data_types_callback_;
+
   // A function that can be invoked repeatedly to determine whether sync can be
   // started. |start_engine_| should not be invoked unless this returns true.
-  const base::RepeatingCallback<bool()> can_start_;
+  const base::RepeatingCallback<bool()> can_start_callback_;
 
   // The callback we invoke when it's time to call expensive
   // startup routines for the sync engine.
-  const base::RepeatingClosure start_engine_;
-
-  // Used to compute preferred_types from SyncPrefs as-needed.
-  ModelTypeSet registered_types_;
+  const base::RepeatingClosure start_engine_callback_;
 
   // If true, will bypass the FirstSetupComplete check when triggering sync
   // startup. Set in TryStartImmediately.
