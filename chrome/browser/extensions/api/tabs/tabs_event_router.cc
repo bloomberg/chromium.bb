@@ -35,8 +35,6 @@ using zoom::ZoomController;
 
 namespace extensions {
 
-namespace tabs = api::tabs;
-
 namespace {
 
 bool WillDispatchTabUpdatedEvent(
@@ -211,7 +209,7 @@ void TabsEventRouter::TabCreatedAt(WebContents* contents,
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   auto event = std::make_unique<Event>(events::TABS_ON_CREATED,
-                                       tabs::OnCreated::kEventName,
+                                       api::tabs::OnCreated::kEventName,
                                        std::move(args), profile);
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
@@ -249,8 +247,9 @@ void TabsEventRouter::TabInsertedAt(TabStripModel* tab_strip_model,
   args->Append(std::move(object_args));
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  DispatchEvent(profile, events::TABS_ON_ATTACHED, tabs::OnAttached::kEventName,
-                std::move(args), EventRouter::USER_GESTURE_UNKNOWN);
+  DispatchEvent(profile, events::TABS_ON_ATTACHED,
+                api::tabs::OnAttached::kEventName, std::move(args),
+                EventRouter::USER_GESTURE_UNKNOWN);
 }
 
 void TabsEventRouter::TabDetachedAt(WebContents* contents,
@@ -274,8 +273,9 @@ void TabsEventRouter::TabDetachedAt(WebContents* contents,
   args->Append(std::move(object_args));
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  DispatchEvent(profile, events::TABS_ON_DETACHED, tabs::OnDetached::kEventName,
-                std::move(args), EventRouter::USER_GESTURE_UNKNOWN);
+  DispatchEvent(profile, events::TABS_ON_DETACHED,
+                api::tabs::OnDetached::kEventName, std::move(args),
+                EventRouter::USER_GESTURE_UNKNOWN);
 }
 
 void TabsEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
@@ -295,8 +295,9 @@ void TabsEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
   args->Append(std::move(object_args));
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  DispatchEvent(profile, events::TABS_ON_REMOVED, tabs::OnRemoved::kEventName,
-                std::move(args), EventRouter::USER_GESTURE_UNKNOWN);
+  DispatchEvent(profile, events::TABS_ON_REMOVED,
+                api::tabs::OnRemoved::kEventName, std::move(args),
+                EventRouter::USER_GESTURE_UNKNOWN);
 
   UnregisterForTabNotifications(contents);
 }
@@ -324,18 +325,19 @@ void TabsEventRouter::ActiveTabChanged(WebContents* old_contents,
       ? EventRouter::USER_GESTURE_ENABLED
       : EventRouter::USER_GESTURE_NOT_ENABLED;
   DispatchEvent(profile, events::TABS_ON_SELECTION_CHANGED,
-                tabs::OnSelectionChanged::kEventName, args->CreateDeepCopy(),
-                gesture);
+                api::tabs::OnSelectionChanged::kEventName,
+                args->CreateDeepCopy(), gesture);
   DispatchEvent(profile, events::TABS_ON_ACTIVE_CHANGED,
-                tabs::OnActiveChanged::kEventName, std::move(args), gesture);
+                api::tabs::OnActiveChanged::kEventName, std::move(args),
+                gesture);
 
   // The onActivated event takes one argument: {windowId, tabId}.
   auto on_activated_args = std::make_unique<base::ListValue>();
   object_args->Set(tabs_constants::kTabIdKey, std::make_unique<Value>(tab_id));
   on_activated_args->Append(std::move(object_args));
   DispatchEvent(profile, events::TABS_ON_ACTIVATED,
-                tabs::OnActivated::kEventName, std::move(on_activated_args),
-                gesture);
+                api::tabs::OnActivated::kEventName,
+                std::move(on_activated_args), gesture);
 }
 
 void TabsEventRouter::TabSelectionChanged(
@@ -368,11 +370,11 @@ void TabsEventRouter::TabSelectionChanged(
   // The onHighlighted event replaced onHighlightChanged.
   Profile* profile = tab_strip_model->profile();
   DispatchEvent(profile, events::TABS_ON_HIGHLIGHT_CHANGED,
-                tabs::OnHighlightChanged::kEventName,
+                api::tabs::OnHighlightChanged::kEventName,
                 std::unique_ptr<base::ListValue>(args->DeepCopy()),
                 EventRouter::USER_GESTURE_UNKNOWN);
   DispatchEvent(profile, events::TABS_ON_HIGHLIGHTED,
-                tabs::OnHighlighted::kEventName, std::move(args),
+                api::tabs::OnHighlighted::kEventName, std::move(args),
                 EventRouter::USER_GESTURE_UNKNOWN);
 }
 
@@ -394,7 +396,7 @@ void TabsEventRouter::TabMoved(WebContents* contents,
   args->Append(std::move(object_args));
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  DispatchEvent(profile, events::TABS_ON_MOVED, tabs::OnMoved::kEventName,
+  DispatchEvent(profile, events::TABS_ON_MOVED, api::tabs::OnMoved::kEventName,
                 std::move(args), EventRouter::USER_GESTURE_UNKNOWN);
 }
 
@@ -465,7 +467,7 @@ void TabsEventRouter::DispatchTabUpdatedEvent(
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
 
   auto event = std::make_unique<Event>(events::TABS_ON_UPDATED,
-                                       tabs::OnUpdated::kEventName,
+                                       api::tabs::OnUpdated::kEventName,
                                        std::move(args_base), profile);
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
@@ -503,7 +505,7 @@ void TabsEventRouter::TabReplacedAt(TabStripModel* tab_strip_model,
   args->AppendInteger(old_tab_id);
 
   DispatchEvent(Profile::FromBrowserContext(new_contents->GetBrowserContext()),
-                events::TABS_ON_REPLACED, tabs::OnReplaced::kEventName,
+                events::TABS_ON_REPLACED, api::tabs::OnReplaced::kEventName,
                 std::move(args), EventRouter::USER_GESTURE_UNKNOWN);
 
   UnregisterForTabNotifications(old_contents);
@@ -541,7 +543,7 @@ void TabsEventRouter::OnZoomChanged(
   Profile* profile = Profile::FromBrowserContext(
       data.web_contents->GetBrowserContext());
   DispatchEvent(profile, events::TABS_ON_ZOOM_CHANGE,
-                tabs::OnZoomChange::kEventName,
+                api::tabs::OnZoomChange::kEventName,
                 api::tabs::OnZoomChange::Create(zoom_change_info),
                 EventRouter::USER_GESTURE_UNKNOWN);
 }
