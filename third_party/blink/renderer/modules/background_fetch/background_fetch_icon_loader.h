@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_type_converters.h"
+#include "third_party/blink/renderer/modules/manifest/image_resource.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -17,7 +18,6 @@
 namespace blink {
 
 class BackgroundFetchBridge;
-class IconDefinition;
 struct WebSize;
 
 class MODULES_EXPORT BackgroundFetchIconLoader final
@@ -39,7 +39,7 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
   // data, and passes the bitmap to the given callback.
   void Start(BackgroundFetchBridge* bridge,
              ExecutionContext* execution_context,
-             HeapVector<IconDefinition>,
+             HeapVector<ManifestImageResource>,
              IconCallback callback);
 
   // Cancels the pending load, if there is one. The |icon_callback_| will not
@@ -75,12 +75,12 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
 
   // Get a score for the given icon, based on ideal_size. The icon with the
   // highest score is chosen.
-  double GetIconScore(IconDefinition icon, const int ideal_size);
+  double GetIconScore(ManifestImageResource icon, const int ideal_size);
 
   bool stopped_ = false;
   scoped_refptr<SharedBuffer> data_;
   IconCallback icon_callback_;
-  HeapVector<IconDefinition> icons_;
+  HeapVector<ManifestImageResource> icons_;
   Member<ThreadableLoader> threadable_loader_;
 };
 

@@ -6,39 +6,38 @@
 
 #include <utility>
 
+#include "base/strings/utf_string_conversions.h"
 #include "content/common/background_fetch/background_fetch_types.h"
+#include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest_mojom_traits.h"
+#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/size.h"
+#include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace content {
 
 namespace {
 
 // Creates a new IconDefinition object for the given arguments.
-IconDefinition CreateIconDefinition(std::string src,
-                                    std::string sizes,
-                                    std::string type) {
-  IconDefinition definition;
-  definition.src = std::move(src);
-  definition.sizes = std::move(sizes);
-  definition.type = std::move(type);
+blink::Manifest::ImageResource CreateIcon(const std::string& src,
+                                          std::vector<gfx::Size> sizes,
+                                          const std::string& type) {
+  blink::Manifest::ImageResource icon;
+  icon.src = GURL(src);
+  icon.sizes = std::move(sizes);
+  icon.type = base::ASCIIToUTF16(type);
 
-  return definition;
-}
-
-// Returns whether the given IconDefinition objects are identical.
-bool IconDefinitionsAreIdentical(const IconDefinition& left,
-                                 const IconDefinition& right) {
-  return left.src == right.src && left.sizes == right.sizes &&
-         left.type == right.type;
+  return icon;
 }
 
 }  // namespace
 
 TEST(BackgroundFetchStructTraitsTest, BackgroundFetchOptionsRoundtrip) {
   BackgroundFetchOptions options;
-  options.icons = {
-      CreateIconDefinition("my_icon.png", "256x256", "image/png"),
-      CreateIconDefinition("my_small_icon.jpg", "128x128", "image/jpg")};
+  options.icons = {CreateIcon("my_icon.png", {{256, 256}}, "image/png"),
+                   CreateIcon("my_small_icon.jpg", {{128, 128}}, "image/jpg")};
   options.title = "My Background Fetch";
   options.download_total = 9001;
 
@@ -48,10 +47,8 @@ TEST(BackgroundFetchStructTraitsTest, BackgroundFetchOptionsRoundtrip) {
       &roundtrip_options));
 
   ASSERT_EQ(roundtrip_options.icons.size(), options.icons.size());
-  for (size_t i = 0; i < options.icons.size(); ++i) {
-    EXPECT_TRUE(IconDefinitionsAreIdentical(options.icons[i],
-                                            roundtrip_options.icons[i]));
-  }
+  for (size_t i = 0; i < options.icons.size(); ++i)
+    EXPECT_EQ(options.icons[i], roundtrip_options.icons[i]);
 
   EXPECT_EQ(roundtrip_options.title, options.title);
   EXPECT_EQ(roundtrip_options.download_total, options.download_total);
@@ -75,15 +72,14 @@ TEST(BackgroundFetchStructTraitsTest, BackgroundFetchRegistrationRoundTrip) {
 }
 
 TEST(BackgroundFetchStructTraitsTest, IconDefinitionRoundtrip) {
-  IconDefinition definition =
-      CreateIconDefinition("my_icon.png", "256x256", "image/png");
+  blink::Manifest::ImageResource icon =
+      CreateIcon("my_icon.png", {{256, 256}}, "image/png");
 
-  IconDefinition roundtrip_definition;
-  ASSERT_TRUE(blink::mojom::IconDefinition::Deserialize(
-      blink::mojom::IconDefinition::Serialize(&definition),
-      &roundtrip_definition));
+  blink::Manifest::ImageResource roundtrip_icon;
+  ASSERT_TRUE(blink::mojom::ManifestImageResource::Deserialize(
+      blink::mojom::ManifestImageResource::Serialize(&icon), &roundtrip_icon));
 
-  EXPECT_TRUE(IconDefinitionsAreIdentical(definition, roundtrip_definition));
+  EXPECT_EQ(icon, roundtrip_icon);
 }
 
 }  // namespace content

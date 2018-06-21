@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LiICENSE file.
 
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_icon_loader.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
-#include "third_party/blink/renderer/modules/background_fetch/background_fetch_icon_loader.h"
-#include "third_party/blink/renderer/modules/background_fetch/icon_definition.h"
+#include "third_party/blink/renderer/modules/manifest/image_resource.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -63,27 +64,28 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
       loaded_ = BackgroundFetchLoadState::kLoadFailed;
   }
 
-  IconDefinition CreateTestIcon(const String& url_str, const String& size) {
+  ManifestImageResource CreateTestIcon(const String& url_str,
+                                       const String& size) {
     KURL url = RegisterMockedURL(url_str);
-    IconDefinition icon;
+    ManifestImageResource icon;
     icon.setSrc(url.GetString());
     icon.setType("image/png");
     icon.setSizes(size);
     return icon;
   }
 
-  int PickRightIcon(HeapVector<IconDefinition> icons,
+  int PickRightIcon(HeapVector<ManifestImageResource> icons,
                     const WebSize& ideal_display_size) {
     loader_->icons_ = std::move(icons);
     return loader_->PickBestIconForDisplay(GetContext(), ideal_display_size);
   }
 
   void LoadIcon(const KURL& url) {
-    IconDefinition icon;
+    ManifestImageResource icon;
     icon.setSrc(url.GetString());
     icon.setType("image/png");
     icon.setSizes("500x500");
-    HeapVector<IconDefinition> icons(1, icon);
+    HeapVector<ManifestImageResource> icons(1, icon);
     loader_->icons_ = std::move(icons);
     loader_->DidGetIconDisplaySizeIfSoLoadIcon(
         GetContext(),
@@ -109,14 +111,14 @@ TEST_F(BackgroundFetchIconLoaderTest, SuccessTest) {
 }
 
 TEST_F(BackgroundFetchIconLoaderTest, PickRightIconTest) {
-  IconDefinition icon0 =
+  ManifestImageResource icon0 =
       CreateTestIcon(kBackgroundFetchImageLoaderIcon500x500, "500x500");
-  IconDefinition icon1 =
+  ManifestImageResource icon1 =
       CreateTestIcon(kBackgroundFetchImageLoaderIcon48x48, "48x48");
-  IconDefinition icon2 =
+  ManifestImageResource icon2 =
       CreateTestIcon(kBackgroundFetchImageLoaderIcon3000x2000, "3000x2000");
 
-  HeapVector<IconDefinition> icons;
+  HeapVector<ManifestImageResource> icons;
   icons.push_back(icon0);
   icons.push_back(icon1);
   icons.push_back(icon2);
@@ -126,13 +128,14 @@ TEST_F(BackgroundFetchIconLoaderTest, PickRightIconTest) {
 }
 
 TEST_F(BackgroundFetchIconLoaderTest, PickRightIconGivenAnyTest) {
-  IconDefinition icon0 =
+  ManifestImageResource icon0 =
       CreateTestIcon(kBackgroundFetchImageLoaderIcon500x500, "500x500");
-  IconDefinition icon1 =
+  ManifestImageResource icon1 =
       CreateTestIcon(kBackgroundFetchImageLoaderIcon48x48, "48x48");
-  IconDefinition icon2 = CreateTestIcon(kBackgroundFetchImageLoaderIcon, "any");
+  ManifestImageResource icon2 =
+      CreateTestIcon(kBackgroundFetchImageLoaderIcon, "any");
 
-  HeapVector<IconDefinition> icons;
+  HeapVector<ManifestImageResource> icons;
   icons.push_back(icon0);
   icons.push_back(icon1);
   icons.push_back(icon2);
@@ -144,13 +147,13 @@ TEST_F(BackgroundFetchIconLoaderTest, PickRightIconGivenAnyTest) {
 TEST_F(BackgroundFetchIconLoaderTest, PickRightIconWithTieBreakTest) {
   // Test that if two icons get the same score, the one declared last gets
   // picked.
-  IconDefinition icon0 =
+  ManifestImageResource icon0 =
       CreateTestIcon(kBackgroundFetchImageLoaderIcon500x500, "500x500");
-  IconDefinition icon1 =
+  ManifestImageResource icon1 =
       CreateTestIcon(kBackgroundFetchImageLoaderIcon48x48, "48x48");
-  IconDefinition icon2 =
+  ManifestImageResource icon2 =
       CreateTestIcon(kBackgroundFetchImageLoaderIcon3000x2000, "48x48");
-  HeapVector<IconDefinition> icons;
+  HeapVector<ManifestImageResource> icons;
   icons.push_back(icon0);
   icons.push_back(icon1);
   icons.push_back(icon2);

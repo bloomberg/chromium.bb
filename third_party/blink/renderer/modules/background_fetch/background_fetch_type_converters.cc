@@ -6,6 +6,7 @@
 
 #include <utility>
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
+#include "third_party/blink/renderer/modules/manifest/image_resource_type_converters.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace mojo {
@@ -31,40 +32,17 @@ blink::mojom::blink::BackgroundFetchOptionsPtr TypeConverter<
   blink::mojom::blink::BackgroundFetchOptionsPtr mojoOptions =
       blink::mojom::blink::BackgroundFetchOptions::New();
 
-  WTF::Vector<blink::mojom::blink::IconDefinitionPtr> mojoIcons;
+  WTF::Vector<blink::mojom::blink::ManifestImageResourcePtr> mojoIcons;
   mojoIcons.ReserveInitialCapacity(options.icons().size());
 
   for (const auto& icon : options.icons())
-    mojoIcons.push_back(blink::mojom::blink::IconDefinition::From(icon));
+    mojoIcons.push_back(blink::mojom::blink::ManifestImageResource::From(icon));
 
   mojoOptions->icons = std::move(mojoIcons);
   mojoOptions->download_total = options.downloadTotal();
   mojoOptions->title = options.title();
 
   return mojoOptions;
-}
-
-blink::IconDefinition
-TypeConverter<blink::IconDefinition, blink::mojom::blink::IconDefinitionPtr>::
-    Convert(const blink::mojom::blink::IconDefinitionPtr& mojoDefinition) {
-  blink::IconDefinition definition;
-  definition.setSrc(mojoDefinition->src);
-  definition.setSizes(mojoDefinition->sizes);
-  definition.setType(mojoDefinition->type);
-
-  return definition;
-}
-
-blink::mojom::blink::IconDefinitionPtr TypeConverter<
-    blink::mojom::blink::IconDefinitionPtr,
-    blink::IconDefinition>::Convert(const blink::IconDefinition& definition) {
-  blink::mojom::blink::IconDefinitionPtr mojoDefinition =
-      blink::mojom::blink::IconDefinition::New();
-  mojoDefinition->src = definition.src();
-  mojoDefinition->sizes = definition.sizes();
-  mojoDefinition->type = definition.type();
-
-  return mojoDefinition;
 }
 
 }  // namespace mojo

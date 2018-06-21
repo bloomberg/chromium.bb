@@ -6,6 +6,7 @@ module blink.mojom;
 
 import "skia/public/interfaces/bitmap.mojom";
 import "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom";
+import "third_party/blink/public/mojom/manifest/manifest.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 enum BackgroundFetchError {
@@ -17,20 +18,11 @@ enum BackgroundFetchError {
   SERVICE_WORKER_UNAVAILABLE
 };
 
-// Represents the definition of an icon developers can optionally provide with a
-// Background Fetch fetch. Analogous to the following structure in the spec:
-// https://wicg.github.io/background-fetch/#background-fetch-manager
-struct IconDefinition {
-  string src;
-  string sizes;
-  string type;
-};
-
 // Represents the optional options a developer can provide when starting a new
 // Background Fetch fetch. Analogous to the following structure in the spec:
 // https://wicg.github.io/background-fetch/#background-fetch-manager
 struct BackgroundFetchOptions {
-  array<IconDefinition> icons;
+  array<ManifestImageResource> icons;
   uint64 download_total;
   string title;
 };

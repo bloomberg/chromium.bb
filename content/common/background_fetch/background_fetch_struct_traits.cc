@@ -8,6 +8,8 @@
 #include "content/common/service_worker/service_worker_fetch_request_mojom_traits.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "mojo/public/cpp/bindings/array_data_view.h"
+#include "third_party/blink/public/common/manifest/manifest_mojom_traits.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 
 namespace mojo {
 
@@ -47,15 +49,6 @@ bool StructTraits<content::mojom::BackgroundFetchSettledFetchDataView,
          content::BackgroundFetchSettledFetch* fetch) {
   return data.ReadRequest(&fetch->request) &&
          data.ReadResponse(&fetch->response);
-}
-
-// static
-bool StructTraits<
-    blink::mojom::IconDefinitionDataView,
-    content::IconDefinition>::Read(blink::mojom::IconDefinitionDataView data,
-                                   content::IconDefinition* definition) {
-  return data.ReadSrc(&definition->src) && data.ReadSizes(&definition->sizes) &&
-         data.ReadType(&definition->type);
 }
 
 }  // namespace mojo

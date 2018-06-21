@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_bridge.h"
-#include "third_party/blink/renderer/modules/background_fetch/icon_definition.h"
+#include "third_party/blink/renderer/modules/manifest/image_resource.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
@@ -40,7 +40,7 @@ BackgroundFetchIconLoader::~BackgroundFetchIconLoader() {
 
 void BackgroundFetchIconLoader::Start(BackgroundFetchBridge* bridge,
                                       ExecutionContext* execution_context,
-                                      HeapVector<IconDefinition> icons,
+                                      HeapVector<ManifestImageResource> icons,
                                       IconCallback icon_callback) {
   DCHECK(!stopped_);
   DCHECK_GE(icons.size(), 1u);
@@ -139,7 +139,7 @@ int BackgroundFetchIconLoader::PickBestIconForDisplay(
 //
 // Note: If this is an ico file containing multiple sizes, return the best
 // score.
-double BackgroundFetchIconLoader::GetIconScore(IconDefinition icon,
+double BackgroundFetchIconLoader::GetIconScore(ManifestImageResource icon,
                                                const int ideal_size) {
   // Extract sizes from the icon definition, expressed as "<width>x<height>
   // <width>x<height> ...."

@@ -11,25 +11,9 @@
 
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 
 namespace content {
-
-// Represents the definition of an icon developers can optionally provide with a
-// Background Fetch fetch. Analogous to the following structure in the spec:
-// https://wicg.github.io/background-fetch/#background-fetch-manager
-//
-// Parsing of the icon definitions as well as fetching an appropriate icon will
-// be done by Blink in the renderer process. The browser process is expected to
-// treat these values as opaque strings.
-struct CONTENT_EXPORT IconDefinition {
-  IconDefinition();
-  IconDefinition(const IconDefinition& other);
-  ~IconDefinition();
-
-  std::string src;
-  std::string sizes;
-  std::string type;
-};
 
 // Represents the optional options a developer can provide when starting a new
 // Background Fetch fetch. Analogous to the following structure in the spec:
@@ -39,7 +23,7 @@ struct CONTENT_EXPORT BackgroundFetchOptions {
   BackgroundFetchOptions(const BackgroundFetchOptions& other);
   ~BackgroundFetchOptions();
 
-  std::vector<IconDefinition> icons;
+  std::vector<blink::Manifest::ImageResource> icons;
   std::string title;
   uint64_t download_total = 0;
 };

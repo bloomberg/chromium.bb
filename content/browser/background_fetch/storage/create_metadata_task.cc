@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -75,10 +76,30 @@ void CreateMetadataTask::InitializeMetadataProto() {
   options_proto->set_title(options_.title);
   options_proto->set_download_total(options_.download_total);
   for (const auto& icon : options_.icons) {
-    auto* icon_definition_proto = options_proto->add_icons();
-    icon_definition_proto->set_src(icon.src);
-    icon_definition_proto->set_sizes(icon.sizes);
-    icon_definition_proto->set_type(icon.type);
+    auto* image_resource_proto = options_proto->add_icons();
+
+    image_resource_proto->set_src(icon.src.spec());
+
+    for (const auto& size : icon.sizes) {
+      auto* size_proto = image_resource_proto->add_sizes();
+      size_proto->set_width(size.width());
+      size_proto->set_height(size.height());
+    }
+
+    image_resource_proto->set_type(base::UTF16ToASCII(icon.type));
+
+    for (const auto& purpose : icon.purpose) {
+      switch (purpose) {
+        case blink::Manifest::ImageResource::Purpose::ANY:
+          image_resource_proto->add_purpose(
+              proto::BackgroundFetchOptions_ImageResource_Purpose_ANY);
+          break;
+        case blink::Manifest::ImageResource::Purpose::BADGE:
+          image_resource_proto->add_purpose(
+              proto::BackgroundFetchOptions_ImageResource_Purpose_BADGE);
+          break;
+      }
+    }
   }
 
   // Set other metadata fields.

@@ -28,31 +28,36 @@ message BackgroundFetchRegistration {
 // Developer provided options.
 // https://wicg.github.io/background-fetch/#background-fetch-manager
 //
-// Next Tag: 4
+// Next Tag: 3
 message BackgroundFetchOptions {
   optional string title = 1;
 
-  // https://w3c.github.io/manifest/#icons-member
-  // Note that sizes can have multiple values (e.g. "32x32 64x64").
+  // https://w3c.github.io/manifest/#dom-imageresource
   //
-  // Next Tag: 4
-  message IconDefinition {
+  // Next Tag: 5
+  message ImageResource {
     optional string src = 1;
-    optional string sizes = 2;
-    optional string type = 3;
+
+    // Next Tag: 3
+    message Size {
+      optional int32 width = 1;
+      optional int32 height = 2;
+    }
+
+    repeated Size sizes = 2;
+    optional bytes type = 3;
+
+    // https://w3c.github.io/manifest/#purpose-member
+    enum Purpose {
+      ANY = 1;
+      BADGE = 2;
+    }
+
+    // blink::Manifest::ImageResource::Purpose enum.
+    repeated Purpose purpose = 4;
   }
 
-  // Example value:
-  // icons: {
-  //   src: "icon/lowres.webp"
-  //   sizes: "48x48"
-  //   type: "image/webp"
-  // }
-  // icons: {
-  //   src: "icon/hd_hi.ico"
-  //   sizes: "72x72 96x96 128x128 256x256"
-  // }
-  repeated IconDefinition icons = 2;
+  repeated ImageResource icons = 2;
 
   optional uint64 download_total = 3;
 }

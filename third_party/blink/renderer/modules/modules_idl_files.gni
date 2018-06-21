@@ -460,7 +460,6 @@ modules_dictionary_idl_files =
           "background_fetch/background_fetch_options.idl",
           "background_fetch/background_fetch_settled_event_init.idl",
           "background_fetch/background_fetched_event_init.idl",
-          "background_fetch/icon_definition.idl",
           "background_sync/sync_event_init.idl",
           "bluetooth/bluetooth_le_scan_filter_init.idl",
           "bluetooth/request_device_options.idl",
