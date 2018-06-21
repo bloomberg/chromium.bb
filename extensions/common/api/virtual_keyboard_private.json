@@ -251,10 +251,7 @@
             "name": "boundsList",
             "type": "array",
             "description": "List of rectangles representing regions occluded by the keyboard.",
-            "items": {
-              "type": "object",
-              "$ref": "Bounds"
-            }
+            "items": { "$ref": "Bounds" }
           }
         ]
       }
