@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_transaction.h"
 
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
@@ -90,8 +90,8 @@ IDBTransaction::IDBTransaction(ExecutionContext* execution_context,
       mode_(kWebIDBTransactionModeReadOnly),
       scope_(scope),
       state_(kActive),
-      event_queue_(EventQueueImpl::Create(execution_context,
-                                          TaskType::kInternalIndexedDB)) {
+      event_queue_(
+          EventQueue::Create(execution_context, TaskType::kInternalIndexedDB)) {
   DCHECK(database_);
   DCHECK(!scope_.IsEmpty()) << "Observer transactions must operate "
                                "on a well-defined set of stores";
@@ -108,8 +108,8 @@ IDBTransaction::IDBTransaction(ScriptState* script_state,
       database_(db),
       mode_(mode),
       scope_(scope),
-      event_queue_(EventQueueImpl::Create(ExecutionContext::From(script_state),
-                                          TaskType::kInternalIndexedDB)) {
+      event_queue_(EventQueue::Create(ExecutionContext::From(script_state),
+                                      TaskType::kInternalIndexedDB)) {
   DCHECK(database_);
   DCHECK(!scope_.IsEmpty()) << "Non-versionchange transactions must operate "
                                "on a well-defined set of stores";
@@ -137,8 +137,8 @@ IDBTransaction::IDBTransaction(ExecutionContext* execution_context,
       mode_(kWebIDBTransactionModeVersionChange),
       state_(kInactive),
       old_database_metadata_(old_metadata),
-      event_queue_(EventQueueImpl::Create(execution_context,
-                                          TaskType::kInternalIndexedDB)) {
+      event_queue_(
+          EventQueue::Create(execution_context, TaskType::kInternalIndexedDB)) {
   DCHECK(database_);
   DCHECK(open_db_request_);
   DCHECK(scope_.IsEmpty());

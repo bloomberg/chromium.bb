@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idb_observer_callback.h"
-#include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_any.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_event_dispatcher.h"
@@ -108,8 +108,7 @@ IDBDatabase::IDBDatabase(ExecutionContext* context,
                          v8::Isolate* isolate)
     : ContextLifecycleObserver(context),
       backend_(std::move(backend)),
-      event_queue_(
-          EventQueueImpl::Create(context, TaskType::kInternalIndexedDB)),
+      event_queue_(EventQueue::Create(context, TaskType::kInternalIndexedDB)),
       database_callbacks_(callbacks),
       isolate_(isolate) {
   database_callbacks_->Connect(this);
