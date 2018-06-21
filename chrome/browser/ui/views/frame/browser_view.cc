@@ -951,7 +951,14 @@ bool BrowserView::ShouldHideUIForFullscreen() const {
   if (immersive_mode_controller_->IsEnabled())
     return false;
 
-  return frame_->GetFrameView()->ShouldHideTopUIForFullscreen();
+#if defined(OS_MACOSX)
+  // On Mac, fullscreen mode still has top chrome UI such as Toolbar and
+  // Tabstrip unless the user explicitly turned that off.
+  return IsFullscreen() && !browser_->profile()->GetPrefs()->GetBoolean(
+                               prefs::kShowFullscreenToolbar);
+#else
+  return IsFullscreen();
+#endif
 }
 
 bool BrowserView::IsFullscreen() const {
@@ -969,12 +976,8 @@ void BrowserView::RestoreFocus() {
 }
 
 void BrowserView::FullscreenStateChanged() {
-  bool fullscreen = IsFullscreen();
-  ProcessFullscreen(
-      fullscreen, GURL(),
-      fullscreen
-          ? GetExclusiveAccessManager()->GetExclusiveAccessExitBubbleType()
-          : EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
+  CHECK(!IsFullscreen());
+  ProcessFullscreen(false, GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
 }
 
 void BrowserView::SetToolbarButtonProvider(ToolbarButtonProvider* provider) {
@@ -2744,11 +2747,6 @@ bool BrowserView::FindCommandIdForAccelerator(
 // BrowserView, ExclusiveAccessContext implementation:
 Profile* BrowserView::GetProfile() {
   return browser_->profile();
-}
-
-void BrowserView::UpdateUIForTabFullscreen(TabFullscreenState state) {
-  frame()->GetFrameView()->UpdateFullscreenTopUI(
-      state == ExclusiveAccessContext::STATE_EXIT_TAB_FULLSCREEN);
 }
 
 WebContents* BrowserView::GetActiveWebContents() {

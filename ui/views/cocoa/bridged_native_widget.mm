@@ -677,9 +677,6 @@ void BridgedNativeWidget::OnFullscreenTransitionStart(
   // If going into fullscreen, store an answer for GetRestoredBounds().
   if (target_fullscreen_state)
     bounds_before_fullscreen_ = gfx::ScreenRectFromNSRect([window_ frame]);
-
-  // Notify that fullscreen state changed.
-  native_widget_mac_->OnWindowFullscreenStateChange();
 }
 
 void BridgedNativeWidget::OnFullscreenTransitionComplete(
