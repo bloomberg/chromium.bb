@@ -13020,7 +13020,7 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32_t immediate_data_size,
       str = GetServiceShadingLanguageVersionString(feature_info_.get());
       break;
     case GL_EXTENSIONS: {
-      gl::ExtensionSet extension_set = feature_info_->extensions();
+      gfx::ExtensionSet extension_set = feature_info_->extensions();
       // For WebGL contexts, strip out shader extensions if they have not
       // been enabled on WebGL1 or no longer exist (become core) in WebGL2.
       if (feature_info_->IsWebGLContext()) {
@@ -13035,7 +13035,7 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32_t immediate_data_size,
       }
       if (supports_post_sub_buffer_)
         extension_set.insert("GL_CHROMIUM_post_sub_buffer");
-      extensions = gl::MakeExtensionString(extension_set);
+      extensions = gfx::MakeExtensionString(extension_set);
       str = extensions.c_str();
       break;
     }
@@ -16089,7 +16089,7 @@ error::Error GLES2DecoderImpl::HandleGetRequestableExtensionsCHROMIUM(
   disallowed_features.AllowExtensions();
   info->Initialize(feature_info_->context_type(),
                    false /* is_passthrough_cmd_decoder */, disallowed_features);
-  bucket->SetFromString(gl::MakeExtensionString(info->extensions()).c_str());
+  bucket->SetFromString(gfx::MakeExtensionString(info->extensions()).c_str());
   return error::kNoError;
 }
 

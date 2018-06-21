@@ -16,7 +16,7 @@
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/gpu_gles2_export.h"
-#include "ui/gl/extension_set.h"
+#include "ui/gfx/extension_set.h"
 
 namespace base {
 class CommandLine;
@@ -155,7 +155,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   ContextType context_type() const { return context_type_; }
 
-  const gl::ExtensionSet& extensions() const { return extensions_; }
+  const gfx::ExtensionSet& extensions() const { return extensions_; }
 
   const FeatureFlags& feature_flags() const {
     return feature_flags_;
@@ -214,7 +214,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   void AddExtensionString(const base::StringPiece& s);
   void InitializeBasicState(const base::CommandLine* command_line);
   void InitializeFeatures();
-  void InitializeFloatAndHalfFloatFeatures(const gl::ExtensionSet& extensions);
+  void InitializeFloatAndHalfFloatFeatures(const gfx::ExtensionSet& extensions);
 
   Validators validators_;
 
@@ -224,7 +224,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   bool is_passthrough_cmd_decoder_ = false;
 
   // The set of extensions returned by glGetString(GL_EXTENSIONS);
-  gl::ExtensionSet extensions_;
+  gfx::ExtensionSet extensions_;
 
   // Flags for some features
   FeatureFlags feature_flags_;

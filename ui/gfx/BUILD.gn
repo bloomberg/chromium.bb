@@ -61,6 +61,8 @@ jumbo_component("gfx") {
     "decorated_text.h",
     "decorated_text_mac.h",
     "decorated_text_mac.mm",
+    "extension_set.cc",
+    "extension_set.h",
     "favicon_size.cc",
     "favicon_size.h",
     "font.cc",

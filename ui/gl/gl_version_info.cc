@@ -24,7 +24,7 @@ namespace gl {
 
 GLVersionInfo::GLVersionInfo(const char* version_str,
                              const char* renderer_str,
-                             const ExtensionSet& extensions)
+                             const gfx::ExtensionSet& extensions)
     : is_es(false),
       is_angle(false),
       is_d3d(false),
@@ -41,7 +41,7 @@ GLVersionInfo::GLVersionInfo(const char* version_str,
 
 void GLVersionInfo::Initialize(const char* version_str,
                                const char* renderer_str,
-                               const ExtensionSet& extensions) {
+                               const gfx::ExtensionSet& extensions) {
   if (version_str)
     ParseVersionString(version_str);
   if (renderer_str) {
@@ -61,7 +61,7 @@ void GLVersionInfo::Initialize(const char* version_str,
   }
   is_desktop_core_profile =
       DesktopCoreCommonCheck(is_es, major_version, minor_version) &&
-      !HasExtension(extensions, "GL_ARB_compatibility");
+      !gfx::HasExtension(extensions, "GL_ARB_compatibility");
   is_es3_capable = IsES3Capable(extensions);
 }
 
@@ -164,7 +164,7 @@ void GLVersionInfo::ParseVersionString(const char* version_str) {
   }
 }
 
-bool GLVersionInfo::IsES3Capable(const ExtensionSet& extensions) const {
+bool GLVersionInfo::IsES3Capable(const gfx::ExtensionSet& extensions) const {
   // Version ES3 capable without extensions needed.
   if (IsAtLeastGLES(3, 0) || IsAtLeastGL(4, 2)) {
     return true;
@@ -177,7 +177,7 @@ bool GLVersionInfo::IsES3Capable(const ExtensionSet& extensions) const {
 
   bool has_transform_feedback =
       (IsAtLeastGL(4, 0) ||
-       HasExtension(extensions, "GL_ARB_transform_feedback2"));
+       gfx::HasExtension(extensions, "GL_ARB_transform_feedback2"));
 
   // This code used to require the GL_ARB_gpu_shader5 extension in order to
   // have support for dynamic indexing of sampler arrays, which was
@@ -186,7 +186,8 @@ bool GLVersionInfo::IsES3Capable(const ExtensionSet& extensions) const {
   // Mesa/Gallium on AMD GPUs) don't support it, we no longer require it.
 
   // tex storage is available in core spec since GL 4.2.
-  bool has_tex_storage = HasExtension(extensions, "GL_ARB_texture_storage");
+  bool has_tex_storage =
+      gfx::HasExtension(extensions, "GL_ARB_texture_storage");
 
   // TODO(cwallez) check for texture related extensions. See crbug.com/623577
 

@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/cancellation_flag.h"
-#include "ui/gl/extension_set.h"
+#include "ui/gfx/extension_set.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_state_restorer.h"
@@ -129,7 +129,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   void SetGLStateRestorer(GLStateRestorer* state_restorer);
 
   // Returns set of extensions. The context must be current.
-  virtual const ExtensionSet& GetExtensions() = 0;
+  virtual const gfx::ExtensionSet& GetExtensions() = 0;
 
   // Indicate that it is safe to force this context to switch GPUs, since
   // transitioning can cause corruption and hangs (OS X only).
@@ -269,7 +269,7 @@ class GL_EXPORT GLContextReal : public GLContext {
  public:
   explicit GLContextReal(GLShareGroup* share_group);
   scoped_refptr<GPUTimingClient> CreateGPUTimingClient() override;
-  const ExtensionSet& GetExtensions() override;
+  const gfx::ExtensionSet& GetExtensions() override;
 
  protected:
   ~GLContextReal() override;
@@ -283,7 +283,7 @@ class GL_EXPORT GLContextReal : public GLContext {
  private:
   std::unique_ptr<GPUTiming> gpu_timing_;
   std::string extensions_string_;
-  ExtensionSet extensions_;
+  gfx::ExtensionSet extensions_;
   bool extensions_initialized_ = false;
   DISALLOW_COPY_AND_ASSIGN(GLContextReal);
 };

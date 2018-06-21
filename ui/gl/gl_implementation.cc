@@ -71,13 +71,14 @@ void CleanupNativeLibraries(void* due_to_fallback) {
   }
 }
 
-ExtensionSet GetGLExtensionsFromCurrentContext(GLApi* api,
-                                               GLenum extensions_enum,
-                                               GLenum num_extensions_enum) {
+gfx::ExtensionSet GetGLExtensionsFromCurrentContext(
+    GLApi* api,
+    GLenum extensions_enum,
+    GLenum num_extensions_enum) {
   if (WillUseGLGetStringForExtensions(api)) {
     const char* extensions =
         reinterpret_cast<const char*>(api->glGetStringFn(extensions_enum));
-    return extensions ? MakeExtensionSet(extensions) : ExtensionSet();
+    return extensions ? gfx::MakeExtensionSet(extensions) : gfx::ExtensionSet();
   }
 
   GLint num_extensions = 0;
@@ -90,7 +91,7 @@ ExtensionSet GetGLExtensionsFromCurrentContext(GLApi* api,
     DCHECK(extension != NULL);
     exts[i] = extension;
   }
-  return ExtensionSet(exts);
+  return gfx::ExtensionSet(exts);
 }
 
 }  // namespace
@@ -257,11 +258,11 @@ std::string GetGLExtensionsFromCurrentContext(GLApi* api) {
   return base::JoinString(exts, " ");
 }
 
-ExtensionSet GetRequestableGLExtensionsFromCurrentContext() {
+gfx::ExtensionSet GetRequestableGLExtensionsFromCurrentContext() {
   return GetRequestableGLExtensionsFromCurrentContext(g_current_gl_context);
 }
 
-ExtensionSet GetRequestableGLExtensionsFromCurrentContext(GLApi* api) {
+gfx::ExtensionSet GetRequestableGLExtensionsFromCurrentContext(GLApi* api) {
   return GetGLExtensionsFromCurrentContext(api, GL_REQUESTABLE_EXTENSIONS_ANGLE,
                                            GL_NUM_REQUESTABLE_EXTENSIONS_ANGLE);
 }
@@ -273,7 +274,7 @@ bool WillUseGLGetStringForExtensions() {
 bool WillUseGLGetStringForExtensions(GLApi* api) {
   const char* version_str =
       reinterpret_cast<const char*>(api->glGetStringFn(GL_VERSION));
-  ExtensionSet extensions;
+  gfx::ExtensionSet extensions;
   GLVersionInfo version_info(version_str, nullptr, extensions);
   return version_info.is_es || version_info.major_version < 3;
 }

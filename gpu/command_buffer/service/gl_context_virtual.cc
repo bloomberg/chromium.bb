@@ -73,7 +73,7 @@ std::string GLContextVirtual::GetGLRenderer() {
   return shared_context_->GetGLRenderer();
 }
 
-const gl::ExtensionSet& GLContextVirtual::GetExtensions() {
+const gfx::ExtensionSet& GLContextVirtual::GetExtensions() {
   return shared_context_->GetExtensions();
 }
 

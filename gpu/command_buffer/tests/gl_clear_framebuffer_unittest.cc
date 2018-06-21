@@ -18,7 +18,7 @@
 #include "gpu/config/gpu_test_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/extension_set.h"
+#include "ui/gfx/extension_set.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_version_info.h"
 
@@ -229,9 +229,9 @@ TEST_P(GLClearFramebufferTest, ClearDepthStencil) {
 TEST_P(GLClearFramebufferTest, SeparateFramebufferClear) {
   const char* extension_string =
       reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
-  gl::ExtensionSet extensions = gl::MakeExtensionSet(extension_string);
+  gfx::ExtensionSet extensions = gfx::MakeExtensionSet(extension_string);
   bool has_separate_framebuffer =
-      gl::HasExtension(extensions, "GL_CHROMIUM_framebuffer_multisample");
+      gfx::HasExtension(extensions, "GL_CHROMIUM_framebuffer_multisample");
   if (!IsApplicable() || !has_separate_framebuffer) {
     return;
   }

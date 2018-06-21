@@ -23,7 +23,7 @@
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
-#include "ui/gl/extension_set.h"
+#include "ui/gfx/extension_set.h"
 #include "ui/gl/gl_features.h"
 #include "ui/gl/gl_switches.h"
 
@@ -390,7 +390,7 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
   }
 #endif
 
-  gl::ExtensionSet all_disabled_extensions;
+  gfx::ExtensionSet all_disabled_extensions;
   std::string disabled_gl_extensions_value =
       command_line->GetSwitchValueASCII(switches::kDisableGLExtensions);
   if (!disabled_gl_extensions_value.empty()) {
@@ -424,13 +424,13 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
 
     // Disabling WebGL extensions only occurs via the blacklist, so
     // the logic is simpler.
-    gl::ExtensionSet disabled_webgl_extensions;
+    gfx::ExtensionSet disabled_webgl_extensions;
     std::vector<std::string> disabled_webgl_extension_list =
         list->GetDisabledWebGLExtensions();
     disabled_webgl_extensions.insert(disabled_webgl_extension_list.begin(),
                                      disabled_webgl_extension_list.end());
     gpu_feature_info.disabled_webgl_extensions =
-        gl::MakeExtensionString(disabled_webgl_extensions);
+        gfx::MakeExtensionString(disabled_webgl_extensions);
   }
   gpu::GpuDriverBugList::AppendWorkaroundsFromCommandLine(
       &enabled_driver_bug_workarounds, *command_line);
@@ -442,7 +442,7 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
 
   if (all_disabled_extensions.size()) {
     gpu_feature_info.disabled_extensions =
-        gl::MakeExtensionString(all_disabled_extensions);
+        gfx::MakeExtensionString(all_disabled_extensions);
   }
 
   AdjustGpuFeatureStatusToWorkarounds(&gpu_feature_info);

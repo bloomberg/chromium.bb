@@ -1710,7 +1710,7 @@ error::Error GLES2DecoderPassthroughImpl::DoGetString(GLenum name,
       str = GetServiceShadingLanguageVersionString(feature_info_.get());
       break;
     case GL_EXTENSIONS: {
-      extensions = gl::MakeExtensionString(feature_info_->extensions());
+      extensions = gfx::MakeExtensionString(feature_info_->extensions());
       str = extensions.c_str();
       break;
     }

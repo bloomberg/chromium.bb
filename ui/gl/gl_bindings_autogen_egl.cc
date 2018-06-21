@@ -112,12 +112,12 @@ void DriverEGL::InitializeStaticBindings() {
 
 void DriverEGL::InitializeClientExtensionBindings() {
   std::string client_extensions(GetClientExtensions());
-  ExtensionSet extensions(MakeExtensionSet(client_extensions));
+  gfx::ExtensionSet extensions(gfx::MakeExtensionSet(client_extensions));
   ALLOW_UNUSED_LOCAL(extensions);
 
   ext.b_EGL_EXT_platform_base =
-      HasExtension(extensions, "EGL_EXT_platform_base");
-  ext.b_EGL_KHR_debug = HasExtension(extensions, "EGL_KHR_debug");
+      gfx::HasExtension(extensions, "EGL_EXT_platform_base");
+  ext.b_EGL_KHR_debug = gfx::HasExtension(extensions, "EGL_KHR_debug");
 
   if (ext.b_EGL_KHR_debug) {
     fn.eglDebugMessageControlKHRFn =
@@ -144,50 +144,52 @@ void DriverEGL::InitializeClientExtensionBindings() {
 
 void DriverEGL::InitializeExtensionBindings() {
   std::string platform_extensions(GetPlatformExtensions());
-  ExtensionSet extensions(MakeExtensionSet(platform_extensions));
+  gfx::ExtensionSet extensions(gfx::MakeExtensionSet(platform_extensions));
   ALLOW_UNUSED_LOCAL(extensions);
 
   ext.b_EGL_ANDROID_get_frame_timestamps =
-      HasExtension(extensions, "EGL_ANDROID_get_frame_timestamps");
+      gfx::HasExtension(extensions, "EGL_ANDROID_get_frame_timestamps");
   ext.b_EGL_ANDROID_get_native_client_buffer =
-      HasExtension(extensions, "EGL_ANDROID_get_native_client_buffer");
+      gfx::HasExtension(extensions, "EGL_ANDROID_get_native_client_buffer");
   ext.b_EGL_ANDROID_native_fence_sync =
-      HasExtension(extensions, "EGL_ANDROID_native_fence_sync");
+      gfx::HasExtension(extensions, "EGL_ANDROID_native_fence_sync");
   ext.b_EGL_ANGLE_d3d_share_handle_client_buffer =
-      HasExtension(extensions, "EGL_ANGLE_d3d_share_handle_client_buffer");
+      gfx::HasExtension(extensions, "EGL_ANGLE_d3d_share_handle_client_buffer");
   ext.b_EGL_ANGLE_program_cache_control =
-      HasExtension(extensions, "EGL_ANGLE_program_cache_control");
+      gfx::HasExtension(extensions, "EGL_ANGLE_program_cache_control");
   ext.b_EGL_ANGLE_query_surface_pointer =
-      HasExtension(extensions, "EGL_ANGLE_query_surface_pointer");
+      gfx::HasExtension(extensions, "EGL_ANGLE_query_surface_pointer");
   ext.b_EGL_ANGLE_stream_producer_d3d_texture =
-      HasExtension(extensions, "EGL_ANGLE_stream_producer_d3d_texture");
-  ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle =
-      HasExtension(extensions, "EGL_ANGLE_surface_d3d_texture_2d_share_handle");
+      gfx::HasExtension(extensions, "EGL_ANGLE_stream_producer_d3d_texture");
+  ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle = gfx::HasExtension(
+      extensions, "EGL_ANGLE_surface_d3d_texture_2d_share_handle");
   ext.b_EGL_CHROMIUM_sync_control =
-      HasExtension(extensions, "EGL_CHROMIUM_sync_control");
+      gfx::HasExtension(extensions, "EGL_CHROMIUM_sync_control");
   ext.b_EGL_EXT_image_flush_external =
-      HasExtension(extensions, "EGL_EXT_image_flush_external");
-  ext.b_EGL_KHR_fence_sync = HasExtension(extensions, "EGL_KHR_fence_sync");
+      gfx::HasExtension(extensions, "EGL_EXT_image_flush_external");
+  ext.b_EGL_KHR_fence_sync =
+      gfx::HasExtension(extensions, "EGL_KHR_fence_sync");
   ext.b_EGL_KHR_gl_texture_2D_image =
-      HasExtension(extensions, "EGL_KHR_gl_texture_2D_image");
-  ext.b_EGL_KHR_image = HasExtension(extensions, "EGL_KHR_image");
-  ext.b_EGL_KHR_image_base = HasExtension(extensions, "EGL_KHR_image_base");
-  ext.b_EGL_KHR_stream = HasExtension(extensions, "EGL_KHR_stream");
+      gfx::HasExtension(extensions, "EGL_KHR_gl_texture_2D_image");
+  ext.b_EGL_KHR_image = gfx::HasExtension(extensions, "EGL_KHR_image");
+  ext.b_EGL_KHR_image_base =
+      gfx::HasExtension(extensions, "EGL_KHR_image_base");
+  ext.b_EGL_KHR_stream = gfx::HasExtension(extensions, "EGL_KHR_stream");
   ext.b_EGL_KHR_stream_consumer_gltexture =
-      HasExtension(extensions, "EGL_KHR_stream_consumer_gltexture");
+      gfx::HasExtension(extensions, "EGL_KHR_stream_consumer_gltexture");
   ext.b_EGL_KHR_swap_buffers_with_damage =
-      HasExtension(extensions, "EGL_KHR_swap_buffers_with_damage");
-  ext.b_EGL_KHR_wait_sync = HasExtension(extensions, "EGL_KHR_wait_sync");
+      gfx::HasExtension(extensions, "EGL_KHR_swap_buffers_with_damage");
+  ext.b_EGL_KHR_wait_sync = gfx::HasExtension(extensions, "EGL_KHR_wait_sync");
   ext.b_EGL_MESA_image_dma_buf_export =
-      HasExtension(extensions, "EGL_MESA_image_dma_buf_export");
+      gfx::HasExtension(extensions, "EGL_MESA_image_dma_buf_export");
   ext.b_EGL_NV_post_sub_buffer =
-      HasExtension(extensions, "EGL_NV_post_sub_buffer");
+      gfx::HasExtension(extensions, "EGL_NV_post_sub_buffer");
   ext.b_EGL_NV_stream_consumer_gltexture_yuv =
-      HasExtension(extensions, "EGL_NV_stream_consumer_gltexture_yuv");
-  ext.b_GL_CHROMIUM_egl_android_native_fence_sync_hack = HasExtension(
+      gfx::HasExtension(extensions, "EGL_NV_stream_consumer_gltexture_yuv");
+  ext.b_GL_CHROMIUM_egl_android_native_fence_sync_hack = gfx::HasExtension(
       extensions, "GL_CHROMIUM_egl_android_native_fence_sync_hack");
   ext.b_GL_CHROMIUM_egl_khr_fence_sync_hack =
-      HasExtension(extensions, "GL_CHROMIUM_egl_khr_fence_sync_hack");
+      gfx::HasExtension(extensions, "GL_CHROMIUM_egl_khr_fence_sync_hack");
 
   if (ext.b_EGL_KHR_image || ext.b_EGL_KHR_image_base ||
       ext.b_EGL_KHR_gl_texture_2D_image) {

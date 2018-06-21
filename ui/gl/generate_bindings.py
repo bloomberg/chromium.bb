@@ -2805,13 +2805,13 @@ namespace gl {
   if set_name == 'gl':
     file.write("""\
 void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
-                                         const ExtensionSet& extensions) {
+                                         const gfx::ExtensionSet& extensions) {
 """)
   elif set_name == 'egl':
     file.write("""\
 void DriverEGL::InitializeClientExtensionBindings() {
   std::string client_extensions(GetClientExtensions());
-  ExtensionSet extensions(MakeExtensionSet(client_extensions));
+  gfx::ExtensionSet extensions(gfx::MakeExtensionSet(client_extensions));
   ALLOW_UNUSED_LOCAL(extensions);
 
 """)
@@ -2819,7 +2819,7 @@ void DriverEGL::InitializeClientExtensionBindings() {
     file.write("""\
 void Driver%s::InitializeExtensionBindings() {
   std::string platform_extensions(GetPlatformExtensions());
-  ExtensionSet extensions(MakeExtensionSet(platform_extensions));
+  gfx::ExtensionSet extensions(gfx::MakeExtensionSet(platform_extensions));
   ALLOW_UNUSED_LOCAL(extensions);
 
 """ % (set_name.upper(),))
@@ -2828,7 +2828,7 @@ void Driver%s::InitializeExtensionBindings() {
     # Extra space at the end of the extension name is intentional,
     # it is used as a separator
     for extension in extensions:
-      file.write('  ext.b_%s = HasExtension(%s, "%s");\n' %
+      file.write('  ext.b_%s = gfx::HasExtension(%s, "%s");\n' %
                  (extension, extension_var, extension))
 
     for func in extension_funcs:
@@ -2847,7 +2847,7 @@ void Driver%s::InitializeExtensionBindings() {
 
 void DriverEGL::InitializeExtensionBindings() {
   std::string platform_extensions(GetPlatformExtensions());
-  ExtensionSet extensions(MakeExtensionSet(platform_extensions));
+  gfx::ExtensionSet extensions(gfx::MakeExtensionSet(platform_extensions));
   ALLOW_UNUSED_LOCAL(extensions);
 
 """)
