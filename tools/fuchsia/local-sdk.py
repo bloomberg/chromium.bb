@@ -56,7 +56,7 @@ def main(args):
 
   tempdir = tempfile.mkdtemp()
   sdk_tar = os.path.join(tempdir, 'fuchsia-sdk.tgz')
-  Run('go', 'run', 'scripts/makesdk.go', '-output', sdk_tar, '.')
+  Run('go', 'run', 'scripts/sdk/foundation/makesdk.go', '-output', sdk_tar, '.')
 
   # Nuke the SDK from DEPS, put our just-built one there, and set a fake .hash
   # file. This means that on next gclient runhooks, we'll restore to the
