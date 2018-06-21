@@ -115,7 +115,7 @@ void OobeBaseTest::SetUpOnMainThread() {
       content::NotificationService::AllSources()));
 
   js_checker_.set_web_contents(
-      LoginDisplayHost::default_host()->GetWebUILoginView()->GetWebContents());
+      LoginDisplayHost::default_host()->GetOobeWebContents());
 
   test::UserSessionManagerTestApi session_manager_test_api(
       UserSessionManager::GetInstance());

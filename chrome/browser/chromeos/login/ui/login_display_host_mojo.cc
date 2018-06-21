@@ -117,6 +117,12 @@ OobeUI* LoginDisplayHostMojo::GetOobeUI() const {
   return dialog_->GetOobeUI();
 }
 
+content::WebContents* LoginDisplayHostMojo::GetOobeWebContents() const {
+  if (!dialog_)
+    return nullptr;
+  return dialog_->GetWebContents();
+}
+
 WebUILoginView* LoginDisplayHostMojo::GetWebUILoginView() const {
   NOTREACHED();
   return nullptr;

@@ -228,8 +228,7 @@ void LoginManagerTest::InitializeWebContents() {
   LoginDisplayHost* host = LoginDisplayHost::default_host();
   EXPECT_TRUE(host != NULL);
 
-  content::WebContents* web_contents =
-      host->GetWebUILoginView()->GetWebContents();
+  content::WebContents* web_contents = host->GetOobeWebContents();
   EXPECT_TRUE(web_contents != NULL);
   set_web_contents(web_contents);
   js_checker_.set_web_contents(web_contents);

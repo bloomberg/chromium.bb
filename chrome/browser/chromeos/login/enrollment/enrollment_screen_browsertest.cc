@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, EnrollmentSpinner) {
   ASSERT_TRUE(view);
 
   test::JSChecker checker(
-      LoginDisplayHost::default_host()->GetWebUILoginView()->GetWebContents());
+      LoginDisplayHost::default_host()->GetOobeWebContents());
 
   // Run through the flow
   view->Show();

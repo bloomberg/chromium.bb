@@ -352,11 +352,8 @@ class WizardControllerTest : public WizardInProcessBrowserTest {
   content::WebContents* GetWebContents() {
     LoginDisplayHost* host = LoginDisplayHost::default_host();
     if (!host)
-      return NULL;
-    WebUILoginView* webui_login_view = host->GetWebUILoginView();
-    if (!webui_login_view)
-      return NULL;
-    return webui_login_view->GetWebContents();
+      return nullptr;
+    return host->GetOobeWebContents();
   }
 
   void WaitUntilJSIsReady() {

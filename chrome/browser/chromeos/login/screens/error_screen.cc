@@ -109,7 +109,7 @@ void ErrorScreen::AllowOfflineLogin(bool allowed) {
 void ErrorScreen::FixCaptivePortal() {
   if (!captive_portal_window_proxy_.get()) {
     content::WebContents* web_contents =
-        LoginDisplayHost::default_host()->GetWebUILoginView()->GetWebContents();
+        LoginDisplayHost::default_host()->GetOobeWebContents();
     captive_portal_window_proxy_.reset(new CaptivePortalWindowProxy(
         network_state_informer_.get(), web_contents));
   }

@@ -103,15 +103,8 @@ scoped_refptr<SelectFileDialogExtension> PendingDialog::Find(
 #if defined(OS_CHROMEOS)
 // Return the Chrome OS WebUI login WebContents, if applicable.
 content::WebContents* GetLoginWebContents() {
-  chromeos::LoginDisplayHost* const login_display_host =
-      chromeos::LoginDisplayHost::default_host();
-  if (!login_display_host)
-    return nullptr;
-  chromeos::WebUILoginView* const view =
-      login_display_host->GetWebUILoginView();
-  if (!view)
-    return nullptr;
-  return view->GetWebContents();
+  chromeos::LoginDisplayHost* host = chromeos::LoginDisplayHost::default_host();
+  return host ? host->GetOobeWebContents() : nullptr;
 }
 #endif
 

@@ -315,11 +315,7 @@ class ShutdownPolicyLoginTest : public ShutdownPolicyBaseTest {
         content::NotificationService::AllSources()).Wait();
     LoginDisplayHost* host = LoginDisplayHost::default_host();
     ASSERT_TRUE(host);
-    WebUILoginView* web_ui_login_view = host->GetWebUILoginView();
-    ASSERT_TRUE(web_ui_login_view);
-    content::WebUI* web_ui = web_ui_login_view->GetWebUI();
-    ASSERT_TRUE(web_ui);
-    contents_ = web_ui->GetWebContents();
+    contents_ = host->GetOobeWebContents();
     ASSERT_TRUE(contents_);
 
     // Wait for the login UI to be ready.

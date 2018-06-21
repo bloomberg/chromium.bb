@@ -78,7 +78,7 @@ class CaptivePortalWindowTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     content::WebContents* web_contents =
-        LoginDisplayHost::default_host()->GetWebUILoginView()->GetWebContents();
+        LoginDisplayHost::default_host()->GetOobeWebContents();
     captive_portal_window_proxy_.reset(
         new CaptivePortalWindowProxy(&delegate_, web_contents));
   }

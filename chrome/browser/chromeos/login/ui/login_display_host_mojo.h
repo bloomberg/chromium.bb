@@ -70,6 +70,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   LoginDisplay* GetLoginDisplay() override;
   gfx::NativeWindow GetNativeWindow() const override;
   OobeUI* GetOobeUI() const override;
+  content::WebContents* GetOobeWebContents() const override;
   WebUILoginView* GetWebUILoginView() const override;
   void OnFinalize() override;
   void SetStatusAreaVisible(bool visible) override;

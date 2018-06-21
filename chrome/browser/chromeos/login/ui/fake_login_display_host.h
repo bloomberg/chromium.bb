@@ -26,6 +26,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   LoginDisplay* GetLoginDisplay() override;
   gfx::NativeWindow GetNativeWindow() const override;
   OobeUI* GetOobeUI() const override;
+  content::WebContents* GetOobeWebContents() const override;
   WebUILoginView* GetWebUILoginView() const override;
   void BeforeSessionStart() override;
   void Finalize(base::OnceClosure) override;
