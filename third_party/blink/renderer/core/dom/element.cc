@@ -3932,8 +3932,9 @@ LayoutObject* Element::PseudoElementLayoutObject(PseudoId pseudo_id) const {
   return nullptr;
 }
 
-ComputedStyle* Element::PseudoStyle(const PseudoStyleRequest& request,
-                                    const ComputedStyle* parent_style) {
+ComputedStyle* Element::CachedStyleForPseudoElement(
+    const PseudoStyleRequest& request,
+    const ComputedStyle* parent_style) {
   ComputedStyle* style = MutableComputedStyle();
 
   if (!style || (request.pseudo_id < kFirstInternalPseudoId &&
@@ -3945,13 +3946,13 @@ ComputedStyle* Element::PseudoStyle(const PseudoStyleRequest& request,
     return cached;
 
   scoped_refptr<ComputedStyle> result =
-      GetUncachedPseudoStyle(request, parent_style);
+      StyleForPseudoElement(request, parent_style);
   if (result)
     return style->AddCachedPseudoStyle(std::move(result));
   return nullptr;
 }
 
-scoped_refptr<ComputedStyle> Element::GetUncachedPseudoStyle(
+scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
     const PseudoStyleRequest& request,
     const ComputedStyle* parent_style) {
   const ComputedStyle* style = GetComputedStyle();

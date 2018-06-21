@@ -3508,7 +3508,8 @@ ComputedStyle* LayoutObject::GetCachedPseudoStyle(
   if (!element)
     return nullptr;
 
-  return element->PseudoStyle(PseudoStyleRequest(pseudo), parent_style);
+  return element->CachedStyleForPseudoElement(PseudoStyleRequest(pseudo),
+                                              parent_style);
 }
 
 scoped_refptr<ComputedStyle> LayoutObject::GetUncachedPseudoStyle(
@@ -3525,7 +3526,7 @@ scoped_refptr<ComputedStyle> LayoutObject::GetUncachedPseudoStyle(
   if (element->IsPseudoElement())
     return nullptr;
 
-  return element->GetUncachedPseudoStyle(request, parent_style);
+  return element->StyleForPseudoElement(request, parent_style);
 }
 
 void LayoutObject::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {

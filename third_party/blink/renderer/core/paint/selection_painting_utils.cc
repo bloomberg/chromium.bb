@@ -38,7 +38,7 @@ scoped_refptr<ComputedStyle> GetUncachedSelectionStyle(Node* node) {
   if (ShadowRoot* root = node->ContainingShadowRoot()) {
     if (root->IsUserAgent()) {
       if (Element* shadow_host = node->OwnerShadowHost()) {
-        return shadow_host->GetUncachedPseudoStyle(
+        return shadow_host->StyleForPseudoElement(
             PseudoStyleRequest(kPseudoIdSelection));
       }
     }
@@ -51,8 +51,7 @@ scoped_refptr<ComputedStyle> GetUncachedSelectionStyle(Node* node) {
   if (!element || element->IsPseudoElement())
     return nullptr;
 
-  return element->GetUncachedPseudoStyle(
-      PseudoStyleRequest(kPseudoIdSelection));
+  return element->StyleForPseudoElement(PseudoStyleRequest(kPseudoIdSelection));
 }
 
 Color SelectionColor(const Document& document,
@@ -80,8 +79,10 @@ const ComputedStyle* SelectionPseudoStyle(Node* node) {
   if (!node)
     return nullptr;
   Element* element = Traversal<Element>::FirstAncestorOrSelf(*node);
-  return element ? element->PseudoStyle(PseudoStyleRequest(kPseudoIdSelection))
-                 : nullptr;
+  if (!element)
+    return nullptr;
+  return element->CachedStyleForPseudoElement(
+      PseudoStyleRequest(kPseudoIdSelection));
 }
 
 }  // anonymous namespace

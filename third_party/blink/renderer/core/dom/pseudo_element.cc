@@ -105,7 +105,8 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudo_id)
 
 scoped_refptr<ComputedStyle> PseudoElement::CustomStyleForLayoutObject() {
   scoped_refptr<ComputedStyle> original_style =
-      ParentOrShadowHostElement()->PseudoStyle(PseudoStyleRequest(pseudo_id_));
+      ParentOrShadowHostElement()->CachedStyleForPseudoElement(
+          PseudoStyleRequest(pseudo_id_));
   if (!original_style || original_style->Display() != EDisplay::kContents)
     return original_style;
 
