@@ -40,7 +40,6 @@ class FidoGetAssertionTaskTest : public testing::Test {
  public:
   FidoGetAssertionTaskTest() {
     scoped_feature_list_.emplace();
-    scoped_feature_list_->InitAndEnableFeature(kNewCtap2Device);
   }
 
   TestGetAssertionTaskCallbackReceiver& get_assertion_callback_receiver() {

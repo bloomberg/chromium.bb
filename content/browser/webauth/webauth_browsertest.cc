@@ -969,18 +969,10 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 
 // WebAuthBrowserCtapTest ----------------------------------------------
 
-// A test fixture that enables CTAP only flag.
 class WebAuthBrowserCtapTest : public WebAuthLocalClientBrowserTest {
  public:
   WebAuthBrowserCtapTest() = default;
-
- protected:
-  std::vector<base::Feature> GetFeaturesToEnable() override {
-    return {features::kWebAuth, device::kNewCtap2Device};
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  ~WebAuthBrowserCtapTest() override = default;
 
   DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserCtapTest);
 };
