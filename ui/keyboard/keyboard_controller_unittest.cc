@@ -799,6 +799,9 @@ TEST_F(KeyboardControllerAnimationTest, FloatingKeyboardEnsureCaretInWorkArea) {
   RunAnimationForLayer(layer);
 
   EXPECT_TRUE(keyboard_window()->IsVisible());
+
+  // Unfocus from the MockTextInputClient before destroying it.
+  ui()->GetInputMethod()->DetachTextInputClient(&mock_input_client);
 }
 
 // Checks DisableKeyboard() doesn't clear the observer list.
