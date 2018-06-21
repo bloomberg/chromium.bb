@@ -3,7 +3,7 @@
 -CompositorEventAckBrowserTest.*
 -NavigationHandleImplBrowserTest.BlockCredentialedSubresources
 -*CompositorImplLowEndBrowserTest.*
--SitePerProcess*
+-SitePerProcessHit*
 -ScrollLatencyBrowserTest.SmoothWheelScroll
 -TouchInputBrowserTest.TouchHandlerConsume
 -TouchInputBrowserTest.TouchHandlerNoConsume
