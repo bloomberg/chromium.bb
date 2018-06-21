@@ -17,7 +17,7 @@ _debugging = False
 
 def _ProcessEntry(entry):
   """Transforms one entry in the compile database to be clang-tool friendly."""
-  split_command = shlex.split(entry['command'])
+  split_command = shlex.split(entry['command'], posix=(sys.platform != 'win32'))
 
   # Drop gomacc.exe from the front, if present.
   if split_command[0].endswith('gomacc.exe'):
