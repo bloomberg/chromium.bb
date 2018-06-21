@@ -541,7 +541,7 @@ Runner.prototype = {
     var deltaTime = now - (this.time || now);
 
     // Flashing.
-    if (this.bdayFlashTimer) {
+    if (this.bdayFlashTimer != null) {
       if (this.bdayFlashTimer <= 0) {
         this.bdayFlashTimer = null;
         this.tRex.setFlashing(false);
@@ -865,6 +865,7 @@ Runner.prototype = {
       this.tRex.reset();
       this.playSound(this.soundFx.BUTTON_PRESS);
       this.invert(true);
+      this.bdayFlashTimer = null;
       this.update();
     }
   },
