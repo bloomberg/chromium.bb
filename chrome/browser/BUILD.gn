@@ -845,8 +845,6 @@ jumbo_split_static_library("browser") {
     "net_benchmarking.cc",
     "net_benchmarking.h",
     "notifications/alert_dispatcher_mac.h",
-    "notifications/desktop_notification_profile_util.cc",
-    "notifications/desktop_notification_profile_util.h",
     "notifications/metrics/notification_metrics_logger.cc",
     "notifications/metrics/notification_metrics_logger.h",
     "notifications/metrics/notification_metrics_logger_factory.cc",

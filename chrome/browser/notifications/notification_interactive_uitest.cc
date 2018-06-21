@@ -215,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyOnPermissionRequestUI) {
   CreateSimpleNotification(browser(), false);
   ASSERT_EQ(0, GetNotificationCount());
   ContentSettingsForOneType settings;
-  GetPrefsByContentSetting(CONTENT_SETTING_BLOCK, &settings);
+  GetDisabledContentSettings(&settings);
   EXPECT_TRUE(CheckOriginInSetting(settings, GetTestPageURL()));
 }
 
@@ -228,13 +228,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestClosePermissionRequestUI) {
   CreateSimpleNotification(browser(), false);
   ASSERT_EQ(0, GetNotificationCount());
   ContentSettingsForOneType settings;
-  GetPrefsByContentSetting(CONTENT_SETTING_BLOCK, &settings);
+  GetDisabledContentSettings(&settings);
   EXPECT_EQ(0U, settings.size());
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestPermissionAPI) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  EnablePermissionsEmbargo(&scoped_feature_list);
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Test that Notification.permission returns the right thing.
@@ -246,8 +244,14 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestPermissionAPI) {
 
   DenyOrigin(GetTestPageURL().GetOrigin());
   EXPECT_EQ("denied", QueryPermissionStatus(browser()));
+}
 
-  DropOriginPreference(GetTestPageURL().GetOrigin());
+IN_PROC_BROWSER_TEST_F(NotificationsTest, TestPermissionEmbargo) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  EnablePermissionsEmbargo(&scoped_feature_list);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
   // Verify embargo behaviour - automatically blocked after 3 dismisses.
   ASSERT_TRUE(RequestAndDismissPermission(browser()));
@@ -349,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateDenyCloseNotifications) {
 
   DenyOrigin(GetTestPageURL().GetOrigin());
   ContentSettingsForOneType settings;
-  GetPrefsByContentSetting(CONTENT_SETTING_BLOCK, &settings);
+  GetDisabledContentSettings(&settings);
   ASSERT_TRUE(CheckOriginInSetting(settings, GetTestPageURL().GetOrigin()));
 
   EXPECT_EQ(1, GetNotificationCount());

@@ -15,8 +15,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
-#include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
+#include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/notifications/stub_notification_display_service.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
@@ -405,13 +405,8 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
   ~ServiceWorkerPushMessagingTest() override {}
 
   void GrantNotificationPermissionForTest(const GURL& url) {
-    GURL origin = url.GetOrigin();
-    DesktopNotificationProfileUtil::GrantPermission(profile(), origin);
-    ASSERT_EQ(CONTENT_SETTING_ALLOW,
-              PermissionManager::Get(profile())
-                  ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                                        origin, origin)
-                  .content_setting);
+    NotificationPermissionContext::UpdatePermission(profile(), url.GetOrigin(),
+                                                    CONTENT_SETTING_ALLOW);
   }
 
   PushMessagingAppIdentifier GetAppIdentifierForServiceWorkerRegistration(
@@ -1230,7 +1225,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerPushMessagingTest, OnPush) {
   ASSERT_TRUE(extension);
   GURL extension_url = extension->url();
 
-  ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest(extension_url));
+  GrantNotificationPermissionForTest(extension_url);
 
   GURL url = extension->GetResourceURL("page.html");
   ui_test_utils::NavigateToURL(browser(), url);

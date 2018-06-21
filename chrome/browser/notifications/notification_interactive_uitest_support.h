@@ -60,8 +60,7 @@ class NotificationsTest : public InProcessBrowserTest {
   bool RequestPermissionAndWait(Browser* browser);
   std::string QueryPermissionStatus(Browser* browser);
   bool CancelNotification(const char* notification_id, Browser* browser);
-  void GetPrefsByContentSetting(ContentSetting setting,
-                                ContentSettingsForOneType* settings);
+  void GetDisabledContentSettings(ContentSettingsForOneType* settings);
   bool CheckOriginInSetting(const ContentSettingsForOneType& settings,
                             const GURL& origin);
 

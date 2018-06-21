@@ -8,8 +8,8 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notification_common.h"
+#include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
@@ -54,15 +54,8 @@ class MessageCenterNotificationManagerBrowserTest
   // Grants permission to display Web Notifications for origin of the test
   // page that's being used in this browser test.
   void GrantNotificationPermissionForTest() const {
-    GURL origin = TestPageUrl().GetOrigin();
-
-    DesktopNotificationProfileUtil::GrantPermission(browser()->profile(),
-                                                    origin);
-    ASSERT_EQ(CONTENT_SETTING_ALLOW,
-              PermissionManager::Get(browser()->profile())
-                  ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                                        origin, origin)
-                  .content_setting);
+    NotificationPermissionContext::UpdatePermission(
+        browser()->profile(), TestPageUrl().GetOrigin(), CONTENT_SETTING_ALLOW);
   }
 
   // Executes |script| and stores the result as a string in |result|. A boolean
@@ -96,7 +89,7 @@ class MessageCenterNotificationManagerBrowserTest
 // crbug.com/767868
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationManagerBrowserTest,
                        CloseDisplayedPersistentNotification) {
-  ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
+  GrantNotificationPermissionForTest();
 
   std::string script_result;
   ASSERT_TRUE(RunScript("DisplayPersistentNotification('action_close')",

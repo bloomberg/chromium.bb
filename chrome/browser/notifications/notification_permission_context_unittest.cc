@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/permissions/permission_request_id.h"
@@ -447,6 +446,49 @@ TEST_F(NotificationPermissionContextTest, TestParallelDenyInIncognito) {
             permission_context.last_permission_set_setting());
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             permission_context.GetContentSettingFromMap(url, url));
+}
+
+TEST_F(NotificationPermissionContextTest, GetNotificationsSettings) {
+  // Verifies that notification permissions, which don't store a secondary URL,
+  // are stored appropriately in the HostContentSettingsMap.
+
+  NotificationPermissionContext::UpdatePermission(
+      profile(), GURL("https://allowed.com"), CONTENT_SETTING_ALLOW);
+  NotificationPermissionContext::UpdatePermission(
+      profile(), GURL("https://allowed2.com"), CONTENT_SETTING_ALLOW);
+
+  NotificationPermissionContext::UpdatePermission(
+      profile(), GURL("https://denied.com"), CONTENT_SETTING_BLOCK);
+  NotificationPermissionContext::UpdatePermission(
+      profile(), GURL("https://denied2.com"), CONTENT_SETTING_BLOCK);
+
+  ContentSettingsForOneType settings;
+  HostContentSettingsMapFactory::GetForProfile(profile())
+      ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                              content_settings::ResourceIdentifier(),
+                              &settings);
+
+  // |settings| contains the default setting and 4 exceptions.
+  ASSERT_EQ(5u, settings.size());
+
+  EXPECT_EQ(
+      ContentSettingsPattern::FromURLNoWildcard(GURL("https://allowed.com")),
+      settings[0].primary_pattern);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, settings[0].GetContentSetting());
+  EXPECT_EQ(
+      ContentSettingsPattern::FromURLNoWildcard(GURL("https://allowed2.com")),
+      settings[1].primary_pattern);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, settings[1].GetContentSetting());
+  EXPECT_EQ(
+      ContentSettingsPattern::FromURLNoWildcard(GURL("https://denied.com")),
+      settings[2].primary_pattern);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, settings[2].GetContentSetting());
+  EXPECT_EQ(
+      ContentSettingsPattern::FromURLNoWildcard(GURL("https://denied2.com")),
+      settings[3].primary_pattern);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, settings[3].GetContentSetting());
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(), settings[4].primary_pattern);
+  EXPECT_EQ(CONTENT_SETTING_ASK, settings[4].GetContentSetting());
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

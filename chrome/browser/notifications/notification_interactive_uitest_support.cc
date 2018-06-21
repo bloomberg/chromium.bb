@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/notifications/desktop_notification_profile_util.h"
+#include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -142,13 +142,13 @@ void NotificationsTest::CrashTab(Browser* browser, int index) {
 }
 
 void NotificationsTest::DenyOrigin(const GURL& origin) {
-  DropOriginPreference(origin);
-  DesktopNotificationProfileUtil::DenyPermission(browser()->profile(), origin);
+  NotificationPermissionContext::UpdatePermission(browser()->profile(), origin,
+                                                  CONTENT_SETTING_BLOCK);
 }
 
 void NotificationsTest::AllowOrigin(const GURL& origin) {
-  DropOriginPreference(origin);
-  DesktopNotificationProfileUtil::GrantPermission(browser()->profile(), origin);
+  NotificationPermissionContext::UpdatePermission(browser()->profile(), origin,
+                                                  CONTENT_SETTING_ALLOW);
 }
 
 void NotificationsTest::AllowAllOrigins() {
@@ -256,14 +256,14 @@ bool NotificationsTest::CancelNotification(const char* notification_id,
   return observer.Wait();
 }
 
-void NotificationsTest::GetPrefsByContentSetting(
-    ContentSetting setting,
+void NotificationsTest::GetDisabledContentSettings(
     ContentSettingsForOneType* settings) {
-  DesktopNotificationProfileUtil::GetNotificationsSettings(browser()->profile(),
-                                                           settings);
-  for (ContentSettingsForOneType::iterator it = settings->begin();
-       it != settings->end();) {
-    if (it->GetContentSetting() != setting ||
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                              content_settings::ResourceIdentifier(), settings);
+
+  for (auto it = settings->begin(); it != settings->end();) {
+    if (it->GetContentSetting() != CONTENT_SETTING_BLOCK ||
         it->source.compare("preference") != 0) {
       it = settings->erase(it);
     } else {
@@ -310,8 +310,4 @@ void NotificationsTest::EnablePermissionsEmbargo(
        features::kBlockPromptsIfIgnoredOften},
       {});
 #endif  //  BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-}
-
-void NotificationsTest::DropOriginPreference(const GURL& origin) {
-  DesktopNotificationProfileUtil::ClearSetting(browser()->profile(), origin);
 }
