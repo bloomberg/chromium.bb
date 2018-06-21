@@ -34037,6 +34037,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Not found"/>
 </enum>
 
+<enum name="OfflinePagesLastNIsSavingSamePageEnum">
+  <int value="0" label="New page"/>
+  <int value="1" label="Same page, better expected quality"/>
+  <int value="2" label="Same page, same expected quality"/>
+</enum>
+
 <enum name="OfflinePagesLoadStatus">
   <int value="0" label="Success"/>
   <int value="1" label="Store init failed"/>
