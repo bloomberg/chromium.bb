@@ -55,8 +55,8 @@ void ChannelImpl::GetConnectionMetadata(
 
 void ChannelImpl::OnConnectionMetadataFetchedFromDelegate(
     GetConnectionMetadataCallback callback,
-    mojom::ConnectionMetadata connection_metadata_from_delegate) {
-  std::move(callback).Run(connection_metadata_from_delegate.Clone());
+    mojom::ConnectionMetadataPtr connection_metadata_from_delegate) {
+  std::move(callback).Run(std::move(connection_metadata_from_delegate));
 }
 
 void ChannelImpl::OnBindingDisconnected() {

@@ -34,7 +34,7 @@ class ClientChannel {
   virtual ~ClientChannel();
 
   bool GetConnectionMetadata(
-      base::OnceCallback<void(mojom::ConnectionMetadata)> callback);
+      base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback);
 
   // Sends a message with the specified |payload|. Once the message has been
   // sent, |on_sent_callback| will be invoked. Returns whether this
@@ -58,7 +58,7 @@ class ClientChannel {
                                   base::OnceClosure on_sent_callback) = 0;
 
   virtual void PerformGetConnectionMetadata(
-      base::OnceCallback<void(mojom::ConnectionMetadata)> callback) = 0;
+      base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) = 0;
 
   void NotifyDisconnected();
   void NotifyMessageReceived(const std::string& payload);

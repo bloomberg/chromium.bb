@@ -48,7 +48,7 @@ class AuthenticatedChannelImpl : public AuthenticatedChannel,
 
   // AuthenticatedChannel:
   void GetConnectionMetadata(
-      base::OnceCallback<void(mojom::ConnectionMetadata)> callback) override;
+      base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) override;
   void PerformSendMessage(const std::string& feature,
                           const std::string& payload,
                           base::OnceClosure on_sent_callback) final;
@@ -65,7 +65,12 @@ class AuthenticatedChannelImpl : public AuthenticatedChannel,
   void OnMessageSent(cryptauth::SecureChannel* secure_channel,
                      int sequence_number) override;
 
-  mojom::ConnectionMetadata connection_metadata_;
+  void OnRssiFetched(
+      base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback,
+      base::Optional<int32_t> current_rssi);
+
+  const std::vector<mojom::ConnectionCreationDetail>
+      connection_creation_details_;
   std::unique_ptr<cryptauth::SecureChannel> secure_channel_;
   std::unordered_map<int, base::OnceClosure> sequence_number_to_callback_map_;
 

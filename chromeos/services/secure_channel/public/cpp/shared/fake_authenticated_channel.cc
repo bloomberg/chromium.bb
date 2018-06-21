@@ -13,8 +13,8 @@ FakeAuthenticatedChannel::FakeAuthenticatedChannel() : AuthenticatedChannel() {}
 FakeAuthenticatedChannel::~FakeAuthenticatedChannel() = default;
 
 void FakeAuthenticatedChannel::GetConnectionMetadata(
-    base::OnceCallback<void(mojom::ConnectionMetadata)> callback) {
-  return std::move(callback).Run(connection_metadata_);
+    base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) {
+  return std::move(callback).Run(std::move(connection_metadata_for_next_call_));
 }
 
 void FakeAuthenticatedChannel::PerformSendMessage(

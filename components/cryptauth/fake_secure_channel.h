@@ -7,6 +7,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "components/cryptauth/connection.h"
 #include "components/cryptauth/secure_channel.h"
 
 namespace cryptauth {
@@ -22,6 +24,10 @@ class FakeSecureChannel : public SecureChannel {
   }
 
   bool was_initialized() { return was_initialized_; }
+
+  void set_rssi_to_return(const base::Optional<int32_t>& rssi_to_return) {
+    rssi_to_return_ = rssi_to_return;
+  }
 
   struct SentMessage {
     SentMessage(const std::string& feature, const std::string& payload);
@@ -45,12 +51,15 @@ class FakeSecureChannel : public SecureChannel {
   void Disconnect() override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
+  void GetConnectionRssi(
+      base::OnceCallback<void(base::Optional<int32_t>)> callback) override;
 
  private:
   int next_sequence_number_ = 0;
   bool was_initialized_ = false;
   std::vector<Observer*> observers_;
   std::vector<SentMessage> sent_messages_;
+  base::Optional<int32_t> rssi_to_return_;
 
   base::OnceClosure destructor_callback_;
 

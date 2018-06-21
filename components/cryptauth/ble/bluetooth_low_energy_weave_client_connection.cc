@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -861,6 +862,34 @@ std::string BluetoothLowEnergyWeaveClientConnection::GetDeviceAddress() {
   // expected to change periodically.
   return gatt_connection_ ? gatt_connection_->GetDeviceAddress()
                           : bluetooth_device_->GetAddress();
+}
+
+void BluetoothLowEnergyWeaveClientConnection::GetConnectionRssi(
+    base::OnceCallback<void(base::Optional<int32_t>)> callback) {
+  device::BluetoothDevice* device = GetBluetoothDevice();
+
+  if (!device || !device->IsConnected()) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  // device::BluetoothDevice has not converted to using a base::OnceCallback
+  // instead of a base::Callback, so use a wrapper for now.
+  auto callback_holder = base::AdaptCallbackForRepeating(std::move(callback));
+  device->GetConnectionInfo(
+      base::Bind(&BluetoothLowEnergyWeaveClientConnection::OnConnectionInfo,
+                 weak_ptr_factory_.GetWeakPtr(), callback_holder));
+}
+
+void BluetoothLowEnergyWeaveClientConnection::OnConnectionInfo(
+    base::RepeatingCallback<void(base::Optional<int32_t>)> rssi_callback,
+    const device::BluetoothDevice::ConnectionInfo& connection_info) {
+  if (connection_info.rssi == device::BluetoothDevice::kUnknownPower) {
+    std::move(rssi_callback).Run(base::nullopt);
+    return;
+  }
+
+  std::move(rssi_callback).Run(connection_info.rssi);
 }
 
 device::BluetoothDevice*

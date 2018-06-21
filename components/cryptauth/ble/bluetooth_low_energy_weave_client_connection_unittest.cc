@@ -366,6 +366,11 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
         .WillByDefault(Return(mock_bluetooth_device_.get()));
     ON_CALL(*mock_bluetooth_device_, GetGattService(kServiceID))
         .WillByDefault(Return(service_.get()));
+    ON_CALL(*mock_bluetooth_device_, IsConnected()).WillByDefault(Return(true));
+    ON_CALL(*mock_bluetooth_device_, GetConnectionInfo(_))
+        .WillByDefault(
+            Invoke(this, &CryptAuthBluetoothLowEnergyWeaveClientConnectionTest::
+                             MockGetConnectionInfo));
     ON_CALL(*service_, GetCharacteristic(kRXCharacteristicID))
         .WillByDefault(Return(rx_characteristic_.get()));
     ON_CALL(*service_, GetCharacteristic(kTXCharacteristicID))
@@ -628,6 +633,18 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
                              GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_UNKNOWN;
   }
 
+  base::Optional<int32_t> GetRssi(
+      TestBluetoothLowEnergyWeaveClientConnection* connection) {
+    connection->GetConnectionRssi(base::BindOnce(
+        &CryptAuthBluetoothLowEnergyWeaveClientConnectionTest::OnConnectionRssi,
+        base::Unretained(this)));
+
+    base::Optional<int32_t> rssi = rssi_;
+    rssi_.reset();
+
+    return rssi;
+  }
+
  protected:
   const RemoteDeviceRef remote_device_;
   const device::BluetoothUUID service_uuid_;
@@ -645,6 +662,7 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
   std::unique_ptr<device::MockBluetoothGattCharacteristic> rx_characteristic_;
   std::vector<uint8_t> last_value_written_on_tx_characteristic_;
   base::MessageLoop message_loop_;
+  int32_t rssi_for_channel_ = device::BluetoothDevice::kUnknownPower;
   bool last_wire_message_success_;
   bool has_verified_connection_result_;
   NiceMock<MockBluetoothLowEnergyWeavePacketGenerator>* generator_;
@@ -676,6 +694,16 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
   base::HistogramTester histogram_tester_;
 
  private:
+  void MockGetConnectionInfo(
+      const device::BluetoothDevice::ConnectionInfoCallback& callback) {
+    callback.Run(device::BluetoothDevice::ConnectionInfo(
+        rssi_for_channel_, 0 /* transmit_power */, 0 /* max_transmit_power */));
+  }
+
+  void OnConnectionRssi(base::Optional<int32_t> rssi) { rssi_ = rssi; }
+
+  base::Optional<int32_t> rssi_;
+
   DISALLOW_COPY_AND_ASSIGN(
       CryptAuthBluetoothLowEnergyWeaveClientConnectionTest);
 };
@@ -1551,6 +1579,22 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   VerifyBleWeaveConnectionResult(
       BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_WAITING_FOR_MESSAGE_TO_SEND);
+}
+
+TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest, GetRssi) {
+  std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
+      CreateConnection(true /* should_set_low_connection_latency */));
+
+  EXPECT_FALSE(GetRssi(connection.get()));
+
+  rssi_for_channel_ = -50;
+  EXPECT_EQ(-50, GetRssi(connection.get()));
+
+  rssi_for_channel_ = -40;
+  EXPECT_EQ(-40, GetRssi(connection.get()));
+
+  rssi_for_channel_ = -30;
+  EXPECT_EQ(-30, GetRssi(connection.get()));
 }
 
 }  // namespace weave

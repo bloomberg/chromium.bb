@@ -155,13 +155,16 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
            fake_proxy_delegate_->disconnected_proxy_id();
   }
 
-  const mojom::ConnectionMetadata& GetConnectionMetadataFromChannel() {
+  mojom::ConnectionMetadataPtr GetConnectionMetadataFromChannel() {
+    EXPECT_FALSE(last_metadata_from_channel_);
+
     mojom::ChannelPtr& channel = *fake_client_connection_parameters_->channel();
     channel->GetConnectionMetadata(base::BindOnce(
         &SecureChannelSingleClientMessageProxyImplTest::OnConnectionMetadata,
         base::Unretained(this)));
     channel.FlushForTesting();
-    return last_metadata_from_channel_;
+
+    return std::move(last_metadata_from_channel_);
   }
 
  private:
@@ -171,7 +174,7 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
 
   void OnConnectionMetadata(
       mojom::ConnectionMetadataPtr connection_metadata_ptr) {
-    last_metadata_from_channel_ = *connection_metadata_ptr;
+    last_metadata_from_channel_ = std::move(connection_metadata_ptr);
   }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -183,7 +186,7 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
   int next_message_counter_ = 0;
   std::unordered_set<int> sent_message_counters_;
 
-  mojom::ConnectionMetadata last_metadata_from_channel_;
+  mojom::ConnectionMetadataPtr last_metadata_from_channel_;
 
   std::unique_ptr<SingleClientMessageProxy> proxy_;
 
@@ -236,16 +239,19 @@ TEST_F(SecureChannelSingleClientMessageProxyImplTest,
 }
 
 TEST_F(SecureChannelSingleClientMessageProxyImplTest, ConnectionMetadata) {
-  mojom::ConnectionMetadata metadata;
-  fake_proxy_delegate()->set_connection_metadata(metadata);
-  EXPECT_TRUE(metadata.Equals(GetConnectionMetadataFromChannel()));
-
-  metadata.rssi_rolling_average = -5.5f;
-  metadata.creation_details.push_back(
+  std::vector<mojom::ConnectionCreationDetail> creation_details{
       mojom::ConnectionCreationDetail::
-          REMOTE_DEVICE_USED_BACKGROUND_BLE_ADVERTISING);
-  fake_proxy_delegate()->set_connection_metadata(metadata);
-  EXPECT_TRUE(metadata.Equals(GetConnectionMetadataFromChannel()));
+          REMOTE_DEVICE_USED_BACKGROUND_BLE_ADVERTISING};
+
+  mojom::ConnectionMetadataPtr metadata = mojom::ConnectionMetadata::New(
+      creation_details,
+      mojom::BluetoothConnectionMetadata::New(-24 /* current_rssi */));
+  fake_proxy_delegate()->set_connection_metadata_for_next_call(
+      std::move(metadata));
+
+  metadata = GetConnectionMetadataFromChannel();
+  EXPECT_EQ(creation_details, metadata->creation_details);
+  EXPECT_EQ(-24, metadata->bluetooth_connection_metadata->current_rssi);
 }
 
 }  // namespace secure_channel

@@ -29,7 +29,7 @@ class SingleClientMessageProxy {
                                         const std::string& message_payload,
                                         base::OnceClosure on_sent_callback) = 0;
     virtual void GetConnectionMetadata(
-        base::OnceCallback<void(mojom::ConnectionMetadata)> callback) = 0;
+        base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) = 0;
     virtual void OnClientDisconnected(
         const base::UnguessableToken& proxy_id) = 0;
   };
@@ -55,7 +55,7 @@ class SingleClientMessageProxy {
                                   base::OnceClosure on_sent_callback);
   void NotifyClientDisconnected();
   void GetConnectionMetadataFromDelegate(
-      base::OnceCallback<void(mojom::ConnectionMetadata)> callback);
+      base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback);
 
  private:
   Delegate* delegate_;

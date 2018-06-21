@@ -263,7 +263,8 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
         base::Unretained(this)));
   }
 
-  void OnGetConnectionMetadata(mojom::ConnectionMetadata connection_metadata) {
+  void OnGetConnectionMetadata(
+      mojom::ConnectionMetadataPtr connection_metadata) {
     connection_metadata_ = std::move(connection_metadata);
   }
 
@@ -288,7 +289,7 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
     return fake_authenticated_channel_;
   }
 
-  base::Optional<mojom::ConnectionMetadata> connection_metadata_;
+  mojom::ConnectionMetadataPtr connection_metadata_;
 
  private:
   void OnMessageSent(int message_counter) {
@@ -316,35 +317,40 @@ TEST_F(SecureChannelMultiplexedChannelImplTest, ConnectionMetadata) {
   CreateChannel();
   EXPECT_EQ(1u, id_to_active_proxy_map().size());
 
-  // Set connection metadata on |fake_authenticated_channel_|.
-  std::vector<mojom::ConnectionCreationDetail> details{
+  std::vector<mojom::ConnectionCreationDetail> creation_details{
       mojom::ConnectionCreationDetail::
           REMOTE_DEVICE_USED_BACKGROUND_BLE_ADVERTISING};
-  mojom::ConnectionMetadata connection_metadata(
-      details, mojom::ConnectionMetadata::kNoRssiAvailable);
-  fake_authenticated_channel()->set_connection_metadata(connection_metadata);
+
+  // Set connection metadata on |fake_authenticated_channel_|.
+  mojom::ConnectionMetadataPtr metadata = mojom::ConnectionMetadata::New(
+      creation_details,
+      mojom::BluetoothConnectionMetadata::New(-24 /* current_rssi */));
+  fake_authenticated_channel()->set_connection_metadata_for_next_call(
+      std::move(metadata));
 
   // Retrieving the metadata through the proxy should cause
   // |fake_authenticated_channel_|'s metadata to be passed through
   // |multiplexed_channel_|.
   CallGetConnectionMetadataFromDelegate(
       id_to_active_proxy_map().begin()->second);
-  EXPECT_EQ(details, connection_metadata_->creation_details);
-  EXPECT_EQ(mojom::ConnectionMetadata::kNoRssiAvailable,
-            connection_metadata_->rssi_rolling_average);
+  EXPECT_EQ(creation_details, connection_metadata_->creation_details);
+  EXPECT_EQ(-24,
+            connection_metadata_->bluetooth_connection_metadata->current_rssi);
 
   // Now, change the values and set them on |fake_authenticated_channel_|.
-  connection_metadata.creation_details =
-      std::vector<mojom::ConnectionCreationDetail>();
-  connection_metadata.rssi_rolling_average = -5.5f;
-  fake_authenticated_channel()->set_connection_metadata(connection_metadata);
+  creation_details.clear();
+  metadata = mojom::ConnectionMetadata::New(
+      creation_details,
+      mojom::BluetoothConnectionMetadata::New(-8 /* current_rssi */));
+  fake_authenticated_channel()->set_connection_metadata_for_next_call(
+      std::move(metadata));
 
   // The new updates should be available.
   CallGetConnectionMetadataFromDelegate(
       id_to_active_proxy_map().begin()->second);
-  EXPECT_EQ(std::vector<mojom::ConnectionCreationDetail>(),
-            connection_metadata_->creation_details);
-  EXPECT_EQ(-5.5f, connection_metadata_->rssi_rolling_average);
+  EXPECT_EQ(creation_details, connection_metadata_->creation_details);
+  EXPECT_EQ(-8,
+            connection_metadata_->bluetooth_connection_metadata->current_rssi);
 
   DisconnectClientAndVerifyState(id_to_active_proxy_map().begin()->second,
                                  true /* expected_to_be_last_client */);

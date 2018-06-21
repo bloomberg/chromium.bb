@@ -32,7 +32,7 @@ class AuthenticatedChannel {
   virtual ~AuthenticatedChannel();
 
   virtual void GetConnectionMetadata(
-      base::OnceCallback<void(mojom::ConnectionMetadata)> callback) = 0;
+      base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) = 0;
 
   // Sends a message with the specified |feature| and |payload|. Once the
   // message has been sent, |on_sent_callback| will be invoked. Returns whether

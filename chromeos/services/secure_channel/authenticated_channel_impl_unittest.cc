@@ -29,6 +29,8 @@ const mojom::ConnectionCreationDetail kTestConnectionCreationDetails[] = {
     mojom::ConnectionCreationDetail::
         REMOTE_DEVICE_USED_BACKGROUND_BLE_ADVERTISING};
 
+const int32_t kTestRssi = -24;
+
 class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
  protected:
   SecureChannelAuthenticatedChannelImplTest()
@@ -41,6 +43,7 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
         std::make_unique<cryptauth::FakeConnection>(test_device_));
     fake_secure_channel->ChangeStatus(
         cryptauth::SecureChannel::Status::AUTHENTICATED);
+    fake_secure_channel->set_rssi_to_return(kTestRssi);
     fake_secure_channel_ = fake_secure_channel.get();
 
     channel_ = AuthenticatedChannelImpl::Factory::Get()->BuildInstance(
@@ -100,7 +103,8 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
         base::Unretained(this)));
   }
 
-  void OnGetConnectionMetadata(mojom::ConnectionMetadata connection_metadata) {
+  void OnGetConnectionMetadata(
+      mojom::ConnectionMetadataPtr connection_metadata) {
     connection_metadata_ = std::move(connection_metadata);
   }
 
@@ -114,7 +118,7 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
 
   AuthenticatedChannel* channel() { return channel_.get(); }
 
-  base::Optional<mojom::ConnectionMetadata> connection_metadata_;
+  mojom::ConnectionMetadataPtr connection_metadata_;
 
  private:
   void OnMessageSent(int sequence_number) {
@@ -143,10 +147,8 @@ TEST_F(SecureChannelAuthenticatedChannelImplTest, ConnectionMetadata) {
                 std::begin(kTestConnectionCreationDetails),
                 std::end(kTestConnectionCreationDetails)),
             connection_metadata_->creation_details);
-  // TODO(khorimoto): Update test to test RSSI rolling average when implemented.
-  // https://crbug.com/844759.
-  EXPECT_EQ(mojom::ConnectionMetadata::kNoRssiAvailable,
-            connection_metadata_->rssi_rolling_average);
+  EXPECT_EQ(kTestRssi,
+            connection_metadata_->bluetooth_connection_metadata->current_rssi);
 }
 
 TEST_F(SecureChannelAuthenticatedChannelImplTest, DisconnectRequestFromClient) {

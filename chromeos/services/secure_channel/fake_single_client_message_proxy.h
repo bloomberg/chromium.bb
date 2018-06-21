@@ -70,9 +70,10 @@ class FakeSingleClientMessageProxyDelegate
     return send_message_requests_;
   }
 
-  void set_connection_metadata(
-      const mojom::ConnectionMetadata& connection_metadata) {
-    connection_metadata_ = connection_metadata;
+  void set_connection_metadata_for_next_call(
+      mojom::ConnectionMetadataPtr connection_metadata_for_next_call) {
+    connection_metadata_for_next_call_ =
+        std::move(connection_metadata_for_next_call);
   }
 
   void set_on_client_disconnected_closure(
@@ -90,12 +91,12 @@ class FakeSingleClientMessageProxyDelegate
                               const std::string& message_payload,
                               base::OnceClosure on_sent_callback) override;
   void GetConnectionMetadata(
-      base::OnceCallback<void(mojom::ConnectionMetadata)> callback) override;
+      base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) override;
   void OnClientDisconnected(const base::UnguessableToken& proxy_id) override;
 
   std::vector<std::tuple<std::string, std::string, base::OnceClosure>>
       send_message_requests_;
-  mojom::ConnectionMetadata connection_metadata_;
+  mojom::ConnectionMetadataPtr connection_metadata_for_next_call_;
   base::OnceClosure on_client_disconnected_closure_;
   base::UnguessableToken disconnected_proxy_id_;
 

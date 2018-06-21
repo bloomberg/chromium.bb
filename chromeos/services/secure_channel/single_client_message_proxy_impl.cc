@@ -80,7 +80,7 @@ void SingleClientMessageProxyImpl::OnSendMessageRequested(
 }
 
 void SingleClientMessageProxyImpl::GetConnectionMetadata(
-    base::OnceCallback<void(mojom::ConnectionMetadata)> callback) {
+    base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) {
   GetConnectionMetadataFromDelegate(std::move(callback));
 }
 
