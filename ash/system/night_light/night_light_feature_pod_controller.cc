@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/night_light/night_light_controller.h"
@@ -21,7 +22,9 @@ NightLightFeaturePodController::~NightLightFeaturePodController() = default;
 FeaturePodButton* NightLightFeaturePodController::CreateButton() {
   DCHECK(!button_);
   button_ = new FeaturePodButton(this);
-  button_->SetVisible(features::IsNightLightEnabled());
+  button_->SetVisible(
+      features::IsNightLightEnabled() &&
+      Shell::Get()->session_controller()->ShouldEnableSettings());
   button_->SetLabel(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_BUTTON_LABEL));
   UpdateButton();
