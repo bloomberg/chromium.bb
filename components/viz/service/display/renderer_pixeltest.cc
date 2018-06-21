@@ -2596,7 +2596,7 @@ using BackgroundFilterRendererTypes =
 TYPED_TEST_CASE(RendererPixelTestWithBackgroundFilter,
                 BackgroundFilterRendererTypes);
 
-TYPED_TEST(RendererPixelTestWithBackgroundFilter, InvertFilter) {
+TYPED_TEST(RendererPixelTestWithBackgroundFilter, DISABLED_InvertFilter) {
   this->background_filters_.Append(
       cc::FilterOperation::CreateInvertFilter(1.f));
 
