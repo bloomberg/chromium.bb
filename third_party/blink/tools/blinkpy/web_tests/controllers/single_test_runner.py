@@ -365,7 +365,7 @@ class SingleTestRunner(object):
           return processed
 
         def is_ng_name_mismatch(expected, actual):
-            if 'LayoutNGBlockFlow' not in actual:
+            if not re.search("LayoutNG(BlockFlow|ListItem|TableCaption|TableCell)", actual):
                 return False
             if not self._is_render_tree(actual) and not self._is_layer_tree(actual):
                 return False
