@@ -25,7 +25,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -33,6 +32,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.download.DirectoryOption.AllDirectoriesTask;
 import org.chromium.chrome.browser.download.DownloadMetrics.DownloadOpenSource;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
@@ -1541,26 +1541,29 @@ public class DownloadManagerService
         // Only show the missing directory snackbar once.
         if (!prefServiceBridge.getBoolean(Pref.SHOW_MISSING_SD_CARD_ERROR_ANDROID)) return;
 
-        String[] downloadDirs = DownloadUtils.getAllDownloadDirectories();
-        if (downloadDirs.length > 1) return;
+        AllDirectoriesTask task = new AllDirectoriesTask() {
+            @Override
+            protected void onPostExecute(ArrayList<DirectoryOption> dirs) {
+                if (dirs.size() > 1) return;
+                String externalStorageDir =
+                        Environment.getExternalStorageDirectory().getAbsolutePath();
 
-        String externalStorageDir = null;
-        try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
-            externalStorageDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-        }
-
-        for (DownloadItem item : list) {
-            boolean missingOnSDCard = isFilePathOnMissingExternalDrive(
-                    item.getDownloadInfo().getFilePath(), externalStorageDir, downloadDirs);
-            if (!isUnresumableOrCancelled(item) && missingOnSDCard) {
-                mHandler.post(() -> {
-                    // TODO(shaktisahu): Show it on infobar in the right way.
-                    mDownloadSnackbarController.onDownloadDirectoryNotFound();
-                });
-                prefServiceBridge.setBoolean(Pref.SHOW_MISSING_SD_CARD_ERROR_ANDROID, false);
-                break;
+                for (DownloadItem item : list) {
+                    boolean missingOnSDCard = isFilePathOnMissingExternalDrive(
+                            item.getDownloadInfo().getFilePath(), externalStorageDir, dirs);
+                    if (!isUnresumableOrCancelled(item) && missingOnSDCard) {
+                        mHandler.post(() -> {
+                            // TODO(shaktisahu): Show it on infobar in the right way.
+                            mDownloadSnackbarController.onDownloadDirectoryNotFound();
+                        });
+                        prefServiceBridge.setBoolean(
+                                Pref.SHOW_MISSING_SD_CARD_ERROR_ANDROID, false);
+                        break;
+                    }
+                }
             }
-        }
+        };
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -1583,20 +1586,20 @@ public class DownloadManagerService
      * @param filePath  The file path to check.
      * @param externalStorageDir  The absolute path of external storage directory for primary
      * storage.
-     * @param downloadDirs  All available download directories including primary storage and
+     * @param directoryOptions  All available download directories including primary storage and
      * secondary storage.
      *
      * @return          Whether this file path is in a directory that is no longer available.
      */
-    private boolean isFilePathOnMissingExternalDrive(
-            String filePath, String externalStorageDir, String[] downloadDirs) {
+    private boolean isFilePathOnMissingExternalDrive(String filePath, String externalStorageDir,
+            ArrayList<DirectoryOption> directoryOptions) {
         if (filePath.contains(externalStorageDir)) {
             return false;
         }
 
-        for (String dir : downloadDirs) {
-            if (TextUtils.isEmpty(dir)) continue;
-            if (filePath.contains(dir)) return false;
+        for (DirectoryOption directory : directoryOptions) {
+            if (TextUtils.isEmpty(directory.location)) continue;
+            if (filePath.contains(directory.location)) return false;
         }
 
         return true;
