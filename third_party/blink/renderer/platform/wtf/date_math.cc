@@ -77,6 +77,7 @@
 #include <time.h>
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -85,6 +86,8 @@
 #include "third_party/blink/renderer/platform/wtf/string_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+
+#include <unicode/timezone.h>
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -835,9 +838,11 @@ String MakeRFC2822DateString(const Time date, int utc_offset) {
 }
 
 double ConvertToLocalTime(double ms) {
-  double utc_offset = CalculateUTCOffset();
-  double dst_offset = CalculateDSTOffset(ms, utc_offset);
-  return (ms + utc_offset + dst_offset);
+  std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createDefault());
+  int32_t raw_offset, dst_offset;
+  UErrorCode status = U_ZERO_ERROR;
+  timezone->getOffset(ms, false, raw_offset, dst_offset, status);
+  return (ms + static_cast<double>(raw_offset + dst_offset));
 }
 
 }  // namespace WTF
