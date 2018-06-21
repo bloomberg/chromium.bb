@@ -12,6 +12,10 @@ source_set("huffman_trie_generator_sources") {
     "huffman/huffman_builder.h",
     "trie/trie_bit_buffer.cc",
     "trie/trie_bit_buffer.h",
+    "trie/trie_writer.cc",
+    "trie/trie_writer.h",
+    "trie_entry.cc",
+    "trie_entry.h",
   ]
   deps = [
     "//base",
