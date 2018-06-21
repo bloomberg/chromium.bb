@@ -53,8 +53,8 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
         std::move(request_param), get_assertion_cb_.callback());
   }
 
-  void InitFeatureListWithCtapFlag() {
-    scoped_feature_list_.InitAndEnableFeature(kNewCtap2Device);
+  void InitFeatureListAndDisableCtapFlag() {
+    scoped_feature_list_.InitAndDisableFeature(kNewCtap2Device);
   }
 
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
@@ -72,7 +72,6 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 };
 
 TEST_F(FidoGetAssertionHandlerTest, TestGetAssertionRequestOnSingleDevice) {
-  InitFeatureListWithCtapFlag();
   auto request_handler = CreateGetAssertionHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
   auto device = std::make_unique<MockFidoDevice>();
@@ -95,7 +94,6 @@ TEST_F(FidoGetAssertionHandlerTest, TestGetAssertionRequestOnSingleDevice) {
 
 // Test a scenario where the connected authenticator is a U2F device.
 TEST_F(FidoGetAssertionHandlerTest, TestU2fSign) {
-  InitFeatureListWithCtapFlag();
   auto request_handler = CreateGetAssertionHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
@@ -120,6 +118,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestU2fSign) {
 // Test a scenario where the connected authenticator is a U2F device and
 // "WebAuthenticationCtap2" flag is not enabled.
 TEST_F(FidoGetAssertionHandlerTest, TestU2fSignWithoutCtapFlag) {
+  InitFeatureListAndDisableCtapFlag();
   auto request_handler = CreateGetAssertionHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 

@@ -61,8 +61,8 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
         cb_.callback());
   }
 
-  void InitFeatureListWithCtapFlag() {
-    scoped_feature_list_.InitAndEnableFeature(kNewCtap2Device);
+  void InitFeatureListAndDisableCtapFlag() {
+    scoped_feature_list_.InitAndDisableFeature(kNewCtap2Device);
   }
 
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
@@ -78,7 +78,6 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
 };
 
 TEST_F(FidoMakeCredentialHandlerTest, TestCtap2MakeCredentialWithFlagEnabled) {
-  InitFeatureListWithCtapFlag();
   auto request_handler = CreateMakeCredentialHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
@@ -99,7 +98,6 @@ TEST_F(FidoMakeCredentialHandlerTest, TestCtap2MakeCredentialWithFlagEnabled) {
 
 // Test a scenario where the connected authenticator is a U2F device.
 TEST_F(FidoMakeCredentialHandlerTest, TestU2fRegisterWithFlagEnabled) {
-  InitFeatureListWithCtapFlag();
   auto request_handler = CreateMakeCredentialHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
@@ -120,6 +118,7 @@ TEST_F(FidoMakeCredentialHandlerTest, TestU2fRegisterWithFlagEnabled) {
 // Test a scenario where the connected authenticator is a U2F device using a
 // logic that defaults to handling U2F devices.
 TEST_F(FidoMakeCredentialHandlerTest, TestU2fRegisterWithoutFlagEnabled) {
+  InitFeatureListAndDisableCtapFlag();
   auto request_handler = CreateMakeCredentialHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 

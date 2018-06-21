@@ -40,7 +40,6 @@ class FidoMakeCredentialTaskTest : public testing::Test {
  public:
   FidoMakeCredentialTaskTest() {
     scoped_feature_list_.emplace();
-    scoped_feature_list_->InitAndEnableFeature(kNewCtap2Device);
   }
 
   std::unique_ptr<MakeCredentialTask> CreateMakeCredentialTask(
