@@ -15,7 +15,6 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/risk_data_loader.h"
-#include "components/security_state/core/security_state.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
@@ -117,10 +116,6 @@ class AutofillClient : public RiskDataLoader {
 
   // Gets an AddressNormalizer instance (can be null).
   virtual AddressNormalizer* GetAddressNormalizer() = 0;
-
-  // Gets the security level used for recording histograms for the current
-  // context if possible, SECURITY_LEVEL_COUNT otherwise.
-  virtual security_state::SecurityLevel GetSecurityLevelForUmaHistograms() = 0;
 
   // Causes the Autofill settings UI to be shown.
   virtual void ShowAutofillSettings() = 0;

@@ -20,7 +20,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_promo_util.h"
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
-#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
@@ -148,22 +147,6 @@ AddressNormalizer* ChromeAutofillClient::GetAddressNormalizer() {
   if (base::FeatureList::IsEnabled(features::kAutofillAddressNormalizer))
     return AddressNormalizerFactory::GetInstance();
   return nullptr;
-}
-
-security_state::SecurityLevel
-ChromeAutofillClient::GetSecurityLevelForUmaHistograms() {
-  SecurityStateTabHelper* helper =
-      ::SecurityStateTabHelper::FromWebContents(web_contents());
-
-  // If there is no helper, it means we are not in a "web" state (for example
-  // the file picker on CrOS). Return SECURITY_LEVEL_COUNT which will not be
-  // logged.
-  if (!helper)
-    return security_state::SecurityLevel::SECURITY_LEVEL_COUNT;
-
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  return security_info.security_level;
 }
 
 void ChromeAutofillClient::ShowAutofillSettings() {

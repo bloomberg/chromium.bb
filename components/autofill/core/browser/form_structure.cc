@@ -42,7 +42,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
 #include "components/autofill/core/common/signatures_util.h"
-#include "components/security_state/core/security_state.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/origin.h"
 
@@ -792,8 +791,7 @@ void FormStructure::LogQualityMetrics(
     auto* const field = this->field(i);
     if (IsUPIVirtualPaymentAddress(field->value)) {
       AutofillMetrics::LogUserHappinessMetric(
-          AutofillMetrics::USER_DID_ENTER_UPI_VPA, field->Type().group(),
-          security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
+          AutofillMetrics::USER_DID_ENTER_UPI_VPA, field->Type().group());
     }
 
     form_interactions_ukm_logger->LogFieldFillStatus(*this, *field,

@@ -211,17 +211,6 @@ class MockAutofillClient : public TestAutofillClient {
  public:
   MockAutofillClient() {}
   MOCK_METHOD1(ExecuteCommand, void(int));
-
-  security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override {
-    return security_level_;
-  }
-
-  void set_security_level(security_state::SecurityLevel security_level) {
-    security_level_ = security_level;
-  }
-
- private:
-  security_state::SecurityLevel security_level_;
 };
 
 }  // namespace
@@ -5848,9 +5837,8 @@ TEST_F(
 TEST_F(AutofillMetricsTest, LogUserHappinessMetric_PasswordForm) {
   {
     base::HistogramTester histogram_tester;
-    AutofillMetrics::LogUserHappinessMetric(
-        AutofillMetrics::USER_DID_AUTOFILL, PASSWORD_FIELD,
-        security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
+    AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL,
+                                            PASSWORD_FIELD);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Password",
@@ -5862,9 +5850,8 @@ TEST_F(AutofillMetricsTest, LogUserHappinessMetric_PasswordForm) {
 
   {
     base::HistogramTester histogram_tester;
-    AutofillMetrics::LogUserHappinessMetric(
-        AutofillMetrics::USER_DID_AUTOFILL, USERNAME_FIELD,
-        security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
+    AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL,
+                                            USERNAME_FIELD);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Password",
@@ -5878,9 +5865,8 @@ TEST_F(AutofillMetricsTest, LogUserHappinessMetric_PasswordForm) {
 TEST_F(AutofillMetricsTest, LogUserHappinessMetric_UnknownForm) {
   {
     base::HistogramTester histogram_tester;
-    AutofillMetrics::LogUserHappinessMetric(
-        AutofillMetrics::USER_DID_AUTOFILL, NO_GROUP,
-        security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
+    AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL,
+                                            NO_GROUP);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Unknown",
@@ -5892,9 +5878,8 @@ TEST_F(AutofillMetricsTest, LogUserHappinessMetric_UnknownForm) {
 
   {
     base::HistogramTester histogram_tester;
-    AutofillMetrics::LogUserHappinessMetric(
-        AutofillMetrics::USER_DID_AUTOFILL, TRANSACTION,
-        security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
+    AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL,
+                                            TRANSACTION);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Unknown",
@@ -7345,190 +7330,4 @@ TEST_F(AutofillMetricsTest, LocallySavedCardWithFirstAndLastName) {
   histogram_tester.ExpectTotalCount(
       "Autofill.SaveCardWithFirstAndLastNameComplete.Local", 2);
 }
-
-// Tests that the LogUserHappinessBySecurityLevel are recorded correctly.
-TEST_F(AutofillMetricsTest, LogUserHappinessBySecurityLevel) {
-  {
-    base::HistogramTester histogram_tester;
-    AutofillMetrics::LogUserHappinessBySecurityLevel(
-        AutofillMetrics::USER_DID_AUTOFILL, CREDIT_CARD_FORM,
-        security_state::SecurityLevel::SECURE);
-    histogram_tester.ExpectBucketCount(
-        "Security.UserHappiness.CreditCard.SECURE",
-        AutofillMetrics::USER_DID_AUTOFILL, 1);
-  }
-
-  {
-    base::HistogramTester histogram_tester;
-    AutofillMetrics::LogUserHappinessBySecurityLevel(
-        AutofillMetrics::SUGGESTIONS_SHOWN, ADDRESS_FORM,
-        security_state::SecurityLevel::DANGEROUS);
-    histogram_tester.ExpectBucketCount(
-        "Security.UserHappiness.Address.DANGEROUS",
-        AutofillMetrics::SUGGESTIONS_SHOWN, 1);
-  }
-
-  {
-    base::HistogramTester histogram_tester;
-    AutofillMetrics::LogUserHappinessBySecurityLevel(
-        AutofillMetrics::FIELD_WAS_AUTOFILLED, PASSWORD_FORM,
-        security_state::SecurityLevel::HTTP_SHOW_WARNING);
-    histogram_tester.ExpectBucketCount(
-        "Security.UserHappiness.Password.HTTP_SHOW_WARNING",
-        AutofillMetrics::FIELD_WAS_AUTOFILLED, 1);
-  }
-
-  {
-    base::HistogramTester histogram_tester;
-    AutofillMetrics::LogUserHappinessBySecurityLevel(
-        AutofillMetrics::USER_DID_AUTOFILL_ONCE, UNKNOWN_FORM_TYPE,
-        security_state::SecurityLevel::EV_SECURE);
-    histogram_tester.ExpectBucketCount(
-        "Security.UserHappiness.Unknown.EV_SECURE",
-        AutofillMetrics::USER_DID_AUTOFILL_ONCE, 1);
-  }
-
-  {
-    // No metric should be recorded if the security level is
-    // SECURITY_LEVEL_COUNT.
-    base::HistogramTester histogram_tester;
-    AutofillMetrics::LogUserHappinessBySecurityLevel(
-        AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_SOME,
-        CREDIT_CARD_FORM, security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
-    histogram_tester.ExpectTotalCount("Security.UserHappiness.CreditCard.OTHER",
-                                      0);
-  }
-}
-
-// Verify that we correctly log LogUserHappinessBySecurityLevel dealing form the
-// form event metrics.
-TEST_F(AutofillMetricsTest, LogUserHappinessBySecurityLevel_FromFormEvents) {
-  // Load a fillable form.
-  FormData form;
-  form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
-  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
-
-  FormFieldData field;
-  test::CreateTestFormField("Name", "name", "", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("Email", "email", "", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("Phone", "phone", "", "text", &field);
-  form.fields.push_back(field);
-
-  std::vector<FormData> forms(1, form);
-
-  // Simulate seeing the form.
-  {
-    base::HistogramTester histogram_tester;
-    autofill_client_.set_security_level(
-        security_state::SecurityLevel::DANGEROUS);
-    autofill_manager_->OnFormsSeen(forms, TimeTicks());
-    histogram_tester.ExpectBucketCount(
-        "Security.UserHappiness.Address.DANGEROUS",
-        AutofillMetrics::FORMS_LOADED, 1);
-  }
-
-  // Simulate suggestions shown twice with separate popups.
-  {
-    base::HistogramTester histogram_tester;
-    autofill_client_.set_security_level(
-        security_state::SecurityLevel::HTTP_SHOW_WARNING);
-    autofill_manager_->DidShowSuggestions(true, form, field);
-    autofill_manager_->DidShowSuggestions(true, form, field);
-    histogram_tester.ExpectBucketCount(
-        "Security.UserHappiness.Address.HTTP_SHOW_WARNING",
-        AutofillMetrics::SUGGESTIONS_SHOWN, 2);
-    histogram_tester.ExpectBucketCount(
-        "Security.UserHappiness.Address.HTTP_SHOW_WARNING",
-        AutofillMetrics::SUGGESTIONS_SHOWN_ONCE, 1);
-  }
-}
-
-// Tests that the LogSaveCardPromptMetricBySecurityLevel are recorded correctly.
-TEST_F(AutofillMetricsTest, LogSaveCardPromptMetricBySecurityLevel) {
-  {
-    base::HistogramTester histogram_tester;
-    AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
-        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, /*is_uploading=*/true,
-        security_state::SecurityLevel::SECURE);
-    histogram_tester.ExpectBucketCount(
-        "Security.SaveCardPromptMetric.Upload.SECURE",
-        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1);
-  }
-
-  {
-    base::HistogramTester histogram_tester;
-    AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
-        AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, /*is_uploading=*/false,
-        security_state::SecurityLevel::DANGEROUS);
-    histogram_tester.ExpectBucketCount(
-        "Security.SaveCardPromptMetric.Local.DANGEROUS",
-        AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
-  }
-
-  {
-    base::HistogramTester histogram_tester;
-    AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
-        AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, /*is_uploading=*/true,
-        security_state::SecurityLevel::HTTP_SHOW_WARNING);
-    histogram_tester.ExpectBucketCount(
-        "Security.SaveCardPromptMetric.Upload.HTTP_SHOW_WARNING",
-        AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
-  }
-
-  {
-    base::HistogramTester histogram_tester;
-    AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
-        AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING,
-        /*is_uploading=*/false, security_state::SecurityLevel::EV_SECURE);
-    histogram_tester.ExpectBucketCount(
-        "Security.SaveCardPromptMetric.Local.EV_SECURE",
-        AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING, 1);
-  }
-
-  {
-    // No metric should be recorded if the security level is
-    // SECURITY_LEVEL_COUNT.
-    base::HistogramTester histogram_tester;
-    AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
-        AutofillMetrics::SAVE_CARD_PROMPT_CVC_FIX_FLOW_SHOWN,
-        /*is_uploading=*/true,
-        security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
-    histogram_tester.ExpectTotalCount(
-        "Security.SaveCardPromptMetric.Upload.OTHER", 0);
-  }
-}
-
-// Verify that we correctly log LogSaveCardPromptMetricBySecurityLevel from the
-// save card prompt metrics.
-TEST_F(AutofillMetricsTest,
-       LogSaveCardPromptMetricBySecurityLevel_FromSaveCardPromptMetric) {
-  {
-    base::HistogramTester histogram_tester;
-    AutofillMetrics::LogSaveCardPromptMetric(
-        AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING,
-        /*is_uploading=*/true, /*is_reshow=*/false,
-        /*previous_save_credit_card_prompt_user_decision=*/1,
-        security_state::SecurityLevel::EV_SECURE);
-    histogram_tester.ExpectBucketCount(
-        "Security.SaveCardPromptMetric.Upload.EV_SECURE",
-        AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING, 1);
-  }
-
-  {
-    base::HistogramTester histogram_tester;
-    AutofillMetrics::LogSaveCardPromptMetric(
-        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, /*is_uploading=*/false,
-        /*is_reshow=*/true,
-        /*previous_save_credit_card_prompt_user_decision=*/0,
-        security_state::SecurityLevel::SECURE);
-    histogram_tester.ExpectBucketCount(
-        "Security.SaveCardPromptMetric.Local.SECURE",
-        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1);
-  }
-}
-
 }  // namespace autofill

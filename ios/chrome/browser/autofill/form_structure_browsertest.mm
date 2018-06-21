@@ -24,7 +24,6 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -139,7 +138,6 @@ FormStructureBrowserTest::FormStructureBrowserTest()
 void FormStructureBrowserTest::SetUp() {
   ChromeWebTest::SetUp();
 
-  IOSSecurityStateTabHelper::CreateForWebState(web_state());
   InfoBarManagerImpl::CreateForWebState(web_state());
   AutofillAgent* autofillAgent = [[AutofillAgent alloc]
       initWithPrefService:chrome_browser_state_->GetPrefs()

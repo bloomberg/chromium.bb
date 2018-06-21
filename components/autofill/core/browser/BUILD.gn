@@ -230,7 +230,6 @@ static_library("browser") {
     "//components/autofill/core/browser/proto",
     "//components/autofill/core/common",
     "//components/resources",
-    "//components/security_state/core",
     "//skia",
     "//third_party/libaddressinput",
   ]
@@ -243,6 +242,7 @@ static_library("browser") {
     "//components/os_crypt",
     "//components/pref_registry",
     "//components/prefs",
+    "//components/security_state/core",
     "//components/signin/core/browser:signin_metrics",
     "//components/strings",
     "//components/sync",

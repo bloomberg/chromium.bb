@@ -28,7 +28,6 @@
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 #include "ios/chrome/browser/ui/settings/personal_data_manager_data_changed_observer.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
@@ -212,7 +211,6 @@ void AutofillControllerTest::SetUp() {
       initWithPrefService:chrome_browser_state_->GetPrefs()
                  webState:web_state()];
   InfoBarManagerImpl::CreateForWebState(web_state());
-  IOSSecurityStateTabHelper::CreateForWebState(web_state());
   autofill_controller_ = [[AutofillController alloc]
            initWithBrowserState:chrome_browser_state_.get()
                        webState:web_state()
