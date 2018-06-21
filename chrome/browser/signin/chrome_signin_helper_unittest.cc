@@ -90,7 +90,8 @@ TEST_F(ChromeSigninHelperTest, RemoveDiceSigninHeader) {
   ASSERT_TRUE(request_->response_headers()->HasHeader(kDiceResponseHeader));
 
   // Process the header.
-  signin::ProcessAccountConsistencyResponseHeaders(request_.get(), GURL(),
+  signin::ResponseAdapter response_adapter(request_.get());
+  signin::ProcessAccountConsistencyResponseHeaders(&response_adapter, GURL(),
                                                    false /* is_incognito */);
 
   // Check that the header has been removed.

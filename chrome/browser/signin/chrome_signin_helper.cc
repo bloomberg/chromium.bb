@@ -64,8 +64,9 @@ const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
 const char kGoogleSignoutResponseHeader[] = "Google-Accounts-SignOut";
 #endif
 
-// Key for DiceURLRequestUserData.
-const void* const kDiceURLRequestUserDataKey = &kDiceURLRequestUserDataKey;
+// Key for RequestDestructionObserverUserData.
+const void* const kRequestDestructionObserverUserDataKey =
+    &kRequestDestructionObserverUserDataKey;
 
 // TODO(droger): Remove this delay when the Dice implementation is finished on
 // the server side.
@@ -109,75 +110,45 @@ class AccountReconcilorLockWrapper
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilorLockWrapper);
 };
 
-// The AccountReconcilor is suspended while a Dice request is in flight. This
-// allows the DiceResponseHandler to see the response before the
-// AccountReconcilor starts.
-class DiceURLRequestUserData : public base::SupportsUserData::Data {
+void DestroyLockWrapperAfterDelay(
+    scoped_refptr<AccountReconcilorLockWrapper> lock_wrapper) {
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          base::DoNothing::Once<scoped_refptr<AccountReconcilorLockWrapper>>(),
+          std::move(lock_wrapper)),
+      base::TimeDelta::FromMilliseconds(
+          g_dice_account_reconcilor_blocked_delay_ms));
+}
+
+// Returns true if the account reconcilor needs be be blocked while a Gaia
+// sign-in request is in progress.
+//
+// The account reconcilor must be blocked on all request that may change the
+// Gaia authentication cookies. This includes:
+// * Main frame  requests.
+// * XHR requests having Gaia URL as referrer.
+bool ShouldBlockReconcilorForRequest(ChromeRequestAdapter* request) {
+  content::ResourceType resource_type = request->GetResourceType();
+
+  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
+    return true;
+
+  return (resource_type == content::RESOURCE_TYPE_XHR) &&
+         gaia::IsGaiaSignonRealm(request->GetReferrerOrigin());
+}
+
+class RequestDestructionObserverUserData : public base::SupportsUserData::Data {
  public:
-  // Attaches a DiceURLRequestUserData to the request if it needs to block the
-  // AccountReconcilor.
-  static void AttachToRequest(net::URLRequest* request) {
-    if (ShouldBlockReconcilorForRequest(request) &&
-        !request->GetUserData(kDiceURLRequestUserDataKey)) {
-      const content::ResourceRequestInfo* info =
-          content::ResourceRequestInfo::ForRequest(request);
-      request->SetUserData(kDiceURLRequestUserDataKey,
-                           std::make_unique<DiceURLRequestUserData>(
-                               info->GetWebContentsGetterForRequest()));
-    }
-  }
+  explicit RequestDestructionObserverUserData(base::OnceClosure closure)
+      : closure_(std::move(closure)) {}
 
-  explicit DiceURLRequestUserData(
-      const content::ResourceRequestInfo::WebContentsGetter&
-          web_contents_getter)
-      : account_reconcilor_lock_wrapper_(new AccountReconcilorLockWrapper) {
-    // The task takes a reference on the wrapper, because DiceRequestUserData
-    // may be deleted before the task is run.
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&AccountReconcilorLockWrapper::CreateLockOnUI,
-                       account_reconcilor_lock_wrapper_, web_contents_getter));
-  }
-
-  // The Gaia cookie is received in one request, and the Dice response in
-  // another request that is immediately following.
-  // Start locking the reconcilor on the first request, and keep it locked for a
-  // short time afterwards, to give the second request some time to start and
-  // lock the reconcilor from there.
-  ~DiceURLRequestUserData() override {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&DiceURLRequestUserData::DoNothing,
-                       account_reconcilor_lock_wrapper_),
-        base::TimeDelta::FromMilliseconds(
-            g_dice_account_reconcilor_blocked_delay_ms));
-  }
+  ~RequestDestructionObserverUserData() override { std::move(closure_).Run(); }
 
  private:
-  // Returns true if the account reconcilor needs be be blocked while a Gaia
-  // sign-in request is in progress.
-  //
-  // The account reconcilor must be blocked on all request that may change the
-  // Gaia authentication cookies. This includes:
-  // * Main frame  requests.
-  // * XHR requests having Gaia URL as referrer.
-  static bool ShouldBlockReconcilorForRequest(net::URLRequest* request) {
-    const content::ResourceRequestInfo* info =
-        content::ResourceRequestInfo::ForRequest(request);
-    content::ResourceType resource_type = info->GetResourceType();
+  base::OnceClosure closure_;
 
-    if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
-      return true;
-
-    return (resource_type == content::RESOURCE_TYPE_XHR) &&
-           gaia::IsGaiaSignonRealm(GURL(request->referrer()).GetOrigin());
-  }
-  // Dummy function used to extend the lifetime of the wrapper by keeping a
-  // reference on it.
-  static void DoNothing(scoped_refptr<AccountReconcilorLockWrapper> wrapper) {}
-
-  scoped_refptr<AccountReconcilorLockWrapper> account_reconcilor_lock_wrapper_;
-  DISALLOW_COPY_AND_ASSIGN(DiceURLRequestUserData);
+  DISALLOW_COPY_AND_ASSIGN(RequestDestructionObserverUserData);
 };
 
 // Processes the mirror response header on the UI thread. Currently depending
@@ -340,19 +311,17 @@ void ProcessDiceHeaderUIThread(
 // Looks for the X-Chrome-Manage-Accounts response header, and if found,
 // tries to show the avatar bubble in the browser identified by the
 // child/route id. Must be called on IO thread.
-void ProcessMirrorResponseHeaderIfExists(net::URLRequest* request,
+void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
                                          bool is_off_the_record) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  if (!info || (info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME))
+  if (!response->IsMainFrame())
     return;
 
-  if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
+  if (!gaia::IsGaiaSignonRealm(response->GetOrigin()))
     return;
 
-  net::HttpResponseHeaders* response_headers = request->response_headers();
+  const net::HttpResponseHeaders* response_headers = response->GetHeaders();
   if (!response_headers)
     return;
 
@@ -377,21 +346,21 @@ void ProcessMirrorResponseHeaderIfExists(net::URLRequest* request,
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(ProcessMirrorHeaderUIThread, params,
-                     info->GetWebContentsGetterForRequest()));
+                     response->GetWebContentsGetter()));
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-void ProcessDiceResponseHeaderIfExists(net::URLRequest* request,
+void ProcessDiceResponseHeaderIfExists(ResponseAdapter* response,
                                        bool is_off_the_record) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (is_off_the_record)
     return;
 
-  if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
+  if (!gaia::IsGaiaSignonRealm(response->GetOrigin()))
     return;
 
-  net::HttpResponseHeaders* response_headers = request->response_headers();
+  const net::HttpResponseHeaders* response_headers = response->GetHeaders();
   if (!response_headers)
     return;
 
@@ -402,7 +371,7 @@ void ProcessDiceResponseHeaderIfExists(net::URLRequest* request,
     params = BuildDiceSigninResponseParams(header_value);
     // The header must be removed for privacy reasons, so that renderers never
     // have access to the authorization code.
-    response_headers->RemoveHeader(kDiceResponseHeader);
+    response->RemoveHeader(kDiceResponseHeader);
   } else if (response_headers->GetNormalizedHeader(kGoogleSignoutResponseHeader,
                                                    &header_value)) {
     params = BuildDiceSignoutResponseParams(header_value);
@@ -413,22 +382,81 @@ void ProcessDiceResponseHeaderIfExists(net::URLRequest* request,
   if (params.user_intention == DiceAction::NONE)
     return;
 
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(ProcessDiceHeaderUIThread, base::Passed(std::move(params)),
-                 info->GetWebContentsGetterForRequest()));
+                 response->GetWebContentsGetter()));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 }  // namespace
 
+ChromeRequestAdapter::ChromeRequestAdapter(net::URLRequest* request)
+    : RequestAdapter(request) {}
+
+ChromeRequestAdapter::~ChromeRequestAdapter() = default;
+
+bool ChromeRequestAdapter::IsMainRequestContext(ProfileIOData* io_data) {
+  return request_->context() == io_data->GetMainRequestContext();
+}
+
+content::ResourceRequestInfo::WebContentsGetter
+ChromeRequestAdapter::GetWebContentsGetter() const {
+  const auto* info = content::ResourceRequestInfo::ForRequest(request_);
+  return info->GetWebContentsGetterForRequest();
+}
+
+content::ResourceType ChromeRequestAdapter::GetResourceType() const {
+  const auto* info = content::ResourceRequestInfo::ForRequest(request_);
+  return info->GetResourceType();
+}
+
+GURL ChromeRequestAdapter::GetReferrerOrigin() const {
+  return GURL(request_->referrer()).GetOrigin();
+}
+
+void ChromeRequestAdapter::SetDestructionCallback(base::OnceClosure closure) {
+  if (request_->GetUserData(kRequestDestructionObserverUserDataKey))
+    return;
+
+  request_->SetUserData(
+      kRequestDestructionObserverUserDataKey,
+      std::make_unique<RequestDestructionObserverUserData>(std::move(closure)));
+}
+
+ResponseAdapter::ResponseAdapter(const net::URLRequest* request)
+    : request_(request) {}
+
+ResponseAdapter::~ResponseAdapter() = default;
+
+content::ResourceRequestInfo::WebContentsGetter
+ResponseAdapter::GetWebContentsGetter() const {
+  const auto* info = content::ResourceRequestInfo::ForRequest(request_);
+  return info->GetWebContentsGetterForRequest();
+}
+
+bool ResponseAdapter::IsMainFrame() const {
+  const auto* info = content::ResourceRequestInfo::ForRequest(request_);
+  return info && (info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME);
+}
+
+GURL ResponseAdapter::GetOrigin() const {
+  return request_->url().GetOrigin();
+}
+
+const net::HttpResponseHeaders* ResponseAdapter::GetHeaders() const {
+  return request_->response_headers();
+}
+
+void ResponseAdapter::RemoveHeader(const std::string& name) {
+  request_->response_headers()->RemoveHeader(name);
+}
+
 void SetDiceAccountReconcilorBlockDelayForTesting(int delay_ms) {
   g_dice_account_reconcilor_blocked_delay_ms = delay_ms;
 }
 
-void FixAccountConsistencyRequestHeader(net::URLRequest* request,
+void FixAccountConsistencyRequestHeader(ChromeRequestAdapter* request,
                                         const GURL& redirect_url,
                                         ProfileIOData* io_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -436,7 +464,7 @@ void FixAccountConsistencyRequestHeader(net::URLRequest* request,
   if (io_data->IsOffTheRecord())
     return;  // Account consistency is disabled in incognito.
 
-  if (io_data->GetMainRequestContext() != request->context()) {
+  if (!request->IsMainRequestContext(io_data)) {
     // Account consistency requires the AccountReconcilor, which is only
     // attached to the main request context.
     // Note: InlineLoginUI uses an isolated request context and thus bypasses
@@ -475,8 +503,17 @@ void FixAccountConsistencyRequestHeader(net::URLRequest* request,
   // Block the AccountReconcilor while the Dice requests are in flight. This
   // allows the DiceReponseHandler to process the response before the reconcilor
   // starts.
-  if (dice_header_added)
-    DiceURLRequestUserData::AttachToRequest(request);
+  if (dice_header_added && ShouldBlockReconcilorForRequest(request)) {
+    auto lock_wrapper = base::MakeRefCounted<AccountReconcilorLockWrapper>();
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&AccountReconcilorLockWrapper::CreateLockOnUI,
+                       lock_wrapper, request->GetWebContentsGetter()));
+
+    // On destruction of the request |lock_wrapper| will be released.
+    request->SetDestructionCallback(
+        base::BindOnce(&DestroyLockWrapperAfterDelay, std::move(lock_wrapper)));
+  }
 
   // Mirror header:
   AppendOrRemoveMirrorRequestHeader(
@@ -484,7 +521,7 @@ void FixAccountConsistencyRequestHeader(net::URLRequest* request,
       io_data->GetCookieSettings(), profile_mode_mask);
 }
 
-void ProcessAccountConsistencyResponseHeaders(net::URLRequest* request,
+void ProcessAccountConsistencyResponseHeaders(ResponseAdapter* response,
                                               const GURL& redirect_url,
                                               bool is_off_the_record) {
   if (redirect_url.is_empty()) {
@@ -493,13 +530,13 @@ void ProcessAccountConsistencyResponseHeaders(net::URLRequest* request,
     // See if the response contains the X-Chrome-Manage-Accounts header. If so
     // show the profile avatar bubble so that user can complete signin/out
     // action the native UI.
-    ProcessMirrorResponseHeaderIfExists(request, is_off_the_record);
+    ProcessMirrorResponseHeaderIfExists(response, is_off_the_record);
   }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Process the Dice header: on sign-in, exchange the authorization code for a
   // refresh token, on sign-out just follow the sign-out URL.
-  ProcessDiceResponseHeaderIfExists(request, is_off_the_record);
+  ProcessDiceResponseHeaderIfExists(response, is_off_the_record);
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 }
 
