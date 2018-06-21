@@ -357,9 +357,10 @@ void BackgroundModeManager::RegisterPrefs(PrefRegistrySimple* registry) {
 void BackgroundModeManager::RegisterProfile(Profile* profile) {
   // We don't want to register multiple times for one profile.
   DCHECK(!base::ContainsKey(background_mode_data_, profile));
-  BackgroundModeInfo bmd(
-      new BackgroundModeData(profile, &command_id_handler_vector_));
-  background_mode_data_[profile] = bmd;
+  auto bmd = std::make_unique<BackgroundModeData>(profile,
+                                                  &command_id_handler_vector_);
+  BackgroundModeData* bmd_ptr = bmd.get();
+  background_mode_data_[profile] = std::move(bmd);
 
   // Initially set the name for this background mode data.
   base::string16 name = l10n_util::GetStringUTF16(IDS_PROFILES_DEFAULT_NAME);
@@ -368,7 +369,7 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
       profile->GetPath(), &entry)) {
     name = entry->GetName();
   }
-  bmd->SetName(name);
+  bmd_ptr->SetName(name);
 
   // Check for the presence of background apps after all extensions have been
   // loaded, to handle the case where an extension has been manually removed
@@ -378,7 +379,7 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
       base::Bind(&BackgroundModeManager::OnExtensionsReady,
         weak_factory_.GetWeakPtr(), profile));
 
-  bmd->applications()->AddObserver(this);
+  bmd_ptr->applications()->AddObserver(this);
 
   // If we're adding a new profile and running in multi-profile mode, this new
   // profile should be added to the status icon if one currently exists.
