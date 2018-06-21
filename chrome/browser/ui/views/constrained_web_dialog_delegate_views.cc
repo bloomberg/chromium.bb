@@ -42,6 +42,17 @@ class InitiatorWebContentsObserver
     DISALLOW_COPY_AND_ASSIGN(InitiatorWebContentsObserver);
 };
 
+gfx::Size RestrictToPlatformMinimumSize(const gfx::Size& min_size) {
+#if defined(OS_MACOSX)
+  // http://crbug.com/78973 - MacOS does not handle zero-sized windows well.
+  gfx::Size adjusted_min_size(1, 1);
+  adjusted_min_size.SetToMax(min_size);
+  return adjusted_min_size;
+#else
+  return min_size;
+#endif
+}
+
 // The specialized WebView that lives in a constrained dialog.
 class ConstrainedDialogWebView : public views::WebView,
                                  public ConstrainedWebDialogDelegate,
@@ -224,7 +235,7 @@ ConstrainedDialogWebView::ConstrainedDialogWebView(
                                                   delegate,
                                                   &initiator_observer_,
                                                   this)),
-      min_size_(min_size),
+      min_size_(RestrictToPlatformMinimumSize(min_size)),
       max_size_(max_size) {
   SetWebContents(GetWebContents());
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
