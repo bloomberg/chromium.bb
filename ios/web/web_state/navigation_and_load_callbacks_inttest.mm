@@ -934,6 +934,9 @@ TEST_F(NavigationAndLoadCallbacksTest, StateNavigation) {
 
   // Perform push state using JavaScript.
   const GURL push_url = test_server_->GetURL("/test.html");
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
+  }
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentStartedContext(
           web_state(), push_url, /*has_user_gesture=*/false, &context, &nav_id,
