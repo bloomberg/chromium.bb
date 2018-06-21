@@ -22,7 +22,7 @@ int main(int argc, char **argv)
   char * hyphens = calloc(8, sizeof(char));
 
   hyphens[0] = '0';
-  hyphens[1] = '1';
+  hyphens[1] = '0';
   hyphens[2] = '0';
   hyphens[3] = '0';
   hyphens[4] = '1';

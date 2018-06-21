@@ -23,10 +23,10 @@ int main(int argc, char **argv)
 
   hyphens[0] = '0';
   hyphens[1] = '0';
-  hyphens[2] = '1';
+  hyphens[2] = '0';
   hyphens[3] = '0';
   hyphens[4] = '1';
-  hyphens[5] = '0';
+  hyphens[5] = '1';
   hyphens[6] = '0';
 
   ret = check_hyphenation_pos(tables, word, hyphens);
