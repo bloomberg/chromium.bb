@@ -26,11 +26,17 @@ AshGpuInterfaceProvider::~AshGpuInterfaceProvider() = default;
 
 void AshGpuInterfaceProvider::RegisterGpuInterfaces(
     service_manager::BinderRegistry* registry) {
-  registry->AddInterface(base::BindRepeating(
-      &AshGpuInterfaceProvider::BindGpuRequest, base::Unretained(this)));
+  registry->AddInterface<ui::mojom::Arc>(base::BindRepeating(
+      &AshGpuInterfaceProvider::BindArcRequest, base::Unretained(this)));
   registry->AddInterface(base::BindRepeating(
       &AshGpuInterfaceProvider::BindDiscardableSharedMemoryManagerRequest,
       base::Unretained(this)));
+  registry->AddInterface(base::BindRepeating(
+      &AshGpuInterfaceProvider::BindGpuRequest, base::Unretained(this)));
+}
+
+void AshGpuInterfaceProvider::BindArcRequest(ui::mojom::ArcRequest request) {
+  gpu_host_->AddArc(std::move(request));
 }
 
 void AshGpuInterfaceProvider::BindDiscardableSharedMemoryManagerRequest(

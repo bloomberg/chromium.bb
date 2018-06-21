@@ -25,6 +25,7 @@ class ImmersiveHandlerFactoryMash;
 class WindowManager;
 
 // ShellPort implementation for mash. See ash/README.md for more.
+// NOTE: this is also used for OopAsh.
 class ShellPortMash : public ShellPort {
  public:
   ShellPortMash(WindowManager* window_manager,
