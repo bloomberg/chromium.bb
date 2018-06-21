@@ -97,10 +97,6 @@ class ContentPasswordManagerDriver
       const autofill::PasswordForm& password_form) override;
   void SameDocumentNavigation(
       const autofill::PasswordForm& password_form) override;
-  void PresaveGeneratedPassword(
-      const autofill::PasswordForm& password_form) override;
-  void PasswordNoLongerGenerated(
-      const autofill::PasswordForm& password_form) override;
   void ShowPasswordSuggestions(int key,
                                base::i18n::TextDirection text_direction,
                                const base::string16& typed_username,

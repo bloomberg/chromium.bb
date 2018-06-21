@@ -122,32 +122,12 @@ class FakeContentPasswordManagerDriver
     save_generation_field_ = base::nullopt;
   }
 
-  bool called_password_no_longer_generated() const {
-    return called_password_no_longer_generated_;
-  }
-
-  void reset_called_password_no_longer_generated() {
-    called_password_no_longer_generated_ = false;
-  }
-
-  bool called_presave_generated_password() const {
-    return called_presave_generated_password_;
-  }
-
-  void reset_called_presave_generated_password() {
-    called_presave_generated_password_ = false;
-  }
-
   int called_check_safe_browsing_reputation_cnt() const {
     return called_check_safe_browsing_reputation_cnt_;
   }
 
   int called_show_manual_fallback_for_saving_count() const {
     return called_show_manual_fallback_for_saving_count_;
-  }
-
-  bool last_fallback_for_saving_was_for_generated_password() const {
-    return last_fallback_for_saving_was_for_generated_password_;
   }
 
   bool called_manual_fallback_suggestion() {
@@ -167,12 +147,6 @@ class FakeContentPasswordManagerDriver
       const autofill::PasswordForm& password_form) override;
 
   void SameDocumentNavigation(
-      const autofill::PasswordForm& password_form) override;
-
-  void PresaveGeneratedPassword(
-      const autofill::PasswordForm& password_form) override;
-
-  void PasswordNoLongerGenerated(
       const autofill::PasswordForm& password_form) override;
 
   void ShowPasswordSuggestions(int key,
@@ -234,12 +208,6 @@ class FakeContentPasswordManagerDriver
   bool called_save_generation_field_ = false;
   // Records data received via SaveGenerationFieldDetectedByClassifier() call.
   base::Optional<base::string16> save_generation_field_;
-  // Records whether PresaveGeneratedPassword() gets called.
-  bool called_presave_generated_password_ = false;
-  // Records whether PasswordNoLongerGenerated() gets called.
-  bool called_password_no_longer_generated_ = false;
-  // True iff the current password is generated.
-  bool password_is_generated_ = false;
 
   // Records number of times CheckSafeBrowsingReputation() gets called.
   int called_check_safe_browsing_reputation_cnt_ = 0;
@@ -247,8 +215,6 @@ class FakeContentPasswordManagerDriver
   // Records the number of request to show manual fallback for password saving.
   // If it is zero, the fallback is not available.
   int called_show_manual_fallback_for_saving_count_ = 0;
-  // True if the last request of saving fallback was for a generated password.
-  bool last_fallback_for_saving_was_for_generated_password_ = false;
 
   mojo::BindingSet<autofill::mojom::PasswordManagerDriver> bindings_;
 };

@@ -397,6 +397,9 @@ TEST_F(PasswordGenerationAgentTest, FillTest) {
   EXPECT_TRUE(second_password_element.Value().IsNull());
 
   base::string16 password = base::ASCIIToUTF16("random_password");
+  EXPECT_CALL(fake_pw_client_,
+              PresaveGeneratedPassword(testing::Field(
+                  &autofill::PasswordForm::password_value, password)));
   password_generation_->GeneratedPasswordAccepted(password);
 
   // Password fields are filled out and set as being autofilled.
@@ -436,6 +439,9 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   WebInputElement second_password_element = element.To<WebInputElement>();
 
   base::string16 password = base::ASCIIToUTF16("random_password");
+  EXPECT_CALL(fake_pw_client_,
+              PresaveGeneratedPassword(testing::Field(
+                  &autofill::PasswordForm::password_value, password)));
   password_generation_->GeneratedPasswordAccepted(password);
 
   // Passwords start out the same.
@@ -444,16 +450,18 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
 
   // After editing the first field they are still the same.
   std::string edited_password_ascii = "edited_password";
+  base::string16 edited_password = base::ASCIIToUTF16(edited_password_ascii);
+  EXPECT_CALL(fake_pw_client_,
+              PresaveGeneratedPassword(testing::Field(
+                  &autofill::PasswordForm::password_value, edited_password)));
   SimulateUserInputChangeForElement(&first_password_element,
                                     edited_password_ascii);
-  base::string16 edited_password = base::ASCIIToUTF16(edited_password_ascii);
   EXPECT_EQ(edited_password, first_password_element.Value().Utf16());
   EXPECT_EQ(edited_password, second_password_element.Value().Utf16());
 
-  fake_driver_.reset_called_password_no_longer_generated();
-
   // Verify that password mirroring works correctly even when the password
   // is deleted.
+  EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_));
   SimulateUserInputChangeForElement(&first_password_element, std::string());
   EXPECT_EQ(base::string16(), first_password_element.Value().Utf16());
   EXPECT_EQ(base::string16(), second_password_element.Value().Utf16());
@@ -461,7 +469,6 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   // Should have notified the browser that the password is no longer generated
   // and trigger generation again.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(fake_driver_.called_password_no_longer_generated());
   EXPECT_TRUE(GetCalledAutomaticGenerationStatusChangedTrue());
 }
 
@@ -742,35 +749,34 @@ TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
     ExpectManualGenerationAvailable(test_case.generation_element, true);
 
     base::string16 password = base::ASCIIToUTF16("random_password");
+    EXPECT_CALL(fake_pw_client_,
+                PresaveGeneratedPassword(testing::Field(
+                    &autofill::PasswordForm::password_value, password)));
     password_generation_->GeneratedPasswordAccepted(password);
     base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(fake_driver_.called_presave_generated_password());
-    fake_driver_.reset_called_presave_generated_password();
 
     FocusField(test_case.generation_element);
+    EXPECT_CALL(fake_pw_client_, PresaveGeneratedPassword(testing::_));
     SimulateUserTypingASCIICharacter('a', true);
     base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(fake_driver_.called_presave_generated_password());
-    fake_driver_.reset_called_presave_generated_password();
 
     FocusField("username");
+    EXPECT_CALL(fake_pw_client_, PresaveGeneratedPassword(testing::_));
     SimulateUserTypingASCIICharacter('X', true);
     base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(fake_driver_.called_presave_generated_password());
-    fake_driver_.reset_called_presave_generated_password();
 
     FocusField(test_case.generation_element);
+    EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_));
     for (size_t i = 0; i < password.length(); ++i)
       SimulateUserTypingASCIICharacter(ui::VKEY_BACK, false);
     SimulateUserTypingASCIICharacter(ui::VKEY_BACK, true);
     base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(fake_driver_.called_password_no_longer_generated());
-    fake_driver_.reset_called_password_no_longer_generated();
 
+    EXPECT_CALL(fake_pw_client_, PresaveGeneratedPassword(testing::_)).Times(0);
     FocusField("username");
     SimulateUserTypingASCIICharacter('Y', true);
     base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(fake_driver_.called_presave_generated_password());
+    testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
   }
 }
 
@@ -779,18 +785,22 @@ TEST_F(PasswordGenerationAgentTest, FallbackForSaving) {
   SelectGenerationFallbackInContextMenu("first_password");
   ExpectManualGenerationAvailable("first_password", true);
   EXPECT_EQ(0, fake_driver_.called_show_manual_fallback_for_saving_count());
-  password_generation_->GeneratedPasswordAccepted(
-      base::ASCIIToUTF16("random_password"));
+  base::string16 password = base::ASCIIToUTF16("random_password");
+  EXPECT_CALL(fake_pw_client_,
+              PresaveGeneratedPassword(testing::Field(
+                  &autofill::PasswordForm::password_value, password)))
+      .WillOnce(testing::InvokeWithoutArgs([this]() {
+        // Make sure that generation event was propagated to the browser before
+        // the fallback showing. Otherwise, the fallback for saving provides a
+        // save bubble instead of a confirmation bubble.
+        EXPECT_EQ(0,
+                  fake_driver_.called_show_manual_fallback_for_saving_count());
+      }));
+  password_generation_->GeneratedPasswordAccepted(password);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(fake_driver_.called_presave_generated_password());
   // Two fallback requests are expected because generation changes either new
   // password and confirmation fields.
   EXPECT_EQ(2, fake_driver_.called_show_manual_fallback_for_saving_count());
-  // Make sure that generation event was propagated to the browser before the
-  // fallback showing. Otherwise, the fallback for saving provides a save bubble
-  // instead of a confirmation bubble.
-  EXPECT_TRUE(
-      fake_driver_.last_fallback_for_saving_was_for_generated_password());
 }
 
 TEST_F(PasswordGenerationAgentTest, FormClassifierVotesSignupForm) {
@@ -848,6 +858,9 @@ TEST_F(PasswordGenerationAgentTest, ConfirmationFieldVoteFromServer) {
   WebInputElement confirmation_password_element = element.To<WebInputElement>();
 
   base::string16 password = base::ASCIIToUTF16("random_password");
+  EXPECT_CALL(fake_pw_client_,
+              PresaveGeneratedPassword(testing::Field(
+                  &autofill::PasswordForm::password_value, password)));
   password_generation_->GeneratedPasswordAccepted(password);
   EXPECT_EQ(password, generation_element.Value().Utf16());
   // Check that the generated password was copied according to the server's
@@ -868,7 +881,11 @@ TEST_F(PasswordGenerationAgentTest, RevealPassword) {
   const char* kTextFieldId = "username";
 
   ExpectAutomaticGenerationAvailable(kGenerationElementId, true);
-  password_generation_->GeneratedPasswordAccepted(base::ASCIIToUTF16("pwd"));
+  base::string16 password = base::ASCIIToUTF16("pwd");
+  EXPECT_CALL(fake_pw_client_,
+              PresaveGeneratedPassword(testing::Field(
+                  &autofill::PasswordForm::password_value, password)));
+  password_generation_->GeneratedPasswordAccepted(password);
 
   const bool kFalseTrue[] = {false, true};
   for (bool clickOnInputField : kFalseTrue) {
@@ -899,12 +916,16 @@ TEST_F(PasswordGenerationAgentTest, JavascriptClearedTheField) {
 
   const char kGenerationElementId[] = "first_password";
   ExpectAutomaticGenerationAvailable(kGenerationElementId, true);
-  password_generation_->GeneratedPasswordAccepted(base::ASCIIToUTF16("pwd"));
+  base::string16 password = base::ASCIIToUTF16("pwd");
+  EXPECT_CALL(fake_pw_client_,
+              PresaveGeneratedPassword(testing::Field(
+                  &autofill::PasswordForm::password_value, password)));
+  password_generation_->GeneratedPasswordAccepted(password);
+  EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_));
   ExecuteJavaScriptForTests(
       "document.getElementById('first_password').value = '';");
   FocusField(kGenerationElementId);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(fake_driver_.called_password_no_longer_generated());
 }
 
 TEST_F(PasswordGenerationAgentTest, GenerationFallbackTest) {
@@ -940,8 +961,8 @@ TEST_F(PasswordGenerationAgentTest, AutofillToGenerationField) {
   const WebInputElement input_element = element.To<WebInputElement>();
   // Since password isn't generated (just suitable field was detected),
   // |OnFieldAutofilled| wouldn't trigger any actions.
+  EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_)).Times(0);
   password_generation_->OnFieldAutofilled(input_element);
-  EXPECT_FALSE(fake_driver_.called_password_no_longer_generated());
 }
 
 TEST_F(PasswordGenerationAgentTestForHtmlAnnotation, AnnotateForm) {

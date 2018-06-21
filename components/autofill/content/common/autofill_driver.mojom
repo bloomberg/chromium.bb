@@ -129,13 +129,6 @@ interface PasswordManagerDriver {
   ShowManualFallbackSuggestion(mojo_base.mojom.TextDirection text_direction,
                            gfx.mojom.RectF bounds);
 
-  // Instructs the browser to presave the form with generated password.
-  PresaveGeneratedPassword(PasswordForm password_form);
-
-  // Instructs the browser that form no longer contains a generated password and
-  // the presaved form should be removed.
-  PasswordNoLongerGenerated(PasswordForm password_form);
-
   // Sends the outcome of HTML parsing based form classifier that detects the
   // forms where password generation should be available.
   SaveGenerationFieldDetectedByClassifier(
@@ -176,4 +169,11 @@ interface PasswordManagerClient {
   // by the user typing more characters than the maximum offer size into the
   // password field.
   PasswordGenerationRejectedByTyping();
+
+  // Instructs the browser to presave the form with generated password.
+  PresaveGeneratedPassword(PasswordForm password_form);
+
+  // Instructs the browser that form no longer contains a generated password and
+  // the presaved form should be removed.
+  PasswordNoLongerGenerated(PasswordForm password_form);
 };

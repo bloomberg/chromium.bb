@@ -390,7 +390,7 @@ void PasswordGenerationAgent::GeneratedPasswordAccepted(
   }
   std::unique_ptr<PasswordForm> presaved_form(CreatePasswordFormToPresave());
   if (presaved_form)
-    GetPasswordManagerDriver()->PresaveGeneratedPassword(*presaved_form);
+    GetPasswordManagerClient()->PresaveGeneratedPassword(*presaved_form);
 
   // Call UpdateStateForTextChange after the corresponding PasswordFormManager
   // is notified that the password was generated.
@@ -591,7 +591,7 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
       std::unique_ptr<PasswordForm> presaved_form(
           CreatePasswordFormToPresave());
       if (presaved_form)
-        GetPasswordManagerDriver()->PresaveGeneratedPassword(*presaved_form);
+        GetPasswordManagerClient()->PresaveGeneratedPassword(*presaved_form);
     }
     return false;
   }
@@ -611,7 +611,7 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
         &generation_form_data_->password_elements);
     std::unique_ptr<PasswordForm> presaved_form(CreatePasswordFormToPresave());
     if (presaved_form) {
-      GetPasswordManagerDriver()->PresaveGeneratedPassword(*presaved_form);
+      GetPasswordManagerClient()->PresaveGeneratedPassword(*presaved_form);
     }
   } else if (element.Value().length() > kMaximumOfferSize) {
     // User has rejected the feature and has started typing a password.
@@ -695,7 +695,7 @@ void PasswordGenerationAgent::PasswordNoLongerGenerated() {
       &generation_element_, &generation_form_data_->password_elements);
   std::unique_ptr<PasswordForm> presaved_form(CreatePasswordFormToPresave());
   if (presaved_form)
-    GetPasswordManagerDriver()->PasswordNoLongerGenerated(*presaved_form);
+    GetPasswordManagerClient()->PasswordNoLongerGenerated(*presaved_form);
 }
 
 void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
