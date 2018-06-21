@@ -137,7 +137,12 @@ class ChromeLauncherControllerInitializer
 ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh()
     : notification_observer_(std::make_unique<NotificationObserver>()) {}
 
-ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {}
+ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
+  // Views code observes TabletModeClient and may not be destroyed until
+  // ash::Shell is, so destroy |tablet_mode_client_| after ash::Shell.
+  // Also extensions need to remove observers after PostMainMessageLoopRun().
+  tablet_mode_client_.reset();
+}
 
 void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
@@ -306,10 +311,6 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 
   chromeos::NetworkConnect::Shutdown();
   network_connect_delegate_.reset();
-
-  // Views code observes TabletModeClient and may not be destroyed until
-  // ash::Shell is so destroy |tablet_mode_client_| after ash::Shell.
-  tablet_mode_client_.reset();
 }
 
 class ChromeBrowserMainExtraPartsAsh::NotificationObserver
