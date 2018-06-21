@@ -79,8 +79,6 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
   // tasks are completed.
   scoped_refptr<AudioDestination> destination_;
 
-  String input_device_id_;
-  unsigned number_of_input_channels_;
   const WebAudioLatencyHint latency_hint_;
 };
 

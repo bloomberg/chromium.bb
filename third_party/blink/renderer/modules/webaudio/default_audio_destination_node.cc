@@ -37,7 +37,6 @@ DefaultAudioDestinationHandler::DefaultAudioDestinationHandler(
     AudioNode& node,
     const WebAudioLatencyHint& latency_hint)
     : AudioDestinationHandler(node),
-      number_of_input_channels_(0),
       latency_hint_(latency_hint) {
   // Node-specific default mixing rules.
   channel_count_ = 2;
@@ -78,7 +77,6 @@ void DefaultAudioDestinationHandler::Uninitialize() {
   if (destination_->IsPlaying())
     StopDestination();
 
-  number_of_input_channels_ = 0;
   AudioHandler::Uninitialize();
 }
 
