@@ -36,6 +36,7 @@
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/cors.mojom-blink.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_cors.h"
@@ -354,7 +355,7 @@ void DocumentThreadableLoader::Start(const ResourceRequest& request) {
       is_controlled_by_service_worker = true;
       break;
     case blink::mojom::ControllerServiceWorkerMode::kNoFetchEventHandler:
-      if (Platform::Current()->IsServiceWorkerNetServicificationEnabled())
+      if (ServiceWorkerUtils::IsServicificationEnabled())
         is_controlled_by_service_worker = false;
       else
         is_controlled_by_service_worker = true;

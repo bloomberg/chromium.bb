@@ -10,6 +10,7 @@ include_rules = [
     "+build",
     "+net",
     "+mojo",
+    "+services/network/public/cpp",
     "+skia/public/interfaces/bitmap_skbitmap_struct_traits.h",
     "+testing/gmock/include/gmock",
     "+testing/gtest/include/gtest",
