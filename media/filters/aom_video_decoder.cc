@@ -118,61 +118,16 @@ static void SetColorSpaceForFrame(const aom_image_t* img,
     return;
   }
 
-  ColorSpace color_space = config.color_space();
-  gfx::ColorSpace::PrimaryID primaries = gfx::ColorSpace::PrimaryID::INVALID;
-  gfx::ColorSpace::TransferID transfer = gfx::ColorSpace::TransferID::INVALID;
-  gfx::ColorSpace::MatrixID matrix = gfx::ColorSpace::MatrixID::INVALID;
   gfx::ColorSpace::RangeID range = img->range == AOM_CR_FULL_RANGE
                                        ? gfx::ColorSpace::RangeID::FULL
                                        : gfx::ColorSpace::RangeID::LIMITED;
-  switch (img->cs) {
-    case AOM_CS_BT_601:
-    case AOM_CS_SMPTE_170:
-      primaries = gfx::ColorSpace::PrimaryID::SMPTE170M;
-      transfer = gfx::ColorSpace::TransferID::SMPTE170M;
-      matrix = gfx::ColorSpace::MatrixID::SMPTE170M;
-      color_space = COLOR_SPACE_SD_REC601;
-      break;
-    case AOM_CS_SMPTE_240:
-      primaries = gfx::ColorSpace::PrimaryID::SMPTE240M;
-      transfer = gfx::ColorSpace::TransferID::SMPTE240M;
-      matrix = gfx::ColorSpace::MatrixID::SMPTE240M;
-      break;
-    case AOM_CS_BT_709:
-      primaries = gfx::ColorSpace::PrimaryID::BT709;
-      transfer = gfx::ColorSpace::TransferID::BT709;
-      matrix = gfx::ColorSpace::MatrixID::BT709;
-      color_space = COLOR_SPACE_HD_REC709;
-      break;
-    case AOM_CS_BT_2020_NCL:
-    case AOM_CS_BT_2020_CL:
-      primaries = gfx::ColorSpace::PrimaryID::BT2020;
-      if (img->bit_depth >= 12) {
-        transfer = gfx::ColorSpace::TransferID::BT2020_12;
-      } else if (img->bit_depth >= 10) {
-        transfer = gfx::ColorSpace::TransferID::BT2020_10;
-      } else {
-        transfer = gfx::ColorSpace::TransferID::BT709;
-      }
-      matrix = img->cs == AOM_CS_BT_2020_NCL
-                   ? gfx::ColorSpace::MatrixID::BT2020_NCL
-                   : gfx::ColorSpace::MatrixID::BT2020_CL;
-      break;
-    case AOM_CS_SRGB:
-      primaries = gfx::ColorSpace::PrimaryID::BT709;
-      transfer = gfx::ColorSpace::TransferID::IEC61966_2_1;
-      matrix = gfx::ColorSpace::MatrixID::BT709;
-      break;
-    default:
-      NOTIMPLEMENTED() << "Unsupported color space encountered: " << img->cs;
-      break;
-  }
 
-  // TODO(ccameron): Set a color space even for unspecified values.
-  if (primaries != gfx::ColorSpace::PrimaryID::INVALID)
-    frame->set_color_space(gfx::ColorSpace(primaries, transfer, matrix, range));
-
-  frame->metadata()->SetInteger(VideoFrameMetadata::COLOR_SPACE, color_space);
+  // AOM color space defines match ISO 23001-8:2016 via ISO/IEC 23091-4/ITU-T
+  // H.273.
+  // http://av1-spec.argondesign.com/av1-spec/av1-spec.html#color-config-semantics
+  frame->set_color_space(
+      media::VideoColorSpace(img->cp, img->tc, img->mc, range)
+          .ToGfxColorSpace());
 }
 
 // Copies plane of 8-bit pixels out of a 16-bit values.
@@ -308,8 +263,8 @@ bool AomVideoDecoder::DecodeBuffer(const DecoderBuffer* buffer) {
 
   if (aom_codec_decode(
           aom_decoder_.get(), buffer->data(), buffer->data_size(),
-          reinterpret_cast<void*>(buffer->timestamp().InMicroseconds()),
-          0 /* deadline */) != AOM_CODEC_OK) {
+          reinterpret_cast<void*>(buffer->timestamp().InMicroseconds())) !=
+      AOM_CODEC_OK) {
     const char* detail = aom_codec_error_detail(aom_decoder_.get());
     MEDIA_LOG(ERROR, media_log_)
         << "aom_codec_decode() failed: " << aom_codec_error(aom_decoder_.get())
