@@ -622,7 +622,16 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)configureButtonsForActiveAndCurrentPage {
   self.newTabButton.page = self.currentPage;
-  switch (self.activePage) {
+  if (self.currentPage == TabGridPageRemoteTabs) {
+    [self configureDoneButtonBasedOnPage:self.activePage];
+  } else {
+    [self configureDoneButtonBasedOnPage:self.currentPage];
+  }
+  [self configureCloseAllButtonForCurrentPageAndUndoAvailability];
+}
+
+- (void)configureDoneButtonBasedOnPage:(TabGridPage)page {
+  switch (page) {
     case TabGridPageIncognitoTabs:
       self.doneButton.enabled = !self.incognitoTabsViewController.gridEmpty;
       break;
@@ -630,11 +639,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       self.doneButton.enabled = !self.regularTabsViewController.gridEmpty;
       break;
     case TabGridPageRemoteTabs:
-      NOTREACHED() << "It is not possible to have entered tab grid directly "
-                      "into remote tabs.";
+      NOTREACHED() << "The done button should not be configured based on the "
+                      "contents of the recent tabs page.";
       break;
   }
-  [self configureCloseAllButtonForCurrentPageAndUndoAvailability];
 }
 
 - (void)configureCloseAllButtonForCurrentPageAndUndoAvailability {
@@ -794,7 +802,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 #pragma mark - Control actions
 
 - (void)doneButtonTapped:(id)sender {
-  [self.tabPresentationDelegate showActiveTabInPage:self.activePage];
+  TabGridPage newActivePage = self.currentPage;
+  if (self.currentPage == TabGridPageRemoteTabs) {
+    newActivePage = self.activePage;
+  }
+  self.activePage = newActivePage;
+  [self.tabPresentationDelegate showActiveTabInPage:newActivePage];
 }
 
 - (void)closeAllButtonTapped:(id)sender {
