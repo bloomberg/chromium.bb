@@ -70,6 +70,8 @@ def GetAffectedOverlays(change, manifest, all_overlays):
   checkout = change.GetCheckout(manifest, strict=False)
   if checkout:
     git_repo = checkout.GetPath(absolute=True)
+    logging.debug('%s modifies %s', cros_patch.GetChangesAsString([change]),
+                  git_repo)
 
     # The whole git repo is an overlay. Return it.
     # Example: src/private-overlays/overlay-x86-zgb-private
@@ -245,12 +247,21 @@ class CategorizeChanges(object):
     logging.info('packages under test\n: %s', pp.pformat(packages_under_test))
 
     for change in changes:
-      packages = workon_dict.get((change.project, change.tracking_branch))
-      if packages:
-        # The CL modifies a workon package.
-        workon_changes.add(change)
-        if all(x not in packages_under_test for x in packages):
-          irrelevant_workon_changes.add(change)
+      # Let's catch the exception here instead of GetIrrelevantChanges.
+      # This is so that we don't skip categorizing the rest of changes.
+      try:
+        packages = workon_dict.get((change.project, change.tracking_branch),
+                                   [])
+        logging.info('%s affects workon packages %s',
+                     cros_patch.GetChangesAsString([change]),
+                     packages)
+        if packages:
+          # The CL modifies a workon package.
+          workon_changes.add(change)
+          if all(x not in packages_under_test for x in packages):
+            irrelevant_workon_changes.add(change)
+      except Exception as e:
+        logging.warning('Unable to categorize workon change: %s', e)
 
     return workon_changes, irrelevant_workon_changes
 
@@ -330,6 +341,16 @@ class CategorizeChanges(object):
     # not included in |changes|.
     overlay_changes, irrelevant_overlay_changes = cls.ClassifyOverlayChanges(
         untriaged_changes, config, build_root, manifest, packages_under_test)
+    if not overlay_changes:
+      logging.debug('There are no overlay based changes.')
+    else:
+      logging.debug('Overlay based changes: %s',
+                    cros_patch.GetChangesAsString(overlay_changes))
+    if not irrelevant_overlay_changes:
+      logging.debug('There are no irrelevant overlay based changes.')
+    else:
+      logging.debug('Irrelevant Overlay based changes: %s',
+                    cros_patch.GetChangesAsString(irrelevant_overlay_changes))
     untriaged_changes -= overlay_changes
     irrelevant_changes |= irrelevant_overlay_changes
 
@@ -347,6 +368,18 @@ class CategorizeChanges(object):
       else:
         untriaged_changes -= workon_changes
         irrelevant_changes |= irrelevant_workon_changes
+        if not workon_changes:
+          logging.debug('There are no workon packages based changes.')
+        else:
+          logging.debug('Workon packages based changes: %s',
+                        cros_patch.GetChangesAsString(workon_changes))
+        if not irrelevant_workon_changes:
+          logging.debug('There are no irrelevant workon packages based'
+                        ' changes.')
+        else:
+          logging.debug('Irrelevant Workon packages based changes: %s',
+                        cros_patch.
+                        GetChangesAsString(irrelevant_workon_changes))
 
     return irrelevant_changes
 

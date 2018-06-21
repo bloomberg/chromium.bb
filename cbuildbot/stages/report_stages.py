@@ -1246,8 +1246,6 @@ class DetectRelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
             relevant_changes, constants.CL_ACTION_RELEVANT_TO_SLAVE)
 
     if relevant_changes:
-      logging.info('Below are the relevant changes for board: %s.',
-                   self._current_board)
       validation_pool.ValidationPool.PrintLinksToChanges(
           list(relevant_changes))
     else:
