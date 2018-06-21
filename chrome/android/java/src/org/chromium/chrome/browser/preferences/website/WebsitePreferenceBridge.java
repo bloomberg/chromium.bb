@@ -60,65 +60,64 @@ public abstract class WebsitePreferenceBridge {
         return list;
     }
 
+    private static void insertInfoIntoList(@PermissionInfo.Type int type,
+            ArrayList<PermissionInfo> list, String origin, String embedder) {
+        if (type == PermissionInfo.Type.CAMERA || type == PermissionInfo.Type.MICROPHONE) {
+            for (PermissionInfo info : list) {
+                if (info.getOrigin().equals(origin) && info.getEmbedder().equals(embedder)) {
+                    return;
+                }
+            }
+        }
+        list.add(new PermissionInfo(type, origin, embedder, false));
+    }
+
     @CalledByNative
     private static void insertCameraInfoIntoList(
             ArrayList<PermissionInfo> list, String origin, String embedder) {
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).getOrigin().equals(origin)
-                    && list.get(i).getEmbedder().equals(embedder)) {
-                return;
-            }
-        }
-        list.add(new PermissionInfo(PermissionInfo.Type.CAMERA, origin, embedder, false));
+        insertInfoIntoList(PermissionInfo.Type.CAMERA, list, origin, embedder);
     }
 
     @CalledByNative
     private static void insertClipboardInfoIntoList(
             ArrayList<PermissionInfo> list, String origin, String embedder) {
-        list.add(new PermissionInfo(PermissionInfo.Type.CLIPBOARD, origin, embedder, false));
+        insertInfoIntoList(PermissionInfo.Type.CLIPBOARD, list, origin, embedder);
     }
 
     @CalledByNative
     private static void insertGeolocationInfoIntoList(
             ArrayList<PermissionInfo> list, String origin, String embedder) {
-        list.add(new PermissionInfo(PermissionInfo.Type.GEOLOCATION, origin, embedder, false));
+        insertInfoIntoList(PermissionInfo.Type.GEOLOCATION, list, origin, embedder);
     }
 
     @CalledByNative
     private static void insertMicrophoneInfoIntoList(
             ArrayList<PermissionInfo> list, String origin, String embedder) {
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).getOrigin().equals(origin)
-                    && list.get(i).getEmbedder().equals(embedder)) {
-                return;
-            }
-        }
-        list.add(new PermissionInfo(PermissionInfo.Type.MICROPHONE, origin, embedder, false));
+        insertInfoIntoList(PermissionInfo.Type.MICROPHONE, list, origin, embedder);
     }
 
     @CalledByNative
     private static void insertMidiInfoIntoList(
             ArrayList<PermissionInfo> list, String origin, String embedder) {
-        list.add(new PermissionInfo(PermissionInfo.Type.MIDI, origin, embedder, false));
+        insertInfoIntoList(PermissionInfo.Type.MIDI, list, origin, embedder);
     }
 
     @CalledByNative
     private static void insertNotificationIntoList(
             ArrayList<PermissionInfo> list, String origin, String embedder) {
-        list.add(new PermissionInfo(PermissionInfo.Type.NOTIFICATION, origin, embedder, false));
+        insertInfoIntoList(PermissionInfo.Type.NOTIFICATION, list, origin, embedder);
     }
 
     @CalledByNative
     private static void insertProtectedMediaIdentifierInfoIntoList(
             ArrayList<PermissionInfo> list, String origin, String embedder) {
-        list.add(new PermissionInfo(
-                PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER, origin, embedder, false));
+        insertInfoIntoList(PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER, list, origin, embedder);
     }
 
     @CalledByNative
     private static void insertSensorsInfoIntoList(
             ArrayList<PermissionInfo> list, String origin, String embedder) {
-        list.add(new PermissionInfo(PermissionInfo.Type.SENSORS, origin, embedder, false));
+        insertInfoIntoList(PermissionInfo.Type.SENSORS, list, origin, embedder);
     }
 
     @CalledByNative
