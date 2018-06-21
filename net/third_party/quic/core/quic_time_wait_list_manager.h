@@ -72,14 +72,12 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
 
   // Adds the given connection_id to time wait state for time_wait_period_.
   // If |termination_packets| are provided, copies of these packets will be sent
-  // when a packet with this connection ID is processed. If no termination
-  // packets are provided, then a PUBLIC_RESET will be sent with the specified
-  // |version|. Any termination packets will be move from |termination_packets|
-  // and will become owned by the manager. |action| specifies what the time wait
-  // list manager should do when processing packets of the connection.
+  // when a packet with this connection ID is processed. Any termination packets
+  // will be move from |termination_packets| and will become owned by the
+  // manager. |action| specifies what the time wait list manager should do when
+  // processing packets of the connection.
   virtual void AddConnectionIdToTimeWait(
       QuicConnectionId connection_id,
-      ParsedQuicVersion version,
       bool ietf_quic,
       TimeWaitAction action,
       std::vector<std::unique_ptr<QuicEncryptedPacket>>* termination_packets);
@@ -110,11 +108,6 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // If necessary, trims the oldest connections from the time-wait list until
   // the size is under the configured maximum.
   void TrimTimeWaitListIfNeeded();
-
-  // Given a ConnectionId that exists in the time wait list, returns the
-  // ParsedQuicVersion associated with it.
-  ParsedQuicVersion GetQuicVersionFromConnectionId(
-      QuicConnectionId connection_id);
 
   // The number of connections on the time-wait list.
   size_t num_connections() const { return connection_id_map_.size(); }
@@ -184,7 +177,6 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // connection_id.
   struct ConnectionIdData {
     ConnectionIdData(int num_packets,
-                     ParsedQuicVersion version,
                      bool ietf_quic,
                      QuicTime time_added,
                      TimeWaitAction action);
@@ -195,7 +187,6 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
     ~ConnectionIdData();
 
     int num_packets;
-    ParsedQuicVersion version;
     bool ietf_quic;
     QuicTime time_added;
     // These packets may contain CONNECTION_CLOSE frames, or SREJ messages.

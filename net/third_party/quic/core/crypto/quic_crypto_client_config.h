@@ -343,6 +343,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     user_agent_id_ = user_agent_id;
   }
 
+  // Returns the user_agent_id that will be provided in the client hello
+  // handshake message.
+  const QuicString& user_agent_id() const { return user_agent_id_; }
+
   // Saves the |alpn| that will be passed in QUIC's CHLO message.
   void set_alpn(const QuicString& alpn) { alpn_ = alpn; }
 

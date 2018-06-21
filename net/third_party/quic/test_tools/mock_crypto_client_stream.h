@@ -78,7 +78,6 @@ class MockCryptoClientStream : public QuicCryptoClientStream,
 
  private:
   void SetConfigNegotiated();
-
   bool encryption_established_;
   bool handshake_confirmed_;
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters>

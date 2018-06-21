@@ -31,6 +31,7 @@
 #include "net/third_party/quic/core/quic_alarm_factory.h"
 #include "net/third_party/quic/core/quic_blocked_writer_interface.h"
 #include "net/third_party/quic/core/quic_connection_stats.h"
+#include "net/third_party/quic/core/quic_debug_info_provider_interface.h"
 #include "net/third_party/quic/core/quic_framer.h"
 #include "net/third_party/quic/core/quic_one_block_arena.h"
 #include "net/third_party/quic/core/quic_packet_creator.h"
@@ -307,7 +308,8 @@ class QUIC_EXPORT_PRIVATE QuicConnectionHelperInterface {
 };
 
 class QUIC_EXPORT_PRIVATE QuicConnection
-    : public QuicFramerVisitorInterface,
+    : public QuicDebugInfoProviderInterface,
+      public QuicFramerVisitorInterface,
       public QuicBlockedWriterInterface,
       public QuicPacketGenerator::DelegateInterface,
       public QuicSentPacketManager::NetworkChangeVisitor {
@@ -451,6 +453,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     return framer_.supported_versions();
   }
 
+  // From QuicConnectionDebugInfoProviderInterface
+  QuicString DebugStringForAckProcessing() const override;
+
   // From QuicFramerVisitorInterface
   void OnError(QuicFramer* framer) override;
   bool OnProtocolVersionMismatch(ParsedQuicVersion received_version) override;
@@ -542,19 +547,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     packet_generator_.set_debug_delegate(visitor);
   }
   const QuicSocketAddress& self_address() const { return self_address_; }
-  const QuicSocketAddress& peer_address() const {
-    if (enable_server_proxy_) {
-      return direct_peer_address_;
-    }
-    return peer_address_;
-  }
+  const QuicSocketAddress& peer_address() const { return direct_peer_address_; }
   const QuicSocketAddress& effective_peer_address() const {
-    if (enable_server_proxy_) {
-      return effective_peer_address_;
-    }
-    QUIC_BUG << "effective_peer_address() should only be called when "
-                "enable_server_proxy_ is true.";
-    return peer_address_;
+    return effective_peer_address_;
   }
   QuicConnectionId connection_id() const { return connection_id_; }
   const QuicClock* clock() const { return clock_; }
@@ -795,8 +790,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     per_packet_options_ = options;
   }
 
-  bool IsServerProxyEnabled() const { return enable_server_proxy_; }
-
   bool IsPathDegrading() const { return is_path_degrading_; }
 
   bool deprecate_scheduler() const { return deprecate_scheduler_; }
@@ -808,13 +801,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Send a packet to the peer, and takes ownership of the packet if the packet
   // cannot be written immediately.
   virtual void SendOrQueuePacket(SerializedPacket* packet);
-
-  // Called after a packet is received from a new peer address and is decrypted.
-  // Starts validation of peer's address change.
-  virtual void StartPeerMigration(AddressChangeType peer_migration_type);
-
-  // Called when a peer address migration is validated.
-  virtual void OnPeerMigrationValidated();
 
   // Called after a packet is received from a new effective peer address and is
   // decrypted. Starts validation of effective peer's address change. Calls
@@ -850,10 +836,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Returns the current per-packet options for the connection.
   PerPacketOptions* per_packet_options() { return per_packet_options_; }
-
-  AddressChangeType active_peer_migration_type() {
-    return active_peer_migration_type_;
-  }
 
   AddressChangeType active_effective_peer_migration_type() const {
     return active_effective_peer_migration_type_;
@@ -1022,12 +1004,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // true as soon as |current_packet_content_| is set to
   // SECOND_FRAME_IS_PADDING.
   bool is_current_packet_connectivity_probing_;
-  // Caches the current peer migration type if a peer migration might be
-  // initiated. As soon as the current packet is confirmed not a connectivity
-  // probe, peer migration will start.
-  // TODO(wub): Remove once quic_reloadable_flag_quic_enable_server_proxy2 is
-  // deprecated.
-  AddressChangeType current_peer_migration_type_;
   // Caches the current effective peer migration type if a effective peer
   // migration might be initiated. As soon as the current packet is confirmed
   // not a connectivity probe, effective peer migration will start.
@@ -1057,17 +1033,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // |effective_peer_address_| to be the address of the endpoint behind the
   // proxy if the connection is proxied.
   QuicSocketAddress effective_peer_address_;
-
-  // Records change type when the peer initiates migration to a new peer
-  // address. Reset to NO_CHANGE after peer migration is validated.
-  // TODO(wub): Remove once quic_reloadable_flag_quic_enable_server_proxy2 is
-  // deprecated.
-  AddressChangeType active_peer_migration_type_;
-
-  // Records highest sent packet number when peer migration is started.
-  // TODO(wub): Remove once quic_reloadable_flag_quic_enable_server_proxy2 is
-  // deprecated.
-  QuicPacketNumber highest_packet_sent_before_peer_migration_;
 
   // Records change type when the effective peer initiates migration to a new
   // address. Reset to NO_CHANGE after effective peer migration is validated.
@@ -1338,13 +1303,14 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // supports_release_time_ is true.
   const QuicTime::Delta pace_time_into_future_;
 
-  // Latched value of quic_reloadable_flag_quic_enable_server_proxy2.
-  const bool enable_server_proxy_;
-
   // Latched value of quic_reloadable_flag_quic_deprecate_scoped_scheduler2.
   // TODO(fayang): Remove ScopedRetransmissionScheduler when deprecating
   // quic_reloadable_flag_quic_deprecate_scoped_scheduler2.
   const bool deprecate_scheduler_;
+
+  // Latched value of
+  // quic_reloadable_flag_quic_no_send_alarm_in_process_packet_if_write_blocked.
+  const bool no_send_alarm_in_process_packet_if_write_blocked_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

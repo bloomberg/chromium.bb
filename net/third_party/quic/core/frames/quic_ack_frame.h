@@ -66,7 +66,7 @@ class QUIC_EXPORT_PRIVATE PacketNumberQueue {
 
   // Returns the number of unique packets stored in the queue. Inefficient; only
   // exposed for testing.
-  size_t NumPacketsSlow() const;
+  QuicPacketCount NumPacketsSlow() const;
 
   // Returns the number of disjoint packet number intervals contained in the
   // queue.

@@ -138,7 +138,7 @@ class StatelessConnectionTerminator {
     creator_.Flush();
     DCHECK_EQ(1u, collector_.packets()->size());
     time_wait_list_manager_->AddConnectionIdToTimeWait(
-        connection_id_, framer_->version(), framer_->last_packet_is_ietf_quic(),
+        connection_id_, framer_->last_packet_is_ietf_quic(),
         QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
         collector_.packets());
   }
@@ -167,7 +167,7 @@ class StatelessConnectionTerminator {
       creator_.Flush();
     }
     time_wait_list_manager_->AddConnectionIdToTimeWait(
-        connection_id_, framer_->version(), framer_->last_packet_is_ietf_quic(),
+        connection_id_, framer_->last_packet_is_ietf_quic(),
         QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
         collector_.packets());
     DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id_));
@@ -362,9 +362,11 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
   }
 
   if (time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id)) {
-    // Set the framer's version based on the recorded version for this
-    // connection and continue processing for non-public-reset packets.
-    return HandlePacketForTimeWait(header);
+    // This connection ID is already in time-wait state.
+    time_wait_list_manager_->ProcessPacket(current_self_address_,
+                                           current_peer_address_,
+                                           header.destination_connection_id);
+    return false;
   }
 
   // The packet has an unknown connection ID.
@@ -398,16 +400,6 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
 
 bool QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
   QuicConnectionId connection_id = header.destination_connection_id;
-
-  if (time_wait_list_manager_->IsConnectionIdInTimeWait(
-          header.destination_connection_id)) {
-    // This connection ID is already in time-wait state.
-    time_wait_list_manager_->ProcessPacket(current_self_address_,
-                                           current_peer_address_,
-                                           header.destination_connection_id);
-    return false;
-  }
-
   // Packet's connection ID is unknown.  Apply the validity checks.
   QuicPacketFate fate = ValidityChecks(header);
   if (fate == kFateProcess) {
@@ -441,7 +433,7 @@ void QuicDispatcher::ProcessUnauthenticatedHeaderFate(
         QUIC_DLOG(INFO) << "Adding connection ID " << connection_id
                         << "to time-wait list.";
         StatelesslyTerminateConnection(
-            connection_id, framer_.version(), framer()->GetLastPacketFormat(),
+            connection_id, framer()->GetLastPacketFormat(),
             QUIC_HANDSHAKE_FAILED, "Reject connection",
             quic::QuicTimeWaitListManager::SEND_STATELESS_RESET);
       }
@@ -535,8 +527,7 @@ void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
     action = QuicTimeWaitListManager::DO_NOTHING;
   }
   time_wait_list_manager_->AddConnectionIdToTimeWait(
-      it->first, connection->version(),
-      connection->transport_version() > QUIC_VERSION_43, action,
+      it->first, connection->transport_version() > QUIC_VERSION_43, action,
       connection->termination_packets());
   session_map_.erase(it);
 }
@@ -643,7 +634,6 @@ void QuicDispatcher::OnConnectionAddedToTimeWaitList(
 
 void QuicDispatcher::StatelesslyTerminateConnection(
     QuicConnectionId connection_id,
-    const ParsedQuicVersion& version,
     PacketHeaderFormat format,
     QuicErrorCode error_code,
     const QuicString& error_details,
@@ -658,7 +648,7 @@ void QuicDispatcher::StatelesslyTerminateConnection(
   }
 
   time_wait_list_manager_->AddConnectionIdToTimeWait(
-      connection_id, version, format != GOOGLE_QUIC_PACKET, action,
+      connection_id, format != GOOGLE_QUIC_PACKET, action,
       /*termination_packets=*/nullptr);
 }
 
@@ -829,7 +819,7 @@ void QuicDispatcher::OnExpiredPackets(
     QuicConnectionId connection_id,
     BufferedPacketList early_arrived_packets) {
   StatelesslyTerminateConnection(
-      connection_id, framer_.version(),
+      connection_id,
       early_arrived_packets.ietf_quic ? IETF_QUIC_LONG_HEADER_PACKET
                                       : GOOGLE_QUIC_PACKET,
       QUIC_HANDSHAKE_FAILED, "Packets buffered for too long",
@@ -909,9 +899,8 @@ void QuicDispatcher::ProcessChlo() {
   if (!accept_new_connections_) {
     // Don't any create new connection.
     StatelesslyTerminateConnection(
-        current_connection_id(), framer_.version(),
-        framer()->GetLastPacketFormat(), QUIC_HANDSHAKE_FAILED,
-        "Stop accepting new connections",
+        current_connection_id(), framer()->GetLastPacketFormat(),
+        QUIC_HANDSHAKE_FAILED, "Stop accepting new connections",
         quic::QuicTimeWaitListManager::SEND_STATELESS_RESET);
     // Time wait list will reject the packet correspondingly.
     time_wait_list_manager()->ProcessPacket(current_self_address(),
@@ -960,22 +949,6 @@ const QuicSocketAddress QuicDispatcher::GetClientAddress() const {
 }
 
 bool QuicDispatcher::ShouldDestroySessionAsynchronously() {
-  return true;
-}
-
-bool QuicDispatcher::HandlePacketForTimeWait(const QuicPacketHeader& header) {
-  if (header.reset_flag) {
-    // Public reset packets do not have packet numbers, so ignore the packet.
-    return false;
-  }
-
-  // Switch the framer to the correct version, so that the packet number can
-  // be parsed correctly.
-  framer_.set_version(time_wait_list_manager_->GetQuicVersionFromConnectionId(
-      header.destination_connection_id));
-
-  // Continue parsing the packet to extract the packet number.  Then
-  // send it to the time wait manager in OnUnathenticatedHeader.
   return true;
 }
 

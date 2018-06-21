@@ -216,9 +216,7 @@ class QuicDispatcherTest : public QuicTest {
         time_wait_list_manager_(nullptr),
         session1_(nullptr),
         session2_(nullptr),
-        store_(nullptr) {
-    SetQuicReloadableFlag(quic_respect_ietf_header, true);
-  }
+        store_(nullptr) {}
 
   void SetUp() override {
     dispatcher_->InitializeWithWriter(new QuicDefaultPacketWriter(1));
@@ -562,8 +560,7 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   // wait list manager.
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, connection_id))
       .Times(1);
-  EXPECT_CALL(*time_wait_list_manager_,
-              AddConnectionIdToTimeWait(_, _, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
       .Times(0);
   ProcessPacket(client_address, connection_id, true, "data");
 }
@@ -579,8 +576,7 @@ TEST_F(QuicDispatcherTest, NoVersionPacketToTimeWaitListManager) {
       .Times(0);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, connection_id))
       .Times(1);
-  EXPECT_CALL(*time_wait_list_manager_,
-              AddConnectionIdToTimeWait(_, _, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
       .Times(1);
   ProcessPacket(client_address, connection_id, false, SerializeCHLO());
 }
@@ -596,8 +592,7 @@ TEST_F(QuicDispatcherTest, ProcessPacketWithZeroPort) {
               CreateQuicSession(1, client_address, QuicStringPiece("hq")))
       .Times(0);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, _)).Times(0);
-  EXPECT_CALL(*time_wait_list_manager_,
-              AddConnectionIdToTimeWait(_, _, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
       .Times(0);
   ProcessPacket(client_address, 1, true, SerializeCHLO());
 }
@@ -642,8 +637,7 @@ TEST_F(QuicDispatcherTest, TooBigSeqNoPacketToTimeWaitListManager) {
       .Times(0);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, 1)).Times(1);
   EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, 2)).Times(1);
-  EXPECT_CALL(*time_wait_list_manager_,
-              AddConnectionIdToTimeWait(_, _, _, _, _))
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
       .Times(2);
   // A packet whose packet number is one to large to be allowed to start a
   // connection.
@@ -1183,15 +1177,13 @@ TEST_F(QuicDispatcherTestStrayPacketConnectionId,
   if (CurrentSupportedVersions()[0].transport_version > QUIC_VERSION_43) {
     // This IETF packet has invalid connection ID length.
     EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, _)).Times(0);
-    EXPECT_CALL(*time_wait_list_manager_,
-                AddConnectionIdToTimeWait(_, _, _, _, _))
+    EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
         .Times(0);
   } else {
     // This GQUIC packet is considered as IETF QUIC packet with short header
     // with unacceptable packet number.
     EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, _)).Times(1);
-    EXPECT_CALL(*time_wait_list_manager_,
-                AddConnectionIdToTimeWait(_, _, _, _, _))
+    EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
         .Times(1);
   }
   ProcessPacket(client_address, connection_id, true, "data",
@@ -2114,7 +2106,7 @@ TEST_F(AsyncGetProofTest, BasicReject) {
     InSequence s;
     EXPECT_CALL(check, Call(1));
     EXPECT_CALL(*time_wait_list_manager_,
-                AddConnectionIdToTimeWait(conn_id, _, _, _, _));
+                AddConnectionIdToTimeWait(conn_id, _, _, _));
     EXPECT_CALL(*time_wait_list_manager_,
                 ProcessPacket(_, client_addr_, conn_id));
 
@@ -2242,7 +2234,7 @@ TEST_F(AsyncGetProofTest, MultipleReject) {
     EXPECT_CALL(*dispatcher_, CreateQuicSession(conn_id_2, client_addr_, _))
         .Times(0);
     EXPECT_CALL(*time_wait_list_manager_,
-                AddConnectionIdToTimeWait(conn_id_2, _, _, _, _));
+                AddConnectionIdToTimeWait(conn_id_2, _, _, _));
     EXPECT_CALL(*time_wait_list_manager_,
                 ProcessPacket(_, client_addr_, conn_id_2));
 
@@ -2256,7 +2248,7 @@ TEST_F(AsyncGetProofTest, MultipleReject) {
 
     EXPECT_CALL(check, Call(4));
     EXPECT_CALL(*time_wait_list_manager_,
-                AddConnectionIdToTimeWait(conn_id_1, _, _, _, _));
+                AddConnectionIdToTimeWait(conn_id_1, _, _, _));
     EXPECT_CALL(*time_wait_list_manager_,
                 ProcessPacket(_, client_addr_, conn_id_1));
   }
@@ -2316,7 +2308,7 @@ TEST_F(AsyncGetProofTest, MultipleIdenticalReject) {
                 CreateQuicSession(conn_id_1, client_addr_, QuicStringPiece()))
         .Times(0);
     EXPECT_CALL(*time_wait_list_manager_,
-                AddConnectionIdToTimeWait(conn_id_1, _, _, _, _));
+                AddConnectionIdToTimeWait(conn_id_1, _, _, _));
     EXPECT_CALL(*time_wait_list_manager_,
                 ProcessPacket(_, client_addr_, conn_id_1));
   }

@@ -37,9 +37,7 @@ GeneralLossAlgorithm::GeneralLossAlgorithm(LossDetectionType loss_type)
                             ? kDefaultAdaptiveLossDelayShift
                             : kDefaultLossDelayShift),
       largest_previously_acked_(0),
-      largest_lost_(0),
-      detect_loss_incrementally_(
-          GetQuicReloadableFlag(quic_incremental_loss_detection)) {}
+      largest_lost_(0) {}
 
 LossDetectionType GeneralLossAlgorithm::GetLossDetectionType() const {
   return loss_type_;
@@ -70,8 +68,7 @@ void GeneralLossAlgorithm::DetectLosses(
                max_rtt + (max_rtt >> reordering_shift_));
   QuicPacketNumber packet_number = unacked_packets.GetLeastUnacked();
   QuicUnackedPacketMap::const_iterator it = unacked_packets.begin();
-  if (detect_loss_incrementally_ && largest_lost_ >= packet_number) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_incremental_loss_detection);
+  if (largest_lost_ >= packet_number) {
     if (largest_lost_ > unacked_packets.largest_sent_packet()) {
       QUIC_BUG << "largest_lost: " << largest_lost_
                << " is greater than largest_sent_packet: "
@@ -129,7 +126,7 @@ void GeneralLossAlgorithm::DetectLosses(
     }
   }
   largest_previously_acked_ = largest_newly_acked;
-  if (detect_loss_incrementally_ && !packets_lost->empty()) {
+  if (!packets_lost->empty()) {
     DCHECK_LT(largest_lost_, packets_lost->back().packet_number);
     largest_lost_ = packets_lost->back().packet_number;
   }

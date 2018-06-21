@@ -199,8 +199,6 @@ void MockCryptoClientStream::SetConfigNegotiated() {
   config.SetIdleNetworkTimeout(
       QuicTime::Delta::FromSeconds(2 * kMaximumIdleTimeoutSecs),
       QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs));
-  config.SetMaxStreamsPerConnection(kDefaultMaxStreamsPerConnection / 2,
-                                    kDefaultMaxStreamsPerConnection / 2);
   config.SetBytesForConnectionIdToSend(PACKET_8BYTE_CONNECTION_ID);
   config.SetMaxIncomingDynamicStreamsToSend(kDefaultMaxStreamsPerConnection /
                                             2);

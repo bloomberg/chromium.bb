@@ -190,7 +190,8 @@ class TestQuicCryptoClientStream : public TestQuicCryptoStream {
             QuicServerId("test.example.com", 443),
             proof_verifier_.get(),
             ssl_ctx_.get(),
-            crypto_test_utils::ProofVerifyContextForTesting())) {}
+            crypto_test_utils::ProofVerifyContextForTesting(),
+            "quic-tester")) {}
 
   ~TestQuicCryptoClientStream() override = default;
 

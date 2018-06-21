@@ -198,12 +198,6 @@ enum QuicIetfFrameType : uint8_t {
   // whether the frame is a stream frame or not, and then examine each
   // bit specifically when/as needed.
   IETF_STREAM = 0x10,
-
-  // Temporary, for testing only. To be removed when Version 99 is finalized.
-  IETF_TEMP_GOAWAY_FRAME = 0xf0,
-  IETF_TEMP_WINDOW_UPDATE_FRAME = 0xf1,
-  IETF_TEMP_STOP_WAITING_FRAME = 0xf2,
-  IETF_TEMP_BLOCKED_FRAME = 0xf3
 };
 // Masks for the bits that indicate the frame is a Stream frame vs the
 // bits used as flags.

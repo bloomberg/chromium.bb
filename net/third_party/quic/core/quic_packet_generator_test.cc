@@ -151,7 +151,6 @@ class QuicPacketGeneratorTest : public QuicTest {
                 Perspective::IS_CLIENT),
         generator_(42, &framer_, &random_generator_, &delegate_, &producer_),
         creator_(QuicPacketGeneratorPeer::GetPacketCreator(&generator_)) {
-    SetQuicReloadableFlag(quic_respect_ietf_header, true);
     creator_->SetEncrypter(
         ENCRYPTION_FORWARD_SECURE,
         QuicMakeUnique<NullEncrypter>(Perspective::IS_CLIENT));
@@ -710,7 +709,9 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {
   // Send some data and a control frame
   MakeIOVector("quux", &iov_);
   generator_.ConsumeData(3, &iov_, 1u, iov_.iov_len, 0, NO_FIN);
-  generator_.AddControlFrame(QuicFrame(CreateGoAwayFrame()));
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    generator_.AddControlFrame(QuicFrame(CreateGoAwayFrame()));
+  }
   EXPECT_TRUE(generator_.HasPendingStreamFramesOfStream(3));
 
   // All five frames will be flushed out in a single packet.
@@ -723,7 +724,11 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {
 
   PacketContents contents;
   contents.num_ack_frames = 1;
-  contents.num_goaway_frames = 1;
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    contents.num_goaway_frames = 1;
+  } else {
+    contents.num_goaway_frames = 0;
+  }
   contents.num_rst_stream_frames = 1;
   contents.num_stream_frames = 1;
   CheckPacketContains(contents, 0);
@@ -759,7 +764,9 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations2) {
       generator_.ConsumeData(3, &iov_, 1u, iov_.iov_len, 0, FIN);
   EXPECT_EQ(data_len, consumed.bytes_consumed);
   EXPECT_TRUE(consumed.fin_consumed);
-  generator_.AddControlFrame(QuicFrame(CreateGoAwayFrame()));
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    generator_.AddControlFrame(QuicFrame(CreateGoAwayFrame()));
+  }
 
   generator_.Flush();
   EXPECT_FALSE(generator_.HasQueuedFrames());
@@ -774,7 +781,11 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations2) {
 
   // The second should have the remainder of the stream data.
   PacketContents contents2;
-  contents2.num_goaway_frames = 1;
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    contents2.num_goaway_frames = 1;
+  } else {
+    contents2.num_goaway_frames = 0;
+  }
   contents2.num_stream_frames = 1;
   CheckPacketContains(contents2, 1);
 }

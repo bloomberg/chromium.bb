@@ -2061,6 +2061,10 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceAllSupportedVersion) {
 }
 
 TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
+  if (version_ == quic::QUIC_VERSION_99) {
+    // Not available under version 99
+    return;
+  }
   MockQuicData mock_quic_data;
   quic::QuicStreamOffset header_stream_offset = 0;
   mock_quic_data.AddWrite(

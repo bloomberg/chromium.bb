@@ -31,6 +31,7 @@
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
+#include "net/third_party/quic/platform/api/quic_string_utils.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
 using std::string;
@@ -239,6 +240,21 @@ uint8_t GetConnectionIdLengthValue(QuicConnectionIdLength length) {
   return static_cast<uint8_t>(length - kConnectionIdLengthAdjustment);
 }
 
+class TrackedDataReader : public QuicDataReader {
+ public:
+  TrackedDataReader(const char* data,
+                    const size_t len,
+                    Endianness endianness,
+                    QuicDataReader** preader)
+      : QuicDataReader(data, len, endianness), preader_(preader) {
+    *preader_ = this;
+  }
+  ~TrackedDataReader() { *preader_ = nullptr; }
+
+ private:
+  QuicDataReader** preader_;
+};
+
 }  // namespace
 
 QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
@@ -262,7 +278,8 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
       last_timestamp_(QuicTime::Delta::Zero()),
       data_producer_(nullptr),
       use_incremental_ack_processing_(
-          GetQuicReloadableFlag(quic_use_incremental_ack_processing4)) {
+          GetQuicReloadableFlag(quic_use_incremental_ack_processing4)),
+      decrypted_payload_reader_(nullptr) {
   if (use_incremental_ack_processing_) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_use_incremental_ack_processing4);
   }
@@ -658,6 +675,35 @@ size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
           return 0;
         }
         break;
+      case APPLICATION_CLOSE_FRAME:
+        set_detailed_error(
+            "Attempt to append APPLICATION_CLOSE frame and not in version 99.");
+        return RaiseError(QUIC_INTERNAL_ERROR);
+      case NEW_CONNECTION_ID_FRAME:
+        set_detailed_error(
+            "Attempt to append NEW_CONNECTION_ID frame and not in version 99.");
+        return RaiseError(QUIC_INTERNAL_ERROR);
+      case MAX_STREAM_ID_FRAME:
+        set_detailed_error(
+            "Attempt to append MAX_STREAM_ID frame and not in version 99.");
+        return RaiseError(QUIC_INTERNAL_ERROR);
+      case STREAM_ID_BLOCKED_FRAME:
+        set_detailed_error(
+            "Attempt to append STREAM_ID_BLOCKED frame and not in version 99.");
+        return RaiseError(QUIC_INTERNAL_ERROR);
+      case PATH_RESPONSE_FRAME:
+        set_detailed_error(
+            "Attempt to append PATH_RESPONSE frame and not in version 99.");
+        return RaiseError(QUIC_INTERNAL_ERROR);
+      case PATH_CHALLENGE_FRAME:
+        set_detailed_error(
+            "Attempt to append PATH_CHALLENGE frame and not in version 99.");
+        return RaiseError(QUIC_INTERNAL_ERROR);
+      case STOP_SENDING_FRAME:
+        set_detailed_error(
+            "Attempt to append STOP_SENDING frame and not in version 99.");
+        return RaiseError(QUIC_INTERNAL_ERROR);
+
       default:
         RaiseError(QUIC_INVALID_FRAME_DATA);
         QUIC_BUG << "QUIC_INVALID_FRAME_DATA";
@@ -710,12 +756,9 @@ size_t QuicFramer::BuildIetfDataPacket(const QuicPacketHeader& header,
         }
         break;
       case STOP_WAITING_FRAME:
-        if (!AppendStopWaitingFrame(header, *frame.stop_waiting_frame,
-                                    &writer)) {
-          QUIC_BUG << "AppendStopWaitingFrame failed";
-          return 0;
-        }
-        break;
+        set_detailed_error(
+            "Attempt to append STOP WAITING frame in version 99.");
+        return RaiseError(QUIC_INTERNAL_ERROR);
       case MTU_DISCOVERY_FRAME:
         // MTU discovery frames are serialized as ping frames.
         QUIC_FALLTHROUGH_INTENDED;
@@ -736,11 +779,8 @@ size_t QuicFramer::BuildIetfDataPacket(const QuicPacketHeader& header,
         }
         break;
       case GOAWAY_FRAME:
-        if (!AppendGoAwayFrame(*frame.goaway_frame, &writer)) {
-          QUIC_BUG << "AppendGoAwayFrame failed";
-          return 0;
-        }
-        break;
+        set_detailed_error("Attempt to append GOAWAY frame in version 99.");
+        return RaiseError(QUIC_INTERNAL_ERROR);
       case WINDOW_UPDATE_FRAME:
         // Depending on whether there is a stream ID or not, will be either a
         // MAX STREAM DATA frame or a MAX DATA frame.
@@ -1018,13 +1058,11 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   last_packet_is_ietf_quic_ = false;
   if (perspective_ == Perspective::IS_CLIENT) {
     last_packet_is_ietf_quic_ = version_.transport_version > QUIC_VERSION_43;
-  } else if (GetQuicReloadableFlag(quic_respect_ietf_header) &&
-             !reader.IsDoneReading()) {
+  } else if (!reader.IsDoneReading()) {
     uint8_t type = reader.PeekByte();
     last_packet_is_ietf_quic_ = QuicUtils::IsIetfPacketHeader(type);
   }
   if (last_packet_is_ietf_quic_) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_respect_ietf_header);
     QUIC_DVLOG(1) << ENDPOINT << "Processing IETF QUIC packet.";
     reader.set_endianness(NETWORK_BYTE_ORDER);
   }
@@ -1187,7 +1225,8 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
     set_detailed_error("Unable to decrypt payload.");
     return RaiseError(QUIC_DECRYPTION_FAILURE);
   }
-  QuicDataReader reader(decrypted_buffer, decrypted_length, endianness());
+  TrackedDataReader reader(decrypted_buffer, decrypted_length, endianness(),
+                           &decrypted_payload_reader_);
 
   // Update the largest packet number after we have decrypted the packet
   // so we are confident is not attacker controlled.
@@ -1249,7 +1288,8 @@ bool QuicFramer::ProcessDataPacket(QuicDataReader* encrypted_reader,
     return RaiseError(QUIC_DECRYPTION_FAILURE);
   }
 
-  QuicDataReader reader(decrypted_buffer, decrypted_length, endianness());
+  TrackedDataReader reader(decrypted_buffer, decrypted_length, endianness(),
+                           &decrypted_payload_reader_);
 
   // Update the largest packet number after we have decrypted the packet
   // so we are confident is not attacker controlled.
@@ -2225,62 +2265,6 @@ bool QuicFramer::ProcessIetfFrameData(QuicDataReader* reader,
           }
           break;
         }
-        case IETF_TEMP_GOAWAY_FRAME: {
-          // temporary, for testing
-          QuicGoAwayFrame goaway_frame;
-          if (!ProcessGoAwayFrame(reader, &goaway_frame)) {
-            return RaiseError(QUIC_INVALID_GOAWAY_DATA);
-          }
-          if (!visitor_->OnGoAwayFrame(goaway_frame)) {
-            QUIC_DVLOG(1) << ENDPOINT
-                          << "Visitor asked to stop further processing.";
-            // Returning true since there was no parsing error.
-            return true;
-          }
-          break;
-        }
-        case IETF_TEMP_WINDOW_UPDATE_FRAME: {
-          // temporary, for testing
-          QuicWindowUpdateFrame window_update_frame;
-          if (!ProcessWindowUpdateFrame(reader, &window_update_frame)) {
-            return RaiseError(QUIC_INVALID_WINDOW_UPDATE_DATA);
-          }
-          if (!visitor_->OnWindowUpdateFrame(window_update_frame)) {
-            QUIC_DVLOG(1) << ENDPOINT
-                          << "Visitor asked to stop further processing.";
-            // Returning true since there was no parsing error.
-            return true;
-          }
-          break;
-        }
-        case IETF_TEMP_STOP_WAITING_FRAME: {
-          // temporary, for testing
-          QuicStopWaitingFrame stop_waiting_frame;
-          if (!ProcessStopWaitingFrame(reader, header, &stop_waiting_frame)) {
-            return RaiseError(QUIC_INVALID_STOP_WAITING_DATA);
-          }
-          if (!visitor_->OnStopWaitingFrame(stop_waiting_frame)) {
-            QUIC_DVLOG(1) << ENDPOINT
-                          << "Visitor asked to stop further processing.";
-            // Returning true since there was no parsing error.
-            return true;
-          }
-          continue;
-        }
-        case IETF_TEMP_BLOCKED_FRAME: {
-          // temporary, for testing
-          QuicBlockedFrame blocked_frame;
-          if (!ProcessBlockedFrame(reader, &blocked_frame)) {
-            return RaiseError(QUIC_INVALID_BLOCKED_DATA);
-          }
-          if (!visitor_->OnBlockedFrame(blocked_frame)) {
-            QUIC_DVLOG(1) << ENDPOINT
-                          << "Visitor asked to stop further processing.";
-            // Returning true since there was no parsing error.
-            return true;
-          }
-          continue;
-        }
 
         default:
           set_detailed_error("Illegal frame type.");
@@ -2728,18 +2712,6 @@ bool QuicFramer::ProcessIetfAckFrame(QuicDataReader* reader,
   //  +1 because AddRange implementation requires [low,high)
   QuicPacketNumber block_high = largest_acked + 1;
   QuicPacketNumber block_low = largest_acked - ack_block_value;
-  if (use_incremental_ack_processing_) {
-    if (!visitor_->OnAckRange(block_low, block_high,
-                              /* last_range= */ (ack_block_count == 0))) {
-      // The visitor suppresses further processing of the packet. Although
-      // this is not a parsing error, returns false as this is in middle
-      // of processing an ACK frame.
-      set_detailed_error("Visitor suppresses further processing of ACK frame.");
-      return false;
-    }
-  } else {
-    ack_frame->packets.AddRange(block_low, block_high);
-  }
 
   // ack_block_value is the number of packets preceding the
   // largest_acked packet which are in the block being acked. Thus,
@@ -2753,28 +2725,64 @@ bool QuicFramer::ProcessIetfAckFrame(QuicDataReader* reader,
     return false;
   }
 
+  if (use_incremental_ack_processing_) {
+    if (!visitor_->OnAckRange(block_low, block_high,
+                              /* last_range= */ (ack_block_count == 0))) {
+      // The visitor suppresses further processing of the packet. Although
+      // this is not a parsing error, returns false as this is in middle
+      // of processing an ACK frame.
+      set_detailed_error("Visitor suppresses further processing of ACK frame.");
+      return false;
+    }
+  } else {
+    ack_frame->packets.AddRange(block_low, block_high);
+  }
+
   while (ack_block_count != 0) {
     uint64_t gap_block_value;
-
     // Get the sizes of the gap and ack blocks,
     if (!reader->ReadVarInt62(&gap_block_value)) {
       set_detailed_error("Unable to read gap block value.");
       return false;
     }
+    // It's an error if the gap is larger than the space from packet
+    // number 0 to the start of the block that's just been acked, PLUS
+    // there must be space for at least 1 packet to be acked. For
+    // example, if block_low is 10 and gap_block_value is 9, it means
+    // the gap block is 10 packets long, leaving no room for a packet
+    // to be acked. Thus, gap_block_value+2 can not be larger than
+    // block_low.
+    // The test is written this way to detect wrap-arounds.
+    if ((gap_block_value + 2) > block_low) {
+      set_detailed_error(
+          QuicStrCat("Underflow with gap block length ", gap_block_value + 1,
+                     " previous ack block start is ", block_low, ".")
+              .c_str());
+      return false;
+    }
 
-    // Slide block_high down to be the high end of the next ack
-    // block. It needs to be decremented by the length of the previous
-    // ack block and by the length of the gap (+2 since both values
-    // are the length-1).
-    block_high -= ack_block_value + gap_block_value + 2;
+    // Adjust block_high to be the top of the next ack block.
+    // There is a gap of |gap_block_value| packets between the bottom
+    // of ack block N and top of block N+1.  Note that gap_block_value
+    // is he size of the gap minus 1 (per the QUIC protocol), and
+    // block_high is the packet number of the first packet of the gap
+    // (per the implementation of OnAckRange/AddAckRange, below).
+    block_high = block_low - 1 - gap_block_value;
 
     if (!reader->ReadVarInt62(&ack_block_value)) {
       set_detailed_error("Unable to read ack block value.");
       return false;
     }
+    if (ack_block_value > (block_high - 1)) {
+      set_detailed_error(
+          QuicStrCat("Underflow with ack block length ", ack_block_value + 1,
+                     " latest ack block end is ", block_high - 1, ".")
+              .c_str());
+      return false;
+    }
     // Calculate the low end of the new nth ack block. The +1 is
     // because the encoded value is the blocksize-1.
-    block_low = block_high - ack_block_value - 1;
+    block_low = block_high - 1 - ack_block_value;
     if (use_incremental_ack_processing_) {
       if (!visitor_->OnAckRange(block_low, block_high,
                                 /*last_range=*/(ack_block_count == 1))) {
@@ -2923,14 +2931,8 @@ bool QuicFramer::ProcessWindowUpdateFrame(QuicDataReader* reader,
 
 bool QuicFramer::ProcessBlockedFrame(QuicDataReader* reader,
                                      QuicBlockedFrame* frame) {
-  // TODO(fkastenholz): replace with DCHECK_NE(QUIC_VERSION_99,
-  // version_.transport_version) << ...
-  // when support for IETF blocked/stream-blocked frame is
-  // complete and we remove IETF_TEMP_BLOCKED_FRAME
-  if (version_.transport_version == QUIC_VERSION_99) {
-    // IETF STREAM BLOCKED is closest analog
-    return ProcessStreamBlockedFrame(reader, frame);
-  }
+  DCHECK_NE(QUIC_VERSION_99, version_.transport_version)
+      << "Attempt to process non-IETF frames but version is 99";
 
   if (!reader->ReadUInt32(&frame->stream_id)) {
     set_detailed_error("Unable to read stream_id.");
@@ -3406,6 +3408,36 @@ bool QuicFramer::AppendTypeByte(const QuicFrame& frame,
     case MTU_DISCOVERY_FRAME:
       type_byte = static_cast<uint8_t>(PING_FRAME);
       break;
+
+    case APPLICATION_CLOSE_FRAME:
+      set_detailed_error(
+          "Attempt to append APPLICATION_CLOSE frame and not in version 99.");
+      return RaiseError(QUIC_INTERNAL_ERROR);
+    case NEW_CONNECTION_ID_FRAME:
+      set_detailed_error(
+          "Attempt to append NEW_CONNECTION_ID frame and not in version 99.");
+      return RaiseError(QUIC_INTERNAL_ERROR);
+    case MAX_STREAM_ID_FRAME:
+      set_detailed_error(
+          "Attempt to append MAX_STREAM_ID frame and not in version 99.");
+      return RaiseError(QUIC_INTERNAL_ERROR);
+    case STREAM_ID_BLOCKED_FRAME:
+      set_detailed_error(
+          "Attempt to append STREAM_ID_BLOCKED frame and not in version 99.");
+      return RaiseError(QUIC_INTERNAL_ERROR);
+    case PATH_RESPONSE_FRAME:
+      set_detailed_error(
+          "Attempt to append PATH_RESPONSE frame and not in version 99.");
+      return RaiseError(QUIC_INTERNAL_ERROR);
+    case PATH_CHALLENGE_FRAME:
+      set_detailed_error(
+          "Attempt to append PATH_CHALLENGE frame and not in version 99.");
+      return RaiseError(QUIC_INTERNAL_ERROR);
+    case STOP_SENDING_FRAME:
+      set_detailed_error(
+          "Attempt to append STOP_SENDING frame and not in version 99.");
+      return RaiseError(QUIC_INTERNAL_ERROR);
+
     default:
       type_byte = static_cast<uint8_t>(frame.type);
       break;
@@ -3429,11 +3461,12 @@ bool QuicFramer::AppendIetfTypeByte(const QuicFrame& frame,
       type_byte = IETF_CONNECTION_CLOSE;
       break;
     case GOAWAY_FRAME:
-      type_byte = IETF_TEMP_GOAWAY_FRAME;
-      break;
+      set_detailed_error(
+          "Attempt to create non-version-99 GOAWAY frame in version 99.");
+      return RaiseError(QUIC_INTERNAL_ERROR);
     case WINDOW_UPDATE_FRAME:
-      // Depending on whether there is a stream ID or not, will be either a MAX
-      // STREAM DATA frame or a MAX DATA frame.
+      // Depending on whether there is a stream ID or not, will be either a
+      // MAX_STREAM_DATA frame or a MAX_DATA frame.
       if (frame.window_update_frame->stream_id == 0) {
         type_byte = IETF_MAX_DATA;
       } else {
@@ -3448,8 +3481,9 @@ bool QuicFramer::AppendIetfTypeByte(const QuicFrame& frame,
       }
       break;
     case STOP_WAITING_FRAME:
-      type_byte = IETF_TEMP_STOP_WAITING_FRAME;
-      break;
+      set_detailed_error(
+          "Attempt to append type byte of STOP WAITING frame in version 99.");
+      return RaiseError(QUIC_INTERNAL_ERROR);
     case PING_FRAME:
       type_byte = IETF_PING;
       break;
@@ -4618,6 +4652,19 @@ bool QuicFramer::ProcessNewConnectionIdFrame(QuicDataReader* reader,
     return false;
   }
   return true;
+}
+
+QuicString QuicFramer::VerboseDebugString() const {
+  QuicString str =
+      QuicStrCat("{ version:", ParsedQuicVersionToString(version_));
+
+  if (decrypted_payload_reader_ != nullptr) {
+    QuicStrAppend(&str, " decrypted_payload_reader:",
+                  decrypted_payload_reader_->VerboseDebugString());
+  }
+
+  QuicStrAppend(&str, "\n}");
+  return str;
 }
 
 }  // namespace quic

@@ -41,7 +41,6 @@ class QuicCryptoClientStreamTest : public QuicTest {
         server_id_(kServerHostname, kServerPort, net::PRIVACY_MODE_DISABLED),
         crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
                        TlsClientHandshaker::CreateSslCtx()) {
-    SetQuicReloadableFlag(quic_respect_ietf_header, true);
     CreateConnection();
   }
 
@@ -138,7 +137,6 @@ TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
 
   const QuicConfig* config = session_->config();
   EXPECT_EQ(kMaximumIdleTimeoutSecs, config->IdleNetworkTimeout().ToSeconds());
-  EXPECT_EQ(kDefaultMaxStreamsPerConnection, config->MaxStreamsPerConnection());
 
   const QuicCryptoNegotiatedParameters& crypto_params(
       stream()->crypto_negotiated_params());
@@ -391,7 +389,6 @@ class QuicCryptoClientStreamStatelessTest : public QuicTest {
         server_compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
         server_id_(kServerHostname, kServerPort, net::PRIVACY_MODE_DISABLED) {
-    SetQuicReloadableFlag(quic_respect_ietf_header, true);
     TestQuicSpdyClientSession* client_session = nullptr;
     CreateClientSessionForTest(server_id_,
                                /* supports_stateless_rejects= */ true,

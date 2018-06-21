@@ -42,11 +42,13 @@ TlsClientHandshaker::TlsClientHandshaker(QuicCryptoStream* stream,
                                          const QuicServerId& server_id,
                                          ProofVerifier* proof_verifier,
                                          SSL_CTX* ssl_ctx,
-                                         ProofVerifyContext* verify_context)
+                                         ProofVerifyContext* verify_context,
+                                         const QuicString& user_agent_id)
     : TlsHandshaker(stream, session, ssl_ctx),
       server_id_(server_id),
       proof_verifier_(proof_verifier),
       verify_context_(verify_context),
+      user_agent_id_(user_agent_id),
       crypto_negotiated_params_(new QuicCryptoNegotiatedParameters) {}
 
 TlsClientHandshaker::~TlsClientHandshaker() {
@@ -102,6 +104,7 @@ bool TlsClientHandshaker::SetTransportParameters() {
   if (!session()->config()->FillTransportParameters(&params)) {
     return false;
   }
+  params.google_quic_params->SetStringPiece(kUAID, user_agent_id_);
 
   std::vector<uint8_t> param_bytes;
   return SerializeTransportParameters(params, &param_bytes) &&

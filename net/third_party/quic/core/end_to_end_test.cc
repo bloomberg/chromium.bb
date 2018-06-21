@@ -394,7 +394,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams>,
     // client as well according to the test parameter.
     copt.push_back(GetParam().congestion_control_tag);
     if (GetParam().congestion_control_tag == kTPCC &&
-        GetQuicReloadableFlag(quic_enable_pcc)) {
+        GetQuicReloadableFlag(quic_enable_pcc2)) {
       copt.push_back(kTPCC);
     }
 
@@ -440,7 +440,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams>,
   void StartServer() {
     SetQuicReloadableFlag(quic_use_cheap_stateless_rejects,
                           GetParam().use_cheap_stateless_reject);
-    SetQuicReloadableFlag(quic_respect_ietf_header, true);
 
     auto* test_server = new QuicTestServer(
         crypto_test_utils::ProofSourceForTesting(), server_config_,
@@ -2584,9 +2583,7 @@ class EndToEndTestServerPush : public EndToEndTest {
   const size_t kNumMaxStreams = 10;
 
   EndToEndTestServerPush() : EndToEndTest() {
-    client_config_.SetMaxStreamsPerConnection(kNumMaxStreams, kNumMaxStreams);
     client_config_.SetMaxIncomingDynamicStreamsToSend(kNumMaxStreams);
-    server_config_.SetMaxStreamsPerConnection(kNumMaxStreams, kNumMaxStreams);
     server_config_.SetMaxIncomingDynamicStreamsToSend(kNumMaxStreams);
     support_server_push_ = true;
   }

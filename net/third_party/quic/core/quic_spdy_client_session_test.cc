@@ -83,7 +83,6 @@ class QuicSpdyClientSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
   }
 
   void Initialize() {
-    SetQuicReloadableFlag(quic_respect_ietf_header, true);
     session_.reset();
     connection_ = new PacketSavingConnection(&helper_, &alarm_factory_,
                                              Perspective::IS_CLIENT,
