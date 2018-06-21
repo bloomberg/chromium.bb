@@ -148,7 +148,6 @@ test("gin_unittests") {
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//tools/v8_context_snapshot:v8_context_snapshot",
     "//v8",
   ]
 
@@ -157,7 +156,9 @@ test("gin_unittests") {
     "//v8:external_startup_data",
   ]
 
-  data_deps = []
+  data_deps = [
+    "//tools/v8_context_snapshot:v8_context_snapshot",
+  ]
   data = []
 
   # gin_shell is not an Android app.

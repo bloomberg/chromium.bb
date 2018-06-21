@@ -306,7 +306,6 @@ jumbo_static_library("test_support") {
     "//media/mojo/interfaces",
     "//third_party/blink/public:blink",
     "//third_party/blink/public:test_support",
-    "//tools/v8_context_snapshot",
   ]
   deps = [
     ":content_test_mojo_bindings",
@@ -364,7 +363,6 @@ jumbo_static_library("test_support") {
     "//third_party/webrtc/rtc_base:rtc_base_approved",
     "//third_party/webrtc/stats:rtc_stats",
     "//third_party/webrtc_overrides:init_webrtc",
-    "//tools/v8_context_snapshot:v8_context_snapshot",
     "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
     "//ui/base:test_support",
@@ -389,6 +387,7 @@ jumbo_static_library("test_support") {
 
   data_deps = [
     "//content/shell:pak",
+    "//tools/v8_context_snapshot:v8_context_snapshot",
   ]
 
   if (is_android) {
