@@ -8,7 +8,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/notifications/desktop_notification_profile_util.h"
+#include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -25,7 +25,9 @@ WebPageNotifierController::GetNotifierList(Profile* profile) {
   std::vector<ash::mojom::NotifierUiDataPtr> notifiers;
 
   ContentSettingsForOneType settings;
-  DesktopNotificationProfileUtil::GetNotificationsSettings(profile, &settings);
+  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      content_settings::ResourceIdentifier(), &settings);
 
   favicon::FaviconService* const favicon_service =
       FaviconServiceFactory::GetForProfile(profile,
@@ -92,13 +94,9 @@ void WebPageNotifierController::SetNotifierEnabled(
 
   if (differs_from_default_value) {
     if (notifier_id.url.is_valid()) {
-      if (enabled) {
-        DesktopNotificationProfileUtil::GrantPermission(profile,
-                                                        notifier_id.url);
-      } else {
-        DesktopNotificationProfileUtil::DenyPermission(profile,
-                                                       notifier_id.url);
-      }
+      NotificationPermissionContext::UpdatePermission(
+          profile, notifier_id.url,
+          enabled ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
     } else {
       LOG(ERROR) << "Invalid url pattern: "
                  << notifier_id.url.possibly_invalid_spec();
@@ -118,7 +116,7 @@ void WebPageNotifierController::SetNotifierEnabled(
 
     if (pattern.IsValid()) {
       // Note that we don't use
-      // DesktopNotificationProfileUtil::ClearSetting()
+      // NotificationPermissionContext::UpdatePermission()
       // here because pattern might be from user manual input and not match
       // the default one used by ClearSetting().
       HostContentSettingsMapFactory::GetForProfile(profile)

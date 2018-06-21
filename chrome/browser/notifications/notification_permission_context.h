@@ -15,6 +15,11 @@ class Profile;
 
 class NotificationPermissionContext : public PermissionContextBase {
  public:
+  // Helper method for updating the permission state of |origin| to |setting|.
+  static void UpdatePermission(Profile* profile,
+                               const GURL& origin,
+                               ContentSetting setting);
+
   explicit NotificationPermissionContext(Profile* profile);
   ~NotificationPermissionContext() override;
 

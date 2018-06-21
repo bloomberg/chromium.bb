@@ -6,7 +6,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "chrome/browser/notifications/desktop_notification_profile_util.h"
+#include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 
@@ -46,7 +46,8 @@ void PersistentNotificationHandler::OnClick(
 
 void PersistentNotificationHandler::DisableNotifications(Profile* profile,
                                                          const GURL& origin) {
-  DesktopNotificationProfileUtil::DenyPermission(profile, origin);
+  NotificationPermissionContext::UpdatePermission(profile, origin,
+                                                  CONTENT_SETTING_BLOCK);
 }
 
 void PersistentNotificationHandler::OpenSettings(Profile* profile,

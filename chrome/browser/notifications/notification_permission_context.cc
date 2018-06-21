@@ -12,9 +12,10 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/notifications/desktop_notification_profile_util.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -168,6 +169,25 @@ void VisibilityTimerTabHelper::RunTask(const base::Closure& task) {
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(VisibilityTimerTabHelper);
 
+// static
+void NotificationPermissionContext::UpdatePermission(Profile* profile,
+                                                     const GURL& origin,
+                                                     ContentSetting setting) {
+  switch (setting) {
+    case CONTENT_SETTING_ALLOW:
+    case CONTENT_SETTING_BLOCK:
+    case CONTENT_SETTING_DEFAULT:
+      HostContentSettingsMapFactory::GetForProfile(profile)
+          ->SetContentSettingDefaultScope(
+              origin, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+              content_settings::ResourceIdentifier(), setting);
+      break;
+
+    default:
+      NOTREACHED();
+  }
+}
+
 NotificationPermissionContext::NotificationPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
                             CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
@@ -232,7 +252,7 @@ ContentSetting NotificationPermissionContext::GetPermissionStatusForExtension(
 void NotificationPermissionContext::ResetPermission(
     const GURL& requesting_origin,
     const GURL& embedder_origin) {
-  DesktopNotificationProfileUtil::ClearSetting(profile(), requesting_origin);
+  UpdatePermission(profile(), requesting_origin, CONTENT_SETTING_DEFAULT);
 }
 
 void NotificationPermissionContext::DecidePermission(
@@ -292,14 +312,7 @@ void NotificationPermissionContext::UpdateContentSetting(
     ContentSetting content_setting) {
   DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
          content_setting == CONTENT_SETTING_BLOCK);
-
-  if (content_setting == CONTENT_SETTING_ALLOW) {
-    DesktopNotificationProfileUtil::GrantPermission(profile(),
-                                                    requesting_origin);
-  } else {
-    DesktopNotificationProfileUtil::DenyPermission(profile(),
-                                                   requesting_origin);
-  }
+  UpdatePermission(profile(), requesting_origin, content_setting);
 }
 
 bool NotificationPermissionContext::IsRestrictedToSecureOrigins() const {

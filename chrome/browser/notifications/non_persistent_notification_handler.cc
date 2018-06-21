@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/strings/nullable_string16.h"
 #include "build/build_config.h"
-#include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notification_common.h"
+#include "chrome/browser/notifications/notification_permission_context.h"
 #include "content/public/browser/notification_event_dispatcher.h"
 
 #if !defined(OS_ANDROID)
@@ -92,7 +92,8 @@ void NonPersistentNotificationHandler::DidDispatchClickEvent(
 void NonPersistentNotificationHandler::DisableNotifications(
     Profile* profile,
     const GURL& origin) {
-  DesktopNotificationProfileUtil::DenyPermission(profile, origin);
+  NotificationPermissionContext::UpdatePermission(profile, origin,
+                                                  CONTENT_SETTING_BLOCK);
 }
 
 void NonPersistentNotificationHandler::OpenSettings(Profile* profile,

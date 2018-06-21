@@ -28,7 +28,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/engagement/important_sites_util.h"
-#include "chrome/browser/notifications/desktop_notification_profile_util.h"
+#include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
@@ -442,19 +442,7 @@ static void JNI_WebsitePreferenceBridge_SetNotificationSettingForOrigin(
     return;
   }
 
-  switch (setting) {
-    case CONTENT_SETTING_DEFAULT:
-      DesktopNotificationProfileUtil::ClearSetting(profile, url);
-      break;
-    case CONTENT_SETTING_ALLOW:
-      DesktopNotificationProfileUtil::GrantPermission(profile, url);
-      break;
-    case CONTENT_SETTING_BLOCK:
-      DesktopNotificationProfileUtil::DenyPermission(profile, url);
-      break;
-    default:
-      NOTREACHED();
-  }
+  NotificationPermissionContext::UpdatePermission(profile, url, setting);
   WebSiteSettingsUmaUtil::LogPermissionChange(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
 }
