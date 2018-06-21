@@ -5409,7 +5409,7 @@ weston_compositor_remove_output(struct weston_output *output)
 
 	weston_presentation_feedback_discard_list(&output->feedback_list);
 
-	weston_compositor_reflow_outputs(compositor, output, output->width);
+	weston_compositor_reflow_outputs(compositor, output, -output->width);
 
 	wl_list_remove(&output->link);
 	wl_list_insert(compositor->pending_output_list.prev, &output->link);
