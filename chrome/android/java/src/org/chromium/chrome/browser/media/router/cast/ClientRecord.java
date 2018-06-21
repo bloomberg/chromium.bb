@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.media.router;
+package org.chromium.chrome.browser.media.router.cast;
+
+import org.chromium.chrome.browser.media.router.MediaRoute;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +53,13 @@ public class ClientRecord {
      */
     public List<String> pendingMessages = new ArrayList<String>();
 
-    public ClientRecord(String routeId, String clientId, String appId, String autoJoinPolicy,
-            String origin, int tabId) {
+    ClientRecord(
+            String routeId,
+            String clientId,
+            String appId,
+            String autoJoinPolicy,
+            String origin,
+            int tabId) {
         this.routeId = routeId;
         this.clientId = clientId;
         this.appId = appId;
