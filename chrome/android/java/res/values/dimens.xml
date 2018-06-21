@@ -346,6 +346,9 @@
     <dimen name="ntp_search_box_transition_length">16dp</dimen>
     <dimen name="ntp_search_box_logo_padding">8dp</dimen>
     <dimen name="ntp_search_box_voice_search_margin_end_modern">6dp</dimen>
+    <dimen name="explore_sites_radius">8dp</dimen>
+    <dimen name="explore_sites_padding">6dp</dimen>
+    <dimen name="explore_sites_margin">12dp</dimen>
     <!-- Negative vertical inset added to the search box bounds when modern is enabled. 4dp is added
          to both the top and bottom bounds to bring the 48dp modern_toolbar_background_size to 56dp
          (matches toolbar_height_no_shadow). -->
