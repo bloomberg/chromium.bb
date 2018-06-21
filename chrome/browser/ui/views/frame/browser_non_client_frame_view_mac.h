@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/frame/avatar_button_manager.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
+#include "components/prefs/pref_change_registrar.h"
 
 class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
  public:
@@ -21,6 +22,8 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
+  void UpdateFullscreenTopUI(bool is_exiting_fullscreen) override;
+  bool ShouldHideTopUIForFullscreen() const override;
   void UpdateThrobber(bool running) override;
   int GetTabStripLeftInset() const override;
 
@@ -47,8 +50,31 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   AvatarButtonStyle GetAvatarButtonStyle() const override;
 
  private:
+  // This enum class represents the appearance of the fullscreen toolbar, which
+  // includes the tab strip and omnibox. These values are logged in a histogram
+  // and shouldn't be renumbered or removed.
+  enum class FullscreenToolbarStyle {
+    // The toolbar is present. Moving the cursor to the top
+    // causes the menubar to appear and the toolbar to slide down.
+    kToolbarPresent = 0,
+    // The toolbar is hidden. Moving cursor to top shows the
+    // toolbar and menubar.
+    kToolbarHidden,
+    // Toolbar is hidden. Moving cursor to top causes the menubar
+    // to appear, but not the toolbar.
+    kToolbarNone,
+    // The last enum value. Used for logging in a histogram.
+    kToolbarLast = kToolbarNone
+  };
+
   void PaintThemedFrame(gfx::Canvas* canvas);
   int GetTabStripRightInset() const;
+
+  // Used to keep track of the update of kShowFullscreenToolbar preference.
+  PrefChangeRegistrar pref_registrar_;
+
+  // The style of the fullscreen toolbar.
+  FullscreenToolbarStyle toolbar_style_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewMac);
 };

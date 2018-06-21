@@ -81,6 +81,13 @@ bool BrowserNonClientFrameView::CaptionButtonsOnLeadingEdge() const {
   return false;
 }
 
+void BrowserNonClientFrameView::UpdateFullscreenTopUI(
+    bool is_exiting_fullscreen) {}
+
+bool BrowserNonClientFrameView::ShouldHideTopUIForFullscreen() const {
+  return frame()->IsFullscreen();
+}
+
 gfx::ImageSkia BrowserNonClientFrameView::GetIncognitoAvatarIcon() const {
   const SkColor icon_color = color_utils::PickContrastingColor(
       SK_ColorWHITE, gfx::kChromeIconGrey, GetFrameColor());
