@@ -293,9 +293,6 @@ class PLATFORM_EXPORT ThreadState {
   void ScheduleIncrementalMarkingStep();
   void ScheduleIncrementalMarkingFinalize();
 
-  void RunIncrementalMarkingStepTask();
-  void RunIncrementalMarkingFinalizeTask();
-
   void IncrementalMarkingStart(BlinkGC::GCReason);
   void IncrementalMarkingStep();
   void IncrementalMarkingFinalize();
