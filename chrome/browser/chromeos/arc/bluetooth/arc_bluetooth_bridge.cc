@@ -2678,7 +2678,11 @@ ArcBluetoothBridge::GetAdvertisingData(const BluetoothDevice* device) const {
   advertising_data.push_back(std::move(local_name));
 
   // Service UUIDs
-  const BluetoothDevice::UUIDSet& uuid_set = device->GetUUIDs();
+  BluetoothDevice::UUIDSet uuid_set = device->GetUUIDs();
+  for (const BluetoothRemoteGattService* gatt_service :
+       device->GetGattServices()) {
+    uuid_set.erase(gatt_service->GetUUID());
+  }
   if (uuid_set.size() > 0) {
     mojom::BluetoothAdvertisingDataPtr service_uuids =
         mojom::BluetoothAdvertisingData::New();
