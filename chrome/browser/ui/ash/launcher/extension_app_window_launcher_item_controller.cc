@@ -24,7 +24,6 @@ ExtensionAppWindowLauncherItemController::
 
 void ExtensionAppWindowLauncherItemController::AddAppWindow(
     extensions::AppWindow* app_window) {
-  DCHECK(!app_window->window_type_is_panel());
   AddWindow(app_window->GetBaseWindow());
 }
 

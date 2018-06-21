@@ -31,11 +31,6 @@ using extensions::AppWindow;
 
 namespace {
 
-const int kMinPanelWidth = 100;
-const int kMinPanelHeight = 100;
-const int kDefaultPanelWidth = 200;
-const int kDefaultPanelHeight = 300;
-
 const AcceleratorMapping kAppWindowAcceleratorMap[] = {
   { ui::VKEY_W, ui::EF_CONTROL_DOWN, IDC_CLOSE_WINDOW },
   { ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_CLOSE_WINDOW },
@@ -110,11 +105,6 @@ void ChromeNativeAppWindowViews::OnBeforeWidgetInit(
     views::Widget* widget) {
 }
 
-void ChromeNativeAppWindowViews::OnBeforePanelWidgetInit(
-    views::Widget::InitParams* init_params,
-    views::Widget* widget) {
-}
-
 void ChromeNativeAppWindowViews::InitializeDefaultWindow(
     const AppWindow::CreateParams& create_params) {
   views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_WINDOW);
@@ -161,7 +151,6 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
 #endif
 
   // Register accelarators supported by app windows.
-  // TODO(jeremya/stevenjb): should these be registered for panels too?
   views::FocusManager* focus_manager = GetFocusManager();
   const std::map<ui::Accelerator, int>& accelerator_table =
       GetAcceleratorTable();
@@ -194,34 +183,6 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   }
 }
 
-void ChromeNativeAppWindowViews::InitializePanelWindow(
-    const AppWindow::CreateParams& create_params) {
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_PANEL);
-  params.delegate = this;
-
-  gfx::Rect initial_window_bounds =
-      create_params.GetInitialWindowBounds(gfx::Insets());
-  gfx::Size preferred_size =
-      gfx::Size(initial_window_bounds.width(), initial_window_bounds.height());
-  if (preferred_size.width() == 0)
-    preferred_size.set_width(kDefaultPanelWidth);
-  else if (preferred_size.width() < kMinPanelWidth)
-    preferred_size.set_width(kMinPanelWidth);
-
-  if (preferred_size.height() == 0)
-    preferred_size.set_height(kDefaultPanelHeight);
-  else if (preferred_size.height() < kMinPanelHeight)
-    preferred_size.set_height(kMinPanelHeight);
-  SetPreferredSize(preferred_size);
-
-  // A panel will be placed at a default origin in the currently active target
-  // root window.
-  params.bounds = gfx::Rect(preferred_size);
-  OnBeforePanelWidgetInit(&params, widget());
-  widget()->Init(params);
-  widget()->set_focus_on_creation(create_params.focused);
-}
-
 views::NonClientFrameView*
 ChromeNativeAppWindowViews::CreateStandardDesktopAppFrame() {
   return views::WidgetDelegateView::CreateNonClientFrameView(widget());
@@ -247,8 +208,7 @@ ui::WindowShowState ChromeNativeAppWindowViews::GetRestoredState() const {
 }
 
 bool ChromeNativeAppWindowViews::IsAlwaysOnTop() const {
-  // TODO(jackhou): On Mac, only docked panels are always-on-top.
-  return app_window()->window_type_is_panel() || widget()->IsAlwaysOnTop();
+  return widget()->IsAlwaysOnTop();
 }
 
 // views::WidgetDelegate implementation.
@@ -345,10 +305,6 @@ bool ChromeNativeAppWindowViews::AcceleratorPressed(
 // NativeAppWindow implementation.
 
 void ChromeNativeAppWindowViews::SetFullscreen(int fullscreen_types) {
-  // Fullscreen not supported by panels.
-  if (app_window()->window_type_is_panel())
-    return;
-
   widget()->SetFullscreen(fullscreen_types != AppWindow::FULLSCREEN_TYPE_NONE);
 }
 
@@ -394,11 +350,7 @@ void ChromeNativeAppWindowViews::InitializeWindow(
   has_frame_color_ = create_params.has_frame_color;
   active_frame_color_ = create_params.active_frame_color;
   inactive_frame_color_ = create_params.inactive_frame_color;
-  if (create_params.window_type == AppWindow::WINDOW_TYPE_PANEL) {
-    InitializePanelWindow(create_params);
-  } else {
-    InitializeDefaultWindow(create_params);
-  }
+  InitializeDefaultWindow(create_params);
   extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
       Profile::FromBrowserContext(app_window->browser_context()),
       widget()->GetFocusManager(),

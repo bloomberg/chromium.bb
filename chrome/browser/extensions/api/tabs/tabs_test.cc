@@ -1075,18 +1075,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, MAYBE_AcceptState) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, ValidateCreateWindowState) {
-  EXPECT_TRUE(base::MatchPattern(
-      RunCreateWindowExpectError(
-          "[{\"state\": \"fullscreen\", \"type\": \"panel\"}]"),
-      keys::kInvalidWindowStateError));
-  EXPECT_TRUE(base::MatchPattern(
-      RunCreateWindowExpectError(
-          "[{\"state\": \"maximized\", \"type\": \"panel\"}]"),
-      keys::kInvalidWindowStateError));
-  EXPECT_TRUE(base::MatchPattern(
-      RunCreateWindowExpectError(
-          "[{\"state\": \"minimized\", \"type\": \"panel\"}]"),
-      keys::kInvalidWindowStateError));
   EXPECT_TRUE(
       base::MatchPattern(RunCreateWindowExpectError(
                              "[{\"state\": \"minimized\", \"focused\": true}]"),

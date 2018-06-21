@@ -320,9 +320,7 @@ void AppWindow::Init(const GURL& url,
     else if (new_params.state == ui::SHOW_STATE_MINIMIZED)
       Minimize();
 
-    // Panels are not activated by default.
-    Show(window_type_is_panel() || !new_params.focused ? SHOW_INACTIVE
-                                                       : SHOW_ACTIVE);
+    Show(new_params.focused ? SHOW_ACTIVE : SHOW_INACTIVE);
   }
 
   OnNativeWindowChanged();
@@ -879,14 +877,6 @@ content::ColorChooser* AppWindow::OpenColorChooser(
 
 void AppWindow::RunFileChooser(content::RenderFrameHost* render_frame_host,
                                const content::FileChooserParams& params) {
-  if (window_type_is_panel()) {
-    // Panels can't host a file dialog, abort. TODO(stevenjb): allow file
-    // dialogs to be unhosted but still close with the owning web contents.
-    // crbug.com/172502.
-    LOG(WARNING) << "File dialog opened by panel.";
-    return;
-  }
-
   app_delegate_->RunFileChooser(render_frame_host, params);
 }
 

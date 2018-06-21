@@ -133,7 +133,6 @@ void FindRuntimeContext(gfx::NativeWindow owner_window,
   }
 
   if (app_window) {
-    DCHECK(!app_window->window_type_is_panel());
     *base_window = app_window->GetBaseWindow();
     *web_contents = app_window->web_contents();
   } else {

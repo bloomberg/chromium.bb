@@ -1108,7 +1108,7 @@ class V1App : public TestBrowserWindow {
 };
 
 // A V2 application window created with an |extension| and for a |profile|.
-// Upon destruction it will properly close the application; supports panels too.
+// Upon destruction it will properly close the application.
 class V2App {
  public:
   V2App(Profile* profile,
@@ -2638,36 +2638,6 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   EXPECT_FALSE(manager->IsWindowOnDesktopOfUser(window, current_user));
   launcher_controller_->ActivateWindowOrMinimizeIfActive(browser_window, false);
   EXPECT_TRUE(manager->IsWindowOnDesktopOfUser(window, current_user));
-}
-
-// Ensure multi-profile panels are properly added / removed from the shelf.
-TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
-       PanelUpdateOnUserSwitch) {
-  InitLauncherController();
-
-  // Check the shelf model used by ShelfWindowWatcher.
-  ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
-  ASSERT_EQ(2, shelf_model->item_count());
-  EXPECT_EQ(ash::TYPE_BACK_BUTTON, shelf_model->items()[0].type);
-  EXPECT_EQ(ash::TYPE_APP_LIST, shelf_model->items()[1].type);
-
-  // Add an app panel window; ShelfWindowWatcher will add a shelf item.
-  V2App panel(profile(), extension_platform_app_.get(),
-              extensions::AppWindow::WINDOW_TYPE_PANEL);
-  ASSERT_EQ(3, shelf_model->item_count());
-  EXPECT_EQ(ash::TYPE_APP_PANEL, shelf_model->items()[2].type);
-
-  // After switching users the item should go away.
-  TestingProfile* profile2 = CreateMultiUserProfile("user2");
-  SwitchActiveUser(multi_user_util::GetAccountIdFromProfile(profile2));
-  ASSERT_EQ(2, shelf_model->item_count());
-  EXPECT_EQ(ash::TYPE_BACK_BUTTON, shelf_model->items()[0].type);
-  EXPECT_EQ(ash::TYPE_APP_LIST, shelf_model->items()[1].type);
-
-  // And it should come back when switching back.
-  SwitchActiveUser(multi_user_util::GetAccountIdFromProfile(profile()));
-  ASSERT_EQ(3, shelf_model->item_count());
-  EXPECT_EQ(ash::TYPE_APP_PANEL, shelf_model->items()[2].type);
 }
 
 // Check that a running windowed V1 application will be properly pinned and

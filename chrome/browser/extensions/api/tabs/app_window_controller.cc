@@ -38,8 +38,6 @@ int AppWindowController::GetWindowId() const {
 }
 
 std::string AppWindowController::GetWindowTypeText() const {
-  if (app_window_->window_type_is_panel())
-    return tabs_constants::kWindowTypeValuePanel;
   return tabs_constants::kWindowTypeValueApp;
 }
 

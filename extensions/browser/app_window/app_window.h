@@ -91,7 +91,7 @@ class AppWindow : public content::WebContentsDelegate,
   // Enum values should not be changed since they are used by UMA.
   enum WindowType {
     WINDOW_TYPE_DEFAULT = 0,  // Default app window.
-    WINDOW_TYPE_PANEL = 1,    // OS controlled panel window (Ash only).
+    DEPRECATED_WINDOW_TYPE_PANEL = 1,
     WINDOW_TYPE_COUNT = 2,
   };
 
@@ -218,9 +218,10 @@ class AppWindow : public content::WebContentsDelegate,
       const std::vector<DraggableRegion>& regions);
 
   // The constructor and Init methods are public for constructing a AppWindow
-  // with a non-standard render interface (e.g. v1 apps using Ash Panels).
-  // Normally AppWindow::Create should be used.
-  // Takes ownership of |app_delegate| and |delegate|.
+  // with a non-standard render interface (e.g.
+  // lock_screen_apps::StateController, ChromeAppWindowClient). Normally
+  // AppWindow::Create should be used. Takes ownership of |app_delegate| and
+  // |delegate|.
   AppWindow(content::BrowserContext* context,
             AppDelegate* app_delegate,
             const Extension* extension);
@@ -237,9 +238,6 @@ class AppWindow : public content::WebContentsDelegate,
   const std::string& extension_id() const { return extension_id_; }
   content::WebContents* web_contents() const;
   WindowType window_type() const { return window_type_; }
-  bool window_type_is_panel() const {
-    return window_type_ == WINDOW_TYPE_PANEL;
-  }
   content::BrowserContext* browser_context() const { return browser_context_; }
   const gfx::Image& custom_app_icon() const { return custom_app_icon_; }
   const GURL& app_icon_url() const { return app_icon_url_; }
@@ -290,7 +288,7 @@ class AppWindow : public content::WebContentsDelegate,
   void UpdateDraggableRegions(const std::vector<DraggableRegion>& regions);
 
   // Updates the app image to |image|. Called internally from the image loader
-  // callback. Also called externally for v1 apps using Ash Panels.
+  // callback.
   void UpdateAppIcon(const gfx::Image& image);
 
   // Enable or disable fullscreen mode. |type| specifies which type of
