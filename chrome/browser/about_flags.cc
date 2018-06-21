@@ -122,6 +122,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/libaom/av1_buildflags.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
@@ -1624,7 +1625,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-service-worker-servicification",
      flag_descriptions::kServiceWorkerServicificationName,
      flag_descriptions::kServiceWorkerServicificationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kServiceWorkerServicification)},
+     FEATURE_VALUE_TYPE(blink::features::kServiceWorkerServicification)},
     {"enable-pwa-full-code-cache",
      flag_descriptions::kEnablePWAFullCodeCacheName,
      flag_descriptions::kEnablePWAFullCodeCacheDescription, kOsAll,

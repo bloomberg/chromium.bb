@@ -681,10 +681,6 @@ bool BlinkPlatformImpl::AllowScriptExtensionForServiceWorker(
   return GetContentClient()->AllowScriptExtensionForServiceWorker(scriptUrl);
 }
 
-bool BlinkPlatformImpl::IsServiceWorkerNetServicificationEnabled() {
-  return ServiceWorkerUtils::IsServicificationEnabled();
-}
-
 blink::WebCrypto* BlinkPlatformImpl::Crypto() {
   return &web_crypto_;
 }

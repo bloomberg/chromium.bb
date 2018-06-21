@@ -51,6 +51,8 @@ class ServiceWorkerUtils {
       const std::vector<GURL>& urls);
 
   // Returns true if servicified service worker is enabled.
+  //
+  // TODO(falken): Remove this and have callsites use blink::ServiceWorkerUtils.
   CONTENT_EXPORT static bool IsServicificationEnabled();
 
   // Returns true if the |provider_id| was assigned by the browser process.

@@ -626,12 +626,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual bool AllowScriptExtensionForServiceWorker(const WebURL& script_url) {
     return false;
   }
-  // Whether the new service worker glue for NetworkService is enabled (i.e.,
-  // the NetworkService or ServiceWorkerServicification feature is enabled).
-  // TODO(falken): Make ServiceWorkerServicification a base::Feature inside
-  // the blink namespace, then this function can move out of platform.h and be
-  // implemented directly in blink.
-  virtual bool IsServiceWorkerNetServicificationEnabled() { return false; }
 
   // WebCrypto ----------------------------------------------------------
 

@@ -38,6 +38,7 @@ source_set("headers") {
     "device_memory/approximated_device_memory.h",
     "experiments/memory_ablation_experiment.h",
     "feature_policy/feature_policy.h",
+    "features.h",
     "frame/frame_policy.h",
     "frame/sandbox_flags.h",
     "frame/user_activation_state.h",
@@ -59,6 +60,7 @@ source_set("headers") {
     "screen_orientation/web_screen_orientation_enum_traits.h",
     "screen_orientation/web_screen_orientation_lock_type.h",
     "screen_orientation/web_screen_orientation_type.h",
+    "service_worker/service_worker_utils.h",
   ]
 
   public_deps = [

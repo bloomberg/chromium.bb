@@ -21,6 +21,7 @@ jumbo_source_set("common") {
     "device_memory/approximated_device_memory.cc",
     "experiments/memory_ablation_experiment.cc",
     "feature_policy/feature_policy.cc",
+    "features.cc",
     "frame/frame_policy.cc",
     "frame/user_activation_state.cc",
     "manifest/manifest.cc",
@@ -38,6 +39,7 @@ jumbo_source_set("common") {
     "origin_manifest/origin_manifest.cc",
     "origin_trials/trial_token.cc",
     "origin_trials/trial_token_validator.cc",
+    "service_worker/service_worker_utils.cc",
   ]
 
   public_deps = [
@@ -48,6 +50,7 @@ jumbo_source_set("common") {
     "//base",
     "//mojo/public/cpp/system",
     "//net",
+    "//services/network/public/cpp:cpp",
   ]
 
   # iOS doesn't use and must not depend on //media
