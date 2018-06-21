@@ -10,7 +10,9 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/chromeos/assistant_optin/confirm_reject_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/get_more_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/assistant_optin/ready_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/third_party_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/value_prop_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -56,7 +58,6 @@ assistant::SettingsUiUpdate GetSettingsUiUpdate(
       assistant::ActivityControlSettingsUiSelector::
           ASSISTANT_SUW_ONBOARDING_ON_CHROME_OS);
   consent_flow_update->set_consent_token(consent_token);
-  consent_flow_update->set_saw_third_party_disclosure(true);
 
   return update;
 }
@@ -146,14 +147,15 @@ base::ListValue CreateGetMoreData(
 // Get string constants for settings ui.
 base::DictionaryValue GetSettingsUiStrings(
     const assistant::SettingsUi& settings_ui,
-    bool activity_controll_needed) {
+    bool activity_control_needed) {
   auto consent_ui = settings_ui.consent_flow_ui().consent_ui();
+  auto confirm_reject_ui = consent_ui.activity_control_confirm_reject_ui();
   auto activity_control_ui = consent_ui.activity_control_ui();
   auto third_party_disclosure_ui = consent_ui.third_party_disclosure_ui();
   base::DictionaryValue dictionary;
 
   // Add activity controll string constants.
-  if (activity_controll_needed) {
+  if (activity_control_needed) {
     dictionary.SetString("valuePropIdentity", activity_control_ui.identity());
     if (activity_control_ui.intro_text_paragraph_size()) {
       dictionary.SetString("valuePropIntro",
@@ -169,10 +171,38 @@ base::DictionaryValue GetSettingsUiStrings(
                          consent_ui.reject_button_text());
   }
 
+  // Add confirm reject screen string constants.
+  // TODO(updowndota) Use remote strings after server bug fixed.
+  dictionary.SetString(
+      "confirmRejectTitle",
+      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONFIRM_SCREEN_TITLE));
+  dictionary.SetString(
+      "confirmRejectAcceptTitle",
+      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONFIRM_SCREEN_ACCEPT_TITLE));
+  dictionary.SetString(
+      "confirmRejectAcceptMessage",
+      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONFIRM_SCREEN_ACCEPT_MESSAGE));
+  dictionary.SetString(
+      "confirmRejectAcceptMessageExpanded",
+      l10n_util::GetStringUTF16(
+          IDS_ASSISTANT_CONFIRM_SCREEN_ACCEPT_MESSAGE_EXPANDED));
+  dictionary.SetString(
+      "confirmRejectRejectTitle",
+      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONFIRM_SCREEN_REJECT_TITLE));
+  dictionary.SetString(
+      "confirmRejectRejectMessage",
+      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONFIRM_SCREEN_REJECT_MESSAGE));
+  dictionary.SetString(
+      "confirmRejectContinueButton",
+      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONTINUE_BUTTON));
+
   // Add third party string constants.
-  dictionary.SetString("thirdPartyTitle", third_party_disclosure_ui.title());
-  dictionary.SetString("thirdPartyContinueButton",
-                       third_party_disclosure_ui.button_continue());
+  dictionary.SetString(
+      "thirdPartyTitle",
+      l10n_util::GetStringUTF16(IDS_ASSISTANT_THIRD_PARTY_SCREEN_TITLE));
+  dictionary.SetString(
+      "thirdPartyContinueButton",
+      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONTINUE_BUTTON));
   dictionary.SetString("thirdPartyFooter", consent_ui.tos_pp_links());
 
   // Add get more screen string constants.
@@ -181,7 +211,7 @@ base::DictionaryValue GetSettingsUiStrings(
       l10n_util::GetStringUTF16(IDS_ASSISTANT_GET_MORE_SCREEN_TITLE));
   dictionary.SetString(
       "getMoreContinueButton",
-      l10n_util::GetStringUTF16(IDS_ASSISTANT_GET_MORE_SCREEN_CONTINUE_BUTTON));
+      l10n_util::GetStringUTF16(IDS_ASSISTANT_CONTINUE_BUTTON));
 
   return dictionary;
 }
@@ -203,10 +233,13 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
 
   AddScreenHandler(std::make_unique<ValuePropScreenHandler>(
       base::BindOnce(&AssistantOptInUI::OnExit, weak_factory_.GetWeakPtr())));
+  AddScreenHandler(std::make_unique<ConfirmRejectScreenHandler>(
+      base::BindOnce(&AssistantOptInUI::OnExit, weak_factory_.GetWeakPtr())));
   AddScreenHandler(std::make_unique<ThirdPartyScreenHandler>(
       base::BindOnce(&AssistantOptInUI::OnExit, weak_factory_.GetWeakPtr())));
   AddScreenHandler(std::make_unique<GetMoreScreenHandler>(
       base::BindOnce(&AssistantOptInUI::OnExit, weak_factory_.GetWeakPtr())));
+  AddScreenHandler(std::make_unique<ReadyScreenHandler>());
 
   base::DictionaryValue localized_strings;
   for (auto* handler : screen_handlers_)
@@ -262,27 +295,21 @@ void AssistantOptInUI::AddScreenHandler(
 }
 
 void AssistantOptInUI::OnExit(AssistantOptInScreenExitCode exit_code) {
-  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   switch (exit_code) {
     case AssistantOptInScreenExitCode::VALUE_PROP_SKIPPED:
-      prefs->SetBoolean(arc::prefs::kArcVoiceInteractionValuePropAccepted,
-                        false);
-      prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, false);
-      CloseDialog(nullptr);
-      break;
-    case AssistantOptInScreenExitCode::VALUE_PROP_ACCEPTED:
       assistant_handler_->ShowNextScreen();
       break;
+    case AssistantOptInScreenExitCode::VALUE_PROP_ACCEPTED:
+      OnActivityControlOptInResult(true);
+      break;
+    case AssistantOptInScreenExitCode::CONFIRM_ACCEPTED:
+      OnActivityControlOptInResult(true);
+      break;
+    case AssistantOptInScreenExitCode::CONFIRM_REJECTED:
+      OnActivityControlOptInResult(false);
+      break;
     case AssistantOptInScreenExitCode::THIRD_PARTY_CONTINUED:
-      if (activity_controll_needed_) {
-        // Send the update to complete user opt-in.
-        settings_manager_->UpdateSettings(
-            GetSettingsUiUpdate(consent_token_).SerializeAsString(),
-            base::BindOnce(&AssistantOptInUI::OnUpdateSettingsResponse,
-                           weak_factory_.GetWeakPtr(), false));
-      } else {
-        assistant_handler_->ShowNextScreen();
-      }
+      assistant_handler_->ShowNextScreen();
       break;
     case AssistantOptInScreenExitCode::EMAIL_OPTED_IN:
       DCHECK(email_optin_needed_);
@@ -292,10 +319,24 @@ void AssistantOptInUI::OnExit(AssistantOptInScreenExitCode exit_code) {
       if (email_optin_needed_)
         OnEmailOptInResult(false);
       else
-        CloseDialog(nullptr);
+        assistant_handler_->ShowNextScreen();
       break;
     default:
       NOTREACHED();
+  }
+}
+
+void AssistantOptInUI::OnActivityControlOptInResult(bool opted_in) {
+  if (opted_in) {
+    settings_manager_->UpdateSettings(
+        GetSettingsUiUpdate(consent_token_).SerializeAsString(),
+        base::BindOnce(&AssistantOptInUI::OnUpdateSettingsResponse,
+                       weak_factory_.GetWeakPtr()));
+  } else {
+    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+    prefs->SetBoolean(arc::prefs::kArcVoiceInteractionValuePropAccepted, false);
+    prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, false);
+    CloseDialog(nullptr);
   }
 }
 
@@ -303,7 +344,7 @@ void AssistantOptInUI::OnEmailOptInResult(bool opted_in) {
   settings_manager_->UpdateSettings(
       GetEmailOptInUpdate(opted_in).SerializeAsString(),
       base::BindOnce(&AssistantOptInUI::OnUpdateSettingsResponse,
-                     weak_factory_.GetWeakPtr(), true));
+                     weak_factory_.GetWeakPtr()));
 }
 
 void AssistantOptInUI::OnGetSettingsResponse(const std::string& settings) {
@@ -311,17 +352,17 @@ void AssistantOptInUI::OnGetSettingsResponse(const std::string& settings) {
   settings_ui.ParseFromString(settings);
 
   DCHECK(settings_ui.has_consent_flow_ui());
-  auto activity_control_ui =
-      settings_ui.consent_flow_ui().consent_ui().activity_control_ui();
-  auto third_party_disclosure_ui =
-      settings_ui.consent_flow_ui().consent_ui().third_party_disclosure_ui();
+  auto consent_ui = settings_ui.consent_flow_ui().consent_ui();
+  auto activity_control_ui = consent_ui.activity_control_ui();
+  auto confirm_reject_ui = consent_ui.activity_control_confirm_reject_ui();
+  auto third_party_disclosure_ui = consent_ui.third_party_disclosure_ui();
 
   consent_token_ = activity_control_ui.consent_token();
 
-  // Process activity controll data.
+  // Process activity control data.
   if (!activity_control_ui.setting_zippy().size()) {
     // No need to consent. Move to the next screen.
-    activity_controll_needed_ = false;
+    activity_control_needed_ = false;
     PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
     prefs->SetBoolean(arc::prefs::kArcVoiceInteractionValuePropAccepted, true);
     prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
@@ -345,11 +386,10 @@ void AssistantOptInUI::OnGetSettingsResponse(const std::string& settings) {
 
   // Pass string constants dictionary.
   assistant_handler_->ReloadContent(
-      GetSettingsUiStrings(settings_ui, activity_controll_needed_));
+      GetSettingsUiStrings(settings_ui, activity_control_needed_));
 }
 
-void AssistantOptInUI::OnUpdateSettingsResponse(bool should_exit,
-                                                const std::string& result) {
+void AssistantOptInUI::OnUpdateSettingsResponse(const std::string& result) {
   assistant::SettingsUiUpdateResult ui_result;
   ui_result.ParseFromString(result);
 
@@ -358,7 +398,8 @@ void AssistantOptInUI::OnUpdateSettingsResponse(bool should_exit,
         assistant::ConsentFlowUiUpdateResult::SUCCESS) {
       // TODO(updowndta): Handle consent update failure.
       LOG(ERROR) << "Consent udpate error.";
-    } else {
+    } else if (activity_control_needed_) {
+      activity_control_needed_ = false;
       PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
       prefs->SetBoolean(arc::prefs::kArcVoiceInteractionValuePropAccepted,
                         true);
@@ -374,11 +415,7 @@ void AssistantOptInUI::OnUpdateSettingsResponse(bool should_exit,
     }
   }
 
-  if (!should_exit) {
-    assistant_handler_->ShowNextScreen();
-  } else {
-    CloseDialog(nullptr);
-  }
+  assistant_handler_->ShowNextScreen();
 }
 
 // AssistantOptInDialog

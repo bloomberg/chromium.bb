@@ -8,8 +8,10 @@
 // <include src="../login/oobe_dialog.js">
 // <include src="utils.js">
 // <include src="setting_zippy.js">
+// <include src="assistant_confirm_reject.js">
 // <include src="assistant_get_more.js">
 // <include src="assistant_loading.js">
+// <include src="assistant_ready.js">
 // <include src="assistant_third_party.js">
 // <include src="assistant_value_prop.js">
 
@@ -40,6 +42,7 @@ cr.define('assistantOptin', function() {
       loadTimeData.overrideValues(data);
       i18nTemplate.process(document, loadTimeData);
       $('value-prop').reloadContent(data);
+      $('confirm-reject').reloadContent(data);
       $('third-party').reloadContent(data);
       $('get-more').reloadContent(data);
     },
@@ -71,10 +74,20 @@ cr.define('assistantOptin', function() {
     showNextScreen: function() {
       switch (this.currentScreen) {
         case $('value-prop'):
+          if ($('value-prop').userAccepted) {
+            this.showScreen($('third-party'));
+          } else {
+            this.showScreen($('confirm-reject'));
+          }
+          break;
+        case $('confirm-reject'):
           this.showScreen($('third-party'));
           break;
         case $('third-party'):
           this.showScreen($('get-more'));
+          break;
+        case $('get-more'):
+          this.showScreen($('ready'));
           break;
         default:
           console.error('Undefined');

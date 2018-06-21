@@ -40,7 +40,7 @@ void ValuePropScreenHandler::DeclareLocalizedValues(
                IDS_VOICE_INTERACTION_VALUE_PROP_LOAD_ERROR_MESSAGE);
   builder->Add("assistantOptinRetryButton",
                IDS_VOICE_INTERACTION_VALUE_PROP_RETRY_BUTTON);
-  builder->Add("valuePropMoreButton",
+  builder->Add("assistantOptinMoreButton",
                IDS_VOICE_INTERACTION_VALUE_PROP_MORE_BUTTION);
   builder->Add("back", IDS_EULA_BACK_BUTTON);
   builder->Add("next", IDS_EULA_NEXT_BUTTON);

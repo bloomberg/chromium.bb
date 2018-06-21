@@ -46,6 +46,14 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Whether user accept the activity control.
+     */
+    userAccepted: {
+      type: Boolean,
+      value: true,
+    },
   },
 
   /**
@@ -117,6 +125,7 @@ Polymer({
    * @private
    */
   onSkipTap_: function() {
+    this.userAccepted = false;
     chrome.send('AssistantValuePropScreen.userActed', ['skip-pressed']);
   },
 
@@ -138,6 +147,7 @@ Polymer({
    * @private
    */
   onNextTap_: function() {
+    this.userAccepted = true;
     chrome.send('AssistantValuePropScreen.userActed', ['next-pressed']);
   },
 
