@@ -4518,7 +4518,7 @@ if (!is_android) {
       "../browser/ssl/cert_verifier_browser_test.h",
       "base/in_process_browser_test.cc",
       "base/in_process_browser_test.h",
-      "base/in_process_browser_test_mac.cc",
+      "base/in_process_browser_test_mac.mm",
       "base/javascript_browser_test.cc",
       "base/javascript_browser_test.h",
       "base/mojo_web_ui_browser_test.cc",

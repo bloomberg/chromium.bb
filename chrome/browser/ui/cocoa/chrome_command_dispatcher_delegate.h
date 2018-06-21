@@ -13,6 +13,9 @@
 // shortcuts and executing them with chrome::ExecuteCommand.
 @interface ChromeCommandDispatcherDelegate : NSObject<CommandDispatcherDelegate>
 
+// Permanently disabled throttling of repeated commands.
++ (void)disableThrottleForTesting;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_CHROME_COMMAND_DISPATCHER_DELEGATE_H_

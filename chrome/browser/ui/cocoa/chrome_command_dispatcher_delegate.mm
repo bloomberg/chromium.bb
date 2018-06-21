@@ -16,7 +16,56 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
+namespace {
+
+// For commands that bypass the main menu, we need a custom throttle
+// implementation since we don't have main menu's 100ms throttle. If a command
+// is repeated, and less than 50ms has passed, ignore it. 50ms was chosen as a
+// time that feels good - 100ms feels too long.
+constexpr NSTimeInterval kThrottleTimeIntervalSeconds = 0.05;
+
+// Browser tests disable throttling so that they can quickly send key events.
+bool g_throttling_enabled = true;
+
+}  // namespace
+
+@interface ChromeCommandDispatcherDelegate ()
+// We track the last time we let a hotkey bypass the main menu. This allows us
+// to implement a custom throttle. By default, the main menu has a built-in
+// 100ms throttle [also used to highlight the .
+@property(nonatomic, retain) NSDate* lastMainMenuBypassDate;
+@property(nonatomic, assign) int lastMainMenuBypassChromeCommand;
+@end
+
 @implementation ChromeCommandDispatcherDelegate
+@synthesize lastMainMenuBypassDate = lastMainMenuBypassDate_;
+@synthesize lastMainMenuBypassChromeCommand = lastMainMenuBypassChromeCommand_;
+
++ (void)disableThrottleForTesting {
+  g_throttling_enabled = false;
+}
+
+- (void)dealloc {
+  [lastMainMenuBypassDate_ release];
+  [super dealloc];
+}
+
+- (BOOL)shouldThrottleChromeCommand:(int)command {
+  if (!g_throttling_enabled)
+    return NO;
+  return self.lastMainMenuBypassChromeCommand == command &&
+         self.lastMainMenuBypassDate &&
+         fabs([self.lastMainMenuBypassDate timeIntervalSinceNow]) <
+             kThrottleTimeIntervalSeconds;
+}
+
+- (void)executeChromeCommandBypassingMainMenu:(int)command
+                                      browser:(Browser*)browser {
+  self.lastMainMenuBypassDate = [NSDate date];
+  self.lastMainMenuBypassChromeCommand = command;
+
+  chrome::ExecuteCommand(browser, command);
+}
 
 - (BOOL)eventHandledByExtensionCommand:(NSEvent*)event
                               priority:(ui::AcceleratorManager::HandlerPriority)
@@ -76,21 +125,25 @@
   //
   // By not passing the event to AppKit, we do lose out on the brief
   // highlighting of the NSMenu.
-  //
-  // TODO(erikchen): Add a throttle. Otherwise, it's possible for a user holding
-  // down a hotkey [e.g. cmd + w] to accidentally close too many tabs!
-  // https://crbug.com/846893.
   CommandForKeyEventResult result = CommandForKeyEvent(event);
   if (result.found()) {
     Browser* browser = chrome::FindBrowserWithWindow(window);
     if (browser &&
         browser->command_controller()->IsReservedCommandOrKey(
             result.chrome_command, content::NativeWebKeyboardEvent(event))) {
-      if (result.from_main_menu) {
-        return ui::PerformKeyEquivalentResult::kPassToMainMenu;
+      // If a command is reserved, then we also have it bypass the main menu.
+      // This is based on the rough approximation that reserved commands are
+      // also the ones that we want to be quickly repeatable.
+      // https://crbug.com/836947.
+
+      if ([self shouldThrottleChromeCommand:result.chrome_command]) {
+        // Claim to have handled the command to prevent anyone else from
+        // processing it.
+        return ui::PerformKeyEquivalentResult::kHandled;
       }
 
-      chrome::ExecuteCommand(browser, result.chrome_command);
+      [self executeChromeCommandBypassingMainMenu:result.chrome_command
+                                          browser:browser];
       return ui::PerformKeyEquivalentResult::kHandled;
     }
   }
@@ -117,11 +170,22 @@
   if (result.found()) {
     Browser* browser = chrome::FindBrowserWithWindow(window);
     if (browser) {
+      // postPerformKeyEquivalent: is only called on events that are not
+      // reserved. We want to bypass the main menu if and only if the event is
+      // reserved. As such, we let all events with main menu keyEquivalents be
+      // handled by the main menu.
       if (result.from_main_menu) {
         return ui::PerformKeyEquivalentResult::kPassToMainMenu;
       }
 
-      chrome::ExecuteCommand(browser, result.chrome_command);
+      if ([self shouldThrottleChromeCommand:result.chrome_command]) {
+        // Claim to have handled the command to prevent anyone else from
+        // processing it.
+        return ui::PerformKeyEquivalentResult::kHandled;
+      }
+
+      [self executeChromeCommandBypassingMainMenu:result.chrome_command
+                                          browser:browser];
       return ui::PerformKeyEquivalentResult::kHandled;
     }
   }
