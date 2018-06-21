@@ -160,6 +160,8 @@ TEST(TranslateLanguageListTest, GetSupportedLanguagesFetch) {
   languages.clear();
   language_list.GetSupportedLanguages(true /* translate_allowed */, &languages);
   EXPECT_EQ(std::vector<std::string>(1, "it"), languages);
+
+  TranslateDownloadManager::GetInstance()->ResetForTesting();
 }
 
 // Check that we don't send any network data when translate is disabled by
@@ -186,6 +188,8 @@ TEST(TranslateLanguageListTest, GetSupportedLanguagesNoFetch) {
   // language list load.
   EXPECT_FALSE(language_list.HasOngoingLanguageListLoadingForTesting());
   EXPECT_TRUE(test_url_loader_factory.pending_requests()->empty());
+
+  TranslateDownloadManager::GetInstance()->ResetForTesting();
 }
 
 }  // namespace translate

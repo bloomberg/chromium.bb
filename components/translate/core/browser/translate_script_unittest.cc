@@ -40,7 +40,10 @@ class TranslateScriptTest : public testing::Test {
         test_shared_loader_factory_);
   }
 
-  void TearDown() override { script_.reset(); }
+  void TearDown() override {
+    script_.reset();
+    TranslateDownloadManager::GetInstance()->ResetForTesting();
+  }
 
   void Request() {
     script_->Request(
