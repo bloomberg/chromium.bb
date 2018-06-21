@@ -92,10 +92,6 @@ const base::Feature kUiCompositorScrollWithLayers = {
 };
 
 #if defined(OS_WIN)
-// Enables stylus appearing as touch when in contact with digitizer.
-const base::Feature kDirectManipulationStylus = {
-    "DirectManipulationStylus", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables InputPane API for controlling on screen keyboard.
 const base::Feature kInputPaneOnScreenKeyboard = {
     "InputPaneOnScreenKeyboard", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -120,6 +116,18 @@ const base::Feature kPrecisionTouchpad{"PrecisionTouchpad",
 const base::Feature kPrecisionTouchpadScrollPhase{
     "PrecisionTouchpadScrollPhase", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+// Enables stylus appearing as touch when in contact with digitizer.
+const base::Feature kDirectManipulationStylus = {
+    "DirectManipulationStylus",
+#if defined(OS_WIN)
+    base::FEATURE_ENABLED_BY_DEFAULT
+#else
+    base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 // Used to have ash (Chrome OS system UI) run in its own process.
 // TODO(jamescook): Make flag only available in Chrome OS.

@@ -2644,10 +2644,6 @@ const char kCloudPrintXpsDescription[] =
     "Print with Chrome. Printers must be re-connected after changing this "
     "flag.";
 
-const char kDirectManipulationStylusName[] = "Direct Manipulation Stylus";
-const char kDirectManipulationStylusDescription[] =
-    "If enabled, Chrome will scroll web pages on stylus drag.";
-
 const char kDisablePostscriptPrinting[] = "Disable PostScript Printing";
 const char kDisablePostscriptPrintingDescription[] =
     "Disables PostScript generation when printing to PostScript capable "
@@ -3267,6 +3263,14 @@ const char kAutomaticTabDiscardingDescription[] =
     "chrome://discards.";
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+
+const char kDirectManipulationStylusName[] = "Direct Manipulation Stylus";
+const char kDirectManipulationStylusDescription[] =
+    "If enabled, Chrome will scroll web pages on stylus drag.";
+
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 const char kExperimentalUiName[] = "Use all upcoming UI features";
 const char kExperimentalUiDescription[] = "Use all upcoming UI features.";
