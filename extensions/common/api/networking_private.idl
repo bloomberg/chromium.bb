@@ -864,6 +864,11 @@ namespace networkingPrivate {
     // If true, only policy networks may be connected to and no new networks may
     // be added or configured. Defaults to false.
     boolean? AllowOnlyPolicyNetworksToConnect;
+
+    // List of blacklisted networks. Connections to blacklisted networks are
+    // prohibited. Networks can be whitelisted again by specifying an explicit
+    // network configuration. Defaults to an empty list.
+    DOMString[]? BlacklistedHexSSIDs;
   };
 
   dictionary Certificate {

@@ -1101,7 +1101,7 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED" desc="Description in status area or network list when no network is connected.">
         No network
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_PROHIBITED" desc="Tooltip in network list when no network is prohibited by policy.">
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_PROHIBITED" desc="Tooltip in network list when the network is prohibited by policy.">
         This network is disabled by your administrator.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK" desc="Accessibility text for the network status tray when the connected network has a weak signal.">

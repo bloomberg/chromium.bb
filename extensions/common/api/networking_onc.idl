@@ -240,7 +240,7 @@ namespace networking.onc {
     // If set, the value against which to match the certificate subject's
     // organizational units. At least one organizational unit should match the
     // value.
-    DOMString? OrganizationalUnit;    
+    DOMString? OrganizationalUnit;
   };
 
   dictionary CertificatePattern {
@@ -417,7 +417,7 @@ namespace networking.onc {
 
   [noinline_doc] dictionary CellularProperties {
     // Whether the cellular network should be connected automatically (when
-    // in range). 
+    // in range).
     boolean? AutoConnect;
     // The cellular network activation type.
     DOMString? ActivationType;
@@ -533,7 +533,7 @@ namespace networking.onc {
   };
 
   dictionary EthernetProperties {
-    // Whether the Ethernet network should be connected automatically. 
+    // Whether the Ethernet network should be connected automatically.
     boolean? AutoConnect;
     // The authentication used by the Ethernet network. Possible values are
     // <code>None</code> and <code>8021X</code>.
@@ -874,6 +874,11 @@ namespace networking.onc {
     // If true, only policy networks may be connected to and no new networks may
     // be added or configured. Defaults to false.
     boolean? AllowOnlyPolicyNetworksToConnect;
+
+    // List of blacklisted networks. Connections to blacklisted networks are
+    // prohibited. Networks can be whitelisted again by specifying an explicit
+    // network configuration. Defaults to an empty list.
+    DOMString[]? BlacklistedHexSSIDs;
   };
 
   callback VoidCallback = void();

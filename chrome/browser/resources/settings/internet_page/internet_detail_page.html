@@ -95,11 +95,11 @@
       <paper-button on-click="onConfigureTap_"
           hidden$="[[!showConfigure_(networkProperties, globalPolicy)]]">
         $i18n{networkButtonConfigure}
-      </paper-button> 
+      </paper-button>
       <paper-button class="action-button" on-click="onConnectTap_"
           hidden$="[[!showConnect_(networkProperties, globalPolicy)]]"
           disabled="[[!enableConnect_(networkProperties, defaultNetwork,
-              globalPolicy, networkPropertiesReceived_, outOfRange_)]]">
+              networkPropertiesReceived_, outOfRange_, globalPolicy)]]">
         $i18n{networkButtonConnect}
       </paper-button>
       <paper-button class="action-button" on-click="onDisconnectTap_"
@@ -110,12 +110,12 @@
 
     <!-- Disabled by policy / Shared messages. -->
     <div class="settings-box continuation"
-        hidden$="[[!connectNotAllowed_(networkProperties, globalPolicy)]]">
+        hidden$="[[!isBlockedByPolicy_(networkProperties, globalPolicy)]]">
       <iron-icon class="policy" icon="cr20:domain"></iron-icon>
       <div>$i18n{networkConnectNotAllowed}</div>
     </div>
     <div class="settings-box continuation"
-        hidden$="[[!showShared_(networkProperties)]]">
+        hidden$="[[!showShared_(networkProperties, globalPolicy)]]">
       $i18n{networkShared}
     </div>
 
@@ -131,7 +131,8 @@
 
     <template is="dom-if" if="[[!isSecondaryUser_]]">
       <!-- Prefer this network. -->
-      <template is="dom-if" if="[[showPreferNetwork_(networkProperties)]]">
+      <template is="dom-if"
+          if="[[showPreferNetwork_(networkProperties, globalPolicy)]]">
         <div class="settings-box">
           <div id="preferNetworkToggleLabel"class="start">
             $i18n{networkPrefer}
@@ -146,7 +147,8 @@
         </div>
       </template>
       <!-- Autoconnect. -->
-      <template is="dom-if" if="[[showAutoConnect_(networkProperties)]]">
+      <template is="dom-if"
+          if="[[showAutoConnect_(networkProperties, globalPolicy)]]">
         <div class="settings-box">
           <div id="autoConnectToggleLabel" class="start">
             $i18n{networkAutoConnect}
@@ -155,8 +157,7 @@
               property="[[getManagedAutoConnect_(networkProperties)]]">
           </cr-policy-network-indicator>
           <cr-toggle checked="{{autoConnect_}}"
-              disabled="[[!enableAutoConnect_(networkProperties,
-                  globalPolicy)]]"
+              disabled="[[!enableAutoConnect_(networkProperties)]]"
               aria-labelledby="autoConnectToggleLabel">
           </cr-toggle>
         </div>
@@ -226,7 +227,8 @@
         </iron-collapse>
       </template>
 
-      <template is="dom-if" if="[[hasNetworkSection_(networkProperties)]]">
+      <template is="dom-if"
+          if="[[hasNetworkSection_(networkProperties, globalPolicy)]]">
         <!-- Network toggle -->
         <div class="settings-box" actionable on-click="toggleNetworkExpanded_">
           <div class="start">$i18n{networkSectionNetwork}</div>
@@ -268,7 +270,8 @@
         </iron-collapse>
       </template>
 
-      <template is="dom-if" if="[[hasProxySection_(networkProperties)]]">
+      <template is="dom-if"
+          if="[[hasProxySection_(networkProperties, globalPolicy)]]">
         <!-- Proxy toggle -->
         <div class="settings-box" actionable on-click="toggleProxyExpanded_">
           <div class="start">$i18n{networkSectionProxy}</div>

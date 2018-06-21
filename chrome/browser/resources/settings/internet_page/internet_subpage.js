@@ -509,7 +509,7 @@ Polymer({
     assert(this.defaultNetwork !== undefined);
     const state = e.detail;
     e.target.blur();
-    if (this.canConnect_(state, this.globalPolicy, this.defaultNetwork)) {
+    if (this.canConnect_(state, this.defaultNetwork, this.globalPolicy)) {
       this.fire('network-connect', {networkProperties: state});
       return;
     }
@@ -517,20 +517,33 @@ Polymer({
   },
 
   /**
-   * Determines whether or not a network state can be connected to.
    * @param {!CrOnc.NetworkStateProperties} state The network state.
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
-   * @param {?CrOnc.NetworkStateProperties} defaultNetwork
    * @private
    */
-  canConnect_: function(state, globalPolicy, defaultNetwork) {
-    if (state.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED)
-      return false;
-    if (state.Type == CrOnc.Type.WI_FI && globalPolicy &&
-        globalPolicy.AllowOnlyPolicyNetworksToConnect &&
-        !this.isPolicySource(state.Source)) {
+  isBlockedByPolicy_: function(state, globalPolicy) {
+    if (state.Type != CrOnc.Type.WI_FI || this.isPolicySource(state.Source)) {
       return false;
     }
+    return !!globalPolicy &&
+        (!!globalPolicy.AllowOnlyPolicyNetworksToConnect ||
+         (!!state.WiFi && !!state.WiFi.HexSSID &&
+          !!globalPolicy.BlacklistedHexSSIDs &&
+          globalPolicy.BlacklistedHexSSIDs.includes(state.WiFi.HexSSID)));
+  },
+
+  /**
+   * Determines whether or not a network state can be connected to.
+   * @param {!CrOnc.NetworkStateProperties} state The network state.
+   * @param {?CrOnc.NetworkStateProperties} defaultNetwork
+   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @private
+   */
+  canConnect_: function(state, defaultNetwork, globalPolicy) {
+    if (state.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED)
+      return false;
+    if (this.isBlockedByPolicy_(state, globalPolicy))
+      return false;
     if (state.Type == CrOnc.Type.VPN &&
         (!defaultNetwork ||
          defaultNetwork.ConnectionState != CrOnc.ConnectionState.CONNECTED)) {
