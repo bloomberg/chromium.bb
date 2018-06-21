@@ -190,6 +190,16 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
       base::BindRepeating(
           &ChromePasswordProtectionService::OnWarningTriggerChanged,
           base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kPasswordProtectionLoginURLs,
+      base::BindRepeating(
+          &ChromePasswordProtectionService::OnEnterprisePasswordUrlChanged,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kPasswordProtectionChangePasswordURL,
+      base::BindRepeating(
+          &ChromePasswordProtectionService::OnEnterprisePasswordUrlChanged,
+          base::Unretained(this)));
   password_manager::HashPasswordManager hash_password_manager;
   hash_password_manager.set_prefs(profile->GetPrefs());
   base::Optional<password_manager::PasswordHashData> sync_hash_data =
@@ -1188,6 +1198,12 @@ void ChromePasswordProtectionService::OnWarningTriggerChanged() {
   PasswordStoreFactory::GetForProfile(profile_,
                                       ServiceAccessType::EXPLICIT_ACCESS)
       ->SchedulePasswordHashUpdate(/*should_log_metrics*/ false);
+}
+
+void ChromePasswordProtectionService::OnEnterprisePasswordUrlChanged() {
+  PasswordStoreFactory::GetForProfile(profile_,
+                                      ServiceAccessType::EXPLICIT_ACCESS)
+      ->ScheduleEnterprisePasswordURLUpdate();
 }
 
 }  // namespace safe_browsing

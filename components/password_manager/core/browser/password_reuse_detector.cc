@@ -68,7 +68,7 @@ bool ReverseStringLess::operator()(const base::string16& lhs,
                                       rhs.rend());
 }
 
-PasswordReuseDetector::PasswordReuseDetector() : prefs_(nullptr) {}
+PasswordReuseDetector::PasswordReuseDetector() {}
 
 PasswordReuseDetector::~PasswordReuseDetector() {}
 
@@ -160,10 +160,9 @@ PasswordReuseDetector::CheckNonGaiaEnterprisePasswordReuse(
   // Skips password reuse check if |domain| matches enterprise login URL or
   // enterprise change password URL.
   GURL page_url(domain);
-  if (!prefs_ ||
-      safe_browsing::MatchesPasswordProtectionLoginURL(page_url, *prefs_) ||
-      safe_browsing::MatchesPasswordProtectionChangePasswordURL(page_url,
-                                                                *prefs_)) {
+  if (enterprise_password_urls_.has_value() &&
+      safe_browsing::MatchesURLList(page_url,
+                                    enterprise_password_urls_.value())) {
     return base::nullopt;
   }
 
@@ -226,6 +225,20 @@ void PasswordReuseDetector::UseGaiaPasswordHash(
 void PasswordReuseDetector::UseNonGaiaEnterprisePasswordHash(
     base::Optional<std::vector<PasswordHashData>> password_hash_data_list) {
   enterprise_password_hash_data_list_ = std::move(password_hash_data_list);
+}
+
+void PasswordReuseDetector::UseEnterprisePasswordURLs(
+    base::Optional<std::vector<GURL>> enterprise_login_urls,
+    base::Optional<GURL> enterprise_change_password_url) {
+  enterprise_password_urls_ = std::move(enterprise_login_urls);
+  if (!enterprise_change_password_url.has_value() ||
+      !enterprise_change_password_url->is_valid()) {
+    return;
+  }
+
+  if (!enterprise_password_urls_)
+    enterprise_password_urls_ = base::make_optional<std::vector<GURL>>();
+  enterprise_password_urls_->push_back(enterprise_change_password_url.value());
 }
 
 void PasswordReuseDetector::ClearGaiaPasswordHash(const std::string& username) {

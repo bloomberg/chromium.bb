@@ -14,10 +14,6 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/testing_pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -104,15 +100,13 @@ std::vector<PasswordHashData> PrepareEnterprisePasswordData(
   return result;
 }
 
-void ConfigureEnterprisePasswordProtection(TestingPrefServiceSimple* prefs) {
-  prefs->registry()->RegisterStringPref(
-      prefs::kPasswordProtectionChangePasswordURL, "");
-  prefs->registry()->RegisterListPref(prefs::kPasswordProtectionLoginURLs);
-  prefs->SetString(prefs::kPasswordProtectionChangePasswordURL,
-                   "https://changepassword.example.com/");
-  base::ListValue login_urls;
-  login_urls.AppendString("https://login.example.com");
-  prefs->Set(prefs::kPasswordProtectionLoginURLs, login_urls);
+void ConfigureEnterprisePasswordProtection(
+    PasswordReuseDetector* reuse_detector) {
+  base::Optional<std::vector<GURL>> login_urls =
+      base::make_optional<std::vector<GURL>>();
+  login_urls->push_back(GURL("https://login.example.com"));
+  reuse_detector->UseEnterprisePasswordURLs(
+      login_urls, GURL("https://changepassword.example.com/"));
 }
 
 TEST(PasswordReuseDetectorTest, TypingPasswordOnDifferentSite) {
@@ -296,14 +290,8 @@ TEST(PasswordReuseDetectorTest, GaiaPasswordReuseFound) {
 }
 
 TEST(PasswordReuseDetectorTest, EnterprisePasswordNoReuse) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
-  TestingPrefServiceSimple prefs;
-  ConfigureEnterprisePasswordProtection(&prefs);
-
   PasswordReuseDetector reuse_detector;
-  reuse_detector.SetPrefs(&prefs);
+  ConfigureEnterprisePasswordProtection(&reuse_detector);
   reuse_detector.OnGetPasswordStoreResults(GetForms(GetTestDomainsPasswords()));
   MockPasswordReuseDetectorConsumer mockConsumer;
 
@@ -330,14 +318,8 @@ TEST(PasswordReuseDetectorTest, EnterprisePasswordNoReuse) {
 }
 
 TEST(PasswordReuseDetectorTest, EnterprisePasswordReuseFound) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
-  TestingPrefServiceSimple prefs;
-  ConfigureEnterprisePasswordProtection(&prefs);
-
   PasswordReuseDetector reuse_detector;
-  reuse_detector.SetPrefs(&prefs);
+  ConfigureEnterprisePasswordProtection(&reuse_detector);
   reuse_detector.OnGetPasswordStoreResults(GetForms(GetTestDomainsPasswords()));
   MockPasswordReuseDetectorConsumer mockConsumer;
 
@@ -406,17 +388,11 @@ TEST(PasswordReuseDetectorTest, MatchSavedPasswordButNotGaiaPassword) {
 }
 
 TEST(PasswordReuseDetectorTest, MatchEnterpriseAndMultipleSavedPasswords) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
-  TestingPrefServiceSimple prefs;
-  ConfigureEnterprisePasswordProtection(&prefs);
-
   const std::vector<std::pair<std::string, std::string>> domain_passwords = {
       {"https://a.com", "34567890"}, {"https://b.com", "01234567890"},
   };
   PasswordReuseDetector reuse_detector;
-  reuse_detector.SetPrefs(&prefs);
+  ConfigureEnterprisePasswordProtection(&reuse_detector);
   reuse_detector.OnGetPasswordStoreResults(GetForms(domain_passwords));
 
   std::string enterprise_password = "1234567890";
@@ -449,14 +425,8 @@ TEST(PasswordReuseDetectorTest, MatchEnterpriseAndMultipleSavedPasswords) {
 }
 
 TEST(PasswordReuseDetectorTest, MatchSavedPasswordButNotEnterprisePassword) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
-  TestingPrefServiceSimple prefs;
-  ConfigureEnterprisePasswordProtection(&prefs);
-
   PasswordReuseDetector reuse_detector;
-  reuse_detector.SetPrefs(&prefs);
+  ConfigureEnterprisePasswordProtection(&reuse_detector);
   reuse_detector.OnGetPasswordStoreResults(GetForms(GetTestDomainsPasswords()));
   MockPasswordReuseDetectorConsumer mockConsumer;
 
@@ -472,17 +442,11 @@ TEST(PasswordReuseDetectorTest, MatchSavedPasswordButNotEnterprisePassword) {
 }
 
 TEST(PasswordReuseDetectorTest, MatchGaiaEnterpriseAndSavedPassword) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
-  TestingPrefServiceSimple prefs;
-  ConfigureEnterprisePasswordProtection(&prefs);
-
   const std::vector<std::pair<std::string, std::string>> domain_passwords = {
       {"https://a.com", "34567890"}, {"https://b.com", "01234567890"},
   };
   PasswordReuseDetector reuse_detector;
-  reuse_detector.SetPrefs(&prefs);
+  ConfigureEnterprisePasswordProtection(&reuse_detector);
   reuse_detector.OnGetPasswordStoreResults(GetForms(domain_passwords));
 
   std::string gaia_password = "123456789";

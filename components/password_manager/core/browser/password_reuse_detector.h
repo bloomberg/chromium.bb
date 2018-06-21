@@ -65,13 +65,17 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   void UseNonGaiaEnterprisePasswordHash(
       base::Optional<std::vector<PasswordHashData>> password_hash_data_list);
 
+  // Stores enterprise login URLs and change password URL.
+  // These URLs should be skipped in enterprise password reuse checking.
+  void UseEnterprisePasswordURLs(
+      base::Optional<std::vector<GURL>> enterprise_login_urls,
+      base::Optional<GURL> enterprise_change_password_url);
+
   void ClearGaiaPasswordHash(const std::string& username);
 
   void ClearAllGaiaPasswordHash();
 
   void ClearAllEnterprisePasswordHash();
-
-  void SetPrefs(PrefService* prefs) { prefs_ = prefs; }
 
  private:
   using passwords_iterator = std::map<base::string16,
@@ -127,7 +131,7 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   base::Optional<std::vector<PasswordHashData>>
       enterprise_password_hash_data_list_;
 
-  PrefService* prefs_;
+  base::Optional<std::vector<GURL>> enterprise_password_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseDetector);
 };

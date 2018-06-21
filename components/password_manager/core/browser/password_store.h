@@ -293,8 +293,12 @@ class PasswordStore : protected PasswordStoreSync,
   void SetPasswordStoreSigninNotifier(
       std::unique_ptr<PasswordStoreSigninNotifier> notifier);
 
-  // Schedule the update of password hashes used by reuse detector.
+  // Schedules the update of password hashes used by reuse detector.
   void SchedulePasswordHashUpdate(bool should_log_metrics);
+
+  // Schedules the update of enterprise login and change password URLs.
+  // These URLs are used in enterprise password reuse detection.
+  void ScheduleEnterprisePasswordURLUpdate();
 
 #endif
 
@@ -482,6 +486,12 @@ class PasswordStore : protected PasswordStoreSync,
   void SaveProtectedPasswordHashImpl(
       PasswordHashDataList protected_password_data_list,
       bool should_log_metrics);
+
+  // Propagates enterprise login urls and change password url to
+  // |reuse_detector_|.
+  void SaveEnterprisePasswordURLs(
+      const std::vector<GURL>& enterprise_login_urls,
+      const GURL& enterprise_change_password_url);
 
   // Synchronous implementation of ClearProtectedPasswordHash().
   void ClearProtectedPasswordHashImpl();
