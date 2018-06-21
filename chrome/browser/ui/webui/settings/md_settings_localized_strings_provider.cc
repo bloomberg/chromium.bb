@@ -1616,7 +1616,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
      IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE_WARNING_WITH_COUNTS_PLURAL},
     {"deleteProfileWarningWithoutCounts",
      IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE_WARNING_WITHOUT_COUNTS},
-    {"syncDisconnectExplanation", IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION},
     {"syncDisconnectConfirm", IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM},
     {"sync", IDS_SETTINGS_SYNC},
     {"syncDescription", IDS_SETTINGS_SYNC_DESCRIPTION},
@@ -1726,8 +1725,9 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   // The syncDisconnect text differs depending on Dice-enabledness.
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
     LocalizedString sync_disconnect_strings[] = {
-        {"syncDisconnect", IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CONFIRM},
-        {"syncDisconnectTitle", IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_TITLE},
+        {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
+        {"syncDisconnectTitle",
+         IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE},
         {"syncDisconnectDeleteProfile",
          IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CHECKBOX},
         {"syncDisconnectConfirm",
@@ -1735,6 +1735,12 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     };
     AddLocalizedStringsBulk(html_source, sync_disconnect_strings,
                             arraysize(sync_disconnect_strings));
+
+    html_source->AddString(
+        "syncDisconnectExplanation",
+        l10n_util::GetStringFUTF8(
+            IDS_SETTINGS_SYNC_DISCONNECT_AND_SIGN_OUT_EXPLANATION,
+            base::ASCIIToUTF16(sync_dashboard_url)));
   }
 #endif
 
