@@ -109,6 +109,11 @@ scoped_refptr<ComputedStyle> PseudoElement::CustomStyleForLayoutObject() {
   if (!original_style || original_style->Display() != EDisplay::kContents)
     return original_style;
 
+  return StoreOriginalAndReturnLayoutStyle(std::move(original_style));
+}
+
+scoped_refptr<ComputedStyle> PseudoElement::StoreOriginalAndReturnLayoutStyle(
+    scoped_refptr<ComputedStyle> original_style) {
   // For display:contents we should not generate a box, but we generate a non-
   // observable inline box for pseudo elements to be able to locate the
   // anonymous layout objects for generated content during DetachLayoutTree().
@@ -120,7 +125,7 @@ scoped_refptr<ComputedStyle> PseudoElement::CustomStyleForLayoutObject() {
 
   // Store the actual ComputedStyle to be able to return the correct values from
   // getComputedStyle().
-  StoreNonLayoutObjectComputedStyle(original_style);
+  StoreNonLayoutObjectComputedStyle(std::move(original_style));
   return layout_style;
 }
 
