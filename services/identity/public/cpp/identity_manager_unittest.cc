@@ -315,7 +315,9 @@ class TestIdentityManagerDiagnosticsObserver
     token_requestor_account_id_ = account_id;
     token_requestor_consumer_id_ = consumer_id;
     token_requestor_scopes_ = scopes;
-    std::move(on_access_token_requested_callback_).Run();
+
+    if (on_access_token_requested_callback_)
+      std::move(on_access_token_requested_callback_).Run();
   }
 
   IdentityManager* identity_manager_;
@@ -499,9 +501,20 @@ TEST_F(IdentityManagerTest, RemoveAccessTokenFromCache) {
   run_loop.Run();
 }
 
+TEST_F(IdentityManagerTest, CreateAccessTokenFetcher) {
+  std::set<std::string> scopes{"scope"};
+  AccessTokenFetcher::TokenCallback callback = base::BindOnce(
+      [](GoogleServiceAuthError error, std::string access_token) {});
+  std::unique_ptr<AccessTokenFetcher> token_fetcher =
+      identity_manager()->CreateAccessTokenFetcherForAccount(
+          identity_manager()->GetPrimaryAccountInfo().account_id,
+          "dummy_consumer", scopes, std::move(callback));
+  EXPECT_TRUE(token_fetcher);
+}
+
 TEST_F(IdentityManagerTest, CreateAccessTokenFetcherForPrimaryAccount) {
   std::set<std::string> scopes{"scope"};
-  PrimaryAccountAccessTokenFetcher::TokenCallback callback = base::BindOnce(
+  AccessTokenFetcher::TokenCallback callback = base::BindOnce(
       [](GoogleServiceAuthError error, std::string access_token) {});
   std::unique_ptr<PrimaryAccountAccessTokenFetcher> token_fetcher =
       identity_manager()->CreateAccessTokenFetcherForPrimaryAccount(
@@ -520,7 +533,7 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
   token_service()->UpdateCredentials(account_id, "refresh_token");
 
   std::set<std::string> scopes{"scope"};
-  PrimaryAccountAccessTokenFetcher::TokenCallback callback = base::BindOnce(
+  AccessTokenFetcher::TokenCallback callback = base::BindOnce(
       [](GoogleServiceAuthError error, std::string access_token) {});
   std::unique_ptr<PrimaryAccountAccessTokenFetcher> token_fetcher =
       identity_manager()->CreateAccessTokenFetcherForPrimaryAccount(

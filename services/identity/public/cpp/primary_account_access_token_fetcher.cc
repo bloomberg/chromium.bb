@@ -15,9 +15,9 @@ PrimaryAccountAccessTokenFetcher::PrimaryAccountAccessTokenFetcher(
     SigninManagerBase* signin_manager,
     OAuth2TokenService* token_service,
     const OAuth2TokenService::ScopeSet& scopes,
-    TokenCallback callback,
+    AccessTokenFetcher::TokenCallback callback,
     Mode mode)
-    : OAuth2TokenService::Consumer(oauth_consumer_name),
+    : oauth_consumer_name_(oauth_consumer_name),
       signin_manager_(signin_manager),
       token_service_(token_service),
       scopes_(scopes),
@@ -59,13 +59,14 @@ void PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest() {
   // Note: We might get here even in cases where we know that there's no refresh
   // token. We're requesting an access token anyway, so that the token service
   // will generate an appropriate error code that we can return to the client.
-  DCHECK(!access_token_request_);
+  DCHECK(!access_token_fetcher_);
 
-  // TODO(843510): Consider making the request to ProfileOAuth2TokenService
-  // asynchronously once there are no direct clients of PO2TS (i.e., PO2TS is
-  // used only by this class and IdentityManager).
-  access_token_request_ = token_service_->StartRequest(
-      signin_manager_->GetAuthenticatedAccountId(), scopes_, this);
+  access_token_fetcher_ = std::make_unique<AccessTokenFetcher>(
+      signin_manager_->GetAuthenticatedAccountId(), oauth_consumer_name_,
+      token_service_, scopes_,
+      base::BindOnce(
+          &PrimaryAccountAccessTokenFetcher::OnAccessTokenFetchComplete,
+          base::Unretained(this)));
 }
 
 void PrimaryAccountAccessTokenFetcher::GoogleSigninSucceeded(
@@ -91,25 +92,10 @@ void PrimaryAccountAccessTokenFetcher::ProcessSigninStateChange() {
   StartAccessTokenRequest();
 }
 
-void PrimaryAccountAccessTokenFetcher::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  DCHECK_EQ(request, access_token_request_.get());
-  std::unique_ptr<OAuth2TokenService::Request> request_deleter(
-      std::move(access_token_request_));
-
-  RunCallbackAndMaybeDie(GoogleServiceAuthError::AuthErrorNone(), access_token);
-
-  // Potentially dead after the above invocation; nothing to do except return.
-}
-
-void PrimaryAccountAccessTokenFetcher::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  DCHECK_EQ(request, access_token_request_.get());
-  std::unique_ptr<OAuth2TokenService::Request> request_deleter(
-      std::move(access_token_request_));
+void PrimaryAccountAccessTokenFetcher::OnAccessTokenFetchComplete(
+    GoogleServiceAuthError error,
+    std::string access_token) {
+  access_token_fetcher_.reset();
 
   // There is a special case for Android that RefreshTokenIsAvailable and
   // StartRequest are called to pre-fetch the account image and name before
@@ -130,14 +116,6 @@ void PrimaryAccountAccessTokenFetcher::OnGetTokenFailure(
     return;
   }
 
-  RunCallbackAndMaybeDie(error, std::string());
-
-  // Potentially dead after the above invocation; nothing to do except return.
-}
-
-void PrimaryAccountAccessTokenFetcher::RunCallbackAndMaybeDie(
-    const GoogleServiceAuthError& error,
-    const std::string& access_token) {
   // Per the contract of this class, it is allowed for consumers to delete this
   // object from within the callback that is run below. Hence, it is not safe to
   // add any code below this call.

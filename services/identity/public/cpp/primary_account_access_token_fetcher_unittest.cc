@@ -57,7 +57,7 @@ class PrimaryAccountAccessTokenFetcherTest
       public OAuth2TokenService::DiagnosticsObserver {
  public:
   using TestTokenCallback =
-      StrictMock<MockCallback<PrimaryAccountAccessTokenFetcher::TokenCallback>>;
+      StrictMock<MockCallback<AccessTokenFetcher::TokenCallback>>;
 
   PrimaryAccountAccessTokenFetcherTest() : signin_client_(&pref_service_) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
@@ -88,7 +88,7 @@ class PrimaryAccountAccessTokenFetcherTest
   }
 
   std::unique_ptr<PrimaryAccountAccessTokenFetcher> CreateFetcher(
-      PrimaryAccountAccessTokenFetcher::TokenCallback callback,
+      AccessTokenFetcher::TokenCallback callback,
       PrimaryAccountAccessTokenFetcher::Mode mode) {
     std::set<std::string> scopes{"scope"};
     return std::make_unique<PrimaryAccountAccessTokenFetcher>(

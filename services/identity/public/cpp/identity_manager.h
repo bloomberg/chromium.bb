@@ -10,6 +10,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "services/identity/public/cpp/access_token_fetcher.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 #if !defined(OS_CHROMEOS)
@@ -119,12 +120,19 @@ class IdentityManager : public SigninManagerBase::Observer,
   // primary account info has a valid account ID.
   bool HasPrimaryAccount();
 
+  // Creates an AccessTokenFetcher given the passed-in information.
+  std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
+      const std::string& account_id,
+      const std::string& oauth_consumer_name,
+      const OAuth2TokenService::ScopeSet& scopes,
+      AccessTokenFetcher::TokenCallback callback);
+
   // Creates a PrimaryAccountAccessTokenFetcher given the passed-in information.
   std::unique_ptr<PrimaryAccountAccessTokenFetcher>
   CreateAccessTokenFetcherForPrimaryAccount(
       const std::string& oauth_consumer_name,
       const OAuth2TokenService::ScopeSet& scopes,
-      PrimaryAccountAccessTokenFetcher::TokenCallback callback,
+      AccessTokenFetcher::TokenCallback callback,
       PrimaryAccountAccessTokenFetcher::Mode mode);
 
   // If an entry exists in the Identity Service's cache corresponding to the
