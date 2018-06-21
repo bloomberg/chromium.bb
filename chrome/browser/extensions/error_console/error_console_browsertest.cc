@@ -492,8 +492,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIArgumentsRuntimeError) {
     message =
         "Uncaught TypeError: Error in invocation of "
         "tabs.get(integer tabId, function callback): "
-        "Error at parameter 'tabId': Invalid type: "
-        "expected integer, found string.";
+        "No matching signature.";
   } else {
     // API calls are checked in schemaUtils.js with JS bindings.
     source = "extensions::" + std::string(kSchemaUtils);
