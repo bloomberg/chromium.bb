@@ -31,8 +31,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_UP_SAMPLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_UP_SAMPLER_H_
 
+#include <memory>
+
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
 #include "third_party/blink/renderer/platform/audio/direct_convolver.h"
+#include "third_party/blink/renderer/platform/audio/simple_fft_convolver.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
@@ -63,7 +66,8 @@ class PLATFORM_EXPORT UpSampler {
   size_t input_block_size_;
 
   // Computes the odd sample-frames of the output.
-  DirectConvolver convolver_;
+  std::unique_ptr<DirectConvolver> direct_convolver_;
+  std::unique_ptr<SimpleFFTConvolver> simple_fft_convolver_;
 
   AudioFloatArray temp_buffer_;
 

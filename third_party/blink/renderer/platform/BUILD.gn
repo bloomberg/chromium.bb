@@ -406,6 +406,8 @@ jumbo_component("platform") {
     "audio/reverb_convolver_stage.h",
     "audio/reverb_input_buffer.cc",
     "audio/reverb_input_buffer.h",
+    "audio/simple_fft_convolver.cc",
+    "audio/simple_fft_convolver.h",
     "audio/sinc_resampler.cc",
     "audio/sinc_resampler.h",
     "audio/stereo_panner.cc",

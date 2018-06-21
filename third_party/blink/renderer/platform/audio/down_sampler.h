@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_DOWN_SAMPLER_H_
 
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
-#include "third_party/blink/renderer/platform/audio/direct_convolver.h"
+#include "third_party/blink/renderer/platform/audio/simple_fft_convolver.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
@@ -62,8 +62,8 @@ class PLATFORM_EXPORT DownSampler {
 
   size_t input_block_size_;
 
-  // Half-band filter.
-  DirectConvolver convolver_;
+  // Half-band filter. SimpleFFTConvolver is always faster than DirectConvolver.
+  SimpleFFTConvolver convolver_;
 
   AudioFloatArray temp_buffer_;
 

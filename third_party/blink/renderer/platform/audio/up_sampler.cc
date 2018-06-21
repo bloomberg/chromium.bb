@@ -76,13 +76,30 @@ std::unique_ptr<AudioFloatArray> MakeKernel(size_t size) {
 
 UpSampler::UpSampler(size_t input_block_size)
     : input_block_size_(input_block_size),
-      convolver_(input_block_size, MakeKernel(kDefaultKernelSize)),
       temp_buffer_(input_block_size),
-      input_buffer_(input_block_size * 2) {}
+      input_buffer_(input_block_size * 2) {
+  std::unique_ptr<AudioFloatArray> convolution_kernel =
+      MakeKernel(kDefaultKernelSize);
+  if (input_block_size_ <= 128) {
+    // If the input block size is small enough, use direct convolution because
+    // it is faster than FFT convolution for such input block sizes.
+    direct_convolver_ = std::make_unique<DirectConvolver>(
+        input_block_size_, std::move(convolution_kernel));
+  } else {
+    // Otherwise, use FFT convolution because it is faster than direct
+    // convolution for large input block sizes.
+    simple_fft_convolver_ = std::make_unique<SimpleFFTConvolver>(
+        input_block_size_, std::move(convolution_kernel));
+  }
+}
 
 void UpSampler::Process(const float* source_p,
                         float* dest_p,
                         size_t source_frames_to_process) {
+  const size_t convolution_kernel_size =
+      direct_convolver_ ? direct_convolver_->ConvolutionKernelSize()
+                        : simple_fft_convolver_->ConvolutionKernelSize();
+
   bool is_input_block_size_good = source_frames_to_process == input_block_size_;
   DCHECK(is_input_block_size_good);
   if (!is_input_block_size_good)
@@ -93,13 +110,7 @@ void UpSampler::Process(const float* source_p,
   if (!is_temp_buffer_good)
     return;
 
-  bool is_kernel_good =
-      convolver_.ConvolutionKernelSize() == kDefaultKernelSize;
-  DCHECK(is_kernel_good);
-  if (!is_kernel_good)
-    return;
-
-  size_t half_size = convolver_.ConvolutionKernelSize() / 2;
+  size_t half_size = convolution_kernel_size / 2;
 
   // Copy source samples to 2nd half of input buffer.
   bool is_input_buffer_good =
@@ -119,7 +130,13 @@ void UpSampler::Process(const float* source_p,
 
   // Compute odd sample-frames 1,3,5,7...
   float* odd_samples_p = temp_buffer_.Data();
-  convolver_.Process(source_p, odd_samples_p, source_frames_to_process);
+  if (direct_convolver_) {
+    direct_convolver_->Process(source_p, odd_samples_p,
+                               source_frames_to_process);
+  } else {
+    simple_fft_convolver_->Process(source_p, odd_samples_p,
+                                   source_frames_to_process);
+  }
 
   for (unsigned i = 0; i < source_frames_to_process; ++i)
     dest_p[i * 2 + 1] = odd_samples_p[i];
@@ -130,14 +147,18 @@ void UpSampler::Process(const float* source_p,
 }
 
 void UpSampler::Reset() {
-  convolver_.Reset();
+  direct_convolver_.reset();
+  simple_fft_convolver_.reset();
   input_buffer_.Zero();
 }
 
 size_t UpSampler::LatencyFrames() const {
+  const size_t convolution_kernel_size =
+      direct_convolver_ ? direct_convolver_->ConvolutionKernelSize()
+                        : simple_fft_convolver_->ConvolutionKernelSize();
   // Divide by two since this is a linear phase kernel and the delay is at the
   // center of the kernel.
-  return convolver_.ConvolutionKernelSize() / 2;
+  return convolution_kernel_size / 2;
 }
 
 }  // namespace blink
