@@ -632,9 +632,6 @@ crbug.com/854192 fast/multicol/composited-layer-nested.html [ Failure ]
 crbug.com/854192 fast/multicol/vertical-rl/composited-relpos-overlapping-will-change.html [ Failure ]
 crbug.com/854192 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 
-# Crash due to layer bounds DCHECK.
-crbug.com/854194 fast/multicol/short-columns-insane-unbreakable-content-height-crash.html [ Crash ]
-
 # Image layers are not scaled.
 crbug.com/854195 images/color-profile-layer.html [ Failure ]
 crbug.com/854195 images/pixelated-composited.html [ Failure ]

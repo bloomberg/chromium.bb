@@ -737,7 +737,7 @@ TEST_P(VisualViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize) {
   NavigateTo(base_url_ + "viewport-device-width.html");
 
   // Ensure the scroll layer matches the frame view's size.
-  EXPECT_EQ(FloatSize(320, 240), visual_viewport.ScrollLayer()->Size());
+  EXPECT_EQ(IntSize(320, 240), visual_viewport.ScrollLayer()->Size());
 
   // Ensure the location and scale were reset.
   EXPECT_EQ(FloatSize(), visual_viewport.GetScrollOffset());
@@ -1195,13 +1195,13 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustment) {
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
 
   visual_viewport.SetScale(1);
-  EXPECT_EQ(IntSize(500, 450), visual_viewport.VisibleRect().Size());
+  EXPECT_EQ(FloatSize(500, 450), visual_viewport.VisibleRect().Size());
   EXPECT_EQ(IntSize(1000, 900), frame_view.FrameRect().Size());
 
   // Simulate bringing down the browser controls by 20px.
   WebView()->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                  1, 1);
-  EXPECT_EQ(IntSize(500, 430), visual_viewport.VisibleRect().Size());
+  EXPECT_EQ(FloatSize(500, 430), visual_viewport.VisibleRect().Size());
 
   // Test that the scroll bounds are adjusted appropriately: the visual viewport
   // should be shrunk by 20px to 430px. The outer viewport was shrunk to
@@ -1246,7 +1246,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
 
   visual_viewport.SetScale(2);
-  EXPECT_EQ(IntSize(250, 225), visual_viewport.VisibleRect().Size());
+  EXPECT_EQ(FloatSize(250, 225), visual_viewport.VisibleRect().Size());
   EXPECT_EQ(IntSize(1000, 900), frame_view.FrameRect().Size());
 
   // Simulate bringing down the browser controls by 20px. Since we're zoomed in,
@@ -1254,7 +1254,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
   // they do at an unzoomed level.
   WebView()->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                  1, 1);
-  EXPECT_EQ(IntSize(250, 215), visual_viewport.VisibleRect().Size());
+  EXPECT_EQ(FloatSize(250, 215), visual_viewport.VisibleRect().Size());
 
   // Test that the scroll bounds are adjusted appropriately.
   visual_viewport.Move(ScrollOffset(10000, 10000));
@@ -1328,8 +1328,8 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
 
   visual_viewport.SetScale(page_scale);
-  EXPECT_EQ(IntSize(250, (visual_viewport_height - browser_controls_height) /
-                             page_scale),
+  EXPECT_EQ(FloatSize(250, (visual_viewport_height - browser_controls_height) /
+                               page_scale),
             visual_viewport.VisibleRect().Size());
   EXPECT_EQ(IntSize(1000, layout_viewport_height -
                               browser_controls_height / min_page_scale),
@@ -1344,7 +1344,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
                                         kUserScroll);
   WebView()->GetBrowserControls().SetShownRatio(0);
 
-  EXPECT_EQ(IntSize(250, visual_viewport_height / page_scale),
+  EXPECT_EQ(FloatSize(250, visual_viewport_height / page_scale),
             visual_viewport.VisibleRect().Size());
 
   ScrollOffset frame_view_expected =
@@ -1365,7 +1365,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
                                        0, false);
 
   EXPECT_EQ(IntSize(500, visual_viewport_height), visual_viewport.Size());
-  EXPECT_EQ(IntSize(250, visual_viewport_height / page_scale),
+  EXPECT_EQ(FloatSize(250, visual_viewport_height / page_scale),
             visual_viewport.VisibleRect().Size());
   EXPECT_EQ(IntSize(1000, layout_viewport_height),
             frame_view.FrameRect().Size());
@@ -1399,7 +1399,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
 
   visual_viewport.SetScale(page_scale);
-  EXPECT_EQ(IntSize(250, visual_viewport_height / page_scale),
+  EXPECT_EQ(FloatSize(250, visual_viewport_height / page_scale),
             visual_viewport.VisibleRect().Size());
   EXPECT_EQ(IntSize(1000, layout_viewport_height),
             frame_view.FrameRect().Size());
@@ -1413,8 +1413,8 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
   frame_view.LayoutViewport()->ScrollBy(ScrollOffset(10000, 10000),
                                         kUserScroll);
 
-  EXPECT_EQ(IntSize(250, (visual_viewport_height - browser_controls_height) /
-                             page_scale),
+  EXPECT_EQ(FloatSize(250, (visual_viewport_height - browser_controls_height) /
+                               page_scale),
             visual_viewport.VisibleRect().Size());
 
   ScrollOffset frame_view_expected(
@@ -1439,8 +1439,8 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
 
   EXPECT_EQ(IntSize(500, visual_viewport_height - browser_controls_height),
             visual_viewport.Size());
-  EXPECT_EQ(IntSize(250, (visual_viewport_height - browser_controls_height) /
-                             page_scale),
+  EXPECT_EQ(FloatSize(250, (visual_viewport_height - browser_controls_height) /
+                               page_scale),
             visual_viewport.VisibleRect().Size());
   EXPECT_EQ(IntSize(1000, layout_viewport_height -
                               browser_controls_height / min_page_scale),

@@ -1673,7 +1673,8 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
       overflow_clip_rect.Location());
 
   scrolling_contents_layer_->SetOffsetDoubleFromLayoutObject(
-      ToIntSize(scrolling_contents_layer_offset_from_layout_object),
+      DoubleSize(scrolling_contents_layer_offset_from_layout_object.X(),
+                 scrolling_contents_layer_offset_from_layout_object.Y()),
       GraphicsLayer::kDontSetNeedsDisplay);
 }
 
@@ -1700,13 +1701,13 @@ void CompositedLayerMapping::UpdateForegroundLayerGeometry() {
   // Should be equivalent to local_compositing_bounds.
   IntRect compositing_bounds(
       IntPoint(graphics_layer_->OffsetFromLayoutObject()),
-      FlooredIntSize(graphics_layer_->Size()));
+      graphics_layer_->Size());
   if (scrolling_layer_) {
     // Override compositing bounds to include full overflow if composited
     // scrolling is used.
     compositing_bounds =
         IntRect(IntPoint(scrolling_contents_layer_->OffsetFromLayoutObject()),
-                FlooredIntSize(scrolling_contents_layer_->Size()));
+                scrolling_contents_layer_->Size());
   } else if (child_containment_layer_) {
     // If we have a clipping layer, shrink compositing bounds to the clip rect.
     // Note: this is technically incorrect because non-composited positive
@@ -1715,13 +1716,13 @@ void CompositedLayerMapping::UpdateForegroundLayerGeometry() {
     // escape clips, thus shrinking the layer won't cause bug.
     IntRect clipping_box(
         IntPoint(child_containment_layer_->OffsetFromLayoutObject()),
-        FlooredIntSize(child_containment_layer_->Size()));
+        child_containment_layer_->Size());
     compositing_bounds.Intersect(clipping_box);
   }
 
   IntRect old_compositing_bounds(
       IntPoint(foreground_layer_->OffsetFromLayoutObject()),
-      FlooredIntSize(foreground_layer_->Size()));
+      foreground_layer_->Size());
   if (compositing_bounds != old_compositing_bounds) {
     foreground_layer_->SetOffsetFromLayoutObject(
         ToIntSize(compositing_bounds.Location()));
@@ -3369,8 +3370,7 @@ IntRect CompositedLayerMapping::ComputeInterestRect(
     const GraphicsLayer* graphics_layer,
     const IntRect& previous_interest_rect) const {
   // Use the previous interest rect if it covers the whole layer.
-  IntRect whole_layer_rect =
-      IntRect(IntPoint(), ExpandedIntSize(graphics_layer->Size()));
+  IntRect whole_layer_rect = IntRect(IntPoint(), graphics_layer->Size());
   if (!NeedsRepaint(*graphics_layer) &&
       previous_interest_rect == whole_layer_rect)
     return previous_interest_rect;
@@ -3383,8 +3383,7 @@ IntRect CompositedLayerMapping::ComputeInterestRect(
   IntRect new_interest_rect = RecomputeInterestRect(graphics_layer);
   if (NeedsRepaint(*graphics_layer) ||
       InterestRectChangedEnoughToRepaint(
-          previous_interest_rect, new_interest_rect,
-          ExpandedIntSize(graphics_layer->Size())))
+          previous_interest_rect, new_interest_rect, graphics_layer->Size()))
     return new_interest_rect;
   return previous_interest_rect;
 }

@@ -21,7 +21,8 @@ class PLATFORM_EXPORT DoubleSize {
  public:
   DoubleSize() : width_(0), height_(0) {}
   DoubleSize(double width, double height) : width_(width), height_(height) {}
-  DoubleSize(const IntSize& p) : width_(p.Width()), height_(p.Height()) {}
+  explicit DoubleSize(const IntSize& p)
+      : width_(p.Width()), height_(p.Height()) {}
   DoubleSize(const FloatSize& s) : width_(s.Width()), height_(s.Height()) {}
   explicit DoubleSize(const LayoutSize&);
 

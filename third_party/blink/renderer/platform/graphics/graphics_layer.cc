@@ -136,7 +136,7 @@ GraphicsLayer::~GraphicsLayer() {
 }
 
 LayoutRect GraphicsLayer::VisualRect() const {
-  LayoutRect bounds = LayoutRect(FloatPoint(), Size());
+  LayoutRect bounds = LayoutRect(LayoutPoint(), LayoutSize(Size()));
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     DCHECK(layer_state_);
     bounds.MoveBy(layer_state_->offset);
@@ -267,7 +267,7 @@ void GraphicsLayer::RemoveFromParent() {
 void GraphicsLayer::SetOffsetFromLayoutObject(
     const IntSize& offset,
     ShouldSetNeedsDisplay should_set_needs_display) {
-  SetOffsetDoubleFromLayoutObject(offset);
+  SetOffsetDoubleFromLayoutObject(DoubleSize(offset));
 }
 
 void GraphicsLayer::SetOffsetDoubleFromLayoutObject(
@@ -359,7 +359,7 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
     // Generate raster invalidations for SPv175 (but not SPv2).
-    IntRect layer_bounds(layer_state_->offset, ExpandedIntSize(Size()));
+    IntRect layer_bounds(layer_state_->offset, Size());
     EnsureRasterInvalidator().Generate(GetPaintController().GetPaintArtifact(),
                                        layer_bounds, layer_state_->state,
                                        VisualRectSubpixelOffset());
@@ -1372,7 +1372,7 @@ sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
   if (client_.ShouldThrottleRendering())
     return sk_sp<PaintRecord>(new PaintRecord);
 
-  FloatRect bounds(IntRect(IntPoint(0, 0), ExpandedIntSize(Size())));
+  FloatRect bounds(IntRect(IntPoint(), Size()));
   GraphicsContext graphics_context(GetPaintController());
   graphics_context.BeginRecording(bounds);
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {

@@ -3000,7 +3000,7 @@ static void CollectDrawableLayersForLayerListRecursively(
       layer->CcLayer()->RemoveAllChildren();
       RecordForeignLayer(context, *layer, DisplayItem::kForeignLayerWrapper,
                          layer->CcLayer(), layer->GetOffsetFromTransformNode(),
-                         RoundedIntSize(layer->Size()));
+                         layer->Size());
     }
     if (contents_layer) {
       auto position = contents_layer->position();
@@ -3951,8 +3951,9 @@ IntRect LocalFrameView::VisibleContentRect(
 LayoutRect LocalFrameView::VisibleScrollSnapportRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   const ComputedStyle* style = GetLayoutBox()->Style();
-  LayoutRect visible_content_rect = LayoutRect(
-      FloatPoint(scroll_offset_), VisibleContentSize(scrollbar_inclusion));
+  LayoutRect visible_content_rect =
+      LayoutRect(LayoutPoint(DoublePoint(scroll_offset_)),
+                 LayoutSize(VisibleContentSize(scrollbar_inclusion)));
   LayoutRectOutsets padding(
       MinimumValueForLength(style->ScrollPaddingTop(),
                             visible_content_rect.Height()),

@@ -464,14 +464,14 @@ TEST_F(RootFrameViewportTest, VisibleContentRect) {
   EXPECT_EQ(IntPoint(100, 75),
             root_frame_viewport->VisibleContentRect().Location());
   EXPECT_EQ(ScrollOffset(500, 401),
-            root_frame_viewport->VisibleContentRect().Size());
+            DoubleSize(root_frame_viewport->VisibleContentRect().Size()));
 
   visual_viewport->SetScale(2);
 
   EXPECT_EQ(IntPoint(100, 75),
             root_frame_viewport->VisibleContentRect().Location());
   EXPECT_EQ(ScrollOffset(250, 201),
-            root_frame_viewport->VisibleContentRect().Size());
+            DoubleSize(root_frame_viewport->VisibleContentRect().Size()));
 }
 
 // Tests that scrolls on the root frame scroll the visual viewport before
