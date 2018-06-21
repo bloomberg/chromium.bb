@@ -257,7 +257,11 @@ public class CompositorViewHolder extends FrameLayout
         // [1] - https://developer.android.com/reference/android/view/WindowManager.LayoutParams.html#FLAG_FULLSCREEN
         if (mSystemUiFullscreen) {
             getWindowVisibleDisplayFrame(mCacheRect);
-            return mCacheRect.width();
+
+            // On certain devices, getWindowVisibleDisplayFrame is larger than the screen size, so
+            // this ensures we never draw beyond the underlying dimensions of the view.
+            // https://crbug.com/854109
+            return Math.min(mCacheRect.width(), getWidth());
         } else {
             return getWidth();
         }
@@ -267,7 +271,7 @@ public class CompositorViewHolder extends FrameLayout
         // See comment in getWidthForViewport() for an explainer of why this is done.
         if (mSystemUiFullscreen) {
             getWindowVisibleDisplayFrame(mCacheRect);
-            return mCacheRect.height();
+            return Math.min(mCacheRect.height(), getHeight());
         } else {
             return getHeight();
         }
