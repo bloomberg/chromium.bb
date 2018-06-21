@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/test/fontconfig_util_linux.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
@@ -35,16 +37,31 @@ base::File GetFileForPath(const base::FilePath& path) {
   return file;
 }
 
+bool FontConfigTestingEnvironmentEnabled() {
+  return base::CommandLine::ForCurrentProcess()->GetSwitches().count(
+      switches::kFontConfigTestingEnvironment);
+}
+
 }  // namespace
 
 namespace font_service {
 
 FontServiceApp::FontServiceApp() {
+  // TODO(thomasanderson) https://crbug.com/831146: Remove this once a reland of
+  // CL https://chromium-review.googlesource.com/c/chromium/src/+/1009071 lands,
+  // which propagates the FONTCONFIG_FILE environment variable to subprocesses
+  // and thus ensures, child/utility processes receive the correct fontconfig
+  // testing environment.
+  if (FontConfigTestingEnvironmentEnabled())
+    base::SetUpFontconfig();
   registry_.AddInterface(
       base::Bind(&FontServiceApp::Create, base::Unretained(this)));
 }
 
-FontServiceApp::~FontServiceApp() {}
+FontServiceApp::~FontServiceApp() {
+  if (FontConfigTestingEnvironmentEnabled())
+    base::TearDownFontconfig();
+}
 
 void FontServiceApp::OnStart() {}
 
