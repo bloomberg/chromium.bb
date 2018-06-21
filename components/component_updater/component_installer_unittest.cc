@@ -168,6 +168,16 @@ class MockInstallerPolicy : public ComponentInstallerPolicy {
   }
 };
 
+class MockUpdateScheduler : public UpdateScheduler {
+ public:
+  MOCK_METHOD4(Schedule,
+               void(const base::TimeDelta& initial_delay,
+                    const base::TimeDelta& delay,
+                    const UserTask& user_task,
+                    const OnStopTaskCallback& on_stop));
+  MOCK_METHOD0(Stop, void());
+};
+
 class ComponentInstallerTest : public testing::Test {
  public:
   ComponentInstallerTest();
@@ -179,6 +189,7 @@ class ComponentInstallerTest : public testing::Test {
   }
   scoped_refptr<TestConfigurator> configurator() const { return config_; }
   base::OnceClosure quit_closure() { return runloop_.QuitClosure(); }
+  MockUpdateScheduler& scheduler() { return *scheduler_; }
 
  protected:
   void RunThreads();
@@ -189,6 +200,10 @@ class ComponentInstallerTest : public testing::Test {
 
  private:
   void UnpackComplete(const ComponentUnpacker::Result& result);
+  void Schedule(const base::TimeDelta& initial_delay,
+                const base::TimeDelta& delay,
+                const UpdateScheduler::UserTask& user_task,
+                const UpdateScheduler::OnStopTaskCallback& on_stop);
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_ =
       base::ThreadTaskRunnerHandle::Get();
@@ -196,6 +211,7 @@ class ComponentInstallerTest : public testing::Test {
 
   scoped_refptr<TestConfigurator> config_ =
       base::MakeRefCounted<TestConfigurator>();
+  MockUpdateScheduler* scheduler_ = nullptr;
   scoped_refptr<MockUpdateClient> update_client_ =
       base::MakeRefCounted<MockUpdateClient>();
   std::unique_ptr<ComponentUpdateService> component_updater_;
@@ -204,8 +220,12 @@ class ComponentInstallerTest : public testing::Test {
 
 ComponentInstallerTest::ComponentInstallerTest() {
   EXPECT_CALL(update_client(), AddObserver(_)).Times(1);
-  component_updater_ =
-      std::make_unique<CrxUpdateService>(config_, update_client_);
+  auto scheduler = std::make_unique<MockUpdateScheduler>();
+  scheduler_ = scheduler.get();
+  ON_CALL(*scheduler_, Schedule(_, _, _, _))
+      .WillByDefault(Invoke(this, &ComponentInstallerTest::Schedule));
+  component_updater_ = std::make_unique<CrxUpdateService>(
+      config_, std::move(scheduler), update_client_);
 }
 
 ComponentInstallerTest::~ComponentInstallerTest() {
@@ -235,6 +255,14 @@ void ComponentInstallerTest::UnpackComplete(
   EXPECT_EQ(0, result_.extended_error);
 
   main_thread_task_runner_->PostTask(FROM_HERE, quit_closure());
+}
+
+void ComponentInstallerTest::Schedule(
+    const base::TimeDelta& initial_delay,
+    const base::TimeDelta& delay,
+    const UpdateScheduler::UserTask& user_task,
+    const UpdateScheduler::OnStopTaskCallback& on_stop) {
+  user_task.Run(base::DoNothing());
 }
 
 }  // namespace
@@ -272,6 +300,8 @@ TEST_F(ComponentInstallerTest, RegisterComponent) {
 
   EXPECT_CALL(update_client(), GetCrxUpdateState(id, _)).Times(1);
   EXPECT_CALL(update_client(), Stop()).Times(1);
+  EXPECT_CALL(scheduler(), Schedule(_, _, _, _)).Times(1);
+  EXPECT_CALL(scheduler(), Stop()).Times(1);
 
   auto installer = base::MakeRefCounted<ComponentInstaller>(
       std::make_unique<MockInstallerPolicy>());
@@ -324,6 +354,7 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallSuccess) {
 
   EXPECT_FALSE(base::PathExists(unpack_path));
   EXPECT_CALL(update_client(), Stop()).Times(1);
+  EXPECT_CALL(scheduler(), Stop()).Times(1);
 }
 
 // Tests that the unpack path is removed when the install failed.
@@ -354,6 +385,7 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallError) {
 
   EXPECT_FALSE(base::PathExists(unpack_path));
   EXPECT_CALL(update_client(), Stop()).Times(1);
+  EXPECT_CALL(scheduler(), Stop()).Times(1);
 }
 
 }  // namespace component_updater

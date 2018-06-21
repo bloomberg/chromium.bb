@@ -88,6 +88,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/component_updater/timer_update_scheduler.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -1002,7 +1003,8 @@ BrowserProcessImpl::component_updater() {
   component_updater_ = component_updater::ComponentUpdateServiceFactory(
       component_updater::MakeChromeComponentUpdaterConfigurator(
           base::CommandLine::ForCurrentProcess(),
-          g_browser_process->local_state()));
+          g_browser_process->local_state()),
+      std::make_unique<component_updater::TimerUpdateScheduler>());
 
   return component_updater_.get();
 }

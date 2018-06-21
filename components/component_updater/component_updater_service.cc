@@ -23,7 +23,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/component_updater/component_updater_service_internal.h"
-#include "components/component_updater/timer.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/update_client.h"
@@ -56,8 +55,11 @@ ComponentInfo::ComponentInfo(ComponentInfo&& other) = default;
 ComponentInfo::~ComponentInfo() {}
 
 CrxUpdateService::CrxUpdateService(scoped_refptr<Configurator> config,
+                                   std::unique_ptr<UpdateScheduler> scheduler,
                                    scoped_refptr<UpdateClient> update_client)
-    : config_(config), update_client_(update_client) {
+    : config_(config),
+      scheduler_(std::move(scheduler)),
+      update_client_(update_client) {
   AddObserver(this);
 }
 
@@ -91,18 +93,20 @@ void CrxUpdateService::Start() {
           << "Next update attempt will take place in "
           << config_->NextCheckDelay() << " seconds. ";
 
-  timer_.Start(
+  scheduler_->Schedule(
       base::TimeDelta::FromSeconds(config_->InitialDelay()),
       base::TimeDelta::FromSeconds(config_->NextCheckDelay()),
       base::Bind(base::IgnoreResult(&CrxUpdateService::CheckForUpdates),
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      // TODO: Stop component update if requested.
+      base::DoNothing());
 }
 
 // Stops the update loop. In flight operations will be completed.
 void CrxUpdateService::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "CrxUpdateService stopping";
-  timer_.Stop();
+  scheduler_->Stop();
   update_client_->Stop();
 }
 
@@ -299,7 +303,8 @@ void CrxUpdateService::OnDemandUpdateInternal(const std::string& id,
                      base::TimeTicks::Now()));
 }
 
-bool CrxUpdateService::CheckForUpdates() {
+bool CrxUpdateService::CheckForUpdates(
+    UpdateScheduler::OnFinishedCallback on_finished) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // TODO(xiaochu): remove this log after https://crbug.com/851151 is fixed.
@@ -320,24 +325,38 @@ bool CrxUpdateService::CheckForUpdates() {
       unsecure_ids.push_back(id);
   }
 
+  if (unsecure_ids.empty() && secure_ids.empty()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(on_finished));
+    return true;
+  }
+
+  Callback on_finished_callback = base::BindOnce(
+      [](UpdateScheduler::OnFinishedCallback on_finished,
+         update_client::Error error) { std::move(on_finished).Run(); },
+      std::move(on_finished));
+
   if (!unsecure_ids.empty()) {
-    update_client_->Update(unsecure_ids,
-                           base::BindOnce(&CrxUpdateService::GetCrxComponents,
-                                          base::Unretained(this)),
-                           false,
-                           base::BindOnce(&CrxUpdateService::OnUpdateComplete,
-                                          base::Unretained(this), Callback(),
-                                          base::TimeTicks::Now()));
+    update_client_->Update(
+        unsecure_ids,
+        base::BindOnce(&CrxUpdateService::GetCrxComponents,
+                       base::Unretained(this)),
+        false,
+        base::BindOnce(
+            &CrxUpdateService::OnUpdateComplete, base::Unretained(this),
+            secure_ids.empty() ? std::move(on_finished_callback) : Callback(),
+            base::TimeTicks::Now()));
   }
 
   if (!secure_ids.empty()) {
-    update_client_->Update(secure_ids,
-                           base::BindOnce(&CrxUpdateService::GetCrxComponents,
-                                          base::Unretained(this)),
-                           false,
-                           base::BindOnce(&CrxUpdateService::OnUpdateComplete,
-                                          base::Unretained(this), Callback(),
-                                          base::TimeTicks::Now()));
+    update_client_->Update(
+        secure_ids,
+        base::BindOnce(&CrxUpdateService::GetCrxComponents,
+                       base::Unretained(this)),
+        false,
+        base::BindOnce(&CrxUpdateService::OnUpdateComplete,
+                       base::Unretained(this), std::move(on_finished_callback),
+                       base::TimeTicks::Now()));
   }
 
   return true;
@@ -440,10 +459,13 @@ void CrxUpdateService::OnEvent(Events event, const std::string& id) {
 // is the job of the browser process.
 // TODO(sorin): consider making this a singleton.
 std::unique_ptr<ComponentUpdateService> ComponentUpdateServiceFactory(
-    scoped_refptr<Configurator> config) {
+    scoped_refptr<Configurator> config,
+    std::unique_ptr<UpdateScheduler> scheduler) {
   DCHECK(config);
+  DCHECK(scheduler);
   auto update_client = update_client::UpdateClientFactory(config);
-  return std::make_unique<CrxUpdateService>(config, std::move(update_client));
+  return std::make_unique<CrxUpdateService>(config, std::move(scheduler),
+                                            std::move(update_client));
 }
 
 }  // namespace component_updater
