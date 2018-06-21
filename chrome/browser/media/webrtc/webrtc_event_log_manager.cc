@@ -299,14 +299,18 @@ void WebRtcEventLogManager::StartRemoteLogging(
   }
 
   const BrowserContext* browser_context = GetBrowserContext(render_process_id);
-  if (!browser_context || browser_context->IsOffTheRecord()) {
-    // RPH died before processing of this notification, or is incognito.
-    // In the former case, there's no one to report to anyway.
-    // In the latter case, we don't want to expose incognito state to the
-    // JS application, so we give an error message that must be shared with
-    // other common events.
+  if (!browser_context) {
+    // RPH died before processing of this notification.
     MaybeReply(std::move(reply), false,
                std::string(kStartRemoteLoggingFailureGeneric));
+    return;
+  }
+
+  if (browser_context->IsOffTheRecord()) {
+    // Feature disable in incognito. Since the feature can be disabled for
+    // non-incognito sessions, this should not expose incognito mode.
+    MaybeReply(std::move(reply), false,
+               std::string(kStartRemoteLoggingFailureFeatureDisabled));
     return;
   }
 

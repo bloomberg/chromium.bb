@@ -276,9 +276,8 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
 
   if (!AdditionalActiveLogAllowed(key.browser_context_id)) {
     // Intentionally use a generic error, so as to not leak information such
-    // as this being an incognito session (rejected elsewhere with the same
-    // error), or there being too many other peer connections on other tabs
-    // that might also be logging.
+    // as there being too many other peer connections on other tabs that might
+    // also be logging.
     *error_message = kStartRemoteLoggingFailureGeneric;
     return false;
   }
