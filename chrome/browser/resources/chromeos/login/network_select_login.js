@@ -135,7 +135,7 @@ Polymer({
    */
   onSelectedNetworkConnected_: function() {
     this.networkLastSelectedGuid_ = '';
-    chrome.send('login.NetworkScreen.userActed', ['continue']);
+    chrome.send('login.WelcomeScreen.userActed', ['continue']);
   },
 
   /**

@@ -241,7 +241,7 @@ Polymer({
 
   /** @private */
   onNetworkNextTap_: function() {
-    chrome.send('login.NetworkScreen.userActed', ['continue']);
+    chrome.send('login.WelcomeScreen.userActed', ['continue']);
   },
 
   /**

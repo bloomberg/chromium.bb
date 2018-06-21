@@ -47,7 +47,7 @@ class KioskEnableScreenView;
 class LoginScreenContext;
 class NativeWindowDelegate;
 class NetworkStateInformer;
-class NetworkView;
+class WelcomeView;
 class OobeDisplayChooser;
 class RecommendAppsScreenView;
 class SigninScreenHandler;
@@ -99,7 +99,7 @@ class OobeUI : public content::WebUIController,
   ~OobeUI() override;
 
   CoreOobeView* GetCoreOobeView();
-  NetworkView* GetNetworkView();
+  WelcomeView* GetWelcomeView();
   EulaView* GetEulaView();
   UpdateView* GetUpdateView();
   EnableDebuggingScreenView* GetEnableDebuggingScreenView();

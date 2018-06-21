@@ -237,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothHostPairingNoInputTest, ForgetDevice) {
 }
 
 // This is the class to simulate the OOBE process for devices that have
-// sufficient input, i.e., the first screen of OOBE is the network screen.
+// sufficient input, i.e., the first screen of OOBE is the welcome screen.
 // The device will not put itself in Bluetooth discoverable mode until the user
 // manually trigger it using the proper accelerator.
 class BluetoothHostPairingWithInputTest
@@ -257,7 +257,7 @@ class BluetoothHostPairingWithInputTest
 // the Bluetooth is disabled by default.
 IN_PROC_BROWSER_TEST_F(BluetoothHostPairingWithInputTest,
                        BluetoothDisableByDefault) {
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
   EXPECT_FALSE(controller());
   EXPECT_FALSE(bluetooth_adapter());
 }

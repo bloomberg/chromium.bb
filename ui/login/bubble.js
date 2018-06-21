@@ -213,7 +213,7 @@ cr.define('cr.ui', function() {
      */
     showForElement: function(el, attachment, opt_offset, opt_padding) {
       /* showForElement() is used only to display Accessibility popup in
-       * oobe_screen_network*. It requires old-style bubble, so it is safe
+       * oobe_screen_welcome*. It requires old-style bubble, so it is safe
        * to always set this flag here.
        */
       this.showContentForElement(

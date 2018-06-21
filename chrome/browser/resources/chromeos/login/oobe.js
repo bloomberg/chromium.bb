@@ -15,7 +15,7 @@
 // <include src="oobe_screen_eula.js">
 // <include src="oobe_screen_hid_detection.js">
 // <include src="oobe_screen_host_pairing.js">
-// <include src="oobe_screen_network.js">
+// <include src="oobe_screen_welcome.js">
 // <include src="oobe_screen_update.js">
 
 cr.define('cr.ui.Oobe', function() {
@@ -28,7 +28,7 @@ cr.define('cr.ui.Oobe', function() {
       cr.ui.login.DisplayManager.initialize();
       login.HIDDetectionScreen.register();
       login.WrongHWIDScreen.register();
-      login.NetworkScreen.register();
+      login.WelcomeScreen.register();
       login.EulaScreen.register();
       login.UpdateScreen.register();
       login.AutoEnrollmentCheckScreen.register();

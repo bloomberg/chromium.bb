@@ -12,7 +12,7 @@ namespace chromeos {
 
 class UpdateScreen;
 
-// Interface for dependency injection between NetworkScreen and its actual
+// Interface for dependency injection between WelcomeScreen and its actual
 // representation. Owned by UpdateScreen.
 class UpdateView {
  public:

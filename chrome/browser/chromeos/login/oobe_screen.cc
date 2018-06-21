@@ -18,7 +18,7 @@ namespace {
 // in the same order as the Screen enum.
 const char* kScreenNames[] = {
     "hid-detection",                   // SCREEN_OOBE_HID_DETECTION
-    "connect",                         // SCREEN_OOBE_NETWORK
+    "connect",                         // SCREEN_OOBE_WELCOME
     "eula",                            // SCREEN_OOBE_EULA
     "update",                          // SCREEN_OOBE_UPDATE
     "debugging",                       // SCREEN_OOBE_ENABLE_DEBUGGING

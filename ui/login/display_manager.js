@@ -7,7 +7,7 @@
  */
 
 // TODO(xiyuan): Find a better to share those constants.
-/** @const */ var SCREEN_OOBE_NETWORK = 'connect';
+/** @const */ var SCREEN_OOBE_WELCOME = 'connect';
 /** @const */ var SCREEN_OOBE_HID_DETECTION = 'hid-detection';
 /** @const */ var SCREEN_OOBE_EULA = 'eula';
 /** @const */ var SCREEN_OOBE_ENABLE_DEBUGGING = 'debugging';
@@ -133,7 +133,7 @@ cr.define('cr.ui.login', function() {
    * @type Array<Array<string>>
    * @const
    */
-  var SCREEN_GROUPS = [[SCREEN_OOBE_NETWORK,
+  var SCREEN_GROUPS = [[SCREEN_OOBE_WELCOME,
                         SCREEN_OOBE_EULA,
                         SCREEN_OOBE_UPDATE,
                         SCREEN_OOBE_AUTO_ENROLLMENT_CHECK]
@@ -145,7 +145,7 @@ cr.define('cr.ui.login', function() {
    * @const
    */
   var RESET_AVAILABLE_SCREEN_GROUP = [
-    SCREEN_OOBE_NETWORK,
+    SCREEN_OOBE_WELCOME,
     SCREEN_OOBE_EULA,
     SCREEN_OOBE_UPDATE,
     SCREEN_OOBE_ENROLLMENT,
@@ -175,7 +175,7 @@ cr.define('cr.ui.login', function() {
    */
   var ENABLE_DEBUGGING_AVAILABLE_SCREEN_GROUP = [
     SCREEN_OOBE_HID_DETECTION,
-    SCREEN_OOBE_NETWORK,
+    SCREEN_OOBE_WELCOME,
     SCREEN_OOBE_EULA,
     SCREEN_OOBE_UPDATE,
     SCREEN_TERMS_OF_SERVICE
@@ -199,7 +199,7 @@ cr.define('cr.ui.login', function() {
    * @const
    */
   var DEMO_MODE_SETUP_AVAILABLE_SCREEN_GROUP = [
-    SCREEN_OOBE_NETWORK,
+    SCREEN_OOBE_WELCOME,
   ];
 
   /**
@@ -430,7 +430,7 @@ cr.define('cr.ui.login', function() {
         if (currentStepId == SCREEN_GAIA_SIGNIN ||
             currentStepId == SCREEN_ACCOUNT_PICKER) {
           chrome.send('toggleEnrollmentScreen');
-        } else if (currentStepId == SCREEN_OOBE_NETWORK ||
+        } else if (currentStepId == SCREEN_OOBE_WELCOME ||
                    currentStepId == SCREEN_OOBE_EULA) {
           // In this case update check will be skipped and OOBE will
           // proceed straight to enrollment screen when EULA is accepted.
@@ -593,7 +593,7 @@ cr.define('cr.ui.login', function() {
       if (newStep.onAfterShow)
         newStep.onAfterShow(screenData);
 
-      // Workaround for gaia and network screens.
+      // Workaround for gaia and welcome screens.
       // Due to other origin iframe and long ChromeVox focusing correspondingly
       // passive aria-label title is not pronounced.
       // Gaia hack can be removed on fixed crbug.com/316726.

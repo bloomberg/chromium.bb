@@ -1,24 +1,24 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_NETWORK_VIEW_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_NETWORK_VIEW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_WELCOME_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_WELCOME_VIEW_H_
 
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
 
-class NetworkScreen;
+class WelcomeScreen;
 
-// Interface for dependency injection between NetworkScreen and its actual
-// representation, either views based or WebUI. Owned by NetworkScreen.
-class NetworkView {
+// Interface for dependency injection between WelcomeScreen and its actual
+// representation, either views based or WebUI. Owned by WelcomeScreen.
+class WelcomeView {
  public:
-  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_OOBE_NETWORK;
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_OOBE_WELCOME;
 
-  virtual ~NetworkView() {}
+  virtual ~WelcomeView() {}
 
   // Shows the contents of the screen.
   virtual void Show() = 0;
@@ -27,7 +27,7 @@ class NetworkView {
   virtual void Hide() = 0;
 
   // Binds |screen| to the view.
-  virtual void Bind(NetworkScreen* screen) = 0;
+  virtual void Bind(WelcomeScreen* screen) = 0;
 
   // Unbinds model from the view.
   virtual void Unbind() = 0;
@@ -51,4 +51,4 @@ class NetworkView {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_NETWORK_VIEW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_WELCOME_VIEW_H_

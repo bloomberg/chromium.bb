@@ -1230,7 +1230,7 @@ void ShowLoginWizard(OobeScreen first_screen) {
     // Shows networks screen instead of enrollment screen to resume the
     // interrupted auto start enrollment flow because enrollment screen does
     // not handle flaky network. See http://crbug.com/332572
-    display_host->StartWizard(OobeScreen::SCREEN_OOBE_NETWORK);
+    display_host->StartWizard(OobeScreen::SCREEN_OOBE_WELCOME);
     return;
   }
 
