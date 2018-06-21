@@ -307,4 +307,27 @@ function testIsWritableFile() {
   assertFalse(getGalleryItem(
       '/test.jpg', mtp, false /* not read only */).
       isWritableFile(volumeManager));
-};
+}
+
+function testIsEditableFile() {
+  var downloads = new MockFileSystem('downloads');
+  var getGalleryItem = function(path, fileSystem, isReadOnly) {
+    return new GalleryItem(
+        new MockEntry(fileSystem, path), {isReadOnly: isReadOnly}, {size: 100},
+        {}, true /* original */);
+  };
+
+  // Images and raw files are editable, even if read-only (a copy is made).
+  assertTrue(getGalleryItem('/test.jpg', downloads, false).isEditable());
+  assertTrue(getGalleryItem('/test.png', downloads, false).isEditable());
+  assertTrue(getGalleryItem('/test.webp', downloads, false).isEditable());
+  assertTrue(getGalleryItem('/test.arw', downloads, false).isEditable());
+  assertTrue(getGalleryItem('/test.jpg', downloads, true).isEditable());
+
+  // Video files are not editable.
+  assertFalse(getGalleryItem('/test.avi', downloads, false).isEditable());
+  assertFalse(getGalleryItem('/test.mkv', downloads, false).isEditable());
+  assertFalse(getGalleryItem('/test.mp4', downloads, false).isEditable());
+  assertFalse(getGalleryItem('/test.mov', downloads, false).isEditable());
+  assertFalse(getGalleryItem('/test.webm', downloads, false).isEditable());
+}

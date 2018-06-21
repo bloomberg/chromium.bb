@@ -47,7 +47,8 @@ GalleryUtil.createEntrySet = function(originalEntries) {
     return entries.filter(function(entry) {
       // Currently the gallery doesn't support mime types, so checking by
       // file extensions is enough.
-      return FileType.isImage(entry) || FileType.isRaw(entry);
+      return FileType.isImage(entry) || FileType.isRaw(entry) ||
+          FileType.isVideo(entry);
     }).sort(function(a, b) {
       return util.compareName(a, b);
     });

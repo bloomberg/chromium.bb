@@ -45,15 +45,15 @@ ImageUtil.ImageLoader = function(document, metadataModel) {
 };
 
 /**
- * Loads an image.
+ * Loads media.
  * TODO(mtomasz): Simplify, or even get rid of this class and merge with the
  * ThumbnaiLoader class.
  *
- * @param {!GalleryItem} item Item representing the image to be loaded.
+ * @param {!GalleryItem} item Item representing the media to be loaded.
  * @param {function(!HTMLCanvasElement, string=)} callback Callback to be
  *     called when loaded. The second optional argument is an error identifier.
  * @param {number=} opt_delay Load delay in milliseconds, useful to let the
- *     animations play out before the computation heavy image loading starts.
+ *     animations play out before the computation heavy media loading starts.
  */
 ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
   var entry = item.getEntry();
@@ -62,21 +62,30 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
   this.entry_ = entry;
   this.callback_ = callback;
 
-  var targetImage = assertInstanceof(this.document_.createElement('img'),
-      HTMLImageElement);
   // The transform fetcher is not cancellable so we need a generation counter.
   var generation = ++this.generation_;
 
-  /**
-   * @param {!HTMLImageElement} image Image to be transformed.
-   * @param {Object=} opt_transform Transformation.
-   */
-  var onTransform = function(image, opt_transform) {
-    if (generation === this.generation_) {
-      this.convertImage_(image, opt_transform);
-    }
-  };
-  onTransform = onTransform.bind(this);
+  if (FileType.isVideo(entry)) {
+    var targetVideo = assertInstanceof(
+        this.document_.createElement('video'), HTMLVideoElement);
+    targetVideo.controls = true;
+    targetVideo.controlsList = 'nodownload';
+    targetVideo.classList.add('video');
+  } else {
+    var targetImage =
+        assertInstanceof(this.document_.createElement('img'), HTMLImageElement);
+
+    /**
+     * @param {!HTMLImageElement} image Image to be transformed.
+     * @param {Object=} opt_transform Transformation.
+     */
+    var onTransform = function(image, opt_transform) {
+      if (generation === this.generation_) {
+        this.convertImage_(image, opt_transform);
+      }
+    };
+    onTransform = onTransform.bind(this);
+  }
 
   /**
    * @param {string=} opt_error Error.
@@ -119,10 +128,48 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
     targetImage.src = url;
   }.bind(this);
 
-  // Loads the image. If already loaded, then forces a reload.
+  var loadVideo = function(url) {
+    if (generation !== this.generation_)
+      return;
+
+    metrics.startInterval(ImageUtil.getMetricName('LoadTime'));
+    this.timeout_ = 0;
+
+    var source = assertInstanceof(
+        this.document_.createElement('source'), HTMLSourceElement);
+    source.src = url;
+    targetVideo.appendChild(source);
+
+    // Start the <video> element loading immediately.
+    setTimeout(this.callback_, 0, targetVideo);
+    this.callback_ = null;
+
+    // Start a task to set the poster property using the thumbnail so that there
+    // is an image visible before the user clicks play. Ignore errors - the
+    // poster just won't be set. If the video load also fails, the standard
+    // controls show a broken play icon.
+    var thumbnailMetadata = item.getThumbnailMetadataItem();
+    if (!thumbnailMetadata)
+      return;
+
+    var posterLoader = new ThumbnailLoader(
+        entry, undefined /* opt_loaderType */, thumbnailMetadata);
+    posterLoader.loadAsDataUrl(ThumbnailLoader.FillMode.FIT)
+        .then(function(result) {
+          targetVideo.poster = result.data;
+        }.bind(this))
+        .catch(function(error) {}.bind(this));
+  }.bind(this);
+
+  // Loads the media. If already loaded, then forces a reload.
   var startLoad = function() {
     if (generation !== this.generation_)
       return;
+
+    if (FileType.isVideo(entry)) {
+      loadVideo(entry.toURL() + '?nocache=' + Date.now());
+      return;
+    }
 
     // Obtain target URL.
     if (FileType.isRaw(entry)) {

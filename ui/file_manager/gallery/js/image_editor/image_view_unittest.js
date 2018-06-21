@@ -72,3 +72,43 @@ function testImageView() {
       ImageView.getLoadTarget(
           itemWithoutCacheOrThumbnail, new ImageView.Effect.None));
 }
+
+function testLoadVideo(callback) {
+  var container = document.createElement('div');
+  // We re-use the image-container for video, it starts with this class.
+  container.classList.add('image-container');
+
+  var viewport = new Viewport(window);
+
+  // Mock volume manager.
+  var volumeManager = {
+    getVolumeInfo: function(entry) {
+      return {volumeType: VolumeManagerCommon.VolumeType.DOWNLOADS};
+    }
+  };
+
+  var metadataModel = new MetadataModel(volumeManager);
+  var imageView = new ImageView(container, viewport, metadataModel);
+
+  var downloads = new MockFileSystem('file:///downloads');
+  var getGalleryItem = function(path) {
+    return new GalleryItem(
+        new MockEntry(downloads, path), {isReadOnly: false}, {size: 100}, {},
+        true /* original */);
+  };
+  var item = getGalleryItem('/test.webm');
+  var effect = new ImageView.Effect.None();
+  var displayDone = function() {
+    assertTrue(container.classList.contains('image-container'));
+    assertTrue(container.classList.contains('video-container'));
+    var video = container.firstElementChild;
+    assertTrue(video instanceof HTMLVideoElement);
+    var source = video.firstElementChild;
+    assertTrue(source instanceof HTMLSourceElement);
+    assertTrue(source.src.startsWith(
+        'filesystem:file:///downloads/test.webm?nocache='));
+    callback();
+  };
+  var loadDone = function() {};
+  imageView.load(item, effect, displayDone, loadDone);
+}
