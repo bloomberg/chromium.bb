@@ -15,6 +15,7 @@
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/search/most_visited_iframe_source.h"
+#include "chrome/browser/search/ntp_icon_source.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/thumbnail_source.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -88,6 +89,7 @@ InstantService::InstantService(Profile* profile) : profile_(profile) {
   // Set up the data sources that Instant uses on the NTP.
   content::URLDataSource::Add(profile_, new ThemeSource(profile_));
   content::URLDataSource::Add(profile_, new LocalNtpSource(profile_));
+  content::URLDataSource::Add(profile_, new NtpIconSource(profile_));
   content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, false));
   content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, true));
   content::URLDataSource::Add(profile_, new ThumbnailListSource(profile_));
