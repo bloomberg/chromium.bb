@@ -4,6 +4,7 @@
 
 #include "content/browser/background_fetch/storage/mark_request_complete_task.h"
 
+#include "base/barrier_closure.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
@@ -32,10 +33,15 @@ MarkRequestCompleteTask::MarkRequestCompleteTask(
 MarkRequestCompleteTask::~MarkRequestCompleteTask() = default;
 
 void MarkRequestCompleteTask::Start() {
-  StoreResponse();
+  base::RepeatingClosure barrier_closure = base::BarrierClosure(
+      2u, base::BindOnce(&MarkRequestCompleteTask::CheckAndCallFinished,
+                         weak_factory_.GetWeakPtr()));
+
+  StoreResponse(barrier_closure);
+  UpdateMetadata(barrier_closure);
 }
 
-void MarkRequestCompleteTask::StoreResponse() {
+void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
   auto response = std::make_unique<ServiceWorkerResponse>();
 
   is_response_successful_ = data_manager()->FillServiceWorkerResponse(
@@ -43,7 +49,7 @@ void MarkRequestCompleteTask::StoreResponse() {
 
   // A valid non-empty url is needed if we want to write to the cache.
   if (!request_info_->fetch_request().url.is_valid()) {
-    CreateAndStoreCompletedRequest();
+    CreateAndStoreCompletedRequest(std::move(done_closure));
     return;
   }
 
@@ -51,16 +57,18 @@ void MarkRequestCompleteTask::StoreResponse() {
       registration_id_.origin(), CacheStorageOwner::kBackgroundFetch,
       registration_id_.unique_id() /* cache_name */,
       base::BindOnce(&MarkRequestCompleteTask::DidOpenCache,
-                     weak_factory_.GetWeakPtr(), std::move(response)));
+                     weak_factory_.GetWeakPtr(), std::move(response),
+                     std::move(done_closure)));
 }
 
 void MarkRequestCompleteTask::DidOpenCache(
     std::unique_ptr<ServiceWorkerResponse> response,
+    base::OnceClosure done_closure,
     CacheStorageCacheHandle handle,
     blink::mojom::CacheStorageError error) {
   if (error != blink::mojom::CacheStorageError::kSuccess) {
     // TODO(crbug.com/780025): Log failures to UMA.
-    CreateAndStoreCompletedRequest();
+    CreateAndStoreCompletedRequest(std::move(done_closure));
     return;
   }
   DCHECK(handle.value());
@@ -73,17 +81,20 @@ void MarkRequestCompleteTask::DidOpenCache(
   handle.value()->Put(
       std::move(request), std::move(response),
       base::BindOnce(&MarkRequestCompleteTask::DidWriteToCache,
-                     weak_factory_.GetWeakPtr(), std::move(handle)));
+                     weak_factory_.GetWeakPtr(), std::move(handle),
+                     std::move(done_closure)));
 }
 
 void MarkRequestCompleteTask::DidWriteToCache(
     CacheStorageCacheHandle handle,
+    base::OnceClosure done_closure,
     blink::mojom::CacheStorageError error) {
   // TODO(crbug.com/780025): Log failures to UMA.
-  CreateAndStoreCompletedRequest();
+  CreateAndStoreCompletedRequest(std::move(done_closure));
 }
 
-void MarkRequestCompleteTask::CreateAndStoreCompletedRequest() {
+void MarkRequestCompleteTask::CreateAndStoreCompletedRequest(
+    base::OnceClosure done_closure) {
   completed_request_.set_unique_id(registration_id_.unique_id());
   completed_request_.set_request_index(request_info_->request_index());
   completed_request_.set_serialized_request(
@@ -97,11 +108,12 @@ void MarkRequestCompleteTask::CreateAndStoreCompletedRequest() {
       {{CompletedRequestKey(completed_request_.unique_id(),
                             completed_request_.request_index()),
         completed_request_.SerializeAsString()}},
-      base::BindRepeating(&MarkRequestCompleteTask::DidStoreCompletedRequest,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&MarkRequestCompleteTask::DidStoreCompletedRequest,
+                     weak_factory_.GetWeakPtr(), std::move(done_closure)));
 }
 
 void MarkRequestCompleteTask::DidStoreCompletedRequest(
+    base::OnceClosure done_closure,
     ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
@@ -109,7 +121,7 @@ void MarkRequestCompleteTask::DidStoreCompletedRequest(
     case DatabaseStatus::kFailed:
     case DatabaseStatus::kNotFound:
       // TODO(crbug.com/780025): Log failures to UMA.
-      Finished();  // Destroys |this|.
+      std::move(done_closure).Run();
       return;
   }
 
@@ -119,24 +131,70 @@ void MarkRequestCompleteTask::DidStoreCompletedRequest(
       {ActiveRequestKey(completed_request_.unique_id(),
                         completed_request_.request_index())},
       base::BindOnce(&MarkRequestCompleteTask::DidDeleteActiveRequest,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(), std::move(done_closure)));
 }
 
 void MarkRequestCompleteTask::DidDeleteActiveRequest(
+    base::OnceClosure done_closure,
+    ServiceWorkerStatusCode status) {
+  // TODO(crbug.com/780025): Log failures to UMA.
+  std::move(done_closure).Run();
+}
+
+void MarkRequestCompleteTask::UpdateMetadata(base::OnceClosure done_closure) {
+  if (!request_info_->IsResultSuccess() || request_info_->GetFileSize() == 0u) {
+    std::move(done_closure).Run();
+    return;
+  }
+
+  service_worker_context()->GetRegistrationUserData(
+      registration_id_.service_worker_registration_id(),
+      {RegistrationKey(registration_id_.unique_id())},
+      base::BindOnce(&MarkRequestCompleteTask::DidGetMetadata,
+                     weak_factory_.GetWeakPtr(), std::move(done_closure)));
+}
+
+void MarkRequestCompleteTask::DidGetMetadata(
+    base::OnceClosure done_closure,
+    const std::vector<std::string>& data,
     ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kNotFound:
     case DatabaseStatus::kFailed:
       // TODO(crbug.com/780025): Log failures to UMA.
-      break;
+      std::move(done_closure).Run();
+      return;
     case DatabaseStatus::kOk:
-      std::move(callback_).Run();
+      DCHECK_EQ(1u, data.size());
       break;
   }
 
-  Finished();  // Destroys |this|.
+  proto::BackgroundFetchMetadata metadata;
+  if (!metadata.ParseFromString(data.front())) {
+    NOTREACHED() << "Database is corrupt";  // TODO(crbug.com/780027): Nuke it.
+  }
 
-  // TODO(rayankans): Update download stats.
+  metadata.mutable_registration()->set_download_total(
+      metadata.registration().download_total() + request_info_->GetFileSize());
+
+  service_worker_context()->StoreRegistrationUserData(
+      registration_id_.service_worker_registration_id(),
+      registration_id_.origin().GetURL(),
+      {{RegistrationKey(registration_id_.unique_id()),
+        metadata.SerializeAsString()}},
+      base::BindOnce(&MarkRequestCompleteTask::DidStoreMetadata,
+                     weak_factory_.GetWeakPtr(), std::move(done_closure)));
+}
+
+void MarkRequestCompleteTask::DidStoreMetadata(base::OnceClosure done_closure,
+                                               ServiceWorkerStatusCode status) {
+  // TODO(crbug.com/780025): Log failures to UMA.
+  std::move(done_closure).Run();
+}
+
+void MarkRequestCompleteTask::CheckAndCallFinished() {
+  std::move(callback_).Run();
+  Finished();
 }
 
 }  // namespace background_fetch

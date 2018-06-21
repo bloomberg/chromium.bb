@@ -38,20 +38,35 @@ class MarkRequestCompleteTask : public DatabaseTask {
   void Start() override;
 
  private:
-  void StoreResponse();
+  void StoreResponse(base::OnceClosure done_closure);
 
   void DidOpenCache(std::unique_ptr<ServiceWorkerResponse> response,
+                    base::OnceClosure done_closure,
                     CacheStorageCacheHandle handle,
                     blink::mojom::CacheStorageError error);
 
   void DidWriteToCache(CacheStorageCacheHandle handle,
+                       base::OnceClosure done_closure,
                        blink::mojom::CacheStorageError error);
 
-  void CreateAndStoreCompletedRequest();
+  void CreateAndStoreCompletedRequest(base::OnceClosure done_closure);
 
-  void DidStoreCompletedRequest(ServiceWorkerStatusCode status);
+  void DidStoreCompletedRequest(base::OnceClosure done_closure,
+                                ServiceWorkerStatusCode status);
 
-  void DidDeleteActiveRequest(ServiceWorkerStatusCode status);
+  void DidDeleteActiveRequest(base::OnceClosure done_closure,
+                              ServiceWorkerStatusCode status);
+
+  void UpdateMetadata(base::OnceClosure done_closure);
+
+  void DidGetMetadata(base::OnceClosure done_closure,
+                      const std::vector<std::string>& data,
+                      ServiceWorkerStatusCode status);
+
+  void DidStoreMetadata(base::OnceClosure done_closure,
+                        ServiceWorkerStatusCode status);
+
+  void CheckAndCallFinished();
 
   BackgroundFetchRegistrationId registration_id_;
   scoped_refptr<BackgroundFetchRequestInfo> request_info_;
