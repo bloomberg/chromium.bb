@@ -23,6 +23,7 @@
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
 
@@ -83,7 +84,7 @@ void StatusAreaWidget::Initialize() {
   logout_button_tray_ = std::make_unique<LogoutButtonTray>(shelf_);
   status_area_widget_delegate_->AddChildView(logout_button_tray_.get());
 
-  if (Shell::GetAshConfig() == ash::Config::MASH) {
+  if (!::features::IsAshInBrowserProcess()) {
     // Flag warning tray is not currently used in non-MASH environments, because
     // mus will roll out via experiment/Finch trial and showing the tray would
     // reveal the experiment state to users.

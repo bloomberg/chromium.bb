@@ -65,9 +65,20 @@ Env::~Env() {
 std::unique_ptr<Env> Env::CreateInstance(Mode mode) {
   DCHECK(!lazy_tls_ptr.Pointer()->Get());
   std::unique_ptr<Env> env(new Env(mode));
-  env->Init();
+  env->Init(nullptr);
   return env;
 }
+
+#if defined(USE_OZONE)
+// static
+std::unique_ptr<Env> Env::CreateInstanceToHostViz(
+    service_manager::Connector* connector) {
+  DCHECK(!lazy_tls_ptr.Pointer()->Get());
+  std::unique_ptr<Env> env(new Env(Mode::LOCAL));
+  env->Init(connector);
+  return env;
+}
+#endif
 
 // static
 Env* Env::GetInstance() {
@@ -195,7 +206,7 @@ Env::Env(Mode mode)
   lazy_tls_ptr.Pointer()->Set(this);
 }
 
-void Env::Init() {
+void Env::Init(service_manager::Connector* connector) {
   if (mode_ == Mode::MUS) {
     EnableMusOSExchangeDataProvider();
     EnableMusOverrideInputInjector();
@@ -213,6 +224,14 @@ void Env::Init() {
   params.single_process = command_line->HasSwitch("single-process") ||
                           command_line->HasSwitch("in-process-gpu");
   params.using_mojo = command_line->HasSwitch(switches::kEnableDrmMojo);
+
+  if (connector) {
+    // Supplying a connector implies this process is hosting Viz.
+    params.connector = connector;
+    // Hosting viz is currently single-process only.
+    params.single_process = true;
+    params.using_mojo = true;
+  }
 
   ui::OzonePlatform::InitializeForUI(params);
 #endif

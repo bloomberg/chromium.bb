@@ -20,6 +20,7 @@
 #include "mash/public/mojom/launchable.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -40,7 +41,7 @@ FlagWarningTray::FlagWarningTray(Shelf* shelf) : shelf_(shelf) {
   // Flag warning tray is not currently used in non-MASH environments, because
   // mus will roll out via experiment/Finch trial and showing the tray would
   // reveal the experiment state to users.
-  DCHECK_EQ(Shell::GetAshConfig(), Config::MASH);
+  DCHECK(!::features::IsAshInBrowserProcess());
   container_ = new TrayContainer(shelf);
   AddChildView(container_);
 

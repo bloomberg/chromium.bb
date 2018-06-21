@@ -19,6 +19,7 @@
 #include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -123,7 +124,7 @@ HeaderView::HeaderView(views::Widget* target_widget,
         target_widget, this, caption_button_container_);
   } else {
     DCHECK_EQ(mojom::WindowStyle::BROWSER, window_style);
-    DCHECK_EQ(Config::MASH, Shell::GetAshConfig());
+    DCHECK(!::features::IsAshInBrowserProcess());
     appearance_provider_ = std::make_unique<WindowPropertyAppearanceProvider>(
         target_widget_->GetNativeWindow());
     // TODO(estade): pass correct value for |incognito|.

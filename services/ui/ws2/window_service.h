@@ -17,6 +17,7 @@
 #include "services/ui/input_devices/input_device_server.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "services/ui/public/interfaces/screen_provider.mojom.h"
+#include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/ids.h"
 #include "ui/aura/mus/property_converter.h"
@@ -84,6 +85,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   const std::set<WindowTree*>& window_trees() const { return window_trees_; }
 
+  service_manager::BinderRegistry* registry() { return &registry_; }
+
   // Called when a WindowServiceClient is about to be destroyed.
   void OnWillDestroyWindowTree(WindowTree* tree);
 
@@ -103,6 +106,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   void BindImeRegistrarRequest(mojom::IMERegistrarRequest request);
   void BindImeDriverRequest(mojom::IMEDriverRequest request);
   void BindInputDeviceServerRequest(mojom::InputDeviceServerRequest request);
+  void BindUserActivityMonitorRequest(
+      mojom::UserActivityMonitorRequest request);
   void BindWindowTreeFactoryRequest(
       ui::mojom::WindowTreeFactoryRequest request);
 

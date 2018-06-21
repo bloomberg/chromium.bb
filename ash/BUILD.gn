@@ -1281,6 +1281,8 @@ component("ash") {
     "wm/workspace/workspace_window_resizer.h",
     "wm/workspace_controller.cc",
     "wm/workspace_controller.h",
+    "ws/ash_gpu_interface_provider.cc",
+    "ws/ash_gpu_interface_provider.h",
     "ws/window_service_delegate_impl.cc",
     "ws/window_service_delegate_impl.h",
     "ws/window_service_owner.cc",
@@ -1305,6 +1307,7 @@ component("ash") {
     "//services/ui/public/cpp/input_devices",
     "//services/ui/public/interfaces",
     "//services/ui/public/interfaces/display",
+    "//services/ui/ws2:host",
     "//services/ui/ws2:lib",
     "//skia",
     "//ui/aura",
@@ -1343,6 +1346,7 @@ component("ash") {
     "//chromeos/services/multidevice_setup/public/mojom",
     "//components/account_id",
     "//components/device_event_log",
+    "//components/discardable_memory/service",
     "//components/exo",
     "//components/exo/wayland",
     "//components/onc",
@@ -1366,9 +1370,11 @@ component("ash") {
     "//services/data_decoder/public/cpp",
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
+    "//services/ui/gpu_host",
 
     # TODO(sky): this should not be necessary once --mash goes away.
     "//services/ui:lib",
+    "//services/ui/public/cpp/input_devices:input_device_controller",
     "//services/ui/public/interfaces/input_devices",
 
     # TODO(msw): Remove this; only ash_with_content should depend on webkit.

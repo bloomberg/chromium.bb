@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
@@ -26,6 +27,10 @@ class UnguessableToken;
 namespace mojo {
 template <typename MojoInterface>
 class InterfacePtr;
+}
+
+namespace service_manager {
+class Connector;
 }
 
 namespace ui {
@@ -73,6 +78,14 @@ class AURA_EXPORT Env : public ui::EventTarget,
   // NOTE: if you pass in Mode::MUS it is expected that you call
   // SetWindowTreeClient() before any windows are created.
   static std::unique_ptr<Env> CreateInstance(Mode mode = Mode::LOCAL);
+
+#if defined(USE_OZONE)
+  // used to create a new Env that hosts the viz process. |connector| is the
+  // connector used to establish outbound connections.
+  static std::unique_ptr<Env> CreateInstanceToHostViz(
+      service_manager::Connector* connector);
+#endif
+
   static Env* GetInstance();
   static Env* GetInstanceDontCreate();
 
@@ -167,7 +180,7 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   explicit Env(Mode mode);
 
-  void Init();
+  void Init(service_manager::Connector* connector);
 
   // After calling this method, all OSExchangeDataProvider instances will be
   // Mus instances. We can't do this work in Init(), because our mode may
