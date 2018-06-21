@@ -605,6 +605,12 @@ static INLINE int get_bitdepth_data_path_index(const MACROBLOCKD *xd) {
   return xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH ? 1 : 0;
 }
 
+static INLINE uint8_t *get_buf_by_bd(const MACROBLOCKD *xd, uint8_t *buf16) {
+  return (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+             ? CONVERT_TO_BYTEPTR(buf16)
+             : buf16;
+}
+
 static INLINE int get_sqr_bsize_idx(BLOCK_SIZE bsize) {
   switch (bsize) {
     case BLOCK_4X4: return 0;

@@ -627,9 +627,7 @@ void av1_make_masked_inter_predictor(
                   tmp_buf[INTER_PRED_BYTES_PER_PIXEL * MAX_SB_SQUARE]);
 #undef INTER_PRED_BYTES_PER_PIXEL
 
-  uint8_t *tmp_dst = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-                         ? CONVERT_TO_BYTEPTR(tmp_buf)
-                         : tmp_buf;
+  uint8_t *tmp_dst = get_buf_by_bd(xd, tmp_buf);
 
   const int tmp_buf_stride = MAX_SB_SIZE;
   CONV_BUF_TYPE *org_dst = conv_params->dst;
@@ -1713,9 +1711,7 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
 
   const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
   struct buf_2d *const pre_buf = &pd->pre[ref];
-  const int hbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
-  uint8_t *const dst =
-      (hbd ? CONVERT_TO_BYTEPTR(ext_dst) : ext_dst) + ext_dst_stride * y + x;
+  uint8_t *const dst = get_buf_by_bd(xd, ext_dst) + ext_dst_stride * y + x;
   const MV mv = mi->mv[ref].as_mv;
 
   ConvolveParams conv_params = get_conv_params(ref, 0, plane, xd->bd);
