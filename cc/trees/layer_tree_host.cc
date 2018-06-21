@@ -1130,6 +1130,13 @@ void LayerTreeHost::SetPageScaleFactorAndLimits(float page_scale_factor,
     return;
   DCHECK_GE(page_scale_factor, min_page_scale_factor);
   DCHECK_LE(page_scale_factor, max_page_scale_factor);
+  // We should never process non-unit page_scale_delta for an OOPIF subframe.
+  // TODO(wjmaclean): Remove this check as a pre-condition to closing the bug.
+  // https://crbug.com/845097
+  CHECK(!settings_.is_layer_tree_for_subframe ||
+        page_scale_factor == page_scale_factor_)
+      << "Setting PSF in oopif subframe: old psf = " << page_scale_factor_
+      << ", new psf = " << page_scale_factor;
 
   page_scale_factor_ = page_scale_factor;
   min_page_scale_factor_ = min_page_scale_factor;
@@ -1292,6 +1299,13 @@ bool LayerTreeHost::LayerNeedsPushPropertiesForTesting(Layer* layer) const {
 
 void LayerTreeHost::SetPageScaleFromImplSide(float page_scale) {
   DCHECK(CommitRequested());
+  // We should never process non-unit page_scale_delta for an OOPIF subframe.
+  // TODO(wjmaclean): Remove this check as a pre-condition to closing the bug.
+  // https://crbug.com/845097
+  CHECK(!settings_.is_layer_tree_for_subframe ||
+        page_scale == page_scale_factor_)
+      << "Setting PSF in oopif subframe: old psf = " << page_scale_factor_
+      << ", new psf = " << page_scale;
   page_scale_factor_ = page_scale;
   SetPropertyTreesNeedRebuild();
 }
