@@ -205,7 +205,7 @@
         </div>
       </template>
 
-      <cr-link-row icon-class="subpage-arrow" class="indented hr"
+      <cr-link-row embedded icon-class="subpage-arrow" class="indented hr"
           id="overscan" label="$i18n{displayOverscanPageTitle}"
           sub-label="$i18n{displayOverscanPageText}" on-click="onOverscanTap_"
           hidden$="[[!showOverscanSetting_(selectedDisplay)]]">
@@ -216,21 +216,12 @@
           on-close="onCloseOverscanDialog_">
       </settings-display-overscan-dialog>
 
-      <div class="settings-box indented two-line"
+      <cr-link-row embedded icon-class="subpage-arrow" class="indented hr"
+          id="touchCalibration" label="$i18n{displayTouchCalibrationTitle}"
+          sub-label="$i18n{displayTouchCalibrationText}"
           on-click="onTouchCalibrationTap_"
-          hidden$="[[!showTouchCalibrationSetting_(selectedDisplay)]]"
-          actionable>
-        <div class="start">
-          $i18n{displayTouchCalibrationTitle}
-          <div class="secondary" id="touchCalibrationSecondary">
-            $i18n{displayTouchCalibrationText}
-          </div>
-        </div>
-        <paper-icon-button-light class="subpage-arrow">
-          <button aria-label="$i18n{displayTouchCalibrationTitle}"
-              aria-describedby="touchCalibrationSecondary"></button>
-        </paper-icon-button-light>
-      </div>
+          hidden$="[[!showTouchCalibrationSetting_(selectedDisplay)]]">
+      </cr-link-row>
     </div>
 
     <!-- Night Light Settings -->
