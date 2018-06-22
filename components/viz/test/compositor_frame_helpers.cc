@@ -143,9 +143,7 @@ CompositorFrameBuilder& CompositorFrameBuilder::SetRequestPresentationFeedback(
 
 CompositorFrame CompositorFrameBuilder::MakeInitCompositorFrame() const {
   CompositorFrame frame;
-  frame.metadata.begin_frame_ack =
-      BeginFrameAck(BeginFrameArgs::kManualSourceId,
-                    BeginFrameArgs::kStartingFrameNumber, true);
+  frame.metadata.begin_frame_ack = BeginFrameAck::CreateManualAckWithDamage();
   frame.metadata.device_scale_factor = 1.f;
   return frame;
 }

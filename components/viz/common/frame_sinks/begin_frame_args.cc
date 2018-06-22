@@ -115,6 +115,9 @@ BeginFrameAck::BeginFrameAck()
       sequence_number(BeginFrameArgs::kInvalidFrameNumber),
       has_damage(false) {}
 
+BeginFrameAck::BeginFrameAck(const BeginFrameArgs& args, bool has_damage)
+    : BeginFrameAck(args.source_id, args.sequence_number, has_damage) {}
+
 BeginFrameAck::BeginFrameAck(uint64_t source_id,
                              uint64_t sequence_number,
                              bool has_damage)

@@ -163,8 +163,7 @@ class DisplaySchedulerTest : public testing::Test {
   DisplayScheduler& scheduler() { return scheduler_; }
   BeginFrameAck AckForCurrentBeginFrame() {
     DCHECK(last_begin_frame_args_.IsValid());
-    return BeginFrameAck(last_begin_frame_args_.source_id,
-                         last_begin_frame_args_.sequence_number, true);
+    return BeginFrameAck(last_begin_frame_args_, true);
   }
 
   FakeExternalBeginFrameSource fake_begin_frame_source_;
@@ -288,8 +287,7 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
   EXPECT_GE(now_src().NowTicks(),
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   scheduler_.BeginFrameDeadlineForTest();
-  EXPECT_EQ(BeginFrameAck(last_begin_frame_args_.source_id,
-                          last_begin_frame_args_.sequence_number, true),
+  EXPECT_EQ(BeginFrameAck(last_begin_frame_args_, true),
             client_.last_begin_frame_ack());
 
   // Set both surface 1 and 2 as active via SurfaceDamageExpected().
@@ -305,8 +303,7 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
   EXPECT_GE(now_src().NowTicks(),
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   scheduler_.BeginFrameDeadlineForTest();
-  EXPECT_EQ(BeginFrameAck(last_begin_frame_args_.source_id,
-                          last_begin_frame_args_.sequence_number, true),
+  EXPECT_EQ(BeginFrameAck(last_begin_frame_args_, true),
             client_.last_begin_frame_ack());
 
   // Surface damage with |!has_damage| triggers early deadline if other damage
@@ -335,8 +332,7 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
   EXPECT_LT(now_src().NowTicks(),
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   scheduler_.BeginFrameDeadlineForTest();
-  EXPECT_EQ(BeginFrameAck(last_begin_frame_args_.source_id,
-                          last_begin_frame_args_.sequence_number, false),
+  EXPECT_EQ(BeginFrameAck(last_begin_frame_args_, false),
             client_.last_begin_frame_ack());
 
   // System should be idle now.
@@ -786,8 +782,7 @@ TEST_F(DisplaySchedulerTest, SetNeedsOneBeginFrame) {
   scheduler_.SetNeedsOneBeginFrame();
   EXPECT_TRUE(scheduler_.inside_begin_frame_deadline_interval());
   scheduler_.BeginFrameDeadlineForTest();
-  EXPECT_EQ(BeginFrameAck(last_begin_frame_args_.source_id,
-                          last_begin_frame_args_.sequence_number, false),
+  EXPECT_EQ(BeginFrameAck(last_begin_frame_args_, false),
             client_.last_begin_frame_ack());
 
   // System should be idle again.

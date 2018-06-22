@@ -133,6 +133,10 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
 // Sent by a BeginFrameObserver as acknowledgment of completing a BeginFrame.
 struct VIZ_COMMON_EXPORT BeginFrameAck {
   BeginFrameAck();
+
+  // Constructs an instance as a response to the specified BeginFrameArgs.
+  BeginFrameAck(const BeginFrameArgs& args, bool has_damage);
+
   BeginFrameAck(uint64_t source_id, uint64_t sequence_number, bool has_damage);
 
   // Creates a BeginFrameAck for a manual BeginFrame. Used when clients produce
