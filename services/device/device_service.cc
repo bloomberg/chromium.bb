@@ -235,7 +235,7 @@ void DeviceService::BindVibrationManagerRequest(
 #if defined(OS_CHROMEOS)
 void DeviceService::BindMtpManagerRequest(mojom::MtpManagerRequest request) {
   if (!mtp_device_manager_)
-    mtp_device_manager_ = std::make_unique<MtpDeviceManager>();
+    mtp_device_manager_ = MtpDeviceManager::Initialize();
   mtp_device_manager_->AddBinding(std::move(request));
 }
 #endif

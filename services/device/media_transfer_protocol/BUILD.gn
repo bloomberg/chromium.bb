@@ -26,8 +26,6 @@ source_set("media_transfer_protocol") {
   sources = [
     "media_transfer_protocol_daemon_client.cc",
     "media_transfer_protocol_daemon_client.h",
-    "media_transfer_protocol_manager.cc",
-    "media_transfer_protocol_manager.h",
     "mtp_device_manager.cc",
     "mtp_device_manager.h",
   ]
