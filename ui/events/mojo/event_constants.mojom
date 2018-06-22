@@ -28,6 +28,7 @@ enum EventType {
   SCROLL,
   SCROLL_FLING_START,
   SCROLL_FLING_CANCEL,
+  CANCEL_MODE,
 };
 
 // This mirrors ui::EventFlags
