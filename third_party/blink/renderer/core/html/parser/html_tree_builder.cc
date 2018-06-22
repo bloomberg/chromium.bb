@@ -552,7 +552,8 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
       token->GetName() == bgsoundTag || token->GetName() == commandTag ||
       token->GetName() == linkTag || token->GetName() == metaTag ||
       token->GetName() == noframesTag || token->GetName() == scriptTag ||
-      token->GetName() == styleTag || token->GetName() == titleTag) {
+      token->GetName() == styleTag || token->GetName() == titleTag ||
+      token->GetName() == templateTag) {
     bool did_process = ProcessStartTagForInHead(token);
     DCHECK(did_process);
     return;
@@ -845,10 +846,6 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
       IsTableBodyContextTag(token->GetName()) ||
       IsTableCellContextTag(token->GetName()) || token->GetName() == trTag) {
     ParseError(token);
-    return;
-  }
-  if (token->GetName() == templateTag) {
-    ProcessTemplateStartTag(token);
     return;
   }
   tree_.ReconstructTheActiveFormattingElements();
@@ -1237,10 +1234,6 @@ void HTMLTreeBuilder::ProcessStartTag(AtomicHTMLToken* token) {
         ProcessStartTagForInHead(token);
         return;
       }
-      if (token->GetName() == templateTag) {
-        ProcessTemplateStartTag(token);
-        return;
-      }
       ParseError(token);
       break;
     case kAfterFramesetMode:
@@ -1346,9 +1339,7 @@ void HTMLTreeBuilder::ProcessStartTag(AtomicHTMLToken* token) {
       }
 
       InsertionMode insertion_mode = kTemplateContentsMode;
-      if (token->GetName() == frameTag)
-        insertion_mode = kInFramesetMode;
-      else if (token->GetName() == colTag)
+      if (token->GetName() == colTag)
         insertion_mode = kInColumnGroupMode;
       else if (IsCaptionColOrColgroupTag(token->GetName()) ||
                IsTableBodyContextTag(token->GetName()))
@@ -2066,10 +2057,6 @@ void HTMLTreeBuilder::ProcessEndTag(AtomicHTMLToken* token) {
         if (!IsParsingFragment() &&
             !tree_.CurrentStackItem()->HasTagName(framesetTag))
           SetInsertionMode(kAfterFramesetMode);
-        return;
-      }
-      if (token->GetName() == templateTag) {
-        ProcessTemplateEndTag(token);
         return;
       }
       break;
