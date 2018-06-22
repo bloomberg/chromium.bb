@@ -170,6 +170,34 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   }
 }
 
+TEST(NotificationDatabaseDataTest, ActionDeserializationIsNotAdditive) {
+  NotificationDatabaseData database_data;
+
+  for (size_t i = 0; i < blink::kWebNotificationMaxActions; ++i)
+    database_data.notification_data.actions.emplace_back();
+
+  std::string serialized_data;
+  NotificationDatabaseData copied_database_data;
+
+  // Serialize the data in |notification_data| to the string |serialized_data|,
+  // and then deserialize it again immediately to |copied_database_data|.
+  ASSERT_TRUE(
+      SerializeNotificationDatabaseData(database_data, &serialized_data));
+  ASSERT_TRUE(DeserializeNotificationDatabaseData(serialized_data,
+                                                  &copied_database_data));
+
+  EXPECT_EQ(copied_database_data.notification_data.actions.size(),
+            blink::kWebNotificationMaxActions);
+
+  // Deserialize it again in the same |copied_database_data|. The number of
+  // actions in the structure should not be affected.
+  ASSERT_TRUE(DeserializeNotificationDatabaseData(serialized_data,
+                                                  &copied_database_data));
+
+  EXPECT_EQ(copied_database_data.notification_data.actions.size(),
+            blink::kWebNotificationMaxActions);
+}
+
 TEST(NotificationDatabaseDataTest, SerializeAndDeserializeActionTypes) {
   PlatformNotificationActionType action_types[] = {
       PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON,
@@ -222,7 +250,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeDirections) {
   }
 }
 
-TEST(NotificationDatabaseDataTest, SerializeAndDeserializeclosed_reasons) {
+TEST(NotificationDatabaseDataTest, SerializeAndDeserializeClosedReasons) {
   NotificationDatabaseData::ClosedReason closed_reasons[] = {
       NotificationDatabaseData::ClosedReason::USER,
       NotificationDatabaseData::ClosedReason::DEVELOPER,
