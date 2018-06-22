@@ -1264,17 +1264,6 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-surface-synchronization"
-        ],
-        "name": "surface_sync_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--enable-features=VizDisplayCompositor",
           "--test-launcher-filter-file=../../testing/buildbot/filters/viz.browser_tests.filter"
         ],
@@ -1284,17 +1273,6 @@
           "shards": 10
         },
         "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-surface-synchronization"
-        ],
-        "name": "surface_sync_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 2
-        },
-        "test": "content_browsertests"
       },
       {
         "args": [
@@ -1739,17 +1717,6 @@
       },
       {
         "args": [
-          "--enable-surface-synchronization"
-        ],
-        "name": "surface_sync_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--enable-features=VizDisplayCompositor",
           "--test-launcher-filter-file=../../testing/buildbot/filters/viz.browser_tests.filter"
         ],
@@ -1765,17 +1732,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "compositor_unittests"
-      },
-      {
-        "args": [
-          "--enable-surface-synchronization"
-        ],
-        "name": "surface_sync_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 2
-        },
-        "test": "content_browsertests"
       },
       {
         "args": [
@@ -1929,17 +1885,6 @@
       },
       {
         "args": [
-          "--enable-surface-synchronization"
-        ],
-        "name": "surface_sync_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--enable-features=VizDisplayCompositor",
           "--test-launcher-filter-file=../../testing/buildbot/filters/viz.browser_tests.filter"
         ],
@@ -1966,17 +1911,6 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter"
         ],
         "name": "network_service_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 2
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-surface-synchronization"
-        ],
-        "name": "surface_sync_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 2
