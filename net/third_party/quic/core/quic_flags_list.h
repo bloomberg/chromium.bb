@@ -156,7 +156,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup2, true)
 // ScopedPacketFlusher.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_deprecate_scoped_scheduler2,
-          false)
+          true)
 
 // If it's been more than SRTT since receiving a packet, set the ack alarm for
 // 1ms instead of the standard delayed ack timer.

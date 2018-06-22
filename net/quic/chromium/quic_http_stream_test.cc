@@ -538,6 +538,25 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
                                        quic::QUIC_PROMISE_VARY_MISMATCH);
   }
 
+  std::unique_ptr<quic::QuicReceivedPacket>
+  ConstructClientRstStreamVaryMismatchAndRequestHeadersPacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      RequestPriority request_priority,
+      quic::QuicStreamId parent_stream_id,
+      size_t* spdy_headers_frame_length,
+      quic::QuicStreamOffset* offset) {
+    spdy::SpdyPriority priority =
+        ConvertRequestPriorityToQuicPriority(request_priority);
+    return client_maker_.MakeRstAndRequestHeadersPacket(
+        packet_number, should_include_version, promise_id_,
+        quic::QUIC_PROMISE_VARY_MISMATCH, stream_id, fin, priority,
+        std::move(request_headers_), parent_stream_id,
+        spdy_headers_frame_length, offset);
+  }
+
   std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndRstStreamPacket(
       quic::QuicPacketNumber packet_number,
       quic::QuicPacketNumber largest_received,
@@ -2201,11 +2220,19 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
         client_packet_number++, kIncludeVersion, promise_id_, 0,
         DEFAULT_PRIORITY, &header_stream_offset));
   }
-  AddWrite(ConstructClientRstStreamVaryMismatchPacket(client_packet_number++));
-  AddWrite(InnerConstructRequestHeadersPacket(
-      client_packet_number++, stream_id_ + 2, !kIncludeVersion, kFin,
-      DEFAULT_PRIORITY, promise_id_, &spdy_request_header_frame_length,
-      &header_stream_offset));
+  if (FLAGS_quic_reloadable_flag_quic_deprecate_scoped_scheduler2) {
+    AddWrite(ConstructClientRstStreamVaryMismatchAndRequestHeadersPacket(
+        client_packet_number++, stream_id_ + 2, !kIncludeVersion, kFin,
+        DEFAULT_PRIORITY, promise_id_, &spdy_request_header_frame_length,
+        &header_stream_offset));
+  } else {
+    AddWrite(
+        ConstructClientRstStreamVaryMismatchPacket(client_packet_number++));
+    AddWrite(InnerConstructRequestHeadersPacket(
+        client_packet_number++, stream_id_ + 2, !kIncludeVersion, kFin,
+        DEFAULT_PRIORITY, promise_id_, &spdy_request_header_frame_length,
+        &header_stream_offset));
+  }
   AddWrite(ConstructClientAckPacket(client_packet_number++, 3, 1, 1));
   AddWrite(ConstructClientRstStreamCancelledPacket(client_packet_number++));
 
