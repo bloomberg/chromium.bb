@@ -409,8 +409,16 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
           continue
         for suite_config in self._run.config.hw_tests:
           if not suite_config.async:
-            commands.AbortHWTests(self._run.config.name, old_version,
-                                  debug, suite_config.suite)
+            if self._run.config.enable_skylab_hw_tests:
+              commands.AbortSkylabHWTests(
+                  build='%s/%s' % (self._run.config.name, old_version),
+                  board=self._run.config.boards[0],
+                  debug=False, # For tryjob
+                  suite=suite_config.suite,
+                  pool=suite_config.pool)
+            else:
+              commands.AbortHWTests(self._run.config.name, old_version,
+                                    debug, suite_config.suite)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):

@@ -61,6 +61,7 @@ _SWARMING_EXPIRATION = 20 * 60
 RUN_SUITE_PATH = '/usr/local/autotest/site_utils/run_suite.py'
 SKYLAB_RUN_SUITE_PATH = '/usr/local/autotest/bin/run_suite_skylab'
 _ABORT_SUITE_PATH = '/usr/local/autotest/site_utils/abort_suite.py'
+_SKYLAB_ABORT_SUITE_PATH = '/usr/local/autotest/bin/abort_suite_skylab'
 _MAX_HWTEST_CMD_RETRY = 10
 SKYLAB_SUITE_BOT_POOL = 'ChromeOSSkylab-suite'
 SUITE_BOT_POOL = 'default'
@@ -1439,6 +1440,45 @@ def AbortHWTests(config_type_or_name, version, debug, suite=''):
         'expiration_secs': _SWARMING_EXPIRATION}
     if debug:
       logging.info('AbortHWTests would run the cmd via '
+                   'swarming, cmd: %s, swarming_args: %s',
+                   cros_build_lib.CmdToStr(cmd), str(swarming_args))
+    else:
+      swarming_lib.RunSwarmingCommand(cmd, **swarming_args)
+  except cros_build_lib.RunCommandError:
+    logging.warning('AbortHWTests failed', exc_info=True)
+
+
+def AbortSkylabHWTests(build, board, debug, suite, pool=None, suite_id=''):
+  """Abort the specified hardware tests for the given bot(s).
+
+  Args:
+    build: A string build name, like 'link-paladin/R18-1655.0.0-rc1'.
+    board: The name of the board.
+    debug: Whether we are in debug mode.
+    suite: Name of the Autotest suite.
+    pool: The name of the pool.
+    suite_id: The ID of this swarming suite task.
+  """
+  abort_args = ['--board', board, '--suite_name', suite, '--build', build,
+                '--abort_limit', str(1)]
+  if suite_id:
+    abort_args += ['--suite_task_ids', suite_id]
+
+  if pool is not None:
+    abort_args += ['--pool', pool]
+
+  try:
+    cmd = [_SKYLAB_ABORT_SUITE_PATH] + abort_args
+    swarming_args = {
+        'swarming_server': topology.topology.get(
+            topology.CHROME_SWARMING_PROXY_HOST_KEY),
+        'task_name': '-'.join(['abort', build, suite]),
+        'dimensions': [('os', 'Ubuntu-14.04'),
+                       ('pool', SKYLAB_SUITE_BOT_POOL)],
+        'print_status_updates': True,
+        'expiration_secs': _SWARMING_EXPIRATION}
+    if debug:
+      logging.info('AbortSkylabHWTests would run the cmd via '
                    'swarming, cmd: %s, swarming_args: %s',
                    cros_build_lib.CmdToStr(cmd), str(swarming_args))
     else:
