@@ -896,3 +896,46 @@ TEST_F('EditingTest', 'IsValidLine', function() {
     assertFalse(line.isValidLine());
   })
 });
+
+TEST_F('EditingTest', 'TelTrimsWhitespace', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div id="go"></div>
+    <input id="input" type="tel"></input>
+    <script>
+      var data = [
+        '6               ',
+        '60              ',
+        '601             ',
+        '60              '
+      ];
+      var go = document.getElementById('go');
+      var input = document.getElementById('input');
+      var index = 0;
+      go.addEventListener('click', function() {
+        input.value = data[index];
+        index++;
+        input.selectionStart = index;
+        input.selectionEnd = index;
+      }, true);
+    </script>
+  */}, function(root) {
+    var input = root.find({role: RoleType.TEXT_FIELD});
+    var go = root.find({role: RoleType.GENERIC_CONTAINER});
+    var enterKey = go.doDefault.bind(go);
+    this.listenOnce(input, 'focus', function() {
+      mockFeedback.call(enterKey)
+          .expectSpeech('6')
+          .call(enterKey)
+          .expectSpeech('0')
+          .call(enterKey)
+          .expectSpeech('1')
+
+          // Deletion.
+          .call(enterKey)
+          .expectSpeech('1')
+          .replay();
+    });
+    input.focus();
+  });
+});
