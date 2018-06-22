@@ -11,7 +11,18 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 
+class PrefService;
+class PrefRegistrySimple;
+
 namespace chromeos {
+
+namespace device_sync {
+class DeviceSyncClient;
+}  // namespace device_sync
+
+namespace secure_channel {
+class SecureChannelClient;
+}  // namespace secure_channel
 
 namespace multidevice_setup {
 
@@ -22,8 +33,13 @@ class MultiDeviceSetupBase;
 // requests.
 class MultiDeviceSetupService : public service_manager::Service {
  public:
-  MultiDeviceSetupService();
+  MultiDeviceSetupService(
+      PrefService* pref_service,
+      device_sync::DeviceSyncClient* device_sync_client,
+      secure_channel::SecureChannelClient* secure_channel_client);
   ~MultiDeviceSetupService() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
   // service_manager::Service:

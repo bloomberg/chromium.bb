@@ -7,25 +7,38 @@
 
 #include <memory>
 
-#include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
+
+class PrefService;
 
 namespace chromeos {
 
+namespace device_sync {
+class DeviceSyncClient;
+}  // namespace device_sync
+
+namespace secure_channel {
+class SecureChannelClient;
+}  // namespace secure_channel
+
 namespace multidevice_setup {
 
+class AccountStatusChangeDelegateNotifier;
+class SetupFlowCompletionRecorder;
+
 // Concrete MultiDeviceSetup implementation.
-class MultiDeviceSetupImpl : public MultiDeviceSetupBase {
+class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup {
  public:
   class Factory {
    public:
     static Factory* Get();
     static void SetFactoryForTesting(Factory* test_factory);
     virtual ~Factory();
-    virtual std::unique_ptr<MultiDeviceSetupBase> BuildInstance();
+    virtual std::unique_ptr<mojom::MultiDeviceSetup> BuildInstance(
+        PrefService* pref_service,
+        device_sync::DeviceSyncClient* device_sync_client,
+        secure_channel::SecureChannelClient* secure_channel_client);
 
    private:
     static Factory* test_factory_;
@@ -34,7 +47,10 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase {
   ~MultiDeviceSetupImpl() override;
 
  private:
-  MultiDeviceSetupImpl();
+  MultiDeviceSetupImpl(
+      PrefService* pref_service,
+      device_sync::DeviceSyncClient* device_sync_client,
+      secure_channel::SecureChannelClient* secure_channel_client);
 
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
@@ -44,7 +60,8 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase {
       mojom::EventTypeForDebugging type,
       TriggerEventForDebuggingCallback callback) override;
 
-  mojom::AccountStatusChangeDelegatePtr delegate_;
+  std::unique_ptr<SetupFlowCompletionRecorder> setup_flow_completion_recorder_;
+  std::unique_ptr<AccountStatusChangeDelegateNotifier> delegate_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupImpl);
 };

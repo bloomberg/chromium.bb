@@ -4,13 +4,18 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate.h"
+#include "chromeos/services/multidevice_setup/fake_multidevice_setup.h"
+#include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
+#include "components/cryptauth/remote_device_test_util.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,107 +23,223 @@ namespace chromeos {
 
 namespace multidevice_setup {
 
-class MultiDeviceSetupServiceTest : public testing::Test {
- protected:
-  MultiDeviceSetupServiceTest() = default;
-  ~MultiDeviceSetupServiceTest() override = default;
+namespace {
 
-  void SetUp() override {
-    fake_account_status_change_delegate_ =
-        std::make_unique<FakeAccountStatusChangeDelegate>();
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::make_unique<MultiDeviceSetupService>());
+class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
+ public:
+  FakeMultiDeviceSetupFactory(
+      sync_preferences::TestingPrefServiceSyncable*
+          expected_testing_pref_service,
+      device_sync::FakeDeviceSyncClient* expected_device_sync_client,
+      secure_channel::FakeSecureChannelClient* expected_secure_channel_client)
+      : expected_testing_pref_service_(expected_testing_pref_service),
+        expected_device_sync_client_(expected_device_sync_client),
+        expected_secure_channel_client_(expected_secure_channel_client) {}
+
+  ~FakeMultiDeviceSetupFactory() override = default;
+
+  FakeMultiDeviceSetup* instance() { return instance_; }
+
+ private:
+  std::unique_ptr<mojom::MultiDeviceSetup> BuildInstance(
+      PrefService* pref_service,
+      device_sync::DeviceSyncClient* device_sync_client,
+      secure_channel::SecureChannelClient* secure_channel_client) override {
+    EXPECT_FALSE(instance_);
+    EXPECT_EQ(expected_testing_pref_service_, pref_service);
+    EXPECT_EQ(expected_device_sync_client_, device_sync_client);
+    EXPECT_EQ(expected_secure_channel_client_, secure_channel_client);
+
+    auto instance = std::make_unique<FakeMultiDeviceSetup>();
+    instance_ = instance.get();
+    return instance;
   }
 
-  mojom::MultiDeviceSetup* GetMultiDeviceSetup() {
-    if (!multidevice_setup_) {
-      EXPECT_EQ(nullptr, connector_);
+  sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
+  device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
+  secure_channel::FakeSecureChannelClient* expected_secure_channel_client_;
 
-      // Create the Connector and bind it to |multidevice_setup_|.
-      connector_ = connector_factory_->CreateConnector();
-      connector_->BindInterface(mojom::kServiceName, &multidevice_setup_);
+  FakeMultiDeviceSetup* instance_ = nullptr;
 
-      // Set |fake_account_status_change_delegate_|.
-      CallSetAccountStatusChangeDelegate();
-    }
+  DISALLOW_COPY_AND_ASSIGN(FakeMultiDeviceSetupFactory);
+};
 
-    return multidevice_setup_.get();
+}  // namespace
+
+class MultiDeviceSetupServiceTest : public testing::Test {
+ protected:
+  MultiDeviceSetupServiceTest()
+      : test_device_(cryptauth::CreateRemoteDeviceRefForTest()) {}
+  ~MultiDeviceSetupServiceTest() override = default;
+
+  // testing::Test:
+  void SetUp() override {
+    test_pref_service_ =
+        std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
+    fake_device_sync_client_ =
+        std::make_unique<device_sync::FakeDeviceSyncClient>();
+    fake_secure_channel_client_ =
+        std::make_unique<secure_channel::FakeSecureChannelClient>();
+
+    fake_multidevice_setup_factory_ =
+        std::make_unique<FakeMultiDeviceSetupFactory>(
+            test_pref_service_.get(), fake_device_sync_client_.get(),
+            fake_secure_channel_client_.get());
+    MultiDeviceSetupImpl::Factory::SetFactoryForTesting(
+        fake_multidevice_setup_factory_.get());
+
+    connector_factory_ =
+        service_manager::TestConnectorFactory::CreateForUniqueService(
+            std::make_unique<MultiDeviceSetupService>(
+                test_pref_service_.get(), fake_device_sync_client_.get(),
+                fake_secure_channel_client_.get()));
+
+    auto connector = connector_factory_->CreateConnector();
+    connector->BindInterface(mojom::kServiceName, &multidevice_setup_ptr_);
+    multidevice_setup_ptr_.FlushForTesting();
+  }
+
+  void TearDown() override {
+    MultiDeviceSetupImpl::Factory::SetFactoryForTesting(nullptr);
+  }
+
+  void CallSetAccountStatusChangeDelegate() {
+    EXPECT_FALSE(fake_account_status_change_delegate_);
+
+    fake_account_status_change_delegate_ =
+        std::make_unique<FakeAccountStatusChangeDelegate>();
+
+    multidevice_setup_ptr_->SetAccountStatusChangeDelegate(
+        fake_account_status_change_delegate_->GenerateInterfacePtr(),
+        base::DoNothing());
+    multidevice_setup_ptr_.FlushForTesting();
+  }
+
+  void CallTriggerEventForDebuggingBeforeInitializationComplete(
+      mojom::EventTypeForDebugging type) {
+    EXPECT_FALSE(fake_account_status_change_delegate_);
+    EXPECT_FALSE(last_debug_event_success_);
+
+    base::RunLoop run_loop;
+    multidevice_setup_ptr_->TriggerEventForDebugging(
+        type,
+        base::BindOnce(&MultiDeviceSetupServiceTest::OnDebugEventTriggered,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    // Always expected to fail before initialization completes.
+    EXPECT_FALSE(*last_debug_event_success_);
+    last_debug_event_success_.reset();
+  }
+
+  void CallTriggerEventForDebuggingAfterInitializationComplete(
+      mojom::EventTypeForDebugging type,
+      bool should_succeed) {
+    EXPECT_TRUE(fake_account_status_change_delegate_);
+    EXPECT_FALSE(last_debug_event_success_);
+
+    base::RunLoop run_loop;
+    multidevice_setup_ptr_->TriggerEventForDebugging(
+        type,
+        base::BindOnce(&MultiDeviceSetupServiceTest::OnDebugEventTriggered,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    multidevice_setup_ptr_.FlushForTesting();
+
+    std::pair<mojom::EventTypeForDebugging,
+              FakeMultiDeviceSetup::TriggerEventForDebuggingCallback>&
+        triggered_debug_event_args =
+            fake_multidevice_setup()->triggered_debug_events().back();
+    EXPECT_EQ(type, triggered_debug_event_args.first);
+    std::move(triggered_debug_event_args.second).Run(should_succeed);
+
+    run_loop.Run();
+
+    EXPECT_EQ(should_succeed, *last_debug_event_success_);
+    last_debug_event_success_.reset();
+  }
+
+  void FinishInitialization() {
+    EXPECT_FALSE(fake_multidevice_setup());
+    fake_device_sync_client_->set_local_device_metadata(test_device_);
+    fake_device_sync_client_->NotifyEnrollmentFinished();
+    EXPECT_TRUE(fake_multidevice_setup());
   }
 
   FakeAccountStatusChangeDelegate* fake_account_status_change_delegate() {
     return fake_account_status_change_delegate_.get();
   }
 
-  void CallSetAccountStatusChangeDelegate() {
-    base::RunLoop run_loop;
-    multidevice_setup_->SetAccountStatusChangeDelegate(
-        fake_account_status_change_delegate_->GenerateInterfacePtr(),
-        base::BindOnce(
-            &MultiDeviceSetupServiceTest::OnNotificationPresenterRegistered,
-            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
+  FakeMultiDeviceSetup* fake_multidevice_setup() {
+    return fake_multidevice_setup_factory_->instance();
   }
 
-  void CallTriggerEventForDebugging(mojom::EventTypeForDebugging type) {
-    base::RunLoop run_loop;
-    GetMultiDeviceSetup()->TriggerEventForDebugging(
-        type,
-        base::BindOnce(&MultiDeviceSetupServiceTest::OnNotificationTriggered,
-                       base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
+  mojom::MultiDeviceSetup* multidevice_setup() {
+    return multidevice_setup_ptr_.get();
   }
 
  private:
-  void OnNotificationPresenterRegistered(
-      const base::RepeatingClosure& quit_closure) {
-    quit_closure.Run();
-  }
-
-  void OnNotificationTriggered(const base::RepeatingClosure& quit_closure,
-                               bool success) {
-    // NotificationPresenter is set in GetMultiDeviceSetup().
-    EXPECT_TRUE(success);
-    quit_closure.Run();
+  void OnDebugEventTriggered(base::OnceClosure quit_closure, bool success) {
+    last_debug_event_success_ = success;
+    std::move(quit_closure).Run();
   }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  const cryptauth::RemoteDeviceRef test_device_;
+
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
+      test_pref_service_;
+  std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
+  std::unique_ptr<secure_channel::FakeSecureChannelClient>
+      fake_secure_channel_client_;
+
+  std::unique_ptr<FakeMultiDeviceSetupFactory> fake_multidevice_setup_factory_;
 
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
-
   std::unique_ptr<FakeAccountStatusChangeDelegate>
       fake_account_status_change_delegate_;
-  mojom::MultiDeviceSetupPtr multidevice_setup_;
+  base::Optional<bool> last_debug_event_success_;
+
+  mojom::MultiDeviceSetupPtr multidevice_setup_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupServiceTest);
 };
 
 TEST_F(MultiDeviceSetupServiceTest,
-       TriggerEventForDebugging_kNewUserPotentialHostExists) {
-  CallTriggerEventForDebugging(
+       TriggerEventForDebuggingBeforeInitialization) {
+  CallTriggerEventForDebuggingBeforeInitializationComplete(
       mojom::EventTypeForDebugging::kNewUserPotentialHostExists);
-
-  EXPECT_EQ(
-      1u, fake_account_status_change_delegate()->num_new_user_events_handled());
-}
-
-TEST_F(MultiDeviceSetupServiceTest,
-       TriggerEventForDebugging_kExistingUserConnectedHostSwitched) {
-  CallTriggerEventForDebugging(
+  CallTriggerEventForDebuggingBeforeInitializationComplete(
       mojom::EventTypeForDebugging::kExistingUserConnectedHostSwitched);
-
-  EXPECT_EQ(1u, fake_account_status_change_delegate()
-                    ->num_existing_user_host_switched_events_handled());
+  CallTriggerEventForDebuggingBeforeInitializationComplete(
+      mojom::EventTypeForDebugging::kExistingUserNewChromebookAdded);
 }
 
-TEST_F(MultiDeviceSetupServiceTest,
-       TriggerEventForDebugging_kExistingUserNewChromebookAdded) {
-  CallTriggerEventForDebugging(
-      mojom::EventTypeForDebugging::kExistingUserNewChromebookAdded);
+TEST_F(MultiDeviceSetupServiceTest, SetDelegateBeforeInitialization) {
+  CallSetAccountStatusChangeDelegate();
+  FinishInitialization();
+  CallTriggerEventForDebuggingAfterInitializationComplete(
+      mojom::EventTypeForDebugging::kNewUserPotentialHostExists,
+      true /* should_succeed */);
+  CallTriggerEventForDebuggingAfterInitializationComplete(
+      mojom::EventTypeForDebugging::kExistingUserConnectedHostSwitched,
+      true /* should_succeed */);
+  CallTriggerEventForDebuggingAfterInitializationComplete(
+      mojom::EventTypeForDebugging::kExistingUserNewChromebookAdded,
+      true /* should_succeed */);
+}
 
-  EXPECT_EQ(1u, fake_account_status_change_delegate()
-                    ->num_existing_user_chromebook_added_events_handled());
+TEST_F(MultiDeviceSetupServiceTest, FinishInitializationFirst) {
+  FinishInitialization();
+  CallSetAccountStatusChangeDelegate();
+  CallTriggerEventForDebuggingAfterInitializationComplete(
+      mojom::EventTypeForDebugging::kNewUserPotentialHostExists,
+      true /* should_succeed */);
+  CallTriggerEventForDebuggingAfterInitializationComplete(
+      mojom::EventTypeForDebugging::kExistingUserConnectedHostSwitched,
+      true /* should_succeed */);
+  CallTriggerEventForDebuggingAfterInitializationComplete(
+      mojom::EventTypeForDebugging::kExistingUserNewChromebookAdded,
+      true /* should_succeed */);
 }
 
 }  // namespace multidevice_setup

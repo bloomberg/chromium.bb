@@ -34,7 +34,9 @@ class AccountStatusChangeDelegateNotifier {
   mojom::AccountStatusChangeDelegate* delegate() { return delegate_ptr_.get(); }
 
  private:
+  friend class MultiDeviceSetupImpl;
   friend class MultiDeviceSetupAccountStatusChangeDelegateNotifierTest;
+  friend class MultiDeviceSetupImplTest;
 
   void FlushForTesting();
 
