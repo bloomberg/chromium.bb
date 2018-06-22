@@ -491,11 +491,7 @@ TEST_F(IdentityManagerTest, RemoveAccessTokenFromCache) {
   token_service()->set_on_access_token_invalidated_info(
       account_id, scopes, access_token, run_loop.QuitClosure());
 
-  AccountInfo account_info;
-  account_info.account_id = account_id;
-  account_info.gaia = kTestGaiaId;
-  account_info.email = kTestEmail;
-  identity_manager()->RemoveAccessTokenFromCache(account_info, scopes,
+  identity_manager()->RemoveAccessTokenFromCache(account_id, scopes,
                                                  access_token);
 
   run_loop.Run();
