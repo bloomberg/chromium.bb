@@ -659,8 +659,11 @@ class LocalDeviceInstrumentationTestRun(
             dir=dev.GetExternalStoragePath()) as dev_test_list_json:
           junit4_runner_class = self._test_instance.junit4_runner_class
           test_package = self._test_instance.test_package
-          extras = {}
-          extras['log'] = 'true'
+          extras = {
+            'log': 'true',
+            # Workaround for https://github.com/mockito/mockito/issues/922
+            'notPackage': 'net.bytebuddy',
+          }
           extras[_EXTRA_TEST_LIST] = dev_test_list_json.name
           target = '%s/%s' % (test_package, junit4_runner_class)
           timeout = 120
