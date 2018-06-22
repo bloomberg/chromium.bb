@@ -47,7 +47,7 @@ TEST(OfflineItemConversionsTest, OfflinePageItemConversion) {
   EXPECT_EQ(creation_time, offline_item.creation_time);
   EXPECT_EQ(last_access_time, offline_item.last_accessed_time);
   EXPECT_EQ(file_size, offline_item.total_size_bytes);
-  EXPECT_EQ("text/html", offline_item.mime_type);
+  EXPECT_EQ("multipart/related", offline_item.mime_type);
   EXPECT_EQ(OfflineItemFilter::FILTER_PAGE, offline_item.filter);
   EXPECT_EQ(OfflineItemState::COMPLETE, offline_item.state);
   EXPECT_EQ(100, offline_item.progress.value);
@@ -62,14 +62,14 @@ TEST(OfflineItemConversionsTest, OfflinePageItemConversion) {
   // OfflineItem. Then check that only the mime type is and is_suggested
   // information changed.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kOfflinePagesSharingFeature);
+  scoped_feature_list.InitAndDisableFeature(kOfflinePagesSharingFeature);
   OfflineItem offline_item_p2p =
       OfflineItemConversions::CreateOfflineItem(offline_page_item, false);
-  EXPECT_EQ("multipart/related", offline_item_p2p.mime_type);
+  EXPECT_EQ("text/html", offline_item_p2p.mime_type);
   EXPECT_FALSE(offline_item_p2p.is_suggested);
 
   // Change offline_item_p2p to match offline_item and check that it does.
-  offline_item_p2p.mime_type = "text/html";
+  offline_item_p2p.mime_type = "multipart/related";
   offline_item_p2p.is_suggested = true;
   EXPECT_EQ(offline_item, offline_item_p2p);
 }
@@ -95,7 +95,7 @@ TEST(OfflineItemConversionsTest, SavePageRequestConversion) {
   EXPECT_EQ(base::FilePath(), offline_item.file_path);
   EXPECT_EQ(creation_time, offline_item.creation_time);
   EXPECT_EQ(base::Time(), offline_item.last_accessed_time);
-  EXPECT_EQ("text/html", offline_item.mime_type);
+  EXPECT_EQ("multipart/related", offline_item.mime_type);
   EXPECT_EQ(OfflineItemFilter::FILTER_PAGE, offline_item.filter);
   EXPECT_EQ(OfflineItemState::IN_PROGRESS, offline_item.state);
   EXPECT_EQ(0, offline_item.progress.value);
@@ -103,16 +103,16 @@ TEST(OfflineItemConversionsTest, SavePageRequestConversion) {
   EXPECT_EQ(OfflineItemProgressUnit::PERCENTAGE, offline_item.progress.unit);
   EXPECT_FALSE(offline_item.is_suggested);
 
-  // Enabled P2P sharing of offline pages and check that only the mime type is
+  // Disable P2P sharing of offline pages and check that only the mime type is
   // different.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kOfflinePagesSharingFeature);
+  scoped_feature_list.InitAndDisableFeature(kOfflinePagesSharingFeature);
   OfflineItem offline_item_p2p =
       OfflineItemConversions::CreateOfflineItem(save_page_request);
-  EXPECT_EQ("multipart/related", offline_item_p2p.mime_type);
+  EXPECT_EQ("text/html", offline_item_p2p.mime_type);
 
   // Change offline_item_p2p to match offline_item and check that it does.
-  offline_item_p2p.mime_type = "text/html";
+  offline_item_p2p.mime_type = "multipart/related";
   EXPECT_EQ(offline_item, offline_item_p2p);
 }
 

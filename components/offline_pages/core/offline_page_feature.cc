@@ -32,7 +32,7 @@ const base::Feature kOfflinePagesCTFeature{"OfflinePagesCT",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOfflinePagesSharingFeature{
-    "OfflinePagesSharing", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OfflinePagesSharing", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOfflinePagesSvelteConcurrentLoadingFeature{
     "OfflinePagesSvelteConcurrentLoading", base::FEATURE_DISABLED_BY_DEFAULT};
