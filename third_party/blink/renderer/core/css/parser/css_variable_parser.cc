@@ -150,7 +150,8 @@ bool CSSVariableParser::ContainsValidVariableReferences(
 CSSCustomPropertyDeclaration* CSSVariableParser::ParseDeclarationValue(
     const AtomicString& variable_name,
     CSSParserTokenRange range,
-    bool is_animation_tainted) {
+    bool is_animation_tainted,
+    const CSSParserContext& context) {
   if (range.AtEnd())
     return nullptr;
 
@@ -162,7 +163,8 @@ CSSCustomPropertyDeclaration* CSSVariableParser::ParseDeclarationValue(
   if (type == CSSValueInternalVariableValue) {
     return CSSCustomPropertyDeclaration::Create(
         variable_name,
-        CSSVariableData::Create(range, is_animation_tainted, has_references));
+        CSSVariableData::Create(range, is_animation_tainted, has_references,
+                                context.BaseURL(), context.Charset()));
   }
   return CSSCustomPropertyDeclaration::Create(variable_name, type);
 }
@@ -183,7 +185,8 @@ CSSVariableReferenceValue* CSSVariableParser::ParseRegisteredPropertyValue(
   if (require_var_reference && !has_references)
     return nullptr;
   return CSSVariableReferenceValue::Create(
-      CSSVariableData::Create(range, is_animation_tainted, has_references),
+      CSSVariableData::Create(range, is_animation_tainted, has_references,
+                              context.BaseURL(), context.Charset()),
       context);
 }
 

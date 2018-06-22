@@ -110,16 +110,17 @@ void PropertyRegistration::registerProperty(
     return;
   }
 
+  const CSSParserContext* parser_context =
+      document->ElementSheet().Contents()->ParserContext();
+
   const CSSValue* initial = nullptr;
   scoped_refptr<CSSVariableData> initial_variable_data;
   if (descriptor.hasInitialValue()) {
     CSSTokenizer tokenizer(descriptor.initialValue());
     const auto tokens = tokenizer.TokenizeToEOF();
     bool is_animation_tainted = false;
-    initial = syntax_descriptor.Parse(
-        CSSParserTokenRange(tokens),
-        document->ElementSheet().Contents()->ParserContext(),
-        is_animation_tainted);
+    initial = syntax_descriptor.Parse(CSSParserTokenRange(tokens),
+                                      parser_context, is_animation_tainted);
     if (!initial) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
@@ -135,7 +136,8 @@ void PropertyRegistration::registerProperty(
     initial =
         &StyleBuilderConverter::ConvertRegisteredPropertyInitialValue(*initial);
     initial_variable_data = CSSVariableData::Create(
-        CSSParserTokenRange(tokens), is_animation_tainted, false);
+        CSSParserTokenRange(tokens), is_animation_tainted, false,
+        parser_context->BaseURL(), parser_context->Charset());
   } else {
     if (!syntax_descriptor.IsTokenStream()) {
       exception_state.ThrowDOMException(

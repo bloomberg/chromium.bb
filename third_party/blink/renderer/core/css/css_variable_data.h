@@ -8,7 +8,9 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -24,11 +26,15 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   static scoped_refptr<CSSVariableData> Create() {
     return base::AdoptRef(new CSSVariableData());
   }
-  static scoped_refptr<CSSVariableData> Create(const CSSParserTokenRange& range,
-                                               bool is_animation_tainted,
-                                               bool needs_variable_resolution) {
+  static scoped_refptr<CSSVariableData> Create(
+      const CSSParserTokenRange& range,
+      bool is_animation_tainted,
+      bool needs_variable_resolution,
+      const KURL& base_url,
+      const WTF::TextEncoding& charset) {
     return base::AdoptRef(new CSSVariableData(range, is_animation_tainted,
-                                              needs_variable_resolution));
+                                              needs_variable_resolution,
+                                              base_url, charset));
   }
 
   static scoped_refptr<CSSVariableData> CreateResolved(
@@ -50,16 +56,26 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
 
   bool NeedsVariableResolution() const { return needs_variable_resolution_; }
 
+  bool NeedsUrlResolution() const { return needs_url_resolution_; }
+
+  const KURL& BaseURL() const { return base_url_; }
+
+  const WTF::TextEncoding& Charset() const { return charset_; }
+
   const CSSValue* ParseForSyntax(const CSSSyntaxDescriptor&,
                                  SecureContextMode) const;
 
  private:
   CSSVariableData()
-      : is_animation_tainted_(false), needs_variable_resolution_(false){};
+      : is_animation_tainted_(false),
+        needs_variable_resolution_(false),
+        needs_url_resolution_(false){};
 
   CSSVariableData(const CSSParserTokenRange&,
                   bool is_animation_tainted,
-                  bool needs_variable_resolution);
+                  bool needs_variable_resolution,
+                  const KURL& base_url,
+                  const WTF::TextEncoding& charset);
 
   CSSVariableData(const Vector<CSSParserToken>& resolved_tokens,
                   Vector<String> backing_strings,
@@ -67,7 +83,8 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
       : backing_strings_(std::move(backing_strings)),
         tokens_(resolved_tokens),
         is_animation_tainted_(is_animation_tainted),
-        needs_variable_resolution_(false) {}
+        needs_variable_resolution_(false),
+        needs_url_resolution_(false) {}
 
   void ConsumeAndUpdateTokens(const CSSParserTokenRange&);
 
@@ -78,6 +95,9 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   Vector<CSSParserToken> tokens_;
   const bool is_animation_tainted_;
   const bool needs_variable_resolution_;
+  bool needs_url_resolution_;
+  KURL base_url_;
+  WTF::TextEncoding charset_;
   DISALLOW_COPY_AND_ASSIGN(CSSVariableData);
 };
 

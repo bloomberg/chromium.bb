@@ -967,8 +967,8 @@ void CSSParserImpl::ConsumeVariableValue(CSSParserTokenRange range,
                                          bool important,
                                          bool is_animation_tainted) {
   if (CSSCustomPropertyDeclaration* value =
-          CSSVariableParser::ParseDeclarationValue(variable_name, range,
-                                                   is_animation_tainted)) {
+          CSSVariableParser::ParseDeclarationValue(
+              variable_name, range, is_animation_tainted, *context_)) {
     parsed_properties_.push_back(
         CSSPropertyValue(GetCSSPropertyVariable(), *value, important));
     context_->Count(context_->Mode(), CSSPropertyVariable);

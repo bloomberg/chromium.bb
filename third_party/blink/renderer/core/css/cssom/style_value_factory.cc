@@ -255,9 +255,10 @@ CSSStyleValueVector StyleValueFactory::FromString(
 
   if ((property_id == CSSPropertyVariable && !tokens.IsEmpty()) ||
       CSSVariableParser::ContainsValidVariableReferences(range)) {
-    const auto variable_data =
-        CSSVariableData::Create(range, false /* is_animation_tainted */,
-                                false /* needs variable resolution */);
+    const auto variable_data = CSSVariableData::Create(
+        range, false /* is_animation_tainted */,
+        false /* needs variable resolution */, parser_context->BaseURL(),
+        parser_context->Charset());
     CSSStyleValueVector values;
     values.push_back(CSSUnparsedValue::FromCSSVariableData(*variable_data));
     return values;

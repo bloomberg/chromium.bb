@@ -45,6 +45,8 @@ void CSSVariableData::ConsumeAndUpdateTokens(const CSSParserTokenRange& range) {
     CSSParserToken token = local_range.Consume();
     if (token.HasStringBacking())
       string_builder.Append(token.Value());
+    needs_url_resolution_ |=
+        (token.GetType() == kUrlToken || token.FunctionId() == CSSValueUrl);
   }
   String backing_string = string_builder.ToString();
   backing_strings_.push_back(backing_string);
@@ -56,9 +58,14 @@ void CSSVariableData::ConsumeAndUpdateTokens(const CSSParserTokenRange& range) {
 
 CSSVariableData::CSSVariableData(const CSSParserTokenRange& range,
                                  bool is_animation_tainted,
-                                 bool needs_variable_resolution)
+                                 bool needs_variable_resolution,
+                                 const KURL& base_url,
+                                 const WTF::TextEncoding& charset)
     : is_animation_tainted_(is_animation_tainted),
-      needs_variable_resolution_(needs_variable_resolution) {
+      needs_variable_resolution_(needs_variable_resolution),
+      needs_url_resolution_(needs_variable_resolution_),
+      base_url_(base_url),
+      charset_(charset) {
   DCHECK(!range.AtEnd());
   ConsumeAndUpdateTokens(range);
 }
