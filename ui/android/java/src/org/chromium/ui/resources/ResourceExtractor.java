@@ -18,6 +18,7 @@ import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.ui.base.LocalizationUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +46,8 @@ public class ResourceExtractor {
 
         private void doInBackgroundImpl() {
             final File outputDir = getOutputDir();
+            String[] assetsToExtract = detectFilesToExtract();
+
             // Use a suffix for extracted files in order to guarantee that the version of the file
             // on disk matches up with the version of the APK.
             String extractSuffix = BuildInfo.getInstance().extractedFileSuffix;
@@ -52,7 +55,7 @@ public class ResourceExtractor {
             boolean allFilesExist = existingFileNames != null;
             if (allFilesExist) {
                 List<String> existingFiles = Arrays.asList(existingFileNames);
-                for (String assetName : mAssetsToExtract) {
+                for (String assetName : assetsToExtract) {
                     allFilesExist &= existingFiles.contains(assetName + extractSuffix);
                 }
             }
@@ -71,7 +74,7 @@ public class ResourceExtractor {
 
             AssetManager assetManager = ContextUtils.getApplicationAssets();
             byte[] buffer = new byte[BUFFER_SIZE];
-            for (String assetPath : mAssetsToExtract) {
+            for (String assetPath : assetsToExtract) {
                 String assetName = assetPath.substring(assetPath.lastIndexOf('/') + 1);
                 File output = new File(outputDir, assetName + extractSuffix);
                 TraceEvent.begin("ExtractResource");
@@ -116,7 +119,6 @@ public class ResourceExtractor {
     }
 
     private ExtractTask mExtractTask;
-    private final String[] mAssetsToExtract = detectFilesToExtract();
 
     private static ResourceExtractor sInstance;
 
@@ -129,12 +131,21 @@ public class ResourceExtractor {
 
     private static String[] detectFilesToExtract() {
         Locale defaultLocale = Locale.getDefault();
-        String language = LocaleUtils.getUpdatedLanguageForChromium(defaultLocale.getLanguage());
+        String androidLanguage = defaultLocale.getLanguage();
+        String chromiumLanguage = LocaleUtils.getUpdatedLanguageForChromium(androidLanguage);
+
+        // NOTE: The UI language will differ from the application's language
+        // when the system locale is not directly supported by Chrome's
+        // resources.
+        String uiLanguage = LocalizationUtils.getUiLanguageStringForCompressedPak();
+        Log.i(TAG, "Using UI locale %s, system locale: %s (Android name: %s)", uiLanguage,
+                chromiumLanguage, androidLanguage);
+
         // Currenty (Apr 2018), this array can be as big as 6 entries, so using a capacity
         // that allows a bit of growth, but is still in the right ballpark..
         ArrayList<String> activeLocales = new ArrayList<String>(6);
         for (String locale : BuildConfig.COMPRESSED_LOCALES) {
-            if (locale.startsWith(language)) {
+            if (locale.startsWith(uiLanguage)) {
                 activeLocales.add(locale);
             }
         }
@@ -146,7 +157,7 @@ public class ResourceExtractor {
         for (int n = 0; n < activeLocales.size(); ++n) {
             localePakFiles[n] = COMPRESSED_LOCALES_DIR + '/' + activeLocales.get(n) + ".pak";
         }
-        Log.i(TAG, "Android Locale: %s requires .pak files: %s", defaultLocale,
+        Log.i(TAG, "UI Language: %s requires .pak files: %s", uiLanguage,
                 Arrays.toString(activeLocales.toArray()));
 
         return localePakFiles;
