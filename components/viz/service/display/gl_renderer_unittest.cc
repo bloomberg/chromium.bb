@@ -2229,10 +2229,18 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
     bool AllowDCLayerOverlays() override { return false; }
 
     void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
-      ASSERT_EQ(1U, surfaces->size());
+      if (!multiple_candidates_)
+        ASSERT_EQ(1U, surfaces->size());
       OverlayCandidate& candidate = surfaces->back();
       candidate.overlay_handled = true;
     }
+
+    void SetAllowMultipleCandidates(bool multiple_candidates) {
+      multiple_candidates_ = multiple_candidates;
+    }
+
+   private:
+    bool multiple_candidates_ = false;
   };
 
   explicit SingleOverlayOnTopProcessor(OutputSurface* surface)
@@ -2241,6 +2249,10 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
   void Initialize() override {
     strategies_.push_back(
         std::make_unique<OverlayStrategySingleOnTop>(&validator_));
+  }
+
+  void AllowMultipleCandidates() {
+    validator_.SetAllowMultipleCandidates(true);
   }
 
   SingleOverlayValidator validator_;
@@ -3903,6 +3915,128 @@ TEST_F(GLRendererTest, UndamagedRenderPassStillDrawnWhenNoPartialSwap) {
       EXPECT_GE(renderer.bind_root_framebuffer_calls(), 1);
     }
   }
+}
+
+class GLRendererWithGpuFenceTest : public GLRendererTest {
+ protected:
+  GLRendererWithGpuFenceTest() {
+    auto provider = TestContextProvider::Create();
+    provider->BindToCurrentThread();
+    provider->TestContextGL()->set_have_commit_overlay_planes(true);
+    test_context_support_ = provider->support();
+
+    output_surface_ = FakeOutputSurface::Create3d(std::move(provider));
+    output_surface_->set_overlay_texture_id(kSurfaceOverlayTextureId);
+    output_surface_->set_gpu_fence_id(kGpuFenceId);
+    resource_provider_ = std::make_unique<DisplayResourceProvider>(
+        DisplayResourceProvider::kGpu, output_surface_->context_provider(),
+        nullptr);
+
+    renderer_ = std::make_unique<FakeRendererGL>(
+        &settings_, output_surface_.get(), resource_provider_.get(),
+        base::ThreadTaskRunnerHandle::Get());
+    renderer_->Initialize();
+    renderer_->SetVisible(true);
+
+    auto* processor = new SingleOverlayOnTopProcessor(output_surface_.get());
+    processor->AllowMultipleCandidates();
+    processor->Initialize();
+    renderer_->SetOverlayProcessor(processor);
+
+    test_context_support_->SetScheduleOverlayPlaneCallback(base::BindRepeating(
+        &MockOverlayScheduler::Schedule, base::Unretained(&overlay_scheduler)));
+  }
+
+  ~GLRendererWithGpuFenceTest() override {
+    if (child_resource_provider_)
+      child_resource_provider_->ShutdownAndReleaseAllResources();
+  }
+
+  ResourceId create_overlay_resource() {
+    child_context_provider_ = TestContextProvider::Create();
+    child_context_provider_->BindToCurrentThread();
+
+    child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
+    auto transfer_resource = TransferableResource::MakeGLOverlay(
+        gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+        gfx::Size(256, 256), true);
+    ResourceId client_resource_id = child_resource_provider_->ImportResource(
+        transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
+
+    std::unordered_map<ResourceId, ResourceId> resource_map =
+        cc::SendResourceAndGetChildToParentMap(
+            {client_resource_id}, resource_provider_.get(),
+            child_resource_provider_.get(), child_context_provider_.get());
+    return resource_map[client_resource_id];
+  }
+
+  static constexpr unsigned kSurfaceOverlayTextureId = 33;
+  static constexpr unsigned kGpuFenceId = 66;
+
+  TestContextSupport* test_context_support_;
+
+  cc::FakeOutputSurfaceClient output_surface_client_;
+  std::unique_ptr<FakeOutputSurface> output_surface_;
+  std::unique_ptr<DisplayResourceProvider> resource_provider_;
+  scoped_refptr<TestContextProvider> child_context_provider_;
+  std::unique_ptr<ClientResourceProvider> child_resource_provider_;
+  RendererSettings settings_;
+  std::unique_ptr<FakeRendererGL> renderer_;
+  MockOverlayScheduler overlay_scheduler;
+};
+
+TEST_F(GLRendererWithGpuFenceTest, GpuFenceIdIsUsedWithRootRenderPass) {
+  gfx::Size viewport_size(100, 100);
+  RenderPass* root_pass = cc::AddRenderPass(
+      &render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
+      gfx::Transform(), cc::FilterOperations());
+  root_pass->has_transparent_background = false;
+
+  EXPECT_CALL(overlay_scheduler,
+              Schedule(0, gfx::OVERLAY_TRANSFORM_NONE, kSurfaceOverlayTextureId,
+                       gfx::Rect(viewport_size), _, _, kGpuFenceId))
+      .Times(1);
+  DrawFrame(renderer_.get(), viewport_size);
+}
+
+TEST_F(GLRendererWithGpuFenceTest, GpuFenceIdIsUsedWithoutRootRenderPass) {
+  gfx::Size viewport_size(100, 100);
+  RenderPass* root_pass = cc::AddRenderPass(
+      &render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
+      gfx::Transform(), cc::FilterOperations());
+  root_pass->has_transparent_background = false;
+
+  bool needs_blending = false;
+  bool premultiplied_alpha = false;
+  bool flipped = false;
+  bool nearest_neighbor = false;
+  float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  gfx::PointF uv_top_left(0, 0);
+  gfx::PointF uv_bottom_right(1, 1);
+
+  // Add a draw quad covering the whole viewport. This causes the root
+  // render pass to be skipped.
+  TextureDrawQuad* overlay_quad =
+      root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
+  shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
+                       gfx::Rect(viewport_size), gfx::Rect(viewport_size),
+                       false, false, 1, SkBlendMode::kSrcOver, 0);
+  overlay_quad->SetNew(shared_state, gfx::Rect(viewport_size),
+                       gfx::Rect(viewport_size), needs_blending,
+                       create_overlay_resource(), premultiplied_alpha,
+                       uv_top_left, uv_bottom_right, SK_ColorTRANSPARENT,
+                       vertex_opacity, flipped, nearest_neighbor, false);
+
+  EXPECT_CALL(overlay_scheduler,
+              Schedule(0, gfx::OVERLAY_TRANSFORM_NONE, kSurfaceOverlayTextureId,
+                       gfx::Rect(viewport_size), _, _, kGpuFenceId))
+      .Times(1);
+  EXPECT_CALL(overlay_scheduler,
+              Schedule(1, gfx::OVERLAY_TRANSFORM_NONE, _,
+                       gfx::Rect(viewport_size), _, _, kGpuFenceId))
+      .Times(1);
+  DrawFrame(renderer_.get(), viewport_size);
 }
 
 }  // namespace
