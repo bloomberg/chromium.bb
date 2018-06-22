@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -222,8 +223,10 @@ void ShellContentBrowserClient::RegisterInProcessServices(
 
 void ShellContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
-  (*services)[kTestServiceUrl] = base::UTF8ToUTF16("Test Service");
-  (*services)[echo::mojom::kServiceName] = base::UTF8ToUTF16("Echo Service");
+  (*services)[kTestServiceUrl] =
+      base::BindRepeating(&base::ASCIIToUTF16, "Test Service");
+  (*services)[echo::mojom::kServiceName] =
+      base::BindRepeating(&base::ASCIIToUTF16, "Echo Service");
 }
 
 bool ShellContentBrowserClient::ShouldTerminateOnServiceQuit(

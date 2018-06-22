@@ -56,10 +56,9 @@ void RegisterOutOfProcessServicesImpl(
     ContentBrowserClient::OutOfProcessServiceMap* services_map) {
   for (size_t i = 0; i < num_services; ++i) {
     const Service& service = services[i];
-    base::string16 display_name =
-        l10n_util::GetStringUTF16(service.display_name_id);
     (*services_map)[service.name] =
-        ContentBrowserClient::OutOfProcessServiceInfo(display_name);
+        ContentBrowserClient::OutOfProcessServiceInfo(base::BindRepeating(
+            &l10n_util::GetStringUTF16, service.display_name_id));
   }
 }
 

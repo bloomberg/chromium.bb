@@ -969,6 +969,17 @@ void LaunchURL(
   }
 }
 
+std::unique_ptr<service_manager::Service> CreatePrefService(
+    base::RepeatingCallback<prefs::InProcessPrefServiceFactory*()>
+        factory_callback) {
+  auto* factory = factory_callback.Run();
+
+  if (!factory)
+    return std::make_unique<service_manager::Service>();
+
+  return factory->CreatePrefService();
+}
+
 }  // namespace
 
 ChromeContentBrowserClient::ChromeContentBrowserClient(
@@ -3505,10 +3516,15 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
     info.factory = ChromeService::GetInstance()->CreateChromeServiceFactory();
     services->insert(std::make_pair(chrome::mojom::kServiceName, info));
   }
-  if (g_browser_process->pref_service_factory()) {
+
+  if (!g_browser_process || g_browser_process->pref_service_factory()) {
     service_manager::EmbeddedServiceInfo info;
-    info.factory =
-        g_browser_process->pref_service_factory()->CreatePrefServiceFactory();
+    info.factory = base::BindRepeating(
+        &CreatePrefService,
+        base::BindRepeating([]() -> prefs::InProcessPrefServiceFactory* {
+          return g_browser_process ? g_browser_process->pref_service_factory()
+                                   : nullptr;
+        }));
     info.task_runner = base::ThreadTaskRunnerHandle::Get();
     services->insert(
         std::make_pair(prefs::mojom::kLocalStateServiceName, info));
@@ -3541,65 +3557,77 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
     services->emplace(chromeos::secure_channel::mojom::kServiceName, info);
   }
 #endif
-  g_browser_process->platform_part()->RegisterInProcessServices(services,
-                                                                connection);
+
+// Platform specific in process services registeration should be added here.
+// The call of
+// |g_browser_process->platform_part()->RegisterInProcessServices()| is
+// removed since the registeration could happen before |g_browser_process|
+// is created.
+#if defined(OS_CHROMEOS)
+  { ash_service_registry::RegisterInProcessServices(services, connection); }
+#endif
 }
 
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
 #if BUILDFLAG(ENABLE_PRINTING)
-  (*services)[printing::mojom::kServiceName] = l10n_util::GetStringUTF16(
-      IDS_UTILITY_PROCESS_PDF_COMPOSITOR_SERVICE_NAME);
+  (*services)[printing::mojom::kServiceName] =
+      base::BindRepeating(&l10n_util::GetStringUTF16,
+                          IDS_UTILITY_PROCESS_PDF_COMPOSITOR_SERVICE_NAME);
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
     (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
   (*services)[printing::mojom::kChromePrintingServiceName] =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PRINTING_SERVICE_NAME);
+      base::BindRepeating(&l10n_util::GetStringUTF16,
+                          IDS_UTILITY_PROCESS_PRINTING_SERVICE_NAME);
 #endif
 
-  (*services)[heap_profiling::mojom::kServiceName] =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROFILING_SERVICE_NAME);
+  (*services)[heap_profiling::mojom::kServiceName] = base::BindRepeating(
+      &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_PROFILING_SERVICE_NAME);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
   (*services)[chrome::mojom::kMediaGalleryUtilServiceName] =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_MEDIA_GALLERY_UTILITY_NAME);
+      base::BindRepeating(&l10n_util::GetStringUTF16,
+                          IDS_UTILITY_PROCESS_MEDIA_GALLERY_UTILITY_NAME);
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   (*services)[chrome::mojom::kRemovableStorageWriterServiceName] =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_IMAGE_WRITER_NAME);
+      base::BindRepeating(&l10n_util::GetStringUTF16,
+                          IDS_UTILITY_PROCESS_IMAGE_WRITER_NAME);
 #endif
 
 #if defined(OS_WIN)
-  (*services)[chrome::mojom::kUtilWinServiceName] =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_UTILITY_WIN_NAME);
+  (*services)[chrome::mojom::kUtilWinServiceName] = base::BindRepeating(
+      &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_UTILITY_WIN_NAME);
 #endif
 
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_EXTENSIONS)
   (*services)[chrome::mojom::kWifiUtilWinServiceName] =
-      l10n_util::GetStringUTF16(
-          IDS_UTILITY_PROCESS_WIFI_CREDENTIALS_GETTER_NAME);
+      base::BindRepeating(&l10n_util::GetStringUTF16,
+                          IDS_UTILITY_PROCESS_WIFI_CREDENTIALS_GETTER_NAME);
 #endif
 
 #if !defined(OS_ANDROID)
-  (*services)[chrome::mojom::kProfileImportServiceName] =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROFILE_IMPORTER_NAME);
+  (*services)[chrome::mojom::kProfileImportServiceName] = base::BindRepeating(
+      &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_PROFILE_IMPORTER_NAME);
 
   (*services)[proxy_resolver::mojom::kProxyResolverServiceName] =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME);
+      base::BindRepeating(&l10n_util::GetStringUTF16,
+                          IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME);
 #endif
 
 #if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
-  (*services)[chrome::mojom::kFileUtilServiceName] =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_FILE_UTILITY_NAME);
+  (*services)[chrome::mojom::kFileUtilServiceName] = base::BindRepeating(
+      &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_FILE_UTILITY_NAME);
 #endif
 
-  (*services)[patch::mojom::kServiceName] =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PATCH_NAME);
+  (*services)[patch::mojom::kServiceName] = base::BindRepeating(
+      &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_PATCH_NAME);
 
-  (*services)[unzip::mojom::kServiceName] =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_UNZIP_NAME);
+  (*services)[unzip::mojom::kServiceName] = base::BindRepeating(
+      &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_UNZIP_NAME);
 
 #if defined(OS_CHROMEOS)
   ash_service_registry::RegisterOutOfProcessServices(services);

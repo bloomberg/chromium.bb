@@ -93,16 +93,16 @@ ShellContentBrowserClient::GetExtraServiceManifests() {
 
 void ShellContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
-  (*services)[font_service::mojom::kServiceName] = OutOfProcessServiceInfo(
-      base::ASCIIToUTF16(font_service::mojom::kServiceName));
-  (*services)[quick_launch::mojom::kServiceName] = OutOfProcessServiceInfo(
-      base::ASCIIToUTF16(quick_launch::mojom::kServiceName));
-  (*services)[shortcut_viewer::mojom::kServiceName] = OutOfProcessServiceInfo(
-      base::ASCIIToUTF16(shortcut_viewer::mojom::kServiceName));
-  (*services)[tap_visualizer::mojom::kServiceName] = OutOfProcessServiceInfo(
-      base::ASCIIToUTF16(tap_visualizer::mojom::kServiceName));
-  (*services)[test_ime_driver::mojom::kServiceName] = OutOfProcessServiceInfo(
-      base::ASCIIToUTF16(test_ime_driver::mojom::kServiceName));
+  (*services)[font_service::mojom::kServiceName] = base::BindRepeating(
+      &base::ASCIIToUTF16, font_service::mojom::kServiceName);
+  (*services)[quick_launch::mojom::kServiceName] = base::BindRepeating(
+      &base::ASCIIToUTF16, quick_launch::mojom::kServiceName);
+  (*services)[shortcut_viewer::mojom::kServiceName] = base::BindRepeating(
+      &base::ASCIIToUTF16, shortcut_viewer::mojom::kServiceName);
+  (*services)[tap_visualizer::mojom::kServiceName] = base::BindRepeating(
+      &base::ASCIIToUTF16, tap_visualizer::mojom::kServiceName);
+  (*services)[test_ime_driver::mojom::kServiceName] = base::BindRepeating(
+      &base::ASCIIToUTF16, test_ime_driver::mojom::kServiceName);
 }
 
 void ShellContentBrowserClient::RegisterInProcessServices(
