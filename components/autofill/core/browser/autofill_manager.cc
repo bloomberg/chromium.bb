@@ -501,8 +501,8 @@ void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,
   UpdatePendingForm(form);
 
   if (!user_did_type_ || autofill_field->is_autofilled)
-    form_interactions_ukm_logger_->LogTextFieldDidChange(
-        *autofill_field, form_structure->form_parsed_timestamp());
+    form_interactions_ukm_logger_->LogTextFieldDidChange(*form_structure,
+                                                         *autofill_field);
 
   if (!user_did_type_) {
     user_did_type_ = true;

@@ -6307,7 +6307,11 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
         {UkmTextFieldDidChangeType::kHtmlFieldModeName, HTML_MODE_NONE},
         {UkmTextFieldDidChangeType::kIsAutofilledName, false},
         {UkmTextFieldDidChangeType::kIsEmptyName, true},
-        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}},
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmTextFieldDidChangeType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields[0]))},
+        {UkmTextFieldDidChangeType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}},
        {{UkmTextFieldDidChangeType::kFieldTypeGroupName, NAME},
         {UkmTextFieldDidChangeType::kHeuristicTypeName, NAME_FULL},
         {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA},
@@ -6315,7 +6319,11 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
         {UkmTextFieldDidChangeType::kHtmlFieldModeName, HTML_MODE_NONE},
         {UkmTextFieldDidChangeType::kIsAutofilledName, true},
         {UkmTextFieldDidChangeType::kIsEmptyName, true},
-        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}},
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmTextFieldDidChangeType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields[0]))},
+        {UkmTextFieldDidChangeType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}},
        {{UkmTextFieldDidChangeType::kFieldTypeGroupName, EMAIL},
         {UkmTextFieldDidChangeType::kHeuristicTypeName, EMAIL_ADDRESS},
         {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA},
@@ -6323,7 +6331,11 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
         {UkmTextFieldDidChangeType::kHtmlFieldModeName, HTML_MODE_NONE},
         {UkmTextFieldDidChangeType::kIsAutofilledName, true},
         {UkmTextFieldDidChangeType::kIsEmptyName, true},
-        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmTextFieldDidChangeType::kFieldSignatureName,
+         Collapse(CalculateFieldSignatureForField(form.fields[1]))},
+        {UkmTextFieldDidChangeType::kFormSignatureName,
+         Collapse(CalculateFormSignature(form))}}});
 }
 
 // Verify that we correctly log metrics tracking the duration of form fill.
