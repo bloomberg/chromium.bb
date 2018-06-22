@@ -46,6 +46,9 @@ class PasswordAccessoryController
           best_matches,
       const GURL& origin);
 
+  // Send empty suggestions and default options to the view.
+  void DidNavigateMainFrame();
+
   // Called by the UI code to request that |textToFill| is to be filled into the
   // currently focused field.
   void OnFillingTriggered(bool is_password,
@@ -75,7 +78,7 @@ class PasswordAccessoryController
       content::WebContents* web_contents,
       std::unique_ptr<PasswordAccessoryViewInterface> view);
 
-  // The web page view this accessory sheet and the focused field live in.
+  // The tab for which this class is scoped.
   content::WebContents* web_contents_;
 
   // Hold the native instance of the view. Must be last declared and initialized

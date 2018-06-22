@@ -32,6 +32,9 @@ using testing::StrictMock;
 using AccessoryItem = PasswordAccessoryViewInterface::AccessoryItem;
 using ItemType = AccessoryItem::Type;
 
+constexpr char kExampleSite[] = "https://example.com";
+constexpr char kExampleDomain[] = "example.com";
+
 // The mock view mocks the platform-specific implementation. That also means
 // that we have to care about the lifespan of the Controller because that would
 // usually be responsibility of the view.
@@ -60,6 +63,12 @@ std::string PrintItem(const base::string16& text,
          "a password "
          "and type is " +
          PrintToString(static_cast<int>(type));
+}
+
+// Compares whether a given AccessoryItem is a label with the given text.
+MATCHER_P(MatchesLabel, text, PrintItem(text, text, false, ItemType::LABEL)) {
+  return arg.text == text && arg.is_password == false &&
+         arg.content_description == text && arg.itemType == ItemType::LABEL;
 }
 
 // Compares whether a given AccessoryItem had the given properties.
@@ -98,14 +107,15 @@ base::string16 password_for_str(const std::string& user) {
   return password_for_str(ASCIIToUTF16(user));
 }
 
-base::string16 passwords_empty_str() {
-  return l10n_util::GetStringUTF16(
-      IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_EMPTY_MESSAGE);
+base::string16 passwords_empty_str(const std::string& domain) {
+  return l10n_util::GetStringFUTF16(
+      IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_EMPTY_MESSAGE,
+      ASCIIToUTF16(domain));
 }
 
-base::string16 passwords_title_str() {
-  return l10n_util::GetStringUTF16(
-      IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_TITLE);
+base::string16 passwords_title_str(const std::string& domain) {
+  return l10n_util::GetStringFUTF16(
+      IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_TITLE, ASCIIToUTF16(domain));
 }
 
 base::string16 no_user_str() {
@@ -136,6 +146,7 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+    NavigateAndCommit(GURL(kExampleSite));
     PasswordAccessoryController::CreateForWebContentsForTesting(
         web_contents(),
         std::make_unique<StrictMock<MockPasswordAccessoryView>>());
@@ -164,44 +175,40 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
   EXPECT_CALL(
       *view(),
       OnItemsAvailable(
-          GURL("https://example.com"),
+          GURL(kExampleSite),
           ElementsAre(
-              MatchesItem(ASCIIToUTF16("Passwords"), ASCIIToUTF16("Passwords"),
-                          false, ItemType::LABEL),
+              MatchesLabel(passwords_title_str(kExampleDomain)),
               MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
                           ItemType::SUGGESTION),
               MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
                           ItemType::SUGGESTION))));
 
   controller()->OnPasswordsAvailable({CreateEntry("Ben", "S3cur3").first},
-                                     GURL("https://example.com"));
+                                     GURL(kExampleSite));
 }
 
 TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
-  EXPECT_CALL(
-      *view(),
-      OnItemsAvailable(GURL("https://example.com"),
-                       ElementsAre(MatchesItem(ASCIIToUTF16("Passwords"),
-                                               ASCIIToUTF16("Passwords"), false,
-                                               ItemType::LABEL),
-                                   MatchesItem(no_user_str(), no_user_str(),
-                                               false, ItemType::SUGGESTION),
-                                   MatchesItem(ASCIIToUTF16("S3cur3"),
-                                               password_for_str(no_user_str()),
-                                               true, ItemType::SUGGESTION))));
+  EXPECT_CALL(*view(),
+              OnItemsAvailable(
+                  GURL(kExampleSite),
+                  ElementsAre(MatchesLabel(passwords_title_str(kExampleDomain)),
+                              MatchesItem(no_user_str(), no_user_str(), false,
+                                          ItemType::SUGGESTION),
+                              MatchesItem(ASCIIToUTF16("S3cur3"),
+                                          password_for_str(no_user_str()), true,
+                                          ItemType::SUGGESTION))));
 
   controller()->OnPasswordsAvailable({CreateEntry("", "S3cur3").first},
-                                     GURL("https://example.com"));
+                                     GURL(kExampleSite));
 }
 
 TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
   EXPECT_CALL(
       *view(),
       OnItemsAvailable(
-          GURL("https://example.com"),
+          GURL(kExampleSite),
           ElementsAre(
-              MatchesItem(passwords_title_str(), passwords_title_str(), false,
-                          ItemType::LABEL),
+              MatchesLabel(passwords_title_str(kExampleDomain)),
 
               MatchesItem(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
                           ItemType::SUGGESTION),
@@ -226,20 +233,33 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
   controller()->OnPasswordsAvailable(
       {CreateEntry("Ben", "S3cur3").first, CreateEntry("Zebra", "M3h").first,
        CreateEntry("Alf", "PWD").first, CreateEntry("Cat", "M1@u").first},
-      GURL("https://example.com"));
+      GURL(kExampleSite));
+}
+
+TEST_F(PasswordAccessoryControllerTest, ClearsSuggestionsOnFrameNavigation) {
+  // Set any, non-empty password list.
+  EXPECT_CALL(*view(), OnItemsAvailable(GURL(kExampleSite), _));
+  controller()->OnPasswordsAvailable({CreateEntry("Ben", "S3cur3").first},
+                                     GURL(kExampleSite));
+
+  // Pretend that a navigation happened.
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(
+          GURL(kExampleSite),
+          ElementsAre(MatchesLabel(passwords_empty_str(kExampleDomain)))));
+
+  controller()->DidNavigateMainFrame();
 }
 
 TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
-  EXPECT_CALL(*view(), OnItemsAvailable(
-                           GURL("https://example.com"),
-                           ElementsAre(MatchesItem(ASCIIToUTF16("Passwords"),
-                                                   ASCIIToUTF16("Passwords"),
-                                                   false, ItemType::LABEL),
-                                       MatchesItem(passwords_empty_str(),
-                                                   passwords_empty_str(), false,
-                                                   ItemType::LABEL))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(
+          GURL(kExampleSite),
+          ElementsAre(MatchesLabel(passwords_empty_str(kExampleDomain)))));
 
-  controller()->OnPasswordsAvailable({}, GURL("https://example.com"));
+  controller()->OnPasswordsAvailable({}, GURL(kExampleSite));
 }
 
 TEST_F(PasswordAccessoryControllerTest, IgnoresCrossOriginCalls) {

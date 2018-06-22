@@ -555,6 +555,13 @@ void ChromePasswordManagerClient::DidFinishNavigation(
   web_contents()->GetRenderViewHost()->GetWidget()->RemoveInputEventObserver(
       this);
   web_contents()->GetRenderViewHost()->GetWidget()->AddInputEventObserver(this);
+#else
+  // Ensure that entries from old origins are properly cleaned up.
+  PasswordAccessoryController* password_accessory =
+      PasswordAccessoryController::FromWebContents(web_contents());
+  if (password_accessory) {
+    password_accessory->DidNavigateMainFrame();
+  }
 #endif
 }
 
