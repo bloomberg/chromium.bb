@@ -32,8 +32,7 @@
       "testing/scripts/.*",
       "testing/test_env.py",
       "third_party/android_platform/development/scripts/.*",
-      "tools/clang/blink_gc_plugin/CMakeLists.txt",
-      "tools/luci-go/.*"
+      "tools/clang/blink_gc_plugin/CMakeLists.txt"
     ],
     "ignores": [
       "infra/config/recipes.cfg",
