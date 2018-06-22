@@ -470,11 +470,11 @@ bool GetPasswordForm(
         control_elements, form_data, username_detector_cache);
   }
 
-  // Narrow the scope to enabled inputs.
+  // Narrow the scope to enabled text inputs.
   std::vector<const FormFieldData*> enabled_fields;
   enabled_fields.reserve(form_data.fields.size());
   for (const FormFieldData& field : form_data.fields) {
-    if (field.is_enabled)
+    if (field.is_enabled && field.IsTextInputElement())
       enabled_fields.push_back(&field);
   }
 
