@@ -7,6 +7,9 @@ import copy
 from core import sharding_map_generator
 import json
 import os
+import subprocess
+import sys
+from telemetry import decorators
 import tempfile
 import unittest
 
@@ -42,3 +45,30 @@ class TestShardingMapGenerator(unittest.TestCase):
       self.assertEqual(results['2']['full_time'], 140)
     finally:
       os.remove(map_path)
+
+  @decorators.Disabled('android', 'win', 'linux')
+  def testGeneratePerfSharding(self):
+    path_output = tempfile.mkstemp(suffix='.json')[1]
+    path_results = tempfile.mkstemp(suffix='.json')[1]
+    try:
+      cmd = [sys.executable,
+          os.path.normpath('tools/perf/generate_perf_sharding')]
+      args = [
+          '--output-file', path_output,
+          '--timing-data', 'tools/perf/core/test_data/test_timing_data.json',
+          '--num-shards', '5',
+          '--test-data',
+          'tools/perf/core/test_data/test_timing_data_1_build.json',
+          '--test-data-output', path_results
+      ]
+      subprocess.check_call(cmd + args)
+
+      with open(path_results, 'r') as test_results:
+        results = json.load(test_results)
+        shard_total_timing = []
+        for shard in results:
+          shard_total_timing.append(results[shard]['full_time'])
+        self.assertTrue(max(shard_total_timing) - min(shard_total_timing) < 400)
+    finally:
+      os.remove(path_output)
+      os.remove(path_results)

@@ -30,19 +30,19 @@ ORDER BY
 QUERY_LAST_100_RUNS = """
 SELECT
   name,
-  AVG(run_durations) AS duration
+  AVG(time) AS duration
 FROM (
   SELECT
     name,
     start_time,
-    SUM(run.times) AS run_durations,
+    time,
     ROW_NUMBER() OVER (PARTITION BY name ORDER BY start_time DESC)
       AS row_num
   FROM (
     SELECT
       run.name AS name,
       start_time,
-      run.times
+      AVG(run.times) AS time
     FROM
       [test-results-hrd:events.test_results]
     WHERE
@@ -52,13 +52,9 @@ FROM (
       AND run.is_unexpected IS FALSE
     GROUP BY
       name,
-      start_time,
-      run.times
+      start_time
     ORDER BY
-      start_time DESC )
-  GROUP BY
-    name,
-    start_time)
+      start_time DESC ))
 WHERE
   row_num < 100
 GROUP BY
