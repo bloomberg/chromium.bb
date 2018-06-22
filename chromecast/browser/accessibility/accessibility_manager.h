@@ -53,6 +53,9 @@ class AccessibilityManager {
   // Hides highlight on screen.
   void HideHighlights();
 
+  // Enable or disable touch exploration.
+  void EnableTouchExploration(bool enable);
+
   // Update the touch exploration controller so that synthesized
   // touch events are anchored at this point.
   void SetTouchAccessibilityAnchorPoint(const gfx::Point& anchor_point);

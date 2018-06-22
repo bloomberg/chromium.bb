@@ -65,6 +65,10 @@ void AccessibilityManager::HideHighlights() {
   accessibility_focus_ring_controller_->HideHighlights();
 }
 
+void AccessibilityManager::EnableTouchExploration(bool enable) {
+  touch_exploration_manager_->Enable(enable);
+}
+
 void AccessibilityManager::SetTouchAccessibilityAnchorPoint(
     const gfx::Point& anchor_point) {
   touch_exploration_manager_->SetTouchAccessibilityAnchorPoint(anchor_point);
