@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_LIFECYCLE_UNIT_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_LIFECYCLE_UNIT_H_
 
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -78,10 +77,6 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // unit.
   void UpdateLifecycleState(mojom::LifecycleState state);
 
-  // Reloads the tab because its renderer is bloated and shows an infobar
-  // explaining that it was reloaded because it ran out of memory.
-  void ReloadBloatedTab();
-
   // LifecycleUnit:
   TabLifecycleUnitExternal* AsTabLifecycleUnitExternal() override;
   base::string16 GetTitle() const override;
@@ -118,13 +113,6 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   friend class TabLifecycleUnitSource;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(TabLifecycleUnitTest, CanReloadBloatedTab);
-  FRIEND_TEST_ALL_PREFIXES(TabLifecycleUnitTest, CannotReloadBloatedTabCrashed);
-  FRIEND_TEST_ALL_PREFIXES(TabLifecycleUnitTest,
-                           CannotReloadBloatedTabInvalidURL);
-  FRIEND_TEST_ALL_PREFIXES(TabLifecycleUnitTest,
-                           CannotReloadBloatedTabPendingUserInteraction);
-
   // Determines if the tab is a media tab, and populates an optional
   // |decision_details| with full details.
   bool IsMediaTabImpl(DecisionDetails* decision_details) const;
