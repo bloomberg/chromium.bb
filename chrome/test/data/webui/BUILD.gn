@@ -45,20 +45,15 @@ js2gtest("browser_tests_js_webui") {
     "a11y/accessibility_audit_rules.js",
     "a11y/accessibility_test.js",
     "about_invalidations_browsertest.js",
-    "accessibility_audit_browsertest.js",
     "assertions.js",
     "async_gen.js",
-    "certificate_viewer_dialog_test.js",
     "chrome_send_browsertest.js",
     "cr_components/cr_components_browsertest.js",
     "cr_elements/cr_elements_browsertest.js",
-    "extensions/a11y/extensions_a11y_test.js",
-    "extensions/cr_extensions_browsertest.js",
     "load_time_data_browsertest.js",
     "md_bookmarks/md_bookmarks_browsertest.js",
     "md_downloads/downloads_browsertest.js",
     "md_history/md_history_browsertest.js",
-    "md_user_manager/user_manager_browsertest.js",
     "media_router/media_router_elements_browsertest.js",
     "mock4js_browsertest.js",
     "net_internals/bandwidth_view.js",
@@ -108,22 +103,27 @@ js2gtest("browser_tests_js_webui") {
 
   if (is_chromeos) {
     sources += [
+      "certificate_viewer_dialog_test.js",
       "multidevice_setup/multidevice_setup_browsertest.js",
       "settings/easy_unlock_browsertest_chromeos.js",
       "sys_internals/sys_internals_browsertest.js",
     ]
   } else {
-    sources += [ "signin/signin_browsertest.js" ]
+    sources += [
+      "md_user_manager/user_manager_browsertest.js",
+      "signin/signin_browsertest.js",
+    ]
   }
 
-  if (is_chrome_branded) {
+  if (!is_chrome_branded) {
     # crbug.com/230471
-    sources -= [ "accessibility_audit_browsertest.js" ]
+    sources += [ "accessibility_audit_browsertest.js" ]
   }
-  if (!is_chromeos) {
-    sources -= [ "certificate_viewer_dialog_test.js" ]
-  } else {
-    sources -= [ "md_user_manager/user_manager_browsertest.js" ]
+  if (enable_extensions) {
+    sources += [
+      "extensions/a11y/extensions_a11y_test.js",
+      "extensions/cr_extensions_browsertest.js",
+    ]
   }
   if (enable_print_preview) {
     sources += [
