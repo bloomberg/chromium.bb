@@ -4,6 +4,7 @@
 
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
 
+#include "base/logging.h"
 #include "base/time/time.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -15,6 +16,11 @@ bool AccountReconcilorDelegate::IsReconcileEnabled() const {
 
 bool AccountReconcilorDelegate::IsAccountConsistencyEnforced() const {
   return false;
+}
+
+std::string AccountReconcilorDelegate::GetGaiaApiSource() const {
+  NOTREACHED() << "Reconcile is not enabled, no Gaia API calls should be made.";
+  return "ChromiumAccountReconcilorInvalidSource";
 }
 
 bool AccountReconcilorDelegate::ShouldAbortReconcileIfPrimaryHasError() const {

@@ -31,6 +31,10 @@ bool DiceAccountReconcilorDelegate::IsAccountConsistencyEnforced() const {
   return account_consistency_ == AccountConsistencyMethod::kDice;
 }
 
+std::string DiceAccountReconcilorDelegate::GetGaiaApiSource() const {
+  return "ChromiumAccountReconcilorDice";
+}
+
 // - On first execution, the candidates are examined in this order:
 //   1. The primary account
 //   2. The current first Gaia account
