@@ -3,12 +3,17 @@ This document describes the browser-process implementation of the [Cache
 Storage specification](
 https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html).
 
+As of June 2018, Chrome components can use the Cache Storage interface via
+`CacheStorageManager` to store Request/Response key-value pairs. The concept of
+`CacheStorageOwner` was added to distinguish and isolate the different
+components.
+
 ## Major Classes and Ownership
 ### Ownership
 Where '=>' represents ownership, '->' is a reference, and '~>' is a weak
 reference.
 
-##### `CacheStorageContextImpl`=>`CacheStorageManager`=>`CacheStorage`=>`CacheStorageCache`
+##### `CacheStorageContextImpl`->`CacheStorageManager`=>`CacheStorage`=>`CacheStorageCache`
 * A `CacheStorageManager` can own multiple `CacheStorage` objects.
 * A `CacheStorage` can own multiple `CacheStorageCache` objects.
 
@@ -44,12 +49,12 @@ reference.
    mitigate rapid opening/closing/opening churn.
 
 ### CacheStorageManager
-1. Forwards calls to the appropriate `CacheStorage` for a given origin,
-   loading `CacheStorage`s on demand.
+1. Forwards calls to the appropriate `CacheStorage` for a given origin-owner
+   pair, loading `CacheStorage`s on demand.
 2. Handles `QuotaManager` and `BrowsingData` calls.
 
 ### CacheStorage
-1. Manages the caches for a single origin.
+1. Manages the caches for a single origin-owner pair.
 2. Handles creation/deletion of caches and updates the index on disk
    accordingly.
 3. Manages operations that span multiple caches (e.g., `CacheStorage::Match`).

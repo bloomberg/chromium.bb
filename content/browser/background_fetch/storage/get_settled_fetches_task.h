@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_GET_SETTLED_FETCHES_TASK_H_
 
 #include "base/callback_forward.h"
+#include "base/memory/scoped_refptr.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
@@ -13,8 +14,6 @@
 #include "storage/browser/blob/blob_data_handle.h"
 
 namespace content {
-
-class CacheStorageManager;
 
 namespace background_fetch {
 
@@ -28,7 +27,6 @@ class GetSettledFetchesTask : public DatabaseTask {
 
   GetSettledFetchesTask(BackgroundFetchDataManager* data_manager,
                         BackgroundFetchRegistrationId registration_id,
-                        CacheStorageManager* cache_manager,
                         SettledFetchesCallback callback);
 
   ~GetSettledFetchesTask() override;
@@ -61,7 +59,6 @@ class GetSettledFetchesTask : public DatabaseTask {
   void FinishTaskWithErrorCode(blink::mojom::BackgroundFetchError error);
 
   BackgroundFetchRegistrationId registration_id_;
-  CacheStorageManager* cache_manager_;
   SettledFetchesCallback settled_fetches_callback_;
 
   // SettledFetchesCallback params.

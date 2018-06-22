@@ -141,6 +141,7 @@ class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
             browser_context(), storage_partition(),
             embedded_worker_test_helper()->context_wrapper(),
             true /* mock_fill_response */);
+    background_fetch_data_manager_->InitializeOnIOThread();
   }
 
   // Synchronous version of BackgroundFetchDataManager::CreateRegistration().
@@ -362,7 +363,7 @@ class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
     bool result = false;
 
     base::RunLoop run_loop;
-    background_fetch_data_manager_->GetCacheStorageManager()->HasCache(
+    background_fetch_data_manager_->cache_manager()->HasCache(
         origin(), CacheStorageOwner::kBackgroundFetch, cache_name,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidFindCache,
                        base::Unretained(this), run_loop.QuitClosure(),
@@ -378,7 +379,7 @@ class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
     auto request_ptr = std::make_unique<ServiceWorkerFetchRequest>(request);
 
     base::RunLoop run_loop;
-    background_fetch_data_manager_->GetCacheStorageManager()->MatchCache(
+    background_fetch_data_manager_->cache_manager()->MatchCache(
         origin(), CacheStorageOwner::kBackgroundFetch, kExampleUniqueId,
         std::move(request_ptr), nullptr /* match_params */,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidMatchCache,

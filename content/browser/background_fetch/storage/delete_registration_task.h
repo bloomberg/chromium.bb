@@ -15,8 +15,6 @@
 
 namespace content {
 
-class CacheStorageManager;
-
 namespace background_fetch {
 
 // Deletes Background Fetch registration entries from the database.
@@ -26,7 +24,13 @@ class DeleteRegistrationTask : public background_fetch::DatabaseTask {
                          int64_t service_worker_registration_id,
                          const url::Origin& origin,
                          const std::string& unique_id,
-                         CacheStorageManager* cache_manager,
+                         HandleBackgroundFetchErrorCallback callback);
+
+  DeleteRegistrationTask(BackgroundFetchDataManager* data_manager,
+                         scoped_refptr<CacheStorageManager> cache_manager,
+                         int64_t service_worker_registration_id,
+                         const url::Origin& origin,
+                         const std::string& unique_id,
                          HandleBackgroundFetchErrorCallback callback);
 
   ~DeleteRegistrationTask() override;
@@ -49,7 +53,6 @@ class DeleteRegistrationTask : public background_fetch::DatabaseTask {
   int64_t service_worker_registration_id_;
   url::Origin origin_;
   std::string unique_id_;
-  CacheStorageManager* cache_manager_;
   HandleBackgroundFetchErrorCallback callback_;
 
   // The error to report once all async work is completed.

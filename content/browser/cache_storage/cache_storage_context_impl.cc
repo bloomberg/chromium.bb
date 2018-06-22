@@ -129,7 +129,12 @@ void CacheStorageContextImpl::CreateCacheStorageManager(
 void CacheStorageContextImpl::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  cache_manager_.reset();
+  // Release |cache_manager_|. New clients will get a nullptr if they request
+  // an instance of CacheStorageManager after this. Any other client that
+  // ref-wrapped |cache_manager_| will be able to continue using it, and the
+  // CacheStorageManager will be destroyed when all the references are
+  // destroyed.
+  cache_manager_ = nullptr;
 }
 
 }  // namespace content

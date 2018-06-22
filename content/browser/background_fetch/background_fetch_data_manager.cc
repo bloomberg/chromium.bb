@@ -89,18 +89,22 @@ BackgroundFetchDataManager::BackgroundFetchDataManager(
   blob_storage_context_ =
       base::WrapRefCounted(ChromeBlobStorageContext::GetFor(browser_context));
   DCHECK(blob_storage_context_);
+}
 
-  BrowserThread::PostAfterStartupTask(
-      FROM_HERE, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-      // Normally weak pointers must be obtained on the IO thread, but it's ok
-      // here as the factory cannot be destroyed before the constructor ends.
-      base::BindOnce(&BackgroundFetchDataManager::Cleanup,
-                     weak_ptr_factory_.GetWeakPtr()));
+void BackgroundFetchDataManager::InitializeOnIOThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // The CacheStorageManager can only be accessed from the IO thread.
+  cache_manager_ =
+      base::WrapRefCounted(cache_storage_context_->cache_manager());
+
+  // TODO(crbug.com/855199): Persist which registrations to cleanup on startup.
+  Cleanup();
+
+  DCHECK(cache_manager_);
 }
 
 void BackgroundFetchDataManager::Cleanup() {
-  AddDatabaseTask(std::make_unique<background_fetch::CleanupTask>(
-      this, GetCacheStorageManager()));
+  AddDatabaseTask(std::make_unique<background_fetch::CleanupTask>(this));
 }
 
 BackgroundFetchDataManager::~BackgroundFetchDataManager() {
@@ -198,8 +202,7 @@ void BackgroundFetchDataManager::MarkRequestAsComplete(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AddDatabaseTask(std::make_unique<background_fetch::MarkRequestCompleteTask>(
-      this, registration_id, request, GetCacheStorageManager(),
-      std::move(callback)));
+      this, registration_id, request, std::move(callback)));
 }
 
 void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
@@ -208,7 +211,7 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AddDatabaseTask(std::make_unique<background_fetch::GetSettledFetchesTask>(
-      this, registration_id, GetCacheStorageManager(), std::move(callback)));
+      this, registration_id, std::move(callback)));
 }
 
 bool BackgroundFetchDataManager::FillServiceWorkerResponse(
@@ -285,7 +288,7 @@ void BackgroundFetchDataManager::DeleteRegistration(
   AddDatabaseTask(std::make_unique<background_fetch::DeleteRegistrationTask>(
       this, registration_id.service_worker_registration_id(),
       registration_id.origin(), registration_id.unique_id(),
-      GetCacheStorageManager(), std::move(callback)));
+      std::move(callback)));
 }
 
 void BackgroundFetchDataManager::GetDeveloperIdsForServiceWorker(
@@ -308,17 +311,24 @@ void BackgroundFetchDataManager::GetNumCompletedRequests(
       std::move(callback)));
 }
 
-CacheStorageManager* BackgroundFetchDataManager::GetCacheStorageManager() {
+void BackgroundFetchDataManager::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  CacheStorageManager* manager = cache_storage_context_->cache_manager();
-  DCHECK(manager);
+  // Release reference to CacheStorageManager. DatabaseTasks that need it
+  // hold their own copy, so they can continue their work.
+  cache_manager_ = nullptr;
 
-  return manager;
+  shutting_down_ = true;
 }
 
 void BackgroundFetchDataManager::AddDatabaseTask(
-    std::unique_ptr<background_fetch::DatabaseTask> task) {
+    std::unique_ptr<background_fetch::DatabaseTask> task,
+    bool internal) {
+  // If Shutdown was called don't add any new tasks, unless they were
+  // created by another DatabaseTask.
+  if (shutting_down_ && !internal)
+    return;
+
   database_tasks_.push(std::move(task));
   if (database_tasks_.size() == 1)
     database_tasks_.front()->Start();

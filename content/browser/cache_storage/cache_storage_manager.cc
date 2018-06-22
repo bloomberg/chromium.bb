@@ -28,7 +28,6 @@
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/database/database_identifier.h"
@@ -153,7 +152,7 @@ void OneOriginSizeReported(base::OnceClosure callback,
 }  // namespace
 
 // static
-std::unique_ptr<CacheStorageManager> CacheStorageManager::Create(
+scoped_refptr<CacheStorageManager> CacheStorageManager::Create(
     const base::FilePath& path,
     scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy) {
@@ -163,14 +162,14 @@ std::unique_ptr<CacheStorageManager> CacheStorageManager::Create(
                     .AppendASCII("CacheStorage");
   }
 
-  return base::WrapUnique(new CacheStorageManager(
+  return base::WrapRefCounted(new CacheStorageManager(
       root_path, std::move(cache_task_runner), std::move(quota_manager_proxy)));
 }
 
 // static
-std::unique_ptr<CacheStorageManager> CacheStorageManager::Create(
+scoped_refptr<CacheStorageManager> CacheStorageManager::Create(
     CacheStorageManager* old_manager) {
-  std::unique_ptr<CacheStorageManager> manager(new CacheStorageManager(
+  scoped_refptr<CacheStorageManager> manager(new CacheStorageManager(
       old_manager->root_path(), old_manager->cache_task_runner(),
       old_manager->quota_manager_proxy_.get()));
   // These values may be NULL, in which case this will be called again later by

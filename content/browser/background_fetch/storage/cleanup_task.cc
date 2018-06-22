@@ -21,11 +21,8 @@ namespace {
 void EmptyErrorHandler(blink::mojom::BackgroundFetchError) {}
 }  // namespace
 
-CleanupTask::CleanupTask(BackgroundFetchDataManager* data_manager,
-                         CacheStorageManager* cache_manager)
-    : DatabaseTask(data_manager),
-      cache_manager_(cache_manager),
-      weak_factory_(this) {}
+CleanupTask::CleanupTask(BackgroundFetchDataManager* data_manager)
+    : DatabaseTask(data_manager), weak_factory_(this) {}
 
 CleanupTask::~CleanupTask() = default;
 
@@ -82,9 +79,9 @@ void CleanupTask::DidGetActiveUniqueIds(
           // This |unique_id| can be safely cleaned up. Re-use
           // DeleteRegistrationTask for the actual deletion logic.
           AddDatabaseTask(std::make_unique<DeleteRegistrationTask>(
-              data_manager(), service_worker_registration_id,
+              data_manager(), cache_manager(), service_worker_registration_id,
               url::Origin::Create(GURL(metadata_proto.origin())), unique_id,
-              cache_manager_, base::BindOnce(&EmptyErrorHandler)));
+              base::BindOnce(&EmptyErrorHandler)));
         }
       }
     }

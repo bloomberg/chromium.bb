@@ -16,6 +16,7 @@
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_scheduler.h"
@@ -73,6 +74,9 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       scoped_refptr<CacheStorageContextImpl> cache_storage_context);
 
   ~BackgroundFetchDataManager() override;
+
+  // Grabs a reference to CacheStorageManager.
+  virtual void InitializeOnIOThread();
 
   // Creates and stores a new registration with the given properties. Will
   // invoke the |callback| when the registration has been created, which may
@@ -159,11 +163,25 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       const url::Origin& origin,
       ServiceWorkerResponse* response);
 
+  void ShutdownOnIO();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BackgroundFetchDataManagerTest, Cleanup);
   friend class BackgroundFetchDataManagerTest;
   friend class BackgroundFetchTestDataManager;
   friend class background_fetch::DatabaseTask;
+
+  // Accessors for tests and DatabaseTasks.
+  const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context()
+      const {
+    return service_worker_context_;
+  }
+  const scoped_refptr<CacheStorageManager>& cache_manager() const {
+    return cache_manager_;
+  }
+  std::set<std::string>& ref_counted_unique_ids() {
+    return ref_counted_unique_ids_;
+  }
 
   void AddStartNextPendingRequestTask(
       int64_t service_worker_registration_id,
@@ -171,18 +189,25 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       blink::mojom::BackgroundFetchError error,
       std::unique_ptr<proto::BackgroundFetchMetadata> metadata);
 
-  void AddDatabaseTask(std::unique_ptr<background_fetch::DatabaseTask> task);
+  // |internal| signifies whether the DatabaseTask is being added from within
+  // another DatabaseTask.
+  void AddDatabaseTask(std::unique_ptr<background_fetch::DatabaseTask> task,
+                       bool internal = false);
 
   void OnDatabaseTaskFinished(background_fetch::DatabaseTask* task);
 
-  // Virtual for testing.
-  virtual CacheStorageManager* GetCacheStorageManager();
-
   void Cleanup();
+
+  // Whether Shutdown was called on BackgroundFetchContext.
+  bool shutting_down_ = false;
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   scoped_refptr<CacheStorageContextImpl> cache_storage_context_;
+
+  // The BackgroundFetch stores its own reference to CacheStorageManager
+  // in case StoragePartitionImpl is destoyed, which releases the reference.
+  scoped_refptr<CacheStorageManager> cache_manager_;
 
   // The blob storage request with which response information will be stored.
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;

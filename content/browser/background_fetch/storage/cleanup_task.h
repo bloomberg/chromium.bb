@@ -14,16 +14,13 @@
 
 namespace content {
 
-class CacheStorageManager;
-
 namespace background_fetch {
 
 // Deletes inactive registrations marked for deletion.
 // TODO(crbug.com/780025): Log failed deletions to UMA.
 class CleanupTask : public background_fetch::DatabaseTask {
  public:
-  CleanupTask(BackgroundFetchDataManager* data_manager,
-              CacheStorageManager* cache_manager);
+  explicit CleanupTask(BackgroundFetchDataManager* data_manager);
 
   ~CleanupTask() override;
 
@@ -39,8 +36,6 @@ class CleanupTask : public background_fetch::DatabaseTask {
       const std::vector<std::pair<int64_t, std::string>>& registration_data,
       const std::vector<std::pair<int64_t, std::string>>& active_unique_id_data,
       ServiceWorkerStatusCode status);
-
-  CacheStorageManager* cache_manager_;
 
   base::WeakPtrFactory<CleanupTask> weak_factory_;  // Keep as last.
 

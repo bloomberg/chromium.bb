@@ -19,15 +19,12 @@ MarkRequestCompleteTask::MarkRequestCompleteTask(
     BackgroundFetchDataManager* data_manager,
     BackgroundFetchRegistrationId registration_id,
     scoped_refptr<BackgroundFetchRequestInfo> request_info,
-    CacheStorageManager* cache_manager,
     MarkedCompleteCallback callback)
     : DatabaseTask(data_manager),
       registration_id_(registration_id),
       request_info_(std::move(request_info)),
-      cache_manager_(cache_manager),
       callback_(std::move(callback)),
       weak_factory_(this) {
-  DCHECK(cache_manager_);
 }
 
 MarkRequestCompleteTask::~MarkRequestCompleteTask() = default;
@@ -53,7 +50,7 @@ void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
     return;
   }
 
-  cache_manager_->OpenCache(
+  cache_manager()->OpenCache(
       registration_id_.origin(), CacheStorageOwner::kBackgroundFetch,
       registration_id_.unique_id() /* cache_name */,
       base::BindOnce(&MarkRequestCompleteTask::DidOpenCache,

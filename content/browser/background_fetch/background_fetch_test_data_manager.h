@@ -38,15 +38,12 @@ class BackgroundFetchTestDataManager : public BackgroundFetchDataManager {
                                  const url::Origin& origin,
                                  ServiceWorkerResponse* response) override;
 
+  void InitializeOnIOThread() override;
+
  private:
   friend class BackgroundFetchDataManagerTest;
 
-  void CreateCacheStorageManager();
-
-  CacheStorageManager* GetCacheStorageManager() override;
-
   scoped_refptr<MockQuotaManager> mock_quota_manager_;
-  std::unique_ptr<CacheStorageManager> cache_manager_;
   BrowserContext* browser_context_;
   StoragePartition* storage_partition_;
   bool mock_fill_response_;
