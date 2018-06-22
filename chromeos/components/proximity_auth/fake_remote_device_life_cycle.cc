@@ -7,8 +7,10 @@
 namespace proximity_auth {
 
 FakeRemoteDeviceLifeCycle::FakeRemoteDeviceLifeCycle(
-    cryptauth::RemoteDeviceRef remote_device)
+    cryptauth::RemoteDeviceRef remote_device,
+    base::Optional<cryptauth::RemoteDeviceRef> local_device)
     : remote_device_(remote_device),
+      local_device_(local_device),
       started_(false),
       state_(RemoteDeviceLifeCycle::State::STOPPED) {}
 

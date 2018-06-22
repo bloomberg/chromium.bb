@@ -153,7 +153,8 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
  public:
   ProximityAuthUnlockManagerImplTest()
       : remote_device_(cryptauth::CreateRemoteDeviceRefForTest()),
-        life_cycle_(remote_device_),
+        local_device_(cryptauth::CreateRemoteDeviceRefForTest()),
+        life_cycle_(remote_device_, local_device_),
         connection_(remote_device_),
         bluetooth_adapter_(CreateAndRegisterMockBluetoothAdapter()),
         task_runner_(new base::TestSimpleTaskRunner()),
@@ -210,6 +211,7 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
 
  protected:
   cryptauth::RemoteDeviceRef remote_device_;
+  cryptauth::RemoteDeviceRef local_device_;
   FakeRemoteDeviceLifeCycle life_cycle_;
   cryptauth::FakeConnection connection_;
 
