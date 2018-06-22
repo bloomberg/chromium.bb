@@ -55,6 +55,8 @@ const InstallConstants kInstallModes[] = {
         true,   // Supported multi-install.
         icon_resources::kApplicationIndex,  // App icon resource index.
         IDR_MAINFRAME,                      // App icon resource id.
+        L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
+        L"924012148-",  // App container sid prefix for sandbox.
     },
 };
 

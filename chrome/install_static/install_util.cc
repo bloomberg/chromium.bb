@@ -423,6 +423,10 @@ int GetIconResourceIndex() {
   return InstallDetails::Get().mode().app_icon_resource_index;
 }
 
+const wchar_t* GetSandboxSidPrefix() {
+  return InstallDetails::Get().mode().sandbox_sid_prefix;
+}
+
 bool GetCollectStatsConsent() {
   bool enabled = true;
 
