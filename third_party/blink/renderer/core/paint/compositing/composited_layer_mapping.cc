@@ -1513,10 +1513,13 @@ void CompositedLayerMapping::UpdateChildContainmentLayerGeometry() {
 
   if (child_clipping_mask_layer_ && !scrolling_layer_ &&
       !GetLayoutObject().Style()->ClipPath()) {
-    child_clipping_mask_layer_->SetSize(child_containment_layer_->Size());
+    if (child_clipping_mask_layer_->Size() !=
+        child_containment_layer_->Size()) {
+      child_clipping_mask_layer_->SetSize(child_containment_layer_->Size());
+      child_clipping_mask_layer_->SetNeedsDisplay();
+    }
     child_clipping_mask_layer_->SetOffsetFromLayoutObject(
         child_containment_layer_->OffsetFromLayoutObject());
-    child_clipping_mask_layer_->SetNeedsDisplay();
   }
 }
 
@@ -1612,10 +1615,12 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
 
   if (child_clipping_mask_layer_ && !GetLayoutObject().Style()->ClipPath()) {
     child_clipping_mask_layer_->SetPosition(scrolling_layer_->GetPosition());
-    child_clipping_mask_layer_->SetSize(scrolling_layer_->Size());
+    if (child_clipping_mask_layer_->Size() != scrolling_layer_->Size()) {
+      child_clipping_mask_layer_->SetSize(scrolling_layer_->Size());
+      child_clipping_mask_layer_->SetNeedsDisplay();
+    }
     child_clipping_mask_layer_->SetOffsetFromLayoutObject(
         ToIntSize(overflow_clip_rect.Location()));
-    child_clipping_mask_layer_->SetNeedsDisplay();
   }
 
   bool overflow_clip_rect_offset_changed =
@@ -1682,10 +1687,12 @@ void CompositedLayerMapping::UpdateChildClippingMaskLayerGeometry() {
   IntRect padding_box = EnclosingIntRect(layout_box.PaddingBoxRect());
 
   child_clipping_mask_layer_->SetPosition(graphics_layer_->GetPosition());
-  child_clipping_mask_layer_->SetSize(graphics_layer_->Size());
+  if (child_clipping_mask_layer_->Size() != graphics_layer_->Size()) {
+    child_clipping_mask_layer_->SetSize(graphics_layer_->Size());
+    child_clipping_mask_layer_->SetNeedsDisplay();
+  }
   child_clipping_mask_layer_->SetOffsetFromLayoutObject(
       ToIntSize(padding_box.Location()));
-  child_clipping_mask_layer_->SetNeedsDisplay();
 
   // NOTE: also some stuff happening in updateChildContainmentLayerGeometry().
 }
