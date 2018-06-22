@@ -210,6 +210,8 @@ HEADLESS_PROTOCOL_TEST(VirtualTimeLocalStorage,
                        "emulation/virtual-time-local-storage.js");
 HEADLESS_PROTOCOL_TEST(VirtualTimePendingScript,
                        "emulation/virtual-time-pending-script.js");
+HEADLESS_PROTOCOL_TEST(VirtualTimeHtmlImport,
+                       "emulation/virtual-time-html-import.js");
 HEADLESS_PROTOCOL_TEST(VirtualTimeRedirect,
                        "emulation/virtual-time-redirect.js");
 HEADLESS_PROTOCOL_TEST(VirtualTimeSessionStorage,

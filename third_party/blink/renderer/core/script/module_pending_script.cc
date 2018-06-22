@@ -62,9 +62,7 @@ void ModulePendingScript::Trace(blink::Visitor* visitor) {
 void ModulePendingScript::NotifyModuleTreeLoadFinished() {
   CHECK(!IsReady());
   ready_ = true;
-
-  if (Client())
-    Client()->PendingScriptFinished(this);
+  PendingScriptFinished();
 }
 
 Script* ModulePendingScript::GetSource(const KURL& document_url,
