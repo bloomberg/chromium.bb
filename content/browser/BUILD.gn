@@ -126,6 +126,8 @@ jumbo_source_set("browser") {
     "//services/catalog:constants",
     "//services/catalog/public/cpp",
     "//services/catalog/public/mojom:constants",
+    "//services/content:impl",
+    "//services/content/public/mojom",
     "//services/data_decoder/public/cpp",
     "//services/data_decoder/public/mojom",
     "//services/device:lib",
@@ -581,6 +583,8 @@ jumbo_source_set("browser") {
     # needed on all platforms.
     "compositor/surface_utils.cc",
     "compositor/surface_utils.h",
+    "content_service_delegate_impl.cc",
+    "content_service_delegate_impl.h",
     "cookie_store/cookie_change_subscription.cc",
     "cookie_store/cookie_change_subscription.h",
     "cookie_store/cookie_store_context.cc",
