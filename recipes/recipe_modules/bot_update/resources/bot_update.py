@@ -572,26 +572,6 @@ def get_target_pin(solution_name, git_url, revisions):
   return None
 
 
-def force_solution_revision(solution_name, git_url, revisions, cwd):
-  branch, revision = _get_target_branch_and_revision(
-      solution_name, git_url, revisions)
-  if revision and revision.upper() != 'HEAD':
-    treeish = revision
-  else:
-    # TODO(machenbach): This won't work with branch-heads, as Gerrit's
-    # destination branch would be e.g. refs/branch-heads/123. But here
-    # we need to pass refs/remotes/branch-heads/123 to check out.
-    # This will also not work if somebody passes a local refspec like
-    # refs/heads/master. It needs to translate to refs/remotes/origin/master
-    # first. See also https://crbug.com/740456 .
-    treeish = branch if branch.startswith('refs/') else 'origin/%s' % branch
-
-  # Note that -- argument is necessary to ensure that git treats `treeish`
-  # argument as revision or ref, and not as a file/directory which happens to
-  # have the exact same name.
-  git('checkout', '--force', treeish, '--', cwd=cwd)
-
-
 def _has_in_git_cache(revision_sha1, git_cache_dir, url):
   """Returns whether given revision_sha1 is contained in cache of a given repo.
   """
@@ -741,8 +721,6 @@ def _git_checkout(sln, sln_dir, revisions, shallow, refs, git_cache_dir,
       if sys.platform.startswith('win'):
         _maybe_break_locks(sln_dir, tries=3)
 
-      force_solution_revision(name, url, revisions, sln_dir)
-      git('clean', '-dff', cwd=sln_dir)
       return
     except SubprocessFailed as e:
       # Exited abnormally, theres probably something wrong.
@@ -916,16 +894,6 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   # Windows sometimes has trouble deleting files. This can make git commands
   # that rely on locks fail.
   break_repo_locks = True if sys.platform.startswith('win') else False
-  # We want to pass all non-solution revisions into the gclient sync call.
-  solution_dirs = {sln['name'] for sln in solutions}
-  gc_revisions = {
-      dirname: rev for dirname, rev in revisions.iteritems()
-      if dirname not in solution_dirs}
-  # Gclient sometimes ignores "unmanaged": "False" in the gclient solution
-  # if --revision <anything> is passed (for example, for subrepos).
-  # This forces gclient to always treat solutions deps as unmanaged.
-  for solution_name in list(solution_dirs):
-    gc_revisions[solution_name] = 'unmanaged'
 
   with git_config_if_not_set('user.name', 'chrome-bot'):
     with git_config_if_not_set('user.email', 'chrome-bot@chromium.org'):
@@ -936,7 +904,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
           BRANCH_HEADS_REFSPEC in refs,
           TAGS_REFSPEC in refs,
           shallow,
-          gc_revisions,
+          revisions,
           break_repo_locks,
           disable_syntax_validation,
           gerrit_repo,
