@@ -118,7 +118,7 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     tab.EvaluateJavaScript(
         "window.draw({{ red }}, {{ green }}, {{ blue }});",
         red=canvasRGB.r, green=canvasRGB.g, blue=canvasRGB.b)
-    screenshot = tab.Screenshot(5)
+    screenshot = tab.Screenshot(10)
     start_x = 10
     start_y = 0
     outer_size = 256
@@ -131,7 +131,7 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     browser_arg = args[0]
     self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([browser_arg]))
     self._Navigate(test_path)
-    repetitions = 10
+    repetitions = 20
     for _ in range(0, repetitions):
       self._CheckScreenshot()
 
