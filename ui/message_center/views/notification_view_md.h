@@ -15,9 +15,7 @@
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/animation/ink_drop_observer.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 
 namespace views {
@@ -26,6 +24,7 @@ class Label;
 class LabelButton;
 class ProgressBar;
 class RadioButton;
+class Textfield;
 }
 
 namespace message_center {
@@ -33,19 +32,6 @@ namespace message_center {
 class BoundedLabel;
 class NotificationHeaderView;
 class ProportionalImageView;
-
-// ItemViews are responsible for drawing each list notification item's title and
-// message next to each other within a single column.
-class ItemView : public views::View {
- public:
-  explicit ItemView(const NotificationItem& item);
-  ~ItemView() override;
-
-  const char* GetClassName() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ItemView);
-};
 
 // CompactTitleMessageView shows notification title and message in a single
 // line. This view is used for NOTIFICATION_TYPE_PROGRESS.
@@ -85,22 +71,6 @@ class LargeImageView : public views::View {
   gfx::ImageSkia image_;
 
   DISALLOW_COPY_AND_ASSIGN(LargeImageView);
-};
-
-// We have a container view outside LargeImageView, because we want to fill
-// area that is not coverted by the image by background color.
-class LargeImageContainerView : public views::View {
- public:
-  LargeImageContainerView();
-  ~LargeImageContainerView() override;
-
-  void SetImage(const gfx::ImageSkia& image);
-  const char* GetClassName() const override;
-
- private:
-  LargeImageView* const image_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(LargeImageContainerView);
 };
 
 // This class is needed in addition to LabelButton mainly becuase we want to set
@@ -143,36 +113,6 @@ class NotificationInputDelegate {
   virtual ~NotificationInputDelegate() = default;
 };
 
-class NotificationInputTextfieldMD : public views::Textfield {
- public:
-  NotificationInputTextfieldMD(views::TextfieldController* controller);
-  ~NotificationInputTextfieldMD() override;
-
-  void set_index(size_t index) { index_ = index; }
-  void set_placeholder(const base::string16& placeholder);
-
-  size_t index() const { return index_; };
-
- private:
-  // |index_| is the notification action index that should be passed as the
-  // argument of ClickOnNotificationButtonWithReply.
-  size_t index_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationInputTextfieldMD);
-};
-
-class NotificationInputReplyButtonMD : public views::ImageButton {
- public:
-  NotificationInputReplyButtonMD(views::ButtonListener* listener);
-  ~NotificationInputReplyButtonMD() override;
-
-  void SetNormalImage();
-  void SetPlaceholderImage();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NotificationInputReplyButtonMD);
-};
-
 class NotificationInputContainerMD : public views::InkDropHostView,
                                      public views::ButtonListener,
                                      public views::TextfieldController {
@@ -196,16 +136,16 @@ class NotificationInputContainerMD : public views::InkDropHostView,
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  NotificationInputTextfieldMD* textfield() const { return textfield_; };
-  NotificationInputReplyButtonMD* button() const { return button_; };
+  views::Textfield* textfield() const { return textfield_; };
+  views::ImageButton* button() const { return button_; };
 
  private:
   NotificationInputDelegate* const delegate_;
 
   views::InkDropContainerView* const ink_drop_container_;
 
-  NotificationInputTextfieldMD* const textfield_;
-  NotificationInputReplyButtonMD* const button_;
+  views::Textfield* const textfield_;
+  views::ImageButton* const button_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationInputContainerMD);
 };
@@ -337,9 +277,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   BoundedLabel* message_view_ = nullptr;
   views::Label* status_view_ = nullptr;
   ProportionalImageView* icon_view_ = nullptr;
-  LargeImageContainerView* image_container_view_ = nullptr;
+  views::View* image_container_view_ = nullptr;
   std::vector<NotificationButtonMD*> action_buttons_;
-  std::vector<ItemView*> item_views_;
+  std::vector<views::View*> item_views_;
   views::ProgressBar* progress_bar_view_ = nullptr;
   CompactTitleMessageView* compact_title_message_view_ = nullptr;
   views::View* action_buttons_row_ = nullptr;
