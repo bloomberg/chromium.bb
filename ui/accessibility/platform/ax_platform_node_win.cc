@@ -169,6 +169,10 @@ base::LazyInstance<AXPlatformNodeWinSet>::Leaky g_alert_targets =
 base::LazyInstance<base::ObserverList<IAccessible2UsageObserver>>::Leaky
     g_iaccessible2_usage_observer_list = LAZY_INSTANCE_INITIALIZER;
 
+// Sets the multiplier by which large changes to a RangeValueProvider are
+// greater than small changes
+constexpr int kLargeChangeScaleFactor = 10;
+
 }  // namespace
 
 // There is no easy way to decouple |kScreenReader| and |kHTML| accessibility
@@ -1419,6 +1423,108 @@ STDMETHODIMP AXPlatformNodeWin::ScrollIntoView() {
   return E_FAIL;
 }
 
+//
+// IValueProvider implementation.
+//
+
+STDMETHODIMP AXPlatformNodeWin::SetValue(LPCWSTR value) {
+  if (!value)
+    return E_INVALIDARG;
+
+  AXActionData data;
+  data.action = ax::mojom::Action::kSetValue;
+  data.value = base::string16(value);
+  if (delegate_->AccessibilityPerformAction(data))
+    return S_OK;
+  return E_FAIL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_IsReadOnly(BOOL* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  int restriction;
+  if (GetIntAttribute(ax::mojom::IntAttribute::kRestriction, &restriction)) {
+    *result = static_cast<ax::mojom::Restriction>(restriction) ==
+              ax::mojom::Restriction::kReadOnly;
+    return S_OK;
+  }
+  return E_FAIL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_Value(BSTR* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  if (GetStringAttributeAsBstr(ax::mojom::StringAttribute::kValue, result))
+    return S_OK;
+  return E_FAIL;
+}
+
+//
+// IRangeValueProvider implementation.
+//
+
+STDMETHODIMP AXPlatformNodeWin::SetValue(double value) {
+  AXActionData data;
+  data.action = ax::mojom::Action::kSetValue;
+  data.value = base::NumberToString16(value);
+  if (delegate_->AccessibilityPerformAction(data))
+    return S_OK;
+  return E_FAIL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_LargeChange(double* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  float attribute;
+  if (GetFloatAttribute(ax::mojom::FloatAttribute::kStepValueForRange,
+                        &attribute)) {
+    *result = attribute * kLargeChangeScaleFactor;
+    return S_OK;
+  }
+  return E_FAIL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_Maximum(double* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  float attribute;
+  if (GetFloatAttribute(ax::mojom::FloatAttribute::kMaxValueForRange,
+                        &attribute)) {
+    *result = attribute;
+    return S_OK;
+  }
+  return E_FAIL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_Minimum(double* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  float attribute;
+  if (GetFloatAttribute(ax::mojom::FloatAttribute::kMinValueForRange,
+                        &attribute)) {
+    *result = attribute;
+    return S_OK;
+  }
+  return E_FAIL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_SmallChange(double* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  float attribute;
+  if (GetFloatAttribute(ax::mojom::FloatAttribute::kStepValueForRange,
+                        &attribute)) {
+    *result = attribute;
+    return S_OK;
+  }
+  return E_FAIL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_Value(double* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  float attribute;
+  if (GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
+                        &attribute)) {
+    *result = attribute;
+    return S_OK;
+  }
+  return E_FAIL;
+}
+
 // IAccessibleEx methods not implemented.
 STDMETHODIMP AXPlatformNodeWin::GetRuntimeId(SAFEARRAY** runtime_id) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RUNTIME_ID);
@@ -2569,19 +2675,25 @@ STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
     case UIA_GridPatternId:
     case UIA_GridItemPatternId:
     case UIA_MultipleViewPatternId:
-    case UIA_RangeValuePatternId:
-    case UIA_ScrollPatternId:
-      *result = nullptr;
       break;
+
+    case UIA_RangeValuePatternId:
+      *result = static_cast<IRawElementProviderSimple*>(this);
+      AddRef();
+      break;
+
+    case UIA_ScrollPatternId:
+      break;
+
     case UIA_ScrollItemPatternId:
       *result = static_cast<IRawElementProviderSimple*>(this);
       AddRef();
       break;
+
     case UIA_SynchronizedInputPatternId:
     case UIA_TablePatternId:
     case UIA_TableItemPatternId:
     case UIA_TransformPatternId:
-      *result = nullptr;
       break;
 
     // TODO(suproteem): Add checks for control role.
@@ -2589,7 +2701,13 @@ STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
     case UIA_SelectionItemPatternId:
     case UIA_SelectionPatternId:
     case UIA_TogglePatternId:
+      break;
+
     case UIA_ValuePatternId:
+      *result = static_cast<IRawElementProviderSimple*>(this);
+      AddRef();
+      break;
+
     case UIA_WindowPatternId:
 
     // Overlap with MSAA, not supported.
@@ -2609,7 +2727,6 @@ STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
     case UIA_TextPattern2Id:
     case UIA_TransformPattern2Id:
     case UIA_VirtualizedItemPatternId:
-      *result = nullptr;
       break;
   }
   return S_OK;

@@ -36,24 +36,6 @@ bool UIATextProvider::CreateTextProvider(const string16& value,
   return false;
 }
 
-STDMETHODIMP UIATextProvider::get_IsReadOnly(BOOL* read_only) {
-  *read_only = !editable_;
-  return S_OK;
-}
-
-//
-// IValueProvider methods.
-//
-
-STDMETHODIMP UIATextProvider::SetValue(const wchar_t* val) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP UIATextProvider::get_Value(BSTR* value) {
-  *value = SysAllocString(value_.c_str());
-  return S_OK;
-}
-
 //
 // ITextProvider methods.
 //
