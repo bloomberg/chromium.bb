@@ -107,9 +107,9 @@ void KeySystemSupportImpl::IsKeySystemSupported(
 
   // Supported codecs and encryption schemes.
   auto capability = media::mojom::KeySystemCapability::New();
-  capability->video_codecs = cdm_info->supported_video_codecs;
+  capability->video_codecs = cdm_info->capability.video_codecs;
   capability->encryption_schemes =
-      SetToVector(cdm_info->supported_encryption_schemes);
+      SetToVector(cdm_info->capability.encryption_schemes);
 
   if (base::FeatureList::IsEnabled(media::kHardwareSecureDecryption)) {
     capability->hw_secure_video_codecs =
@@ -120,7 +120,7 @@ void KeySystemSupportImpl::IsKeySystemSupported(
     NOTIMPLEMENTED();
   }
 
-  capability->session_types = SetToVector(cdm_info->supported_session_types);
+  capability->session_types = SetToVector(cdm_info->capability.session_types);
 
   std::move(callback).Run(true, std::move(capability));
 }

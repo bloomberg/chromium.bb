@@ -20,19 +20,39 @@
 
 namespace content {
 
+// Capabilites supported by a Content Decryption Module.
+struct CONTENT_EXPORT CdmCapability {
+  CdmCapability();
+  CdmCapability(std::vector<media::VideoCodec> video_codecs,
+                base::flat_set<media::EncryptionMode> encryption_schemes,
+                base::flat_set<media::CdmSessionType> session_types);
+  CdmCapability(const CdmCapability& other);
+  ~CdmCapability();
+
+  // List of video codecs supported by the CDM (e.g. vp8). This is the set of
+  // codecs that can be decrypted and decoded by the CDM. As this is generic,
+  // not all profiles or levels of the specified codecs may actually be
+  // supported.
+  // TODO(crbug.com/796725) Find a way to include profiles and levels.
+  std::vector<media::VideoCodec> video_codecs;
+
+  // List of encryption schemes supported by the CDM (e.g. cenc).
+  base::flat_set<media::EncryptionMode> encryption_schemes;
+
+  // List of session types supported by the CDM.
+  base::flat_set<media::CdmSessionType> session_types;
+};
+
 // Represents a Content Decryption Module implementation and its capabilities.
 struct CONTENT_EXPORT CdmInfo {
-  CdmInfo(
-      const std::string& name,
-      const std::string& guid,
-      const base::Version& version,
-      const base::FilePath& path,
-      const std::string& file_system_id,
-      const std::vector<media::VideoCodec>& supported_video_codecs,
-      const base::flat_set<media::CdmSessionType>& supported_session_types,
-      const base::flat_set<media::EncryptionMode>& supported_encryption_schemes,
-      const std::string& supported_key_system,
-      bool supports_sub_key_systems);
+  CdmInfo(const std::string& name,
+          const std::string& guid,
+          const base::Version& version,
+          const base::FilePath& path,
+          const std::string& file_system_id,
+          CdmCapability capability,
+          const std::string& supported_key_system,
+          bool supports_sub_key_systems);
   CdmInfo(const CdmInfo& other);
   ~CdmInfo();
 
@@ -54,18 +74,8 @@ struct CONTENT_EXPORT CdmInfo {
   // digits(0-9), or "._-".
   std::string file_system_id;
 
-  // List of video codecs supported by the CDM (e.g. vp8). This is the set of
-  // codecs that can be decrypted and decoded by the CDM. As this is generic,
-  // not all profiles or levels of the specified codecs may actually be
-  // supported.
-  // TODO(crbug.com/796725) Find a way to include profiles and levels.
-  std::vector<media::VideoCodec> supported_video_codecs;
-
-  // List of session types supported by the CDM.
-  base::flat_set<media::CdmSessionType> supported_session_types;
-
-  // List of encryption schemes supported by the CDM (e.g. cenc).
-  base::flat_set<media::EncryptionMode> supported_encryption_schemes;
+  // CDM capability, e.g. video codecs, encryption schemes and session types.
+  CdmCapability capability;
 
   // The key system supported by this CDM.
   std::string supported_key_system;
