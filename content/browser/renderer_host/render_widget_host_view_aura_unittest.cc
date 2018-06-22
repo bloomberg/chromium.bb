@@ -428,7 +428,7 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
     new_content_rendering_timeout_fired_ = true;
   }
 
-  bool new_content_rendering_timeout_fired_;
+  bool new_content_rendering_timeout_fired_ = false;
   std::unique_ptr<MockWidgetImpl> widget_impl_;
 };
 
@@ -6306,8 +6306,8 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   viz::LocalSurfaceId id0 = view_->GetLocalSurfaceId();
   EXPECT_TRUE(id0.is_valid());
 
-  // No new LocalSurfaceId should be allocated for the first navigation but the
-  // timer should fire.
+  // No new LocalSurfaceId should be allocated for the first navigation and the
+  // timer should not fire.
   widget_host_->DidNavigate(1);
   viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
   EXPECT_EQ(id0, id1);
@@ -6317,7 +6317,15 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
         FROM_HERE, run_loop.QuitClosure(), 2 * kTimeout);
     run_loop.Run();
   }
-  EXPECT_TRUE(widget_host_->new_content_rendering_timeout_fired());
+  if (base::FeatureList::IsEnabled(features::kEnableSurfaceSynchronization)) {
+    // When using surface sync, the timer should not fire, because the surface
+    // id did not change.
+    EXPECT_FALSE(widget_host_->new_content_rendering_timeout_fired());
+  } else {
+    // When not using surface sync, the timer will fire because the source id
+    // changed.
+    EXPECT_TRUE(widget_host_->new_content_rendering_timeout_fired());
+  }
   widget_host_->reset_new_content_rendering_timeout_fired();
 
   // Start the timer. Verify that a new LocalSurfaceId is allocated.
