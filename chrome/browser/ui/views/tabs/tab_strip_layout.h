@@ -21,8 +21,9 @@ struct TabSizeInfo {
   int min_active_width;
   int min_inactive_width;
 
-  // The max size of tabs. Active and inactive tabs have the same max width.
-  gfx::Size max_size;
+  // The size of a standard tab, which is the max size active or inactive tabs
+  // have.
+  gfx::Size standard_size;
 
   // The overlap between adjacent tabs. When positioning tabs the x-coordinate
   // of a tab is calculated as the x-coordinate of the previous tab plus the

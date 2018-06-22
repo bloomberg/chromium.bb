@@ -89,6 +89,7 @@ class Tab : public gfx::AnimationDelegate,
   bool GetTooltipTextOrigin(const gfx::Point& p,
                             gfx::Point* origin) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  gfx::Size CalculatePreferredSize() const override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void PaintChildren(const views::PaintInfo& info) override;
@@ -171,17 +172,17 @@ class Tab : public gfx::AnimationDelegate,
   // Called when the frame state color changes.
   void FrameColorsChanged();
 
-  // Returns the minimum possible size of a single unselected Tab.
-  static gfx::Size GetMinimumInactiveSize();
+  // Returns the minimum possible width of a single unselected Tab.
+  static int GetMinimumInactiveWidth();
 
-  // Returns the minimum possible size of a selected Tab. Selected tabs must
-  // always show a close button and have a larger minimum size than unselected
-  // tabs.
-  static gfx::Size GetMinimumActiveSize();
+  // Returns the minimum possible width of a selected Tab. Selected tabs must
+  // always show a close button, and thus have a larger minimum size than
+  // unselected tabs.
+  static int GetMinimumActiveWidth();
 
-  // Returns the preferred size of a single Tab, assuming space is
+  // Returns the preferred width of a single Tab, assuming space is
   // available.
-  static gfx::Size GetStandardSize();
+  static int GetStandardWidth();
 
   // Returns the width for pinned tabs. Pinned tabs always have this width.
   static int GetPinnedWidth();

@@ -215,9 +215,10 @@ const TabSizeInfo& GetTabSizeInfo() {
 
   g_tab_size_info = new TabSizeInfo;
   g_tab_size_info->pinned_tab_width = Tab::GetPinnedWidth();
-  g_tab_size_info->min_active_width = Tab::GetMinimumActiveSize().width();
-  g_tab_size_info->min_inactive_width = Tab::GetMinimumInactiveSize().width();
-  g_tab_size_info->max_size = Tab::GetStandardSize();
+  g_tab_size_info->min_active_width = Tab::GetMinimumActiveWidth();
+  g_tab_size_info->min_inactive_width = Tab::GetMinimumInactiveWidth();
+  g_tab_size_info->standard_size =
+      gfx::Size(Tab::GetStandardWidth(), GetLayoutConstant(TAB_HEIGHT));
   g_tab_size_info->tab_overlap = Tab::GetOverlap();
   g_tab_size_info->pinned_to_normal_offset =
       TabStrip::GetPinnedToNonPinnedOffset();
@@ -1296,8 +1297,8 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
     const int pinned_tab_count = GetPinnedTabCount();
     needed_tab_width = pinned_tab_count * Tab::GetPinnedWidth();
     const int remaining_tab_count = tab_count() - pinned_tab_count;
-    const int min_selected_width = Tab::GetMinimumActiveSize().width();
-    const int min_unselected_width = Tab::GetMinimumInactiveSize().width();
+    const int min_selected_width = Tab::GetMinimumActiveWidth();
+    const int min_unselected_width = Tab::GetMinimumInactiveWidth();
     if (remaining_tab_count > 0) {
       needed_tab_width += GetPinnedToNonPinnedOffset() + min_selected_width +
                           ((remaining_tab_count - 1) * min_unselected_width);
@@ -1317,7 +1318,7 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
   return gfx::Size(needed_tab_width + TabToFollowingNewTabButtonSpacing() +
                        GetNewTabButtonWidth(IsIncognito()) +
                        GetFrameGrabWidth(),
-                   Tab::GetMinimumInactiveSize().height());
+                   GetLayoutConstant(TAB_HEIGHT));
 }
 
 void TabStrip::GetAccessibleNodeData(ui::AXNodeData* node_data) {

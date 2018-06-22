@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/nav_button_provider.h"
-#include "chrome/browser/ui/views/tabs/tab.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/test/views_test_base.h"
@@ -59,7 +59,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   bool IsFullscreen() const override { return false; }
   bool IsTabStripVisible() const override { return true; }
   int GetTabStripHeight() const override {
-    return Tab::GetMinimumInactiveSize().height();
+    return GetLayoutConstant(TAB_HEIGHT);
   }
   bool IsToolbarVisible() const override { return true; }
   gfx::Size GetTabstripPreferredSize() const override {

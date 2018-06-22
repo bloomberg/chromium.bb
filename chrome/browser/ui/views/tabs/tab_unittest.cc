@@ -280,7 +280,7 @@ TEST_F(TabTest, HitTestTopPixel) {
   FakeTabController tab_controller;
   Tab tab(&tab_controller, nullptr);
   widget.GetContentsView()->AddChildView(&tab);
-  tab.SetBoundsRect(gfx::Rect(gfx::Point(0, 0), Tab::GetStandardSize()));
+  tab.SizeToPreferredSize();
 
   // Tabs are slanted, so a click halfway down the left edge won't hit it.
   int middle_y = tab.height() / 2;
@@ -338,20 +338,19 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
         StopFadeAnimationIfNecessary(tab);
 
         // Test layout for every width from standard to minimum.
-        gfx::Rect bounds(gfx::Point(0, 0), Tab::GetStandardSize());
-        int min_width;
+        int width, min_width;
         if (is_pinned_tab) {
-          bounds.set_width(Tab::GetPinnedWidth());
-          min_width = Tab::GetPinnedWidth();
+          width = min_width = Tab::GetPinnedWidth();
         } else {
-          min_width = is_active_tab ? Tab::GetMinimumActiveSize().width()
-                                    : Tab::GetMinimumInactiveSize().width();
+          width = Tab::GetStandardWidth();
+          min_width = is_active_tab ? Tab::GetMinimumActiveWidth()
+                                    : Tab::GetMinimumInactiveWidth();
         }
-        while (bounds.width() >= min_width) {
-          SCOPED_TRACE(::testing::Message() << "bounds=" << bounds.ToString());
-          tab.SetBoundsRect(bounds);  // Invokes Tab::Layout().
+        const int height = GetLayoutConstant(TAB_HEIGHT);
+        for (; width >= min_width; --width) {
+          SCOPED_TRACE(::testing::Message() << "width=" << width);
+          tab.SetBounds(0, 0, width, height);  // Invokes Tab::Layout().
           CheckForExpectedLayoutAndVisibilityOfElements(tab);
-          bounds.set_width(bounds.width() - 1);
         }
       }
     }
@@ -368,7 +367,7 @@ TEST_F(TabTest, TooltipProvidedByTab) {
   FakeTabController controller;
   Tab tab(&controller, nullptr);
   widget.GetContentsView()->AddChildView(&tab);
-  tab.SetBoundsRect(gfx::Rect(Tab::GetStandardSize()));
+  tab.SizeToPreferredSize();
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(16, 16);
@@ -461,7 +460,7 @@ TEST_F(TabTest, LayeredThrobber) {
   FakeTabController tab_controller;
   Tab tab(&tab_controller, nullptr);
   widget.GetContentsView()->AddChildView(&tab);
-  tab.SetBoundsRect(gfx::Rect(Tab::GetStandardSize()));
+  tab.SizeToPreferredSize();
 
   TabIcon* icon = GetTabIcon(tab);
   TabRendererData data;

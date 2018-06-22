@@ -868,6 +868,10 @@ void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
                               IsSelected());
 }
 
+gfx::Size Tab::CalculatePreferredSize() const {
+  return gfx::Size(GetStandardWidth(), GetLayoutConstant(TAB_HEIGHT));
+}
+
 void Tab::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
   // If this hierarchy changed has resulted in us being part of a widget
   // hierarchy for the first time, we can now get at the theme provider, and
@@ -892,7 +896,7 @@ void Tab::PaintChildren(const views::PaintInfo& info) {
 void Tab::OnPaint(gfx::Canvas* canvas) {
   // Don't paint if we're narrower than we can render correctly. (This should
   // only happen during animations).
-  if (width() < GetMinimumInactiveSize().width() && !data().pinned)
+  if (width() < GetMinimumInactiveWidth() && !data().pinned)
     return;
 
   gfx::Path clip;
@@ -1088,28 +1092,24 @@ void Tab::FrameColorsChanged() {
 }
 
 // static
-gfx::Size Tab::GetMinimumInactiveSize() {
-  return gfx::Size(GetLayoutInsets(TAB).width(), GetLayoutConstant(TAB_HEIGHT));
+int Tab::GetMinimumInactiveWidth() {
+  return GetLayoutInsets(TAB).width();
 }
 
 // static
-gfx::Size Tab::GetMinimumActiveSize() {
-  gfx::Size minimum_size = GetMinimumInactiveSize();
-  minimum_size.Enlarge(gfx::kFaviconSize, 0);
-  return minimum_size;
+int Tab::GetMinimumActiveWidth() {
+  return gfx::kFaviconSize + GetMinimumInactiveWidth();
 }
 
 // static
-gfx::Size Tab::GetStandardSize() {
-  const int kNetTabWidth = GetLayoutConstant(TAB_STANDARD_WIDTH);
-  const int overlap = GetOverlap();
-  return gfx::Size(kNetTabWidth + overlap, GetMinimumInactiveSize().height());
+int Tab::GetStandardWidth() {
+  return GetLayoutConstant(TAB_STANDARD_WIDTH) + GetOverlap();
 }
 
 // static
 int Tab::GetPinnedWidth() {
   constexpr int kTabPinnedContentWidth = 23;
-  return GetMinimumInactiveSize().width() + kTabPinnedContentWidth;
+  return kTabPinnedContentWidth + GetMinimumInactiveWidth();
 }
 
 // static
@@ -1124,8 +1124,7 @@ float Tab::GetInverseDiagonalSlope() {
   //   so the diagonal is ((height - 1.5 - 1.5) * scale - 1 - (scale - 1)) px
   //   high.  Simplifying this gives (height - 4) * scale px, or (height - 4)
   //   DIP.
-  return (GetTabEndcapWidth() - 4) /
-         (Tab::GetMinimumInactiveSize().height() - 4);
+  return (GetTabEndcapWidth() - 4) / (GetLayoutConstant(TAB_HEIGHT) - 4);
 }
 
 // static
@@ -1399,11 +1398,10 @@ void Tab::UpdateIconVisibility() {
   showing_icon_ = showing_alert_indicator_ = false;
   extra_padding_before_content_ = false;
 
-  const gfx::Size min_size(GetMinimumInactiveSize());
-  if (height() < min_size.height())
+  if (height() < GetLayoutConstant(TAB_HEIGHT))
     return;
 
-  int available_width = std::max(0, width() - min_size.width());
+  int available_width = std::max(0, width() - GetMinimumInactiveWidth());
 
   const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
   const int favicon_width = gfx::kFaviconSize;
@@ -1503,8 +1501,8 @@ float Tab::GetThrobValue() const {
     constexpr float kHoverOpacityMin = 0.5f;
     constexpr float kHoverOpacityMax = 0.65f;
     const float hoverOpacity = LerpFromRange(
-        kHoverOpacityMin, kHoverOpacityMax, float{GetStandardSize().width()},
-        float{GetMinimumInactiveSize().width()}, float{bounds().width()});
+        kHoverOpacityMin, kHoverOpacityMax, float{GetStandardWidth()},
+        float{GetMinimumInactiveWidth()}, float{bounds().width()});
     return is_selected ? (kSelectedTabThrobScale * hoverOpacity) : hoverOpacity;
   };
 

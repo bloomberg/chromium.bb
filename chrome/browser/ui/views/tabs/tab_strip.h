@@ -615,8 +615,8 @@ class TabStrip : public views::View,
   // Returns the current widths of each type of tab.  If the tabstrip width is
   // not evenly divisible into these widths, the initial tabs in the strip will
   // be 1 px larger.
-  int current_inactive_width_ = Tab::GetStandardSize().width();
-  int current_active_width_ = Tab::GetStandardSize().width();
+  int current_inactive_width_ = Tab::GetStandardWidth();
+  int current_active_width_ = Tab::GetStandardWidth();
 
   // If this value is nonnegative, it is used as the width to lay out tabs
   // (instead of tab_area_width()). Most of the time this will be -1, but while
