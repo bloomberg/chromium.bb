@@ -9,6 +9,8 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment_traversal.h"
+#include "third_party/blink/renderer/platform/fonts/character_range.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
 
 namespace blink {
 
@@ -138,7 +140,24 @@ AbstractInlineTextBox::Direction NGAbstractInlineTextBox::GetDirection() const {
 void NGAbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
   if (!fragment_)
     return;
-  // TODO(layout-dev): We should implement |CharacterWidths()|.
+  if (!PhysicalTextFragment().TextShapeResult()) {
+    // When |fragment_| for BR, we don't have shape result.
+    // "aom-computed-boolean-properties.html" reaches here.
+    widths.resize(Len());
+    return;
+  }
+  const ShapeResult& shape_result = *PhysicalTextFragment().TextShapeResult();
+  ShapeResultBuffer buffer;
+  buffer.AppendResult(&shape_result);
+  const Vector<CharacterRange> ranges = buffer.IndividualCharacterRanges(
+      shape_result.Direction(), shape_result.Width());
+  widths.ReserveCapacity(ranges.size());
+  widths.resize(0);
+  for (const auto& range : ranges)
+    widths.push_back(range.Width());
+  // The shaper can fail to return glyph metrics for all characters (see
+  // crbug.com/613915 and crbug.com/615661) so add empty ranges to ensure all
+  // characters have an associated range.
   widths.resize(Len());
 }
 

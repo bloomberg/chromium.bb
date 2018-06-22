@@ -55,9 +55,6 @@ crbug.com/591099 external/wpt/css/css-writing-modes/two-levels-of-orthogonal-flo
 crbug.com/591099 fast/dom/inner-text-first-letter.html [ Pass ]
 
 # New failures are appended below by the script.
-crbug.com/591099 accessibility/inline-text-bidi-bounds-for-range.html [ Failure ]
-crbug.com/714962 accessibility/inline-text-bounds-for-range-br.html [ Failure ]
-crbug.com/591099 accessibility/inline-text-bounds-for-range.html [ Failure ]
 crbug.com/591099 animations/cross-fade-list-style-image.html [ Failure ]
 crbug.com/591099 animations/rotate-transform-equivalent.html [ Failure ]
 crbug.com/714962 compositing/background-color/view-blending-base-background.html [ Failure ]
