@@ -39,15 +39,15 @@
       "os": "11.2"
     },
     {
-      "include": "internal_earl_grey_tests.json",
+      "include": "screen_size_dependent_tests.json",
       "test args": [
         "--disable-features=UIRefreshPhase1"
       ],
-      "device type": "iPhone X",
+      "device type": "iPhone 6",
       "os": "11.2"
     },
     {
-      "include": "internal_earl_grey_tests.json",
+      "include": "screen_size_dependent_tests.json",
       "test args": [
         "--disable-features=UIRefreshPhase1"
       ],
