@@ -151,20 +151,20 @@ TEST_F(CallStackProfileStructTraitsTest, Frame) {
   using Frame = base::StackSamplingProfiler::Frame;
 
   const Frame serialize_cases[] = {
-    // Null instruction pointer.
-    Frame(0x0, 10),
-    // Non-null instruction pointer.
-    Frame(0x10, 10),
-    // Instruction pointer with a bit set beyond 32 bits, when built for x64.
-    Frame(1ULL << (sizeof(uintptr_t) * 8) * 3 / 4, 10),
-    // Zero module index.
-    Frame(0xabcd, 0),
-    // Non-zero module index.
-    Frame(0xabcd, 1),
-    // Non-zero module index.
-    Frame(0xabcd, 10),
-    // Unknown module index.
-    Frame(0xabcd, Frame::kUnknownModuleIndex),
+      // Null instruction pointer.
+      Frame(0x0, 10),
+      // Non-null instruction pointer.
+      Frame(0x10, 10),
+      // Instruction pointer with a bit set beyond 32 bits, when built for x64.
+      Frame(1ULL << (sizeof(uintptr_t) * 8) * 3 / 4, 10),
+      // Zero module index.
+      Frame(0xabcd, 0),
+      // Non-zero module index.
+      Frame(0xabcd, 1),
+      // Non-zero module index.
+      Frame(0xabcd, 10),
+      // Unknown module index.
+      Frame(0xabcd, base::kUnknownModuleIndex),
   };
 
   for (const Frame& input : serialize_cases) {
@@ -179,10 +179,11 @@ TEST_F(CallStackProfileStructTraitsTest, Frame) {
 // Checks serialization/deserialization of Profile fields, including validation
 // of the Frame module_index field.
 TEST_F(CallStackProfileStructTraitsTest, Profile) {
-  using Module = base::StackSamplingProfiler::Module;
-  using Frame = base::StackSamplingProfiler::Frame;
-  using Sample = base::StackSamplingProfiler::Sample;
-  using Profile = base::StackSamplingProfiler::CallStackProfile;
+  using base::StackSamplingProfiler;
+  using Module = StackSamplingProfiler::Module;
+  using Frame = StackSamplingProfiler::Frame;
+  using Sample = StackSamplingProfiler::Sample;
+  using Profile = StackSamplingProfiler::CallStackProfile;
 
   struct SerializeCase {
     Profile profile;
@@ -190,60 +191,49 @@ TEST_F(CallStackProfileStructTraitsTest, Profile) {
   };
 
   const SerializeCase serialize_cases[] = {
-    // Empty modules and samples.
-    {
-      CreateProfile(std::vector<Module>(), std::vector<Sample>(),
-                    base::TimeDelta::FromSeconds(1),
-                    base::TimeDelta::FromSeconds(2)),
-      true
-    },
-    // Non-empty modules and empty samples.
-    {
-      CreateProfile({ Module(0x4000, "a", base::FilePath()) },
-                    std::vector<Sample>(),
-                    base::TimeDelta::FromSeconds(1),
-                    base::TimeDelta::FromSeconds(2)),
-      true
-    },
-    // Valid values for modules and samples.
-    {
-      CreateProfile({
-                      Module(0x4000, "a", base::FilePath()),
-                      Module(0x4100, "b", base::FilePath()),
-                    },
-                    {
-                      Sample({
-                          Frame(0x4010, 0),
-                          Frame(0x4110, 1),
-                          Frame(0x4110, Frame::kUnknownModuleIndex),
-                      }),
-                    },
-                    base::TimeDelta::FromSeconds(1),
-                    base::TimeDelta::FromSeconds(2)),
-      true
-    },
-    // Valid values for modules, but an out of range module index in the second
-    // sample.
-    {
-      CreateProfile({
-                      Module(0x4000, "a", base::FilePath()),
-                      Module(0x4100, "b", base::FilePath()),
-                    },
-                    {
-                      Sample({
-                          Frame(0x4010, 0),
-                          Frame(0x4110, 1),
-                          Frame(0x4110, Frame::kUnknownModuleIndex),
-                      }),
-                      Sample({
-                          Frame(0x4010, 0),
-                          Frame(0x4110, 2),
-                      }),
-                    },
-                    base::TimeDelta::FromSeconds(1),
-                    base::TimeDelta::FromSeconds(2)),
-      false
-    },
+      // Empty modules and samples.
+      {CreateProfile(std::vector<Module>(), std::vector<Sample>(),
+                     base::TimeDelta::FromSeconds(1),
+                     base::TimeDelta::FromSeconds(2)),
+       true},
+      // Non-empty modules and empty samples.
+      {CreateProfile({Module(0x4000, "a", base::FilePath())},
+                     std::vector<Sample>(), base::TimeDelta::FromSeconds(1),
+                     base::TimeDelta::FromSeconds(2)),
+       true},
+      // Valid values for modules and samples.
+      {CreateProfile(
+           {
+               Module(0x4000, "a", base::FilePath()),
+               Module(0x4100, "b", base::FilePath()),
+           },
+           {
+               Sample({
+                   Frame(0x4010, 0), Frame(0x4110, 1),
+                   Frame(0x4110, base::kUnknownModuleIndex),
+               }),
+           },
+           base::TimeDelta::FromSeconds(1), base::TimeDelta::FromSeconds(2)),
+       true},
+      // Valid values for modules, but an out of range module index in the
+      // second
+      // sample.
+      {CreateProfile(
+           {
+               Module(0x4000, "a", base::FilePath()),
+               Module(0x4100, "b", base::FilePath()),
+           },
+           {
+               Sample({
+                   Frame(0x4010, 0), Frame(0x4110, 1),
+                   Frame(0x4110, base::kUnknownModuleIndex),
+               }),
+               Sample({
+                   Frame(0x4010, 0), Frame(0x4110, 2),
+               }),
+           },
+           base::TimeDelta::FromSeconds(1), base::TimeDelta::FromSeconds(2)),
+       false},
   };
 
   for (const SerializeCase& input : serialize_cases) {

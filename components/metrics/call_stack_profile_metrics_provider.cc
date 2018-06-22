@@ -249,7 +249,7 @@ void CopySampleToProto(
     // A frame may not have a valid module. If so, we can't compute the
     // instruction pointer offset, and we don't want to send bare pointers, so
     // leave call_stack_entry empty.
-    if (frame.module_index == StackSamplingProfiler::Frame::kUnknownModuleIndex)
+    if (frame.module_index == base::kUnknownModuleIndex)
       continue;
     int64_t module_offset =
         reinterpret_cast<const char*>(frame.instruction_pointer) -
