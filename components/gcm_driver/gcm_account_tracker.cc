@@ -122,18 +122,14 @@ void GCMAccountTracker::OnGetTokenSuccess(
   AccountInfos::iterator iter = account_infos_.find(request->GetAccountId());
   DCHECK(iter != account_infos_.end());
   if (iter != account_infos_.end()) {
-    DCHECK(iter->second.state == GETTING_TOKEN ||
-           iter->second.state == ACCOUNT_REMOVED);
-    // If OnAccountSignedOut(..) was called most recently, account is kept in
-    // ACCOUNT_REMOVED state.
-    if (iter->second.state == GETTING_TOKEN) {
-      iter->second.state = TOKEN_PRESENT;
-      iter->second.access_token = access_token;
-      iter->second.expiration_time = expiration_time;
-    }
+    DCHECK_EQ(GETTING_TOKEN, iter->second.state);
+
+    iter->second.state = TOKEN_PRESENT;
+    iter->second.access_token = access_token;
+    iter->second.expiration_time = expiration_time;
   }
 
-  DeleteTokenRequest(request);
+  pending_token_requests_.erase(request->GetAccountId());
   ReportTokens();
 }
 
@@ -147,20 +143,16 @@ void GCMAccountTracker::OnGetTokenFailure(
   AccountInfos::iterator iter = account_infos_.find(request->GetAccountId());
   DCHECK(iter != account_infos_.end());
   if (iter != account_infos_.end()) {
-    DCHECK(iter->second.state == GETTING_TOKEN ||
-           iter->second.state == ACCOUNT_REMOVED);
-    // If OnAccountSignedOut(..) was called most recently, account is kept in
-    // ACCOUNT_REMOVED state.
-    if (iter->second.state == GETTING_TOKEN) {
-      // Given the fetcher has a built in retry logic, consider this situation
-      // to be invalid refresh token, that is only fixed when user signs in.
-      // Once the users signs in properly the minting will retry.
-      iter->second.access_token.clear();
-      iter->second.state = ACCOUNT_REMOVED;
-    }
+    DCHECK_EQ(GETTING_TOKEN, iter->second.state);
+
+    // Given the fetcher has a built in retry logic, consider this situation
+    // to be invalid refresh token, that is only fixed when user signs in.
+    // Once the users signs in properly the minting will retry.
+    iter->second.access_token.clear();
+    iter->second.state = ACCOUNT_REMOVED;
   }
 
-  DeleteTokenRequest(request);
+  pending_token_requests_.erase(request->GetAccountId());
   ReportTokens();
 }
 
@@ -297,17 +289,6 @@ base::TimeDelta GCMAccountTracker::GetTimeToNextTokenReporting() const {
   return time_till_next_reporting;
 }
 
-void GCMAccountTracker::DeleteTokenRequest(
-    const OAuth2TokenService::Request* request) {
-  auto iter = std::find_if(
-      pending_token_requests_.begin(), pending_token_requests_.end(),
-      [request](const std::unique_ptr<OAuth2TokenService::Request>& r) {
-        return request == r.get();
-      });
-  if (iter != pending_token_requests_.end())
-    pending_token_requests_.erase(iter);
-}
-
 void GCMAccountTracker::GetAllNeededTokens() {
   // Only start fetching tokens if driver is running, they have a limited
   // validity time and GCM connection is a good indication of network running.
@@ -334,7 +315,8 @@ void GCMAccountTracker::GetToken(AccountInfos::iterator& account_iter) {
   std::unique_ptr<OAuth2TokenService::Request> request =
       token_service_->StartRequest(account_iter->first, scopes, this);
 
-  pending_token_requests_.push_back(std::move(request));
+  DCHECK(pending_token_requests_.count(account_iter->first) == 0);
+  pending_token_requests_.emplace(account_iter->first, std::move(request));
   account_iter->second.state = GETTING_TOKEN;
 }
 
@@ -360,6 +342,12 @@ void GCMAccountTracker::OnAccountSignedOut(const AccountIds& ids) {
 
   iter->second.access_token.clear();
   iter->second.state = ACCOUNT_REMOVED;
+
+  // Delete any ongoing access token request now so that if the account is later
+  // re-added and a new access token request made, we do not break this class'
+  // invariant that there is at most one ongoing access token request per
+  // account.
+  pending_token_requests_.erase(ids.account_key);
   ReportTokens();
 }
 
