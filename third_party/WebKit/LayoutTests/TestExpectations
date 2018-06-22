@@ -3665,9 +3665,6 @@ crbug.com/655458 external/wpt/workers/semantics/multiple-workers/005.html [ Fail
 crbug.com/655458 external/wpt/workers/semantics/multiple-workers/006.html [ Failure Timeout ]
 crbug.com/655458 external/wpt/workers/semantics/multiple-workers/007.html [ Failure Timeout ]
 
-crbug.com/655458 external/wpt/workers/semantics/structured-clone/dedicated.html [ Crash Failure Timeout ]
-crbug.com/655458 external/wpt/workers/semantics/structured-clone/shared.html [ Crash Failure Timeout ]
-
 crbug.com/490511 external/wpt/html/semantics/embedded-content/media-elements/playing-the-media-resource/pause-remove-from-document-networkState.html [ Timeout ]
 
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
