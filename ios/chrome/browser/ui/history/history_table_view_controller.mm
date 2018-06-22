@@ -237,19 +237,22 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
     return;
   }
 
-  // At this point there has been a response, we can stop the loading indicator.
+  // At this point there has been a response, stop the loading indicator.
   [self stopLoadingIndicatorWithCompletion:nil];
 
   // If there are no results and no URLs have been loaded, report that no
   // history entries were found.
   if (results.empty() && self.empty) {
-    [self updateEntriesStatusMessage];
+    [self addEmptyTableViewWithMessage:l10n_util::GetNSString(
+                                           IDS_HISTORY_NO_RESULTS)
+                                 image:[UIImage imageNamed:@"empty_history"]];
     [self updateToolbarButtons];
     return;
   }
 
   self.finishedLoading = queryResultsInfo.reached_beginning;
   self.empty = NO;
+  [self removeEmptyTableView];
 
   // Header section should be updated outside of batch updates, otherwise
   // loading indicator removal will not be observed.
@@ -595,6 +598,9 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
   // If only the header section remains, there are no history entries.
   if ([self.tableViewModel numberOfSections] == 1) {
     self.empty = YES;
+    [self addEmptyTableViewWithMessage:l10n_util::GetNSString(
+                                           IDS_HISTORY_NO_RESULTS)
+                                 image:[UIImage imageNamed:@"empty_history"]];
   }
   [self updateEntriesStatusMessage];
   [self updateToolbarButtons];

@@ -63,6 +63,8 @@ source_set("presentation") {
 source_set("views") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "table_view_empty_view.h",
+    "table_view_empty_view.mm",
     "table_view_loading_view.h",
     "table_view_loading_view.mm",
   ]

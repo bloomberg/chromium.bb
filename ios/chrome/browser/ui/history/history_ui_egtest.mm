@@ -462,21 +462,19 @@ id<GREYMatcher> ConfirmClearBrowsingDataButton() {
 }
 
 - (void)assertNoHistoryShown {
+  id<GREYMatcher> noHistoryMessageMatcher =
+      grey_allOf(grey_text(l10n_util::GetNSString(IDS_HISTORY_NO_RESULTS)),
+                 grey_sufficientlyVisible(), nil);
+  [[EarlGrey selectElementWithMatcher:noHistoryMessageMatcher]
+      assertWithMatcher:grey_notNil()];
+
   if (IsUIRefreshPhase1Enabled()) {
-    // TODO(crbug.com/838579): Add empty table matcher once its implemented.
     id<GREYMatcher> historyEntryMatcher =
         grey_allOf(grey_kindOfClass([TableViewURLCell class]),
                    grey_sufficientlyVisible(), nil);
     [[EarlGrey selectElementWithMatcher:historyEntryMatcher]
         assertWithMatcher:grey_nil()];
-
   } else {
-    id<GREYMatcher> noHistoryMessageMatcher =
-        grey_allOf(grey_text(l10n_util::GetNSString(IDS_HISTORY_NO_RESULTS)),
-                   grey_sufficientlyVisible(), nil);
-    [[EarlGrey selectElementWithMatcher:noHistoryMessageMatcher]
-        assertWithMatcher:grey_notNil()];
-
     id<GREYMatcher> historyEntryMatcher =
         grey_allOf(grey_kindOfClass([LegacyHistoryEntryCell class]),
                    grey_sufficientlyVisible(), nil);

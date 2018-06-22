@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/ui/table_view/table_view_empty_view.h"
 #import "ios/chrome/browser/ui/table_view/table_view_loading_view.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
@@ -18,13 +19,15 @@
 #endif
 
 @interface ChromeTableViewController ()
-// The loading view that will be displayed for [self
-// startLoadingIndicatorWithLoadingMessage].
+// The loading displayed by [self startLoadingIndicatorWithLoadingMessage:].
 @property(nonatomic, strong) TableViewLoadingView* loadingView;
+// The view displayed by [self addEmptyTableViewWithMessage:].
+@property(nonatomic, strong) TableViewEmptyView* emptyView;
 @end
 
 @implementation ChromeTableViewController
 @synthesize appBar = _appBar;
+@synthesize emptyView = _emptyView;
 @synthesize loadingView = _loadingView;
 @synthesize styler = _styler;
 @synthesize tableViewModel = _tableViewModel;
@@ -90,12 +93,13 @@
 
 - (void)startLoadingIndicatorWithLoadingMessage:(NSString*)loadingMessage {
   if (!self.loadingView) {
-    TableViewLoadingView* waitingView =
+    self.loadingView =
         [[TableViewLoadingView alloc] initWithFrame:self.view.bounds
                                      loadingMessage:loadingMessage];
-    self.loadingView = waitingView;
     self.tableView.backgroundView = self.loadingView;
     [self.loadingView startLoadingIndicator];
+    // Since this would replace any emptyView, set it to nil.
+    self.emptyView = nil;
   }
 }
 
@@ -105,9 +109,33 @@
       if (completion)
         completion();
       [self.loadingView removeFromSuperview];
+      // Check that the tableView.backgroundView hasn't been modified
+      // before its removed.
+      DCHECK(self.tableView.backgroundView == self.loadingView);
       self.tableView.backgroundView = nil;
       self.loadingView = nil;
     }];
+  }
+}
+
+- (void)addEmptyTableViewWithMessage:(NSString*)message image:(UIImage*)image {
+  if (!self.emptyView) {
+    self.emptyView = [[TableViewEmptyView alloc] initWithFrame:self.view.bounds
+                                                       message:message
+                                                         image:image];
+    self.tableView.backgroundView = self.emptyView;
+    // Since this would replace any loadingView, set it to nil.
+    self.loadingView = nil;
+  }
+}
+
+- (void)removeEmptyTableView {
+  if (self.emptyView) {
+    // Check that the tableView.backgroundView hasn't been modified
+    // before its removed.
+    DCHECK(self.tableView.backgroundView == self.emptyView);
+    self.tableView.backgroundView = nil;
+    self.emptyView = nil;
   }
 }
 
