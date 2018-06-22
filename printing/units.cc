@@ -28,18 +28,6 @@ double ConvertUnitDouble(double value, double old_unit, double new_unit) {
   return value * new_unit / old_unit;
 }
 
-int ConvertMilliInchToHundredThousanthMeter(int milli_inch) {
-  // 1" == 25.4 mm
-  // 1" == 25400 um
-  // 0.001" == 25.4 um
-  // 0.001" == 2.54 cmm
-  return ConvertUnit(milli_inch, 100, 254);
-}
-
-int ConvertHundredThousanthMeterToMilliInch(int cmm) {
-  return ConvertUnit(cmm, 254, 100);
-}
-
 int ConvertPixelsToPoint(int pixels) {
   return ConvertUnit(pixels, kPixelsPerInch, kPointsPerInch);
 }
