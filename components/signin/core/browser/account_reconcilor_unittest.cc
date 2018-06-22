@@ -78,6 +78,8 @@ class SpyReconcilorDelegate : public signin::AccountReconcilorDelegate {
 
   bool IsAccountConsistencyEnforced() const override { return true; }
 
+  std::string GetGaiaApiSource() const override { return "TestSource"; }
+
   bool ShouldAbortReconcileIfPrimaryHasError() const override { return true; }
 
   std::string GetFirstGaiaAccountForReconcile(

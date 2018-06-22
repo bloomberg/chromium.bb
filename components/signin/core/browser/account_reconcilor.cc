@@ -32,9 +32,6 @@ using signin::AccountReconcilorDelegate;
 
 namespace {
 
-// String used for source parameter in GAIA cookie manager calls.
-const char kSource[] = "ChromiumAccountReconcilor";
-
 class AccountEqualToFunc {
  public:
   explicit AccountEqualToFunc(const gaia::ListedAccount& account)
@@ -275,7 +272,7 @@ void AccountReconcilor::OnAuthErrorChanged(
   // This should cover well the Mirror and Desktop Identity Consistency cases as
   // the cookies are always bound to the refresh tokens in these cases.
   if (error != GoogleServiceAuthError::AuthErrorNone())
-    cookie_manager_service_->TriggerListAccounts(kSource);
+    cookie_manager_service_->TriggerListAccounts(delegate_->GetGaiaApiSource());
 }
 
 void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
@@ -285,7 +282,8 @@ void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
     return;
   }
   VLOG(1) << "AccountReconcilor::PerformMergeAction: " << account_id;
-  cookie_manager_service_->AddAccountToCookie(account_id, kSource);
+  cookie_manager_service_->AddAccountToCookie(account_id,
+                                              delegate_->GetGaiaApiSource());
 }
 
 void AccountReconcilor::PerformLogoutAllAccountsAction() {
@@ -293,7 +291,7 @@ void AccountReconcilor::PerformLogoutAllAccountsAction() {
   if (!delegate_->IsAccountConsistencyEnforced())
     return;
   VLOG(1) << "AccountReconcilor::PerformLogoutAllAccountsAction";
-  cookie_manager_service_->LogOutAllAccounts(kSource);
+  cookie_manager_service_->LogOutAllAccounts(delegate_->GetGaiaApiSource());
 }
 
 void AccountReconcilor::StartReconcile() {
@@ -352,7 +350,7 @@ void AccountReconcilor::StartReconcile() {
   std::vector<gaia::ListedAccount> accounts;
   std::vector<gaia::ListedAccount> signed_out_accounts;
   if (cookie_manager_service_->ListAccounts(&accounts, &signed_out_accounts,
-                                            kSource)) {
+                                            delegate_->GetGaiaApiSource())) {
     OnGaiaAccountsInCookieUpdated(
         accounts, signed_out_accounts,
         GoogleServiceAuthError(GoogleServiceAuthError::NONE));
@@ -457,7 +455,7 @@ std::vector<std::string> AccountReconcilor::LoadValidAccountsFromTokenService()
 void AccountReconcilor::OnReceivedManageAccountsResponse(
     signin::GAIAServiceType service_type) {
   if (service_type == signin::GAIA_SERVICE_TYPE_ADDSESSION) {
-    cookie_manager_service_->TriggerListAccounts(kSource);
+    cookie_manager_service_->TriggerListAccounts(delegate_->GetGaiaApiSource());
   }
 }
 

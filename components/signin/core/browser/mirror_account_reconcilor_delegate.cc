@@ -28,6 +28,10 @@ bool MirrorAccountReconcilorDelegate::IsAccountConsistencyEnforced() const {
   return true;
 }
 
+std::string MirrorAccountReconcilorDelegate::GetGaiaApiSource() const {
+  return "ChromiumAccountReconcilor";
+}
+
 bool MirrorAccountReconcilorDelegate::ShouldAbortReconcileIfPrimaryHasError()
     const {
   return true;

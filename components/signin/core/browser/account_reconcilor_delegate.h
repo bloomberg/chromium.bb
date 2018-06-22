@@ -41,6 +41,9 @@ class AccountReconcilorDelegate {
   // changes to the accounts are made. Defaults to false.
   virtual bool IsAccountConsistencyEnforced() const;
 
+  // Returns the value to set in the "source" parameter for Gaia API calls.
+  virtual std::string GetGaiaApiSource() const;
+
   // Returns true if Reconcile should be aborted when the primary account is in
   // error state. Defaults to false.
   virtual bool ShouldAbortReconcileIfPrimaryHasError() const;
