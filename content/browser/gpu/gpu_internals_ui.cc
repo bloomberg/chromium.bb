@@ -439,8 +439,12 @@ std::string GetProfileName(gpu::VideoCodecProfile profile) {
       return "dolby vision profile 7";
     case gpu::THEORAPROFILE_ANY:
       return "theora";
-    case gpu::AV1PROFILE_PROFILE0:
-      return "av1 profile0";
+    case gpu::AV1PROFILE_PROFILE_MAIN:
+      return "av1 profile main";
+    case gpu::AV1PROFILE_PROFILE_HIGH:
+      return "av1 profile high";
+    case gpu::AV1PROFILE_PROFILE_PRO:
+      return "av1 profile pro";
   }
   NOTREACHED();
   return "";

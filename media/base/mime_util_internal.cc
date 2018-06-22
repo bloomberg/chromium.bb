@@ -783,7 +783,10 @@ bool MimeUtil::ParseCodecHelper(const std::string& mime_type_lower_case,
         case Codec::AV1: {
 #if BUILDFLAG(ENABLE_AV1_DECODER)
           if (base::FeatureList::IsEnabled(kAv1Decoder)) {
-            out_result->video_profile = AV1PROFILE_PROFILE0;
+            // TODO(dalecurtis): This needs updating to parse the actual profile
+            // from the provided codec string before enabling for release.
+            // http://crbug.com/784607
+            out_result->video_profile = AV1PROFILE_PROFILE_MAIN;
             break;
           }
 #endif

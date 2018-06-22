@@ -842,12 +842,11 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
 #if BUILDFLAG(ENABLE_AV1_DECODER)
     case FOURCC_AV01: {
       DVLOG(2) << __func__ << " reading AV1 configuration.";
-      // TODO(dalecurtis): AV1 profiles are not finalized, this needs updating
-      // to read the actual profile and configuration before enabling for
-      // release. http://crbug.com/784993
+      // TODO(dalecurtis): This needs updating to read the actual profile and
+      // configuration before enabling for release. http://crbug.com/784993
       frame_bitstream_converter = nullptr;
       video_codec = kCodecAV1;
-      video_codec_profile = AV1PROFILE_PROFILE0;
+      video_codec_profile = AV1PROFILE_PROFILE_MAIN;
       break;
     }
 #endif

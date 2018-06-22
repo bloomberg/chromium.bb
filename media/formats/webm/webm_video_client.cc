@@ -66,11 +66,11 @@ bool WebMVideoClient::InitializeConfig(
     profile = GetVP9CodecProfile(codec_private);
 #if BUILDFLAG(ENABLE_AV1_DECODER)
   } else if (codec_id == "V_AV1") {
-    // TODO(dalecurtis): AV1 profiles are not finalized, this needs updating
-    // to read the actual profile and configuration before enabling for
+    // TODO(dalecurtis): AV1 profiles in WebM are not finalized, this needs
+    // updating to read the actual profile and configuration before enabling for
     // release. http://crbug.com/784993
     video_codec = kCodecAV1;
-    profile = AV1PROFILE_PROFILE0;
+    profile = AV1PROFILE_PROFILE_MAIN;
 #endif
   } else {
     MEDIA_LOG(ERROR, media_log_) << "Unsupported video codec_id " << codec_id;

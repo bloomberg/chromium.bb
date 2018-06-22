@@ -186,7 +186,9 @@ message VideoDecoderConfig {
     DOLBYVISION_PROFILE5 = 21;
     DOLBYVISION_PROFILE7 = 22;
     THEORAPROFILE_ANY = 23;
-    AV1PROFILE_PROFILE0 = 24;
+    AV1PROFILE_PROFILE_MAIN = 24;
+    AV1PROFILE_PROFILE_HIGH = 25;
+    AV1PROFILE_PROFILE_PRO = 26;
   };
 
   // Proto version of media::VideoPixelFormat.
