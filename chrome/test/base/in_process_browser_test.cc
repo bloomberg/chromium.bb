@@ -245,9 +245,6 @@ void InProcessBrowserTest::SetUp() {
   CHECK(base::PathService::Override(chrome::DIR_DEFAULT_DOWNLOADS,
                                     default_download_dir_.GetPath()));
 
-#if defined(OS_MACOSX)
-  InProcessBrowserTest::SetUpMacOS();
-#endif
   BrowserTestBase::SetUp();
 }
 

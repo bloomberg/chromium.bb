@@ -229,9 +229,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   base::mac::ScopedNSAutoreleasePool* AutoreleasePool() const {
     return autorelease_pool_;
   }
-
-  // Initializes macOS-only state.
-  void SetUpMacOS();
 #endif  // OS_MACOSX
 
   void set_exit_when_last_browser_closes(bool value) {
