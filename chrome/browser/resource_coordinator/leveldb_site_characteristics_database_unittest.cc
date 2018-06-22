@@ -8,9 +8,11 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/resource_coordinator/site_characteristics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "url/gurl.h"
 
 namespace resource_coordinator {
@@ -41,16 +43,20 @@ class LevelDBSiteCharacteristicsDatabaseTest : public ::testing::Test {
 
   void SetUp() override {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    db_ = std::make_unique<LevelDBSiteCharacteristicsDatabase>(
-        temp_dir_.GetPath());
-    WaitForAsyncOperationsToComplete();
-    EXPECT_TRUE(db_);
+    OpenDB();
   }
 
   void TearDown() override {
     db_.reset();
     WaitForAsyncOperationsToComplete();
     EXPECT_TRUE(temp_dir_.Delete());
+  }
+
+  void OpenDB() {
+    db_ = std::make_unique<LevelDBSiteCharacteristicsDatabase>(
+        temp_dir_.GetPath());
+    WaitForAsyncOperationsToComplete();
+    EXPECT_TRUE(db_);
   }
 
  protected:
@@ -72,6 +78,24 @@ class LevelDBSiteCharacteristicsDatabaseTest : public ::testing::Test {
     db_->ReadSiteCharacteristicsFromDB(origin, std::move(init_callback));
     WaitForAsyncOperationsToComplete();
     return success;
+  }
+
+  // Add some entries to the database and returns a vector with their origins.
+  std::vector<url::Origin> AddDummyEntriesToDB() {
+    const size_t kEntryCount = 10;
+    std::vector<url::Origin> site_origins;
+    for (size_t i = 0; i < kEntryCount; ++i) {
+      SiteCharacteristicsProto proto_temp;
+      std::string origin_str = base::StringPrintf("http://%zu.com", i);
+      InitSiteCharacteristicProto(&proto_temp,
+                                  static_cast<::google::protobuf::int64>(i));
+      EXPECT_TRUE(proto_temp.IsInitialized());
+      url::Origin origin = url::Origin::Create(GURL(origin_str));
+      db_->WriteSiteCharacteristicsIntoDB(origin, proto_temp);
+      site_origins.emplace_back(origin);
+    }
+    WaitForAsyncOperationsToComplete();
+    return site_origins;
   }
 
   void WaitForAsyncOperationsToComplete() { task_env_.RunUntilIdle(); }
@@ -100,25 +124,11 @@ TEST_F(LevelDBSiteCharacteristicsDatabaseTest, InitAndStoreSiteCharacteristic) {
 }
 
 TEST_F(LevelDBSiteCharacteristicsDatabaseTest, RemoveEntries) {
-  // Add multiple origins to the database.
-  const size_t kEntryCount = 10;
-  std::vector<url::Origin> site_origins;
-  for (size_t i = 0; i < kEntryCount; ++i) {
-    SiteCharacteristicsProto proto_temp;
-    std::string origin_str = base::StringPrintf("http://%zu.com", i);
-    InitSiteCharacteristicProto(&proto_temp,
-                                static_cast<::google::protobuf::int64>(i));
-    EXPECT_TRUE(proto_temp.IsInitialized());
-    url::Origin origin = url::Origin::Create(GURL(origin_str));
-    db_->WriteSiteCharacteristicsIntoDB(origin, proto_temp);
-    site_origins.emplace_back(origin);
-  }
-
-  WaitForAsyncOperationsToComplete();
+  std::vector<url::Origin> site_origins = AddDummyEntriesToDB();
 
   // Remove half the origins from the database.
   std::vector<url::Origin> site_origins_to_remove(
-      site_origins.begin(), site_origins.begin() + kEntryCount / 2);
+      site_origins.begin(), site_origins.begin() + site_origins.size() / 2);
   db_->RemoveSiteCharacteristicsFromDB(site_origins_to_remove);
 
   WaitForAsyncOperationsToComplete();
@@ -128,7 +138,7 @@ TEST_F(LevelDBSiteCharacteristicsDatabaseTest, RemoveEntries) {
   for (const auto& iter : site_origins_to_remove)
     EXPECT_FALSE(ReadFromDB(iter, &proto_temp));
 
-  for (auto iter = site_origins.begin() + kEntryCount / 2;
+  for (auto iter = site_origins.begin() + site_origins.size() / 2;
        iter != site_origins.end(); ++iter) {
     EXPECT_TRUE(ReadFromDB(*iter, &proto_temp));
   }
@@ -141,6 +151,31 @@ TEST_F(LevelDBSiteCharacteristicsDatabaseTest, RemoveEntries) {
   // Verify that no origin remains.
   for (auto iter : site_origins)
     EXPECT_FALSE(ReadFromDB(iter, &proto_temp));
+}
+
+TEST_F(LevelDBSiteCharacteristicsDatabaseTest, DatabaseRecoveryTest) {
+  std::vector<url::Origin> site_origins = AddDummyEntriesToDB();
+
+  db_.reset();
+
+  EXPECT_TRUE(leveldb_chrome::CorruptClosedDBForTesting(temp_dir_.GetPath()));
+
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(
+      "TabManager.Discarding.LocalDatabase.DatabaseInit", 0);
+  // Open the corrupt DB and ensure that the appropriate histograms gets
+  // updated.
+  OpenDB();
+  EXPECT_TRUE(db_->DatabaseIsInitializedForTesting());
+  histogram_tester.ExpectUniqueSample(
+      "TabManager.Discarding.LocalDatabase.DatabaseInit",
+      1 /* kInitStatusCorruption */, 1);
+  histogram_tester.ExpectUniqueSample(
+      "TabManager.Discarding.LocalDatabase.DatabaseInitAfterRepair",
+      0 /* kInitStatusOk */, 1);
+
+  // TODO(sebmarchand): try to induce an I/O error by deleting one of the
+  // manifest files.
 }
 
 }  // namespace resource_coordinator
