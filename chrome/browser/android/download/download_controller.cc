@@ -393,6 +393,7 @@ void DownloadController::OnDownloadStarted(
   }
 
   // Register for updates to the DownloadItem.
+  download_item->RemoveObserver(this);
   download_item->AddObserver(this);
 
   OnDownloadUpdated(download_item);

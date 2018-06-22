@@ -41,6 +41,7 @@ component("public") {
     "download_save_info.cc",
     "download_save_info.h",
     "download_source.h",
+    "download_start_observer.h",
     "download_stats.h",
     "download_task_runner.h",
     "download_ukm_helper.h",

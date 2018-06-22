@@ -17,6 +17,7 @@
 #include "components/download/internal/common/resource_downloader.h"
 #include "components/download/public/common/download_file.h"
 #include "components/download/public/common/download_item_impl.h"
+#include "components/download/public/common/download_start_observer.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_url_loader_factory_getter.h"
@@ -194,6 +195,7 @@ InProgressDownloadManager::InProgressDownloadManager(
     const IsOriginSecureCallback& is_origin_secure_cb)
     : delegate_(delegate),
       file_factory_(new DownloadFileFactory()),
+      download_start_observer_(nullptr),
       is_origin_secure_cb_(is_origin_secure_cb),
       weak_factory_(this) {}
 
@@ -471,6 +473,9 @@ void InProgressDownloadManager::StartDownloadWithItem(
       std::move(download_file), std::move(info->request_handle), *info,
       std::move(url_loader_factory_getter),
       delegate_ ? delegate_->GetURLRequestContextGetter(*info) : nullptr);
+
+  if (download_start_observer_)
+    download_start_observer_->OnDownloadStarted(download);
 }
 
 void InProgressDownloadManager::OnDownloadDBInitialized(

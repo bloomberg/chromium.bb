@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_start_observer.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/context_menu_params.h"
 #include "net/http/http_content_disposition.h"
@@ -58,7 +59,8 @@ struct DownloadInfo {
 
 // Interface to request GET downloads and send notifications for POST
 // downloads.
-class DownloadControllerBase : public download::DownloadItem::Observer {
+class DownloadControllerBase : public download::DownloadItem::Observer,
+                               public download::DownloadStartObserver {
  public:
   // Returns the singleton instance of the DownloadControllerBase.
   static DownloadControllerBase* Get();
@@ -66,11 +68,6 @@ class DownloadControllerBase : public download::DownloadItem::Observer {
   // Called to set the DownloadControllerBase instance.
   static void SetDownloadControllerBase(
       DownloadControllerBase* download_controller);
-
-  // Should be called when a download is started. It can be either a GET
-  // request with authentication or a POST request. Notifies the embedding
-  // app about the download. Should be called on the UI thread.
-  virtual void OnDownloadStarted(download::DownloadItem* download_item) = 0;
 
   // Called when a download is initiated by context menu.
   virtual void StartContextMenuDownload(

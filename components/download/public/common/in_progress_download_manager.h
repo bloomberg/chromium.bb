@@ -28,6 +28,7 @@ struct ResourceResponse;
 namespace download {
 
 class DownloadDBCache;
+class DownloadStartObserver;
 class DownloadURLLoaderFactoryGetter;
 class DownloadUrlParameters;
 class InProgressCache;
@@ -128,6 +129,10 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Called to retrieve an in-progress download.
   DownloadItemImpl* GetInProgressDownload(const std::string& guid);
 
+  void set_download_start_observer(DownloadStartObserver* observer) {
+    download_start_observer_ = observer;
+  }
+
   void set_file_factory(std::unique_ptr<DownloadFileFactory> file_factory) {
     file_factory_ = std::move(file_factory);
   }
@@ -179,6 +184,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
 
   // listens to information about in-progress download items.
   std::unique_ptr<DownloadItem::Observer> in_progress_download_observer_;
+
+  // Observer to notify when a download starts.
+  DownloadStartObserver* download_start_observer_;
 
   // callback to check if an origin is secure.
   IsOriginSecureCallback is_origin_secure_cb_;
