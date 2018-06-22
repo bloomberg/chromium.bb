@@ -7,6 +7,10 @@
 
 #include <string>
 
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
+
 namespace chromecast {
 class TaskRunner;
 
@@ -47,6 +51,7 @@ struct MediaPipelineDeviceParams {
       : sync_type(kModeSyncPts),
         audio_type(kAudioStreamNormal),
         task_runner(task_runner_in),
+        connector(nullptr),
         content_type(content_type_in),
         device_id(device_id_in) {}
 
@@ -57,6 +62,7 @@ struct MediaPipelineDeviceParams {
       : sync_type(sync_type_in),
         audio_type(kAudioStreamNormal),
         task_runner(task_runner_in),
+        connector(nullptr),
         content_type(content_type_in),
         device_id(device_id_in) {}
 
@@ -64,10 +70,12 @@ struct MediaPipelineDeviceParams {
                             AudioStreamType audio_type_in,
                             TaskRunner* task_runner_in,
                             AudioContentType content_type_in,
-                            const std::string& device_id_in)
+                            const std::string& device_id_in,
+                            service_manager::Connector* connector_in = nullptr)
       : sync_type(sync_type_in),
         audio_type(audio_type_in),
         task_runner(task_runner_in),
+        connector(connector_in),
         content_type(content_type_in),
         device_id(device_id_in) {}
 
@@ -79,6 +87,9 @@ struct MediaPipelineDeviceParams {
   // the media thread, this may simplify thread management and safety for
   // some backends.
   TaskRunner* const task_runner;
+
+  // connector allows the backend to bind to services through ServiceManager.
+  service_manager::Connector* const connector;
 
   // Identifies the content type for volume control.
   const AudioContentType content_type;

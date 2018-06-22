@@ -19,6 +19,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
+
 namespace chromecast {
 class TaskRunnerImpl;
 
@@ -36,7 +40,8 @@ class CastRenderer : public ::media::Renderer,
                const std::string& audio_device_id,
                VideoModeSwitcher* video_mode_switcher,
                VideoResolutionPolicy* video_resolution_policy,
-               MediaResourceTracker* media_resource_tracker);
+               MediaResourceTracker* media_resource_tracker,
+               service_manager::Connector* connector);
   ~CastRenderer() final;
 
   // ::media::Renderer implementation.
@@ -74,6 +79,7 @@ class CastRenderer : public ::media::Renderer,
   VideoModeSwitcher* video_mode_switcher_;
   VideoResolutionPolicy* video_resolution_policy_;
   MediaResourceTracker* media_resource_tracker_;
+  service_manager::Connector* connector_;
   // Must outlive |pipeline_| to properly count resource usage.
   std::unique_ptr<MediaResourceTracker::ScopedUsage> media_resource_usage_;
 

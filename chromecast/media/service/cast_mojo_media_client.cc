@@ -43,7 +43,7 @@ std::unique_ptr<::media::Renderer> CastMojoMediaClient::CreateRenderer(
     const std::string& audio_device_id) {
   return std::make_unique<CastRenderer>(
       backend_factory_, task_runner, audio_device_id, video_mode_switcher_,
-      video_resolution_policy_, media_resource_tracker_);
+      video_resolution_policy_, media_resource_tracker_, connector_);
 }
 
 std::unique_ptr<::media::CdmFactory> CastMojoMediaClient::CreateCdmFactory(
