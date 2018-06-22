@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,6 +31,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/strings/grit/components_strings.h"
@@ -1376,7 +1378,6 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"passwordsAndAutofillPageTitle",
        IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE},
-      {"autofill", IDS_SETTINGS_AUTOFILL},
       {"googlePayments", IDS_SETTINGS_GOOGLE_PAYMENTS},
       {"googlePaymentsCached", IDS_SETTINGS_GOOGLE_PAYMENTS_CACHED},
       {"autofillFormsLabel", IDS_SETTINGS_AUTOFILL_TOGGLE_LABEL},
@@ -1387,7 +1388,6 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       {"addressPhone", IDS_SETTINGS_AUTOFILL_ADDRESSES_PHONE},
       {"addressEmail", IDS_SETTINGS_AUTOFILL_ADDRESSES_EMAIL},
       {"removeAddress", IDS_SETTINGS_ADDRESS_REMOVE},
-      {"creditCards", IDS_SETTINGS_AUTOFILL_CREDIT_CARD_HEADING},
       {"removeCreditCard", IDS_SETTINGS_CREDIT_CARD_REMOVE},
       {"clearCreditCard", IDS_SETTINGS_CREDIT_CARD_CLEAR},
       {"creditCardType", IDS_SETTINGS_AUTOFILL_CREDIT_CARD_TYPE_COLUMN_LABEL},
@@ -1401,7 +1401,6 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       {"addCreditCardTitle", IDS_SETTINGS_ADD_CREDIT_CARD_TITLE},
       {"canMakePaymentToggleLabel", IDS_SETTINGS_CAN_MAKE_PAYMENT_TOGGLE_LABEL},
       {"autofillDetail", IDS_SETTINGS_AUTOFILL_DETAIL},
-      {"passwords", IDS_SETTINGS_PASSWORDS},
       {"passwordsSavePasswordsLabel",
        IDS_SETTINGS_PASSWORDS_SAVE_PASSWORDS_TOGGLE_LABEL},
       {"passwordsAutosigninLabel",
@@ -1422,8 +1421,6 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       {"editPasswordUsernameLabel", IDS_SETTINGS_PASSWORDS_USERNAME},
       {"editPasswordPasswordLabel", IDS_SETTINGS_PASSWORDS_PASSWORD},
       {"noAddressesFound", IDS_SETTINGS_ADDRESS_NONE},
-      {"noCreditCardsFound", IDS_SETTINGS_CREDIT_CARD_NONE},
-      {"noCreditCardsPolicy", IDS_SETTINGS_CREDIT_CARD_DISABLED},
       {"noPasswordsFound", IDS_SETTINGS_PASSWORDS_NONE},
       {"noExceptionsFound", IDS_SETTINGS_PASSWORDS_EXCEPTIONS_NONE},
       {"import", IDS_PASSWORD_MANAGER_IMPORT_BUTTON},
@@ -1446,6 +1443,30 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PASSWORDS_EXPORTING_FAILURE_TIP_ENOUGH_SPACE},
       {"exportPasswordsFailTipsAnotherFolder",
        IDS_SETTINGS_PASSWORDS_EXPORTING_FAILURE_TIP_ANOTHER_FOLDER}};
+
+  // TODO(https://crbug.com/854562): Integrate these strings into the
+  // |localized_strings| array once Autofill Home is fully launched.
+  if (base::FeatureList::IsEnabled(password_manager::features::kAutofillHome)) {
+    html_source->AddLocalizedString("autofill",
+                                    IDS_SETTINGS_AUTOFILL_AUTOFILL_HOME);
+    html_source->AddLocalizedString("passwords",
+                                    IDS_SETTINGS_PASSWORDS_AUTOFILL_HOME);
+    html_source->AddLocalizedString("creditCards",
+                                    IDS_SETTINGS_AUTOFILL_PAYMENT_METHODS);
+    html_source->AddLocalizedString("noCreditCardsFound",
+                                    IDS_SETTINGS_PAYMENT_METHODS_NONE);
+    html_source->AddLocalizedString("noCreditCardsPolicy",
+                                    IDS_SETTINGS_PAYMENT_METHODS_DISABLED);
+  } else {
+    html_source->AddLocalizedString("autofill", IDS_SETTINGS_AUTOFILL);
+    html_source->AddLocalizedString("passwords", IDS_SETTINGS_PASSWORDS);
+    html_source->AddLocalizedString("creditCards",
+                                    IDS_SETTINGS_AUTOFILL_CREDIT_CARD_HEADING);
+    html_source->AddLocalizedString("noCreditCardsFound",
+                                    IDS_SETTINGS_CREDIT_CARD_NONE);
+    html_source->AddLocalizedString("noCreditCardsPolicy",
+                                    IDS_SETTINGS_CREDIT_CARD_DISABLED);
+  }
 
   html_source->AddString(
       "managePasswordsLabel",
@@ -1643,8 +1664,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"bookmarksCheckboxLabel", IDS_SETTINGS_BOOKMARKS_CHECKBOX_LABEL},
     {"passwordsCheckboxLabel", IDS_SETTINGS_PASSWORDS_CHECKBOX_LABEL},
     {"openTabsCheckboxLabel", IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL},
-    {"enablePaymentsIntegrationCheckboxLabel",
-     IDS_SETTINGS_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL},
     {"manageSyncedDataTitle", IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE},
     {"encryptionOptionsTitle", IDS_SETTINGS_ENCRYPTION_OPTIONS},
     {"syncDataEncryptedText", IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT},
@@ -1665,6 +1684,18 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+
+  // TODO(https://crbug.com/854562): Integrate these strings into the
+  // |localized_strings| array once Autofill Home is fully launched.
+  if (base::FeatureList::IsEnabled(password_manager::features::kAutofillHome)) {
+    html_source->AddLocalizedString(
+        "enablePaymentsIntegrationCheckboxLabel",
+        IDS_SETTINGS_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL_AUTOFILL_HOME);
+  } else {
+    html_source->AddLocalizedString(
+        "enablePaymentsIntegrationCheckboxLabel",
+        IDS_SETTINGS_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL);
+  }
 
   // Format numbers to be used on the pin keyboard.
   for (int j = 0; j <= 9; j++) {
