@@ -152,6 +152,7 @@ class BotUpdateUnittests(unittest.TestCase):
       'gerrit_repo': None,
       'gerrit_ref': None,
       'gerrit_rebase_patch_ref': None,
+      'shallow': False,
       'refs': [],
       'git_cache_dir': '',
       'cleanup_dir': None,
@@ -193,6 +194,11 @@ class BotUpdateUnittests(unittest.TestCase):
     ).returns(self.gclient)
 
   def testBasic(self):
+    bot_update.ensure_checkout(**self.params)
+    return self.call.records
+
+  def testBasicShallow(self):
+    self.params['shallow'] = True
     bot_update.ensure_checkout(**self.params)
     return self.call.records
 

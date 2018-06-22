@@ -87,6 +87,11 @@ ATTEMPTS = 5
 GIT_CACHE_PATH = path.join(DEPOT_TOOLS_DIR, 'git_cache.py')
 GCLIENT_PATH = path.join(DEPOT_TOOLS_DIR, 'gclient.py')
 
+# If there is less than 100GB of disk space on the system, then we do
+# a shallow checkout.
+SHALLOW_CLONE_THRESHOLD = 100 * 1024 * 1024 * 1024
+
+
 class SubprocessFailed(Exception):
   def __init__(self, message, code, output):
     Exception.__init__(self, message)
@@ -346,7 +351,7 @@ def git_config_if_not_set(key, value):
 
 
 def gclient_sync(
-    with_branch_heads, with_tags, revisions, break_repo_locks,
+    with_branch_heads, with_tags, shallow, revisions, break_repo_locks,
     disable_syntax_validation, gerrit_repo, gerrit_ref, gerrit_reset,
     gerrit_rebase_patch_ref, apply_patch_on_gclient):
   # We just need to allocate a filename.
@@ -360,6 +365,8 @@ def gclient_sync(
     args += ['--with_branch_heads']
   if with_tags:
     args += ['--with_tags']
+  if shallow:
+    args += ['--shallow']
   if break_repo_locks:
     args += ['--break_repo_locks']
   if disable_syntax_validation:
@@ -610,12 +617,14 @@ def _maybe_break_locks(checkout_path, tries=3):
 
 
 
-def git_checkouts(solutions, revisions, refs, git_cache_dir, cleanup_dir):
+def git_checkouts(solutions, revisions, shallow, refs, git_cache_dir,
+                  cleanup_dir):
   build_dir = os.getcwd()
   first_solution = True
   for sln in solutions:
     sln_dir = path.join(build_dir, sln['name'])
-    _git_checkout(sln, sln_dir, revisions, refs, git_cache_dir, cleanup_dir)
+    _git_checkout(sln, sln_dir, revisions, shallow, refs, git_cache_dir,
+                  cleanup_dir)
     if first_solution:
       git_ref = git('log', '--format=%H', '--max-count=1',
                     cwd=path.join(build_dir, sln['name'])
@@ -624,11 +633,17 @@ def git_checkouts(solutions, revisions, refs, git_cache_dir, cleanup_dir):
   return git_ref
 
 
-def _git_checkout(sln, sln_dir, revisions, refs, git_cache_dir, cleanup_dir):
+def _git_checkout(sln, sln_dir, revisions, shallow, refs, git_cache_dir,
+                  cleanup_dir):
   name = sln['name']
   url = sln['url']
+  if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
+    # Experiments show there's little to be gained from
+    # a shallow clone of src.
+    shallow = False
+  s = ['--shallow'] if shallow else []
   populate_cmd = (['cache', 'populate', '--ignore_locks', '-v',
-                   '--cache-dir', git_cache_dir, url])
+                   '--cache-dir', git_cache_dir] + s + [url])
   for ref in refs:
     populate_cmd.extend(['--ref', ref])
 
@@ -845,7 +860,7 @@ def emit_json(out_file, did_run, gclient_output=None, **kwargs):
 
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     target_cpu, patch_root, gerrit_repo, gerrit_ref,
-                    gerrit_rebase_patch_ref, refs, git_cache_dir,
+                    gerrit_rebase_patch_ref, shallow, refs, git_cache_dir,
                     cleanup_dir, gerrit_reset, disable_syntax_validation,
                     apply_patch_on_gclient):
   # Get a checkout of each solution, without DEPS or hooks.
@@ -853,7 +868,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   # invoking DEPS.
   print 'Fetching Git checkout'
 
-  git_checkouts(solutions, revisions, refs, git_cache_dir, cleanup_dir)
+  git_checkouts(solutions, revisions, shallow, refs, git_cache_dir, cleanup_dir)
 
   applied_gerrit_patch = False
   if not apply_patch_on_gclient:
@@ -888,6 +903,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
       gclient_output = gclient_sync(
           BRANCH_HEADS_REFSPEC in refs,
           TAGS_REFSPEC in refs,
+          shallow,
           revisions,
           break_repo_locks,
           disable_syntax_validation,
@@ -990,6 +1006,9 @@ def parse_args():
                    help='Delete checkout first, always')
   parse.add_option('--output_json',
                    help='Output JSON information into a specified file')
+  parse.add_option('--maybe_shallow', action='store_true',
+                   help='Enables turning on shallow mode if total disk '
+                        'space is low.')
   parse.add_option('--refs', action='append',
                    help='Also fetch this refspec for the main solution(s). '
                         'Eg. +refs/branch-heads/*')
@@ -1065,6 +1084,7 @@ def prepare(options, git_slns, active):
   # Make sure we tell recipes that we didn't run if the script exits here.
   emit_json(options.output_json, did_run=active)
 
+  # Do a shallow checkout if the disk is less than 100GB.
   total_disk_space, free_disk_space = get_total_disk_space()
   total_disk_space_gb = int(total_disk_space / (1024 * 1024 * 1024))
   used_disk_space_gb = int((total_disk_space - free_disk_space)
@@ -1073,6 +1093,9 @@ def prepare(options, git_slns, active):
   step_text = '[%dGB/%dGB used (%d%%)]' % (used_disk_space_gb,
                                            total_disk_space_gb,
                                            percent_used)
+  shallow = (total_disk_space < SHALLOW_CLONE_THRESHOLD
+             and options.maybe_shallow)
+
   # The first solution is where the primary DEPS file resides.
   first_sln = dir_names[0]
 
@@ -1080,10 +1103,10 @@ def prepare(options, git_slns, active):
   print 'Revisions: %s' % options.revision
   revisions = parse_revisions(options.revision, first_sln)
   print 'Fetching Git checkout at %s@%s' % (first_sln, revisions[first_sln])
-  return revisions, step_text
+  return revisions, step_text, shallow
 
 
-def checkout(options, git_slns, specs, revisions, step_text):
+def checkout(options, git_slns, specs, revisions, step_text, shallow):
   print 'Using Python version: %s' % (sys.version,)
   print 'Checking git version...'
   ver = git('version').strip()
@@ -1114,7 +1137,8 @@ def checkout(options, git_slns, specs, revisions, step_text):
           gerrit_ref=options.gerrit_ref,
           gerrit_rebase_patch_ref=not options.gerrit_no_rebase_patch_ref,
 
-          # Finally, extra configurations cleanup dir location.
+          # Finally, extra configurations such as shallowness of the clone.
+          shallow=shallow,
           refs=options.refs,
           git_cache_dir=options.git_cache_dir,
           cleanup_dir=options.cleanup_dir,
@@ -1214,8 +1238,8 @@ def main():
 
   try:
     # Dun dun dun, the main part of bot_update.
-    revisions, step_text = prepare(options, git_slns, active)
-    checkout(options, git_slns, specs, revisions, step_text)
+    revisions, step_text, shallow = prepare(options, git_slns, active)
+    checkout(options, git_slns, specs, revisions, step_text, shallow)
 
   except PatchFailed as e:
     # Return a specific non-zero exit code for patch failure (because it is
