@@ -39,6 +39,12 @@ class FrameSchedulerImplTest : public testing::Test {
     task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));
   }
 
+  FrameSchedulerImplTest(std::vector<base::Feature> features_to_enable,
+                         std::vector<base::Feature> features_to_disable)
+      : FrameSchedulerImplTest() {
+    feature_list_.InitWithFeatures(features_to_enable, features_to_disable);
+  }
+
   ~FrameSchedulerImplTest() override = default;
 
   void SetUp() override {
@@ -105,6 +111,7 @@ class FrameSchedulerImplTest : public testing::Test {
     return frame_scheduler_->CalculateLifecycleState(type);
   }
 
+  base::test::ScopedFeatureList feature_list_;
   base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
@@ -635,10 +642,13 @@ TEST_F(FrameSchedulerImplTest, SubesourceLoadingPaused) {
 // TODO(farahcharab) Move priority testing to MainThreadTaskQueueTest after
 // landing the change that moves priority computation to MainThreadTaskQueue.
 
-TEST_F(FrameSchedulerImplTest, LowPriorityBackgroundPagesWhenFeatureEnabled) {
-  base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitAndEnableFeature(kLowPriorityForBackgroundPages);
+class LowPriorityBackgroundPageExperimentTest : public FrameSchedulerImplTest {
+ public:
+  LowPriorityBackgroundPageExperimentTest()
+      : FrameSchedulerImplTest({kLowPriorityForBackgroundPages}, {}) {}
+};
 
+TEST_F(LowPriorityBackgroundPageExperimentTest, FrameQueuesPriorities) {
   page_scheduler_->SetPageVisible(false);
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kLowPriority);
@@ -683,11 +693,14 @@ TEST_F(FrameSchedulerImplTest, LowPriorityBackgroundPagesWhenFeatureEnabled) {
             TaskQueue::QueuePriority::kNormalPriority);
 }
 
-TEST_F(FrameSchedulerImplTest,
-       BestEffortPriorityBackgroundPagesWhenFeatureEnabled) {
-  base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitAndEnableFeature(kBestEffortPriorityForBackgroundPages);
+class BestEffortPriorityBackgroundPageExperimentTest
+    : public FrameSchedulerImplTest {
+ public:
+  BestEffortPriorityBackgroundPageExperimentTest()
+      : FrameSchedulerImplTest({kBestEffortPriorityForBackgroundPages}, {}) {}
+};
 
+TEST_F(BestEffortPriorityBackgroundPageExperimentTest, FrameQueuesPriorities) {
   page_scheduler_->SetPageVisible(false);
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kBestEffortPriority);
@@ -732,10 +745,14 @@ TEST_F(FrameSchedulerImplTest,
             TaskQueue::QueuePriority::kNormalPriority);
 }
 
-TEST_F(FrameSchedulerImplTest, LowPriorityForHiddenFrameFeatureEnabled) {
-  base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitAndEnableFeature(kLowPriorityForHiddenFrame);
+class LowPriorityHiddenFrameExperimentTest : public FrameSchedulerImplTest {
+ public:
+  LowPriorityHiddenFrameExperimentTest()
+      : FrameSchedulerImplTest({kLowPriorityForHiddenFrame},
+                               {kExperimentOnlyWhenLoading}) {}
+};
 
+TEST_F(LowPriorityHiddenFrameExperimentTest, FrameQueuesPriorities) {
   // Hidden Frame Task Queues.
   frame_scheduler_->SetFrameVisible(false);
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
@@ -767,12 +784,17 @@ TEST_F(FrameSchedulerImplTest, LowPriorityForHiddenFrameFeatureEnabled) {
             TaskQueue::QueuePriority::kNormalPriority);
 }
 
-TEST_F(FrameSchedulerImplTest,
-       LowPriorityForHiddenFrameDuringLoadingFeatureEnabled) {
-  base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitWithFeatures(
-      {kLowPriorityForHiddenFrame, kExperimentOnlyWhenLoading}, {});
+class LowPriorityHiddenFrameDuringLoadingExperimentTest
+    : public FrameSchedulerImplTest {
+ public:
+  LowPriorityHiddenFrameDuringLoadingExperimentTest()
+      : FrameSchedulerImplTest(
+            {kLowPriorityForHiddenFrame, kExperimentOnlyWhenLoading},
+            {}) {}
+};
 
+TEST_F(LowPriorityHiddenFrameDuringLoadingExperimentTest,
+       FrameQueuesPriorities) {
   // Main thread scheduler is in the loading use case.
   scheduler_->DidStartProvisionalLoad(true);
   EXPECT_TRUE(scheduler_->IsLoading());
@@ -810,10 +832,14 @@ TEST_F(FrameSchedulerImplTest,
             TaskQueue::QueuePriority::kNormalPriority);
 }
 
-TEST_F(FrameSchedulerImplTest, LowPriorityForSubFrameFeatureEnabled) {
-  base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitAndEnableFeature(kLowPriorityForSubFrame);
+class LowPrioritySubFrameExperimentTest : public FrameSchedulerImplTest {
+ public:
+  LowPrioritySubFrameExperimentTest()
+      : FrameSchedulerImplTest({kLowPriorityForSubFrame},
+                               {kExperimentOnlyWhenLoading}) {}
+};
 
+TEST_F(LowPrioritySubFrameExperimentTest, FrameQueuesPriorities) {
   // Sub-Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kLowPriority);
@@ -829,12 +855,16 @@ TEST_F(FrameSchedulerImplTest, LowPriorityForSubFrameFeatureEnabled) {
             TaskQueue::QueuePriority::kLowPriority);
 }
 
-TEST_F(FrameSchedulerImplTest,
-       LowPriorityForSubFrameDuringLoadingFeatureEnabled) {
-  base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitWithFeatures(
-      {kLowPriorityForSubFrame, kExperimentOnlyWhenLoading}, {});
+class LowPrioritySubFrameDuringLoadingExperimentTest
+    : public FrameSchedulerImplTest {
+ public:
+  LowPrioritySubFrameDuringLoadingExperimentTest()
+      : FrameSchedulerImplTest(
+            {kLowPriorityForSubFrame, kExperimentOnlyWhenLoading},
+            {}) {}
+};
 
+TEST_F(LowPrioritySubFrameDuringLoadingExperimentTest, FrameQueuesPriorities) {
   // Main thread scheduler is in the loading use case.
   scheduler_->DidStartProvisionalLoad(true);
   EXPECT_TRUE(scheduler_->IsLoading());
@@ -872,11 +902,16 @@ TEST_F(FrameSchedulerImplTest,
             TaskQueue::QueuePriority::kNormalPriority);
 }
 
-TEST_F(FrameSchedulerImplTest,
-       kLowPriorityForSubFrameThrottleableTaskFeatureEnabled) {
-  base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitAndEnableFeature(kLowPriorityForSubFrameThrottleableTask);
+class LowPrioritySubFrameThrottleableTaskExperimentTest
+    : public FrameSchedulerImplTest {
+ public:
+  LowPrioritySubFrameThrottleableTaskExperimentTest()
+      : FrameSchedulerImplTest({kLowPriorityForSubFrameThrottleableTask},
+                               {kExperimentOnlyWhenLoading}) {}
+};
 
+TEST_F(LowPrioritySubFrameThrottleableTaskExperimentTest,
+       FrameQueuesPriorities) {
   // Sub-Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
@@ -892,13 +927,17 @@ TEST_F(FrameSchedulerImplTest,
             TaskQueue::QueuePriority::kNormalPriority);
 }
 
-TEST_F(FrameSchedulerImplTest,
-       kLowPriorityForSubFrameThrottleableTaskDuringLoadingFeatureEnabled) {
-  base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitWithFeatures(
-      {kLowPriorityForSubFrameThrottleableTask, kExperimentOnlyWhenLoading},
-      {});
+class LowPrioritySubFrameThrottleableTaskDuringLoadingExperimentTest
+    : public FrameSchedulerImplTest {
+ public:
+  LowPrioritySubFrameThrottleableTaskDuringLoadingExperimentTest()
+      : FrameSchedulerImplTest({kLowPriorityForSubFrameThrottleableTask,
+                                kExperimentOnlyWhenLoading},
+                               {}) {}
+};
 
+TEST_F(LowPrioritySubFrameThrottleableTaskDuringLoadingExperimentTest,
+       FrameQueuesPriorities) {
   // Main thread scheduler is in the loading use case.
   scheduler_->DidStartProvisionalLoad(true);
   EXPECT_TRUE(scheduler_->IsLoading());
@@ -936,10 +975,15 @@ TEST_F(FrameSchedulerImplTest,
             TaskQueue::QueuePriority::kNormalPriority);
 }
 
-TEST_F(FrameSchedulerImplTest, kLowPriorityForThrottleableTaskFeatureEnabled) {
-  base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitAndEnableFeature(kLowPriorityForThrottleableTask);
+class LowPriorityThrottleableTaskExperimentTest
+    : public FrameSchedulerImplTest {
+ public:
+  LowPriorityThrottleableTaskExperimentTest()
+      : FrameSchedulerImplTest({kLowPriorityForThrottleableTask},
+                               {kExperimentOnlyWhenLoading}) {}
+};
 
+TEST_F(LowPriorityThrottleableTaskExperimentTest, FrameQueuesPriorities) {
   // Sub-Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
@@ -972,12 +1016,17 @@ TEST_F(FrameSchedulerImplTest, kLowPriorityForThrottleableTaskFeatureEnabled) {
             TaskQueue::QueuePriority::kNormalPriority);
 }
 
-TEST_F(FrameSchedulerImplTest,
-       kLowPriorityForThrottleableTaskDuringLoadingFeatureEnabled_SubFrame) {
-  base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitWithFeatures(
-      {kLowPriorityForThrottleableTask, kExperimentOnlyWhenLoading}, {});
+class LowPriorityThrottleableTaskDuringLoadingExperimentTest
+    : public FrameSchedulerImplTest {
+ public:
+  LowPriorityThrottleableTaskDuringLoadingExperimentTest()
+      : FrameSchedulerImplTest(
+            {kLowPriorityForThrottleableTask, kExperimentOnlyWhenLoading},
+            {}) {}
+};
 
+TEST_F(LowPriorityThrottleableTaskDuringLoadingExperimentTest,
+       SubFrameQueuesPriorities) {
   // Main thread is in the loading use case.
   scheduler_->DidStartProvisionalLoad(true);
   EXPECT_TRUE(scheduler_->IsLoading());
@@ -1013,12 +1062,8 @@ TEST_F(FrameSchedulerImplTest,
             TaskQueue::QueuePriority::kNormalPriority);
 }
 
-TEST_F(FrameSchedulerImplTest,
-       kLowPriorityForThrottleableTaskDuringLoadingFeatureEnabled_MainFrame) {
-  base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitWithFeatures(
-      {kLowPriorityForThrottleableTask, kExperimentOnlyWhenLoading}, {});
-
+TEST_F(LowPriorityThrottleableTaskDuringLoadingExperimentTest,
+       MainFrameQueuesPriorities) {
   frame_scheduler_ = FrameSchedulerImpl::Create(
       page_scheduler_.get(), nullptr, FrameScheduler::FrameType::kMainFrame);
 

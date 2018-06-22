@@ -83,6 +83,26 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     }
   };
 
+  struct SchedulingSettings {
+    SchedulingSettings();
+
+    // High priority input experiment.
+    bool high_priority_input;
+
+    // Background page priority experiment.
+    bool low_priority_background_page;
+    bool best_effort_background_page;
+
+    // Task and subframe priority experiment.
+    bool low_priority_subframe;
+    bool low_priority_throttleable;
+    bool low_priority_subframe_throttleable;
+    bool low_priority_hidden_frame;
+
+    // Turn on relevant experiments during the loading phase.
+    bool experiment_only_when_loading;
+  };
+
   static const char* UseCaseToString(UseCase use_case);
   static const char* RAILModeToString(v8::RAILMode rail_mode);
   static const char* VirtualTimePolicyToString(
@@ -325,6 +345,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // Returns true if main thread is in loading use case.
   bool IsLoading() const;
 
+  const SchedulingSettings& scheduling_settings() const;
+
   base::WeakPtr<MainThreadSchedulerImpl> GetWeakPtr();
 
  protected:
@@ -353,6 +375,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   friend class main_thread_scheduler_impl_unittest::
       MainThreadSchedulerImplForTest;
   friend class main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest;
+
   FRIEND_TEST_ALL_PREFIXES(
       main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest,
       ShouldIgnoreTaskForUkm);
@@ -690,6 +713,14 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // This controller should be initialized before any TraceableVariables
   // because they require one to initialize themselves.
   TraceableVariableController tracing_controller_;
+
+  // Used for experiments on finch. On main thread instantiation, we cache
+  // the values of base::Feature flags using this struct, since calling
+  // base::Feature::IsEnabled is a relatively expensive operation.
+  //
+  // Note that it is important to keep this as the first member to ensure it is
+  // initialized first and can be used everywhere.
+  const SchedulingSettings scheduling_settings_;
 
   MainThreadSchedulerHelper helper_;
   IdleHelper idle_helper_;
