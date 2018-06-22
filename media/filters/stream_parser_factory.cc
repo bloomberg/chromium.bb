@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
+#include "media/base/video_codecs.h"
 #include "media/formats/mp4/mp4_stream_parser.h"
 #include "media/formats/mpeg/adts_stream_parser.h"
 #include "media/formats/mpeg/mpeg1_audio_stream_parser.h"
@@ -92,9 +93,8 @@ static const CodecInfo kOpusCodecInfo = {"opus", CodecInfo::AUDIO, nullptr,
                                          CodecInfo::HISTOGRAM_OPUS};
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-// TODO(dalecurtis): This is not the correct final string. Fix before enabling
-// by default. http://crbug.com/784607
-static const CodecInfo kAV1CodecInfo = {"av1", CodecInfo::VIDEO, nullptr,
+// Note: Validation of the codec string is handled by the caller.
+static const CodecInfo kAV1CodecInfo = {"av01.*", CodecInfo::VIDEO, nullptr,
                                         CodecInfo::HISTOGRAM_AV1};
 #endif
 
