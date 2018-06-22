@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
-#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
