@@ -2283,6 +2283,23 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
         y = owner_bounds.bottom() - pref.height() +
             border_and_shadow_insets.bottom();
       }
+    } else if (state_.anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT) {
+      // Align the left of the menu with the right of the anchor, and the top of
+      // the menu with the top of the anchor.
+      x = owner_bounds.right() - border_and_shadow_insets.left() +
+          menu_config.touchable_anchor_offset;
+      y = owner_bounds.origin().y() - border_and_shadow_insets.top();
+      if (x + pref.width() > state_.monitor_bounds.width()) {
+        // Align the right of the menu with the left of the anchor.
+        x = owner_bounds.origin().x() - pref.width() +
+            border_and_shadow_insets.right() -
+            menu_config.touchable_anchor_offset;
+      }
+      if (y + pref.height() > state_.monitor_bounds.height()) {
+        // Align the bottom of the menu with the bottom of the anchor.
+        y = owner_bounds.bottom() - pref.height() +
+            border_and_shadow_insets.bottom();
+      }
     } else {
       if (state_.anchor == MENU_ANCHOR_BUBBLE_RIGHT)
         x = owner_bounds.right() - kBubbleTipSizeLeftRight;

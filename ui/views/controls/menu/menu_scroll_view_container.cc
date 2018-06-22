@@ -335,6 +335,7 @@ BubbleBorder::Arrow MenuScrollViewContainer::BubbleBorderTypeFromAnchor(
       return BubbleBorder::TOP_CENTER;
     case MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE:
     case MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT:
+    case MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT:
       return BubbleBorder::FLOAT;
     default:
       return BubbleBorder::NONE;

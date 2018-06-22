@@ -204,7 +204,8 @@ bool MenuItemView::IsBubble(MenuAnchorPosition anchor) {
          anchor == MENU_ANCHOR_BUBBLE_ABOVE ||
          anchor == MENU_ANCHOR_BUBBLE_BELOW ||
          anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE ||
-         anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT;
+         anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT ||
+         anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT;
 }
 
 // static
