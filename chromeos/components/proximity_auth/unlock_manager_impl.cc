@@ -156,8 +156,7 @@ void UnlockManagerImpl::OnLifeCycleStateChanged() {
   if (state == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
     DCHECK(life_cycle_->GetConnection());
     DCHECK(GetMessenger());
-    proximity_monitor_ =
-        CreateProximityMonitor(life_cycle_->GetConnection(), pref_manager_);
+    proximity_monitor_ = CreateProximityMonitor(life_cycle_, pref_manager_);
     GetMessenger()->AddObserver(this);
   }
 
@@ -322,12 +321,17 @@ void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
 }
 
 std::unique_ptr<ProximityMonitor> UnlockManagerImpl::CreateProximityMonitor(
-    cryptauth::Connection* connection,
+    RemoteDeviceLifeCycle* life_cycle,
     ProximityAuthPrefManager* pref_manager) {
-  // TODO(crbug.com/752273): Inject a real ClientChannel.
-  return std::make_unique<ProximityMonitorImpl>(connection->remote_device(),
-                                                nullptr /* channel */,
-                                                connection, pref_manager);
+  return std::make_unique<ProximityMonitorImpl>(
+      life_cycle->GetRemoteDevice(),
+      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
+          ? life_cycle->GetChannel()
+          : nullptr,
+      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
+          ? nullptr
+          : life_cycle->GetConnection(),
+      pref_manager);
 }
 
 void UnlockManagerImpl::SendSignInChallenge() {

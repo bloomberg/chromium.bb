@@ -569,8 +569,16 @@ void ProximityAuthWebUIHandler::OnRemoteDevicesLoaded(
 
 void ProximityAuthWebUIHandler::StartRemoteDeviceLifeCycle(
     cryptauth::RemoteDeviceRef remote_device) {
+  base::Optional<cryptauth::RemoteDeviceRef> local_device;
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+    local_device = device_sync_client_->GetLocalDeviceMetadata();
+  }
+
   selected_remote_device_ = remote_device;
-  life_cycle_.reset(new RemoteDeviceLifeCycleImpl(*selected_remote_device_));
+  // TODO(crbug.com/752273): Inject a real SecureChannelClient.
+  life_cycle_.reset(
+      new RemoteDeviceLifeCycleImpl(*selected_remote_device_, local_device,
+                                    nullptr /* secure_channel_client */));
   life_cycle_->AddObserver(this);
   life_cycle_->Start();
 }

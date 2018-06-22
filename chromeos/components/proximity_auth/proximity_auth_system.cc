@@ -114,8 +114,10 @@ void ProximityAuthSystem::OnSuspendDone() {
 std::unique_ptr<RemoteDeviceLifeCycle>
 ProximityAuthSystem::CreateRemoteDeviceLifeCycle(
     cryptauth::RemoteDeviceRef remote_device) {
-  return std::unique_ptr<RemoteDeviceLifeCycle>(
-      new RemoteDeviceLifeCycleImpl(remote_device));
+  // TODO(crbug.com/752273): Inject a real local device and SecureChannelClient.
+  return std::make_unique<RemoteDeviceLifeCycleImpl>(
+      remote_device, base::nullopt /* local_device */,
+      nullptr /* secure_channel_client */);
 }
 
 void ProximityAuthSystem::OnLifeCycleStateChanged(
