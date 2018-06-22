@@ -5,6 +5,8 @@
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
@@ -28,6 +30,9 @@ QuietModeFeaturePodController::~QuietModeFeaturePodController() {
 FeaturePodButton* QuietModeFeaturePodController::CreateButton() {
   DCHECK(!button_);
   button_ = new FeaturePodButton(this);
+  button_->SetVisible(
+      Shell::Get()->session_controller()->ShouldShowNotificationTray() &&
+      !Shell::Get()->session_controller()->IsScreenLocked());
   button_->SetLabel(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NOTIFICATIONS_LABEL));
   OnQuietModeChanged(MessageCenter::Get()->IsQuietMode());

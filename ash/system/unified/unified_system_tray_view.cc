@@ -5,6 +5,8 @@
 #include "ash/system/unified/unified_system_tray_view.h"
 
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "ash/system/tray/interacted_by_tap_recorder.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
@@ -141,6 +143,9 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
+  message_center_view_->SetVisible(
+      Shell::Get()->session_controller()->ShouldShowNotificationTray() &&
+      !Shell::Get()->session_controller()->IsScreenLocked());
   AddChildView(message_center_view_);
   layout->SetFlexForView(message_center_view_, 1);
 
