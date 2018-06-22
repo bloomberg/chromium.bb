@@ -8,6 +8,7 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
+#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -57,9 +58,11 @@ DialogPlate::DialogPlate(AssistantController* assistant_controller)
   // The Assistant controller indirectly owns the view hierarchy to which
   // DialogPlate belongs so is guaranteed to outlive it.
   assistant_controller_->interaction_controller()->AddModelObserver(this);
+  assistant_controller_->ui_controller()->AddModelObserver(this);
 }
 
 DialogPlate::~DialogPlate() {
+  assistant_controller_->ui_controller()->RemoveModelObserver(this);
   assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
@@ -220,11 +223,10 @@ void DialogPlate::OnInputModalityChanged(InputModality input_modality) {
   }
 }
 
-void DialogPlate::OnInteractionStateChanged(
-    InteractionState interaction_state) {
-  // When the Assistant interaction becomes inactive we need to clear the
-  // dialog plate so that text does not persist across Assistant entries.
-  if (interaction_state == InteractionState::kInactive)
+void DialogPlate::OnUiVisibilityChanged(bool visible, AssistantSource source) {
+  // When the Assistant UI is hidden we need to clear the dialog plate so that
+  // text does not persist across Assistant entries.
+  if (!visible)
     textfield_->SetText(base::string16());
 }
 

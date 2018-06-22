@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/assistant/assistant_ui_controller.h"
-#include "ash/highlighter/highlighter_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
@@ -42,11 +41,11 @@ class AssistantControllerTest : public AshTestBase {
     assistant_binding_->Bind(mojo::MakeRequest(&assistant));
     controller_->SetAssistant(std::move(assistant));
 
-    ASSERT_FALSE(IsAssistantUiShown());
+    ASSERT_FALSE(IsAssistantUiVisible());
   }
 
-  bool IsAssistantUiShown() {
-    return controller_->ui_controller()->IsVisible();
+  bool IsAssistantUiVisible() {
+    return controller_->ui_controller()->model()->visible();
   }
 
  private:

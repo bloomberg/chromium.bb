@@ -18,9 +18,20 @@ namespace ash {
 AssistantController::AssistantController()
     : assistant_interaction_controller_(
           std::make_unique<AssistantInteractionController>()),
-      assistant_ui_controller_(std::make_unique<AssistantUiController>(this)) {}
+      assistant_ui_controller_(std::make_unique<AssistantUiController>(this)) {
+  // Note that the sub-controllers have a circular dependency.
+  // TODO(dmblack): Remove this circular dependency.
+  assistant_interaction_controller_->SetAssistantUiController(
+      assistant_ui_controller_.get());
+  assistant_ui_controller_->SetAssistantInteractionController(
+      assistant_interaction_controller_.get());
+}
 
-AssistantController::~AssistantController() = default;
+AssistantController::~AssistantController() {
+  // Explicitly clean up the circular dependency in the sub-controllers.
+  assistant_interaction_controller_->SetAssistantUiController(nullptr);
+  assistant_ui_controller_->SetAssistantInteractionController(nullptr);
+}
 
 void AssistantController::BindRequest(
     mojom::AssistantControllerRequest request) {
@@ -31,8 +42,9 @@ void AssistantController::SetAssistant(
     chromeos::assistant::mojom::AssistantPtr assistant) {
   assistant_ = std::move(assistant);
 
-  // Provide reference to interaction controller.
+  // Provide reference to sub-controllers.
   assistant_interaction_controller_->SetAssistant(assistant_.get());
+  assistant_ui_controller_->SetAssistant(assistant_.get());
 }
 
 void AssistantController::SetAssistantImageDownloader(
@@ -44,8 +56,8 @@ void AssistantController::SetAssistantSetup(
     mojom::AssistantSetupPtr assistant_setup) {
   assistant_setup_ = std::move(assistant_setup);
 
-  // Provide reference to interaction controller.
-  assistant_interaction_controller_->SetAssistantSetup(assistant_setup_.get());
+  // Provide reference to UI controller.
+  assistant_ui_controller_->SetAssistantSetup(assistant_setup_.get());
 }
 
 void AssistantController::SetWebContentsManager(
@@ -90,6 +102,7 @@ void AssistantController::ManageWebContents(
   params->account_id = user_session->user_info->account_id;
 
   // Specify that we will handle top level browser requests.
+  // TODO(dmblack): Make AssistantController the OpenUrl delegate.
   ash::mojom::ManagedWebContentsOpenUrlDelegatePtr ptr;
   web_contents_open_url_delegate_bindings_.AddBinding(
       assistant_interaction_controller_.get(), mojo::MakeRequest(&ptr));

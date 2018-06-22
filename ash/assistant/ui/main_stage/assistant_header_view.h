@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_HEADER_VIEW_H_
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
@@ -21,7 +22,8 @@ class AssistantController;
 // AssistantHeaderView is the child of UiElementContainerView which provides
 // the Assistant icon. On first launch, it also displays a greeting to the user.
 class AssistantHeaderView : public views::View,
-                            public AssistantInteractionModelObserver {
+                            public AssistantInteractionModelObserver,
+                            public AssistantUiModelObserver {
  public:
   explicit AssistantHeaderView(AssistantController* assistant_controller);
   ~AssistantHeaderView() override;
@@ -32,8 +34,10 @@ class AssistantHeaderView : public views::View,
   void ChildVisibilityChanged(views::View* child) override;
 
   // AssistantInteractionModelObserver:
-  void OnInteractionStateChanged(InteractionState interaction_state) override;
   void OnCommittedQueryChanged(const AssistantQuery& committed_query) override;
+
+  // AssistantUiModelObserver:
+  void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
 
  private:
   void InitLayout();

@@ -11,6 +11,7 @@
 
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/public/interfaces/web_contents_manager.mojom.h"
@@ -21,14 +22,12 @@
 namespace ash {
 
 class AssistantInteractionModelObserver;
-
-namespace mojom {
-class AssistantSetup;
-}  // namespace mojom
+class AssistantUiController;
 
 class AssistantInteractionController
     : public chromeos::assistant::mojom::AssistantEventSubscriber,
       public AssistantInteractionModelObserver,
+      public AssistantUiModelObserver,
       public HighlighterController::Observer,
       public DialogPlateDelegate,
       public mojom::ManagedWebContentsOpenUrlDelegate {
@@ -39,14 +38,15 @@ class AssistantInteractionController
   using AssistantInteractionResolution =
       chromeos::assistant::mojom::AssistantInteractionResolution;
 
-  explicit AssistantInteractionController();
+  AssistantInteractionController();
   ~AssistantInteractionController() override;
 
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
 
-  // Provides a pointer to the |assistant_setup| owned by AssistantController.
-  void SetAssistantSetup(mojom::AssistantSetup* assistant_setup);
+  // Provides a pointer to the |assistant_ui_controller| owned by
+  // AssistantController.
+  void SetAssistantUiController(AssistantUiController* assistant_ui_controller);
 
   // Returns a reference to the underlying model.
   const AssistantInteractionModel* model() const {
@@ -57,18 +57,15 @@ class AssistantInteractionController
   void AddModelObserver(AssistantInteractionModelObserver* observer);
   void RemoveModelObserver(AssistantInteractionModelObserver* observer);
 
-  // Invoke to modify the Assistant interaction state.
-  void StartInteraction();
-  void StopInteraction();
-  void ToggleInteraction();
-
   // Invoked on suggestion chip pressed event.
   void OnSuggestionChipPressed(int id);
 
   // AssistantInteractionModelObserver:
   void OnInputModalityChanged(InputModality input_modality) override;
-  void OnInteractionStateChanged(InteractionState interaction_state) override;
   void OnCommittedQueryChanged(const AssistantQuery& committed_query) override;
+
+  // AssistantUiModelObserver:
+  void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
 
   // HighlighterController::Observer:
   void OnHighlighterEnabledChanged(HighlighterEnabledState state) override;
@@ -98,23 +95,22 @@ class AssistantInteractionController
   void OnDialogPlateContentsCommitted(const std::string& text) override;
 
  private:
+  void StartTextInteraction(const std::string text);
+  void StartVoiceInteraction();
+  void StopActiveInteraction();
+
   void OpenUrl(const GURL& url);
+
+  // Owned by AssistantController.
+  chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
+
+  // Owned by AssisantController.
+  AssistantUiController* assistant_ui_controller_ = nullptr;
 
   mojo::Binding<chromeos::assistant::mojom::AssistantEventSubscriber>
       assistant_event_subscriber_binding_;
 
   AssistantInteractionModel assistant_interaction_model_;
-
-  // Owned by AssistantController.
-  chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
-
-  // Owned by AssistantController.
-  mojom::AssistantSetup* assistant_setup_ = nullptr;
-
-  // Indicates whether or not there is an active interaction in progress. If
-  // there is no active interaction, UI related service events should be
-  // discarded.
-  bool has_active_interaction_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantInteractionController);
 };

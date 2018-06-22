@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
@@ -34,12 +33,13 @@ AssistantMainView::AssistantMainView(AssistantController* assistant_controller)
   caption_bar_->set_delegate(assistant_controller_->ui_controller());
   dialog_plate_->set_delegate(assistant_controller_);
 
-  // Observe changes to interaction model.
-  assistant_controller_->interaction_controller()->AddModelObserver(this);
+  // The AssistantController indirectly owns the view hierarchy to which
+  // AssistantMainView belongs so is guaranteed to outlive it.
+  assistant_controller_->ui_controller()->AddModelObserver(this);
 }
 
 AssistantMainView::~AssistantMainView() {
-  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
+  assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
 
 gfx::Size AssistantMainView::CalculatePreferredSize() const {
@@ -92,9 +92,9 @@ void AssistantMainView::InitLayout() {
   AddChildView(dialog_plate_);
 }
 
-void AssistantMainView::OnInteractionStateChanged(
-    InteractionState interaction_state) {
-  if (interaction_state != InteractionState::kInactive)
+void AssistantMainView::OnUiVisibilityChanged(bool visible,
+                                              AssistantSource source) {
+  if (visible)
     return;
 
   // When the Assistant UI is being hidden we need to reset our minimum height
