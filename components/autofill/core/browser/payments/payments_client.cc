@@ -701,7 +701,7 @@ void PaymentsClient::StartTokenFetch(bool invalidate_old) {
   if (invalidate_old) {
     DCHECK(!access_token_.empty());
     identity_manager_->RemoveAccessTokenFromCache(
-        identity_manager_->GetPrimaryAccountInfo(), payments_scopes,
+        identity_manager_->GetPrimaryAccountInfo().account_id, payments_scopes,
         access_token_);
   }
   access_token_.clear();

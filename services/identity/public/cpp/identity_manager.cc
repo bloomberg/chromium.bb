@@ -106,7 +106,7 @@ IdentityManager::CreateAccessTokenFetcherForPrimaryAccount(
 }
 
 void IdentityManager::RemoveAccessTokenFromCache(
-    const AccountInfo& account_info,
+    const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
     const std::string& access_token) {
   // TODO(843510): Consider making the request to ProfileOAuth2TokenService
@@ -115,8 +115,7 @@ void IdentityManager::RemoveAccessTokenFromCache(
   // ProfileOAuth2TokenService::RequestAccessToken() to be made asynchronously
   // as well (to maintain ordering in the case where a client removes an access
   // token from the cache and then immediately requests an access token).
-  token_service_->InvalidateAccessToken(account_info.account_id, scopes,
-                                        access_token);
+  token_service_->InvalidateAccessToken(account_id, scopes, access_token);
 }
 
 void IdentityManager::AddObserver(Observer* observer) {

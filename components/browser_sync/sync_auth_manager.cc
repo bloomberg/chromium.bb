@@ -278,8 +278,8 @@ void SyncAuthManager::RequestAccessToken() {
   // Invalidate previous token, otherwise token service will return the same
   // token again.
   if (!access_token_.empty()) {
-    identity_manager_->RemoveAccessTokenFromCache(GetAuthenticatedAccountInfo(),
-                                                  oauth2_scopes, access_token_);
+    identity_manager_->RemoveAccessTokenFromCache(
+        GetAuthenticatedAccountInfo().account_id, oauth2_scopes, access_token_);
 
     access_token_.clear();
     credentials_changed_callback_.Run();

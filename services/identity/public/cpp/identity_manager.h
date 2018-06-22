@@ -139,7 +139,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   // given information, removes that entry; in this case, the next access token
   // request for |account_id| and |scopes| will fetch a new token from the
   // network. Otherwise, is a no-op.
-  void RemoveAccessTokenFromCache(const AccountInfo& account_info,
+  void RemoveAccessTokenFromCache(const std::string& account_id,
                                   const OAuth2TokenService::ScopeSet& scopes,
                                   const std::string& access_token);
 
