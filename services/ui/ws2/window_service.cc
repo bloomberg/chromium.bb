@@ -9,6 +9,7 @@
 #include "services/ui/ws2/gpu_interface_provider.h"
 #include "services/ui/ws2/screen_provider.h"
 #include "services/ui/ws2/server_window.h"
+#include "services/ui/ws2/user_activity_monitor.h"
 #include "services/ui/ws2/window_service_delegate.h"
 #include "services/ui/ws2/window_tree.h"
 #include "services/ui/ws2/window_tree_factory.h"
@@ -27,6 +28,7 @@ WindowService::WindowService(
       gpu_interface_provider_(std::move(gpu_interface_provider)),
       screen_provider_(std::make_unique<ScreenProvider>()),
       focus_client_(focus_client),
+      user_activity_monitor_(std::make_unique<UserActivityMonitor>()),
       next_client_id_(decrement_client_ids ? kInitialClientIdDecrement
                                            : kInitialClientId),
       decrement_client_ids_(decrement_client_ids),
@@ -107,9 +109,9 @@ void WindowService::OnStart() {
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindInputDeviceServerRequest, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
-      &WindowService::BindWindowTreeFactoryRequest, base::Unretained(this)));
-  registry_.AddInterface(base::BindRepeating(
       &WindowService::BindUserActivityMonitorRequest, base::Unretained(this)));
+  registry_.AddInterface(base::BindRepeating(
+      &WindowService::BindWindowTreeFactoryRequest, base::Unretained(this)));
 
   // |gpu_interface_provider_| may be null in tests.
   if (gpu_interface_provider_)
@@ -150,13 +152,12 @@ void WindowService::BindInputDeviceServerRequest(
 }
 
 void WindowService::BindUserActivityMonitorRequest(
-    ui::mojom::UserActivityMonitorRequest request) {
-  // TODO: https://crbug.com/854700.
-  NOTIMPLEMENTED_LOG_ONCE();
+    mojom::UserActivityMonitorRequest request) {
+  user_activity_monitor_->AddBinding(std::move(request));
 }
 
 void WindowService::BindWindowTreeFactoryRequest(
-    ui::mojom::WindowTreeFactoryRequest request) {
+    mojom::WindowTreeFactoryRequest request) {
   window_tree_factory_->AddBinding(std::move(request));
 }
 

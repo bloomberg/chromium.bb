@@ -47,6 +47,7 @@ namespace ws2 {
 class GpuInterfaceProvider;
 class ScreenProvider;
 class ServerWindow;
+class UserActivityMonitor;
 class WindowServiceDelegate;
 class WindowTree;
 class WindowTreeFactory;
@@ -109,8 +110,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   void BindInputDeviceServerRequest(mojom::InputDeviceServerRequest request);
   void BindUserActivityMonitorRequest(
       mojom::UserActivityMonitorRequest request);
-  void BindWindowTreeFactoryRequest(
-      ui::mojom::WindowTreeFactoryRequest request);
+  void BindWindowTreeFactoryRequest(mojom::WindowTreeFactoryRequest request);
 
   WindowServiceDelegate* delegate_;
 
@@ -122,6 +122,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   aura::client::FocusClient* focus_client_;
 
   service_manager::BinderRegistry registry_;
+
+  std::unique_ptr<UserActivityMonitor> user_activity_monitor_;
 
   std::unique_ptr<WindowTreeFactory> window_tree_factory_;
 

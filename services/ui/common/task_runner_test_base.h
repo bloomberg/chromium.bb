@@ -38,7 +38,7 @@ class TaskRunnerTestBase : public testing::Test {
   void SetUp() override;
 
  private:
-  base::MessageLoop message_loop_;
+  base::MessageLoop message_loop_{base::MessageLoop::TYPE_UI};
 
   // Added as the task runner for message loop.
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
