@@ -59,7 +59,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
  public:
   WindowService(WindowServiceDelegate* delegate,
                 std::unique_ptr<GpuInterfaceProvider> gpu_support,
-                aura::client::FocusClient* focus_client);
+                aura::client::FocusClient* focus_client,
+                bool decrement_client_ids = false);
   ~WindowService() override;
 
   // Gets the ServerWindow for |window|, creating if necessary.
@@ -133,7 +134,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   std::unique_ptr<ClipboardHost> clipboard_host_;
 
   // Id for the next WindowTree.
-  ClientSpecificId next_client_id_ = kWindowServerClientId + 1;
+  ClientSpecificId next_client_id_;
+
+  // If true, client ids are decremented, not incremented; the default is false.
+  const bool decrement_client_ids_;
 
   // Id used for the next window created locally that is exposed to clients.
   ClientSpecificId next_window_id_ = 1;

@@ -587,14 +587,14 @@ class WindowTreeClientTest2 : public WindowServerServiceTestBase {
 
   Id root_window_id() const { return root_window_id_; }
 
-  int client_id_1() const { return client_id_1_; }
-  int client_id_2() const { return client_id_2_; }
-  int client_id_3() const { return client_id_3_; }
+  ClientSpecificId client_id_1() const { return client_id_1_; }
+  ClientSpecificId client_id_2() const { return client_id_2_; }
+  ClientSpecificId client_id_3() const { return client_id_3_; }
 
   void EstablishSecondClientWithRoot(Id root_id) {
     ASSERT_TRUE(wt_client2_.get() == nullptr);
     wt_client2_ = EstablishClientViaEmbed(wt1(), root_id);
-    ASSERT_GT(client_id_2_, 0);
+    ASSERT_GT(client_id_2_, 0u);
     ASSERT_TRUE(wt_client2_.get() != nullptr);
   }
 
@@ -716,9 +716,9 @@ class WindowTreeClientTest2 : public WindowServerServiceTestBase {
 
  private:
   std::unique_ptr<WindowTreeClientFactory> client_factory_;
-  int client_id_1_ = kWindowServerClientId + 1;
-  int client_id_2_ = client_id_1_ + 1;
-  int client_id_3_ = client_id_2_ + 1;
+  const ClientSpecificId client_id_1_ = kWindowServerClientId + 1;
+  const ClientSpecificId client_id_2_ = client_id_1_ + 1;
+  const ClientSpecificId client_id_3_ = client_id_2_ + 1;
   Id root_window_id_;
   service_manager::BinderRegistry registry_;
 
@@ -1795,7 +1795,7 @@ TEST_F(WindowTreeClientTest2, DISABLED_SetWindowVisibilityNotifications3) {
 
 // Tests that when opacity is set on a window, that the calling client is not
 // notified, however children are. Also that setting the same opacity is
-// rejected and no on eis notifiyed.
+// rejected and no one is notified.
 TEST_F(WindowTreeClientTest2, DISABLED_SetOpacityNotifications) {
   Id window_1_1 = wt_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);

@@ -5,7 +5,6 @@
 #include "services/ui/ws2/window_tree_test_helper.h"
 
 #include "services/ui/ws2/server_window.h"
-#include "services/ui/ws2/window_tree.h"
 #include "services/ui/ws2/window_tree_binding.h"
 
 namespace ui {

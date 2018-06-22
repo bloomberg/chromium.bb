@@ -1937,7 +1937,7 @@ TEST_F(WindowTreeClientTest, SetWindowVisibilityNotifications3) {
 
 // Tests that when opacity is set on a window, that the calling client is not
 // notified, however children are. Also that setting the same opacity is
-// rejected and no on eis notifiyed.
+// rejected and no one is notified.
 TEST_F(WindowTreeClientTest, SetOpacityNotifications) {
   Id window_1_1 = wt_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);

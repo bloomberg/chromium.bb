@@ -13,6 +13,8 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/gpu_interface_provider.h"
 #include "services/ui/ws2/window_service_test_setup.h"
+#include "services/ui/ws2/window_tree.h"
+#include "services/ui/ws2/window_tree_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
@@ -51,6 +53,47 @@ TEST(WindowServiceTest, DeleteWithClients) {
 
   // Destroying the |window_service| should remove all the WindowTrees and
   // ensure a DCHECK isn't hit in ~WindowTree.
+}
+
+// Test client ids assigned to window trees that connect to the window service.
+TEST(WindowServiceTest, ClientIds) {
+  // Use |test_setup| to configure aura and other state.
+  WindowServiceTestSetup test_setup;
+
+  // Create another WindowService.
+  TestWindowServiceDelegate test_window_service_delegate;
+  WindowService window_service(&test_window_service_delegate, nullptr,
+                               test_setup.focus_controller());
+
+  // The first window tree should have the initial client id.
+  auto tree = window_service.CreateWindowTree(nullptr);
+  EXPECT_EQ(kInitialClientId, WindowTreeTestHelper(tree.get()).client_id());
+
+  // The second window tree should have an incremented client id.
+  tree = window_service.CreateWindowTree(nullptr);
+  EXPECT_EQ(kInitialClientId + 1, WindowTreeTestHelper(tree.get()).client_id());
+}
+
+// Test client ids assigned to window trees in the decrementing mode.
+TEST(WindowServiceTest, ClientIdsDecrement) {
+  // Use |test_setup| to configure aura and other state.
+  WindowServiceTestSetup test_setup;
+
+  // Create another WindowService that decrements window ids.
+  const bool decrement = true;
+  TestWindowServiceDelegate test_window_service_delegate;
+  WindowService window_service(&test_window_service_delegate, nullptr,
+                               test_setup.focus_controller(), decrement);
+
+  // The first window tree should have the initial decrementing client id.
+  auto tree = window_service.CreateWindowTree(nullptr);
+  EXPECT_EQ(kInitialClientIdDecrement,
+            WindowTreeTestHelper(tree.get()).client_id());
+
+  // The second window tree should have a decremented client id.
+  tree = window_service.CreateWindowTree(nullptr);
+  EXPECT_EQ(kInitialClientIdDecrement - 1,
+            WindowTreeTestHelper(tree.get()).client_id());
 }
 
 }  // namespace ws2

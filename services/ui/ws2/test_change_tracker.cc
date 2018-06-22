@@ -19,7 +19,8 @@ namespace ws2 {
 
 std::string WindowIdToString(Id id) {
   return (id == 0) ? "null"
-                   : base::StringPrintf("%d,%d", ClientIdFromTransportId(id),
+                   : base::StringPrintf("%" PRIu32 ",%" PRIu32,
+                                        ClientIdFromTransportId(id),
                                         ClientWindowIdFromTransportId(id));
 }
 
