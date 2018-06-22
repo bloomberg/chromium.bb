@@ -53,6 +53,7 @@ METRIC_BRANCH_CLEANUP = 'chromeos/chromite/cbuildbot_launch/branch_cleanup'
 METRIC_DISTFILES_CLEANUP = (
     'chromeos/chromite/cbuildbot_launch/distfiles_cleanup')
 METRIC_DEPOT_TOOLS = 'chromeos/chromite/cbuildbot_launch/depot_tools_prep'
+METRIC_CHROOT_CLEANUP = 'chromeos/chromite/cbuildbot_launch/chroot_cleanup'
 
 # Builder state
 BUILDER_STATE_FILENAME = '.cbuildbot_build_state.json'
@@ -502,7 +503,9 @@ def _main(argv):
           if result == 0 else constants.BUILDER_STATUS_FAILED)
       SetLastBuildState(root, build_state)
 
-      CleanupChroot(buildroot)
+      with metrics.SecondsTimer(METRIC_CHROOT_CLEANUP, fields=metrics_fields):
+        CleanupChroot(buildroot)
+
       return result
 
 
