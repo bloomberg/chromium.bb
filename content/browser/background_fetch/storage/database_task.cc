@@ -14,6 +14,21 @@ namespace content {
 
 namespace background_fetch {
 
+DatabaseTask::DatabaseTask(BackgroundFetchDataManager* data_manager)
+    : data_manager_(data_manager) {
+  DCHECK(data_manager_);
+  cache_manager_ = data_manager_->cache_manager();
+}
+
+DatabaseTask::DatabaseTask(BackgroundFetchDataManager* data_manager,
+                           scoped_refptr<CacheStorageManager> cache_manager)
+    : data_manager_(data_manager), cache_manager_(cache_manager) {
+  DCHECK(data_manager_);
+  DCHECK(cache_manager_);
+}
+
+DatabaseTask::~DatabaseTask() = default;
+
 void DatabaseTask::Finished() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -21,16 +36,21 @@ void DatabaseTask::Finished() {
 }
 
 void DatabaseTask::AddDatabaseTask(std::unique_ptr<DatabaseTask> task) {
-  data_manager_->AddDatabaseTask(std::move(task));
+  data_manager_->AddDatabaseTask(std::move(task), true /* internal */);
 }
 
 ServiceWorkerContextWrapper* DatabaseTask::service_worker_context() {
-  DCHECK(data_manager_->service_worker_context_);
-  return data_manager_->service_worker_context_.get();
+  DCHECK(data_manager_->service_worker_context());
+  return data_manager_->service_worker_context().get();
+}
+
+CacheStorageManager* DatabaseTask::cache_manager() {
+  DCHECK(cache_manager_);
+  return cache_manager_.get();
 }
 
 std::set<std::string>& DatabaseTask::ref_counted_unique_ids() {
-  return data_manager_->ref_counted_unique_ids_;
+  return data_manager_->ref_counted_unique_ids();
 }
 
 }  // namespace background_fetch

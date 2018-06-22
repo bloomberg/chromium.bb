@@ -47,19 +47,7 @@ BackgroundFetchTestDataManager::BackgroundFetchTestDataManager(
       storage_partition_(storage_partition),
       mock_fill_response_(mock_fill_response) {}
 
-bool BackgroundFetchTestDataManager::FillServiceWorkerResponse(
-    const BackgroundFetchRequestInfo& request,
-    const url::Origin& origin,
-    ServiceWorkerResponse* response) {
-  return mock_fill_response_
-             ? request.IsResultSuccess()
-             : BackgroundFetchDataManager::FillServiceWorkerResponse(
-                   request, origin, response);
-}
-
-BackgroundFetchTestDataManager::~BackgroundFetchTestDataManager() = default;
-
-void BackgroundFetchTestDataManager::CreateCacheStorageManager() {
+void BackgroundFetchTestDataManager::InitializeOnIOThread() {
   ChromeBlobStorageContext* blob_storage_context(
       ChromeBlobStorageContext::GetFor(browser_context_));
   // Wait for ChromeBlobStorageContext to finish initializing.
@@ -83,10 +71,16 @@ void BackgroundFetchTestDataManager::CreateCacheStorageManager() {
       blob_storage_context->context()->AsWeakPtr());
 }
 
-CacheStorageManager* BackgroundFetchTestDataManager::GetCacheStorageManager() {
-  if (!cache_manager_)
-    CreateCacheStorageManager();
-  return cache_manager_.get();
+bool BackgroundFetchTestDataManager::FillServiceWorkerResponse(
+    const BackgroundFetchRequestInfo& request,
+    const url::Origin& origin,
+    ServiceWorkerResponse* response) {
+  return mock_fill_response_
+             ? request.IsResultSuccess()
+             : BackgroundFetchDataManager::FillServiceWorkerResponse(
+                   request, origin, response);
 }
+
+BackgroundFetchTestDataManager::~BackgroundFetchTestDataManager() = default;
 
 }  // namespace content

@@ -16,14 +16,11 @@ namespace background_fetch {
 GetSettledFetchesTask::GetSettledFetchesTask(
     BackgroundFetchDataManager* data_manager,
     BackgroundFetchRegistrationId registration_id,
-    CacheStorageManager* cache_manager,
     SettledFetchesCallback callback)
     : DatabaseTask(data_manager),
       registration_id_(registration_id),
-      cache_manager_(cache_manager),
       settled_fetches_callback_(std::move(callback)),
       weak_factory_(this) {
-  DCHECK(cache_manager_);
 }
 
 GetSettledFetchesTask::~GetSettledFetchesTask() = default;
@@ -33,7 +30,7 @@ void GetSettledFetchesTask::Start() {
       2u, base::BindOnce(&GetSettledFetchesTask::GetResponses,
                          weak_factory_.GetWeakPtr()));
 
-  cache_manager_->OpenCache(
+  cache_manager()->OpenCache(
       registration_id_.origin(), CacheStorageOwner::kBackgroundFetch,
       registration_id_.unique_id() /* cache_name */,
       base::BindOnce(&GetSettledFetchesTask::DidOpenCache,

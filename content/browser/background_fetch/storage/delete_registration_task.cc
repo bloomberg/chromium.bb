@@ -44,17 +44,28 @@ DeleteRegistrationTask::DeleteRegistrationTask(
     int64_t service_worker_registration_id,
     const url::Origin& origin,
     const std::string& unique_id,
-    CacheStorageManager* cache_manager,
     HandleBackgroundFetchErrorCallback callback)
     : DatabaseTask(data_manager),
       service_worker_registration_id_(service_worker_registration_id),
       origin_(origin),
       unique_id_(unique_id),
-      cache_manager_(cache_manager),
       callback_(std::move(callback)),
       weak_factory_(this) {
-  DCHECK(cache_manager_);
 }
+
+DeleteRegistrationTask::DeleteRegistrationTask(
+    BackgroundFetchDataManager* data_manager,
+    scoped_refptr<CacheStorageManager> cache_manager,
+    int64_t service_worker_registration_id,
+    const url::Origin& origin,
+    const std::string& unique_id,
+    HandleBackgroundFetchErrorCallback callback)
+    : DatabaseTask(data_manager, cache_manager),
+      service_worker_registration_id_(service_worker_registration_id),
+      origin_(origin),
+      unique_id_(unique_id),
+      callback_(std::move(callback)),
+      weak_factory_(this) {}
 
 DeleteRegistrationTask::~DeleteRegistrationTask() = default;
 
@@ -73,7 +84,7 @@ void DeleteRegistrationTask::Start() {
   DidGetRegistration(barrier_closure, {}, SERVICE_WORKER_OK);
 #endif  // DCHECK_IS_ON()
 
-  cache_manager_->DeleteCache(
+  cache_manager()->DeleteCache(
       origin_, CacheStorageOwner::kBackgroundFetch, unique_id_ /* cache_name */,
       base::BindOnce(&DeleteRegistrationTask::DidDeleteCache,
                      weak_factory_.GetWeakPtr(), barrier_closure));

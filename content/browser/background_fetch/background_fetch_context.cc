@@ -52,6 +52,7 @@ BackgroundFetchContext::~BackgroundFetchContext() {
 void BackgroundFetchContext::InitializeOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   service_worker_context_->AddObserver(this);
+  data_manager_->InitializeOnIOThread();
 }
 
 void BackgroundFetchContext::GetRegistration(
@@ -437,6 +438,20 @@ void BackgroundFetchContext::LastObserverGarbageCollected(
   data_manager_->DeleteRegistration(
       registration_id,
       base::BindOnce(&background_fetch::RecordRegistrationDeletedError));
+}
+
+void BackgroundFetchContext::Shutdown() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&BackgroundFetchContext::ShutdownOnIO, this));
+}
+
+void BackgroundFetchContext::ShutdownOnIO() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  data_manager_->ShutdownOnIO();
 }
 
 void BackgroundFetchContext::SetDataManagerForTesting(

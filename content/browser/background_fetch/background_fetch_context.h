@@ -54,8 +54,11 @@ class CONTENT_EXPORT BackgroundFetchContext
       const scoped_refptr<content::CacheStorageContextImpl>&
           cache_storage_context);
 
-  // Adds service worker context observer.
+  // Adds service worker context observer and initializes |data_manager_|.
   void InitializeOnIOThread();
+
+  // Called by the StoragePartitionImpl destructor.
+  void Shutdown();
 
   // Gets the active Background Fetch registration identified by |developer_id|
   // for the given |service_worker_id| and |origin|. The |callback| will be
@@ -122,6 +125,8 @@ class CONTENT_EXPORT BackgroundFetchContext
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
 
   ~BackgroundFetchContext() override;
+
+  void ShutdownOnIO();
 
   // Creates a new Job Controller for the given |registration_id| and |options|,
   // which will start fetching the files that are part of the registration.

@@ -636,7 +636,7 @@ class CacheStorageManagerTest : public testing::Test {
   scoped_refptr<MockSpecialStoragePolicy> quota_policy_;
   scoped_refptr<MockQuotaManager> mock_quota_manager_;
   scoped_refptr<MockCacheStorageQuotaManagerProxy> quota_manager_proxy_;
-  std::unique_ptr<CacheStorageManager> cache_manager_;
+  scoped_refptr<CacheStorageManager> cache_manager_;
 
   CacheStorageCacheHandle callback_cache_handle_;
   int callback_bool_;

@@ -387,11 +387,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
 #endif
 }
 
-// TODO(crbug.com/851229): Disabled due to flakiness on Mac, and MSAN for
-// ChromiumOS and Linux.
 IN_PROC_BROWSER_TEST_F(
     BackgroundFetchBrowserTest,
-    DISABLED_OfflineItemCollection_VerifyResourceDownloadedWhenDownloadTotalLargerThanActualSize) {
+    OfflineItemCollection_VerifyResourceDownloadedWhenDownloadTotalLargerThanActualSize) {
   // Starts a Background Fetch for a single to-be-downloaded file and waits for
   // the fetch to be registered with the offline items collection.
   std::vector<OfflineItem> items;
@@ -424,11 +422,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(offline_item.progress.max.value(), kDownloadedResourceSizeInBytes);
 }
 
-// TODO(crbug.com/851229): Disabled due to flakiness on Mac, and MSAN for
-// ChromiumOS and Linux.
 IN_PROC_BROWSER_TEST_F(
     BackgroundFetchBrowserTest,
-    DISABLED_OfflineItemCollection_VerifyResourceDownloadedWhenDownloadTotalSmallerThanActualSize) {
+    OfflineItemCollection_VerifyResourceDownloadedWhenDownloadTotalSmallerThanActualSize) {
   // Starts a Background Fetch for a single to-be-downloaded file and waits for
   // the fetch to be registered with the offline items collection.
   std::vector<OfflineItem> items;

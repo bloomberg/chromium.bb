@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/cache_storage_context.h"
 #include "content/public/browser/cache_storage_usage_info.h"
@@ -98,7 +99,7 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
   bool is_incognito_ = false;
 
   // Only accessed on the IO thread.
-  std::unique_ptr<CacheStorageManager> cache_manager_;
+  scoped_refptr<CacheStorageManager> cache_manager_;
 };
 
 }  // namespace content

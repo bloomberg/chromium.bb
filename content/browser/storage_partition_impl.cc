@@ -540,6 +540,9 @@ StoragePartitionImpl::~StoragePartitionImpl() {
   if (GetPaymentAppContext())
     GetPaymentAppContext()->Shutdown();
 
+  if (GetBackgroundFetchContext())
+    GetBackgroundFetchContext()->Shutdown();
+
   if (GetAppCacheService()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
