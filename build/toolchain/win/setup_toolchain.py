@@ -207,6 +207,7 @@ def main():
   vc_lib_atlmfc_path = ''
   vc_lib_um_path = ''
   include = ''
+  lib = ''
 
   # TODO(scottmg|goma): Do we need an equivalent of
   # ninja_use_custom_environment_files?
@@ -247,10 +248,18 @@ def main():
       except ValueError:
         pass
 
+      lib = [p.replace('"', r'\"') for p in env['LIB'].split(';') if p]
+      # Make lib path relative to builddir when cwd and sdk in same drive.
+      try:
+        lib = map(os.path.relpath, lib)
+      except ValueError:
+        pass
+
       def q(s):  # Quote s if it contains spaces or other weird characters.
         return s if re.match(r'^[a-zA-Z0-9._/\\:-]*$', s) else '"' + s + '"'
       include_I = ' '.join([q('/I' + i) for i in include])
       include_imsvc = ' '.join([q('-imsvc' + i) for i in include])
+      libpath_flags = ' '.join([q('-libpath:' + i) for i in lib])
 
       if (environment_block_name != ''):
         env_block = _FormatAsEnvironmentBlock(env)
@@ -275,6 +284,9 @@ def main():
   assert vc_lib_um_path
   print 'vc_lib_um_path = ' + gn_helpers.ToGNString(vc_lib_um_path)
   print 'paths = ' + gn_helpers.ToGNString(env['PATH'])
+  assert libpath_flags
+  print 'libpath_flags = ' + gn_helpers.ToGNString(libpath_flags)
+
 
 if __name__ == '__main__':
   main()
