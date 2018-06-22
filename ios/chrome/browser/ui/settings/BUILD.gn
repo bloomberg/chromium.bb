@@ -420,6 +420,7 @@ source_set("unified_consent_eg_tests") {
     "//base/test:test_support",
     "//components/signin/core/browser",
     "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/test/earl_grey:test_support",
     "//ui/base",
   ]
