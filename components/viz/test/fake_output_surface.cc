@@ -97,11 +97,11 @@ gfx::BufferFormat FakeOutputSurface::GetOverlayBufferFormat() const {
 }
 
 bool FakeOutputSurface::IsDisplayedAsOverlayPlane() const {
-  return false;
+  return overlay_texture_id_ != 0;
 }
 
 unsigned FakeOutputSurface::GetOverlayTextureId() const {
-  return 0;
+  return overlay_texture_id_;
 }
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -112,7 +112,7 @@ gpu::VulkanSurface* FakeOutputSurface::GetVulkanSurface() {
 #endif
 
 unsigned FakeOutputSurface::UpdateGpuFence() {
-  return 0;
+  return gpu_fence_id_;
 }
 
 }  // namespace viz

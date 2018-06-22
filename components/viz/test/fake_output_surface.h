@@ -84,6 +84,12 @@ class FakeOutputSurface : public OutputSurface {
     framebuffer_format_ = format;
   }
 
+  void set_gpu_fence_id(unsigned gpu_fence_id) { gpu_fence_id_ = gpu_fence_id; }
+
+  void set_overlay_texture_id(unsigned overlay_texture_id) {
+    overlay_texture_id_ = overlay_texture_id;
+  }
+
   void SetOverlayCandidateValidator(OverlayCandidateValidator* validator) {
     overlay_candidate_validator_ = validator;
   }
@@ -111,6 +117,8 @@ class FakeOutputSurface : public OutputSurface {
   bool has_external_stencil_test_ = false;
   GLint framebuffer_ = 0;
   GLenum framebuffer_format_ = 0;
+  unsigned gpu_fence_id_ = 0;
+  unsigned overlay_texture_id_ = 0;
   OverlayCandidateValidator* overlay_candidate_validator_ = nullptr;
   gfx::ColorSpace last_reshape_color_space_;
   gfx::Rect last_set_draw_rectangle_;
