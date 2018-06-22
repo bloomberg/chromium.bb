@@ -9,6 +9,8 @@
  */
 (function() {
   var internal = mojo.internal;
+  var textDecoder = new TextDecoder('utf-8');
+  var textEncoder = new TextEncoder('utf-8');
 
   /**
    * Decodes the UTF8 string from the given buffer.
@@ -16,7 +18,7 @@
    * @return {string} The corresponding JavaScript string.
    */
   function decodeUtf8String(buffer) {
-    return decodeURIComponent(escape(String.fromCharCode.apply(null, buffer)));
+    return textDecoder.decode(buffer);
   }
 
   /**
@@ -28,12 +30,11 @@
    * @return {number} The number of bytes written to |outputBuffer|.
    */
   function encodeUtf8String(str, outputBuffer) {
-    var utf8String = unescape(encodeURIComponent(str));
-    if (outputBuffer.length < utf8String.length)
+    const utf8Buffer = textEncoder.encode(str);
+    if (outputBuffer.length < utf8Buffer.length)
       throw new Error("Buffer too small for encodeUtf8String");
-    for (var i = 0; i < outputBuffer.length && i < utf8String.length; i++)
-      outputBuffer[i] = utf8String.charCodeAt(i);
-    return i;
+    outputBuffer.set(utf8Buffer);
+    return utf8Buffer.length;
   }
 
   /**
@@ -41,8 +42,7 @@
    * |str| would occupy.
    */
   function utf8Length(str) {
-    var utf8String = unescape(encodeURIComponent(str));
-    return utf8String.length;
+    return textEncoder.encode(str).length;
   }
 
   internal.decodeUtf8String = decodeUtf8String;

@@ -270,6 +270,21 @@ test(() => {
 }, 'utf8');
 
 test(() => {
+  var str = "Hello world ".repeat(100000);
+  var messageName = 42;
+  var payloadSize = 1200000;
+
+  var builder = new mojo.internal.MessageV0Builder(messageName, payloadSize);;
+  var encoder = builder.createEncoder(1200000);
+  encoder.encodeStringPointer(str);
+  var message = builder.finish();
+
+  var reader = new mojo.internal.MessageReader(message);
+  var str2 = reader.decoder.decodeStringPointer();
+  assert_equals(str2, str);
+}, 'very long utf8');
+
+test(() => {
   var encoder = new mojo.internal.MessageV0Builder(42, 24).createEncoder(8);
   function DummyClass() {};
   var testCases = [
