@@ -440,28 +440,6 @@
             ]
         }
     ],
-    "AutofillCreditCardSigninPromo": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledThree",
-                    "params": {
-                        "impression_limit": "3"
-                    },
-                    "enable_features": [
-                        "AutofillCreditCardSigninPromo"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillExpandedPopupViews": [
         {
             "platforms": [
@@ -571,24 +549,6 @@
             "experiments": [
                 {
                     "name": "Enabled"
-                }
-            ]
-        }
-    ],
-    "AutofillUpstreamRequestCvcIfMissing": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledWithGoogleBranding_Launched",
-                    "enable_features": [
-                        "AutofillUpstreamRequestCvcIfMissing"
-                    ]
                 }
             ]
         }
