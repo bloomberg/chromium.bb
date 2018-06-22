@@ -13,6 +13,10 @@
 /* Use libxml2 instead of Expat */
 #define ENABLE_LIBXML2 1
 
+/* Define to 1 if translation of program messages to the user's native
+   language is requested. */
+#define ENABLE_NLS 1
+
 /* Additional font directories */
 #define FC_ADD_FONTS "yes"
 
@@ -23,7 +27,7 @@
 #define FC_DEFAULT_FONTS "/usr/share/fonts"
 
 /* The type of len parameter of the gperf hash/lookup function */
-#define FC_GPERF_SIZE_T unsigned int
+#define FC_GPERF_SIZE_T size_t
 
 /* Define to nothing if C supports flexible array members, and to 1 if it does
    not. That way, with a declaration like `struct s { int n; double
@@ -33,6 +37,21 @@
    instead. Don't use 'offsetof (struct s, d[0])', as this doesn't work with
    MSVC and with C++ compilers. */
 #define FLEXIBLE_ARRAY_MEMBER /**/
+
+/* Gettext package */
+#define GETTEXT_PACKAGE "fontconfig"
+
+/* Define to 1 if you have the Mac OS X function CFLocaleCopyCurrent in the
+   CoreFoundation framework. */
+/* #undef HAVE_CFLOCALECOPYCURRENT */
+
+/* Define to 1 if you have the Mac OS X function CFPreferencesCopyAppValue in
+   the CoreFoundation framework. */
+/* #undef HAVE_CFPREFERENCESCOPYAPPVALUE */
+
+/* Define if the GNU dcgettext() function is already present or preinstalled.
+   */
+#define HAVE_DCGETTEXT 1
 
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
@@ -53,14 +72,11 @@
 /* Define to 1 if you have the `fstatvfs' function. */
 #define HAVE_FSTATVFS 1
 
-/* FT_Bitmap_Size structure includes y_ppem field */
-#define HAVE_FT_BITMAP_SIZE_Y_PPEM 1
+/* Define to 1 if you have the `FT_Done_MM_Var' function. */
+/* #undef HAVE_FT_DONE_MM_VAR */
 
 /* Define to 1 if you have the `FT_Get_BDF_Property' function. */
 #define HAVE_FT_GET_BDF_PROPERTY 1
-
-/* Define to 1 if you have the `FT_Get_Next_Char' function. */
-#define HAVE_FT_GET_NEXT_CHAR 1
 
 /* Define to 1 if you have the `FT_Get_PS_Font_Info' function. */
 #define HAVE_FT_GET_PS_FONT_INFO 1
@@ -70,9 +86,6 @@
 
 /* Define to 1 if you have the `FT_Has_PS_Glyph_Names' function. */
 #define HAVE_FT_HAS_PS_GLYPH_NAMES 1
-
-/* Define to 1 if you have the `FT_Select_Size' function. */
-#define HAVE_FT_SELECT_SIZE 1
 
 /* Define to 1 if you have the `getexecname' function. */
 /* #undef HAVE_GETEXECNAME */
@@ -88,6 +101,12 @@
 
 /* Define to 1 if you have the `getprogname' function. */
 /* #undef HAVE_GETPROGNAME */
+
+/* Define if the GNU gettext() function is already present or preinstalled. */
+#define HAVE_GETTEXT 1
+
+/* Define if you have the iconv() function and it works. */
+/* #undef HAVE_ICONV */
 
 /* Have Intel __sync_* atomic primitives */
 #define HAVE_INTEL_ATOMIC_PRIMITIVES 1
@@ -161,6 +180,12 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #define HAVE_STDLIB_H 1
 
+/* Define to 1 if you have the `strerror' function. */
+#define HAVE_STRERROR 1
+
+/* Define to 1 if you have the `strerror_r' function. */
+#define HAVE_STRERROR_R 1
+
 /* Define to 1 if you have the <strings.h> header file. */
 #define HAVE_STRINGS_H 1
 
@@ -214,12 +239,6 @@
 /* Define to 1 if you have the <sys/vfs.h> header file. */
 #define HAVE_SYS_VFS_H 1
 
-/* Define to 1 if `usLowerOpticalPointSize' is a member of `TT_OS2'. */
-#define HAVE_TT_OS2_USLOWEROPTICALPOINTSIZE 1
-
-/* Define to 1 if `usUpperOpticalPointSize' is a member of `TT_OS2'. */
-#define HAVE_TT_OS2_USUPPEROPTICALPOINTSIZE 1
-
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
 
@@ -251,7 +270,7 @@
 #define PACKAGE_NAME "fontconfig"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "fontconfig 2.12.6"
+#define PACKAGE_STRING "fontconfig 2.13.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "fontconfig"
@@ -260,7 +279,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.12.6"
+#define PACKAGE_VERSION "2.13.0"
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
@@ -313,7 +332,7 @@
 
 
 /* Version number of package */
-#define VERSION "2.12.6"
+#define VERSION "2.13.0"
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
