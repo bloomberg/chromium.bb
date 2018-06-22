@@ -71,8 +71,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
 
   mojom::VoiceInteractionObserverPtr ptr;
   voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
-  Shell::Get()->voice_interaction_controller()->AddVoiceInteractionObserver(
-      std::move(ptr));
+  Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   set_ink_drop_base_color(kShelfInkDropBaseColor);
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);

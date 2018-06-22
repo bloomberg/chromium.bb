@@ -47,7 +47,7 @@ class TestVoiceInteractionObserver : public mojom::VoiceInteractionObserver {
   void SetVoiceInteractionController(VoiceInteractionController* controller) {
     mojom::VoiceInteractionObserverPtr ptr;
     voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
-    controller->AddVoiceInteractionObserver(std::move(ptr));
+    controller->AddObserver(std::move(ptr));
   }
 
  private:

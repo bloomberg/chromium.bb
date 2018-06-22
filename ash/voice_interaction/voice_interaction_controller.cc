@@ -17,11 +17,6 @@ void VoiceInteractionController::BindRequest(
   binding_.Bind(std::move(request));
 }
 
-void VoiceInteractionController::AddVoiceInteractionObserver(
-    mojom::VoiceInteractionObserverPtr observer) {
-  observers_.AddPtr(std::move(observer));
-}
-
 void VoiceInteractionController::NotifyStatusChanged(
     mojom::VoiceInteractionState state) {
   voice_interaction_state_ = state;
@@ -66,6 +61,11 @@ void VoiceInteractionController::IsSettingEnabled(
 void VoiceInteractionController::IsSetupCompleted(
     IsSetupCompletedCallback callback) {
   std::move(callback).Run(setup_completed_);
+}
+
+void VoiceInteractionController::AddObserver(
+    mojom::VoiceInteractionObserverPtr observer) {
+  observers_.AddPtr(std::move(observer));
 }
 
 void VoiceInteractionController::FlushForTesting() {
