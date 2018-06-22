@@ -5170,6 +5170,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   } else {
     UIImageView* pageScreenshot = [self pageOpenCloseAnimationView];
     tab.view.frame = self.contentArea.bounds;
+    // Setting the frame here doesn't trigger a layout pass. Trigger it manually
+    // if needed. Not triggering it can create problem if the previous frame
+    // wasn't the right one, for example in https://crbug.com/852106.
+    [tab.view layoutIfNeeded];
     pageScreenshot.image = SnapshotTabHelper::FromWebState(tab.webState)
                                ->UpdateSnapshot(/*with_overlays=*/true,
                                                 /*visible_frame_only=*/true);

@@ -3823,14 +3823,19 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // This will be resized later, but matching the final frame will minimize
   // re-rendering. Use the screen size because the application's key window
   // may still be nil.
+  CGRect containerViewFrame = CGRectZero;
+  if (UIApplication.sharedApplication.keyWindow) {
+    containerViewFrame = UIApplication.sharedApplication.keyWindow.bounds;
+  } else {
+    containerViewFrame = UIScreen.mainScreen.bounds;
+  }
   if (base::FeatureList::IsEnabled(
           web::features::kBrowserContainerFullscreen)) {
-    _containerView.frame = [UIScreen mainScreen].bounds;
+    _containerView.frame = containerViewFrame;
   } else {
     // TODO(crbug.com/688259): Stop subtracting status bar height.
     CGFloat statusBarHeight =
         [[UIApplication sharedApplication] statusBarFrame].size.height;
-    CGRect containerViewFrame = [UIScreen mainScreen].bounds;
     containerViewFrame.origin.y += statusBarHeight;
     containerViewFrame.size.height -= statusBarHeight;
     _containerView.frame = containerViewFrame;
