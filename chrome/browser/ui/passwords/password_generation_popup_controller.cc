@@ -4,16 +4,3 @@
 
 #include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
 
-namespace autofill {
-
-// static
-constexpr int PasswordGenerationPopupController::kHelpVerticalPadding = 15;
-
-// static
-constexpr int PasswordGenerationPopupController::kHorizontalPadding = 16;
-
-// static
-constexpr int PasswordGenerationPopupController::kPopupPasswordSectionHeight =
-    62;
-
-}  // namespace autofill

@@ -29,16 +29,15 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/geometry/rect.h"
 
+class PasswordGenerationPopupObserver;
+class PasswordGenerationPopupControllerImpl;
 class Profile;
 
 namespace autofill {
-class PasswordGenerationPopupObserver;
-class PasswordGenerationPopupControllerImpl;
-
 namespace password_generation {
 struct PasswordGenerationUIData;
-}
-}
+}  // namespace password_generation
+}  // namespace autofill
 
 namespace content {
 class WebContents;
@@ -155,7 +154,7 @@ class ChromePasswordManagerClient
       autofill::AutofillClient* autofill_client);
 
   // Observer for PasswordGenerationPopup events. Used for testing.
-  void SetTestObserver(autofill::PasswordGenerationPopupObserver* observer);
+  void SetTestObserver(PasswordGenerationPopupObserver* observer);
 
   static void BindCredentialManager(
       password_manager::mojom::CredentialManagerRequest request,
@@ -234,11 +233,10 @@ class ChromePasswordManagerClient
       password_manager_client_bindings_;
 
   // Observer for password generation popup.
-  autofill::PasswordGenerationPopupObserver* observer_;
+  PasswordGenerationPopupObserver* observer_;
 
   // Controls the popup
-  base::WeakPtr<
-    autofill::PasswordGenerationPopupControllerImpl> popup_controller_;
+  base::WeakPtr<PasswordGenerationPopupControllerImpl> popup_controller_;
 
   // Set to false to disable password saving (will no longer ask if you
   // want to save passwords and also won't fill the passwords).

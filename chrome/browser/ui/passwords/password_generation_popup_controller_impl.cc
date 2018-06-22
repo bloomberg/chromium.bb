@@ -44,13 +44,11 @@
 #include "chrome/browser/android/preferences/preferences_launcher.h"
 #endif
 
-namespace autofill {
-
 base::WeakPtr<PasswordGenerationPopupControllerImpl>
 PasswordGenerationPopupControllerImpl::GetOrCreate(
     base::WeakPtr<PasswordGenerationPopupControllerImpl> previous,
     const gfx::RectF& bounds,
-    const PasswordForm& form,
+    const autofill::PasswordForm& form,
     const base::string16& generation_element,
     uint32_t max_length,
     password_manager::PasswordManager* password_manager,
@@ -76,14 +74,14 @@ PasswordGenerationPopupControllerImpl::GetOrCreate(
 
 PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
     const gfx::RectF& bounds,
-    const PasswordForm& form,
+    const autofill::PasswordForm& form,
     const base::string16& generation_element,
     uint32_t max_length,
     const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
     PasswordGenerationPopupObserver* observer,
     content::WebContents* web_contents,
     gfx::NativeView container_view)
-    : view_(NULL),
+    : view_(nullptr),
       form_(form),
       driver_(driver),
       observer_(observer),
@@ -95,7 +93,7 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
       // TODO(estade): use correct text direction.
       controller_common_(bounds, base::i18n::LEFT_TO_RIGHT, container_view),
       password_selected_(false),
-      display_password_(false),
+      state_(kOfferGeneration),
       web_contents_(web_contents),
       weak_ptr_factory_(this) {
   base::string16 link =
@@ -144,7 +142,7 @@ bool PasswordGenerationPopupControllerImpl::PossiblyAcceptPassword() {
 }
 
 void PasswordGenerationPopupControllerImpl::PasswordSelected(bool selected) {
-  if (!display_password_ || selected == password_selected_)
+  if (state_ == kEditGeneratedPassword || selected == password_selected_)
     return;
 
   password_selected_ = selected;
@@ -152,7 +150,7 @@ void PasswordGenerationPopupControllerImpl::PasswordSelected(bool selected) {
 }
 
 void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
-  if (!display_password_)
+  if (state_ != kOfferGeneration)
     return;
 
   driver_->GeneratedPasswordAccepted(current_password_);
@@ -176,14 +174,16 @@ void PasswordGenerationPopupControllerImpl::CalculateBounds() {
       container_view(), IsRTL());
 }
 
-void PasswordGenerationPopupControllerImpl::Show(bool display_password) {
-  display_password_ = display_password;
-  if (display_password_ && current_password_.empty()) {
+void PasswordGenerationPopupControllerImpl::Show(GenerationState state) {
+  // When switching from editing to generation state, regenerate the password.
+  if (state == kOfferGeneration &&
+      (state_ != state || current_password_.empty())) {
     current_password_ =
         driver_->GetPasswordGenerationManager()->GeneratePassword(
             web_contents_->GetLastCommittedURL().GetOrigin(), form_signature_,
             field_signature_, max_length_);
   }
+  state_ = state;
 
   if (!view_) {
     view_ = PasswordGenerationPopupView::Create(this);
@@ -202,13 +202,20 @@ void PasswordGenerationPopupControllerImpl::Show(bool display_password) {
     view_->UpdateBoundsAndRedrawPopup();
   }
 
-  static_cast<ContentAutofillDriver*>(driver_->GetAutofillDriver())
+  static_cast<autofill::ContentAutofillDriver*>(driver_->GetAutofillDriver())
       ->RegisterKeyPressHandler(base::BindRepeating(
           &PasswordGenerationPopupControllerImpl::HandleKeyPressEvent,
           base::Unretained(this)));
 
   if (observer_)
-    observer_->OnPopupShown(display_password_);
+    observer_->OnPopupShown(state_);
+}
+
+void PasswordGenerationPopupControllerImpl::UpdatePassword(
+    base::string16 new_password) {
+  current_password_ = std::move(new_password);
+  if (view_)
+    view_->UpdatePasswordValue();
 }
 
 void PasswordGenerationPopupControllerImpl::HideAndDestroy() {
@@ -217,7 +224,7 @@ void PasswordGenerationPopupControllerImpl::HideAndDestroy() {
 
 void PasswordGenerationPopupControllerImpl::Hide() {
   if (driver_) {
-    static_cast<ContentAutofillDriver*>(driver_->GetAutofillDriver())
+    static_cast<autofill::ContentAutofillDriver*>(driver_->GetAutofillDriver())
         ->RemoveKeyPressHandler();
   }
 
@@ -305,20 +312,23 @@ int PasswordGenerationPopupControllerImpl::GetElidedLabelWidthForRow(int row) {
 }
 #endif
 
-bool PasswordGenerationPopupControllerImpl::display_password() const {
-  return display_password_;
+PasswordGenerationPopupController::GenerationState
+PasswordGenerationPopupControllerImpl::state() const {
+  return state_;
 }
 
 bool PasswordGenerationPopupControllerImpl::password_selected() const {
   return password_selected_;
 }
 
-base::string16 PasswordGenerationPopupControllerImpl::password() const {
+const base::string16& PasswordGenerationPopupControllerImpl::password() const {
   return current_password_;
 }
 
 base::string16 PasswordGenerationPopupControllerImpl::SuggestedText() {
-  return l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_SUGGESTION);
+  return l10n_util::GetStringUTF16(
+      state_ == kOfferGeneration ? IDS_PASSWORD_GENERATION_SUGGESTION
+                                 : IDS_PASSWORD_GENERATION_EDITING_SUGGESTION);
 }
 
 const base::string16& PasswordGenerationPopupControllerImpl::HelpText() {
@@ -328,5 +338,3 @@ const base::string16& PasswordGenerationPopupControllerImpl::HelpText() {
 const gfx::Range& PasswordGenerationPopupControllerImpl::HelpTextLinkRange() {
   return link_range_;
 }
-
-}  // namespace autofill

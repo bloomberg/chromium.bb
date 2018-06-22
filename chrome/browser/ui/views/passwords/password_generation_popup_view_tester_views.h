@@ -8,8 +8,6 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_view_tester.h"
 
-namespace autofill {
-
 class PasswordGenerationPopupViewViews;
 
 class PasswordGenerationPopupViewTesterViews
@@ -27,7 +25,5 @@ class PasswordGenerationPopupViewTesterViews
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationPopupViewTesterViews);
 };
-
-}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_GENERATION_POPUP_VIEW_TESTER_VIEWS_H_

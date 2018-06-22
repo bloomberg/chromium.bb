@@ -33,10 +33,12 @@ class PasswordManagerDriver;
 }  // namespace password_manager
 
 namespace autofill {
+struct PasswordForm;
+struct Suggestion;
+}  // namespace autofill
 
 class PasswordGenerationPopupObserver;
 class PasswordGenerationPopupView;
-struct Suggestion;
 
 // This class controls a PasswordGenerationPopupView. It is responsible for
 // determining the location of the popup, handling keypress events while the
@@ -57,7 +59,7 @@ class PasswordGenerationPopupControllerImpl
   static base::WeakPtr<PasswordGenerationPopupControllerImpl> GetOrCreate(
       base::WeakPtr<PasswordGenerationPopupControllerImpl> previous,
       const gfx::RectF& bounds,
-      const PasswordForm& form,
+      const autofill::PasswordForm& form,
       const base::string16& generation_element,
       uint32_t max_length,
       password_manager::PasswordManager* password_manager,
@@ -68,10 +70,10 @@ class PasswordGenerationPopupControllerImpl
   ~PasswordGenerationPopupControllerImpl() override;
 
   // Create a PasswordGenerationPopupView if one doesn't already exist.
-  // If |display_password| is true, a generated password is shown that can be
-  // selected by the user. Otherwise just the text explaining generated
-  // passwords is shown. Idempotent.
-  void Show(bool display_password);
+  void Show(GenerationState state);
+
+  // Update the password to be displayed in the UI.
+  void UpdatePassword(base::string16 new_password);
 
   // Hides the popup and destroys |this|.
   void HideAndDestroy();
@@ -79,7 +81,7 @@ class PasswordGenerationPopupControllerImpl
  protected:
   PasswordGenerationPopupControllerImpl(
       const gfx::RectF& bounds,
-      const PasswordForm& form,
+      const autofill::PasswordForm& form,
       const base::string16& generation_element,
       uint32_t max_length,
       const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
@@ -112,9 +114,9 @@ class PasswordGenerationPopupControllerImpl
   int GetElidedLabelWidthForRow(int row) override;
 #endif
 
-  bool display_password() const override;
+  GenerationState state() const override;
   bool password_selected() const override;
-  base::string16 password() const override;
+  const base::string16& password() const override;
   base::string16 SuggestedText() override;
   const base::string16& HelpText() override;
   const gfx::Range& HelpTextLinkRange() override;
@@ -133,7 +135,8 @@ class PasswordGenerationPopupControllerImpl
   // wrapping.
   void CalculateBounds();
 
-  PasswordForm form_;
+  autofill::PasswordForm form_;
+
   base::WeakPtr<password_manager::PasswordManagerDriver> driver_;
 
   // May be NULL.
@@ -150,23 +153,25 @@ class PasswordGenerationPopupControllerImpl
   uint32_t max_length_;
 
   // Contains common popup data.
-  const PopupControllerCommon controller_common_;
+  const autofill::PopupControllerCommon controller_common_;
 
   // Help text and the range in the text that corresponds to the saved passwords
   // link.
   base::string16 help_text_;
   gfx::Range link_range_;
 
+  // The password value to be displayed in the UI.
   base::string16 current_password_;
+  // Whether the row with the password is currently selected/highlighted.
   bool password_selected_;
 
-  // If a password will be shown in this popup.
-  bool display_password_;
+  // The state of the generation popup.
+  GenerationState state_;
 
   // Bounds for all the elements of the popup.
   gfx::Rect popup_bounds_;
 
-  PopupViewCommon view_common_;
+  autofill::PopupViewCommon view_common_;
 
   content::WebContents* const web_contents_;
 
@@ -174,7 +179,5 @@ class PasswordGenerationPopupControllerImpl
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationPopupControllerImpl);
 };
-
-}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_PASSWORD_GENERATION_POPUP_CONTROLLER_IMPL_H_

@@ -5,15 +5,14 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_PASSWORD_GENERATION_POPUP_OBSERVER_H_
 #define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_GENERATION_POPUP_OBSERVER_H_
 
-namespace autofill {
+#include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
 
 // Observer for PasswordGenerationPopup events. Currently only used for testing.
 class PasswordGenerationPopupObserver {
  public:
-  virtual void OnPopupShown(bool password_visible) = 0;
+  virtual void OnPopupShown(
+      PasswordGenerationPopupController::GenerationState state) = 0;
   virtual void OnPopupHidden() = 0;
 };
-
-}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_PASSWORD_GENERATION_POPUP_OBSERVER_H_

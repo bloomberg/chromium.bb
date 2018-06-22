@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
                        MouseMovementInEditingPopup) {
   controller_ = new autofill::TestPasswordGenerationPopupController(
       GetWebContents(), GetNativeView());
-  controller_->Show(false /* display_password */);
+  controller_->Show(PasswordGenerationPopupController::kEditGeneratedPassword);
 
   gfx::Point center_point =
       static_cast<PasswordGenerationPopupController*>(controller_)
@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
 IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest, InvalidContainerView) {
   controller_ = new autofill::TestPasswordGenerationPopupController(
       GetWebContents(), NULL);
-  controller_->Show(true /* display password */);
+  controller_->Show(PasswordGenerationPopupController::kOfferGeneration);
 }
 
 // Verify that destroying web contents with visible popup does not crash.
@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
                        CloseWebContentsWithVisiblePopup) {
   controller_ = new autofill::TestPasswordGenerationPopupController(
       GetWebContents(), GetNativeView());
-  controller_->Show(false);
+  controller_->Show(PasswordGenerationPopupController::kEditGeneratedPassword);
   GetWebContents()->Close();
 }
 
