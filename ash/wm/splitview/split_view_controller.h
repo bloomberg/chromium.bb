@@ -5,6 +5,7 @@
 #ifndef ASH_WM_SPLITSVIEW_SPLIT_VIEW_CONTROLLER_H_
 #define ASH_WM_SPLITSVIEW_SPLIT_VIEW_CONTROLLER_H_
 
+#include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/interfaces/split_view.mojom.h"
@@ -44,7 +45,8 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
                                        public ::wm::ActivationChangeObserver,
                                        public ShellObserver,
                                        public display::DisplayObserver,
-                                       public TabletModeObserver {
+                                       public TabletModeObserver,
+                                       public AccessibilityObserver {
  public:
   enum State { NO_SNAP, LEFT_SNAPPED, RIGHT_SNAPPED, BOTH_SNAPPED };
 
@@ -177,6 +179,9 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
 
   // TabletModeObserver:
   void OnTabletModeEnding() override;
+
+  // AccessibilityObserver:
+  void OnAccessibilityStatusChanged() override;
 
   aura::Window* left_window() { return left_window_; }
   aura::Window* right_window() { return right_window_; }

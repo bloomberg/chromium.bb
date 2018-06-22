@@ -7,6 +7,7 @@
 #include <cmath>
 #include <memory>
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -283,11 +284,13 @@ class SplitViewController::TabDraggedWindowObserver
 };
 
 SplitViewController::SplitViewController() {
+  Shell::Get()->accessibility_controller()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
 }
 
 SplitViewController::~SplitViewController() {
   display::Screen::GetScreen()->RemoveObserver(this);
+  Shell::Get()->accessibility_controller()->RemoveObserver(this);
   EndSplitView();
 }
 
@@ -297,11 +300,18 @@ bool SplitViewController::ShouldAllowSplitView() {
           switches::kAshDisableTabletSplitView)) {
     return false;
   }
+
   if (!Shell::Get()
            ->tablet_mode_controller()
            ->IsTabletModeWindowManagerEnabled()) {
     return false;
   }
+
+  // TODO(crubg.com/853588): Disallow window dragging and split screen while
+  // ChromeVox is on until they are in a usable state.
+  if (Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled())
+    return false;
+
   return true;
 }
 
@@ -883,6 +893,13 @@ void SplitViewController::OnDisplayMetricsChanged(
 
 void SplitViewController::OnTabletModeEnding() {
   EndSplitView();
+}
+
+void SplitViewController::OnAccessibilityStatusChanged() {
+  // TODO(crubg.com/853588): Exit split screen if ChromeVox is turned on until
+  // they are compatible.
+  if (Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled())
+    EndSplitView();
 }
 
 void SplitViewController::StartObserving(aura::Window* window) {
