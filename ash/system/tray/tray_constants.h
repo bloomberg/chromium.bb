@@ -167,15 +167,15 @@ constexpr int kUnifiedSystemInfoSpacing = 8;
 
 // Constants used in FeaturePodsView of UnifiedSystemTray.
 constexpr gfx::Size kUnifiedFeaturePodIconSize(48, 48);
-constexpr gfx::Size kUnifiedFeaturePodSize(80, 88);
+constexpr gfx::Size kUnifiedFeaturePodSize(84, 88);
 constexpr gfx::Size kUnifiedFeaturePodCollapsedSize(48, 48);
 constexpr gfx::Insets kUnifiedFeaturePodIconPadding(4);
 constexpr gfx::Insets kUnifiedFeaturePodHoverPadding(2);
 constexpr int kUnifiedFeaturePodSpacing = 6;
 constexpr int kUnifiedFeaturePodHoverRadius = 4;
 constexpr int kUnifiedFeaturePodVerticalPadding = 28;
-constexpr int kUnifiedFeaturePodHorizontalSidePadding = 28;
-constexpr int kUnifiedFeaturePodHorizontalMiddlePadding = 32;
+constexpr int kUnifiedFeaturePodHorizontalSidePadding = 26;
+constexpr int kUnifiedFeaturePodHorizontalMiddlePadding = 28;
 constexpr int kUnifiedFeaturePodCollapsedVerticalPadding = 16;
 constexpr int kUnifiedFeaturePodCollapsedHorizontalPadding = 24;
 constexpr int kUnifiedFeaturePodItemsInRow = 3;
