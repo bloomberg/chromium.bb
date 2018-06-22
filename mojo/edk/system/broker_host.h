@@ -13,8 +13,8 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
 #include "mojo/edk/embedder/process_error_callback.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel.h"
+#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/scoped_process_handle.h"
 
 namespace mojo {

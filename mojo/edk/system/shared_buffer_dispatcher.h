@@ -12,8 +12,8 @@
 
 #include "base/macros.h"
 #include "base/memory/platform_shared_memory_region.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/dispatcher.h"
+#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 
 namespace mojo {

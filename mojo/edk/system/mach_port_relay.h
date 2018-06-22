@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/process/port_provider_mac.h"
 #include "base/synchronization/lock.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel.h"
+#include "mojo/edk/system/scoped_platform_handle.h"
 
 namespace mojo {
 namespace edk {

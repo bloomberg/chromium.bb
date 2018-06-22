@@ -13,10 +13,10 @@
 #include "base/logging.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/broker_messages.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/platform_handle_utils.h"
+#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/public/cpp/platform/socket_utils_posix.h"
 
 namespace mojo {

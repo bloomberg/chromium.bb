@@ -21,7 +21,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "base/win/win_util.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/edk/system/scoped_platform_handle.h"
 
 namespace mojo {
 namespace edk {
