@@ -25,6 +25,7 @@ class PasswordAccessoryViewAndroid : public PasswordAccessoryViewInterface {
   // PasswordAccessoryViewInterface:
   void OnItemsAvailable(const GURL& origin,
                         const std::vector<AccessoryItem>& items) override;
+  void OnAutomaticGenerationStatusChanged(bool available) override;
 
   // Called from Java via JNI:
   void OnFillingTriggered(
@@ -36,6 +37,8 @@ class PasswordAccessoryViewAndroid : public PasswordAccessoryViewInterface {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<_jstring*>& selectedOption);
+  void OnGenerationRequested(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj);
 
  private:
   // The controller provides data for this view and owns it.

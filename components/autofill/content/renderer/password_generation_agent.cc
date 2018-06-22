@@ -547,18 +547,24 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
   if (!generation_element_.IsNull())
     generation_element_.SetShouldRevealPassword(false);
 
-  if (node.IsNull() || !node.IsElementNode())
+  if (node.IsNull() || !node.IsElementNode()) {
+    AutomaticGenerationStatusChanged(false);
     return false;
+  }
 
   const blink::WebElement web_element = node.ToConst<blink::WebElement>();
-  if (!web_element.GetDocument().GetFrame())
+  if (!web_element.GetDocument().GetFrame()) {
+    AutomaticGenerationStatusChanged(false);
     return false;
+  }
 
   const blink::WebInputElement* element = ToWebInputElement(&web_element);
   if (element && element->IsPasswordFieldForAutofill())
     last_focused_password_element_ = *element;
-  if (!element || *element != generation_element_)
+  if (!element || *element != generation_element_) {
+    AutomaticGenerationStatusChanged(false);
     return false;
+  }
 
   if (password_is_generated_) {
     if (generation_element_.Value().IsEmpty()) {
@@ -579,6 +585,7 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
     return true;
   }
 
+  AutomaticGenerationStatusChanged(false);
   return false;
 }
 

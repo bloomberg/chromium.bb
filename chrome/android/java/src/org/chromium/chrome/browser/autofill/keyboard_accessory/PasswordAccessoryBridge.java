@@ -4,22 +4,31 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.ui.base.WindowAndroid;
 
 class PasswordAccessoryBridge {
     private final KeyboardAccessoryData.PropertyProvider<Item> mItemProvider =
             new KeyboardAccessoryData.PropertyProvider<>();
+    private final KeyboardAccessoryData.PropertyProvider<Action> mActionProvider =
+            new KeyboardAccessoryData.PropertyProvider<>();
     private final ManualFillingCoordinator mManualFillingCoordinator;
+    private final ChromeActivity mActivity;
+    private @Nullable Action mGenerationAction;
     private long mNativeView;
 
     private PasswordAccessoryBridge(long nativeView, WindowAndroid windowAndroid) {
         mNativeView = nativeView;
-        ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
-        mManualFillingCoordinator = activity.getManualFillingController();
+        mActivity = (ChromeActivity) windowAndroid.getActivity().get();
+        mManualFillingCoordinator = mActivity.getManualFillingController();
         mManualFillingCoordinator.registerPasswordProvider(mItemProvider);
+        mManualFillingCoordinator.registerActionProvider(mActionProvider);
     }
 
     @CalledByNative
@@ -31,6 +40,35 @@ class PasswordAccessoryBridge {
     private void onItemsAvailable(
             String[] text, String[] description, int[] isPassword, int[] itemType) {
         mItemProvider.notifyObservers(convertToItems(text, description, isPassword, itemType));
+    }
+
+    @CalledByNative
+    private void onAutomaticGenerationStatusChanged(boolean available) {
+        final Action[] generationAction;
+        if (available) {
+            if (mGenerationAction != null) {
+                return;
+            }
+            // This is meant to suppress the warning that the short string is not used.
+            // TODO(crbug.com/855581): Switch between strings based on whether they fit on the
+            // screen or not.
+            boolean useLongString = true;
+            String caption = useLongString
+                    ? mActivity.getString(R.string.password_generation_accessory_button)
+                    : mActivity.getString(R.string.password_generation_accessory_button_short);
+
+            mGenerationAction = new Action(caption, (action) -> {
+                assert mNativeView
+                        != 0 : "Controller has been destroyed but the bridge wasn't cleaned up!";
+                nativeOnGenerationRequested(mNativeView);
+            });
+            generationAction = new Action[] {mGenerationAction};
+        } else {
+            if (mGenerationAction == null) return;
+            mGenerationAction = null;
+            generationAction = new Action[0];
+        }
+        mActionProvider.notifyObservers(generationAction);
     }
 
     @CalledByNative
@@ -79,4 +117,5 @@ class PasswordAccessoryBridge {
             long nativePasswordAccessoryViewAndroid, boolean isPassword, String textToFill);
     private native void nativeOnOptionSelected(
             long nativePasswordAccessoryViewAndroid, String selectedOption);
+    private native void nativeOnGenerationRequested(long nativePasswordAccessoryViewAndroid);
 }

@@ -688,15 +688,41 @@ gfx::RectF ChromePasswordManagerClient::GetBoundsInScreenSpace(
 void ChromePasswordManagerClient::AutomaticGenerationStatusChanged(
     bool available,
     const base::Optional<
-        autofill::password_generation::PasswordGenerationUIData>&
-        password_generation_ui_data) {
-  // TODO(crbug.com/835234): Use the case when available is false to
-  // remove the option from the keyboard accessory on Android and maybe
-  // to hide the popup on desktop.
+        autofill::password_generation::PasswordGenerationUIData>& ui_data) {
+#if defined(OS_ANDROID)
+  // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordsKeyboardAccessory) &&
+      !base::FeatureList::IsEnabled(features::kExperimentalUi)) {
+    if (available) {
+      ShowPasswordGenerationPopup(ui_data.value(),
+                                  false /* is_manually_triggered */);
+    }
+  } else {
+    PasswordAccessoryController::CreateForWebContents(web_contents());
+    if (available) {
+      password_manager::PasswordManagerDriver* driver =
+          driver_factory_->GetDriverForFrame(
+              password_manager_client_bindings_.GetCurrentTargetFrame());
+      DCHECK(driver);
+      password_manager_.SetGenerationElementAndReasonForForm(
+          driver, ui_data.value().password_form,
+          ui_data.value().generation_element,
+          false /* is_manually_triggered */);
+      PasswordAccessoryController::FromWebContents(web_contents())
+          ->OnAutomaticGenerationStatusChanged(true, ui_data,
+                                               driver->AsWeakPtr());
+    } else {
+      PasswordAccessoryController::FromWebContents(web_contents())
+          ->OnAutomaticGenerationStatusChanged(false, base::nullopt, nullptr);
+    }
+  }
+#else
   if (available) {
-    ShowPasswordGenerationPopup(password_generation_ui_data.value(),
+    ShowPasswordGenerationPopup(ui_data.value(),
                                 false /* is_manually_triggered */);
   }
+#endif  // defined(OS_ANDROID)
 }
 
 void ChromePasswordManagerClient::ShowManualPasswordGenerationPopup(
