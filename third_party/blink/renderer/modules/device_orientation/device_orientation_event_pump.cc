@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/device_sensors/device_orientation_event_pump.h"
-
 #include <cmath>
 
-#include "base/logging.h"
-#include "content/public/renderer/render_frame.h"
-#include "services/device/public/mojom/sensor.mojom.h"
+#include "services/device/public/mojom/sensor.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_event_pump.h"
 
 namespace {
 
@@ -22,7 +20,7 @@ bool IsAngleDifferentThreshold(bool has_angle1,
 
   return (has_angle1 &&
           std::fabs(angle1 - angle2) >=
-              content::DeviceOrientationEventPump::kOrientationThreshold);
+              blink::DeviceOrientationEventPump::kOrientationThreshold);
 }
 
 bool IsSignificantlyDifferent(const device::OrientationData& data1,
@@ -37,14 +35,17 @@ bool IsSignificantlyDifferent(const device::OrientationData& data1,
 
 }  // namespace
 
-namespace content {
+namespace blink {
 
 template class DeviceSensorEventPump<blink::WebDeviceOrientationListener>;
 
 const double DeviceOrientationEventPump::kOrientationThreshold = 0.1;
 
-DeviceOrientationEventPump::DeviceOrientationEventPump(bool absolute)
-    : relative_orientation_sensor_(
+DeviceOrientationEventPump::DeviceOrientationEventPump(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    bool absolute)
+    : DeviceSensorEventPump<blink::WebDeviceOrientationListener>(task_runner),
+      relative_orientation_sensor_(
           this,
           device::mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES),
       absolute_orientation_sensor_(
@@ -57,17 +58,15 @@ DeviceOrientationEventPump::~DeviceOrientationEventPump() {
   StopIfObserving();
 }
 
-void DeviceOrientationEventPump::SendStartMessage() {
+void DeviceOrientationEventPump::SendStartMessage(LocalFrame* frame) {
   if (!sensor_provider_) {
-    RenderFrame* const render_frame = GetRenderFrame();
-    if (!render_frame)
-      return;
+    DCHECK(frame);
 
-    render_frame->GetRemoteInterfaces()->GetInterface(
+    frame->GetInterfaceProvider().GetInterface(
         mojo::MakeRequest(&sensor_provider_));
     sensor_provider_.set_connection_error_handler(
-        base::BindOnce(&DeviceSensorEventPump::HandleSensorProviderError,
-                       base::Unretained(this)));
+        WTF::Bind(&DeviceSensorEventPump::HandleSensorProviderError,
+                  WTF::Unretained(this)));
   }
 
   if (absolute_) {
@@ -109,7 +108,7 @@ void DeviceOrientationEventPump::SendStopMessage() {
   data_ = device::OrientationData();
 }
 
-void DeviceOrientationEventPump::FireEvent() {
+void DeviceOrientationEventPump::FireEvent(TimerBase*) {
   device::OrientationData data;
 
   DCHECK(listener());
@@ -211,4 +210,4 @@ bool DeviceOrientationEventPump::ShouldFireEvent(
   return IsSignificantlyDifferent(data_, data);
 }
 
-}  // namespace content
+}  // namespace blink

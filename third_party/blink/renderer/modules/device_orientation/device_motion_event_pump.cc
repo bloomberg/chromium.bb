@@ -2,43 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/device_sensors/device_motion_event_pump.h"
-
 #include <cmath>
 
-#include "base/logging.h"
-#include "content/public/renderer/render_frame.h"
 #include "services/device/public/cpp/generic_sensor/motion_data.h"
-#include "services/device/public/mojom/sensor.mojom.h"
+#include "services/device/public/mojom/sensor.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_event_pump.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 
-namespace content {
+namespace blink {
 
 template class DeviceSensorEventPump<blink::WebDeviceMotionListener>;
 
-DeviceMotionEventPump::DeviceMotionEventPump()
-    : accelerometer_(this, device::mojom::SensorType::ACCELEROMETER),
+DeviceMotionEventPump::DeviceMotionEventPump(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : DeviceSensorEventPump<blink::WebDeviceMotionListener>(task_runner),
+      accelerometer_(this, device::mojom::blink::SensorType::ACCELEROMETER),
       linear_acceleration_sensor_(
           this,
-          device::mojom::SensorType::LINEAR_ACCELERATION),
-      gyroscope_(this, device::mojom::SensorType::GYROSCOPE) {}
+          device::mojom::blink::SensorType::LINEAR_ACCELERATION),
+      gyroscope_(this, device::mojom::blink::SensorType::GYROSCOPE) {}
 
 DeviceMotionEventPump::~DeviceMotionEventPump() {
   StopIfObserving();
 }
 
-void DeviceMotionEventPump::SendStartMessage() {
+void DeviceMotionEventPump::SendStartMessage(LocalFrame* frame) {
   if (!sensor_provider_) {
-    RenderFrame* const render_frame = GetRenderFrame();
-    if (!render_frame)
-      return;
+    DCHECK(frame);
 
-    render_frame->GetRemoteInterfaces()->GetInterface(
+    frame->GetInterfaceProvider().GetInterface(
         mojo::MakeRequest(&sensor_provider_));
     sensor_provider_.set_connection_error_handler(
-        base::BindOnce(&DeviceSensorEventPump::HandleSensorProviderError,
-                       base::Unretained(this)));
+        WTF::Bind(&DeviceSensorEventPump::HandleSensorProviderError,
+                  WTF::Unretained(this)));
   }
 
   accelerometer_.Start(sensor_provider_.get());
@@ -57,7 +55,7 @@ void DeviceMotionEventPump::SendStopMessage() {
   gyroscope_.Stop();
 }
 
-void DeviceMotionEventPump::FireEvent() {
+void DeviceMotionEventPump::FireEvent(TimerBase*) {
   device::MotionData data;
   // The device orientation spec states that interval should be in milliseconds.
   // https://w3c.github.io/deviceorientation/spec-source-orientation.html#devicemotion
@@ -127,11 +125,11 @@ void DeviceMotionEventPump::GetDataFromSharedMemory(device::MotionData* data) {
   data->all_available_sensors_are_active = accelerometer_active &&
                                            linear_acceleration_sensor_active &&
                                            gyroscope_active;
-}  // namespace content
+}
 
 bool DeviceMotionEventPump::ShouldFireEvent(
     const device::MotionData& data) const {
   return data.all_available_sensors_are_active;
 }
 
-}  // namespace content
+}  // namespace blink

@@ -27,6 +27,7 @@ _CONFIG = [
             'gfx::ColorSpace',
             'gfx::CubicBezier',
             'gfx::ICCProfile',
+            'gfx::RadToDeg',
             'gfx::ScrollOffset',
 
             # //base constructs that are allowed everywhere

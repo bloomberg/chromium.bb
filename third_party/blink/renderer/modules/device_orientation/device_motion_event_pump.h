@@ -2,32 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_MOTION_EVENT_PUMP_H_
-#define CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_MOTION_EVENT_PUMP_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_EVENT_PUMP_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_EVENT_PUMP_H_
 
 #include "base/macros.h"
-#include "content/renderer/device_sensors/device_sensor_event_pump.h"
 #include "third_party/blink/public/platform/modules/device_orientation/web_device_motion_listener.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_sensor_event_pump.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace device {
 class MotionData;
 }
 
-namespace content {
+namespace blink {
 
-class CONTENT_EXPORT DeviceMotionEventPump
+class MODULES_EXPORT DeviceMotionEventPump
     : public DeviceSensorEventPump<blink::WebDeviceMotionListener> {
  public:
-  DeviceMotionEventPump();
+  explicit DeviceMotionEventPump(scoped_refptr<base::SingleThreadTaskRunner>);
   ~DeviceMotionEventPump() override;
 
-  // PlatformEventObserver:
-  void SendStartMessage() override;
+  // DeviceSensorEventPump:
+  void SendStartMessage(LocalFrame* frame) override;
   void SendStopMessage() override;
 
  protected:
   // DeviceSensorEventPump:
-  void FireEvent() override;
+  void FireEvent(TimerBase*) override;
 
   SensorEntry accelerometer_;
   SensorEntry linear_acceleration_sensor_;
@@ -46,6 +47,6 @@ class CONTENT_EXPORT DeviceMotionEventPump
   DISALLOW_COPY_AND_ASSIGN(DeviceMotionEventPump);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_MOTION_EVENT_PUMP_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_EVENT_PUMP_H_

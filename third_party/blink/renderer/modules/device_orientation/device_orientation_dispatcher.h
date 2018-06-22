@@ -44,6 +44,7 @@ class OrientationData;
 namespace blink {
 
 class DeviceOrientationData;
+class DeviceOrientationEventPump;
 
 // This class listens to device orientation data and notifies all registered
 // controllers.
@@ -77,6 +78,7 @@ class DeviceOrientationDispatcher final
 
   const bool absolute_;
   Member<DeviceOrientationData> last_device_orientation_data_;
+  std::unique_ptr<DeviceOrientationEventPump> event_pump_;
 };
 
 }  // namespace blink
