@@ -32,6 +32,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/layout.h"
 
+namespace {
+
 using bookmarks::BookmarkNode;
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;
@@ -67,15 +69,11 @@ using bookmarks_helper::SetTitle;
 using bookmarks_helper::SetURL;
 using bookmarks_helper::SortChildren;
 
-namespace {
-
 const char kGenericURL[] = "http://www.host.ext:1234/path/filename";
 const char kGenericURLTitle[] = "URL Title";
 const char kGenericFolderName[] = "Folder Name";
 const char kGenericSubfolderName[] = "Subfolder Name";
 const char kValidPassphrase[] = "passphrase!";
-
-}  // namespace
 
 class TwoClientBookmarksSyncTest : public SyncTest {
  public:
@@ -2173,3 +2171,5 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_EQ(initial_count + 2, CountAllBookmarks(0));
   ASSERT_EQ(initial_count + 2, CountAllBookmarks(1));
 }
+
+}  // namespace

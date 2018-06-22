@@ -22,6 +22,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
 
+namespace {
+
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 using bookmarks::UrlAndTitle;
@@ -487,3 +489,5 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, E2E_ONLY(SanitySetup)) {
 INSTANTIATE_TEST_CASE_P(USS,
                         SingleClientBookmarksSyncTestIncludingUssTests,
                         ::testing::Values(false, true));
+
+}  // namespace
