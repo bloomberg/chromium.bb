@@ -53,8 +53,7 @@ class MockPowerMonitorSource : public base::PowerMonitorSource {
 
 // The values doesn't matter as long as this is consistently used thruout the
 // test.
-const CdmProxy::Protocol kTestProtocol =
-    CdmProxy::Protocol::kIntelConvergedSecurityAndManageabilityEngine;
+const CdmProxy::Protocol kTestProtocol = CdmProxy::Protocol::kIntel;
 const CdmProxy::Function kTestFunction =
     CdmProxy::Function::kIntelNegotiateCryptoSessionKeyExchange;
 const uint32_t kTestFunctionId = 123;
