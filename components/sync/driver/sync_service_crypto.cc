@@ -344,6 +344,7 @@ void SyncServiceCrypto::OnPassphraseTypeChanged(PassphraseType type,
   DVLOG(1) << "Passphrase type changed to " << PassphraseTypeToString(type);
   cached_passphrase_type_ = type;
   cached_explicit_passphrase_time_ = passphrase_time;
+  notify_observers_.Run();
 }
 
 void SyncServiceCrypto::OnLocalSetPassphraseEncryption(
