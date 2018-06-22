@@ -21,6 +21,7 @@
 #include "libassistant/contrib/core/macros.h"
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/public/conversation_state_listener.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 
@@ -46,7 +47,8 @@ class AssistantManagerServiceImpl
       public ::chromeos::assistant::action::AssistantActionObserver,
       public AssistantEventObserver,
       public assistant_client::ConversationStateListener,
-      public assistant_client::AssistantManagerDelegate {
+      public assistant_client::AssistantManagerDelegate,
+      public ash::mojom::VoiceInteractionObserver {
  public:
   AssistantManagerServiceImpl(service_manager::Connector* connector,
                               device::mojom::BatteryMonitorPtr battery_monitor);
@@ -98,6 +100,15 @@ class AssistantManagerServiceImpl
       const std::string& modify_setting_args_proto) override;
   bool IsSettingSupported(const std::string& setting_id) override;
 
+  // ash::mojom::VoiceInteractionObserver:
+  void OnVoiceInteractionStatusChanged(
+      ash::mojom::VoiceInteractionState state) override {}
+  void OnVoiceInteractionSettingsEnabled(bool enabled) override {}
+  void OnVoiceInteractionContextEnabled(bool enabled) override {}
+  void OnVoiceInteractionSetupCompleted(bool completed) override;
+  void OnAssistantFeatureAllowedChanged(
+      ash::mojom::AssistantAllowedState state) override {}
+
  private:
   void StartAssistantInternal(
       base::OnceClosure callback,
@@ -147,6 +158,8 @@ class AssistantManagerServiceImpl
   mojo::InterfacePtrSet<mojom::AssistantEventSubscriber> subscribers_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   ash::mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
+  mojo::Binding<ash::mojom::VoiceInteractionObserver>
+      voice_interaction_observer_binding_;
   base::WeakPtrFactory<AssistantManagerServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantManagerServiceImpl);

@@ -43,9 +43,14 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       action_module_(std::make_unique<action::CrosActionModule>(this)),
       display_connection_(std::make_unique<CrosDisplayConnection>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      voice_interaction_observer_binding_(this),
       weak_factory_(this) {
   connector->BindInterface(ash::mojom::kServiceName,
                            &voice_interaction_controller_);
+
+  ash::mojom::VoiceInteractionObserverPtr ptr;
+  voice_interaction_observer_binding_.Bind(mojo::MakeRequest(&ptr));
+  voice_interaction_controller_->AddObserver(std::move(ptr));
 }
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {}
@@ -244,6 +249,11 @@ bool AssistantManagerServiceImpl::IsSettingSupported(
   DVLOG(2) << "IsSettingSupported=" << setting_id;
   return (setting_id == kWiFiDeviceSettingId ||
           setting_id == kBluetoothDeviceSettingId);
+}
+
+void AssistantManagerServiceImpl::OnVoiceInteractionSetupCompleted(
+    bool completed) {
+  UpdateDeviceLocale(completed);
 }
 
 void AssistantManagerServiceImpl::StartAssistantInternal(
