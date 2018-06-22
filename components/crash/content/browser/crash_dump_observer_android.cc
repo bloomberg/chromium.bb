@@ -31,6 +31,12 @@ void PopulateTerminationInfo(
   info->binding_state = content_info.binding_state;
   info->was_killed_intentionally_by_browser =
       content_info.was_killed_intentionally_by_browser;
+  info->remaining_process_with_strong_binding =
+      content_info.remaining_process_with_strong_binding;
+  info->remaining_process_with_moderate_binding =
+      content_info.remaining_process_with_moderate_binding;
+  info->remaining_process_with_waived_binding =
+      content_info.remaining_process_with_waived_binding;
   info->was_oom_protected_status =
       content_info.status == base::TERMINATION_STATUS_OOM_PROTECTED;
 }

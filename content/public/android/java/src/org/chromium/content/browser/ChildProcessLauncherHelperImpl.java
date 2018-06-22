@@ -426,8 +426,10 @@ public final class ChildProcessLauncherHelperImpl {
         // access it afterwards.
         if (connection == null) return;
 
+        int bindingCounts[] = connection.bindingStateCountsCurrentOrWhenDied();
         nativeSetTerminationInfo(terminationInfoPtr, connection.bindingStateCurrentOrWhenDied(),
-                connection.isKilledByUs());
+                connection.isKilledByUs(), bindingCounts[ChildBindingState.STRONG],
+                bindingCounts[ChildBindingState.MODERATE], bindingCounts[ChildBindingState.WAIVED]);
     }
 
     @CalledByNative
@@ -651,6 +653,7 @@ public final class ChildProcessLauncherHelperImpl {
         return sSpareSandboxedConnection == null ? null : sSpareSandboxedConnection.getConnection();
     }
 
-    private static native void nativeSetTerminationInfo(
-            long termiantionInfoPtr, @ChildBindingState int bindingState, boolean killedByUs);
+    private static native void nativeSetTerminationInfo(long termiantionInfoPtr,
+            @ChildBindingState int bindingState, boolean killedByUs, int remainingStrong,
+            int remainingModerate, int remainingWaived);
 }

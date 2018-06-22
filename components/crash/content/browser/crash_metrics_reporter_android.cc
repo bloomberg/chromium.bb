@@ -13,6 +13,20 @@
 namespace crash_reporter {
 namespace {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class BindingStateCombo {
+  kNoWaivedNoModerateNoStrong = 0,
+  kNoWaivedNoModerateHasStrong = 1,
+  kNoWaivedHasModerateNoStrong = 2,
+  kNoWaivedHasModerateHasStrong = 3,
+  kHasWaivedNoModerateNoStrong = 4,
+  kHasWaivedNoModerateHasStrong = 5,
+  kHasWaivedHasModerateNoStrong = 6,
+  kHasWaivedHasModerateHasStrong = 7,
+  kMaxValue = kHasWaivedHasModerateHasStrong
+};
+
 void ReportCrashCount(CrashMetricsReporter::ProcessedCrashCounts crash_type,
                       CrashMetricsReporter::ReportedCrashTypeSet* counts) {
   UMA_HISTOGRAM_ENUMERATION("Stability.Android.ProcessedCrashCounts",
@@ -218,6 +232,29 @@ void CrashMetricsReporter::CrashDumpProcessed(
                          ? ProcessedCrashCounts::kGpuCrashAll
                          : ProcessedCrashCounts::kRendererCrashAll,
                      &reported_counts);
+  }
+
+  if (app_foreground && android_oom_kill &&
+      info.binding_state == base::android::ChildBindingState::STRONG) {
+    const bool has_waived = info.remaining_process_with_waived_binding > 0;
+    const bool has_moderate = info.remaining_process_with_moderate_binding > 0;
+    const bool has_strong = info.remaining_process_with_strong_binding > 0;
+    BindingStateCombo combo;
+    if (has_waived && has_moderate) {
+      combo = has_strong ? BindingStateCombo::kHasWaivedHasModerateHasStrong
+                         : BindingStateCombo::kHasWaivedHasModerateNoStrong;
+    } else if (has_waived) {
+      combo = has_strong ? BindingStateCombo::kHasWaivedNoModerateHasStrong
+                         : BindingStateCombo::kHasWaivedNoModerateNoStrong;
+    } else if (has_moderate) {
+      combo = has_strong ? BindingStateCombo::kNoWaivedHasModerateHasStrong
+                         : BindingStateCombo::kNoWaivedHasModerateNoStrong;
+    } else {
+      combo = has_strong ? BindingStateCombo::kNoWaivedNoModerateHasStrong
+                         : BindingStateCombo::kNoWaivedNoModerateNoStrong;
+    }
+    UMA_HISTOGRAM_ENUMERATION(
+        "Stability.Android.StrongBindingOomRemainingBindingState", combo);
   }
 
   ReportLegacyCrashUma(info, has_valid_dump);

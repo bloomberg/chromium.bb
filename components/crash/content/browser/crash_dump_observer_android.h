@@ -53,6 +53,9 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
     base::android::ChildBindingState binding_state =
         base::android::ChildBindingState::UNBOUND;
     bool was_killed_intentionally_by_browser = false;
+    int remaining_process_with_strong_binding = 0;
+    int remaining_process_with_moderate_binding = 0;
+    int remaining_process_with_waived_binding = 0;
 
     // Note this is slightly different |has_oom_protection_bindings|.
     // This is equivalent to status == TERMINATION_STATUS_NORMAL_TERMINATION,
