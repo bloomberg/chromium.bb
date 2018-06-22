@@ -36,6 +36,10 @@ _DEFAULT_OUT_DIR = os.path.join(_SRC_ROOT, 'out', 'binary-size-build')
 _BINARY_SIZE_DIR = os.path.join(_SRC_ROOT, 'tools', 'binary_size')
 _RESOURCE_SIZES_PATH = os.path.join(
     _SRC_ROOT, 'build', 'android', 'resource_sizes.py')
+_LLVM_TOOLS_DIR = os.path.join(
+    _SRC_ROOT, 'third_party', 'llvm-build', 'Release+Asserts', 'bin')
+_DOWNLOAD_OBJDUMP_PATH = os.path.join(
+    _SRC_ROOT, 'tools', 'clang', 'scripts', 'download_objdump.py')
 
 
 _DiffResult = collections.namedtuple('DiffResult', ['name', 'value', 'units'])
@@ -355,7 +359,7 @@ class _BuildArchive(object):
     self._slow_options = slow_options
     self._save_unstripped = save_unstripped
 
-  def ArchiveBuildResults(self, supersize_path):
+  def ArchiveBuildResults(self, supersize_path, tool_prefix):
     """Save build artifacts necessary for diffing."""
     logging.info('Saving build results to: %s', self.dir)
     _EnsureDirsExist(self.dir)
@@ -363,7 +367,7 @@ class _BuildArchive(object):
       self._ArchiveFile(self.build.abs_apk_path)
       self._ArchiveFile(self.build.abs_apk_path + '.mapping')
       self._ArchiveResourceSizes()
-    self._ArchiveSizeFile(supersize_path)
+    self._ArchiveSizeFile(supersize_path, tool_prefix)
     if self._save_unstripped:
       self._ArchiveFile(self.build.abs_main_lib_path)
     self.metadata.Write()
@@ -397,7 +401,7 @@ class _BuildArchive(object):
       _Die('missing expected file: %s', filename)
     shutil.copy(filename, self.dir)
 
-  def _ArchiveSizeFile(self, supersize_path):
+  def _ArchiveSizeFile(self, supersize_path, tool_prefix):
     existing_size_file = self.build.abs_apk_path + '.size'
     if os.path.exists(existing_size_file):
       logging.info('Found existing .size file')
@@ -405,6 +409,8 @@ class _BuildArchive(object):
     else:
       supersize_cmd = [supersize_path, 'archive', self.archived_size_path,
                        '--elf-file', self.build.abs_main_lib_path]
+      if tool_prefix:
+        supersize_cmd += ['--tool-prefix', tool_prefix]
       if self.build.IsCloud():
         supersize_cmd += ['--no-source-paths']
       else:
@@ -475,10 +481,12 @@ class _DiffArchiveManager(object):
     # Print cached file if all builds were cached.
     if os.path.exists(path):
       _PrintFile(path)
-    if self.build_archives:
+    if self.build_archives and len(self.build_archives) <= 2:
+      if not all(a.Exists() for a in self.build_archives):
+        return
       supersize_path = os.path.join(_BINARY_SIZE_DIR, 'supersize')
       size2 = ''
-      if len(self.build_archives) > 1:
+      if len(self.build_archives) == 2:
         size2 = os.path.relpath(self.build_archives[-1].archived_size_path)
       logging.info('Enter supersize console via: %s console %s %s',
           os.path.relpath(supersize_path),
@@ -607,8 +615,9 @@ def _SyncAndBuild(archive, build, subrepo, no_gclient, extra_rev):
     # commits on a branch.
     _GitCmd(['checkout', '--detach'], subrepo)
     logging.info('Syncing to %s', archive.rev)
-    if _GclientSyncCmd(archive.rev, subrepo):
-      return False
+    ret = _GclientSyncCmd(archive.rev, subrepo)
+    if ret:
+      return ret
   with _ApplyPatch(extra_rev, subrepo):
     return build.Run()
 
@@ -789,14 +798,22 @@ def _PrintFile(path):
 
 @contextmanager
 def _TmpCopyBinarySizeDir():
-  """Recursively copy files to a temp dir and yield supersize path."""
+  """Recursively copy files to a temp dir and yield temp paths."""
   # Needs to be at same level of nesting as the real //tools/binary_size
   # since supersize uses this to find d3 in //third_party.
   tmp_dir = tempfile.mkdtemp(dir=_SRC_ROOT)
   try:
     bs_dir = os.path.join(tmp_dir, 'binary_size')
     shutil.copytree(_BINARY_SIZE_DIR, bs_dir)
-    yield os.path.join(bs_dir, 'supersize')
+    # We also copy the tools supersize needs, but only if they exist.
+    tool_prefix = None
+    if os.path.exists(_DOWNLOAD_OBJDUMP_PATH):
+      if not os.path.exists(os.path.join(_LLVM_TOOLS_DIR, 'llvm-readelf')):
+        _RunCmd([_DOWNLOAD_OBJDUMP_PATH])
+      tools_dir = os.path.join(bs_dir, 'bintools')
+      tool_prefix = os.path.join(tools_dir, 'llvm-')
+      shutil.copytree(_LLVM_TOOLS_DIR, tools_dir)
+    yield (os.path.join(bs_dir, 'supersize'), tool_prefix)
   finally:
     shutil.rmtree(tmp_dir)
 
@@ -965,7 +982,8 @@ def main():
     reference_rev = args.rev
   _ValidateRevs(args.rev, reference_rev, subrepo, args.extra_rev)
   revs = _GenerateRevList(args.rev, reference_rev, args.all, subrepo, args.step)
-  with _TmpCopyBinarySizeDir() as supersize_path:
+  with _TmpCopyBinarySizeDir() as paths:
+    supersize_path, tool_prefix = paths
     diffs = [NativeDiff(build.size_name, supersize_path)]
     if build.IsAndroid():
       diffs +=  [
@@ -996,7 +1014,7 @@ def main():
               _Die('%d builds failed in a row, last failure was %s.',
                    consecutive_failures, archive.rev)
           else:
-            archive.ArchiveBuildResults(supersize_path)
+            archive.ArchiveBuildResults(supersize_path, tool_prefix)
             consecutive_failures = 0
 
       if i != 0:
