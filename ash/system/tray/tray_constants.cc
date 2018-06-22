@@ -77,4 +77,11 @@ const int kTrayPopupInkDropCornerRadius = 2;
 
 const int kTrayPopupSystemInfoRowHeight = 40;
 
+static_assert(kTrayMenuWidth == kUnifiedFeaturePodHorizontalSidePadding * 2 +
+                                    kUnifiedFeaturePodHorizontalMiddlePadding *
+                                        (kUnifiedFeaturePodItemsInRow - 1) +
+                                    kUnifiedFeaturePodSize.width() *
+                                        kUnifiedFeaturePodItemsInRow,
+              "Total feature pod width does not match kTrayMenuWidth");
+
 }  // namespace ash
