@@ -3810,14 +3810,11 @@ void RenderFrameImpl::DidCreateDocumentLoader(
     blink::WebDocumentLoader* document_loader) {
   bool content_initiated = !pending_navigation_params_.get();
 
-  DocumentState* document_state =
-      DocumentState::FromDocumentLoader(document_loader);
-  if (!document_state) {
-    document_state = new DocumentState;
-    document_loader->SetExtraData(document_state);
-    if (!content_initiated)
-      PopulateDocumentStateFromPending(document_state);
-  }
+  DCHECK(!DocumentState::FromDocumentLoader(document_loader));
+  DocumentState* document_state = new DocumentState;
+  document_loader->SetExtraData(document_state);
+  if (!content_initiated)
+    PopulateDocumentStateFromPending(document_state);
 
   // Carry over the user agent override flag, if it exists.
   // TODO(lukasza): https://crbug.com/426555: Need OOPIF support for propagating
