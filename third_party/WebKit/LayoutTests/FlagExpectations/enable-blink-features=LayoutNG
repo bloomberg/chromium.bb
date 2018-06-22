@@ -440,7 +440,6 @@ crbug.com/714962 fast/dom/Range/getBoundingClientRect-linebreak-character.html [
 crbug.com/591099 fast/dom/Window/window-lookup-precedence.html [ Failure ]
 crbug.com/714962 fast/dom/elementFromPoint-relative-to-viewport.html [ Failure ]
 crbug.com/714962 fast/dom/elementsFromPoint/elementsFromPoint-inline.html [ Failure ]
-crbug.com/714962 fast/dom/inert/inert-inlines.html [ Failure ]
 crbug.com/591099 fast/dom/nodesFromRect/nodesFromRect-basic.html [ Failure ]
 crbug.com/714962 fast/dom/nodesFromRect/nodesFromRect-culled-inline-with-linebreak.html [ Failure ]
 crbug.com/714962 fast/dom/nodesFromRect/nodesFromRect-culled-inlines.html [ Failure ]

@@ -72,6 +72,14 @@ LayoutPoint FallbackAccumulatedOffset(const NGPaintFragment& child,
          LayoutSize(parent_inline_offset.X(), parent_inline_offset.Y());
 }
 
+bool FragmentVisibleToHitTestRequest(const NGPaintFragment& fragment,
+                                     const HitTestRequest& request) {
+  return fragment.Style().Visibility() == EVisibility::kVisible &&
+         (request.IgnorePointerEventsNone() ||
+          fragment.Style().PointerEvents() != EPointerEvents::kNone) &&
+         !(fragment.GetNode() && fragment.GetNode()->IsInert());
+}
+
 }  // anonymous namespace
 
 NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
@@ -900,10 +908,7 @@ bool NGBoxFragmentPainter::NodeAtPoint(
 
 bool NGBoxFragmentPainter::VisibleToHitTestRequest(
     const HitTestRequest& request) const {
-  return box_fragment_.Style().Visibility() == EVisibility::kVisible &&
-         (request.IgnorePointerEventsNone() ||
-          box_fragment_.Style().PointerEvents() != EPointerEvents::kNone) &&
-         !(box_fragment_.GetNode() && box_fragment_.GetNode()->IsInert());
+  return FragmentVisibleToHitTestRequest(box_fragment_, request);
 }
 
 bool NGBoxFragmentPainter::HitTestTextFragment(
@@ -930,7 +935,8 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
 
   // TODO(layout-dev): Clip to line-top/bottom.
   LayoutRect rect = LayoutRect(PixelSnappedIntRect(border_rect));
-  if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
+  if (FragmentVisibleToHitTestRequest(text_paint_fragment,
+                                      result.GetHitTestRequest()) &&
       location_in_container.Intersects(rect)) {
     Node* node = text_paint_fragment.NodeForHitTest();
     if (!result.InnerNode() && node) {
