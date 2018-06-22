@@ -81,6 +81,14 @@ class OZONE_EXPORT OzonePlatform {
     bool using_mojo = false;
   };
 
+  // Struct used to indicate platform properties.
+  struct PlatformProperties {
+    // Fuchsia only: set to true when the platforms requires
+    // |view_owner_request| field in PlatformWindowInitProperties when creating
+    // a window.
+    bool needs_view_owner_request;
+  };
+
   // Ensures the OzonePlatform instance without doing any initialization.
   // No-op in case the instance is already created.
   // This is useful in order call virtual methods that depend on the ozone
@@ -127,6 +135,10 @@ class OZONE_EXPORT OzonePlatform {
       PlatformWindowInitProperties properties) = 0;
   virtual std::unique_ptr<display::NativeDisplayDelegate>
   CreateNativeDisplayDelegate() = 0;
+
+  // Returns a struct that contains configuration and requirements for the
+  // current platform implementation.
+  virtual const PlatformProperties& GetPlatformProperties();
 
   // Returns the message loop type required for OzonePlatform instance that
   // will be initialized for the GPU process.

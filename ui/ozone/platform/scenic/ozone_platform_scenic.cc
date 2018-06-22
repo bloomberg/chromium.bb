@@ -29,6 +29,10 @@ namespace ui {
 
 namespace {
 
+constexpr OzonePlatform::PlatformProperties kScenicPlatformProperties = {
+    /*needs_view_owner_request=*/true,
+};
+
 class ScenicPlatformEventSource : public ui::PlatformEventSource {
  public:
   ScenicPlatformEventSource() = default;
@@ -81,6 +85,10 @@ class OzonePlatformScenic : public OzonePlatform {
     }
     return std::make_unique<ScenicWindow>(
         &window_manager_, delegate, std::move(properties.view_owner_request));
+  }
+
+  const PlatformProperties& GetPlatformProperties() override {
+    return kScenicPlatformProperties;
   }
 
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
