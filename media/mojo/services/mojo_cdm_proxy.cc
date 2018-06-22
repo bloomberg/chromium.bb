@@ -43,9 +43,8 @@ cdm::CdmProxyClient::Protocol ToCdmProtocol(CdmProxy::Protocol protocol) {
   switch (protocol) {
     case CdmProxy::Protocol::kNone:
       return cdm::CdmProxyClient::Protocol::kNone;
-    case CdmProxy::Protocol::kIntelConvergedSecurityAndManageabilityEngine:
-      return cdm::CdmProxyClient::Protocol::
-          kIntelConvergedSecurityAndManageabilityEngine;
+    case CdmProxy::Protocol::kIntel:
+      return cdm::CdmProxyClient::Protocol::kIntel;
   }
 
   NOTREACHED() << "Unexpected protocol: " << static_cast<int32_t>(protocol);

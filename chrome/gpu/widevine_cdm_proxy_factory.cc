@@ -76,7 +76,6 @@ std::unique_ptr<media::CdmProxy> CreateWidevineCdmProxy() {
        0x90000001}};
 
   return std::make_unique<media::D3D11CdmProxy>(
-      kD3D11ConfigWidevineStreamId,
-      media::CdmProxy::Protocol::kIntelConvergedSecurityAndManageabilityEngine,
+      kD3D11ConfigWidevineStreamId, media::CdmProxy::Protocol::kIntel,
       std::move(function_id_map));
 }

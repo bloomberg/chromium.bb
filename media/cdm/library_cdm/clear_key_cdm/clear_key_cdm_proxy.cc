@@ -43,9 +43,8 @@ base::WeakPtr<CdmContext> ClearKeyCdmProxy::GetCdmContext() {
 void ClearKeyCdmProxy::Initialize(Client* client, InitializeCB init_cb) {
   DVLOG(1) << __func__;
 
-  std::move(init_cb).Run(
-      Status::kOk, Protocol::kIntelConvergedSecurityAndManageabilityEngine,
-      kClearKeyCdmProxyCryptoSessionId);
+  std::move(init_cb).Run(Status::kOk, Protocol::kIntel,
+                         kClearKeyCdmProxyCryptoSessionId);
 }
 
 void ClearKeyCdmProxy::Process(Function function,
