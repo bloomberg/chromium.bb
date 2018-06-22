@@ -66,6 +66,17 @@ gfx::PointF ComputePointInRootInPixels(
   return gfx::ConvertPointToPixel(device_scale_factor, point_in_root);
 }
 
+bool IsMouseButtonDown(const blink::WebMouseEvent& event) {
+  constexpr int mouse_button_modifiers =
+      blink::WebInputEvent::kLeftButtonDown |
+      blink::WebInputEvent::kMiddleButtonDown |
+      blink::WebInputEvent::kRightButtonDown |
+      blink::WebInputEvent::kBackButtonDown |
+      blink::WebInputEvent::kForwardButtonDown;
+
+  return event.GetModifiers() & mouse_button_modifiers;
+}
+
 }  // anonymous namespace
 
 namespace content {
@@ -231,16 +242,11 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
     target = root_view->host()->delegate()->GetMouseLockWidget()->GetView();
   }
 
-  constexpr int mouse_button_modifiers =
-      blink::WebInputEvent::kLeftButtonDown |
-      blink::WebInputEvent::kMiddleButtonDown |
-      blink::WebInputEvent::kRightButtonDown |
-      blink::WebInputEvent::kBackButtonDown |
-      blink::WebInputEvent::kForwardButtonDown;
+  // Ignore mouse_capture_target_ if there are no mouse buttons currently down
+  // because this is only for the purpose of dragging.
   if (!target && mouse_capture_target_.target &&
-      event.GetType() != blink::WebInputEvent::kMouseDown &&
       (event.GetType() == blink::WebInputEvent::kMouseUp ||
-       event.GetModifiers() & mouse_button_modifiers)) {
+       IsMouseButtonDown(event))) {
     target = mouse_capture_target_.target;
   }
 
@@ -383,10 +389,24 @@ void RenderWidgetHostInputEventRouter::DispatchMouseEvent(
   if (!target)
     return;
 
-  if (mouse_event.GetType() == blink::WebInputEvent::kMouseUp)
+  // Implicitly release any capture when a MouseUp arrives, so that if any
+  // events arrive before the renderer can explicitly release capture, we can
+  // target those correctly. This also releases if there are no mouse buttons
+  // down, which is to protect against problems that can occur on some
+  // platforms where MouseUps are not received when the mouse cursor is off the
+  // browser window.
+  // Also, this is strictly necessary for touch emulation.
+  if (mouse_event.GetType() == blink::WebInputEvent::kMouseUp ||
+      !IsMouseButtonDown(mouse_event))
     mouse_capture_target_.target = nullptr;
-  else if (mouse_event.GetType() == blink::WebInputEvent::kMouseDown)
+
+  // When touch emulation is active, mouse events have to act like touch
+  // events, which requires that there be implicit capture between MouseDown
+  // and MouseUp.
+  if (mouse_event.GetType() == blink::WebInputEvent::kMouseDown &&
+      touch_emulator_ && touch_emulator_->enabled()) {
     mouse_capture_target_.target = target;
+  }
 
   DCHECK(target_location.has_value());
   blink::WebMouseEvent event = mouse_event;
@@ -1511,6 +1531,21 @@ void RenderWidgetHostInputEventRouter::ShowContextMenuAtPoint(
       last_mouse_move_target_->GetRenderWidgetHost());
   DCHECK(rwhi);
   rwhi->ShowContextMenuAtPoint(point, source_type);
+}
+
+void RenderWidgetHostInputEventRouter::SetMouseCaptureTarget(
+    RenderWidgetHostViewBase* target,
+    bool capture) {
+  if (touch_emulator_ && touch_emulator_->enabled())
+    return;
+
+  if (capture) {
+    mouse_capture_target_.target = target;
+    return;
+  }
+
+  if (mouse_capture_target_.target == target)
+    mouse_capture_target_.target = nullptr;
 }
 
 }  // namespace content

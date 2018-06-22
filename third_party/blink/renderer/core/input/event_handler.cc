@@ -1018,11 +1018,12 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
         EventTypeNames::mouseup, mouse_event);
   }
 
-  // Only relase scrollbar when left button up.
+  // Only release scrollbar when left button up.
   if (mouse_event.button == WebPointerProperties::Button::kLeft &&
       last_scrollbar_under_mouse_) {
     mouse_event_manager_->InvalidateClick();
     last_scrollbar_under_mouse_->MouseUp(mouse_event);
+    frame_->LocalFrameRoot().Client()->SetMouseCapture(false);
     return DispatchMousePointerEvent(
         WebInputEvent::kPointerUp, mouse_event_manager_->GetNodeUnderMouse(),
         String(), mouse_event, Vector<WebMouseEvent>());
@@ -2135,6 +2136,8 @@ bool EventHandler::PassMousePressEventToScrollbar(
   if (!scrollbar || !scrollbar->Enabled())
     return false;
   scrollbar->MouseDown(mev.Event());
+  if (scrollbar->PressedPart() == ScrollbarPart::kThumbPart)
+    frame_->LocalFrameRoot().Client()->SetMouseCapture(true);
   return true;
 }
 

@@ -91,6 +91,8 @@ class MockWidgetInputHandlerHost : public mojom::WidgetInputHandlerHost {
   MOCK_METHOD2(ImeCompositionRangeChanged,
                void(const gfx::Range&, const std::vector<gfx::Rect>&));
 
+  MOCK_METHOD1(SetMouseCapture, void(bool));
+
  private:
   mojo::Binding<mojom::WidgetInputHandlerHost> binding_;
 

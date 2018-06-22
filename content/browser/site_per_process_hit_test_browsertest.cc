@@ -473,6 +473,68 @@ bool ConvertJSONToRect(const std::string& str, gfx::Rect* rect) {
 }
 #endif  // defined(USE_AURA)
 
+// Class for intercepting SetMouseCapture messages being sent to a
+// RenderWidgetHost. Note that this only works for RenderWidgetHosts that
+// are attached to RenderFrameHosts, and not those for page popups, which
+// use different bindings.
+class SetMouseCaptureInterceptor
+    : public base::RefCountedThreadSafe<SetMouseCaptureInterceptor>,
+      public mojom::WidgetInputHandlerHostInterceptorForTesting {
+ public:
+  SetMouseCaptureInterceptor(RenderWidgetHostImpl* host)
+      : msg_received_(false),
+        capturing_(false),
+        host_(host),
+        impl_(binding().SwapImplForTesting(this)) {}
+
+  bool Capturing() const { return capturing_; }
+
+  void Wait() {
+    DCHECK(!run_loop_);
+    if (msg_received_) {
+      msg_received_ = false;
+      return;
+    }
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+    run_loop_.reset();
+    msg_received_ = false;
+  }
+
+ protected:
+  // mojom::WidgetInputHandlerHostInterceptorForTesting:
+  mojom::WidgetInputHandlerHost* GetForwardingInterface() override {
+    return impl_;
+  }
+  void SetMouseCapture(bool capturing) override {
+    capturing_ = capturing;
+    msg_received_ = true;
+    if (run_loop_)
+      run_loop_->Quit();
+    GetForwardingInterface()->SetMouseCapture(capturing);
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<SetMouseCaptureInterceptor>;
+
+  ~SetMouseCaptureInterceptor() override {
+    binding().SwapImplForTesting(impl_);
+  }
+
+  mojo::Binding<mojom::WidgetInputHandlerHost>& binding() {
+    return static_cast<InputRouterImpl*>(host_->input_router())
+        ->frame_host_binding_for_testing();
+  }
+
+  std::unique_ptr<base::RunLoop> run_loop_;
+  bool msg_received_;
+  bool capturing_;
+  RenderWidgetHostImpl* host_;
+  mojom::WidgetInputHandlerHost* impl_;
+
+  DISALLOW_COPY_AND_ASSIGN(SetMouseCaptureInterceptor);
+};
+
 }  // namespace
 
 class SitePerProcessHitTestBrowserTest
@@ -1104,6 +1166,7 @@ class SitePerProcessEmulatedTouchBrowserTest
     int mouse_modifier = (test_type == PinchGoesToMainFrame)
                              ? blink::WebInputEvent::kShiftKey
                              : 0;
+    mouse_modifier |= blink::WebInputEvent::kLeftButtonDown;
     blink::WebMouseEvent mouse_down_event =
         SyntheticWebMouseEventBuilder::Build(
             blink::WebInputEvent::kMouseDown, position_in_root.x(),
@@ -2173,10 +2236,13 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // Verify that mouse capture works on a RenderWidgetHostView level, so that
 // dragging scroll bars and selecting text continues even when the mouse
 // cursor crosses over cross-process frame boundaries.
+// TODO(kenrb): This currently only works for scrollbar dragging.
+// Other reasons for a node to capture mouse input need to be addressed. See
+// https://crbug.com/647378.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        CrossProcessMouseCapture) {
   GURL main_url(embedded_test_server()->GetURL(
-      "/frame_tree/page_with_positioned_frame.html"));
+      "/frame_tree/page_with_large_scrollable_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
@@ -2184,10 +2250,12 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   ASSERT_EQ(1U, root->child_count());
 
   FrameTreeNode* child_node = root->child_at(0);
-  GURL site_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
-  EXPECT_EQ(site_url, child_node->current_url());
-  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
-            child_node->current_frame_host()->GetSiteInstance());
+  ASSERT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://baz.com/",
+      DepictFrameTree(root));
 
   // Create listeners for mouse events.
   RenderWidgetHostMouseEventMonitor main_frame_monitor(
@@ -2233,76 +2301,78 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   EXPECT_FALSE(main_frame_monitor.EventWasReceived());
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
 
-  // Target MouseMove to main frame. This should still be routed to the
-  // child frame because it is now capturing mouse input.
+  // Target MouseMove to main frame. This should be routed to the main frame
+  // because the child frame is not capturing input.
   mouse_event.SetType(blink::WebInputEvent::kMouseMove);
   mouse_event.SetModifiers(blink::WebInputEvent::kLeftButtonDown);
   SetWebEventPositions(&mouse_event, gfx::Point(1, 1), root_view);
-  // Note that this event is sent twice, with the monitors cleared after
-  // the first time, because the first MouseMove to the child frame
-  // causes a MouseMove to be sent to the main frame also, which we
-  // need to ignore.
-  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
-  main_frame_monitor.ResetEventReceived();
-  child_frame_monitor.ResetEventReceived();
-  SetWebEventPositions(&mouse_event, gfx::Point(1, 5), root_view);
-  RouteMouseEventAndWaitUntilDispatch(router, root_view, rwhv_child,
+  RouteMouseEventAndWaitUntilDispatch(router, root_view, root_view,
                                       &mouse_event);
 
-  EXPECT_FALSE(main_frame_monitor.EventWasReceived());
-  EXPECT_TRUE(child_frame_monitor.EventWasReceived());
-
-  // A MouseUp to the child frame should cancel the mouse capture.
-  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
-  mouse_event.SetModifiers(blink::WebInputEvent::kNoModifiers);
-  SetWebEventPositions(&mouse_event,
-                       gfx::Point(child_frame_target_x, child_frame_target_y),
-                       root_view);
+  // Dispatch twice because the router generates an extra MouseLeave for the
+  // child frame.
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
-  RouteMouseEventAndWaitUntilDispatch(router, root_view, rwhv_child,
+  RouteMouseEventAndWaitUntilDispatch(router, root_view, root_view,
                                       &mouse_event);
-
-  EXPECT_FALSE(main_frame_monitor.EventWasReceived());
-  EXPECT_TRUE(child_frame_monitor.EventWasReceived());
-
-  // Subsequent MouseMove events targeted to the main frame should be routed
-  // to that frame.
-  mouse_event.SetType(blink::WebInputEvent::kMouseMove);
-  SetWebEventPositions(&mouse_event, gfx::Point(1, 10), root_view);
-  // Sending the MouseMove twice for the same reason as above.
-  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
-  main_frame_monitor.ResetEventReceived();
-  child_frame_monitor.ResetEventReceived();
-  SetWebEventPositions(&mouse_event, gfx::Point(1, 15), root_view);
-  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
 
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
 
-  // Target MouseDown to the main frame to cause it to capture input.
+// Targeting a scrollbar with a click doesn't work on Mac or Android.
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+  scoped_refptr<SetMouseCaptureInterceptor> interceptor =
+      new SetMouseCaptureInterceptor(static_cast<RenderWidgetHostImpl*>(
+          root->current_frame_host()->GetRenderWidgetHost()));
+
+  // Now send a MouseDown to target the thumb part of the scroll bar, which
+  // should initiate mouse capture for the main frame.
   mouse_event.SetType(blink::WebInputEvent::kMouseDown);
-  SetWebEventPositions(&mouse_event, gfx::Point(1, 20), root_view);
-  main_frame_monitor.ResetEventReceived();
-  child_frame_monitor.ResetEventReceived();
+  SetWebEventPositions(&mouse_event, gfx::Point(100, 25), root_view);
   router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
 
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
-  EXPECT_FALSE(child_frame_monitor.EventWasReceived());
 
-  // Sending a MouseMove to the child frame should still result in the main
-  // frame receiving the event.
+  // Wait for the mouse capture message.
+  interceptor->Wait();
+  EXPECT_TRUE(interceptor->Capturing());
+
+  // Yield the thread, in order to let the capture message be processed by its
+  // actual handler.
+  {
+    base::RunLoop loop;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  loop.QuitClosure());
+    loop.Run();
+  }
+
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+
+  // Now that the main frame is capturing, a MouseMove targeted to the child
+  // frame should be received by the main frame.
   mouse_event.SetType(blink::WebInputEvent::kMouseMove);
-  mouse_event.SetModifiers(blink::WebInputEvent::kLeftButtonDown);
   SetWebEventPositions(&mouse_event,
                        gfx::Point(child_frame_target_x, child_frame_target_y),
                        root_view);
-  main_frame_monitor.ResetEventReceived();
-  child_frame_monitor.ResetEventReceived();
-  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
-
+  RouteMouseEventAndWaitUntilDispatch(router, root_view, root_view,
+                                      &mouse_event);
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+
+  // A MouseUp sent anywhere should cancel the mouse capture.
+  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  SetWebEventPositions(&mouse_event,
+                       gfx::Point(child_frame_target_x, child_frame_target_y),
+                       root_view);
+  RouteMouseEventAndWaitUntilDispatch(router, root_view, root_view,
+                                      &mouse_event);
+
+  interceptor->Wait();
+  EXPECT_FALSE(interceptor->Capturing());
+#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
 }
 
 // There are no cursors on Android.

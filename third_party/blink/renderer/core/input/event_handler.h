@@ -367,6 +367,9 @@ class CORE_EXPORT EventHandler final
   void DefaultEscapeEventHandler(KeyboardEvent*);
   void DefaultArrowEventHandler(WebFocusType, KeyboardEvent*);
 
+  // |last_scrollbar_under_mouse_| is set when the mouse moves off of a
+  // scrollbar, and used to notify it of MouseUp events to release mouse
+  // capture.
   void UpdateLastScrollbarUnderMouse(Scrollbar*, bool);
 
   WebInputEventResult HandleGestureShowPress();

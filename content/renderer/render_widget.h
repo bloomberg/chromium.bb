@@ -477,6 +477,8 @@ class CONTENT_EXPORT RenderWidget
                                    bool monitor_updates);
   void SetWidgetBinding(mojom::WidgetRequest request);
 
+  void SetMouseCapture(bool capture);
+
   // Time-To-First-Active-Paint(TTFAP) type
   enum {
     TTFAP_AFTER_PURGED,

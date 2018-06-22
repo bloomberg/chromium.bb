@@ -2489,6 +2489,13 @@ void RenderWidget::SetWidgetBinding(mojom::WidgetRequest request) {
   widget_binding_.Bind(std::move(request));
 }
 
+void RenderWidget::SetMouseCapture(bool capture) {
+  if (mojom::WidgetInputHandlerHost* host =
+          widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
+    host->SetMouseCapture(capture);
+  }
+}
+
 bool RenderWidget::IsSurfaceSynchronizationEnabled() const {
   return compositor_ && compositor_->IsSurfaceSynchronizationEnabled();
 }

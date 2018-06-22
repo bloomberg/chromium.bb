@@ -2289,6 +2289,11 @@ bool RenderWidgetHostImpl::IsWheelScrollInProgress() {
   return is_in_gesture_scroll_[blink::kWebGestureDeviceTouchpad];
 }
 
+void RenderWidgetHostImpl::SetMouseCapture(bool capture) {
+  if (delegate_)
+    delegate_->GetInputEventRouter()->SetMouseCaptureTarget(GetView(), capture);
+}
+
 void RenderWidgetHostImpl::OnInvalidFrameToken(uint32_t frame_token) {
   bad_message::ReceivedBadMessage(GetProcess(),
                                   bad_message::RWH_INVALID_FRAME_TOKEN);

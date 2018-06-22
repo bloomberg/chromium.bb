@@ -114,6 +114,8 @@ class MockInputRouterImplClient : public InputRouterImplClient {
 
   void OnImeCancelComposition() override {}
 
+  void SetMouseCapture(bool capture) override {}
+
   MockWidgetInputHandler::MessageVector GetAndResetDispatchedMessages() {
     return widget_input_handler_.GetAndResetDispatchedMessages();
   }
