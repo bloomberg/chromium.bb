@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -21,6 +23,7 @@
 #include "chromeos/system/version_loader.h"
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
 using assistant_client::ActionModule;
@@ -40,7 +43,10 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       action_module_(std::make_unique<action::CrosActionModule>(this)),
       display_connection_(std::make_unique<CrosDisplayConnection>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  connector->BindInterface(ash::mojom::kServiceName,
+                           &voice_interaction_controller_);
+}
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {}
 
@@ -271,7 +277,7 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
   assistant_client::Callback0 assistant_callback([
     callback = std::move(callback),
     update_settings_callback =
-        base::BindOnce(&AssistantManagerServiceImpl::UpdateDeviceIdAndType,
+        base::BindOnce(&AssistantManagerServiceImpl::UpdateDeviceSettings,
                        weak_factory_.GetWeakPtr())
   ]() mutable {
     std::move(callback).Run();
@@ -306,7 +312,7 @@ std::string AssistantManagerServiceImpl::BuildUserAgent(
   return user_agent;
 }
 
-void AssistantManagerServiceImpl::UpdateDeviceIdAndType() {
+void AssistantManagerServiceImpl::UpdateDeviceSettings() {
   const std::string device_id = assistant_manager_->GetDeviceId();
   if (device_id.empty())
     return;
@@ -319,6 +325,33 @@ void AssistantManagerServiceImpl::UpdateDeviceIdAndType() {
   device_settings_update->set_device_id(device_id);
   device_settings_update->set_assistant_device_type(
       assistant::AssistantDevice::CROS);
+
+  // Device settings update result is not handled because it is not included in
+  // the SettingsUiUpdateResult.
+  SendUpdateSettingsUiRequest(update.SerializeAsString(),
+                              UpdateSettingsUiResponseCallback());
+
+  // Update device locale if voice interaction setup is completed.
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &AssistantManagerServiceImpl::IsVoiceInteractionSetupCompleted,
+          weak_factory_.GetWeakPtr(),
+          base::BindOnce(&AssistantManagerServiceImpl::UpdateDeviceLocale,
+                         weak_factory_.GetWeakPtr())));
+}
+
+void AssistantManagerServiceImpl::UpdateDeviceLocale(bool is_setup_completed) {
+  if (!is_setup_completed)
+    return;
+
+  // Update device locale.
+  assistant::SettingsUiUpdate update;
+  assistant::AssistantDeviceSettingsUpdate* device_settings_update =
+      update.mutable_assistant_device_settings_update()
+          ->add_assistant_device_settings_update();
+  device_settings_update->mutable_device_settings()->set_locale(
+      base::i18n::GetConfiguredLocale());
 
   // Device settings update result is not handled because it is not included in
   // the SettingsUiUpdateResult.
@@ -443,6 +476,11 @@ void AssistantManagerServiceImpl::OnSpeechLevelUpdatedOnMainThread(
     const float speech_level) {
   subscribers_.ForAllPtrs(
       [&speech_level](auto* ptr) { ptr->OnSpeechLevelUpdated(speech_level); });
+}
+
+void AssistantManagerServiceImpl::IsVoiceInteractionSetupCompleted(
+    ash::mojom::VoiceInteractionController::IsSetupCompletedCallback callback) {
+  voice_interaction_controller_->IsSetupCompleted(std::move(callback));
 }
 
 }  // namespace assistant

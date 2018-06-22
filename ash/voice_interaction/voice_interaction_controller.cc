@@ -8,13 +8,13 @@
 
 namespace ash {
 
-VoiceInteractionController::VoiceInteractionController() : binding_(this) {}
+VoiceInteractionController::VoiceInteractionController() = default;
 
 VoiceInteractionController::~VoiceInteractionController() = default;
 
 void VoiceInteractionController::BindRequest(
     mojom::VoiceInteractionControllerRequest request) {
-  binding_.Bind(std::move(request));
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void VoiceInteractionController::NotifyStatusChanged(
