@@ -135,7 +135,7 @@ class LoginDisplay {
 
  protected:
   // Login UI delegate (controller).
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
 
   // Parent window, might be used to create dialog windows.
   gfx::NativeWindow parent_window_ = nullptr;
