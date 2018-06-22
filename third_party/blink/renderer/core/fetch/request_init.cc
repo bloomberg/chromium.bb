@@ -80,7 +80,7 @@ RequestInit::RequestInit(ScriptState* script_state,
   if (exception_state.HadException())
     return;
 
-  auto referrer_string = h.Get<IDLUSVString>("referrer");
+  referrer_ = h.Get<IDLUSVString>("referrer").value_or(String());
   if (exception_state.HadException())
     return;
 
@@ -120,7 +120,7 @@ RequestInit::RequestInit(ScriptState* script_state,
 
   are_any_members_set_ = h.AreAnyMembersSet();
 
-  CheckEnumValues(referrer_string, referrer_policy_string, exception_state);
+  CheckEnumValues(referrer_policy_string, exception_state);
   if (exception_state.HadException())
     return;
 
@@ -156,7 +156,6 @@ base::Optional<AbortSignal*> RequestInit::Signal() const {
 }
 
 void RequestInit::CheckEnumValues(
-    const base::Optional<String>& referrer_string,
     const base::Optional<String>& referrer_policy_string,
     ExceptionState& exception_state) {
   TRACE_EVENT0("blink", "RequestInit::CheckEnumValues");
@@ -198,36 +197,25 @@ void RequestInit::CheckEnumValues(
   }
 
   // Validate referrer policy
-
-  // A part of the Request constructor algorithm is performed here. See
-  // the comments in the Request constructor code for the detail.
-
-  // We need to use "about:client" instead of |clientReferrerString|,
-  // because "about:client" => |clientReferrerString| conversion is done
-  // in Request::createRequestWithRequestOrString.
-  referrer_ = Referrer("about:client", kReferrerPolicyDefault);
-  if (referrer_string.has_value())
-    referrer_.referrer = AtomicString(*referrer_string);
-
   if (referrer_policy_string.has_value()) {
     if (*referrer_policy_string == "") {
-      referrer_.referrer_policy = kReferrerPolicyDefault;
+      referrer_policy_ = kReferrerPolicyDefault;
     } else if (*referrer_policy_string == "no-referrer") {
-      referrer_.referrer_policy = kReferrerPolicyNever;
+      referrer_policy_ = kReferrerPolicyNever;
     } else if (*referrer_policy_string == "no-referrer-when-downgrade") {
-      referrer_.referrer_policy = kReferrerPolicyNoReferrerWhenDowngrade;
+      referrer_policy_ = kReferrerPolicyNoReferrerWhenDowngrade;
     } else if (*referrer_policy_string == "origin") {
-      referrer_.referrer_policy = kReferrerPolicyOrigin;
+      referrer_policy_ = kReferrerPolicyOrigin;
     } else if (*referrer_policy_string == "origin-when-cross-origin") {
-      referrer_.referrer_policy = kReferrerPolicyOriginWhenCrossOrigin;
+      referrer_policy_ = kReferrerPolicyOriginWhenCrossOrigin;
     } else if (*referrer_policy_string == "same-origin") {
-      referrer_.referrer_policy = kReferrerPolicySameOrigin;
+      referrer_policy_ = kReferrerPolicySameOrigin;
     } else if (*referrer_policy_string == "strict-origin") {
-      referrer_.referrer_policy = kReferrerPolicyStrictOrigin;
+      referrer_policy_ = kReferrerPolicyStrictOrigin;
     } else if (*referrer_policy_string == "unsafe-url") {
-      referrer_.referrer_policy = kReferrerPolicyAlways;
+      referrer_policy_ = kReferrerPolicyAlways;
     } else if (*referrer_policy_string == "strict-origin-when-cross-origin") {
-      referrer_.referrer_policy = kReferrerPolicyStrictOriginWhenCrossOrigin;
+      referrer_policy_ = kReferrerPolicyStrictOriginWhenCrossOrigin;
     } else {
       exception_state.ThrowTypeError("Invalid referrer policy");
       return;

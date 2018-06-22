@@ -31,7 +31,10 @@ class RequestInit {
   const String& Method() const { return method_; }
   const HeadersInit& GetHeaders() const { return headers_; }
   ScriptValue GetBody() const { return body_; }
-  const Referrer& GetReferrer() const { return referrer_; }
+  const String& Referrer() const { return referrer_; }
+  base::Optional<ReferrerPolicy> GetReferrerPolicy() const {
+    return referrer_policy_;
+  }
   const String& Mode() const { return mode_; }
   const String& Credentials() const { return credentials_; }
   const String& CacheMode() const { return cache_; }
@@ -49,8 +52,7 @@ class RequestInit {
   friend struct NativeValueTraits<IDLPassThrough>;
   friend struct NativeValueTraitsBase<IDLPassThrough>;
 
-  void CheckEnumValues(const base::Optional<String>& referrer_string,
-                       const base::Optional<String>& referrer_policy_string,
+  void CheckEnumValues(const base::Optional<String>& referrer_policy_string,
                        ExceptionState&);
   void SetUpBody(ExecutionContext*,
                  v8::Isolate*,
@@ -62,7 +64,8 @@ class RequestInit {
   // Having a ScriptValue is safe here because this struct is STACK_ALLOCATED
   // and not intended to live long.
   ScriptValue body_;
-  Referrer referrer_;
+  String referrer_;
+  base::Optional<ReferrerPolicy> referrer_policy_;
   String mode_;
   String credentials_;
   String cache_;

@@ -260,43 +260,29 @@ Request* Request::CreateRequestWithRequestOrString(
     // "Unset |request|'s history-navigation flag."
     request->SetIsHistoryNavigation(false);
 
-    // The substep "Set |request|'s referrer to "client"." is performed by
-    // the code below as follows:
-    // - |init.referrer.referrer| gets initialized by the RequestInit
-    //   constructor to "about:client" when any of |options|'s members are
-    //   present.
-    // - The code below does the equivalent as the step specified in the
-    //   spec by processing the "about:client".
+    // "Set |request|’s referrer to "client"."
+    request->SetReferrerString(FetchRequestData::ClientReferrerString());
 
-    // The substep "Set |request|'s referrer policy to the empty string."
-    // is also performed by the code below similarly.
+    // "Set |request|’s referrer policy to the empty string."
+    request->SetReferrerPolicy(kReferrerPolicyDefault);
   }
 
-  // The following if-clause performs the following two steps:
-  // - "If |init|'s referrer member is present, run these substeps:"
-  //   "If |init|'s referrerPolicy member is present, set |request|'s
-  //    referrer policy to it."
-  //
-  // The condition "if any of |init|'s members are present"
-  // (areAnyMembersSet) is used for the if-clause instead of conditions
-  // indicating presence of each member as specified in the spec. This is to
-  // perform the substeps in the previous step together here.
-  if (init.AreAnyMembersSet()) {
+  // "If init’s referrer member is present, then:"
+  if (!init.Referrer().IsNull()) {
     // Nothing to do for the step "Let |referrer| be |init|'s referrer
     // member."
 
-    if (init.GetReferrer().referrer.IsEmpty()) {
+    if (init.Referrer().IsEmpty()) {
       // "If |referrer| is the empty string, set |request|'s referrer to
       // "no-referrer" and terminate these substeps."
       request->SetReferrerString(AtomicString(Referrer::NoReferrer()));
     } else {
       // "Let |parsedReferrer| be the result of parsing |referrer| with
       // |baseURL|."
-      KURL parsed_referrer(base_url, init.GetReferrer().referrer);
+      KURL parsed_referrer(base_url, init.Referrer());
       if (!parsed_referrer.IsValid()) {
         // "If |parsedReferrer| is failure, throw a TypeError."
-        exception_state.ThrowTypeError("Referrer '" +
-                                       init.GetReferrer().referrer +
+        exception_state.ThrowTypeError("Referrer '" + init.Referrer() +
                                        "' is not a valid URL.");
         return nullptr;
       }
@@ -322,8 +308,12 @@ Request* Request::CreateRequestWithRequestOrString(
         request->SetReferrerString(AtomicString(parsed_referrer.GetString()));
       }
     }
-    request->SetReferrerPolicy(init.GetReferrer().referrer_policy);
   }
+
+  // "If init's referrerPolicy member is present, set request's referrer
+  // policy to it."
+  if (init.GetReferrerPolicy().has_value())
+    request->SetReferrerPolicy(init.GetReferrerPolicy().value());
 
   // The following code performs the following steps:
   // - "Let |mode| be |init|'s mode member if it is present, and
