@@ -35,6 +35,11 @@ class WindowServiceDelegateImpl : public ui::ws2::WindowServiceDelegate {
                    ui::DragDropTypes::DragEventSource source,
                    DragDropCompletedCallback callback) override;
   void CancelDragLoop(aura::Window* window) override;
+  void UpdateTextInputState(aura::Window* window,
+                            ui::mojom::TextInputStatePtr state) override;
+  void UpdateImeVisibility(aura::Window* window,
+                           bool visible,
+                           ui::mojom::TextInputStatePtr state) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowServiceDelegateImpl);

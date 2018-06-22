@@ -14,6 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
+#include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -86,6 +87,18 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
 
   // Called to cancel an in-progress drag loop that was started by RunDragLoop.
   virtual void CancelDragLoop(aura::Window* window) {}
+
+  // Called to update the text input state of the PlatformWindow associated with
+  // |window|. It is a no-op if |window| is not focused.
+  virtual void UpdateTextInputState(aura::Window* window,
+                                    ui::mojom::TextInputStatePtr state) {}
+
+  // Called to update the IME visibility and text input state of the
+  // PlatformWindow associated with |window|. It is a no-op if |window| is not
+  // focused.
+  virtual void UpdateImeVisibility(aura::Window* window,
+                                   bool visible,
+                                   ui::mojom::TextInputStatePtr state) {}
 
  protected:
   virtual ~WindowServiceDelegate() = default;

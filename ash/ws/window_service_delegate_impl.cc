@@ -5,11 +5,14 @@
 #include "ash/ws/window_service_delegate_impl.h"
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/host/ash_window_tree_host.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/non_client_frame_controller.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "ash/wm/toplevel_window_event_handler.h"
+#include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -157,6 +160,27 @@ void WindowServiceDelegateImpl::CancelDragLoop(aura::Window* window) {
     return;
 
   aura::client::GetDragDropClient(window->GetRootWindow())->DragCancel();
+}
+
+void WindowServiceDelegateImpl::UpdateTextInputState(
+    aura::Window* window,
+    ui::mojom::TextInputStatePtr state) {
+  if (!wm::IsActiveWindow(window))
+    return;
+
+  RootWindowController::ForWindow(window)->ash_host()->UpdateTextInputState(
+      std::move(state));
+}
+
+void WindowServiceDelegateImpl::UpdateImeVisibility(
+    aura::Window* window,
+    bool visible,
+    ui::mojom::TextInputStatePtr state) {
+  if (!wm::IsActiveWindow(window))
+    return;
+
+  RootWindowController::ForWindow(window)->ash_host()->UpdateImeVisibility(
+      visible, std::move(state));
 }
 
 }  // namespace ash
