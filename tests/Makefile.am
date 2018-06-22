@@ -27,9 +27,6 @@ en_gb_g1_italics_SOURCES = en_gb_g1_italics.c
 findTable_SOURCES = findTable.c
 getTable_SOURCES = getTable.c
 hash_collision_SOURCES = hash_collision.c
-hyphenate_achena_SOURCES = hyphenate_achena.c
-hyphenate_alderen_SOURCES = hyphenate_alderen.c
-hyphenate_straightforward_SOURCES = hyphenate_straightforward.c
 hyphenate_xxx_SOURCES = hyphenate_xxx.c
 inpos_SOURCES = inpos.c
 inpos_compbrl_SOURCES = default_table.h inpos_compbrl.c
@@ -65,9 +62,6 @@ program_TESTS =					\
 	findTable				\
 	getTable				\
 	hash_collision				\
-	hyphenate_achena			\
-	hyphenate_alderen			\
-	hyphenate_straightforward		\
 	hyphenate_xxx				\
 	inpos					\
 	inpos_compbrl				\
