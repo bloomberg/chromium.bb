@@ -183,10 +183,9 @@ TEST_F(StartupControllerTest, SetupInProgressTriggerInterruptsDeferral) {
 // Test that deferred startup and the FirstSetupComplete check can be bypassed.
 TEST_F(StartupControllerTest, BypassDeferredStartupAndSetupCompleteCheck) {
   SetCanStart(true);
-  controller()->SetBypassSetupCompleteAndDeferredStartup();
   ASSERT_FALSE(sync_prefs()->IsFirstSetupComplete());
   ExpectNotStarted();
-  controller()->TryStart(/*force_immediate=*/false);
+  controller()->TryStart(/*force_immediate=*/true);
   ExpectStarted();
 }
 

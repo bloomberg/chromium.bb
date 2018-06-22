@@ -343,11 +343,9 @@ void ProfileSyncService::Initialize() {
 
   // Auto-start means the first time the profile starts up, sync should start up
   // immediately.
-  if (start_behavior_ == AUTO_START && IsSyncRequested() &&
-      !IsFirstSetupComplete()) {
-    startup_controller_->SetBypassSetupCompleteAndDeferredStartup();
-  }
-  startup_controller_->TryStart(/*force_immediate=*/false);
+  bool force_immediate = (start_behavior_ == AUTO_START && IsSyncRequested() &&
+                          !IsFirstSetupComplete());
+  startup_controller_->TryStart(force_immediate);
 }
 
 void ProfileSyncService::StartSyncingWithServer() {
@@ -1966,8 +1964,7 @@ void ProfileSyncService::RequestStart() {
     sync_prefs_.SetSyncRequested(true);
     NotifyObservers();
   }
-  startup_controller_->SetBypassSetupCompleteAndDeferredStartup();
-  startup_controller_->TryStart(IsSetupInProgress());
+  startup_controller_->TryStart(/*force_immediate=*/true);
 }
 
 void ProfileSyncService::ReconfigureDatatypeManager() {
