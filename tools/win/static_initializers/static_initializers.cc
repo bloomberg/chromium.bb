@@ -37,11 +37,23 @@ static bool LoadDataFromPdb(const wchar_t* filename,
   wchar_t ext[MAX_PATH];
   _wsplitpath_s(filename, NULL, 0, NULL, 0, NULL, 0, ext, MAX_PATH);
 
-  // Open and prepare the debug data associated with the executable.
-  hr = (*source)->loadDataForExe(filename, search_path, NULL);
-  if (FAILED(hr)) {
-    printf("loadDataForExe failed - HRESULT = %08lX\n", hr);
-    return false;
+  if (wcsicmp(ext, L".pdb") == 0) {
+    // Open and prepare the debug data specified.
+    hr = (*source)->loadDataFromPdb(filename);
+    if (FAILED(hr)) {
+      printf("loadDataFromPdb failed - HRESULT = %08lX\n", hr);
+      return false;
+    }
+  } else {
+    // Open and prepare the debug data associated with the executable.
+    hr = (*source)->loadDataForExe(filename, search_path, NULL);
+    if (FAILED(hr)) {
+      printf("loadDataForExe failed - HRESULT = %08lX\n", hr);
+      printf(
+          "Try copying the .pdb beside the PE file or passing the .pdb path "
+          "to this tool directly.");
+      return false;
+    }
   }
 
   // Open a session for querying symbols.
