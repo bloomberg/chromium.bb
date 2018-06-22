@@ -854,7 +854,7 @@
   "monochrome_apk_checker": {
     "label": "//chrome/android/monochrome:monochrome_apk_checker",
     "type": "script",
-    "script": "//chrome/android/monochrome/scripts/monochrome_apk_checker_wrapper.py",
+    "script": "//testing/scripts/monochrome_apk_checker_wrapper.py",
     "args": [
       "--script",
       "../../chrome/android/monochrome/scripts/monochrome_apk_checker.py",
