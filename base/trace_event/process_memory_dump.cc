@@ -272,8 +272,6 @@ MemoryAllocatorDump* ProcessMemoryDump::GetAllocatorDump(
   auto it = allocator_dumps_.find(absolute_name);
   if (it != allocator_dumps_.end())
     return it->second.get();
-  if (black_hole_mad_)
-    return black_hole_mad_.get();
   return nullptr;
 }
 
