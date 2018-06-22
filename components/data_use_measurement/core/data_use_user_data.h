@@ -88,7 +88,7 @@ class DataUseUserData : public base::SupportsUserData::Data {
     VIDEO_APPBACKGROUND = 10,
     VIDEO_TABBACKGROUND = 11,
     VIDEO = 12,
-    TYPE_MAX = 13,
+    kMaxValue = 13,
   };
 
   // The state of the application. Only available on Android and on other
