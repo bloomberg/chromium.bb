@@ -19,6 +19,8 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
@@ -617,14 +619,24 @@ Node* NGPaintFragment::NodeForHitTest() const {
   if (PhysicalFragment().IsLineBox())
     return Parent()->NodeForHitTest();
 
-  // When the fragment is inside a ::first-letter, ::before or ::after pseudo
-  // node, return the pseudo node.
+  // When the fragment is a list marker, return the list item.
+  if (GetLayoutObject() && GetLayoutObject()->IsLayoutNGListMarker())
+    return ToLayoutNGListMarker(GetLayoutObject())->ListItem()->GetNode();
+
   for (const NGPaintFragment* runner = Parent(); runner;
        runner = runner->Parent()) {
+    // When the fragment is inside a ::first-letter, ::before or ::after pseudo
+    // node, return the pseudo node.
     if (Node* node = runner->GetNode()) {
       if (CanBeHitTestTargetPseudoNode(*node))
         return node;
       return nullptr;
+    }
+
+    // When the fragment is inside a list marker, return the list item.
+    if (runner->GetLayoutObject() &&
+        runner->GetLayoutObject()->IsLayoutNGListMarker()) {
+      return runner->NodeForHitTest();
     }
   }
 
