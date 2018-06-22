@@ -489,6 +489,11 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
     int64_t bytes_to_read = std::min(
         static_cast<int64_t>(kDefaultFileSystemUrlPipeSize), remaining_bytes_);
     if (!bytes_to_read) {
+      if (consumer_handle_.is_valid()) {
+        // This was an empty file; make sure to call OnReceiveResponse
+        // regardless.
+        client_->OnReceiveResponse(head_);
+      }
       OnFileWritten(MOJO_RESULT_OK);
       return;
     }
