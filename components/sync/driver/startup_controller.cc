@@ -67,13 +67,13 @@ StartupController::StartupController(
       can_start_callback_(std::move(can_start)),
       start_engine_callback_(std::move(start_engine)),
       bypass_setup_complete_(false),
-      received_start_request_(false),
+      bypass_deferred_startup_(false),
       weak_factory_(this) {}
 
 StartupController::~StartupController() {}
 
 void StartupController::Reset() {
-  received_start_request_ = false;
+  bypass_deferred_startup_ = false;
   bypass_setup_complete_ = false;
   start_up_time_ = base::Time();
   start_engine_time_ = base::Time();
@@ -105,7 +105,7 @@ void StartupController::StartUp(StartUpDeferredOption deferred_option) {
   }
 }
 
-void StartupController::TryStart(bool setup_in_progress) {
+void StartupController::TryStart(bool force_immediate) {
   if (!can_start_callback_.Run()) {
     return;
   }
@@ -117,17 +117,16 @@ void StartupController::TryStart(bool setup_in_progress) {
   //   and encryption information to the UI.
   // Do not start up the sync engine if setup has not completed and isn't
   // in progress, unless told to otherwise.
-  if (setup_in_progress) {
+  if (force_immediate) {
     StartUp(STARTUP_IMMEDIATE);
   } else if (sync_prefs_->IsFirstSetupComplete() || bypass_setup_complete_) {
-    StartUp(received_start_request_ ? STARTUP_IMMEDIATE : STARTUP_DEFERRED);
+    StartUp(bypass_deferred_startup_ ? STARTUP_IMMEDIATE : STARTUP_DEFERRED);
   }
 }
 
-void StartupController::TryStartImmediately() {
-  received_start_request_ = true;
+void StartupController::SetBypassSetupCompleteAndDeferredStartup() {
+  bypass_deferred_startup_ = true;
   bypass_setup_complete_ = true;
-  TryStart(/*setup_in_progress=*/false);
 }
 
 void StartupController::RecordTimeDeferred() {
@@ -148,8 +147,8 @@ void StartupController::OnFallbackStartupTimerExpired() {
   RecordTimeDeferred();
   UMA_HISTOGRAM_ENUMERATION("Sync.Startup.DeferredInitTrigger",
                             TRIGGER_FALLBACK_TIMER, MAX_TRIGGER_VALUE);
-  received_start_request_ = true;
-  TryStart(/*setup_in_progress=*/false);
+  bypass_deferred_startup_ = true;
+  TryStart(/*force_immediate=*/false);
 }
 
 StartupController::State StartupController::GetState() const {
@@ -183,8 +182,8 @@ void StartupController::OnDataTypeRequestsSyncStartup(ModelType type) {
     UMA_HISTOGRAM_ENUMERATION("Sync.Startup.DeferredInitTrigger",
                               TRIGGER_DATA_TYPE_REQUEST, MAX_TRIGGER_VALUE);
   }
-  received_start_request_ = true;
-  TryStart(/*setup_in_progress=*/false);
+  bypass_deferred_startup_ = true;
+  TryStart(/*force_immediate=*/false);
 }
 
 }  // namespace syncer

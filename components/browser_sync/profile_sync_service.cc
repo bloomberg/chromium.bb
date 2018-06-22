@@ -345,10 +345,9 @@ void ProfileSyncService::Initialize() {
   // immediately.
   if (start_behavior_ == AUTO_START && IsSyncRequested() &&
       !IsFirstSetupComplete()) {
-    startup_controller_->TryStartImmediately();
-  } else {
-    startup_controller_->TryStart(/*setup_in_progress=*/false);
+    startup_controller_->SetBypassSetupCompleteAndDeferredStartup();
   }
+  startup_controller_->TryStart(/*force_immediate=*/false);
 }
 
 void ProfileSyncService::StartSyncingWithServer() {
@@ -1242,7 +1241,7 @@ ProfileSyncService::GetSetupInProgressHandle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (++outstanding_setup_in_progress_handles_ == 1) {
-    startup_controller_->TryStart(/*setup_in_progress=*/true);
+    startup_controller_->TryStart(/*force_immediate=*/true);
 
     NotifyObservers();
   }
@@ -1967,7 +1966,8 @@ void ProfileSyncService::RequestStart() {
     sync_prefs_.SetSyncRequested(true);
     NotifyObservers();
   }
-  startup_controller_->TryStartImmediately();
+  startup_controller_->SetBypassSetupCompleteAndDeferredStartup();
+  startup_controller_->TryStart(IsSetupInProgress());
 }
 
 void ProfileSyncService::ReconfigureDatatypeManager() {
