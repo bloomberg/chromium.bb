@@ -623,10 +623,6 @@ function renderMaterialDesignTile(data) {
   // Set title and alt to empty so screen readers won't say the image name.
   fi.title = '';
   fi.alt = '';
-  // Images from this source may come as multiples of 16dp or multiples of 40dp.
-  // We display them as full size (e.g. 48px for 3x) but zoom accordingly to
-  // keep the right visual appearance.
-  fi.style = 'zoom: ' + 100 / window.devicePixelRatio + '%;';
   loadedCounter += 1;
   fi.addEventListener('load', function(ev) {
     // Store the type for a potential later navigation.
