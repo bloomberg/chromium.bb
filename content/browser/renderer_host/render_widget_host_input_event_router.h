@@ -258,6 +258,9 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                                         gfx::PointF* transformed_point,
                                         viz::EventSource source) const;
 
+  // TODO(851958): Remove once we understand the cause of 851958.
+  void ReportMouseTargetNotInRoot(RenderWidgetHostViewBase* target_root,
+                                  RenderWidgetHostViewBase* specified_root);
   // TODO(828422): Remove once this issue no longer occurs.
   void ReportBubblingScrollToSameView(const blink::WebGestureEvent& event,
                                       const RenderWidgetHostViewBase* view);

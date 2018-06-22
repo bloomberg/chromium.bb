@@ -150,24 +150,7 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
     // most recent target, if possible. In some cases the parent might already
     // have been destroyed, in which case the last target is cleared.
     if (view != last_mouse_move_root_view_) {
-      // TODO(851958): Remove crash keys once we understand why the following
-      // attempt to get the parent can crash.
-      static auto* target_key = base::debug::AllocateCrashKeyString(
-          "failed-parent-lookup-target", base::debug::CrashKeySize::Size32);
-      base::debug::ScopedCrashKeyString target_key_value(
-          target_key, base::StringPrintf("%p", last_mouse_move_target_));
-      static auto* root_key = base::debug::AllocateCrashKeyString(
-          "failed-parent-lookup-root", base::debug::CrashKeySize::Size32);
-      base::debug::ScopedCrashKeyString root_key_value(
-          root_key, base::StringPrintf("%p", last_mouse_move_root_view_));
-      static auto* target_is_child_key = base::debug::AllocateCrashKeyString(
-          "failed-parent-lookup-target-is-child",
-          base::debug::CrashKeySize::Size32);
-      base::debug::ScopedCrashKeyString target_is_child_key_value(
-          target_is_child_key,
-          std::to_string(
-              last_mouse_move_target_->IsRenderWidgetHostViewChildFrame()));
-
+      DCHECK(last_mouse_move_target_->IsRenderWidgetHostViewChildFrame());
       last_mouse_move_target_ =
           static_cast<RenderWidgetHostViewChildFrame*>(last_mouse_move_target_)
               ->GetParentView();
@@ -691,6 +674,8 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
   std::vector<RenderWidgetHostViewBase*> exited_views;
   RenderWidgetHostViewBase* cur_view = target;
   entered_views.push_back(cur_view);
+  // Non-root RWHVs are guaranteed to be RenderWidgetHostViewChildFrames,
+  // as long as they are the only embeddable RWHVs.
   while (cur_view->IsRenderWidgetHostViewChildFrame()) {
     cur_view =
         static_cast<RenderWidgetHostViewChildFrame*>(cur_view)->GetParentView();
@@ -703,9 +688,11 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
     }
     entered_views.push_back(cur_view);
   }
-  // Non-root RWHVs are guaranteed to be RenderWidgetHostViewChildFrames,
-  // as long as they are the only embeddable RWHVs.
-  DCHECK_EQ(cur_view, root_view);
+
+  if (cur_view != root_view) {
+    ReportMouseTargetNotInRoot(cur_view, root_view);
+    return;
+  }
 
   cur_view = last_mouse_move_target_;
   if (cur_view) {
@@ -783,6 +770,33 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
 
   last_mouse_move_target_ = target;
   last_mouse_move_root_view_ = root_view;
+}
+
+void RenderWidgetHostInputEventRouter::ReportMouseTargetNotInRoot(
+    RenderWidgetHostViewBase* target_root,
+    RenderWidgetHostViewBase* specified_root) {
+  static auto* specified_root_is_child_key =
+      base::debug::AllocateCrashKeyString("mouse-outside-root-root-is-child",
+                                          base::debug::CrashKeySize::Size32);
+  base::debug::ScopedCrashKeyString specified_root_is_child_key_value(
+      specified_root_is_child_key,
+      std::to_string(specified_root->IsRenderWidgetHostViewChildFrame()));
+  static auto* specified_root_is_mouse_locked_key =
+      base::debug::AllocateCrashKeyString(
+          "mouse-outside-root-root-is-mouse-locked",
+          base::debug::CrashKeySize::Size32);
+  base::debug::ScopedCrashKeyString specified_root_is_mouse_locked_key_value(
+      specified_root_is_mouse_locked_key,
+      std::to_string(specified_root->IsMouseLocked()));
+  static auto* target_root_is_mouse_locked_key =
+      base::debug::AllocateCrashKeyString(
+          "mouse-outside-root-target-root-is-mouse-locked",
+          base::debug::CrashKeySize::Size32);
+  base::debug::ScopedCrashKeyString target_root_is_mouse_locked_key_value(
+      target_root_is_mouse_locked_key,
+      std::to_string(target_root->IsMouseLocked()));
+
+  base::debug::DumpWithoutCrashing();
 }
 
 void RenderWidgetHostInputEventRouter::ReportBubblingScrollToSameView(
