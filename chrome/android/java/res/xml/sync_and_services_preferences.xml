@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
+        android:persistent="false"
+        android:key="use_sync_and_all_services"
+        android:title="@string/use_sync_and_all_services"/>
+
+    <Preference
+        android:key="sign_out_divider"
+        android:layout="@layout/divider_preference"/>
+    <org.chromium.chrome.browser.preferences.SigninExpandablePreferenceGroup
+        android:persistent="false"
+        android:key="sync_and_personalization"
+        android:title="@string/sync_and_personalization_title"
+        android:summary="@string/sync_and_personalization_summary"/>
+
+    <Preference
+        android:layout="@layout/divider_preference"/>
+
+    <org.chromium.chrome.browser.preferences.SigninExpandablePreferenceGroup
+        android:key="nonpersonalized_services"
+        android:title="@string/prefs_nonpersonalized_services_section_title"
+        android:summary="@string/prefs_nonpersonalized_services_section_summary">
+
+        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+            android:key="navigation_error"
+            android:title="@string/navigation_error_title"
+            android:summary="@string/navigation_error_summary"
+            android:defaultValue="true"/>
+        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+            android:key="search_suggestions"
+            android:title="@string/search_suggestions_title"
+            android:summary="@string/search_suggestions_summary"
+            android:defaultValue="true"/>
+        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+            android:key="safe_browsing_extended_reporting"
+            android:title="@string/safe_browsing_extended_reporting_title"
+            android:summary="@string/safe_browsing_extended_reporting_summary"/>
+        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+            android:key="safe_browsing_scout_reporting"
+            android:title="@string/safe_browsing_scout_reporting_title"
+            android:summary="@string/safe_browsing_scout_reporting_summary"/>
+        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+            android:key="safe_browsing"
+            android:title="@string/safe_browsing_title"
+            android:summary="@string/safe_browsing_summary"/>
+        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+            android:key="network_predictions"
+            android:title="@string/network_predictions_title"
+            android:summary="@string/network_predictions_summary"
+            android:persistent="false"/>
+        <org.chromium.chrome.browser.preferences.ChromeBasePreference
+            android:key="usage_and_crash_reports"
+            android:title="@string/usage_and_crash_reports_title"
+            android:fragment="org.chromium.chrome.browser.preferences.privacy.UsageAndCrashReportsPreferenceFragment"/>
+        <org.chromium.chrome.browser.preferences.ChromeBasePreference
+            android:key="contextual_search"
+            android:title="@string/contextual_search_title"
+            android:fragment="org.chromium.chrome.browser.preferences.privacy.ContextualSearchPreferenceFragment"/>
+    </org.chromium.chrome.browser.preferences.SigninExpandablePreferenceGroup>
+
+    <Preference
+        android:layout="@layout/divider_preference"/>
+</PreferenceScreen>
