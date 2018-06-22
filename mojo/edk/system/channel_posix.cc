@@ -20,8 +20,8 @@
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
-#include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/socket_utils_posix.h"
 
 #if !defined(OS_NACL)
 #include <sys/uio.h>
@@ -281,13 +281,14 @@ class ChannelPosix : public Channel,
       read_watcher_.reset();
       base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
 
-      ScopedInternalPlatformHandle accept_fd;
-      ServerAcceptConnection(handle_, &accept_fd);
+      base::ScopedFD accept_fd;
+      AcceptSocketConnection(handle_.get().handle, &accept_fd);
       if (!accept_fd.is_valid()) {
         OnError(Error::kConnectionFailed);
         return;
       }
-      handle_ = std::move(accept_fd);
+      handle_ = ScopedInternalPlatformHandle(
+          InternalPlatformHandle(accept_fd.release()));
       StartOnIOThread();
 #else
       NOTREACHED();
@@ -306,8 +307,13 @@ class ChannelPosix : public Channel,
       char* buffer = GetReadBuffer(&buffer_capacity);
       DCHECK_GT(buffer_capacity, 0u);
 
-      ssize_t read_result = PlatformChannelRecvmsg(
-          handle_, buffer, buffer_capacity, &incoming_platform_handles_);
+      std::vector<base::ScopedFD> incoming_fds;
+      ssize_t read_result = SocketRecvmsg(handle_.get().handle, buffer,
+                                          buffer_capacity, &incoming_fds);
+      for (auto& fd : incoming_fds) {
+        incoming_platform_handles_.emplace_back(
+            InternalPlatformHandle(fd.release()));
+      }
 
       if (read_result > 0) {
         bytes_read = static_cast<size_t>(read_result);
@@ -364,8 +370,11 @@ class ChannelPosix : public Channel,
       if (!handles.empty()) {
         iovec iov = {const_cast<void*>(message_view.data()),
                      message_view.data_num_bytes()};
+        std::vector<base::ScopedFD> fds(handles.size());
+        for (size_t i = 0; i < handles.size(); ++i)
+          fds[i] = base::ScopedFD(handles[i].release().handle);
         // TODO: Handle lots of handles.
-        result = PlatformChannelSendmsgWithHandles(handle_, &iov, 1, handles);
+        result = SendmsgWithHandles(handle_.get().handle, &iov, 1, fds);
         if (result >= 0) {
 #if defined(OS_MACOSX)
           // There is a bug on OSX which makes it dangerous to close
@@ -393,8 +402,8 @@ class ChannelPosix : public Channel,
 #endif  // defined(OS_MACOSX)
         }
       } else {
-        result = PlatformChannelWrite(handle_, message_view.data(),
-                                      message_view.data_num_bytes());
+        result = SocketWrite(handle_.get().handle, message_view.data(),
+                             message_view.data_num_bytes());
       }
 
       if (result < 0) {

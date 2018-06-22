@@ -65,7 +65,6 @@ template("core_impl_source_set") {
 
     public = [
       "embedder/configuration.h",
-      "embedder/connection_params.h",
       "embedder/named_platform_channel_pair.h",
       "embedder/named_platform_handle.h",
       "embedder/named_platform_handle_utils.h",
@@ -73,9 +72,9 @@ template("core_impl_source_set") {
       "embedder/platform_handle.h",
       "embedder/process_error_callback.h",
       "embedder/scoped_platform_handle.h",
-      "embedder/transport_protocol.h",
       "system/channel.h",
       "system/configuration.h",
+      "system/connection_params.h",
       "system/core.h",
       "system/data_pipe_consumer_dispatcher.h",
       "system/data_pipe_control_message.h",
@@ -104,7 +103,6 @@ template("core_impl_source_set") {
     }
 
     sources = [
-      "embedder/connection_params.cc",
       "embedder/named_platform_handle_utils_win.cc",
       "embedder/platform_channel_pair.cc",
       "embedder/platform_channel_pair_win.cc",
@@ -115,6 +113,7 @@ template("core_impl_source_set") {
       "system/channel.cc",
       "system/channel_win.cc",
       "system/configuration.cc",
+      "system/connection_params.cc",
       "system/core.cc",
       "system/data_pipe_consumer_dispatcher.cc",
       "system/data_pipe_control_message.cc",
@@ -163,9 +162,7 @@ template("core_impl_source_set") {
       sources += [ "embedder/platform_channel_pair_posix.cc" ]
 
       if (!is_nacl || is_nacl_nonsfi) {
-        public += [ "embedder/platform_channel_utils_posix.h" ]
         sources += [
-          "embedder/platform_channel_utils_posix.cc",
           "system/broker_posix.cc",
           "system/channel_posix.cc",
         ]

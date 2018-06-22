@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/embedder/connection_params.h"
+#include "mojo/edk/system/connection_params.h"
 
 #include <utility>
 
@@ -11,12 +11,8 @@
 namespace mojo {
 namespace edk {
 
-ConnectionParams::ConnectionParams(TransportProtocol protocol,
-                                   ScopedInternalPlatformHandle channel)
-    : protocol_(protocol), channel_(std::move(channel)) {
-  // TODO(rockot): Support other protocols.
-  DCHECK_EQ(TransportProtocol::kLegacy, protocol);
-}
+ConnectionParams::ConnectionParams(ScopedInternalPlatformHandle channel)
+    : channel_(std::move(channel)) {}
 
 ConnectionParams::ConnectionParams(ConnectionParams&& params) {
   *this = std::move(params);

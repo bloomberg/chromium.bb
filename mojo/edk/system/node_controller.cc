@@ -214,8 +214,7 @@ void NodeController::AcceptBrokerClientInvitation(
     CancelPendingPortMerges();
     return;
   }
-  connection_params = ConnectionParams(connection_params.protocol(),
-                                       std::move(platform_handle));
+  connection_params = ConnectionParams(std::move(platform_handle));
 #endif
 
   io_task_runner_->PostTask(
@@ -340,10 +339,9 @@ void NodeController::SendBrokerClientInvitationOnIOThread(
   CHECK(channel_ok);
 #endif  // defined(OS_WIN)
 
-  scoped_refptr<NodeChannel> channel = NodeChannel::Create(
-      this,
-      ConnectionParams(connection_params.protocol(), std::move(server_handle)),
-      io_task_runner_, process_error_callback);
+  scoped_refptr<NodeChannel> channel =
+      NodeChannel::Create(this, ConnectionParams(std::move(server_handle)),
+                          io_task_runner_, process_error_callback);
 
 #else  // !defined(OS_MACOSX) && !defined(OS_NACL)
   scoped_refptr<NodeChannel> channel =
@@ -825,8 +823,7 @@ void NodeController::OnAddBrokerClient(const ports::NodeName& from_node,
   }
 
   PlatformChannelPair broker_channel;
-  ConnectionParams connection_params(TransportProtocol::kLegacy,
-                                     broker_channel.PassServerHandle());
+  ConnectionParams connection_params(broker_channel.PassServerHandle());
   scoped_refptr<NodeChannel> client =
       NodeChannel::Create(this, std::move(connection_params), io_task_runner_,
                           ProcessErrorCallback());
@@ -907,10 +904,9 @@ void NodeController::OnAcceptBrokerClient(
     broker = inviter;
   } else {
     DCHECK(broker_channel.is_valid());
-    broker = NodeChannel::Create(
-        this,
-        ConnectionParams(TransportProtocol::kLegacy, std::move(broker_channel)),
-        io_task_runner_, ProcessErrorCallback());
+    broker =
+        NodeChannel::Create(this, ConnectionParams(std::move(broker_channel)),
+                            io_task_runner_, ProcessErrorCallback());
     AddPeer(broker_name, broker, true /* start_channel */);
   }
 
@@ -1049,10 +1045,9 @@ void NodeController::OnIntroduce(const ports::NodeName& from_node,
     return;
   }
 
-  scoped_refptr<NodeChannel> channel = NodeChannel::Create(
-      this,
-      ConnectionParams(TransportProtocol::kLegacy, std::move(channel_handle)),
-      io_task_runner_, ProcessErrorCallback());
+  scoped_refptr<NodeChannel> channel =
+      NodeChannel::Create(this, ConnectionParams(std::move(channel_handle)),
+                          io_task_runner_, ProcessErrorCallback());
 
   DVLOG(1) << "Adding new peer " << name << " via broker introduction.";
   AddPeer(name, channel, true /* start_channel */);

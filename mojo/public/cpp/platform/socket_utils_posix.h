@@ -23,6 +23,18 @@ namespace mojo {
 // and there wasn't a much better home for them. Consider moving them to
 // src/base or something.
 
+// Like |write()| but handles |EINTR| and never raises |SIGPIPE|.
+COMPONENT_EXPORT(MOJO_CPP_PLATFORM)
+ssize_t SocketWrite(base::PlatformFile socket,
+                    const void* bytes,
+                    size_t num_bytes);
+
+// Like |writev()| but handles |EINTR| and never raises |SIGPIPE|.
+COMPONENT_EXPORT(MOJO_CPP_PLATFORM)
+ssize_t SocketWritev(base::PlatformFile socket,
+                     struct iovec* iov,
+                     size_t num_iov);
+
 // Wrapper around |sendmsg()| which makes it convenient to send attached file
 // descriptors. All entries in |descriptors| must be valid and |descriptors|
 // must be non-empty.
@@ -38,6 +50,14 @@ ssize_t SendmsgWithHandles(base::PlatformFile socket,
                            struct iovec* iov,
                            size_t num_iov,
                            const std::vector<base::ScopedFD>& descriptors);
+
+// Like |recvmsg()|, but handles |EINTR|.
+COMPONENT_EXPORT(MOJO_CPP_PLATFORM)
+ssize_t SocketRecvmsg(base::PlatformFile socket,
+                      void* buf,
+                      size_t num_bytes,
+                      std::vector<base::ScopedFD>* descriptors,
+                      bool block = false);
 
 // Treats |server_fd| as a socket listening for new connections. Returns |false|
 // if it encounters an unrecoverable error.
