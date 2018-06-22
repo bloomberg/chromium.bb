@@ -626,6 +626,180 @@ INSTANTIATE_TEST_CASE_P(ProprietaryCodecs,
 
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
+struct MSEChangeTypeTestData {
+  const MSEPlaybackTestData file_one;
+  const MSEPlaybackTestData file_two;
+};
+
+class MSEChangeTypeTest
+    : public ::testing::WithParamInterface<
+          std::tuple<MSEPlaybackTestData, MSEPlaybackTestData>>,
+      public PipelineIntegrationTest {
+ public:
+  // Populate meaningful test suffixes instead of /0, /1, etc.
+  struct PrintToStringParamName {
+    template <class ParamType>
+    std::string operator()(
+        const testing::TestParamInfo<ParamType>& info) const {
+      std::stringstream ss;
+      ss << std::get<0>(info.param) << "_AND_" << std::get<1>(info.param);
+      std::string s = ss.str();
+      // Strip out invalid param name characters.
+      std::stringstream ss2;
+      for (size_t i = 0; i < s.size(); ++i) {
+        if (isalnum(s[i]) || s[i] == '_')
+          ss2 << s[i];
+      }
+      return ss2.str();
+    }
+  };
+
+ protected:
+  void PlayBackToBack() {
+    // TODO(wolenetz): Consider a modified, composable, hash that lets us
+    // combine known hashes for two files to generate an expected hash for when
+    // both are played. For now, only the duration (and successful append and
+    // play-to-end) are verified.
+    MSEPlaybackTestData file_one = std::get<0>(GetParam());
+    MSEPlaybackTestData file_two = std::get<1>(GetParam());
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+    // AV1 media is included in the some of these tests when the decoder is
+    // enabled.
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(kAv1Decoder);
+#endif
+
+    // Start in 'sequence' appendMode, because some test media begin near enough
+    // to time 0, resulting in gaps across the changeType boundary in buffered
+    // media timeline.
+    // TODO(wolenetz): Switch back to 'segments' mode once we have some
+    // incubation of a way to flexibly allow playback through unbuffered
+    // regions. Known test media requiring sequence mode: MP3-in-MP2T
+    MockMediaSource source(file_one.filename, file_one.mimetype,
+                           file_one.append_bytes, true);
+    ASSERT_EQ(PIPELINE_OK,
+              StartPipelineWithMediaSource(&source, kNormal, nullptr));
+    source.EndOfStream();
+
+    // Transitions between VP8A and other test media can trigger this again.
+    EXPECT_CALL(*this, OnVideoOpacityChange(_)).Times(AnyNumber());
+
+    Ranges<base::TimeDelta> ranges = pipeline_->GetBufferedTimeRanges();
+    EXPECT_EQ(1u, ranges.size());
+    EXPECT_EQ(0, ranges.start(0).InMilliseconds());
+    base::TimeDelta file_one_end_time = ranges.end(0);
+    EXPECT_EQ(file_one.duration_ms, file_one_end_time.InMilliseconds());
+
+    // Change type and append |file_two| with start time abutting end of
+    // the previous buffered range.
+    source.UnmarkEndOfStream();
+    source.ChangeType(file_two.mimetype);
+    scoped_refptr<DecoderBuffer> file_two_contents =
+        ReadTestDataFile(file_two.filename);
+    source.AppendAtTime(file_one_end_time, file_two_contents->data(),
+                        file_two.append_bytes == kAppendWholeFile
+                            ? file_two_contents->data_size()
+                            : file_two.append_bytes);
+    source.EndOfStream();
+    ranges = pipeline_->GetBufferedTimeRanges();
+    EXPECT_EQ(1u, ranges.size());
+    EXPECT_EQ(0, ranges.start(0).InMilliseconds());
+
+    base::TimeDelta file_two_actual_duration =
+        ranges.end(0) - file_one_end_time;
+    EXPECT_EQ(file_two_actual_duration.InMilliseconds(), file_two.duration_ms);
+
+    Play();
+
+    ASSERT_TRUE(WaitUntilOnEnded());
+    EXPECT_TRUE(demuxer_->GetTimelineOffset().is_null());
+    source.Shutdown();
+    Stop();
+  }
+};
+
+TEST_P(MSEChangeTypeTest, LegacyByDts_PlayBackToBack) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(media::kMseBufferByPts);
+  PlayBackToBack();
+}
+
+TEST_P(MSEChangeTypeTest, NewByPts_PlayBackToBack) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(media::kMseBufferByPts);
+  PlayBackToBack();
+}
+
+const MSEPlaybackTestData kMediaSourceAudioFiles[] = {
+    // MP3
+    {"sfx.mp3", kMP3, kAppendWholeFile, 313},
+
+    // Opus in WebM
+    {"sfx-opus-441.webm", kOpusAudioOnlyWebM, kAppendWholeFile, 301},
+
+    // Vorbis in WebM
+    {"bear-320x240-audio-only.webm", kAudioOnlyWebM, kAppendWholeFile, 2768},
+
+    // FLAC in MP4
+    {"sfx-flac_frag.mp4", kMP4AudioFlac, kAppendWholeFile, 288},
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+    // AAC in ADTS
+    {"bear-audio-main-aac.aac", kADTS, kAppendWholeFile, 2773},
+
+    // AAC in MP4
+    {"bear-640x360-a_frag.mp4", kMP4Audio, kAppendWholeFile, 2803},
+
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
+    // MP3 in MP2T
+    {"bear-audio-mp4a.6B.ts", "video/mp2t; codecs=\"mp4a.6B\"",
+     kAppendWholeFile, 1097},
+#endif  // BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+};
+
+const MSEPlaybackTestData kMediaSourceVideoFiles[] = {
+    // VP9 in WebM
+    {"bear-vp9.webm", kWebMVP9, kAppendWholeFile, kVP9WebMFileDurationMs},
+
+    // VP9 in MP4
+    {"bear-320x240-v_frag-vp9.mp4", kMP4VideoVP9, kAppendWholeFile, 2736},
+
+    // VP8 in WebM
+    {"bear-vp8a.webm", kVideoOnlyWebM, kAppendWholeFile,
+     kVP8AWebMFileDurationMs},
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+    // AV1 in MP4
+    // TODO(johannkoenig): re-enable when an av1 mp4 muxer is available.
+    // {"bear-av1.mp4", kMP4AV1, kAppendWholeFile, kVP9WebMFileDurationMs},
+
+    // AV1 in WebM
+    {"bear-av1.webm", kWebMAV1, kAppendWholeFile, kVP9WebMFileDurationMs},
+#endif  // BUILDFLAG(ENABLE_AV1_DECODER)
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+    // H264 AVC3 in MP4
+    {"bear-1280x720-v_frag-avc3.mp4", kMP4VideoAVC3, kAppendWholeFile,
+     k1280IsoAVC3FileDurationMs},
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+};
+
+INSTANTIATE_TEST_CASE_P(
+    AudioOnly,
+    MSEChangeTypeTest,
+    testing::Combine(testing::ValuesIn(kMediaSourceAudioFiles),
+                     testing::ValuesIn(kMediaSourceAudioFiles)),
+    MSEChangeTypeTest::PrintToStringParamName());
+
+INSTANTIATE_TEST_CASE_P(
+    VideoOnly,
+    MSEChangeTypeTest,
+    testing::Combine(testing::ValuesIn(kMediaSourceVideoFiles),
+                     testing::ValuesIn(kMediaSourceVideoFiles)),
+    MSEChangeTypeTest::PrintToStringParamName());
+
 // Test parameter determines if media::kMseBufferByPts feature should be forced
 // on or off for the test.
 // Note, the BasicMSEPlaybackTest test fixture defines its own parameter type,
