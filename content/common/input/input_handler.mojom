@@ -187,6 +187,13 @@ interface WidgetInputHandlerHost {
   // to always have correct bound info.
   ImeCompositionRangeChanged(gfx.mojom.Range range,
                              array<gfx.mojom.Rect> bounds);
+
+  // Updates the mouse capture state of this widget. While capture is enabled,
+  // all mouse events, including those that don't hittest to this widget, will
+  // be targeted to this widget. This enables Blink to behave correctly when
+  // a scrollbar is being dragged, or text is being drag-highlighted, even
+  // when the mouse passes across different RenderWidget areas.
+  SetMouseCapture(bool capture);
 };
 
 // Interface exposed by the renderer to the browser. This class represents

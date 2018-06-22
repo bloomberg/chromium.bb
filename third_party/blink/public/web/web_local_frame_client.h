@@ -295,6 +295,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   // eTLD+1 as the current document.
   virtual void SetHasReceivedUserGestureBeforeNavigation(bool value) {}
 
+  // Called when a frame is capturing mouse input, such as when a scrollbar
+  // is being dragged.
+  virtual void SetMouseCapture(bool capture) {}
+
   // Console messages ----------------------------------------------------
 
   // Whether or not we should report a detailed message for the given source.

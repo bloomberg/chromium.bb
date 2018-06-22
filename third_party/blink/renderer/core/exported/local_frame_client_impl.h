@@ -275,6 +275,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   std::unique_ptr<WebContentSettingsClient> CreateWorkerContentSettingsClient()
       override;
 
+  void SetMouseCapture(bool capture) override;
+
  private:
   explicit LocalFrameClientImpl(WebLocalFrameImpl*);
 

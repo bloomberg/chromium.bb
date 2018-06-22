@@ -99,6 +99,13 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void ImeCompositionRangeChanged(
       const gfx::Range& range,
       const std::vector<gfx::Rect>& bounds) override;
+  void SetMouseCapture(bool capture) override;
+
+  // Exposed so that tests can swap out the implementation and intercept calls.
+  mojo::Binding<mojom::WidgetInputHandlerHost>&
+  frame_host_binding_for_testing() {
+    return frame_host_binding_;
+  }
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override;

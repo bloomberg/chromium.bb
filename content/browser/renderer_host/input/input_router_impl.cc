@@ -283,6 +283,10 @@ void InputRouterImpl::ImeCompositionRangeChanged(
   client_->OnImeCompositionRangeChanged(range, bounds);
 }
 
+void InputRouterImpl::SetMouseCapture(bool capture) {
+  client_->SetMouseCapture(capture);
+}
+
 bool InputRouterImpl::OnMessageReceived(const IPC::Message& message) {
   // TODO(dtapuska): Move these to mojo
   bool handled = true;

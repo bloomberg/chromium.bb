@@ -415,6 +415,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   CreateWorkerContentSettingsClient() {
     return nullptr;
   }
+
+  virtual void SetMouseCapture(bool) {}
 };
 
 }  // namespace blink

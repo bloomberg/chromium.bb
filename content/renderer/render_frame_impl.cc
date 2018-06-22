@@ -3719,6 +3719,10 @@ void RenderFrameImpl::SetHasReceivedUserGestureBeforeNavigation(bool value) {
                                                                   value));
 }
 
+void RenderFrameImpl::SetMouseCapture(bool capture) {
+  GetRenderWidget()->SetMouseCapture(capture);
+}
+
 bool RenderFrameImpl::ShouldReportDetailedMessageForSource(
     const blink::WebString& source) {
   return GetContentClient()->renderer()->ShouldReportDetailedMessageForSource(
