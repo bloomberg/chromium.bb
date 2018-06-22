@@ -5,6 +5,8 @@
 #include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -77,6 +79,29 @@ TEST_F(PageSignalReceiverUnitTest,
   page_signal_receiver_->NotifyObserversIfKnownCu(
       page_cu_id_, &PageSignalObserver::OnLifecycleStateChanged,
       mojom::LifecycleState::kDiscarded);
+}
+
+// Regression test for crbug.com/855114.
+TEST_F(PageSignalReceiverUnitTest, ConstructMojoChannelOnce) {
+  // Create a dummy service manager.
+  service_manager::mojom::ServicePtr service;
+  content::ServiceManagerConnection::SetForProcess(
+      content::ServiceManagerConnection::Create(
+          mojo::MakeRequest(&service),
+          content::BrowserThread::GetTaskRunnerForThread(
+              content::BrowserThread::IO)));
+  // Add and remove an observer.
+  {
+    TestPageSignalObserver observer1(Action::kObserve, page_cu_id_,
+                                     page_signal_receiver_.get());
+  }
+  // Add and remove another observer. This causes the page signal receiver to
+  // construct the mojo channel again because the observer list is empty.
+  {
+    TestPageSignalObserver observer2(Action::kObserve, page_cu_id_,
+                                     page_signal_receiver_.get());
+  }
+  content::ServiceManagerConnection::DestroyForProcess();
 }
 
 }  // namespace resource_coordinator
