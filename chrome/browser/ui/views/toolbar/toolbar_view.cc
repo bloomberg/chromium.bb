@@ -521,19 +521,19 @@ void ToolbarView::Layout() {
                      toolbar_button_height);
   next_element_x = reload_->bounds().right();
 
+  home_->SetSize(
+      gfx::Size(home_->GetPreferredSize().width(), toolbar_button_height));
   if (show_home_button_.GetValue() ||
       (browser_->is_app() && extensions::util::IsNewBookmarkAppsEnabled())) {
-    next_element_x += element_padding;
     home_->SetVisible(true);
-    home_->SetBounds(next_element_x, toolbar_button_y,
-                     home_->GetPreferredSize().width(), toolbar_button_height);
+    next_element_x += element_padding;
+    home_->SetPosition(gfx::Point(next_element_x, toolbar_button_y));
+    next_element_x += home_->width();
   } else {
     home_->SetVisible(false);
-    home_->SetBounds(next_element_x, toolbar_button_y, 0,
-                     toolbar_button_height);
   }
-  next_element_x =
-      home_->bounds().right() + GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
+
+  next_element_x += GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
 
   int app_menu_width = app_menu_button_->GetPreferredSize().width();
   const int right_padding = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
