@@ -100,7 +100,7 @@ class CrtcController : public base::SupportsWeakPtr<CrtcController> {
   // TODO(dnicoara) Add support for hardware mirroring (multiple connectors).
   uint32_t connector_;
 
-  drmModeModeInfo mode_;
+  drmModeModeInfo mode_ = {};
 
   // Keeps track of the CRTC state. If a surface has been bound, then the value
   // is set to false. Otherwise it is true.
