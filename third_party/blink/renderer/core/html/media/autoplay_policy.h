@@ -99,6 +99,10 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   // should only return `true` when MEI allowed autoplay.
   bool WasAutoplayInitiated() const;
 
+  // Ensure that `autoplay_initiated_` has a value. It is set to `false` to
+  // avoid false positives.
+  void EnsureAutoplayInitiatedSet();
+
   virtual void Trace(blink::Visitor*);
 
  private:

@@ -332,6 +332,12 @@ bool AutoplayPolicy::WasAutoplayInitiated() const {
   return *autoplay_initiated_;
 }
 
+void AutoplayPolicy::EnsureAutoplayInitiatedSet() {
+  if (autoplay_initiated_)
+    return;
+  autoplay_initiated_ = false;
+}
+
 bool AutoplayPolicy::IsGestureNeededForPlaybackIfPendingUserGestureIsLocked()
     const {
   if (element_->GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)

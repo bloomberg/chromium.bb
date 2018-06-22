@@ -4279,6 +4279,7 @@ bool HTMLMediaElement::WasAutoplayInitiated() {
 }
 
 void HTMLMediaElement::RequestPlay() {
+  autoplay_policy_->EnsureAutoplayInitiatedSet();
   PlayInternal();
 }
 
