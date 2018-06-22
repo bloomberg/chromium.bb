@@ -168,9 +168,12 @@ void SetFrameTime(base::TimeTicks* result, base::TimeTicks frame_time) {
 }
 
 TEST_P(SurfaceTest, RequestFrameCallback) {
+  // Must be before surface so it outlives it, for surface's destructor calls
+  // SetFrameTime() referencing this.
+  base::TimeTicks frame_time;
+
   std::unique_ptr<Surface> surface(new Surface);
 
-  base::TimeTicks frame_time;
   surface->RequestFrameCallback(
       base::Bind(&SetFrameTime, base::Unretained(&frame_time)));
   surface->Commit();

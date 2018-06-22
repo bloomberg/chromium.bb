@@ -458,14 +458,17 @@ uint32_t Configure(gfx::Size* suggested_size,
 }
 
 TEST_F(ShellSurfaceTest, ConfigureCallback) {
-  std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-
+  // Must be before shell_surface so it outlives it, for shell_surface's
+  // destructor calls Configure() referencing these 4 variables.
   gfx::Size suggested_size;
   ash::mojom::WindowStateType has_state_type =
       ash::mojom::WindowStateType::NORMAL;
   bool is_resizing = false;
   bool is_active = false;
+
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
   shell_surface->set_configure_callback(
       base::Bind(&Configure, base::Unretained(&suggested_size),
                  base::Unretained(&has_state_type),
