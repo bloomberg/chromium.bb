@@ -26,6 +26,7 @@ namespace {
 constexpr char kGaiaURL[] = "chrome://oobe/gaia-signin";
 constexpr int kGaiaDialogHeight = 640;
 constexpr int kGaiaDialogWidth = 768;
+constexpr char kAppLaunchBailout[] = "app_launch_bailout";
 
 }  // namespace
 
@@ -37,6 +38,8 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
       tablet_mode_observer_(this) {
   display_observer_.Add(display::Screen::GetScreen());
   tablet_mode_observer_.Add(TabletModeClient::Get());
+  accel_map_[ui::Accelerator(
+      ui::VKEY_S, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] = kAppLaunchBailout;
 }
 
 OobeUIDialogDelegate::~OobeUIDialogDelegate() {
@@ -188,7 +191,12 @@ bool OobeUIDialogDelegate::HandleContextMenu(
 
 std::vector<ui::Accelerator> OobeUIDialogDelegate::GetAccelerators() {
   // TODO(crbug.com/809648): Adding necessory accelerators.
-  return std::vector<ui::Accelerator>();
+  std::vector<ui::Accelerator> output;
+
+  for (const auto& pair : accel_map_)
+    output.push_back(pair.first);
+
+  return output;
 }
 
 bool OobeUIDialogDelegate::AcceleratorPressed(
@@ -202,7 +210,12 @@ bool OobeUIDialogDelegate::AcceleratorPressed(
     return true;
   }
 
-  return false;
+  auto entry = accel_map_.find(accelerator);
+  if (entry == accel_map_.end())
+    return false;
+
+  GetOobeUI()->ForwardAccelerator(entry->second);
+  return true;
 }
 
 }  // namespace chromeos

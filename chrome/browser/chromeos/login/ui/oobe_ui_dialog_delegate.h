@@ -114,6 +114,8 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   ScopedObserver<TabletModeClient, TabletModeClientObserver>
       tablet_mode_observer_;
 
+  std::map<ui::Accelerator, std::string> accel_map_;
+
   DISALLOW_COPY_AND_ASSIGN(OobeUIDialogDelegate);
 };
 

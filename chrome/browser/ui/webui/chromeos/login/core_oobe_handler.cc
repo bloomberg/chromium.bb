@@ -297,6 +297,7 @@ void CoreOobeHandler::SetClientAreaSize(int width, int height) {
 void CoreOobeHandler::HandleInitialized() {
   ExecuteDeferredJSCalls();
   oobe_ui_->InitializeHandlers();
+  AllowJavascript();
 }
 
 void CoreOobeHandler::HandleSkipUpdateEnrollAfterEula() {
@@ -439,6 +440,10 @@ void CoreOobeHandler::UpdateShutdownAndRebootVisibility(
 
 void CoreOobeHandler::SetLoginUserCount(int user_count) {
   CallJSOrDefer("setLoginUserCount", user_count);
+}
+
+void CoreOobeHandler::ForwardAccelerator(std::string accelerator_name) {
+  CallJSOrDefer("handleAccelerator", accelerator_name);
 }
 
 void CoreOobeHandler::UpdateA11yState() {
