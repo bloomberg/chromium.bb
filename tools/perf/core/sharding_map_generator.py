@@ -74,7 +74,7 @@ from telemetry.internal.browser import browser_options
 
 def main(args, benchmarks):
   story_timing_ordered_dict = _load_timing_data_from_file(
-      benchmarks, args.timing_data)
+      benchmarks, args.timing_data, True)
 
   all_stories = {}
   for b in benchmarks:
@@ -88,9 +88,15 @@ def main(args, benchmarks):
 
   if args.test_data:
     story_timing_ordered_dict = _load_timing_data_from_file(
-        benchmarks, args.test_data)
-    print test_sharding_map(
+        benchmarks, args.test_data, False)
+    test_results = test_sharding_map(
         args.output_file, story_timing_ordered_dict, all_stories)
+    if args.test_data_output:
+      with open(args.test_data_output, 'w') as output_file:
+        json.dump(test_results, output_file, indent = 4, separators=(',', ': '))
+
+    else:
+      print test_results
 
 
 def get_args():
@@ -113,6 +119,10 @@ def get_args():
   parser.add_argument(
       '--test-data', action='store',
       help='If specified, test the generated sharding map with this data.')
+  parser.add_argument(
+      '--test-data-output', action='store',
+      help='If specified with --test-data, file \
+          to output the tested timing data to.')
   parser.add_argument(
       '--debug', action='store',
       help='If specified, the filename to write extra timing data to.')
@@ -207,15 +217,28 @@ def _add_benchmarks_to_shard(sharding_map, shard_index, stories_in_shard,
   sharding_map[str(shard_index)] = {'benchmarks': benchmarks_in_shard}
 
 
-def _load_timing_data_from_file(benchmarks, timing_data_file):
+def _load_timing_data_from_file(benchmarks, timing_data_file, repeat):
   story_timing_ordered_dict = _init_timing_dict_for_benchmarks(benchmarks)
+  pageset_repeat_dict = _init_pageset_repeat_dict_for_benchmarks(benchmarks)
   with open(timing_data_file, 'r') as timing_data_file:
     story_timing = json.load(timing_data_file)
     for run in story_timing:
+      benchmark = run['name'].split('/', 1)[0]
       if run['name'] in story_timing_ordered_dict:
         if run['duration']:
-          story_timing_ordered_dict[run['name']] += float(run['duration'])
+          if repeat:
+            story_timing_ordered_dict[run['name']] = (float(run['duration'])
+                * pageset_repeat_dict[benchmark])
+          else:
+            story_timing_ordered_dict[run['name']] += float(run['duration'])
   return story_timing_ordered_dict
+
+
+def _init_pageset_repeat_dict_for_benchmarks(benchmarks):
+  pageset_repeat = {}
+  for b in benchmarks:
+    pageset_repeat[b.Name()] = b().options.get('pageset_repeat', 1)
+  return pageset_repeat
 
 
 def _init_timing_dict_for_benchmarks(benchmarks):
