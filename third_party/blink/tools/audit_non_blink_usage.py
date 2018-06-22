@@ -75,6 +75,19 @@ _CONFIG = [
             # //base/memory/ptr_util.h.
             'base::WrapUnique',
 
+            # //base/numerics/safe_conversions.h.
+            'base::as_signed',
+            'base::as_unsigned',
+            'base::checked_cast',
+            'base::strict_cast',
+            'base::saturated_cast',
+            'base::SafeUnsignedAbs',
+            'base::StrictNumeric',
+            'base::MakeStrictNum',
+            'base::IsValueInRangeForNumericType',
+            'base::IsTypeInRangeForNumericType',
+            'base::IsValueNegative',
+
             # //base/synchronization/waitable_event.h.
             'base::WaitableEvent',
 
