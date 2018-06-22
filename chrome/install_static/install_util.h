@@ -130,6 +130,9 @@ bool SupportsRetentionExperiments();
 // Returns the index of the icon resource in the main executable for the mode.
 int GetIconResourceIndex();
 
+// Get sandbox id of current install mode.
+const wchar_t* GetSandboxSidPrefix();
+
 // Returns true if usage stats collecting is enabled for this user for the
 // current executable.
 bool GetCollectStatsConsent();

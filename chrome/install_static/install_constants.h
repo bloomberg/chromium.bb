@@ -127,6 +127,9 @@ struct InstallConstants {
 
   // The resource id of this mode's main application icon.
   int16_t app_icon_resource_id;
+
+  // The app container sid prefix for sandbox.
+  const wchar_t* sandbox_sid_prefix;
 };
 
 }  // namespace install_static

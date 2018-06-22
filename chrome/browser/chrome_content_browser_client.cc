@@ -289,6 +289,7 @@
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/module_event_sink_impl_win.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/wifi_util_win/public/mojom/constants.mojom.h"
 #include "sandbox/win/src/sandbox_policy.h"
@@ -3323,38 +3324,18 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 #if defined(OS_WIN)
 base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
     int sandbox_type) const {
-  base::string16 sid;
-
-#if defined(GOOGLE_CHROME_BUILD)
-  const version_info::Channel channel = chrome::GetChannel();
-
-  // It's possible to have a SxS installation running at the same time as a
-  // non-SxS so isolate them from each other.
-  if (channel == version_info::Channel::CANARY) {
-    sid.assign(
-        L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
-        L"924012150-");
-  } else {
-    sid.assign(
-        L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
-        L"924012149-");
-  }
-#else
-  sid.assign(
-      L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
-      L"924012148-");
-#endif
-
   // TODO(wfh): Add support for more process types here. crbug.com/499523
   switch (sandbox_type) {
     case service_manager::SANDBOX_TYPE_RENDERER:
-      return sid + L"129201922";
+      return base::string16(install_static::GetSandboxSidPrefix()) +
+             L"129201922";
     case service_manager::SANDBOX_TYPE_UTILITY:
       return base::string16();
     case service_manager::SANDBOX_TYPE_GPU:
       return base::string16();
     case service_manager::SANDBOX_TYPE_PPAPI:
-      return sid + L"129201925";
+      return base::string16(install_static::GetSandboxSidPrefix()) +
+             L"129201925";
 #if BUILDFLAG(ENABLE_NACL)
     case PROCESS_TYPE_NACL_LOADER:
       return base::string16();

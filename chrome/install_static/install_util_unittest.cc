@@ -635,6 +635,27 @@ TEST_P(InstallStaticUtilTest, GetChromeChannelName) {
   EXPECT_EQ(default_channel(), GetChromeChannelName());
 }
 
+TEST_P(InstallStaticUtilTest, GetSandboxSidPrefix) {
+#if defined(GOOGLE_CHROME_BUILD)
+  static constexpr const wchar_t* kSandBoxSids[] = {
+      L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
+      L"924012149-",  // Google Chrome.
+      L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
+      L"924012151-",  // Google Chrome Beta.
+      L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
+      L"924012152-",  // Google Chrome Dev.
+      L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
+      L"924012150-",  // Google Chrome SxS (Canary).
+  };
+#else
+  static constexpr const wchar_t* kSandBoxSids[] = {
+      L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
+      L"924012148-",  // Chromium.
+  };
+#endif
+  EXPECT_EQ(GetSandboxSidPrefix(), kSandBoxSids[std::get<0>(GetParam())]);
+}
+
 #if defined(GOOGLE_CHROME_BUILD)
 // Stable supports user and system levels.
 INSTANTIATE_TEST_CASE_P(Stable,
