@@ -1894,8 +1894,9 @@ Output.prototype = {
 
     if (AutomationPredicate.checkable(node))
       this.format_(node, '@hint_checkable', buff);
-    if (AutomationPredicate.clickable(node))
+    else if (AutomationPredicate.clickable(node))
       this.format_(node, '@hint_clickable', buff);
+
     if (node.autoComplete == 'list' || node.autoComplete == 'both')
       this.format_(node, '@hint_autocomplete_list', buff);
     if (node.autoComplete == 'inline' || node.autoComplete == 'both')
