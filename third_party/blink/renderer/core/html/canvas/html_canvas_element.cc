@@ -32,6 +32,7 @@
 #include <memory>
 
 #include "base/location.h"
+#include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -82,7 +83,6 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -936,7 +936,7 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   if (GetLayoutBox() && !GetLayoutBox()->HasAcceleratedCompositing())
     return false;
 
-  CheckedNumeric<int> checked_canvas_pixel_count = Size().Width();
+  base::CheckedNumeric<int> checked_canvas_pixel_count = Size().Width();
   checked_canvas_pixel_count *= Size().Height();
   if (!checked_canvas_pixel_count.IsValid())
     return false;
@@ -1468,7 +1468,8 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
   // a change from acceleration to non-accleration or vice versa.
   if (gpu_buffer_count && !gpu_memory_usage_) {
     // Switch from non-acceleration mode to acceleration mode
-    CheckedNumeric<intptr_t> checked_usage = gpu_buffer_count * bytes_per_pixel;
+    base::CheckedNumeric<intptr_t> checked_usage =
+        gpu_buffer_count * bytes_per_pixel;
     checked_usage *= width();
     checked_usage *= height();
     intptr_t gpu_memory_usage =
@@ -1487,7 +1488,7 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
 
   // Recomputation of externally memory usage computation is carried out
   // in all cases.
-  CheckedNumeric<intptr_t> checked_usage =
+  base::CheckedNumeric<intptr_t> checked_usage =
       non_gpu_buffer_count * bytes_per_pixel;
   checked_usage *= width();
   checked_usage *= height();

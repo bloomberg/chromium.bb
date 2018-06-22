@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "base/numerics/checked_math.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
@@ -17,7 +18,6 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/threading/background_task_runner.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -138,7 +138,7 @@ ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions& options,
 // each ImageBitmap() constructor, which makes sure that doing
 // width * height * bytesPerPixel will never overflow unsigned.
 bool DstBufferSizeHasOverflow(const ImageBitmap::ParsedOptions& options) {
-  CheckedNumeric<unsigned> total_bytes = options.crop_rect.Width();
+  base::CheckedNumeric<unsigned> total_bytes = options.crop_rect.Width();
   total_bytes *= options.crop_rect.Height();
   total_bytes *=
       SkColorTypeBytesPerPixel(options.color_params.GetSkColorType());

@@ -44,6 +44,7 @@
 
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 
+#include "base/numerics/checked_math.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -94,7 +95,6 @@
 #include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/scroll/smooth_scroll_sequencer.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 
 namespace blink {
 

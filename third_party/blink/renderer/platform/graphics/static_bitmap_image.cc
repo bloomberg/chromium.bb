@@ -4,13 +4,13 @@
 
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 
+#include "base/numerics/checked_math.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/image_observer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -115,7 +115,7 @@ bool StaticBitmapImage::ConvertToArrayBufferContents(
     const CanvasColorParams& color_params,
     bool is_accelerated) {
   uint8_t bytes_per_pixel = color_params.BytesPerPixel();
-  CheckedNumeric<int> data_size = bytes_per_pixel;
+  base::CheckedNumeric<int> data_size = bytes_per_pixel;
   data_size *= rect.Size().Area();
   if (!data_size.IsValid() ||
       data_size.ValueOrDie() > v8::TypedArray::kMaxLength)

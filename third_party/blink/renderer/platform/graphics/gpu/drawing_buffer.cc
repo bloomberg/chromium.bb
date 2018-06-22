@@ -34,6 +34,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "cc/layers/texture_layer.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
@@ -54,7 +55,6 @@
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -91,7 +91,7 @@ scoped_refptr<DrawingBuffer> DrawingBuffer::Create(
     return nullptr;
   }
 
-  CheckedNumeric<int> data_size = color_params.BytesPerPixel();
+  base::CheckedNumeric<int> data_size = color_params.BytesPerPixel();
   data_size *= size.Width();
   data_size *= size.Height();
   if (!data_size.IsValid() ||
@@ -1257,7 +1257,7 @@ scoped_refptr<Uint8Array> DrawingBuffer::PaintRenderingResultsToDataArray(
   int width = Size().Width();
   int height = Size().Height();
 
-  CheckedNumeric<int> data_size = 4;
+  base::CheckedNumeric<int> data_size = 4;
   data_size *= width;
   data_size *= height;
   if (RuntimeEnabledFeatures::CanvasColorManagementEnabled() &&

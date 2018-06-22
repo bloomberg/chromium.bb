@@ -21,8 +21,8 @@
 
 #include "third_party/blink/renderer/core/layout/counter_node.h"
 
+#include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 
 #ifndef NDEBUG
 #include <stdio.h>
@@ -148,11 +148,11 @@ int CounterNode::ComputeCountInParent() const {
   // https://drafts.csswg.org/css-lists-3/#valdef-counter-reset-custom-ident-integer
   int increment = ActsAsReset() ? 0 : value_;
   if (previous_sibling_) {
-    return WTF::CheckAdd(previous_sibling_->count_in_parent_, increment)
+    return base::CheckAdd(previous_sibling_->count_in_parent_, increment)
         .ValueOrDefault(previous_sibling_->count_in_parent_);
   }
   DCHECK_EQ(parent_->first_child_, this);
-  return WTF::CheckAdd(parent_->value_, increment)
+  return base::CheckAdd(parent_->value_, increment)
       .ValueOrDefault(parent_->value_);
 }
 

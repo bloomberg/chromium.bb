@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
 
 #include <memory>
+#include "base/numerics/checked_math.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -64,7 +65,6 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_draw_buffers.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_lose_context.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 
 namespace blink {
 

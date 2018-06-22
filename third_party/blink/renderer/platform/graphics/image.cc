@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/image.h"
 
+#include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "cc/tiles/software_image_decode_cache.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -46,7 +47,6 @@
 #include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkImage.h"

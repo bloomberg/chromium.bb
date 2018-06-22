@@ -655,14 +655,14 @@ void Canvas2DLayerBridge::DidDraw(const FloatRect& rect) {
   if (is_deferral_enabled_) {
     have_recorded_draw_commands_ = true;
     IntRect pixel_bounds = EnclosingIntRect(rect);
-    CheckedNumeric<int> pixel_bounds_size = pixel_bounds.Width();
+    base::CheckedNumeric<int> pixel_bounds_size = pixel_bounds.Width();
     pixel_bounds_size *= pixel_bounds.Height();
     recording_pixel_count_ += pixel_bounds_size;
     if (!recording_pixel_count_.IsValid()) {
       DisableDeferral(kDisableDeferralReasonExpensiveOverdrawHeuristic);
       return;
     }
-    CheckedNumeric<int> threshold_size = size_.Width();
+    base::CheckedNumeric<int> threshold_size = size_.Width();
     threshold_size *= size_.Height();
     threshold_size *= CanvasHeuristicParameters::kExpensiveOverdrawThreshold;
     if (!threshold_size.IsValid()) {

@@ -31,6 +31,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "cc/layers/texture_layer_client.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -41,7 +42,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -203,7 +203,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   AccelerationMode acceleration_mode_;
   CanvasColorParams color_params_;
   IntSize size_;
-  CheckedNumeric<int> recording_pixel_count_;
+  base::CheckedNumeric<int> recording_pixel_count_;
 
   enum SnapshotState {
     kInitialSnapshotState,

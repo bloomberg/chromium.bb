@@ -27,9 +27,9 @@
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 #include <string.h>
+#include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace WTF {
@@ -37,7 +37,7 @@ namespace WTF {
 scoped_refptr<CStringImpl> CStringImpl::CreateUninitialized(size_t length,
                                                             char*& data) {
   unsigned length_in_unsigned = SafeCast<unsigned>(length);
-  CheckedNumeric<size_t> size = length;
+  base::CheckedNumeric<size_t> size = length;
   // The +1 is for the terminating NUL character.
   size += sizeof(CStringImpl) + 1;
   CStringImpl* buffer = static_cast<CStringImpl*>(Partitions::BufferMalloc(
