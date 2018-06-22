@@ -28,6 +28,7 @@
 #include "media/base/media_log.h"
 #include "media/base/media_resource.h"
 #include "media/base/renderer_client.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromecast {
 namespace media {
@@ -55,7 +56,8 @@ CastRenderer::CastRenderer(
     const std::string& audio_device_id,
     VideoModeSwitcher* video_mode_switcher,
     VideoResolutionPolicy* video_resolution_policy,
-    MediaResourceTracker* media_resource_tracker)
+    MediaResourceTracker* media_resource_tracker,
+    service_manager::Connector* connector)
     : backend_factory_(backend_factory),
       task_runner_(task_runner),
       audio_device_id_(audio_device_id.empty()
@@ -64,6 +66,7 @@ CastRenderer::CastRenderer(
       video_mode_switcher_(video_mode_switcher),
       video_resolution_policy_(video_resolution_policy),
       media_resource_tracker_(media_resource_tracker),
+      connector_(connector),
       client_(nullptr),
       cast_cdm_context_(nullptr),
       media_task_runner_factory_(
@@ -111,8 +114,9 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
   } else {
     content_type = AudioContentType::kMedia;
   }
-  MediaPipelineDeviceParams params(sync_type, backend_task_runner_.get(),
-                                   content_type, audio_device_id_);
+  MediaPipelineDeviceParams params(
+      sync_type, MediaPipelineDeviceParams::AudioStreamType::kAudioStreamNormal,
+      backend_task_runner_.get(), content_type, audio_device_id_, connector_);
 
   if (audio_device_id_ == kTtsAudioDeviceId ||
       audio_device_id_ ==
