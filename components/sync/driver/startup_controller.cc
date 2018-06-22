@@ -68,7 +68,6 @@ StartupController::StartupController(
       start_engine_callback_(std::move(start_engine)),
       bypass_setup_complete_(false),
       received_start_request_(false),
-      setup_in_progress_(false),
       weak_factory_(this) {}
 
 StartupController::~StartupController() {}
@@ -80,13 +79,6 @@ void StartupController::Reset() {
   start_engine_time_ = base::Time();
   // Don't let previous timers affect us post-reset.
   weak_factory_.InvalidateWeakPtrs();
-}
-
-void StartupController::SetSetupInProgress(bool setup_in_progress) {
-  setup_in_progress_ = setup_in_progress;
-  if (setup_in_progress_) {
-    TryStart();
-  }
 }
 
 void StartupController::StartUp(StartUpDeferredOption deferred_option) {
@@ -113,7 +105,7 @@ void StartupController::StartUp(StartUpDeferredOption deferred_option) {
   }
 }
 
-void StartupController::TryStart() {
+void StartupController::TryStart(bool setup_in_progress) {
   if (!can_start_callback_.Run()) {
     return;
   }
@@ -125,7 +117,7 @@ void StartupController::TryStart() {
   //   and encryption information to the UI.
   // Do not start up the sync engine if setup has not completed and isn't
   // in progress, unless told to otherwise.
-  if (setup_in_progress_) {
+  if (setup_in_progress) {
     StartUp(STARTUP_IMMEDIATE);
   } else if (sync_prefs_->IsFirstSetupComplete() || bypass_setup_complete_) {
     StartUp(received_start_request_ ? STARTUP_IMMEDIATE : STARTUP_DEFERRED);
@@ -135,7 +127,7 @@ void StartupController::TryStart() {
 void StartupController::TryStartImmediately() {
   received_start_request_ = true;
   bypass_setup_complete_ = true;
-  TryStart();
+  TryStart(/*setup_in_progress=*/false);
 }
 
 void StartupController::RecordTimeDeferred() {
@@ -157,7 +149,7 @@ void StartupController::OnFallbackStartupTimerExpired() {
   UMA_HISTOGRAM_ENUMERATION("Sync.Startup.DeferredInitTrigger",
                             TRIGGER_FALLBACK_TIMER, MAX_TRIGGER_VALUE);
   received_start_request_ = true;
-  TryStart();
+  TryStart(/*setup_in_progress=*/false);
 }
 
 StartupController::State StartupController::GetState() const {
@@ -192,7 +184,7 @@ void StartupController::OnDataTypeRequestsSyncStartup(ModelType type) {
                               TRIGGER_DATA_TYPE_REQUEST, MAX_TRIGGER_VALUE);
   }
   received_start_request_ = true;
-  TryStart();
+  TryStart(/*setup_in_progress=*/false);
 }
 
 }  // namespace syncer

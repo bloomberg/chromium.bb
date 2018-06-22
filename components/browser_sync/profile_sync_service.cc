@@ -347,7 +347,7 @@ void ProfileSyncService::Initialize() {
       !IsFirstSetupComplete()) {
     startup_controller_->TryStartImmediately();
   } else {
-    startup_controller_->TryStart();
+    startup_controller_->TryStart(/*setup_in_progress=*/false);
   }
 }
 
@@ -434,7 +434,7 @@ void ProfileSyncService::AccountStateChanged() {
     DCHECK(!engine_);
   } else {
     DCHECK(!engine_);
-    startup_controller_->TryStart();
+    startup_controller_->TryStart(IsSetupInProgress());
   }
 }
 
@@ -1024,7 +1024,7 @@ void ProfileSyncService::OnActionableError(
       break;
     case syncer::RESET_LOCAL_SYNC_DATA:
       ShutdownImpl(syncer::DISABLE_SYNC);
-      startup_controller_->TryStart();
+      startup_controller_->TryStart(IsSetupInProgress());
       UMA_HISTOGRAM_ENUMERATION(
           "Sync.ClearServerDataEvents",
           syncer::CLEAR_SERVER_DATA_RESET_LOCAL_DATA_RECEIVED,
@@ -1054,7 +1054,7 @@ void ProfileSyncService::OnClearServerDataDone() {
   // Shutdown sync, delete the Directory, then restart, restoring the cached
   // nigori state.
   ShutdownImpl(syncer::DISABLE_SYNC);
-  startup_controller_->TryStart();
+  startup_controller_->TryStart(IsSetupInProgress());
   UMA_HISTOGRAM_ENUMERATION("Sync.ClearServerDataEvents",
                             syncer::CLEAR_SERVER_DATA_SUCCEEDED,
                             syncer::CLEAR_SERVER_DATA_MAX);
@@ -1207,7 +1207,7 @@ std::string ProfileSyncService::GetEngineInitializationStateString() const {
 
 bool ProfileSyncService::IsSetupInProgress() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return startup_controller_->IsSetupInProgress();
+  return outstanding_setup_in_progress_handles_ > 0;
 }
 
 bool ProfileSyncService::QueryDetailedSyncStatus(
@@ -1234,7 +1234,7 @@ bool ProfileSyncService::CanConfigureDataTypes() const {
 
 bool ProfileSyncService::IsFirstSetupInProgress() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return !IsFirstSetupComplete() && startup_controller_->IsSetupInProgress();
+  return !IsFirstSetupComplete() && IsSetupInProgress();
 }
 
 std::unique_ptr<syncer::SyncSetupInProgressHandle>
@@ -1242,8 +1242,7 @@ ProfileSyncService::GetSetupInProgressHandle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (++outstanding_setup_in_progress_handles_ == 1) {
-    DCHECK(!startup_controller_->IsSetupInProgress());
-    startup_controller_->SetSetupInProgress(true);
+    startup_controller_->TryStart(/*setup_in_progress=*/true);
 
     NotifyObservers();
   }
@@ -1716,7 +1715,7 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
     StopImpl(CLEAR_DATA);
   } else {
     // Sync is no longer disabled by policy. Try starting it up if appropriate.
-    startup_controller_->TryStart();
+    startup_controller_->TryStart(IsSetupInProgress());
   }
 }
 
@@ -2183,9 +2182,6 @@ void ProfileSyncService::OnSetupInProgressHandleDestroyed() {
   // Don't re-start Sync until all outstanding handles are destroyed.
   if (--outstanding_setup_in_progress_handles_ != 0)
     return;
-
-  DCHECK(startup_controller_->IsSetupInProgress());
-  startup_controller_->SetSetupInProgress(false);
 
   if (IsEngineInitialized())
     ReconfigureDatatypeManager();
