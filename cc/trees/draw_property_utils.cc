@@ -1005,8 +1005,12 @@ void UpdatePageScaleFactor(PropertyTrees* property_trees,
                            float page_scale_factor,
                            float device_scale_factor,
                            const gfx::Transform device_transform) {
-  if (property_trees->transform_tree.page_scale_factor() == page_scale_factor)
+  // TODO(wjmaclean): Once Issue #845097 is resolved, we can change the nullptr
+  // check below to a DCHECK.
+  if (property_trees->transform_tree.page_scale_factor() == page_scale_factor ||
+      !page_scale_node) {
     return;
+  }
 
   property_trees->transform_tree.set_page_scale_factor(page_scale_factor);
 
