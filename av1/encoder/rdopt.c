@@ -7580,12 +7580,24 @@ static INLINE void swap_dst_buf(MACROBLOCKD *xd, const BUFFER_SET *dst_bufs[2],
   restore_dst_buf(xd, *dst_bufs[0], num_planes);
 }
 
+static INLINE int get_switchable_rate(MACROBLOCK *const x,
+                                      const InterpFilters filters,
+                                      const int ctx[2]) {
+  int inter_filter_cost;
+  const InterpFilter filter0 = av1_extract_interp_filter(filters, 0);
+  const InterpFilter filter1 = av1_extract_interp_filter(filters, 1);
+  inter_filter_cost = x->switchable_interp_costs[ctx[0]][filter0];
+  inter_filter_cost += x->switchable_interp_costs[ctx[1]][filter1];
+  return SWITCHABLE_INTERP_RATE_FACTOR * inter_filter_cost;
+}
+
 // calculate the rdcost of given interpolation_filter
 static INLINE int64_t interpolation_filter_rd(
     MACROBLOCK *const x, const AV1_COMP *const cpi, BLOCK_SIZE bsize,
     int mi_row, int mi_col, BUFFER_SET *const orig_dst, int64_t *const rd,
     int *const switchable_rate, int *const skip_txfm_sb,
-    int64_t *const skip_sse_sb, const BUFFER_SET *dst_bufs[2], int filter_idx) {
+    int64_t *const skip_sse_sb, const BUFFER_SET *dst_bufs[2], int filter_idx,
+    const int switchable_ctx[2]) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -7595,7 +7607,8 @@ static INLINE int64_t interpolation_filter_rd(
 
   const InterpFilters last_best = mbmi->interp_filters;
   mbmi->interp_filters = filter_sets[filter_idx];
-  const int tmp_rs = av1_get_switchable_rate(cm, x, xd);
+  const int tmp_rs =
+      get_switchable_rate(x, mbmi->interp_filters, switchable_ctx);
   av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
   model_rd_for_sb(cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate, &tmp_dist,
                   &tmp_skip_sb, &tmp_skip_sse, NULL, NULL, NULL);
@@ -7677,7 +7690,11 @@ static int64_t interpolation_filter_search(
   if (!need_search || match_found == -1) {
     set_default_interp_filters(mbmi, assign_filter);
   }
-  *switchable_rate = av1_get_switchable_rate(cm, x, xd);
+  int switchable_ctx[2];
+  switchable_ctx[0] = av1_get_pred_context_switchable_interp(xd, 0);
+  switchable_ctx[1] = av1_get_pred_context_switchable_interp(xd, 1);
+  *switchable_rate =
+      get_switchable_rate(x, mbmi->interp_filters, switchable_ctx);
   av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
   model_rd_for_sb(cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate, &tmp_dist,
                   skip_txfm_sb, skip_sse_sb, NULL, NULL, NULL);
@@ -7704,7 +7721,7 @@ static int64_t interpolation_filter_search(
     for (i = 1; i < SWITCHABLE_FILTERS; ++i) {
       if (interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
                                   switchable_rate, skip_txfm_sb, skip_sse_sb,
-                                  dst_bufs, i)) {
+                                  dst_bufs, i, switchable_ctx)) {
         best_dual_mode = i;
       }
     }
@@ -7713,7 +7730,7 @@ static int64_t interpolation_filter_search(
          i += SWITCHABLE_FILTERS) {
       interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
                               switchable_rate, skip_txfm_sb, skip_sse_sb,
-                              dst_bufs, i);
+                              dst_bufs, i, switchable_ctx);
     }
   } else {
     // EIGHTTAP_REGULAR mode is calculated beforehand
@@ -7725,7 +7742,7 @@ static int64_t interpolation_filter_search(
       }
       interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
                               switchable_rate, skip_txfm_sb, skip_sse_sb,
-                              dst_bufs, i);
+                              dst_bufs, i, switchable_ctx);
     }
   }
   swap_dst_buf(xd, dst_bufs, num_planes);
