@@ -686,7 +686,7 @@ TEST_F('OutputE2ETest', 'ToggleButton', function() {
     function(root) {
       var el = root.firstChild;
       var o = new Output().withSpeech(cursors.Range.fromNode(el));
-      assertEqualsJSON({string_: '|Subscribe|Button|Pressed|Press Search+Space to activate.',
+      assertEqualsJSON({string_: '|Subscribe|Button|Pressed|Press Search+Space to toggle.',
             spans_: [
         {value: {earconId: 'CHECK_ON'}, start: 0, end: 0},
         {value: 'name', start: 1, end:10},
