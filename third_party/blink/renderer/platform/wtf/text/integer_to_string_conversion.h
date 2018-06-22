@@ -32,7 +32,7 @@ namespace WTF {
 
 // TODO(esprehn): See if we can generalize IntToStringT in
 // base/strings/string_number_conversions.cc, and use unsigned type expansion
-// optimization here instead of CheckedNumeric::UnsignedAbs().
+// optimization here instead of base::CheckedNumeric::UnsignedAbs().
 template <typename IntegerType>
 class IntegerToStringConverter {
  public:

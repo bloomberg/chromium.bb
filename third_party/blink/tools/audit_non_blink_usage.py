@@ -77,6 +77,25 @@ _CONFIG = [
             # //base/synchronization/waitable_event.h.
             'base::WaitableEvent',
 
+            # //base/numerics/checked_math.h.
+            'base::CheckedNumeric',
+            'base::IsValidForType',
+            'base::ValueOrDieForType',
+            'base::ValueOrDefaultForType',
+            'base::MakeCheckedNum',
+            'base::CheckMax',
+            'base::CheckMin',
+            'base::CheckAdd',
+            'base::CheckSub',
+            'base::CheckMul',
+            'base::CheckDiv',
+            'base::CheckMod',
+            'base::CheckLsh',
+            'base::CheckRsh',
+            'base::CheckAnd',
+            'base::CheckOr',
+            'base::CheckXor',
+
             # Debugging helpers from //base/debug are allowed everywhere.
             'base::debug::.+',
 

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/shapedetection/shape_detector.h"
 
+#include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -15,7 +16,6 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
@@ -121,7 +121,7 @@ ScriptPromise ShapeDetector::DetectShapesOnImageData(
     return promise;
   }
 
-  WTF::CheckedNumeric<int> allocation_size = image_data->Size().Area() * 4;
+  base::CheckedNumeric<int> allocation_size = image_data->Size().Area() * 4;
   CHECK_EQ(allocation_size.ValueOrDefault(0), sk_bitmap.computeByteSize());
 
   memcpy(sk_bitmap.getPixels(), image_data->data()->Data(),

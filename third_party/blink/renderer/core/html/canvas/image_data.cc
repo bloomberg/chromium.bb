@@ -73,7 +73,7 @@ bool ImageData::ValidateConstructorArguments(
   }
 
   if (param_flags & (kParamWidth | kParamHeight)) {
-    CheckedNumeric<unsigned> data_size = 4;
+    base::CheckedNumeric<unsigned> data_size = 4;
     if (color_settings) {
       data_size *=
           ImageData::StorageFormatDataSize(color_settings->storageFormat());
@@ -133,7 +133,7 @@ bool ImageData::ValidateConstructorArguments(
   if (param_flags & kParamSize) {
     if (size->Width() <= 0 || size->Height() <= 0)
       return false;
-    CheckedNumeric<unsigned> data_size = 4;
+    base::CheckedNumeric<unsigned> data_size = 4;
     data_size *= size->Width();
     data_size *= size->Height();
     if (!data_size.IsValid() ||
@@ -493,7 +493,7 @@ ImageData* ImageData::CreateImageData(ImageDataArray& data,
 // This function accepts size (0, 0) and always returns the ImageData in
 // "srgb" color space and "uint8" storage format.
 ImageData* ImageData::CreateForTest(const IntSize& size) {
-  CheckedNumeric<unsigned> data_size = 4;
+  base::CheckedNumeric<unsigned> data_size = 4;
   data_size *= size.Width();
   data_size *= size.Height();
   if (!data_size.IsValid() ||

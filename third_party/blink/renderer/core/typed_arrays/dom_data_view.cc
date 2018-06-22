@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
 
+#include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_view.h"
 
 namespace blink {
@@ -18,7 +18,7 @@ class DataView final : public ArrayBufferView {
   static scoped_refptr<DataView> Create(ArrayBuffer* buffer,
                                         unsigned byte_offset,
                                         unsigned byte_length) {
-    CheckedNumeric<uint32_t> checked_max = byte_offset;
+    base::CheckedNumeric<uint32_t> checked_max = byte_offset;
     checked_max += byte_length;
     CHECK_LE(checked_max.ValueOrDie(), buffer->ByteLength());
     return base::AdoptRef(new DataView(buffer, byte_offset, byte_length));

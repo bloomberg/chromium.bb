@@ -27,6 +27,7 @@
 
 #include <memory>
 
+#include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -101,7 +102,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -4213,7 +4213,7 @@ void WebGLRenderingContextBase::ReadPixelsHelper(GLint x,
                       "no destination ArrayBufferView");
     return;
   }
-  CheckedNumeric<GLuint> offset_in_bytes = offset;
+  base::CheckedNumeric<GLuint> offset_in_bytes = offset;
   offset_in_bytes *= pixels->TypeSize();
   if (!offset_in_bytes.IsValid() ||
       offset_in_bytes.ValueOrDie() > pixels->byteLength()) {
@@ -4228,7 +4228,8 @@ void WebGLRenderingContextBase::ReadPixelsHelper(GLint x,
     SynthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "readPixels", reason);
     return;
   }
-  CheckedNumeric<GLuint> buffer_size = pixels->byteLength() - offset_in_bytes;
+  base::CheckedNumeric<GLuint> buffer_size =
+      pixels->byteLength() - offset_in_bytes;
   if (!buffer_size.IsValid()) {
     SynthesizeGLError(GL_INVALID_VALUE, "readPixels",
                       "destination offset out of range");
@@ -7200,7 +7201,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
     SynthesizeGLError(error, function_name, "invalid texture dimensions");
     return false;
   }
-  CheckedNumeric<uint32_t> total = src_offset;
+  base::CheckedNumeric<uint32_t> total = src_offset;
   total *= pixels->TypeSize();
   total += total_bytes_required;
   total += skip_bytes;

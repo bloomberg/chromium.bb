@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
 
+#include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/core/css/cssom/css_url_image_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -31,7 +32,6 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/stroke_data.h"
 #include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -1608,7 +1608,7 @@ ImageData* BaseRenderingContext2D::getImageData(
     int sw,
     int sh,
     ExceptionState& exception_state) {
-  if (!WTF::CheckMul(sw, sh).IsValid<int>()) {
+  if (!base::CheckMul(sw, sh).IsValid<int>()) {
     exception_state.ThrowRangeError("Out of memory at ImageData creation");
     return nullptr;
   }
@@ -1628,7 +1628,7 @@ ImageData* BaseRenderingContext2D::getImageData(
     return nullptr;
 
   if (sw < 0) {
-    if (!WTF::CheckAdd(sx, sw).IsValid<int>()) {
+    if (!base::CheckAdd(sx, sw).IsValid<int>()) {
       exception_state.ThrowRangeError("Out of memory at ImageData creation");
       return nullptr;
     }
@@ -1636,7 +1636,7 @@ ImageData* BaseRenderingContext2D::getImageData(
     sw = -sw;
   }
   if (sh < 0) {
-    if (!WTF::CheckAdd(sy, sh).IsValid<int>()) {
+    if (!base::CheckAdd(sy, sh).IsValid<int>()) {
       exception_state.ThrowRangeError("Out of memory at ImageData creation");
       return nullptr;
     }
@@ -1644,8 +1644,8 @@ ImageData* BaseRenderingContext2D::getImageData(
     sh = -sh;
   }
 
-  if (!WTF::CheckAdd(sx, sw).IsValid<int>() ||
-      !WTF::CheckAdd(sy, sh).IsValid<int>()) {
+  if (!base::CheckAdd(sx, sw).IsValid<int>() ||
+      !base::CheckAdd(sy, sh).IsValid<int>()) {
     exception_state.ThrowRangeError("Out of memory at ImageData creation");
     return nullptr;
   }
@@ -1731,7 +1731,7 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
                                           int dirty_width,
                                           int dirty_height,
                                           ExceptionState& exception_state) {
-  if (!WTF::CheckMul(dirty_width, dirty_height).IsValid<int>()) {
+  if (!base::CheckMul(dirty_width, dirty_height).IsValid<int>()) {
     return;
   }
   usage_counters_.num_put_image_data_calls++;

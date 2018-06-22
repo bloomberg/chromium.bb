@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context_base.h"
 
 #include <memory>
+#include "base/numerics/checked_math.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/bindings/modules/v8/webgl_any.h"
@@ -26,7 +27,6 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_transform_feedback.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_uniform_location.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 using WTF::String;
@@ -59,7 +59,7 @@ bool ValidateSubSourceAndGetData(DOMArrayBufferView* view,
     // type size is at most 8, so no overflow.
     byte_offset = sub_offset * type_size;
   }
-  CheckedNumeric<long long> total = byte_offset;
+  base::CheckedNumeric<long long> total = byte_offset;
   total += byte_length;
   if (!total.IsValid() || total.ValueOrDie() > view->byteLength()) {
     return false;
@@ -3521,7 +3521,7 @@ bool WebGL2RenderingContextBase::ValidateClearBuffer(const char* function_name,
                                                      GLenum buffer,
                                                      GLsizei size,
                                                      GLuint src_offset) {
-  CheckedNumeric<GLsizei> checked_size(size);
+  base::CheckedNumeric<GLsizei> checked_size(size);
   checked_size -= src_offset;
   if (!checked_size.IsValid()) {
     SynthesizeGLError(GL_INVALID_VALUE, function_name,
@@ -5877,7 +5877,7 @@ const char* WebGL2RenderingContextBase::ValidateGetBufferSubDataBounds(
     WebGLBuffer* source_buffer,
     GLintptr source_byte_offset,
     long long destination_byte_length) {
-  CheckedNumeric<long long> src_end = source_byte_offset;
+  base::CheckedNumeric<long long> src_end = source_byte_offset;
   src_end += destination_byte_length;
   if (!src_end.IsValid() || src_end.ValueOrDie() > source_buffer->GetSize()) {
     SynthesizeGLError(GL_INVALID_VALUE, function_name,

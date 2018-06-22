@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <memory>
+#include "base/numerics/checked_math.h"
 #include "base/sys_byteorder.h"
 #include "third_party/blink/public/web/web_serialized_script_value_version.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
@@ -57,7 +58,6 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -92,7 +92,7 @@ scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create() {
 
 scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create(
     const String& data) {
-  CheckedNumeric<size_t> data_buffer_size = data.length();
+  base::CheckedNumeric<size_t> data_buffer_size = data.length();
   data_buffer_size *= 2;
   if (!data_buffer_size.IsValid())
     return Create();

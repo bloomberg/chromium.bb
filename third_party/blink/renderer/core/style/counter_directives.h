@@ -29,8 +29,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -89,7 +89,7 @@ class CounterDirectives {
     // According to the spec, if an increment would overflow or underflow the
     // counter, we are allowed to ignore the increment.
     // https://drafts.csswg.org/css-lists-3/#valdef-counter-reset-custom-ident-integer
-    return WTF::CheckAdd(reset_value_, increment_value_)
+    return base::CheckAdd(reset_value_, increment_value_)
         .ValueOrDefault(reset_value_);
   }
 

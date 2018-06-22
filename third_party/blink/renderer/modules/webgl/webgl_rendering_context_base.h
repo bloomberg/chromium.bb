@@ -29,6 +29,7 @@
 #include <memory>
 #include <set>
 
+#include "base/numerics/checked_math.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -53,7 +54,6 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/webgl_image_conversion.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
@@ -1098,7 +1098,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
       // According to the WebGL 2.0 spec, specifying depth > 1 means
       // to select multiple rectangles stacked vertically.
-      WTF::CheckedNumeric<GLint> max_y_accessed;
+      base::CheckedNumeric<GLint> max_y_accessed;
       if (unpack_image_height) {
         max_y_accessed = unpack_image_height;
       } else {

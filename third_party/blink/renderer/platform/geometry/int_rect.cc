@@ -25,9 +25,9 @@
 
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 
+#include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -199,7 +199,7 @@ String IntRect::ToString() const {
 }
 
 bool IntRect::IsValid() const {
-  CheckedNumeric<int> max = location_.X();
+  base::CheckedNumeric<int> max = location_.X();
   max += size_.Width();
   if (!max.IsValid())
     return false;
