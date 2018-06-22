@@ -128,19 +128,21 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
                        'pool. Contact labs to rack in more hardware')
 
     shard_to_bot_assignment_map = {}
-    unallocated_bots = set(self._eligible_bots_by_ids.values())
+    unallocated_bots_by_ids = self._eligible_bots_by_ids.copy()
     for shard_index in xrange(args.shards):
       bot_id = self._query_swarming_for_last_shard_id(shard_index)
-      if bot_id:
+      if bot_id and bot_id in unallocated_bots_by_ids:
         bot = self._eligible_bots_by_ids[bot_id]
         shard_to_bot_assignment_map[shard_index] = bot
-        unallocated_bots.discard(bot)
+        unallocated_bots_by_ids.pop(bot_id)
       else:
         shard_to_bot_assignment_map[shard_index] = None
 
     # Now create sets of remaining healthy and bad bots
-    unallocated_healthy_bots = {b for b in unallocated_bots if b.is_alive()}
-    unallocated_bad_bots = {b for b in unallocated_bots if not b.is_alive()}
+    unallocated_healthy_bots = {
+        b for b in unallocated_bots_by_ids.values() if b.is_alive()}
+    unallocated_bad_bots = {
+        b for b in unallocated_bots_by_ids.values() if not b.is_alive()}
 
     # Try assigning healthy bots for new shards first.
     for shard_index, bot in sorted(shard_to_bot_assignment_map.iteritems()):
