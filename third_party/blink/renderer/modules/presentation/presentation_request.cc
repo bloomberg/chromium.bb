@@ -37,6 +37,12 @@ Settings* GetSettings(ExecutionContext* execution_context) {
   return document->GetSettings();
 }
 
+bool IsKnownProtocolForPresentationUrl(const KURL& url) {
+  // TODO(crbug.com/733381): Restrict to https + custom schemes.
+  return url.ProtocolIsInHTTPFamily() || url.ProtocolIs("cast") ||
+         url.ProtocolIs("cast-dial");
+}
+
 }  // anonymous namespace
 
 // static
@@ -60,13 +66,7 @@ PresentationRequest* PresentationRequest::Create(
     return nullptr;
   }
 
-  if (urls.IsEmpty()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "Do not support empty sequence of URLs.");
-    return nullptr;
-  }
-
-  Vector<KURL> parsed_urls(urls.size());
+  Vector<KURL> parsed_urls;
   for (size_t i = 0; i < urls.size(); ++i) {
     const KURL& parsed_url = KURL(execution_context->Url(), urls[i]);
 
@@ -86,8 +86,16 @@ PresentationRequest* PresentationRequest::Create(
       return nullptr;
     }
 
-    parsed_urls[i] = parsed_url;
+    if (IsKnownProtocolForPresentationUrl(parsed_url))
+      parsed_urls.push_back(parsed_url);
   }
+
+  if (parsed_urls.IsEmpty()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      "Do not support empty sequence of URLs.");
+    return nullptr;
+  }
+
   return new PresentationRequest(execution_context, parsed_urls);
 }
 
