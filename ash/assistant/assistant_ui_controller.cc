@@ -7,21 +7,68 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/ui/assistant_container_view.h"
+#include "ash/public/interfaces/assistant_setup.mojom.h"
+#include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "ash/system/toast/toast_data.h"
+#include "ash/system/toast/toast_manager.h"
+#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/optional.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
+
+namespace {
+
+// Toast -----------------------------------------------------------------------
+
+constexpr int kToastDurationMs = 2500;
+constexpr char kUnboundServiceToastId[] =
+    "assistant_controller_unbound_service";
+
+void ShowToast(const std::string& id, int message_id) {
+  ToastData toast(id, l10n_util::GetStringUTF16(message_id), kToastDurationMs,
+                  base::nullopt);
+  Shell::Get()->toast_manager()->Show(toast);
+}
+
+}  // namespace
+
+// AssistantUiController -------------------------------------------------------
 
 AssistantUiController::AssistantUiController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller) {
-  assistant_controller_->interaction_controller()->AddModelObserver(this);
+  Shell::Get()->highlighter_controller()->AddObserver(this);
 }
 
 AssistantUiController::~AssistantUiController() {
-  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
+  Shell::Get()->highlighter_controller()->RemoveObserver(this);
 
   if (container_view_)
     container_view_->GetWidget()->RemoveObserver(this);
+}
+
+void AssistantUiController::SetAssistant(
+    chromeos::assistant::mojom::Assistant* assistant) {
+  assistant_ = assistant;
+}
+
+void AssistantUiController::SetAssistantInteractionController(
+    AssistantInteractionController* assistant_interaction_controller) {
+  if (assistant_interaction_controller_)
+    assistant_interaction_controller_->RemoveModelObserver(this);
+
+  assistant_interaction_controller_ = assistant_interaction_controller;
+
+  if (assistant_interaction_controller_)
+    assistant_interaction_controller_->AddModelObserver(this);
+}
+
+void AssistantUiController::SetAssistantSetup(
+    mojom::AssistantSetup* assistant_setup) {
+  assistant_setup_ = assistant_setup;
 }
 
 void AssistantUiController::AddModelObserver(
@@ -46,13 +93,10 @@ void AssistantUiController::OnWidgetVisibilityChanged(views::Widget* widget,
 }
 
 void AssistantUiController::OnWidgetDestroying(views::Widget* widget) {
-  // We need to be sure that the Assistant interaction is stopped when the
-  // widget is closed. Special cases, such as closing the widget via the |ESC|
-  // key might otherwise go unhandled, causing inconsistencies between the
-  // widget visibility state and the underlying interaction model state.
-  // TODO(dmblack): Clean this up. Sibling controllers shouldn't need to
-  // communicate to each other directly in this way.
-  assistant_controller_->interaction_controller()->StopInteraction();
+  // We need to update the model when the widget is destroyed as this may not
+  // have occurred due to a call to HideUi/ToggleUi. This can occur as the
+  // result of pressing the ESC key.
+  assistant_ui_model_.SetVisible(false, AssistantSource::kUnspecified);
 
   container_view_->GetWidget()->RemoveObserver(this);
   container_view_ = nullptr;
@@ -65,14 +109,13 @@ void AssistantUiController::OnInputModalityChanged(
 
 void AssistantUiController::OnInteractionStateChanged(
     InteractionState interaction_state) {
-  switch (interaction_state) {
-    case InteractionState::kActive:
-      Show();
-      break;
-    case InteractionState::kInactive:
-      Dismiss();
-      break;
-  }
+  if (interaction_state != InteractionState::kActive)
+    return;
+
+  // If there is an active interaction, we need to show Assistant UI if it is
+  // not already showing. An interaction can only be started when the Assistant
+  // UI is hidden if the entry point is hotword.
+  ShowUi(AssistantSource::kHotword);
 }
 
 void AssistantUiController::OnMicStateChanged(MicState mic_state) {
@@ -97,21 +140,64 @@ void AssistantUiController::OnDialogPlateButtonPressed(DialogPlateButtonId id) {
   UpdateUiMode(AssistantUiMode::kWebUi);
 }
 
-bool AssistantUiController::IsVisible() const {
-  return container_view_ && container_view_->GetWidget()->IsVisible();
+void AssistantUiController::OnHighlighterEnabledChanged(
+    HighlighterEnabledState state) {
+  switch (state) {
+    case HighlighterEnabledState::kEnabled:
+      if (!assistant_ui_model_.visible())
+        ShowUi(AssistantSource::kStylus);
+      break;
+    case HighlighterEnabledState::kDisabledByUser:
+      if (assistant_ui_model_.visible())
+        HideUi(AssistantSource::kStylus);
+      break;
+    case HighlighterEnabledState::kDisabledBySessionEnd:
+      // No action necessary.
+      break;
+  }
 }
 
-void AssistantUiController::Show() {
+void AssistantUiController::ShowUi(AssistantSource source) {
+  if (!Shell::Get()->voice_interaction_controller()->setup_completed()) {
+    assistant_setup_->StartAssistantOptInFlow();
+    return;
+  }
+
+  if (!Shell::Get()->voice_interaction_controller()->settings_enabled())
+    return;
+
+  if (!assistant_) {
+    ShowToast(kUnboundServiceToastId, IDS_ASH_ASSISTANT_ERROR_GENERIC);
+    return;
+  }
+
+  if (assistant_ui_model_.visible())
+    return;
+
   if (!container_view_) {
     container_view_ = new AssistantContainerView(assistant_controller_);
     container_view_->GetWidget()->AddObserver(this);
   }
+
   container_view_->GetWidget()->Show();
+  assistant_ui_model_.SetVisible(true, source);
 }
 
-void AssistantUiController::Dismiss() {
+void AssistantUiController::HideUi(AssistantSource source) {
+  if (!assistant_ui_model_.visible())
+    return;
+
   if (container_view_)
     container_view_->GetWidget()->Hide();
+
+  assistant_ui_model_.SetVisible(false, source);
+}
+
+void AssistantUiController::ToggleUi(AssistantSource source) {
+  if (assistant_ui_model_.visible())
+    HideUi(source);
+  else
+    ShowUi(source);
 }
 
 void AssistantUiController::UpdateUiMode(
@@ -123,29 +209,13 @@ void AssistantUiController::UpdateUiMode(
     return;
   }
 
-  // When Assistant UI is not visible, we should reset to main UI mode.
-  if (!IsVisible()) {
-    assistant_ui_model_.SetUiMode(AssistantUiMode::kMainUi);
-    return;
-  }
-
-  const AssistantInteractionModel* interaction_model =
-      assistant_controller_->interaction_controller()->model();
-
-  // When the mic is open, we should be in main UI mode.
-  if (interaction_model->mic_state() == MicState::kOpen) {
-    assistant_ui_model_.SetUiMode(AssistantUiMode::kMainUi);
-    return;
-  }
-
   // When stylus input modality is selected, we should be in mini UI mode.
-  if (interaction_model->input_modality() == InputModality::kStylus) {
-    assistant_ui_model_.SetUiMode(AssistantUiMode::kMiniUi);
-    return;
-  }
-
-  // By default, we will fall back to main UI mode.
-  assistant_ui_model_.SetUiMode(AssistantUiMode::kMainUi);
+  // Otherwise we fall back to main UI mode.
+  assistant_ui_model_.SetUiMode(
+      assistant_interaction_controller_->model()->input_modality() ==
+              InputModality::kStylus
+          ? AssistantUiMode::kMiniUi
+          : AssistantUiMode::kMainUi);
 }
 
 }  // namespace ash

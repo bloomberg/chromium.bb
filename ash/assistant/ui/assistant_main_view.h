@@ -5,7 +5,7 @@
 #ifndef ASH_ASSISTANT_UI_ASSISTANT_MAIN_VIEW_H_
 #define ASH_ASSISTANT_UI_ASSISTANT_MAIN_VIEW_H_
 
-#include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
@@ -16,8 +16,7 @@ class AssistantMainStage;
 class CaptionBar;
 class DialogPlate;
 
-class AssistantMainView : public views::View,
-                          public AssistantInteractionModelObserver {
+class AssistantMainView : public views::View, public AssistantUiModelObserver {
  public:
   explicit AssistantMainView(AssistantController* assistant_controller);
   ~AssistantMainView() override;
@@ -29,8 +28,8 @@ class AssistantMainView : public views::View,
   void OnBoundsChanged(const gfx::Rect& prev_bounds) override;
   void RequestFocus() override;
 
-  // AssistantInteractionModelObserver:
-  void OnInteractionStateChanged(InteractionState interaction_state) override;
+  // AssistantUiModelObserver:
+  void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
 
  private:
   void InitLayout();

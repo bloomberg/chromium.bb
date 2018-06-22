@@ -28,9 +28,22 @@ void AssistantUiModel::SetUiMode(AssistantUiMode ui_mode) {
   NotifyUiModeChanged();
 }
 
+void AssistantUiModel::SetVisible(bool visible, AssistantSource source) {
+  if (visible == visible_)
+    return;
+
+  visible_ = visible;
+  NotifyUiVisibilityChanged(source);
+}
+
 void AssistantUiModel::NotifyUiModeChanged() {
   for (AssistantUiModelObserver& observer : observers_)
     observer.OnUiModeChanged(ui_mode_);
+}
+
+void AssistantUiModel::NotifyUiVisibilityChanged(AssistantSource source) {
+  for (AssistantUiModelObserver& observer : observers_)
+    observer.OnUiVisibilityChanged(visible_, source);
 }
 
 }  // namespace ash

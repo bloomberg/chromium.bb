@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/dialog_plate/action_view.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
@@ -55,6 +56,7 @@ class DialogPlate : public views::View,
                     public views::TextfieldController,
                     public ActionViewListener,
                     public AssistantInteractionModelObserver,
+                    public AssistantUiModelObserver,
                     public views::ButtonListener {
  public:
   explicit DialogPlate(AssistantController* assistant_controller);
@@ -79,7 +81,9 @@ class DialogPlate : public views::View,
 
   // AssistantInteractionModelObserver:
   void OnInputModalityChanged(InputModality input_modality) override;
-  void OnInteractionStateChanged(InteractionState interaction_state) override;
+
+  // AssistantUiModelObserver:
+  void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
 
   void set_delegate(DialogPlateDelegate* delegate) { delegate_ = delegate; }
 

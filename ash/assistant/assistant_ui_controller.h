@@ -10,8 +10,17 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/caption_bar.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
+#include "ash/highlighter/highlighter_controller.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget_observer.h"
+
+namespace chromeos {
+namespace assistant {
+namespace mojom {
+class Assistant;
+}  // namespace mojom
+}  // namespace assistant
+}  // namespace chromeos
 
 namespace views {
 class Widget;
@@ -21,15 +30,32 @@ namespace ash {
 
 class AssistantContainerView;
 class AssistantController;
+class AssistantInteractionController;
+
+namespace mojom {
+class AssistantSetup;
+}  // namespace mojom
 
 class ASH_EXPORT AssistantUiController
     : public views::WidgetObserver,
       public AssistantInteractionModelObserver,
       public CaptionBarDelegate,
-      public DialogPlateDelegate {
+      public DialogPlateDelegate,
+      public HighlighterController::Observer {
  public:
   explicit AssistantUiController(AssistantController* assistant_controller);
   ~AssistantUiController() override;
+
+  // Provides a pointer to the |assistant| owned by AssistantController.
+  void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
+
+  // Provides a pointer to the |assistant_interaction_controller| owned by
+  // AssistantController.
+  void SetAssistantInteractionController(
+      AssistantInteractionController* assistant_interaction_controller);
+
+  // Provides a pointer to the |assistant_setup| owned by AssistantController.
+  void SetAssistantSetup(mojom::AssistantSetup* assistant_setup);
 
   // Returns the underlying model.
   const AssistantUiModel* model() const { return &assistant_ui_model_; }
@@ -54,18 +80,28 @@ class ASH_EXPORT AssistantUiController
   // DialogPlateDelegate:
   void OnDialogPlateButtonPressed(DialogPlateButtonId id) override;
 
-  // Returns true if assistant bubble is visible, otherwise false.
-  bool IsVisible() const;
+  // HighlighterController::Observer:
+  void OnHighlighterEnabledChanged(HighlighterEnabledState state) override;
+
+  void ShowUi(AssistantSource source);
+  void HideUi(AssistantSource source);
+  void ToggleUi(AssistantSource source);
 
  private:
-  void Show();
-  void Dismiss();
-
   // Updates UI mode to |ui_mode| if specified. Otherwise UI mode is updated on
   // the basis of interaction/widget visibility state.
   void UpdateUiMode(base::Optional<AssistantUiMode> ui_mode = base::nullopt);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
+
+  // Owned by AssistantController.
+  chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
+
+  // Owned by AssistantController.
+  AssistantInteractionController* assistant_interaction_controller_ = nullptr;
+
+  // Owned by AssistantController.
+  mojom::AssistantSetup* assistant_setup_ = nullptr;
 
   AssistantUiModel assistant_ui_model_;
 

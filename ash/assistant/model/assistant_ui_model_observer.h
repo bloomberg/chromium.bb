@@ -9,6 +9,7 @@
 
 namespace ash {
 
+enum class AssistantSource;
 enum class AssistantUiMode;
 
 // An observer which receives notification of changes to the Assistant UI model.
@@ -16,6 +17,10 @@ class AssistantUiModelObserver {
  public:
   // Invoked when the UI mode is changed.
   virtual void OnUiModeChanged(AssistantUiMode ui_mode) {}
+
+  // Invoked when the UI visibility is changed. The |source| of the visibility
+  // change event is provided for interested observers.
+  virtual void OnUiVisibilityChanged(bool visible, AssistantSource source) {}
 
  protected:
   AssistantUiModelObserver() = default;

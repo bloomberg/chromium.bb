@@ -12,6 +12,15 @@ namespace ash {
 
 class AssistantUiModelObserver;
 
+// Enumeration of Assistant entry/exit points.
+enum class AssistantSource {
+  kUnspecified,
+  kHotkey,
+  kHotword,
+  kLongPressLauncher,
+  kStylus,
+};
+
 // Enumeration of Assistant UI modes.
 enum class AssistantUiMode {
   kMainUi,
@@ -35,10 +44,18 @@ class AssistantUiModel {
   // Returns the UI mode.
   AssistantUiMode ui_mode() const { return ui_mode_; }
 
+  // Sets the UI visibility.
+  void SetVisible(bool visible, AssistantSource source);
+
+  bool visible() const { return visible_; }
+
  private:
   void NotifyUiModeChanged();
+  void NotifyUiVisibilityChanged(AssistantSource source);
 
   AssistantUiMode ui_mode_ = AssistantUiMode::kMainUi;
+
+  bool visible_ = false;
 
   base::ObserverList<AssistantUiModelObserver> observers_;
 

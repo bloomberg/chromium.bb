@@ -10,7 +10,8 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_interaction_controller.h"
+#include "ash/assistant/assistant_ui_controller.h"
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/assistant_overlay.h"
@@ -142,10 +143,8 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
         assistant_overlay_->BurstAnimation();
         event->SetHandled();
         if (chromeos::switches::IsAssistantEnabled()) {
-          Shell::Get()
-              ->assistant_controller()
-              ->interaction_controller()
-              ->StartInteraction();
+          Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
+              AssistantSource::kLongPressLauncher);
         } else {
           Shell::Get()->app_list_controller()->StartVoiceInteractionSession();
         }
