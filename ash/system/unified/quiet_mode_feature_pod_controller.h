@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_UNIFIED_QUIET_MODE_FEATURE_POD_CONTROLLER_H_
 #define ASH_SYSTEM_UNIFIED_QUIET_MODE_FEATURE_POD_CONTROLLER_H_
 
+#include "ash/ash_export.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -17,7 +18,7 @@ class UnifiedSystemTrayController;
 // Controller of a feature pod button that toggles do-not-disturb mode.
 // If the do-not-disturb mode is enabled, the button indicates it by bright
 // background color and different icon.
-class QuietModeFeaturePodController
+class ASH_EXPORT QuietModeFeaturePodController
     : public FeaturePodControllerBase,
       public message_center::MessageCenterObserver {
  public:
