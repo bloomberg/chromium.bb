@@ -31,19 +31,32 @@ class ServiceContext;
 // service references to different endpoints in your service.
 class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceKeepalive {
  public:
+  class TimeoutObserver {
+   public:
+    virtual ~TimeoutObserver() {}
+    virtual void OnTimeoutExpired() = 0;
+    virtual void OnTimeoutCancelled() = 0;
+  };
+
   // Creates a keepalive which allows the service to be idle for |idle_timeout|
-  // before requesting termination. Must outlive |context|, which is not owned.
-  ServiceKeepalive(ServiceContext* context, base::TimeDelta idle_timeout);
+  // before requesting termination. Both |context| and |timeout_observer| are
+  // not owned and must outlive the ServiceKeepalive instance.
+  ServiceKeepalive(ServiceContext* context,
+                   base::TimeDelta idle_timeout,
+                   TimeoutObserver* timeout_observer = nullptr);
   ~ServiceKeepalive();
 
   std::unique_ptr<ServiceContextRef> CreateRef();
+  bool HasNoRefs();
 
  private:
   void OnRefAdded();
   void OnRefCountZero();
+  void OnTimerExpired();
 
   ServiceContext* const context_;
   const base::TimeDelta idle_timeout_;
+  TimeoutObserver* const timeout_observer_;
   base::OneShotTimer idle_timer_;
   ServiceContextRefFactory ref_factory_;
   base::WeakPtrFactory<ServiceKeepalive> weak_ptr_factory_;

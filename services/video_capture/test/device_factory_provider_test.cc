@@ -12,13 +12,6 @@
 
 namespace video_capture {
 
-ServiceManagerListenerImpl::ServiceManagerListenerImpl(
-    service_manager::mojom::ServiceManagerListenerRequest request,
-    base::RunLoop* loop)
-    : binding_(this, std::move(request)), loop_(loop) {}
-
-ServiceManagerListenerImpl::~ServiceManagerListenerImpl() = default;
-
 DeviceFactoryProviderTest::DeviceFactoryProviderTest()
     : service_manager::test::ServiceTest("video_capture_unittests") {}
 
@@ -30,18 +23,7 @@ void DeviceFactoryProviderTest::SetUp() {
 
   service_manager::test::ServiceTest::SetUp();
 
-  service_manager::mojom::ServiceManagerPtr service_manager;
-  connector()->BindInterface(service_manager::mojom::kServiceName,
-                             &service_manager);
-  service_manager::mojom::ServiceManagerListenerPtr listener;
-  base::RunLoop loop;
-  service_state_observer_ = std::make_unique<ServiceManagerListenerImpl>(
-      mojo::MakeRequest(&listener), &loop);
-  service_manager->AddListener(std::move(listener));
-  loop.Run();
-
   connector()->BindInterface(mojom::kServiceName, &factory_provider_);
-  factory_provider_->SetShutdownDelayInSeconds(0.0f);
   factory_provider_->ConnectToDeviceFactory(mojo::MakeRequest(&factory_));
 }
 

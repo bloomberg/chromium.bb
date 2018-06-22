@@ -76,26 +76,4 @@ TEST_F(FakeVideoCaptureDeviceTest, BuffersGetReused) {
   ASSERT_LE(num_buffers_created, kMaxBufferPoolBuffers);
 }
 
-// Tests that the service requests to be closed when the last client disconnects
-// while using a device.
-TEST_F(FakeVideoCaptureDeviceTest,
-       ServiceQuitsWhenClientDisconnectsWhileUsingDevice) {
-  base::RunLoop wait_loop;
-  EXPECT_CALL(*service_state_observer_, OnServiceStopped(_))
-      .WillOnce(Invoke([&wait_loop](const service_manager::Identity& identity) {
-        if (identity.name() == mojom::kServiceName)
-          wait_loop.Quit();
-      }));
-
-  mojom::ReceiverPtr receiver_proxy;
-  MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
-  fake_device_proxy_->Start(requestable_settings_, std::move(receiver_proxy));
-
-  fake_device_proxy_.reset();
-  factory_.reset();
-  factory_provider_.reset();
-
-  wait_loop.Run();
-}
-
 }  // namespace video_capture

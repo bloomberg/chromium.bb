@@ -92,16 +92,16 @@ class DeviceFactoryProviderImpl::GpuDependenciesContext {
 };
 
 DeviceFactoryProviderImpl::DeviceFactoryProviderImpl(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref,
-    base::Callback<void(float)> set_shutdown_delay_cb)
-    : service_ref_(std::move(service_ref)),
-      set_shutdown_delay_cb_(std::move(set_shutdown_delay_cb)) {}
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
+    : service_ref_(std::move(service_ref)) {}
 
 DeviceFactoryProviderImpl::~DeviceFactoryProviderImpl() {
   factory_bindings_.CloseAllBindings();
   device_factory_.reset();
-  gpu_dependencies_context_->GetTaskRunner()->DeleteSoon(
-      FROM_HERE, std::move(gpu_dependencies_context_));
+  if (gpu_dependencies_context_) {
+    gpu_dependencies_context_->GetTaskRunner()->DeleteSoon(
+        FROM_HERE, std::move(gpu_dependencies_context_));
+  }
 }
 
 void DeviceFactoryProviderImpl::InjectGpuDependencies(
@@ -119,10 +119,6 @@ void DeviceFactoryProviderImpl::ConnectToDeviceFactory(
     mojom::DeviceFactoryRequest request) {
   LazyInitializeDeviceFactory();
   factory_bindings_.AddBinding(device_factory_.get(), std::move(request));
-}
-
-void DeviceFactoryProviderImpl::SetShutdownDelayInSeconds(float seconds) {
-  set_shutdown_delay_cb_.Run(seconds);
 }
 
 void DeviceFactoryProviderImpl::LazyInitializeGpuDependenciesContext() {
