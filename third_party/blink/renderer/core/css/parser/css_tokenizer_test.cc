@@ -233,8 +233,8 @@ TEST(CSSTokenizerTest, Escapes) {
   TEST_TOKENS("\\\f", Delim('\\'), Whitespace());
   TEST_TOKENS("\\\r\n", Delim('\\'), Whitespace());
   String replacement = FromUChar32(0xFFFD);
-  TEST_TOKENS(String("null\\\0", 6), Ident("null" + replacement));
-  TEST_TOKENS(String("null\\\0\0", 7),
+  TEST_TOKENS(String("null\\\0", 6u), Ident("null" + replacement));
+  TEST_TOKENS(String("null\\\0\0", 7u),
               Ident("null" + replacement + replacement));
   TEST_TOKENS("null\\0", Ident("null" + replacement));
   TEST_TOKENS("null\\0000", Ident("null" + replacement));
@@ -267,9 +267,9 @@ TEST(CSSTokenizerTest, IdentToken) {
               Ident(FromUChar32(0xA0)));  // non-breaking space
   TEST_TOKENS(FromUChar32(0x1234), Ident(FromUChar32(0x1234)));
   TEST_TOKENS(FromUChar32(0x12345), Ident(FromUChar32(0x12345)));
-  TEST_TOKENS(String("\0", 1), Ident(FromUChar32(0xFFFD)));
-  TEST_TOKENS(String("ab\0c", 4), Ident("ab" + FromUChar32(0xFFFD) + "c"));
-  TEST_TOKENS(String("ab\0c", 4), Ident("ab" + FromUChar32(0xFFFD) + "c"));
+  TEST_TOKENS(String("\0", 1u), Ident(FromUChar32(0xFFFD)));
+  TEST_TOKENS(String("ab\0c", 4u), Ident("ab" + FromUChar32(0xFFFD) + "c"));
+  TEST_TOKENS(String("ab\0c", 4u), Ident("ab" + FromUChar32(0xFFFD) + "c"));
 }
 
 TEST(CSSTokenizerTest, FunctionToken) {
@@ -344,10 +344,10 @@ TEST(CSSTokenizerTest, StringToken) {
   TEST_TOKENS("'bad\rstring", BadString(), Whitespace(), Ident("string"));
   TEST_TOKENS("'bad\r\nstring", BadString(), Whitespace(), Ident("string"));
   TEST_TOKENS("'bad\fstring", BadString(), Whitespace(), Ident("string"));
-  TEST_TOKENS(String("'\0'", 3), GetString(FromUChar32(0xFFFD)));
-  TEST_TOKENS(String("'hel\0lo'", 8),
+  TEST_TOKENS(String("'\0'", 3u), GetString(FromUChar32(0xFFFD)));
+  TEST_TOKENS(String("'hel\0lo'", 8u),
               GetString("hel" + FromUChar32(0xFFFD) + "lo"));
-  TEST_TOKENS(String("'h\\65l\0lo'", 10),
+  TEST_TOKENS(String("'h\\65l\0lo'", 10u),
               GetString("hel" + FromUChar32(0xFFFD) + "lo"));
 }
 

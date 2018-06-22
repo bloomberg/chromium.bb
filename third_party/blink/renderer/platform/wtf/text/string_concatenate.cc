@@ -8,6 +8,9 @@
 
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
+WTF::StringTypeAdapter<char*>::StringTypeAdapter(char* buffer, size_t length)
+    : buffer_(buffer), length_(SafeCast<unsigned>(length)) {}
+
 void WTF::StringTypeAdapter<char*>::WriteTo(LChar* destination) const {
   for (unsigned i = 0; i < length_; ++i)
     destination[i] = static_cast<LChar>(buffer_[i]);

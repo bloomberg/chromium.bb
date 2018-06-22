@@ -472,7 +472,7 @@ static void FormatEscapedEntityCallback(const void* context,
     *err = U_ZERO_ERROR;
 
     UnencodableReplacementArray entity;
-    int entity_len =
+    uint32_t entity_len =
         TextCodec::GetUnencodableReplacement(code_point, handling, entity);
     String entity_u(entity, entity_len);
     entity_u.Ensure16Bit();

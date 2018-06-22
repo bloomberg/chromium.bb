@@ -33,6 +33,11 @@ namespace WTF {
 static_assert(sizeof(AtomicString) == sizeof(String),
               "AtomicString and String must be same size");
 
+#if defined(ARCH_CPU_64_BITS)
+AtomicString::AtomicString(const LChar* chars, size_t length)
+    : AtomicString(chars, SafeCast<unsigned>(length)) {}
+#endif  // defined(ARCH_CPU_64_BITS)
+
 AtomicString::AtomicString(const LChar* chars, unsigned length)
     : string_(AtomicStringTable::Instance().Add(chars, length)) {}
 

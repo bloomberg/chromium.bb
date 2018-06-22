@@ -27,6 +27,7 @@
 // on systems without case-sensitive file systems.
 
 #include <iosfwd>
+#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
@@ -87,6 +88,12 @@ class WTF_EXPORT String {
   // Construct a string with latin1 data.
   String(const LChar* characters, unsigned length);
   String(const char* characters, unsigned length);
+
+#if defined(ARCH_CPU_64_BITS)
+  // Only define a size_t constructor if size_t is 64 bit otherwise
+  // we'd have a duplicate define.
+  String(const char* characters, size_t length);
+#endif  // defined(ARCH_CPU_64_BITS)
 
   // Construct a string with latin1 data, from a null-terminated source.
   String(const LChar* characters)

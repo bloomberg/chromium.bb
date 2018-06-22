@@ -135,7 +135,8 @@ bool VerifyAlgorithmNameMappings(const AlgorithmNameMapping* begin,
   for (const AlgorithmNameMapping* it = begin; it != end; ++it) {
     if (it->algorithm_name_length != strlen(it->algorithm_name))
       return false;
-    String str(it->algorithm_name, it->algorithm_name_length);
+    String str(it->algorithm_name,
+               static_cast<unsigned>(it->algorithm_name_length));
     if (!str.ContainsOnlyASCII())
       return false;
     if (str.UpperASCII() != str)

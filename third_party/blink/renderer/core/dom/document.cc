@@ -5502,7 +5502,7 @@ static ParseQualifiedNameResult ParseQualifiedNameInternal(
     AtomicString& local_name) {
   bool name_start = true;
   bool saw_colon = false;
-  int colon_pos = 0;
+  unsigned colon_pos = 0;
 
   for (unsigned i = 0; i < length;) {
     UChar32 c;

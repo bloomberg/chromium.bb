@@ -154,7 +154,7 @@ enum NewlineType { kCr, kLf, kCrLf };
 String LineBreakString(NewlineType type) {
   static const char kBreakStrings[] = "\r\n";
   return String(type == kLf ? kBreakStrings + 1 : kBreakStrings,
-                type == kCrLf ? 2 : 1);
+                type == kCrLf ? 2u : 1u);
 }
 
 String MakeTestData(const char** lines, const NewlineType* breaks, int count) {
@@ -248,7 +248,7 @@ TEST(BufferedLineReaderTest, BufferBoundaryInCRLF_2) {
 
 TEST(BufferedLineReaderTest, NormalizedNUL) {
   BufferedLineReader reader;
-  reader.Append(String("X\0Y\n", 4));
+  reader.Append(String("X\0Y\n", 4u));
   String line;
   ASSERT_TRUE(reader.GetLine(line));
   ASSERT_EQ(line[1], kReplacementCharacter);

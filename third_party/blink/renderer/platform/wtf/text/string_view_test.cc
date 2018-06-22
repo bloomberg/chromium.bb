@@ -252,7 +252,7 @@ TEST(StringViewTest, ConstructionAtomicString16) {
 }
 
 TEST(StringViewTest, ConstructionStringView8) {
-  StringView view8_bit = StringView(kChars8, 5);
+  StringView view8_bit = StringView(kChars8, 5u);
 
   // StringView(StringView&);
   ASSERT_TRUE(StringView(view8_bit).Is8Bit());
@@ -325,18 +325,18 @@ TEST(StringViewTest, ConstructionLiteral8) {
   EXPECT_STREQ(kChars, StringView(kChars).ToString().Utf8().data());
 
   // StringView(const LChar* chars, unsigned length);
-  ASSERT_TRUE(StringView(kChars8, 2).Is8Bit());
-  EXPECT_FALSE(StringView(kChars8, 2).IsNull());
-  EXPECT_EQ(2u, StringView(kChars8, 2).length());
-  EXPECT_EQ(StringView("12"), StringView(kChars8, 2));
-  EXPECT_STREQ("12", StringView(kChars8, 2).ToString().Utf8().data());
+  ASSERT_TRUE(StringView(kChars8, 2u).Is8Bit());
+  EXPECT_FALSE(StringView(kChars8, 2u).IsNull());
+  EXPECT_EQ(2u, StringView(kChars8, 2u).length());
+  EXPECT_EQ(StringView("12"), StringView(kChars8, 2u));
+  EXPECT_STREQ("12", StringView(kChars8, 2u).ToString().Utf8().data());
 
   // StringView(const char* chars, unsigned length);
-  ASSERT_TRUE(StringView(kChars, 2).Is8Bit());
-  EXPECT_FALSE(StringView(kChars, 2).IsNull());
-  EXPECT_EQ(2u, StringView(kChars, 2).length());
-  EXPECT_EQ(StringView("12"), StringView(kChars, 2));
-  EXPECT_STREQ("12", StringView(kChars, 2).ToString().Utf8().data());
+  ASSERT_TRUE(StringView(kChars, 2u).Is8Bit());
+  EXPECT_FALSE(StringView(kChars, 2u).IsNull());
+  EXPECT_EQ(2u, StringView(kChars, 2u).length());
+  EXPECT_EQ(StringView("12"), StringView(kChars, 2u));
+  EXPECT_STREQ("12", StringView(kChars, 2u).ToString().Utf8().data());
 }
 
 TEST(StringViewTest, ConstructionLiteral16) {
@@ -348,14 +348,14 @@ TEST(StringViewTest, ConstructionLiteral16) {
   EXPECT_EQ(String(kChars16), StringView(kChars16).ToString().Utf8().data());
 
   // StringView(const UChar* chars, unsigned length);
-  ASSERT_FALSE(StringView(kChars16, 2).Is8Bit());
-  EXPECT_FALSE(StringView(kChars16, 2).IsNull());
-  EXPECT_EQ(kChars16, StringView(kChars16, 2).Characters16());
-  EXPECT_EQ(StringView("12"), StringView(kChars16, 2));
+  ASSERT_FALSE(StringView(kChars16, 2u).Is8Bit());
+  EXPECT_FALSE(StringView(kChars16, 2u).IsNull());
+  EXPECT_EQ(kChars16, StringView(kChars16, 2u).Characters16());
+  EXPECT_EQ(StringView("12"), StringView(kChars16, 2u));
   EXPECT_EQ(StringView(reinterpret_cast<const UChar*>(u"12")),
-            StringView(kChars16, 2));
-  EXPECT_EQ(2u, StringView(kChars16, 2).length());
-  EXPECT_EQ(String("12"), StringView(kChars16, 2).ToString());
+            StringView(kChars16, 2u));
+  EXPECT_EQ(2u, StringView(kChars16, 2u).length());
+  EXPECT_EQ(String("12"), StringView(kChars16, 2u).ToString());
 }
 
 TEST(StringViewTest, IsEmpty) {
@@ -379,7 +379,7 @@ TEST(StringViewTest, ToString) {
 TEST(StringViewTest, ToAtomicString) {
   EXPECT_EQ(g_null_atom.Impl(), StringView().ToAtomicString());
   EXPECT_EQ(g_empty_atom.Impl(), StringView("").ToAtomicString());
-  EXPECT_EQ(AtomicString("12"), StringView(kChars8, 2).ToAtomicString());
+  EXPECT_EQ(AtomicString("12"), StringView(kChars8, 2u).ToAtomicString());
   // AtomicString will convert to 8bit if possible when creating the string.
   EXPECT_EQ(AtomicString("12").Impl(),
             StringView(kChars16, 2).ToAtomicString().Impl());

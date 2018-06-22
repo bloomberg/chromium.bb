@@ -101,7 +101,7 @@ class WTF_EXPORT StringTypeAdapter<char*> {
 
  public:
   explicit StringTypeAdapter<char*>(char* buffer)
-      : buffer_(buffer), length_(strlen(buffer)) {}
+      : StringTypeAdapter(buffer, strlen(buffer)) {}
 
   unsigned length() const { return length_; }
   bool Is8Bit() const { return true; }
@@ -110,6 +110,8 @@ class WTF_EXPORT StringTypeAdapter<char*> {
   void WriteTo(UChar* destination) const;
 
  private:
+  StringTypeAdapter<char*>(char* buffer, size_t length);
+
   const char* buffer_;
   unsigned length_;
 };

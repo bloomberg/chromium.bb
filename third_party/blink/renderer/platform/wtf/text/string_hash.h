@@ -100,11 +100,6 @@ class CaseFoldingHash {
                                     length);
   }
 
-  static inline unsigned GetHash(const char* data) {
-    return CaseFoldingHash::GetHash(reinterpret_cast<const LChar*>(data),
-                                    strlen(data));
-  }
-
   static inline bool Equal(const StringImpl* a, const StringImpl* b) {
     DCHECK(a);
     DCHECK(b);
