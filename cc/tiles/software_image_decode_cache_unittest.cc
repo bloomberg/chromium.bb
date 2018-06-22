@@ -396,9 +396,9 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityAt0_1Scale) {
       draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
   EXPECT_EQ(key.type(), SoftwareImageDecodeCache::CacheKey::kSubrectAndScale);
-  EXPECT_EQ(62, key.target_size().width());
+  EXPECT_EQ(63, key.target_size().width());
   EXPECT_EQ(25, key.target_size().height());
-  EXPECT_EQ(62u * 25u * 4u, key.locked_bytes());
+  EXPECT_EQ(63u * 25u * 4u, key.locked_bytes());
 }
 
 TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityAt0_01Scale) {
@@ -415,9 +415,9 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityAt0_01Scale) {
       draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
   EXPECT_EQ(key.type(), SoftwareImageDecodeCache::CacheKey::kSubrectAndScale);
-  EXPECT_EQ(7, key.target_size().width());
-  EXPECT_EQ(3, key.target_size().height());
-  EXPECT_EQ(7u * 3u * 4u, key.locked_bytes());
+  EXPECT_EQ(8, key.target_size().width());
+  EXPECT_EQ(4, key.target_size().height());
+  EXPECT_EQ(8u * 4u * 4u, key.locked_bytes());
 }
 
 TEST(SoftwareImageDecodeCacheTest,
@@ -477,9 +477,9 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyHighQualityDropToMediumIfTooLarge) {
       draw_image, kN32_SkColorType);
   EXPECT_EQ(draw_image.frame_key(), key.frame_key());
   EXPECT_EQ(key.type(), SoftwareImageDecodeCache::CacheKey::kSubrectAndScale);
-  EXPECT_EQ(2277, key.target_size().width());
+  EXPECT_EQ(2278, key.target_size().width());
   EXPECT_EQ(1024, key.target_size().height());
-  EXPECT_EQ(2277u * 1024u * 4u, key.locked_bytes());
+  EXPECT_EQ(2278u * 1024u * 4u, key.locked_bytes());
 }
 
 TEST(SoftwareImageDecodeCacheTest,
@@ -1445,7 +1445,7 @@ TEST(SoftwareImageDecodeCacheTest, MediumQualityAt0_1ScaleIsHandled) {
   // Decoded image should not be lazy generated.
   EXPECT_FALSE(decoded_draw_image.image()->isLazyGenerated());
   EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
-  EXPECT_EQ(62, decoded_draw_image.image()->width());
+  EXPECT_EQ(63, decoded_draw_image.image()->width());
   EXPECT_EQ(25, decoded_draw_image.image()->height());
 
   cache.DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -1476,8 +1476,8 @@ TEST(SoftwareImageDecodeCacheTest, MediumQualityAt0_01ScaleIsHandled) {
   // Decoded image should not be lazy generated.
   EXPECT_FALSE(decoded_draw_image.image()->isLazyGenerated());
   EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
-  EXPECT_EQ(7, decoded_draw_image.image()->width());
-  EXPECT_EQ(3, decoded_draw_image.image()->height());
+  EXPECT_EQ(8, decoded_draw_image.image()->width());
+  EXPECT_EQ(4, decoded_draw_image.image()->height());
 
   cache.DrawWithImageFinished(draw_image, decoded_draw_image);
   cache.UnrefImage(draw_image);
