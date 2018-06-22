@@ -100,7 +100,7 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
     ink_drop_container_->SetVisible(false);
 
     SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
-    set_ink_drop_visible_opacity(0.14f);
+    set_ink_drop_visible_opacity(0.08f);
 
     SetFocusPainter(nullptr);
     focus_ring_ = views::FocusRing::Install(this);
@@ -220,8 +220,10 @@ std::unique_ptr<views::InkDropRipple> NewTabButton::CreateInkDropRipple()
 std::unique_ptr<views::InkDropHighlight> NewTabButton::CreateInkDropHighlight()
     const {
   const gfx::Rect bounds = GetContentsBounds();
-  return CreateDefaultInkDropHighlight(
+  auto highlight = CreateDefaultInkDropHighlight(
       gfx::RectF(GetMirroredRect(bounds)).CenterPoint(), bounds.size());
+  highlight->set_visible_opacity(0.1f);
+  return highlight;
 }
 
 void NewTabButton::NotifyClick(const ui::Event& event) {
