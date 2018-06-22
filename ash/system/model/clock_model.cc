@@ -39,7 +39,7 @@ void ClockModel::SetUse24HourClock(bool use_24_hour) {
 }
 
 bool ClockModel::IsLoggedIn() {
-  return Shell::Get()->session_controller()->login_status() ==
+  return Shell::Get()->session_controller()->login_status() !=
          LoginStatus::NOT_LOGGED_IN;
 }
 
