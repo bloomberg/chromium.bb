@@ -501,9 +501,17 @@ bool ContentSecurityPolicy::AllowJavaScriptURLs(
     const String& context_url,
     const WTF::OrdinalNumber& context_line,
     SecurityViolationReportingPolicy reporting_policy) const {
+  // Javascript URLs may be whitelisted by hash, if
+  // 'unsafe-hashes' is present in a policy. Check against the digest
+  // of the |source| and also check whether inline script is allowed.
+  Vector<CSPHashValue> csp_hash_values;
+  FillInCSPHashValues(source, script_hash_algorithms_used_, csp_hash_values);
+
   bool is_allowed = true;
   for (const auto& policy : policies_) {
-    is_allowed &= policy->AllowJavaScriptURLs(element, source, context_url,
+    is_allowed &= CheckScriptHashAgainstPolicy(csp_hash_values, policy,
+                                               InlineType::kAttribute) ||
+                  policy->AllowJavaScriptURLs(element, source, context_url,
                                               context_line, reporting_policy);
   }
   return is_allowed;
@@ -516,7 +524,7 @@ bool ContentSecurityPolicy::AllowInlineEventHandler(
     const WTF::OrdinalNumber& context_line,
     SecurityViolationReportingPolicy reporting_policy) const {
   // Inline event handlers may be whitelisted by hash, if
-  // 'unsafe-hash-attributes' is present in a policy. Check against the digest
+  // 'unsafe-hashes' is present in a policy. Check against the digest
   // of the |source| and also check whether inline script is allowed.
   Vector<CSPHashValue> csp_hash_values;
   FillInCSPHashValues(source, script_hash_algorithms_used_, csp_hash_values);

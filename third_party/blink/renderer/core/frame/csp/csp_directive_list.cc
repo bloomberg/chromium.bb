@@ -236,9 +236,9 @@ bool CSPDirectiveList::CheckHash(SourceListDirective* directive,
   return !directive || directive->AllowHash(hash_value);
 }
 
-bool CSPDirectiveList::CheckHashedAttributes(
+bool CSPDirectiveList::CheckUnsafeHashesAllowed(
     SourceListDirective* directive) const {
-  return !directive || directive->AllowHashedAttributes();
+  return !directive || directive->AllowUnsafeHashes();
 }
 
 bool CSPDirectiveList::CheckDynamic(SourceListDirective* directive) const {
@@ -612,7 +612,7 @@ bool CSPDirectiveList::AllowJavaScriptURLs(
   if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
     return CheckInlineAndReportViolation(
         directive,
-        "Refused to execute JavaScript URL because it violates the following "
+        "Refused to run the JavaScript URL because it violates the following "
         "Content Security Policy directive: ",
         element, source, context_url, context_line, true, "sha256-...");
   }
@@ -972,24 +972,28 @@ bool CSPDirectiveList::AllowAncestors(
              : CheckAncestors(frame_ancestors_.Get(), frame);
 }
 
-bool CSPDirectiveList::AllowScriptHash(
-    const CSPHashValue& hash_value,
-    ContentSecurityPolicy::InlineType type) const {
+bool CSPDirectiveList::AllowHash(const CSPHashValue& hash_value,
+                                 ContentSecurityPolicy::InlineType type,
+                                 SourceListDirective* directive) const {
   if (type == ContentSecurityPolicy::InlineType::kAttribute) {
     if (!policy_->ExperimentalFeaturesEnabled())
       return false;
-    if (!CheckHashedAttributes(OperativeDirective(script_src_.Get())))
+    if (!CheckUnsafeHashesAllowed(OperativeDirective(directive)))
       return false;
   }
-  return CheckHash(OperativeDirective(script_src_.Get()), hash_value);
+  return CheckHash(OperativeDirective(directive), hash_value);
+}
+
+bool CSPDirectiveList::AllowScriptHash(
+    const CSPHashValue& hash_value,
+    ContentSecurityPolicy::InlineType type) const {
+  return AllowHash(hash_value, type, script_src_.Get());
 }
 
 bool CSPDirectiveList::AllowStyleHash(
     const CSPHashValue& hash_value,
     ContentSecurityPolicy::InlineType type) const {
-  if (type != ContentSecurityPolicy::InlineType::kBlock)
-    return false;
-  return CheckHash(OperativeDirective(style_src_.Get()), hash_value);
+  return AllowHash(hash_value, type, style_src_.Get());
 }
 
 bool CSPDirectiveList::AllowDynamic() const {

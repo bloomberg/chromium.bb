@@ -523,13 +523,13 @@ WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
   const KURL& kurl = url;
   DCHECK(kurl.ProtocolIs("javascript"));
 
-  String script = DecodeURLEscapeSequences(
-      kurl.GetString().Substring(strlen("javascript:")));
+  String script = DecodeURLEscapeSequences(kurl.GetString());
 
   if (!element_->GetDocument().GetContentSecurityPolicy()->AllowJavaScriptURLs(
           element_, script, element_->GetDocument().Url(), OrdinalNumber())) {
     return WebString();
   }
+  script = script.Substring(strlen("javascript:"));
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (popups_allowed) {

@@ -337,9 +337,7 @@ DOMWindow* CreateWindow(const String& url_string,
       opener_frame.GetDocument()->GetContentSecurityPolicy() &&
       !ContentSecurityPolicy::ShouldBypassMainWorld(
           opener_frame.GetDocument())) {
-    const int kJavascriptSchemeLength = sizeof("javascript:") - 1;
-    String script_source = DecodeURLEscapeSequences(completed_url.GetString())
-                               .Substring(kJavascriptSchemeLength);
+    String script_source = DecodeURLEscapeSequences(completed_url.GetString());
 
     if (!opener_frame.GetDocument()
              ->GetContentSecurityPolicy()
