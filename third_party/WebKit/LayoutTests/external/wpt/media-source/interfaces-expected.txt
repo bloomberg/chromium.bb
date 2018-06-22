@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 143 tests; 140 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 147 tests; 144 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Partial interface URL: original interface defined
 PASS Partial interface URL: valid exposure set
 PASS Partial interface AudioTrack: original interface defined
@@ -103,6 +103,8 @@ PASS SourceBuffer interface: operation appendBuffer(BufferSource)
 PASS Unscopable handled correctly for appendBuffer(BufferSource) on SourceBuffer
 PASS SourceBuffer interface: operation abort()
 PASS Unscopable handled correctly for abort() on SourceBuffer
+PASS SourceBuffer interface: operation changeType(DOMString)
+PASS Unscopable handled correctly for changeType(DOMString) on SourceBuffer
 PASS SourceBuffer interface: operation remove(double, unrestricted double)
 PASS Unscopable handled correctly for remove(double, unrestricted double) on SourceBuffer
 PASS SourceBuffer must be primary interface of sourceBuffer
@@ -124,6 +126,8 @@ PASS SourceBuffer interface: sourceBuffer must inherit property "onabort" with t
 PASS SourceBuffer interface: sourceBuffer must inherit property "appendBuffer(BufferSource)" with the proper type
 PASS SourceBuffer interface: calling appendBuffer(BufferSource) on sourceBuffer with too few arguments must throw TypeError
 PASS SourceBuffer interface: sourceBuffer must inherit property "abort()" with the proper type
+PASS SourceBuffer interface: sourceBuffer must inherit property "changeType(DOMString)" with the proper type
+PASS SourceBuffer interface: calling changeType(DOMString) on sourceBuffer with too few arguments must throw TypeError
 PASS SourceBuffer interface: sourceBuffer must inherit property "remove(double, unrestricted double)" with the proper type
 PASS SourceBuffer interface: calling remove(double, unrestricted double) on sourceBuffer with too few arguments must throw TypeError
 PASS SourceBufferList interface: existence and properties of interface object
