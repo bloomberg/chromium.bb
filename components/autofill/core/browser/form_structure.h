@@ -288,17 +288,92 @@ class FormStructure {
   FRIEND_TEST_ALL_PREFIXES(FormStructureTest,
                            RationalizePhoneNumber_RunsOncePerSection);
 
+  class SectionedFieldsIndexes {
+   public:
+    SectionedFieldsIndexes();
+    ~SectionedFieldsIndexes();
+
+    size_t LastFieldIndex() const {
+      if (sectioned_indexes.empty())
+        return (size_t)-1;  // Shouldn't happen.
+      return sectioned_indexes.back().back();
+    };
+
+    void AddFieldIndex(const size_t index, bool is_new_section) {
+      if (is_new_section || Empty()) {
+        sectioned_indexes.push_back(std::vector<size_t>(1, index));
+        return;
+      }
+      sectioned_indexes.back().push_back(index);
+    }
+
+    void WalkForwardToTheNextSection() { current_section_ptr++; }
+
+    bool IsFinished() const {
+      return current_section_ptr >= sectioned_indexes.size();
+    }
+
+    size_t CurrentIndex() const { return CurrentSection()[0]; }
+
+    std::vector<size_t> CurrentSection() const {
+      if (current_section_ptr < sectioned_indexes.size())
+        return sectioned_indexes[current_section_ptr];
+      return std::vector<size_t>(1, (size_t)-1);  // To handle edge cases.
+    }
+
+    void Reset() { current_section_ptr = 0; }
+
+    bool Empty() const { return sectioned_indexes.empty(); }
+
+   private:
+    // A vector of sections. Each section is a vector of some of the indexes
+    // that belong to the same section. The sections and indexes are sorted by
+    // their order of appearance on the form.
+    std::vector<std::vector<size_t>> sectioned_indexes;
+    // Points to a vector of indexes that belong to the same section.
+    size_t current_section_ptr = 0;
+  };
+
   // A function to fine tune the credit cards related predictions. For example:
   // lone credit card fields in an otherwise non-credit-card related form is
   // unlikely to be correct, the function will override that prediction.
   void RationalizeCreditCardFieldPredictions();
 
+  // The rationalization is based on the visible fields, but should be applied
+  // to the hidden select fields. This is because hidden 'select' fields are
+  // also autofilled to take care of the synthetic fields.
+  void ApplyRationalizationsToHiddenSelects(size_t field_index,
+                                            ServerFieldType new_type);
+
+  // Returns true if we can replace server predictions with the heuristics one.
+  bool HeuristicsPredictionsAreApplicable(size_t upper_index,
+                                          size_t lower_index,
+                                          ServerFieldType first_type,
+                                          ServerFieldType second_type);
+
+  // Applies upper type to upper field, and lower type to lower field, and
+  // applies the rationalization also to hidden select fields if necessary.
+  void ApplyRationalizationsToFields(size_t upper_index,
+                                     size_t lower_index,
+                                     ServerFieldType upper_type,
+                                     ServerFieldType lower_type);
+
+  // Returns true if the fields_[index] server type should be rationalized to
+  // ADDRESS_HOME_COUNTRY.
+  bool FieldShouldBeRationalizedToCountry(size_t index);
+
   // Two or three fields predicted as the whole address should be address lines
   // 1, 2 and 3 instead.
-  void RationalizeAddressLineFields(const std::vector<size_t>& fields_index);
+  void RationalizeAddressLineFields(
+      SectionedFieldsIndexes& sections_of_address_indexes);
+
+  // Rationalize state and country interdependently.
+  void RationalizeAddressStateCountry(
+      SectionedFieldsIndexes& sections_of_state_indexes,
+      SectionedFieldsIndexes& sections_of_country_indexes);
 
   // Tunes the fields with identical predictions.
-  void RationalizeRepreatedFields();
+  void RationalizeRepeatedFields();
 
   // A helper function to review the predictions and do appropriate adjustments
   // when it considers neccessary.

@@ -29,6 +29,7 @@ using base::ASCIIToUTF16;
 using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
 using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
 using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
+using autofill::features::kAutofillRationalizeRepeatedServerPredictions;
 
 namespace autofill {
 
@@ -4634,6 +4635,10 @@ TEST_F(FormStructureTest, RationalizePhoneNumber_RunsOncePerSection) {
 // Tests that a form that has only one address predicted as
 // ADDRESS_HOME_STREET_ADDRESS is not modified by the address rationalization.
 TEST_F(FormStructureTest, RationalizeRepeatedFields_OneAddress) {
+  base::test::ScopedFeatureList feature_list;
+  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
+              true);
+
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -4680,6 +4685,10 @@ TEST_F(FormStructureTest, RationalizeRepeatedFields_OneAddress) {
 // ADDRESS_HOME_STREET_ADDRESS is modified by the address rationalization to be
 // ADDRESS_HOME_LINE1 and ADDRESS_HOME_LINE2 instead.
 TEST_F(FormStructureTest, RationalizeRepreatedFields_TwoAddresses) {
+  base::test::ScopedFeatureList feature_list;
+  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
+              true);
+
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -4732,6 +4741,10 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_TwoAddresses) {
 // ADDRESS_HOME_STREET_ADDRESS is modified by the address rationalization to be
 // ADDRESS_HOME_LINE1, ADDRESS_HOME_LINE2 and ADDRESS_HOME_LINE3 instead.
 TEST_F(FormStructureTest, RationalizeRepreatedFields_ThreeAddresses) {
+  base::test::ScopedFeatureList feature_list;
+  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
+              true);
+
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -4792,6 +4805,9 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_ThreeAddresses) {
 // This doesn't happen in real world, bc four address lines mean multiple
 // sections according to the heuristics.
 TEST_F(FormStructureTest, RationalizeRepreatedFields_FourAddresses) {
+  base::test::ScopedFeatureList feature_list;
+  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
+              true);
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -4861,6 +4877,10 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_FourAddresses) {
 // Tests that a form that has only one address in each section predicted as
 // ADDRESS_HOME_STREET_ADDRESS is not modified by the address rationalization.
 TEST_F(FormStructureTest, RationalizeRepreatedFields_OneAddressEachSection) {
+  base::test::ScopedFeatureList feature_list;
+  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
+              true);
+
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -4939,6 +4959,10 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_OneAddressEachSection) {
 TEST_F(
     FormStructureTest,
     RationalizeRepreatedFields_SectionTwoAddress_SectionThreeAddress_SectionFourAddresses) {
+  base::test::ScopedFeatureList feature_list;
+  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
+              true);
+
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -5092,6 +5116,10 @@ TEST_F(
 // while the sections are previously determined by the heuristics.
 TEST_F(FormStructureTest,
        RationalizeRepreatedFields_MultipleSectionsByHeuristics_OneAddressEach) {
+  base::test::ScopedFeatureList feature_list;
+  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
+              true);
+
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -5166,6 +5194,10 @@ TEST_F(FormStructureTest,
 TEST_F(
     FormStructureTest,
     RationalizeRepreatedFields_MultipleSectionsByHeuristics_TwoAddress_ThreeAddress) {
+  base::test::ScopedFeatureList feature_list;
+  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
+              true);
+
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -5252,6 +5284,379 @@ TEST_F(
   EXPECT_EQ(ADDRESS_HOME_LINE2, forms[0]->field(6)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME_LINE3, forms[0]->field(7)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(8)->Type().GetStorableType());
+}
+
+TEST_F(FormStructureTest,
+       RationalizeRepreatedFields_StateCountry_NoRationalization) {
+  base::test::ScopedFeatureList feature_list;
+  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
+              true);
+
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+  // First Section
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+
+  // Second Section
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state");
+  form.fields.push_back(field);
+
+  // Third Section
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state");
+  form.fields.push_back(field);
+
+  // Fourth Section
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  // Will identify the sections based on the heuristics types.
+  form_structure.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
+                                         /*source_id=*/0);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_STATE);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_COUNTRY);
+  // second section
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_COUNTRY);
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_STATE);
+  // third section
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_STATE);
+  // fourth section
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_COUNTRY);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Will call RationalizeFieldTypePredictions
+  FormStructure::ParseQueryResponse(response_string, forms);
+
+  ASSERT_EQ(1U, forms.size());
+  ASSERT_EQ(10U, forms[0]->field_count());
+  EXPECT_EQ(NAME_FULL, forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, forms[0]->field(2)->Type().GetStorableType());
+  // second section
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, forms[0]->field(3)->Type().GetStorableType());
+  EXPECT_EQ(NAME_FULL, forms[0]->field(4)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(5)->Type().GetStorableType());
+  // third section
+  EXPECT_EQ(NAME_FULL, forms[0]->field(6)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(7)->Type().GetStorableType());
+  // fourth section
+  EXPECT_EQ(NAME_FULL, forms[0]->field(8)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, forms[0]->field(9)->Type().GetStorableType());
+}
+
+TEST_F(FormStructureTest, RationalizeRepreatedFields_CountryStateNoHeuristics) {
+  base::test::ScopedFeatureList feature_list;
+  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
+              true);
+
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.section = "shipping";
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+
+  field.section = "billing";
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country2");
+  field.form_control_type = "select-one";
+  field.is_focusable = false;  // hidden
+  form.fields.push_back(field);
+
+  field.is_focusable = true;  // visible
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country2");
+  field.form_control_type = "select-one";
+  field.is_focusable = false;  // hidden
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country2");
+  field.form_control_type = "select-one";
+  field.is_focusable = false;  // hidden
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country2");
+  field.form_control_type = "select-one";
+  field.is_focusable = false;  // hidden
+  form.fields.push_back(field);
+
+  field.is_focusable = true;  // visible
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state");
+  form.fields.push_back(field);
+
+  field.section = "billing-2";
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state");
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_CITY);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_STATE);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_STATE);
+  // second section
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_STATE);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_STATE);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_STATE);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_STATE);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_STATE);
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(ADDRESS_BILLING_STATE);
+  // third section
+  response.add_field()->set_overall_type_prediction(ADDRESS_BILLING_STATE);
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(ADDRESS_BILLING_STATE);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Will call RationalizeFieldTypePredictions
+  FormStructure::ParseQueryResponse(response_string, forms);
+
+  ASSERT_EQ(1U, forms.size());
+  ASSERT_EQ(14U, forms[0]->field_count());
+  EXPECT_EQ(NAME_FULL, forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(2)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, forms[0]->field(3)->Type().GetStorableType());
+  // second section
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, forms[0]->field(4)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, forms[0]->field(5)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, forms[0]->field(6)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, forms[0]->field(7)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, forms[0]->field(8)->Type().GetStorableType());
+  EXPECT_EQ(NAME_FULL, forms[0]->field(9)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(10)->Type().GetStorableType());
+  // third section
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY,
+            forms[0]->field(11)->Type().GetStorableType());
+  EXPECT_EQ(NAME_FULL, forms[0]->field(12)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(13)->Type().GetStorableType());
+}
+
+TEST_F(FormStructureTest,
+       RationalizeRepreatedFields_StateCountryWithHeuristics) {
+  base::test::ScopedFeatureList feature_list;
+  InitFeature(&feature_list, kAutofillRationalizeRepeatedServerPredictions,
+              true);
+
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+  // First Section
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.form_control_type = "select-one";
+  field.is_focusable = false;  // hidden
+  form.fields.push_back(field);
+
+  field.is_focusable = true;  // visible
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country2");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("city");
+  field.name = ASCIIToUTF16("City");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state2");
+  field.form_control_type = "select-one";
+  field.role = AutofillField::ROLE_ATTRIBUTE_PRESENTATION;  // hidden
+  form.fields.push_back(field);
+
+  field.role = AutofillField::ROLE_ATTRIBUTE_OTHER;  // visible
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state");
+  form.fields.push_back(field);
+
+  // Second Section
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("city");
+  field.name = ASCIIToUTF16("City");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state");
+  form.fields.push_back(field);
+
+  // Third Section
+  field.label = ASCIIToUTF16("city");
+  field.name = ASCIIToUTF16("City");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state2");
+  field.form_control_type = "select-one";
+  field.role = AutofillField::ROLE_ATTRIBUTE_PRESENTATION;  // hidden
+  form.fields.push_back(field);
+
+  field.role = AutofillField::ROLE_ATTRIBUTE_OTHER;  // visible
+
+  field.label = ASCIIToUTF16("State");
+  field.name = ASCIIToUTF16("state");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country2");
+  field.form_control_type = "select-one";
+  field.is_focusable = false;  // hidden
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  // Will identify the sections based on the heuristics types.
+  form_structure.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
+                                         /*source_id=*/0);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_COUNTRY);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_COUNTRY);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_CITY);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_COUNTRY);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_COUNTRY);
+  // second section
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_COUNTRY);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_CITY);
+  response.add_field()->set_overall_type_prediction(ADDRESS_BILLING_COUNTRY);
+  // third section
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_CITY);
+  response.add_field()->set_overall_type_prediction(ADDRESS_BILLING_COUNTRY);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_COUNTRY);
+  response.add_field()->set_overall_type_prediction(ADDRESS_BILLING_COUNTRY);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_COUNTRY);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Will call RationalizeFieldTypePredictions
+  FormStructure::ParseQueryResponse(response_string, forms);
+
+  ASSERT_EQ(1U, forms.size());
+  ASSERT_EQ(14U, forms[0]->field_count());
+  EXPECT_EQ(NAME_FULL, forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, forms[0]->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, forms[0]->field(2)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(3)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(4)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(5)->Type().GetStorableType());
+  // second section
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, forms[0]->field(6)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(7)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(8)->Type().GetStorableType());
+  // third section
+  EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(9)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(10)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(11)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY,
+            forms[0]->field(12)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY,
+            forms[0]->field(13)->Type().GetStorableType());
 }
 
 }  // namespace autofill

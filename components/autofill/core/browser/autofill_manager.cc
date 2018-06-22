@@ -1333,8 +1333,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
 
     // Don't fill hidden fields, with the exception of <select> fields, for
     // the sake of filling the synthetic fields.
-    if (!cached_field->is_focusable ||
-        cached_field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION) {
+    if (!cached_field->IsVisible()) {
       bool skip = result.fields[i].form_control_type != "select-one";
       form_interactions_ukm_logger_->LogHiddenRepresentationalFieldSkipDecision(
           *form_structure, *cached_field, skip);
@@ -1387,9 +1386,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
     if (result.fields[i].is_autofilled)
       result.fields[i].section = form_structure->field(i)->section;
 
-    if ((!cached_field->is_focusable ||
-         cached_field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION) &&
-        result.fields[i].is_autofilled) {
+    if (!cached_field->IsVisible() && result.fields[i].is_autofilled) {
       AutofillMetrics::LogHiddenOrPresentationalSelectFieldsFilled();
     }
   }
