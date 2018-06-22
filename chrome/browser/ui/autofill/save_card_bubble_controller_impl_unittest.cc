@@ -64,7 +64,8 @@ class TestSaveCardBubbleControllerImpl : public SaveCardBubbleControllerImpl {
 
  private:
   base::TimeDelta elapsed_;
-  security_state::SecurityLevel security_level_;
+  security_state::SecurityLevel security_level_ =
+      security_state::SecurityLevel::NONE;
 };
 
 class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
