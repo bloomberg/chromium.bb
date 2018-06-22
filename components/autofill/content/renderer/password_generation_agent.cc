@@ -672,7 +672,7 @@ void PasswordGenerationAgent::ShowEditingPopup() {
   GetPasswordManagerClient()->ShowPasswordEditingPopup(
       render_frame()->GetRenderView()->ElementBoundsInWindow(
           generation_element_),
-      *generation_form_data_->form);
+      *CreatePasswordFormToPresave());
   editing_popup_shown_ = true;
 }
 

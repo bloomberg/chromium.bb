@@ -661,7 +661,7 @@ ChromePasswordManagerClient::GetAutofillManagerForMainFrame() {
 }
 
 void ChromePasswordManagerClient::SetTestObserver(
-    autofill::PasswordGenerationPopupObserver* observer) {
+    PasswordGenerationPopupObserver* observer) {
   observer_ = observer;
 }
 
@@ -711,14 +711,16 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
       password_manager_client_bindings_.GetCurrentTargetFrame());
   DCHECK(driver);
   gfx::RectF element_bounds_in_screen_space = GetBoundsInScreenSpace(bounds);
-  popup_controller_ =
-      autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
-          popup_controller_, element_bounds_in_screen_space, form,
-          base::string16(),  // No generation_element needed for editing.
-          0,                 // Unspecified max length.
-          &password_manager_, driver->AsWeakPtr(), observer_, web_contents(),
-          web_contents()->GetNativeView());
-  popup_controller_->Show(false /* display_password */);
+  popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
+      popup_controller_, element_bounds_in_screen_space, form,
+      base::string16(),  // No generation_element needed for editing.
+      0,                 // Unspecified max length.
+      &password_manager_, driver->AsWeakPtr(), observer_, web_contents(),
+      web_contents()->GetNativeView());
+  DCHECK(!form.password_value.empty());
+  popup_controller_->UpdatePassword(form.password_value);
+  popup_controller_->Show(
+      PasswordGenerationPopupController::kEditGeneratedPassword);
 }
 
 void ChromePasswordManagerClient::GenerationAvailableForForm(
@@ -734,6 +736,9 @@ void ChromePasswordManagerClient::PasswordGenerationRejectedByTyping() {
 
 void ChromePasswordManagerClient::PresaveGeneratedPassword(
     const autofill::PasswordForm& password_form) {
+  if (popup_controller_)
+    popup_controller_->UpdatePassword(password_form.password_value);
+
   password_manager_.OnPresaveGeneratedPassword(password_form);
 }
 
@@ -881,13 +886,12 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
   gfx::RectF element_bounds_in_screen_space =
       GetBoundsInScreenSpace(ui_data.bounds);
 
-  popup_controller_ =
-      autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
-          popup_controller_, element_bounds_in_screen_space,
-          ui_data.password_form, ui_data.generation_element, ui_data.max_length,
-          &password_manager_, driver->AsWeakPtr(), observer_, web_contents(),
-          web_contents()->GetNativeView());
-  popup_controller_->Show(true /* display_password */);
+  popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
+      popup_controller_, element_bounds_in_screen_space, ui_data.password_form,
+      ui_data.generation_element, ui_data.max_length, &password_manager_,
+      driver->AsWeakPtr(), observer_, web_contents(),
+      web_contents()->GetNativeView());
+  popup_controller_->Show(PasswordGenerationPopupController::kOfferGeneration);
 }
 
 password_manager::PasswordManager*

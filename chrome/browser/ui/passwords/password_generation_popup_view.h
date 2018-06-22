@@ -12,16 +12,11 @@ class Point;
 class Size;
 }  // namespace gfx
 
-namespace autofill {
-
 class PasswordGenerationPopupController;
 
 // Interface for creating and controlling a platform dependent view.
 class PasswordGenerationPopupView {
  public:
-  // Number of pixels added in between lines of the help section.
-  static const int kHelpSectionAdditionalSpacing = 3;
-
   // Display the popup.
   virtual void Show() = 0;
 
@@ -35,6 +30,9 @@ class PasswordGenerationPopupView {
   // The layout should be recreated.
   virtual void UpdateState() = 0;
 
+  // The password was edited, the popup should show the new value.
+  virtual void UpdatePasswordValue() {}
+
   // Updates layout information from the controller and performs the layout.
   virtual void UpdateBoundsAndRedrawPopup() = 0;
 
@@ -47,13 +45,6 @@ class PasswordGenerationPopupView {
   // when Hide() is called.
   static PasswordGenerationPopupView* Create(
       PasswordGenerationPopupController* controller);
-
-  static const SkColor kPasswordTextColor;
-  static const SkColor kExplanatoryTextBackgroundColor;
-  static const SkColor kExplanatoryTextColor;
-  static const SkColor kDividerColor;
 };
-
-}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_PASSWORD_GENERATION_POPUP_VIEW_H_

@@ -9,8 +9,6 @@
 
 #include "ui/gfx/geometry/point.h"
 
-namespace autofill {
-
 class PasswordGenerationPopupView;
 
 // Helps test a PasswordGenerationPopupView.
@@ -23,7 +21,5 @@ class PasswordGenerationPopupViewTester {
 
   virtual void SimulateMouseMovementAt(const gfx::Point& point) = 0;
 };
-
-}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_PASSWORD_GENERATION_POPUP_VIEW_TESTER_H_

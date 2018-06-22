@@ -24,8 +24,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
-namespace autofill {
-
 namespace {
 
 // Background color of the bottom part of the prompt.
@@ -45,21 +43,30 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
   ~GeneratedPasswordBox() override = default;
 
   // |password| is the generated password, |suggestion| is the text to the left
-  // of it.
-  void Init(const base::string16& password, const base::string16& suggestion) {
+  // of it. |generating_state| means that the generated password is offered.
+  void Init(const base::string16& password,
+            const base::string16& suggestion,
+            PasswordGenerationPopupController::GenerationState state) {
     views::GridLayout* layout =
         SetLayoutManager(std::make_unique<views::GridLayout>(this));
     BuildColumnSet(layout);
     layout->StartRow(0, 0);
 
-    views::Label* suggestion_label =
-        new views::Label(suggestion, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                         views::style::STYLE_PRIMARY);
+    views::Label* suggestion_label = new views::Label(
+        suggestion, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+        state == PasswordGenerationPopupController::kOfferGeneration
+            ? views::style::STYLE_PRIMARY
+            : STYLE_SECONDARY);
     layout->AddView(suggestion_label);
 
-    views::Label* password_label = new views::Label(
+    DCHECK(!password_label_);
+    password_label_ = new views::Label(
         password, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
-    layout->AddView(password_label);
+    layout->AddView(password_label_);
+  }
+
+  void UpdatePassword(const base::string16& password) {
+    password_label_->SetText(password);
   }
 
   // views::View:
@@ -78,6 +85,8 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
                           views::GridLayout::CENTER, 1,
                           views::GridLayout::USE_PREF, 0, 0);
   }
+
+  views::Label* password_label_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GeneratedPasswordBox);
 };
@@ -110,13 +119,14 @@ gfx::Size PasswordGenerationPopupViewViews::GetPreferredSizeOfPasswordView() {
 }
 
 void PasswordGenerationPopupViewViews::UpdateState() {
-  if (static_cast<bool>(password_view_) != controller_->display_password()) {
-    // The state of the drop-down can change from editing generated password
-    // mode back to generation mode.
-    RemoveAllChildViews(true);
-    password_view_ = nullptr;
-    CreateLayoutAndChildren();
-  }
+  RemoveAllChildViews(true);
+  password_view_ = nullptr;
+  CreateLayoutAndChildren();
+}
+
+void PasswordGenerationPopupViewViews::UpdatePasswordValue() {
+  password_view_->UpdatePassword(controller_->password());
+  Layout();
 }
 
 void PasswordGenerationPopupViewViews::UpdateBoundsAndRedrawPopup() {
@@ -160,14 +170,15 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
       provider->GetDistanceMetric(DISTANCE_TOAST_LABEL_VERTICAL);
   const int kHorizontalMargin =
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
-  if (controller_->display_password()) {
-    password_view_ = new GeneratedPasswordBox();
-    password_view_->SetBorder(
-        views::CreateEmptyBorder(kVerticalPadding, kHorizontalMargin,
-                                 kVerticalPadding, kHorizontalMargin));
-    password_view_->Init(controller_->password(), controller_->SuggestedText());
-    AddChildView(password_view_);
-  }
+
+  password_view_ = new GeneratedPasswordBox();
+  password_view_->SetBorder(
+      views::CreateEmptyBorder(kVerticalPadding, kHorizontalMargin,
+                               kVerticalPadding, kHorizontalMargin));
+  password_view_->Init(controller_->password(), controller_->SuggestedText(),
+                       controller_->state());
+  AddChildView(password_view_);
+  PasswordSelectionUpdated();
 
   views::StyledLabel* help_label =
       new views::StyledLabel(controller_->HelpText(), this);
@@ -227,5 +238,3 @@ PasswordGenerationPopupView* PasswordGenerationPopupView::Create(
 
   return new PasswordGenerationPopupViewViews(controller, observing_widget);
 }
-
-}  // namespace autofill

@@ -10,8 +10,6 @@
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
 #include "ui/views/controls/styled_label_listener.h"
 
-namespace autofill {
-
 class PasswordGenerationPopupController;
 
 class PasswordGenerationPopupViewViews : public autofill::AutofillPopupBaseView,
@@ -27,6 +25,7 @@ class PasswordGenerationPopupViewViews : public autofill::AutofillPopupBaseView,
   void Hide() override;
   gfx::Size GetPreferredSizeOfPasswordView() override;
   void UpdateState() override;
+  void UpdatePasswordValue() override;
   void UpdateBoundsAndRedrawPopup() override;
   void PasswordSelectionUpdated() override;
   bool IsPointInPasswordBounds(const gfx::Point& point) override;
@@ -47,7 +46,7 @@ class PasswordGenerationPopupViewViews : public autofill::AutofillPopupBaseView,
                               const gfx::Range& range,
                               int event_flags) override;
 
-  // Sub view that displays the actual password to be saved.
+  // Sub view that displays the actual generated password.
   GeneratedPasswordBox* password_view_ = nullptr;
 
   // Controller for this view. Weak reference.
@@ -55,7 +54,5 @@ class PasswordGenerationPopupViewViews : public autofill::AutofillPopupBaseView,
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationPopupViewViews);
 };
-
-}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_GENERATION_POPUP_VIEW_VIEWS_H_

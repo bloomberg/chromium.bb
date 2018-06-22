@@ -12,18 +12,15 @@ namespace gfx {
 class Range;
 }
 
-namespace autofill {
-
-class PasswordGenerationPopupController : public AutofillPopupViewDelegate {
+class PasswordGenerationPopupController
+    : public autofill::AutofillPopupViewDelegate {
  public:
-  // Space above and below help section.
-  static const int kHelpVerticalPadding;
-
-  // Spacing between the border of the popup and any text.
-  static const int kHorizontalPadding;
-
-  // Desired height of the password section.
-  static const int kPopupPasswordSectionHeight;
+  enum GenerationState {
+    // Generated password is offered in the popup but not filled yet.
+    kOfferGeneration,
+    // The generated password was accepted.
+    kEditGeneratedPassword,
+  };
 
   // Called by the view when the password was accepted.
   virtual void PasswordAccepted() = 0;
@@ -35,9 +32,9 @@ class PasswordGenerationPopupController : public AutofillPopupViewDelegate {
   virtual int GetMinimumWidth() = 0;
 
   // Accessors
-  virtual bool display_password() const = 0;
+  virtual GenerationState state() const = 0;
   virtual bool password_selected() const = 0;
-  virtual base::string16 password() const = 0;
+  virtual const base::string16& password() const = 0;
 
   // Translated strings
   virtual base::string16 SuggestedText() = 0;
@@ -45,9 +42,7 @@ class PasswordGenerationPopupController : public AutofillPopupViewDelegate {
   virtual const gfx::Range& HelpTextLinkRange() = 0;
 
  protected:
-  ~PasswordGenerationPopupController() override {}
+  ~PasswordGenerationPopupController() override = default;
 };
-
-}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_PASSWORD_GENERATION_POPUP_CONTROLLER_H_

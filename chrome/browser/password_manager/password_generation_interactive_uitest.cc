@@ -29,26 +29,25 @@
 
 namespace {
 
-class TestPopupObserver : public autofill::PasswordGenerationPopupObserver {
+class TestPopupObserver : public PasswordGenerationPopupObserver {
  public:
-  TestPopupObserver()
-      : popup_showing_(false),
-        password_visible_(false) {}
-  virtual ~TestPopupObserver() {}
-
-  void OnPopupShown(bool password_visible) override {
+  void OnPopupShown(
+      PasswordGenerationPopupController::GenerationState state) override {
     popup_showing_ = true;
-    password_visible_ = password_visible;
+    state_ = state;
   }
 
   void OnPopupHidden() override { popup_showing_ = false; }
 
-  bool popup_showing() { return popup_showing_; }
-  bool password_visible() { return password_visible_; }
+  bool popup_showing() const { return popup_showing_; }
+  PasswordGenerationPopupController::GenerationState state() const {
+    return state_;
+  }
 
  private:
-  bool popup_showing_;
-  bool password_visible_;
+  bool popup_showing_ = false;
+  PasswordGenerationPopupController::GenerationState state_ =
+      PasswordGenerationPopupController::kOfferGeneration;
 };
 
 }  // namespace
@@ -130,11 +129,15 @@ class PasswordGenerationInteractiveTest :
   }
 
   bool GenerationPopupShowing() {
-    return observer_.popup_showing() && observer_.password_visible();
+    return observer_.popup_showing() &&
+           observer_.state() ==
+               PasswordGenerationPopupController::kOfferGeneration;
   }
 
   bool EditingPopupShowing() {
-    return observer_.popup_showing() && !observer_.password_visible();
+    return observer_.popup_showing() &&
+           observer_.state() ==
+               PasswordGenerationPopupController::kEditGeneratedPassword;
   }
 
  private:

@@ -7,8 +7,6 @@
 #include "chrome/browser/ui/views/passwords/password_generation_popup_view_views.h"
 #include "ui/events/event_utils.h"
 
-namespace autofill {
-
 std::unique_ptr<PasswordGenerationPopupViewTester>
 PasswordGenerationPopupViewTester::For(PasswordGenerationPopupView* view) {
   return std::make_unique<PasswordGenerationPopupViewTesterViews>(
@@ -28,5 +26,3 @@ void PasswordGenerationPopupViewTesterViews::SimulateMouseMovementAt(
                             ui::EventTimeForNow(), 0, 0);
   static_cast<views::View*>(view_)->OnMouseMoved(mouse_down);
 }
-
-}  // namespace autofill

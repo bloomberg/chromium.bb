@@ -13,8 +13,6 @@
 #include "chrome/browser/ui/passwords/password_generation_popup_view.h"
 #include "ui/android/view_android.h"
 
-namespace autofill {
-
 class PasswordGenerationPopupController;
 
 // The android implementation of the password generation UI.
@@ -60,7 +58,5 @@ class PasswordGenerationPopupViewAndroid : public PasswordGenerationPopupView {
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationPopupViewAndroid);
 };
-
-}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_ANDROID_AUTOFILL_PASSWORD_GENERATION_POPUP_VIEW_ANDROID_H_
