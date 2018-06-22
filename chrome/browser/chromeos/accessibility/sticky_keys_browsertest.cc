@@ -140,12 +140,6 @@ IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, OpenNewTabs) {
 }
 
 IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, CtrlClickHomeButton) {
-  if (ui::MaterialDesignController::IsRefreshUi()) {
-    // TODO(bsep): crbug.com/853990 Running the message loop in ClickOnView hits
-    // a DCHECK in cc::layer for unknown reasons. Needs investigation.
-    return;
-  }
-
   // Show home page button.
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kShowHomeButton, true);
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
