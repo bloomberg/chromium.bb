@@ -85,8 +85,8 @@ TEST(MipMapUtilTest, NonSquare) {
 // Ensures that we handle rounding images correctly.
 TEST(MipMapUtilTest, Rounding) {
   const gfx::Size src_size(49, 49);
-  const gfx::Size target_size_larger(25, 25);
-  const gfx::Size target_size_smaller(24, 24);
+  const gfx::Size target_size_larger(26, 26);
+  const gfx::Size target_size_smaller(25, 25);
   const int target_level_larger = 0;
   const int target_level_smaller = 1;
   const SkSize expected_scale_larger = SkSize::Make(1, 1);
@@ -114,6 +114,16 @@ TEST(MipMapUtilTest, Rounding) {
   EXPECT_FLOAT_SIZE_EQ(
       expected_scale_smaller,
       MipMapUtil::GetScaleAdjustmentForSize(src_size, target_size_smaller));
+}
+
+// Ensures that we round up during mip calculation.
+TEST(MipMapUtilTest, RoundUp) {
+  const gfx::Size src_sizes[] = {gfx::Size(3, 3), gfx::Size(5, 7),
+                                 gfx::Size(11, 14), gfx::Size(17, 31)};
+  for (int i = 0; i < 4; ++i) {
+    EXPECT_EQ(MipMapUtil::GetSizeForLevel(src_sizes[i], i + 1),
+              gfx::Size(2, 2));
+  }
 }
 
 }  // namespace

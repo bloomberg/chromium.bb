@@ -4,13 +4,25 @@
 
 #include "cc/tiles/mipmap_util.h"
 
+#include "base/numerics/safe_math.h"
+
 namespace cc {
 namespace {
-// Calculates the size of |axis_base_size| at the given |mip_level| using
-// OpenGL rounding rules.
+// Calculates the size of |axis_base_size| at the given |mip_level|. Note that
+// the calculation here rounds up for consistency with size calculations in the
+// JPEG decoder. This allows us to decode images to the mip size directly.
 int ScaleAxisToMipLevel(int axis_base_size, int mip_level) {
   DCHECK_GE(mip_level, 0);
   DCHECK_LT(mip_level, 32);
+
+  if (mip_level == 0)
+    return axis_base_size;
+
+  // Increment the size by (2^mip_level - 1) so we round on when dividing it
+  // below.
+  base::CheckedNumeric<int> base_size = axis_base_size;
+  base_size += (1 << mip_level) - 1;
+  axis_base_size = base_size.ValueOrDefault(std::numeric_limits<int>::max());
   return std::max(1, axis_base_size >> mip_level);
 }
 
