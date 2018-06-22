@@ -789,6 +789,7 @@ TEST_F(BubbleFrameViewTest, LayoutWithIcon) {
   delegate.SetAnchorView(anchor.widget().GetContentsView());
   SkBitmap bitmap;
   bitmap.allocN32Pixels(20, 80);
+  bitmap.eraseColor(SK_ColorYELLOW);
   delegate.set_icon(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
 
   Widget* widget = BubbleDialogDelegateView::CreateBubble(&delegate);
