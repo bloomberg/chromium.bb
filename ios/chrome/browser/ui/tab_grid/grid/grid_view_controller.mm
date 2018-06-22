@@ -32,9 +32,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @interface GridViewController ()<GridCellDelegate,
                                  UICollectionViewDataSource,
                                  UICollectionViewDelegate>
-// Bookkeeping based on |-viewDidAppear:| and |-viewDidDisappear:|.
-// If the view is not appeared, there is no need to update the collection view.
-@property(nonatomic, assign, getter=isViewAppeared) BOOL viewAppeared;
+// There is no need to update the collection view when other view controllers
+// are obscuring the collection view. Bookkeeping is based on |-viewWillAppear:|
+// and |-viewWillDisappear methods. Note that the |Did| methods are not reliably
+// called (e.g., edge case in multitasking).
+@property(nonatomic, assign) BOOL updatesCollectionView;
 // A collection view of items in a grid format.
 @property(nonatomic, weak) UICollectionView* collectionView;
 // The local model backing the collection view.
@@ -65,7 +67,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @synthesize emptyStateView = _emptyStateView;
 @synthesize showsSelectionUpdates = _showsSelectionUpdates;
 // Private properties.
-@synthesize viewAppeared = _viewAppeared;
+@synthesize updatesCollectionView = _updatesCollectionView;
 @synthesize collectionView = _collectionView;
 @synthesize items = _items;
 @synthesize selectedItemID = _selectedItemID;
@@ -112,10 +114,13 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
+  self.updatesCollectionView = YES;
   [self.collectionView reloadData];
   // Selection is invalid if there are no items.
-  if (self.items.count == 0)
+  if (self.items.count == 0) {
+    [self animateEmptyStateIn];
     return;
+  }
   [self.collectionView selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
                                     animated:animated
                               scrollPosition:UICollectionViewScrollPositionTop];
@@ -124,14 +129,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   [self animateEmptyStateOut];
 }
 
-- (void)viewDidAppear:(BOOL)animated {
-  [super viewDidAppear:animated];
-  self.viewAppeared = YES;
-}
-
-- (void)viewDidDisappear:(BOOL)animated {
-  [super viewDidDisappear:animated];
-  self.viewAppeared = NO;
+- (void)viewWillDisappear:(BOOL)animated {
+  self.updatesCollectionView = NO;
+  [super viewWillDisappear:animated];
 }
 
 #pragma mark - Public
@@ -275,7 +275,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   self.items = [items mutableCopy];
   self.selectedItemID = selectedItemID;
-  if ([self isViewAppeared]) {
+  if ([self updatesCollectionView]) {
     [self.collectionView reloadData];
     [self.collectionView
         selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
@@ -343,7 +343,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (void)selectItemWithID:(NSString*)selectedItemID {
   self.selectedItemID = selectedItemID;
-  if (!([self isViewAppeared] && self.showsSelectionUpdates))
+  if (!([self updatesCollectionView] && self.showsSelectionUpdates))
     return;
   [self.collectionView
       selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
@@ -357,7 +357,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
          [self indexOfItemWithID:item.identifier] == NSNotFound);
   NSUInteger index = [self indexOfItemWithID:itemID];
   self.items[index] = item;
-  if (![self isViewAppeared])
+  if (![self updatesCollectionView])
     return;
   GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
       [self.collectionView cellForItemAtIndexPath:CreateIndexPath(index)]);
@@ -408,7 +408,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
         (ProceduralBlockWithBool)collectionViewUpdatesCompletion {
   // If the view isn't visible, there's no need for the collection view to
   // update.
-  if (![self isViewAppeared]) {
+  if (![self updatesCollectionView]) {
     modelUpdates();
     return;
   }
