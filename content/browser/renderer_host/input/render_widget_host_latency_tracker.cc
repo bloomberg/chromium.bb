@@ -26,19 +26,10 @@ using blink::WebTouchEvent;
 using ui::LatencyInfo;
 
 namespace content {
-namespace {
-
-ukm::SourceId GenerateUkmSourceId() {
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  return ukm_recorder ? ukm_recorder->GetNewSourceID() : ukm::kInvalidSourceId;
-}
-
-}  // namespace
 
 RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker(
     RenderWidgetHostDelegate* delegate)
-    : ukm_source_id_(GenerateUkmSourceId()),
-      has_seen_first_gesture_scroll_update_(false),
+    : has_seen_first_gesture_scroll_update_(false),
       active_multi_finger_gesture_(false),
       touch_start_default_prevented_(false),
       render_widget_host_delegate_(delegate) {}
@@ -113,12 +104,6 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   OnEventStart(latency);
-  if (!set_url_for_ukm_ && render_widget_host_delegate_ &&
-      ukm_source_id_ != ukm::kInvalidSourceId) {
-    render_widget_host_delegate_->UpdateUrlForUkmSource(ukm::UkmRecorder::Get(),
-                                                        ukm_source_id_);
-    set_url_for_ukm_ = true;
-  }
 
   if (event.GetType() == WebInputEvent::kTouchStart) {
     const WebTouchEvent& touch_event =
@@ -221,7 +206,8 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
 void RenderWidgetHostLatencyTracker::OnEventStart(ui::LatencyInfo* latency) {
   static uint64_t global_trace_id = 0;
   latency->set_trace_id(++global_trace_id);
-  latency->set_ukm_source_id(ukm_source_id_);
+  latency->set_ukm_source_id(
+      render_widget_host_delegate_->GetUkmSourceIdForLastCommittedSource());
 }
 
 }  // namespace content

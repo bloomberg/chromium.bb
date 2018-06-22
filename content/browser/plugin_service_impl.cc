@@ -25,6 +25,7 @@
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/pepper_plugin_list.h"
 #include "content/common/plugin_list.h"
@@ -65,13 +66,12 @@ void WillLoadPluginsCallback(base::SequenceChecker* sequence_checker) {
 // static
 void PluginServiceImpl::RecordBrokerUsage(int render_process_id,
                                           int render_frame_id) {
-  ukm::UkmRecorder* recorder = ukm::UkmRecorder::Get();
-  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
   WebContents* web_contents = WebContents::FromRenderFrameHost(
       RenderFrameHost::FromID(render_process_id, render_frame_id));
   if (web_contents) {
-    recorder->UpdateSourceURL(source_id, web_contents->GetLastCommittedURL());
-    ukm::builders::Pepper_Broker(source_id).Record(recorder);
+    ukm::SourceId source_id = static_cast<WebContentsImpl*>(web_contents)
+                                  ->GetUkmSourceIdForLastCommittedSource();
+    ukm::builders::Pepper_Broker(source_id).Record(ukm::UkmRecorder::Get());
   }
 }
 

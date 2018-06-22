@@ -684,6 +684,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // RenderWidgetHostDelegate --------------------------------------------------
 
+  ukm::SourceId GetUkmSourceIdForLastCommittedSource() const override;
   void RenderWidgetCreated(RenderWidgetHostImpl* render_widget_host) override;
   void RenderWidgetDeleted(RenderWidgetHostImpl* render_widget_host) override;
   void RenderWidgetGotFocus(RenderWidgetHostImpl* render_widget_host) override;
@@ -749,8 +750,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool OnUpdateDragCursor() override;
   bool IsWidgetForMainFrame(RenderWidgetHostImpl* render_widget_host) override;
   bool AddDomainInfoToRapporSample(rappor::Sample* sample) override;
-  void UpdateUrlForUkmSource(ukm::UkmRecorder* service,
-                             ukm::SourceId ukm_source_id) override;
   void FocusedNodeTouched(bool editable) override;
   void DidReceiveCompositorFrame() override;
   bool IsShowingContextMenuOnPage() const override;
@@ -1500,6 +1499,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Whether the first visually non-empty paint has occurred.
   bool did_first_visually_non_empty_paint_;
+
+  // SourceId for current page.
+  ukm::SourceId last_committed_source_id_ = ukm::kInvalidSourceId;
 
   // Data for misc internal state ----------------------------------------------
 

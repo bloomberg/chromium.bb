@@ -84,11 +84,4 @@ void DownloadUkmHelper::RecordDownloadCompleted(
       .Record(ukm::UkmRecorder::Get());
 }
 
-void DownloadUkmHelper::UpdateSourceURL(ukm::UkmRecorder* ukm_recorder,
-                                        ukm::SourceId source_id,
-                                        const GURL& url) {
-  if (ukm_recorder)
-    ukm_recorder->UpdateSourceURL(source_id, url);
-}
-
 }  // namespace download

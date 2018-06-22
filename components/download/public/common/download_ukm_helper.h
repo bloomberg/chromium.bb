@@ -12,7 +12,6 @@
 #include "components/download/public/common/download_source.h"
 #include "components/download/public/common/resume_mode.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "url/gurl.h"
 
 namespace download {
 
@@ -50,11 +49,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUkmHelper {
                                       int resulting_file_size,
                                       const base::TimeDelta& time_since_start,
                                       int64_t bytes_wasted);
-
-  // Friended Helper for recording main frame URLs to UKM.
-  static void UpdateSourceURL(ukm::UkmRecorder* ukm_recorder,
-                              ukm::SourceId source_id,
-                              const GURL& url);
 
  private:
   DownloadUkmHelper();

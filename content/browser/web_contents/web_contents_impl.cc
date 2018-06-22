@@ -2055,6 +2055,10 @@ void WebContentsImpl::LostCapture(RenderWidgetHostImpl* render_widget_host) {
     delegate_->LostCapture();
 }
 
+ukm::SourceId WebContentsImpl::GetUkmSourceIdForLastCommittedSource() const {
+  return last_committed_source_id_;
+}
+
 void WebContentsImpl::RenderWidgetCreated(
     RenderWidgetHostImpl* render_widget_host) {
   created_widgets_.insert(render_widget_host);
@@ -4054,6 +4058,7 @@ void WebContentsImpl::ReadyToCommitNavigation(
 void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
   TRACE_EVENT1("navigation", "WebContentsImpl::DidFinishNavigation",
                "navigation_handle", navigation_handle);
+
   for (auto& observer : observers_)
     observer.DidFinishNavigation(navigation_handle);
 
@@ -4073,6 +4078,9 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
     if (navigation_handle->IsInMainFrame() &&
         !navigation_handle->IsSameDocument()) {
       was_ever_audible_ = false;
+      last_committed_source_id_ =
+          ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
+                                 ukm::SourceIdType::NAVIGATION_ID);
     }
   }
 }
@@ -6497,13 +6505,6 @@ bool WebContentsImpl::AddDomainInfoToRapporSample(rappor::Sample* sample) {
   sample->SetStringField("Domain", ::rappor::GetDomainAndRegistrySampleFromGURL(
                                        GetLastCommittedURL()));
   return true;
-}
-
-void WebContentsImpl::UpdateUrlForUkmSource(ukm::UkmRecorder* service,
-                                            ukm::SourceId ukm_source_id) {
-  // Here we associate this metric to the main frame URL regardless of what
-  // caused it.
-  service->UpdateSourceURL(ukm_source_id, GetLastCommittedURL());
 }
 
 void WebContentsImpl::FocusedNodeTouched(bool editable) {

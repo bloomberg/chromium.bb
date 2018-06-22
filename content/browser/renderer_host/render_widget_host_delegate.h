@@ -35,10 +35,6 @@ namespace rappor {
 class Sample;
 }
 
-namespace ukm {
-class UkmRecorder;
-}
-
 namespace content {
 
 class BrowserAccessibilityManager;
@@ -262,10 +258,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // if the eTLD+1 is not known for |render_widget_host|.
   virtual bool AddDomainInfoToRapporSample(rappor::Sample* sample);
 
-  // Update UkmRecorder for the given source with the URL. This is used for
-  // URL-keyed metrics to set the url for a report.
-  virtual void UpdateUrlForUkmSource(ukm::UkmRecorder* service,
-                                     ukm::SourceId ukm_source_id);
+  // Get the UKM source ID for current content. This is used for providing
+  // data about the content to the URL-keyed metrics service.
+  virtual ukm::SourceId GetUkmSourceIdForLastCommittedSource() const;
 
   // Notifies the delegate that a focused editable element has been touched
   // inside this RenderWidgetHost. If |editable| is true then the focused

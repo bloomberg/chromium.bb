@@ -114,9 +114,10 @@ bool RenderWidgetHostDelegate::AddDomainInfoToRapporSample(
   return false;
 }
 
-void RenderWidgetHostDelegate::UpdateUrlForUkmSource(
-    ukm::UkmRecorder* service,
-    ukm::SourceId ukm_source_id) {}
+ukm::SourceId RenderWidgetHostDelegate::GetUkmSourceIdForLastCommittedSource()
+    const {
+  return ukm::kInvalidSourceId;
+}
 
 gfx::Size RenderWidgetHostDelegate::GetAutoResizeSize() {
   return gfx::Size();

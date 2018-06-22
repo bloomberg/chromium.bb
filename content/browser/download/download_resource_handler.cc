@@ -24,6 +24,7 @@
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/navigation_entry.h"
@@ -109,10 +110,8 @@ void InitializeDownloadTabInfoOnUIThread(
       tab_info->tab_url = entry->GetURL();
       tab_info->tab_referrer_url = entry->GetReferrer().url;
 
-      tab_info->ukm_source_id = ukm::UkmRecorder::GetNewSourceID();
-      download::DownloadUkmHelper::UpdateSourceURL(
-          ukm::UkmRecorder::Get(), tab_info->ukm_source_id,
-          web_contents->GetLastCommittedURL());
+      tab_info->ukm_source_id = static_cast<WebContentsImpl*>(web_contents)
+                                    ->GetUkmSourceIdForLastCommittedSource();
     }
   }
 }

@@ -44,6 +44,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -257,7 +258,8 @@ void SavePackage::InternalInit() {
 
   download::RecordSavePackageEvent(download::SAVE_PACKAGE_STARTED);
 
-  ukm_source_id_ = ukm::UkmRecorder::GetNewSourceID();
+  ukm_source_id_ = static_cast<WebContentsImpl*>(web_contents())
+                       ->GetUkmSourceIdForLastCommittedSource();
   ukm_download_id_ = download::GetUniqueDownloadId();
   download::DownloadUkmHelper::RecordDownloadStarted(
       ukm_download_id_, ukm_source_id_, download::DownloadContent::TEXT,
@@ -284,9 +286,6 @@ bool SavePackage::Init(
   std::unique_ptr<download::DownloadRequestHandleInterface> request_handle(
       new SavePackageRequestHandle(AsWeakPtr()));
 
-  download::DownloadUkmHelper::UpdateSourceURL(
-      ukm::UkmRecorder::Get(), ukm_source_id_,
-      web_contents()->GetLastCommittedURL());
   RenderFrameHost* frame_host = web_contents()->GetMainFrame();
   download_manager_->CreateSavePackageDownloadItem(
       saved_main_file_path_, page_url_,
