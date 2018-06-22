@@ -164,11 +164,17 @@ class MEDIA_EXPORT SourceBufferStream {
 
   // Notifies this object that the audio config has changed and buffers in
   // future Append() calls should be associated with this new config.
-  bool UpdateAudioConfig(const AudioDecoderConfig& config);
+  // If the codec is allowed to change, the caller should set
+  // |allow_codec_change| to true.
+  bool UpdateAudioConfig(const AudioDecoderConfig& config,
+                         bool allow_codec_change);
 
   // Notifies this object that the video config has changed and buffers in
   // future Append() calls should be associated with this new config.
-  bool UpdateVideoConfig(const VideoDecoderConfig& config);
+  // If the codec is allowed to change, the caller should set
+  // |allow_codec_change| to true.
+  bool UpdateVideoConfig(const VideoDecoderConfig& config,
+                         bool allow_codec_change);
 
   // Returns the largest distance between two adjacent buffers in this stream,
   // or an estimate if no two adjacent buffers have been appended to the stream

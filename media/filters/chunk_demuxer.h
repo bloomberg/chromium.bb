@@ -103,10 +103,16 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
                                 base::TimeDelta start_pts);
 
   // Called when midstream config updates occur.
+  // For audio and video, if the codec is allowed to change, the caller should
+  // set |allow_codec_change| to true.
   // Returns true if the new config is accepted.
   // Returns false if the new config should trigger an error.
-  bool UpdateAudioConfig(const AudioDecoderConfig& config, MediaLog* media_log);
-  bool UpdateVideoConfig(const VideoDecoderConfig& config, MediaLog* media_log);
+  bool UpdateAudioConfig(const AudioDecoderConfig& config,
+                         bool allow_codec_change,
+                         MediaLog* media_log);
+  bool UpdateVideoConfig(const VideoDecoderConfig& config,
+                         bool allow_codec_change,
+                         MediaLog* media_log);
   void UpdateTextConfig(const TextTrackConfig& config, MediaLog* media_log);
 
   void MarkEndOfStream();
@@ -282,6 +288,23 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // associated with |id|.
   void Remove(const std::string& id, base::TimeDelta start,
               base::TimeDelta end);
+
+  // Returns whether or not the source buffer associated with |id| can change
+  // its parser type to one which parses |type| and |codecs|.  |type| indicates
+  // the MIME type for the data that we intend to append for this |id|.
+  bool CanChangeTypeTo(const std::string& id,
+                       const std::string& type,
+                       const std::string& codecs);
+
+  // For the source buffer associated with |id|, changes its parser type to one
+  // which parses |type| and |codecs|.  |type| indicates the MIME type for the
+  // data that we intend to append for this |id|.  Caller must first ensure
+  // CanChangeTypeTo() returns true for the same parameters.  Caller must also
+  // ensure that ResetParserState() is done before calling this, to flush any
+  // pending frames.
+  void ChangeType(const std::string& id,
+                  const std::string& type,
+                  const std::string& codecs);
 
   // If the buffer is full, attempts to try to free up space, as specified in
   // the "Coded Frame Eviction Algorithm" in the Media Source Extensions Spec.

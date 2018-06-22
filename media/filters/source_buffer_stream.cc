@@ -1976,13 +1976,21 @@ base::TimeDelta SourceBufferStream<RangeClass>::GetMaxInterbufferDistance()
 
 template <typename RangeClass>
 bool SourceBufferStream<RangeClass>::UpdateAudioConfig(
-    const AudioDecoderConfig& config) {
+    const AudioDecoderConfig& config,
+    bool allow_codec_change) {
   DCHECK(!audio_configs_.empty());
   DCHECK(video_configs_.empty());
   DVLOG(3) << "UpdateAudioConfig.";
 
-  if (audio_configs_[0].codec() != config.codec()) {
-    MEDIA_LOG(ERROR, media_log_) << "Audio codec changes not allowed.";
+  if (!allow_codec_change &&
+      audio_configs_[append_config_index_].codec() != config.codec()) {
+    // TODO(wolenetz): When we relax addSourceBuffer() and changeType() codec
+    // strictness, codec changes should be allowed even without changing the
+    // bytestream.
+    // TODO(wolenetz): Remove "experimental" from this error message when
+    // changeType() ships without needing experimental blink flag.
+    MEDIA_LOG(ERROR, media_log_) << "Audio codec changes not allowed unless "
+                                    "using experimental changeType().";
     return false;
   }
 
@@ -2004,13 +2012,21 @@ bool SourceBufferStream<RangeClass>::UpdateAudioConfig(
 
 template <typename RangeClass>
 bool SourceBufferStream<RangeClass>::UpdateVideoConfig(
-    const VideoDecoderConfig& config) {
+    const VideoDecoderConfig& config,
+    bool allow_codec_change) {
   DCHECK(!video_configs_.empty());
   DCHECK(audio_configs_.empty());
   DVLOG(3) << "UpdateVideoConfig.";
 
-  if (video_configs_[0].codec() != config.codec()) {
-    MEDIA_LOG(ERROR, media_log_) << "Video codec changes not allowed.";
+  if (!allow_codec_change &&
+      video_configs_[append_config_index_].codec() != config.codec()) {
+    // TODO(wolenetz): When we relax addSourceBuffer() and changeType() codec
+    // strictness, codec changes should be allowed even without changing the
+    // bytestream.
+    // TODO(wolenetz): Remove "experimental" from this error message when
+    // changeType() ships without needing experimental blink flag.
+    MEDIA_LOG(ERROR, media_log_) << "Video codec changes not allowed unless "
+                                    "using experimental changeType()";
     return false;
   }
 

@@ -50,6 +50,12 @@ class MEDIA_EXPORT SourceBufferState {
                 encrypted_media_init_data_cb,
             const NewTextTrackCB& new_text_track_cb);
 
+  // Reconfigures this source buffer to use |new_stream_parser|. Caller must
+  // first ensure that ResetParserState() was done to flush any pending frames
+  // from the old stream parser.
+  void ChangeType(std::unique_ptr<StreamParser> new_stream_parser,
+                  const std::string& new_expected_codecs);
+
   // Appends new data to the StreamParser.
   // Returns true if the data was successfully appended. Returns false if an
   // error occurred. |*timestamp_offset| is used and possibly updated by the
@@ -145,15 +151,29 @@ class MEDIA_EXPORT SourceBufferState {
       const SourceBufferParseWarningCB& parse_warning_cb);
 
  private:
-  // State advances through this list. The intent is to ensure at least one
-  // config is received prior to parser calling initialization callback, and
-  // that such initialization callback occurs at most once per parser.
+  // State advances through this list to PARSER_INITIALIZED.
+  // The intent is to ensure at least one config is received prior to parser
+  // calling initialization callback, and that such initialization callback
+  // occurs at most once per parser.
+  // PENDING_PARSER_RECONFIG occurs if State had reached PARSER_INITIALIZED
+  // before changing to a new StreamParser in ChangeType(). In such case, State
+  // would then advance to PENDING_PARSER_REINIT, then PARSER_INITIALIZED upon
+  // the next initialization segment parsed, but would not run the
+  // initialization callback in this case (since such would already have
+  // occurred on the initial transition from PENDING_PARSER_INIT to
+  // PARSER_INITIALIZED.)
   enum State {
     UNINITIALIZED = 0,
     PENDING_PARSER_CONFIG,
     PENDING_PARSER_INIT,
-    PARSER_INITIALIZED
+    PARSER_INITIALIZED,
+    PENDING_PARSER_RECONFIG,
+    PENDING_PARSER_REINIT
   };
+
+  // Initializes |stream_parser_|. Also, updates |expected_audio_codecs| and
+  // |expected_video_codecs|.
+  void InitializeParser(const std::string& expected_codecs);
 
   // Called by the |stream_parser_| when a new initialization segment is
   // encountered.
