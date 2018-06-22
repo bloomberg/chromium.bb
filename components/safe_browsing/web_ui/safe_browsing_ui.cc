@@ -34,6 +34,12 @@
 #endif
 
 using base::Time;
+using PasswordReuseLookup =
+    sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup;
+using PasswordReuseDetected =
+    sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseDetected;
+using PasswordReuseDialogInteraction = sync_pb::UserEventSpecifics::
+    GaiaPasswordReuse::PasswordReuseDialogInteraction;
 
 namespace safe_browsing {
 WebUIInfoSingleton::WebUIInfoSingleton() = default;
@@ -43,6 +49,11 @@ WebUIInfoSingleton::~WebUIInfoSingleton() = default;
 // static
 WebUIInfoSingleton* WebUIInfoSingleton::GetInstance() {
   return base::Singleton<WebUIInfoSingleton>::get();
+}
+
+// static
+bool WebUIInfoSingleton::HasListener() {
+  return !GetInstance()->webui_instances_.empty();
 }
 
 void WebUIInfoSingleton::AddToClientDownloadRequestsSent(
@@ -353,10 +364,97 @@ base::DictionaryValue SerializePGEvent(
   if (reuse.has_reuse_detected()) {
     event_dict.SetPath({"reuse_detected", "status", "enabled"},
                        base::Value(reuse.reuse_detected().status().enabled()));
+
+    std::string reporting_population;
+    switch (
+        reuse.reuse_detected().status().safe_browsing_reporting_population()) {
+      case PasswordReuseDetected::SafeBrowsingStatus::
+          REPORTING_POPULATION_UNSPECIFIED:
+        reporting_population = "REPORTING_POPULATION_UNSPECIFIED";
+        break;
+      case PasswordReuseDetected::SafeBrowsingStatus::NONE:
+        reporting_population = "NONE";
+        break;
+      case PasswordReuseDetected::SafeBrowsingStatus::EXTENDED_REPORTING:
+        reporting_population = "EXTENDED_REPORTING";
+        break;
+      case PasswordReuseDetected::SafeBrowsingStatus::SCOUT:
+        reporting_population = "SCOUT";
+        break;
+    }
     event_dict.SetPath({"reuse_detected", "status", "reporting_population"},
-                       base::Value(reuse.reuse_detected()
-                                       .status()
-                                       .safe_browsing_reporting_population()));
+                       base::Value(reporting_population));
+  }
+
+  if (reuse.has_reuse_lookup()) {
+    std::string lookup_result;
+    switch (reuse.reuse_lookup().lookup_result()) {
+      case PasswordReuseLookup::UNSPECIFIED:
+        lookup_result = "UNSPECIFIED";
+        break;
+      case PasswordReuseLookup::WHITELIST_HIT:
+        lookup_result = "WHITELIST_HIT";
+        break;
+      case PasswordReuseLookup::CACHE_HIT:
+        lookup_result = "CACHE_HIT";
+        break;
+      case PasswordReuseLookup::REQUEST_SUCCESS:
+        lookup_result = "REQUEST_SUCCESS";
+        break;
+      case PasswordReuseLookup::REQUEST_FAILURE:
+        lookup_result = "REQUEST_FAILURE";
+        break;
+      case PasswordReuseLookup::URL_UNSUPPORTED:
+        lookup_result = "URL_UNSUPPORTED";
+        break;
+      case PasswordReuseLookup::ENTERPRISE_WHITELIST_HIT:
+        lookup_result = "ENTERPRISE_WHITELIST_HIT";
+        break;
+      case PasswordReuseLookup::TURNED_OFF_BY_POLICY:
+        lookup_result = "TURNED_OFF_BY_POLICY";
+        break;
+    }
+    event_dict.SetPath({"reuse_lookup", "lookup_result"},
+                       base::Value(lookup_result));
+
+    std::string verdict;
+    switch (reuse.reuse_lookup().verdict()) {
+      case PasswordReuseLookup::VERDICT_UNSPECIFIED:
+        verdict = "VERDICT_UNSPECIFIED";
+        break;
+      case PasswordReuseLookup::SAFE:
+        verdict = "SAFE";
+        break;
+      case PasswordReuseLookup::LOW_REPUTATION:
+        verdict = "LOW_REPUTATION";
+        break;
+      case PasswordReuseLookup::PHISHING:
+        verdict = "PHISHING";
+        break;
+    }
+    event_dict.SetPath({"reuse_lookup", "verdict"}, base::Value(verdict));
+    event_dict.SetPath({"reuse_lookup", "verdict_token"},
+                       base::Value(reuse.reuse_lookup().verdict_token()));
+  }
+
+  if (reuse.has_dialog_interaction()) {
+    std::string interaction_result;
+    switch (reuse.dialog_interaction().interaction_result()) {
+      case PasswordReuseDialogInteraction::UNSPECIFIED:
+        interaction_result = "UNSPECIFIED";
+        break;
+      case PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN:
+        interaction_result = "WARNING_ACTION_TAKEN";
+        break;
+      case PasswordReuseDialogInteraction::WARNING_ACTION_IGNORED:
+        interaction_result = "WARNING_ACTION_IGNORED";
+        break;
+      case PasswordReuseDialogInteraction::WARNING_UI_IGNORED:
+        interaction_result = "WARNING_UI_IGNORED";
+        break;
+    }
+    event_dict.SetPath({"dialog_interaction", "interaction_result"},
+                       base::Value(interaction_result));
   }
 
   std::string event_serialized;

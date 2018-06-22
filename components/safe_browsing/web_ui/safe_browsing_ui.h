@@ -89,6 +89,9 @@ class WebUIInfoSingleton {
  public:
   static WebUIInfoSingleton* GetInstance();
 
+  // Returns true when there is a listening chrome://safe-browsing tab.
+  static bool HasListener();
+
   // Add the new message in |client_download_requests_sent_| and send it to all
   // the open chrome://safe-browsing tabs.
   void AddToClientDownloadRequestsSent(
