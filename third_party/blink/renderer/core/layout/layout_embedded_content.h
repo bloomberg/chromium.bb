@@ -29,6 +29,7 @@
 namespace blink {
 
 class EmbeddedContentView;
+class FrameView;
 class WebPluginContainerImpl;
 
 // LayoutObject for frames via LayoutFrame and LayoutIFrame, and plugins via
