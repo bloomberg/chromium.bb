@@ -19,15 +19,15 @@
 #include "base/rand_util.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
-#include "mojo/edk/embedder/named_platform_channel_pair.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/system/broker.h"
 #include "mojo/edk/system/broker_host.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
+#include "mojo/edk/system/platform_handle_utils.h"
 #include "mojo/edk/system/request_context.h"
 #include "mojo/edk/system/user_message_impl.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "mojo/edk/system/mach_port_relay.h"
@@ -319,21 +319,28 @@ void NodeController::SendBrokerClientInvitationOnIOThread(
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
 #if !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_FUCHSIA)
-  PlatformChannelPair node_channel;
-  ScopedInternalPlatformHandle server_handle = node_channel.PassServerHandle();
+  PlatformChannel node_channel;
+  ScopedInternalPlatformHandle server_handle =
+      PlatformHandleToScopedInternalPlatformHandle(
+          node_channel.TakeLocalEndpoint().TakePlatformHandle());
   // BrokerHost owns itself.
   BrokerHost* broker_host = new BrokerHost(
       target_process.get(), connection_params.TakeChannelHandle(),
       process_error_callback);
-  bool channel_ok = broker_host->SendChannel(node_channel.PassClientHandle());
+  bool channel_ok =
+      broker_host->SendChannel(PlatformHandleToScopedInternalPlatformHandle(
+          node_channel.TakeRemoteEndpoint().TakePlatformHandle()));
 
 #if defined(OS_WIN)
   if (!channel_ok) {
     // On Windows the above operation may fail if the channel is crossing a
     // session boundary. In that case we fall back to a named pipe.
-    NamedPlatformChannelPair named_channel;
-    server_handle = named_channel.PassServerHandle();
-    broker_host->SendNamedChannel(named_channel.handle().name);
+    NamedPlatformChannel::Options options;
+    NamedPlatformChannel named_channel(options);
+    server_handle = PlatformHandleToScopedInternalPlatformHandle(
+        named_channel.TakeServerEndpoint().TakePlatformHandle());
+    server_handle.get().needs_connection = true;
+    broker_host->SendNamedChannel(named_channel.GetServerName());
   }
 #else
   CHECK(channel_ok);
@@ -822,8 +829,10 @@ void NodeController::OnAddBrokerClient(const ports::NodeName& from_node,
     return;
   }
 
-  PlatformChannelPair broker_channel;
-  ConnectionParams connection_params(broker_channel.PassServerHandle());
+  PlatformChannel broker_channel;
+  ConnectionParams connection_params(
+      PlatformHandleToScopedInternalPlatformHandle(
+          broker_channel.TakeLocalEndpoint().TakePlatformHandle()));
   scoped_refptr<NodeChannel> client =
       NodeChannel::Create(this, std::move(connection_params), io_task_runner_,
                           ProcessErrorCallback());
@@ -843,7 +852,10 @@ void NodeController::OnAddBrokerClient(const ports::NodeName& from_node,
   DVLOG(1) << "Broker " << name_ << " accepting client " << client_name
            << " from peer " << from_node;
 
-  sender->BrokerClientAdded(client_name, broker_channel.PassClientHandle());
+  sender->BrokerClientAdded(
+      client_name,
+      PlatformHandleToScopedInternalPlatformHandle(
+          broker_channel.TakeRemoteEndpoint().TakePlatformHandle()));
 }
 
 void NodeController::OnBrokerClientAdded(
@@ -1025,9 +1037,13 @@ void NodeController::OnRequestIntroduction(const ports::NodeName& from_node,
     // We don't know who they're talking about!
     requestor->Introduce(name, ScopedInternalPlatformHandle());
   } else {
-    PlatformChannelPair new_channel;
-    requestor->Introduce(name, new_channel.PassServerHandle());
-    new_friend->Introduce(from_node, new_channel.PassClientHandle());
+    PlatformChannel new_channel;
+    requestor->Introduce(
+        name, PlatformHandleToScopedInternalPlatformHandle(
+                  new_channel.TakeLocalEndpoint().TakePlatformHandle()));
+    new_friend->Introduce(
+        from_node, PlatformHandleToScopedInternalPlatformHandle(
+                       new_channel.TakeRemoteEndpoint().TakePlatformHandle()));
   }
 }
 

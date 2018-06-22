@@ -8,7 +8,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/system/platform_handle_utils.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -239,7 +240,7 @@ class ChannelTestShutdownAndWriteDelegate : public Channel::Delegate {
 
 TEST(ChannelTest, PeerShutdownDuringRead) {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
-  PlatformChannelPair channel_pair;
+  PlatformChannel channel;
 
   // Create a "client" Channel with one end of the pipe, and Start() it.
   std::unique_ptr<base::Thread> client_thread =
@@ -248,7 +249,9 @@ TEST(ChannelTest, PeerShutdownDuringRead) {
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
   scoped_refptr<Channel> client_channel = Channel::Create(
-      nullptr, ConnectionParams(channel_pair.PassClientHandle()),
+      nullptr,
+      ConnectionParams(PlatformHandleToScopedInternalPlatformHandle(
+          channel.TakeRemoteEndpoint().TakePlatformHandle())),
       client_thread->task_runner());
   client_channel->Start();
 
@@ -264,9 +267,10 @@ TEST(ChannelTest, PeerShutdownDuringRead) {
   // is received.
   base::RunLoop run_loop;
   ChannelTestShutdownAndWriteDelegate server_delegate(
-      channel_pair.PassServerHandle(), message_loop.task_runner(),
-      std::move(client_channel), std::move(client_thread),
-      run_loop.QuitClosure());
+      PlatformHandleToScopedInternalPlatformHandle(
+          channel.TakeLocalEndpoint().TakePlatformHandle()),
+      message_loop.task_runner(), std::move(client_channel),
+      std::move(client_thread), run_loop.QuitClosure());
 
   run_loop.Run();
 }
