@@ -85,10 +85,10 @@ constexpr int kExtraLeftPaddingToBalanceCloseButtonPadding = 2;
 constexpr int kPinnedTabExtraWidthToRenderAsNormal = 30;
 
 // Opacity of the active tab background painted over inactive selected tabs.
-constexpr float kSelectedTabOpacity = 0.3;
+constexpr float kSelectedTabOpacity = 0.75f;
 
 // Inactive selected tabs have their throb value scaled by this.
-constexpr float kSelectedTabThrobScale = 0.95 - kSelectedTabOpacity;
+constexpr float kSelectedTabThrobScale = 0.95f - kSelectedTabOpacity;
 
 // Height of the separator painted on the left edge of the tab for the material
 // refresh mode.
