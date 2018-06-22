@@ -11,6 +11,10 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
+namespace WTF {
+class TextEncoding;
+}  // namespace WTF
+
 namespace blink {
 
 class CSSCustomPropertyDeclaration;
@@ -18,6 +22,7 @@ class CSSParserTokenRange;
 class CSSPendingSubstitutionValue;
 class CSSVariableData;
 class CSSVariableReferenceValue;
+class KURL;
 class PropertyRegistry;
 class StyleResolverState;
 class StyleInheritedVariables;
@@ -85,7 +90,17 @@ class CSSVariableResolver {
   // Resolves the CSSVariableData from a custom property declaration.
   scoped_refptr<CSSVariableData> ResolveCustomProperty(AtomicString name,
                                                        const CSSVariableData&,
+                                                       bool resolve_urls,
                                                        bool& cycle_detected);
+  // Rewrites (in-place) kUrlTokens and kFunctionToken/CSSValueUrls to contain
+  // absolute URLs.
+  void ResolveRelativeUrls(Vector<CSSParserToken>& tokens,
+                           Vector<String>& backing_strings,
+                           const KURL& base_url,
+                           const WTF::TextEncoding& charset);
+
+  bool ShouldResolveRelativeUrls(const AtomicString& name,
+                                 const CSSVariableData&);
 
   const StyleResolverState& state_;
   StyleInheritedVariables* inherited_variables_;

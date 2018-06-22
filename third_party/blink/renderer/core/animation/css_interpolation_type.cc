@@ -308,9 +308,9 @@ void CSSInterpolationType::ApplyCustomPropertyValue(
   const auto tokens = tokenizer.TokenizeToEOF();
   bool is_animation_tainted = true;
   bool needs_variable_resolution = false;
-  scoped_refptr<CSSVariableData> variable_data =
-      CSSVariableData::Create(CSSParserTokenRange(tokens), is_animation_tainted,
-                              needs_variable_resolution);
+  scoped_refptr<CSSVariableData> variable_data = CSSVariableData::Create(
+      CSSParserTokenRange(tokens), is_animation_tainted,
+      needs_variable_resolution, KURL(), WTF::TextEncoding());
   ComputedStyle& style = *state.Style();
   const PropertyHandle property = GetProperty();
   const AtomicString& property_name = property.CustomPropertyName();

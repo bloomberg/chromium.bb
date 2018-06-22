@@ -25,9 +25,35 @@
 #include "third_party/blink/renderer/core/style/style_inherited_variables.h"
 #include "third_party/blink/renderer/core/style/style_non_inherited_variables.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
+
+namespace {
+
+CSSParserToken ResolveUrl(const CSSParserToken& token,
+                          Vector<String>& backing_strings,
+                          const KURL& base_url,
+                          WTF::TextEncoding charset) {
+  DCHECK(token.GetType() == kUrlToken || token.GetType() == kStringToken);
+
+  StringView string_view = token.Value();
+
+  if (string_view.IsNull())
+    return token;
+
+  String relative_url = string_view.ToString();
+  KURL absolute_url = charset.IsValid() ? KURL(base_url, relative_url, charset)
+                                        : KURL(base_url, relative_url);
+
+  backing_strings.push_back(absolute_url.GetString());
+
+  return token.CopyWithUpdatedString(StringView(backing_strings.back()));
+}
+
+}  // namespace
 
 bool CSSVariableResolver::ResolveFallback(
     CSSParserTokenRange range,
@@ -64,12 +90,15 @@ CSSVariableData* CSSVariableResolver::ValueForCustomProperty(
   }
   if (!variable_data)
     return registration ? registration->InitialVariableData() : nullptr;
-  if (!variable_data->NeedsVariableResolution())
+
+  bool resolve_urls = ShouldResolveRelativeUrls(name, *variable_data);
+
+  if (!variable_data->NeedsVariableResolution() && !resolve_urls)
     return variable_data;
 
   bool unused_cycle_detected;
-  scoped_refptr<CSSVariableData> new_variable_data =
-      ResolveCustomProperty(name, *variable_data, unused_cycle_detected);
+  scoped_refptr<CSSVariableData> new_variable_data = ResolveCustomProperty(
+      name, *variable_data, resolve_urls, unused_cycle_detected);
   if (!registration) {
     inherited_variables_->SetVariable(name, new_variable_data);
     return new_variable_data.get();
@@ -97,8 +126,9 @@ CSSVariableData* CSSVariableResolver::ValueForCustomProperty(
 scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
     AtomicString name,
     const CSSVariableData& variable_data,
+    bool resolve_urls,
     bool& cycle_detected) {
-  DCHECK(variable_data.NeedsVariableResolution());
+  DCHECK(variable_data.NeedsVariableResolution() || resolve_urls);
 
   bool disallow_animation_tainted = false;
   bool is_animation_tainted = variable_data.IsAnimationTainted();
@@ -118,8 +148,43 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
     return nullptr;
   }
   cycle_detected = false;
+
+  if (resolve_urls) {
+    ResolveRelativeUrls(tokens, backing_strings, variable_data.BaseURL(),
+                        variable_data.Charset());
+  }
+
   return CSSVariableData::CreateResolved(tokens, std::move(backing_strings),
                                          is_animation_tainted);
+}
+
+void CSSVariableResolver::ResolveRelativeUrls(
+    Vector<CSSParserToken>& tokens,
+    Vector<String>& backing_strings,
+    const KURL& base_url,
+    const WTF::TextEncoding& charset) {
+  CSSParserToken* token = tokens.begin();
+  CSSParserToken* end = tokens.end();
+
+  while (token < end) {
+    if (token->GetType() == kUrlToken) {
+      *token = ResolveUrl(*token, backing_strings, base_url, charset);
+    } else if (token->FunctionId() == CSSValueUrl) {
+      if (token + 1 < end && token[1].GetType() == kStringToken)
+        token[1] = ResolveUrl(token[1], backing_strings, base_url, charset);
+    }
+    ++token;
+  }
+}
+
+bool CSSVariableResolver::ShouldResolveRelativeUrls(
+    const AtomicString& name,
+    const CSSVariableData& variable_data) {
+  if (!variable_data.NeedsUrlResolution())
+    return false;
+  const PropertyRegistration* registration =
+      registry_ ? registry_->Registration(name) : nullptr;
+  return registration ? registration->Syntax().HasUrlSyntax() : false;
 }
 
 bool CSSVariableResolver::ResolveVariableReference(
@@ -299,7 +364,9 @@ CSSVariableResolver::ResolveCustomPropertyAnimationKeyframe(
     return nullptr;
   }
 
-  return ResolveCustomProperty(name, *keyframe.Value(), cycle_detected);
+  bool resolve_urls = false;
+  return ResolveCustomProperty(name, *keyframe.Value(), resolve_urls,
+                               cycle_detected);
 }
 
 void CSSVariableResolver::ResolveVariableDefinitions() {
