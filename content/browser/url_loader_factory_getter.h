@@ -66,11 +66,6 @@ class URLLoaderFactoryGetter
   CONTENT_EXPORT void CloneNetworkFactory(
       network::mojom::URLLoaderFactoryRequest network_factory_request);
 
-  // Called on the IO thread to get the URLLoaderFactory to the blob service.
-  // Must be used only if the network service or servicified service worker is
-  // enabled. The pointer shouldn't be cached.
-  CONTENT_EXPORT network::mojom::URLLoaderFactory* GetBlobFactory();
-
   // Overrides the network URLLoaderFactory for subsequent requests. Passing a
   // null pointer will restore the default behavior.
   CONTENT_EXPORT void SetNetworkFactoryForTesting(
@@ -102,8 +97,7 @@ class URLLoaderFactoryGetter
 
   CONTENT_EXPORT ~URLLoaderFactoryGetter();
   void InitializeOnIOThread(
-      network::mojom::URLLoaderFactoryPtrInfo network_factory,
-      network::mojom::URLLoaderFactoryPtrInfo blob_factory);
+      network::mojom::URLLoaderFactoryPtrInfo network_factory);
 
   // Send |network_factory_request| to cached |StoragePartitionImpl|.
   void HandleNetworkFactoryRequestOnUIThread(
@@ -118,11 +112,9 @@ class URLLoaderFactoryGetter
 
   // Bound with appropriate URLLoaderFactories at HandleFactoryRequests().
   network::mojom::URLLoaderFactoryRequest pending_network_factory_request_;
-  network::mojom::URLLoaderFactoryRequest pending_blob_factory_request_;
 
   // Only accessed on IO thread.
   network::mojom::URLLoaderFactoryPtr network_factory_;
-  network::mojom::URLLoaderFactoryPtr blob_factory_;
   network::mojom::URLLoaderFactory* test_factory_ = nullptr;
 
   // Used to re-create |network_factory_| when connection error happens. Can

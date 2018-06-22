@@ -160,6 +160,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
@@ -3173,6 +3174,17 @@ void RenderFrameHostImpl::BeginNavigation(
             GetSiteInstance()->GetBrowserContext(), std::move(blob_url_token));
   }
 
+  // If the request was for a blob URL, but no blob_url_token was passed in this
+  // is not necessarily an error. Renderer initiated reloads for example are one
+  // situation where a renderer currently doesn't have an easy way of resolving
+  // the blob URL. For those situations resolve the blob URL here, as we don't
+  // care about ordering with other blob URL manipulation anyway.
+  if (blink::BlobUtils::MojoBlobURLsEnabled() &&
+      validated_params.url.SchemeIsBlob() && !blob_url_loader_factory) {
+    blob_url_loader_factory = ChromeBlobStorageContext::URLLoaderFactoryForUrl(
+        GetSiteInstance()->GetBrowserContext(), validated_params.url);
+  }
+
   if (waiting_for_init_) {
     pending_navigate_ = std::make_unique<PendingNavigation>(
         validated_params, std::move(begin_params),
@@ -3643,9 +3655,6 @@ void RenderFrameHostImpl::CommitNavigation(
     // however only do this for cross-document navigations, because the
     // alternative would be redundant effort.
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
-    StoragePartitionImpl* storage_partition =
-        static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
-            browser_context, GetSiteInstance()));
     if (subresource_loader_params &&
         subresource_loader_params->loader_factory_info.is_valid()) {
       // If the caller has supplied a default URLLoaderFactory override (for
@@ -3681,12 +3690,6 @@ void RenderFrameHostImpl::CommitNavigation(
     DCHECK(default_factory_info);
     subresource_loader_factories->default_factory_info() =
         std::move(default_factory_info);
-    // Everyone gets a blob loader.
-    network::mojom::URLLoaderFactoryPtrInfo blob_factory_info;
-    storage_partition->GetBlobURLLoaderFactory()->HandleRequest(
-        mojo::MakeRequest(&blob_factory_info));
-    subresource_loader_factories->factories_info().emplace(
-        url::kBlobScheme, std::move(blob_factory_info));
 
     non_network_url_loader_factories_.clear();
 

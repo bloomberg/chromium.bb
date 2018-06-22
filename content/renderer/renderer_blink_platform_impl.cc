@@ -191,13 +191,6 @@ media::AudioParameters GetAudioHardwareParams() {
       .output_params();
 }
 
-network::mojom::URLLoaderFactoryPtr GetBlobURLLoaderFactoryGetter() {
-  network::mojom::URLLoaderFactoryPtr blob_loader_factory;
-  RenderThreadImpl::current()->GetRendererHost()->GetBlobURLLoaderFactory(
-      mojo::MakeRequest(&blob_loader_factory));
-  return blob_loader_factory;
-}
-
 gpu::ContextType ToGpuContextType(blink::Platform::ContextType type) {
   switch (type) {
     case blink::Platform::kWebGL1ContextType:
@@ -356,10 +349,7 @@ scoped_refptr<ChildURLLoaderFactoryBundle>
 RendererBlinkPlatformImpl::CreateDefaultURLLoaderFactoryBundle() {
   return base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
       base::BindOnce(&RendererBlinkPlatformImpl::CreateNetworkURLLoaderFactory,
-                     base::Unretained(this)),
-      base::FeatureList::IsEnabled(network::features::kNetworkService)
-          ? base::BindOnce(&GetBlobURLLoaderFactoryGetter)
-          : ChildURLLoaderFactoryBundle::FactoryGetterCallback());
+                     base::Unretained(this)));
 }
 
 PossiblyAssociatedInterfacePtr<network::mojom::URLLoaderFactory>

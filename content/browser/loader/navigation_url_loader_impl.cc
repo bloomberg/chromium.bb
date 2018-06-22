@@ -761,12 +761,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       return;
     }
 
-    if (resource_request_->url.SchemeIs(url::kBlobScheme)) {
-      factory =
-          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              default_url_loader_factory_getter_->GetBlobFactory());
-    } else if (!IsURLHandledByNetworkService(resource_request_->url) &&
-               !resource_request_->url.SchemeIs(url::kDataScheme)) {
+    if (!IsURLHandledByNetworkService(resource_request_->url) &&
+        !resource_request_->url.SchemeIs(url::kDataScheme)) {
       if (known_schemes_.find(resource_request_->url.scheme()) ==
           known_schemes_.end()) {
         bool handled = GetContentClient()->browser()->HandleExternalProtocol(
