@@ -66,8 +66,7 @@ const TEB* GetThreadEnvironmentBlock(HANDLE thread_handle) {
   };
 
   using NtQueryInformationThreadFunction =
-      NTSTATUS (WINAPI*)(HANDLE, THREAD_INFORMATION_CLASS, PVOID, ULONG,
-                         PULONG);
+      NTSTATUS(WINAPI*)(HANDLE, THREAD_INFORMATION_CLASS, PVOID, ULONG, PULONG);
 
   const auto nt_query_information_thread =
       reinterpret_cast<NtQueryInformationThreadFunction>(::GetProcAddress(
@@ -76,10 +75,9 @@ const TEB* GetThreadEnvironmentBlock(HANDLE thread_handle) {
     return nullptr;
 
   THREAD_BASIC_INFORMATION basic_info = {0};
-  NTSTATUS status =
-      nt_query_information_thread(thread_handle, ThreadBasicInformation,
-                                  &basic_info, sizeof(THREAD_BASIC_INFORMATION),
-                                  nullptr);
+  NTSTATUS status = nt_query_information_thread(
+      thread_handle, ThreadBasicInformation, &basic_info,
+      sizeof(THREAD_BASIC_INFORMATION), nullptr);
   if (status != 0)
     return nullptr;
 
@@ -89,8 +87,10 @@ const TEB* GetThreadEnvironmentBlock(HANDLE thread_handle) {
 #if defined(_WIN64)
 // If the value at |pointer| points to the original stack, rewrite it to point
 // to the corresponding location in the copied stack.
-void RewritePointerIfInOriginalStack(uintptr_t top, uintptr_t bottom,
-                                     void* stack_copy, const void** pointer) {
+void RewritePointerIfInOriginalStack(uintptr_t top,
+                                     uintptr_t bottom,
+                                     void* stack_copy,
+                                     const void** pointer) {
   const auto value = reinterpret_cast<uintptr_t>(*pointer);
   if (value >= bottom && value < top) {
     *pointer = reinterpret_cast<const void*>(
@@ -128,20 +128,14 @@ void CopyMemoryFromStack(void* to, const void* from, size_t length)
 // Note: this function must not access memory in the original stack as it may
 // have been changed or deallocated by this point. This is why |top| and
 // |bottom| are passed as uintptr_t.
-void RewritePointersToStackMemory(uintptr_t top, uintptr_t bottom,
-                                  CONTEXT* context, void* stack_copy) {
+void RewritePointersToStackMemory(uintptr_t top,
+                                  uintptr_t bottom,
+                                  CONTEXT* context,
+                                  void* stack_copy) {
 #if defined(_WIN64)
-  DWORD64 CONTEXT::* const nonvolatile_registers[] = {
-    &CONTEXT::R12,
-    &CONTEXT::R13,
-    &CONTEXT::R14,
-    &CONTEXT::R15,
-    &CONTEXT::Rdi,
-    &CONTEXT::Rsi,
-    &CONTEXT::Rbx,
-    &CONTEXT::Rbp,
-    &CONTEXT::Rsp
-  };
+  DWORD64 CONTEXT::*const nonvolatile_registers[] = {
+      &CONTEXT::R12, &CONTEXT::R13, &CONTEXT::R14, &CONTEXT::R15, &CONTEXT::Rdi,
+      &CONTEXT::Rsi, &CONTEXT::Rbx, &CONTEXT::Rbp, &CONTEXT::Rsp};
 
   // Rewrite pointers in the context.
   for (size_t i = 0; i < size(nonvolatile_registers); ++i) {
@@ -165,8 +159,7 @@ struct RecordedFrame {
 
   RecordedFrame(RecordedFrame&& other)
       : instruction_pointer(other.instruction_pointer),
-        module(std::move(other.module)) {
-  }
+        module(std::move(other.module)) {}
 
   RecordedFrame& operator=(RecordedFrame&& other) {
     instruction_pointer = other.instruction_pointer;
@@ -321,8 +314,7 @@ ScopedSuspendThread::~ScopedSuspendThread() {
 bool PointsToGuardPage(uintptr_t stack_pointer) {
   MEMORY_BASIC_INFORMATION memory_info;
   SIZE_T result = ::VirtualQuery(reinterpret_cast<LPCVOID>(stack_pointer),
-                                 &memory_info,
-                                 sizeof(memory_info));
+                                 &memory_info, sizeof(memory_info));
   return result != 0 && (memory_info.Protect & PAGE_GUARD);
 }
 
@@ -528,8 +520,7 @@ std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
   // Get the thread's handle.
   HANDLE thread_handle = ::OpenThread(
       THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION,
-      FALSE,
-      thread_id);
+      FALSE, thread_id);
 
   if (thread_handle) {
     return std::unique_ptr<NativeStackSampler>(new NativeStackSamplerWin(
