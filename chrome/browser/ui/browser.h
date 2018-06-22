@@ -79,7 +79,6 @@ class BrowserCommandController;
 }
 
 namespace content {
-class PictureInPictureWindowController;
 class SessionStorageNamespace;
 }
 
@@ -997,13 +996,6 @@ class Browser : public TabStripModelObserver,
       extension_window_controller_;
 
   std::unique_ptr<chrome::BrowserCommandController> command_controller_;
-
-  // |pip_window_controller_| is held as a SupportsUserData attachment on the
-  // content::WebContents, and thus scoped to the lifetime of the initiator
-  // content::WebContents.
-  // The current active Picture-in-Picture controller is held in case of
-  // updates to the relevant viz::SurfaceId.
-  content::PictureInPictureWindowController* pip_window_controller_ = nullptr;
 
   // True if the browser window has been shown at least once.
   bool window_has_shown_;
