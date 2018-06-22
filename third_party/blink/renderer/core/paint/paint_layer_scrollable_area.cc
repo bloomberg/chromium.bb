@@ -1348,43 +1348,63 @@ IntSize PaintLayerScrollableArea::ScrollbarOffset(
 }
 
 static inline const LayoutObject& ScrollbarStyleSource(
-    const LayoutObject& layout_object) {
-  if (Node* node = layout_object.GetNode()) {
-    if (layout_object.IsLayoutView()) {
-      Document& doc = node->GetDocument();
-      if (Settings* settings = doc.GetSettings()) {
-        if (!settings->GetAllowCustomScrollbarInMainFrame() &&
-            layout_object.GetFrame() && layout_object.GetFrame()->IsMainFrame())
-          return layout_object;
-      }
-
-      // Try the <body> element first as a scrollbar source.
-      Element* body = doc.body();
-      if (body && body->GetLayoutObject() &&
-          body->GetLayoutObject()->Style()->HasPseudoStyle(kPseudoIdScrollbar))
-        return *body->GetLayoutObject();
-
-      // If the <body> didn't have a custom style, then the root element might.
-      Element* doc_element = doc.documentElement();
-      if (doc_element && doc_element->GetLayoutObject() &&
-          doc_element->GetLayoutObject()->Style()->HasPseudoStyle(
-              kPseudoIdScrollbar))
-        return *doc_element->GetLayoutObject();
+    const LayoutBox& layout_box) {
+  if (layout_box.IsLayoutView()) {
+    Document& doc = layout_box.GetDocument();
+    if (Settings* settings = doc.GetSettings()) {
+      if (!settings->GetAllowCustomScrollbarInMainFrame() &&
+          layout_box.GetFrame() && layout_box.GetFrame()->IsMainFrame())
+        return layout_box;
     }
 
-    if (layout_object.StyleRef().HasPseudoStyle(kPseudoIdScrollbar))
-      return layout_object;
+    // Try the <body> element first as a scrollbar source.
+    Element* body = doc.body();
+    if (body && body->GetLayoutObject() &&
+        body->GetLayoutObject()->Style()->HasPseudoStyle(kPseudoIdScrollbar))
+      return *body->GetLayoutObject();
 
-    if (ShadowRoot* shadow_root = node->ContainingShadowRoot()) {
-      if (shadow_root->IsUserAgent()) {
-        if (LayoutObject* host_layout_object =
-                shadow_root->host().GetLayoutObject())
-          return *host_layout_object;
-      }
-    }
+    // If the <body> didn't have a custom style, then the root element might.
+    Element* doc_element = doc.documentElement();
+    if (doc_element && doc_element->GetLayoutObject() &&
+        doc_element->GetLayoutObject()->Style()->HasPseudoStyle(
+            kPseudoIdScrollbar))
+      return *doc_element->GetLayoutObject();
   }
 
-  return layout_object;
+  return layout_box;
+}
+
+int PaintLayerScrollableArea::HypotheticalScrollbarThickness(
+    ScrollbarOrientation orientation) const {
+  Scrollbar* scrollbar = orientation == kHorizontalScrollbar
+                             ? HorizontalScrollbar()
+                             : VerticalScrollbar();
+  if (scrollbar)
+    return scrollbar->ScrollbarThickness();
+
+  const LayoutObject& style_source = ScrollbarStyleSource(*GetLayoutBox());
+  bool has_custom_scrollbar_style =
+      style_source.IsBox() &&
+      style_source.StyleRef().HasPseudoStyle(kPseudoIdScrollbar);
+  if (has_custom_scrollbar_style) {
+    return LayoutScrollbar::HypotheticalScrollbarThickness(
+        orientation, *GetLayoutBox(), style_source);
+  }
+
+  ScrollbarControlSize scrollbar_size = kRegularScrollbar;
+  if (style_source.StyleRef().HasAppearance()) {
+    scrollbar_size = LayoutTheme::GetTheme().ScrollbarControlSizeForPart(
+        style_source.StyleRef().Appearance());
+  }
+  ScrollbarTheme& theme = GetPageScrollbarTheme();
+  if (theme.UsesOverlayScrollbars())
+    return 0;
+  int thickness = theme.ScrollbarThickness(scrollbar_size);
+  return GetLayoutBox()
+      ->GetDocument()
+      .GetPage()
+      ->GetChromeClient()
+      .WindowToViewportScalar(thickness);
 }
 
 bool PaintLayerScrollableArea::NeedsScrollbarReconstruction() const {

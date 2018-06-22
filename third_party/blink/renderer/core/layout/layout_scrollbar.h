@@ -36,6 +36,7 @@ namespace blink {
 class ComputedStyle;
 class Element;
 class LayoutBox;
+class LayoutObject;
 class LayoutScrollbarPart;
 
 class LayoutScrollbar final : public Scrollbar {
@@ -44,6 +45,12 @@ class LayoutScrollbar final : public Scrollbar {
                                           ScrollbarOrientation,
                                           Element*);
   ~LayoutScrollbar() override;
+
+  // Return the thickness that a custom scrollbar would have, without actually
+  // constructing the scrollbar.
+  static int HypotheticalScrollbarThickness(ScrollbarOrientation,
+                                            const LayoutBox& enclosing_box,
+                                            const LayoutObject& style_source);
 
   // The LayoutBox that supplies our style information. If the scrollbar is for
   // a document, this is either the <body> or <html> element. Otherwise, it is

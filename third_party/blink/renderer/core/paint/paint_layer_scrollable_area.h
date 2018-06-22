@@ -156,13 +156,13 @@ class CORE_EXPORT PaintLayerScrollableArea final
     void SetHasHorizontalScrollbar(bool has_scrollbar);
     void SetHasVerticalScrollbar(bool has_scrollbar);
 
-    Scrollbar* CreateScrollbar(ScrollbarOrientation);
     void DestroyDetachedScrollbars();
     void Dispose();
 
     void Trace(blink::Visitor*);
 
    private:
+    Scrollbar* CreateScrollbar(ScrollbarOrientation);
     void DestroyScrollbar(ScrollbarOrientation);
 
     Member<PaintLayerScrollableArea> scrollable_area_;
@@ -260,9 +260,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   }
   Scrollbar* VerticalScrollbar() const override {
     return scrollbar_manager_.VerticalScrollbar();
-  }
-  Scrollbar* CreateScrollbar(ScrollbarOrientation orientation) override {
-    return scrollbar_manager_.CreateScrollbar(orientation);
   }
 
   void CalculateScrollbarModes(ScrollbarMode& h_mode,
@@ -521,6 +518,12 @@ class CORE_EXPORT PaintLayerScrollableArea final
   uint64_t Id() const;
 
   ScrollbarTheme& GetPageScrollbarTheme() const override;
+
+  // Return the thickness of the existing scrollbar; or, if there is no
+  // existing scrollbar, then calculate the thickness it would have if it
+  // existed. Returns zero if the (real or hypothetical) scrollbar is an overlay
+  // scrollbar.
+  int HypotheticalScrollbarThickness(ScrollbarOrientation) const;
 
   void WillRemoveScrollbar(Scrollbar&, ScrollbarOrientation) override;
 

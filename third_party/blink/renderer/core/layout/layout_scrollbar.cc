@@ -86,15 +86,31 @@ LayoutScrollbar::~LayoutScrollbar() {
   UpdateScrollbarParts(true);
 }
 
+int LayoutScrollbar::HypotheticalScrollbarThickness(
+    ScrollbarOrientation orientation,
+    const LayoutBox& enclosing_box,
+    const LayoutObject& style_source) {
+  scoped_refptr<ComputedStyle> part_style = style_source.GetUncachedPseudoStyle(
+      PseudoStyleRequest(kPseudoIdScrollbar, nullptr, kScrollbarBGPart),
+      style_source.Style());
+  if (orientation == kHorizontalScrollbar) {
+    return LayoutScrollbarPart::ComputeScrollbarHeight(
+        enclosing_box.ClientHeight().ToInt(), part_style.get());
+  }
+  return LayoutScrollbarPart::ComputeScrollbarWidth(
+      enclosing_box.ClientWidth().ToInt(), part_style.get());
+}
+
 void LayoutScrollbar::Trace(blink::Visitor* visitor) {
   visitor->Trace(style_source_);
   Scrollbar::Trace(visitor);
 }
 
 LayoutBox* LayoutScrollbar::StyleSource() const {
-  return style_source_ && style_source_->GetLayoutObject()
-             ? style_source_->GetLayoutObject()->EnclosingBox()
-             : nullptr;
+  if (!style_source_->GetLayoutObject())
+    return nullptr;
+  DCHECK(style_source_->GetLayoutObject()->IsBox());
+  return ToLayoutBox(style_source_->GetLayoutObject());
 }
 
 void LayoutScrollbar::DisconnectFromScrollableArea() {

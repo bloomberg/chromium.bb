@@ -100,32 +100,64 @@ void LayoutScrollbarPart::UpdateLayout() {
 void LayoutScrollbarPart::LayoutHorizontalPart() {
   if (part_ == kScrollbarBGPart) {
     SetWidth(LayoutUnit(scrollbar_->Width()));
-    ComputeScrollbarHeight();
+    UpdateScrollbarHeight();
   } else {
-    ComputeScrollbarWidth();
+    UpdateScrollbarWidth();
     SetHeight(LayoutUnit(scrollbar_->Height()));
   }
 }
 
 void LayoutScrollbarPart::LayoutVerticalPart() {
   if (part_ == kScrollbarBGPart) {
-    ComputeScrollbarWidth();
+    UpdateScrollbarWidth();
     SetHeight(LayoutUnit(scrollbar_->Height()));
   } else {
     SetWidth(LayoutUnit(scrollbar_->Width()));
-    ComputeScrollbarHeight();
+    UpdateScrollbarHeight();
   }
 }
 
-int LayoutScrollbarPart::CalcScrollbarThicknessUsing(SizeType size_type,
-                                                     const Length& length,
-                                                     int containing_length) {
+static int CalcScrollbarThicknessUsing(SizeType size_type,
+                                       const Length& length,
+                                       int containing_length,
+                                       ScrollbarTheme* theme) {
   if (!length.IsIntrinsicOrAuto() || (size_type == kMinSize && length.IsAuto()))
     return MinimumValueForLength(length, LayoutUnit(containing_length)).ToInt();
-  return scrollbar_->GetTheme().ScrollbarThickness();
+  return theme->ScrollbarThickness();
 }
 
-void LayoutScrollbarPart::ComputeScrollbarWidth() {
+int LayoutScrollbarPart::ComputeScrollbarWidth(int visible_size,
+                                               const ComputedStyle* style) {
+  LayoutScrollbarTheme* theme = LayoutScrollbarTheme::GetLayoutScrollbarTheme();
+  int w = CalcScrollbarThicknessUsing(kMainOrPreferredSize, style->Width(),
+                                      visible_size, theme);
+  int min_width = CalcScrollbarThicknessUsing(kMinSize, style->MinWidth(),
+                                              visible_size, theme);
+  int max_width = w;
+  if (!style->MaxWidth().IsMaxSizeNone()) {
+    max_width = CalcScrollbarThicknessUsing(kMaxSize, style->MaxWidth(),
+                                            visible_size, theme);
+  }
+
+  return std::max(min_width, std::min(max_width, w));
+}
+
+int LayoutScrollbarPart::ComputeScrollbarHeight(int visible_size,
+                                                const ComputedStyle* style) {
+  LayoutScrollbarTheme* theme = LayoutScrollbarTheme::GetLayoutScrollbarTheme();
+  int h = CalcScrollbarThicknessUsing(kMainOrPreferredSize, style->Height(),
+                                      visible_size, theme);
+  int min_height = CalcScrollbarThicknessUsing(kMinSize, style->MinHeight(),
+                                               visible_size, theme);
+  int max_height = h;
+  if (!style->MaxHeight().IsMaxSizeNone()) {
+    max_height = CalcScrollbarThicknessUsing(kMaxSize, style->MaxHeight(),
+                                             visible_size, theme);
+  }
+  return std::max(min_height, std::min(max_height, h));
+}
+
+void LayoutScrollbarPart::UpdateScrollbarWidth() {
   if (!scrollbar_->StyleSource())
     return;
   // FIXME: We are querying layout information but nothing guarantees that it's
@@ -135,15 +167,7 @@ void LayoutScrollbarPart::ComputeScrollbarWidth() {
   int visible_size = scrollbar_->StyleSource()->Size().Width() -
                      scrollbar_->StyleSource()->Style()->BorderLeftWidth() -
                      scrollbar_->StyleSource()->Style()->BorderRightWidth();
-  int w = CalcScrollbarThicknessUsing(kMainOrPreferredSize, Style()->Width(),
-                                      visible_size);
-  int min_width =
-      CalcScrollbarThicknessUsing(kMinSize, Style()->MinWidth(), visible_size);
-  int max_width = Style()->MaxWidth().IsMaxSizeNone()
-                      ? w
-                      : CalcScrollbarThicknessUsing(
-                            kMaxSize, Style()->MaxWidth(), visible_size);
-  SetWidth(LayoutUnit(std::max(min_width, std::min(max_width, w))));
+  SetWidth(LayoutUnit(ComputeScrollbarWidth(visible_size, Style())));
 
   // Buttons and track pieces can all have margins along the axis of the
   // scrollbar. Values are rounded because scrollbar parts need to be rendered
@@ -156,7 +180,7 @@ void LayoutScrollbarPart::ComputeScrollbarWidth() {
           .Round()));
 }
 
-void LayoutScrollbarPart::ComputeScrollbarHeight() {
+void LayoutScrollbarPart::UpdateScrollbarHeight() {
   if (!scrollbar_->StyleSource())
     return;
   // FIXME: We are querying layout information but nothing guarantees that it's
@@ -166,15 +190,7 @@ void LayoutScrollbarPart::ComputeScrollbarHeight() {
   int visible_size = scrollbar_->StyleSource()->Size().Height() -
                      scrollbar_->StyleSource()->Style()->BorderTopWidth() -
                      scrollbar_->StyleSource()->Style()->BorderBottomWidth();
-  int h = CalcScrollbarThicknessUsing(kMainOrPreferredSize, Style()->Height(),
-                                      visible_size);
-  int min_height =
-      CalcScrollbarThicknessUsing(kMinSize, Style()->MinHeight(), visible_size);
-  int max_height = Style()->MaxHeight().IsMaxSizeNone()
-                       ? h
-                       : CalcScrollbarThicknessUsing(
-                             kMaxSize, Style()->MaxHeight(), visible_size);
-  SetHeight(LayoutUnit(std::max(min_height, std::min(max_height, h))));
+  SetHeight(LayoutUnit(ComputeScrollbarHeight(visible_size, Style())));
 
   // Buttons and track pieces can all have margins along the axis of the
   // scrollbar. Values are rounded because scrollbar parts need to be rendered
