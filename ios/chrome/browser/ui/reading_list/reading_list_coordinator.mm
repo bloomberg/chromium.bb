@@ -20,7 +20,9 @@
 #include "ios/chrome/browser/reading_list/reading_list_download_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_commands.h"
+#import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_coordinator.h"
+#import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_params.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_mediator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
@@ -38,39 +40,28 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// Action chosen by the user in the context menu, for UMA report.
-// These match tools/metrics/histograms/histograms.xml.
-enum UMAContextMenuAction {
-  // The user opened the entry in a new tab.
-  NEW_TAB = 0,
-  // The user opened the entry in a new incognito tab.
-  NEW_INCOGNITO_TAB = 1,
-  // The user copied the url of the entry.
-  COPY_LINK = 2,
-  // The user chose to view the offline version of the entry.
-  VIEW_OFFLINE = 3,
-  // The user cancelled the context menu.
-  CANCEL = 4,
-  // Add new enum above ENUM_MAX.
-  ENUM_MAX
-};
-}
-
-@interface ReadingListCoordinator ()
+@interface ReadingListCoordinator ()<ReadingListContextMenuCommands>
 
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // Used to load the Reading List pages.
 @property(nonatomic, weak) id<UrlLoader> URLLoader;
+// The container view containing both the collection view and the toolbar.
 @property(nonatomic, strong) ReadingListViewController* containerViewController;
-@property(nonatomic, strong) AlertCoordinator* alertCoordinator;
+// The collection view controller that displays the reading list items (owned by
+// |containerViewController|).
+@property(nonatomic, weak)
+    ReadingListCollectionViewController* collectionViewController;
+// The context menu displayed for long-presses on reading list items.
+@property(nonatomic, strong)
+    ReadingListContextMenuCoordinator* contextMenuCoordinator;
 
 @end
 
 @implementation ReadingListCoordinator
 
-@synthesize alertCoordinator = _alertCoordinator;
 @synthesize containerViewController = _containerViewController;
+@synthesize collectionViewController = _collectionViewController;
+@synthesize contextMenuCoordinator = _contextMenuCoordinator;
 @synthesize URLLoader = _URLLoader;
 @synthesize browserState = _browserState;
 @synthesize mediator = _mediator;
@@ -108,6 +99,7 @@ enum UMAContextMenuAction {
 
                        toolbar:toolbar];
     collectionViewController.delegate = self;
+    self.collectionViewController = collectionViewController;
 
     self.containerViewController = [[ReadingListViewController alloc]
         initWithCollectionViewController:collectionViewController
@@ -161,83 +153,26 @@ enum UMAContextMenuAction {
   }
   const GURL entryURL = entry->URL();
 
-  __weak ReadingListCoordinator* weakSelf = self;
-  __weak ReadingListCollectionViewController* weakCollection =
-      readingListCollectionViewController;
-
-  _alertCoordinator = [[ActionSheetCoordinator alloc]
-      initWithBaseViewController:self.containerViewController
-                           title:readingListItem.title
-                         message:readingListItem.subtitle
-                            rect:CGRectMake(menuLocation.x, menuLocation.y, 0,
-                                            0)
-                            view:readingListCollectionViewController
-                                     .collectionView];
-
-  NSString* openInNewTabTitle =
-      l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
-  [_alertCoordinator
-      addItemWithTitle:openInNewTabTitle
-                action:^{
-                  [weakSelf readingListCollectionViewController:weakCollection
-                                              openNewTabWithURL:entryURL
-                                                      incognito:NO];
-                  UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu", NEW_TAB,
-                                            ENUM_MAX);
-
-                }
-                 style:UIAlertActionStyleDefault];
-
-  NSString* openInNewTabIncognitoTitle =
-      l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB);
-  [_alertCoordinator
-      addItemWithTitle:openInNewTabIncognitoTitle
-                action:^{
-                  [weakSelf readingListCollectionViewController:weakCollection
-                                              openNewTabWithURL:entryURL
-                                                      incognito:YES];
-                  UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu",
-                                            NEW_INCOGNITO_TAB, ENUM_MAX);
-                }
-                 style:UIAlertActionStyleDefault];
-
-  NSString* copyLinkTitle =
-      l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_COPY);
-  [_alertCoordinator
-      addItemWithTitle:copyLinkTitle
-                action:^{
-                  UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu",
-                                            COPY_LINK, ENUM_MAX);
-                  StoreURLInPasteboard(entryURL);
-                }
-                 style:UIAlertActionStyleDefault];
-
+  GURL offlineURL;
   if (entry->DistilledState() == ReadingListEntry::PROCESSED) {
-    GURL offlineURL = reading_list::OfflineURLForPath(
+    offlineURL = reading_list::OfflineURLForPath(
         entry->DistilledPath(), entryURL, entry->DistilledURL());
-    NSString* viewOfflineVersionTitle =
-        l10n_util::GetNSString(IDS_IOS_READING_LIST_CONTENT_CONTEXT_OFFLINE);
-    [_alertCoordinator
-        addItemWithTitle:viewOfflineVersionTitle
-                  action:^{
-                    UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu",
-                                              VIEW_OFFLINE, ENUM_MAX);
-                    [weakSelf readingListCollectionViewController:weakCollection
-                                                   openOfflineURL:offlineURL
-                                            correspondingEntryURL:entryURL];
-                  }
-                   style:UIAlertActionStyleDefault];
   }
 
-  [_alertCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_APP_CANCEL)
-                action:^{
-                  UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu", CANCEL,
-                                            ENUM_MAX);
-                }
-                 style:UIAlertActionStyleCancel];
+  ReadingListContextMenuParams* params =
+      [[ReadingListContextMenuParams alloc] init];
+  params.title = readingListItem.title;
+  params.message = readingListItem.subtitle;
+  params.rect = CGRectMake(menuLocation.x, menuLocation.y, 0, 0);
+  params.view = readingListCollectionViewController.collectionView;
+  params.entryURL = entryURL;
+  params.offlineURL = offlineURL;
 
-  [_alertCoordinator start];
+  self.contextMenuCoordinator = [[ReadingListContextMenuCoordinator alloc]
+      initWithBaseViewController:self.containerViewController
+                          params:params];
+  self.contextMenuCoordinator.commandHandler = self;
+  [self.contextMenuCoordinator start];
 }
 
 - (void)
@@ -300,6 +235,50 @@ readingListCollectionViewController:
                              openOfflineURL:offlineURL
                       correspondingEntryURL:entryURL];
   }
+}
+
+#pragma mark - ReadingListContextMenuCommands
+
+- (void)openURLInNewTabForContextMenuWithParams:
+    (ReadingListContextMenuParams*)params {
+  [self readingListCollectionViewController:self.collectionViewController
+                          openNewTabWithURL:params.entryURL
+                                  incognito:NO];
+  [self cleanUpContextMenu];
+}
+
+- (void)openURLInNewIncognitoTabForContextMenuWithParams:
+    (ReadingListContextMenuParams*)params {
+  [self readingListCollectionViewController:self.collectionViewController
+                          openNewTabWithURL:params.entryURL
+                                  incognito:YES];
+  [self cleanUpContextMenu];
+}
+
+- (void)copyURLForContextMenuWithParams:(ReadingListContextMenuParams*)params {
+  StoreURLInPasteboard(params.entryURL);
+  [self cleanUpContextMenu];
+}
+
+- (void)openOfflineURLInNewTabForContextMenuWithParams:
+    (ReadingListContextMenuParams*)params {
+  [self readingListCollectionViewController:self.collectionViewController
+                             openOfflineURL:params.offlineURL
+                      correspondingEntryURL:params.entryURL];
+  [self cleanUpContextMenu];
+}
+
+- (void)cancelReadingListContextMenuWithParams:
+    (ReadingListContextMenuParams*)params {
+  [self cleanUpContextMenu];
+}
+
+#pragma mark - Context Menu Helpers
+
+// Stops the context menu coordinator and resets the property.
+- (void)cleanUpContextMenu {
+  [self.contextMenuCoordinator stop];
+  self.contextMenuCoordinator = nil;
 }
 
 #pragma mark - Private
