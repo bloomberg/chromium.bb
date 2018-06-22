@@ -312,16 +312,6 @@ TEST_F(ModelTypeControllerTest, LoadModelsOnBackendThread) {
   ExpectProcessorConnected(false);
 }
 
-TEST_F(ModelTypeControllerTest, LoadModelsTwice) {
-  LoadModels();
-  RunAllTasks();
-  EXPECT_EQ(DataTypeController::MODEL_LOADED, controller()->state());
-  EXPECT_FALSE(load_models_last_error().IsSet());
-  // A second LoadModels call should set the error.
-  LoadModels();
-  EXPECT_TRUE(load_models_last_error().IsSet());
-}
-
 TEST_F(ModelTypeControllerTest, Activate) {
   LoadModels();
   RunAllTasks();

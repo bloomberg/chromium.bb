@@ -180,6 +180,7 @@ void ModelAssociationManager::LoadEnabledTypes() {
     auto dtc_iter = controllers_->find(type);
     DCHECK(dtc_iter != controllers_->end());
     DataTypeController* dtc = dtc_iter->second.get();
+    DCHECK_NE(DataTypeController::STOPPING, dtc->state());
     if (dtc->state() == DataTypeController::NOT_RUNNING) {
       DCHECK(!loaded_types_.Has(dtc->type()));
       DCHECK(!associated_types_.Has(dtc->type()));
