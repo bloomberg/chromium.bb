@@ -352,15 +352,16 @@ class FrameProcessorTest
                                           CHANNEL_LAYOUT_STEREO, 1000,
                                           EmptyExtraData(), Unencrypted());
         frame_processor_->OnPossibleAudioConfigUpdate(decoder_config);
-        ASSERT_TRUE(audio_->UpdateAudioConfig(decoder_config, &media_log_));
+        ASSERT_TRUE(
+            audio_->UpdateAudioConfig(decoder_config, false, &media_log_));
         break;
       }
       case DemuxerStream::VIDEO: {
         ASSERT_FALSE(video_);
         video_.reset(
             new ChunkDemuxerStream(DemuxerStream::VIDEO, "2", range_api_));
-        ASSERT_TRUE(
-            video_->UpdateVideoConfig(TestVideoConfig::Normal(), &media_log_));
+        ASSERT_TRUE(video_->UpdateVideoConfig(TestVideoConfig::Normal(), false,
+                                              &media_log_));
         break;
       }
       // TODO(wolenetz): Test text coded frame processing.

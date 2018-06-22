@@ -3472,7 +3472,7 @@ TEST_P(SourceBufferStreamTest, ConfigChange_Basic) {
   CheckVideoConfig(video_config_);
 
   // Signal a config change.
-  STREAM_OP(UpdateVideoConfig(new_config));
+  STREAM_OP(UpdateVideoConfig(new_config, false));
 
   // Make sure updating the config doesn't change anything since new_config
   // should not be associated with the buffer GetNextBuffer() will return.
@@ -3508,7 +3508,7 @@ TEST_P(SourceBufferStreamTest, ConfigChange_Seek) {
 
   Seek(0);
   NewCodedFrameGroupAppend(0, 5, &kDataA);
-  STREAM_OP(UpdateVideoConfig(new_config));
+  STREAM_OP(UpdateVideoConfig(new_config, false));
   NewCodedFrameGroupAppend(5, 5, &kDataB);
 
   // Seek to the start of the buffers with the new config and make sure a
@@ -4709,7 +4709,7 @@ TEST_P(SourceBufferStreamTest, Audio_ConfigChangeWithPreroll) {
   NewCodedFrameGroupAppend("0K 3K 6K");
 
   // Update the configuration.
-  STREAM_OP(UpdateAudioConfig(new_config));
+  STREAM_OP(UpdateAudioConfig(new_config, false));
 
   // We haven't read any buffers at this point, so the config for the next
   // buffer at time 0 should still be the original config.
@@ -4969,7 +4969,7 @@ TEST_P(SourceBufferStreamTest, ConfigChange_ReSeek) {
   // Append a few buffers, with a config change in the middle.
   VideoDecoderConfig new_config = TestVideoConfig::Large();
   NewCodedFrameGroupAppend("2000K 2010 2020D10");
-  STREAM_OP(UpdateVideoConfig(new_config));
+  STREAM_OP(UpdateVideoConfig(new_config, false));
   NewCodedFrameGroupAppend("2030K 2040 2050D10");
   CheckExpectedRangesByTimestamp("{ [2000,2060) }");
 

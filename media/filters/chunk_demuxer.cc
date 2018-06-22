@@ -52,6 +52,34 @@ using base::TimeDelta;
     }                                                                   \
   }
 
+namespace {
+
+// Helper to attempt construction of a StreamParser specific to |type| and
+// |codecs|.
+// TODO(wolenetz): Consider relocating this to StreamParserFactory in
+// conjunction with updating StreamParserFactory's isTypeSupported() to also
+// parse codecs, rather than require preparsed vector.
+std::unique_ptr<media::StreamParser> CreateParserForTypeAndCodecs(
+    const std::string& type,
+    const std::string& codecs,
+    media::MediaLog* media_log) {
+  std::vector<std::string> parsed_codec_ids;
+  media::SplitCodecsToVector(codecs, &parsed_codec_ids, false);
+  return media::StreamParserFactory::Create(type, parsed_codec_ids, media_log);
+}
+
+// Helper to calculate the expected codecs parsed from initialization segments
+// for a few mime types that have an implicit codec.
+std::string ExpectedCodecs(const std::string& type, const std::string& codecs) {
+  if (codecs == "" && type == "audio/aac")
+    return "aac";
+  if (codecs == "" && (type == "audio/mpeg" || type == "audio/mp3"))
+    return "mp3";
+  return codecs;
+}
+
+}  // namespace
+
 namespace media {
 
 ChunkDemuxerStream::ChunkDemuxerStream(Type type,
@@ -228,6 +256,7 @@ void ChunkDemuxerStream::OnStartOfCodedFrameGroup(DecodeTimestamp start_dts,
 }
 
 bool ChunkDemuxerStream::UpdateAudioConfig(const AudioDecoderConfig& config,
+                                           bool allow_codec_change,
                                            MediaLog* media_log) {
   DCHECK(config.IsValidConfig());
   DCHECK_EQ(type_, AUDIO);
@@ -245,10 +274,11 @@ bool ChunkDemuxerStream::UpdateAudioConfig(const AudioDecoderConfig& config,
     return true;
   }
 
-  return SBSTREAM_OP(UpdateAudioConfig(config));
+  return SBSTREAM_OP(UpdateAudioConfig(config, allow_codec_change));
 }
 
 bool ChunkDemuxerStream::UpdateVideoConfig(const VideoDecoderConfig& config,
+                                           bool allow_codec_change,
                                            MediaLog* media_log) {
   DCHECK(config.IsValidConfig());
   DCHECK_EQ(type_, VIDEO);
@@ -260,7 +290,7 @@ bool ChunkDemuxerStream::UpdateVideoConfig(const VideoDecoderConfig& config,
     return true;
   }
 
-  return SBSTREAM_OP(UpdateVideoConfig(config));
+  return SBSTREAM_OP(UpdateVideoConfig(config, allow_codec_change));
 }
 
 void ChunkDemuxerStream::UpdateTextConfig(const TextTrackConfig& config,
@@ -627,12 +657,8 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
   // needed. See https://crbug.com/786975.
   CHECK(!init_cb_.is_null());
 
-  std::vector<std::string> parsed_codec_ids;
-  media::SplitCodecsToVector(codecs, &parsed_codec_ids, false);
-
   std::unique_ptr<media::StreamParser> stream_parser(
-      StreamParserFactory::Create(type, parsed_codec_ids, media_log_));
-
+      CreateParserForTypeAndCodecs(type, codecs, media_log_));
   if (!stream_parser) {
     DVLOG(1) << __func__ << " failed: unsupported mime_type=" << type
              << " codecs=" << codecs;
@@ -663,16 +689,10 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
   CHECK(*insert_result.first == id);
   CHECK(insert_result.second);  // Only true if insertion succeeded.
 
-  std::string expected_sbs_codecs = codecs;
-  if (codecs == "" && type == "audio/aac")
-    expected_sbs_codecs = "aac";
-  if (codecs == "" && (type == "audio/mpeg" || type == "audio/mp3"))
-    expected_sbs_codecs = "mp3";
-
   source_state->Init(base::BindOnce(&ChunkDemuxer::OnSourceInitDone,
                                     base::Unretained(this), id),
-                     expected_sbs_codecs, encrypted_media_init_data_cb_,
-                     new_text_track_cb);
+                     ExpectedCodecs(type, codecs),
+                     encrypted_media_init_data_cb_, new_text_track_cb);
 
   // TODO(wolenetz): Change to DCHECKs once less verification in release build
   // is needed. See https://crbug.com/786975.
@@ -938,6 +958,51 @@ void ChunkDemuxer::Remove(const std::string& id, TimeDelta start,
 
   source_state_map_[id]->Remove(start, end, duration_);
   host_->OnBufferedTimeRangesChanged(GetBufferedRanges_Locked());
+}
+
+bool ChunkDemuxer::CanChangeTypeTo(const std::string& id,
+                                   const std::string& type,
+                                   const std::string& codecs) {
+  // Note, Chromium currently will not compare type's codec parameters, if any,
+  // with previous type of the SourceBuffer.
+  // TODO(wolenetz): Consider returning false if the codec parameters
+  // are ever made to be precise such that they signal number of tracks of
+  // various media types differ from the first initialization segment (if
+  // received already). Switching to an audio-only container, when the first
+  // initialization segment only contained non-audio tracks, is one example we
+  // could enforce earlier here.
+
+  DVLOG(1) << __func__ << " id=" << id << " mime_type=" << type
+           << " codecs=" << codecs;
+  base::AutoLock auto_lock(lock_);
+
+  DCHECK(IsValidId(id));
+
+  // CanChangeType() doesn't care if there has or hasn't been received a first
+  // initialization segment for the source buffer corresponding to |id|.
+
+  std::unique_ptr<media::StreamParser> stream_parser(
+      CreateParserForTypeAndCodecs(type, codecs, media_log_));
+  return !!stream_parser;
+}
+
+void ChunkDemuxer::ChangeType(const std::string& id,
+                              const std::string& type,
+                              const std::string& codecs) {
+  DVLOG(1) << __func__ << " id=" << id << " mime_type=" << type
+           << " codecs=" << codecs;
+
+  base::AutoLock auto_lock(lock_);
+
+  DCHECK(state_ == INITIALIZING || state_ == INITIALIZED) << state_;
+  DCHECK(IsValidId(id));
+
+  std::unique_ptr<media::StreamParser> stream_parser(
+      CreateParserForTypeAndCodecs(type, codecs, media_log_));
+  // Caller should query CanChangeType() first to protect from failing this.
+  DCHECK(stream_parser);
+  source_state_map_[id]->ChangeType(std::move(stream_parser),
+                                    ExpectedCodecs(type, codecs));
 }
 
 double ChunkDemuxer::GetDuration() {

@@ -155,42 +155,24 @@ void SourceBufferState::Init(
   init_cb_ = std::move(init_cb);
   encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
   new_text_track_cb_ = new_text_track_cb;
-
-  std::vector<std::string> expected_codecs_parsed;
-  SplitCodecsToVector(expected_codecs, &expected_codecs_parsed, false);
-
-  std::vector<AudioCodec> expected_acodecs;
-  std::vector<VideoCodec> expected_vcodecs;
-  for (const auto& codec_id : expected_codecs_parsed) {
-    AudioCodec acodec = StringToAudioCodec(codec_id);
-    if (acodec != kUnknownAudioCodec) {
-      expected_audio_codecs_.push_back(acodec);
-      continue;
-    }
-    VideoCodec vcodec = StringToVideoCodec(codec_id);
-    if (vcodec != kUnknownVideoCodec) {
-      expected_video_codecs_.push_back(vcodec);
-      continue;
-    }
-    MEDIA_LOG(INFO, media_log_) << "Unrecognized media codec: " << codec_id;
-  }
-
   state_ = PENDING_PARSER_CONFIG;
-  stream_parser_->Init(
-      base::BindOnce(&SourceBufferState::OnSourceInitDone,
-                     base::Unretained(this)),
-      base::BindRepeating(&SourceBufferState::OnNewConfigs,
-                          base::Unretained(this), expected_codecs),
-      base::BindRepeating(&SourceBufferState::OnNewBuffers,
-                          base::Unretained(this)),
-      new_text_track_cb_.is_null(),
-      base::BindRepeating(&SourceBufferState::OnEncryptedMediaInitData,
-                          base::Unretained(this)),
-      base::BindRepeating(&SourceBufferState::OnNewMediaSegment,
-                          base::Unretained(this)),
-      base::BindRepeating(&SourceBufferState::OnEndOfMediaSegment,
-                          base::Unretained(this)),
-      media_log_);
+  InitializeParser(expected_codecs);
+}
+
+void SourceBufferState::ChangeType(
+    std::unique_ptr<StreamParser> new_stream_parser,
+    const std::string& new_expected_codecs) {
+  DCHECK_GE(state_, PENDING_PARSER_CONFIG);
+  DCHECK_NE(state_, PENDING_PARSER_INIT);
+  DCHECK(!parsing_media_segment_);
+
+  // If this source buffer has already handled an initialization segment, avoid
+  // running |init_cb_| again later.
+  if (state_ == PARSER_INITIALIZED)
+    state_ = PENDING_PARSER_RECONFIG;
+
+  stream_parser_ = std::move(new_stream_parser);
+  InitializeParser(new_expected_codecs);
 }
 
 void SourceBufferState::SetSequenceMode(bool sequence_mode) {
@@ -558,6 +540,46 @@ bool SourceBufferState::IsSeekWaitingForData() const {
   return false;
 }
 
+void SourceBufferState::InitializeParser(const std::string& expected_codecs) {
+  expected_audio_codecs_.clear();
+  expected_video_codecs_.clear();
+
+  std::vector<std::string> expected_codecs_parsed;
+  SplitCodecsToVector(expected_codecs, &expected_codecs_parsed, false);
+
+  std::vector<AudioCodec> expected_acodecs;
+  std::vector<VideoCodec> expected_vcodecs;
+  for (const auto& codec_id : expected_codecs_parsed) {
+    AudioCodec acodec = StringToAudioCodec(codec_id);
+    if (acodec != kUnknownAudioCodec) {
+      expected_audio_codecs_.push_back(acodec);
+      continue;
+    }
+    VideoCodec vcodec = StringToVideoCodec(codec_id);
+    if (vcodec != kUnknownVideoCodec) {
+      expected_video_codecs_.push_back(vcodec);
+      continue;
+    }
+    MEDIA_LOG(INFO, media_log_) << "Unrecognized media codec: " << codec_id;
+  }
+
+  stream_parser_->Init(
+      base::BindOnce(&SourceBufferState::OnSourceInitDone,
+                     base::Unretained(this)),
+      base::BindRepeating(&SourceBufferState::OnNewConfigs,
+                          base::Unretained(this), expected_codecs),
+      base::BindRepeating(&SourceBufferState::OnNewBuffers,
+                          base::Unretained(this)),
+      new_text_track_cb_.is_null(),
+      base::BindRepeating(&SourceBufferState::OnEncryptedMediaInitData,
+                          base::Unretained(this)),
+      base::BindRepeating(&SourceBufferState::OnNewMediaSegment,
+                          base::Unretained(this)),
+      base::BindRepeating(&SourceBufferState::OnEndOfMediaSegment,
+                          base::Unretained(this)),
+      media_log_);
+}
+
 bool SourceBufferState::OnNewConfigs(
     std::string expected_codecs,
     std::unique_ptr<MediaTracks> tracks,
@@ -588,6 +610,11 @@ bool SourceBufferState::OnNewConfigs(
   // issue https://github.com/w3c/media-source/issues/161 is resolved.
   std::vector<AudioCodec> expected_acodecs = expected_audio_codecs_;
   std::vector<VideoCodec> expected_vcodecs = expected_video_codecs_;
+
+  // TODO(wolenetz): Once codec strictness is relaxed, we can change
+  // |allow_codec_changes| to always be true. Until then, we only allow codec
+  // changes on explicit ChangeType().
+  const bool allow_codec_changes = state_ == PENDING_PARSER_RECONFIG;
 
   FrameProcessor::TrackIdChanges track_id_changes;
   for (const auto& track : tracks->tracks()) {
@@ -648,7 +675,8 @@ bool SourceBufferState::OnNewConfigs(
 
       track->set_id(stream->media_track_id());
       frame_processor_->OnPossibleAudioConfigUpdate(audio_config);
-      success &= stream->UpdateAudioConfig(audio_config, media_log_);
+      success &= stream->UpdateAudioConfig(audio_config, allow_codec_changes,
+                                           media_log_);
     } else if (track->type() == MediaTrack::Video) {
       VideoDecoderConfig video_config = tracks->getVideoConfig(track_id);
       DVLOG(1) << "Video track_id=" << track_id
@@ -703,7 +731,8 @@ bool SourceBufferState::OnNewConfigs(
       }
 
       track->set_id(stream->media_track_id());
-      success &= stream->UpdateVideoConfig(video_config, media_log_);
+      success &= stream->UpdateVideoConfig(video_config, allow_codec_changes,
+                                           media_log_);
     } else {
       MEDIA_LOG(ERROR, media_log_) << "Error: unsupported media track type "
                                    << track->type();
@@ -811,6 +840,8 @@ bool SourceBufferState::OnNewConfigs(
   if (success) {
     if (state_ == PENDING_PARSER_CONFIG)
       state_ = PENDING_PARSER_INIT;
+    if (state_ == PENDING_PARSER_RECONFIG)
+      state_ = PENDING_PARSER_REINIT;
     DCHECK(!init_segment_received_cb_.is_null());
     init_segment_received_cb_.Run(std::move(tracks));
   }
@@ -935,9 +966,15 @@ void SourceBufferState::OnEncryptedMediaInitData(
 
 void SourceBufferState::OnSourceInitDone(
     const StreamParser::InitParameters& params) {
-  DCHECK_EQ(state_, PENDING_PARSER_INIT);
+  // We've either yet-to-run |init_cb_| if pending init, or we've previously
+  // run it if pending reinit.
+  DCHECK((!init_cb_.is_null() && state_ == PENDING_PARSER_INIT) ||
+         (init_cb_.is_null() && state_ == PENDING_PARSER_REINIT));
+  State old_state = state_;
   state_ = PARSER_INITIALIZED;
-  std::move(init_cb_).Run(params);
+
+  if (old_state == PENDING_PARSER_INIT)
+    std::move(init_cb_).Run(params);
 }
 
 }  // namespace media
