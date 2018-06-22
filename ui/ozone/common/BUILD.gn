@@ -52,9 +52,6 @@ if (ozone_platform_gbm) {
       "linux/drm_util_linux.h",
       "linux/gbm_device_linux.cc",
       "linux/gbm_device_linux.h",
-      "linux/overlay_plane.cc",
-      "linux/overlay_plane.h",
-      "linux/scanout_buffer.h",
     ]
 
     deps = [
