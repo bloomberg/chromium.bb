@@ -2657,32 +2657,6 @@ class LaunchDesktopTest(ChromeDriverBaseTest):
     finally:
       shutil.rmtree(user_data_dir, ignore_errors=True)
 
-  def testHelpfulErrorMessage_AbnormalExit(self):
-    """If Chrome fails to start abnormally, we should provide a useful error
-    message."""
-    file_descriptor, path = tempfile.mkstemp()
-    try:
-      os.close(file_descriptor)
-      exception_raised = False
-      try:
-        driver = chromedriver.ChromeDriver(_CHROMEDRIVER_SERVER_URL,
-                                           chrome_binary=path,
-                                           test_name=self.id())
-      except Exception as e:
-        self.assertIn('Chrome failed to start', e.message)
-        self.assertIn('exited abnormally', e.message)
-        self.assertIn('ChromeDriver is assuming that Chrome has crashed',
-                      e.message)
-        exception_raised = True
-      self.assertTrue(exception_raised)
-      try:
-        driver.Quit()
-      except:
-        pass
-    finally:
-      pass
-      os.remove(path)
-
   def testHelpfulErrorMessage_NormalExit(self):
     """If Chrome fails to start, we should provide a useful error message."""
     if util.IsWindows():
