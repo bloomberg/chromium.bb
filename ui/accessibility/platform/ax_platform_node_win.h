@@ -241,10 +241,12 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public IAccessibleTable,
                         public IAccessibleTable2,
                         public IAccessibleTableCell,
+                        public IExpandCollapseProvider,
                         public IRangeValueProvider,
                         public IRawElementProviderSimple,
                         public IScrollItemProvider,
                         public IServiceProvider,
+                        public IToggleProvider,
                         public IValueProvider,
                         public AXPlatformNodeBase {
  public:
@@ -259,9 +261,11 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IAccessibleTable)
     COM_INTERFACE_ENTRY(IAccessibleTable2)
     COM_INTERFACE_ENTRY(IAccessibleTableCell)
+    COM_INTERFACE_ENTRY(IExpandCollapseProvider)
     COM_INTERFACE_ENTRY(IRangeValueProvider)
     COM_INTERFACE_ENTRY(IRawElementProviderSimple)
     COM_INTERFACE_ENTRY(IScrollItemProvider)
+    COM_INTERFACE_ENTRY(IToggleProvider)
     COM_INTERFACE_ENTRY(IValueProvider)
     COM_INTERFACE_ENTRY(IServiceProvider)
   END_COM_MAP()
@@ -425,10 +429,28 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                                   LONG* child_id) override;
 
   //
+  // IExpandCollapseProvider methods..
+  //
+
+  STDMETHODIMP Collapse() override;
+
+  STDMETHODIMP Expand() override;
+
+  STDMETHODIMP get_ExpandCollapseState(ExpandCollapseState* result) override;
+
+  //
   // IScrollItemProvider methods.
   //
 
   STDMETHODIMP ScrollIntoView() override;
+
+  //
+  // IToggleProvider methods.
+  //
+
+  STDMETHODIMP Toggle() override;
+
+  STDMETHODIMP get_ToggleState(ToggleState* result) override;
 
   //
   // IValueProvider methods.
