@@ -173,7 +173,7 @@ Polymer({
         additionalInformation = requirements.minLength.toString();
         break;
       case MessageType.TOO_LONG:
-        additionalInformation = requirements.maxLength.toString();
+        additionalInformation = (requirements.maxLength + 1).toString();
         break;
       case MessageType.TOO_WEAK:
       case MessageType.MISMATCH:
