@@ -124,10 +124,10 @@ struct AddEntriesMessage {
   // Maps |value| to TargetVolume. Returns true on success.
   static bool MapStringToTargetVolume(base::StringPiece value,
                                       TargetVolume* volume) {
-    if (value == "drive")
-      *volume = DRIVE_VOLUME;
-    else if (value == "local")
+    if (value == "local")
       *volume = LOCAL_VOLUME;
+    else if (value == "drive")
+      *volume = DRIVE_VOLUME;
     else if (value == "usb")
       *volume = USB_VOLUME;
     else
@@ -158,7 +158,7 @@ struct AddEntriesMessage {
 
     bool can_copy;    // Whether the user can copy this file or directory.
     bool can_delete;  // Whether the user can delete this file or directory.
-    bool can_rename;  // Whether the user can rename thie file or directory.
+    bool can_rename;  // Whether the user can rename this file or directory.
     bool can_add_children;  // For directories, whether the user can add
                             // children to this directory.
     bool can_share;  // Whether the user can share this file or directory.
@@ -204,7 +204,7 @@ struct AddEntriesMessage {
     std::string name_text;           // Display file name.
     std::string mime_type;           // File entry content mime type.
     base::Time last_modified_time;   // Entry last modified time.
-    EntryCapabilities capabilities;  // Permissions of this file or directory.
+    EntryCapabilities capabilities;  // Entry permissions.
 
     // Registers the member information to the given converter.
     static void RegisterJSONConverter(
@@ -396,16 +396,17 @@ class LocalTestVolume : public TestVolume {
   }
 
  private:
-  // Updates ModifiedTime of the entry and its parents by referring
-  // TestEntryInfo. Returns true on success.
+  // Updates the ModifiedTime of the entry, and its parent directories if
+  // needed. Returns true on success.
   bool UpdateModifiedTime(const AddEntriesMessage::TestEntryInfo& entry) {
     const base::FilePath path = root_path().AppendASCII(entry.target_path);
     if (!base::TouchFile(path, entry.last_modified_time,
-                         entry.last_modified_time))
+                         entry.last_modified_time)) {
       return false;
+    }
 
-    // Update the modified time of parent directories because it may be also
-    // affected by the update of child items.
+    // Update the modified time of parent directories because they may be
+    // also affected by the update of child items.
     if (path.DirName() != root_path()) {
       const auto& it = entries_.find(path.DirName());
       if (it == entries_.end())
@@ -530,6 +531,7 @@ class DriveTestVolume : public TestVolume {
     capabilities.set_can_add_children(entry.capabilities.can_add_children);
     capabilities.set_can_share(entry.capabilities.can_share);
 
+    // Add the file or directory entry.
     switch (entry.type) {
       case AddEntriesMessage::FILE:
         CreateFile(entry.source_file_name, parent_entry->resource_id(),
@@ -543,8 +545,8 @@ class DriveTestVolume : public TestVolume {
         break;
     }
 
-    // Files and directories in drive will only appear after CheckUpdates
-    // has completed.
+    // Any file or directory created above, will only appear in Drive after
+    // CheckForUpdates() has completed.
     CheckForUpdates();
     content::RunAllTasksUntilIdle();
   }
@@ -738,8 +740,8 @@ class DriveFsTestVolume : public DriveTestVolume {
         profile_));
   }
 
-  // Updates ModifiedTime of the entry and its parents by referring
-  // TestEntryInfo. Returns true on success.
+  // Updates the ModifiedTime of the entry, and its parent directories if
+  // needed. Returns true on success.
   bool UpdateModifiedTime(const AddEntriesMessage::TestEntryInfo& entry) {
     const auto path = GetTargetPathForTestEntry(entry);
     if (!base::TouchFile(path, entry.last_modified_time,
@@ -747,8 +749,8 @@ class DriveFsTestVolume : public DriveTestVolume {
       return false;
     }
 
-    // Update the modified time of parent directories because it may be also
-    // affected by the update of child items.
+    // Update the modified time of parent directories because they may be
+    // also affected by the update of child items.
     if (path.DirName() != GetDriveRoot()) {
       const auto it = entries_.find(path.DirName());
       if (it == entries_.end())
