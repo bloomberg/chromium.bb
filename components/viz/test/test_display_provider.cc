@@ -21,7 +21,7 @@ std::unique_ptr<Display> TestDisplayProvider::CreateDisplay(
     gpu::SurfaceHandle surface_handle,
     bool gpu_compositing,
     mojom::DisplayClient* display_client,
-    ExternalBeginFrameControllerImpl* external_begin_frame_controller,
+    ExternalBeginFrameSource* external_begin_frame_source,
     const RendererSettings& renderer_settings,
     bool send_swap_size_notifications,
     std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source) {

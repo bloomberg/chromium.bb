@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_EXTERNAL_BEGIN_FRAME_CONTROLLER_IMPL_H_
-#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_EXTERNAL_BEGIN_FRAME_CONTROLLER_IMPL_H_
+#ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_EXTERNAL_BEGIN_FRAME_SOURCE_MOJO_H_
+#define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_EXTERNAL_BEGIN_FRAME_SOURCE_MOJO_H_
 
 #include <memory>
 
@@ -15,24 +15,23 @@
 
 namespace viz {
 
-// In-process implementation of the ExternalBeginFrameController interface.
-// Owns an ExternalBeginFrameSource that replaces the Display's default
-// BeginFrameSource. Observes the Display to be notified of BeginFrame
+// Implementation of ExternalBeginFrameSource that's controlled by IPCs over
+// the mojom::ExternalBeginFrameController interface. Replaces the Display's
+// default BeginFrameSource. Observes the Display to be notified of BeginFrame
 // completion.
-class VIZ_SERVICE_EXPORT ExternalBeginFrameControllerImpl
+class VIZ_SERVICE_EXPORT ExternalBeginFrameSourceMojo
     : public mojom::ExternalBeginFrameController,
       public ExternalBeginFrameSourceClient,
-      public DisplayObserver {
+      public DisplayObserver,
+      public ExternalBeginFrameSource {
  public:
-  ExternalBeginFrameControllerImpl(
+  ExternalBeginFrameSourceMojo(
       mojom::ExternalBeginFrameControllerAssociatedRequest controller_request,
       mojom::ExternalBeginFrameControllerClientPtr client);
-  ~ExternalBeginFrameControllerImpl() override;
+  ~ExternalBeginFrameSourceMojo() override;
 
   // mojom::ExternalBeginFrameController implementation.
   void IssueExternalBeginFrame(const BeginFrameArgs& args) override;
-
-  BeginFrameSource* begin_frame_source() { return &begin_frame_source_; }
 
   void SetDisplay(Display* display);
 
@@ -42,15 +41,15 @@ class VIZ_SERVICE_EXPORT ExternalBeginFrameControllerImpl
 
   // DisplayObserver implementation.
   void OnDisplayDidFinishFrame(const BeginFrameAck& ack) override;
+  void OnDisplayDestroyed() override;
 
   mojo::AssociatedBinding<mojom::ExternalBeginFrameController> binding_;
   mojom::ExternalBeginFrameControllerClientPtr client_;
 
-  ExternalBeginFrameSource begin_frame_source_;
   bool needs_begin_frames_ = false;
   Display* display_ = nullptr;
 };
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_EXTERNAL_BEGIN_FRAME_CONTROLLER_IMPL_H_
+#endif  // COMPONENTS_VIZ_SERVICE_FRAME_SINKS_EXTERNAL_BEGIN_FRAME_SOURCE_MOJO_H_

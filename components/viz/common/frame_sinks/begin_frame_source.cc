@@ -284,7 +284,9 @@ ExternalBeginFrameSource::ExternalBeginFrameSource(
   DCHECK(client_);
 }
 
-ExternalBeginFrameSource::~ExternalBeginFrameSource() = default;
+ExternalBeginFrameSource::~ExternalBeginFrameSource() {
+  DCHECK(observers_.empty());
+}
 
 void ExternalBeginFrameSource::AsValueInto(
     base::trace_event::TracedValue* state) const {

@@ -12,9 +12,9 @@
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/display_provider.h"
-#include "components/viz/service/display_embedder/external_begin_frame_controller_impl.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_impl.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "components/viz/service/frame_sinks/external_begin_frame_source_mojo.h"
 #include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
 #include "components/viz/service/frame_sinks/root_compositor_frame_sink_impl.h"
 #include "components/viz/service/frame_sinks/video_capture/capturable_frame_sink.h"
@@ -152,12 +152,12 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
   DCHECK(!base::ContainsKey(sink_map_, params->frame_sink_id));
   DCHECK(display_provider_);
 
-  std::unique_ptr<ExternalBeginFrameControllerImpl>
-      external_begin_frame_controller;
+  std::unique_ptr<ExternalBeginFrameSourceMojo>
+      external_begin_frame_source_mojo;
   if (params->external_begin_frame_controller.is_pending() &&
       params->external_begin_frame_controller_client) {
-    external_begin_frame_controller =
-        std::make_unique<ExternalBeginFrameControllerImpl>(
+    external_begin_frame_source_mojo =
+        std::make_unique<ExternalBeginFrameSourceMojo>(
             std::move(params->external_begin_frame_controller),
             mojom::ExternalBeginFrameControllerClientPtr(
                 std::move(params->external_begin_frame_controller_client)));
@@ -168,7 +168,7 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
   std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
   auto display = display_provider_->CreateDisplay(
       params->frame_sink_id, params->widget, params->gpu_compositing,
-      display_client.get(), external_begin_frame_controller.get(),
+      display_client.get(), external_begin_frame_source_mojo.get(),
       params->renderer_settings, params->send_swap_size_notifications,
       &begin_frame_source);
 
@@ -178,11 +178,14 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
   if (!display)
     return;
 
+  if (external_begin_frame_source_mojo)
+    external_begin_frame_source_mojo->SetDisplay(display.get());
+
   sink_map_[params->frame_sink_id] =
       std::make_unique<RootCompositorFrameSinkImpl>(
           this, params->frame_sink_id, std::move(display),
           std::move(begin_frame_source),
-          std::move(external_begin_frame_controller),
+          std::move(external_begin_frame_source_mojo),
           std::move(params->compositor_frame_sink),
           mojom::CompositorFrameSinkClientPtr(
               std::move(params->compositor_frame_sink_client)),

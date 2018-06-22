@@ -48,6 +48,7 @@ class VIZ_SERVICE_EXPORT DisplayObserver {
   virtual ~DisplayObserver() {}
 
   virtual void OnDisplayDidFinishFrame(const BeginFrameAck& ack) = 0;
+  virtual void OnDisplayDestroyed() = 0;
 };
 
 // A Display produces a surface that can be used to draw to a physical display
