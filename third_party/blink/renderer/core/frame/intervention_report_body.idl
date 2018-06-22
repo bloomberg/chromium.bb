@@ -6,7 +6,7 @@
 
 [
     NoInterfaceObject,
-    RuntimeEnabled=ReportingObserver
+    RuntimeEnabled=InterventionReporting
 ] interface InterventionReportBody : ReportBody {
   // TODO(paulmeyer): Add additional data, such as id.
   readonly attribute DOMString message;

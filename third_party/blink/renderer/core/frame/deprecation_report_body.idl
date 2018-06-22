@@ -6,7 +6,7 @@
 
 [
     NoInterfaceObject,
-    RuntimeEnabled=ReportingObserver
+    RuntimeEnabled=DeprecationReporting
 ] interface DeprecationReportBody : ReportBody {
   readonly attribute DOMString id;
   readonly attribute Date? anticipatedRemoval;
