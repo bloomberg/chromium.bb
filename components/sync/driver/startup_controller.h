@@ -37,15 +37,17 @@ class StartupController {
   ~StartupController();
 
   // Starts up sync if it is requested by the user and preconditions are met.
-  // If |setup_in_progress| is true, this will start sync immediately, bypassing
-  // deferred startup and the "first setup complete" check.
-  // TODO(crbug.com/854978): Rename "setup_in_progress" to "force_immediate" or
-  // something like that after TryStartImmediately is gone.
-  void TryStart(bool setup_in_progress);
+  // If |force_immediate| is true, this will start sync immediately, bypassing
+  // deferred startup and the "first setup complete" check (but *not* the
+  // |can_start_callback_| check!).
+  void TryStart(bool force_immediate);
 
-  // Same as TryStart() above, but bypasses deferred startup and the first setup
-  // complete check.
-  void TryStartImmediately();
+  // Tells the controller to bypass deferred startup and the "first setup
+  // complete" check. After this, any TryStart() calls (until a Reset()) will
+  // cause immediate startup.
+  // TODO(crbug.com/854978): See if we can get rid of this and just call
+  // TryStart(true) instead.
+  void SetBypassSetupCompleteAndDeferredStartup();
 
   // Called when a datatype (SyncableService) has a need for sync to start
   // ASAP, presumably because a local change event has occurred but we're
@@ -85,13 +87,13 @@ class StartupController {
   const base::RepeatingClosure start_engine_callback_;
 
   // If true, will bypass the FirstSetupComplete check when triggering sync
-  // startup. Set in TryStartImmediately.
+  // startup. Set in SetBypassSetupCompleteAndDeferredStartup.
   bool bypass_setup_complete_;
 
-  // True if we should start sync ASAP because either a data type has
-  // requested it, or TryStartImmediately was called, or our deferred startup
-  // timer has expired.
-  bool received_start_request_;
+  // True if we should start sync ASAP because either a data type has requested
+  // it, or SetBypassSetupCompleteAndDeferredStartup was called, or our deferred
+  // startup timer has expired.
+  bool bypass_deferred_startup_;
 
   // The time that StartUp() is called. This is used to calculate time spent
   // in the deferred state; that is, after StartUp and before invoking the

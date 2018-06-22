@@ -81,11 +81,11 @@ class StartupControllerTest : public testing::Test {
 
 // Test that sync doesn't start if setup is not in progress or complete.
 TEST_F(StartupControllerTest, NoSetupComplete) {
-  controller()->TryStart(/*setup_in_progress=*/false);
+  controller()->TryStart(/*force_immediate=*/false);
   ExpectNotStarted();
 
   SetCanStart(true);
-  controller()->TryStart(/*setup_in_progress=*/false);
+  controller()->TryStart(/*force_immediate=*/false);
   ExpectNotStarted();
 }
 
@@ -93,7 +93,7 @@ TEST_F(StartupControllerTest, NoSetupComplete) {
 TEST_F(StartupControllerTest, DefersAfterFirstSetupComplete) {
   sync_prefs()->SetFirstSetupComplete();
   SetCanStart(true);
-  controller()->TryStart(/*setup_in_progress=*/false);
+  controller()->TryStart(/*force_immediate=*/false);
   ExpectStartDeferred();
 }
 
@@ -110,7 +110,7 @@ TEST_F(StartupControllerTest, NoDeferralDataTypeTrigger) {
 TEST_F(StartupControllerTest, DataTypeTriggerInterruptsDeferral) {
   sync_prefs()->SetFirstSetupComplete();
   SetCanStart(true);
-  controller()->TryStart(/*setup_in_progress=*/false);
+  controller()->TryStart(/*force_immediate=*/false);
   ExpectStartDeferred();
 
   controller()->OnDataTypeRequestsSyncStartup(SESSIONS);
@@ -128,7 +128,7 @@ TEST_F(StartupControllerTest, DataTypeTriggerInterruptsDeferral) {
 TEST_F(StartupControllerTest, FallbackTimer) {
   sync_prefs()->SetFirstSetupComplete();
   SetCanStart(true);
-  controller()->TryStart(/*setup_in_progress=*/false);
+  controller()->TryStart(/*force_immediate=*/false);
   ExpectStartDeferred();
 
   base::RunLoop().RunUntilIdle();
@@ -147,14 +147,14 @@ TEST_F(StartupControllerTest, NoDeferralWithoutSessionsSync) {
 
   sync_prefs()->SetFirstSetupComplete();
   SetCanStart(true);
-  controller()->TryStart(/*setup_in_progress=*/false);
+  controller()->TryStart(/*force_immediate=*/false);
   ExpectStarted();
 }
 
 // Sanity check that the fallback timer doesn't fire before startup
 // conditions are met.
 TEST_F(StartupControllerTest, FallbackTimerWaits) {
-  controller()->TryStart(/*setup_in_progress=*/false);
+  controller()->TryStart(/*force_immediate=*/false);
   ExpectNotStarted();
   base::RunLoop().RunUntilIdle();
   ExpectNotStarted();
@@ -164,7 +164,7 @@ TEST_F(StartupControllerTest, FallbackTimerWaits) {
 TEST_F(StartupControllerTest, NoDeferralSetupInProgressTrigger) {
   sync_prefs()->SetFirstSetupComplete();
   SetCanStart(true);
-  controller()->TryStart(/*setup_in_progress=*/true);
+  controller()->TryStart(/*force_immediate=*/true);
   ExpectStarted();
 }
 
@@ -173,17 +173,20 @@ TEST_F(StartupControllerTest, NoDeferralSetupInProgressTrigger) {
 TEST_F(StartupControllerTest, SetupInProgressTriggerInterruptsDeferral) {
   sync_prefs()->SetFirstSetupComplete();
   SetCanStart(true);
-  controller()->TryStart(/*setup_in_progress=*/false);
+  controller()->TryStart(/*force_immediate=*/false);
   ExpectStartDeferred();
 
-  controller()->TryStart(/*setup_in_progress=*/true);
+  controller()->TryStart(/*force_immediate=*/true);
   ExpectStarted();
 }
 
-// Test that immediate startup can be forced.
-TEST_F(StartupControllerTest, ForceImmediateStartup) {
+// Test that deferred startup and the FirstSetupComplete check can be bypassed.
+TEST_F(StartupControllerTest, BypassDeferredStartupAndSetupCompleteCheck) {
   SetCanStart(true);
-  controller()->TryStartImmediately();
+  controller()->SetBypassSetupCompleteAndDeferredStartup();
+  ASSERT_FALSE(sync_prefs()->IsFirstSetupComplete());
+  ExpectNotStarted();
+  controller()->TryStart(/*force_immediate=*/false);
   ExpectStarted();
 }
 
