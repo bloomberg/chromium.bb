@@ -248,6 +248,12 @@ Polymer({
   },
 
   /** @private */
+  onSignoutTap_: function() {
+    this.syncBrowserProxy_.signOut(false /* deleteProfile */);
+    /** @type {!CrActionMenuElement} */ (this.$$('#menu')).close();
+  },
+
+  /** @private */
   onSyncButtonTap_: function() {
     assert(this.shownAccount_);
     assert(this.storedAccounts_.length > 0);

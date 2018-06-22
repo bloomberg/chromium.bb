@@ -212,6 +212,11 @@
                 src="chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE">
             <span>$i18n{useAnotherAccount}</span>
           </button>
+          <button class="dropdown-item" on-click="onSignoutTap_" slot="item"
+              disabled="[[syncStatus.setupInProgress]]" id="sign-out-item">
+            <iron-icon icon="settings:exit-to-app"></iron-icon>
+            <span>$i18n{peopleSignOut}</span>
+          </button>
         </cr-action-menu>
       </template>
     </template>

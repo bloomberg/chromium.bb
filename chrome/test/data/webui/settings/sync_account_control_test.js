@@ -135,10 +135,11 @@ cr.define('settings_sync_account_control', function() {
       assertTrue(!!testElement.$$('#menu'));
       assertFalse(testElement.$$('#menu').open);
       const items = testElement.root.querySelectorAll('.dropdown-item');
-      assertEquals(3, items.length);
+      assertEquals(4, items.length);
       assertTrue(items[0].textContent.includes('foo@foo.com'));
       assertTrue(items[1].textContent.includes('bar@bar.com'));
       assertEquals(items[2].id, 'sign-in-item');
+      assertEquals(items[3].id, 'sign-out-item');
 
       // "sync to" button is showing the correct name and syncs with the
       // correct account when clicked.
