@@ -85,13 +85,13 @@ class DrmWindow {
   // Move the HW cursor to the specified location.
   void MoveCursor(const gfx::Point& location);
 
-  bool SchedulePageFlip(const std::vector<OverlayPlane>& planes,
+  bool SchedulePageFlip(const std::vector<DrmOverlayPlane>& planes,
                         SwapCompletionOnceCallback callback);
   std::vector<OverlayCheckReturn_Params> TestPageFlip(
       const std::vector<OverlayCheck_Params>& overlay_params);
 
   // Returns the last buffer associated with this window.
-  const OverlayPlane* GetLastModesetBuffer();
+  const DrmOverlayPlane* GetLastModesetBuffer();
 
   void GetVSyncParameters(
       const gfx::VSyncProvider::UpdateVSyncCallback& callback) const;
@@ -130,7 +130,7 @@ class DrmWindow {
   int cursor_frame_ = 0;
   int cursor_frame_delay_ms_ = 0;
 
-  OverlayPlaneList last_submitted_planes_;
+  DrmOverlayPlaneList last_submitted_planes_;
 
   bool force_buffer_reallocation_ = false;
 

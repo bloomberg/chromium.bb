@@ -345,7 +345,7 @@ void ScreenManager::UpdateControllerToWindowMapping() {
   }
 }
 
-OverlayPlane ScreenManager::GetModesetBuffer(
+DrmOverlayPlane ScreenManager::GetModesetBuffer(
     HardwareDisplayController* controller,
     const gfx::Rect& bounds) {
   DrmWindow* window = FindWindowAt(bounds);
@@ -355,7 +355,7 @@ OverlayPlane ScreenManager::GetModesetBuffer(
   const auto& modifiers =
       controller->GetFormatModifiersForModesetting(fourcc_format);
   if (window) {
-    const OverlayPlane* primary = window->GetLastModesetBuffer();
+    const DrmOverlayPlane* primary = window->GetLastModesetBuffer();
     const DrmDevice* drm = controller->GetAllocationDrmDevice().get();
     if (primary && primary->buffer->GetSize() == bounds.size() &&
         primary->buffer->GetGbmDeviceLinux() == drm->AsGbmDeviceLinux()) {
@@ -377,19 +377,19 @@ OverlayPlane ScreenManager::GetModesetBuffer(
       buffer_generator_->Create(drm, fourcc_format, modifiers, bounds.size());
   if (!buffer) {
     LOG(ERROR) << "Failed to create scanout buffer";
-    return OverlayPlane(nullptr, 0, gfx::OVERLAY_TRANSFORM_INVALID, gfx::Rect(),
-                        gfx::RectF(), /* enable_blend */ true,
-                        /* gpu_fence */ nullptr);
+    return DrmOverlayPlane(nullptr, 0, gfx::OVERLAY_TRANSFORM_INVALID,
+                           gfx::Rect(), gfx::RectF(), /* enable_blend */ true,
+                           /* gpu_fence */ nullptr);
   }
 
   FillModesetBuffer(drm, controller, buffer.get());
-  return OverlayPlane(buffer, nullptr);
+  return DrmOverlayPlane(buffer, nullptr);
 }
 
 bool ScreenManager::EnableController(HardwareDisplayController* controller) {
   DCHECK(!controller->crtc_controllers().empty());
   gfx::Rect rect(controller->origin(), controller->GetModeSize());
-  OverlayPlane plane = GetModesetBuffer(controller, rect);
+  DrmOverlayPlane plane = GetModesetBuffer(controller, rect);
   if (!plane.buffer || !controller->Enable(plane)) {
     LOG(ERROR) << "Failed to enable controller";
     return false;
@@ -405,7 +405,7 @@ bool ScreenManager::ModesetController(HardwareDisplayController* controller,
   gfx::Rect rect(origin, gfx::Size(mode.hdisplay, mode.vdisplay));
   controller->set_origin(origin);
 
-  OverlayPlane plane = GetModesetBuffer(controller, rect);
+  DrmOverlayPlane plane = GetModesetBuffer(controller, rect);
   if (!plane.buffer || !controller->Modeset(plane, mode)) {
     LOG(ERROR) << "Failed to modeset controller";
     return false;

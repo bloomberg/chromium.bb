@@ -55,7 +55,7 @@ DrmOverlayValidator::~DrmOverlayValidator() {}
 
 std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
     const std::vector<OverlayCheck_Params>& params,
-    const OverlayPlaneList& last_used_planes) {
+    const DrmOverlayPlaneList& last_used_planes) {
   std::vector<OverlayCheckReturn_Params> returns(params.size());
   HardwareDisplayController* controller = window_->GetController();
   if (!controller) {
@@ -66,7 +66,7 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
     return returns;
   }
 
-  OverlayPlaneList test_list;
+  DrmOverlayPlaneList test_list;
   std::vector<scoped_refptr<ScanoutBuffer>> reusable_buffers;
   scoped_refptr<DrmDevice> drm = controller->GetAllocationDrmDevice();
 
@@ -84,9 +84,9 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
                                  GetFourCCFormatFromBufferFormat(params[i].format),
                                  buffer_generator_, &reusable_buffers);
 
-    OverlayPlane plane(buffer, params[i].plane_z_order, params[i].transform,
-                       params[i].display_rect, params[i].crop_rect,
-                       /* enable_blend */ true, /* gpu_fence */ nullptr);
+    DrmOverlayPlane plane(buffer, params[i].plane_z_order, params[i].transform,
+                          params[i].display_rect, params[i].crop_rect,
+                          /* enable_blend */ true, /* gpu_fence */ nullptr);
     test_list.push_back(plane);
 
     if (buffer && controller->TestPageFlip(test_list)) {

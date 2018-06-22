@@ -32,7 +32,7 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
                  std::unique_ptr<DrmWindowProxy> window,
                  gfx::AcceleratedWidget widget);
 
-  void QueueOverlayPlane(const OverlayPlane& plane);
+  void QueueOverlayPlane(const DrmOverlayPlane& plane);
 
   // gl::GLSurface:
   bool Initialize(gl::GLSurfaceFormat format) override;
@@ -99,7 +99,7 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
 
   GbmSurfaceFactory* surface_factory_;
   std::unique_ptr<DrmWindowProxy> window_;
-  std::vector<OverlayPlane> planes_;
+  std::vector<DrmOverlayPlane> planes_;
 
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
   gfx::AcceleratedWidget widget_;

@@ -92,7 +92,7 @@ class HardwareDisplayPlaneManager {
   // recording the plane IDs in the |plane_list|. Only planes compatible with
   // |crtc_id| will be used. |overlay_list| must be sorted bottom-to-top.
   virtual bool AssignOverlayPlanes(HardwareDisplayPlaneList* plane_list,
-                                   const OverlayPlaneList& overlay_list,
+                                   const DrmOverlayPlaneList& overlay_list,
                                    uint32_t crtc_id,
                                    CrtcController* crtc);
 
@@ -113,7 +113,7 @@ class HardwareDisplayPlaneManager {
   // Check that the primary plane is valid for this
   // PlaneManager. Specifically, legacy can't support primary planes
   // that don't have the same size as the current mode of the crtc.
-  virtual bool ValidatePrimarySize(const OverlayPlane& primary,
+  virtual bool ValidatePrimarySize(const DrmOverlayPlane& primary,
                                    const drmModeModeInfo& mode) = 0;
 
   const std::vector<std::unique_ptr<HardwareDisplayPlane>>& planes() {
@@ -123,7 +123,7 @@ class HardwareDisplayPlaneManager {
   // Request a callback to be called when the planes are ready to be displayed.
   // The callback will be invoked in the caller's execution context (same
   // sequence or thread).
-  virtual void RequestPlanesReadyCallback(const OverlayPlaneList& planes,
+  virtual void RequestPlanesReadyCallback(const DrmOverlayPlaneList& planes,
                                           base::OnceClosure callback) = 0;
 
   // Returns all formats which can be scanned out by this PlaneManager.
@@ -148,7 +148,7 @@ class HardwareDisplayPlaneManager {
 
   virtual bool SetPlaneData(HardwareDisplayPlaneList* plane_list,
                             HardwareDisplayPlane* hw_plane,
-                            const OverlayPlane& overlay,
+                            const DrmOverlayPlane& overlay,
                             uint32_t crtc_id,
                             const gfx::Rect& src_rect,
                             CrtcController* crtc) = 0;
@@ -157,9 +157,10 @@ class HardwareDisplayPlaneManager {
 
   // Finds the plane located at or after |*index| that is not in use and can
   // be used with |crtc_index|.
-  HardwareDisplayPlane* FindNextUnusedPlane(size_t* index,
-                                            uint32_t crtc_index,
-                                            const OverlayPlane& overlay) const;
+  HardwareDisplayPlane* FindNextUnusedPlane(
+      size_t* index,
+      uint32_t crtc_index,
+      const DrmOverlayPlane& overlay) const;
 
   // Convert |crtc_id| into an index, returning -1 if the ID couldn't be found.
   int LookupCrtcIndex(uint32_t crtc_id) const;
@@ -167,7 +168,7 @@ class HardwareDisplayPlaneManager {
   // Returns true if |plane| can support |overlay| and compatible with
   // |crtc_index|.
   virtual bool IsCompatible(HardwareDisplayPlane* plane,
-                            const OverlayPlane& overlay,
+                            const DrmOverlayPlane& overlay,
                             uint32_t crtc_index) const;
 
   void ResetCurrentPlaneList(HardwareDisplayPlaneList* plane_list) const;

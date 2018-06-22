@@ -21,29 +21,30 @@ namespace ui {
 
 class ScanoutBuffer;
 
-struct OverlayPlane;
-typedef std::vector<OverlayPlane> OverlayPlaneList;
+struct DrmOverlayPlane;
+typedef std::vector<DrmOverlayPlane> DrmOverlayPlaneList;
 
-struct OverlayPlane {
+struct DrmOverlayPlane {
   // Simpler constructor for the primary plane.
-  explicit OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
-                        gfx::GpuFence* gpu_fence);
+  explicit DrmOverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
+                           gfx::GpuFence* gpu_fence);
 
-  OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
-               int z_order,
-               gfx::OverlayTransform plane_transform,
-               const gfx::Rect& display_bounds,
-               const gfx::RectF& crop_rect,
-               bool enable_blend,
-               gfx::GpuFence* gpu_fence);
-  OverlayPlane(const OverlayPlane& other);
+  DrmOverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
+                  int z_order,
+                  gfx::OverlayTransform plane_transform,
+                  const gfx::Rect& display_bounds,
+                  const gfx::RectF& crop_rect,
+                  bool enable_blend,
+                  gfx::GpuFence* gpu_fence);
+  DrmOverlayPlane(const DrmOverlayPlane& other);
 
-  bool operator<(const OverlayPlane& plane) const;
+  bool operator<(const DrmOverlayPlane& plane) const;
 
-  ~OverlayPlane();
+  ~DrmOverlayPlane();
 
   // Returns the primary plane in |overlays|.
-  static const OverlayPlane* GetPrimaryPlane(const OverlayPlaneList& overlays);
+  static const DrmOverlayPlane* GetPrimaryPlane(
+      const DrmOverlayPlaneList& overlays);
 
   scoped_refptr<ScanoutBuffer> buffer;
   int z_order = 0;

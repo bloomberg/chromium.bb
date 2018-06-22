@@ -377,8 +377,8 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
   // here since this method might be called every pageflip.
   if (buffer_->GetFramebufferId()) {
     surface_manager_->GetSurface(widget)->QueueOverlayPlane(
-        OverlayPlane(buffer_, plane_z_order, plane_transform, display_bounds,
-                     crop_rect, enable_blend, gpu_fence));
+        DrmOverlayPlane(buffer_, plane_z_order, plane_transform, display_bounds,
+                        crop_rect, enable_blend, gpu_fence));
   }
 
   return true;

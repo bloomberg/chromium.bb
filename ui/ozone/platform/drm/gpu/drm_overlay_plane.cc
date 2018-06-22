@@ -10,8 +10,8 @@
 
 namespace ui {
 
-OverlayPlane::OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
-                           gfx::GpuFence* gpu_fence)
+DrmOverlayPlane::DrmOverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
+                                 gfx::GpuFence* gpu_fence)
     : buffer(buffer),
       plane_transform(gfx::OVERLAY_TRANSFORM_NONE),
       display_bounds(gfx::Point(), buffer->GetSize()),
@@ -19,13 +19,13 @@ OverlayPlane::OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
       enable_blend(false),
       gpu_fence(gpu_fence) {}
 
-OverlayPlane::OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
-                           int z_order,
-                           gfx::OverlayTransform plane_transform,
-                           const gfx::Rect& display_bounds,
-                           const gfx::RectF& crop_rect,
-                           bool enable_blend,
-                           gfx::GpuFence* gpu_fence)
+DrmOverlayPlane::DrmOverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
+                                 int z_order,
+                                 gfx::OverlayTransform plane_transform,
+                                 const gfx::Rect& display_bounds,
+                                 const gfx::RectF& crop_rect,
+                                 bool enable_blend,
+                                 gfx::GpuFence* gpu_fence)
     : buffer(buffer),
       z_order(z_order),
       plane_transform(plane_transform),
@@ -34,19 +34,19 @@ OverlayPlane::OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
       enable_blend(enable_blend),
       gpu_fence(gpu_fence) {}
 
-OverlayPlane::OverlayPlane(const OverlayPlane& other) = default;
+DrmOverlayPlane::DrmOverlayPlane(const DrmOverlayPlane& other) = default;
 
-OverlayPlane::~OverlayPlane() {}
+DrmOverlayPlane::~DrmOverlayPlane() {}
 
-bool OverlayPlane::operator<(const OverlayPlane& plane) const {
+bool DrmOverlayPlane::operator<(const DrmOverlayPlane& plane) const {
   return std::tie(z_order, display_bounds, crop_rect, plane_transform) <
          std::tie(plane.z_order, plane.display_bounds, plane.crop_rect,
                   plane.plane_transform);
 }
 
 // static
-const OverlayPlane* OverlayPlane::GetPrimaryPlane(
-    const OverlayPlaneList& overlays) {
+const DrmOverlayPlane* DrmOverlayPlane::GetPrimaryPlane(
+    const DrmOverlayPlaneList& overlays) {
   for (size_t i = 0; i < overlays.size(); ++i) {
     if (overlays[i].z_order == 0)
       return &overlays[i];

@@ -24,7 +24,7 @@ namespace {
 // We currently wait for the fences serially, but it's possible
 // that merging the fences and waiting on the merged fence fd
 // is more efficient. We should revisit once we have more info.
-void WaitForPlaneFences(const ui::OverlayPlaneList& planes) {
+void WaitForPlaneFences(const ui::DrmOverlayPlaneList& planes) {
   for (const auto& plane : planes) {
     if (plane.gpu_fence)
       plane.gpu_fence->Wait();
@@ -140,7 +140,7 @@ bool HardwareDisplayPlaneManagerLegacy::SetColorCorrectionOnAllCrtcPlanes(
 }
 
 bool HardwareDisplayPlaneManagerLegacy::ValidatePrimarySize(
-    const OverlayPlane& primary,
+    const DrmOverlayPlane& primary,
     const drmModeModeInfo& mode) {
   DCHECK(primary.buffer.get());
 
@@ -148,7 +148,7 @@ bool HardwareDisplayPlaneManagerLegacy::ValidatePrimarySize(
 }
 
 void HardwareDisplayPlaneManagerLegacy::RequestPlanesReadyCallback(
-    const OverlayPlaneList& planes,
+    const DrmOverlayPlaneList& planes,
     base::OnceClosure callback) {
   base::PostTaskWithTraitsAndReply(
       FROM_HERE,
@@ -159,7 +159,7 @@ void HardwareDisplayPlaneManagerLegacy::RequestPlanesReadyCallback(
 bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(
     HardwareDisplayPlaneList* plane_list,
     HardwareDisplayPlane* hw_plane,
-    const OverlayPlane& overlay,
+    const DrmOverlayPlane& overlay,
     uint32_t crtc_id,
     const gfx::Rect& src_rect,
     CrtcController* crtc) {
@@ -183,7 +183,7 @@ bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(
 
 bool HardwareDisplayPlaneManagerLegacy::IsCompatible(
     HardwareDisplayPlane* plane,
-    const OverlayPlane& overlay,
+    const DrmOverlayPlane& overlay,
     uint32_t crtc_index) const {
   if (plane->type() == HardwareDisplayPlane::kCursor ||
       !plane->CanUseForCrtc(crtc_index))

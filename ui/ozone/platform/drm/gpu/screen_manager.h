@@ -112,8 +112,8 @@ class ScreenManager {
                         uint32_t connector,
                         const drmModeModeInfo& mode);
 
-  OverlayPlane GetModesetBuffer(HardwareDisplayController* controller,
-                                const gfx::Rect& bounds);
+  DrmOverlayPlane GetModesetBuffer(HardwareDisplayController* controller,
+                                   const gfx::Rect& bounds);
 
   bool EnableController(HardwareDisplayController* controller);
 

@@ -45,7 +45,7 @@ HardwareDisplayController::~HardwareDisplayController() {
   UnsetCursor();
 }
 
-bool HardwareDisplayController::Modeset(const OverlayPlane& primary,
+bool HardwareDisplayController::Modeset(const DrmOverlayPlane& primary,
                                         drmModeModeInfo mode) {
   TRACE_EVENT0("drm", "HDC::Modeset");
   DCHECK(primary.buffer.get());
@@ -58,7 +58,7 @@ bool HardwareDisplayController::Modeset(const OverlayPlane& primary,
   return status;
 }
 
-bool HardwareDisplayController::Enable(const OverlayPlane& primary) {
+bool HardwareDisplayController::Enable(const DrmOverlayPlane& primary) {
   TRACE_EVENT0("drm", "HDC::Enable");
   DCHECK(primary.buffer.get());
   bool status = true;
@@ -86,20 +86,20 @@ void HardwareDisplayController::Disable() {
 }
 
 bool HardwareDisplayController::SchedulePageFlip(
-    const OverlayPlaneList& plane_list,
+    const DrmOverlayPlaneList& plane_list,
     SwapCompletionOnceCallback callback) {
   return ActualSchedulePageFlip(plane_list, false /* test_only */,
                                 std::move(callback));
 }
 
 bool HardwareDisplayController::TestPageFlip(
-    const OverlayPlaneList& plane_list) {
+    const DrmOverlayPlaneList& plane_list) {
   return ActualSchedulePageFlip(plane_list, true /* test_only */,
                                 base::BindOnce(&EmptyFlipCallback));
 }
 
 bool HardwareDisplayController::ActualSchedulePageFlip(
-    const OverlayPlaneList& plane_list,
+    const DrmOverlayPlaneList& plane_list,
     bool test_only,
     SwapCompletionOnceCallback callback) {
   TRACE_EVENT0("drm", "HDC::SchedulePageFlip");
@@ -113,9 +113,9 @@ bool HardwareDisplayController::ActualSchedulePageFlip(
     return true;
   }
 
-  OverlayPlaneList pending_planes = plane_list;
+  DrmOverlayPlaneList pending_planes = plane_list;
   std::sort(pending_planes.begin(), pending_planes.end(),
-            [](const OverlayPlane& l, const OverlayPlane& r) {
+            [](const DrmOverlayPlane& l, const DrmOverlayPlane& r) {
               return l.z_order < r.z_order;
             });
   scoped_refptr<PageFlipRequest> page_flip_request =

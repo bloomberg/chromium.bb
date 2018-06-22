@@ -175,7 +175,7 @@ TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
   const gfx::Size window_size(6, 4);
   ui::MockDumbBufferGenerator buffer_generator;
   ui::DrmWindow* window = screen_manager_->GetWindow(kDefaultWidgetHandle);
-  ui::OverlayPlane plane(
+  ui::DrmOverlayPlane plane(
       buffer_generator.Create(drm_, DRM_FORMAT_XRGB8888, {}, window_size),
       nullptr);
 
@@ -183,7 +183,7 @@ TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
 
   // Window was re-sized, so the expectation is to re-create the buffers first.
   window->SchedulePageFlip(
-      std::vector<ui::OverlayPlane>(1, ui::OverlayPlane(plane)),
+      std::vector<ui::DrmOverlayPlane>(1, ui::DrmOverlayPlane(plane)),
       base::BindOnce(&DrmWindowTest::OnSwapBuffers, base::Unretained(this)));
   EXPECT_EQ(1, on_swap_buffers_count_);
   EXPECT_EQ(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS,
@@ -192,7 +192,7 @@ TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
             last_presentation_feedback_.flags);
 
   window->SchedulePageFlip(
-      std::vector<ui::OverlayPlane>(1, ui::OverlayPlane(plane)),
+      std::vector<ui::DrmOverlayPlane>(1, ui::DrmOverlayPlane(plane)),
       base::BindOnce(&DrmWindowTest::OnSwapBuffers, base::Unretained(this)));
   EXPECT_EQ(2, on_swap_buffers_count_);
   EXPECT_EQ(gfx::SwapResult::SWAP_FAILED, last_swap_buffers_result_);
