@@ -46,7 +46,7 @@ cr.define('extension_code_section_tests', function() {
       expectFalse(testIsVisible('#no-code'));
 
       let codeSections =
-          codeSection.querySelectorAll('* /deep/ #source span span');
+          codeSection.shadowRoot.querySelectorAll('#source span span');
 
       expectEquals(code.beforeHighlight, codeSections[0].textContent);
       expectEquals(code.highlight, codeSections[1].textContent);

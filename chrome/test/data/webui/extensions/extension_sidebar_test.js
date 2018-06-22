@@ -30,15 +30,25 @@ cr.define('extension_sidebar_tests', function() {
       PolymerTest.clearBody();
       sidebar = new extensions.Sidebar();
       document.body.appendChild(sidebar);
+      const whenSelected =
+          test_util.eventToPromise('iron-select', sidebar.$.sectionMenu);
       Polymer.dom.flush();
-      expectEquals(sidebar.$$(selector).id, 'sections-shortcuts');
+      return whenSelected
+          .then(function() {
+            expectEquals(sidebar.$$(selector).id, 'sections-shortcuts');
 
-      window.history.replaceState(undefined, '', '/');
-      PolymerTest.clearBody();
-      sidebar = new extensions.Sidebar();
-      document.body.appendChild(sidebar);
-      Polymer.dom.flush();
-      expectEquals(sidebar.$$(selector).id, 'sections-extensions');
+            window.history.replaceState(undefined, '', '/');
+            PolymerTest.clearBody();
+            sidebar = new extensions.Sidebar();
+            document.body.appendChild(sidebar);
+            const whenSelected =
+                test_util.eventToPromise('iron-select', sidebar.$.sectionMenu);
+            Polymer.dom.flush();
+            return whenSelected;
+          })
+          .then(function() {
+            expectEquals(sidebar.$$(selector).id, 'sections-extensions');
+          });
     });
 
     test(assert(TestNames.LayoutAndClickHandlers), function(done) {

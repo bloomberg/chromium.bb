@@ -719,25 +719,35 @@ var CrExtensionsErrorConsoleTest = class extends CrExtensionsBrowserTest {
 };
 
 TEST_F('CrExtensionsErrorConsoleTest', 'TestUpDownErrors', function() {
-  const STACK_ERRORS = '* /deep/ li';
-  const ACTIVE_ERROR_IN_STACK = '* /deep/ li[tabindex="0"]';
+  const STACK_ERRORS = 'li';
+  const ACTIVE_ERROR_IN_STACK = 'li[tabindex="0"]';
 
-  let initialFocus = document.querySelector(ACTIVE_ERROR_IN_STACK);
+  let initialFocus =
+      extension_test_util.findMatches(document, ACTIVE_ERROR_IN_STACK)[0];
   assertTrue(!!initialFocus);
-  assertEquals(1, document.querySelectorAll(ACTIVE_ERROR_IN_STACK).length);
-  assertEquals(4, document.querySelectorAll(STACK_ERRORS).length);
+  assertEquals(
+      1,
+      extension_test_util.findMatches(document, ACTIVE_ERROR_IN_STACK).length);
+  assertEquals(
+      4, extension_test_util.findMatches(document, STACK_ERRORS).length);
 
   // Pressing up when the first item is focused should NOT change focus.
   MockInteractions.keyDownOn(initialFocus, 38, '', 'ArrowUp');
-  assertEquals(initialFocus, document.querySelector(ACTIVE_ERROR_IN_STACK));
+  assertEquals(
+      initialFocus,
+      extension_test_util.findMatches(document, ACTIVE_ERROR_IN_STACK)[0]);
 
   // Pressing down when the first item is focused should change focus.
   MockInteractions.keyDownOn(initialFocus, 40, '', 'ArrowDown');
-  assertNotEquals(initialFocus, document.querySelector(ACTIVE_ERROR_IN_STACK));
+  assertNotEquals(
+      initialFocus,
+      extension_test_util.findMatches(document, ACTIVE_ERROR_IN_STACK)[0]);
 
   // Pressing up when the second item is focused should focus the first again.
   MockInteractions.keyDownOn(initialFocus, 38, '', 'ArrowUp');
-  assertEquals(initialFocus, document.querySelector(ACTIVE_ERROR_IN_STACK));
+  assertEquals(
+      initialFocus,
+      extension_test_util.findMatches(document, ACTIVE_ERROR_IN_STACK)[0]);
 
   testDone();
 });
