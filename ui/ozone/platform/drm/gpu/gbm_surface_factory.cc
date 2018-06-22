@@ -114,9 +114,9 @@ GbmSurfaceFactory::GetAllowedGLImplementations() {
 }
 
 GLOzone* GbmSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   switch (implementation) {
     case gl::kGLImplementationEGLGLES2:
+    case gl::kGLImplementationSwiftShaderGL:
       return egl_implementation_.get();
     case gl::kGLImplementationOSMesaGL:
       return osmesa_implementation_.get();

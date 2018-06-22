@@ -218,6 +218,7 @@ GLOzone* WaylandSurfaceFactory::GetGLOzone(
     gl::GLImplementation implementation) {
   switch (implementation) {
     case gl::kGLImplementationEGLGLES2:
+    case gl::kGLImplementationSwiftShaderGL:
       return egl_implementation_.get();
     case gl::kGLImplementationOSMesaGL:
       return osmesa_implementation_.get();
