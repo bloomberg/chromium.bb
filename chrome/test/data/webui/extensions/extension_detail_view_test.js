@@ -266,7 +266,7 @@ cr.define('extension_detail_view_tests', function() {
       testWarningVisible('#blacklisted-warning', true);
       testWarningVisible('#update-required-warning', false);
 
-      item.set('data.blacklistText', undefined);
+      item.set('data.blacklistText', null);
       Polymer.dom.flush();
       testWarningVisible('#runtime-warnings', true);
       testWarningVisible('#corrupted-warning', true);

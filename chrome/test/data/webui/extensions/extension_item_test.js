@@ -260,7 +260,7 @@ cr.define('extension_item_tests', function() {
       Polymer.dom.flush();
       assertWarnings(kCorrupt | kSuspicious | kBlacklisted);
 
-      item.set('data.blacklistText', undefined);
+      item.set('data.blacklistText', null);
       Polymer.dom.flush();
       assertWarnings(kCorrupt | kSuspicious);
 

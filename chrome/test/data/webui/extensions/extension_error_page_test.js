@@ -92,7 +92,7 @@ cr.define('extension_error_page_tests', function() {
       expectTrue(testIsVisible('#heading'));
       expectTrue(testIsVisible('#errorsList'));
 
-      var errorElements = errorPage.querySelectorAll('* /deep/ .error-item');
+      var errorElements = errorPage.shadowRoot.querySelectorAll('.error-item');
       expectEquals(1, errorElements.length);
       var error = errorElements[0];
       expectEquals(
@@ -109,7 +109,7 @@ cr.define('extension_error_page_tests', function() {
           manifestErrorBase);
       errorPage.set('data.manifestErrors', [manifestError]);
       Polymer.dom.flush();
-      errorElements = errorPage.querySelectorAll('* /deep/ .error-item');
+      errorElements = errorPage.shadowRoot.querySelectorAll('.error-item');
       expectEquals(2, errorElements.length);
       error = errorElements[0];
       expectEquals(
@@ -165,8 +165,9 @@ cr.define('extension_error_page_tests', function() {
       Polymer.dom.flush();
 
       var errorElements =
-          errorPage.querySelectorAll('* /deep/ .error-item .start');
-      var ironCollapses = errorPage.querySelectorAll('* /deep/ iron-collapse');
+          errorPage.shadowRoot.querySelectorAll('.error-item .start');
+      var ironCollapses =
+          errorPage.shadowRoot.querySelectorAll('iron-collapse');
       expectEquals(2, errorElements.length);
       expectEquals(2, ironCollapses.length);
 

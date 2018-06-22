@@ -253,10 +253,11 @@
             </div>
           </div>
           <div id="description" class="multiline-clippable-text"
-              hidden$="[[hasWarnings_(data.*)]]">
+              hidden$="[[hasWarnings_(data.disableReasons.*, data.*)]]">
             [[data.description]]
           </div>
-          <template is="dom-if" if="[[hasWarnings_(data.*)]]">
+          <template is="dom-if"
+              if="[[hasWarnings_(data.disableReasons.*, data.*)]]">
             <div id="warnings">
               <iron-icon id="error-icon" icon="error"></iron-icon>
               <span id="runtime-warnings" aria-describedby="a11yAssociation"

@@ -249,6 +249,35 @@ cr.define('extension_test_util', function() {
         });
   }
 
+  /**
+   * Finds all nodes matching |query| under |root|, within self and children's
+   * Shadow DOM.
+   * @param {!Node} root
+   * @param {string} query The CSS query
+   * @return {!Array<!HTMLElement>}
+   */
+  function findMatches(root, query) {
+    let elements = new Set();
+    function doSearch(node) {
+      if (node.nodeType == Node.ELEMENT_NODE) {
+        const matches = node.querySelectorAll(query);
+        for (let match of matches)
+          elements.add(match);
+      }
+      let child = node.firstChild;
+      while (child !== null) {
+        doSearch(child);
+        child = child.nextSibling;
+      }
+      const shadowRoot = node.shadowRoot;
+      if (shadowRoot)
+        doSearch(shadowRoot);
+    }
+    doSearch(root);
+    return Array.from(elements);
+  }
+
+
   return {
     ClickMock: ClickMock,
     ListenerMock: ListenerMock,
@@ -258,5 +287,6 @@ cr.define('extension_test_util', function() {
     testVisible: testVisible,
     createExtensionInfo: createExtensionInfo,
     testIcons: testIcons,
+    findMatches: findMatches,
   };
 });
