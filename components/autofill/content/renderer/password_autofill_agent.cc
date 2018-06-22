@@ -796,26 +796,57 @@ bool PasswordAutofillAgent::FillSuggestion(
   if (IsUsernameAmendable(username_element,
                           element->IsPasswordFieldForAutofill()) &&
       username_element.Value().Utf16() != username) {
-    username_element.SetAutofillValue(blink::WebString::FromUTF16(username));
-    username_element.SetAutofillState(WebAutofillState::kAutofilled);
-    UpdateFieldValueAndPropertiesMaskMap(username_element, &username,
-                                         FieldPropertiesFlags::AUTOFILLED,
-                                         &field_value_and_properties_map_);
+    FillField(&username_element, username);
   }
 
-  password_element.SetAutofillValue(blink::WebString::FromUTF16(password));
-  password_element.SetAutofillState(WebAutofillState::kAutofilled);
-  UpdateFieldValueAndPropertiesMaskMap(password_element, &password,
-                                       FieldPropertiesFlags::AUTOFILLED,
-                                       &field_value_and_properties_map_);
-  ProvisionallySavePassword(password_element.Form(), password_element,
-                            RESTRICTION_NONE);
+  FillPasswordFieldAndSave(&password_element, password);
 
   blink::WebInputElement mutable_filled_element = *element;
   mutable_filled_element.SetSelectionRange(element->Value().length(),
                                            element->Value().length());
 
   return true;
+}
+
+void PasswordAutofillAgent::FillIntoFocusedField(
+    bool is_password,
+    const base::string16& credential) {
+  if (!autofill_agent_.get()) {
+    return;
+  }
+  blink::WebInputElement input = autofill_agent_.get()->GetLastFocusedInput();
+  if (input.IsNull() || (!input.IsTextField() || !IsElementEditable(input))) {
+    return;
+  }
+  if (is_password) {
+    if (!input.IsPasswordFieldForAutofill()) {
+      return;
+    }
+    FillPasswordFieldAndSave(&input, credential);
+  } else {
+    FillField(&input, credential);
+  }
+}
+
+void PasswordAutofillAgent::FillField(blink::WebInputElement* input,
+                                      const base::string16& credential) {
+  DCHECK(input);
+  DCHECK(!input->IsNull());
+  input->SetAutofillValue(blink::WebString::FromUTF16(credential));
+  input->SetAutofillState(WebAutofillState::kAutofilled);
+  UpdateFieldValueAndPropertiesMaskMap(*input, &credential,
+                                       FieldPropertiesFlags::AUTOFILLED,
+                                       &field_value_and_properties_map_);
+}
+
+void PasswordAutofillAgent::FillPasswordFieldAndSave(
+    blink::WebInputElement* password_input,
+    const base::string16& credential) {
+  DCHECK(password_input);
+  DCHECK(password_input->IsPasswordFieldForAutofill());
+  FillField(password_input, credential);
+  ProvisionallySavePassword(password_input->Form(), *password_input,
+                            RESTRICTION_NONE);
 }
 
 bool PasswordAutofillAgent::PreviewSuggestion(

@@ -113,6 +113,12 @@ void ContentPasswordManagerDriver::FillSuggestion(
   GetAutofillAgent()->FillPasswordSuggestion(username, password);
 }
 
+void ContentPasswordManagerDriver::FillIntoFocusedField(
+    bool is_password,
+    const base::string16& credential) {
+  GetPasswordAutofillAgent()->FillIntoFocusedField(is_password, credential);
+}
+
 void ContentPasswordManagerDriver::PreviewSuggestion(
     const base::string16& username,
     const base::string16& password) {

@@ -9,7 +9,11 @@
 #include "chrome/browser/password_manager/password_accessory_view_interface.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -20,14 +24,14 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordAccessoryController);
 
 PasswordAccessoryController::PasswordAccessoryController(
     content::WebContents* web_contents)
-    : container_view_(web_contents->GetNativeView()),
+    : web_contents_(web_contents),
       view_(PasswordAccessoryViewInterface::Create(this)) {}
 
 // Additional creation functions in unit tests only:
 PasswordAccessoryController::PasswordAccessoryController(
     content::WebContents* web_contents,
     std::unique_ptr<PasswordAccessoryViewInterface> view)
-    : container_view_(web_contents->GetNativeView()), view_(std::move(view)) {}
+    : web_contents_(web_contents), view_(std::move(view)) {}
 
 PasswordAccessoryController::~PasswordAccessoryController() = default;
 
@@ -45,6 +49,12 @@ void PasswordAccessoryController::CreateForWebContentsForTesting(
 void PasswordAccessoryController::OnPasswordsAvailable(
     const std::map<base::string16, const PasswordForm*>& best_matches,
     const GURL& origin) {
+  const url::Origin& tab_origin =
+      web_contents_->GetMainFrame()->GetLastCommittedOrigin();
+  if (!tab_origin.IsSameOriginWith(url::Origin::Create(origin))) {
+    // TODO(fhorschig): Support iframes: https://crbug.com/854150.
+    return;
+  }
   DCHECK(view_);
   std::vector<Item> items;
   base::string16 passwords_title_str = l10n_util::GetStringUTF16(
@@ -72,10 +82,21 @@ void PasswordAccessoryController::OnPasswordsAvailable(
 }
 
 void PasswordAccessoryController::OnFillingTriggered(
+    bool is_password,
     const base::string16& textToFill) const {
-  // TODO(fhorschig): Actually fill |textToFill| into focused field.
+  password_manager::ContentPasswordManagerDriverFactory* factory =
+      password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
+          web_contents_);
+  DCHECK(factory);
+  // TODO(fhorschig): Consider allowing filling on non-main frames.
+  password_manager::ContentPasswordManagerDriver* driver =
+      factory->GetDriverForFrame(web_contents_->GetMainFrame());
+  if (!driver) {
+    return;
+  }  // |driver| can be NULL if the tab is being closed.
+  driver->FillIntoFocusedField(is_password, textToFill);
 }
 
 gfx::NativeView PasswordAccessoryController::container_view() const {
-  return container_view_;
+  return web_contents_->GetNativeView();
 }

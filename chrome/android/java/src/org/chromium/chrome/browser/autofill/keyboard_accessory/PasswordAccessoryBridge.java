@@ -46,12 +46,12 @@ class PasswordAccessoryBridge {
             items[i] = new Item(type[i], text[i], description[i], isPassword[i] == 1, (item) -> {
                 assert mNativeView
                         != 0 : "Controller has been destroyed but the bridge wasn't cleaned up!";
-                nativeOnFillingTriggered(mNativeView, item.getCaption());
+                nativeOnFillingTriggered(mNativeView, item.isPassword(), item.getCaption());
             });
         }
         return items;
     }
 
     private native void nativeOnFillingTriggered(
-            long nativePasswordAccessoryViewAndroid, String textToFill);
+            long nativePasswordAccessoryViewAndroid, boolean isPassword, String textToFill);
 }

@@ -238,6 +238,7 @@ void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
   }
 
   HidePopup();
+  last_input_element_.Reset();
 
   if (node.IsNull() || !node.IsElementNode()) {
     if (!last_interacted_form_.IsNull()) {
@@ -264,6 +265,7 @@ void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
     return;
 
   element_ = *element;
+  last_input_element_ = *element;
 
   FormData form;
   FormFieldData field;
@@ -814,9 +816,14 @@ void AutofillAgent::FormControlElementClicked(
   last_clicked_form_control_element_was_focused_for_testing_ = was_focused;
   was_last_action_fill_ = false;
 
+  last_input_element_.Reset();
   const WebInputElement* input_element = ToWebInputElement(&element);
   if (!input_element && !form_util::IsTextAreaElement(element))
     return;
+
+  if (input_element) {
+    last_input_element_ = *input_element;
+  }
 
   ShowSuggestionsOptions options;
   options.autofill_on_empty_values = true;
@@ -987,6 +994,7 @@ void AutofillAgent::ResetLastInteractedElements() {
   last_clicked_form_control_element_for_testing_.Reset();
   formless_elements_user_edited_.clear();
   provisionally_saved_form_.reset();
+  last_input_element_.Reset();
 }
 
 void AutofillAgent::UpdateLastInteractedForm(blink::WebFormElement form) {
