@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
-#include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -70,7 +69,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   bool IsFullscreen() const override { return false; }
   bool IsTabStripVisible() const override { return window_title_.empty(); }
   int GetTabStripHeight() const override {
-    return IsTabStripVisible() ? Tab::GetMinimumInactiveSize().height() : 0;
+    return IsTabStripVisible() ? GetLayoutConstant(TAB_HEIGHT) : 0;
   }
   bool IsToolbarVisible() const override { return true; }
   gfx::Size GetTabstripPreferredSize() const override {

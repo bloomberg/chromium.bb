@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -760,7 +761,7 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
   if (!attached_tabstrip_->touch_layout_.get()) {
     double ratio =
         static_cast<double>(attached_tabstrip_->current_inactive_width()) /
-        Tab::GetStandardSize().width();
+        Tab::GetStandardWidth();
     threshold = gfx::ToRoundedInt(ratio * kHorizontalMoveThreshold);
   }
   // else case: touch tabs never shrink.
@@ -1377,7 +1378,7 @@ gfx::Rect TabDragController::GetDraggedViewTabStripBounds(
 
   return gfx::Rect(tab_strip_point.x(), tab_strip_point.y(),
                    attached_tabstrip_->current_active_width(),
-                   Tab::GetStandardSize().height());
+                   GetLayoutConstant(TAB_HEIGHT));
 }
 
 gfx::Point TabDragController::GetAttachedDragPoint(

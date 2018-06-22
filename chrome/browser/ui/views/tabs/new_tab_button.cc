@@ -117,7 +117,7 @@ int NewTabButton::GetTopOffset() {
   // We're only interested in the button's height which doesn't change based
   // on incognito or not, so we used `is_incognito=false`.
   const int extra_vertical_space =
-      Tab::GetMinimumInactiveSize().height() -
+      GetLayoutConstant(TAB_HEIGHT) -
       GetLayoutSize(NEW_TAB_BUTTON, false /* is_incognito */).height();
 
   // In newer material UI, the button is placed vertically exactly in the

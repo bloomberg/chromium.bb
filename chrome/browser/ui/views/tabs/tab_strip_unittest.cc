@@ -732,7 +732,7 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
   tab_strip_->SetBounds(0, 0, 200, 20);
 
   // Create a lot of tabs in order to make inactive tabs tiny.
-  const int min_inactive_width = Tab::GetMinimumInactiveSize().width();
+  const int min_inactive_width = Tab::GetMinimumInactiveWidth();
   while (current_inactive_width() != min_inactive_width)
     controller_->CreateNewTab();
 
@@ -745,7 +745,7 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
   // During mouse-based tab closure, the active tab should remain at least as
   // wide as it's minium width.
   controller_->SelectTab(0);
-  for (const int min_active_width = Tab::GetMinimumActiveSize().width();
+  for (const int min_active_width = Tab::GetMinimumActiveWidth();
        tab_strip_->tab_count();) {
     const int active_index = controller_->GetActiveIndex();
     EXPECT_GE(tab_strip_->ideal_bounds(active_index).width(), min_active_width);
@@ -760,11 +760,11 @@ TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
   tab_strip_->SetBounds(0, 0, 200, 20);
 
   // Create a lot of tabs in order to make inactive tabs tiny.
-  const int min_inactive_width = Tab::GetMinimumInactiveSize().width();
+  const int min_inactive_width = Tab::GetMinimumInactiveWidth();
   while (current_inactive_width() != min_inactive_width)
     controller_->CreateNewTab();
 
-  const int min_active_width = Tab::GetMinimumActiveSize().width();
+  const int min_active_width = Tab::GetMinimumActiveWidth();
 
   int dragged_tab_index = controller_->GetActiveIndex();
   EXPECT_GE(tab_strip_->ideal_bounds(dragged_tab_index).width(),

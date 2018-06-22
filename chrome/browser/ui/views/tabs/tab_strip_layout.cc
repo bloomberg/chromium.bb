@@ -30,7 +30,7 @@ void CalculateNormalTabWidths(const TabSizeInfo& tab_size_info,
   const int total_overlap = tab_size_info.tab_overlap * (num_normal_tabs - 1);
   int desired_tab_width =
       std::min((normal_width + total_overlap) / num_normal_tabs,
-               tab_size_info.max_size.width());
+               tab_size_info.standard_size.width());
 
   *active_width = std::max(desired_tab_width, tab_size_info.min_active_width);
 
@@ -56,7 +56,7 @@ int CalculateBoundsForPinnedTabs(const TabSizeInfo& tab_size_info,
                                  std::vector<gfx::Rect>* tabs_bounds) {
   DCHECK_EQ(static_cast<size_t>(num_tabs), tabs_bounds->size());
   int next_x = start_x;
-  const int tab_height = tab_size_info.max_size.height();
+  const int tab_height = tab_size_info.standard_size.height();
   for (int index = 0; index < num_pinned_tabs; ++index) {
     (*tabs_bounds)[index].SetRect(next_x, 0, tab_size_info.pinned_tab_width,
                                   tab_height);
@@ -79,7 +79,7 @@ std::vector<gfx::Rect> CalculateBounds(const TabSizeInfo& tab_size_info,
 
   std::vector<gfx::Rect> tabs_bounds(num_tabs);
 
-  *active_width = *inactive_width = tab_size_info.max_size.width();
+  *active_width = *inactive_width = tab_size_info.standard_size.width();
 
   int next_x = CalculateBoundsForPinnedTabs(tab_size_info, num_pinned_tabs,
                                             num_tabs, start_x, &tabs_bounds);
@@ -99,7 +99,7 @@ std::vector<gfx::Rect> CalculateBounds(const TabSizeInfo& tab_size_info,
   // tabs (the active tab may already be bigger).
   int extra_space = 0;
   bool widen_active = false;
-  if (*inactive_width != tab_size_info.max_size.width()) {
+  if (*inactive_width != tab_size_info.standard_size.width()) {
     widen_active = *active_width == *inactive_width;
     const int tab_width =
         (*inactive_width - tab_size_info.tab_overlap) * (num_normal_tabs - 1) +
@@ -108,7 +108,7 @@ std::vector<gfx::Rect> CalculateBounds(const TabSizeInfo& tab_size_info,
   }
 
   // Convert the widths to bounds.
-  const int tab_height = tab_size_info.max_size.height();
+  const int tab_height = tab_size_info.standard_size.height();
   for (int i = num_pinned_tabs; i < num_tabs; ++i) {
     const bool is_active = i == active_index;
     int width = is_active ? *active_width : *inactive_width;
