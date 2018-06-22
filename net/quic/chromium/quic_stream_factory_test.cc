@@ -777,8 +777,9 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   void TestMigrationOnWriteErrorMigrationDisabled(IoMode write_error_mode);
   void TestMigrationOnWriteError(IoMode write_error_mode);
   void TestMigrationOnWriteErrorNoNewNetwork(IoMode write_error_mode);
-  void TestMigrationOnMultipleWriteErrors(IoMode first_write_error_mode,
-                                          IoMode second_write_error_mode);
+  void TestMigrationOnMultipleWriteErrors(
+      IoMode write_error_mode_on_old_network,
+      IoMode write_error_mode_on_new_network);
   void TestMigrationOnNetworkNotificationWithWriteErrorQueuedLater(
       bool disconnected);
   void TestMigrationOnWriteErrorWithNotificationQueuedLater(bool disconnected);
@@ -4169,34 +4170,73 @@ TEST_P(QuicStreamFactoryTest,
   TestMigrationOnWriteErrorMigrationDisabled(ASYNC);
 }
 
+// Sets up a test which verifies that connection migration on write error can
+// eventually succeed and rewrite the packet on the new network with singals
+// delivered in the following order (alternate network is always availabe):
+// - original network encounters a SYNC/ASYNC write error based on
+//   |write_error_mode_on_old_network|, the packet failed to be written is
+//   cached, session migrates immediately to the alternate network.
+// - an immediate SYNC/ASYNC write error based on
+//   |write_error_mode_on_new_network| is encountered after migration to the
+//   alternate network, session migrates immediately to the original network.
+// - an immediate SYNC/ASYNC write error based on
+//   |write_error_mode_on_old_network| is encountered after migration to the
+//   original network, session migrates immediately to the alternate network.
+// - finally, session successfully sends the packet and reads the response on
+//   the alternate network.
+// TODO(zhongyi): once https://crbug.com/855666 is fixed, this test should be
+// modified to test that session is closed early if hopping between networks
+// with consecutive write errors is detected.
 void QuicStreamFactoryTestBase::TestMigrationOnMultipleWriteErrors(
-    IoMode first_write_error_mode,
-    IoMode second_write_error_mode) {
-  const int kMaxReadersPerQuicSession = 5;
-  InitializeConnectionMigrationTest(
+    IoMode write_error_mode_on_old_network,
+    IoMode write_error_mode_on_new_network) {
+  InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  // Set up kMaxReadersPerQuicSession socket data providers, since
-  // migration will cause kMaxReadersPerQuicSession write failures as
-  // the session hops repeatedly between the two networks.
-  MockQuicData socket_data[kMaxReadersPerQuicSession + 1];
-  for (int i = 0; i <= kMaxReadersPerQuicSession; ++i) {
-    // The last socket is created but never used.
-    if (i < kMaxReadersPerQuicSession) {
-      socket_data[i].AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-      if (i == 0) {
-        socket_data[i].AddWrite(SYNCHRONOUS,
-                                ConstructInitialSettingsPacket(1, nullptr));
-      }
-      socket_data[i].AddWrite(
-          (i % 2 == 0) ? first_write_error_mode : second_write_error_mode,
-          ERR_FAILED);
-    }
-    socket_data[i].AddSocketDataToFactory(socket_factory_.get());
-  }
+  // Set up the socket data used by the original network, which encounters a
+  // write erorr.
+  MockQuicData socket_data1;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddWrite(
+      SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
+  socket_data1.AddWrite(write_error_mode_on_old_network,
+                        ERR_ADDRESS_UNREACHABLE);  // Write Error
+  socket_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  // Set up the socket data used by the alternate network, which also
+  // encounters a write error.
+  MockQuicData failed_quic_data2;
+  failed_quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  failed_quic_data2.AddWrite(write_error_mode_on_new_network, ERR_FAILED);
+  failed_quic_data2.AddSocketDataToFactory(socket_factory_.get());
+
+  // Set up the third socket data used by original network, which encounters a
+  // write error again.
+  MockQuicData failed_quic_data1;
+  failed_quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  failed_quic_data1.AddWrite(write_error_mode_on_old_network, ERR_FAILED);
+  failed_quic_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  // Set up the last socket data used by the alternate network, which will
+  // finish migration successfully. The request is rewritten to this new socket,
+  // and the response to the request is read on this socket.
+  MockQuicData socket_data2;
+  socket_data2.AddWrite(SYNCHRONOUS, ConstructGetRequestPacket(
+                                         2, GetNthClientInitiatedStreamId(0),
+                                         true, true, &header_stream_offset));
+  socket_data2.AddRead(
+      ASYNC, ConstructOkResponsePacket(1, GetNthClientInitiatedStreamId(0),
+                                       false, false));
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddWrite(SYNCHRONOUS,
+                        client_maker_.MakeAckAndRstPacket(
+                            3, false, GetNthClientInitiatedStreamId(0),
+                            quic::QUIC_STREAM_CANCELLED, 1, 1, 1, true));
+  socket_data2.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -4223,46 +4263,58 @@ void QuicStreamFactoryTestBase::TestMigrationOnMultipleWriteErrors(
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
 
-  // Send GET request on stream. This should cause a write error, which triggers
-  // a connection migration attempt.
+  // Send GET request on stream.
+  // This should encounter a write error on network 1,
+  // then migrate to network 2, which encounters another write error,
+  // and migrate again to network 1, which encoutners one more write error.
+  // Finally the session migrates to network 2 successfully.
   HttpResponseInfo response;
   HttpRequestHeaders request_headers;
   EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
                                     callback_.callback()));
-  EXPECT_EQ(ERR_IO_PENDING, stream->ReadResponseHeaders(callback_.callback()));
 
-  // Run the message loop so that data queued in the new socket is read by the
-  // packet reader.
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
 
-  // The connection should be closed because of a write error after migration.
-  EXPECT_FALSE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
-  EXPECT_FALSE(HasActiveSession(host_port_pair_));
-  EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR,
-            stream->ReadResponseHeaders(callback_.callback()));
+  // Verify that response headers on the migrated socket were delivered to the
+  // stream.
+  EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
 
   stream.reset();
-  for (int i = 0; i <= kMaxReadersPerQuicSession; ++i) {
-    DLOG(INFO) << "Socket number: " << i;
-    EXPECT_TRUE(socket_data[i].AllReadDataConsumed());
-    EXPECT_TRUE(socket_data[i].AllWriteDataConsumed());
-  }
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(failed_quic_data2.AllReadDataConsumed());
+  EXPECT_TRUE(failed_quic_data2.AllWriteDataConsumed());
+  EXPECT_TRUE(failed_quic_data1.AllReadDataConsumed());
+  EXPECT_TRUE(failed_quic_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, MigrateSessionOnMultipleWriteErrorsSyncSync) {
-  TestMigrationOnMultipleWriteErrors(SYNCHRONOUS, SYNCHRONOUS);
+  TestMigrationOnMultipleWriteErrors(
+      /*write_error_mode_on_old_network*/ SYNCHRONOUS,
+      /*write_error_mode_on_new_network*/ SYNCHRONOUS);
 }
 
 TEST_P(QuicStreamFactoryTest, MigrateSessionOnMultipleWriteErrorsSyncAsync) {
-  TestMigrationOnMultipleWriteErrors(SYNCHRONOUS, ASYNC);
+  TestMigrationOnMultipleWriteErrors(
+      /*write_error_mode_on_old_network*/ SYNCHRONOUS,
+      /*write_error_mode_on_new_network*/ ASYNC);
 }
 
 TEST_P(QuicStreamFactoryTest, MigrateSessionOnMultipleWriteErrorsAsyncSync) {
-  TestMigrationOnMultipleWriteErrors(ASYNC, SYNCHRONOUS);
+  TestMigrationOnMultipleWriteErrors(
+      /*write_error_mode_on_old_network*/ ASYNC,
+      /*write_error_mode_on_new_network*/ SYNCHRONOUS);
 }
 
 TEST_P(QuicStreamFactoryTest, MigrateSessionOnMultipleWriteErrorsAsyncAsync) {
-  TestMigrationOnMultipleWriteErrors(ASYNC, ASYNC);
+  TestMigrationOnMultipleWriteErrors(
+      /*write_error_mode_on_old_network*/ ASYNC,
+      /*write_error_mode_on_new_network*/ ASYNC);
 }
 
 // Sets up the connection migration test where network change notification is
