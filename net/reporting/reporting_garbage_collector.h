@@ -10,7 +10,7 @@
 #include "net/base/net_export.h"
 
 namespace base {
-class Timer;
+class OneShotTimer;
 }  // namespace base
 
 namespace net {
@@ -28,9 +28,11 @@ class NET_EXPORT ReportingGarbageCollector {
 
   virtual ~ReportingGarbageCollector();
 
-  // Replaces the internal Timer used for scheduling garbage collection passes
-  // with a caller-specified one so that unittests can provide a MockTimer.
-  virtual void SetTimerForTesting(std::unique_ptr<base::Timer> timer) = 0;
+  // Replaces the internal OneShotTimer used for scheduling garbage collection
+  // passes with a caller-specified one so that unittests can provide a
+  // MockOneShotTimer.
+  virtual void SetTimerForTesting(
+      std::unique_ptr<base::OneShotTimer> timer) = 0;
 };
 
 }  // namespace net

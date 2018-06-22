@@ -175,11 +175,8 @@ TestReportingContext::TestReportingContext(base::Clock* clock,
           std::make_unique<TestReportingUploader>(),
           std::make_unique<TestReportingDelegate>()),
       rand_counter_(0),
-      delivery_timer_(new base::MockTimer(/* retain_user_task= */ false,
-                                          /* is_repeating= */ false)),
-      garbage_collection_timer_(
-          new base::MockTimer(/* retain_user_task= */ false,
-                              /* is_repeating= */ false)) {
+      delivery_timer_(new base::MockOneShotTimer()),
+      garbage_collection_timer_(new base::MockOneShotTimer()) {
   garbage_collector()->SetTimerForTesting(
       base::WrapUnique(garbage_collection_timer_));
   delivery_agent()->SetTimerForTesting(base::WrapUnique(delivery_timer_));

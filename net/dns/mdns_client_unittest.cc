@@ -373,16 +373,16 @@ class MockClock : public base::Clock {
   DISALLOW_COPY_AND_ASSIGN(MockClock);
 };
 
-class MockTimer : public base::MockTimer {
+class MockTimer : public base::MockOneShotTimer {
  public:
-  MockTimer() : base::MockTimer(false, false) {}
+  MockTimer() {}
   ~MockTimer() override = default;
 
   void Start(const base::Location& posted_from,
              base::TimeDelta delay,
              const base::Closure& user_task) override {
     StartObserver(posted_from, delay, user_task);
-    base::MockTimer::Start(posted_from, delay, user_task);
+    base::MockOneShotTimer::Start(posted_from, delay, user_task);
   }
 
   // StartObserver is invoked when MockTimer::Start() is called.

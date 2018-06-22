@@ -73,11 +73,10 @@ std::unique_ptr<SequencedSocketData> BuildNullSocketData() {
   return std::make_unique<SequencedSocketData>();
 }
 
-class MockWeakTimer : public base::MockTimer,
+class MockWeakTimer : public base::MockOneShotTimer,
                       public base::SupportsWeakPtr<MockWeakTimer> {
  public:
-  MockWeakTimer(bool retain_user_task, bool is_repeating)
-      : MockTimer(retain_user_task, is_repeating) {}
+  MockWeakTimer() {}
 };
 
 const char kOrigin[] = "http://www.example.org";
@@ -1230,7 +1229,7 @@ TEST_P(WebSocketStreamCreateTest, ConnectionTimeout) {
 TEST_P(WebSocketStreamCreateTest, HandshakeTimeout) {
   std::unique_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
-  auto timer = std::make_unique<MockWeakTimer>(false, false);
+  auto timer = std::make_unique<MockWeakTimer>();
   base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
   SetTimer(std::move(timer));
   CreateAndConnectRawExpectations("ws://www.example.org/", NoSubProtocols(),
@@ -1250,7 +1249,7 @@ TEST_P(WebSocketStreamCreateTest, HandshakeTimeout) {
 
 // When the connection establishes the timer should be stopped.
 TEST_P(WebSocketStreamCreateTest, HandshakeTimerOnSuccess) {
-  auto timer = std::make_unique<MockWeakTimer>(false, false);
+  auto timer = std::make_unique<MockWeakTimer>();
   base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
 
   SetTimer(std::move(timer));
@@ -1271,7 +1270,7 @@ TEST_P(WebSocketStreamCreateTest, HandshakeTimerOnFailure) {
   std::unique_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
   socket_data->set_connect_data(
       MockConnect(SYNCHRONOUS, ERR_CONNECTION_REFUSED));
-  auto timer = std::make_unique<MockWeakTimer>(false, false);
+  auto timer = std::make_unique<MockWeakTimer>();
   base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
   SetTimer(std::move(timer));
   CreateAndConnectRawExpectations("ws://www.example.org/", NoSubProtocols(),

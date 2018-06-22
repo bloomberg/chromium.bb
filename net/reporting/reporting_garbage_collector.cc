@@ -34,7 +34,7 @@ class ReportingGarbageCollectorImpl : public ReportingGarbageCollector,
     context_->RemoveObserver(this);
   }
 
-  void SetTimerForTesting(std::unique_ptr<base::Timer> timer) override {
+  void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer) override {
     timer_ = std::move(timer);
   }
 
@@ -76,7 +76,7 @@ class ReportingGarbageCollectorImpl : public ReportingGarbageCollector,
   }
 
   ReportingContext* context_;
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 };
 
 }  // namespace

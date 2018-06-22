@@ -64,7 +64,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
   ~ReportingDeliveryAgentImpl() override { context_->RemoveObserver(this); }
 
-  void SetTimerForTesting(std::unique_ptr<base::Timer> timer) override {
+  void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer) override {
     DCHECK(!timer_->IsRunning());
     timer_ = std::move(timer);
   }
@@ -240,7 +240,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
   ReportingContext* context_;
 
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 
   // Tracks OriginGroup tuples for which there is a pending delivery running.
   // (Would be an unordered_set, but there's no hash on pair.)
