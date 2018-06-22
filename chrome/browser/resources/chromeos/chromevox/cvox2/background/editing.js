@@ -130,8 +130,10 @@ function AutomationEditableText(node) {
     throw Error('Node must have editable state set to true.');
   var start = node.textSelStart;
   var end = node.textSelEnd;
+  var value = this.getProcessedValue_(node) || '';
   cvox.ChromeVoxEditableTextBase.call(
-      this, node.value || '', Math.min(start, end), Math.max(start, end),
+      this, value, Math.min(start, end, value.length),
+      Math.min(Math.max(start, end), value.length),
       node.state[StateType.PROTECTED] /**password*/, cvox.ChromeVox.tts);
   /** @override */
   this.multiline = node.state[StateType.MULTILINE] || false;
@@ -147,10 +149,11 @@ AutomationEditableText.prototype = {
    * @param {string|undefined} eventFrom
    */
   onUpdate: function(eventFrom) {
-    var newValue = this.node_.value || '';
+    var newValue = this.getProcessedValue_(this.node_) || '';
 
     var textChangeEvent = new cvox.TextChangeEvent(
-        newValue, this.node_.textSelStart || 0, this.node_.textSelEnd || 0,
+        newValue, Math.min(this.node_.textSelStart || 0, newValue.length),
+        Math.min(this.node_.textSelEnd || 0, newValue.length),
         true /* triggered by user */);
     this.changed(textChangeEvent);
     this.outputBraille_();
@@ -192,6 +195,16 @@ AutomationEditableText.prototype = {
     range = Range.fromNode(this.node_);
     output.withBraille(range, null, Output.EventType.NAVIGATE);
     output.go();
+  },
+
+  /**
+   * @param {!AutomationNode} node
+   * @return {string|undefined}
+   * @private
+   */
+  getProcessedValue_: function(node) {
+    var value = node.value;
+    return (value && node.inputType == 'tel') ? value['trimEnd']() : value;
   }
 };
 
