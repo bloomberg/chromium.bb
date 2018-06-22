@@ -40,6 +40,8 @@ struct NET_EXPORT RedirectInfo {
       int http_status_code,
       // The new location URL of the redirect response.
       const GURL& new_location,
+      // Whether the URL was upgraded to HTTPS due to upgrade-insecure-requests.
+      bool insecure_scheme_was_upgraded,
       // Whether Token Binding of TLS was negotiated.
       bool token_binding_negotiated,
       // This method copies the URL fragment of the original URL to the new URL
@@ -65,6 +67,10 @@ struct NET_EXPORT RedirectInfo {
 
   // The new HTTP referrer header.
   std::string new_referrer;
+
+  // True if this redirect was upgraded to HTTPS due to the
+  // upgrade-insecure-requests policy.
+  bool insecure_scheme_was_upgraded;
 
   // The new referrer policy that should be obeyed if there are
   // subsequent redirects.

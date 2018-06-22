@@ -301,7 +301,8 @@ int64_t URLRequestTestJob::GetTotalReceivedBytes() const {
 }
 
 bool URLRequestTestJob::IsRedirectResponse(GURL* location,
-                                           int* http_status_code) {
+                                           int* http_status_code,
+                                           bool* insecure_scheme_was_upgraded) {
   if (!response_headers_.get())
     return false;
 
@@ -309,6 +310,7 @@ bool URLRequestTestJob::IsRedirectResponse(GURL* location,
   if (!response_headers_->IsRedirect(&value))
     return false;
 
+  *insecure_scheme_was_upgraded = false;
   *location = request_->url().Resolve(value);
   *http_status_code = response_headers_->response_code();
   return true;

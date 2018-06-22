@@ -260,9 +260,9 @@ class NavigationURLLoaderImplTest : public testing::Test {
     return most_recent_resource_request_.value().priority;
   }
 
-  GURL NavigateAndReturnRedirectURL(const GURL& url,
-                                    bool upgrade_if_insecure,
-                                    bool expect_request_fail) {
+  net::RedirectInfo NavigateAndReturnRedirectInfo(const GURL& url,
+                                                  bool upgrade_if_insecure,
+                                                  bool expect_request_fail) {
     TestNavigationURLLoaderDelegate delegate;
     std::unique_ptr<NavigationURLLoader> loader = CreateTestLoader(
         url,
@@ -277,7 +277,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
     } else {
       delegate.WaitForResponseStarted();
     }
-    return delegate.redirect_info().new_url;
+    return delegate.redirect_info();
   }
 
  protected:
@@ -418,16 +418,18 @@ TEST_F(NavigationURLLoaderImplTest, UpgradeIfInsecureTest) {
   // We expect the request to fail since there is no server listening at
   // test.test, but for the purpose of this test we only need to validate the
   // redirect URL was not changed.
-  EXPECT_EQ(expected_url,
-            NavigateAndReturnRedirectURL(url, false /* upgrade_if_insecure */,
-                                         true /* expect_request_fail */));
+  net::RedirectInfo redirect_info = NavigateAndReturnRedirectInfo(
+      url, false /* upgrade_if_insecure */, true /* expect_request_fail */);
+  EXPECT_FALSE(redirect_info.insecure_scheme_was_upgraded);
+  EXPECT_EQ(expected_url, redirect_info.new_url);
   GURL::Replacements replacements;
   replacements.SetSchemeStr("https");
   expected_url = expected_url.ReplaceComponents(replacements);
+  redirect_info = NavigateAndReturnRedirectInfo(
+      url, true /* upgrade_if_insecure */, true /* expect_request_fail */);
   // Same as above, but validating the URL is upgraded to https.
-  EXPECT_EQ(expected_url,
-            NavigateAndReturnRedirectURL(url, true /* upgrade_if_insecure */,
-                                         true /* expect_request_fail */));
+  EXPECT_TRUE(redirect_info.insecure_scheme_was_upgraded);
+  EXPECT_EQ(expected_url, redirect_info.new_url);
 }
 
 }  // namespace content

@@ -147,13 +147,18 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   // is a redirect, and fills in the location param with the URL of the
   // redirect.  The HTTP status code (e.g., 302) is filled into
   // |*http_status_code| to signify the type of redirect.
+  // |*insecure_scheme_was_upgraded| is set to true if the scheme of this
+  // request was upgraded to HTTPS due to an 'upgrade-insecure-requests'
+  // policy.
   //
   // The caller is responsible for following the redirect by setting up an
   // appropriate replacement Job. Note that the redirected location may be
   // invalid, the caller should be sure it can handle this.
   //
   // The default implementation inspects the response_info_.
-  virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
+  virtual bool IsRedirectResponse(GURL* location,
+                                  int* http_status_code,
+                                  bool* insecure_scheme_was_upgraded);
 
   // Called to determine if it is okay to copy the reference fragment from the
   // original URL (if existent) to the redirection target when the redirection

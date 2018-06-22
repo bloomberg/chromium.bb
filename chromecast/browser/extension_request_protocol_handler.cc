@@ -48,7 +48,9 @@ class CastExtensionURLRequestJob : public net::URLRequestJob,
   void GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
   bool GetRemoteEndpoint(net::IPEndPoint* endpoint) const override;
   void PopulateNetErrorDetails(net::NetErrorDetails* details) const override;
-  bool IsRedirectResponse(GURL* location, int* http_status_code) override;
+  bool IsRedirectResponse(GURL* location,
+                          int* http_status_code,
+                          bool* insecure_scheme_was_upgraded) override;
   bool CopyFragmentOnRedirect(const GURL& location) const override;
   bool IsSafeRedirect(const GURL& location) override;
   bool NeedsAuth() override;
@@ -103,8 +105,10 @@ void CastExtensionURLRequestJob::Start() {
   sub_request_->Start();
 }
 
-bool CastExtensionURLRequestJob::IsRedirectResponse(GURL* location,
-                                                    int* http_status_code) {
+bool CastExtensionURLRequestJob::IsRedirectResponse(
+    GURL* location,
+    int* http_status_code,
+    bool* insecure_scheme_was_upgraded) {
   return false;
 }
 

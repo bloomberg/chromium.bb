@@ -105,6 +105,7 @@ URLRequest::ReferrerPolicy ProcessReferrerPolicyHeaderOnRedirect(
 
 RedirectInfo::RedirectInfo()
     : status_code(-1),
+      insecure_scheme_was_upgraded(false),
       new_referrer_policy(
           URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE) {}
 
@@ -122,6 +123,7 @@ RedirectInfo RedirectInfo::ComputeRedirectInfo(
     const HttpResponseHeaders* response_headers,
     int http_status_code,
     const GURL& new_location,
+    bool insecure_scheme_was_upgraded,
     bool token_binding_negotiated,
     bool copy_fragment) {
   DCHECK(!response_headers ||
@@ -148,6 +150,8 @@ RedirectInfo RedirectInfo::ComputeRedirectInfo(
   } else {
     redirect_info.new_url = new_location;
   }
+
+  redirect_info.insecure_scheme_was_upgraded = insecure_scheme_was_upgraded;
 
   // Update the first-party URL if appropriate.
   if (original_first_party_url_policy ==

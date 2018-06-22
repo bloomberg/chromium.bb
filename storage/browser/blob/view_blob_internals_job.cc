@@ -159,12 +159,15 @@ void ViewBlobInternalsJob::Start() {
                                 weak_factory_.GetWeakPtr()));
 }
 
-bool ViewBlobInternalsJob::IsRedirectResponse(GURL* location,
-                                              int* http_status_code) {
+bool ViewBlobInternalsJob::IsRedirectResponse(
+    GURL* location,
+    int* http_status_code,
+    bool* insecure_scheme_was_upgraded) {
   if (request_->url().has_query()) {
     // Strip the query parameters.
     GURL::Replacements replacements;
     replacements.ClearQuery();
+    *insecure_scheme_was_upgraded = false;
     *location = request_->url().ReplaceComponents(replacements);
     *http_status_code = 307;
     return true;

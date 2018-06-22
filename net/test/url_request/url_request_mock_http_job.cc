@@ -141,11 +141,14 @@ void URLRequestMockHTTPJob::GetResponseInfo(HttpResponseInfo* info) {
   GetResponseInfoConst(info);
 }
 
-bool URLRequestMockHTTPJob::IsRedirectResponse(GURL* location,
-                                               int* http_status_code) {
+bool URLRequestMockHTTPJob::IsRedirectResponse(
+    GURL* location,
+    int* http_status_code,
+    bool* insecure_scheme_was_upgraded) {
   // Override the URLRequestFileJob implementation to invoke the default
   // one based on HttpResponseInfo.
-  return URLRequestJob::IsRedirectResponse(location, http_status_code);
+  return URLRequestJob::IsRedirectResponse(location, http_status_code,
+                                           insecure_scheme_was_upgraded);
 }
 
 void URLRequestMockHTTPJob::OnReadComplete(net::IOBuffer* buffer, int result) {

@@ -183,7 +183,8 @@ void URLRequestJob::PopulateNetErrorDetails(NetErrorDetails* details) const {
 }
 
 bool URLRequestJob::IsRedirectResponse(GURL* location,
-                                       int* http_status_code) {
+                                       int* http_status_code,
+                                       bool* insecure_scheme_was_upgraded) {
   // For non-HTTP jobs, headers will be null.
   HttpResponseHeaders* headers = request_->response_headers();
   if (!headers)
@@ -192,11 +193,13 @@ bool URLRequestJob::IsRedirectResponse(GURL* location,
   std::string value;
   if (!headers->IsRedirect(&value))
     return false;
+  *insecure_scheme_was_upgraded = false;
   *location = request_->url().Resolve(value);
   // If this a redirect to HTTP of a request that had the
   // 'upgrade-insecure-requests' policy set, upgrade it to HTTPS.
   if (request_->upgrade_if_insecure()) {
     if (location->SchemeIs("http")) {
+      *insecure_scheme_was_upgraded = true;
       GURL::Replacements replacements;
       replacements.SetSchemeStr("https");
       *location = location->ReplaceComponents(replacements);
@@ -397,8 +400,10 @@ void URLRequestJob::NotifyHeadersComplete() {
 
   GURL new_location;
   int http_status_code;
+  bool insecure_scheme_was_upgraded;
 
-  if (IsRedirectResponse(&new_location, &http_status_code)) {
+  if (IsRedirectResponse(&new_location, &http_status_code,
+                         &insecure_scheme_was_upgraded)) {
     // Redirect response bodies are not read. Notify the transaction
     // so it does not treat being stopped as an error.
     DoneReadingRedirectResponse();
@@ -423,7 +428,8 @@ void URLRequestJob::NotifyHeadersComplete() {
         request_->method(), request_->url(), request_->site_for_cookies(),
         request_->first_party_url_policy(), request_->referrer_policy(),
         request_->referrer(), request_->response_headers(), http_status_code,
-        new_location, request_->ssl_info().token_binding_negotiated,
+        new_location, insecure_scheme_was_upgraded,
+        request_->ssl_info().token_binding_negotiated,
         CopyFragmentOnRedirect(new_location));
     bool defer_redirect = false;
     request_->NotifyReceivedRedirect(redirect_info, &defer_redirect);

@@ -68,6 +68,7 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
+#include "url/url_constants.h"
 
 namespace content {
 
@@ -587,7 +588,8 @@ void NavigationRequest::BeginNavigation() {
   // otherwise block. Similarly, the NavigationHandle is created afterwards, so
   // that it gets the request URL after potentially being modified by CSP.
   net::Error net_error = CheckContentSecurityPolicy(
-      false /* is redirect */, false /* is_response_check */);
+      false /* is redirect */, false /* url_upgraded_after_redirect */,
+      false /* is_response_check */);
   if (net_error != net::OK) {
     // Create a navigation handle so that the correct error code can be set on
     // it by OnRequestFailed().
@@ -792,7 +794,6 @@ void NavigationRequest::OnRequestRedirected(
     return;
   }
 #endif
-
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRedirectToURL(
           redirect_info.new_url)) {
     DVLOG(1) << "Denied redirect for "
@@ -843,7 +844,8 @@ void NavigationRequest::OnRequestRedirected(
   // gives CSP a chance to modify requests that NavigationThrottles would
   // otherwise block.
   net::Error net_error = CheckContentSecurityPolicy(
-      true /* is redirect */, false /* is_response_check */);
+      true /* is redirect */, redirect_info.insecure_scheme_was_upgraded,
+      false /* is_response_check */);
   if (net_error != net::OK) {
     OnRequestFailed(network::URLLoaderCompletionStatus(net_error));
 
@@ -1067,7 +1069,8 @@ void NavigationRequest::OnResponseStarted(
   // redirect or not in order to perform its checks. This is the reason
   // why we need to check the CSP both on request and response.
   net::Error net_error = CheckContentSecurityPolicy(
-      navigation_handle_->WasServerRedirect(), true /* is_response_check */);
+      navigation_handle_->WasServerRedirect(),
+      false /* url_upgraded_after_redirect */, true /* is_response_check */);
   if (net_error != net::OK) {
     OnRequestFailedInternal(network::URLLoaderCompletionStatus(net_error),
                             false /* skip_throttles */,
@@ -1616,10 +1619,23 @@ bool NavigationRequest::IsAllowedByCSPDirective(
     CSPContext* context,
     CSPDirective::Name directive,
     bool is_redirect,
+    bool url_upgraded_after_redirect,
     bool is_response_check,
     CSPContext::CheckCSPDisposition disposition) {
+  GURL url;
+  // If this request was upgraded in the net stack, downgrade the URL back to
+  // HTTP before checking report only policies.
+  if (url_upgraded_after_redirect &&
+      disposition == CSPContext::CheckCSPDisposition::CHECK_REPORT_ONLY_CSP &&
+      common_params_.url.SchemeIs(url::kHttpsScheme)) {
+    GURL::Replacements replacements;
+    replacements.SetSchemeStr(url::kHttpScheme);
+    url = common_params_.url.ReplaceComponents(replacements);
+  } else {
+    url = common_params_.url;
+  }
   return context->IsAllowedByCsp(
-      directive, common_params_.url, is_redirect, is_response_check,
+      directive, url, is_redirect, is_response_check,
       common_params_.source_location.value_or(SourceLocation()), disposition,
       begin_params_->is_form_submission);
 }
@@ -1627,17 +1643,18 @@ bool NavigationRequest::IsAllowedByCSPDirective(
 net::Error NavigationRequest::CheckCSPDirectives(
     RenderFrameHostImpl* parent,
     bool is_redirect,
+    bool url_upgraded_after_redirect,
     bool is_response_check,
     CSPContext::CheckCSPDisposition disposition) {
   bool navigate_to_allowed = IsAllowedByCSPDirective(
       initiator_csp_context_.get(), CSPDirective::NavigateTo, is_redirect,
-      is_response_check, disposition);
+      url_upgraded_after_redirect, is_response_check, disposition);
 
   bool frame_src_allowed = true;
   if (parent) {
-    frame_src_allowed =
-        IsAllowedByCSPDirective(parent, CSPDirective::FrameSrc, is_redirect,
-                                is_response_check, disposition);
+    frame_src_allowed = IsAllowedByCSPDirective(
+        parent, CSPDirective::FrameSrc, is_redirect,
+        url_upgraded_after_redirect, is_response_check, disposition);
   }
 
   if (navigate_to_allowed && frame_src_allowed)
@@ -1657,6 +1674,7 @@ net::Error NavigationRequest::CheckCSPDirectives(
 
 net::Error NavigationRequest::CheckContentSecurityPolicy(
     bool is_redirect,
+    bool url_upgraded_after_redirect,
     bool is_response_check) {
   if (common_params_.url.SchemeIs(url::kAboutScheme))
     return net::OK;
@@ -1688,8 +1706,8 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
   // requests that are upgraded in step 2.
 
   net::Error report_only_csp_status =
-      CheckCSPDirectives(parent, is_redirect, is_response_check,
-                         CSPContext::CHECK_REPORT_ONLY_CSP);
+      CheckCSPDirectives(parent, is_redirect, url_upgraded_after_redirect,
+                         is_response_check, CSPContext::CHECK_REPORT_ONLY_CSP);
 
   // upgrade-insecure-requests is handled in the network code for redirects,
   // only do the upgrade here if this is not a redirect.
@@ -1702,8 +1720,9 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
     }
   }
 
-  net::Error enforced_csp_status = CheckCSPDirectives(
-      parent, is_redirect, is_response_check, CSPContext::CHECK_ENFORCED_CSP);
+  net::Error enforced_csp_status =
+      CheckCSPDirectives(parent, is_redirect, url_upgraded_after_redirect,
+                         is_response_check, CSPContext::CHECK_ENFORCED_CSP);
   if (enforced_csp_status != net::OK)
     return enforced_csp_status;
   return report_only_csp_status;

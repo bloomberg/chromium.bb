@@ -280,6 +280,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   bool IsAllowedByCSPDirective(CSPContext* context,
                                CSPDirective::Name directive,
                                bool is_redirect,
+                               bool url_upgraded_after_redirect,
                                bool is_response_check,
                                CSPContext::CheckCSPDisposition disposition);
 
@@ -289,6 +290,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // net::ERR_BLOCKED_BY_CLIENT depending on which checks fail.
   net::Error CheckCSPDirectives(RenderFrameHostImpl* parent,
                                 bool is_redirect,
+                                bool url_upgraded_after_redirect,
                                 bool is_response_check,
                                 CSPContext::CheckCSPDisposition disposition);
 
@@ -299,6 +301,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // - The navigation request may be upgraded from HTTP to HTTPS if a CSP is
   //   configured to upgrade insecure requests.
   net::Error CheckContentSecurityPolicy(bool is_redirect,
+                                        bool url_upgraded_after_redirect,
                                         bool is_response_check);
 
   // This enum describes the result of the credentialed subresource check for

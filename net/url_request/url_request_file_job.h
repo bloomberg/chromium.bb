@@ -41,7 +41,9 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
   void Start() override;
   void Kill() override;
   int ReadRawData(IOBuffer* buf, int buf_size) override;
-  bool IsRedirectResponse(GURL* location, int* http_status_code) override;
+  bool IsRedirectResponse(GURL* location,
+                          int* http_status_code,
+                          bool* insecure_scheme_was_upgraded) override;
   bool GetMimeType(std::string* mime_type) const override;
   void SetExtraRequestHeaders(const HttpRequestHeaders& headers) override;
 

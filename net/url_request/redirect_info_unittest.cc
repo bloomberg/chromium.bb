@@ -36,6 +36,7 @@ TEST(RedirectInfoTest, MethodForRedirect) {
       net::URLRequest::NEVER_CLEAR_REFERRER;
   const std::string kOriginalReferrer = "";
   const GURL kNewLocation = GURL("https://foo.test/redirected");
+  const bool kInsecureSchemeWasUpgraded = false;
   const bool kTokenBindingNegotiated = false;
   const bool kCopyFragment = true;
 
@@ -48,8 +49,8 @@ TEST(RedirectInfoTest, MethodForRedirect) {
         test.original_method, kOriginalUrl, kOriginalSiteForCookies,
         kOriginalFirstPartyUrlPolicy, kOriginalReferrerPolicy,
         kOriginalReferrer, nullptr /* response_headers */,
-        test.http_status_code, kNewLocation, kTokenBindingNegotiated,
-        kCopyFragment);
+        test.http_status_code, kNewLocation, kInsecureSchemeWasUpgraded,
+        kTokenBindingNegotiated, kCopyFragment);
 
     EXPECT_EQ(test.expected_new_method, redirect_info.new_method);
     EXPECT_EQ(test.http_status_code, redirect_info.status_code);
@@ -87,6 +88,7 @@ TEST(RedirectInfoTest, CopyFragment) {
       net::URLRequest::NEVER_CLEAR_REFERRER;
   const std::string kOriginalReferrer = "";
   const int kHttpStatusCode = 301;
+  const bool kInsecureSchemeWasUpgraded = false;
   const bool kTokenBindingNegotiated = false;
 
   for (const auto& test : kTests) {
@@ -99,7 +101,8 @@ TEST(RedirectInfoTest, CopyFragment) {
         KOriginalMethod, GURL(test.original_url), kOriginalSiteForCookies,
         kOriginalFirstPartyUrlPolicy, kOriginalReferrerPolicy,
         kOriginalReferrer, nullptr /* response_headers */, kHttpStatusCode,
-        GURL(test.new_location), kTokenBindingNegotiated, test.copy_fragment);
+        GURL(test.new_location), kInsecureSchemeWasUpgraded,
+        kTokenBindingNegotiated, test.copy_fragment);
 
     EXPECT_EQ(GURL(test.expected_new_url), redirect_info.new_url);
   }
@@ -123,6 +126,7 @@ TEST(RedirectInfoTest, FirstPartyURLPolicy) {
       net::URLRequest::NEVER_CLEAR_REFERRER;
   const std::string kOriginalReferrer = "";
   const GURL kNewLocation = GURL("https://foo.test/redirected");
+  const bool kInsecureSchemeWasUpgraded = false;
   const int kHttpStatusCode = 301;
   const bool kTokenBindingNegotiated = false;
   const bool kCopyFragment = true;
@@ -136,7 +140,8 @@ TEST(RedirectInfoTest, FirstPartyURLPolicy) {
         KOriginalMethod, kOriginalUrl, kOriginalSiteForCookies,
         test.original_first_party_url_policy, kOriginalReferrerPolicy,
         kOriginalReferrer, nullptr /* response_headers */, kHttpStatusCode,
-        kNewLocation, kTokenBindingNegotiated, kCopyFragment);
+        kNewLocation, kInsecureSchemeWasUpgraded, kTokenBindingNegotiated,
+        kCopyFragment);
 
     EXPECT_EQ(GURL(test.expected_new_site_for_cookies),
               redirect_info.new_site_for_cookies);
@@ -420,6 +425,7 @@ TEST(RedirectInfoTest, ReferrerPolicy) {
   const GURL kOriginalSiteForCookies = GURL("https://foo.test/");
   const URLRequest::FirstPartyURLPolicy kOriginalFirstPartyUrlPolicy =
       net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
+  const bool kInsecureSchemeWasUpgraded = false;
   const bool kTokenBindingNegotiated = false;
   const bool kCopyFragment = true;
 
@@ -450,7 +456,7 @@ TEST(RedirectInfoTest, ReferrerPolicy) {
         kOriginalFirstPartyUrlPolicy, test.original_referrer_policy,
         test.original_referrer, response_headers.get(),
         response_headers->response_code(), new_location,
-        kTokenBindingNegotiated, kCopyFragment);
+        kInsecureSchemeWasUpgraded, kTokenBindingNegotiated, kCopyFragment);
 
     EXPECT_EQ(test.expected_new_referrer_policy,
               redirect_info.new_referrer_policy);
@@ -482,6 +488,7 @@ TEST(RedirectInfoTest, ReferredTokenBinding) {
       net::URLRequest::NEVER_CLEAR_REFERRER;
   const std::string kOriginalReferrer = "";
   const GURL kNewLocation = GURL("https://bar.test/redirected");
+  const bool kInsecureSchemeWasUpgraded = false;
   const bool kCopyFragment = true;
 
   for (const auto& test : kTests) {
@@ -505,7 +512,8 @@ TEST(RedirectInfoTest, ReferredTokenBinding) {
         kOriginalFirstPartyUrlPolicy, kOriginalReferrerPolicy,
         kOriginalReferrer, response_headers.get(),
         response_headers->response_code(), kNewLocation,
-        test.token_binding_negotiated, kCopyFragment);
+        kInsecureSchemeWasUpgraded, test.token_binding_negotiated,
+        kCopyFragment);
 
     EXPECT_EQ(test.expected_referred_token_binding_host,
               redirect_info.referred_token_binding_host);
