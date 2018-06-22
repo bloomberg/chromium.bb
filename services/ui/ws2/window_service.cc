@@ -21,11 +21,15 @@ namespace ws2 {
 WindowService::WindowService(
     WindowServiceDelegate* delegate,
     std::unique_ptr<GpuInterfaceProvider> gpu_interface_provider,
-    aura::client::FocusClient* focus_client)
+    aura::client::FocusClient* focus_client,
+    bool decrement_client_ids)
     : delegate_(delegate),
       gpu_interface_provider_(std::move(gpu_interface_provider)),
       screen_provider_(std::make_unique<ScreenProvider>()),
       focus_client_(focus_client),
+      next_client_id_(decrement_client_ids ? kInitialClientIdDecrement
+                                           : kInitialClientId),
+      decrement_client_ids_(decrement_client_ids),
       ime_registrar_(&ime_driver_) {
   DCHECK(focus_client);  // A |focus_client| must be provided.
   // MouseLocationManager is necessary for providing the shared memory with the
@@ -57,8 +61,10 @@ ServerWindow* WindowService::GetServerWindowForWindowCreateIfNecessary(
 
 std::unique_ptr<WindowTree> WindowService::CreateWindowTree(
     mojom::WindowTreeClient* window_tree_client) {
-  const ClientSpecificId client_id = next_client_id_++;
-  CHECK_NE(0u, next_client_id_);
+  const ClientSpecificId client_id =
+      decrement_client_ids_ ? next_client_id_-- : next_client_id_++;
+  CHECK_NE(kInvalidClientId, next_client_id_);
+  CHECK_NE(kWindowServerClientId, next_client_id_);
   auto window_tree =
       std::make_unique<WindowTree>(this, client_id, window_tree_client);
   window_trees_.insert(window_tree.get());

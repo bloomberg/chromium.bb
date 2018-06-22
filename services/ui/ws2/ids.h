@@ -15,12 +15,22 @@ namespace ws2 {
 
 // A client id used to indicate no client. That is, no WindowTree ever gets this
 // id.
-const ClientSpecificId kInvalidClientId = 0;
+constexpr ClientSpecificId kInvalidClientId = 0;
 
-const Id kInvalidTransportId = 0;
+constexpr Id kInvalidTransportId = 0;
 
 // A client id used to indicate WindowServer.
-const ClientSpecificId kWindowServerClientId = 1;
+constexpr ClientSpecificId kWindowServerClientId = 1;
+
+// The initial id assigned to window service clients, incremented thereafter.
+constexpr ClientSpecificId kInitialClientId = 2;
+
+// The initial id assigned to window service clients in a decrementing mode.
+// Used when Chrome hosts Ash in the browser process; in that configuration,
+// Content connects directly to Viz and assigns incrementing FrameSinkIds to
+// renderers, so the window service uses decrementing ids to avoid conflicts.
+constexpr ClientSpecificId kInitialClientIdDecrement =
+    std::numeric_limits<ClientSpecificId>::max();
 
 // Used for ids assigned by the client.
 using ClientWindowId = viz::FrameSinkId;

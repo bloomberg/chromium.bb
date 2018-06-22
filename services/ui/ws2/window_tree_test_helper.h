@@ -14,6 +14,7 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws2/ids.h"
+#include "services/ui/ws2/window_tree.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
@@ -35,7 +36,6 @@ enum class EventTargetingPolicy;
 namespace ws2 {
 
 class Embedding;
-class WindowTree;
 
 // Used for accessing private members of WindowTree in tests.
 class WindowTreeTestHelper {
@@ -44,6 +44,8 @@ class WindowTreeTestHelper {
   ~WindowTreeTestHelper();
 
   mojom::WindowTree* window_tree();
+
+  ClientSpecificId client_id() const { return window_tree_->client_id_; }
 
   mojom::WindowDataPtr WindowToWindowData(aura::Window* window);
 

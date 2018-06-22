@@ -45,9 +45,9 @@
 
 namespace ui {
 namespace {
-// The client_id used here should not conflict with the client_id generated
-// from RenderWidgetHostImpl and client_id(0) used by aura::WindowPortMus.
-constexpr uint32_t kDefaultClientId = std::numeric_limits<uint32_t>::max();
+
+// This should not conflict with ids from RenderWidgetHostImpl or WindowService.
+constexpr uint32_t kDefaultClientId = std::numeric_limits<uint32_t>::max() / 2;
 
 class FakeReflector : public Reflector {
  public:
