@@ -333,13 +333,17 @@ bool ExternalFileURLRequestJob::GetMimeType(std::string* mime_type) const {
   return !mime_type->empty();
 }
 
-bool ExternalFileURLRequestJob::IsRedirectResponse(GURL* location,
-                                                   int* http_status_code) {
+bool ExternalFileURLRequestJob::IsRedirectResponse(
+    GURL* location,
+    int* http_status_code,
+    bool* insecure_scheme_was_upgraded) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   if (redirect_url_.is_empty())
     return false;
 
   // Redirect a hosted document.
+  *insecure_scheme_was_upgraded = false;
   *location = redirect_url_;
   const int kHttpFound = 302;
   *http_status_code = kHttpFound;

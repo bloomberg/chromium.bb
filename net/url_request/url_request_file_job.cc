@@ -108,7 +108,8 @@ int URLRequestFileJob::ReadRawData(IOBuffer* dest, int dest_size) {
 }
 
 bool URLRequestFileJob::IsRedirectResponse(GURL* location,
-                                           int* http_status_code) {
+                                           int* http_status_code,
+                                           bool* insecure_scheme_was_upgraded) {
   if (meta_info_.is_directory) {
     // This happens when we discovered the file is a directory, so needs a
     // slash at the end of the path.
@@ -117,6 +118,7 @@ bool URLRequestFileJob::IsRedirectResponse(GURL* location,
     GURL::Replacements replacements;
     replacements.SetPathStr(new_path);
 
+    *insecure_scheme_was_upgraded = false;
     *location = request_->url().ReplaceComponents(replacements);
     *http_status_code = 301;  // simulate a permanent redirect
     return true;

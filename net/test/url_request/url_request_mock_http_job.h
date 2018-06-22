@@ -39,7 +39,9 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
   bool GetMimeType(std::string* mime_type) const override;
   bool GetCharset(std::string* charset) override;
   void GetResponseInfo(HttpResponseInfo* info) override;
-  bool IsRedirectResponse(GURL* location, int* http_status_code) override;
+  bool IsRedirectResponse(GURL* location,
+                          int* http_status_code,
+                          bool* insecure_scheme_was_upgraded) override;
 
   // URLRequestFileJob overridess.
   void OnReadComplete(net::IOBuffer* buffer, int result) override;

@@ -12788,6 +12788,7 @@ TEST_F(URLRequestTest, UpgradeIfInsecureFlagSet) {
   replacements.SetSchemeStr("https");
   EXPECT_EQ(kRedirectUrl.ReplaceComponents(replacements),
             d.redirect_info().new_url);
+  EXPECT_TRUE(d.redirect_info().insecure_scheme_was_upgraded);
 }
 
 TEST_F(URLRequestTest, UpgradeIfInsecureFlagSetExplicitPort80) {
@@ -12812,6 +12813,7 @@ TEST_F(URLRequestTest, UpgradeIfInsecureFlagSetExplicitPort80) {
   // The scheme should now be https, and the effective port should now be 443.
   EXPECT_TRUE(d.redirect_info().new_url.SchemeIs("https"));
   EXPECT_EQ(d.redirect_info().new_url.EffectiveIntPort(), 443);
+  EXPECT_TRUE(d.redirect_info().insecure_scheme_was_upgraded);
 }
 
 TEST_F(URLRequestTest, UpgradeIfInsecureFlagSetNonStandardPort) {
@@ -12836,6 +12838,7 @@ TEST_F(URLRequestTest, UpgradeIfInsecureFlagSetNonStandardPort) {
   replacements.SetSchemeStr("https");
   EXPECT_EQ(kRedirectUrl.ReplaceComponents(replacements),
             d.redirect_info().new_url);
+  EXPECT_TRUE(d.redirect_info().insecure_scheme_was_upgraded);
 }
 
 TEST_F(URLRequestTest, UpgradeIfInsecureFlagNotSet) {
@@ -12856,6 +12859,7 @@ TEST_F(URLRequestTest, UpgradeIfInsecureFlagNotSet) {
   // The redirect URL should not be changed if the upgrade_if_insecure flag is
   // not set.
   EXPECT_EQ(kRedirectUrl, d.redirect_info().new_url);
+  EXPECT_FALSE(d.redirect_info().insecure_scheme_was_upgraded);
 }
 
 // Test that URLRequests get properly tagged.

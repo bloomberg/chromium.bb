@@ -121,7 +121,8 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
       original_request.referrer_policy,
       network::ComputeReferrer(original_request.referrer),
       response_head.headers.get(), response_head.headers->response_code(),
-      original_request.url.Resolve(new_location), token_binding_negotiated);
+      original_request.url.Resolve(new_location), false,
+      token_binding_negotiated);
 }
 
 int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(

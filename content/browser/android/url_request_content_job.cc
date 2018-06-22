@@ -81,8 +81,10 @@ int URLRequestContentJob::ReadRawData(net::IOBuffer* dest, int dest_size) {
   return rv;
 }
 
-bool URLRequestContentJob::IsRedirectResponse(GURL* location,
-                                              int* http_status_code) {
+bool URLRequestContentJob::IsRedirectResponse(
+    GURL* location,
+    int* http_status_code,
+    bool* insecure_scheme_was_upgraded) {
   return false;
 }
 

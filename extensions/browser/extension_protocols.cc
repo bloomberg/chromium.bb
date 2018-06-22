@@ -239,7 +239,9 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
                    base::Owned(last_modified_time)));
   }
 
-  bool IsRedirectResponse(GURL* location, int* http_status_code) override {
+  bool IsRedirectResponse(GURL* location,
+                          int* http_status_code,
+                          bool* insecure_scheme_was_upgraded) override {
     return false;
   }
 
