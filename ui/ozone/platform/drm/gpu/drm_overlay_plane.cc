@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/common/linux/overlay_plane.h"
+#include "ui/ozone/platform/drm/gpu/drm_overlay_plane.h"
 
 #include <stddef.h>
 
-#include "ui/ozone/common/linux/scanout_buffer.h"
+#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
 

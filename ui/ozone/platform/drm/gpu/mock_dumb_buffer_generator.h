@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 
+#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer_generator.h"
 
 namespace ui {
