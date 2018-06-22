@@ -397,7 +397,7 @@ class LitePage(IntegrationTest):
       test_driver.AddChromeArg('--force-effective-connection-type=2G')
       # Set exp=client_test_icaspr to force iCASPR response.
       test_driver.AddChromeArg(
-          '--data-reduction-proxy-experiment=client_test_icaspr')
+          '--data-reduction-proxy-experiment=ihdp_integration')
 
       test_driver.LoadURL('http://check.googlezip.net/previews/ihdp.html')
 
