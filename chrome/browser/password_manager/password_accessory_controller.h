@@ -54,6 +54,9 @@ class PasswordAccessoryController
   void OnFillingTriggered(bool is_password,
                           const base::string16& textToFill) const;
 
+  // Called by the UI code because a user triggered the |selectedOption|.
+  void OnOptionSelected(const base::string16& selectedOption) const;
+
   // The web page view containing the focused field.
   gfx::NativeView container_view() const;
 

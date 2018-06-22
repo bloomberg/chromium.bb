@@ -18,6 +18,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#include "chrome/browser/android/preferences/preferences_launcher.h"
+
 using autofill::PasswordForm;
 using Item = PasswordAccessoryViewInterface::AccessoryItem;
 
@@ -101,6 +103,15 @@ void PasswordAccessoryController::OnFillingTriggered(
     return;
   }  // |driver| can be NULL if the tab is being closed.
   driver->FillIntoFocusedField(is_password, textToFill);
+}
+
+void PasswordAccessoryController::OnOptionSelected(
+    const base::string16& selectedOption) const {
+  if (selectedOption ==
+      l10n_util::GetStringUTF16(
+          IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK)) {
+    chrome::android::PreferencesLauncher::ShowPasswordSettings();
+  }
 }
 
 gfx::NativeView PasswordAccessoryController::container_view() const {
