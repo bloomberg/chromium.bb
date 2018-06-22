@@ -98,11 +98,16 @@
   [self stopWithCompletion:nil];
 }
 
+// This method should always execute the |completionHandler|.
 - (void)stopWithCompletion:(ProceduralBlock)completionHandler {
-  [self.historyNavigationController
-      dismissViewControllerAnimated:YES
-                         completion:completionHandler];
-  self.historyNavigationController = nil;
+  if (self.historyNavigationController) {
+    [self.historyNavigationController
+        dismissViewControllerAnimated:YES
+                           completion:completionHandler];
+    self.historyNavigationController = nil;
+  } else if (completionHandler) {
+    completionHandler();
+  }
 }
 
 #pragma mark - HistoryLocalCommands
