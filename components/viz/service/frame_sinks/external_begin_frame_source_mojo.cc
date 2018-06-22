@@ -2,22 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_embedder/external_begin_frame_controller_impl.h"
+#include "components/viz/service/frame_sinks/external_begin_frame_source_mojo.h"
 
 namespace viz {
 
-ExternalBeginFrameControllerImpl::ExternalBeginFrameControllerImpl(
+ExternalBeginFrameSourceMojo::ExternalBeginFrameSourceMojo(
     mojom::ExternalBeginFrameControllerAssociatedRequest controller_request,
     mojom::ExternalBeginFrameControllerClientPtr client)
-    : binding_(this, std::move(controller_request)),
-      client_(std::move(client)),
-      begin_frame_source_(this) {}
+    : ExternalBeginFrameSource(this),
+      binding_(this, std::move(controller_request)),
+      client_(std::move(client)) {}
 
-ExternalBeginFrameControllerImpl::~ExternalBeginFrameControllerImpl() = default;
+ExternalBeginFrameSourceMojo::~ExternalBeginFrameSourceMojo() {
+  DCHECK(!display_);
+}
 
-void ExternalBeginFrameControllerImpl::IssueExternalBeginFrame(
+void ExternalBeginFrameSourceMojo::IssueExternalBeginFrame(
     const BeginFrameArgs& args) {
-  begin_frame_source_.OnBeginFrame(args);
+  OnBeginFrame(args);
 
   // Ensure that Display will receive the BeginFrame (as a missed one), even
   // if it doesn't currently need it. This way, we ensure that
@@ -26,18 +28,23 @@ void ExternalBeginFrameControllerImpl::IssueExternalBeginFrame(
   display_->SetNeedsOneBeginFrame();
 }
 
-void ExternalBeginFrameControllerImpl::OnNeedsBeginFrames(
-    bool needs_begin_frames) {
+void ExternalBeginFrameSourceMojo::OnNeedsBeginFrames(bool needs_begin_frames) {
   needs_begin_frames_ = needs_begin_frames;
   client_->OnNeedsBeginFrames(needs_begin_frames_);
 }
 
-void ExternalBeginFrameControllerImpl::OnDisplayDidFinishFrame(
+void ExternalBeginFrameSourceMojo::OnDisplayDidFinishFrame(
     const BeginFrameAck& ack) {
   client_->OnDisplayDidFinishFrame(ack);
 }
 
-void ExternalBeginFrameControllerImpl::SetDisplay(Display* display) {
+void ExternalBeginFrameSourceMojo::OnDisplayDestroyed() {
+  // As part of destruction, we are automatically removed as a display
+  // observer. No need to call RemoveObserver.
+  display_ = nullptr;
+}
+
+void ExternalBeginFrameSourceMojo::SetDisplay(Display* display) {
   if (display_)
     display_->RemoveObserver(this);
   display_ = display;

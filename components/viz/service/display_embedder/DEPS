@@ -47,10 +47,6 @@ specific_include_rules = {
     "+cc/test",
     "+third_party/khronos/GLES2",
   ],
-  # TODO(kylechar): Move this class to components/viz/service/frame_sinks/.
-  "external_begin_frame_controller_impl.h": [
-    "+components/viz/service/display/display.h",
-  ],
   # TODO(kylechar): Break these dependencies.
   "gpu_display_provider.cc": [
     "+components/viz/service/display/display.h",

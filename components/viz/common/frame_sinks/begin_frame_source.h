@@ -262,7 +262,9 @@ class VIZ_COMMON_EXPORT ExternalBeginFrameSourceClient {
 // an observable BeginFrameSource.
 class VIZ_COMMON_EXPORT ExternalBeginFrameSource : public BeginFrameSource {
  public:
-  // Client lifetime must be preserved by owner past the lifetime of this class.
+  // Client lifetime must be preserved by owner for the lifetime of the class.
+  // In order to allow derived classes to implement the client interface, no
+  // calls to |client| are made during construction / destruction.
   explicit ExternalBeginFrameSource(ExternalBeginFrameSourceClient* client);
   ~ExternalBeginFrameSource() override;
 

@@ -61,6 +61,10 @@ Display::Display(
 }
 
 Display::~Display() {
+  for (auto& observer : observers_)
+    observer.OnDisplayDestroyed();
+  observers_.Clear();
+
   for (auto& callback_list : pending_presented_callbacks_) {
     for (auto& callback : callback_list)
       std::move(callback).Run(gfx::PresentationFeedback::Failure());

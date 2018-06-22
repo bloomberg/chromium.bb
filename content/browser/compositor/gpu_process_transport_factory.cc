@@ -35,9 +35,9 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display_embedder/compositing_mode_reporter_impl.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
-#include "components/viz/service/display_embedder/external_begin_frame_controller_impl.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
+#include "components/viz/service/frame_sinks/external_begin_frame_source_mojo.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
@@ -153,8 +153,8 @@ struct GpuProcessTransportFactory::PerCompositorData {
   // Exactly one of |synthetic_begin_frame_source| and
   // |external_begin_frame_source| is valid at the same time.
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
-  std::unique_ptr<viz::ExternalBeginFrameControllerImpl>
-      external_begin_frame_controller;
+  std::unique_ptr<viz::ExternalBeginFrameSourceMojo>
+      external_begin_frame_source_mojo;
   std::unique_ptr<ui::ExternalBeginFrameControllerClientImpl>
       external_begin_frame_controller_client;
   ReflectorImpl* reflector = nullptr;
@@ -552,8 +552,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     data->reflector->OnSourceSurfaceReady(data->display_output_surface);
 
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
-  std::unique_ptr<viz::ExternalBeginFrameControllerImpl>
-      external_begin_frame_controller;
+  std::unique_ptr<viz::ExternalBeginFrameSourceMojo>
+      external_begin_frame_source_mojo;
   std::unique_ptr<ui::ExternalBeginFrameControllerClientImpl>
       external_begin_frame_controller_client;
 
@@ -563,14 +563,14 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         std::make_unique<ui::ExternalBeginFrameControllerClientImpl>(
             compositor.get());
     // We don't bind the controller mojo interface, since we only use the
-    // ExternalBeginFrameControllerImpl directly and not via mojo (plus, as it
+    // ExternalBeginFrameSourceMojo directly and not via mojo (plus, as it
     // is an associated interface, binding it would require a separate pipe).
     viz::mojom::ExternalBeginFrameControllerAssociatedRequest request = nullptr;
-    external_begin_frame_controller =
-        std::make_unique<viz::ExternalBeginFrameControllerImpl>(
+    external_begin_frame_source_mojo =
+        std::make_unique<viz::ExternalBeginFrameSourceMojo>(
             std::move(request),
             external_begin_frame_controller_client->GetBoundPtr());
-    begin_frame_source = external_begin_frame_controller->begin_frame_source();
+    begin_frame_source = external_begin_frame_source_mojo.get();
   } else if (disable_frame_rate_limit_) {
     synthetic_begin_frame_source =
         std::make_unique<viz::BackToBackBeginFrameSource>(
@@ -593,10 +593,10 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   if (data->synthetic_begin_frame_source) {
     GetFrameSinkManager()->UnregisterBeginFrameSource(
         data->synthetic_begin_frame_source.get());
-  } else if (data->external_begin_frame_controller) {
+  } else if (data->external_begin_frame_source_mojo) {
     GetFrameSinkManager()->UnregisterBeginFrameSource(
-        data->external_begin_frame_controller->begin_frame_source());
-    data->external_begin_frame_controller->SetDisplay(nullptr);
+        data->external_begin_frame_source_mojo.get());
+    data->external_begin_frame_source_mojo->SetDisplay(nullptr);
   }
 
   auto scheduler = std::make_unique<viz::DisplayScheduler>(
@@ -616,12 +616,12 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   // Note that we are careful not to destroy prior BeginFrameSource objects
   // until we have reset |data->display|.
   data->synthetic_begin_frame_source = std::move(synthetic_begin_frame_source);
-  data->external_begin_frame_controller =
-      std::move(external_begin_frame_controller);
+  data->external_begin_frame_source_mojo =
+      std::move(external_begin_frame_source_mojo);
   data->external_begin_frame_controller_client =
       std::move(external_begin_frame_controller_client);
-  if (data->external_begin_frame_controller)
-    data->external_begin_frame_controller->SetDisplay(data->display.get());
+  if (data->external_begin_frame_source_mojo)
+    data->external_begin_frame_source_mojo->SetDisplay(data->display.get());
 
   // The |delegated_output_surface| is given back to the compositor, it
   // delegates to the Display as its root surface. Importantly, it shares the
@@ -724,10 +724,10 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
   if (data->synthetic_begin_frame_source) {
     GetFrameSinkManager()->UnregisterBeginFrameSource(
         data->synthetic_begin_frame_source.get());
-  } else if (data->external_begin_frame_controller) {
+  } else if (data->external_begin_frame_source_mojo) {
     GetFrameSinkManager()->UnregisterBeginFrameSource(
-        data->external_begin_frame_controller->begin_frame_source());
-    data->external_begin_frame_controller->SetDisplay(nullptr);
+        data->external_begin_frame_source_mojo.get());
+    data->external_begin_frame_source_mojo->SetDisplay(nullptr);
   }
   per_compositor_data_.erase(it);
   if (per_compositor_data_.empty()) {
@@ -891,8 +891,8 @@ void GpuProcessTransportFactory::IssueExternalBeginFrame(
     return;
   PerCompositorData* data = it->second.get();
   DCHECK(data);
-  DCHECK(data->external_begin_frame_controller);
-  data->external_begin_frame_controller->IssueExternalBeginFrame(args);
+  DCHECK(data->external_begin_frame_source_mojo);
+  data->external_begin_frame_source_mojo->IssueExternalBeginFrame(args);
 }
 
 void GpuProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,

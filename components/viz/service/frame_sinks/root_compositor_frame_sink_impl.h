@@ -18,7 +18,7 @@
 namespace viz {
 
 class Display;
-class ExternalBeginFrameControllerImpl;
+class ExternalBeginFrameSource;
 class FrameSinkManagerImpl;
 class SyntheticBeginFrameSource;
 
@@ -33,8 +33,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       const FrameSinkId& frame_sink_id,
       std::unique_ptr<Display> display,
       std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source,
-      std::unique_ptr<ExternalBeginFrameControllerImpl>
-          external_begin_frame_controller,
+      std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source,
       mojom::CompositorFrameSinkAssociatedRequest request,
       mojom::CompositorFrameSinkClientPtr client,
       mojom::DisplayPrivateAssociatedRequest display_private_request,
@@ -104,8 +103,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   // it was created with a non-null gpu::SurfaceHandle.
   std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source_;
   // If non-null, |synthetic_begin_frame_source_| will not exist.
-  std::unique_ptr<ExternalBeginFrameControllerImpl>
-      external_begin_frame_controller_;
+  std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source_;
   std::unique_ptr<Display> display_;
 
   DISALLOW_COPY_AND_ASSIGN(RootCompositorFrameSinkImpl);

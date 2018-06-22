@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/display.h"
-#include "components/viz/service/display_embedder/external_begin_frame_controller_impl.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 
@@ -21,8 +20,7 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
     const FrameSinkId& frame_sink_id,
     std::unique_ptr<Display> display,
     std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
-    std::unique_ptr<ExternalBeginFrameControllerImpl>
-        external_begin_frame_controller,
+    std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source,
     mojom::CompositorFrameSinkAssociatedRequest request,
     mojom::CompositorFrameSinkClientPtr client,
     mojom::DisplayPrivateAssociatedRequest display_private_request,
@@ -38,8 +36,7 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
           true /* is_root */,
           true /* needs_sync_points */)),
       synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
-      external_begin_frame_controller_(
-          std::move(external_begin_frame_controller)),
+      external_begin_frame_source_(std::move(external_begin_frame_source)),
       display_(std::move(display)) {
   DCHECK(begin_frame_source());
   DCHECK(display_);
@@ -47,8 +44,6 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
   compositor_frame_sink_binding_.set_connection_error_handler(
       base::Bind(&RootCompositorFrameSinkImpl::OnClientConnectionLost,
                  base::Unretained(this)));
-  if (external_begin_frame_controller_)
-    external_begin_frame_controller_->SetDisplay(display_.get());
   frame_sink_manager->RegisterBeginFrameSource(begin_frame_source(),
                                                frame_sink_id);
   display_->Initialize(this, frame_sink_manager->surface_manager());
@@ -58,8 +53,6 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
 RootCompositorFrameSinkImpl::~RootCompositorFrameSinkImpl() {
   support_->frame_sink_manager()->UnregisterBeginFrameSource(
       begin_frame_source());
-  if (external_begin_frame_controller_)
-    external_begin_frame_controller_->SetDisplay(nullptr);
 }
 
 void RootCompositorFrameSinkImpl::SetDisplayVisible(bool visible) {
@@ -216,8 +209,8 @@ void RootCompositorFrameSinkImpl::OnClientConnectionLost() {
 }
 
 BeginFrameSource* RootCompositorFrameSinkImpl::begin_frame_source() {
-  if (external_begin_frame_controller_)
-    return external_begin_frame_controller_->begin_frame_source();
+  if (external_begin_frame_source_)
+    return external_begin_frame_source_.get();
   return synthetic_begin_frame_source_.get();
 }
 
