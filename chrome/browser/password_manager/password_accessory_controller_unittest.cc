@@ -7,11 +7,19 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/mock_callback.h"
 #include "chrome/browser/password_manager/password_accessory_view_interface.h"
+#include "chrome/browser/password_manager/password_generation_dialog_view_interface.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/password_generation_util.h"
+#include "components/autofill/core/common/signatures_util.h"
+#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,15 +27,17 @@
 
 namespace {
 using autofill::PasswordForm;
+using autofill::password_generation::PasswordGenerationUIData;
 using base::ASCIIToUTF16;
 using base::UTF16ToASCII;
 using base::UTF16ToWide;
 using testing::_;
+using testing::ByMove;
 using testing::ElementsAre;
-using testing::Eq;
 using testing::Mock;
 using testing::NotNull;
 using testing::PrintToString;
+using testing::Return;
 using testing::StrictMock;
 using AccessoryItem = PasswordAccessoryViewInterface::AccessoryItem;
 using ItemType = AccessoryItem::Type;
@@ -47,9 +57,51 @@ class MockPasswordAccessoryView : public PasswordAccessoryViewInterface {
                     const std::vector<AccessoryItem>& items));
   MOCK_METHOD1(OnFillingTriggered, void(const base::string16& textToFill));
   MOCK_METHOD0(OnViewDestroyed, void());
+  MOCK_METHOD1(OnAutomaticGenerationStatusChanged, void(bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordAccessoryView);
+};
+
+class MockPasswordManagerDriver
+    : public password_manager::StubPasswordManagerDriver {
+ public:
+  MockPasswordManagerDriver() = default;
+
+  MOCK_METHOD0(GetPasswordGenerationManager,
+               password_manager::PasswordGenerationManager*());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockPasswordManagerDriver);
+};
+
+class MockPasswordGenerationManager
+    : public password_manager::PasswordGenerationManager {
+ public:
+  MockPasswordGenerationManager(password_manager::PasswordManagerClient* client,
+                                password_manager::PasswordManagerDriver* driver)
+      : password_manager::PasswordGenerationManager(client, driver) {}
+
+  MOCK_METHOD4(GeneratePassword,
+               base::string16(const GURL&,
+                              autofill::FormSignature,
+                              autofill::FieldSignature,
+                              uint32_t));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockPasswordGenerationManager);
+};
+
+// Mock modal dialog view used to bypass the need of a valid top level window.
+class MockPasswordGenerationDialogView
+    : public PasswordGenerationDialogViewInterface {
+ public:
+  MockPasswordGenerationDialogView() = default;
+
+  MOCK_METHOD1(Show, void(base::string16&));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockPasswordGenerationDialogView);
 };
 
 // Pretty prints input for the |MatchesItem| matcher.
@@ -138,6 +190,30 @@ base::string16 manage_passwords_str() {
       IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK);
 }
 
+PasswordGenerationUIData GetTestGenerationUIData1() {
+  PasswordForm form;
+  form.form_data = autofill::FormData();
+  form.form_data.action = GURL("http://www.example1.com/accounts/Login");
+  form.form_data.origin = GURL("http://www.example1.com/accounts/LoginAuth");
+  PasswordGenerationUIData data;
+  data.password_form = form;
+  data.generation_element = ASCIIToUTF16("testelement1");
+  data.max_length = 10;
+  return data;
+}
+
+PasswordGenerationUIData GetTestGenerationUIData2() {
+  PasswordForm form;
+  form.form_data = autofill::FormData();
+  form.form_data.action = GURL("http://www.example2.com/accounts/Login");
+  form.form_data.origin = GURL("http://www.example2.com/accounts/LoginAuth");
+  PasswordGenerationUIData data;
+  data.password_form = form;
+  data.generation_element = ASCIIToUTF16("testelement2");
+  data.max_length = 11;
+  return data;
+}
+
 }  // namespace
 
 // Automagically used to pretty-print AccessoryItems. Must be in same namespace.
@@ -165,7 +241,8 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
     NavigateAndCommit(GURL(kExampleSite));
     PasswordAccessoryController::CreateForWebContentsForTesting(
         web_contents(),
-        std::make_unique<StrictMock<MockPasswordAccessoryView>>());
+        std::make_unique<StrictMock<MockPasswordAccessoryView>>(),
+        mock_dialog_factory_.Get());
     NavigateAndCommit(GURL("https://example.com"));
   }
 
@@ -176,6 +253,15 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
   MockPasswordAccessoryView* view() {
     return static_cast<MockPasswordAccessoryView*>(controller()->view());
   }
+
+  const base::MockCallback<PasswordAccessoryController::CreateDialogFactory>&
+  mock_dialog_factory() {
+    return mock_dialog_factory_;
+  }
+
+ private:
+  base::MockCallback<PasswordAccessoryController::CreateDialogFactory>
+      mock_dialog_factory_;
 };
 
 TEST_F(PasswordAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
@@ -289,4 +375,56 @@ TEST_F(PasswordAccessoryControllerTest, IgnoresCrossOriginCalls) {
   EXPECT_CALL(*view(), OnItemsAvailable(_, _)).Times(0);
   controller()->OnPasswordsAvailable({CreateEntry("Ben", "S3cur3").first},
                                      GURL("https://other-domain.com"));
+}
+
+TEST_F(PasswordAccessoryControllerTest, RelaysAutomaticGenerationAvailable) {
+  EXPECT_CALL(*view(), OnAutomaticGenerationStatusChanged(true));
+  controller()->OnAutomaticGenerationStatusChanged(
+      true, GetTestGenerationUIData1(), nullptr);
+}
+
+TEST_F(PasswordAccessoryControllerTest, RelaysAutmaticGenerationUnavailable) {
+  EXPECT_CALL(*view(), OnAutomaticGenerationStatusChanged(false));
+  controller()->OnAutomaticGenerationStatusChanged(false, base::nullopt,
+                                                   nullptr);
+}
+// Tests that if AutomaticGenerationStatusChanged(true) is called for different
+// password forms, the form and field signatures used for password generation
+// are updated.
+TEST_F(PasswordAccessoryControllerTest,
+       UpdatesSignaturesForDifferentGenerationForms) {
+  MockPasswordManagerDriver mock_driver;
+  password_manager::StubPasswordManagerClient stub_client;
+  MockPasswordGenerationManager mock_generation_manager(&stub_client,
+                                                        &mock_driver);
+
+  // Called twice for different forms.
+  EXPECT_CALL(*view(), OnAutomaticGenerationStatusChanged(true)).Times(2);
+  controller()->OnAutomaticGenerationStatusChanged(
+      true, GetTestGenerationUIData1(), (&mock_driver)->AsWeakPtr());
+  PasswordGenerationUIData new_ui_data = GetTestGenerationUIData2();
+  controller()->OnAutomaticGenerationStatusChanged(true, new_ui_data,
+                                                   (&mock_driver)->AsWeakPtr());
+
+  autofill::FormSignature form_signature =
+      autofill::CalculateFormSignature(new_ui_data.password_form.form_data);
+  autofill::FieldSignature field_signature =
+      autofill::CalculateFieldSignatureByNameAndType(
+          new_ui_data.generation_element, "password");
+
+  std::unique_ptr<MockPasswordGenerationDialogView> dialog_view =
+      std::make_unique<MockPasswordGenerationDialogView>();
+  MockPasswordGenerationDialogView* raw_dialog_view = dialog_view.get();
+
+  base::string16 generated_password = ASCIIToUTF16("t3stp@ssw0rd");
+  EXPECT_CALL(mock_dialog_factory(), Run)
+      .WillOnce(Return(ByMove(std::move(dialog_view))));
+  EXPECT_CALL(mock_driver, GetPasswordGenerationManager())
+      .WillOnce(Return(&mock_generation_manager));
+  EXPECT_CALL(mock_generation_manager,
+              GeneratePassword(_, form_signature, field_signature,
+                               uint32_t(new_ui_data.max_length)))
+      .WillOnce(Return(generated_password));
+  EXPECT_CALL(*raw_dialog_view, Show(generated_password));
+  controller()->OnGenerationRequested();
 }

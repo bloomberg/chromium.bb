@@ -8,6 +8,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_accessory_view_interface.h"
+#include "chrome/browser/password_manager/password_generation_dialog_view_interface.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -15,7 +16,9 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
+#include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #include "chrome/browser/android/preferences/preferences_launcher.h"
@@ -25,28 +28,54 @@ using Item = PasswordAccessoryViewInterface::AccessoryItem;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordAccessoryController);
 
+struct PasswordAccessoryController::GenerationElementData {
+  GenerationElementData(autofill::FormSignature form_signature,
+                        autofill::FieldSignature field_signature,
+                        uint32_t max_password_length)
+      : form_signature(form_signature),
+        field_signature(field_signature),
+        max_password_length(max_password_length) {}
+
+  // Signature of the form for which password generation is triggered.
+  autofill::FormSignature form_signature;
+
+  // Signature of the field for which password generation is triggered.
+  autofill::FieldSignature field_signature;
+
+  // Maximum length of the generated password.
+  uint32_t max_password_length;
+};
+
 PasswordAccessoryController::PasswordAccessoryController(
     content::WebContents* web_contents)
     : web_contents_(web_contents),
-      view_(PasswordAccessoryViewInterface::Create(this)) {}
+      view_(PasswordAccessoryViewInterface::Create(this)),
+      create_dialog_factory_(
+          base::BindRepeating(&PasswordGenerationDialogViewInterface::Create)) {
+}
 
 // Additional creation functions in unit tests only:
 PasswordAccessoryController::PasswordAccessoryController(
     content::WebContents* web_contents,
-    std::unique_ptr<PasswordAccessoryViewInterface> view)
-    : web_contents_(web_contents), view_(std::move(view)) {}
+    std::unique_ptr<PasswordAccessoryViewInterface> view,
+    CreateDialogFactory create_dialog_factory)
+    : web_contents_(web_contents),
+      view_(std::move(view)),
+      create_dialog_factory_(create_dialog_factory) {}
 
 PasswordAccessoryController::~PasswordAccessoryController() = default;
 
 // static
 void PasswordAccessoryController::CreateForWebContentsForTesting(
     content::WebContents* web_contents,
-    std::unique_ptr<PasswordAccessoryViewInterface> view) {
+    std::unique_ptr<PasswordAccessoryViewInterface> view,
+    CreateDialogFactory create_dialog_factory) {
   DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
   DCHECK(!FromWebContents(web_contents)) << "Controller already attached!";
-  web_contents->SetUserData(UserDataKey(),
-                            base::WrapUnique(new PasswordAccessoryController(
-                                web_contents, std::move(view))));
+  web_contents->SetUserData(
+      UserDataKey(),
+      base::WrapUnique(new PasswordAccessoryController(
+          web_contents, std::move(view), create_dialog_factory)));
 }
 
 void PasswordAccessoryController::OnPasswordsAvailable(
@@ -97,6 +126,27 @@ void PasswordAccessoryController::DidNavigateMainFrame() {
       web_contents_->GetMainFrame()->GetLastCommittedOrigin().GetURL());
 }
 
+void PasswordAccessoryController::OnAutomaticGenerationStatusChanged(
+    bool available,
+    const base::Optional<
+        autofill::password_generation::PasswordGenerationUIData>& ui_data,
+    const base::WeakPtr<password_manager::PasswordManagerDriver>& driver) {
+  target_frame_driver_ = driver;
+  if (available) {
+    DCHECK(ui_data.has_value());
+    generation_element_data_ = std::make_unique<GenerationElementData>(
+        autofill::CalculateFormSignature(
+            ui_data.value().password_form.form_data),
+        autofill::CalculateFieldSignatureByNameAndType(
+            ui_data.value().generation_element, "password"),
+        ui_data.value().max_length);
+  } else {
+    generation_element_data_.reset();
+  }
+  DCHECK(view_);
+  view_->OnAutomaticGenerationStatusChanged(available);
+}
+
 void PasswordAccessoryController::OnFillingTriggered(
     bool is_password,
     const base::string16& textToFill) const {
@@ -122,6 +172,37 @@ void PasswordAccessoryController::OnOptionSelected(
   }
 }
 
+void PasswordAccessoryController::OnGenerationRequested() {
+  if (!target_frame_driver_)
+    return;
+  // TODO(crbug.com/835234): Take the modal dialog logic out of the accessory
+  // controller.
+  dialog_view_ = create_dialog_factory_.Run(this);
+  base::string16 password =
+      target_frame_driver_->GetPasswordGenerationManager()->GeneratePassword(
+          web_contents_->GetLastCommittedURL().GetOrigin(),
+          generation_element_data_->form_signature,
+          generation_element_data_->field_signature,
+          generation_element_data_->max_password_length);
+  dialog_view_->Show(password);
+}
+
+void PasswordAccessoryController::GeneratedPasswordAccepted(
+    const base::string16& password) {
+  if (!target_frame_driver_)
+    return;
+  target_frame_driver_->GeneratedPasswordAccepted(password);
+  dialog_view_.reset();
+}
+
+void PasswordAccessoryController::GeneratedPasswordRejected() {
+  dialog_view_.reset();
+}
+
 gfx::NativeView PasswordAccessoryController::container_view() const {
   return web_contents_->GetNativeView();
+}
+
+gfx::NativeWindow PasswordAccessoryController::native_window() const {
+  return web_contents_->GetTopLevelNativeWindow();
 }

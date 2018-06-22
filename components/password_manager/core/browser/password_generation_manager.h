@@ -74,10 +74,15 @@ class PasswordGenerationManager {
   // password shall be generated.
   // |max_length| refers to the maximum allowed length according to the site and
   // may be 0 if unset.
-  base::string16 GeneratePassword(const GURL& last_committed_url,
-                                  autofill::FormSignature form_signature,
-                                  autofill::FieldSignature field_signature,
-                                  uint32_t max_length);
+  //
+  // Virtual for testing
+  //
+  // TODO(crbug.com/855595): Add a stub for this class to facilitate testing.
+  virtual base::string16 GeneratePassword(
+      const GURL& last_committed_url,
+      autofill::FormSignature form_signature,
+      autofill::FieldSignature field_signature,
+      uint32_t max_length);
 
  private:
   friend class PasswordGenerationManagerTest;

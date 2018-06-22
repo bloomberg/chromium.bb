@@ -3449,6 +3449,15 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
         Tap the home button to get to the new tab page in your current tab
       </message>
 
+      <!-- Password Accessory Strings -->
+      <message name="IDS_PASSWORD_GENERATION_ACCESSORY_BUTTON" desc="Text for the button used to generate a password.">
+          Suggest strong password...
+      </message>
+      <message name="IDS_PASSWORD_GENERATION_ACCESSORY_BUTTON_SHORT" desc="Shortened text for the button used to generate a password. This is used for devices with small screen.">
+          Suggest password...
+      </message>
+
+
       <!-- Launcher Shortcuts -->
       <message name="IDS_DISABLED_INCOGNITO_LAUNCHER_SHORTCUT_MESSAGE" desc="Text for a toast displayed prompting the user to remove the disabled 'New incognito tab' app shortcut and recreate it.">
         Remove and recreate this shortcut

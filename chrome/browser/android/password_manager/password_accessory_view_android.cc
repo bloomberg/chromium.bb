@@ -62,6 +62,16 @@ void PasswordAccessoryViewAndroid::OnItemsAvailable(
       base::android::ToJavaIntArray(env, item_types));
 }
 
+void PasswordAccessoryViewAndroid::OnAutomaticGenerationStatusChanged(
+    bool available) {
+  if (!available && java_object_.is_null())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_PasswordAccessoryBridge_onAutomaticGenerationStatusChanged(
+      env, java_object_, available /* available */);
+}
+
 void PasswordAccessoryViewAndroid::OnFillingTriggered(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
@@ -77,6 +87,12 @@ void PasswordAccessoryViewAndroid::OnOptionSelected(
     const base::android::JavaParamRef<_jstring*>& selectedOption) {
   controller_->OnOptionSelected(
       base::android::ConvertJavaStringToUTF16(selectedOption));
+}
+
+void PasswordAccessoryViewAndroid::OnGenerationRequested(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  controller_->OnGenerationRequested();
 }
 
 // static
