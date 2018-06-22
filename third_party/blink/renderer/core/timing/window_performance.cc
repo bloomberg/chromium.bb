@@ -356,7 +356,7 @@ void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
   for (const auto& entry : event_timings_) {
     int duration_in_ms = std::ceil((end_time - entry->startTime()) / 8) * 8;
     entry->SetDuration(duration_in_ms);
-    if (!first_input_timing_) {
+    if (!first_input_detected_) {
       if (entry->name() == "pointerdown") {
         first_pointer_down_event_timing_ =
             PerformanceEventTiming::CreateFirstInputTiming(entry);
@@ -383,6 +383,7 @@ void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
 void WindowPerformance::DispatchFirstInputTiming(
     PerformanceEventTiming* entry) {
   DCHECK(OriginTrials::eventTimingEnabled(GetExecutionContext()));
+  first_input_detected_ = true;
 
   if (!entry)
     return;
