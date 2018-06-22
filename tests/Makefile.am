@@ -209,6 +209,7 @@ dist_yaml_TESTS =			  \
 	yaml/emphasis-no-context.yaml	  \
 	yaml/example_test.yaml		  \
 	yaml/foo.yaml			  \
+	yaml/hyphenation_nocross_harness.yaml  \
 	yaml/inpos_outpos.yaml		  \
 	yaml/issue-238.yaml		  \
 	yaml/issue-35.yaml		  \
@@ -227,7 +228,6 @@ dist_yaml_TESTS =			  \
 	yaml/multipass.yaml		  \
 	yaml/multipass-negation.yaml	  \
 	yaml/new_emph.yaml		  \
-	yaml/nocross_harness.yaml	  \
 	yaml/noletsignafter.yaml	  \
 	yaml/syllable.yaml
 
