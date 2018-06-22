@@ -488,7 +488,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     private void updateButtonsTint() {
-        mMenuButton.setTint(mUseDarkColors ? mDarkModeTint : mLightModeTint);
+        getMenuButton().setTint(mUseDarkColors ? mDarkModeTint : mLightModeTint);
         updateButtonTint(mCloseButton);
         int numCustomActionButtons = mCustomActionButtons.getChildCount();
         for (int i = 0; i < numCustomActionButtons; i++) {
@@ -791,7 +791,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     @Override
     public View getMenuButtonWrapper() {
         // This class has no menu button wrapper, so return the menu button instead.
-        return mMenuButton;
+        return getMenuButton();
     }
 
     @Override

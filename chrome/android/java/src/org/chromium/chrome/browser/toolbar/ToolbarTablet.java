@@ -115,12 +115,12 @@ public class ToolbarTablet
 
         mBookmarkButton = (TintedImageButton) findViewById(R.id.bookmark_button);
 
-        mMenuButton = (TintedImageButton) findViewById(R.id.menu_button);
-        mMenuButtonWrapper.setVisibility(View.VISIBLE);
+        final View menuButtonWrapper = getMenuButtonWrapper();
+        menuButtonWrapper.setVisibility(View.VISIBLE);
 
         if (mAccessibilitySwitcherButton.getVisibility() == View.GONE
-                && mMenuButtonWrapper.getVisibility() == View.GONE) {
-            ViewCompat.setPaddingRelative((View) mMenuButtonWrapper.getParent(), 0, 0,
+                && menuButtonWrapper.getVisibility() == View.GONE) {
+            ViewCompat.setPaddingRelative((View) menuButtonWrapper.getParent(), 0, 0,
                     getResources().getDimensionPixelSize(R.dimen.tablet_toolbar_end_padding), 0);
         }
 
@@ -235,7 +235,7 @@ public class ToolbarTablet
         mBookmarkButton.setOnClickListener(this);
         mBookmarkButton.setOnLongClickListener(this);
 
-        mMenuButton.setOnKeyListener(new KeyboardNavigationListener() {
+        getMenuButton().setOnKeyListener(new KeyboardNavigationListener() {
             @Override
             public View getNextFocusForward() {
                 return getCurrentTabView();
@@ -248,7 +248,7 @@ public class ToolbarTablet
 
             @Override
             protected boolean handleEnterKeyPress() {
-                return getMenuButtonHelper().onEnterKeyPress(mMenuButton);
+                return getMenuButtonHelper().onEnterKeyPress(getMenuButton());
             }
         });
         if (HomepageManager.isHomepageEnabled()) {
@@ -380,7 +380,7 @@ public class ToolbarTablet
             getProgressBar().setThemeColor(
                     ApiCompatibilityUtils.getColor(getResources(), colorResource), isIncognito());
 
-            mMenuButton.setTint(incognito ? mLightModeTint : mDarkModeTint);
+            getMenuButton().setTint(incognito ? mLightModeTint : mDarkModeTint);
             mHomeButton.setTint(incognito ? mLightModeTint : mDarkModeTint);
             mBackButton.setTint(incognito ? mLightModeTint : mDarkModeTint);
             mForwardButton.setTint(incognito ? mLightModeTint : mDarkModeTint);
@@ -502,7 +502,7 @@ public class ToolbarTablet
             mReloadButton.setEnabled(false);
             mLocationBar.getContainerView().setVisibility(View.INVISIBLE);
             if (mShowMenuBadge) {
-                mMenuBadge.setVisibility(View.GONE);
+                getMenuBadge().setVisibility(View.GONE);
                 setMenuButtonContentDescription(false);
             }
         } else {

@@ -68,10 +68,10 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     /**
      * The ImageButton view that represents the menu button.
      */
-    protected TintedImageButton mMenuButton;
-    protected ImageView mMenuBadge;
-    protected View mMenuButtonWrapper;
-    protected AppMenuButtonHelper mAppMenuButtonHelper;
+    private TintedImageButton mMenuButton;
+    private ImageView mMenuBadge;
+    private View mMenuButtonWrapper;
+    private AppMenuButtonHelper mAppMenuButtonHelper;
 
     protected final ColorStateList mDarkModeTint;
     protected final ColorStateList mLightModeTint;
@@ -298,10 +298,17 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     }
 
     /**
-     * @return The view containing the menu button.
+     * @return The {@link TintedImageButton} containing the menu button.
      */
-    protected View getMenuButton() {
+    protected TintedImageButton getMenuButton() {
         return mMenuButton;
+    }
+
+    /**
+     * @return The view containing the menu badge.
+     */
+    protected View getMenuBadge() {
+        return mMenuBadge;
     }
 
     /**
