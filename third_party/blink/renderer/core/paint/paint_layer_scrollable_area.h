@@ -49,10 +49,10 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/scroll_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/sticky_position_scrolling_constraints.h"
-#include "third_party/blink/renderer/core/paint/paint_invalidation_capable_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_fragment.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 
 namespace blink {
 
@@ -62,6 +62,7 @@ class ComputedStyle;
 class HitTestResult;
 class LayoutBox;
 class LayoutScrollbarPart;
+struct PaintInvalidatorContext;
 class PaintLayer;
 class ScrollingCoordinator;
 class StickyPositionScrollingConstraints;
@@ -114,7 +115,7 @@ struct CORE_EXPORT PaintLayerScrollableAreaRareData {
 // PaintLayerPaintingOverlayScrollbars.
 class CORE_EXPORT PaintLayerScrollableArea final
     : public GarbageCollectedFinalized<PaintLayerScrollableArea>,
-      public PaintInvalidationCapableScrollableArea {
+      public ScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(PaintLayerScrollableArea);
   friend class Internals;
 
@@ -373,7 +374,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
     return HasScrollbar() || ScrollCorner() || Resizer();
   }
 
-  LayoutScrollbarPart* ScrollCorner() const override { return scroll_corner_; }
+  LayoutScrollbarPart* ScrollCorner() const { return scroll_corner_; }
 
   void Resize(const IntPoint& pos, const LayoutSize& old_offset);
   IntSize OffsetFromResizeCorner(const IntPoint& absolute_point) const;
@@ -423,7 +424,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool ScrollsOverflow() const { return scrolls_overflow_; }
 
   // Rectangle encompassing the scroll corner and resizer rect.
-  IntRect ScrollCornerAndResizerRect() const final;
+  IntRect ScrollCornerAndResizerRect() const;
 
   void UpdateNeedsCompositedScrolling(bool layer_has_been_composited = false);
   bool NeedsCompositedScrolling() const { return needs_composited_scrolling_; }
@@ -441,7 +442,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   PaintLayer* Layer() const override;
 
-  LayoutScrollbarPart* Resizer() const override { return resizer_; }
+  LayoutScrollbarPart* Resizer() const { return resizer_; }
 
   const IntPoint& CachedOverlayScrollbarOffset() {
     return cached_overlay_scrollbar_offset_;
@@ -521,6 +522,16 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   ScrollbarTheme& GetPageScrollbarTheme() const override;
 
+  void WillRemoveScrollbar(Scrollbar&, ScrollbarOrientation) override;
+
+  void InvalidatePaintOfScrollControlsIfNeeded(const PaintInvalidatorContext&);
+
+  // Should be called when the previous visual rects are no longer valid.
+  void ClearPreviousVisualRects();
+
+  void DidScrollWithScrollbar(ScrollbarPart, ScrollbarOrientation) override;
+  CompositorElementId GetCompositorElementId() const override;
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -593,6 +604,12 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   IntRect CornerRect(const IntRect& bounds) const;
 
+  void ScrollControlWasSetNeedsPaintInvalidation() override;
+
+  void SetHorizontalScrollbarVisualRect(const LayoutRect&);
+  void SetVerticalScrollbarVisualRect(const LayoutRect&);
+  void SetScrollCornerAndResizerVisualRect(const LayoutRect&);
+
   // PaintLayer is destructed before PaintLayerScrollable area, during this
   // time before PaintLayerScrollableArea has been collected layer_ will
   // be set to nullptr by the Dispose method.
@@ -651,6 +668,12 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   // MainThreadScrollingReason due to the properties of the LayoutObject
   uint32_t non_composited_main_thread_scrolling_reasons_;
+
+  bool horizontal_scrollbar_previously_was_overlay_;
+  bool vertical_scrollbar_previously_was_overlay_;
+  LayoutRect horizontal_scrollbar_visual_rect_;
+  LayoutRect vertical_scrollbar_visual_rect_;
+  LayoutRect scroll_corner_and_resizer_visual_rect_;
 };
 
 DEFINE_TYPE_CASTS(PaintLayerScrollableArea,
