@@ -95,6 +95,17 @@ void AshWindowTreeHostPlatform::ClearCursorConfig() {
       GetAcceleratedWidget());
 }
 
+void AshWindowTreeHostPlatform::UpdateTextInputState(
+    ui::mojom::TextInputStatePtr state) {
+  SetTextInputState(std::move(state));
+}
+
+void AshWindowTreeHostPlatform::UpdateImeVisibility(
+    bool visible,
+    ui::mojom::TextInputStatePtr state) {
+  SetImeVisibility(visible, std::move(state));
+}
+
 void AshWindowTreeHostPlatform::SetRootWindowTransformer(
     std::unique_ptr<RootWindowTransformer> transformer) {
   transformer_helper_.SetRootWindowTransformer(std::move(transformer));

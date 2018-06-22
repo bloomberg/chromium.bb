@@ -1457,13 +1457,34 @@ void WindowTree::SetCursor(uint32_t change_id,
 
 void WindowTree::SetWindowTextInputState(Id window_id,
                                          ::ui::mojom::TextInputStatePtr state) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  aura::Window* window = GetWindowByTransportId(window_id);
+  if (!window) {
+    DVLOG(1) << "SetWindowTextInputState failed (no window)";
+    return;
+  }
+  if (!IsClientCreatedWindow(window)) {
+    DVLOG(1) << "SetWindowTextInputState failed (access denied)";
+    return;
+  }
+
+  window_service_->delegate()->UpdateTextInputState(window, std::move(state));
 }
 
 void WindowTree::SetImeVisibility(Id window_id,
                                   bool visible,
                                   ::ui::mojom::TextInputStatePtr state) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  aura::Window* window = GetWindowByTransportId(window_id);
+  if (!window) {
+    DVLOG(1) << "SetImeVisibility failed (no window)";
+    return;
+  }
+  if (!IsClientCreatedWindow(window)) {
+    DVLOG(1) << "SetImeVisibility failed (access denied)";
+    return;
+  }
+
+  window_service_->delegate()->UpdateImeVisibility(window, visible,
+                                                   std::move(state));
 }
 
 void WindowTree::SetEventTargetingPolicy(

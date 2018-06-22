@@ -48,6 +48,9 @@ class ASH_EXPORT AshWindowTreeHostPlatform
   void SetCursorConfig(const display::Display& display,
                        display::Display::Rotation rotation) override;
   void ClearCursorConfig() override;
+  void UpdateTextInputState(ui::mojom::TextInputStatePtr state) override;
+  void UpdateImeVisibility(bool visible,
+                           ui::mojom::TextInputStatePtr state) override;
 
   // aura::WindowTreeHostPlatform:
   void SetRootTransform(const gfx::Transform& transform) override;
