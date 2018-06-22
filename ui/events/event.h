@@ -83,7 +83,9 @@ class EVENTS_EXPORT Event {
   const base::TimeTicks time_stamp() const { return time_stamp_; }
   int flags() const { return flags_; }
 
-  // Returns a name for the event, typically used in logging/debugging.
+  // Returns a name for the event, typically used in logging/debugging. This is
+  // a convenience for EventTypeName(type()) (EventTypeName() is in
+  // event_utils).
   const char* GetName() const;
 
   // This is only intended to be used externally by classes that are modifying

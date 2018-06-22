@@ -1475,6 +1475,20 @@ TEST(WindowTreeTest2, CancelMoveLoop) {
             SingleChangeToDescription(*setup.changes()));
 }
 
+TEST(WindowTreeTest2, CancelMode) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  EXPECT_TRUE(setup.window_tree_test_helper()->SetFocus(top_level));
+  // Dispatch a CancelEvent. This should go to the |top_level| as it has focus.
+  setup.root()->GetHost()->dispatcher()->DispatchCancelModeEvent();
+  EXPECT_EQ("CANCEL_MODE",
+            EventToEventType(
+                setup.window_tree_client()->PopInputEvent().event.get()));
+}
+
 TEST(WindowTreeTest2, PerformDragDrop) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =

@@ -187,6 +187,9 @@ EVENTS_EXPORT void ConvertEventLocationToTargetWindowLocation(
     const gfx::Point& current_window_origin,
     ui::LocatedEvent* located_event);
 
+// Returns a string description of an event type. Useful for debugging.
+EVENTS_EXPORT const char* EventTypeName(EventType type);
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_EVENT_UTILS_H_

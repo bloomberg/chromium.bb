@@ -6,6 +6,7 @@
 
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/gesture_event_details.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/mojo/event_constants.mojom.h"
@@ -159,8 +160,11 @@ ui::mojom::EventType TypeConverter<ui::mojom::EventType,
       return ui::mojom::EventType::SCROLL_FLING_START;
     case ui::ET_SCROLL_FLING_CANCEL:
       return ui::mojom::EventType::SCROLL_FLING_CANCEL;
+    case ui::ET_CANCEL_MODE:
+      return ui::mojom::EventType::CANCEL_MODE;
     default:
-      NOTREACHED() << "Using unknown event types closes connections:" << type;
+      NOTREACHED() << "Using unknown event types closes connections:"
+                   << ui::EventTypeName(type);
       break;
   }
   return ui::mojom::EventType::UNKNOWN;
@@ -443,6 +447,9 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
           scroll_data->momentum_phase);
       break;
     }
+    case ui::mojom::EventType::CANCEL_MODE:
+      *out = std::make_unique<ui::CancelModeEvent>();
+      break;
     case ui::mojom::EventType::UNKNOWN:
       NOTREACHED() << "Using unknown event types closes connections";
       return false;

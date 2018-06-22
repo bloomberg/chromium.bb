@@ -40,71 +40,21 @@
 namespace ui {
 namespace {
 
-const char* EventTypeName(EventType type) {
-  if (type >= ET_LAST)
-    return "";
+#if defined(USE_X11)
+bool X11EventHasNonStandardState(const PlatformEvent& event) {
+  const unsigned int kAllStateMask =
+      Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask |
+      Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask | ShiftMask |
+      LockMask | ControlMask | AnyModifier;
 
-#define CASE_TYPE(t) \
-  case t:            \
-    return #t
-  switch (type) {
-    CASE_TYPE(ET_UNKNOWN);
-    CASE_TYPE(ET_MOUSE_PRESSED);
-    CASE_TYPE(ET_MOUSE_DRAGGED);
-    CASE_TYPE(ET_MOUSE_RELEASED);
-    CASE_TYPE(ET_MOUSE_MOVED);
-    CASE_TYPE(ET_MOUSE_ENTERED);
-    CASE_TYPE(ET_MOUSE_EXITED);
-    CASE_TYPE(ET_KEY_PRESSED);
-    CASE_TYPE(ET_KEY_RELEASED);
-    CASE_TYPE(ET_MOUSEWHEEL);
-    CASE_TYPE(ET_MOUSE_CAPTURE_CHANGED);
-    CASE_TYPE(ET_TOUCH_RELEASED);
-    CASE_TYPE(ET_TOUCH_PRESSED);
-    CASE_TYPE(ET_TOUCH_MOVED);
-    CASE_TYPE(ET_TOUCH_CANCELLED);
-    CASE_TYPE(ET_DROP_TARGET_EVENT);
-    CASE_TYPE(ET_POINTER_DOWN);
-    CASE_TYPE(ET_POINTER_MOVED);
-    CASE_TYPE(ET_POINTER_UP);
-    CASE_TYPE(ET_POINTER_CANCELLED);
-    CASE_TYPE(ET_POINTER_ENTERED);
-    CASE_TYPE(ET_POINTER_EXITED);
-    CASE_TYPE(ET_POINTER_WHEEL_CHANGED);
-    CASE_TYPE(ET_POINTER_CAPTURE_CHANGED);
-    CASE_TYPE(ET_GESTURE_SCROLL_BEGIN);
-    CASE_TYPE(ET_GESTURE_SCROLL_END);
-    CASE_TYPE(ET_GESTURE_SCROLL_UPDATE);
-    CASE_TYPE(ET_GESTURE_SHOW_PRESS);
-    CASE_TYPE(ET_GESTURE_TAP);
-    CASE_TYPE(ET_GESTURE_TAP_DOWN);
-    CASE_TYPE(ET_GESTURE_TAP_CANCEL);
-    CASE_TYPE(ET_GESTURE_BEGIN);
-    CASE_TYPE(ET_GESTURE_END);
-    CASE_TYPE(ET_GESTURE_TWO_FINGER_TAP);
-    CASE_TYPE(ET_GESTURE_PINCH_BEGIN);
-    CASE_TYPE(ET_GESTURE_PINCH_END);
-    CASE_TYPE(ET_GESTURE_PINCH_UPDATE);
-    CASE_TYPE(ET_GESTURE_LONG_PRESS);
-    CASE_TYPE(ET_GESTURE_LONG_TAP);
-    CASE_TYPE(ET_GESTURE_SWIPE);
-    CASE_TYPE(ET_GESTURE_TAP_UNCONFIRMED);
-    CASE_TYPE(ET_GESTURE_DOUBLE_TAP);
-    CASE_TYPE(ET_SCROLL);
-    CASE_TYPE(ET_SCROLL_FLING_START);
-    CASE_TYPE(ET_SCROLL_FLING_CANCEL);
-    CASE_TYPE(ET_CANCEL_MODE);
-    CASE_TYPE(ET_UMA_DATA);
-    case ET_LAST:
-      NOTREACHED();
-      return "";
-      // Don't include default, so that we get an error when new type is added.
-  }
-#undef CASE_TYPE
-
-  NOTREACHED();
-  return "";
+  return event && (event->xkey.state & ~kAllStateMask) != 0;
 }
+#endif
+
+constexpr int kChangedButtonFlagMask =
+    ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON |
+    ui::EF_RIGHT_MOUSE_BUTTON | ui::EF_BACK_MOUSE_BUTTON |
+    ui::EF_FORWARD_MOUSE_BUTTON;
 
 SourceEventType EventTypeToLatencySourceEventType(EventType type) {
   switch (type) {
@@ -178,22 +128,6 @@ SourceEventType EventTypeToLatencySourceEventType(EventType type) {
   NOTREACHED();
   return SourceEventType::UNKNOWN;
 }
-
-#if defined(USE_X11)
-bool X11EventHasNonStandardState(const PlatformEvent& event) {
-  const unsigned int kAllStateMask =
-      Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask |
-      Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask | ShiftMask |
-      LockMask | ControlMask | AnyModifier;
-
-  return event && (event->xkey.state & ~kAllStateMask) != 0;
-}
-#endif
-
-constexpr int kChangedButtonFlagMask =
-    ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON |
-    ui::EF_RIGHT_MOUSE_BUTTON | ui::EF_BACK_MOUSE_BUTTON |
-    ui::EF_FORWARD_MOUSE_BUTTON;
 
 }  // namespace
 

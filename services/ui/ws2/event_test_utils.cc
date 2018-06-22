@@ -14,7 +14,12 @@ namespace ws2 {
 std::string EventToEventType(const Event* event) {
   if (!event)
     return "<null>";
+
+  // TODO(sky): convert to using EventTypeName() is ui/events.h.
   switch (event->type()) {
+    case ET_CANCEL_MODE:
+      return "CANCEL_MODE";
+
     case ET_KEY_PRESSED:
       return "KEY_PRESSED";
 

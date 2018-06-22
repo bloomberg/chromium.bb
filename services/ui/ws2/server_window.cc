@@ -172,7 +172,8 @@ class ServerWindowEventHandler : public ui::EventHandler {
 
     // The event was forwarded to the remote client. We don't want it handled
     // locally too.
-    event->StopPropagation();
+    if (event->cancelable())
+      event->StopPropagation();
   }
 
  protected:
@@ -215,7 +216,8 @@ class ServerWindowEventHandler : public ui::EventHandler {
     // for a client intercepting events.
     if (server_window_->DoesOwnerInterceptEvents()) {
       server_window_->owning_window_tree()->SendEventToClient(window(), *event);
-      event->StopPropagation();
+      if (event->cancelable())
+        event->StopPropagation();
       return true;
     }
     return false;
@@ -325,7 +327,8 @@ class TopLevelEventHandler : public ServerWindowEventHandler {
     if (wm::CaptureController::Get()->GetCaptureWindow()) {
       if (server_window()->capture_owner()) {
         server_window()->capture_owner()->SendEventToClient(window(), *event);
-        event->StopPropagation();
+        if (event->cancelable())
+          event->StopPropagation();
         return;
       }
       return;
@@ -363,7 +366,7 @@ class TopLevelEventHandler : public ServerWindowEventHandler {
       }
     }
     server_window()->owning_window_tree()->SendEventToClient(window(), *event);
-    if (stop_propagation)
+    if (stop_propagation && event->cancelable())
       event->StopPropagation();
   }
 
