@@ -14,6 +14,7 @@
 #include "chromeos/components/proximity_auth/proximity_auth_client.h"
 #include "chromeos/components/proximity_auth/remote_device_life_cycle.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
+#include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "components/cryptauth/connection_observer.h"
 #include "components/cryptauth/cryptauth_client.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
@@ -48,7 +49,8 @@ class ProximityAuthWebUIHandler
  public:
   ProximityAuthWebUIHandler(
       ProximityAuthClient* proximity_auth_client,
-      chromeos::device_sync::DeviceSyncClient* device_sync_client);
+      chromeos::device_sync::DeviceSyncClient* device_sync_client,
+      chromeos::secure_channel::SecureChannelClient* secure_channel_client);
   ~ProximityAuthWebUIHandler() override;
 
   // content::WebUIMessageHandler:
@@ -150,6 +152,7 @@ class ProximityAuthWebUIHandler
   // The delegate used to fetch dependencies. Must outlive this instance.
   ProximityAuthClient* proximity_auth_client_;
   chromeos::device_sync::DeviceSyncClient* device_sync_client_;
+  chromeos::secure_channel::SecureChannelClient* secure_channel_client_;
   std::unique_ptr<cryptauth::CryptAuthClientFactory> cryptauth_client_factory_;
 
   // We only support one concurrent API call.

@@ -136,6 +136,7 @@
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
+#include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/certificate_manager_dialog_ui.h"
@@ -273,6 +274,10 @@ WebUIController* NewWebUI<proximity_auth::ProximityAuthUI>(WebUI* web_ui,
       base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
           ? chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(
                 Profile::FromBrowserContext(browser_context))
+          : nullptr,
+      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
+          ? chromeos::secure_channel::SecureChannelClientProvider::GetInstance()
+                ->GetClient()
           : nullptr);
 }
 #endif

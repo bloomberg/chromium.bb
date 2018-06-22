@@ -107,9 +107,11 @@ std::unique_ptr<base::DictionaryValue> CreateSyncStateDictionary(
 
 ProximityAuthWebUIHandler::ProximityAuthWebUIHandler(
     ProximityAuthClient* proximity_auth_client,
-    chromeos::device_sync::DeviceSyncClient* device_sync_client)
+    chromeos::device_sync::DeviceSyncClient* device_sync_client,
+    chromeos::secure_channel::SecureChannelClient* secure_channel_client)
     : proximity_auth_client_(proximity_auth_client),
       device_sync_client_(device_sync_client),
+      secure_channel_client_(secure_channel_client),
       web_contents_initialized_(false),
       weak_ptr_factory_(this) {
   if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
@@ -575,10 +577,8 @@ void ProximityAuthWebUIHandler::StartRemoteDeviceLifeCycle(
   }
 
   selected_remote_device_ = remote_device;
-  // TODO(crbug.com/752273): Inject a real SecureChannelClient.
-  life_cycle_.reset(
-      new RemoteDeviceLifeCycleImpl(*selected_remote_device_, local_device,
-                                    nullptr /* secure_channel_client */));
+  life_cycle_.reset(new RemoteDeviceLifeCycleImpl(
+      *selected_remote_device_, local_device, secure_channel_client_));
   life_cycle_->AddObserver(this);
   life_cycle_->Start();
 }
