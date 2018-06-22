@@ -92,8 +92,9 @@ class DeviceStatusCollector {
   // Constructor. Callers can inject their own *Fetcher callbacks, e.g. for unit
   // testing. A null callback can be passed for any *Fetcher parameter, to use
   // the default implementation. These callbacks are always executed on Blocking
-  // Pool. If |is_enterprise_device| additional enterprise relevant status data
-  // will be reported.
+  // Pool. Caller is responsible for passing already initialized |pref_service|.
+  // If |is_enterprise_device| additional enterprise relevant status data will
+  // be reported.
   DeviceStatusCollector(PrefService* pref_service,
                         chromeos::system::StatisticsProvider* provider,
                         const VolumeInfoFetcher& volume_info_fetcher,
@@ -220,9 +221,6 @@ class DeviceStatusCollector {
   // Returns whether users' email addresses should be included in activity
   // reports.
   bool IncludeEmailsInActivityReports() const;
-
-  // Called when |pref_service_| is initialized.
-  void OnPrefServiceInitialized(bool succeeded);
 
   // Pref service that is mainly used to store activity periods for reporting.
   PrefService* const pref_service_;

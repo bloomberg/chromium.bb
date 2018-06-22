@@ -845,36 +845,4 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, TestHasAppInstallEventLogUploader) {
   EXPECT_TRUE(manager_->GetAppInstallEventLogUploader());
 }
 
-class ConsumerDeviceStatusUploadingTest
-    : public UserCloudPolicyManagerChromeOSTest {
- protected:
-  ConsumerDeviceStatusUploadingTest() = default;
-
-  ~ConsumerDeviceStatusUploadingTest() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ConsumerDeviceStatusUploadingTest);
-};
-
-TEST_F(ConsumerDeviceStatusUploadingTest, RegularAccountShouldNotUploadStatus) {
-  ASSERT_NO_FATAL_FAILURE(MakeManagerWithPreloadedStore(base::TimeDelta()));
-
-  manager_->OnRegistrationStateChanged(manager_->core()->client());
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(manager_->core()->client()->is_registered());
-  EXPECT_FALSE(manager_->GetStatusUploader());
-}
-
-TEST_F(ConsumerDeviceStatusUploadingTest, ChildAccountShouldUploadStatus) {
-  AddAndSwitchToChildAccountWithProfile();
-  ASSERT_NO_FATAL_FAILURE(MakeManagerWithPreloadedStore(base::TimeDelta()));
-
-  manager_->OnRegistrationStateChanged(manager_->core()->client());
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(manager_->core()->client()->is_registered());
-  EXPECT_TRUE(manager_->GetStatusUploader());
-}
-
 }  // namespace policy

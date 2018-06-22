@@ -50,7 +50,6 @@ class CloudExternalDataManager;
 class DeviceManagementService;
 class PolicyOAuth2TokenFetcher;
 class RemoteCommandsInvalidator;
-class StatusUploader;
 
 // Implements logic for initializing user policy on Chrome OS.
 class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
@@ -164,10 +163,6 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // Helper function to force a policy fetch timeout.
   void ForceTimeoutForTest();
 
-  // Return the StatusUploader used to communicate consumer device status to the
-  // policy server.
-  StatusUploader* GetStatusUploader() const { return status_uploader_.get(); }
-
   // Sets a SharedURLLoaderFactory that should be used for tests instead of
   // retrieving one from the BrowserProcess object in FetchPolicyOAuthToken().
   void SetSystemURLLoaderFactoryForTests(
@@ -225,8 +220,6 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // Observer called on profile shutdown.
   void ProfileShutdown();
 
-  void CreateStatusUploader();
-
   // Profile associated with the current user.
   Profile* const profile_;
 
@@ -266,12 +259,6 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
 
   // Keeps alive the wildcard checker while its running.
   std::unique_ptr<WildcardLoginChecker> wildcard_login_checker_;
-
-  // Task runner used for non-enterprise device status upload.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  // Helper object for updating the server with consumer device state.
-  std::unique_ptr<StatusUploader> status_uploader_;
 
   // The access token passed to OnAccessTokenAvailable. It is stored here so
   // that it can be used if OnInitializationCompleted is called later.

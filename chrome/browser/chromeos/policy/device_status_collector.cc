@@ -779,18 +779,11 @@ DeviceStatusCollector::DeviceStatusCollector(
                             weak_factory_.GetWeakPtr()));
   }
 
-  // User |pref_service| might not be initialized yet. This can be removed once
-  // creation of DeviceStatusCollector for non-enterprise reporting guarantees
-  // that pref service is ready.
-  if (pref_service_->GetInitializationStatus() ==
-      PrefService::INITIALIZATION_STATUS_WAITING) {
-    pref_service->AddPrefInitObserver(
-        base::BindOnce(&DeviceStatusCollector::OnPrefServiceInitialized,
-                       weak_factory_.GetWeakPtr()));
-    return;
-  }
-  OnPrefServiceInitialized(pref_service_->GetInitializationStatus() !=
-                           PrefService::INITIALIZATION_STATUS_ERROR);
+  DCHECK(pref_service_->GetInitializationStatus() !=
+         PrefService::INITIALIZATION_STATUS_WAITING);
+  activity_storage_ = std::make_unique<ActivityStorage>(
+      pref_service_, (is_enterprise_reporting_ ? prefs::kDeviceActivityTimes
+                                               : prefs::kUserActivityTimes));
 }
 
 DeviceStatusCollector::~DeviceStatusCollector() {
@@ -893,9 +886,8 @@ void DeviceStatusCollector::ClearCachedResourceUsage() {
 }
 
 void DeviceStatusCollector::IdleStateCallback(ui::IdleState state) {
-  // Do nothing if |activity_storage_| is not ready or device activity reporting
-  // is disabled.
-  if (!activity_storage_ || !report_activity_times_)
+  // Do nothing if device activity reporting is disabled.
+  if (!report_activity_times_)
     return;
 
   Time now = GetCurrentTime();
@@ -1020,10 +1012,6 @@ void DeviceStatusCollector::ReceiveCPUStatistics(const std::string& stats) {
 }
 
 void DeviceStatusCollector::ReportingUsersChanged() {
-  // Do nothing if |activity_storage_| is not ready.
-  if (!activity_storage_)
-    return;
-
   std::vector<std::string> reporting_users;
   for (auto& value :
        pref_service_->GetList(prefs::kReportingUsers)->GetList()) {
@@ -1059,25 +1047,8 @@ bool DeviceStatusCollector::IncludeEmailsInActivityReports() const {
   return !is_enterprise_reporting_ || report_users_;
 }
 
-void DeviceStatusCollector::OnPrefServiceInitialized(bool succeeded) {
-  if (!succeeded) {
-    LOG(ERROR) << "Pref service was not initialized successfully - activity "
-                  "for device status reporting cannot be stored.";
-    return;
-  }
-
-  DCHECK(!activity_storage_);
-  activity_storage_ = std::make_unique<ActivityStorage>(
-      pref_service_, (is_enterprise_reporting_ ? prefs::kDeviceActivityTimes
-                                               : prefs::kUserActivityTimes));
-}
-
 bool DeviceStatusCollector::GetActivityTimes(
     em::DeviceStatusReportRequest* status) {
-  // Do nothing if |activity_storage_| is not ready.
-  if (!activity_storage_)
-    return false;
-
   // If user reporting is off, data should be aggregated per day.
   // Signed-in user is reported in non-enterprise reporting.
   std::vector<ActivityStorage::ActivityPeriod> activity_times =
@@ -1590,10 +1561,6 @@ std::string DeviceStatusCollector::GetAppVersion(
 }
 
 void DeviceStatusCollector::OnSubmittedSuccessfully() {
-  // Do nothing if |activity_storage_| is not ready.
-  if (!activity_storage_)
-    return;
-
   activity_storage_->TrimActivityPeriods(last_reported_day_,
                                          duration_for_last_reported_day_,
                                          std::numeric_limits<int64_t>::max());

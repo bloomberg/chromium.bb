@@ -25,13 +25,10 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_uploader.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/policy/remote_commands/user_commands_factory_chromeos.h"
-#include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -39,7 +36,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/system/statistics_provider.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
@@ -83,10 +79,6 @@ const char kUMAInitialFetchOAuth2Error[] =
     "Enterprise.UserPolicyChromeOS.InitialFetch.OAuth2Error";
 const char kUMAInitialFetchOAuth2NetworkError[] =
     "Enterprise.UserPolicyChromeOS.InitialFetch.OAuth2NetworkError";
-
-// Default frequency for uploading non-enterprise status reports.
-constexpr base::TimeDelta kDeviceStatusUploadFrequency =
-    base::TimeDelta::FromMinutes(10);
 
 // This class is used to subscribe for notifications that the current profile is
 // being shut down.
@@ -139,7 +131,6 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
                                     PolicyEnforcement::kServerCheckRequired ||
                                 !policy_refresh_timeout.is_zero()),
       enforcement_type_(enforcement_type),
-      task_runner_(task_runner),
       account_id_(account_id),
       fatal_error_callback_(std::move(fatal_error_callback)) {
   DCHECK(profile_);
@@ -327,7 +318,6 @@ void UserCloudPolicyManagerChromeOS::Shutdown() {
   if (service())
     service()->RemoveObserver(this);
   token_fetcher_.reset();
-  status_uploader_.reset();
   external_data_manager_->Disconnect();
   CloudPolicyManager::Shutdown();
 }
@@ -414,22 +404,6 @@ void UserCloudPolicyManagerChromeOS::OnRegistrationStateChanged(
       // indicates the cloud policy setup flow has been aborted.
       CancelWaitForPolicyFetch(true);
     }
-  }
-
-  // TODO(agawronska): Move StatusUploader creation to profile keyed
-  // service, where profile pref service is fully initialized.
-
-  // If child is registered with DMServer and has User Policy applied, it
-  // should upload device status to the server. For enterprise reporting
-  // status upload is controlled by DeviceCloudPolicyManagerChromeOS.
-  const user_manager::User* const user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-  if (client()->is_registered() && user &&
-      user->GetType() == user_manager::USER_TYPE_CHILD) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&UserCloudPolicyManagerChromeOS::CreateStatusUploader,
-                       base::Unretained(this)));
   }
 }
 
@@ -725,24 +699,6 @@ void UserCloudPolicyManagerChromeOS::ProfileShutdown() {
   invalidator_->Shutdown();
   invalidator_.reset();
   shutdown_notifier_.reset();
-}
-
-void UserCloudPolicyManagerChromeOS::CreateStatusUploader() {
-  // Do not recreate status uploader if this is called multiple times.
-  if (status_uploader_)
-    return;
-
-  status_uploader_ = std::make_unique<StatusUploader>(
-      client(),
-      std::make_unique<DeviceStatusCollector>(
-          profile_->GetPrefs(),
-          chromeos::system::StatisticsProvider::GetInstance(),
-          DeviceStatusCollector::VolumeInfoFetcher(),
-          DeviceStatusCollector::CPUStatisticsFetcher(),
-          DeviceStatusCollector::CPUTempFetcher(),
-          DeviceStatusCollector::AndroidStatusFetcher(),
-          false /* is_enterprise_device */),
-      task_runner_, kDeviceStatusUploadFrequency);
 }
 
 }  // namespace policy
