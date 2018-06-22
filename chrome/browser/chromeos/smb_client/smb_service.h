@@ -61,6 +61,7 @@ class SmbService : public KeyedService,
   void OnMountResponse(MountResponse callback,
                        const file_system_provider::MountOptions& options,
                        const base::FilePath& share_path,
+                       bool is_kerberos_chromad,
                        smbprovider::ErrorType error,
                        int32_t mount_id);
 

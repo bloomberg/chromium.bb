@@ -106,6 +106,8 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
   std::string password;
   std::string workgroup;
 
+  bool is_kerberos_chromad = false;
+
   if (username_input.empty()) {
     // If no credentials were provided and the user is ChromAD, pass the users
     // username and workgroup for their email address to be used for Kerberos
@@ -114,6 +116,7 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
     if (user && user->IsActiveDirectoryUser()) {
       ParseUserPrincipalName(user->GetDisplayEmail(), &username, &workgroup);
+      is_kerberos_chromad = true;
     }
   } else {
     // Credentials were provided so use them and parse the username into
@@ -137,13 +140,15 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
       mount_path, workgroup, username,
       temp_file_manager_->WritePasswordToFile(password),
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
-                     base::Passed(&callback), options, share_path));
+                     base::Passed(&callback), options, share_path,
+                     is_kerberos_chromad));
 }
 
 void SmbService::OnMountResponse(
     MountResponse callback,
     const file_system_provider::MountOptions& options,
     const base::FilePath& share_path,
+    bool is_kerberos_chromad,
     smbprovider::ErrorType error,
     int32_t mount_id) {
   if (error != smbprovider::ERROR_OK) {
@@ -154,7 +159,8 @@ void SmbService::OnMountResponse(
   DCHECK_GE(mount_id, 0);
 
   file_system_provider::MountOptions mount_options(options);
-  mount_options.file_system_id = CreateFileSystemId(mount_id, share_path);
+  mount_options.file_system_id =
+      CreateFileSystemId(mount_id, share_path, is_kerberos_chromad);
 
   base::File::Error result =
       GetProviderService()->MountFileSystem(provider_id_, mount_options);

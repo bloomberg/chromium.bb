@@ -32,11 +32,6 @@ std::vector<std::string> GetComponents(const std::string& file_system_id) {
 }  // namespace.
 
 std::string CreateFileSystemId(int32_t mount_id,
-                               const base::FilePath& share_path) {
-  return CreateFileSystemId(mount_id, share_path, false /* is_kerberos */);
-}
-
-std::string CreateFileSystemId(int32_t mount_id,
                                const base::FilePath& share_path,
                                bool is_kerberos_chromad) {
   const std::string file_system_id = base::StrCat(
