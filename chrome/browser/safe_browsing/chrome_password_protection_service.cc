@@ -569,6 +569,9 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseDetectedEvent(
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  if (!IsEventLoggingEnabled() && !WebUIInfoSingleton::HasListener())
+    return;
+
   syncer::UserEventService* user_event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(profile_);
   if (!user_event_service)
@@ -599,17 +602,15 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseDetectedEvent(
   }
 
   WebUIInfoSingleton::GetInstance()->AddToPGEvents(*specifics);
-
-  if (IsEventLoggingEnabled())
-    user_event_service->RecordUserEvent(std::move(specifics));
+  user_event_service->RecordUserEvent(std::move(specifics));
 }
 
-void ChromePasswordProtectionService::LogPasswordReuseDialogInteraction(
+void ChromePasswordProtectionService::MaybeLogPasswordReuseDialogInteraction(
     int64_t navigation_id,
     PasswordReuseDialogInteraction::InteractionResult interaction_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!IsEventLoggingEnabled())
+  if (!IsEventLoggingEnabled() && !WebUIInfoSingleton::HasListener())
     return;
 
   syncer::UserEventService* user_event_service =
@@ -626,6 +627,8 @@ void ChromePasswordProtectionService::LogPasswordReuseDialogInteraction(
       specifics->mutable_gaia_password_reuse_event()
           ->mutable_dialog_interaction();
   dialog_interaction->set_interaction_result(interaction_result);
+
+  WebUIInfoSingleton::GetInstance()->AddToPGEvents(*specifics);
   user_event_service->RecordUserEvent(std::move(specifics));
 }
 
@@ -664,10 +667,13 @@ ChromePasswordProtectionService::GetUserEventSpecifics(
       GetLastCommittedNavigationID(web_contents));
 }
 
-void ChromePasswordProtectionService::LogPasswordReuseLookupResult(
+void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupResult(
     content::WebContents* web_contents,
     PasswordReuseLookup::LookupResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!IsEventLoggingEnabled() && !WebUIInfoSingleton::HasListener())
+    return;
 
   syncer::UserEventService* user_event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(profile_);
@@ -682,15 +688,20 @@ void ChromePasswordProtectionService::LogPasswordReuseLookupResult(
   auto* const reuse_lookup =
       specifics->mutable_gaia_password_reuse_event()->mutable_reuse_lookup();
   reuse_lookup->set_lookup_result(result);
+  WebUIInfoSingleton::GetInstance()->AddToPGEvents(*specifics);
   user_event_service->RecordUserEvent(std::move(specifics));
 }
 
-void ChromePasswordProtectionService::LogPasswordReuseLookupResultWithVerdict(
-    content::WebContents* web_contents,
-    PasswordReuseLookup::LookupResult result,
-    PasswordReuseLookup::ReputationVerdict verdict,
-    const std::string& verdict_token) {
+void ChromePasswordProtectionService::
+    MaybeLogPasswordReuseLookupResultWithVerdict(
+        content::WebContents* web_contents,
+        PasswordReuseLookup::LookupResult result,
+        PasswordReuseLookup::ReputationVerdict verdict,
+        const std::string& verdict_token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!IsEventLoggingEnabled() && !WebUIInfoSingleton::HasListener())
+    return;
 
   syncer::UserEventService* user_event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(profile_);
@@ -707,6 +718,7 @@ void ChromePasswordProtectionService::LogPasswordReuseLookupResultWithVerdict(
   reuse_lookup->set_lookup_result(result);
   reuse_lookup->set_verdict(verdict);
   reuse_lookup->set_verdict_token(verdict_token);
+  WebUIInfoSingleton::GetInstance()->AddToPGEvents(*specifics);
   user_event_service->RecordUserEvent(std::move(specifics));
 }
 
@@ -714,40 +726,37 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
     content::WebContents* web_contents,
     PasswordProtectionService::RequestOutcome outcome,
     const LoginReputationClientResponse* response) {
-  if (!IsEventLoggingEnabled())
-    return;
-
   switch (outcome) {
     case PasswordProtectionService::MATCHED_WHITELIST:
-      LogPasswordReuseLookupResult(web_contents,
-                                   PasswordReuseLookup::WHITELIST_HIT);
+      MaybeLogPasswordReuseLookupResult(web_contents,
+                                        PasswordReuseLookup::WHITELIST_HIT);
       break;
     case PasswordProtectionService::RESPONSE_ALREADY_CACHED:
-      LogPasswordReuseLookupResultWithVerdict(
+      MaybeLogPasswordReuseLookupResultWithVerdict(
           web_contents, PasswordReuseLookup::CACHE_HIT,
           GetVerdictToLogFromResponse(response->verdict_type()),
           response->verdict_token());
       break;
     case PasswordProtectionService::SUCCEEDED:
-      LogPasswordReuseLookupResultWithVerdict(
+      MaybeLogPasswordReuseLookupResultWithVerdict(
           web_contents, PasswordReuseLookup::REQUEST_SUCCESS,
           GetVerdictToLogFromResponse(response->verdict_type()),
           response->verdict_token());
       break;
     case PasswordProtectionService::URL_NOT_VALID_FOR_REPUTATION_COMPUTING:
-      LogPasswordReuseLookupResult(web_contents,
-                                   PasswordReuseLookup::URL_UNSUPPORTED);
+      MaybeLogPasswordReuseLookupResult(web_contents,
+                                        PasswordReuseLookup::URL_UNSUPPORTED);
       break;
     case PasswordProtectionService::MATCHED_ENTERPRISE_WHITELIST:
     case PasswordProtectionService::MATCHED_ENTERPRISE_LOGIN_URL:
     case PasswordProtectionService::MATCHED_ENTERPRISE_CHANGE_PASSWORD_URL:
-      LogPasswordReuseLookupResult(
+      MaybeLogPasswordReuseLookupResult(
           web_contents, PasswordReuseLookup::ENTERPRISE_WHITELIST_HIT);
       break;
     case PasswordProtectionService::PASSWORD_ALERT_MODE:
     case PasswordProtectionService::TURNED_OFF_BY_ADMIN:
-      LogPasswordReuseLookupResult(web_contents,
-                                   PasswordReuseLookup::TURNED_OFF_BY_POLICY);
+      MaybeLogPasswordReuseLookupResult(
+          web_contents, PasswordReuseLookup::TURNED_OFF_BY_POLICY);
       break;
     case PasswordProtectionService::CANCELED:
     case PasswordProtectionService::TIMEDOUT:
@@ -759,8 +768,8 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
     case PasswordProtectionService::DISABLED_DUE_TO_FEATURE_DISABLED:
     case PasswordProtectionService::DISABLED_DUE_TO_USER_POPULATION:
     case PasswordProtectionService::MAX_OUTCOME:
-      LogPasswordReuseLookupResult(web_contents,
-                                   PasswordReuseLookup::REQUEST_FAILURE);
+      MaybeLogPasswordReuseLookupResult(web_contents,
+                                        PasswordReuseLookup::REQUEST_FAILURE);
       break;
     case PasswordProtectionService::UNKNOWN:
     case PasswordProtectionService::DEPRECATED_NO_EXTENDED_REPORTING:
@@ -933,7 +942,7 @@ void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
   int64_t navigation_id =
       GetNavigationIDFromPrefsByOrigin(profile_->GetPrefs(), origin);
   if (action == PasswordProtectionService::CHANGE_PASSWORD) {
-    LogPasswordReuseDialogInteraction(
+    MaybeLogPasswordReuseDialogInteraction(
         navigation_id, PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN);
     // Directly open enterprise change password page for enterprise password
     // reuses.
@@ -954,11 +963,11 @@ void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
     }
   } else if (action == PasswordProtectionService::IGNORE_WARNING) {
     // No need to change state.
-    LogPasswordReuseDialogInteraction(
+    MaybeLogPasswordReuseDialogInteraction(
         navigation_id, PasswordReuseDialogInteraction::WARNING_ACTION_IGNORED);
   } else if (action == PasswordProtectionService::CLOSE) {
     // No need to change state.
-    LogPasswordReuseDialogInteraction(
+    MaybeLogPasswordReuseDialogInteraction(
         navigation_id, PasswordReuseDialogInteraction::WARNING_UI_IGNORED);
   } else {
     NOTREACHED();
@@ -978,7 +987,7 @@ void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
   const Origin origin = Origin::Create(url);
 
   if (action == PasswordProtectionService::CHANGE_PASSWORD) {
-    LogPasswordReuseDialogInteraction(
+    MaybeLogPasswordReuseDialogInteraction(
         GetNavigationIDFromPrefsByOrigin(profile_->GetPrefs(), origin),
         PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN);
     // Directly open enterprise change password page in a new tab for enterprise
@@ -1029,7 +1038,7 @@ void ChromePasswordProtectionService::HandleUserActionOnSettings(
   // If there's only one unhandled reuse, getting the first is correct.
   // If there are more than one, we have no way to figure out which
   // event the user is responding to, so just pick the first one.
-  LogPasswordReuseDialogInteraction(
+  MaybeLogPasswordReuseDialogInteraction(
       GetFirstNavIdOrZero(profile_->GetPrefs()),
       PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN);
   // Opens change password page in a new tab for user to change password.

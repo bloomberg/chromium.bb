@@ -304,12 +304,12 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   std::unique_ptr<sync_pb::UserEventSpecifics> GetUserEventSpecifics(
       content::WebContents* web_contents);
 
-  void LogPasswordReuseLookupResult(
+  void MaybeLogPasswordReuseLookupResult(
       content::WebContents* web_contents,
       sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
           LookupResult result);
 
-  void LogPasswordReuseLookupResultWithVerdict(
+  void MaybeLogPasswordReuseLookupResultWithVerdict(
       content::WebContents* web_contents,
       sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
           LookupResult result,
@@ -317,7 +317,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
           ReputationVerdict verdict,
       const std::string& verdict_token);
 
-  void LogPasswordReuseDialogInteraction(
+  void MaybeLogPasswordReuseDialogInteraction(
       int64_t navigation_id,
       sync_pb::UserEventSpecifics::GaiaPasswordReuse::
           PasswordReuseDialogInteraction::InteractionResult interaction_result);

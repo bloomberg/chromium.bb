@@ -492,7 +492,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   }
 
   // PasswordReuseDialogInteraction
-  service_->LogPasswordReuseDialogInteraction(
+  service_->MaybeLogPasswordReuseDialogInteraction(
       1000 /* navigation_id */,
       PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN);
   ASSERT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
