@@ -52,6 +52,9 @@ Polymer({
        'settings.pages.value, settings.pagesPerSheet.value, state, ' +
        'destination.id)'],
 
+  /** @private {!print_preview_new.State} */
+  lastState_: print_preview_new.State.NOT_READY,
+
   /** @private */
   onPrintClick_: function() {
     this.fire('print-requested');
@@ -140,6 +143,11 @@ Polymer({
         const labelInfo = this.computeLabelInfo_();
         this.summary_ = this.getSummary_(labelInfo);
         this.summaryLabel_ = this.getSummaryLabel_(labelInfo);
+        if (this.lastState_ != this.state &&
+            (document.activeElement == null ||
+             document.activeElement == document.body)) {
+          this.$$('button.print').focus();
+        }
         break;
       case (print_preview_new.State.FATAL_ERROR):
         this.printButtonEnabled_ = false;
@@ -152,6 +160,7 @@ Polymer({
         this.printButtonEnabled_ = false;
         break;
     }
+    this.lastState_ = this.state;
   },
 
   /**
