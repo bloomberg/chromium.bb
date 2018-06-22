@@ -74,11 +74,11 @@ TEST_F(SourceListDirectiveTest, BasicMatchingStrictDynamic) {
   EXPECT_TRUE(source_list.AllowDynamic());
 }
 
-TEST_F(SourceListDirectiveTest, BasicMatchingUnsafeHashedAttributes) {
-  String sources = "'unsafe-hashed-attributes'";
+TEST_F(SourceListDirectiveTest, BasicMatchingUnsafeHashes) {
+  String sources = "'unsafe-hashes'";
   SourceListDirective source_list("script-src", sources, csp.Get());
 
-  EXPECT_TRUE(source_list.AllowHashedAttributes());
+  EXPECT_TRUE(source_list.AllowUnsafeHashes());
 }
 
 TEST_F(SourceListDirectiveTest, BasicMatchingStar) {
@@ -743,37 +743,37 @@ TEST_F(SourceListDirectiveTest, SubsumesUnsafeAttributes) {
         "http://example1.com/foo/bar 'self' 'unsafe-eval'",
         "http://non-example.com/foo/ 'unsafe-eval' 'self'"},
        false},
-      // A or policiesB contain `unsafe-hashed-attributes`.
+      // A or policiesB contain `unsafe-hashes`.
       {false,
        "http://example1.com/foo/ 'self' 'unsafe-inline' 'unsafe-eval' "
        "'strict-dynamic' "
-       "'unsafe-hashed-attributes'",
-       {"http://example1.com/foo/bar.html 'unsafe-hashed-attributes'"},
+       "'unsafe-hashes'",
+       {"http://example1.com/foo/bar.html 'unsafe-hashes'"},
        true},
       {true,
-       "http://example1.com/foo/ 'self' 'unsafe-hashed-attributes'",
+       "http://example1.com/foo/ 'self' 'unsafe-hashes'",
        {"http://example1.com/foo/ 'unsafe-inline'"},
        false},
       {true,
-       "http://example1.com/foo/ 'self' 'unsafe-hashed-attributes'",
-       {"http://example1.com/foo/ 'unsafe-inline' 'unsafe-hashed-attributes'"},
+       "http://example1.com/foo/ 'self' 'unsafe-hashes'",
+       {"http://example1.com/foo/ 'unsafe-inline' 'unsafe-hashes'"},
        false},
       {true,
        "http://example1.com/foo/ 'self' 'unsafe-eval' "
-       "'unsafe-hashed-attributes'",
-       {"http://example1.com/foo/ 'unsafe-eval' 'unsafe-hashed-attributes'",
-        "http://example1.com/foo/bar 'self' 'unsafe-hashed-attributes'",
-        "http://non-example.com/foo/ 'unsafe-hashed-attributes' 'self'"},
+       "'unsafe-hashes'",
+       {"http://example1.com/foo/ 'unsafe-eval' 'unsafe-hashes'",
+        "http://example1.com/foo/bar 'self' 'unsafe-hashes'",
+        "http://non-example.com/foo/ 'unsafe-hashes' 'self'"},
        true},
       {true,
        "http://example1.com/foo/ 'self'",
-       {"http://example1.com/foo/ 'unsafe-hashed-attributes'"},
+       {"http://example1.com/foo/ 'unsafe-hashes'"},
        false},
       {true,
        "http://example1.com/foo/ 'self' 'unsafe-inline'",
-       {"http://example1.com/foo/ 'unsafe-hashed-attributes'",
-        "http://example1.com/foo/bar 'self' 'unsafe-hashed-attributes'",
-        "https://example1.com/foo/bar 'unsafe-hashed-attributes' 'self'"},
+       {"http://example1.com/foo/ 'unsafe-hashes'",
+        "http://example1.com/foo/bar 'self' 'unsafe-hashes'",
+        "https://example1.com/foo/bar 'unsafe-hashes' 'self'"},
        false},
   };
 
@@ -1130,13 +1130,13 @@ TEST_F(SourceListDirectiveTest, SubsumesStrictDynamic) {
        {"'strict-dynamic' 'nonce-yay'", "'nonce-yay'", "'sha512-321abc'"},
        true},
       {true,
-       "http://example1.com/foo/ 'self' 'unsafe-hashed-attributes' "
+       "http://example1.com/foo/ 'self' 'unsafe-hashes' "
        "'strict-dynamic'",
-       {"'strict-dynamic' 'unsafe-hashed-attributes'"},
+       {"'strict-dynamic' 'unsafe-hashes'"},
        true},
       {true,
        "http://example1.com/foo/ 'self' 'nonce-yay' 'strict-dynamic'",
-       {"'strict-dynamic' 'nonce-yay' 'unsafe-hashed-attributes'"},
+       {"'strict-dynamic' 'nonce-yay' 'unsafe-hashes'"},
        false},
       {true,
        "http://example1.com/foo/ 'self' 'unsafe-eval' 'strict-dynamic'",
@@ -1209,12 +1209,12 @@ TEST_F(SourceListDirectiveTest, SubsumesStrictDynamic) {
        {"'unsafe-eval' 'strict-dynamic'"},
        false},
       {true,
-       "'unsafe-hashed-attributes' 'self' 'sha512-321abc' 'strict-dynamic'",
-       {"'unsafe-hashed-attributes' 'strict-dynamic'"},
+       "'unsafe-hashes' 'self' 'sha512-321abc' 'strict-dynamic'",
+       {"'unsafe-hashes' 'strict-dynamic'"},
        true},
       {true,
        "http://example1.com/foo/ 'self' 'sha512-321abc' 'strict-dynamic'",
-       {"'unsafe-hashed-attributes' 'strict-dynamic'"},
+       {"'unsafe-hashes' 'strict-dynamic'"},
        false},
   };
 
@@ -1256,7 +1256,7 @@ TEST_F(SourceListDirectiveTest, SubsumesListWildcard) {
       {"http://another.test", {"https:", "'self'"}, true},
       {"'self'", {"*", "'self'"}, true},
       {"'unsafe-eval' * ", {"'unsafe-eval'"}, true},
-      {"'unsafe-hashed-attributes' * ", {"'unsafe-hashed-attributes'"}, true},
+      {"'unsafe-hashes' * ", {"'unsafe-hashes'"}, true},
       {"'unsafe-inline' * ", {"'unsafe-inline'"}, true},
       {"*", {"*", "http://a.com ws://b.com ftp://c.com"}, true},
       {"*", {"* data: blob:", "http://a.com ws://b.com ftp://c.com"}, true},
@@ -1279,10 +1279,10 @@ TEST_F(SourceListDirectiveTest, SubsumesListWildcard) {
        false},
       {"https://another.test", {"*"}, false},
       {"*", {"* 'unsafe-eval'"}, false},
-      {"*", {"* 'unsafe-hashed-attributes'"}, false},
+      {"*", {"* 'unsafe-hashes'"}, false},
       {"*", {"* 'unsafe-inline'"}, false},
       {"'unsafe-eval'", {"* 'unsafe-eval'"}, false},
-      {"'unsafe-hashed-attributes'", {"* 'unsafe-hashed-attributes'"}, false},
+      {"'unsafe-hashes'", {"* 'unsafe-hashes'"}, false},
       {"'unsafe-inline'", {"* 'unsafe-inline'"}, false},
       {"*", {"data: blob:", "data://a.com ws://b.com ftp://c.com"}, false},
       {"* data:",

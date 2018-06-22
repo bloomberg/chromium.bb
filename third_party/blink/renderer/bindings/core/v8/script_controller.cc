@@ -213,8 +213,7 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(const KURL& url,
     return false;
 
   const int kJavascriptSchemeLength = sizeof("javascript:") - 1;
-  String script_source = DecodeURLEscapeSequences(url.GetString())
-                             .Substring(kJavascriptSchemeLength);
+  String script_source = DecodeURLEscapeSequences(url.GetString());
 
   bool should_bypass_main_world_content_security_policy =
       ContentSecurityPolicy::ShouldBypassMainWorld(GetFrame()->GetDocument());
@@ -228,6 +227,8 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(const KURL& url,
                                   EventHandlerPosition().line_))) {
     return true;
   }
+
+  script_source = script_source.Substring(kJavascriptSchemeLength);
 
   bool progress_notifications_needed =
       GetFrame()->Loader().StateMachine()->IsDisplayingInitialEmptyDocument() &&

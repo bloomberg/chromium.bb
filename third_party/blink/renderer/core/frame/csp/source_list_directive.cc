@@ -37,7 +37,7 @@ SourceListDirective::SourceListDirective(const String& name,
       allow_eval_(false),
       allow_wasm_eval_(false),
       allow_dynamic_(false),
-      allow_hashed_attributes_(false),
+      allow_unsafe_hashes_(false),
       report_sample_(false),
       hash_algorithms_used_(0) {
   Vector<UChar> characters;
@@ -108,8 +108,8 @@ bool SourceListDirective::AllowHash(const CSPHashValue& hash_value) const {
   return hashes_.Contains(hash_value);
 }
 
-bool SourceListDirective::AllowHashedAttributes() const {
-  return allow_hashed_attributes_;
+bool SourceListDirective::AllowUnsafeHashes() const {
+  return allow_unsafe_hashes_;
 }
 
 bool SourceListDirective::AllowReportSample() const {
@@ -118,7 +118,7 @@ bool SourceListDirective::AllowReportSample() const {
 
 bool SourceListDirective::IsNone() const {
   return !list_.size() && !allow_self_ && !allow_star_ && !allow_inline_ &&
-         !allow_hashed_attributes_ && !allow_eval_ && !allow_wasm_eval_ &&
+         !allow_unsafe_hashes_ && !allow_eval_ && !allow_wasm_eval_ &&
          !allow_dynamic_ && !nonces_.size() && !hashes_.size();
 }
 
@@ -234,8 +234,8 @@ bool SourceListDirective::ParseSource(
     return true;
   }
 
-  if (EqualIgnoringASCIICase("'unsafe-hashed-attributes'", token)) {
-    AddSourceUnsafeHashedAttributes();
+  if (EqualIgnoringASCIICase("'unsafe-hashes'", token)) {
+    AddSourceUnsafeHashes();
     return true;
   }
 
@@ -632,8 +632,8 @@ void SourceListDirective::AddSourceStrictDynamic() {
   allow_dynamic_ = true;
 }
 
-void SourceListDirective::AddSourceUnsafeHashedAttributes() {
-  allow_hashed_attributes_ = true;
+void SourceListDirective::AddSourceUnsafeHashes() {
+  allow_unsafe_hashes_ = true;
 }
 
 void SourceListDirective::AddReportSample() {
@@ -719,7 +719,7 @@ bool SourceListDirective::Subsumes(
   bool allow_eval_other = other[0]->allow_eval_;
   bool allow_wasm_eval_other = other[0]->allow_wasm_eval_;
   bool allow_dynamic_other = other[0]->allow_dynamic_;
-  bool allow_hashed_attributes_other = other[0]->allow_hashed_attributes_;
+  bool allow_unsafe_hashes = other[0]->allow_unsafe_hashes_;
   bool is_hash_or_nonce_present_other = other[0]->IsHashOrNoncePresent();
   HashSet<String> nonces_b = other[0]->nonces_;
   HashSet<CSPHashValue> hashes_b = other[0]->hashes_;
@@ -731,8 +731,7 @@ bool SourceListDirective::Subsumes(
     allow_eval_other = allow_eval_other && other[i]->allow_eval_;
     allow_wasm_eval_other = allow_wasm_eval_other && other[i]->allow_wasm_eval_;
     allow_dynamic_other = allow_dynamic_other && other[i]->allow_dynamic_;
-    allow_hashed_attributes_other =
-        allow_hashed_attributes_other && other[i]->allow_hashed_attributes_;
+    allow_unsafe_hashes = allow_unsafe_hashes && other[i]->allow_unsafe_hashes_;
     is_hash_or_nonce_present_other =
         is_hash_or_nonce_present_other && other[i]->IsHashOrNoncePresent();
     nonces_b = other[i]->GetIntersectNonces(nonces_b);
@@ -751,7 +750,7 @@ bool SourceListDirective::Subsumes(
       return false;
     if (!allow_wasm_eval_ && allow_wasm_eval_other)
       return false;
-    if (!allow_hashed_attributes_ && allow_hashed_attributes_other)
+    if (!allow_unsafe_hashes_ && allow_unsafe_hashes)
       return false;
     bool allow_all_inline_other =
         allow_inline_other && !is_hash_or_nonce_present_other &&

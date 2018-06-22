@@ -267,7 +267,7 @@ class CORE_EXPORT CSPDirectiveList
   bool AreAllMatchingHashesPresent(SourceListDirective*,
                                    const IntegrityMetadataSet&) const;
   bool CheckHash(SourceListDirective*, const CSPHashValue&) const;
-  bool CheckHashedAttributes(SourceListDirective*) const;
+  bool CheckUnsafeHashesAllowed(SourceListDirective*) const;
   bool CheckSource(SourceListDirective*,
                    const KURL&,
                    ResourceRequest::RedirectStatus) const;
@@ -329,6 +329,10 @@ class CORE_EXPORT CSPDirectiveList
   static SourceListDirectiveVector GetSourceVector(
       const ContentSecurityPolicy::DirectiveType&,
       const CSPDirectiveListVector& policies);
+
+  bool AllowHash(const CSPHashValue&,
+                 ContentSecurityPolicy::InlineType,
+                 SourceListDirective* directive) const;
 
   Member<ContentSecurityPolicy> policy_;
 
