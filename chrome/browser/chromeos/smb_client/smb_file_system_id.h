@@ -17,8 +17,6 @@ namespace smb_client {
 std::string CreateFileSystemId(int32_t mount_id,
                                const base::FilePath& share_path,
                                bool is_kerberos_chromad);
-std::string CreateFileSystemId(int32_t mount_id,
-                               const base::FilePath& share_path);
 
 // Returns the MountId component of a |file_system_id|. |file_system_id| must be
 // well-formed (e.g. 2@@smb://192.168.1.1/testShare).
