@@ -3601,4 +3601,37 @@ TEST_F(PasswordAutofillAgentTest, FillOnLoadWithRendererIDsNoUsername) {
   EXPECT_EQ(kAlicePassword, password_element_.SuggestedValue().Utf8());
 }
 
+TEST_F(PasswordAutofillAgentTest, FillDataWithNoPasswordId) {
+  ClearUsernameAndPasswordFields();
+
+  // Prepare fill data which contain the form ID, to trigger filling by IDs.
+  PasswordFormFillData data = fill_data_;
+  WebFormElement form_element = GetMainFrame()
+                                    ->GetDocument()
+                                    .GetElementById("LoginTestForm")
+                                    .To<WebFormElement>();
+  data.form_renderer_id = form_element.UniqueRendererFormId();
+  data.has_renderer_ids = true;
+  // Simulate that no field was found into which a password should be filled
+  // (i.e. no "current-password" field).
+  data.password_field.unique_renderer_id =
+      FormFieldData::kNotSetFormControlRendererId;
+
+  SimulateOnFillPasswordForm(data);
+
+  // The username and password should not have been autocompleted.
+  CheckTextFieldsSuggestedState("", false, "", false);
+
+  SimulateElementClick(kPasswordName);
+  SimulateSuggestionChoice(password_element_);
+
+  // Check that the correct suggestions were requested.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(fake_driver_.called_show_pw_suggestions());
+  EXPECT_EQ(kPasswordFillFormDataId, fake_driver_.show_pw_suggestions_key());
+  fake_driver_.reset_show_pw_suggestions();
+
+  CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
+}
+
 }  // namespace autofill

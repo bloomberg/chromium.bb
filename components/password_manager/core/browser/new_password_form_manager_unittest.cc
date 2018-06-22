@@ -8,6 +8,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
@@ -137,19 +138,29 @@ TEST_F(NewPasswordFormManagerTest, Autofill) {
   EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
 }
 
-TEST_F(NewPasswordFormManagerTest, NoAutofillSignUpForm) {
+// NewPasswordFormManager should always send fill data to renderer, even for
+// sign-up forms (no "current-password" field, i.e., no password field to fill
+// into). However, for sign-up forms, no particular password field should be
+// identified for filling. That way, Chrome won't disturb the user by filling
+// the sign-up form, but will be able to offer a manual fallback for filling if
+// the form was misclassified.
+TEST_F(NewPasswordFormManagerTest, AutofillSignUpForm) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   FakeFormFetcher fetcher;
   fetcher.Fetch();
   // Make |observed_form_| to be sign-up form.
   observed_form_.fields.back().autocomplete_attribute = "new-password";
 
-  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
+  PasswordFormFillData fill_data;
+  EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
   NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
                                       observed_form_, &fetcher);
   fetcher.SetNonFederated({&saved_match_}, 0u);
 
   task_runner_->FastForwardUntilNoTasksRemain();
+  constexpr uint32_t kNoID = FormFieldData::kNotSetFormControlRendererId;
+  EXPECT_EQ(kNoID, fill_data.password_field.unique_renderer_id);
+  EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
 }
 
 TEST_F(NewPasswordFormManagerTest, SetSubmitted) {
