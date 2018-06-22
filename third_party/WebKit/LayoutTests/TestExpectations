@@ -4768,3 +4768,6 @@ crbug.com/854910 [ Mac ] fast/scroll-behavior/smooth-scroll/track-scroll.html [ 
 crbug.com/854910 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Failure Pass ]
 crbug.com/855222 [ Mac ] external/wpt/orientation-sensor/AbsoluteOrientationSensor-iframe-access.https.html [ Failure Pass ]
 crbug.com/855222 [ Mac ] external/wpt/orientation-sensor/RelativeOrientationSensor-iframe-access.https.html [ Failure Pass ]
+
+# Sheriff 2018-06-22
+crbug.com/855055 [ Mac ] virtual/threaded/animations/interpolation/svg-stroke-dasharray-interpolation.html [ Pass Timeout ]
