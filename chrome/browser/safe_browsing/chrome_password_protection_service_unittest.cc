@@ -880,12 +880,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
   base::string16 warning_text_with_org_name = l10n_util::GetStringFUTF16(
       IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE_WITH_ORG_NAME,
       base::UTF8ToUTF16("example.com"));
-  EXPECT_EQ(PasswordReuseEvent::NOT_SIGNED_IN, service_->GetSyncAccountType());
-  EXPECT_TRUE(service_->GetOrganizationName().empty());
-  EXPECT_EQ(default_warning_text, service_->GetWarningDetailText(
-                                      PasswordReuseEvent::SIGN_IN_PASSWORD));
-  EXPECT_EQ(default_warning_text, service_->GetWarningDetailText(
-                                      PasswordReuseEvent::ENTERPRISE_PASSWORD));
 
   // Enables kEnterprisePasswordProtectionV1 feature.
   base::test::ScopedFeatureList scoped_features;
@@ -916,10 +910,6 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextGmail) {
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
   base::string16 generic_enterprise_warning_text = l10n_util::GetStringUTF16(
       IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE);
-  EXPECT_EQ(default_warning_text, service_->GetWarningDetailText(
-                                      PasswordReuseEvent::SIGN_IN_PASSWORD));
-  EXPECT_EQ(default_warning_text, service_->GetWarningDetailText(
-                                      PasswordReuseEvent::ENTERPRISE_PASSWORD));
 
   // Enables kEnterprisePasswordProtectionV1 feature.
   base::test::ScopedFeatureList scoped_features;

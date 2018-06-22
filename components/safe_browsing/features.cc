@@ -47,7 +47,7 @@ const base::Feature kInspectDownloadedRarFiles{
     "InspectDownloadedRarFiles", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnterprisePasswordProtectionV1{
-    "EnterprisePasswordProtectionV1", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnterprisePasswordProtectionV1", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kForceEnableResetPasswordWebUI{
     "ForceEnableResetPasswordWebUI", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -63,7 +63,6 @@ constexpr struct {
 } kExperimentalFeatures[]{
     {&kAdSamplerTriggerFeature, false},
     {&kCheckByURLLoaderThrottle, true},
-    {&kEnterprisePasswordProtectionV1, true},
     {&kForceEnableResetPasswordWebUI, true},
     {&kInspectDownloadedRarFiles, true},
     {&kSuspiciousSiteTriggerQuotaFeature, false},
