@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
@@ -514,6 +515,73 @@ void SourceBuffer::remove(double start,
   pending_remove_start_ = start;
   pending_remove_end_ = end;
   remove_async_part_runner_->RunAsync();
+}
+
+void SourceBuffer::changeType(const String& type,
+                              ExceptionState& exception_state) {
+  BLINK_SBLOG << __func__ << " this=" << this << " type=" << type;
+
+  // Per 30 May 2018 Codec Switching feature incubation spec:
+  // https://rawgit.com/WICG/media-source/3b3742ea788999bb7ae4a4553ac7d574b0547dbe/index.html#dom-sourcebuffer-changetype
+  // 1. If type is an empty string then throw a TypeError exception and abort
+  //    these steps.
+  if (type.IsEmpty()) {
+    MediaSource::LogAndThrowTypeError(exception_state,
+                                      "The type provided is empty");
+    return;
+  }
+
+  // 2. If this object has been removed from the sourceBuffers attribute of the
+  //    parent media source, then throw an InvalidStateError exception and abort
+  //    these steps.
+  // 3. If the updating attribute equals true, then throw an InvalidStateError
+  //    exception and abort these steps.
+  if (ThrowExceptionIfRemovedOrUpdating(IsRemoved(), updating_,
+                                        exception_state))
+    return;
+
+  // 4. If type contains a MIME type that is not supported or contains a MIME
+  //    type that is not supported with the types specified (currently or
+  //    previously) of SourceBuffer objects in the sourceBuffers attribute of
+  //    the parent media source, then throw a NotSupportedError exception and
+  //    abort these steps.
+  ContentType content_type(type);
+  String codecs = content_type.Parameter("codecs");
+  if (!MediaSource::isTypeSupported(type) ||
+      !web_source_buffer_->CanChangeType(content_type.GetType(), codecs)) {
+    MediaSource::LogAndThrowDOMException(
+        exception_state, DOMExceptionCode::kNotSupportedError,
+        "Changing to the type provided ('" + type + "') is not supported.");
+    return;
+  }
+
+  // 5. If the readyState attribute of the parent media source is in the "ended"
+  //    state then run the following steps:
+  //    1. Set the readyState attribute of the parent media source to "open"
+  //    2. Queue a task to fire a simple event named sourceopen at the parent
+  //       media source.
+  source_->OpenIfInEndedState();
+
+  // 6. Run the reset parser state algorithm.
+  web_source_buffer_->ResetParserState();
+
+  // 7. Update the generate timestamps flag on this SourceBuffer object to the
+  //    value in the "Generate Timestamps Flag" column of the byte stream format
+  //    registry entry that is associated with type.
+  // This call also updates the pipeline to switch bytestream parser and codecs.
+  web_source_buffer_->ChangeType(content_type.GetType(), codecs);
+
+  // 8. If the generate timestamps flag equals true: Set the mode attribute on
+  //    this SourceBuffer object to "sequence", including running the associated
+  //    steps for that attribute being set. Otherwise: keep the previous value
+  //    of the mode attribute on this SourceBuffer object, without running any
+  //    associated steps for that attribute being set.
+  if (web_source_buffer_->GetGenerateTimestampsFlag())
+    setMode(SequenceKeyword(), exception_state);
+
+  // 9. Set pending initialization segment for changeType flag to true.
+  // The logic for this flag is handled by the pipeline (the new bytestream
+  // parser will expect an initialization segment first).
 }
 
 void SourceBuffer::setTrackDefaults(TrackDefaultList* track_defaults,

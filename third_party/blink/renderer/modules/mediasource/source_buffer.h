@@ -82,6 +82,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   void appendBuffer(NotShared<DOMArrayBufferView> data, ExceptionState&);
   void abort(ExceptionState&);
   void remove(double start, double end, ExceptionState&);
+  void changeType(const String& type, ExceptionState&);
   double appendWindowStart() const;
   void setAppendWindowStart(double, ExceptionState&);
   double appendWindowEnd() const;

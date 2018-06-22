@@ -73,6 +73,9 @@ enum AppendMode {
     [RaisesException] void abort();
     [RaisesException] void remove(double start, unrestricted double end);
 
+    // Explicitly change the container or codecs
+    [RaisesException, RuntimeEnabled=MediaSourceExperimental] void changeType(DOMString type);
+
     // Gets or sets the TrackDefaultList this SourceBuffer may consult during
     // the initialization segment algorithm.
     [RaisesException=Setter, RuntimeEnabled=MediaSourceExperimental] attribute TrackDefaultList trackDefaults;
