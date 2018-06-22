@@ -4,6 +4,7 @@
 
 #include "components/data_use_measurement/core/data_use_measurement.h"
 
+#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -441,22 +442,12 @@ void DataUseMeasurement::RecordContentTypeHistogram(
                        : (!is_tab_visible ? DataUseUserData::VIDEO_TABBACKGROUND
                                           : DataUseUserData::VIDEO);
   }
-  // Use the more primitive STATIC_HISTOGRAM_POINTER_BLOCK macro because the
-  // simple UMA_HISTOGRAM_ENUMERATION macros don't expose 'AddKiB'.
   if (is_user_traffic) {
-    STATIC_HISTOGRAM_POINTER_BLOCK(
-        "DataUse.ContentType.UserTrafficKB", AddKiB(content_type, bytes),
-        base::LinearHistogram::FactoryGet(
-            "DataUse.ContentType.UserTrafficKB", 1, DataUseUserData::TYPE_MAX,
-            DataUseUserData::TYPE_MAX + 1,
-            base::HistogramBase::kUmaTargetedHistogramFlag));
+    UMA_HISTOGRAM_SCALED_ENUMERATION("DataUse.ContentType.UserTrafficKB",
+                                     content_type, bytes, 1024);
   } else {
-    STATIC_HISTOGRAM_POINTER_BLOCK(
-        "DataUse.ContentType.ServicesKB", AddKiB(content_type, bytes),
-        base::LinearHistogram::FactoryGet(
-            "DataUse.ContentType.ServicesKB", 1, DataUseUserData::TYPE_MAX,
-            DataUseUserData::TYPE_MAX + 1,
-            base::HistogramBase::kUmaTargetedHistogramFlag));
+    UMA_HISTOGRAM_SCALED_ENUMERATION("DataUse.ContentType.ServicesKB",
+                                     content_type, bytes, 1024);
   }
 }
 
