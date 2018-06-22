@@ -95,6 +95,7 @@ jumbo_component("views") {
     "cocoa/views_nswindow_delegate.h",
     "cocoa/views_scrollbar_bridge.h",
     "cocoa/widget_owner_nswindow_adapter.h",
+    "cocoa/window_touch_bar_delegate.h",
     "color_chooser/color_chooser_listener.h",
     "color_chooser/color_chooser_view.h",
     "context_menu_controller.h",

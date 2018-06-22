@@ -10,6 +10,8 @@
 #import "ui/base/cocoa/command_dispatcher.h"
 #include "ui/views/views_export.h"
 
+@protocol WindowTouchBarDelegate;
+
 // The NSWindow used by BridgedNativeWidget. Provides hooks into AppKit that
 // can only be accomplished by overriding methods.
 VIEWS_EXPORT
@@ -22,6 +24,11 @@ VIEWS_EXPORT
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(NSInteger)returnCode
         contextInfo:(void*)contextInfo;
+
+// Set a WindowTouchBarDelegate to allow creation of a custom TouchBar when
+// AppKit follows the responder chain and reaches the NSWindow when trying to
+// create one.
+- (void)setWindowTouchBarDelegate:(id<WindowTouchBarDelegate>)delegate;
 
 @end
 

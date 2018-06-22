@@ -8,6 +8,7 @@
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
+#import "chrome/browser/ui/browser_window_touch_bar_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_command_handler.h"
 #import "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
@@ -16,6 +17,7 @@
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #import "ui/base/cocoa/window_size_constants.h"
+#import "ui/views/cocoa/window_touch_bar_delegate.h"
 
 namespace {
 
@@ -37,6 +39,38 @@ bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
 }
 
 }  // namespace
+
+// Bridge Obj-C class for WindowTouchBarDelegate and BrowserWindowTouchBar.
+@interface BrowserWindowTouchBarViewsDelegate
+    : NSObject<WindowTouchBarDelegate> {
+  Browser* browser_;  // Weak.
+  NSWindow* window_;  // Weak.
+  base::scoped_nsobject<BrowserWindowTouchBar> browserWindowTouchBar_;
+}
+
+@end
+
+@implementation BrowserWindowTouchBarViewsDelegate
+
+- (instancetype)initWithBrowser:(Browser*)browser window:(NSWindow*)window {
+  if ((self = [super init])) {
+    browser_ = browser;
+    window_ = window;
+  }
+
+  return self;
+}
+
+- (NSTouchBar*)makeTouchBar API_AVAILABLE(macos(10.12.2)) {
+  if (!browserWindowTouchBar_) {
+    browserWindowTouchBar_.reset([[BrowserWindowTouchBar alloc]
+        initWithBrowser:browser_
+                 window:window_]);
+  }
+  return [browserWindowTouchBar_ makeTouchBar];
+}
+
+@end
 
 BrowserFrameMac::BrowserFrameMac(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
@@ -96,6 +130,12 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
   [ns_window setCommandDispatcherDelegate:command_dispatcher_delegate_];
   [ns_window setCommandHandler:[[[BrowserWindowCommandHandler alloc] init]
                                    autorelease]];
+
+  touch_bar_delegate_.reset([[BrowserWindowTouchBarViewsDelegate alloc]
+      initWithBrowser:browser_view_->browser()
+               window:ns_window]);
+  [ns_window setWindowTouchBarDelegate:touch_bar_delegate_.get()];
+
   return ns_window.autorelease();
 }
 
@@ -106,6 +146,7 @@ void BrowserFrameMac::OnWindowDestroying(NSWindow* window) {
       base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(window);
   [ns_window setCommandHandler:nil];
   [ns_window setCommandDispatcherDelegate:nil];
+  [ns_window setWindowTouchBarDelegate:nil];
 }
 
 int BrowserFrameMac::GetMinimizeButtonOffset() const {

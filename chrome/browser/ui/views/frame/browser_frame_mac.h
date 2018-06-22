@@ -13,6 +13,7 @@
 
 class BrowserFrame;
 class BrowserView;
+@protocol WindowTouchBarDelegate;
 @class ChromeCommandDispatcherDelegate;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,6 +56,7 @@ class BrowserFrameMac : public views::NativeWidgetMac,
   BrowserView* browser_view_;  // Weak. Our ClientView.
   base::scoped_nsobject<ChromeCommandDispatcherDelegate>
       command_dispatcher_delegate_;
+  base::scoped_nsprotocol<id<WindowTouchBarDelegate>> touch_bar_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameMac);
 };
