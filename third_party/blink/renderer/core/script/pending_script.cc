@@ -89,7 +89,7 @@ void PendingScript::WatchForLoad(PendingScriptClient* client) {
   // notifyFinished and further stopWatchingForLoad().
   client_ = client;
   if (IsReady()) {
-    client_->PendingScriptFinished(this);
+    PendingScriptFinished();
   } else {
     virtual_time_pauser_.PauseVirtualTime();
   }
@@ -102,6 +102,13 @@ void PendingScript::StopWatchingForLoad() {
   DCHECK(IsExternalOrModule());
   client_ = nullptr;
   virtual_time_pauser_.UnpauseVirtualTime();
+}
+
+void PendingScript::PendingScriptFinished() {
+  virtual_time_pauser_.UnpauseVirtualTime();
+  if (client_) {
+    client_->PendingScriptFinished(this);
+  }
 }
 
 ScriptElementBase* PendingScript::GetElement() const {

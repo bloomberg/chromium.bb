@@ -349,7 +349,7 @@ void ClassicPendingScript::AdvanceReadyState(ReadyState new_ready_state) {
 
   // Did we transition into a 'ready' state?
   if (IsReady() && !old_is_ready && IsWatchingForLoad())
-    Client()->PendingScriptFinished(this);
+    PendingScriptFinished();
 
   // Did we finish streaming?
   if (IsCurrentlyStreaming()) {

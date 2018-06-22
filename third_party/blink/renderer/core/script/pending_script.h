@@ -79,6 +79,7 @@ class CORE_EXPORT PendingScript
 
   void WatchForLoad(PendingScriptClient*);
   void StopWatchingForLoad();
+  void PendingScriptFinished();
 
   ScriptElementBase* GetElement() const;
 
