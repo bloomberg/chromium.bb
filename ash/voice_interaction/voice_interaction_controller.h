@@ -22,8 +22,6 @@ class ASH_EXPORT VoiceInteractionController
 
   void BindRequest(mojom::VoiceInteractionControllerRequest request);
 
-  void AddVoiceInteractionObserver(mojom::VoiceInteractionObserverPtr observer);
-
   // ash::mojom::VoiceInteractionController:
   void NotifyStatusChanged(mojom::VoiceInteractionState state) override;
   void NotifySettingsEnabled(bool enabled) override;
@@ -32,6 +30,7 @@ class ASH_EXPORT VoiceInteractionController
   void NotifyFeatureAllowed(mojom::AssistantAllowedState state) override;
   void IsSettingEnabled(IsSettingEnabledCallback callback) override;
   void IsSetupCompleted(IsSetupCompletedCallback callback) override;
+  void AddObserver(mojom::VoiceInteractionObserverPtr observer) override;
 
   mojom::VoiceInteractionState voice_interaction_state() const {
     return voice_interaction_state_;
