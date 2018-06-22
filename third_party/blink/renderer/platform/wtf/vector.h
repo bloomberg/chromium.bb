@@ -598,7 +598,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
     buffer_ = nullptr;
   }
 
-  NEVER_INLINE void ReallyDeallocateBuffer(T* buffer_to_deallocate) {
+  NOINLINE void ReallyDeallocateBuffer(T* buffer_to_deallocate) {
     Allocator::FreeInlineVectorBacking(buffer_to_deallocate);
   }
 
@@ -1766,8 +1766,7 @@ void Vector<T, inlineCapacity, Allocator>::Append(const U* data,
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
-NEVER_INLINE void Vector<T, inlineCapacity, Allocator>::AppendSlowCase(
-    U&& val) {
+NOINLINE void Vector<T, inlineCapacity, Allocator>::AppendSlowCase(U&& val) {
   DCHECK_EQ(size(), capacity());
 
   typename std::remove_reference<U>::type* ptr = &val;

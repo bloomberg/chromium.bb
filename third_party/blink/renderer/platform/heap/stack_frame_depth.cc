@@ -19,9 +19,9 @@ namespace blink {
 
 static const char* g_avoid_optimization = nullptr;
 
-// NEVER_INLINE ensures that |dummy| array on configureLimit() is not optimized
+// NOINLINE ensures that |dummy| array on configureLimit() is not optimized
 // away, and the stack frame base register is adjusted |kSafeStackFrameSize|.
-NEVER_INLINE static uintptr_t CurrentStackFrameBaseOnCallee(const char* dummy) {
+NOINLINE static uintptr_t CurrentStackFrameBaseOnCallee(const char* dummy) {
   g_avoid_optimization = dummy;
   return StackFrameDepth::CurrentStackFrame();
 }

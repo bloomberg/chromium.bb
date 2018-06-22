@@ -6317,7 +6317,7 @@ enum GrowthDirection {
   kGrowsTowardsLower,
 };
 
-NEVER_INLINE NO_SANITIZE_ADDRESS GrowthDirection StackGrowthDirection() {
+NOINLINE NO_SANITIZE_ADDRESS GrowthDirection StackGrowthDirection() {
   // Disable ASan, otherwise its stack checking (use-after-return) will
   // confuse the direction check.
   static char* previous = nullptr;
