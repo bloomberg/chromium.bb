@@ -59,6 +59,32 @@ namespace ash {
 
 namespace {
 
+// Names of nodes with wallpaper info in |kUserWallpaperInfo| dictionary.
+constexpr char kNewWallpaperDateNodeName[] = "date";
+constexpr char kNewWallpaperLayoutNodeName[] = "layout";
+constexpr char kNewWallpaperLocationNodeName[] = "file";
+constexpr char kNewWallpaperTypeNodeName[] = "type";
+
+// The file name of the policy wallpaper.
+constexpr char kPolicyWallpaperFile[] = "policy-controlled.jpeg";
+
+// File path suffix of resized small wallpapers.
+constexpr char kSmallWallpaperSuffix[] = "_small";
+
+// How long to wait reloading the wallpaper after the display size has changed.
+constexpr base::TimeDelta kWallpaperReloadDelay =
+    base::TimeDelta::FromMilliseconds(100);
+
+// How long to wait for resizing of the the wallpaper.
+constexpr base::TimeDelta kCompositorLockTimeout =
+    base::TimeDelta::FromMilliseconds(750);
+
+// Default quality for encoding wallpaper.
+constexpr int kDefaultEncodingQuality = 90;
+
+// The color of the wallpaper if no other wallpaper images are available.
+constexpr SkColor kDefaultWallpaperColor = SK_ColorGRAY;
+
 // The paths of wallpaper directories.
 base::FilePath& GlobalUserDataDir() {
   static base::NoDestructor<base::FilePath> dir_user_data;
@@ -101,28 +127,127 @@ void SetGlobalDevicePolicyWallpaperFile(const base::FilePath& path) {
   global_path = path;
 }
 
-// Names of nodes with wallpaper info in |kUserWallpaperInfo| dictionary.
-constexpr char kNewWallpaperDateNodeName[] = "date";
-constexpr char kNewWallpaperLayoutNodeName[] = "layout";
-constexpr char kNewWallpaperLocationNodeName[] = "file";
-constexpr char kNewWallpaperTypeNodeName[] = "type";
+// Returns the appropriate wallpaper resolution for all root windows.
+WallpaperController::WallpaperResolution GetAppropriateResolution() {
+  gfx::Size size = WallpaperController::GetMaxDisplaySizeInNative();
+  return (size.width() > kSmallWallpaperMaxWidth ||
+          size.height() > kSmallWallpaperMaxHeight)
+             ? WallpaperController::WALLPAPER_RESOLUTION_LARGE
+             : WallpaperController::WALLPAPER_RESOLUTION_SMALL;
+}
 
-// The file name of the policy wallpaper.
-constexpr char kPolicyWallpaperFile[] = "policy-controlled.jpeg";
+// Returns the path of the online wallpaper corresponding to |url| and
+// |resolution|.
+base::FilePath GetOnlineWallpaperPath(
+    const std::string& url,
+    WallpaperController::WallpaperResolution resolution) {
+  std::string file_name = GURL(url).ExtractFileName();
+  if (resolution == WallpaperController::WALLPAPER_RESOLUTION_SMALL) {
+    file_name = base::FilePath(file_name)
+                    .InsertBeforeExtension(kSmallWallpaperSuffix)
+                    .value();
+  }
+  DCHECK(!GlobalChromeOSWallpapersDir().empty());
+  return GlobalChromeOSWallpapersDir().Append(file_name);
+}
 
-// File path suffix of resized small wallpapers.
-constexpr char kSmallWallpaperSuffix[] = "_small";
+// Returns wallpaper subdirectory name for current resolution.
+std::string GetCustomWallpaperSubdirForCurrentResolution() {
+  WallpaperController::WallpaperResolution resolution =
+      GetAppropriateResolution();
+  return resolution == WallpaperController::WALLPAPER_RESOLUTION_SMALL
+             ? WallpaperController::kSmallWallpaperSubDir
+             : WallpaperController::kLargeWallpaperSubDir;
+}
 
-// How long to wait reloading the wallpaper after the display size has changed.
-constexpr base::TimeDelta kWallpaperReloadDelay =
-    base::TimeDelta::FromMilliseconds(100);
+// Resizes |image| to a resolution which is nearest to |preferred_width| and
+// |preferred_height| while respecting the |layout| choice. |output_skia| is
+// optional (may be null). Returns true on success.
+bool ResizeImage(const gfx::ImageSkia& image,
+                 WallpaperLayout layout,
+                 int preferred_width,
+                 int preferred_height,
+                 scoped_refptr<base::RefCountedBytes>* output,
+                 gfx::ImageSkia* output_skia) {
+  int width = image.width();
+  int height = image.height();
+  int resized_width;
+  int resized_height;
+  *output = base::MakeRefCounted<base::RefCountedBytes>();
 
-// How long to wait for resizing of the the wallpaper.
-constexpr base::TimeDelta kCompositorLockTimeout =
-    base::TimeDelta::FromMilliseconds(750);
+  if (layout == WALLPAPER_LAYOUT_CENTER_CROPPED) {
+    // Do not resize wallpaper if it is smaller than preferred size.
+    if (width < preferred_width || height < preferred_height)
+      return false;
 
-// Default quality for encoding wallpaper.
-constexpr int kDefaultEncodingQuality = 90;
+    double horizontal_ratio = static_cast<double>(preferred_width) / width;
+    double vertical_ratio = static_cast<double>(preferred_height) / height;
+    if (vertical_ratio > horizontal_ratio) {
+      resized_width =
+          gfx::ToRoundedInt(static_cast<double>(width) * vertical_ratio);
+      resized_height = preferred_height;
+    } else {
+      resized_width = preferred_width;
+      resized_height =
+          gfx::ToRoundedInt(static_cast<double>(height) * horizontal_ratio);
+    }
+  } else if (layout == WALLPAPER_LAYOUT_STRETCH) {
+    resized_width = preferred_width;
+    resized_height = preferred_height;
+  } else {
+    resized_width = width;
+    resized_height = height;
+  }
+
+  gfx::ImageSkia resized_image = gfx::ImageSkiaOperations::CreateResizedImage(
+      image, skia::ImageOperations::RESIZE_LANCZOS3,
+      gfx::Size(resized_width, resized_height));
+
+  SkBitmap bitmap = *(resized_image.bitmap());
+  gfx::JPEGCodec::Encode(bitmap, kDefaultEncodingQuality, &(*output)->data());
+
+  if (output_skia) {
+    resized_image.MakeThreadSafe();
+    *output_skia = resized_image;
+  }
+
+  return true;
+}
+
+// Resizes |image| to a resolution which is nearest to |preferred_width| and
+// |preferred_height| while respecting the |layout| choice and saves the
+// resized wallpaper to |path|. |output_skia| is optional (may be
+// null). Returns true on success.
+bool ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
+                            const base::FilePath& path,
+                            WallpaperLayout layout,
+                            int preferred_width,
+                            int preferred_height,
+                            gfx::ImageSkia* output_skia) {
+  if (layout == WALLPAPER_LAYOUT_CENTER) {
+    if (base::PathExists(path))
+      base::DeleteFile(path, false);
+    return false;
+  }
+  scoped_refptr<base::RefCountedBytes> data;
+  if (!ResizeImage(image, layout, preferred_width, preferred_height, &data,
+                   output_skia)) {
+    return false;
+  }
+
+  // Saves |data| to |path| in local file system.
+  size_t written_bytes =
+      base::WriteFile(path, data->front_as<const char>(), data->size());
+  return written_bytes == data->size();
+}
+
+// Creates a 1x1 solid color image to be used as the backup default wallpaper.
+gfx::ImageSkia CreateSolidColorWallpaper() {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(1, 1);
+  bitmap.eraseColor(kDefaultWallpaperColor);
+  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+}
 
 // Returns true if a color should be extracted from the wallpaper based on the
 // command kAshShelfColor line arg.
@@ -255,69 +380,14 @@ void SaveCustomWallpaper(const std::string& wallpaper_files_id,
   // Re-encode orginal file to jpeg format and saves the result in case that
   // resized wallpaper is not generated (i.e. chrome shutdown before resized
   // wallpaper is saved).
-  WallpaperController::ResizeAndSaveWallpaper(
-      *image, original_path, WALLPAPER_LAYOUT_STRETCH, image->width(),
-      image->height(), nullptr);
-  WallpaperController::ResizeAndSaveWallpaper(
-      *image, small_wallpaper_path, layout, kSmallWallpaperMaxWidth,
-      kSmallWallpaperMaxHeight, nullptr);
-  WallpaperController::ResizeAndSaveWallpaper(
-      *image, large_wallpaper_path, layout, kLargeWallpaperMaxWidth,
-      kLargeWallpaperMaxHeight, nullptr);
-}
-
-// Resizes |image| to a resolution which is nearest to |preferred_width| and
-// |preferred_height| while respecting the |layout| choice. |output_skia| is
-// optional (may be null). Returns true on success.
-bool ResizeImage(const gfx::ImageSkia& image,
-                 WallpaperLayout layout,
-                 int preferred_width,
-                 int preferred_height,
-                 scoped_refptr<base::RefCountedBytes>* output,
-                 gfx::ImageSkia* output_skia) {
-  int width = image.width();
-  int height = image.height();
-  int resized_width;
-  int resized_height;
-  *output = base::MakeRefCounted<base::RefCountedBytes>();
-
-  if (layout == WALLPAPER_LAYOUT_CENTER_CROPPED) {
-    // Do not resize wallpaper if it is smaller than preferred size.
-    if (width < preferred_width || height < preferred_height)
-      return false;
-
-    double horizontal_ratio = static_cast<double>(preferred_width) / width;
-    double vertical_ratio = static_cast<double>(preferred_height) / height;
-    if (vertical_ratio > horizontal_ratio) {
-      resized_width =
-          gfx::ToRoundedInt(static_cast<double>(width) * vertical_ratio);
-      resized_height = preferred_height;
-    } else {
-      resized_width = preferred_width;
-      resized_height =
-          gfx::ToRoundedInt(static_cast<double>(height) * horizontal_ratio);
-    }
-  } else if (layout == WALLPAPER_LAYOUT_STRETCH) {
-    resized_width = preferred_width;
-    resized_height = preferred_height;
-  } else {
-    resized_width = width;
-    resized_height = height;
-  }
-
-  gfx::ImageSkia resized_image = gfx::ImageSkiaOperations::CreateResizedImage(
-      image, skia::ImageOperations::RESIZE_LANCZOS3,
-      gfx::Size(resized_width, resized_height));
-
-  SkBitmap bitmap = *(resized_image.bitmap());
-  gfx::JPEGCodec::Encode(bitmap, kDefaultEncodingQuality, &(*output)->data());
-
-  if (output_skia) {
-    resized_image.MakeThreadSafe();
-    *output_skia = resized_image;
-  }
-
-  return true;
+  ResizeAndSaveWallpaper(*image, original_path, WALLPAPER_LAYOUT_STRETCH,
+                         image->width(), image->height(), nullptr);
+  ResizeAndSaveWallpaper(*image, small_wallpaper_path, layout,
+                         kSmallWallpaperMaxWidth, kSmallWallpaperMaxHeight,
+                         nullptr);
+  ResizeAndSaveWallpaper(*image, large_wallpaper_path, layout,
+                         kLargeWallpaperMaxWidth, kLargeWallpaperMaxHeight,
+                         nullptr);
 }
 
 // Checks if kiosk app is running. Note: it returns false either when there's
@@ -343,15 +413,14 @@ bool IsActiveUser(const AccountId& account_id) {
 // local file system, otherwise returns an empty file path.
 base::FilePath GetExistingOnlineWallpaperPath(const std::string& url) {
   WallpaperController::WallpaperResolution resolution =
-      WallpaperController::GetAppropriateResolution();
-  base::FilePath wallpaper_path =
-      WallpaperController::GetOnlineWallpaperPath(url, resolution);
+      GetAppropriateResolution();
+  base::FilePath wallpaper_path = GetOnlineWallpaperPath(url, resolution);
   if (base::PathExists(wallpaper_path))
     return wallpaper_path;
 
   // Falls back to the large wallpaper if the small one doesn't exist.
   if (resolution == WallpaperController::WALLPAPER_RESOLUTION_SMALL) {
-    wallpaper_path = WallpaperController::GetOnlineWallpaperPath(
+    wallpaper_path = GetOnlineWallpaperPath(
         url, WallpaperController::WALLPAPER_RESOLUTION_LARGE);
     if (base::PathExists(wallpaper_path))
       return wallpaper_path;
@@ -369,15 +438,15 @@ void SaveOnlineWallpaper(const std::string& url,
       !base::CreateDirectory(GlobalChromeOSWallpapersDir())) {
     return;
   }
-  WallpaperController::ResizeAndSaveWallpaper(
+  ResizeAndSaveWallpaper(
       *image,
-      WallpaperController::GetOnlineWallpaperPath(
-          url, WallpaperController::WALLPAPER_RESOLUTION_LARGE),
+      GetOnlineWallpaperPath(url,
+                             WallpaperController::WALLPAPER_RESOLUTION_LARGE),
       layout, image->width(), image->height(), nullptr);
-  WallpaperController::ResizeAndSaveWallpaper(
+  ResizeAndSaveWallpaper(
       *image,
-      WallpaperController::GetOnlineWallpaperPath(
-          url, WallpaperController::WALLPAPER_RESOLUTION_SMALL),
+      GetOnlineWallpaperPath(url,
+                             WallpaperController::WALLPAPER_RESOLUTION_SMALL),
       WALLPAPER_LAYOUT_CENTER_CROPPED, kSmallWallpaperMaxWidth,
       kSmallWallpaperMaxHeight, nullptr);
 }
@@ -408,8 +477,6 @@ std::vector<std::string> GetOfflineWallpaperListImpl() {
 const char WallpaperController::kSmallWallpaperSubDir[] = "small";
 const char WallpaperController::kLargeWallpaperSubDir[] = "large";
 const char WallpaperController::kOriginalWallpaperSubDir[] = "original";
-
-const SkColor WallpaperController::kDefaultWallpaperColor = SK_ColorGRAY;
 
 WallpaperController::WallpaperController()
     : locked_(false),
@@ -475,38 +542,6 @@ gfx::Size WallpaperController::GetMaxDisplaySizeInNative() {
 }
 
 // static
-WallpaperController::WallpaperResolution
-WallpaperController::GetAppropriateResolution() {
-  gfx::Size size = GetMaxDisplaySizeInNative();
-  return (size.width() > kSmallWallpaperMaxWidth ||
-          size.height() > kSmallWallpaperMaxHeight)
-             ? WALLPAPER_RESOLUTION_LARGE
-             : WALLPAPER_RESOLUTION_SMALL;
-}
-
-// static
-base::FilePath WallpaperController::GetOnlineWallpaperPath(
-    const std::string& url,
-    WallpaperResolution resolution) {
-  std::string file_name = GURL(url).ExtractFileName();
-  if (resolution == WALLPAPER_RESOLUTION_SMALL) {
-    file_name = base::FilePath(file_name)
-                    .InsertBeforeExtension(kSmallWallpaperSuffix)
-                    .value();
-  }
-  DCHECK(!GlobalChromeOSWallpapersDir().empty());
-  return GlobalChromeOSWallpapersDir().Append(file_name);
-}
-
-// static
-std::string
-WallpaperController::GetCustomWallpaperSubdirForCurrentResolution() {
-  WallpaperResolution resolution = GetAppropriateResolution();
-  return resolution == WALLPAPER_RESOLUTION_SMALL ? kSmallWallpaperSubDir
-                                                  : kLargeWallpaperSubDir;
-}
-
-// static
 base::FilePath WallpaperController::GetCustomWallpaperPath(
     const std::string& sub_dir,
     const std::string& wallpaper_files_id,
@@ -520,30 +555,6 @@ base::FilePath WallpaperController::GetCustomWallpaperDir(
     const std::string& sub_dir) {
   DCHECK(!GlobalChromeOSCustomWallpapersDir().empty());
   return GlobalChromeOSCustomWallpapersDir().Append(sub_dir);
-}
-
-// static
-bool WallpaperController::ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
-                                                 const base::FilePath& path,
-                                                 WallpaperLayout layout,
-                                                 int preferred_width,
-                                                 int preferred_height,
-                                                 gfx::ImageSkia* output_skia) {
-  if (layout == WALLPAPER_LAYOUT_CENTER) {
-    if (base::PathExists(path))
-      base::DeleteFile(path, false);
-    return false;
-  }
-  scoped_refptr<base::RefCountedBytes> data;
-  if (!ResizeImage(image, layout, preferred_width, preferred_height, &data,
-                   output_skia)) {
-    return false;
-  }
-
-  // Saves |data| to |path| in local file system.
-  size_t written_bytes =
-      base::WriteFile(path, data->front_as<const char>(), data->size());
-  return written_bytes == data->size();
 }
 
 // static
@@ -579,14 +590,6 @@ void WallpaperController::SetWallpaperFromPath(
   }
 }
 
-// static
-gfx::ImageSkia WallpaperController::CreateSolidColorWallpaper() {
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(1, 1);
-  bitmap.eraseColor(kDefaultWallpaperColor);
-  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-}
-
 void WallpaperController::BindRequest(
     mojom::WallpaperControllerRequest request) {
   bindings_.AddBinding(this, std::move(request));
@@ -609,10 +612,6 @@ SkColor WallpaperController::GetProminentColor(
 
 gfx::ImageSkia WallpaperController::GetWallpaper() const {
   return current_wallpaper_ ? current_wallpaper_->image() : gfx::ImageSkia();
-}
-
-uint32_t WallpaperController::GetWallpaperOriginalImageId() const {
-  return current_wallpaper_ ? current_wallpaper_->original_image_id() : 0;
 }
 
 WallpaperLayout WallpaperController::GetWallpaperLayout() const {
@@ -651,67 +650,6 @@ void WallpaperController::OnWallpaperAnimationFinished() {
   // if views-based login is not interested in this event.
   if (wallpaper_controller_client_ && is_first_wallpaper_) {
     wallpaper_controller_client_->OnFirstWallpaperAnimationFinished();
-  }
-}
-
-void WallpaperController::SetDefaultWallpaperImpl(
-    const AccountId& account_id,
-    const user_manager::UserType& user_type,
-    bool show_wallpaper) {
-  // There is no visible wallpaper in kiosk mode.
-  if (IsInKioskMode())
-    return;
-
-  wallpaper_cache_map_.erase(account_id);
-
-  const bool use_small =
-      (GetAppropriateResolution() == WALLPAPER_RESOLUTION_SMALL);
-  WallpaperLayout layout =
-      use_small ? WALLPAPER_LAYOUT_CENTER : WALLPAPER_LAYOUT_CENTER_CROPPED;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  base::FilePath file_path;
-  base::Optional<user_manager::UserType> active_user_type =
-      Shell::Get()->session_controller()->GetUserType();
-
-  // The wallpaper is determined in the following order:
-  // Guest wallpaper, child wallpaper, customized default wallpaper, and regular
-  // default wallpaper.
-  // TODO(wzang|xdai): The current code intentionally distinguishes between
-  // |active_user_type| and |user_type|. We should try to unify them.
-  if (active_user_type && *active_user_type == user_manager::USER_TYPE_GUEST) {
-    const std::string switch_string =
-        use_small ? chromeos::switches::kGuestWallpaperSmall
-                  : chromeos::switches::kGuestWallpaperLarge;
-    file_path = command_line->GetSwitchValuePath(switch_string);
-  } else if (user_type == user_manager::USER_TYPE_CHILD) {
-    const std::string switch_string =
-        use_small ? chromeos::switches::kChildWallpaperSmall
-                  : chromeos::switches::kChildWallpaperLarge;
-    file_path = command_line->GetSwitchValuePath(switch_string);
-  } else if (!customized_default_small_path_.empty()) {
-    DCHECK(!customized_default_large_path_.empty());
-    file_path = use_small ? customized_default_small_path_
-                          : customized_default_large_path_;
-  } else {
-    const std::string switch_string =
-        use_small ? chromeos::switches::kDefaultWallpaperSmall
-                  : chromeos::switches::kDefaultWallpaperLarge;
-    file_path = command_line->GetSwitchValuePath(switch_string);
-  }
-
-  // We need to decode the image if there's no cache, or if the file path
-  // doesn't match the cached value (i.e. the cache is outdated). Otherwise,
-  // directly run the callback with the cached image.
-  if (!cached_default_wallpaper_.image.isNull() &&
-      cached_default_wallpaper_.file_path == file_path) {
-    OnDefaultWallpaperDecoded(file_path, layout, show_wallpaper,
-                              cached_default_wallpaper_.image);
-  } else {
-    ReadAndDecodeWallpaper(
-        base::BindOnce(&WallpaperController::OnDefaultWallpaperDecoded,
-                       weak_factory_.GetWeakPtr(), file_path, layout,
-                       show_wallpaper),
-        sequenced_task_runner_, file_path);
   }
 }
 
@@ -777,17 +715,6 @@ bool WallpaperController::IsPolicyControlled(const AccountId& account_id,
          info.type == POLICY;
 }
 
-bool WallpaperController::CanSetUserWallpaper(const AccountId& account_id,
-                                              bool is_ephemeral) const {
-  // There is no visible wallpaper in kiosk mode.
-  if (IsInKioskMode())
-    return false;
-  // Don't allow user wallpapers while policy is in effect.
-  if (IsPolicyControlled(account_id, is_ephemeral))
-    return false;
-  return true;
-}
-
 void WallpaperController::PrepareWallpaperForLockScreenChange(bool locking) {
   bool needs_blur = locking && IsBlurEnabled();
   if (needs_blur == is_wallpaper_blurred_)
@@ -804,108 +731,6 @@ void WallpaperController::PrepareWallpaperForLockScreenChange(bool locking) {
   mojo_observers_.ForAllPtrs([this](mojom::WallpaperObserver* observer) {
     observer->OnWallpaperBlurChanged(is_wallpaper_blurred_);
   });
-}
-
-void WallpaperController::OnDisplayConfigurationChanged() {
-  gfx::Size max_display_size = GetMaxDisplaySizeInNative();
-  if (current_max_display_size_ == max_display_size)
-    return;
-
-  current_max_display_size_ = max_display_size;
-  if (wallpaper_mode_ == WALLPAPER_IMAGE && current_wallpaper_) {
-    timer_.Stop();
-    GetInternalDisplayCompositorLock();
-    timer_.Start(
-        FROM_HERE, wallpaper_reload_delay_,
-        base::BindRepeating(&WallpaperController::ReloadWallpaper,
-                            weak_factory_.GetWeakPtr(), /*clear_cache=*/false));
-  }
-}
-
-void WallpaperController::OnRootWindowAdded(aura::Window* root_window) {
-  // The wallpaper hasn't been set yet.
-  if (wallpaper_mode_ == WALLPAPER_NONE)
-    return;
-
-  // Handle resolution change for "built-in" images.
-  gfx::Size max_display_size = GetMaxDisplaySizeInNative();
-  if (current_max_display_size_ != max_display_size) {
-    current_max_display_size_ = max_display_size;
-    if (wallpaper_mode_ == WALLPAPER_IMAGE && current_wallpaper_)
-      ReloadWallpaper(/*clear_cache=*/true);
-  }
-
-  InstallDesktopController(root_window);
-}
-
-void WallpaperController::OnLocalStatePrefServiceInitialized(
-    PrefService* pref_service) {
-  local_state_ = pref_service;
-  if (wallpaper_controller_client_) {
-    wallpaper_controller_client_->OnReadyToSetWallpaper();
-  } else {
-    // Ensure unit tests have a wallpaper as placeholder.
-    CreateEmptyWallpaperForTesting();
-  }
-}
-
-void WallpaperController::OnSessionStateChanged(
-    session_manager::SessionState state) {
-  // Replace the device policy wallpaper with a user wallpaper if necessary.
-  if (IsDevicePolicyWallpaper() && !ShouldSetDevicePolicyWallpaper())
-    ReloadWallpaper(/*clear_cache=*/false);
-
-  CalculateWallpaperColors();
-
-  // The wallpaper may be dimmed/blurred based on session state. The color of
-  // the dimming overlay depends on the prominent color cached from a previous
-  // calculation, or a default color if cache is not available. It should never
-  // depend on any in-flight color calculation.
-  if (wallpaper_mode_ == WALLPAPER_IMAGE &&
-      (state == session_manager::SessionState::ACTIVE ||
-       state == session_manager::SessionState::LOCKED ||
-       state == session_manager::SessionState::LOGIN_SECONDARY)) {
-    // TODO(crbug.com/753518): Reuse the existing WallpaperWidgetController for
-    // dimming/blur purpose.
-    InstallDesktopControllerForAllWindows();
-  }
-
-  if (state == session_manager::SessionState::ACTIVE)
-    MoveToUnlockedContainer();
-  else
-    MoveToLockedContainer();
-}
-
-bool WallpaperController::WallpaperIsAlreadyLoaded(
-    const gfx::ImageSkia& image,
-    bool compare_layouts,
-    WallpaperLayout layout) const {
-  if (!current_wallpaper_)
-    return false;
-
-  // Compare layouts only if necessary.
-  if (compare_layouts && layout != current_wallpaper_->wallpaper_info().layout)
-    return false;
-
-  return WallpaperResizer::GetImageId(image) ==
-         current_wallpaper_->original_image_id();
-}
-
-void WallpaperController::ReadAndDecodeWallpaper(
-    LoadedCallback callback,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const base::FilePath& file_path) {
-  decode_requests_for_testing_.push_back(file_path);
-  if (bypass_decode_for_testing_) {
-    std::move(callback).Run(CreateSolidColorWallpaper());
-    return;
-  }
-  std::string* data = new std::string;
-  base::PostTaskAndReplyWithResult(
-      task_runner.get(), FROM_HERE,
-      base::BindOnce(&base::ReadFileToString, file_path, data),
-      base::BindOnce(&OnWallpaperDataRead, std::move(callback),
-                     base::Passed(base::WrapUnique(data))));
 }
 
 bool WallpaperController::ShouldApplyDimming() const {
@@ -1001,14 +826,6 @@ bool WallpaperController::GetUserWallpaperInfo(const AccountId& account_id,
   return true;
 }
 
-bool WallpaperController::InitializeUserWallpaperInfo(
-    const AccountId& account_id,
-    bool is_ephemeral) {
-  const WallpaperInfo info = {std::string(), WALLPAPER_LAYOUT_CENTER_CROPPED,
-                              DEFAULT, base::Time::Now().LocalMidnight()};
-  return SetUserWallpaperInfo(account_id, info, is_ephemeral);
-}
-
 bool WallpaperController::GetWallpaperFromCache(const AccountId& account_id,
                                                 gfx::ImageSkia* image) {
   CustomWallpaperMap::const_iterator it = wallpaper_cache_map_.find(account_id);
@@ -1029,21 +846,6 @@ bool WallpaperController::GetPathFromCache(const AccountId& account_id,
   return false;
 }
 
-bool WallpaperController::ShouldSetDevicePolicyWallpaper() const {
-  // Only allow the device wallpaper if the policy is in effect for enterprise
-  // managed devices.
-  if (!is_device_wallpaper_policy_enforced_)
-    return false;
-
-  // Only set the device wallpaper if we're at the login screen.
-  if (Shell::Get()->session_controller()->GetSessionState() !=
-      session_manager::SessionState::LOGIN_PRIMARY) {
-    return false;
-  }
-
-  return true;
-}
-
 void WallpaperController::AddFirstWallpaperAnimationEndCallback(
     base::OnceClosure callback,
     aura::Window* window) {
@@ -1056,6 +858,19 @@ void WallpaperController::AddFirstWallpaperAnimationEndCallback(
   } else {
     std::move(callback).Run();
   }
+}
+
+void WallpaperController::StartDecodeFromPath(
+    const AccountId& account_id,
+    const user_manager::UserType& user_type,
+    const base::FilePath& wallpaper_path,
+    const WallpaperInfo& info,
+    bool show_wallpaper) {
+  ReadAndDecodeWallpaper(
+      base::BindOnce(&WallpaperController::OnWallpaperDecoded,
+                     weak_factory_.GetWeakPtr(), account_id, user_type,
+                     wallpaper_path, info, show_wallpaper),
+      sequenced_task_runner_, wallpaper_path);
 }
 
 void WallpaperController::Init(
@@ -1376,11 +1191,11 @@ void WallpaperController::ShowUserWallpaper(
       CustomWallpaperElement(wallpaper_path, gfx::ImageSkia());
 
   sequenced_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&WallpaperController::SetWallpaperFromPath,
-                                account_id, current_user_->type, info,
-                                wallpaper_path, /*show_wallpaper=*/true,
-                                base::ThreadTaskRunnerHandle::Get(),
-                                weak_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(&SetWallpaperFromPath, account_id, current_user_->type,
+                     info, wallpaper_path, /*show_wallpaper=*/true,
+                     base::ThreadTaskRunnerHandle::Get(),
+                     weak_factory_.GetWeakPtr()));
 }
 
 void WallpaperController::ShowSigninWallpaper() {
@@ -1492,6 +1307,49 @@ void WallpaperController::ShouldShowWallpaperSetting(
   std::move(callback).Run(ShouldShowWallpaperSettingImpl());
 }
 
+void WallpaperController::OnDisplayConfigurationChanged() {
+  gfx::Size max_display_size = GetMaxDisplaySizeInNative();
+  if (current_max_display_size_ == max_display_size)
+    return;
+
+  current_max_display_size_ = max_display_size;
+  if (wallpaper_mode_ == WALLPAPER_IMAGE && current_wallpaper_) {
+    timer_.Stop();
+    GetInternalDisplayCompositorLock();
+    timer_.Start(
+        FROM_HERE, wallpaper_reload_delay_,
+        base::BindRepeating(&WallpaperController::ReloadWallpaper,
+                            weak_factory_.GetWeakPtr(), /*clear_cache=*/false));
+  }
+}
+
+void WallpaperController::OnRootWindowAdded(aura::Window* root_window) {
+  // The wallpaper hasn't been set yet.
+  if (wallpaper_mode_ == WALLPAPER_NONE)
+    return;
+
+  // Handle resolution change for "built-in" images.
+  gfx::Size max_display_size = GetMaxDisplaySizeInNative();
+  if (current_max_display_size_ != max_display_size) {
+    current_max_display_size_ = max_display_size;
+    if (wallpaper_mode_ == WALLPAPER_IMAGE && current_wallpaper_)
+      ReloadWallpaper(/*clear_cache=*/true);
+  }
+
+  InstallDesktopController(root_window);
+}
+
+void WallpaperController::OnLocalStatePrefServiceInitialized(
+    PrefService* pref_service) {
+  local_state_ = pref_service;
+  if (wallpaper_controller_client_) {
+    wallpaper_controller_client_->OnReadyToSetWallpaper();
+  } else {
+    // Ensure unit tests have a wallpaper as placeholder.
+    CreateEmptyWallpaperForTesting();
+  }
+}
+
 void WallpaperController::OnWallpaperResized() {
   CalculateWallpaperColors();
   compositor_lock_.reset();
@@ -1508,6 +1366,37 @@ void WallpaperController::OnColorCalculationComplete() {
     CacheProminentColors(colors, current_wallpaper_->wallpaper_info().location);
   }
   SetProminentColors(colors);
+}
+
+void WallpaperController::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  // Replace the device policy wallpaper with a user wallpaper if necessary.
+  if (IsDevicePolicyWallpaper() && !ShouldSetDevicePolicyWallpaper())
+    ReloadWallpaper(/*clear_cache=*/false);
+
+  CalculateWallpaperColors();
+
+  // The wallpaper may be dimmed/blurred based on session state. The color of
+  // the dimming overlay depends on the prominent color cached from a previous
+  // calculation, or a default color if cache is not available. It should never
+  // depend on any in-flight color calculation.
+  if (wallpaper_mode_ == WALLPAPER_IMAGE &&
+      (state == session_manager::SessionState::ACTIVE ||
+       state == session_manager::SessionState::LOCKED ||
+       state == session_manager::SessionState::LOGIN_SECONDARY)) {
+    // TODO(crbug.com/753518): Reuse the existing WallpaperWidgetController for
+    // dimming/blur purpose.
+    InstallDesktopControllerForAllWindows();
+  }
+
+  if (state == session_manager::SessionState::ACTIVE)
+    MoveToUnlockedContainer();
+  else
+    MoveToLockedContainer();
+}
+
+void WallpaperController::CompositorLockTimedOut() {
+  compositor_lock_.reset();
 }
 
 void WallpaperController::InitializePathsForTesting(
@@ -1633,6 +1522,118 @@ void WallpaperController::RemoveUserWallpaperImpl(
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&DeleteWallpaperInList, std::move(files_to_remove)));
+}
+
+void WallpaperController::SetDefaultWallpaperImpl(
+    const AccountId& account_id,
+    const user_manager::UserType& user_type,
+    bool show_wallpaper) {
+  // There is no visible wallpaper in kiosk mode.
+  if (IsInKioskMode())
+    return;
+
+  wallpaper_cache_map_.erase(account_id);
+
+  const bool use_small =
+      (GetAppropriateResolution() == WALLPAPER_RESOLUTION_SMALL);
+  WallpaperLayout layout =
+      use_small ? WALLPAPER_LAYOUT_CENTER : WALLPAPER_LAYOUT_CENTER_CROPPED;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  base::FilePath file_path;
+  base::Optional<user_manager::UserType> active_user_type =
+      Shell::Get()->session_controller()->GetUserType();
+
+  // The wallpaper is determined in the following order:
+  // Guest wallpaper, child wallpaper, customized default wallpaper, and regular
+  // default wallpaper.
+  // TODO(wzang|xdai): The current code intentionally distinguishes between
+  // |active_user_type| and |user_type|. We should try to unify them.
+  if (active_user_type && *active_user_type == user_manager::USER_TYPE_GUEST) {
+    const std::string switch_string =
+        use_small ? chromeos::switches::kGuestWallpaperSmall
+                  : chromeos::switches::kGuestWallpaperLarge;
+    file_path = command_line->GetSwitchValuePath(switch_string);
+  } else if (user_type == user_manager::USER_TYPE_CHILD) {
+    const std::string switch_string =
+        use_small ? chromeos::switches::kChildWallpaperSmall
+                  : chromeos::switches::kChildWallpaperLarge;
+    file_path = command_line->GetSwitchValuePath(switch_string);
+  } else if (!customized_default_small_path_.empty()) {
+    DCHECK(!customized_default_large_path_.empty());
+    file_path = use_small ? customized_default_small_path_
+                          : customized_default_large_path_;
+  } else {
+    const std::string switch_string =
+        use_small ? chromeos::switches::kDefaultWallpaperSmall
+                  : chromeos::switches::kDefaultWallpaperLarge;
+    file_path = command_line->GetSwitchValuePath(switch_string);
+  }
+
+  // We need to decode the image if there's no cache, or if the file path
+  // doesn't match the cached value (i.e. the cache is outdated). Otherwise,
+  // directly run the callback with the cached image.
+  if (!cached_default_wallpaper_.image.isNull() &&
+      cached_default_wallpaper_.file_path == file_path) {
+    OnDefaultWallpaperDecoded(file_path, layout, show_wallpaper,
+                              cached_default_wallpaper_.image);
+  } else {
+    ReadAndDecodeWallpaper(
+        base::BindOnce(&WallpaperController::OnDefaultWallpaperDecoded,
+                       weak_factory_.GetWeakPtr(), file_path, layout,
+                       show_wallpaper),
+        sequenced_task_runner_, file_path);
+  }
+}
+
+bool WallpaperController::CanSetUserWallpaper(const AccountId& account_id,
+                                              bool is_ephemeral) const {
+  // There is no visible wallpaper in kiosk mode.
+  if (IsInKioskMode())
+    return false;
+  // Don't allow user wallpapers while policy is in effect.
+  if (IsPolicyControlled(account_id, is_ephemeral))
+    return false;
+  return true;
+}
+
+bool WallpaperController::WallpaperIsAlreadyLoaded(
+    const gfx::ImageSkia& image,
+    bool compare_layouts,
+    WallpaperLayout layout) const {
+  if (!current_wallpaper_)
+    return false;
+
+  // Compare layouts only if necessary.
+  if (compare_layouts && layout != current_wallpaper_->wallpaper_info().layout)
+    return false;
+
+  return WallpaperResizer::GetImageId(image) ==
+         current_wallpaper_->original_image_id();
+}
+
+void WallpaperController::ReadAndDecodeWallpaper(
+    LoadedCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const base::FilePath& file_path) {
+  decode_requests_for_testing_.push_back(file_path);
+  if (bypass_decode_for_testing_) {
+    std::move(callback).Run(CreateSolidColorWallpaper());
+    return;
+  }
+  std::string* data = new std::string;
+  base::PostTaskAndReplyWithResult(
+      task_runner.get(), FROM_HERE,
+      base::BindOnce(&base::ReadFileToString, file_path, data),
+      base::BindOnce(&OnWallpaperDataRead, std::move(callback),
+                     base::Passed(base::WrapUnique(data))));
+}
+
+bool WallpaperController::InitializeUserWallpaperInfo(
+    const AccountId& account_id,
+    bool is_ephemeral) {
+  const WallpaperInfo info = {std::string(), WALLPAPER_LAYOUT_CENTER_CROPPED,
+                              DEFAULT, base::Time::Now().LocalMidnight()};
+  return SetUserWallpaperInfo(account_id, info, is_ephemeral);
 }
 
 void WallpaperController::SetOnlineWallpaperFromPath(
@@ -1848,19 +1849,6 @@ void WallpaperController::SaveAndSetWallpaper(
       CustomWallpaperElement(wallpaper_path, image);
 }
 
-void WallpaperController::StartDecodeFromPath(
-    const AccountId& account_id,
-    const user_manager::UserType& user_type,
-    const base::FilePath& wallpaper_path,
-    const WallpaperInfo& info,
-    bool show_wallpaper) {
-  ReadAndDecodeWallpaper(
-      base::BindOnce(&WallpaperController::OnWallpaperDecoded,
-                     weak_factory_.GetWeakPtr(), account_id, user_type,
-                     wallpaper_path, info, show_wallpaper),
-      sequenced_task_runner_, wallpaper_path);
-}
-
 void WallpaperController::OnWallpaperDecoded(
     const AccountId& account_id,
     const user_manager::UserType& user_type,
@@ -2010,6 +1998,21 @@ bool WallpaperController::IsDevicePolicyWallpaper() const {
          current_wallpaper_->wallpaper_info().type == WallpaperType::DEVICE;
 }
 
+bool WallpaperController::ShouldSetDevicePolicyWallpaper() const {
+  // Only allow the device wallpaper if the policy is in effect for enterprise
+  // managed devices.
+  if (!is_device_wallpaper_policy_enforced_)
+    return false;
+
+  // Only set the device wallpaper if we're at the login screen.
+  if (Shell::Get()->session_controller()->GetSessionState() !=
+      session_manager::SessionState::LOGIN_PRIMARY) {
+    return false;
+  }
+
+  return true;
+}
+
 void WallpaperController::SetDevicePolicyWallpaper() {
   DCHECK(ShouldSetDevicePolicyWallpaper());
   ReadAndDecodeWallpaper(
@@ -2090,10 +2093,6 @@ void WallpaperController::GetInternalDisplayCompositorLock() {
 
   compositor_lock_ = root_window->layer()->GetCompositor()->GetCompositorLock(
       this, kCompositorLockTimeout);
-}
-
-void WallpaperController::CompositorLockTimedOut() {
-  compositor_lock_.reset();
 }
 
 }  // namespace ash
