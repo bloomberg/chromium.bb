@@ -278,6 +278,25 @@ All changes to this list should go through Blink's feature review process: http:
     rx
     ry
     scroll-behavior
+    scroll-margin-block-end
+    scroll-margin-block-start
+    scroll-margin-bottom
+    scroll-margin-inline-end
+    scroll-margin-inline-start
+    scroll-margin-left
+    scroll-margin-right
+    scroll-margin-top
+    scroll-padding-block-end
+    scroll-padding-block-start
+    scroll-padding-bottom
+    scroll-padding-inline-end
+    scroll-padding-inline-start
+    scroll-padding-left
+    scroll-padding-right
+    scroll-padding-top
+    scroll-snap-align
+    scroll-snap-stop
+    scroll-snap-type
     shape-image-threshold
     shape-margin
     shape-outside
@@ -590,6 +609,28 @@ All changes to this list should go through Blink's feature review process: http:
     place-self
         align-self
         justify-self
+    scroll-margin
+        scroll-margin-bottom
+        scroll-margin-left
+        scroll-margin-right
+        scroll-margin-top
+    scroll-margin-block
+        scroll-margin-block-end
+        scroll-margin-block-start
+    scroll-margin-inline
+        scroll-margin-inline-end
+        scroll-margin-inline-start
+    scroll-padding
+        scroll-padding-bottom
+        scroll-padding-left
+        scroll-padding-right
+        scroll-padding-top
+    scroll-padding-block
+        scroll-padding-block-end
+        scroll-padding-block-start
+    scroll-padding-inline
+        scroll-padding-inline-end
+        scroll-padding-inline-start
     text-decoration
         text-decoration-color
         text-decoration-line
