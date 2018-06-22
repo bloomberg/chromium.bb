@@ -8,8 +8,11 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/components/proximity_auth/messenger_observer.h"
 #include "chromeos/components/proximity_auth/remote_status_update.h"
+#include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/fake_secure_context.h"
@@ -29,6 +32,7 @@ using testing::Return;
 using testing::StrictMock;
 
 namespace proximity_auth {
+
 namespace {
 
 const char kTestFeature[] = "testFeature";
@@ -62,16 +66,15 @@ class MockMessengerObserver : public MessengerObserver {
 
 class TestMessenger : public MessengerImpl {
  public:
-  TestMessenger()
+  TestMessenger(
+      std::unique_ptr<chromeos::secure_channel::ClientChannel> channel)
       : MessengerImpl(std::make_unique<cryptauth::FakeConnection>(
                           cryptauth::CreateRemoteDeviceRefForTest()),
-                      std::make_unique<cryptauth::FakeSecureContext>()) {}
-  explicit TestMessenger(std::unique_ptr<cryptauth::Connection> connection)
-      : MessengerImpl(std::move(connection),
-                      std::make_unique<cryptauth::FakeSecureContext>()) {}
+                      std::make_unique<cryptauth::FakeSecureContext>(),
+                      std::move(channel)) {}
   ~TestMessenger() override {}
 
-  // Simple getters for the mock objects owned by |this| messenger.
+  // Simple getters for the fake objects owned by |this| messenger_->
   cryptauth::FakeConnection* GetFakeConnection() {
     return static_cast<cryptauth::FakeConnection*>(connection());
   }
@@ -85,35 +88,88 @@ class TestMessenger : public MessengerImpl {
 
 }  // namespace
 
-TEST(ProximityAuthMessengerImplTest, SupportsSignIn_ProtocolVersionThreeZero) {
-  TestMessenger messenger;
-  messenger.GetFakeSecureContext()->set_protocol_version(
+class ProximityAuthMessengerImplTest : public testing::Test {
+ protected:
+  ProximityAuthMessengerImplTest() = default;
+
+  void SetMultiDeviceApiEnabled() {
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::features::kMultiDeviceApi);
+  }
+
+  void CreateMessenger(bool is_multi_device_api_enabled) {
+    if (is_multi_device_api_enabled)
+      SetMultiDeviceApiEnabled();
+
+    auto fake_channel =
+        std::make_unique<chromeos::secure_channel::FakeClientChannel>();
+    fake_channel_ = fake_channel.get();
+
+    messenger_ = std::make_unique<TestMessenger>(std::move(fake_channel));
+    observer_ = std::make_unique<MockMessengerObserver>(messenger_.get());
+  }
+
+  std::string GetLastSentMessage() {
+    std::vector<std::pair<std::string, base::OnceClosure>>&
+        message_and_callbacks = fake_channel_->sent_messages();
+    std::move(message_and_callbacks[0].second).Run();
+
+    std::string message_copy = message_and_callbacks[0].first;
+    message_and_callbacks.erase(message_and_callbacks.begin());
+    return message_copy;
+  }
+
+  chromeos::secure_channel::FakeClientChannel* fake_channel_;
+
+  std::unique_ptr<TestMessenger> messenger_;
+
+  std::unique_ptr<MockMessengerObserver> observer_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProximityAuthMessengerImplTest);
+};
+
+TEST_F(ProximityAuthMessengerImplTest,
+       SupportsSignIn_ProtocolVersionThreeZero) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  messenger_->GetFakeSecureContext()->set_protocol_version(
       cryptauth::SecureContext::PROTOCOL_VERSION_THREE_ZERO);
-  EXPECT_FALSE(messenger.SupportsSignIn());
+  EXPECT_FALSE(messenger_->SupportsSignIn());
 }
 
-TEST(ProximityAuthMessengerImplTest, SupportsSignIn_ProtocolVersionThreeOne) {
-  TestMessenger messenger;
-  messenger.GetFakeSecureContext()->set_protocol_version(
+TEST_F(ProximityAuthMessengerImplTest, SupportsSignIn_ProtocolVersionThreeOne) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  messenger_->GetFakeSecureContext()->set_protocol_version(
       cryptauth::SecureContext::PROTOCOL_VERSION_THREE_ONE);
-  EXPECT_TRUE(messenger.SupportsSignIn());
+  EXPECT_TRUE(messenger_->SupportsSignIn());
 }
 
-TEST(ProximityAuthMessengerImplTest,
-     OnConnectionStatusChanged_ConnectionDisconnects) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
+TEST_F(ProximityAuthMessengerImplTest, SupportsSignIn_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
 
-  EXPECT_CALL(observer, OnDisconnected());
-  messenger.GetFakeConnection()->Disconnect();
+  EXPECT_TRUE(messenger_->SupportsSignIn());
 }
 
-TEST(ProximityAuthMessengerImplTest, DispatchUnlockEvent_SendsExpectedMessage) {
-  TestMessenger messenger;
-  messenger.DispatchUnlockEvent();
+TEST_F(ProximityAuthMessengerImplTest,
+       OnConnectionStatusChanged_ConnectionDisconnects) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  EXPECT_CALL(*observer_, OnDisconnected());
+  messenger_->GetFakeConnection()->Disconnect();
+}
+
+TEST_F(ProximityAuthMessengerImplTest,
+       DispatchUnlockEvent_SendsExpectedMessage) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  messenger_->DispatchUnlockEvent();
 
   cryptauth::WireMessage* message =
-      messenger.GetFakeConnection()->current_message();
+      messenger_->GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
   EXPECT_EQ(
       "{"
@@ -124,39 +180,56 @@ TEST(ProximityAuthMessengerImplTest, DispatchUnlockEvent_SendsExpectedMessage) {
   EXPECT_EQ("easy_unlock", message->feature());
 }
 
-TEST(ProximityAuthMessengerImplTest, DispatchUnlockEvent_SendMessageFails) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
-  messenger.DispatchUnlockEvent();
+TEST_F(ProximityAuthMessengerImplTest,
+       DispatchUnlockEvent_SendsExpectedMessage_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
 
-  EXPECT_CALL(observer, OnUnlockEventSent(false));
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
+  messenger_->DispatchUnlockEvent();
+
+  EXPECT_EQ(
+      "{"
+      "\"name\":\"easy_unlock\","
+      "\"type\":\"event\""
+      "}",
+      GetLastSentMessage());
 }
 
-TEST(ProximityAuthMessengerImplTest, DispatchUnlockEvent_SendMessageSucceeds) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
-  messenger.DispatchUnlockEvent();
+TEST_F(ProximityAuthMessengerImplTest, DispatchUnlockEvent_SendMessageFails) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
 
-  EXPECT_CALL(observer, OnUnlockEventSent(true));
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  messenger_->DispatchUnlockEvent();
+
+  EXPECT_CALL(*observer_, OnUnlockEventSent(false));
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 }
 
-TEST(ProximityAuthMessengerImplTest,
-     RequestDecryption_SignInUnsupported_DoesntSendMessage) {
-  TestMessenger messenger;
-  messenger.GetFakeSecureContext()->set_protocol_version(
+TEST_F(ProximityAuthMessengerImplTest,
+       DispatchUnlockEvent_SendMessageSucceeds) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  messenger_->DispatchUnlockEvent();
+
+  EXPECT_CALL(*observer_, OnUnlockEventSent(true));
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+}
+
+TEST_F(ProximityAuthMessengerImplTest,
+       RequestDecryption_SignInUnsupported_DoesntSendMessage) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  messenger_->GetFakeSecureContext()->set_protocol_version(
       cryptauth::SecureContext::PROTOCOL_VERSION_THREE_ZERO);
-  messenger.RequestDecryption(kChallenge);
-  EXPECT_FALSE(messenger.GetFakeConnection()->current_message());
+  messenger_->RequestDecryption(kChallenge);
+  EXPECT_FALSE(messenger_->GetFakeConnection()->current_message());
 }
 
-TEST(ProximityAuthMessengerImplTest, RequestDecryption_SendsExpectedMessage) {
-  TestMessenger messenger;
-  messenger.RequestDecryption(kChallenge);
+TEST_F(ProximityAuthMessengerImplTest, RequestDecryption_SendsExpectedMessage) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  messenger_->RequestDecryption(kChallenge);
 
   cryptauth::WireMessage* message =
-      messenger.GetFakeConnection()->current_message();
+      messenger_->GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
   EXPECT_EQ(
       "{"
@@ -166,13 +239,28 @@ TEST(ProximityAuthMessengerImplTest, RequestDecryption_SendsExpectedMessage) {
       message->payload());
 }
 
-TEST(ProximityAuthMessengerImplTest,
-     RequestDecryption_SendsExpectedMessage_UsingBase64UrlEncoding) {
-  TestMessenger messenger;
-  messenger.RequestDecryption("\xFF\xE6");
+TEST_F(ProximityAuthMessengerImplTest,
+       RequestDecryption_SendsExpectedMessage_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
+
+  messenger_->RequestDecryption(kChallenge);
+
+  EXPECT_EQ(
+      "{"
+      "\"encrypted_data\":\"YSBtb3N0IGRpZmZpY3VsdCBjaGFsbGVuZ2U=\","
+      "\"type\":\"decrypt_request\""
+      "}",
+      GetLastSentMessage());
+}
+
+TEST_F(ProximityAuthMessengerImplTest,
+       RequestDecryption_SendsExpectedMessage_UsingBase64UrlEncoding) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  messenger_->RequestDecryption("\xFF\xE6");
 
   cryptauth::WireMessage* message =
-      messenger.GetFakeConnection()->current_message();
+      messenger_->GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
   EXPECT_EQ(
       "{"
@@ -182,47 +270,73 @@ TEST(ProximityAuthMessengerImplTest,
       message->payload());
 }
 
-TEST(ProximityAuthMessengerImplTest, RequestDecryption_SendMessageFails) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
-  messenger.RequestDecryption(kChallenge);
+TEST_F(
+    ProximityAuthMessengerImplTest,
+    RequestDecryption_SendsExpectedMessage_UsingBase64UrlEncoding_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
 
-  EXPECT_CALL(observer, OnDecryptResponseProxy(std::string()));
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
+  messenger_->RequestDecryption("\xFF\xE6");
+
+  EXPECT_EQ(
+      "{"
+      "\"encrypted_data\":\"_-Y=\","
+      "\"type\":\"decrypt_request\""
+      "}",
+      GetLastSentMessage());
 }
 
-TEST(ProximityAuthMessengerImplTest,
-     RequestDecryption_SendSucceeds_WaitsForReply) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
-  messenger.RequestDecryption(kChallenge);
+TEST_F(ProximityAuthMessengerImplTest, RequestDecryption_SendMessageFails) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
 
-  EXPECT_CALL(observer, OnDecryptResponseProxy(_)).Times(0);
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  messenger_->RequestDecryption(kChallenge);
+
+  EXPECT_CALL(*observer_, OnDecryptResponseProxy(std::string()));
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 }
 
-TEST(ProximityAuthMessengerImplTest,
-     RequestDecryption_SendSucceeds_NotifiesObserversOnReply_NoData) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
-  messenger.RequestDecryption(kChallenge);
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+TEST_F(ProximityAuthMessengerImplTest,
+       RequestDecryption_SendSucceeds_WaitsForReply) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
 
-  EXPECT_CALL(observer, OnDecryptResponseProxy(std::string()));
-  messenger.GetFakeConnection()->ReceiveMessage(
+  messenger_->RequestDecryption(kChallenge);
+
+  EXPECT_CALL(*observer_, OnDecryptResponseProxy(_)).Times(0);
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+}
+
+TEST_F(ProximityAuthMessengerImplTest,
+       RequestDecryption_SendSucceeds_NotifiesObserversOnReply_NoData) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  messenger_->RequestDecryption(kChallenge);
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+
+  EXPECT_CALL(*observer_, OnDecryptResponseProxy(std::string()));
+  messenger_->GetFakeConnection()->ReceiveMessage(
       std::string(kTestFeature),
       "{\"type\":\"decrypt_response\"}, but encoded");
 }
 
-TEST(ProximityAuthMessengerImplTest,
-     RequestDecryption_SendSucceeds_NotifiesObserversOnReply_InvalidData) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
-  messenger.RequestDecryption(kChallenge);
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+TEST_F(
+    ProximityAuthMessengerImplTest,
+    RequestDecryption_SendSucceeds_NotifiesObserversOnReply_NoData_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
 
-  EXPECT_CALL(observer, OnDecryptResponseProxy(std::string()));
-  messenger.GetFakeConnection()->ReceiveMessage(
+  messenger_->RequestDecryption(kChallenge);
+
+  EXPECT_CALL(*observer_, OnDecryptResponseProxy(std::string()));
+  fake_channel_->NotifyMessageReceived("{\"type\":\"decrypt_response\"}");
+}
+
+TEST_F(ProximityAuthMessengerImplTest,
+       RequestDecryption_SendSucceeds_NotifiesObserversOnReply_InvalidData) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  messenger_->RequestDecryption(kChallenge);
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+
+  EXPECT_CALL(*observer_, OnDecryptResponseProxy(std::string()));
+  messenger_->GetFakeConnection()->ReceiveMessage(
       std::string(kTestFeature),
       "{"
       "\"type\":\"decrypt_response\","
@@ -230,15 +344,30 @@ TEST(ProximityAuthMessengerImplTest,
       "}, but encoded");
 }
 
-TEST(ProximityAuthMessengerImplTest,
-     RequestDecryption_SendSucceeds_NotifiesObserversOnReply_ValidData) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
-  messenger.RequestDecryption(kChallenge);
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+TEST_F(
+    ProximityAuthMessengerImplTest,
+    RequestDecryption_SendSucceeds_NotifiesObserversOnReply_InvalidData_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
 
-  EXPECT_CALL(observer, OnDecryptResponseProxy("a winner is you"));
-  messenger.GetFakeConnection()->ReceiveMessage(
+  messenger_->RequestDecryption(kChallenge);
+
+  EXPECT_CALL(*observer_, OnDecryptResponseProxy(std::string()));
+  fake_channel_->NotifyMessageReceived(
+      "{"
+      "\"type\":\"decrypt_response\","
+      "\"data\":\"not a base64-encoded string\""
+      "}");
+}
+
+TEST_F(ProximityAuthMessengerImplTest,
+       RequestDecryption_SendSucceeds_NotifiesObserversOnReply_ValidData) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  messenger_->RequestDecryption(kChallenge);
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+
+  EXPECT_CALL(*observer_, OnDecryptResponseProxy("a winner is you"));
+  messenger_->GetFakeConnection()->ReceiveMessage(
       std::string(kTestFeature),
       "{"
       "\"type\":\"decrypt_response\","
@@ -246,16 +375,31 @@ TEST(ProximityAuthMessengerImplTest,
       "}, but encoded");
 }
 
-// Verify that the messenger correctly parses base64url encoded data.
-TEST(ProximityAuthMessengerImplTest,
-     RequestDecryption_SendSucceeds_ParsesBase64UrlEncodingInReply) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
-  messenger.RequestDecryption(kChallenge);
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+TEST_F(
+    ProximityAuthMessengerImplTest,
+    RequestDecryption_SendSucceeds_NotifiesObserversOnReply_ValidData_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
 
-  EXPECT_CALL(observer, OnDecryptResponseProxy("\xFF\xE6"));
-  messenger.GetFakeConnection()->ReceiveMessage(
+  messenger_->RequestDecryption(kChallenge);
+
+  EXPECT_CALL(*observer_, OnDecryptResponseProxy("a winner is you"));
+  fake_channel_->NotifyMessageReceived(
+      "{"
+      "\"type\":\"decrypt_response\","
+      "\"data\":\"YSB3aW5uZXIgaXMgeW91\""  // "a winner is you", base64-encoded
+      "}");
+}
+
+// Verify that the messenger correctly parses base64url encoded data.
+TEST_F(ProximityAuthMessengerImplTest,
+       RequestDecryption_SendSucceeds_ParsesBase64UrlEncodingInReply) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  messenger_->RequestDecryption(kChallenge);
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+
+  EXPECT_CALL(*observer_, OnDecryptResponseProxy("\xFF\xE6"));
+  messenger_->GetFakeConnection()->ReceiveMessage(
       std::string(kTestFeature),
       "{"
       "\"type\":\"decrypt_response\","
@@ -263,79 +407,126 @@ TEST(ProximityAuthMessengerImplTest,
       "}, but encoded");
 }
 
-TEST(ProximityAuthMessengerImplTest,
-     RequestUnlock_SignInUnsupported_DoesntSendMessage) {
-  TestMessenger messenger;
-  messenger.GetFakeSecureContext()->set_protocol_version(
-      cryptauth::SecureContext::PROTOCOL_VERSION_THREE_ZERO);
-  messenger.RequestUnlock();
-  EXPECT_FALSE(messenger.GetFakeConnection()->current_message());
+TEST_F(
+    ProximityAuthMessengerImplTest,
+    RequestDecryption_SendSucceeds_ParsesBase64UrlEncodingInReply_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
+
+  messenger_->RequestDecryption(kChallenge);
+
+  EXPECT_CALL(*observer_, OnDecryptResponseProxy("\xFF\xE6"));
+  fake_channel_->NotifyMessageReceived(
+      "{"
+      "\"type\":\"decrypt_response\","
+      "\"data\":\"_-Y=\""  // "\0xFF\0xE6", base64url-encoded.
+      "}");
 }
 
-TEST(ProximityAuthMessengerImplTest, RequestUnlock_SendsExpectedMessage) {
-  TestMessenger messenger;
-  messenger.RequestUnlock();
+TEST_F(ProximityAuthMessengerImplTest,
+       RequestUnlock_SignInUnsupported_DoesntSendMessage) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  messenger_->GetFakeSecureContext()->set_protocol_version(
+      cryptauth::SecureContext::PROTOCOL_VERSION_THREE_ZERO);
+  messenger_->RequestUnlock();
+  EXPECT_FALSE(messenger_->GetFakeConnection()->current_message());
+}
+
+TEST_F(ProximityAuthMessengerImplTest, RequestUnlock_SendsExpectedMessage) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  messenger_->RequestUnlock();
 
   cryptauth::WireMessage* message =
-      messenger.GetFakeConnection()->current_message();
+      messenger_->GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
   EXPECT_EQ("{\"type\":\"unlock_request\"}, but encoded", message->payload());
 }
 
-TEST(ProximityAuthMessengerImplTest, RequestUnlock_SendMessageFails) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
-  messenger.RequestUnlock();
+TEST_F(ProximityAuthMessengerImplTest,
+       RequestUnlock_SendsExpectedMessage_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
 
-  EXPECT_CALL(observer, OnUnlockResponse(false));
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
+  messenger_->RequestUnlock();
+
+  EXPECT_EQ("{\"type\":\"unlock_request\"}", GetLastSentMessage());
 }
 
-TEST(ProximityAuthMessengerImplTest, RequestUnlock_SendSucceeds_WaitsForReply) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
-  messenger.RequestUnlock();
+TEST_F(ProximityAuthMessengerImplTest, RequestUnlock_SendMessageFails) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
 
-  EXPECT_CALL(observer, OnUnlockResponse(_)).Times(0);
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  messenger_->RequestUnlock();
+
+  EXPECT_CALL(*observer_, OnUnlockResponse(false));
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 }
 
-TEST(ProximityAuthMessengerImplTest,
-     RequestUnlock_SendSucceeds_NotifiesObserversOnReply) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
-  messenger.RequestUnlock();
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+TEST_F(ProximityAuthMessengerImplTest,
+       RequestUnlock_SendSucceeds_WaitsForReply) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
 
-  EXPECT_CALL(observer, OnUnlockResponse(true));
-  messenger.GetFakeConnection()->ReceiveMessage(
+  messenger_->RequestUnlock();
+
+  EXPECT_CALL(*observer_, OnUnlockResponse(_)).Times(0);
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+}
+
+TEST_F(ProximityAuthMessengerImplTest,
+       RequestUnlock_SendSucceeds_NotifiesObserversOnReply) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  messenger_->RequestUnlock();
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+
+  EXPECT_CALL(*observer_, OnUnlockResponse(true));
+  messenger_->GetFakeConnection()->ReceiveMessage(
       std::string(kTestFeature), "{\"type\":\"unlock_response\"}, but encoded");
 }
 
-TEST(ProximityAuthMessengerImplTest,
-     OnMessageReceived_RemoteStatusUpdate_Invalid) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
+TEST_F(
+    ProximityAuthMessengerImplTest,
+    RequestUnlock_SendSucceeds_NotifiesObserversOnReply_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
+
+  messenger_->RequestUnlock();
+
+  EXPECT_CALL(*observer_, OnUnlockResponse(true));
+  fake_channel_->NotifyMessageReceived("{\"type\":\"unlock_response\"}");
+}
+
+TEST_F(ProximityAuthMessengerImplTest,
+       OnMessageReceived_RemoteStatusUpdate_Invalid) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
 
   // Receive a status update message that's missing all the data.
-  EXPECT_CALL(observer, OnRemoteStatusUpdate(_)).Times(0);
-  messenger.GetFakeConnection()->ReceiveMessage(
+  EXPECT_CALL(*observer_, OnRemoteStatusUpdate(_)).Times(0);
+  messenger_->GetFakeConnection()->ReceiveMessage(
       std::string(kTestFeature), "{\"type\":\"status_update\"}, but encoded");
 }
 
-TEST(ProximityAuthMessengerImplTest,
-     OnMessageReceived_RemoteStatusUpdate_Valid) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
+// ryan
+TEST_F(ProximityAuthMessengerImplTest,
+       OnMessageReceived_RemoteStatusUpdate_Invalid_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
 
-  EXPECT_CALL(observer,
+  // Receive a status update message that's missing all the data.
+  EXPECT_CALL(*observer_, OnRemoteStatusUpdate(_)).Times(0);
+  messenger_->GetFakeConnection()->ReceiveMessage(
+      std::string(kTestFeature), "{\"type\":\"status_update\"}, but encoded");
+}
+
+TEST_F(ProximityAuthMessengerImplTest,
+       OnMessageReceived_RemoteStatusUpdate_Valid) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  EXPECT_CALL(*observer_,
               OnRemoteStatusUpdate(
                   AllOf(Field(&RemoteStatusUpdate::user_presence, USER_PRESENT),
                         Field(&RemoteStatusUpdate::secure_screen_lock_state,
                               SECURE_SCREEN_LOCK_ENABLED),
                         Field(&RemoteStatusUpdate::trust_agent_state,
                               TRUST_AGENT_UNSUPPORTED))));
-  messenger.GetFakeConnection()->ReceiveMessage(
+  messenger_->GetFakeConnection()->ReceiveMessage(
       std::string(kTestFeature),
       "{"
       "\"type\":\"status_update\","
@@ -345,61 +536,132 @@ TEST(ProximityAuthMessengerImplTest,
       "}, but encoded");
 }
 
-TEST(ProximityAuthMessengerImplTest, OnMessageReceived_InvalidJSON) {
-  TestMessenger messenger;
-  StrictMock<MockMessengerObserver> observer(&messenger);
-  messenger.RequestUnlock();
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+TEST_F(ProximityAuthMessengerImplTest,
+       OnMessageReceived_RemoteStatusUpdate_Valid_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
 
-  // The StrictMock will verify that no observer methods are called.
-  messenger.GetFakeConnection()->ReceiveMessage(std::string(kTestFeature),
-                                                "Not JSON, but encoded");
+  EXPECT_CALL(*observer_,
+              OnRemoteStatusUpdate(
+                  AllOf(Field(&RemoteStatusUpdate::user_presence, USER_PRESENT),
+                        Field(&RemoteStatusUpdate::secure_screen_lock_state,
+                              SECURE_SCREEN_LOCK_ENABLED),
+                        Field(&RemoteStatusUpdate::trust_agent_state,
+                              TRUST_AGENT_UNSUPPORTED))));
+  fake_channel_->NotifyMessageReceived(
+      "{"
+      "\"type\":\"status_update\","
+      "\"user_presence\":\"present\","
+      "\"secure_screen_lock\":\"enabled\","
+      "\"trust_agent\":\"unsupported\""
+      "}");
 }
 
-TEST(ProximityAuthMessengerImplTest, OnMessageReceived_MissingTypeField) {
-  TestMessenger messenger;
-  StrictMock<MockMessengerObserver> observer(&messenger);
-  messenger.RequestUnlock();
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+TEST_F(ProximityAuthMessengerImplTest, OnMessageReceived_InvalidJSON) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  StrictMock<MockMessengerObserver> observer(messenger_.get());
+  messenger_->RequestUnlock();
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
   // The StrictMock will verify that no observer methods are called.
-  messenger.GetFakeConnection()->ReceiveMessage(
+  messenger_->GetFakeConnection()->ReceiveMessage(std::string(kTestFeature),
+                                                  "Not JSON, but encoded");
+}
+
+TEST_F(ProximityAuthMessengerImplTest,
+       OnMessageReceived_InvalidJSON_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
+
+  StrictMock<MockMessengerObserver> observer(messenger_.get());
+  messenger_->RequestUnlock();
+
+  // The StrictMock will verify that no observer methods are called.
+  fake_channel_->NotifyMessageReceived("Not JSON");
+}
+
+TEST_F(ProximityAuthMessengerImplTest, OnMessageReceived_MissingTypeField) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  StrictMock<MockMessengerObserver> observer(messenger_.get());
+  messenger_->RequestUnlock();
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+
+  // The StrictMock will verify that no observer methods are called.
+  messenger_->GetFakeConnection()->ReceiveMessage(
       std::string(kTestFeature),
       "{\"some key that's not 'type'\":\"some value\"}, but encoded");
 }
 
-TEST(ProximityAuthMessengerImplTest, OnMessageReceived_UnexpectedReply) {
-  TestMessenger messenger;
-  StrictMock<MockMessengerObserver> observer(&messenger);
+TEST_F(ProximityAuthMessengerImplTest,
+       OnMessageReceived_MissingTypeField_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
+
+  StrictMock<MockMessengerObserver> observer(messenger_.get());
+  messenger_->RequestUnlock();
 
   // The StrictMock will verify that no observer methods are called.
-  messenger.GetFakeConnection()->ReceiveMessage(
+  fake_channel_->NotifyMessageReceived(
+      "{\"some key that's not 'type'\":\"some value\"}");
+}
+
+TEST_F(ProximityAuthMessengerImplTest, OnMessageReceived_UnexpectedReply) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  StrictMock<MockMessengerObserver> observer(messenger_.get());
+
+  // The StrictMock will verify that no observer methods are called.
+  messenger_->GetFakeConnection()->ReceiveMessage(
       std::string(kTestFeature), "{\"type\":\"unlock_response\"}, but encoded");
 }
 
-TEST(ProximityAuthMessengerImplTest,
-     OnMessageReceived_MismatchedReply_UnlockInReplyToDecrypt) {
-  TestMessenger messenger;
-  StrictMock<MockMessengerObserver> observer(&messenger);
+TEST_F(ProximityAuthMessengerImplTest,
+       OnMessageReceived_UnexpectedReply_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
 
-  messenger.RequestDecryption(kChallenge);
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  StrictMock<MockMessengerObserver> observer(messenger_.get());
 
   // The StrictMock will verify that no observer methods are called.
-  messenger.GetFakeConnection()->ReceiveMessage(
+  fake_channel_->NotifyMessageReceived("{\"type\":\"unlock_response\"}");
+}
+
+TEST_F(ProximityAuthMessengerImplTest,
+       OnMessageReceived_MismatchedReply_UnlockInReplyToDecrypt) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  StrictMock<MockMessengerObserver> observer(messenger_.get());
+
+  messenger_->RequestDecryption(kChallenge);
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+
+  // The StrictMock will verify that no observer methods are called.
+  messenger_->GetFakeConnection()->ReceiveMessage(
       std::string(kTestFeature), "{\"type\":\"unlock_response\"}, but encoded");
 }
 
-TEST(ProximityAuthMessengerImplTest,
-     OnMessageReceived_MismatchedReply_DecryptInReplyToUnlock) {
-  TestMessenger messenger;
-  StrictMock<MockMessengerObserver> observer(&messenger);
+TEST_F(
+    ProximityAuthMessengerImplTest,
+    OnMessageReceived_MismatchedReply_UnlockInReplyToDecrypt_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
 
-  messenger.RequestUnlock();
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  StrictMock<MockMessengerObserver> observer(messenger_.get());
+
+  messenger_->RequestDecryption(kChallenge);
 
   // The StrictMock will verify that no observer methods are called.
-  messenger.GetFakeConnection()->ReceiveMessage(
+  fake_channel_->NotifyMessageReceived("{\"type\":\"unlock_response\"}");
+}
+
+TEST_F(ProximityAuthMessengerImplTest,
+       OnMessageReceived_MismatchedReply_DecryptInReplyToUnlock) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
+
+  StrictMock<MockMessengerObserver> observer(messenger_.get());
+
+  messenger_->RequestUnlock();
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+
+  // The StrictMock will verify that no observer methods are called.
+  messenger_->GetFakeConnection()->ReceiveMessage(
       std::string(kTestFeature),
       "{"
       "\"type\":\"decrypt_response\","
@@ -407,37 +669,52 @@ TEST(ProximityAuthMessengerImplTest,
       "}, but encoded");
 }
 
-TEST(ProximityAuthMessengerImplTest, BuffersMessages_WhileSending) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
+TEST_F(
+    ProximityAuthMessengerImplTest,
+    OnMessageReceived_MismatchedReply_DecryptInReplyToUnlock_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
+
+  StrictMock<MockMessengerObserver> observer(messenger_.get());
+
+  messenger_->RequestUnlock();
+
+  // The StrictMock will verify that no observer methods are called.
+  fake_channel_->NotifyMessageReceived(
+      "{"
+      "\"type\":\"decrypt_response\","
+      "\"data\":\"YSB3aW5uZXIgaXMgeW91\""
+      "}");
+}
+
+TEST_F(ProximityAuthMessengerImplTest, BuffersMessages_WhileSending) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
 
   // Initiate a decryption request, and then initiate an unlock request before
   // the decryption request is even finished sending.
-  messenger.RequestDecryption(kChallenge);
-  messenger.RequestUnlock();
+  messenger_->RequestDecryption(kChallenge);
+  messenger_->RequestUnlock();
 
-  EXPECT_CALL(observer, OnDecryptResponseProxy(std::string()));
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
+  EXPECT_CALL(*observer_, OnDecryptResponseProxy(std::string()));
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 
-  EXPECT_CALL(observer, OnUnlockResponse(false));
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
+  EXPECT_CALL(*observer_, OnUnlockResponse(false));
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 }
 
-TEST(ProximityAuthMessengerImplTest, BuffersMessages_WhileAwaitingReply) {
-  TestMessenger messenger;
-  MockMessengerObserver observer(&messenger);
+TEST_F(ProximityAuthMessengerImplTest, BuffersMessages_WhileAwaitingReply) {
+  CreateMessenger(false /* is_multi_device_api_enabled */);
 
   // Initiate a decryption request, and allow the message to be sent.
-  messenger.RequestDecryption(kChallenge);
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
+  messenger_->RequestDecryption(kChallenge);
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
   // At this point, the messenger is awaiting a reply to the decryption message.
   // While it's waiting, initiate an unlock request.
-  messenger.RequestUnlock();
+  messenger_->RequestUnlock();
 
   // Now simulate a response arriving for the original decryption request.
-  EXPECT_CALL(observer, OnDecryptResponseProxy("a winner is you"));
-  messenger.GetFakeConnection()->ReceiveMessage(
+  EXPECT_CALL(*observer_, OnDecryptResponseProxy("a winner is you"));
+  messenger_->GetFakeConnection()->ReceiveMessage(
       std::string(kTestFeature),
       "{"
       "\"type\":\"decrypt_response\","
@@ -446,8 +723,33 @@ TEST(ProximityAuthMessengerImplTest, BuffersMessages_WhileAwaitingReply) {
 
   // The unlock request should have remained buffered, and should only now be
   // sent.
-  EXPECT_CALL(observer, OnUnlockResponse(false));
-  messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
+  EXPECT_CALL(*observer_, OnUnlockResponse(false));
+  messenger_->GetFakeConnection()->FinishSendingMessageWithSuccess(false);
+}
+
+TEST_F(ProximityAuthMessengerImplTest, BuffersMessages_MultiDeviceApiEnabled) {
+  CreateMessenger(true /* is_multi_device_api_enabled */);
+
+  // Initiate a decryption request, and allow the message to be sent.
+  messenger_->RequestDecryption(kChallenge);
+
+  // At this point, the messenger is awaiting a reply to the decryption message.
+  // While it's waiting, initiate an unlock request.
+  messenger_->RequestUnlock();
+
+  // Now simulate a response arriving for the original decryption request.
+  EXPECT_CALL(*observer_, OnDecryptResponseProxy("a winner is you"));
+  fake_channel_->NotifyMessageReceived(
+      "{"
+      "\"type\":\"decrypt_response\","
+      "\"data\":\"YSB3aW5uZXIgaXMgeW91\""
+      "}");
+
+  // The unlock request should have remained buffered, and should only now be
+  // sent.
+  EXPECT_CALL(*observer_, OnUnlockResponse(true));
+  GetLastSentMessage();
+  fake_channel_->NotifyMessageReceived("{\"type\":\"unlock_response\"}");
 }
 
 }  // namespace proximity_auth

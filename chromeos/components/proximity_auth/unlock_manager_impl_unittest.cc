@@ -69,6 +69,7 @@ class MockMessenger : public Messenger {
   MOCK_METHOD0(RequestUnlock, void());
   MOCK_CONST_METHOD0(GetSecureContext, cryptauth::SecureContext*());
   MOCK_CONST_METHOD0(GetConnection, cryptauth::Connection*());
+  MOCK_CONST_METHOD0(GetChannel, chromeos::secure_channel::ClientChannel*());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMessenger);
