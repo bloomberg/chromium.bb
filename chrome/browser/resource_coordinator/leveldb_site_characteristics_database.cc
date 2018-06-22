@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/resource_coordinator/utils.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
@@ -121,10 +122,6 @@ class LevelDBSiteCharacteristicsDatabase::AsyncHelper {
   bool DBIsInitialized() { return db_ != nullptr; }
 
  private:
-  static const std::string& SerializeOrigin(const url::Origin& origin) {
-    return origin.host();
-  }
-
   // The on disk location of the database.
   const base::FilePath db_path_;
   // The connection to the LevelDB database.
@@ -184,8 +181,8 @@ LevelDBSiteCharacteristicsDatabase::AsyncHelper::ReadSiteCharacteristicsFromDB(
   base::AssertBlockingAllowed();
 
   std::string protobuf_value;
-  leveldb::Status s =
-      db_->Get(read_options_, SerializeOrigin(origin), &protobuf_value);
+  leveldb::Status s = db_->Get(
+      read_options_, SerializeOriginIntoDatabaseKey(origin), &protobuf_value);
   base::Optional<SiteCharacteristicsProto> site_characteristic_proto;
   if (s.ok()) {
     site_characteristic_proto = SiteCharacteristicsProto();
@@ -204,8 +201,9 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::
         const SiteCharacteristicsProto& site_characteristic_proto) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AssertBlockingAllowed();
-  leveldb::Status s = db_->Put(write_options_, SerializeOrigin(origin),
-                               site_characteristic_proto.SerializeAsString());
+  leveldb::Status s =
+      db_->Put(write_options_, SerializeOriginIntoDatabaseKey(origin),
+               site_characteristic_proto.SerializeAsString());
   if (!s.ok()) {
     LOG(ERROR) << "Error while inserting an element in the site characteristic "
                << "database: " << s.ToString();
@@ -219,7 +217,7 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::
   base::AssertBlockingAllowed();
   leveldb::WriteBatch batch;
   for (const auto& iter : site_origins)
-    batch.Delete(SerializeOrigin(iter));
+    batch.Delete(SerializeOriginIntoDatabaseKey(iter));
   leveldb::Status status = db_->Write(write_options_, &batch);
   if (!status.ok()) {
     LOG(WARNING) << "Failed to remove some entries from the site "
