@@ -598,6 +598,12 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
           ? render_frame_hosts[1]
           : render_frame_hosts[0];
 
+  // Wait for video metadata to load.
+  base::string16 expected_title = base::ASCIIToUTF16("loadedmetadata");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
   std::string result;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       iframe, "enterPictureInPicture();", &result));
@@ -611,17 +617,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
-// Same as above for a cross-origin iframe.
-// Flaky on windows and Linux: crbug/854349
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_CrossOriginFrameEnterLeaveCloseWindow \
-  DISABLED_CrossOriginFrameEnterLeaveCloseWindow
-#else
-#define MAYBE_CrossOriginFrameEnterLeaveCloseWindow \
-  CrossOriginFrameEnterLeaveCloseWindow
-#endif
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       MAYBE_CrossOriginFrameEnterLeaveCloseWindow) {
+                       CrossOriginFrameEnterLeaveCloseWindow) {
   GURL embed_url = embedded_test_server()->GetURL(
       "a.com", "/media/picture-in-picture/iframe-content.html");
   GURL main_url = embedded_test_server()->GetURL(
@@ -644,6 +641,12 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       render_frame_hosts[0] == active_web_contents->GetMainFrame()
           ? render_frame_hosts[1]
           : render_frame_hosts[0];
+
+  // Wait for video metadata to load.
+  base::string16 expected_title = base::ASCIIToUTF16("loadedmetadata");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
 
   std::string result;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(

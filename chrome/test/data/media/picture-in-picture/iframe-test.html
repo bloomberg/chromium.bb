@@ -18,5 +18,11 @@
   function removeFrame() {
     document.body.removeChild(document.querySelector('iframe'));
   }
+
+  window.addEventListener('message', function(event) {
+    if (event.data.loadedmetadata) {
+      document.title = 'loadedmetadata';
+    }
+  });
 </script>
 </html>
