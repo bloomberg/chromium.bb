@@ -355,7 +355,6 @@ ThreatDetails::ThreatDetails()
       num_visits_(0),
       ambiguous_dom_(false),
       trim_to_ad_tags_(false),
-      done_callback_(nullptr),
       all_done_expected_(false),
       is_all_done_(false) {}
 

@@ -8,6 +8,8 @@
 #ifndef BASE_CALLBACK_H_
 #define BASE_CALLBACK_H_
 
+#include <stddef.h>
+
 #include "base/callback_forward.h"
 #include "base/callback_internal.h"
 
@@ -58,6 +60,7 @@ class OnceCallback<R(Args...)> : public internal::CallbackBase {
                                   internal::PassingTraitsType<Args>...);
 
   constexpr OnceCallback() = default;
+  OnceCallback(std::nullptr_t) = delete;
 
   explicit OnceCallback(internal::BindStateBase* bind_state)
       : internal::CallbackBase(bind_state) {}
@@ -105,6 +108,7 @@ class RepeatingCallback<R(Args...)> : public internal::CallbackBaseCopyable {
                                   internal::PassingTraitsType<Args>...);
 
   constexpr RepeatingCallback() = default;
+  RepeatingCallback(std::nullptr_t) = delete;
 
   explicit RepeatingCallback(internal::BindStateBase* bind_state)
       : internal::CallbackBaseCopyable(bind_state) {}
