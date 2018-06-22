@@ -638,6 +638,16 @@
       'linux-chromeos-rel',
     ],
   },
+  'chromevox_tests': {
+    'modifications': {
+      # Takes a long time under msan for some reason.
+      'Linux ChromiumOS MSan Tests': {
+        'swarming': {
+          'shards': 4,
+        },
+      },
+    },
+  },
   'components_browsertests': {
     'remove_from': [
       # chromium.chromiumos
@@ -1390,6 +1400,13 @@
         'use_xvfb': False,
       },
     },
+  },
+  'gl_unittests_ozone': {
+    'remove_from': [
+      # Can't run on MSAN because gl_unittests_ozone uses the hardware driver,
+      # which isn't instrumented.
+      'Linux ChromiumOS MSan Tests',
+    ],
   },
   'gn_unittests': {
     'remove_from': [

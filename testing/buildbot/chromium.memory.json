@@ -4368,6 +4368,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromevox_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -4471,6 +4477,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gfx_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gl_unittests_ozone"
       },
       {
         "swarming": {
@@ -4595,6 +4607,21 @@
         "test": "net_unittests"
       },
       {
+        "args": [
+          "--ozone-platform=headless"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ozone_gl_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ozone_x11_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -4623,6 +4650,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sandbox_linux_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "select_to_speak_extension_tests"
       },
       {
         "swarming": {
@@ -4701,6 +4734,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "url_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "views_mus_interactive_ui_tests"
       },
       {
         "swarming": {
@@ -4892,6 +4931,13 @@
           "can_use_on_swarming_builders": true
         },
         "test": "chromeos_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 4
+        },
+        "test": "chromevox_tests"
       },
       {
         "swarming": {
@@ -5128,6 +5174,21 @@
         "test": "net_unittests"
       },
       {
+        "args": [
+          "--ozone-platform=headless"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ozone_gl_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ozone_x11_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -5156,6 +5217,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sandbox_linux_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "select_to_speak_extension_tests"
       },
       {
         "swarming": {
@@ -5228,6 +5295,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "url_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "views_mus_interactive_ui_tests"
       },
       {
         "swarming": {
