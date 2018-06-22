@@ -235,10 +235,6 @@ const char* OptionalTaskPriorityToString(
   return TaskQueue::PriorityToString(priority.value());
 }
 
-bool IsUnconditionalHighPriorityInputEnabled() {
-  return base::FeatureList::IsEnabled(kHighPriorityInput);
-}
-
 bool IsBlockingEvent(const blink::WebInputEvent& web_input_event) {
   blink::WebInputEvent::Type type = web_input_event.GetType();
   DCHECK(type == blink::WebInputEvent::kTouchStart ||
@@ -283,7 +279,7 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
               MainThreadTaskQueue::QueueType::kInput)
               .SetShouldMonitorQuiescence(true)
               .SetFixedPriority(
-                  IsUnconditionalHighPriorityInputEnabled()
+                  scheduling_settings_.high_priority_input
                       ? base::make_optional(
                             TaskQueue::QueuePriority::kHighestPriority)
                       : base::nullopt))),
@@ -624,6 +620,26 @@ MainThreadSchedulerImpl::AnyThread::AnyThread(
           main_thread_scheduler_impl,
           &main_thread_scheduler_impl->tracing_controller_,
           YesNoStateToString) {}
+
+MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
+  high_priority_input = base::FeatureList::IsEnabled(kHighPriorityInput);
+
+  low_priority_background_page =
+      base::FeatureList::IsEnabled(kLowPriorityForBackgroundPages);
+  best_effort_background_page =
+      base::FeatureList::IsEnabled(kBestEffortPriorityForBackgroundPages);
+
+  low_priority_hidden_frame =
+      base::FeatureList::IsEnabled(kLowPriorityForHiddenFrame);
+  low_priority_subframe = base::FeatureList::IsEnabled(kLowPriorityForSubFrame);
+  low_priority_throttleable =
+      base::FeatureList::IsEnabled(kLowPriorityForThrottleableTask);
+  low_priority_subframe_throttleable =
+      base::FeatureList::IsEnabled(kLowPriorityForSubFrameThrottleableTask);
+
+  experiment_only_when_loading =
+      base::FeatureList::IsEnabled(kExperimentOnlyWhenLoading);
+}
 
 MainThreadSchedulerImpl::AnyThread::~AnyThread() = default;
 
@@ -2751,6 +2767,11 @@ bool MainThreadSchedulerImpl::ShouldUpdateTaskQueuePriorities(
 
 bool MainThreadSchedulerImpl::IsLoading() const {
   return main_thread_only().current_use_case == UseCase::kLoading;
+}
+
+const MainThreadSchedulerImpl::SchedulingSettings&
+MainThreadSchedulerImpl::scheduling_settings() const {
+  return scheduling_settings_;
 }
 
 // static
