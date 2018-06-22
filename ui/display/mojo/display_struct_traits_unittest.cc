@@ -82,6 +82,8 @@ void CheckDisplaySnapShotMojoEqual(const DisplaySnapshot& input,
   EXPECT_EQ(input.has_overscan(), output.has_overscan());
   EXPECT_EQ(input.has_color_correction_matrix(),
             output.has_color_correction_matrix());
+  EXPECT_EQ(input.color_correction_in_linear_space(),
+            output.color_correction_in_linear_space());
   EXPECT_EQ(input.display_name(), output.display_name());
   EXPECT_EQ(input.sys_path(), output.sys_path());
   EXPECT_EQ(input.product_code(), output.product_code());
@@ -250,6 +252,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentAndNativeModesNull) {
   const bool is_aspect_preserving_scaling = true;
   const bool has_overscan = true;
   const bool has_color_correction_matrix = true;
+  const bool color_correction_in_linear_space = true;
   const gfx::ColorSpace display_color_space = gfx::ColorSpace::CreateREC709();
   const std::string display_name("whatever display_name");
   const base::FilePath sys_path = base::FilePath::FromUTF8Unsafe("a/cb");
@@ -267,9 +270,10 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentAndNativeModesNull) {
 
   std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
-      has_overscan, has_color_correction_matrix, display_color_space,
-      display_name, sys_path, std::move(modes), edid, current_mode, native_mode,
-      product_code, year_of_manufacture, maximum_cursor_size);
+      has_overscan, has_color_correction_matrix,
+      color_correction_in_linear_space, display_color_space, display_name,
+      sys_path, std::move(modes), edid, current_mode, native_mode, product_code,
+      year_of_manufacture, maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshot> output;
   SerializeAndDeserialize<mojom::DisplaySnapshot>(input->Clone(), &output);
@@ -288,6 +292,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentModeNull) {
   const bool is_aspect_preserving_scaling = true;
   const bool has_overscan = true;
   const bool has_color_correction_matrix = true;
+  const bool color_correction_in_linear_space = true;
   const gfx::ColorSpace display_color_space = gfx::ColorSpace::CreateREC709();
   const std::string display_name("whatever display_name");
   const base::FilePath sys_path = base::FilePath::FromUTF8Unsafe("z/b");
@@ -305,9 +310,10 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentModeNull) {
 
   std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
-      has_overscan, has_color_correction_matrix, display_color_space,
-      display_name, sys_path, std::move(modes), edid, current_mode, native_mode,
-      product_code, year_of_manufacture, maximum_cursor_size);
+      has_overscan, has_color_correction_matrix,
+      color_correction_in_linear_space, display_color_space, display_name,
+      sys_path, std::move(modes), edid, current_mode, native_mode, product_code,
+      year_of_manufacture, maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshot> output;
   SerializeAndDeserialize<mojom::DisplaySnapshot>(input->Clone(), &output);
@@ -326,6 +332,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotExternal) {
   const bool is_aspect_preserving_scaling = false;
   const bool has_overscan = false;
   const bool has_color_correction_matrix = false;
+  const bool color_correction_in_linear_space = false;
   const std::string display_name("HP Z24i");
   const gfx::ColorSpace display_color_space = gfx::ColorSpace::CreateSRGB();
   const base::FilePath sys_path = base::FilePath::FromUTF8Unsafe("a/cb");
@@ -347,9 +354,10 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotExternal) {
 
   std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
-      has_overscan, has_color_correction_matrix, display_color_space,
-      display_name, sys_path, std::move(modes), edid, current_mode, native_mode,
-      product_code, year_of_manufacture, maximum_cursor_size);
+      has_overscan, has_color_correction_matrix,
+      color_correction_in_linear_space, display_color_space, display_name,
+      sys_path, std::move(modes), edid, current_mode, native_mode, product_code,
+      year_of_manufacture, maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshot> output;
   SerializeAndDeserialize<mojom::DisplaySnapshot>(input->Clone(), &output);
@@ -367,6 +375,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotInternal) {
   const bool is_aspect_preserving_scaling = true;
   const bool has_overscan = false;
   const bool has_color_correction_matrix = false;
+  const bool color_correction_in_linear_space = false;
   const gfx::ColorSpace display_color_space =
       gfx::ColorSpace::CreateDisplayP3D65();
   const std::string display_name("");
@@ -385,9 +394,10 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotInternal) {
 
   std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
-      has_overscan, has_color_correction_matrix, display_color_space,
-      display_name, sys_path, std::move(modes), edid, current_mode, native_mode,
-      product_code, year_of_manufacture, maximum_cursor_size);
+      has_overscan, has_color_correction_matrix,
+      color_correction_in_linear_space, display_color_space, display_name,
+      sys_path, std::move(modes), edid, current_mode, native_mode, product_code,
+      year_of_manufacture, maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshot> output;
   SerializeAndDeserialize<mojom::DisplaySnapshot>(input->Clone(), &output);

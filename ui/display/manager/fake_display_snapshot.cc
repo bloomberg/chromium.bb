@@ -161,7 +161,8 @@ std::unique_ptr<FakeDisplaySnapshot> Builder::Build() {
 
   return std::make_unique<FakeDisplaySnapshot>(
       id_, origin_, physical_size, type_, is_aspect_preserving_scaling_,
-      has_overscan_, has_color_correction_matrix_, name_, std::move(modes_),
+      has_overscan_, has_color_correction_matrix_,
+      color_correction_in_linear_space_, name_, std::move(modes_),
       current_mode_, native_mode_, product_code_, maximum_cursor_size_);
 }
 
@@ -286,6 +287,7 @@ FakeDisplaySnapshot::FakeDisplaySnapshot(int64_t display_id,
                                          bool is_aspect_preserving_scaling,
                                          bool has_overscan,
                                          bool has_color_correction_matrix,
+                                         bool color_correction_in_linear_space,
                                          std::string display_name,
                                          DisplayModeList modes,
                                          const DisplayMode* current_mode,
@@ -299,6 +301,7 @@ FakeDisplaySnapshot::FakeDisplaySnapshot(int64_t display_id,
                       is_aspect_preserving_scaling,
                       has_overscan,
                       has_color_correction_matrix,
+                      color_correction_in_linear_space,
                       gfx::ColorSpace(),
                       display_name,
                       base::FilePath(),

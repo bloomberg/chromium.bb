@@ -84,6 +84,7 @@ class DISPLAY_MANAGER_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
     bool is_aspect_preserving_scaling_ = false;
     bool has_overscan_ = false;
     bool has_color_correction_matrix_ = false;
+    bool color_correction_in_linear_space_ = false;
     std::string name_;
     int64_t product_code_ = DisplaySnapshot::kInvalidProductCode;
     gfx::Size maximum_cursor_size_ = gfx::Size(64, 64);
@@ -101,6 +102,7 @@ class DISPLAY_MANAGER_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
                       bool is_aspect_preserving_scaling,
                       bool has_overscan,
                       bool has_color_correction_matrix,
+                      bool color_correction_in_linear_space,
                       std::string display_name,
                       DisplayModeList modes,
                       const DisplayMode* current_mode,

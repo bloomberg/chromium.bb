@@ -30,7 +30,7 @@ void HeadlessNativeDisplayDelegate::Initialize() {
   current_snapshot_.reset(new display::DisplaySnapshot(
       get_next_display_id(), gfx::Point(0, 0), kDefaultWindowSize,
       display::DisplayConnectionType::DISPLAY_CONNECTION_TYPE_NONE, false,
-      false, false, gfx::ColorSpace(), "", base::FilePath(),
+      false, false, false, gfx::ColorSpace(), "", base::FilePath(),
       display::DisplaySnapshot::DisplayModeList(), std::vector<uint8_t>(),
       nullptr, nullptr, 0, 0, gfx::Size()));
 

@@ -67,6 +67,7 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
                                  bool is_aspect_preserving_scaling,
                                  bool has_overscan,
                                  bool has_color_correction_matrix,
+                                 bool color_correction_in_linear_space,
                                  const gfx::ColorSpace& color_space,
                                  std::string display_name,
                                  const base::FilePath& sys_path,
@@ -84,6 +85,7 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
       is_aspect_preserving_scaling_(is_aspect_preserving_scaling),
       has_overscan_(has_overscan),
       has_color_correction_matrix_(has_color_correction_matrix),
+      color_correction_in_linear_space_(color_correction_in_linear_space),
       color_space_(color_space),
       display_name_(display_name),
       sys_path_(sys_path),
@@ -122,9 +124,10 @@ std::unique_ptr<DisplaySnapshot> DisplaySnapshot::Clone() {
   return std::make_unique<DisplaySnapshot>(
       display_id_, origin_, physical_size_, type_,
       is_aspect_preserving_scaling_, has_overscan_,
-      has_color_correction_matrix_, color_space_, display_name_, sys_path_,
-      std::move(clone_modes), edid_, cloned_current_mode, cloned_native_mode,
-      product_code_, year_of_manufacture_, maximum_cursor_size_);
+      has_color_correction_matrix_, color_correction_in_linear_space_,
+      color_space_, display_name_, sys_path_, std::move(clone_modes), edid_,
+      cloned_current_mode, cloned_native_mode, product_code_,
+      year_of_manufacture_, maximum_cursor_size_);
 }
 
 std::string DisplaySnapshot::ToString() const {

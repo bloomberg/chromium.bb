@@ -49,7 +49,7 @@ void WaylandOutput::OutputHandleGeometry(void* data,
       wayland_output->display_id_, gfx::Point(x, y),
       gfx::Size(physical_width, physical_height),
       display::DisplayConnectionType::DISPLAY_CONNECTION_TYPE_NONE, false,
-      false, false, gfx::ColorSpace(), model, base::FilePath(),
+      false, false, false, gfx::ColorSpace(), model, base::FilePath(),
       display::DisplaySnapshot::DisplayModeList(), std::vector<uint8_t>(),
       nullptr, nullptr, 0, 0, gfx::Size()));
 }

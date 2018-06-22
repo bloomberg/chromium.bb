@@ -36,6 +36,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
                   bool is_aspect_preserving_scaling,
                   bool has_overscan,
                   bool has_color_correction_matrix,
+                  bool color_correction_in_linear_space,
                   const gfx::ColorSpace& color_space,
                   std::string display_name,
                   const base::FilePath& sys_path,
@@ -59,6 +60,9 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   bool has_overscan() const { return has_overscan_; }
   bool has_color_correction_matrix() const {
     return has_color_correction_matrix_;
+  }
+  bool color_correction_in_linear_space() const {
+    return color_correction_in_linear_space_;
   }
   const gfx::ColorSpace& color_space() const { return color_space_; }
   void reset_color_space() { color_space_ = gfx::ColorSpace(); }
@@ -104,6 +108,9 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
 
   // Whether this display has advanced color correction available.
   const bool has_color_correction_matrix_;
+  // Whether the color correction matrix will be applied in linear color space
+  // instead of gamma compressed one.
+  const bool color_correction_in_linear_space_;
 
   gfx::ColorSpace color_space_;
 
