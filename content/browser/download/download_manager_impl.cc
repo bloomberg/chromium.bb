@@ -39,7 +39,6 @@
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
-#include "content/browser/download/blob_download_url_loader_factory_getter.h"
 #include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_url_loader_factory_getter_impl.h"
@@ -1074,7 +1073,6 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
 
 void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
     std::unique_ptr<download::DownloadUrlParameters> params,
-    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     bool is_new_download,
     const GURL& site_url,
@@ -1096,6 +1094,7 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
     }
   }
 
+  DCHECK_EQ(params->url().SchemeIsBlob(), bool{blob_url_loader_factory});
   scoped_refptr<download::DownloadURLLoaderFactoryGetter>
       url_loader_factory_getter;
   if (blob_url_loader_factory) {
@@ -1103,10 +1102,6 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
     url_loader_factory_getter =
         base::MakeRefCounted<DownloadURLLoaderFactoryGetterImpl>(
             blob_url_loader_factory->Clone());
-  } else if (params->url().SchemeIsBlob()) {
-    url_loader_factory_getter =
-        base::MakeRefCounted<BlobDownloadURLLoaderFactoryGetter>(
-            params->url(), std::move(blob_data_handle));
   } else if (params->url().SchemeIsFile()) {
     url_loader_factory_getter =
         base::MakeRefCounted<FileDownloadURLLoaderFactoryGetter>(
@@ -1158,8 +1153,7 @@ void DownloadManagerImpl::BeginDownloadInternal(
           on_can_download_checks_done = base::BindOnce(
               &DownloadManagerImpl::BeginResourceDownloadOnChecksComplete,
               weak_factory_.GetWeakPtr(), std::move(params),
-              std::move(blob_data_handle), std::move(blob_url_loader_factory),
-              is_new_download, site_url);
+              std::move(blob_url_loader_factory), is_new_download, site_url);
       if (delegate_) {
         delegate_->CheckDownloadAllowed(std::move(web_contents_getter), url,
                                         method,
@@ -1169,9 +1163,8 @@ void DownloadManagerImpl::BeginDownloadInternal(
     }
 
     BeginResourceDownloadOnChecksComplete(
-        std::move(params), std::move(blob_data_handle),
-        std::move(blob_url_loader_factory), is_new_download, site_url,
-        rfh ? !content_initiated : true);
+        std::move(params), std::move(blob_url_loader_factory), is_new_download,
+        site_url, rfh ? !content_initiated : true);
   } else {
     StoragePartition* storage_partition =
         BrowserContext::GetStoragePartitionForSite(browser_context_, site_url);
