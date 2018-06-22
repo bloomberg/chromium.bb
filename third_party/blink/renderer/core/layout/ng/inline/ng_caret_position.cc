@@ -289,25 +289,40 @@ NGCaretPosition ComputeNGCaretPosition(const PositionWithAffinity& position) {
 }
 
 Position NGCaretPosition::ToPositionInDOMTree() const {
+  return ToPositionInDOMTreeWithAffinity().GetPosition();
+}
+
+PositionWithAffinity NGCaretPosition::ToPositionInDOMTreeWithAffinity() const {
   if (!fragment)
-    return Position();
+    return PositionWithAffinity();
   switch (position_type) {
     case NGCaretPositionType::kBeforeBox:
       if (!fragment->GetNode())
-        return Position();
-      return Position::BeforeNode(*fragment->GetNode());
+        return PositionWithAffinity();
+      return PositionWithAffinity(Position::BeforeNode(*fragment->GetNode()),
+                                  TextAffinity::kDownstream);
     case NGCaretPositionType::kAfterBox:
       if (!fragment->GetNode())
-        return Position();
-      return Position::AfterNode(*fragment->GetNode());
+        return PositionWithAffinity();
+      return PositionWithAffinity(Position::AfterNode(*fragment->GetNode()),
+                                  TextAffinity::kUpstreamIfPossible);
     case NGCaretPositionType::kAtTextOffset:
       DCHECK(text_offset.has_value());
       const NGOffsetMapping* mapping =
           NGOffsetMapping::GetFor(fragment->GetLayoutObject());
-      return mapping->GetFirstPosition(*text_offset);
+      const Position position = mapping->GetFirstPosition(*text_offset);
+      if (position.IsNull())
+        return PositionWithAffinity();
+      const NGPhysicalTextFragment& text_fragment =
+          ToNGPhysicalTextFragment(fragment->PhysicalFragment());
+      const TextAffinity affinity =
+          text_offset.value() == text_fragment.EndOffset()
+              ? TextAffinity::kUpstreamIfPossible
+              : TextAffinity::kDownstream;
+      return PositionWithAffinity(position, affinity);
   }
   NOTREACHED();
-  return Position();
+  return PositionWithAffinity();
 }
 
 }  // namespace blink
