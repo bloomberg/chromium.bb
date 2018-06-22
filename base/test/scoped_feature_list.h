@@ -110,6 +110,7 @@ class ScopedFeatureList final {
   void InitAndEnableFeatureWithFieldTrialOverride(const Feature& feature,
                                                   FieldTrial* trial);
 
+  bool init_called_ = false;
   std::unique_ptr<FeatureList> original_feature_list_;
   scoped_refptr<FieldTrial> field_trial_override_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;

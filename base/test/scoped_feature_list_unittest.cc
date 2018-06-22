@@ -293,5 +293,16 @@ TEST_F(ScopedFeatureListTest, FeatureOverrideKeepsOtherExistingDefaultFeature) {
   }
 }
 
+TEST_F(ScopedFeatureListTest, ScopedFeatureListIsNoopWhenNotInitialized) {
+  test::ScopedFeatureList feature_list1;
+  feature_list1.InitFromCommandLine("*TestFeature1", std::string());
+
+  // A ScopedFeatureList on which Init() is not called should not reset things
+  // when going out of scope.
+  { test::ScopedFeatureList feature_list2; }
+
+  ExpectFeatures("*TestFeature1", std::string());
+}
+
 }  // namespace test
 }  // namespace base
