@@ -90,7 +90,3 @@ Browser* InProcessBrowserTest::CreateBrowserForApp(const std::string& app_name,
   AddBlankTabAndShow(browser);
   return browser;
 }
-
-void InProcessBrowserTest::SetUpMacOS() {
-  [ChromeCommandDispatcherDelegate disableThrottleForTesting];
-}
