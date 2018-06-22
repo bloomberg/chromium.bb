@@ -516,7 +516,7 @@ WallpaperUtil.getDailyRefreshInfo = function(callback) {
       }
 
       var dailyRefreshInfo = JSON.parse(dailyRefreshInfoJson);
-      if (!dailyRefreshInfo.hasOwnProperty('enabled') ||
+      if (!dailyRefreshInfo || !dailyRefreshInfo.hasOwnProperty('enabled') ||
           !dailyRefreshInfo.hasOwnProperty('collectionId') ||
           !dailyRefreshInfo.hasOwnProperty('resumeToken')) {
         callback(null);

@@ -343,7 +343,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
   chrome.commandLinePrivate.hasSwitch('new-wallpaper-picker', result => {
     var options = result ? {
       frame: 'none',
-      innerBounds: {width: 768, height: 512, minWidth: 480, minHeight: 480},
+      innerBounds: {width: 768, height: 512, minWidth: 768, minHeight: 512},
       resizable: true,
       alphaEnabled: true
     } :

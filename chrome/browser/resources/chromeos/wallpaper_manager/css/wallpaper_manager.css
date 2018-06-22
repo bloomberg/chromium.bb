@@ -458,8 +458,12 @@ body.v2 {
 }
 
 .v2 #categories-list > li[selected] > div {
-  color: rgb(66, 133, 244);
+  color: rgb(26, 115, 232);
   font-weight: 700;
+}
+
+.v2 #categories-list:focus > li[selected] > div {
+  outline: -webkit-focus-ring-color auto 5px;
 }
 
 .v2 #surprise-me {
@@ -486,16 +490,17 @@ body.v2 {
   width: 160px;
 }
 
+.v2 .image-picker [role=listitem][selected] {
+  background-color: rgba(26, 115, 232, 0.08);
+}
+
 .v2 .image-picker [role=listitem].daily-refresh-item {
   pointer-events: none;
 }
 
-.v2 .image-picker [role=listitem][selected]:not(.daily-refresh-item) {
-  border-radius: none;
-}
-
 .v2 .image-picker:not([disabled]) [role=listitem]:hover {
   outline: none;
+  z-index: unset;
 }
 
 .v2 .image-picker img {
@@ -508,28 +513,21 @@ body.v2 {
   animation: fade-in 250ms;
 }
 
+.v2 .image-picker [role=listitem][selected]:not(.daily-refresh-item) img {
+  border-radius: 4px;
+  transform: scale(0.8);
+}
+
 .v2 .image-picker .check {
+  display: none;
+}
+
+.v2 .image-picker [role=listitem][selected] .check {
   background-image: url(../images/ui/selected_wallpaper_checkmark.svg);
   background-repeat: no-repeat;
+  display: block;
   left: 128px;
   top: 8px;
-}
-
-.v2 .image-picker .selected-grid-border {
-  border: solid 16px #fff;
-  box-sizing: border-box;
-  height: 100%;
-  position: absolute;
-  width: 100%;
-}
-
-.v2 .image-picker .selected-grid-border > div {
-  border: solid 16px rgba(26, 115, 232, 0.08);
-  height: 100%;
-  left: -16px;
-  position: absolute;
-  top: -16px;
-  width: 100%;
 }
 
 .v2 #window-close-button {
@@ -595,6 +593,7 @@ body.v2 {
   background-image: url(../images/ui/left_arrow.svg);
   background-repeat: no-repeat;
   background-size: 20px 20px;
+  height: 4px;
   margin-top: 12px;
 }
 
@@ -672,7 +671,7 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
 }
 
 .v2 .top-header-contents .more-options .center-cropped-button {
-  -webkit-margin-start: -24px;
+  -webkit-margin-start: -28px;
 }
 
 .v2 .top-header-contents .center-button .icon,
@@ -799,6 +798,28 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
   transform: translateX(16px);
 }
 
+.v2 .daily-refresh-slider .ripple-circle {
+  background: #000;
+  border-radius: 50%;
+  height: 36px;
+  left: -12px;
+  opacity: 0.18;
+  position: absolute;
+  top: -12px;
+  transform: scale(0);
+  width: 36px;
+}
+
+.v2 .daily-refresh-slider.checked .ripple-circle {
+  background-color: rgb(30, 144, 255);
+  left: 4px;
+}
+
+.v2 .daily-refresh-slider.ripple-animation .ripple-circle {
+  animation: ripple 240ms;
+  animation-delay: 120ms;
+}
+
 .v2 .daily-refresh-label {
   color: rgb(66, 133, 244);
   font-family: 'Roboto';
@@ -859,6 +880,13 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
 
 .v2 #current-wallpaper-description.small-font {
   font-size: 11px;
+  padding-top: 8px;
+}
+
+.v2 #current-wallpaper-more-info div {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .v2 #current-wallpaper-more-options {
@@ -880,11 +908,6 @@ html[dir='rtl'] .v2 #current-wallpaper-more-options {
   border-radius: 16px;
   display: flex;
   padding: 8px 4px;
-}
-
-.v2 #current-wallpaper-more-options a {
-  color: rgb(66, 133, 244);
-  text-decoration: none;
 }
 
 .v2 #current-wallpaper-more-options .text {
@@ -944,4 +967,12 @@ html[dir='rtl'] .v2 #current-wallpaper-more-options {
   to { filter: none;
        opacity: 1;
      }
+}
+
+@keyframes ripple {
+  0%, 100% { transform: scale(0);
+           }
+  90% { opacity: 0.06;
+        transform: scale(1);
+      }
 }

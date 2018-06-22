@@ -658,23 +658,11 @@ cr.define('wallpapers', function() {
 
       // Clears previous checkmark.
       var previousSelectedGridItem = this.checkmark_.parentNode;
-      if (previousSelectedGridItem) {
+      if (previousSelectedGridItem)
         previousSelectedGridItem.removeChild(this.checkmark_);
-        var border =
-            previousSelectedGridItem.querySelector('.selected-grid-border');
-        if (border)
-          previousSelectedGridItem.removeChild(border);
-      }
-      if (!selectedGridItem)
-        return;
 
-      if (this.useNewWallpaperPicker_) {
-        var selectedGridBorder = cr.doc.createElement('div');
-        selectedGridBorder.classList.add('selected-grid-border');
-        selectedGridBorder.appendChild(cr.doc.createElement('div'));
-        selectedGridItem.appendChild(selectedGridBorder);
-      }
-      selectedGridItem.appendChild(this.checkmark_);
+      if (selectedGridItem)
+        selectedGridItem.appendChild(this.checkmark_);
     },
 
     /**
