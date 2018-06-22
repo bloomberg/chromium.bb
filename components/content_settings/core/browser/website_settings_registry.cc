@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/features.h"
 
 namespace {
 
@@ -181,10 +182,17 @@ void WebsiteSettingsRegistry::Init() {
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
            DESKTOP | PLATFORM_ANDROID,
            WebsiteSettingsInfo::DONT_INHERIT_IN_INCOGNITO);
-  Register(CONTENT_SETTINGS_TYPE_PLUGINS_DATA, "flash-data", nullptr,
-           WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::NOT_LOSSY,
-           WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE, DESKTOP,
-           WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
+  Register(
+      CONTENT_SETTINGS_TYPE_PLUGINS_DATA, "flash-data", nullptr,
+      // To counteract the reduced usability of the Flash permission
+      // when it becomes ephemeral, we sync the bit indicating that
+      // the Flash permission should be displayed in the page info.
+      base::FeatureList::IsEnabled(features::kEnableEphemeralFlashPermission)
+          ? WebsiteSettingsInfo::SYNCABLE
+          : WebsiteSettingsInfo::UNSYNCABLE,
+      WebsiteSettingsInfo::NOT_LOSSY,
+      WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE, DESKTOP,
+      WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
 }
 
 }  // namespace content_settings
