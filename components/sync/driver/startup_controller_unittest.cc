@@ -81,11 +81,11 @@ class StartupControllerTest : public testing::Test {
 
 // Test that sync doesn't start if setup is not in progress or complete.
 TEST_F(StartupControllerTest, NoSetupComplete) {
-  controller()->TryStart();
+  controller()->TryStart(/*setup_in_progress=*/false);
   ExpectNotStarted();
 
   SetCanStart(true);
-  controller()->TryStart();
+  controller()->TryStart(/*setup_in_progress=*/false);
   ExpectNotStarted();
 }
 
@@ -93,7 +93,7 @@ TEST_F(StartupControllerTest, NoSetupComplete) {
 TEST_F(StartupControllerTest, DefersAfterFirstSetupComplete) {
   sync_prefs()->SetFirstSetupComplete();
   SetCanStart(true);
-  controller()->TryStart();
+  controller()->TryStart(/*setup_in_progress=*/false);
   ExpectStartDeferred();
 }
 
@@ -110,7 +110,7 @@ TEST_F(StartupControllerTest, NoDeferralDataTypeTrigger) {
 TEST_F(StartupControllerTest, DataTypeTriggerInterruptsDeferral) {
   sync_prefs()->SetFirstSetupComplete();
   SetCanStart(true);
-  controller()->TryStart();
+  controller()->TryStart(/*setup_in_progress=*/false);
   ExpectStartDeferred();
 
   controller()->OnDataTypeRequestsSyncStartup(SESSIONS);
@@ -128,7 +128,7 @@ TEST_F(StartupControllerTest, DataTypeTriggerInterruptsDeferral) {
 TEST_F(StartupControllerTest, FallbackTimer) {
   sync_prefs()->SetFirstSetupComplete();
   SetCanStart(true);
-  controller()->TryStart();
+  controller()->TryStart(/*setup_in_progress=*/false);
   ExpectStartDeferred();
 
   base::RunLoop().RunUntilIdle();
@@ -147,14 +147,14 @@ TEST_F(StartupControllerTest, NoDeferralWithoutSessionsSync) {
 
   sync_prefs()->SetFirstSetupComplete();
   SetCanStart(true);
-  controller()->TryStart();
+  controller()->TryStart(/*setup_in_progress=*/false);
   ExpectStarted();
 }
 
 // Sanity check that the fallback timer doesn't fire before startup
 // conditions are met.
 TEST_F(StartupControllerTest, FallbackTimerWaits) {
-  controller()->TryStart();
+  controller()->TryStart(/*setup_in_progress=*/false);
   ExpectNotStarted();
   base::RunLoop().RunUntilIdle();
   ExpectNotStarted();
@@ -164,7 +164,7 @@ TEST_F(StartupControllerTest, FallbackTimerWaits) {
 TEST_F(StartupControllerTest, NoDeferralSetupInProgressTrigger) {
   sync_prefs()->SetFirstSetupComplete();
   SetCanStart(true);
-  controller()->SetSetupInProgress(true);
+  controller()->TryStart(/*setup_in_progress=*/true);
   ExpectStarted();
 }
 
@@ -173,10 +173,10 @@ TEST_F(StartupControllerTest, NoDeferralSetupInProgressTrigger) {
 TEST_F(StartupControllerTest, SetupInProgressTriggerInterruptsDeferral) {
   sync_prefs()->SetFirstSetupComplete();
   SetCanStart(true);
-  controller()->TryStart();
+  controller()->TryStart(/*setup_in_progress=*/false);
   ExpectStartDeferred();
 
-  controller()->SetSetupInProgress(true);
+  controller()->TryStart(/*setup_in_progress=*/true);
   ExpectStarted();
 }
 
@@ -185,20 +185,6 @@ TEST_F(StartupControllerTest, ForceImmediateStartup) {
   SetCanStart(true);
   controller()->TryStartImmediately();
   ExpectStarted();
-}
-
-// Test that setup-in-progress tracking is persistent across a Reset.
-TEST_F(StartupControllerTest, ResetDuringSetup) {
-  SetCanStart(true);
-
-  // Simulate UI telling us setup is in progress.
-  controller()->SetSetupInProgress(true);
-
-  // This could happen if the UI triggers a stop-syncing permanently call.
-  controller()->Reset();
-
-  // From the UI's point of view, setup is still in progress.
-  EXPECT_TRUE(controller()->IsSetupInProgress());
 }
 
 }  // namespace syncer

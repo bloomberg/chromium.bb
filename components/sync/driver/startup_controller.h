@@ -37,7 +37,11 @@ class StartupController {
   ~StartupController();
 
   // Starts up sync if it is requested by the user and preconditions are met.
-  void TryStart();
+  // If |setup_in_progress| is true, this will start sync immediately, bypassing
+  // deferred startup and the "first setup complete" check.
+  // TODO(crbug.com/854978): Rename "setup_in_progress" to "force_immediate" or
+  // something like that after TryStartImmediately is gone.
+  void TryStart(bool setup_in_progress);
 
   // Same as TryStart() above, but bypasses deferred startup and the first setup
   // complete check.
@@ -52,18 +56,10 @@ class StartupController {
 
   // Prepares this object for a new attempt to start sync, forgetting
   // whether or not preconditions were previously met.
-  // NOTE: This resets internal state managed by this class, but does not
-  // touch values that are explicitly set and reset by higher layers to
-  // tell this class whether a setup UI dialog is being shown to the user.
-  // See setup_in_progress_.
   void Reset();
-
-  // Sets the setup in progress flag and tries to start sync if it's true.
-  void SetSetupInProgress(bool setup_in_progress);
 
   State GetState() const;
 
-  bool IsSetupInProgress() const { return setup_in_progress_; }
   base::Time start_engine_time() const { return start_engine_time_; }
 
  private:
@@ -102,13 +98,6 @@ class StartupController {
   // start_engine_ callback. If this is non-null, then a (possibly deferred)
   // startup has been triggered.
   base::Time start_up_time_;
-
-  // If |true|, there is setup UI visible so we should not start downloading
-  // data types.
-  // Note: this is explicitly controlled by higher layers (UI) and is meant to
-  // reflect what the UI claims the setup state to be. Therefore, only set this
-  // due to explicit requests to do so via SetSetupInProgress.
-  bool setup_in_progress_;
 
   // The time at which we invoked the |start_engine_| callback. If this is
   // non-null, then |start_engine_| shouldn't be called again.
