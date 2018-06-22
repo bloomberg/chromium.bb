@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/command_observer.h"
+#include "chrome/browser/ui/ash/browser_image_registrar.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
@@ -60,7 +61,10 @@ class BrowserNonClientFrameViewAsh
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
+  void UpdateClientArea() override;
   void UpdateMinimumSize() override;
+  int GetTabStripLeftInset() const override;
+  void OnTabsMaxXChanged() override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -80,6 +84,7 @@ class BrowserNonClientFrameViewAsh
   const char* GetClassName() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size GetMinimumSize() const override;
+  void OnThemeChanged() override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
   // ash::CustomFrameHeader::AppearanceProvider:
@@ -175,19 +180,19 @@ class BrowserNonClientFrameViewAsh
   void StartHostedAppAnimation();
 
   // View which contains the window controls.
-  ash::FrameCaptionButtonContainerView* caption_button_container_;
+  ash::FrameCaptionButtonContainerView* caption_button_container_ = nullptr;
 
-  ash::FrameCaptionButton* back_button_;
+  ash::FrameCaptionButton* back_button_ = nullptr;
 
   // For popups, the window icon.
-  TabIconView* window_icon_;
+  TabIconView* window_icon_ = nullptr;
 
   // Helper class for painting the header.
   std::unique_ptr<ash::FrameHeader> frame_header_;
 
   // Container for extra frame buttons shown for hosted app windows.
   // Owned by views hierarchy.
-  HostedAppButtonContainer* hosted_app_button_container_;
+  HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
 
   // URL origin text for hosted app windows.
   // Owned by views hierarchy.
@@ -197,7 +202,7 @@ class BrowserNonClientFrameViewAsh
   ash::mojom::SplitViewControllerPtr split_view_controller_;
 
   // The binding this instance uses to implement mojom::SplitViewObserver.
-  mojo::Binding<ash::mojom::SplitViewObserver> observer_binding_;
+  mojo::Binding<ash::mojom::SplitViewObserver> observer_binding_{this};
 
   // Indicates whether overview mode is active. Hide the header for V1 apps in
   // overview mode because a fake header is added for better UX. If also in
@@ -209,7 +214,14 @@ class BrowserNonClientFrameViewAsh
   ash::mojom::SplitViewState split_view_state_ =
       ash::mojom::SplitViewState::NO_SNAP;
 
-  base::WeakPtrFactory<BrowserNonClientFrameViewAsh> weak_factory_;
+  // A reference to the entry in BrowserImageRegistrar for each frame
+  // image. Multiple windows that share a browser theme will hold onto each ref.
+  scoped_refptr<ImageRegistration> active_frame_image_registration_;
+  scoped_refptr<ImageRegistration> inactive_frame_image_registration_;
+  scoped_refptr<ImageRegistration> active_frame_overlay_image_registration_;
+  scoped_refptr<ImageRegistration> inactive_frame_overlay_image_registration_;
+
+  base::WeakPtrFactory<BrowserNonClientFrameViewAsh> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAsh);
 };

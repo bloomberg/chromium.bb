@@ -1,5 +1,5 @@
 specific_include_rules = {
-  # This class is only used in classic Ash.
+  # Parts of this class use Ash, but only when run in classic Ash mode.
   "browser_non_client_frame_view_ash\.*": [
     "+ash",
   ],
