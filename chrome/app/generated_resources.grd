@@ -5294,6 +5294,9 @@ the Bookmarks menu.">
         <message name="IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_TITLE" desc="The title of a list of saved passwords for the currently visible site.">
           Saved passwords for <ph name="domain">$1<ex>example.com</ex></ph>
         </message>
+        <message name="IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK" desc="The text of the link in the password sheet that opens the password management section.">
+          Manage passwords...
+        </message>
       </if>
 
       <!-- Android uses custom UI for Bookmark importing -->
