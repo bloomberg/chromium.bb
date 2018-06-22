@@ -60,6 +60,8 @@ customBackgrounds.CLASSES = {
   COLLECTION_TITLE: 'bg-sel-tile-title',  // Title of a background image
   DONE_AVAILABLE: 'done-available',
   IMAGE_DIALOG: 'is-img-sel',
+  SELECTED_BORDER: 'selected-border',
+  SELECTED_CHECK: 'selected-check',
   SHOW_OVERLAY: 'show-overlay',
 };
 
@@ -175,6 +177,28 @@ customBackgrounds.showCollectionSelectionDialog = function() {
   };
 };
 
+/**
+ * Apply border and checkmark when a tile is selected
+ * @param {div} tile The tile to apply styling to.
+ */
+customBackgrounds.applySelectedState = function(tile) {
+  tile.classList.add(customBackgrounds.CLASSES.COLLECTION_SELECTED);
+  var selectedBorder = document.createElement('div');
+  var selectedCheck = document.createElement('div');
+  selectedBorder.classList.add(customBackgrounds.CLASSES.SELECTED_BORDER);
+  selectedCheck.classList.add(customBackgrounds.CLASSES.SELECTED_CHECK);
+  selectedBorder.appendChild(selectedCheck);
+  tile.appendChild(selectedBorder);
+};
+
+/**
+ * Remove border and checkmark when a tile is un-selected
+ * @param {div} tile The tile to remove styling from.
+ */
+customBackgrounds.removeSelectedState = function(tile) {
+  tile.classList.remove(customBackgrounds.CLASSES.COLLECTION_SELECTED);
+  tile.removeChild(tile.firstChild);
+};
 
 /**
  * Show dialog for selecting an image or toggling on daily refresh. Image
@@ -207,11 +231,11 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
     var tileInteraction = function(event) {
       var tile = event.target;
       if (selectedTile) {
-        selectedTile.classList.remove(
-            customBackgrounds.CLASSES.COLLECTION_SELECTED);
+        customBackgrounds.removeSelectedState(selectedTile);
       }
-      tile.classList.add(customBackgrounds.CLASSES.COLLECTION_SELECTED);
       selectedTile = tile;
+
+      customBackgrounds.applySelectedState(tile);
 
       // Turn toggle off when an image is selected.
       $(customBackgrounds.IDS.REFRESH_TOGGLE).children[0].checked = false;
@@ -235,8 +259,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
 
   dailyRefresh.onclick = function(event) {
     if (selectedTile) {
-      selectedTile.classList.remove(
-          customBackgrounds.CLASSES.COLLECTION_SELECTED);
+      customBackgrounds.removeSelectedState(selectedTile);
       selectedTile = null;
     }
     $(customBackgrounds.IDS.DONE)
