@@ -551,6 +551,7 @@
       'android_unswarmed_n5x_rel': 'android_release_trybot_arm64',
       'android_unswarmed_pixel_aosp': 'android_debug_trybot_arm64',
       'cast_shell_android': 'android_cast_debug_static_bot_compile_only',
+      'gpu-manual-try-android-p-pixel-2-32': 'gpu_tests_android_vulkan_release_trybot',
       'linux_android_dbg_ng': 'android_debug_trybot',
     },
 
