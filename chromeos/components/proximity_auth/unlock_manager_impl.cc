@@ -324,7 +324,10 @@ void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
 std::unique_ptr<ProximityMonitor> UnlockManagerImpl::CreateProximityMonitor(
     cryptauth::Connection* connection,
     ProximityAuthPrefManager* pref_manager) {
-  return std::make_unique<ProximityMonitorImpl>(connection, pref_manager);
+  // TODO(crbug.com/752273): Inject a real ClientChannel.
+  return std::make_unique<ProximityMonitorImpl>(connection->remote_device(),
+                                                nullptr /* channel */,
+                                                connection, pref_manager);
 }
 
 void UnlockManagerImpl::SendSignInChallenge() {
