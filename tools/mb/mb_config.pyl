@@ -1070,7 +1070,7 @@
     ],
 
     'chromeos_with_codecs_release_trybot': [
-      'chromeos_with_codecs', 'release_trybot', 'use_vaapi',
+      'chromeos_with_codecs', 'release_trybot', 'use_vaapi', 'no_symbols',
     ],
 
     'clang_release_bot_minimal_symbols_x86': [
