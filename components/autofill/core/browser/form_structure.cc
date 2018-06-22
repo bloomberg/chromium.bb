@@ -569,6 +569,10 @@ void FormStructure::ParseQueryResponse(
         !query_response_has_no_server_data);
 
     form->UpdateAutofillCount();
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillRationalizeRepeatedServerPredictions))
+      form->RationalizeRepeatedFields();
+
     if (base::FeatureList::IsEnabled(kAutofillRationalizeFieldTypePredictions))
       form->RationalizeFieldTypePredictions();
 
@@ -1106,6 +1110,10 @@ bool FormStructure::operator!=(const FormData& form) const {
   return !operator==(form);
 }
 
+FormStructure::SectionedFieldsIndexes::SectionedFieldsIndexes() {}
+
+FormStructure::SectionedFieldsIndexes::~SectionedFieldsIndexes() {}
+
 void FormStructure::RationalizeCreditCardFieldPredictions() {
   bool cc_first_name_found = false;
   bool cc_last_name_found = false;
@@ -1263,42 +1271,25 @@ void FormStructure::RationalizePhoneNumbersInSection(std::string section) {
 }
 
 void FormStructure::RationalizeAddressLineFields(
-    const std::vector<size_t>& address_indexes) {
+    SectionedFieldsIndexes& sections_of_address_indexes) {
   // TODO(crbug.com/850552): Add UKM logging.
   // Get the number of fields predicted as being the whole street address.
 
-  if (address_indexes.size() < 2)
-    return;
+  // The rationalization happens within sections.
+  for (sections_of_address_indexes.Reset();
+       !sections_of_address_indexes.IsFinished();
+       sections_of_address_indexes.WalkForwardToTheNextSection()) {
+    auto current_section = sections_of_address_indexes.CurrentSection();
 
-  // The rationalization is within a section, so we need to draw the borders
-  // between them.
-  auto nb_street_address = address_indexes.size();
-
-  std::vector<size_t> section_delimiters;
-  section_delimiters.push_back(0);
-  for (unsigned i = 1; i < nb_street_address; ++i) {
-    if (fields_[address_indexes[i]]->section !=
-        fields_[address_indexes[i - 1]]->section)
-      section_delimiters.push_back(i);
-  }
-  section_delimiters.push_back(nb_street_address);
-
-  // Rationalize the street address fields to be address lines 1 to 3 instead.
-  // By using the sections we are using the heuristic detected types used for
-  // identifying sections, to rationalize the server detected types.
-  for (unsigned section_border_index = 0;
-       section_border_index < section_delimiters.size() - 1;
-       ++section_border_index) {
-    auto border = section_delimiters[section_border_index];
-    auto next_border = section_delimiters[section_border_index + 1];
-    // The rationalization only applies to sections that have 2 or 3 whole
+    // The rationalization only applies to sections that have 2 or 3 visible
     // street address predictions.
-    if ((next_border - border) != 2 && (next_border - border) != 3)
+    if (current_section.size() != 2 && current_section.size() != 3) {
       continue;
+    }
 
     int nb_address_rationalized = 0;
-    for (unsigned i = border; i < next_border; ++i) {
-      auto& field = fields_[address_indexes[i]];
+    for (auto field_index : current_section) {
+      auto& field = fields_[field_index];
       switch (nb_address_rationalized) {
         case 0:
           field->SetTypeTo(AutofillType(ADDRESS_HOME_LINE1));
@@ -1318,30 +1309,198 @@ void FormStructure::RationalizeAddressLineFields(
   }
 }
 
-void FormStructure::RationalizeRepreatedFields() {
-  // Group fields w/ their |type| in index_group_by_type[|type|].
-  std::vector<size_t> index_group_by_type[MAX_VALID_FIELD_TYPE];
+void FormStructure::ApplyRationalizationsToHiddenSelects(
+    size_t field_index,
+    ServerFieldType new_type) {
+  ServerFieldType old_type = fields_[field_index]->Type().GetStorableType();
+
+  // Walk on the hidden select fields right before the field_index which share
+  // the same type with the field_index, and apply the rationalization to them
+  // as well. These fields, if any, function as one field with the field_index.
+  for (auto current_index = field_index - 1; current_index >= 0;
+       current_index--) {
+    if (fields_[current_index]->IsVisible() ||
+        fields_[current_index]->form_control_type != "select-one" ||
+        fields_[current_index]->Type().GetStorableType() != old_type)
+      break;
+    fields_[current_index]->SetTypeTo(AutofillType(new_type));
+  }
+  // Same for the fields coming right after the field_index.
+  for (auto current_index = field_index + 1; current_index < fields_.size();
+       current_index++) {
+    if (fields_[current_index]->IsVisible() ||
+        fields_[current_index]->form_control_type != "select-one" ||
+        fields_[current_index]->Type().GetStorableType() != old_type)
+      break;
+    fields_[current_index]->SetTypeTo(AutofillType(new_type));
+  }
+}
+
+bool FormStructure::HeuristicsPredictionsAreApplicable(
+    size_t upper_index,
+    size_t lower_index,
+    ServerFieldType first_type,
+    ServerFieldType second_type) {
+  // The predictions are applicable if one field has one of the two types, and
+  // the other has the other type.
+  if (fields_[upper_index]->heuristic_type() ==
+      fields_[lower_index]->heuristic_type())
+    return false;
+  if ((fields_[upper_index]->heuristic_type() == first_type ||
+       fields_[upper_index]->heuristic_type() == second_type) &&
+      (fields_[lower_index]->heuristic_type() == first_type ||
+       fields_[lower_index]->heuristic_type() == second_type))
+    return true;
+  return false;
+}
+
+void FormStructure::ApplyRationalizationsToFields(size_t upper_index,
+                                                  size_t lower_index,
+                                                  ServerFieldType upper_type,
+                                                  ServerFieldType lower_type) {
+  // Hidden fields are ignored during the rationalization, but 'select' hidden
+  // fields also get autofilled to support their corresponding visible
+  // 'synthetic fields'. So, if a field's type is rationalized, we should make
+  // sure that the rationalization is also applied to its corresponding hidden
+  // fields, if any.
+  ApplyRationalizationsToHiddenSelects(upper_index, upper_type);
+  fields_[upper_index]->SetTypeTo(AutofillType(upper_type));
+
+  ApplyRationalizationsToHiddenSelects(lower_index, lower_type);
+  fields_[lower_index]->SetTypeTo(AutofillType(lower_type));
+}
+
+bool FormStructure::FieldShouldBeRationalizedToCountry(size_t upper_index) {
+  // Upper field is country if and only if it's the first visible address field
+  // in its section. Otherwise, the upper field is a state, and the lower one
+  // is a country.
+  for (int field_index = upper_index - 1; field_index >= 0; --field_index) {
+    if (fields_[field_index]->IsVisible() &&
+        AutofillType(fields_[field_index]->Type().GetStorableType()).group() ==
+            ADDRESS_HOME &&
+        fields_[field_index]->section == fields_[upper_index]->section) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void FormStructure::RationalizeAddressStateCountry(
+    SectionedFieldsIndexes& sections_of_state_indexes,
+    SectionedFieldsIndexes& sections_of_country_indexes) {
+  // Walk on the sections of state and country indexes simultaneously. If they
+  // both point to the same section, it means that that section includes both
+  // the country and the state type. This means that no that rationalization is
+  // needed. So, walk both pointers forward. Otherwise, look at the section that
+  // appears earlier on the form. That section doesn't have any field of the
+  // other type. Rationalize the fields on the earlier section if needed. Walk
+  // the pointer that points to the earlier section forward. Stop when both
+  // sections of indexes are processed. (This resembles the merge in the merge
+  // sort.)
+  sections_of_state_indexes.Reset();
+  sections_of_country_indexes.Reset();
+
+  while (!sections_of_state_indexes.IsFinished() ||
+         !sections_of_country_indexes.IsFinished()) {
+    auto current_section_of_state_indexes =
+        sections_of_state_indexes.CurrentSection();
+    auto current_section_of_country_indexes =
+        sections_of_country_indexes.CurrentSection();
+    // If there are still sections left with both country and state type, and
+    // state and country current sections are equal, then that section has both
+    // state and country. No rationalization needed.
+    if (!sections_of_state_indexes.IsFinished() &&
+        !sections_of_country_indexes.IsFinished() &&
+        fields_[sections_of_state_indexes.CurrentIndex()]->section ==
+            fields_[sections_of_country_indexes.CurrentIndex()]->section) {
+      sections_of_state_indexes.WalkForwardToTheNextSection();
+      sections_of_country_indexes.WalkForwardToTheNextSection();
+      continue;
+    }
+
+    size_t upper_index = 0, lower_index = 0;
+
+    // If country section is before the state ones, it means that that section
+    // misses states, and the other way around.
+    if (current_section_of_state_indexes < current_section_of_country_indexes) {
+      // We only rationalize when we have exactly two visible fields of a kind.
+      if (current_section_of_state_indexes.size() == 2) {
+        upper_index = current_section_of_state_indexes[0];
+        lower_index = current_section_of_state_indexes[1];
+      }
+      sections_of_state_indexes.WalkForwardToTheNextSection();
+    } else {
+      // We only rationalize when we have exactly two visible fields of a kind.
+      if (current_section_of_country_indexes.size() == 2) {
+        upper_index = current_section_of_country_indexes[0];
+        lower_index = current_section_of_country_indexes[1];
+      }
+      sections_of_country_indexes.WalkForwardToTheNextSection();
+    }
+
+    // This is when upper and lower indexes are not changed, meaning that there
+    // is no need for rationalization.
+    if (upper_index == lower_index) {
+      continue;
+    }
+
+    if (HeuristicsPredictionsAreApplicable(upper_index, lower_index,
+                                           ADDRESS_HOME_STATE,
+                                           ADDRESS_HOME_COUNTRY)) {
+      ApplyRationalizationsToFields(upper_index, lower_index,
+                                    fields_[upper_index]->heuristic_type(),
+                                    fields_[lower_index]->heuristic_type());
+      continue;
+    }
+
+    if (FieldShouldBeRationalizedToCountry(upper_index)) {
+      ApplyRationalizationsToFields(upper_index, lower_index,
+                                    ADDRESS_HOME_COUNTRY, ADDRESS_HOME_STATE);
+    } else {
+      ApplyRationalizationsToFields(upper_index, lower_index,
+                                    ADDRESS_HOME_STATE, ADDRESS_HOME_COUNTRY);
+    }
+  }
+}
+
+void FormStructure::RationalizeRepeatedFields() {
+  // The type of every field whose index is in
+  // sectioned_field_indexes_by_type[|type|] is predicted by server as |type|.
+  // Example: sectioned_field_indexes_by_type[FULL_NAME] is a sectioned fields
+  // indexes of fields whose types are predicted as FULL_NAME by the server.
+  SectionedFieldsIndexes sectioned_field_indexes_by_type[MAX_VALID_FIELD_TYPE];
 
   for (const auto& field : fields_) {
-    // The hidden fields are not considered when rationalizing, except the
-    // hidden select ones for which the types may need to be changed
-    // accordingly.
-    if ((!field->is_focusable ||
-         field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION) &&
-        field->form_control_type != "select-one")
+    // The hidden fields are not considered when rationalizing.
+    if (!field->IsVisible())
       continue;
-
+    // The billing and non-billing types are aggregated.
     auto current_type = field->Type().GetStorableType();
-    if (current_type != UNKNOWN_TYPE && current_type < MAX_VALID_FIELD_TYPE)
-      index_group_by_type[current_type].push_back(&field - &fields_[0]);
+
+    if (current_type != UNKNOWN_TYPE && current_type < MAX_VALID_FIELD_TYPE) {
+      // Look at the sectioned field indexes for the current type, if the
+      // current field belongs to that section, then the field index should be
+      // added to that same section, otherwise, start a new section.
+      sectioned_field_indexes_by_type[current_type].AddFieldIndex(
+          &field - &fields_[0],
+          /*is_new_section*/ sectioned_field_indexes_by_type[current_type]
+                  .Empty() ||
+              fields_[sectioned_field_indexes_by_type[current_type]
+                          .LastFieldIndex()]
+                      ->section != field->section);
+    }
   }
 
   RationalizeAddressLineFields(
-      index_group_by_type[ADDRESS_HOME_STREET_ADDRESS]);
+      sectioned_field_indexes_by_type[ADDRESS_HOME_STREET_ADDRESS]);
+  // Since the billing types are mapped to the non-billing ones, no need to
+  // take care of ADDRESS_BILLING_STATE and .. .
+  RationalizeAddressStateCountry(
+      sectioned_field_indexes_by_type[ADDRESS_HOME_STATE],
+      sectioned_field_indexes_by_type[ADDRESS_HOME_COUNTRY]);
 }
 
 void FormStructure::RationalizeFieldTypePredictions() {
-  RationalizeRepreatedFields();
   RationalizeCreditCardFieldPredictions();
   for (const auto& field : fields_) {
     field->SetTypeTo(field->Type());
@@ -1461,18 +1620,14 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
         field->section = "credit-card";
         continue;
       }
-
       bool already_saw_current_type = seen_types.count(current_type) > 0;
-
       // Forms often ask for multiple phone numbers -- e.g. both a daytime and
       // evening phone number.  Our phone number detection is also generally a
       // little off.  Hence, ignore this field type as a signal here.
       if (AutofillType(current_type).group() == PHONE_HOME)
         already_saw_current_type = false;
 
-      bool ignored_field =
-          !field->is_focusable ||
-          field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+      bool ignored_field = !field->IsVisible();
 
       // This is the first visible field after a hidden section. Consider it as
       // the continuation of the last visible section.

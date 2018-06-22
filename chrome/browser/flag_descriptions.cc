@@ -79,6 +79,11 @@ const char kAutofillPrefilledFieldsName[] = "Autofill Prefilled Fields";
 const char kAutofillPrefilledFieldsDescription[] =
     "Allows autofill to fill fields previously filled by the website";
 
+const char kAutofillRationalizeRepeatedServerPredictionsName[] =
+    "Autofill Rationalization of Repeated Server Field Type Predictions";
+const char kAutofillRationalizeRepeatedServerPredictionsDescription[] =
+    "Allows autofill to rationalize repeated server field type predictions.";
+
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[] =
     "Autofill Enforce Min Required Fields For Heuristics";
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[] =
