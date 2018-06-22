@@ -352,7 +352,8 @@ def main():
   objdumpdir = 'llvmobjdump-' + stamp
   shutil.rmtree(objdumpdir, ignore_errors=True)
   os.makedirs(os.path.join(objdumpdir, 'bin'))
-  for filename in ['llvm-cxxfilt', 'llvm-nm', 'llvm-objdump', 'llvm-readobj']:
+  for filename in ['llvm-bcanalyzer', 'llvm-cxxfilt', 'llvm-nm', 'llvm-objdump',
+                   'llvm-readobj']:
     shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', filename + exe_ext),
                 os.path.join(objdumpdir, 'bin'))
   llvmobjdump_stamp_file_base = 'llvmobjdump_build_revision'
