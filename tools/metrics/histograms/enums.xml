@@ -27543,6 +27543,7 @@ from previous Chrome versions.
   <int value="-763759697" label="enable-audio-support-for-desktop-share"/>
   <int value="-762687134" label="ExperimentalCrostiniUI:enabled"/>
   <int value="-759830869" label="enable-tab-discarding"/>
+  <int value="-758048639" label="InfiniteSessionRestore:enabled"/>
   <int value="-757946835"
       label="OmniboxUIExperimentShowSuggestionFavicons:enabled"/>
   <int value="-751273871" label="AutofillCreditCardBankNameDisplay:enabled"/>
@@ -28168,6 +28169,7 @@ from previous Chrome versions.
   <int value="651844675" label="EasyUnlockPromotions:enabled"/>
   <int value="652561231" label="CustomContextMenu:enabled"/>
   <int value="659086147" label="OverlayScrollbarFlashWhenMouseEnter:enabled"/>
+  <int value="664363259" label="SiteCharacteristicsDatabase:enabled"/>
   <int value="665409384"
       label="AutofillToolkitViewsCreditCardDialogsMac:enabled"/>
   <int value="679931272" label="DcheckIsFatal:enabled"/>
@@ -28280,6 +28282,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentElideSuggestionUrlAfterHost:enabled"/>
   <int value="908523940" label="PassiveEventListenersDueToFling:disabled"/>
   <int value="909439558" label="disable-device-discovery"/>
+  <int value="912119426" label="InfiniteSessionRestore:disabled"/>
   <int value="913138924" label="RecurrentInterstitialFeature:disabled"/>
   <int value="916316159" label="disable-new-app-list-mixer"/>
   <int value="918046854" label="NtlmV2Enabled:disabled"/>
@@ -28295,6 +28298,7 @@ from previous Chrome versions.
   <int value="939554480" label="enable-credit-card-scan"/>
   <int value="939603162" label="BackgroundLoadingForDownloads:disabled"/>
   <int value="941036016" label="ContentSuggestionsSettings:disabled"/>
+  <int value="941883332" label="ProactiveTabFreezeAndDiscard:disabled"/>
   <int value="943319566" label="enable-intent-picker"/>
   <int value="946688335" label="OmniboxSpareRenderer:disabled"/>
   <int value="952558794" label="enable-remote-assistance"/>
@@ -28433,6 +28437,7 @@ from previous Chrome versions.
   <int value="1221559505" label="enable-spelling-feedback-field-trial"/>
   <int value="1222017136" label="WebRtcUseEchoCanceller3:disabled"/>
   <int value="1226624874" label="Mus:disabled"/>
+  <int value="1228115769" label="SiteCharacteristicsDatabase:disabled"/>
   <int value="1235800887" label="V8Ignition:enabled"/>
   <int value="1235940786" label="ChromeHomePersistentIph:enabled"/>
   <int value="1237297772" label="no-pings"/>
@@ -28442,6 +28447,7 @@ from previous Chrome versions.
   <int value="1247293682" label="topchrome-md"/>
   <int value="1250071868" label="disable-timezone-tracking-option"/>
   <int value="1253698118" label="ash-disable-stable-overview-order"/>
+  <int value="1257482622" label="PageAlmostIdle:enabled"/>
   <int value="1257980502" label="disable-accelerated-video-decode"/>
   <int value="1260186484" label="spurious-power-button-screen-accel"/>
   <int value="1261713150" label="ChromeHomeOptOutSnackbar:disabled"/>
@@ -28753,6 +28759,7 @@ from previous Chrome versions.
   <int value="1913298816" label="OverlayScrollbar:enabled"/>
   <int value="1913926782" label="ChromeModernAlternateCardLayout:disabled"/>
   <int value="1915178511" label="disable-blink-features"/>
+  <int value="1924192543" label="ProactiveTabFreezeAndDiscard:enabled"/>
   <int value="1925627218" label="FullscreenToolbarReveal:disabled"/>
   <int value="1927259098" label="TranslateLanguageByULP:enabled"/>
   <int value="1928407249" label="NewPhotoPicker:enabled"/>
@@ -28771,6 +28778,7 @@ from previous Chrome versions.
   <int value="1951466218" label="enable-data-reduction-proxy-lite-page"/>
   <int value="1951645673" label="PasswordsKeyboardAccessory:disabled"/>
   <int value="1955677113" label="trace-export-events-to-etw"/>
+  <int value="1957273171" label="PageAlmostIdle:disabled"/>
   <int value="1957358530" label="ContextualSearchSecondTap:enabled"/>
   <int value="1958387645" label="ScanCardsInWebPayments:enabled"/>
   <int value="1959148757" label="OffMainThreadFetch:enabled"/>

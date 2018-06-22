@@ -24,6 +24,9 @@ extern const base::Feature kTabRanker;
 
 namespace resource_coordinator {
 
+// The name of the ProactiveTabFreezeAndDiscard feature.
+extern const char kProactiveTabFreezeAndDiscardFeatureName[];
+
 // Variations parameter names related to proactive discarding.
 // See ProactiveTabFreezeAndDiscardsParams for details.
 extern const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscard[];
