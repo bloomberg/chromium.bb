@@ -47,6 +47,11 @@ const char kAppBannersDescription[] =
 const char kAshSidebarName[] = "Sidebar";
 const char kAshSidebarDescription[] = "Enable the experimental sidebar.";
 
+const char kAutomaticPasswordGenerationName[] = "Automatic password generation";
+const char kAutomaticPasswordGenerationDescription[] =
+    "Allow Chrome to offer to generate passwords when it detects account "
+    "creation pages.";
+
 const char kEnableBlinkHeapIncrementalMarkingName[] =
     "Blink Heap Incremental Marking";
 const char kEnableBlinkHeapIncrementalMarkingDescription[] =
@@ -1298,11 +1303,6 @@ const char kPasswordForceSavingName[] = "Force-saving of passwords";
 const char kPasswordForceSavingDescription[] =
     "Allow the user to manually enforce password saving instead of relying on "
     "password manager's heuristics.";
-
-const char kPasswordGenerationName[] = "Password generation";
-const char kPasswordGenerationDescription[] =
-    "Allow the user to have Chrome generate passwords when it detects account "
-    "creation pages.";
 
 const char kPasswordExportName[] = "Password export";
 const char kPasswordExportDescription[] =

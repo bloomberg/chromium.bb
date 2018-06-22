@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
@@ -15,6 +16,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/test_password_store.h"
@@ -59,7 +61,8 @@ class PasswordGenerationInteractiveTest :
     PasswordManagerBrowserTestBase::SetUpCommandLine(command_line);
 
     // Make sure the feature is enabled.
-    command_line->AppendSwitch(autofill::switches::kEnablePasswordGeneration);
+    scoped_feature_list_.InitAndEnableFeature(
+        autofill::features::kAutomaticPasswordGeneration);
 
     // Don't require ping from autofill or blacklist checking.
     command_line->AppendSwitch(
@@ -68,7 +71,6 @@ class PasswordGenerationInteractiveTest :
 
   void SetUpOnMainThread() override {
     PasswordManagerBrowserTestBase::SetUpOnMainThread();
-
     // Disable Autofill requesting access to AddressBook data. This will cause
     // the tests to hang on Mac.
     autofill::test::DisableSystemServices(browser()->profile()->GetPrefs());
@@ -142,6 +144,7 @@ class PasswordGenerationInteractiveTest :
 
  private:
   TestPopupObserver observer_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,

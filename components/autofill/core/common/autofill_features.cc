@@ -111,6 +111,11 @@ const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile{
     "AutofillUpstreamUseGooglePayOnAndroidBranding",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether password generation is offered automatically on fields
+// percieved as eligible for generation.
+const base::Feature kAutomaticPasswordGeneration = {
+    "AutomaticPasswordGeneration", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether or not the autofill UI triggers on a single click.
 const base::Feature kSingleClickAutofill{"SingleClickAutofill",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
