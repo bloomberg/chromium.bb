@@ -1955,28 +1955,32 @@ PasswordAutofillAgent::FindUsernamePasswordElements(
   const bool is_password_present =
       password_renderer_id != FormFieldData::kNotSetFormControlRendererId;
 
-  DCHECK(is_password_present);
-
-  std::vector<uint32_t> element_ids = {password_renderer_id};
+  std::vector<uint32_t> element_ids;
+  if (is_password_present)
+    element_ids.push_back(password_renderer_id);
   if (is_username_present)
     element_ids.push_back(username_renderer_id);
 
   WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
-  bool is_form_tag =
+  bool wrapped_in_form_tag =
       form_data.form_renderer_id != FormData::kNotSetFormRendererId;
   std::vector<WebFormControlElement> elements =
-      is_form_tag ? form_util::FindFormControlElementsByUniqueRendererId(
-                        doc, form_data.form_renderer_id, element_ids)
-                  : form_util::FindFormControlElementsByUniqueRendererId(
-                        doc, element_ids);
+      wrapped_in_form_tag
+          ? form_util::FindFormControlElementsByUniqueRendererId(
+                doc, form_data.form_renderer_id, element_ids)
+          : form_util::FindFormControlElementsByUniqueRendererId(doc,
+                                                                 element_ids);
 
   // Set password element.
-  WebInputElement password_field = ConvertToWebInput(elements[0]);
+  WebInputElement password_field;
+  size_t current_index = 0;
+  if (is_password_present)
+    password_field = ConvertToWebInput(elements[current_index++]);
 
   // Set username element.
   WebInputElement username_field;
   if (is_username_present)
-    username_field = ConvertToWebInput(elements[1]);
+    username_field = ConvertToWebInput(elements[current_index++]);
 
   return std::make_pair(username_field, password_field);
 }
