@@ -83,6 +83,8 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   if (payload.vibration_pattern().size() > 0) {
     notification_data->vibration_pattern.assign(
         payload.vibration_pattern().begin(), payload.vibration_pattern().end());
+  } else {
+    notification_data->vibration_pattern.clear();
   }
 
   notification_data->timestamp =
@@ -94,7 +96,11 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   if (payload.data().length()) {
     notification_data->data.assign(payload.data().begin(),
                                    payload.data().end());
+  } else {
+    notification_data->data.clear();
   }
+
+  notification_data->actions.clear();
 
   for (const auto& payload_action : payload.actions()) {
     PlatformNotificationAction action;
