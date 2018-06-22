@@ -50,6 +50,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -80,6 +81,7 @@
 #include "media/base/mime_util.h"
 #include "net/base/escape.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "url/url_constants.h"
 
@@ -2464,6 +2466,16 @@ std::unique_ptr<NavigationEntryImpl>
 NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
     FrameTreeNode* node,
     const LoadURLParams& params) {
+  // Browser initiated navigations might not have a blob_url_loader_factory set
+  // in params even if the navigation is to a blob URL. If that happens, lookup
+  // the correct url loader factory to use here.
+  auto blob_url_loader_factory = params.blob_url_loader_factory;
+  if (!blob_url_loader_factory && blink::BlobUtils::MojoBlobURLsEnabled() &&
+      params.url.SchemeIsBlob()) {
+    blob_url_loader_factory = ChromeBlobStorageContext::URLLoaderFactoryForUrl(
+        GetBrowserContext(), params.url);
+  }
+
   std::unique_ptr<NavigationEntryImpl> entry;
 
   // For subframes, create a pending entry with a corresponding frame entry.
@@ -2477,7 +2489,7 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
         node, -1, -1, nullptr,
         static_cast<SiteInstanceImpl*>(params.source_site_instance.get()),
         params.url, params.referrer, params.redirect_chain, PageState(), "GET",
-        -1, params.blob_url_loader_factory);
+        -1, blob_url_loader_factory);
   } else {
     // Otherwise, create a pending entry for the main frame.
 
@@ -2487,7 +2499,7 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
     entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
         params.url, params.referrer, params.transition_type,
         params.is_renderer_initiated, extra_headers_crlf, browser_context_,
-        params.blob_url_loader_factory));
+        blob_url_loader_factory));
     entry->set_source_site_instance(
         static_cast<SiteInstanceImpl*>(params.source_site_instance.get()));
     entry->SetRedirectChain(params.redirect_chain);

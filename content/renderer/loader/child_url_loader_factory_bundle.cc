@@ -129,18 +129,14 @@ ChildURLLoaderFactoryBundle::ChildURLLoaderFactoryBundle(
 }
 
 ChildURLLoaderFactoryBundle::ChildURLLoaderFactoryBundle(
-    PossiblyAssociatedFactoryGetterCallback direct_network_factory_getter,
-    FactoryGetterCallback default_blob_factory_getter)
-    : direct_network_factory_getter_(std::move(direct_network_factory_getter)),
-      default_blob_factory_getter_(std::move(default_blob_factory_getter)) {}
+    PossiblyAssociatedFactoryGetterCallback direct_network_factory_getter)
+    : direct_network_factory_getter_(std::move(direct_network_factory_getter)) {
+}
 
 ChildURLLoaderFactoryBundle::~ChildURLLoaderFactoryBundle() = default;
 
 network::mojom::URLLoaderFactory* ChildURLLoaderFactoryBundle::GetFactoryForURL(
     const GURL& url) {
-  if (url.SchemeIsBlob())
-    InitDefaultBlobFactoryIfNecessary();
-
   auto it = factories_.find(url.scheme());
   if (it != factories_.end())
     return it->second.get();
@@ -217,20 +213,6 @@ bool ChildURLLoaderFactoryBundle::IsHostChildURLLoaderFactoryBundle() const {
   return false;
 }
 
-void ChildURLLoaderFactoryBundle::InitDefaultBlobFactoryIfNecessary() {
-  if (default_blob_factory_getter_.is_null())
-    return;
-
-  if (factories_.find(url::kBlobScheme) == factories_.end()) {
-    network::mojom::URLLoaderFactoryPtr blob_factory =
-        std::move(default_blob_factory_getter_).Run();
-    if (blob_factory)
-      factories_.emplace(url::kBlobScheme, std::move(blob_factory));
-  } else {
-    default_blob_factory_getter_.Reset();
-  }
-}
-
 void ChildURLLoaderFactoryBundle::InitDirectNetworkFactoryIfNecessary() {
   if (direct_network_factory_getter_.is_null())
     return;
@@ -244,7 +226,6 @@ void ChildURLLoaderFactoryBundle::InitDirectNetworkFactoryIfNecessary() {
 
 std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 ChildURLLoaderFactoryBundle::CloneInternal(bool include_default) {
-  InitDefaultBlobFactoryIfNecessary();
   InitDirectNetworkFactoryIfNecessary();
 
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
@@ -274,7 +255,6 @@ ChildURLLoaderFactoryBundle::CloneInternal(bool include_default) {
 
 std::unique_ptr<ChildURLLoaderFactoryBundleInfo>
 ChildURLLoaderFactoryBundle::PassInterface() {
-  InitDefaultBlobFactoryIfNecessary();
   InitDirectNetworkFactoryIfNecessary();
 
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info;

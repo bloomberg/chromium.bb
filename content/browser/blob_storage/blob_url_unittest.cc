@@ -17,7 +17,6 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -131,7 +130,6 @@ disk_cache::ScopedEntryPtr CreateDiskCacheEntryWithSideData(
 }
 
 enum class RequestTestType {
-  kNetworkServiceRequest,
   kNetRequest,
   kRequestFromBlobImpl
 };
@@ -285,34 +283,6 @@ class BlobURLRequestJobTest : public testing::TestWithParam<RequestTestType> {
     request.headers = extra_headers;
 
     switch (GetParam()) {
-      case RequestTestType::kNetworkServiceRequest: {
-        GetHandleFromBuilder();  // To add to StorageContext.
-        const_cast<storage::BlobStorageRegistry&>(blob_context_.registry())
-            .CreateUrlMapping(url, blob_uuid_);
-
-        network::mojom::URLLoaderPtr url_loader;
-        network::TestURLLoaderClient url_loader_client;
-        scoped_refptr<BlobURLLoaderFactory> factory =
-            BlobURLLoaderFactory::Create(
-                base::BindOnce(&BlobURLRequestJobTest::GetStorageContext,
-                               base::Unretained(this)));
-        base::RunLoop().RunUntilIdle();
-        factory->CreateLoaderAndStart(mojo::MakeRequest(&url_loader), 0, 0,
-                                      network::mojom::kURLLoadOptionNone,
-                                      request,
-                                      url_loader_client.CreateInterfacePtr(),
-                                      net::MutableNetworkTrafficAnnotationTag(
-                                          TRAFFIC_ANNOTATION_FOR_TESTS));
-        url_loader_client.RunUntilComplete();
-
-        if (url_loader_client.response_body().is_valid()) {
-          EXPECT_TRUE(mojo::BlockingCopyToString(
-              url_loader_client.response_body_release(), &response_));
-        }
-        response_headers_ = url_loader_client.response_head().headers;
-        response_metadata_ = url_loader_client.cached_metadata();
-        response_error_code_ = url_loader_client.completion_status().error_code;
-      } break;
       case RequestTestType::kNetRequest: {
         std::unique_ptr<net::URLRequest> request =
             url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY,
@@ -720,8 +690,7 @@ TEST_P(BlobURLRequestJobTest, BrokenBlob) {
 INSTANTIATE_TEST_CASE_P(
     BlobURLRequestJobTest,
     BlobURLRequestJobTest,
-    ::testing::Values(RequestTestType::kNetworkServiceRequest,
-                      RequestTestType::kNetRequest,
+    ::testing::Values(RequestTestType::kNetRequest,
                       RequestTestType::kRequestFromBlobImpl));
 
 }  // namespace content

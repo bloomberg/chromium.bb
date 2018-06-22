@@ -222,12 +222,6 @@ void ClearSessionStorageOnUIThread(
                      special_storage_policy, origin_matcher, callback));
 }
 
-base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetterForStorage(
-    scoped_refptr<ChromeBlobStorageContext> blob_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return blob_context->context()->AsWeakPtr();
-}
-
 }  // namespace
 
 // Class to own the NetworkContext wrapping a storage partitions
@@ -652,14 +646,6 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   scoped_refptr<ChromeBlobStorageContext> blob_context =
       ChromeBlobStorageContext::GetFor(context);
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      ServiceWorkerUtils::IsServicificationEnabled()) {
-    BlobURLLoaderFactory::BlobContextGetter blob_getter =
-        base::BindOnce(&BlobStorageContextGetterForStorage, blob_context);
-    partition->blob_url_loader_factory_ =
-        BlobURLLoaderFactory::Create(std::move(blob_getter));
-  }
-
   partition->url_loader_factory_getter_ = new URLLoaderFactoryGetter();
   partition->url_loader_factory_getter_->Initialize(partition.get());
 
@@ -830,10 +816,6 @@ BroadcastChannelProvider* StoragePartitionImpl::GetBroadcastChannelProvider() {
 BluetoothAllowedDevicesMap*
 StoragePartitionImpl::GetBluetoothAllowedDevicesMap() {
   return bluetooth_allowed_devices_map_.get();
-}
-
-BlobURLLoaderFactory* StoragePartitionImpl::GetBlobURLLoaderFactory() {
-  return blob_url_loader_factory_.get();
 }
 
 BlobRegistryWrapper* StoragePartitionImpl::GetBlobRegistry() {

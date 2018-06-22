@@ -65,10 +65,27 @@ class CONTENT_EXPORT ChromeBlobStorageContext
       size_t length,
       const std::string& content_type);
 
+  // Returns a SharedURLLoaderFactory capable of creating URLLoaders for exactly
+  // the one URL associated with the passed in |token|. Attempting to load any
+  // other URL through the factory will result in an error. If the |token|
+  // itself is invalid all requests will result in errors.
   // Must be called on the UI thread.
   static scoped_refptr<network::SharedURLLoaderFactory>
   URLLoaderFactoryForToken(BrowserContext* browser_context,
                            blink::mojom::BlobURLTokenPtr token);
+
+  // Similar to the above method this also returns a factory capable of loading
+  // a single (blob) URL. If the |url| isn't a valid/registered blob URL at the
+  // time this method is called, using the resulting factory will always result
+  // in an error.
+  // Generally you should prefer using the above method and pass around a
+  // BlobURLToken rather than a blob URL. This is because the BlobURLToken will
+  // ensure that the URL and the blob it refers to stay alive, while merely
+  // holding on to the URL has no such guarantees.
+  // Must be called on the UI thread.
+  static scoped_refptr<network::SharedURLLoaderFactory> URLLoaderFactoryForUrl(
+      BrowserContext* browser_context,
+      const GURL& url);
 
   // Must be called on the UI thread.
   static blink::mojom::BlobPtr GetBlobPtr(BrowserContext* browser_context,

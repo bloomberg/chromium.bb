@@ -73,7 +73,6 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/blob_dispatcher_host.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
-#include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/browser_child_process_host_impl.h"
@@ -2102,16 +2101,6 @@ void RenderProcessHostImpl::GetAssociatedInterface(
   IPC::Listener* listener = listeners_.Lookup(routing_id);
   if (listener)
     listener->OnAssociatedInterfaceRequest(name, request.PassHandle());
-}
-
-void RenderProcessHostImpl::GetBlobURLLoaderFactory(
-    network::mojom::URLLoaderFactoryRequest request) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    NOTREACHED();
-    return;
-  }
-  storage_partition_impl_->GetBlobURLLoaderFactory()->HandleRequest(
-      std::move(request));
 }
 
 void RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider(
