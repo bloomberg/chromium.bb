@@ -411,9 +411,9 @@ deps = {
   'src/third_party/android_build_tools/bundletool': {
       'packages': [
           {
-	      'package': 'chromium/third_party/android_tools_bundletool',
-	      'version': 'version:0.4.2-cr0',
-	  },
+       'package': 'chromium/third_party/android_tools_bundletool',
+       'version': 'version:0.4.2-cr0',
+   },
       ],
       'condition': 'checkout_android',
       'dep_type': 'cipd',
@@ -565,7 +565,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '7999d926809fdb560e58012dddd74b235ea1d99a',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'c5a26a769e69377391ed9bf71ca74d7eae5e6717',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
