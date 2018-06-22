@@ -141,6 +141,8 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   virtual void SetOpacity(float opacity) = 0;
 
+  virtual void SetAspectRatio(const gfx::Size& aspect_ratio) = 0;
+
   virtual void SetWindowIcons(const gfx::ImageSkia& window_icon,
                               const gfx::ImageSkia& app_icon) = 0;
 

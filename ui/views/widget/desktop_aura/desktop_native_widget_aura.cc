@@ -870,6 +870,11 @@ void DesktopNativeWidgetAura::SetOpacity(float opacity) {
     desktop_window_tree_host_->SetOpacity(opacity);
 }
 
+void DesktopNativeWidgetAura::SetAspectRatio(const gfx::Size& aspect_ratio) {
+  if (content_window_)
+    desktop_window_tree_host_->SetAspectRatio(aspect_ratio);
+}
+
 void DesktopNativeWidgetAura::FlashFrame(bool flash_frame) {
   if (content_window_)
     desktop_window_tree_host_->FlashFrame(flash_frame);
