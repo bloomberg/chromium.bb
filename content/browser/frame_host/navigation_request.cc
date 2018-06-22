@@ -24,6 +24,7 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
+#include "content/browser/frame_host/origin_policy_throttle.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -212,6 +213,14 @@ void AddAdditionalRequestHeaders(
         frame_tree_node->IsMainFrame() ? "top-level" : "nested",
         site_value.c_str());
     headers->SetHeaderIfMissing("Sec-Metadata", value);
+  }
+
+  // Ask whether we should request a policy.
+  std::string origin_policy_request;
+  if (OriginPolicyThrottle::ShouldRequestOriginPolicy(url,
+                                                      &origin_policy_request)) {
+    headers->SetHeader(net::HttpRequestHeaders::kSecOriginPolicy,
+                       origin_policy_request);
   }
 
   // Next, set the HTTP Origin if needed.
@@ -1559,6 +1568,11 @@ void NavigationRequest::CommitNavigation() {
   DCHECK(response_ || !IsURLHandledByNetworkStack(common_params_.url) ||
          navigation_handle_->IsSameDocument());
   DCHECK(!common_params_.url.SchemeIs(url::kJavaScriptScheme));
+
+  // Send the applicable origin policy (if any) along with the request.
+  // (The policy is fetched by a throttle and is thus available only now.)
+  DCHECK(common_params_.origin_policy.empty());
+  common_params_.origin_policy = navigation_handle_->origin_policy();
 
   // Retrieve the RenderFrameHost that needs to commit the navigation.
   RenderFrameHostImpl* render_frame_host =

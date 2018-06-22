@@ -22,6 +22,7 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_delegate.h"
+#include "content/browser/frame_host/origin_policy_throttle.h"
 #include "content/browser/frame_host/webui_navigation_throttle.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -1308,6 +1309,9 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
   // console about CSP blocking the load.
   AddThrottle(
       MixedContentNavigationThrottle::CreateThrottleForNavigation(this));
+
+  // Handle Origin Policy (if enabled)
+  AddThrottle(OriginPolicyThrottle::MaybeCreateThrottleFor(this));
 
   for (auto& throttle :
        RenderFrameDevToolsAgentHost::CreateNavigationThrottles(this)) {

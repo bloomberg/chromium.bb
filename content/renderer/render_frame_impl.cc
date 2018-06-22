@@ -466,6 +466,8 @@ WebURLRequest CreateURLRequestForNavigation(
   request.SetPreviewsState(
       static_cast<WebURLRequest::PreviewsState>(common_params.previews_state));
 
+  request.SetOriginPolicy(WebString::FromUTF8(common_params.origin_policy));
+
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_navigation_response_override(std::move(response_override));
   extra_data->set_navigation_initiated_by_renderer(
