@@ -2948,6 +2948,7 @@ if __name__ == '__main__':
 
     for failure in result.failures + result.errors:
       output['tests'][failure[0].id()]['actual'] = 'FAIL'
+      output['tests'][failure[0].id()]['is_unexpected'] = True
 
     num_fails = len(result.failures) + len(result.errors)
     output['num_failures_by_type']['FAIL'] = num_fails
