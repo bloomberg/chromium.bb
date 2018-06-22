@@ -50,6 +50,7 @@ struct aom_codec_alg_priv {
   int decode_tile_col;
   unsigned int tile_mode;
   unsigned int ext_tile_debug;
+  unsigned int row_mt;
   EXTERNAL_REFERENCES ext_refs;
   unsigned int is_annexb;
   int operating_point;
@@ -429,6 +430,7 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
     frame_worker_data->pbi->operating_point = ctx->operating_point;
     frame_worker_data->pbi->output_all_layers = ctx->output_all_layers;
     frame_worker_data->pbi->ext_tile_debug = ctx->ext_tile_debug;
+    frame_worker_data->pbi->row_mt = ctx->row_mt;
 
     worker->hook = (AVxWorkerHook)frame_worker_hook;
     if (!winterface->reset(worker)) {
@@ -489,6 +491,7 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
   frame_worker_data->pbi->dec_tile_row = ctx->decode_tile_row;
   frame_worker_data->pbi->dec_tile_col = ctx->decode_tile_col;
   frame_worker_data->pbi->ext_tile_debug = ctx->ext_tile_debug;
+  frame_worker_data->pbi->row_mt = ctx->row_mt;
   frame_worker_data->pbi->ext_refs = ctx->ext_refs;
 
   frame_worker_data->pbi->common.is_annexb = ctx->is_annexb;
@@ -1124,6 +1127,12 @@ static aom_codec_err_t ctrl_ext_tile_debug(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_OK;
 }
 
+static aom_codec_err_t ctrl_set_row_mt(aom_codec_alg_priv_t *ctx,
+                                       va_list args) {
+  ctx->row_mt = va_arg(args, unsigned int);
+  return AOM_CODEC_OK;
+}
+
 static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AV1_COPY_REFERENCE, ctrl_copy_reference },
 
@@ -1145,6 +1154,7 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AV1D_SET_OUTPUT_ALL_LAYERS, ctrl_set_output_all_layers },
   { AV1_SET_INSPECTION_CALLBACK, ctrl_set_inspection_callback },
   { AV1D_EXT_TILE_DEBUG, ctrl_ext_tile_debug },
+  { AV1D_SET_ROW_MT, ctrl_set_row_mt },
   { AV1D_SET_EXT_REF_PTR, ctrl_set_ext_ref_ptr },
 
   // Getters

@@ -162,6 +162,7 @@ typedef struct AV1Decoder {
   int tile_count_minus_1;
   uint32_t coded_tile_data_size;
   unsigned int ext_tile_debug;  // for ext-tile software debug & testing
+  unsigned int row_mt;
   EXTERNAL_REFERENCES ext_refs;
   size_t tile_list_size;
   uint8_t *tile_list_output;

@@ -187,6 +187,12 @@ enum aom_dec_control_id {
    */
   AV1D_EXT_TILE_DEBUG,
 
+  /** control function to enable the row based multi-threading of decoding. A
+   * value that is equal to 1 indicates that row based multi-threading is
+   * enabled.
+   */
+  AV1D_SET_ROW_MT,
+
   /** control function to indicate whether bitstream is in Annex-B format. */
   AV1D_SET_IS_ANNEXB,
 
@@ -258,6 +264,8 @@ AOM_CTRL_USE_TYPE(AV1D_SET_EXT_REF_PTR, av1_ext_ref_frame_t *)
 #define AOM_CTRL_AV1D_SET_EXT_REF_PTR
 AOM_CTRL_USE_TYPE(AV1D_EXT_TILE_DEBUG, unsigned int)
 #define AOM_CTRL_AV1D_EXT_TILE_DEBUG
+AOM_CTRL_USE_TYPE(AV1D_SET_ROW_MT, unsigned int)
+#define AOM_CTRL_AV1D_SET_ROW_MT
 AOM_CTRL_USE_TYPE(AV1D_SET_IS_ANNEXB, unsigned int)
 #define AOM_CTRL_AV1D_SET_IS_ANNEXB
 AOM_CTRL_USE_TYPE(AV1D_SET_OPERATING_POINT, int)

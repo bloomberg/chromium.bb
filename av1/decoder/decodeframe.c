@@ -4386,8 +4386,11 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   if (initialize_flag) setup_frame_info(pbi);
 
-  if (pbi->max_threads > 1 && tile_count_tg > 1 &&
-      !(cm->large_scale_tile && !pbi->ext_tile_debug))
+  if (pbi->max_threads > 1 && !(cm->large_scale_tile && !pbi->ext_tile_debug) &&
+      pbi->row_mt)
+    *p_data_end = decode_tiles_mt(pbi, data, data_end, start_tile, end_tile);
+  else if (pbi->max_threads > 1 && tile_count_tg > 1 &&
+           !(cm->large_scale_tile && !pbi->ext_tile_debug))
     *p_data_end = decode_tiles_mt(pbi, data, data_end, start_tile, end_tile);
   else
     *p_data_end = decode_tiles(pbi, data, data_end, start_tile, end_tile);

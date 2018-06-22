@@ -30,8 +30,9 @@ namespace {
 
 const int kThreads = 0;
 const int kFileName = 1;
+const int kRowMT = 2;
 
-typedef ::testing::tuple<int, const char *> DecodeParam;
+typedef ::testing::tuple<int, const char *, int> DecodeParam;
 
 class TestVectorTest : public ::libaom_test::DecoderTest,
                        public ::libaom_test::CodecTestWithParam<DecodeParam> {
@@ -46,6 +47,12 @@ class TestVectorTest : public ::libaom_test::DecoderTest,
     md5_file_ = libaom_test::OpenTestDataFile(md5_file_name_);
     ASSERT_TRUE(md5_file_ != NULL)
         << "Md5 file open failed. Filename: " << md5_file_name_;
+  }
+
+  virtual void PreDecodeFrameHook(
+      const libaom_test::CompressedVideoSource &video,
+      libaom_test::Decoder *decoder) {
+    if (video.frame_number() == 0) decoder->Control(AV1D_SET_ROW_MT, row_mt_);
   }
 
   virtual void DecompressedFrameHook(const aom_image_t &img,
@@ -84,6 +91,8 @@ class TestVectorTest : public ::libaom_test::DecoderTest,
         << "Md5 checksums don't match: frame number = " << frame_number;
   }
 
+  unsigned int row_mt_;
+
  private:
   FILE *md5_file_;
 };
@@ -100,6 +109,7 @@ TEST_P(TestVectorTest, MD5Match) {
   char str[256];
 
   cfg.threads = ::testing::get<kThreads>(input);
+  row_mt_ = ::testing::get<kRowMT>(input);
 
   snprintf(str, sizeof(str) / sizeof(str[0]) - 1, "file: %s threads: %d",
            filename.c_str(), cfg.threads);
@@ -140,11 +150,11 @@ TEST_P(TestVectorTest, MD5Match) {
 #if CONFIG_AV1_DECODER
 AV1_INSTANTIATE_TEST_CASE(
     TestVectorTest,
-    ::testing::Combine(
-        ::testing::Values(1),  // Single thread.
-        ::testing::ValuesIn(libaom_test::kAV1TestVectors,
-                            libaom_test::kAV1TestVectors +
-                                libaom_test::kNumAV1TestVectors)));
+    ::testing::Combine(::testing::Values(1),  // Single thread.
+                       ::testing::ValuesIn(libaom_test::kAV1TestVectors,
+                                           libaom_test::kAV1TestVectors +
+                                               libaom_test::kNumAV1TestVectors),
+                       ::testing::Values(0)));
 
 // Test AV1 decode in with different numbers of threads.
 INSTANTIATE_TEST_CASE_P(
@@ -156,7 +166,8 @@ INSTANTIATE_TEST_CASE_P(
             ::testing::Range(2, 9),  // With 2 ~ 8 threads.
             ::testing::ValuesIn(libaom_test::kAV1TestVectors,
                                 libaom_test::kAV1TestVectors +
-                                    libaom_test::kNumAV1TestVectors))));
+                                    libaom_test::kNumAV1TestVectors),
+            ::testing::Range(0, 2))));
 
 #endif  // CONFIG_AV1_DECODER
 
