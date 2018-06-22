@@ -16,6 +16,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -789,6 +790,17 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
     draw_property_utils::UpdatePropertyTrees(this, property_trees);
     draw_property_utils::FindLayersThatNeedUpdates(this, property_trees,
                                                    &update_layer_list);
+
+    // Dump property trees useful for debugging --blink-gen-property-trees
+    // flag. We care only about the renderer compositor.
+    if (VLOG_IS_ON(3) && GetClientNameForMetrics() == std::string("Renderer")) {
+      VLOG(3) << "CC Property Trees:";
+      std::string out;
+      base::JSONWriter::WriteWithOptions(
+          *property_trees->AsTracedValue()->ToBaseValue(),
+          base::JSONWriter::OPTIONS_PRETTY_PRINT, &out);
+      VLOG(3) << out;
+    }
   }
 
   bool painted_content_has_slow_paths = false;
