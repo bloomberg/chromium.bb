@@ -110,7 +110,9 @@ paper-ripple {
    * center within the container. Note that this makes transitions janky, but
    * transitions with video controls look silly, so they're disabled.
    */
+  align-items: center;
   display: flex;
+  justify-content: center;
 }
 
 .gallery[tools] .image-container[cursor='default'] {
@@ -169,11 +171,18 @@ paper-ripple {
 }
 
 .gallery .video-container > .video {
-  margin: auto auto;
   max-height: 100%;
   max-width: 100%;
-  object-fit: contain;
-  object-position: 50% 50%;
+}
+
+/*
+ * Move the video element away from the top and bottom edges when the ribbon is
+ * visible so that it doesn't overlap the scrubber when a video is sufficiently
+ * tall.
+ */
+.gallery[tools] .video-container > .video {
+  box-sizing: border-box;
+  padding: 48px 0;
 }
 
 @media print {
