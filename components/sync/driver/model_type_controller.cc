@@ -108,14 +108,9 @@ void ModelTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!model_load_callback.is_null());
-  model_load_callback_ = model_load_callback;
+  DCHECK_EQ(NOT_RUNNING, state_);
 
-  if (state() != NOT_RUNNING) {
-    LoadModelsDone(RUNTIME_ERROR,
-                   SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
-                             "Model already running", type()));
-    return;
-  }
+  model_load_callback_ = model_load_callback;
 
   DVLOG(1) << "Sync starting for " << ModelTypeToString(type());
   state_ = MODEL_STARTING;
@@ -169,6 +164,7 @@ void ModelTypeController::LoadModelsDone(ConfigureResult result,
     DVLOG(1) << "Sync start completed for " << ModelTypeToString(type());
   } else {
     RecordStartFailure(result);
+    state_ = FAILED;
   }
 
   if (!model_load_callback_.is_null()) {
@@ -241,21 +237,31 @@ void ModelTypeController::DeactivateDataType(ModelTypeConfigurer* configurer) {
 void ModelTypeController::Stop(SyncStopMetadataFate metadata_fate) {
   DCHECK(CalledOnValidThread());
 
-  if (state() == NOT_RUNNING)
-    return;
+  switch (state()) {
+    case ASSOCIATING:
+    case STOPPING:
+      // We don't really use these states in this class.
+      NOTREACHED();
+      break;
 
-  // Only call StopSync if the delegate is ready to handle it (controller is
-  // in loaded state).
-  if (state() == MODEL_LOADED || state() == RUNNING) {
-    DVLOG(1) << "Stopping sync for " << ModelTypeToString(type());
-    PostModelTask(FROM_HERE,
-                  base::BindOnce(&StopSyncHelperOnModelThread, metadata_fate));
-  } else {
-    DCHECK_EQ(MODEL_STARTING, state_);
-    DVLOG(1) << "Shortcutting stop for " << ModelTypeToString(type())
-             << " because it's still starting";
-    // TODO(mastiz): Enter STOPPING state here and/or queue pending stops,
-    // together with |metadata_fate|.
+    case NOT_RUNNING:
+    case FAILED:
+      // Nothing to stop. |metadata_fate| might require CLEAR_METADATA,
+      // which could lead to leaking sync metadata, but it doesn't seem a
+      // realistic scenario (disable sync during shutdown?).
+      return;
+
+    case MODEL_STARTING:
+      DLOG(WARNING) << "Shortcutting stop for " << ModelTypeToString(type())
+                    << " because it's still starting";
+      break;
+
+    case MODEL_LOADED:
+    case RUNNING:
+      DVLOG(1) << "Stopping sync for " << ModelTypeToString(type());
+      PostModelTask(FROM_HERE, base::BindOnce(&StopSyncHelperOnModelThread,
+                                              metadata_fate));
+      break;
   }
 
   state_ = NOT_RUNNING;
