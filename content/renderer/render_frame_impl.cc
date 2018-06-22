@@ -4345,13 +4345,6 @@ void RenderFrameImpl::DidFinishLoad() {
     return;
   RecordSuffixedRendererMemoryMetrics(memory_metrics,
                                       ".MainFrameDidFinishLoad");
-  // TODO(falken): Filter out no fetch controllers. This UMA probably didn't
-  // intend to log them.
-  if (IsControlledByServiceWorker() ==
-      blink::mojom::ControllerServiceWorkerMode::kNoController)
-    return;
-  RecordSuffixedRendererMemoryMetrics(
-      memory_metrics, ".ServiceWorkerControlledMainFrameDidFinishLoad");
 }
 
 void RenderFrameImpl::DidFinishSameDocumentNavigation(
