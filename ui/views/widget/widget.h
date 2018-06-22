@@ -552,6 +552,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // underlying windowing system.
   void SetOpacity(float opacity);
 
+  // Sets the aspect ratio of the widget, which will be maintained during
+  // resizing.
+  void SetAspectRatio(const gfx::Size& aspect_ratio);
+
   // Flashes the frame of the window to draw attention to it. Currently only
   // implemented on Windows for non-Aura.
   void FlashFrame(bool flash);

@@ -447,6 +447,10 @@ void DesktopWindowTreeHostWin::SetOpacity(float opacity) {
   content_window()->layer()->SetOpacity(opacity);
 }
 
+void DesktopWindowTreeHostWin::SetAspectRatio(const gfx::Size& aspect_ratio) {
+  // TODO(apacible): Implement for Windows. https://crbug.com/853276.
+}
+
 void DesktopWindowTreeHostWin::SetWindowIcons(
     const gfx::ImageSkia& window_icon, const gfx::ImageSkia& app_icon) {
   message_handler_->SetWindowIcons(window_icon, app_icon);
