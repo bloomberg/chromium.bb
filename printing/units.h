@@ -50,12 +50,6 @@ PRINTING_EXPORT int ConvertUnit(double value, int old_unit, int new_unit);
 PRINTING_EXPORT double ConvertUnitDouble(double value, double old_unit,
                                          double new_unit);
 
-// Converts from 0.001 inch unit to 0.00001 meter.
-PRINTING_EXPORT int ConvertMilliInchToHundredThousanthMeter(int milli_inch);
-
-// Converts from 0.00001 meter unit to 0.001 inch.
-PRINTING_EXPORT int ConvertHundredThousanthMeterToMilliInch(int cmm);
-
 // Converts from 1 pixel to 1 point using integers.
 PRINTING_EXPORT int ConvertPixelsToPoint(int pixels);
 
