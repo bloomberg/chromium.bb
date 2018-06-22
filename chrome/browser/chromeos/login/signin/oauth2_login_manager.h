@@ -111,7 +111,7 @@ class OAuth2LoginManager : public KeyedService,
   bool ShouldBlockTabLoading() const;
 
  private:
-  friend class MergeSessionLoadPageTest;
+  friend class MergeSessionNavigationThrottleTest;
   friend class OAuth2Test;
 
   // Session restore outcomes (for UMA).

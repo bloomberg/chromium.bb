@@ -9,16 +9,21 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
+#include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "content/public/browser/navigation_throttle.h"
 
 namespace content {
 class NavigationHandle;
 }
 
-// Used to show an interstitial page while merge session process (cookie
+// Used to delay a navigation while merge session process (cookie
 // reconstruction from OAuth2 refresh token in ChromeOS login) is still in
-// progress while we are attempting to load a google property.
-class MergeSessionNavigationThrottle : public content::NavigationThrottle {
+// progress while we are attempting to load a google property. It will resume
+// the navigation once merge session is done, or after 10 seconds.
+class MergeSessionNavigationThrottle
+    : public content::NavigationThrottle,
+      public chromeos::OAuth2LoginManager::Observer {
  public:
   static std::unique_ptr<content::NavigationThrottle> Create(
       content::NavigationHandle* handle);
@@ -33,10 +38,21 @@ class MergeSessionNavigationThrottle : public content::NavigationThrottle {
       override;
   const char* GetNameForLogging() override;
 
-  // MergeSessionLoadPage callback.
-  void OnBlockingPageComplete();
+  // OAuth2LoginManager::Observer implementation:
+  void OnSessionRestoreStateChanged(
+      Profile* user_profile,
+      chromeos::OAuth2LoginManager::SessionRestoreState state) override;
 
-  base::WeakPtrFactory<MergeSessionNavigationThrottle> weak_factory_;
+  // Sets up timer and OAuth2LoginManager Observer, should be called before
+  // deferring. Returns true if the Observer was set up correctly and the
+  // navigation still needs to be delayed, false otherwise.
+  bool BeforeDefer();
+
+  // Cleans up timer and OAuth2LoginManager Observer, then resumes a deferred
+  // navigation.
+  void Proceed();
+
+  base::OneShotTimer proceed_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(MergeSessionNavigationThrottle);
 };

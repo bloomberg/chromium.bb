@@ -4,9 +4,32 @@
 
 #include "chrome/browser/chromeos/login/signin/merge_session_navigation_throttle.h"
 
-#include "chrome/browser/chromeos/login/signin/merge_session_load_page.h"
+#include "base/time/time.h"
+#include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
+#include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
+
+namespace {
+
+// Maximum wait time for merge session process.
+constexpr base::TimeDelta kTotalWaitTime = base::TimeDelta::FromSeconds(10);
+
+chromeos::OAuth2LoginManager* GetOAuth2LoginManager(
+    content::WebContents* web_contents) {
+  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
+  if (!browser_context)
+    return nullptr;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (!profile)
+    return nullptr;
+
+  return chromeos::OAuth2LoginManagerFactory::GetInstance()->GetForProfile(
+      profile);
+}
+}  // namespace
 
 // static
 std::unique_ptr<content::NavigationThrottle>
@@ -17,7 +40,7 @@ MergeSessionNavigationThrottle::Create(content::NavigationHandle* handle) {
 
 MergeSessionNavigationThrottle::MergeSessionNavigationThrottle(
     content::NavigationHandle* handle)
-    : NavigationThrottle(handle), weak_factory_(this) {
+    : NavigationThrottle(handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -35,14 +58,10 @@ MergeSessionNavigationThrottle::WillStartRequest() {
     return content::NavigationThrottle::PROCEED;
   }
 
-  // The MergeSessionLoadPage will be deleted by the interstitial page once it
-  // is closed.
-  (new chromeos::MergeSessionLoadPage(
-       navigation_handle()->GetWebContents(), navigation_handle()->GetURL(),
-       base::Bind(&MergeSessionNavigationThrottle::OnBlockingPageComplete,
-                  weak_factory_.GetWeakPtr())))
-      ->Show();
-  return content::NavigationThrottle::DEFER;
+  if (BeforeDefer())
+    return content::NavigationThrottle::DEFER;
+
+  return content::NavigationThrottle::PROCEED;
 }
 
 content::NavigationThrottle::ThrottleCheckResult
@@ -54,7 +73,34 @@ const char* MergeSessionNavigationThrottle::GetNameForLogging() {
   return "MergeSessionNavigationThrottle";
 }
 
-void MergeSessionNavigationThrottle::OnBlockingPageComplete() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+void MergeSessionNavigationThrottle::OnSessionRestoreStateChanged(
+    Profile* user_profile,
+    chromeos::OAuth2LoginManager::SessionRestoreState state) {
+  chromeos::OAuth2LoginManager* manager =
+      GetOAuth2LoginManager(navigation_handle()->GetWebContents());
+  if (!manager->ShouldBlockTabLoading()) {
+    Proceed();
+  }
+}
+
+bool MergeSessionNavigationThrottle::BeforeDefer() {
+  chromeos::OAuth2LoginManager* manager =
+      GetOAuth2LoginManager(navigation_handle()->GetWebContents());
+  if (manager && manager->ShouldBlockTabLoading()) {
+    manager->AddObserver(this);
+    proceed_timer_.Start(FROM_HERE, kTotalWaitTime, this,
+                         &MergeSessionNavigationThrottle::Proceed);
+    return true;
+  }
+  return false;
+}
+
+void MergeSessionNavigationThrottle::Proceed() {
+  proceed_timer_.Stop();
+  chromeos::OAuth2LoginManager* manager =
+      GetOAuth2LoginManager(navigation_handle()->GetWebContents());
+  if (manager) {
+    manager->RemoveObserver(this);
+  }
   Resume();
 }
