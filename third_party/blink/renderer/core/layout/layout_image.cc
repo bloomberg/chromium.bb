@@ -257,8 +257,13 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
   // Check for optimized image policies.
   if (View() && View()->GetFrameView()) {
     bool old_flag = ShouldInvertColor();
-    is_legacy_format_or_compressed_image_ = CheckForOptimizedImagePolicy(
-        View()->GetFrameView()->GetFrame(), this, new_image);
+    const LocalFrame& frame = View()->GetFrameView()->GetFrame();
+    is_legacy_format_or_compressed_image_ =
+        CheckForOptimizedImagePolicy(frame, this, new_image);
+    if (auto* image_element = ToHTMLImageElementOrNull(GetNode())) {
+      is_downscaled_image_ =
+          CheckForMaxDownscalingImagePolicy(frame, image_element, this);
+    }
     if (old_flag != ShouldInvertColor())
       UpdateShouldInvertColor();
   }
