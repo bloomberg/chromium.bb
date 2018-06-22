@@ -80,6 +80,9 @@ class CoreOobeHandler : public BaseWebUIHandler,
   // Notify WebUI of the user count on the views login screen.
   void SetLoginUserCount(int user_count);
 
+  // Forwards an accelerator value to cr.ui.Oobe.handleAccelerator.
+  void ForwardAccelerator(std::string accelerator_name);
+
  private:
   // CoreOobeView implementation:
   void ShowSignInError(int login_attempts,

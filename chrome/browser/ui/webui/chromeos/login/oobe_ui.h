@@ -161,6 +161,9 @@ class OobeUI : public content::WebUIController,
                         SigninScreenHandlerDelegate* delegate,
                         NativeWindowDelegate* native_window_delegate);
 
+  // Forwards an accelerator to the webui to be handled.
+  void ForwardAccelerator(std::string accelerator_name);
+
   // Resets the delegate set in ShowSigninScreen.
   void ResetSigninScreenHandlerDelegate();
 
