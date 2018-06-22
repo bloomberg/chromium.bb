@@ -12,6 +12,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/search/background/ntp_background_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -33,7 +34,10 @@ class NtpBackgroundServiceTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {}
+                &test_url_loader_factory_)) {
+    identity_env_.MakePrimaryAccountAvailable("example@gmail.com");
+    identity_env_.SetAutomaticIssueOfAccessTokens(true);
+  }
 
   ~NtpBackgroundServiceTest() override {}
 
@@ -41,8 +45,8 @@ class NtpBackgroundServiceTest : public testing::Test {
     testing::Test::SetUp();
 
     service_ = std::make_unique<NtpBackgroundService>(
-        test_shared_loader_factory_, base::nullopt, base::nullopt,
-        kImageOptions);
+        identity_env_.identity_manager(), test_shared_loader_factory_,
+        base::nullopt, base::nullopt, base::nullopt, kImageOptions);
   }
 
   void SetUpResponseWithData(const GURL& load_url,
@@ -64,6 +68,7 @@ class NtpBackgroundServiceTest : public testing::Test {
   // Required to run tests from UI and threads.
   content::TestBrowserThreadBundle thread_bundle_;
 
+  identity::IdentityTestEnvironment identity_env_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 
@@ -227,4 +232,58 @@ TEST_F(NtpBackgroundServiceTest, MultipleRequests) {
   EXPECT_THAT(service()->collection_info().at(0), Eq(collection_info));
   EXPECT_FALSE(service()->collection_images().empty());
   EXPECT_THAT(service()->collection_images().at(0), Eq(collection_image));
+}
+
+TEST_F(NtpBackgroundServiceTest, AlbumInfoNetworkError) {
+  SetUpResponseWithNetworkError(service()->GetAlbumsURLForTesting());
+
+  ASSERT_TRUE(service()->album_info().empty());
+
+  base::RunLoop loop;
+  service()->FetchAlbumInfo();
+  loop.RunUntilIdle();
+
+  ASSERT_TRUE(service()->album_info().empty());
+}
+
+TEST_F(NtpBackgroundServiceTest, BadAlbumsResponse) {
+  SetUpResponseWithData(service()->GetAlbumsURLForTesting(),
+                        "bad serialized PersonalAlbumsResponse");
+
+  ASSERT_TRUE(service()->album_info().empty());
+
+  base::RunLoop loop;
+  service()->FetchAlbumInfo();
+  loop.RunUntilIdle();
+
+  EXPECT_TRUE(service()->album_info().empty());
+}
+
+TEST_F(NtpBackgroundServiceTest, GoodAlbumsResponse) {
+  ntp::background::AlbumMetaData album;
+  album.set_album_id(12345);
+  album.set_album_name("Travel");
+  album.set_banner_image_url("https://wallpapers.co/some_image");
+  album.set_photo_container_id("AnIdentifierForThePhotoContainer");
+  ntp::background::PersonalAlbumsResponse response;
+  *response.add_album_meta_data() = album;
+  std::string response_string;
+  response.SerializeToString(&response_string);
+
+  SetUpResponseWithData(service()->GetAlbumsURLForTesting(), response_string);
+
+  ASSERT_TRUE(service()->album_info().empty());
+
+  base::RunLoop loop;
+  service()->FetchAlbumInfo();
+  loop.RunUntilIdle();
+
+  AlbumInfo album_info;
+  album_info.album_id = album.album_id();
+  album_info.photo_container_id = album.photo_container_id();
+  album_info.album_name = album.album_name();
+  album_info.preview_image_url = GURL(album.banner_image_url());
+
+  EXPECT_FALSE(service()->album_info().empty());
+  EXPECT_THAT(service()->album_info().at(0), Eq(album_info));
 }

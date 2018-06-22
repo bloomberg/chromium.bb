@@ -74,3 +74,33 @@ CollectionImage CollectionImage::CreateFromProto(
 
   return collection_image;
 }
+
+AlbumInfo::AlbumInfo() = default;
+AlbumInfo::AlbumInfo(const AlbumInfo&) = default;
+AlbumInfo::AlbumInfo(AlbumInfo&&) = default;
+AlbumInfo::~AlbumInfo() = default;
+
+AlbumInfo& AlbumInfo::operator=(const AlbumInfo&) = default;
+AlbumInfo& AlbumInfo::operator=(AlbumInfo&&) = default;
+
+bool operator==(const AlbumInfo& lhs, const AlbumInfo& rhs) {
+  return lhs.album_id == rhs.album_id &&
+         lhs.photo_container_id == rhs.photo_container_id &&
+         lhs.album_name == rhs.album_name &&
+         lhs.preview_image_url == rhs.preview_image_url;
+}
+
+bool operator!=(const AlbumInfo& lhs, const AlbumInfo& rhs) {
+  return !(lhs == rhs);
+}
+
+AlbumInfo AlbumInfo::CreateFromProto(
+    const ntp::background::AlbumMetaData& album) {
+  AlbumInfo album_info;
+  album_info.album_id = album.album_id();
+  album_info.photo_container_id = album.photo_container_id();
+  album_info.album_name = album.album_name();
+  album_info.preview_image_url = GURL(album.banner_image_url());
+
+  return album_info;
+}

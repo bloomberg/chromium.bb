@@ -22,6 +22,13 @@ class NtpBackgroundServiceObserver {
   // new data via NtpBackgroundService::collection_images().
   virtual void OnCollectionImagesAvailable() = 0;
 
+  // Called when the AlbumInfo is updated, usually as the result of a
+  // PersonalAlbumsRequestOption() call on the service. Note that this is called
+  // after each FetchAlbumInfo(), even if the network request failed, or if it
+  // didn't result in an actual change to the cached data. You can get the new
+  // data via NtpBackgroundService::album_info().
+  virtual void OnAlbumInfoAvailable() = 0;
+
   // Called when the OnNtpBackgroundService is shutting down. Observers that
   // might outlive the service should use this to unregister themselves, and
   // clear out any pointers to the service they might hold.

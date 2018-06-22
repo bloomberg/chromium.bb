@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
@@ -26,24 +27,41 @@ constexpr char kCollectionsUrl[] =
 constexpr char kCollectionImagesUrl[] =
     "https://clients3.google.com/cast/chromecast/home/wallpaper/"
     "collection-images?rt=b";
+// The url to download metadata of photo albums.
+constexpr char kAlbumsUrl[] =
+    "https://clients3.google.com/cast/chromecast/home/photo-album-metadata?"
+    "f.req=%5B%2C%22512%22%2C%22512%22%2C%2250%22%2C%2C%2Ctrue%2C%2C%222%22"
+    "%2C%220%22%5D&rt=b";
+// The virtual device id required in GET request header for albums requests.
+constexpr char kVirtualDeviceIdParam[] = "CAST-APP-DEVICE-ID";
+constexpr char kVirtualDeviceIdValue[] = "CCCCCCCC01F9618E8D8126398CF4218E";
+// The Authorization header includes an access token.
+constexpr char kAuthHeaderParam[] = "Authorization";
+constexpr char kAuthHeaderValue[] = "Bearer %s";
 
 // The options to be added to an image URL, specifying resolution, cropping,
 // etc. Options appear on an image URL after the '=' character.
 constexpr char kImageOptions[] = "=w3840-h2160-p-k-no-nd-mv";
 
+constexpr char kScopePhotos[] = "https://www.googleapis.com/auth/photos";
+
 }  // namespace
 
 NtpBackgroundService::NtpBackgroundService(
+    identity::IdentityManager* const identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const base::Optional<GURL>& collections_api_url_override,
     const base::Optional<GURL>& collection_images_api_url_override,
+    const base::Optional<GURL>& albums_api_url_override,
     const base::Optional<std::string>& image_options_override)
-    : url_loader_factory_(url_loader_factory) {
+    : url_loader_factory_(url_loader_factory),
+      identity_manager_(identity_manager) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   collections_api_url_ =
       collections_api_url_override.value_or(GURL(kCollectionsUrl));
   collection_images_api_url_ =
       collection_images_api_url_override.value_or(GURL(kCollectionImagesUrl));
+  albums_api_url_ = albums_api_url_override.value_or(GURL(kAlbumsUrl));
   image_options_ = image_options_override.value_or(kImageOptions);
 }
 
@@ -234,6 +252,107 @@ void NtpBackgroundService::OnCollectionImageInfoFetchComplete(
   NotifyObservers(FetchComplete::COLLECTION_IMAGE_INFO);
 }
 
+void NtpBackgroundService::FetchAlbumInfo() {
+  // We're still waiting for the last request to come back.
+  if (token_fetcher_ || albums_loader_)
+    return;
+
+  OAuth2TokenService::ScopeSet scopes{kScopePhotos};
+  token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
+      "ntp_backgrounds_service", scopes,
+      base::BindOnce(&NtpBackgroundService::GetAccessTokenCallback,
+                     base::Unretained(this)),
+      identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+}
+
+void NtpBackgroundService::GetAccessTokenCallback(GoogleServiceAuthError error,
+                                                  std::string token) {
+  token_fetcher_.reset();
+
+  if (error != GoogleServiceAuthError::AuthErrorNone()) {
+    DLOG(WARNING) << "Failed to retrieve token with error: "
+                  << error.ToString();
+    // TODO(ramyan): Communicate error to caller. https://crbug.com/851296
+    return;
+  }
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("google_photos_album_names_download",
+                                          R"(
+        semantics {
+          sender: "Desktop NTP Background Selector"
+          description:
+            "The Chrome Desktop New Tab Page background selector allows "
+            "signed-in users to select images from their Google Photos albums. "
+            "The set of albums is obtained from the Backdrop service."
+          trigger:
+            "Clicking the the settings (gear) icon on the New Tab page."
+          data:
+            "The Backdrop protocol buffer messages and an access token with "
+            "limited scope to obtain the user's Google Photos data."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "Users can control this feature by selecting a non-Google default "
+            "search engine in Chrome settings under 'Search Engine'."
+          chrome_policy {
+            DefaultSearchProviderEnabled {
+              policy_options {mode: MANDATORY}
+              DefaultSearchProviderEnabled: false
+            }
+          }
+        })");
+
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = albums_api_url_;
+  resource_request->method = "GET";
+  resource_request->headers.SetHeader(kVirtualDeviceIdParam,
+                                      kVirtualDeviceIdValue);
+  resource_request->headers.SetHeader(
+      kAuthHeaderParam, base::StringPrintf(kAuthHeaderValue, token.c_str()));
+
+  albums_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                    traffic_annotation);
+  albums_loader_->DownloadToString(
+      url_loader_factory_.get(),
+      base::BindOnce(&NtpBackgroundService::OnAlbumInfoFetchComplete,
+                     base::Unretained(this)),
+      1024 * 1024);
+}
+
+void NtpBackgroundService::OnAlbumInfoFetchComplete(
+    std::unique_ptr<std::string> response_body) {
+  album_info_.clear();
+  // The loader will be deleted when the request is handled.
+  std::unique_ptr<network::SimpleURLLoader> loader_deleter(
+      std::move(albums_loader_));
+
+  if (!response_body) {
+    // This represents network errors (i.e. the server did not provide a
+    // response).
+    DLOG(WARNING) << "Request failed with error: "
+                  << loader_deleter->NetError();
+    NotifyObservers(FetchComplete::ALBUM_INFO);
+    return;
+  }
+
+  ntp::background::PersonalAlbumsResponse albums_response;
+  if (!albums_response.ParseFromString(*response_body)) {
+    DLOG(WARNING) << "Deserializing personal albums response proto failed.";
+    NotifyObservers(FetchComplete::ALBUM_INFO);
+    return;
+  }
+
+  for (int i = 0; i < albums_response.album_meta_data_size(); ++i) {
+    album_info_.push_back(
+        AlbumInfo::CreateFromProto(albums_response.album_meta_data(i)));
+  }
+
+  NotifyObservers(FetchComplete::ALBUM_INFO);
+}
+
 void NtpBackgroundService::AddObserver(NtpBackgroundServiceObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -252,6 +371,9 @@ void NtpBackgroundService::NotifyObservers(FetchComplete fetch_complete) {
       case FetchComplete::COLLECTION_IMAGE_INFO:
         observer.OnCollectionImagesAvailable();
         break;
+      case FetchComplete::ALBUM_INFO:
+        observer.OnAlbumInfoAvailable();
+        break;
     }
   }
 }
@@ -262,4 +384,8 @@ GURL NtpBackgroundService::GetCollectionsLoadURLForTesting() const {
 
 GURL NtpBackgroundService::GetImagesURLForTesting() const {
   return collection_images_api_url_;
+}
+
+GURL NtpBackgroundService::GetAlbumsURLForTesting() const {
+  return albums_api_url_;
 }
