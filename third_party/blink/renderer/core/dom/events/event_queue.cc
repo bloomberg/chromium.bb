@@ -41,7 +41,10 @@ EventQueue* EventQueue::Create(ExecutionContext* context, TaskType task_type) {
 EventQueue::EventQueue(ExecutionContext* context, TaskType task_type)
     : ContextLifecycleObserver(context),
       task_type_(task_type),
-      is_closed_(false) {}
+      is_closed_(false) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
+    Close(nullptr);
+}
 
 EventQueue::~EventQueue() = default;
 
