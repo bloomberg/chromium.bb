@@ -2,42 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_SENSOR_EVENT_PUMP_H_
-#define CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_SENSOR_EVENT_PUMP_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_SENSOR_EVENT_PUMP_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_SENSOR_EVENT_PUMP_H_
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/macros.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
-#include "content/common/content_export.h"
-#include "content/public/common/service_names.mojom.h"
-#include "content/public/renderer/render_frame.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
-#include "services/device/public/cpp/generic_sensor/sensor_traits.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/device/public/mojom/sensor_provider.mojom.h"
+#include "services/device/public/mojom/sensor_provider.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/device_orientation/web_device_motion_listener.h"
 #include "third_party/blink/public/platform/modules/device_orientation/web_device_orientation_listener.h"
-#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
-namespace content {
+namespace blink {
+
+class LocalFrame;
 
 template <typename ListenerType>
-class CONTENT_EXPORT DeviceSensorEventPump {
+class DeviceSensorEventPump {
  public:
   // Default rate for firing events.
   static constexpr int kDefaultPumpFrequencyHz = 60;
   static constexpr int kDefaultPumpDelayMicroseconds =
-      base::Time::kMicrosecondsPerSecond / kDefaultPumpFrequencyHz;
+      WTF::Time::kMicrosecondsPerSecond / kDefaultPumpFrequencyHz;
 
   // The pump is a tri-state automaton with allowed transitions as follows:
   // STOPPED -> PENDING_START
@@ -63,13 +54,14 @@ class CONTENT_EXPORT DeviceSensorEventPump {
     SUSPENDED
   };
 
-  virtual void Start(blink::WebPlatformEventListener* listener) {
+  virtual void Start(LocalFrame* frame,
+                     blink::WebPlatformEventListener* listener) {
     DVLOG(2) << "requested start";
 
     if (state_ != PumpState::STOPPED)
       return;
 
-    DCHECK(!timer_.IsRunning());
+    DCHECK(!timer_.IsActive());
 
     state_ = PumpState::PENDING_START;
 
@@ -77,7 +69,7 @@ class CONTENT_EXPORT DeviceSensorEventPump {
     listener_ = static_cast<ListenerType*>(listener);
     is_observing_ = true;
 
-    SendStartMessage();
+    SendStartMessage(frame);
   }
 
   virtual void Stop() {
@@ -86,10 +78,10 @@ class CONTENT_EXPORT DeviceSensorEventPump {
     if (state_ == PumpState::STOPPED)
       return;
 
-    DCHECK((state_ == PumpState::PENDING_START && !timer_.IsRunning()) ||
-           (state_ == PumpState::RUNNING && timer_.IsRunning()));
+    DCHECK((state_ == PumpState::PENDING_START && !timer_.IsActive()) ||
+           (state_ == PumpState::RUNNING && timer_.IsActive()));
 
-    if (timer_.IsRunning())
+    if (timer_.IsActive())
       timer_.Stop();
 
     DCHECK(is_observing_);
@@ -104,22 +96,24 @@ class CONTENT_EXPORT DeviceSensorEventPump {
   void HandleSensorProviderError() { sensor_provider_.reset(); }
 
   void SetSensorProviderForTesting(
-      device::mojom::SensorProviderPtr sensor_provider) {
+      device::mojom::blink::SensorProviderPtr sensor_provider) {
     sensor_provider_ = std::move(sensor_provider);
   }
 
   PumpState GetPumpStateForTesting() { return state_; }
 
  protected:
-  DeviceSensorEventPump()
-      : state_(PumpState::STOPPED), is_observing_(false), listener_(nullptr) {}
+  explicit DeviceSensorEventPump(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : state_(PumpState::STOPPED),
+        timer_(task_runner, this, &DeviceSensorEventPump::FireEvent) {}
 
   virtual ~DeviceSensorEventPump() { DCHECK(!is_observing_); }
 
   // This method is expected to send an IPC to the browser process to let it
   // know that it should start observing.
   // It is expected for subclasses to override it.
-  virtual void SendStartMessage() = 0;
+  virtual void SendStartMessage(LocalFrame*) = 0;
 
   // This method is expected to send an IPC to the browser process to let it
   // know that it should start observing.
@@ -135,13 +129,15 @@ class CONTENT_EXPORT DeviceSensorEventPump {
       Stop();
   }
 
-  virtual void FireEvent() = 0;
+  // Even though the TimerBase* parameter is not used, it is required by
+  // TaskRunnerTimer class
+  virtual void FireEvent(TimerBase*) = 0;
 
   ListenerType* listener() { return listener_; }
 
-  struct SensorEntry : public device::mojom::SensorClient {
+  struct SensorEntry : public device::mojom::blink::SensorClient {
     SensorEntry(DeviceSensorEventPump* pump,
-                device::mojom::SensorType sensor_type)
+                device::mojom::blink::SensorType sensor_type)
         : event_pump(pump),
           sensor_state(SensorState::NOT_INITIALIZED),
           type(sensor_type),
@@ -162,8 +158,8 @@ class CONTENT_EXPORT DeviceSensorEventPump {
     }
 
     // Mojo callback for SensorProvider::GetSensor().
-    void OnSensorCreated(device::mojom::SensorCreationResult result,
-                         device::mojom::SensorInitParamsPtr params) {
+    void OnSensorCreated(device::mojom::blink::SensorCreationResult result,
+                         device::mojom::blink::SensorInitParamsPtr params) {
       // |sensor_state| can be SensorState::SHOULD_SUSPEND if Stop() is called
       // before OnSensorCreated() is called.
       DCHECK(sensor_state == SensorState::INITIALIZING ||
@@ -182,7 +178,7 @@ class CONTENT_EXPORT DeviceSensorEventPump {
       DCHECK_EQ(0u, params->buffer_offset % kReadBufferSize);
 
       mode = params->mode;
-      default_config = params->default_configuration;
+      default_config = std::move(params->default_configuration);
 
       sensor.Bind(std::move(params->sensor));
       client_binding.Bind(std::move(params->client_request));
@@ -203,16 +199,16 @@ class CONTENT_EXPORT DeviceSensorEventPump {
       shared_buffer_reader.reset(
           new device::SensorReadingSharedBufferReader(buffer));
 
-      default_config.set_frequency(
+      default_config->frequency =
           std::min(static_cast<double>(kDefaultPumpFrequencyHz),
-                   params->maximum_frequency));
+                   params->maximum_frequency);
 
-      sensor.set_connection_error_handler(base::BindOnce(
-          &SensorEntry::HandleSensorError, base::Unretained(this)));
+      sensor.set_connection_error_handler(
+          WTF::Bind(&SensorEntry::HandleSensorError, WTF::Unretained(this)));
       sensor->ConfigureReadingChangeNotifications(false /* disabled */);
-      sensor->AddConfiguration(
-          default_config, base::BindOnce(&SensorEntry::OnSensorAddConfiguration,
-                                         base::Unretained(this)));
+      sensor->AddConfiguration(std::move(default_config),
+                               WTF::Bind(&SensorEntry::OnSensorAddConfiguration,
+                                         WTF::Unretained(this)));
     }
 
     // Mojo callback for Sensor::AddConfiguration().
@@ -259,12 +255,12 @@ class CONTENT_EXPORT DeviceSensorEventPump {
              sensor_state == SensorState::NOT_INITIALIZED;
     }
 
-    void Start(device::mojom::SensorProvider* sensor_provider) {
+    void Start(device::mojom::blink::SensorProvider* sensor_provider) {
       if (sensor_state == SensorState::NOT_INITIALIZED) {
         sensor_state = SensorState::INITIALIZING;
-        sensor_provider->GetSensor(type,
-                                   base::BindOnce(&SensorEntry::OnSensorCreated,
-                                                  base::Unretained(this)));
+        sensor_provider->GetSensor(
+            type,
+            WTF::Bind(&SensorEntry::OnSensorCreated, WTF::Unretained(this)));
       } else if (sensor_state == SensorState::SUSPENDED) {
         sensor->Resume();
         sensor_state = SensorState::ACTIVE;
@@ -298,17 +294,17 @@ class CONTENT_EXPORT DeviceSensorEventPump {
     }
 
     DeviceSensorEventPump* event_pump;
-    device::mojom::SensorPtr sensor;
+    device::mojom::blink::SensorPtr sensor;
     SensorState sensor_state;
-    device::mojom::SensorType type;
-    device::mojom::ReportingMode mode;
-    device::PlatformSensorConfiguration default_config;
+    device::mojom::blink::SensorType type;
+    device::mojom::blink::ReportingMode mode;
+    device::mojom::blink::SensorConfigurationPtr default_config;
     mojo::ScopedSharedBufferHandle shared_buffer_handle;
     mojo::ScopedSharedBufferMapping shared_buffer;
     std::unique_ptr<device::SensorReadingSharedBufferReader>
         shared_buffer_reader;
     device::SensorReading reading;
-    mojo::Binding<device::mojom::SensorClient> client_binding;
+    mojo::Binding<device::mojom::blink::SensorClient> client_binding;
   };
 
   friend struct SensorEntry;
@@ -322,34 +318,26 @@ class CONTENT_EXPORT DeviceSensorEventPump {
     if (!SensorsReadyOrErrored())
       return;
 
-    DCHECK(!timer_.IsRunning());
+    DCHECK(!timer_.IsActive());
 
-    timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMicroseconds(kDefaultPumpDelayMicroseconds), this,
-        &DeviceSensorEventPump::FireEvent);
+    timer_.StartRepeating(
+        WTF::TimeDelta::FromMicroseconds(kDefaultPumpDelayMicroseconds),
+        FROM_HERE);
     state_ = PumpState::RUNNING;
   }
 
-  static RenderFrame* GetRenderFrame() {
-    blink::WebLocalFrame* const web_frame =
-        blink::WebLocalFrame::FrameForCurrentContext();
-
-    return RenderFrame::FromWebFrame(web_frame);
-  }
-
-  device::mojom::SensorProviderPtr sensor_provider_;
+  device::mojom::blink::SensorProviderPtr sensor_provider_;
 
  private:
   virtual bool SensorsReadyOrErrored() const = 0;
 
   PumpState state_;
-  base::RepeatingTimer timer_;
-  bool is_observing_;
-  ListenerType* listener_;
+  bool is_observing_ = false;
+  ListenerType* listener_ = nullptr;
+  TaskRunnerTimer<DeviceSensorEventPump> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSensorEventPump);
 };
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_SENSOR_EVENT_PUMP_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_SENSOR_EVENT_PUMP_H_

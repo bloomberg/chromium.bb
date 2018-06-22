@@ -2,33 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_ORIENTATION_EVENT_PUMP_H_
-#define CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_ORIENTATION_EVENT_PUMP_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ORIENTATION_EVENT_PUMP_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ORIENTATION_EVENT_PUMP_H_
 
 #include "base/macros.h"
-#include "content/renderer/device_sensors/device_sensor_event_pump.h"
 #include "services/device/public/cpp/generic_sensor/orientation_data.h"
 #include "third_party/blink/public/platform/modules/device_orientation/web_device_orientation_listener.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_sensor_event_pump.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
-namespace content {
+namespace blink {
 
-class CONTENT_EXPORT DeviceOrientationEventPump
+class MODULES_EXPORT DeviceOrientationEventPump
     : public DeviceSensorEventPump<blink::WebDeviceOrientationListener> {
  public:
   // Angle threshold beyond which two orientation events are considered
   // sufficiently different.
   static const double kOrientationThreshold;
 
-  explicit DeviceOrientationEventPump(bool absolute);
+  explicit DeviceOrientationEventPump(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      bool absolute);
   ~DeviceOrientationEventPump() override;
 
-  // PlatformEventObserver:
-  void SendStartMessage() override;
+  // DeviceSensorEventPump:
+  void SendStartMessage(LocalFrame* frame) override;
   void SendStopMessage() override;
 
  protected:
   // DeviceSensorEventPump:
-  void FireEvent() override;
+  void FireEvent(TimerBase*) override;
   void DidStartIfPossible() override;
 
   SensorEntry relative_orientation_sensor_;
@@ -53,6 +56,6 @@ class CONTENT_EXPORT DeviceOrientationEventPump
   DISALLOW_COPY_AND_ASSIGN(DeviceOrientationEventPump);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_ORIENTATION_EVENT_PUMP_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ORIENTATION_EVENT_PUMP_H_

@@ -43,6 +43,7 @@ class MotionData;
 namespace blink {
 
 class DeviceMotionData;
+class DeviceMotionEventPump;
 
 // This class listens to device motion data and notifies all registered
 // controllers.
@@ -72,6 +73,7 @@ class DeviceMotionDispatcher final
   void StopListening() override;
 
   Member<DeviceMotionData> last_device_motion_data_;
+  std::unique_ptr<DeviceMotionEventPump> event_pump_;
 };
 
 }  // namespace blink

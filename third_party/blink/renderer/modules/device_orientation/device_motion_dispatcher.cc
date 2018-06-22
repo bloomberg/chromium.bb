@@ -30,9 +30,9 @@
 
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_dispatcher.h"
 
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_controller.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_event_pump.h"
 
 namespace blink {
 
@@ -52,11 +52,19 @@ void DeviceMotionDispatcher::Trace(blink::Visitor* visitor) {
 }
 
 void DeviceMotionDispatcher::StartListening(LocalFrame* frame) {
-  Platform::Current()->StartListening(kWebPlatformEventTypeDeviceMotion, this);
+  // TODO(crbug.com/850619): ensure a valid frame is passed
+  if (!frame)
+    return;
+  if (!event_pump_) {
+    event_pump_ = std::make_unique<DeviceMotionEventPump>(
+        frame->GetTaskRunner(TaskType::kSensor));
+  }
+  event_pump_->Start(frame, this);
 }
 
 void DeviceMotionDispatcher::StopListening() {
-  Platform::Current()->StopListening(kWebPlatformEventTypeDeviceMotion);
+  if (event_pump_)
+    event_pump_->Stop();
   last_device_motion_data_.Clear();
 }
 

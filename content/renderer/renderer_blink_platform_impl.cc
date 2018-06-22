@@ -37,6 +37,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/media_stream_utils.h"
@@ -85,7 +86,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/device/public/cpp/generic_sensor/motion_data.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
@@ -96,8 +96,6 @@
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
-#include "third_party/blink/public/platform/modules/device_orientation/web_device_motion_listener.h"
-#include "third_party/blink/public/platform/modules/device_orientation/web_device_orientation_listener.h"
 #include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
 #include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
@@ -1093,68 +1091,10 @@ blink::InterfaceProvider* RendererBlinkPlatformImpl::GetInterfaceProvider() {
   return blink_interface_provider_.get();
 }
 
-void RendererBlinkPlatformImpl::InitDeviceSensorEventPump(
-    blink::WebPlatformEventType type,
-    blink::WebPlatformEventListener* listener) {
-  switch (type) {
-    case blink::kWebPlatformEventTypeDeviceMotion:
-      if (!motion_event_pump_)
-        motion_event_pump_ = std::make_unique<DeviceMotionEventPump>();
-      motion_event_pump_->Start(listener);
-      break;
-    case blink::kWebPlatformEventTypeDeviceOrientation:
-      if (!orientation_event_pump_) {
-        orientation_event_pump_ =
-            std::make_unique<DeviceOrientationEventPump>(false /* absolute */);
-      }
-      orientation_event_pump_->Start(listener);
-      break;
-    case blink::kWebPlatformEventTypeDeviceOrientationAbsolute:
-      if (!absolute_orientation_event_pump_) {
-        absolute_orientation_event_pump_ =
-            std::make_unique<DeviceOrientationEventPump>(true /* absolute */);
-      }
-      absolute_orientation_event_pump_->Start(listener);
-      break;
-    default:
-      DVLOG(1) << "RendererBlinkPlatformImpl::InitDeviceSensorEventPump() "
-                  "with unknown type.";
-  }
-}
-
-void RendererBlinkPlatformImpl::StopDeviceSensorEventPump(
-    blink::WebPlatformEventType type) {
-  switch (type) {
-    case blink::kWebPlatformEventTypeDeviceMotion: {
-      if (motion_event_pump_)
-        motion_event_pump_->Stop();
-      break;
-    }
-    case blink::kWebPlatformEventTypeDeviceOrientation: {
-      if (orientation_event_pump_)
-        orientation_event_pump_->Stop();
-      break;
-    }
-    case blink::kWebPlatformEventTypeDeviceOrientationAbsolute: {
-      if (absolute_orientation_event_pump_)
-        absolute_orientation_event_pump_->Stop();
-      break;
-    }
-    default:
-      DVLOG(1) << "RendererBlinkPlatformImpl::StopDeviceSensorEventPump() "
-                  "with unknown type.";
-  }
-}
 void RendererBlinkPlatformImpl::StartListening(
     blink::WebPlatformEventType type,
     blink::WebPlatformEventListener* listener) {
-  if (type == blink::kWebPlatformEventTypeDeviceMotion ||
-      type == blink::kWebPlatformEventTypeDeviceOrientation ||
-      type == blink::kWebPlatformEventTypeDeviceOrientationAbsolute) {
-    // this method creates DeviceSensorEventPump instances if necessary and
-    // calls Start() on them
-    InitDeviceSensorEventPump(type, listener);
-  } else if (type == blink::kWebPlatformEventTypeGamepad) {
+  if (type == blink::kWebPlatformEventTypeGamepad) {
     if (!gamepad_shared_memory_reader_) {
       gamepad_shared_memory_reader_ =
           std::make_unique<GamepadSharedMemoryReader>();
@@ -1169,11 +1109,7 @@ void RendererBlinkPlatformImpl::StartListening(
 
 void RendererBlinkPlatformImpl::StopListening(
     blink::WebPlatformEventType type) {
-  if (type == blink::kWebPlatformEventTypeDeviceMotion ||
-      type == blink::kWebPlatformEventTypeDeviceOrientation ||
-      type == blink::kWebPlatformEventTypeDeviceOrientationAbsolute) {
-    StopDeviceSensorEventPump(type);
-  } else if (type == blink::kWebPlatformEventTypeGamepad) {
+  if (type == blink::kWebPlatformEventTypeGamepad) {
     if (gamepad_shared_memory_reader_)
       gamepad_shared_memory_reader_->Stop();
   }
