@@ -73,7 +73,6 @@ enum WebFeature {
   kLineClamp = 96,
   kSubFrameBeforeUnloadRegistered = 97,
   kSubFrameBeforeUnloadFired = 98,
-  kConsoleMarkTimeline = 102,
   kDocumentCreateAttribute = 111,
   kDocumentCreateAttributeNS = 112,
   kDocumentXMLEncoding = 115,    // Removed from DOM4.
@@ -316,8 +315,6 @@ enum WebFeature {
   kNotificationCreated = 533,
   kNotificationClosed = 534,
   kNotificationPermissionRequested = 535,
-  kConsoleTimeline = 538,
-  kConsoleTimelineEnd = 539,
   kSRIElementWithMatchingIntegrityAttribute = 540,
   kSRIElementWithNonMatchingIntegrityAttribute = 541,
   kSRIElementWithUnparsableIntegrityAttribute = 542,

@@ -3832,8 +3832,6 @@ crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attribu
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.percent.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.trailingjunk.worker.html [ Failure ]
 crbug.com/709227 external/wpt/user-timing/invoke_with_timing_attributes.worker.html [ Failure ]
-crbug.com/706804 external/wpt/console/console-tests-historical.any.html [ Skip ]
-crbug.com/706804 external/wpt/console/console-tests-historical.any.worker.html [ Skip ]
 
 # Crashes
 crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern.basic.nocontext.worker.html [ Crash ]
@@ -3848,6 +3846,11 @@ crbug.com/795217 external/wpt/css/css-display/display-contents-details.html [ Fa
 crbug.com/181374 external/wpt/css/css-display/display-contents-dynamic-table-001-inline.html [ Failure ]
 
 # ====== End of display: contents tests ======
+
+# Temporarily disabled tests that will pass once deprecated console methods are removed, see crrev.com/c/1082112
+crbug.com/706804 external/wpt/console/console-tests-historical.any.html [ Skip ]
+crbug.com/706804 external/wpt/console/console-tests-historical.any.worker.html [ Skip ]
+crbug.com/706804 fast/workers/chromium/worker-console-log.html [ Skip ]
 
 crbug.com/676229 [ Win Linux Mac ] plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
 crbug.com/736333 [ Win7 Linux ] plugins/iframe-plugin-bgcolor.html [ Failure Pass ]
