@@ -94,7 +94,8 @@ NSString* GetHTMLForZoomState(const PageZoomState& zoom_state,
       @"<html><head><meta name='viewport' content="
        "'width=%f,minimum-scale=%f,maximum-scale=%f,initial-scale=%f,"
        "user-scalable=%@'/></head><body>Test</body></html>";
-  CGFloat width = CGRectGetWidth([UIScreen mainScreen].bounds) /
+  CGFloat width =
+      CGRectGetWidth(UIApplication.sharedApplication.keyWindow.bounds) /
       zoom_state.minimum_zoom_scale();
   BOOL scalability_enabled = scalability_type == PAGE_SCALABILITY_ENABLED;
   return [NSString
@@ -147,7 +148,8 @@ class CRWWebControllerTest : public WebTestWithWebController {
 
   // The value for web view OCMock objects to expect for |-setFrame:|.
   CGRect GetExpectedWebViewFrame() const {
-    CGSize container_view_size = [UIScreen mainScreen].bounds.size;
+    CGSize container_view_size =
+        UIApplication.sharedApplication.keyWindow.bounds.size;
     container_view_size.height -=
         CGRectGetHeight([UIApplication sharedApplication].statusBarFrame);
     return {CGPointZero, container_view_size};
