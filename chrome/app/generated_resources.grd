@@ -4891,13 +4891,34 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Select a Google Photo Album
       </message>
       <message name="IDS_NTP_CUSTOM_BG_DAILY_REFRESH" desc="The text label for the daily background randomization option.  (On the New Tab Page)">
-        Daily refresh
+        Refresh daily
       </message>
       <message name="IDS_NTP_CUSTOM_BG_SURPRISE_ME" desc="The text label for the random background option. (On the New Tab Page)">
         Surprise me
       </message>
       <message name="IDS_NTP_CUSTOM_BG_RESTORE_DEFAULT" desc="The text label for the restore default option for background customization. (On the New Tab Page)">
         Restore default background
+      </message>
+      <message name="IDS_NTP_CUSTOM_BG_CANCEL" desc="The text label for the cancel option for background customization. (On the New Tab Page)">
+        Cancel
+      </message>
+      <message name="IDS_NTP_CONNECTION_ERROR_NO_PERIOD" desc="Error message for when a connection cannot be established. (On the New Tab Page)">
+        Connection error
+      </message>
+      <message name="IDS_NTP_CONNECTION_ERROR" desc="Error message for when a connection cannot be established. (On the New Tab Page)">
+        Connection error.
+      </message>
+      <message name="IDS_NTP_ERROR_MORE_INFO" desc="Link to more detailed information when a connection cannot be established. (On the New Tab Page)">
+        More info
+      </message>
+      <message name="IDS_NTP_CUSTOM_BG_BACKGROUNDS_UNAVAILABLE" desc="Error message for when background customization is not available. (On the New Tab Page)">
+        Backgrounds are unavailable. Try again later.
+      </message>
+      <message name="IDS_NTP_CUSTOM_BG_IMAGE_UNAVAILABLE" desc="Error message for when the selected background image is not available. (On the New Tab Page)">
+        Image is unavailable. Try again later.
+      </message>
+      <message name="IDS_NTP_CUSTOM_BG_IMAGE_NOT_USABLE" desc="Error message for when an uploaded image is not usuable as a custom background. (On the New Tab Page)">
+        This image can't be used. Choose a different image.
       </message>
 
       <!--Tooltip strings-->
