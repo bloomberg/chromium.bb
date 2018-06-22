@@ -6,9 +6,10 @@
 
 #include "base/mac/foundation_util.h"
 #import "base/mac/sdk_forward_declarations.h"
-#import "ui/views/cocoa/bridged_native_widget.h"
 #import "ui/base/cocoa/user_interface_item_command_handler.h"
+#import "ui/views/cocoa/bridged_native_widget.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
+#import "ui/views/cocoa/window_touch_bar_delegate.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -32,6 +33,7 @@
  @private
   base::scoped_nsobject<CommandDispatcher> commandDispatcher_;
   base::scoped_nsprotocol<id<UserInterfaceItemCommandHandler>> commandHandler_;
+  id<WindowTouchBarDelegate> touchBarDelegate_;  // Weak.
 }
 
 - (instancetype)initWithContentRect:(NSRect)contentRect
@@ -68,6 +70,10 @@
   [[self viewsNSWindowDelegate] sheetDidEnd:sheet
                                  returnCode:returnCode
                                 contextInfo:contextInfo];
+}
+
+- (void)setWindowTouchBarDelegate:(id<WindowTouchBarDelegate>)delegate {
+  touchBarDelegate_ = delegate;
 }
 
 // Private methods.
@@ -181,6 +187,10 @@
     [cursor set];
   else
     [super cursorUpdate:theEvent];
+}
+
+- (NSTouchBar*)makeTouchBar API_AVAILABLE(macos(10.12.2)) {
+  return touchBarDelegate_ ? [touchBarDelegate_ makeTouchBar] : nil;
 }
 
 // CommandDispatchingWindow implementation.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_TOUCH_BAR_H_
-#define CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_TOUCH_BAR_H_
+#ifndef CHROME_BROWSER_UI_BROWSER_WINDOW_TOUCH_BAR_MAC_H_
+#define CHROME_BROWSER_UI_BROWSER_WINDOW_TOUCH_BAR_MAC_H_
 
 #import <Cocoa/Cocoa.h>
 
