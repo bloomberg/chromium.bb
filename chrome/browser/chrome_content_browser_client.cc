@@ -3063,8 +3063,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
 
 #if defined(OS_ANDROID)
-  web_prefs->video_fullscreen_detection_enabled =
-      chrome::android::AppHooks::ShouldDetectVideoFullscreen();
+  web_prefs->video_fullscreen_detection_enabled = true;
 
   web_prefs->enable_media_download_in_product_help =
       base::FeatureList::IsEnabled(

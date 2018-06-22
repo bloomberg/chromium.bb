@@ -103,7 +103,7 @@ public class CompositorViewHolder extends FrameLayout
     private ControlContainer mControlContainer;
 
     private InsetObserverView mInsetObserverView;
-    private boolean mSystemUiFullscreen;
+    private boolean mShowingFullscreenNonVideoContent;
     private Runnable mSystemUiFullscreenResizeRunnable;
 
     /** The currently visible Tab. */
@@ -255,7 +255,7 @@ public class CompositorViewHolder extends FrameLayout
         // contents.
         //
         // [1] - https://developer.android.com/reference/android/view/WindowManager.LayoutParams.html#FLAG_FULLSCREEN
-        if (mSystemUiFullscreen) {
+        if (mShowingFullscreenNonVideoContent) {
             getWindowVisibleDisplayFrame(mCacheRect);
 
             // On certain devices, getWindowVisibleDisplayFrame is larger than the screen size, so
@@ -269,7 +269,7 @@ public class CompositorViewHolder extends FrameLayout
 
     private int getHeightForViewport() {
         // See comment in getWidthForViewport() for an explainer of why this is done.
-        if (mSystemUiFullscreen) {
+        if (mShowingFullscreenNonVideoContent) {
             getWindowVisibleDisplayFrame(mCacheRect);
             return Math.min(mCacheRect.height(), getHeight());
         } else {
@@ -293,8 +293,21 @@ public class CompositorViewHolder extends FrameLayout
             view = (View) view.getParent();
         }
 
-        if (mSystemUiFullscreen == isInFullscreen) return;
-        mSystemUiFullscreen = isInFullscreen;
+        if (!isInFullscreen && !mShowingFullscreenNonVideoContent) return;
+
+        if (isInFullscreen && mFullscreenManager != null
+                && mFullscreenManager.getPersistentFullscreenMode()) {
+            Tab tab = getCurrentTab();
+            WebContents webContents = tab != null ? tab.getWebContents() : null;
+            // When playing fullscreen video, the inset size adjustments are always temporary and
+            // should be ignored to avoid relayout janks.
+            if (webContents != null && webContents.hasActiveEffectivelyFullscreenVideo()) {
+                isInFullscreen = false;
+            }
+        }
+
+        if (mShowingFullscreenNonVideoContent == isInFullscreen) return;
+        mShowingFullscreenNonVideoContent = isInFullscreen;
 
         if (mSystemUiFullscreenResizeRunnable == null) {
             mSystemUiFullscreenResizeRunnable = () -> {
@@ -369,7 +382,7 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     public void onInsetChanged(int top, int left, int bottom, int right) {
-        if (mSystemUiFullscreen) onViewportChanged();
+        if (mShowingFullscreenNonVideoContent) onViewportChanged();
     }
 
     @Override
