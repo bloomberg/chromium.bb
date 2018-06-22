@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_LOGIN_AUTH_MOCK_AUTH_STATUS_CONSUMER_H_
 #define CHROMEOS_LOGIN_AUTH_MOCK_AUTH_STATUS_CONSUMER_H_
 
+#include "base/callback.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
@@ -14,7 +15,7 @@ namespace chromeos {
 
 class CHROMEOS_EXPORT MockAuthStatusConsumer : public AuthStatusConsumer {
  public:
-  MockAuthStatusConsumer();
+  explicit MockAuthStatusConsumer(base::OnceClosure quit_closure);
   virtual ~MockAuthStatusConsumer();
 
   MOCK_METHOD1(OnAuthFailure, void(const AuthFailure& error));
@@ -26,24 +27,27 @@ class CHROMEOS_EXPORT MockAuthStatusConsumer : public AuthStatusConsumer {
   // The following functions can be used in gmock Invoke() clauses.
 
   // Compatible with AuthStatusConsumer::OnRetailModeAuthSuccess()
-  static void OnRetailModeSuccessQuit(const UserContext& user_context);
-  static void OnRetailModeSuccessQuitAndFail(const UserContext& user_context);
+  void OnRetailModeSuccessQuit(const UserContext& user_context);
+  void OnRetailModeSuccessQuitAndFail(const UserContext& user_context);
 
   // Compatible with AuthStatusConsumer::OnOffTheRecordAuthSuccess()
-  static void OnGuestSuccessQuit();
-  static void OnGuestSuccessQuitAndFail();
+  void OnGuestSuccessQuit();
+  void OnGuestSuccessQuitAndFail();
 
   // Compatible with AuthStatusConsumer::OnAuthSuccess()
-  static void OnSuccessQuit(const UserContext& user_context);
-  static void OnSuccessQuitAndFail(const UserContext& user_context);
+  void OnSuccessQuit(const UserContext& user_context);
+  void OnSuccessQuitAndFail(const UserContext& user_context);
 
   // Compatible with AuthStatusConsumer::OnAuthFailure()
-  static void OnFailQuit(const AuthFailure& error);
-  static void OnFailQuitAndFail(const AuthFailure& error);
+  void OnFailQuit(const AuthFailure& error);
+  void OnFailQuitAndFail(const AuthFailure& error);
 
   // Compatible with AuthStatusConsumer::OnPasswordChangeDetected()
-  static void OnMigrateQuit();
-  static void OnMigrateQuitAndFail();
+  void OnMigrateQuit();
+  void OnMigrateQuitAndFail();
+
+ private:
+  base::OnceClosure quit_closure_;
 };
 
 }  // namespace chromeos
