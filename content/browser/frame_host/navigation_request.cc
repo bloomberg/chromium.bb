@@ -207,7 +207,7 @@ void AddAdditionalRequestHeaders(
       }
     }
     std::string value = base::StringPrintf(
-        "cause=%s, destination=document, target=%s, site=%s",
+        "cause=\"%s\", destination=\"document\", target=\"%s\", site=\"%s\"",
         has_user_gesture ? "user-activated" : "forced",
         frame_tree_node->IsMainFrame() ? "top-level" : "nested",
         site_value.c_str());
