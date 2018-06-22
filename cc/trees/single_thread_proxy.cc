@@ -545,8 +545,7 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time,
 
     if (raster) {
       LayerTreeHostImpl::FrameData frame;
-      frame.begin_frame_ack = viz::BeginFrameAck(
-          begin_frame_args.source_id, begin_frame_args.sequence_number, true);
+      frame.begin_frame_ack = viz::BeginFrameAck(begin_frame_args, true);
       DoComposite(&frame);
     }
 

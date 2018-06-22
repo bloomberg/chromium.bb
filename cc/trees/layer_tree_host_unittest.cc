@@ -7999,10 +7999,8 @@ class LayerTreeHostTestBeginFrameAcks : public LayerTreeHostTest {
       return;
     compositor_frame_submitted_ = true;
 
-    EXPECT_EQ(
-        viz::BeginFrameAck(current_begin_frame_args_.source_id,
-                           current_begin_frame_args_.sequence_number, true),
-        frame.metadata.begin_frame_ack);
+    EXPECT_EQ(viz::BeginFrameAck(current_begin_frame_args_, true),
+              frame.metadata.begin_frame_ack);
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
@@ -8012,10 +8010,8 @@ class LayerTreeHostTestBeginFrameAcks : public LayerTreeHostTest {
 
     EXPECT_TRUE(frame_data_);
     EXPECT_TRUE(compositor_frame_submitted_);
-    EXPECT_EQ(
-        viz::BeginFrameAck(current_begin_frame_args_.source_id,
-                           current_begin_frame_args_.sequence_number, true),
-        frame_data_->begin_frame_ack);
+    EXPECT_EQ(viz::BeginFrameAck(current_begin_frame_args_, true),
+              frame_data_->begin_frame_ack);
     EndTest();
   }
 

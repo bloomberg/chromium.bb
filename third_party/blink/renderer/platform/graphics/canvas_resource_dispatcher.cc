@@ -428,8 +428,7 @@ void CanvasResourceDispatcher::OnBeginFrame(
     const viz::BeginFrameArgs& begin_frame_args) {
   DCHECK(Client());
 
-  current_begin_frame_ack_ = viz::BeginFrameAck(
-      begin_frame_args.source_id, begin_frame_args.sequence_number, false);
+  current_begin_frame_ack_ = viz::BeginFrameAck(begin_frame_args, false);
   if (pending_compositor_frames_ >= kMaxPendingCompositorFrames ||
       (begin_frame_args.type == viz::BeginFrameArgs::MISSED &&
        base::TimeTicks::Now() > begin_frame_args.deadline)) {

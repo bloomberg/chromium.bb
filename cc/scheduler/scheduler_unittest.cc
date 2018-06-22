@@ -3064,9 +3064,8 @@ TEST_F(SchedulerTest, SynchronousCompositorCommitAndVerifyBeginFrameAcks) {
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
 
   bool has_damage = false;
-  EXPECT_EQ(
-      viz::BeginFrameAck(args.source_id, args.sequence_number, has_damage),
-      client_->last_begin_frame_ack());
+  EXPECT_EQ(viz::BeginFrameAck(args, has_damage),
+            client_->last_begin_frame_ack());
   client_->Reset();
 
   scheduler_->NotifyBeginMainFrameStarted(now_src()->NowTicks());
@@ -3078,9 +3077,8 @@ TEST_F(SchedulerTest, SynchronousCompositorCommitAndVerifyBeginFrameAcks) {
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
 
   has_damage = false;
-  EXPECT_EQ(
-      viz::BeginFrameAck(args.source_id, args.sequence_number, has_damage),
-      client_->last_begin_frame_ack());
+  EXPECT_EQ(viz::BeginFrameAck(args, has_damage),
+            client_->last_begin_frame_ack());
   client_->Reset();
 
   scheduler_->NotifyReadyToCommit();
@@ -3102,9 +3100,8 @@ TEST_F(SchedulerTest, SynchronousCompositorCommitAndVerifyBeginFrameAcks) {
   // filtering this ack (in CompositorExternalBeginFrameSource) and instead
   // forwarding the one attached to the later submitted CompositorFrame.
   has_damage = false;
-  EXPECT_EQ(
-      viz::BeginFrameAck(args.source_id, args.sequence_number, has_damage),
-      client_->last_begin_frame_ack());
+  EXPECT_EQ(viz::BeginFrameAck(args, has_damage),
+            client_->last_begin_frame_ack());
   client_->Reset();
 
   // Android onDraw.
@@ -3123,9 +3120,8 @@ TEST_F(SchedulerTest, SynchronousCompositorCommitAndVerifyBeginFrameAcks) {
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
 
   has_damage = false;
-  EXPECT_EQ(
-      viz::BeginFrameAck(args.source_id, args.sequence_number, has_damage),
-      client_->last_begin_frame_ack());
+  EXPECT_EQ(viz::BeginFrameAck(args, has_damage),
+            client_->last_begin_frame_ack());
   client_->Reset();
 }
 
@@ -3544,9 +3540,8 @@ TEST_F(SchedulerTest, BeginFrameAckForFinishedImplFrame) {
 
   // Successful draw caused damage.
   bool has_damage = true;
-  EXPECT_EQ(
-      viz::BeginFrameAck(args.source_id, args.sequence_number, has_damage),
-      client_->last_begin_frame_ack());
+  EXPECT_EQ(viz::BeginFrameAck(args, has_damage),
+            client_->last_begin_frame_ack());
   client_->Reset();
 
   // Request another redraw, but fail it. Verify that a new ack is sent.
@@ -3569,9 +3564,8 @@ TEST_F(SchedulerTest, BeginFrameAckForFinishedImplFrame) {
 
   // Failed draw: no damage.
   has_damage = false;
-  EXPECT_EQ(
-      viz::BeginFrameAck(args.source_id, args.sequence_number, has_damage),
-      client_->last_begin_frame_ack());
+  EXPECT_EQ(viz::BeginFrameAck(args, has_damage),
+            client_->last_begin_frame_ack());
   client_->Reset();
 }
 
@@ -3600,9 +3594,8 @@ TEST_F(SchedulerTest, BeginFrameAckForSkippedImplFrame) {
 
   // Successful draw caused damage.
   bool has_damage = true;
-  EXPECT_EQ(
-      viz::BeginFrameAck(args.source_id, args.sequence_number, has_damage),
-      client_->last_begin_frame_ack());
+  EXPECT_EQ(viz::BeginFrameAck(args, has_damage),
+            client_->last_begin_frame_ack());
   client_->Reset();
 
   // Request another redraw that will be skipped because the swap ack is still
@@ -3617,9 +3610,8 @@ TEST_F(SchedulerTest, BeginFrameAckForSkippedImplFrame) {
 
   // Skipped draw: no damage.
   has_damage = false;
-  EXPECT_EQ(
-      viz::BeginFrameAck(args.source_id, args.sequence_number, has_damage),
-      client_->last_begin_frame_ack());
+  EXPECT_EQ(viz::BeginFrameAck(args, has_damage),
+            client_->last_begin_frame_ack());
   client_->Reset();
 }
 
@@ -3648,9 +3640,8 @@ TEST_F(SchedulerTest, BeginFrameAckForBeginFrameBeforeLastDeadline) {
 
   // Latest ack should be for the dropped BeginFrame.
   bool has_damage = false;
-  EXPECT_EQ(
-      viz::BeginFrameAck(args.source_id, args.sequence_number, has_damage),
-      client_->last_begin_frame_ack());
+  EXPECT_EQ(viz::BeginFrameAck(args, has_damage),
+            client_->last_begin_frame_ack());
   client_->Reset();
 }
 
@@ -3680,8 +3671,7 @@ TEST_F(SchedulerTest, BeginFrameAckForDroppedBeginFrame) {
 
   // Latest ack should be for the dropped BeginFrame.
   bool has_damage = false;
-  EXPECT_EQ(viz::BeginFrameAck(second_args.source_id,
-                               second_args.sequence_number, has_damage),
+  EXPECT_EQ(viz::BeginFrameAck(second_args, has_damage),
             client_->last_begin_frame_ack());
   client_->Reset();
 
@@ -3690,8 +3680,7 @@ TEST_F(SchedulerTest, BeginFrameAckForDroppedBeginFrame) {
 
   // We'd expect an out-of-order ack for the prior BeginFrame.
   has_damage = false;
-  EXPECT_EQ(viz::BeginFrameAck(first_args.source_id, first_args.sequence_number,
-                               has_damage),
+  EXPECT_EQ(viz::BeginFrameAck(first_args, has_damage),
             client_->last_begin_frame_ack());
   client_->Reset();
 }
@@ -3718,9 +3707,8 @@ TEST_F(SchedulerTest, BeginFrameAckForLateMissedBeginFrame) {
   // Latest ack should be for the missed BeginFrame that was too late: no
   // damage.
   bool has_damage = false;
-  EXPECT_EQ(
-      viz::BeginFrameAck(args.source_id, args.sequence_number, has_damage),
-      client_->last_begin_frame_ack());
+  EXPECT_EQ(viz::BeginFrameAck(args, has_damage),
+            client_->last_begin_frame_ack());
   client_->Reset();
 }
 

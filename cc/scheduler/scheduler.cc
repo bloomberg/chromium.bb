@@ -522,8 +522,7 @@ void Scheduler::SendBeginFrameAck(const viz::BeginFrameArgs& args,
   if (!did_submit) {
     DCHECK(!inside_scheduled_action_);
     base::AutoReset<bool> mark_inside(&inside_scheduled_action_, true);
-    client_->DidNotProduceFrame(
-        viz::BeginFrameAck(args.source_id, args.sequence_number, did_submit));
+    client_->DidNotProduceFrame(viz::BeginFrameAck(args, did_submit));
   }
 
   if (begin_frame_source_)
@@ -964,8 +963,7 @@ bool Scheduler::IsBeginMainFrameSentOrStarted() const {
 }
 
 viz::BeginFrameAck Scheduler::CurrentBeginFrameAckForActiveTree() const {
-  return viz::BeginFrameAck(begin_main_frame_args_.source_id,
-                            begin_main_frame_args_.sequence_number, true);
+  return viz::BeginFrameAck(begin_main_frame_args_, true);
 }
 
 void Scheduler::ClearHistory() {

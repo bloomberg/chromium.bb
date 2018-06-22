@@ -85,7 +85,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest, ContextLostDuringSubmit);
 
   void StartSubmitting();
-  void SubmitFrame(viz::BeginFrameAck, scoped_refptr<media::VideoFrame>);
+  void SubmitFrame(const viz::BeginFrameAck&, scoped_refptr<media::VideoFrame>);
 
   // Pulls frame and submits it to compositor.
   // Used in cases like PaintSingleFrame, which occurs before video rendering

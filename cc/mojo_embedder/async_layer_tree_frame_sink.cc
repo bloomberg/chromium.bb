@@ -196,8 +196,7 @@ void AsyncLayerTreeFrameSink::OnBeginFrame(const viz::BeginFrameArgs& args) {
   if (!needs_begin_frames_) {
     // We had a race with SetNeedsBeginFrame(false) and still need to let the
     // sink know that we didn't use this BeginFrame.
-    DidNotProduceFrame(
-        viz::BeginFrameAck(args.source_id, args.sequence_number, false));
+    DidNotProduceFrame(viz::BeginFrameAck(args, false));
   }
   if (begin_frame_source_)
     begin_frame_source_->OnBeginFrame(args);
