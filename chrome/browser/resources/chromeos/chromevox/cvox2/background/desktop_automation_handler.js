@@ -621,9 +621,6 @@ DesktopAutomationHandler.prototype = {
             !AutomationUtil.isDescendantOf(target, voxTarget))
       return false;
 
-    if (target.restriction == chrome.automation.Restriction.READ_ONLY)
-      return false;
-
     if (!this.textEditHandler_ || this.textEditHandler_.node !== target) {
       this.textEditHandler_ = editing.TextEditHandler.createForNode(target);
     }
