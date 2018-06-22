@@ -716,6 +716,7 @@ test("browser_tests") {
       "../browser/sessions/tab_restore_browsertest.cc",
       "../browser/site_details_browsertest.cc",
       "../browser/thumbnails/thumbnail_browsertest.cc",
+      "../browser/ui/bloated_renderer/bloated_renderer_tab_helper_browsertest.cc",
       "../browser/ui/blocked_content/popup_tracker_browsertest.cc",
       "../browser/ui/blocked_content/safe_browsing_triggered_popup_blocker_browsertest.cc",
       "../browser/ui/blocked_content/tab_under_blocker_browsertest.cc",

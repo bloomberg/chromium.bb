@@ -229,11 +229,6 @@ void TabLifecycleUnitSource::OnLifecycleStateChanged(
     lifecycle_unit->UpdateLifecycleState(state);
 }
 
-void TabLifecycleUnitSource::OnRendererIsBloated(
-    content::WebContents* web_contents) {
-  GetTabLifecycleUnit(web_contents)->ReloadBloatedTab();
-}
-
 }  // namespace resource_coordinator
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(

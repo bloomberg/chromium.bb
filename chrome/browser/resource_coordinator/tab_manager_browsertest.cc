@@ -266,12 +266,6 @@ class TabManagerTest : public InProcessBrowserTest {
         ->UpdateLifecycleState(mojom::LifecycleState::kFrozen);
   }
 
-  void ReloadBloatedTab(content::WebContents* contents) {
-    static_cast<TabLifecycleUnitSource::TabLifecycleUnit*>(
-        TabLifecycleUnitExternal::FromWebContents(contents))
-        ->ReloadBloatedTab();
-  }
-
   TabManager* tab_manager() { return g_browser_process->GetTabManager(); }
   TabStripModel* tsm() { return browser()->tab_strip_model(); }
 
@@ -1309,24 +1303,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   EXPECT_TRUE(IsTabDiscarded(browser2->tab_strip_model()->GetWebContentsAt(1)));
   EXPECT_TRUE(IsTabDiscarded(browser3->tab_strip_model()->GetWebContentsAt(1)));
   EXPECT_TRUE(IsTabDiscarded(browser4->tab_strip_model()->GetWebContentsAt(1)));
-}
-
-// TODO(ulan): Enable the test after fixing crbug.com/850921.
-IN_PROC_BROWSER_TEST_F(TabManagerTest, DISABLED_ReloadBloatedTab) {
-  content::WindowedNotificationObserver load(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::NotificationService::AllSources());
-  OpenURLParams url(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
-                    WindowOpenDisposition::CURRENT_TAB,
-                    ui::PAGE_TRANSITION_TYPED, false);
-  browser()->OpenURL(url);
-  load.Wait();
-
-  content::WindowedNotificationObserver reload(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::NotificationService::AllSources());
-  ReloadBloatedTab(GetWebContentsAt(0));
-  reload.Wait();
 }
 
 }  // namespace resource_coordinator
