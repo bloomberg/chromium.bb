@@ -189,6 +189,17 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest,
   EXPECT_TRUE(RunAttachFunction(other_ext_url, std::string()));
 }
 
+IN_PROC_BROWSER_TEST_F(DebuggerApiTest,
+                       DebuggerAllowedOnFileUrlsWithFileAccess) {
+  EXPECT_TRUE(RunExtensionTestWithArg("debugger_file_access", "enabled"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(DebuggerApiTest,
+                       DebuggerNotAllowedOnFileUrlsWithoutAccess) {
+  EXPECT_TRUE(RunExtensionTestNoFileAccess("debugger_file_access")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
   int tab_id = SessionTabHelper::IdForTab(
                    browser()->tab_strip_model()->GetActiveWebContents())

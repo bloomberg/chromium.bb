@@ -74,7 +74,8 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   void NotifyNavigated();
   void NotifyCrashed(base::TerminationStatus status);
   void ForceDetachAllSessions();
-  void ForceDetachRestrictedSessions();
+  void ForceDetachRestrictedSessions(
+      const std::vector<DevToolsSession*>& restricted_sessions);
   DevToolsIOContext* GetIOContext() { return &io_context_; }
 
   base::flat_set<DevToolsSession*>& sessions() { return sessions_; }
