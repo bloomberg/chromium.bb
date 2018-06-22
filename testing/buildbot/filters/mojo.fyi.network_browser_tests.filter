@@ -370,11 +370,6 @@
 -PredictorBrowserTest.SubframeInitiatesPreconnects
 -PredictorBrowserTest.SubframeLearning
 
-# https://crbug.com/832749
-# Add DMServer header
--ChromeResourceDispatcherHostDelegateBrowserTest.PolicyHeader
--ChromeResourceDispatcherHostDelegateBrowserTest.PolicyHeaderForRedirect
-
 # Requires a replacement for ChromeNetworkDelegate.
 # http://crbug.com/841309
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromInternalRequest

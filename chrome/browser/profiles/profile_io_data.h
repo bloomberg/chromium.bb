@@ -82,7 +82,6 @@ class ReportingService;
 
 namespace policy {
 class PolicyCertVerifier;
-class PolicyHeaderIOHelper;
 }  // namespace policy
 
 namespace previews {
@@ -215,10 +214,6 @@ class ProfileIOData {
     return &account_consistency_mirror_required_pref_;
   }
 #endif
-
-  policy::PolicyHeaderIOHelper* policy_header_helper() const {
-    return policy_header_helper_.get();
-  }
 
   // Initialize the member needed to track the metrics enabled state. This is
   // only to be called on the UI thread.
@@ -576,9 +571,6 @@ class ProfileIOData {
 #endif
 
   BooleanPrefMember enable_metrics_;
-
-  // Pointed to by NetworkDelegate.
-  mutable std::unique_ptr<policy::PolicyHeaderIOHelper> policy_header_helper_;
 
   // Pointed to by URLRequestContext.
 #if BUILDFLAG(ENABLE_EXTENSIONS)

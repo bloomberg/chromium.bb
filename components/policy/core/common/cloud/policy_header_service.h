@@ -13,17 +13,15 @@
 #include "base/memory/ref_counted.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/policy_export.h"
+#include "url/gurl.h"
 
-namespace base {
-class SequencedTaskRunner;
+namespace net {
+class HttpRequestHeaders;
 }
 
 namespace policy {
 
-class PolicyHeaderIOHelper;
-
-// Per-profile service used to generate PolicyHeaderIOHelper objects, and
-// keep them up to date as policy changes.
+// Per-profile service used to keep track of policy changes.
 // TODO(atwilson): Move to components/policy once CloudPolicyStore is moved.
 class POLICY_EXPORT PolicyHeaderService : public CloudPolicyStore::Observer {
  public:
@@ -35,27 +33,26 @@ class POLICY_EXPORT PolicyHeaderService : public CloudPolicyStore::Observer {
                       CloudPolicyStore* user_policy_store);
   ~PolicyHeaderService() override;
 
-  // Creates a PolicyHeaderIOHelper object to be run on the IO thread and
-  // add policy headers to outgoing requests. The caller takes ownership of
-  // this object and must ensure it outlives ProfileHeaderService (in practice,
-  // this is called by ProfileIOData, which is shutdown *after* all
-  // ProfileKeyedServices are shutdown).
-  std::unique_ptr<PolicyHeaderIOHelper> CreatePolicyHeaderIOHelper(
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+  // Update |*extra_headers| (allocate if necessary) with the policy header if
+  // |url| matches |server_url_|. Otherwise |extra_headers| remains unchanged.
+  void AddPolicyHeaders(
+      const GURL& url,
+      std::unique_ptr<net::HttpRequestHeaders>* extra_headers) const;
 
   // Overridden CloudPolicyStore::Observer methods:
   void OnStoreLoaded(CloudPolicyStore* store) override;
   void OnStoreError(CloudPolicyStore* store) override;
 
-  // Returns a list of all PolicyHeaderIOHelpers created by this object.
-  std::vector<PolicyHeaderIOHelper*> GetHelpersForTest();
+  // Test-only routines used to inject the server URL/headers at runtime.
+  void SetHeaderForTest(const std::string& new_header);
+  void SetServerURLForTest(const std::string& server_url);
 
  private:
   // Generate a policy header based on the currently loaded policy.
   std::string CreateHeaderValue();
 
-  // Weak pointer to created PolicyHeaderIOHelper objects.
-  std::vector<PolicyHeaderIOHelper*> helpers_;
+  // The current policy header value.
+  std::string policy_header_;
 
   // URL of the policy server.
   std::string server_url_;

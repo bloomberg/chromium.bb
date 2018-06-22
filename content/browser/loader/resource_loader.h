@@ -98,14 +98,17 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   // |called_from_resource_controller| is true if called directly from a
   // ResourceController, in which case |resource_handler_| must not be invoked
   // or destroyed synchronously to avoid re-entrancy issues, and false
-  // otherwise.
-  void Resume(bool called_from_resource_controller);
+  // otherwise. |modified_request_headers| is used for redirects only.
+  void Resume(
+      bool called_from_resource_controller,
+      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
   void Cancel();
   void CancelWithError(int error_code);
 
   void StartRequestInternal();
   void CancelRequestInternal(int error, bool from_renderer);
-  void FollowDeferredRedirectInternal();
+  void FollowDeferredRedirectInternal(
+      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
   void CompleteResponseStarted();
   // If |handle_result_async| is true, the result of the following read will be
   // handled asynchronously if it completes synchronously, unless it's EOF or an

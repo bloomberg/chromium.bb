@@ -10,6 +10,7 @@
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_handler.h"
 #include "net/base/io_buffer.h"
+#include "net/http/http_request_headers.h"
 #include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,6 +24,14 @@ class MockResourceLoader::TestResourceController : public ResourceController {
   ~TestResourceController() override {}
 
   void Resume() override { mock_loader_->OnResume(); }
+
+  void ResumeForRedirect(const base::Optional<net::HttpRequestHeaders>&
+                             modified_request_headers) override {
+    DCHECK(!modified_request_headers.has_value())
+        << "Redirect with modified headers was not supported yet. "
+           "crbug.com/845683";
+    Resume();
+  }
 
   void Cancel() override { CancelWithError(net::ERR_ABORTED); }
 

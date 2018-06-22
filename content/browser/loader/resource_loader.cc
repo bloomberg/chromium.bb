@@ -155,7 +155,15 @@ class ResourceLoader::Controller : public ResourceController {
   // ResourceController implementation:
   void Resume() override {
     MarkAsUsed();
-    resource_loader_->Resume(true /* called_from_resource_controller */);
+    resource_loader_->Resume(true /* called_from_resource_controller */,
+                             base::nullopt);
+  }
+
+  void ResumeForRedirect(const base::Optional<net::HttpRequestHeaders>&
+                             modified_request_headers) override {
+    MarkAsUsed();
+    resource_loader_->Resume(true /* called_from_resource_controller */,
+                             modified_request_headers);
   }
 
   void Cancel() override {
@@ -212,7 +220,8 @@ class ResourceLoader::ScopedDeferral {
     // If Resume() was called, it just advanced the state without doing
     // anything. Go ahead and resume the request now.
     if (old_deferred_stage == DEFERRED_NONE)
-      resource_loader_->Resume(false /* called_from_resource_controller */);
+      resource_loader_->Resume(false /* called_from_resource_controller */,
+                               base::nullopt);
   }
 
  private:
@@ -521,9 +530,13 @@ void ResourceLoader::CancelCertificateSelection() {
   request_->CancelWithError(net::ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
 }
 
-void ResourceLoader::Resume(bool called_from_resource_controller) {
+void ResourceLoader::Resume(
+    bool called_from_resource_controller,
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   DeferredStage stage = deferred_stage_;
   deferred_stage_ = DEFERRED_NONE;
+  DCHECK(!modified_request_headers.has_value() || stage == DEFERRED_REDIRECT)
+      << "modified_request_headers can only be used with redirects";
   switch (stage) {
     case DEFERRED_NONE:
       NOTREACHED();
@@ -542,7 +555,7 @@ void ResourceLoader::Resume(bool called_from_resource_controller) {
       // URLRequest::Start completes asynchronously, so starting the request now
       // won't result in synchronously calling into a ResourceHandler, if this
       // was called from Resume().
-      FollowDeferredRedirectInternal();
+      FollowDeferredRedirectInternal(modified_request_headers);
       break;
     case DEFERRED_ON_WILL_READ:
       // Always post a task, as synchronous resumes don't go through this
@@ -670,15 +683,18 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
   }
 }
 
-void ResourceLoader::FollowDeferredRedirectInternal() {
+void ResourceLoader::FollowDeferredRedirectInternal(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   DCHECK(!deferred_redirect_url_.is_empty());
   GURL redirect_url = deferred_redirect_url_;
   deferred_redirect_url_ = GURL();
   if (delegate_->HandleExternalProtocol(this, redirect_url)) {
+    DCHECK(!modified_request_headers.has_value())
+        << "ResourceLoaderDelegate::HandleExternalProtocol() with modified "
+           "headers was not supported yet. crbug.com/845683";
     Cancel();
   } else {
-    request_->FollowDeferredRedirect(
-        base::nullopt /* modified_request_headers */);
+    request_->FollowDeferredRedirect(modified_request_headers);
   }
 }
 

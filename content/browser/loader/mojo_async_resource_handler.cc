@@ -349,9 +349,6 @@ void MojoAsyncResourceHandler::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
-  DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
-                                                   "headers was not supported "
-                                                   "yet. crbug.com/845683";
   if (!request()->status().is_success()) {
     DVLOG(1) << "FollowRedirect for invalid request";
     return;
@@ -366,7 +363,7 @@ void MojoAsyncResourceHandler::FollowRedirect(
   DCHECK(!did_defer_on_writing_);
   did_defer_on_redirect_ = false;
   request()->LogUnblocked();
-  Resume();
+  ResumeForRedirect(modified_request_headers);
 }
 
 void MojoAsyncResourceHandler::ProceedWithResponse() {

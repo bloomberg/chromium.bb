@@ -8,8 +8,9 @@
 #include "base/json/json_writer.h"
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
-#include "components/policy/core/common/cloud/policy_header_io_helper.h"
+#include "net/http/http_request_headers.h"
 
 namespace {
 const char kUserDMTokenKey[] = "user_dmtoken";
@@ -27,21 +28,23 @@ PolicyHeaderService::PolicyHeaderService(
       verification_key_hash_(verification_key_hash),
       user_policy_store_(user_policy_store) {
   user_policy_store_->AddObserver(this);
+  policy_header_ = CreateHeaderValue();
 }
 
 PolicyHeaderService::~PolicyHeaderService() {
   user_policy_store_->RemoveObserver(this);
 }
 
-std::unique_ptr<PolicyHeaderIOHelper>
-PolicyHeaderService::CreatePolicyHeaderIOHelper(
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  std::string initial_header_value = CreateHeaderValue();
-  std::unique_ptr<PolicyHeaderIOHelper> helper =
-      std::make_unique<PolicyHeaderIOHelper>(server_url_, initial_header_value,
-                                             task_runner);
-  helpers_.push_back(helper.get());
-  return helper;
+void PolicyHeaderService::AddPolicyHeaders(
+    const GURL& url,
+    std::unique_ptr<net::HttpRequestHeaders>* extra_headers) const {
+  DCHECK(extra_headers);
+  if (!policy_header_.empty() &&
+      url.spec().compare(0, server_url_.size(), server_url_) == 0) {
+    if (!extra_headers->get())
+      (*extra_headers) = std::make_unique<net::HttpRequestHeaders>();
+    (*extra_headers)->SetHeader(kChromePolicyHeader, policy_header_);
+  }
 }
 
 std::string PolicyHeaderService::CreateHeaderValue() {
@@ -80,22 +83,19 @@ std::string PolicyHeaderService::CreateHeaderValue() {
 }
 
 void PolicyHeaderService::OnStoreLoaded(CloudPolicyStore* store) {
-  // If we have a PolicyHeaderIOHelper, notify it of the new header value.
-  if (!helpers_.empty()) {
-    std::string new_header = CreateHeaderValue();
-    for (std::vector<PolicyHeaderIOHelper*>::const_iterator it =
-             helpers_.begin(); it != helpers_.end(); ++it) {
-      (*it)->UpdateHeader(new_header);
-    }
-  }
+  policy_header_ = CreateHeaderValue();
 }
 
 void PolicyHeaderService::OnStoreError(CloudPolicyStore* store) {
   // Do nothing on errors.
 }
 
-std::vector<PolicyHeaderIOHelper*> PolicyHeaderService::GetHelpersForTest() {
-  return helpers_;
+void PolicyHeaderService::SetHeaderForTest(const std::string& new_header) {
+  policy_header_ = new_header;
+}
+
+void PolicyHeaderService::SetServerURLForTest(const std::string& server_url) {
+  server_url_ = server_url;
 }
 
 }  // namespace policy

@@ -44,6 +44,11 @@ void ResourceHandler::Resume() {
   ReleaseController()->Resume();
 }
 
+void ResourceHandler::ResumeForRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+  ReleaseController()->ResumeForRedirect(modified_request_headers);
+}
+
 void ResourceHandler::Cancel() {
   ReleaseController()->Cancel();
 }

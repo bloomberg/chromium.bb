@@ -90,7 +90,11 @@ class NET_EXPORT HttpRequestHeaders {
 
   HttpRequestHeaders();
   HttpRequestHeaders(const HttpRequestHeaders& other);
+  HttpRequestHeaders(HttpRequestHeaders&& other);
   ~HttpRequestHeaders();
+
+  HttpRequestHeaders& operator=(const HttpRequestHeaders& other);
+  HttpRequestHeaders& operator=(HttpRequestHeaders&& other);
 
   bool IsEmpty() const { return headers_.empty(); }
 
