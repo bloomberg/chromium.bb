@@ -39,7 +39,7 @@ interface MultiDeviceSetup {
   // Registers the "account status change" delegate to be used by the service.
   // Only one delegate can be set; this function should not be called more than
   // once.
-  SetAccountStatusChangeDelegate(AccountStatusChangeDelegate delegate) => ();
+  SetAccountStatusChangeDelegate(AccountStatusChangeDelegate delegate);
 
   // Triggers an event to be dispatched by the service. This API function is
   // intended to be used only for debugging in the chrome://proximity-auth page.

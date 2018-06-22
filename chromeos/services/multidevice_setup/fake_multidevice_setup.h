@@ -31,8 +31,7 @@ class FakeMultiDeviceSetup : public mojom::MultiDeviceSetup {
  private:
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
-      mojom::AccountStatusChangeDelegatePtr delegate,
-      SetAccountStatusChangeDelegateCallback callback) override;
+      mojom::AccountStatusChangeDelegatePtr delegate) override;
   void TriggerEventForDebugging(
       mojom::EventTypeForDebugging type,
       TriggerEventForDebuggingCallback callback) override;

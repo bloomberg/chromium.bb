@@ -101,10 +101,8 @@ class FakeMultiDeviceSetup
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
       chromeos::multidevice_setup::mojom::AccountStatusChangeDelegatePtr
-          delegate,
-      SetAccountStatusChangeDelegateCallback callback) override {
+          delegate) override {
     delegate_ = std::move(delegate);
-    std::move(callback).Run();
   }
 
   void TriggerEventForDebugging(

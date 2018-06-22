@@ -149,8 +149,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
 
     EXPECT_FALSE(fake_account_status_change_delegate_notifier()->delegate());
     multidevice_setup_->SetAccountStatusChangeDelegate(
-        fake_account_status_change_delegate_->GenerateInterfacePtr(),
-        base::DoNothing());
+        fake_account_status_change_delegate_->GenerateInterfacePtr());
     EXPECT_TRUE(fake_account_status_change_delegate_notifier()->delegate());
   }
 

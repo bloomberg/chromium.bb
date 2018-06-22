@@ -63,10 +63,8 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
 MultiDeviceSetupImpl::~MultiDeviceSetupImpl() = default;
 
 void MultiDeviceSetupImpl::SetAccountStatusChangeDelegate(
-    mojom::AccountStatusChangeDelegatePtr delegate,
-    SetAccountStatusChangeDelegateCallback callback) {
+    mojom::AccountStatusChangeDelegatePtr delegate) {
   delegate_notifier_->SetAccountStatusChangeDelegatePtr(std::move(delegate));
-  std::move(callback).Run();
 }
 
 void MultiDeviceSetupImpl::TriggerEventForDebugging(
