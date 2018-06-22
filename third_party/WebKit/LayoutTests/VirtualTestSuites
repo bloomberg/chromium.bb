@@ -709,6 +709,6 @@
   {
     "prefix": "mojo-blob-urls",
     "base": "external/wpt/FileAPI/url",
-    "args": ["--enable-blink-features=MojoBlobURLs"]
+    "args": ["--enable-features=MojoBlobURLs"]
   }
 ]

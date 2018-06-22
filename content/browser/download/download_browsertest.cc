@@ -68,6 +68,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -3034,11 +3035,12 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeBlobURL) {
 
 class DownloadContentTestWithMojoBlobURLs : public DownloadContentTest {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DownloadContentTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "MojoBlobURLs");
+  DownloadContentTestWithMojoBlobURLs() {
+    scoped_feature_list_.InitAndEnableFeature(blink::features::kMojoBlobURLs);
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTestWithMojoBlobURLs,

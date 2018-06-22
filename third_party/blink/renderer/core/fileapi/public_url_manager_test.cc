@@ -4,9 +4,11 @@
 
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/fileapi/url_registry.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/blob/testing/fake_blob.h"
@@ -67,6 +69,8 @@ class PublicURLManagerTest : public testing::Test {
   PublicURLManagerTest() : url_store_binding_(&url_store_) {}
 
   void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kMojoBlobURLs);
+
     execution_context_ = new NullExecutionContext;
     // By default this creates a unique origin, which is exactly what this test
     // wants.
@@ -90,7 +94,7 @@ class PublicURLManagerTest : public testing::Test {
   }
 
  protected:
-  ScopedMojoBlobURLsForTest mojo_blob_urls_ = true;
+  base::test::ScopedFeatureList scoped_feature_list_;
   Persistent<NullExecutionContext> execution_context_;
 
   FakeBlobURLStore url_store_;

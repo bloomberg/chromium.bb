@@ -7,6 +7,11 @@
 namespace blink {
 namespace features {
 
+// Enable mojo Blob URL interface and better blob URL lifetime management.
+// Can be enabled independently of NetworkService.
+const base::Feature kMojoBlobURLs{"MojoBlobURLs",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable new service worker glue for NetworkService. Can be
 // enabled independently of NetworkService.
 const base::Feature kServiceWorkerServicification{

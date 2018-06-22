@@ -26,6 +26,7 @@
 #include <memory>
 
 #include "base/auto_reset.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_cors.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -712,8 +713,7 @@ void XMLHttpRequest::open(const AtomicString& method,
 
   url_ = url;
 
-  if (url_.ProtocolIs("blob") &&
-      RuntimeEnabledFeatures::MojoBlobURLsEnabled()) {
+  if (url_.ProtocolIs("blob") && BlobUtils::MojoBlobURLsEnabled()) {
     GetExecutionContext()->GetPublicURLManager().Resolve(
         url_, MakeRequest(&blob_url_loader_factory_));
   }

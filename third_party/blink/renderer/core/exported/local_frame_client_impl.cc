@@ -34,6 +34,7 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider_client.h"
@@ -585,8 +586,7 @@ void LocalFrameClientImpl::DownloadURL(const ResourceRequest& request) {
     return;
   DCHECK(web_frame_->GetFrame()->GetDocument());
   mojom::blink::BlobURLTokenPtr blob_url_token;
-  if (request.Url().ProtocolIs("blob") &&
-      RuntimeEnabledFeatures::MojoBlobURLsEnabled()) {
+  if (request.Url().ProtocolIs("blob") && BlobUtils::MojoBlobURLsEnabled()) {
     web_frame_->GetFrame()->GetDocument()->GetPublicURLManager().Resolve(
         request.Url(), MakeRequest(&blob_url_token));
   }

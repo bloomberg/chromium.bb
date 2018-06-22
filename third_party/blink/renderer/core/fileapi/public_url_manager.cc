@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/renderer/core/fileapi/url_registry.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
@@ -114,7 +115,7 @@ String PublicURLManager::RegisterURL(URLRegistrable* registrable) {
   const String& url_string = url.GetString();
 
   mojom::blink::BlobPtr blob;
-  if (RuntimeEnabledFeatures::MojoBlobURLsEnabled())
+  if (BlobUtils::MojoBlobURLsEnabled())
     blob = registrable->AsMojoBlob();
   if (blob) {
     if (!url_store_) {
@@ -144,7 +145,7 @@ void PublicURLManager::Revoke(const KURL& url) {
           GetExecutionContext()->GetSecurityOrigin()))
     return;
 
-  if (RuntimeEnabledFeatures::MojoBlobURLsEnabled()) {
+  if (BlobUtils::MojoBlobURLsEnabled()) {
     if (!url_store_) {
       BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
           GetExecutionContext()->GetSecurityOrigin(), MakeRequest(&url_store_));
@@ -163,7 +164,7 @@ void PublicURLManager::Revoke(const KURL& url) {
 void PublicURLManager::Resolve(
     const KURL& url,
     network::mojom::blink::URLLoaderFactoryRequest factory_request) {
-  DCHECK(RuntimeEnabledFeatures::MojoBlobURLsEnabled());
+  DCHECK(BlobUtils::MojoBlobURLsEnabled());
   DCHECK(url.ProtocolIs("blob"));
   if (!url_store_) {
     BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
@@ -175,7 +176,7 @@ void PublicURLManager::Resolve(
 void PublicURLManager::Resolve(
     const KURL& url,
     mojom::blink::BlobURLTokenRequest token_request) {
-  DCHECK(RuntimeEnabledFeatures::MojoBlobURLsEnabled());
+  DCHECK(BlobUtils::MojoBlobURLsEnabled());
   DCHECK(url.ProtocolIs("blob"));
   if (!url_store_) {
     BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(

@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "base/strings/pattern.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_switches.h"
@@ -15,6 +16,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -24,7 +26,10 @@ namespace content {
 class BlobUrlBrowserTest : public ContentBrowserTest,
                            public testing::WithParamInterface<bool> {
  public:
-  BlobUrlBrowserTest() {}
+  BlobUrlBrowserTest() {
+    if (GetParam())
+      scoped_feature_list_.InitAndEnableFeature(blink::features::kMojoBlobURLs);
+  }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -32,14 +37,9 @@ class BlobUrlBrowserTest : public ContentBrowserTest,
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    if (GetParam()) {
-      command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                      "MojoBlobURLs");
-    }
-  }
-
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(BlobUrlBrowserTest);
 };
 

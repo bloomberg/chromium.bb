@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 
 #include <memory>
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -132,7 +133,7 @@ class ScheduledURLNavigation : public ScheduledNavigation {
     }
 
     if (origin_document && url.ProtocolIs("blob") &&
-        RuntimeEnabledFeatures::MojoBlobURLsEnabled()) {
+        BlobUtils::MojoBlobURLsEnabled()) {
       origin_document->GetPublicURLManager().Resolve(
           url_, MakeRequest(&blob_url_token_));
     }

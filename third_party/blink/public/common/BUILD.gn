@@ -34,6 +34,7 @@ source_set("headers") {
   sources = [
     "associated_interfaces/associated_interface_provider.h",
     "associated_interfaces/associated_interface_registry.h",
+    "blob/blob_utils.h",
     "client_hints/client_hints.h",
     "device_memory/approximated_device_memory.h",
     "experiments/memory_ablation_experiment.h",

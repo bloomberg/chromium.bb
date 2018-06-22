@@ -30,6 +30,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -1235,10 +1236,12 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, SubframeErrorPages) {
 
 class IsolatedOriginTestWithMojoBlobURLs : public IsolatedOriginTest {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    IsolatedOriginTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("enable-blink-features", "MojoBlobURLs");
+  IsolatedOriginTestWithMojoBlobURLs() {
+    scoped_feature_list_.InitAndEnableFeature(blink::features::kMojoBlobURLs);
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithMojoBlobURLs, NavigateToBlobURL) {

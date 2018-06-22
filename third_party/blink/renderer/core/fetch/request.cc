@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/fetch/request.h"
 
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
@@ -234,8 +235,7 @@ Request* Request::CreateRequestWithRequestOrString(
     // Parsing URLs should also resolve blob URLs. This is important because
     // fetching of a blob URL should work even after the URL is revoked as long
     // as the request was created while the URL was still valid.
-    if (parsed_url.ProtocolIs("blob") &&
-        RuntimeEnabledFeatures::MojoBlobURLsEnabled()) {
+    if (parsed_url.ProtocolIs("blob") && BlobUtils::MojoBlobURLsEnabled()) {
       network::mojom::blink::URLLoaderFactoryPtr url_loader_factory;
       ExecutionContext::From(script_state)
           ->GetPublicURLManager()

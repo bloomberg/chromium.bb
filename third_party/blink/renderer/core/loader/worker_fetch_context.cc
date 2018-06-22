@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_mixed_content.h"
@@ -254,8 +255,8 @@ std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
   // actually creating the URL loader here. Other subresource loading will
   // immediately create the URL loader so resolving those blob URLs here is
   // simplest.
-  if (request.Url().ProtocolIs("blob") &&
-      RuntimeEnabledFeatures::MojoBlobURLsEnabled() && !url_loader_factory) {
+  if (request.Url().ProtocolIs("blob") && BlobUtils::MojoBlobURLsEnabled() &&
+      !url_loader_factory) {
     global_scope_->GetPublicURLManager().Resolve(
         request.Url(), MakeRequest(&url_loader_factory));
   }
