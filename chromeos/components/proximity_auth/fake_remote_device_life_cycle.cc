@@ -26,6 +26,11 @@ cryptauth::Connection* FakeRemoteDeviceLifeCycle::GetConnection() const {
   return connection_;
 }
 
+chromeos::secure_channel::ClientChannel* FakeRemoteDeviceLifeCycle::GetChannel()
+    const {
+  return channel_;
+}
+
 RemoteDeviceLifeCycle::State FakeRemoteDeviceLifeCycle::GetState() const {
   return state_;
 }

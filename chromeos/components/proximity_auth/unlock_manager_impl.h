@@ -53,7 +53,7 @@ class UnlockManagerImpl : public UnlockManager,
   // Creates a ProximityMonitor instance for the given |connection|.
   // Exposed for testing.
   virtual std::unique_ptr<ProximityMonitor> CreateProximityMonitor(
-      cryptauth::Connection* connection,
+      RemoteDeviceLifeCycle* life_cycle,
       ProximityAuthPrefManager* pref_manager);
 
  private:

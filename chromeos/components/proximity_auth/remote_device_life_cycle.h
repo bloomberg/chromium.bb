@@ -11,6 +11,12 @@
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/remote_device_ref.h"
 
+namespace chromeos {
+namespace secure_channel {
+class ClientChannel;
+}  // namespace secure_channel
+}  // namespace chromeos
+
 namespace proximity_auth {
 
 class Messenger;
@@ -62,6 +68,10 @@ class RemoteDeviceLifeCycle {
 
   // Returns the current Connection, or null if the device is not yet connected.
   virtual cryptauth::Connection* GetConnection() const = 0;
+
+  // Returns the active channel to the remote device, or null if the device is
+  // not yet connected.
+  virtual chromeos::secure_channel::ClientChannel* GetChannel() const = 0;
 
   // Returns the current state of in the life cycle.
   virtual State GetState() const = 0;

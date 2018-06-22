@@ -13,10 +13,20 @@
 #include "base/timer/timer.h"
 #include "chromeos/components/proximity_auth/messenger_observer.h"
 #include "chromeos/components/proximity_auth/remote_device_life_cycle.h"
+#include "chromeos/services/secure_channel/public/cpp/client/connection_attempt.h"
+#include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
+#include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "components/cryptauth/authenticator.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/remote_device_ref.h"
+
+namespace chromeos {
+namespace secure_channel {
+class ClientChannel;
+class SecureChannelClient;
+}  // namespace secure_channel
+}  // namespace chromeos
 
 namespace cryptauth {
 class SecureContext;
@@ -27,18 +37,25 @@ namespace proximity_auth {
 class Messenger;
 
 // Implementation of RemoteDeviceLifeCycle.
-class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
-                                  public MessengerObserver {
+class RemoteDeviceLifeCycleImpl
+    : public RemoteDeviceLifeCycle,
+      public chromeos::secure_channel::ConnectionAttempt::Delegate,
+      public MessengerObserver {
  public:
   // Creates the life cycle for controlling the given |remote_device|.
   // |proximity_auth_client| is not owned.
-  explicit RemoteDeviceLifeCycleImpl(cryptauth::RemoteDeviceRef remote_device);
+  RemoteDeviceLifeCycleImpl(
+      cryptauth::RemoteDeviceRef remote_device,
+      base::Optional<cryptauth::RemoteDeviceRef> local_device,
+      chromeos::secure_channel::SecureChannelClient* secure_channel_client);
   ~RemoteDeviceLifeCycleImpl() override;
 
   // RemoteDeviceLifeCycle:
   void Start() override;
   cryptauth::RemoteDeviceRef GetRemoteDevice() const override;
   cryptauth::Connection* GetConnection() const override;
+  chromeos::secure_channel::ClientChannel* GetChannel() const override;
+
   RemoteDeviceLifeCycle::State GetState() const override;
   Messenger* GetMessenger() override;
   void AddObserver(Observer* observer) override;
@@ -73,11 +90,24 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   // Creates the messenger which parses status updates.
   void CreateMessenger();
 
+  // chromeos::secure_channel::ConnectionAttempt::Delegate:
+  void OnConnectionAttemptFailure(
+      chromeos::secure_channel::mojom::ConnectionAttemptFailureReason reason)
+      override;
+  void OnConnection(std::unique_ptr<chromeos::secure_channel::ClientChannel>
+                        channel) override;
+
   // MessengerObserver:
   void OnDisconnected() override;
 
   // The remote device being controlled.
   const cryptauth::RemoteDeviceRef remote_device_;
+
+  // Represents this device (i.e. this Chromebook) for a particular profile.
+  base::Optional<cryptauth::RemoteDeviceRef> local_device_;
+
+  // The entrypoint to the SecureChannel API.
+  chromeos::secure_channel::SecureChannelClient* secure_channel_client_;
 
   // The current state in the life cycle.
   RemoteDeviceLifeCycle::State state_;
@@ -104,6 +134,12 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   // Used in the FINDING_CONNECTION state to establish a connection to the
   // remote device.
   std::unique_ptr<cryptauth::ConnectionFinder> connection_finder_;
+
+  std::unique_ptr<chromeos::secure_channel::ConnectionAttempt>
+      connection_attempt_;
+
+  // Ownership is eventually passed to |messenger_|.
+  std::unique_ptr<chromeos::secure_channel::ClientChannel> channel_;
 
   // After authentication fails, this timer waits for a period of time before
   // retrying the connection.

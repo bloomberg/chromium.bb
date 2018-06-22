@@ -86,6 +86,7 @@ static_library("test_support") {
   deps = [
     "//base",
     "//chromeos/components/proximity_auth/logging",
+    "//chromeos/services/secure_channel/public/cpp/client",
     "//components/cryptauth:test_support",
     "//testing/gmock",
   ]

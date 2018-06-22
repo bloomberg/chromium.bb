@@ -121,10 +121,10 @@ class TestUnlockManager : public UnlockManagerImpl {
 
  private:
   std::unique_ptr<ProximityMonitor> CreateProximityMonitor(
-      cryptauth::Connection* connection,
+      RemoteDeviceLifeCycle* life_cycle,
       ProximityAuthPrefManager* pref_manager) override {
     EXPECT_EQ(cryptauth::kTestRemoteDevicePublicKey,
-              connection->remote_device().public_key());
+              life_cycle->GetConnection()->remote_device().public_key());
     std::unique_ptr<MockProximityMonitor> proximity_monitor(
         new NiceMock<MockProximityMonitor>());
     proximity_monitor_ = proximity_monitor.get();
