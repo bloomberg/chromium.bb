@@ -936,7 +936,7 @@ class TestExpectations(object):
         MISSING: 'missing results',
     }
 
-    NON_TEST_OUTCOME_EXPECTATIONS = (REBASELINE, SLOW, WONTFIX)
+    NON_TEST_OUTCOME_EXPECTATIONS = (REBASELINE, SKIP, SLOW, WONTFIX)
 
     BUILD_TYPES = ('debug', 'release')
 
@@ -983,9 +983,9 @@ class TestExpectations(object):
             return True
         if result in (TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO) and FAIL in expected_results:
             return True
-        if result == SKIP and WONTFIX in expected_results:
-            return True
         if result == MISSING and test_needs_rebaselining:
+            return True
+        if result == SKIP:
             return True
         return False
 
