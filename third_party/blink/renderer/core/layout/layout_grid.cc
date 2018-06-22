@@ -205,7 +205,7 @@ base::Optional<LayoutUnit> LayoutGrid::AvailableSpaceForGutters(
 
   const GapLength& gap =
       is_row_axis ? StyleRef().ColumnGap() : StyleRef().RowGap();
-  if (!gap.IsNormal() && !gap.GetLength().IsPercent())
+  if (!gap.IsNormal() && !gap.GetLength().IsPercentOrCalc())
     return base::nullopt;
 
   return is_row_axis ? AvailableLogicalWidth()
