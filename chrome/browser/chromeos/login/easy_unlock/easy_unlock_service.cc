@@ -670,7 +670,8 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
 
 void EasyUnlockService::SetProximityAuthDevices(
     const AccountId& account_id,
-    const cryptauth::RemoteDeviceRefList& remote_devices) {
+    const cryptauth::RemoteDeviceRefList& remote_devices,
+    base::Optional<cryptauth::RemoteDeviceRef> local_device) {
   UMA_HISTOGRAM_COUNTS_100("SmartLock.EnabledDevicesCount",
                            remote_devices.size());
 
@@ -681,14 +682,16 @@ void EasyUnlockService::SetProximityAuthDevices(
 
   if (!proximity_auth_system_) {
     PA_LOG(INFO) << "Creating ProximityAuthSystem.";
+    // TODO(crbug.com/752273): Inject a real secure_channel_client.
     proximity_auth_system_.reset(new proximity_auth::ProximityAuthSystem(
         GetType() == TYPE_SIGNIN
             ? proximity_auth::ProximityAuthSystem::SIGN_IN
             : proximity_auth::ProximityAuthSystem::SESSION_LOCK,
-        proximity_auth_client()));
+        proximity_auth_client(), nullptr /* secure_channel_client */));
   }
 
-  proximity_auth_system_->SetRemoteDevicesForUser(account_id, remote_devices);
+  proximity_auth_system_->SetRemoteDevicesForUser(account_id, remote_devices,
+                                                  local_device);
   proximity_auth_system_->Start();
 }
 

@@ -16,6 +16,12 @@
 #include "components/account_id/account_id.h"
 #include "components/cryptauth/remote_device_ref.h"
 
+namespace chromeos {
+namespace secure_channel {
+class SecureChannelClient;
+}  // namespace secure_channel
+}  // namespace chromeos
+
 namespace proximity_auth {
 
 class ProximityAuthClient;
@@ -33,8 +39,10 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
  public:
   enum ScreenlockType { SESSION_LOCK, SIGN_IN };
 
-  ProximityAuthSystem(ScreenlockType screenlock_type,
-                      ProximityAuthClient* proximity_auth_client);
+  ProximityAuthSystem(
+      ScreenlockType screenlock_type,
+      ProximityAuthClient* proximity_auth_client,
+      chromeos::secure_channel::SecureChannelClient* secure_channel_client);
   ~ProximityAuthSystem() override;
 
   // Starts the system to connect and authenticate when a registered user is
@@ -45,11 +53,13 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   void Stop();
 
   // Registers a list of |remote_devices| for |account_id| that can be used for
-  // sign-in/unlock. If devices were previously registered for the user, then
-  // they will be replaced.
+  // sign-in/unlock. |local_device| represents this device (i.e. this Chrome OS
+  // device) for this particular user profile context. If devices were
+  // previously registered for the user, then they will be replaced.
   void SetRemoteDevicesForUser(
       const AccountId& account_id,
-      const cryptauth::RemoteDeviceRefList& remote_devices);
+      const cryptauth::RemoteDeviceRefList& remote_devices,
+      base::Optional<cryptauth::RemoteDeviceRef> local_device);
 
   // Returns the RemoteDevices registered for |account_id|. Returns an empty
   // list
@@ -69,15 +79,21 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
  protected:
   // Constructor which allows passing in a custom |unlock_manager_|.
   // Exposed for testing.
-  ProximityAuthSystem(ScreenlockType screenlock_type,
-                      ProximityAuthClient* proximity_auth_client,
-                      std::unique_ptr<UnlockManager> unlock_manager,
-                      ProximityAuthPrefManager* pref_manager);
+  ProximityAuthSystem(
+      ScreenlockType screenlock_type,
+      ProximityAuthClient* proximity_auth_client,
+      chromeos::secure_channel::SecureChannelClient* secure_channel_client,
+      std::unique_ptr<UnlockManager> unlock_manager,
+      ProximityAuthPrefManager* pref_manager);
 
-  // Creates the RemoteDeviceLifeCycle for |remote_device|.
+  // Creates the RemoteDeviceLifeCycle for |remote_device| and |local_device|.
+  // |remote_device| is the host intended to be connected to, and |local_device|
+  // represents this device (i.e. this Chrome OS device) for this particular
+  // user profile context.
   // Exposed for testing.
   virtual std::unique_ptr<RemoteDeviceLifeCycle> CreateRemoteDeviceLifeCycle(
-      cryptauth::RemoteDeviceRef remote_device);
+      cryptauth::RemoteDeviceRef remote_device,
+      base::Optional<cryptauth::RemoteDeviceRef> local_device);
 
   // RemoteDeviceLifeCycle::Observer:
   void OnLifeCycleStateChanged(RemoteDeviceLifeCycle::State old_state,
@@ -101,8 +117,16 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   // Lists of remote devices, keyed by user account id.
   std::map<AccountId, cryptauth::RemoteDeviceRefList> remote_devices_map_;
 
+  // A mapping from each profile's account ID to the profile-specific
+  // representation of this device (i.e. this Chrome OS device) for that
+  // particular user profile.
+  std::map<AccountId, cryptauth::RemoteDeviceRef> local_device_map_;
+
   // Delegate for Chrome dependent functionality.
   ProximityAuthClient* proximity_auth_client_;
+
+  // Entry point to the SecureChannel API.
+  chromeos::secure_channel::SecureChannelClient* secure_channel_client_;
 
   // Responsible for the life cycle of connecting and authenticating to
   // the RemoteDevice of the currently focused user.

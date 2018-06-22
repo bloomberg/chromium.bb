@@ -404,7 +404,8 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   account_id_ = account_id;
   pref_manager_->SetActiveUser(account_id);
   user_pod_last_focused_timestamp_ = base::TimeTicks::Now();
-  SetProximityAuthDevices(account_id_, cryptauth::RemoteDeviceRefList());
+  SetProximityAuthDevices(account_id_, cryptauth::RemoteDeviceRefList(),
+                          base::nullopt /* local_device */);
   ResetScreenlockState();
 
   pref_manager_->SetActiveUser(account_id);
@@ -538,7 +539,9 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
 
   remote_device_cache_->SetRemoteDevices(remote_devices);
 
-  SetProximityAuthDevices(account_id, remote_device_cache_->GetRemoteDevices());
+  // TODO(crbug.com/752273): Inject a real local device.
+  SetProximityAuthDevices(account_id, remote_device_cache_->GetRemoteDevices(),
+                          base::nullopt /* local_device */);
 }
 
 const EasyUnlockServiceSignin::UserData*

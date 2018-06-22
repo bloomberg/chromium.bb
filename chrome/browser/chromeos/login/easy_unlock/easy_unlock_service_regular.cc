@@ -173,7 +173,8 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
     pref_manager_->SetEasyUnlockEnabledStateSet();
     LogSmartLockEnabledState(SmartLockEnabledState::ENABLED);
   } else {
-    SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceRefList());
+    SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceRefList(),
+                            base::nullopt /* local_device */);
 
     if (pref_manager_->IsEasyUnlockEnabledStateSet()) {
       LogSmartLockEnabledState(SmartLockEnabledState::DISABLED);
@@ -224,7 +225,11 @@ void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
 
 void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
     const cryptauth::RemoteDeviceRefList& remote_devices) {
-  SetProximityAuthDevices(GetAccountId(), remote_devices);
+  SetProximityAuthDevices(
+      GetAccountId(), remote_devices,
+      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
+          ? device_sync_client_->GetLocalDeviceMetadata()
+          : base::nullopt);
 
   // We need to store a copy of |remote devices_| in the TPM, so it can be
   // retrieved on the sign-in screen when a user session has not been started
@@ -739,7 +744,8 @@ void EasyUnlockServiceRegular::OnTurnOffEasyUnlockSuccess() {
 
   EasyUnlockService::ResetLocalStateForUser(GetAccountId());
   SetRemoteDevices(base::ListValue());
-  SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceRefList());
+  SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceRefList(),
+                          base::nullopt /* local_device */);
   pref_manager_->SetIsEasyUnlockEnabled(false);
   SetTurnOffFlowStatus(IDLE);
   ResetScreenlockState();

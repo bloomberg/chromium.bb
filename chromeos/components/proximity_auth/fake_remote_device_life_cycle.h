@@ -16,7 +16,9 @@ namespace proximity_auth {
 
 class FakeRemoteDeviceLifeCycle : public RemoteDeviceLifeCycle {
  public:
-  explicit FakeRemoteDeviceLifeCycle(cryptauth::RemoteDeviceRef remote_device);
+  explicit FakeRemoteDeviceLifeCycle(
+      cryptauth::RemoteDeviceRef remote_device,
+      base::Optional<cryptauth::RemoteDeviceRef> local_device);
   ~FakeRemoteDeviceLifeCycle() override;
 
   // RemoteDeviceLifeCycle:
@@ -44,10 +46,13 @@ class FakeRemoteDeviceLifeCycle : public RemoteDeviceLifeCycle {
 
   bool started() { return started_; }
 
+  cryptauth::RemoteDeviceRef local_device() { return *local_device_; }
+
   base::ObserverList<Observer>& observers() { return observers_; }
 
  private:
   cryptauth::RemoteDeviceRef remote_device_;
+  base::Optional<cryptauth::RemoteDeviceRef> local_device_;
   base::ObserverList<Observer> observers_;
   bool started_;
   State state_;

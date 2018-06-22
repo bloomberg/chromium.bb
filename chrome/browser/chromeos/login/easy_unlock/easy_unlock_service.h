@@ -268,7 +268,8 @@ class EasyUnlockService : public KeyedService {
   // are loaded for |account_id|.
   void SetProximityAuthDevices(
       const AccountId& account_id,
-      const cryptauth::RemoteDeviceRefList& remote_devices);
+      const cryptauth::RemoteDeviceRefList& remote_devices,
+      base::Optional<cryptauth::RemoteDeviceRef> local_device);
 
  private:
   // A class to detect whether a bluetooth adapter is present.
