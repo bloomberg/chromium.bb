@@ -241,9 +241,11 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public IAccessibleTable,
                         public IAccessibleTable2,
                         public IAccessibleTableCell,
+                        public IRangeValueProvider,
                         public IRawElementProviderSimple,
                         public IScrollItemProvider,
                         public IServiceProvider,
+                        public IValueProvider,
                         public AXPlatformNodeBase {
  public:
   BEGIN_COM_MAP(AXPlatformNodeWin)
@@ -257,8 +259,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IAccessibleTable)
     COM_INTERFACE_ENTRY(IAccessibleTable2)
     COM_INTERFACE_ENTRY(IAccessibleTableCell)
+    COM_INTERFACE_ENTRY(IRangeValueProvider)
     COM_INTERFACE_ENTRY(IRawElementProviderSimple)
     COM_INTERFACE_ENTRY(IScrollItemProvider)
+    COM_INTERFACE_ENTRY(IValueProvider)
     COM_INTERFACE_ENTRY(IServiceProvider)
   END_COM_MAP()
 
@@ -425,6 +429,32 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   //
 
   STDMETHODIMP ScrollIntoView() override;
+
+  //
+  // IValueProvider methods.
+  //
+
+  STDMETHODIMP SetValue(LPCWSTR val) override;
+
+  STDMETHODIMP get_IsReadOnly(BOOL* result) override;
+
+  STDMETHODIMP get_Value(BSTR* result) override;
+
+  //
+  // IRangeValueProvider methods.
+  //
+
+  STDMETHODIMP SetValue(double val) override;
+
+  STDMETHODIMP get_LargeChange(double* result) override;
+
+  STDMETHODIMP get_Maximum(double* result) override;
+
+  STDMETHODIMP get_Minimum(double* result) override;
+
+  STDMETHODIMP get_SmallChange(double* result) override;
+
+  STDMETHODIMP get_Value(double* result) override;
 
   // IAccessibleEx methods not implemented.
   STDMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) override;
