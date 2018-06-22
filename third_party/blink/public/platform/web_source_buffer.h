@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SOURCE_BUFFER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SOURCE_BUFFER_H_
 
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_time_range.h"
 
 namespace blink {
@@ -78,6 +79,22 @@ class WebSourceBuffer {
 
   virtual void ResetParserState() = 0;
   virtual void Remove(double start, double end) = 0;
+
+  // Returns true iff this SourceBuffer supports changing bytestream and codecs
+  // to |content_type| and |codecs|.  |content_type| is the ContentType string
+  // of the bytestream's MIME type, and |codecs| contains the "codecs" parameter
+  // string, if any, of the bytestream's MIME type.
+  virtual bool CanChangeType(const WebString& content_type,
+                             const WebString& codecs) = 0;
+
+  // Updates this SourceBuffer to parse bytestream and codecs |content_type| and
+  // |codecs|. Caller must first ensure CanChangeType() returns true for the
+  // same parameters, and must call ResetParserState() prior to calling this, to
+  // flush any pending frames. See CanChangeType() for description of
+  // |content_type| and |codecs| parameters.
+  virtual void ChangeType(const WebString& content_type,
+                          const WebString& codecs) = 0;
+
   virtual bool SetTimestampOffset(double) = 0;
 
   // Set presentation timestamp for the start of append window.

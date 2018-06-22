@@ -163,6 +163,19 @@ void WebSourceBufferImpl::Remove(double start, double end) {
   demuxer_->Remove(id_, DoubleToTimeDelta(start), DoubleToTimeDelta(end));
 }
 
+bool WebSourceBufferImpl::CanChangeType(const blink::WebString& content_type,
+                                        const blink::WebString& codecs) {
+  return demuxer_->CanChangeTypeTo(id_, content_type.Utf8(), codecs.Utf8());
+}
+
+void WebSourceBufferImpl::ChangeType(const blink::WebString& content_type,
+                                     const blink::WebString& codecs) {
+  // Caller must first call ResetParserState() to flush any pending frames.
+  DCHECK(!demuxer_->IsParsingMediaSegment(id_));
+
+  demuxer_->ChangeType(id_, content_type.Utf8(), codecs.Utf8());
+}
+
 bool WebSourceBufferImpl::SetTimestampOffset(double offset) {
   if (demuxer_->IsParsingMediaSegment(id_))
     return false;

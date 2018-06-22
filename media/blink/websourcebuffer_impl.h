@@ -38,6 +38,10 @@ class WebSourceBufferImpl : public blink::WebSourceBuffer {
               double* timestamp_offset) override;
   void ResetParserState() override;
   void Remove(double start, double end) override;
+  bool CanChangeType(const blink::WebString& content_type,
+                     const blink::WebString& codecs) override;
+  void ChangeType(const blink::WebString& content_type,
+                  const blink::WebString& codecs) override;
   bool SetTimestampOffset(double offset) override;
   void SetAppendWindowStart(double start) override;
   void SetAppendWindowEnd(double end) override;
