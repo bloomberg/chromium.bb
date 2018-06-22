@@ -4839,6 +4839,10 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
       av1_rc_postencode_update(cpi, *size);
     }
 
+    // Decrement count down till next gf
+    if (cpi->rc.frames_till_gf_update_due > 0)
+      cpi->rc.frames_till_gf_update_due--;
+
     ++cm->current_video_frame;
 
     return AOM_CODEC_OK;
@@ -5092,6 +5096,11 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     swap_mi_and_prev_mi(cm);
     // Don't increment frame counters if this was an altref buffer
     // update not a real frame
+
+    // Decrement count down till next gf
+    if (cpi->rc.frames_till_gf_update_due > 0)
+      cpi->rc.frames_till_gf_update_due--;
+
     ++cm->current_video_frame;
   }
 
