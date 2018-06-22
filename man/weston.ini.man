@@ -468,7 +468,7 @@ denoting the scaling multiplier for the output.
 .RE
 .TP 7
 .BI "seat=" name
-The logical seat name that that this output should be associated with. If this
+The logical seat name that this output should be associated with. If this
 is set then the seat's input will be confined to the output that has the seat
 set on it. The expectation is that this functionality will be used in a
 multiheaded environment with a single compositor for multiple output and input
