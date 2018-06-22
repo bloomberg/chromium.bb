@@ -81,5 +81,35 @@ public class LocalizationUtils {
         return str.replace("$LOCALE", LocaleUtils.getDefaultLocaleString().replace('-', '_'));
     }
 
+    /**
+     * @return the current Chromium locale used to display UI elements.
+     *
+     * This matches what the Android framework resolves localized string resources to, using the
+     * system locale and the application's resources. For example, if the system uses a locale
+     * that is not supported by Chromium resources (e.g. 'fur-rIT'), Android will likely fallback
+     * to 'en-rUS' strings when Resources.getString() is called, and this method will return the
+     * matching Chromium name (i.e. 'en-US').
+     *
+     * Using this value is only necessary to ensure that the strings accessed from the locale .pak
+     * files from C++ match the resources displayed by the Java-based UI views.
+     */
+    public static String getUiLocaleStringForCompressedPak() {
+        String uiLocale = ContextUtils.getApplicationContext().getResources().getString(
+                org.chromium.ui.R.string.current_detected_ui_locale_name);
+        return uiLocale;
+    }
+
+    /**
+     * @return the language of the current Chromium locale used to display UI elements.
+     */
+    public static String getUiLanguageStringForCompressedPak() {
+        String uiLocale = getUiLocaleStringForCompressedPak();
+        int pos = uiLocale.indexOf('-');
+        if (pos > 0) {
+            return uiLocale.substring(0, pos);
+        }
+        return uiLocale;
+    }
+
     private static native int nativeGetFirstStrongCharacterDirection(String string);
 }

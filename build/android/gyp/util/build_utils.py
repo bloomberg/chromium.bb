@@ -148,6 +148,16 @@ def WriteJson(obj, path, only_if_changed=False):
 def AtomicOutput(path, only_if_changed=True):
   """Helper to prevent half-written outputs.
 
+  Args:
+    path: Path to the final output file, which will be written atomically.
+    only_if_changed: If True (the default), do not touch the filesystem
+      if the content has not changed.
+  Returns:
+    A python context manager that yelds a NamedTemporaryFile instance
+    that must be used by clients to write the data to. On exit, the
+    manager will try to replace the final output file with the
+    temporary one if necessary. The temporary file is always destroyed
+    on exit.
   Example:
     with build_utils.AtomicOutput(output_path) as tmp_file:
       subprocess.check_call(['prog', '--output', tmp_file.name])
