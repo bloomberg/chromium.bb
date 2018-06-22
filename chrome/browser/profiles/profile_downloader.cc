@@ -177,12 +177,31 @@ void ProfileDownloader::FetchImageData() {
     return;
   }
 
+  if (account_info_.picture_url == AccountTrackerService::kNoPictureURLFound) {
+    VLOG(1) << "No picture URL for account " << account_info_.email
+            << ". Using the default profile picture.";
+    picture_status_ = PICTURE_DEFAULT;
+    delegate_->OnProfileDownloadSuccess(this);
+    return;
+  }
+
   std::string image_url_with_size = GetProfilePictureURL();
   if (!image_url_with_size.empty() &&
       image_url_with_size == delegate_->GetCachedPictureURL()) {
     VLOG(1) << "Picture URL matches cached picture URL";
     picture_status_ = PICTURE_CACHED;
     delegate_->OnProfileDownloadSuccess(this);
+    return;
+  }
+
+  GURL image_url_to_fetch(image_url_with_size);
+  if (!image_url_to_fetch.is_valid()) {
+    VLOG(1) << "Profile picture URL with size |" << image_url_to_fetch << "| "
+            << "is not valid (the account picture URL is "
+            << "|" << account_info_.picture_url << "|)";
+    delegate_->OnProfileDownloadFailure(
+        this,
+        ProfileDownloaderDelegate::FailureReason::INVALID_PROFILE_PICTURE_URL);
     return;
   }
 
@@ -209,10 +228,10 @@ void ProfileDownloader::FetchImageData() {
             "profile image."
         })");
 
-  VLOG(1) << "Loading profile image from " << image_url_with_size;
+  VLOG(1) << "Loading profile image from " << image_url_to_fetch;
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = GURL(image_url_with_size);
+  resource_request->url = image_url_to_fetch;
   resource_request->load_flags =
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
   if (!auth_token_.empty()) {

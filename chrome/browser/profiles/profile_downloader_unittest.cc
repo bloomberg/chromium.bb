@@ -29,7 +29,8 @@ const std::string kTestHostedDomain = "google.com";
 const std::string kTestFullName = "full_name";
 const std::string kTestGivenName = "given_name";
 const std::string kTestLocale = "locale";
-const std::string kTestPictureURL = "http://www.google.com/";
+const std::string kTestValidPictureURL = "http://www.google.com/";
+const std::string kTestInvalidPictureURL = "invalid_picture_url";
 
 } // namespace
 
@@ -66,16 +67,12 @@ class ProfileDownloaderTest : public testing::Test,
       ProfileDownloader* downloader,
       ProfileDownloaderDelegate::FailureReason reason) override {}
 
-  void SimulateUserInfoSuccess() {
+  void SimulateUserInfoSuccess(const std::string& picture_url) {
     account_fetcher_service_->FakeUserInfoFetchSuccess(
-      account_tracker_service_->PickAccountIdForAccount(kTestGaia, kTestEmail),
-      kTestEmail,
-      kTestGaia,
-      kTestHostedDomain,
-      kTestFullName,
-      kTestGivenName,
-      kTestLocale,
-      kTestPictureURL);
+        account_tracker_service_->PickAccountIdForAccount(kTestGaia,
+                                                          kTestEmail),
+        kTestEmail, kTestGaia, kTestHostedDomain, kTestFullName, kTestGivenName,
+        kTestLocale, picture_url);
   }
 
   AccountTrackerService* account_tracker_service_;
@@ -88,13 +85,13 @@ class ProfileDownloaderTest : public testing::Test,
 TEST_F(ProfileDownloaderTest, AccountInfoReady) {
   std::string account_id =
       account_tracker_service_->SeedAccountInfo(kTestGaia, kTestEmail);
-  SimulateUserInfoSuccess();
+  SimulateUserInfoSuccess(kTestValidPictureURL);
 
   ASSERT_EQ(ProfileDownloader::PICTURE_FAILED,
             profile_downloader_->GetProfilePictureStatus());
   profile_downloader_->StartForAccount(account_id);
   profile_downloader_->StartFetchingImage();
-  ASSERT_EQ(kTestPictureURL, profile_downloader_->GetProfilePictureURL());
+  ASSERT_EQ(kTestValidPictureURL, profile_downloader_->GetProfilePictureURL());
 }
 
 TEST_F(ProfileDownloaderTest, AccountInfoNotReady) {
@@ -105,6 +102,34 @@ TEST_F(ProfileDownloaderTest, AccountInfoNotReady) {
             profile_downloader_->GetProfilePictureStatus());
   profile_downloader_->StartForAccount(account_id);
   profile_downloader_->StartFetchingImage();
-  SimulateUserInfoSuccess();
-  ASSERT_EQ(kTestPictureURL, profile_downloader_->GetProfilePictureURL());
+  SimulateUserInfoSuccess(kTestValidPictureURL);
+  ASSERT_EQ(kTestValidPictureURL, profile_downloader_->GetProfilePictureURL());
+}
+
+// Regression test for http://crbug.com/854907
+TEST_F(ProfileDownloaderTest, AccountInfoNoPictureDoesNotCrash) {
+  std::string account_id =
+      account_tracker_service_->SeedAccountInfo(kTestGaia, kTestEmail);
+  SimulateUserInfoSuccess(AccountTrackerService::kNoPictureURLFound);
+
+  profile_downloader_->StartForAccount(account_id);
+  profile_downloader_->StartFetchingImage();
+
+  EXPECT_TRUE(profile_downloader_->GetProfilePictureURL().empty());
+  ASSERT_EQ(ProfileDownloader::PICTURE_DEFAULT,
+            profile_downloader_->GetProfilePictureStatus());
+}
+
+// Regression test for http://crbug.com/854907
+TEST_F(ProfileDownloaderTest, AccountInfoInvalidPictureURLDoesNotCrash) {
+  std::string account_id =
+      account_tracker_service_->SeedAccountInfo(kTestGaia, kTestEmail);
+  SimulateUserInfoSuccess(kTestInvalidPictureURL);
+
+  profile_downloader_->StartForAccount(account_id);
+  profile_downloader_->StartFetchingImage();
+
+  EXPECT_TRUE(profile_downloader_->GetProfilePictureURL().empty());
+  ASSERT_EQ(ProfileDownloader::PICTURE_FAILED,
+            profile_downloader_->GetProfilePictureStatus());
 }
