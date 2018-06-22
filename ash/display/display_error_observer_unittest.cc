@@ -30,6 +30,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateTestDisplaySnapshot(
       id, gfx::Point(0, 0) /* origin */, size, type,
       false /* is_aspect_preserving_scaling */, false /* has_overscan */,
       false /* has_color_correction_matrix */,
+      false /* color_correction_in_linear_space */,
       gfx::ColorSpace() /* color_space */, std::string() /* display_name */,
       base::FilePath() /* sys_path */,
       display::DisplaySnapshot::DisplayModeList() /* modes */,

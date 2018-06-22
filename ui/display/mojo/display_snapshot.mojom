@@ -19,6 +19,7 @@ struct DisplaySnapshot {
   bool is_aspect_preserving_scaling;
   bool has_overscan;
   bool has_color_correction_matrix;
+  bool color_correction_in_linear_space;
   gfx.mojom.ColorSpace color_space;
   string display_name;
   mojo_base.mojom.FilePath sys_path;

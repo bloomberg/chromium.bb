@@ -207,6 +207,14 @@ bool HasPerPlaneColorCorrectionMatrix(const int fd, drmModeCrtc* crtc) {
   return true;
 }
 
+bool IsDrmModuleName(const int fd, const std::string& name) {
+  // TODO(dcastagna): Use DrmDevice::GetVersion so that it can be easily mocked
+  // and tested.
+  drmVersionPtr drm_version = drmGetVersion(fd);
+  DCHECK(drm_version) << "Can't get version for drm device.";
+  return std::string(drm_version->name) == name;
+}
+
 bool AreDisplayModesEqual(const DisplayMode_Params& lhs,
                           const DisplayMode_Params& rhs) {
   return lhs.size == rhs.size && lhs.is_interlaced == rhs.is_interlaced &&
@@ -417,6 +425,11 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   const bool has_color_correction_matrix =
       HasColorCorrectionMatrix(fd, info->crtc()) ||
       HasPerPlaneColorCorrectionMatrix(fd, info->crtc());
+  // On rk3399 we can set a color correction matrix that will be applied in
+  // linear space. https://crbug.com/839020 to track if it will be possible to
+  // disable the per-plane degamma/gamma.
+  const bool color_correction_in_linear_space =
+      has_color_correction_matrix && IsDrmModuleName(fd, "rockchip");
   const gfx::Size maximum_cursor_size = GetMaximumCursorSize(fd);
 
   std::string display_name;
@@ -458,9 +471,10 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
 
   return std::make_unique<display::DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
-      has_overscan, has_color_correction_matrix, display_color_space,
-      display_name, sys_path, std::move(modes), edid, current_mode, native_mode,
-      product_code, year_of_manufacture, maximum_cursor_size);
+      has_overscan, has_color_correction_matrix,
+      color_correction_in_linear_space, display_color_space, display_name,
+      sys_path, std::move(modes), edid, current_mode, native_mode, product_code,
+      year_of_manufacture, maximum_cursor_size);
 }
 
 // TODO(rjkroege): Remove in a subsequent CL once Mojo IPC is used everywhere.
@@ -477,6 +491,7 @@ std::vector<DisplaySnapshot_Params> CreateDisplaySnapshotParams(
     p.is_aspect_preserving_scaling = d->is_aspect_preserving_scaling();
     p.has_overscan = d->has_overscan();
     p.has_color_correction_matrix = d->has_color_correction_matrix();
+    p.color_correction_in_linear_space = d->color_correction_in_linear_space();
     p.color_space = d->color_space();
     p.display_name = d->display_name();
     p.sys_path = d->sys_path();
@@ -521,7 +536,8 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   return std::make_unique<display::DisplaySnapshot>(
       params.display_id, params.origin, params.physical_size, params.type,
       params.is_aspect_preserving_scaling, params.has_overscan,
-      params.has_color_correction_matrix, params.color_space,
+      params.has_color_correction_matrix,
+      params.color_correction_in_linear_space, params.color_space,
       params.display_name, params.sys_path, std::move(modes), params.edid,
       current_mode, native_mode, params.product_code,
       params.year_of_manufacture, params.maximum_cursor_size);
