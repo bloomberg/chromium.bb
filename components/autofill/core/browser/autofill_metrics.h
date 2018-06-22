@@ -692,8 +692,8 @@ class AutofillMetrics {
     void LogDidFillSuggestion(int record_type,
                               const FormStructure& form,
                               const AutofillField& field);
-    void LogTextFieldDidChange(const AutofillField& field,
-                               const base::TimeTicks& form_parsed_timestamp);
+    void LogTextFieldDidChange(const FormStructure& form,
+                               const AutofillField& field);
     void LogFieldFillStatus(const FormStructure& form,
                             const AutofillField& field,
                             QualityMetricType metric_type);

@@ -374,9 +374,19 @@ be describing additional metrics about the same event.
     Recorded when user edits a text field. The text field may have been
     autofilled.
   </summary>
+  <metric name="FieldSignature">
+    <summary>
+      The signature of the field
+    </summary>
+  </metric>
   <metric name="FieldTypeGroup">
     <summary>
       Field's |FieldTypeGroup|. See |AutofillType.group()|.
+    </summary>
+  </metric>
+  <metric name="FormSignature">
+    <summary>
+      The signature of the form.
     </summary>
   </metric>
   <metric name="HeuristicType">

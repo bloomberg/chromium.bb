@@ -1796,12 +1796,14 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogTextFieldDidChange(
-    const AutofillField& field,
-    const base::TimeTicks& form_parsed_timestamp) {
+    const FormStructure& form,
+    const AutofillField& field) {
   if (!CanLog())
     return;
 
   ukm::builders::Autofill_TextFieldDidChange(source_id_)
+      .SetFormSignature(HashFormSignature(form.form_signature()))
+      .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
       .SetFieldTypeGroup(static_cast<int>(field.Type().group()))
       .SetHeuristicType(static_cast<int>(field.heuristic_type()))
       .SetServerType(static_cast<int>(field.server_type()))
@@ -1810,7 +1812,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogTextFieldDidChange(
       .SetIsAutofilled(field.is_autofilled)
       .SetIsEmpty(field.IsEmpty())
       .SetMillisecondsSinceFormParsed(
-          MillisecondsSinceFormParsed(form_parsed_timestamp))
+          MillisecondsSinceFormParsed(form.form_parsed_timestamp()))
       .Record(ukm_recorder_);
 }
 
