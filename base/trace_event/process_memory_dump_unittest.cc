@@ -386,6 +386,10 @@ TEST(ProcessMemoryDumpTest, BackgroundModeTest) {
   SetAllocatorDumpNameWhitelistForTesting(kTestDumpNameWhitelist);
   MemoryAllocatorDump* black_hole_mad = pmd->GetBlackHoleMad();
 
+  // GetAllocatorDump works for uncreated dumps.
+  EXPECT_EQ(nullptr, pmd->GetAllocatorDump("NotWhitelisted/TestName"));
+  EXPECT_EQ(nullptr, pmd->GetAllocatorDump("Whitelisted/TestName"));
+
   // Invalid dump names.
   EXPECT_EQ(black_hole_mad,
             pmd->CreateAllocatorDump("NotWhitelisted/TestName"));
@@ -419,7 +423,7 @@ TEST(ProcessMemoryDumpTest, BackgroundModeTest) {
             pmd->CreateAllocatorDump("Whitelisted/0xaB/TestName"));
 
   // GetAllocatorDump is consistent.
-  EXPECT_EQ(black_hole_mad, pmd->GetAllocatorDump("NotWhitelisted/TestName"));
+  EXPECT_EQ(nullptr, pmd->GetAllocatorDump("NotWhitelisted/TestName"));
   EXPECT_NE(black_hole_mad, pmd->GetAllocatorDump("Whitelisted/TestName"));
 
   // Test whitelisted entries.
