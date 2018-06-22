@@ -149,7 +149,7 @@ declare_args() {
   #
   # lld doesn't have the bug.
   use_icf = (is_posix || is_fuchsia) && !using_sanitizer &&
-            !(is_android && use_order_profiling) &&
+            !use_clang_coverage && !(is_android && use_order_profiling) &&
             (use_lld ||
              (use_gold &&
               ((!is_android && linux_use_bundled_binutils) || is_chromeos ||
