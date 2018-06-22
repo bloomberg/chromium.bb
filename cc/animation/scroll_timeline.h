@@ -30,10 +30,6 @@ class CC_ANIMATION_EXPORT ScrollTimeline {
   ScrollTimeline(base::Optional<ElementId> scroller_id,
                  ScrollDirection orientation,
                  double time_range);
-  ScrollTimeline(base::Optional<ElementId> active_id,
-                 base::Optional<ElementId> pending_id,
-                 ScrollDirection orientation,
-                 double time_range);
   virtual ~ScrollTimeline();
 
   // Create a copy of this ScrollTimeline intended for the impl thread in the
