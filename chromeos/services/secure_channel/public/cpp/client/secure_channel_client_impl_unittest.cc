@@ -96,7 +96,7 @@ class TestConnectionAttemptDelegate : public ConnectionAttempt::Delegate {
   }
 
   void OnConnection(std::unique_ptr<ClientChannel> channel) override {
-    last_client_channel_ = std::move(channel);
+    client_channels_.push_back(std::move(channel));
   }
 
   base::Optional<mojom::ConnectionAttemptFailureReason>
@@ -104,14 +104,14 @@ class TestConnectionAttemptDelegate : public ConnectionAttempt::Delegate {
     return last_connection_attempt_failure_reason_;
   }
 
-  std::unique_ptr<ClientChannel> last_client_channel() {
-    return std::move(last_client_channel_);
+  std::vector<std::unique_ptr<ClientChannel>>& client_channels() {
+    return client_channels_;
   }
 
  private:
   base::Optional<mojom::ConnectionAttemptFailureReason>
       last_connection_attempt_failure_reason_;
-  std::unique_ptr<ClientChannel> last_client_channel_;
+  std::vector<std::unique_ptr<ClientChannel>> client_channels_;
 };
 
 }  // namespace
@@ -248,7 +248,7 @@ TEST_F(SecureChannelClientImplTest, TestInitiateConnectionToDevice) {
   run_loop.Run();
 
   EXPECT_EQ(fake_client_channel_impl_factory_->last_client_channel_created(),
-            test_connection_attempt_delegate_->last_client_channel().get());
+            test_connection_attempt_delegate_->client_channels()[0].get());
 }
 
 TEST_F(SecureChannelClientImplTest, TestInitiateConnectionToDevice_Failure) {
@@ -291,7 +291,7 @@ TEST_F(SecureChannelClientImplTest, TestListenForConnectionFromDevice) {
   run_loop.Run();
 
   EXPECT_EQ(fake_client_channel_impl_factory_->last_client_channel_created(),
-            test_connection_attempt_delegate_->last_client_channel().get());
+            test_connection_attempt_delegate_->client_channels()[0].get());
 }
 
 TEST_F(SecureChannelClientImplTest, TestListenForConnectionFromDevice_Failure) {
@@ -330,7 +330,7 @@ TEST_F(SecureChannelClientImplTest, TestMultipleConnections) {
   run_loop_1.Run();
 
   ClientChannel* client_channel_1 =
-      test_connection_attempt_delegate_->last_client_channel().get();
+      test_connection_attempt_delegate_->client_channels()[0].get();
   EXPECT_EQ(fake_client_channel_impl_factory_->last_client_channel_created(),
             client_channel_1);
 
@@ -348,7 +348,7 @@ TEST_F(SecureChannelClientImplTest, TestMultipleConnections) {
   run_loop_2.Run();
 
   ClientChannel* client_channel_2 =
-      test_connection_attempt_delegate_->last_client_channel().get();
+      test_connection_attempt_delegate_->client_channels()[1].get();
   EXPECT_EQ(fake_client_channel_impl_factory_->last_client_channel_created(),
             client_channel_2);
 
