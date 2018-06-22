@@ -5,6 +5,7 @@
 #include <set>
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -155,6 +156,287 @@ TEST(ParseVP9CodecId, NewStyleVP9CodecIDs) {
   EXPECT_FALSE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.01.01.01.02", &profile,
                                        &level, &color_space));
 }
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+TEST(ParseAv1CodecId, VerifyRequiredValues) {
+  VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
+  uint8_t level = 0;
+  VideoColorSpace color_space;
+
+  // Old style is not subset of new style.
+  EXPECT_FALSE(ParseAv1CodecId("av1", &profile, &level, &color_space));
+
+  // Parsing should fail when first 4 required fields are not provided.
+  EXPECT_FALSE(ParseAv1CodecId("av01", &profile, &level, &color_space));
+  EXPECT_FALSE(ParseAv1CodecId("av01.0", &profile, &level, &color_space));
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.04M", &profile, &level, &color_space));
+
+  // Expect success when all required fields supplied (and valid).
+  // TransferID not specified by string, should default to 709.
+  EXPECT_TRUE(ParseAv1CodecId("av01.0.04M.08", &profile, &level, &color_space));
+  EXPECT_EQ(AV1PROFILE_PROFILE_MAIN, profile);
+  EXPECT_EQ(4, level);
+  EXPECT_EQ(VideoColorSpace::TransferID::BT709, color_space.transfer);
+
+  // Verify high and pro profiles parse correctly.
+  EXPECT_TRUE(ParseAv1CodecId("av01.1.04M.08", &profile, &level, &color_space));
+  EXPECT_EQ(AV1PROFILE_PROFILE_HIGH, profile);
+  EXPECT_TRUE(ParseAv1CodecId("av01.2.04M.08", &profile, &level, &color_space));
+  EXPECT_EQ(AV1PROFILE_PROFILE_PRO, profile);
+
+  // Leading zeros or negative values are forbidden.
+  EXPECT_FALSE(
+      ParseAv1CodecId("av01.00.04M.08", &profile, &level, &color_space));
+  EXPECT_FALSE(
+      ParseAv1CodecId("av01.-0.04M.08", &profile, &level, &color_space));
+  EXPECT_FALSE(
+      ParseAv1CodecId("av01.-1.04M.08", &profile, &level, &color_space));
+
+  // There are no profile values > 2
+  for (int i = 3; i <= 9; ++i) {
+    const std::string codec_string = base::StringPrintf("av01.%d.00M.08", i);
+    SCOPED_TRACE(codec_string);
+    EXPECT_FALSE(ParseAv1CodecId(codec_string, &profile, &level, &color_space));
+  }
+
+  // Leading zeros are required for the level.
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.4M.08", &profile, &level, &color_space));
+
+  // Negative values are not allowed.
+  EXPECT_FALSE(
+      ParseAv1CodecId("av01.0.-4M.08", &profile, &level, &color_space));
+
+  // Verify valid levels parse correctly. Valid profiles are 00 -> 31.
+  for (int i = 0; i < 99; ++i) {
+    const std::string codec_string = base::StringPrintf("av01.0.%02dM.08", i);
+    SCOPED_TRACE(codec_string);
+
+    if (i < 32) {
+      EXPECT_TRUE(
+          ParseAv1CodecId(codec_string, &profile, &level, &color_space));
+      EXPECT_EQ(AV1PROFILE_PROFILE_MAIN, profile);
+      EXPECT_EQ(i, level);
+      EXPECT_EQ(VideoColorSpace::TransferID::BT709, color_space.transfer);
+    } else {
+      EXPECT_FALSE(
+          ParseAv1CodecId(codec_string, &profile, &level, &color_space));
+    }
+  }
+
+  // Verify tier parses correctly.
+  for (char c = '\0'; c <= '\255'; ++c) {
+    const std::string codec_string = base::StringPrintf("av01.1.00%c.08", c);
+    SCOPED_TRACE(codec_string);
+
+    if (c == 'M' || c == 'H') {
+      EXPECT_TRUE(
+          ParseAv1CodecId(codec_string, &profile, &level, &color_space));
+      EXPECT_EQ(AV1PROFILE_PROFILE_HIGH, profile);
+      EXPECT_EQ(0, level);
+      EXPECT_EQ(VideoColorSpace::TransferID::BT709, color_space.transfer);
+    } else {
+      EXPECT_FALSE(
+          ParseAv1CodecId(codec_string, &profile, &level, &color_space));
+    }
+  }
+
+  // Leading zeros are required for the bit depth.
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.04M.8", &profile, &level, &color_space));
+
+  // Verify bitdepths. Only 8, 10, 12 are valid.
+  for (int i = 0; i < 99; ++i) {
+    const std::string codec_string = base::StringPrintf("av01.0.00M.%02d", i);
+    SCOPED_TRACE(codec_string);
+
+    if (i == 8 || i == 10 || i == 12) {
+      EXPECT_TRUE(
+          ParseAv1CodecId(codec_string, &profile, &level, &color_space));
+      EXPECT_EQ(AV1PROFILE_PROFILE_MAIN, profile);
+      EXPECT_EQ(0, level);
+      EXPECT_EQ(VideoColorSpace::TransferID::BT709, color_space.transfer);
+    } else {
+      EXPECT_FALSE(
+          ParseAv1CodecId(codec_string, &profile, &level, &color_space));
+    }
+  }
+}
+
+TEST(ParseAv1CodecId, VerifyOptionalMonochrome) {
+  VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
+  uint8_t level = 0;
+  VideoColorSpace color_space;
+
+  // monochrome is either 0, 1 and leading zeros are not allowed.
+  EXPECT_FALSE(
+      ParseAv1CodecId("av01.0.04M.08.00", &profile, &level, &color_space));
+  for (int i = 0; i <= 9; ++i) {
+    const std::string codec_string = base::StringPrintf("av01.0.00M.08.%d", i);
+    SCOPED_TRACE(codec_string);
+    EXPECT_EQ(i < 2,
+              ParseAv1CodecId(codec_string, &profile, &level, &color_space));
+  }
+}
+
+TEST(ParseAv1CodecId, VerifyOptionalSubsampling) {
+  VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
+  uint8_t level = 0;
+  VideoColorSpace color_space;
+
+  // chroma subsampling values are {0,1}{0,1}{0,3} with the last value always
+  // zero if either of the first two values are zero.
+  EXPECT_TRUE(
+      ParseAv1CodecId("av01.0.00M.10.0.000", &profile, &level, &color_space));
+  EXPECT_TRUE(
+      ParseAv1CodecId("av01.0.00M.10.0.100", &profile, &level, &color_space));
+  EXPECT_TRUE(
+      ParseAv1CodecId("av01.0.00M.10.0.010", &profile, &level, &color_space));
+  EXPECT_TRUE(
+      ParseAv1CodecId("av01.0.00M.10.0.111", &profile, &level, &color_space));
+  EXPECT_TRUE(
+      ParseAv1CodecId("av01.0.00M.10.0.112", &profile, &level, &color_space));
+  EXPECT_TRUE(
+      ParseAv1CodecId("av01.0.00M.10.0.113", &profile, &level, &color_space));
+
+  // Invalid cases.
+  EXPECT_FALSE(
+      ParseAv1CodecId("av01.0.00M.10.0.101", &profile, &level, &color_space));
+  EXPECT_FALSE(
+      ParseAv1CodecId("av01.0.00M.10.0.102", &profile, &level, &color_space));
+  EXPECT_FALSE(
+      ParseAv1CodecId("av01.0.00M.10.0.103", &profile, &level, &color_space));
+  EXPECT_FALSE(
+      ParseAv1CodecId("av01.0.00M.10.0.011", &profile, &level, &color_space));
+  EXPECT_FALSE(
+      ParseAv1CodecId("av01.0.00M.10.0.012", &profile, &level, &color_space));
+  EXPECT_FALSE(
+      ParseAv1CodecId("av01.0.00M.10.0.013", &profile, &level, &color_space));
+
+  // The last-value must be non-zero if the first two values are non-zero.
+  EXPECT_FALSE(
+      ParseAv1CodecId("av01.0.00M.10.0.110", &profile, &level, &color_space));
+
+  for (int i = 2; i <= 9; ++i) {
+    for (int j = 2; j <= 9; ++j) {
+      for (int k = 4; k <= 9; ++k) {
+        const std::string codec_string =
+            base::StringPrintf("av01.0.00M.08.0.%d%d%d", i, j, k);
+        SCOPED_TRACE(codec_string);
+        EXPECT_FALSE(
+            ParseAv1CodecId(codec_string, &profile, &level, &color_space));
+      }
+    }
+  }
+}
+
+TEST(ParseAv1CodecId, VerifyOptionalColorProperties) {
+  VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
+  uint8_t level = 0;
+  VideoColorSpace color_space;
+
+  // Verify a few color properties. This is non-exhaustive since validation is
+  // handled by common color space function. Below we validate only portions
+  // specific to the AV1 codec string.
+
+  // Leading zeros must be provided.
+  EXPECT_FALSE(
+      ParseAv1CodecId("av01.0.00M.10.0.000.1", &profile, &level, &color_space));
+  // Negative values are not allowed.
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.00M.10.0.000.-1", &profile, &level,
+                               &color_space));
+
+  // BT709
+  EXPECT_TRUE(ParseAv1CodecId("av01.0.00M.10.0.000.01", &profile, &level,
+                              &color_space));
+  EXPECT_EQ(VideoColorSpace::PrimaryID::BT709, color_space.primaries);
+  // BT2020
+  EXPECT_TRUE(ParseAv1CodecId("av01.0.00M.10.0.000.09", &profile, &level,
+                              &color_space));
+  EXPECT_EQ(VideoColorSpace::PrimaryID::BT2020, color_space.primaries);
+  // 0 is invalid.
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.00M.10.0.000.00", &profile, &level,
+                               &color_space));
+  EXPECT_EQ(VideoColorSpace::PrimaryID::INVALID, color_space.primaries);
+  // 23 - 255 are reserved.
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.00M.10.0.000.23", &profile, &level,
+                               &color_space));
+  EXPECT_EQ(VideoColorSpace::PrimaryID::INVALID, color_space.primaries);
+
+  // Leading zeros must be provided.
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.00M.10.0.000.01.1", &profile, &level,
+                               &color_space));
+  // Negative values are not allowed.
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.00M.10.0.000.01.-1", &profile, &level,
+                               &color_space));
+
+  // Verify a few common EOTFs parse correctly.
+  EXPECT_TRUE(ParseAv1CodecId("av01.0.00M.10.0.000.01.01", &profile, &level,
+                              &color_space));
+  EXPECT_EQ(VideoColorSpace::TransferID::BT709, color_space.transfer);
+  EXPECT_TRUE(ParseAv1CodecId("av01.0.00M.10.0.000.01.04", &profile, &level,
+                              &color_space));
+  EXPECT_EQ(VideoColorSpace::TransferID::GAMMA22, color_space.transfer);
+  EXPECT_TRUE(ParseAv1CodecId("av01.0.00M.10.0.000.01.06", &profile, &level,
+                              &color_space));
+  EXPECT_EQ(VideoColorSpace::TransferID::SMPTE170M, color_space.transfer);
+  EXPECT_TRUE(ParseAv1CodecId("av01.0.00M.10.0.000.01.14", &profile, &level,
+                              &color_space));
+  EXPECT_EQ(VideoColorSpace::TransferID::BT2020_10, color_space.transfer);
+  EXPECT_TRUE(ParseAv1CodecId("av01.0.00M.10.0.000.01.15", &profile, &level,
+                              &color_space));
+  EXPECT_EQ(VideoColorSpace::TransferID::BT2020_12, color_space.transfer);
+  EXPECT_TRUE(ParseAv1CodecId("av01.0.00M.10.0.000.01.13", &profile, &level,
+                              &color_space));
+  EXPECT_EQ(VideoColorSpace::TransferID::IEC61966_2_1, color_space.transfer);
+  EXPECT_TRUE(ParseAv1CodecId("av01.0.00M.10.0.000.01.16", &profile, &level,
+                              &color_space));
+  EXPECT_EQ(VideoColorSpace::TransferID::SMPTEST2084, color_space.transfer);
+  // Verify 0 and 3 are reserved EOTF values.
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.00M.10.0.000.01.00", &profile, &level,
+                               &color_space));
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.00M.10.0.000.01.03", &profile, &level,
+                               &color_space));
+
+  // Leading zeros must be provided.
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.00M.10.0.000.01.01.1", &profile, &level,
+                               &color_space));
+  // Negative values are not allowed.
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.00M.10.0.000.01.01.-1", &profile, &level,
+                               &color_space));
+
+  // Verify a few matrix coefficients.
+  EXPECT_TRUE(ParseAv1CodecId("av01.0.00M.10.0.000.01.01.00", &profile, &level,
+                              &color_space));
+  EXPECT_EQ(VideoColorSpace::MatrixID::RGB, color_space.matrix);
+  EXPECT_TRUE(ParseAv1CodecId("av01.0.00M.10.0.000.01.01.01", &profile, &level,
+                              &color_space));
+  EXPECT_EQ(VideoColorSpace::MatrixID::BT709, color_space.matrix);
+  EXPECT_TRUE(ParseAv1CodecId("av01.0.00M.10.0.000.01.01.10", &profile, &level,
+                              &color_space));
+  EXPECT_EQ(VideoColorSpace::MatrixID::BT2020_CL, color_space.matrix);
+
+  // Values 12 - 255 reserved. Though 12 at least is a valid value we should
+  // support in the future. https://crbug.com/854290
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.00M.10.0.000.01.01.12", &profile, &level,
+                               &color_space));
+
+  // Leading zeros are not allowed.
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.00M.10.0.000.01.01.00.00", &profile,
+                               &level, &color_space));
+  // Negative values are not allowed.
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.00M.10.0.000.01.01.00.-1", &profile,
+                               &level, &color_space));
+
+  // Verify full range flag (boolean 0 or 1).
+  EXPECT_TRUE(ParseAv1CodecId("av01.0.00M.10.0.000.01.01.00.0", &profile,
+                              &level, &color_space));
+  EXPECT_EQ(gfx::ColorSpace::RangeID::LIMITED, color_space.range);
+  EXPECT_TRUE(ParseAv1CodecId("av01.0.00M.10.0.000.01.01.00.1", &profile,
+                              &level, &color_space));
+  EXPECT_EQ(gfx::ColorSpace::RangeID::FULL, color_space.range);
+  EXPECT_FALSE(ParseAv1CodecId("av01.0.00M.10.0.000.01.01.00.2", &profile,
+                               &level, &color_space));
+}
+#endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
 TEST(ParseHEVCCodecIdTest, InvalidHEVCCodecIds) {

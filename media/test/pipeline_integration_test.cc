@@ -103,12 +103,6 @@ enum class BufferingApi { kLegacyByDts, kNewByPts };
 
 namespace media {
 
-#if BUILDFLAG(ENABLE_AV1_DECODER)
-// TODO(dalecurtis): This is not the correct final string. Fix before enabling
-// by default. http://crbug.com/784607
-const char kWebMAV1[] = "video/webm; codecs=\"av1\"";
-#endif
-
 const char kWebM[] = "video/webm; codecs=\"vp8,vorbis\"";
 const char kWebMVP9[] = "video/webm; codecs=\"vp9\"";
 const char kAudioOnlyWebM[] = "video/webm; codecs=\"vorbis\"";
@@ -119,9 +113,8 @@ const char kMP4VideoVP9[] =
 const char kMP4AudioFlac[] = "audio/mp4; codecs=\"flac\"";
 const char kMP3[] = "audio/mpeg";
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-// TODO(dalecurtis): This is not the correct final string. Fix before enabling
-// by default. http://crbug.com/784607
-const char kMP4AV1[] = "video/mp4; codecs=\"av1\"";
+const char kMP4AV1[] = "video/mp4; codecs=\"av01.0.04M.08\"";
+const char kWebMAV1[] = "video/webm; codecs=\"av01.0.04M.08\"";
 #endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const char kADTS[] = "audio/aac";

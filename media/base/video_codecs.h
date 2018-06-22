@@ -9,6 +9,7 @@
 #include <string>
 #include "media/base/media_export.h"
 #include "media/media_buildflags.h"
+#include "third_party/libaom/av1_buildflags.h"
 #include "ui/gfx/color_space.h"
 
 namespace media {
@@ -119,6 +120,13 @@ MEDIA_EXPORT bool ParseNewStyleVp9CodecID(const std::string& codec_id,
 MEDIA_EXPORT bool ParseLegacyVp9CodecID(const std::string& codec_id,
                                         VideoCodecProfile* profile,
                                         uint8_t* level_idc);
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+MEDIA_EXPORT bool ParseAv1CodecId(const std::string& codec_id,
+                                  VideoCodecProfile* profile,
+                                  uint8_t* level_idc,
+                                  VideoColorSpace* color_space);
+#endif
 
 // Handle parsing AVC/H.264 codec ids as outlined in RFC 6381 and ISO-14496-10.
 MEDIA_EXPORT bool ParseAVCCodecId(const std::string& codec_id,

@@ -591,20 +591,18 @@ class AV1MediaCanPlayTypeTest : public MediaCanPlayTypeTest {
 // Note: This must be a separate test since features can not be changed after
 // the initial navigation.
 IN_PROC_BROWSER_TEST_F(AV1MediaCanPlayTypeTest, CodecSupportTest_av1) {
-  // TODO(dalecurtis): This is not the correct final string. Fix before enabling
-  // by default. This test needs to be merged into the existing mp4 and webm
-  // before release as well. http://crbug.com/784607
-  EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"av1\"'"));
-  EXPECT_EQ(kProbably, CanPlay("'video/mp4; codecs=\"av1\"'"));
+  // Fully qualified codec strings are required. These tests are not exhaustive
+  // since codec string parsing is exhaustively tested elsewhere.
+  EXPECT_EQ(kNot, CanPlay("'video/webm; codecs=\"av1\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"av1\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"av01.0.04M.08\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'video/mp4; codecs=\"av01.0.04M.08\"'"));
 }
 #endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_av1_unsupported) {
-  // TODO(dalecurtis): This is not the correct final string. Fix before enabling
-  // by default. This test needs to be merged into the existing mp4 and webm
-  // before release as well. http://crbug.com/784607
-  EXPECT_EQ(kNot, CanPlay("'video/webm; codecs=\"av1\"'"));
-  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"av1\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/webm; codecs=\"av01.0.04M.08\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"av01.0.04M.08\"'"));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_wav) {
