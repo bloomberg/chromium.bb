@@ -20,6 +20,7 @@
 #include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
@@ -66,16 +67,15 @@ void CrossSiteDocumentResourceHandler::LogBlockedResponseOnUIThread(
   if (!web_contents)
     return;
 
-  ukm::UkmRecorder* recorder = ukm::UkmRecorder::Get();
-  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
-  recorder->UpdateSourceURL(source_id, web_contents->GetLastCommittedURL());
+  ukm::SourceId source_id = static_cast<WebContentsImpl*>(web_contents)
+                                ->GetUkmSourceIdForLastCommittedSource();
   ukm::builders::SiteIsolation_XSD_Browser_Blocked(source_id)
       .SetCanonicalMimeType(static_cast<int64_t>(canonical_mime_type))
       .SetContentLengthWasZero(content_length == 0)
       .SetContentResourceType(resource_type)
       .SetHttpResponseCode(http_response_code)
       .SetNeededSniffing(needed_sniffing)
-      .Record(recorder);
+      .Record(ukm::UkmRecorder::Get());
 }
 
 void CrossSiteDocumentResourceHandler::LogBlockedResponse(

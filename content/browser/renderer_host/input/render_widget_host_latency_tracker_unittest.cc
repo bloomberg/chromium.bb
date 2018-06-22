@@ -10,6 +10,7 @@
 #include "components/rappor/test_rappor_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/test/test_content_browser_client.h"
@@ -91,7 +92,8 @@ class RenderWidgetHostLatencyTrackerTest
     ResetHistograms();
   }
 
-  void ExpectUkmReported(const char* event_name,
+  void ExpectUkmReported(ukm::SourceId source_id,
+                         const char* event_name,
                          const std::vector<std::string>& metric_names,
                          size_t expected_count) {
     const ukm::TestUkmRecorder* ukm_recoder =
@@ -100,7 +102,7 @@ class RenderWidgetHostLatencyTrackerTest
     auto entries = ukm_recoder->GetEntriesByName(event_name);
     EXPECT_EQ(expected_count, entries.size());
     for (const auto* const entry : entries) {
-      ukm_recoder->ExpectEntrySourceHasUrl(entry, GURL(kUrl));
+      EXPECT_EQ(source_id, entry->source_id);
       for (const auto& metric_name : metric_names) {
         EXPECT_TRUE(ukm_recoder->EntryHasMetric(entry, metric_name.c_str()));
       }
@@ -215,6 +217,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
   const GURL url(kUrl);
   size_t total_ukm_entry_count = 0;
   contents()->NavigateAndCommit(url);
+  ukm::SourceId source_id = static_cast<WebContentsImpl*>(contents())
+                                ->GetUkmSourceIdForLastCommittedSource();
+  EXPECT_NE(ukm::kInvalidSourceId, source_id);
   for (bool rendering_on_main : {false, true}) {
     ResetHistograms();
     {
@@ -240,7 +245,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
       // UKM metrics.
       total_ukm_entry_count++;
       ExpectUkmReported(
-          "Event.ScrollBegin.Wheel",
+          source_id, "Event.ScrollBegin.Wheel",
           {"TimeToScrollUpdateSwapBegin", "TimeToHandled", "IsMainThread"},
           total_ukm_entry_count);
 
@@ -326,6 +331,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
   const GURL url(kUrl);
   size_t total_ukm_entry_count = 0;
   contents()->NavigateAndCommit(url);
+  ukm::SourceId source_id = static_cast<WebContentsImpl*>(contents())
+                                ->GetUkmSourceIdForLastCommittedSource();
+  EXPECT_NE(ukm::kInvalidSourceId, source_id);
   for (bool rendering_on_main : {false, true}) {
     ResetHistograms();
     {
@@ -350,7 +358,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
       // UKM metrics.
       total_ukm_entry_count++;
       ExpectUkmReported(
-          "Event.ScrollUpdate.Wheel",
+          source_id, "Event.ScrollUpdate.Wheel",
           {"TimeToScrollUpdateSwapBegin", "TimeToHandled", "IsMainThread"},
           total_ukm_entry_count);
 
@@ -492,6 +500,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
   const GURL url(kUrl);
   contents()->NavigateAndCommit(url);
   size_t total_ukm_entry_count = 0;
+  ukm::SourceId source_id = static_cast<WebContentsImpl*>(contents())
+                                ->GetUkmSourceIdForLastCommittedSource();
+  EXPECT_NE(ukm::kInvalidSourceId, source_id);
   for (bool rendering_on_main : {false, true}) {
     ResetHistograms();
     {
@@ -535,7 +546,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
     // UKM metrics.
     total_ukm_entry_count++;
     ExpectUkmReported(
-        "Event.ScrollBegin.Touch",
+        source_id, "Event.ScrollBegin.Touch",
         {"TimeToScrollUpdateSwapBegin", "TimeToHandled", "IsMainThread"},
         total_ukm_entry_count);
 
@@ -601,6 +612,9 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
   const GURL url(kUrl);
   contents()->NavigateAndCommit(url);
   size_t total_ukm_entry_count = 0;
+  ukm::SourceId source_id = static_cast<WebContentsImpl*>(contents())
+                                ->GetUkmSourceIdForLastCommittedSource();
+  EXPECT_NE(ukm::kInvalidSourceId, source_id);
   for (bool rendering_on_main : {false, true}) {
     ResetHistograms();
     {
@@ -643,7 +657,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
     // UKM metrics.
     total_ukm_entry_count++;
     ExpectUkmReported(
-        "Event.ScrollUpdate.Touch",
+        source_id, "Event.ScrollUpdate.Touch",
         {"TimeToScrollUpdateSwapBegin", "TimeToHandled", "IsMainThread"},
         total_ukm_entry_count);
 

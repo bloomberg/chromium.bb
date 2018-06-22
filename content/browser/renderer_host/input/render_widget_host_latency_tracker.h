@@ -54,9 +54,7 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
  private:
   void OnEventStart(ui::LatencyInfo* latency);
 
-  ukm::SourceId ukm_source_id_;
   bool has_seen_first_gesture_scroll_update_;
-  bool set_url_for_ukm_ = false;
   // Whether the current stream of touch events includes more than one active
   // touch point. This is set in OnInputEvent, and cleared in OnInputEventAck.
   bool active_multi_finger_gesture_;
