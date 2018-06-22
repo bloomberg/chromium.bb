@@ -48,13 +48,13 @@ bool StlEquals(const Container a, std::initializer_list<T> b) {
   } while (false)
 
 #define EXPECT_VIDEO_CODECS(...) \
-  EXPECT_STL_EQ(cdm.supported_video_codecs, __VA_ARGS__)
+  EXPECT_STL_EQ(cdm.capability.video_codecs, __VA_ARGS__)
 
 #define EXPECT_ENCRYPTION_SCHEMES(...) \
-  EXPECT_STL_EQ(cdm.supported_encryption_schemes, __VA_ARGS__)
+  EXPECT_STL_EQ(cdm.capability.encryption_schemes, __VA_ARGS__)
 
 #define EXPECT_SESSION_TYPES(...) \
-  EXPECT_STL_EQ(cdm.supported_session_types, __VA_ARGS__)
+  EXPECT_STL_EQ(cdm.capability.session_types, __VA_ARGS__)
 
 }  // namespace
 
@@ -66,21 +66,19 @@ class CdmRegistryImplTest : public testing::Test {
   ~CdmRegistryImplTest() override {}
 
  protected:
-  void Register(
-      const std::string& name,
-      const std::string& version,
-      const std::string& path,
-      const std::vector<VideoCodec>& supported_video_codecs,
-      const base::flat_set<CdmSessionType>& supported_session_types,
-      const base::flat_set<EncryptionMode>& supported_encryption_schemes,
-      std::string supported_key_system,
-      bool supports_sub_key_systems = false) {
+  void Register(const std::string& name,
+                const std::string& version,
+                const std::string& path,
+                const std::vector<VideoCodec>& video_codecs,
+                const base::flat_set<CdmSessionType>& session_types,
+                const base::flat_set<EncryptionMode>& encryption_schemes,
+                std::string supported_key_system,
+                bool supports_sub_key_systems = false) {
     cdm_registry_.RegisterCdm(
         CdmInfo(name, kTestCdmGuid, base::Version(version),
                 base::FilePath::FromUTF8Unsafe(path), kTestFileSystemId,
-                supported_video_codecs, supported_session_types,
-                supported_encryption_schemes, supported_key_system,
-                supports_sub_key_systems));
+                CdmCapability(video_codecs, encryption_schemes, session_types),
+                supported_key_system, supports_sub_key_systems));
   }
 
   bool IsRegistered(const std::string& name, const std::string& version) {

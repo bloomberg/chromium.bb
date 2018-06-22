@@ -63,18 +63,17 @@ class KeySystemSupportTest : public testing::Test {
   // Registers |key_system| with supported capabilities. All other values for
   // CdmInfo have some default value as they're not returned by
   // IsKeySystemSupported().
-  void Register(
-      const std::string& key_system,
-      const std::vector<VideoCodec>& supported_video_codecs,
-      const base::flat_set<CdmSessionType>& supported_session_types,
-      const base::flat_set<EncryptionMode>& supported_encryption_schemes) {
+  void Register(const std::string& key_system,
+                const std::vector<VideoCodec>& video_codecs,
+                const base::flat_set<CdmSessionType>& session_types,
+                const base::flat_set<EncryptionMode>& encryption_schemes) {
     DVLOG(1) << __func__;
 
     CdmRegistry::GetInstance()->RegisterCdm(
         CdmInfo(key_system, kTestCdmGuid, base::Version(kVersion),
                 base::FilePath::FromUTF8Unsafe(kTestPath), kTestFileSystemId,
-                supported_video_codecs, supported_session_types,
-                supported_encryption_schemes, key_system, false));
+                CdmCapability(video_codecs, encryption_schemes, session_types),
+                key_system, false));
   }
 
   // Determines if |key_system| is registered. If it is, updates |codecs_|
