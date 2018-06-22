@@ -67,8 +67,13 @@ resource_coordinator::LifecycleUnit* GetLifecycleUnitById(int32_t id) {
 double GetSiteEngagementScore(content::WebContents* contents) {
   // Get the active navigation entry. Restored tabs should always have one.
   auto& controller = contents->GetController();
-  auto* nav_entry =
-      controller.GetEntryAtIndex(controller.GetCurrentEntryIndex());
+  const int current_entry_index = controller.GetCurrentEntryIndex();
+
+  // A WebContents which hasn't navigated yet does not have a NavigationEntry.
+  if (current_entry_index == -1)
+    return 0;
+
+  auto* nav_entry = controller.GetEntryAtIndex(current_entry_index);
   DCHECK(nav_entry);
 
   auto* engagement_svc = SiteEngagementService::Get(
