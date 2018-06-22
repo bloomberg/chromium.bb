@@ -254,10 +254,13 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
         cm->op_params[i].bitrate = max_level_bitrate(
             cm->profile, major_minor_to_seq_level_idx(seq_params->level[i]),
             seq_params->tier[i]);
+        // Level with seq_level_idx = 31 returns a high "dummy" bitrate to pass
+        // the check
         if (cm->op_params[i].bitrate == 0)
           aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                              "AV1 does not support this combination of "
                              "profile, level, and tier.");
+        // Buffer size in bits/s is bitrate in bits/s * 1 s
         cm->op_params[i].buffer_size = cm->op_params[i].bitrate;
       }
       if (cm->timing_info_present && cm->timing_info.equal_picture_interval &&
@@ -278,9 +281,12 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
             aom_internal_error(
                 &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                 "AV1 does not support more than 10 decoded frames delay");
+        } else {
+          cm->op_params[i].initial_display_delay = 10;
         }
       } else {
         cm->op_params[i].display_model_param_present_flag = 0;
+        cm->op_params[i].initial_display_delay = 10;
       }
     }
   }

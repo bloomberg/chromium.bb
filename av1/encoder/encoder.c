@@ -942,10 +942,13 @@ static void set_bitstream_level_tier(SequenceHeader *seq, AV1_COMMON *cm,
     // level, and tier
     cm->op_params[i].bitrate = max_level_bitrate(
         cm->profile, major_minor_to_seq_level_idx(seq->level[i]), seq->tier[i]);
+    // Level with seq_level_idx = 31 returns a high "dummy" bitrate to pass the
+    // check
     if (cm->op_params[i].bitrate == 0)
       aom_internal_error(
           &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
           "AV1 does not support this combination of profile, level, and tier.");
+    // Buffer size in bits/s is bitrate in bits/s * 1 s
     cm->op_params[i].buffer_size = cm->op_params[i].bitrate;
   }
 }
@@ -1037,7 +1040,11 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
              !cm->seq_params.decoder_model_info_present_flag) {
     // set the decoder model parameters in resource availability mode
     set_resource_availability_parameters(&cm->op_params[0]);
+  } else {
+    cm->op_params[0].initial_display_delay =
+        10;  // Default value (not signaled)
   }
+
   cm->width = oxcf->width;
   cm->height = oxcf->height;
   set_sb_size(&cm->seq_params,
@@ -2286,6 +2293,9 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
              !cm->seq_params.decoder_model_info_present_flag) {
     // set the decoder model parameters in resource availability mode
     set_resource_availability_parameters(&cm->op_params[0]);
+  } else {
+    cm->op_params[0].initial_display_delay =
+        10;  // Default value (not signaled)
   }
 
   update_film_grain_parameters(cpi, oxcf);
