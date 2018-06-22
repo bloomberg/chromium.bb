@@ -5,6 +5,7 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
+#include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -27,6 +28,8 @@ using chrome_test_util::SettingsDoneButton;
 
 // Opens the Google services settings view, and closes it.
 - (void)testOpenGoogleServicesSettings {
+  if (!IsUIRefreshPhase1Enabled())
+    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
 
