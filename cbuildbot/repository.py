@@ -199,7 +199,7 @@ def PrepManifestForRepo(git_repo, manifest):
     manifest: Path to existing manifest file to copy into the new git
               repository.
   """
-  if not git.IsGitRepo(git_repo):
+  if not git.GetGitGitdir(git_repo):
     git.Init(git_repo)
 
   new_manifest = os.path.join(git_repo, constants.DEFAULT_MANIFEST)
@@ -346,6 +346,7 @@ class RepoRepository(object):
     for attrs in git.ManifestCheckout.Cached(self.directory).ListCheckouts():
       d = os.path.join(self.directory, attrs['path'])
       repo_git_store = self.CalculateGitRepoLocations(attrs['name'], d)[0]
+      logging.debug('Found repo directory to clean: %s', repo_git_store)
       git.DeleteStaleLocks(repo_git_store)
 
   def CalculateGitRepoLocations(self, project, path):

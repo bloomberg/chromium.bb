@@ -93,7 +93,7 @@ ChromeOS (board specified.) Also, it can deploy the result to ChromeOS DUT
     6. "gclient sync --nohooks"
     """
     if self.reuse_repo and os.path.exists(self.repo_dir):
-      if git.IsGitRepo(self.repo_dir):
+      if git.GetGitGitdir(self.repo_dir):
         return
       else:
         raise Exception('Chromium repo broken. Please manually remove it: %s' %

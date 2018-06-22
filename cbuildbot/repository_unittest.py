@@ -103,7 +103,7 @@ class RepoInitTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
   def testCleanStaleLocks(self):
     """Test successful repo lock cleanup."""
     self._Initialize('release-R19-2046.B')
-    self.PatchObject(git, 'IsGitRepo')
+    self.PatchObject(git, 'GetGitGitdir')
     dsl = self.PatchObject(git, 'DeleteStaleLocks')
     self.repo.CleanStaleLocks()
 

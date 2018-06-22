@@ -142,12 +142,22 @@ def IsSubmoduleCheckoutRoot(path, remote, url):
   return False
 
 
-def IsGitRepo(cwd):
-  """Checks if there's a git repo rooted at a directory."""
-  is_checkout = os.path.isdir(os.path.join(cwd, '.git'))
-  is_bare_repo = os.path.isdir(os.path.join(
-      cwd, 'objects')) and os.path.isdir(os.path.join(cwd, 'refs'))
-  return is_checkout or is_bare_repo
+def GetGitGitdir(pwd):
+  """Probes for a git gitdir directory rooted at a directory.
+
+  Args:
+    pwd: Directory to probe. If a checkout, should be the root.
+
+  Returns:
+    Path of the gitdir directory. None if the directory is not a git repo.
+  """
+  if os.path.isdir(os.path.join(pwd, '.git')):
+    return os.path.join(pwd, '.git')
+  # Is this directory a bare repo with no checkout?
+  if os.path.isdir(os.path.join(
+      pwd, 'objects')) and os.path.isdir(os.path.join(pwd, 'refs')):
+    return pwd
+  return None
 
 
 def IsGitRepositoryCorrupted(cwd):
@@ -1475,9 +1485,12 @@ def DeleteStaleLocks(git_repo):
   Args"
     git_repo: Directory of git repository.
   """
-  if not IsGitRepo(git_repo):
+  git_gitdir = GetGitGitdir(git_repo)
+  if not git_gitdir:
     raise GitException("Not a valid git repo: %s" % git_repo)
 
-  for root, _, filenames in os.walk(os.path.join(git_repo, '.git')):
+  for root, _, filenames in os.walk(git_gitdir):
     for filename in fnmatch.filter(filenames, '*.lock'):
-      os.remove(os.path.join(root, filename))
+      p = os.path.join(root, filename)
+      logging.info('Found stale git lock, removing: %s', p)
+      os.remove(p)
