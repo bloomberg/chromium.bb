@@ -972,6 +972,11 @@ CommandHandler.onEditCommand_ = function(command) {
   if (!textEditHandler)
     return true;
 
+  // Skip customized keys for read only text fields.
+  if (textEditHandler.node.restriction ==
+      chrome.automation.Restriction.READ_ONLY)
+    return true;
+
   var isMultiline = AutomationPredicate.multiline(current.start.node);
   switch (command) {
     case 'previousCharacter':
