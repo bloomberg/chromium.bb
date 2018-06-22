@@ -42,13 +42,6 @@ class StartupController {
   // |can_start_callback_| check!).
   void TryStart(bool force_immediate);
 
-  // Tells the controller to bypass deferred startup and the "first setup
-  // complete" check. After this, any TryStart() calls (until a Reset()) will
-  // cause immediate startup.
-  // TODO(crbug.com/854978): See if we can get rid of this and just call
-  // TryStart(true) instead.
-  void SetBypassSetupCompleteAndDeferredStartup();
-
   // Called when a datatype (SyncableService) has a need for sync to start
   // ASAP, presumably because a local change event has occurred but we're
   // still in deferred start mode, meaning the SyncableService hasn't been
@@ -86,13 +79,8 @@ class StartupController {
   // startup routines for the sync engine.
   const base::RepeatingClosure start_engine_callback_;
 
-  // If true, will bypass the FirstSetupComplete check when triggering sync
-  // startup. Set in SetBypassSetupCompleteAndDeferredStartup.
-  bool bypass_setup_complete_;
-
   // True if we should start sync ASAP because either a data type has requested
-  // it, or SetBypassSetupCompleteAndDeferredStartup was called, or our deferred
-  // startup timer has expired.
+  // it or our deferred startup timer has expired.
   bool bypass_deferred_startup_;
 
   // The time that StartUp() is called. This is used to calculate time spent

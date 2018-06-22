@@ -66,7 +66,6 @@ StartupController::StartupController(
       get_preferred_data_types_callback_(std::move(get_preferred_data_types)),
       can_start_callback_(std::move(can_start)),
       start_engine_callback_(std::move(start_engine)),
-      bypass_setup_complete_(false),
       bypass_deferred_startup_(false),
       weak_factory_(this) {}
 
@@ -74,7 +73,6 @@ StartupController::~StartupController() {}
 
 void StartupController::Reset() {
   bypass_deferred_startup_ = false;
-  bypass_setup_complete_ = false;
   start_up_time_ = base::Time();
   start_engine_time_ = base::Time();
   // Don't let previous timers affect us post-reset.
@@ -119,14 +117,9 @@ void StartupController::TryStart(bool force_immediate) {
   // in progress, unless told to otherwise.
   if (force_immediate) {
     StartUp(STARTUP_IMMEDIATE);
-  } else if (sync_prefs_->IsFirstSetupComplete() || bypass_setup_complete_) {
+  } else if (sync_prefs_->IsFirstSetupComplete()) {
     StartUp(bypass_deferred_startup_ ? STARTUP_IMMEDIATE : STARTUP_DEFERRED);
   }
-}
-
-void StartupController::SetBypassSetupCompleteAndDeferredStartup() {
-  bypass_deferred_startup_ = true;
-  bypass_setup_complete_ = true;
 }
 
 void StartupController::RecordTimeDeferred() {
@@ -147,6 +140,8 @@ void StartupController::OnFallbackStartupTimerExpired() {
   RecordTimeDeferred();
   UMA_HISTOGRAM_ENUMERATION("Sync.Startup.DeferredInitTrigger",
                             TRIGGER_FALLBACK_TIMER, MAX_TRIGGER_VALUE);
+  // Once the deferred init timer has expired, don't defer startup again (until
+  // Reset() or browser restart), even if this startup attempt doesn't succeed.
   bypass_deferred_startup_ = true;
   TryStart(/*force_immediate=*/false);
 }
