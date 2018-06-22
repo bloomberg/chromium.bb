@@ -160,6 +160,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsDownload() override;
   bool IsFormSubmission() override;
 
+  const std::string& origin_policy() const { return origin_policy_; }
+  void set_origin_policy(const std::string& origin_policy) {
+    origin_policy_ = origin_policy;
+  }
+
   // Resume and CancelDeferredNavigation must only be called by the
   // NavigationThrottle that is currently deferring the navigation.
   // |resuming_throttle| and |cancelling_throttle| are the throttles calling
@@ -368,6 +373,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // url we're navigating to.
   void SetExpectedProcess(RenderProcessHost* expected_process);
 
+  NavigationThrottle* GetDeferringThrottleForTesting() const {
+    return GetDeferringThrottle();
+  }
+
  private:
   friend class NavigationHandleImplTest;
 
@@ -556,6 +565,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Used to inform a RenderProcessHost that we expect this navigation to commit
   // in it.
   int expected_render_process_host_id_;
+
+  // The origin policy that applies to this navigation. Empty if none applies.
+  std::string origin_policy_;
 
   // Whether the navigation is in the middle of a transfer. Set to false when
   // the DidStartProvisionalLoad is received from the new renderer.

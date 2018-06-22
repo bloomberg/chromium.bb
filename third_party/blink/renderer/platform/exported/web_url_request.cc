@@ -416,6 +416,14 @@ const base::Optional<base::UnguessableToken>& WebURLRequest::GetDevToolsToken()
   return resource_request_->GetDevToolsToken();
 }
 
+void WebURLRequest::SetOriginPolicy(const WebString& policy) {
+  resource_request_->SetOriginPolicy(policy);
+}
+
+const WebString WebURLRequest::GetOriginPolicy() const {
+  return resource_request_->GetOriginPolicy();
+}
+
 const ResourceRequest& WebURLRequest::ToResourceRequest() const {
   DCHECK(resource_request_);
   return *resource_request_;

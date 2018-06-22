@@ -369,6 +369,9 @@ class PLATFORM_EXPORT ResourceRequest final {
     devtools_token_ = devtools_token;
   }
 
+  void SetOriginPolicy(const String& policy) { origin_policy_ = policy; }
+  const String& GetOriginPolicy() const { return origin_policy_; }
+
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
@@ -438,6 +441,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool upgrade_if_insecure_ = false;
 
   base::Optional<base::UnguessableToken> devtools_token_;
+  String origin_policy_;
 };
 
 // This class is needed to copy a ResourceRequest across threads, because it

@@ -346,6 +346,10 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT const base::Optional<base::UnguessableToken>&
   GetDevToolsToken() const;
 
+  // Set the applicable Origin Policy.
+  BLINK_PLATFORM_EXPORT const WebString GetOriginPolicy() const;
+  BLINK_PLATFORM_EXPORT void SetOriginPolicy(const WebString& policy);
+
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& ToMutableResourceRequest();
   BLINK_PLATFORM_EXPORT const ResourceRequest& ToResourceRequest() const;

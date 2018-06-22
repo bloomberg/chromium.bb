@@ -480,6 +480,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(started_from_context_menu)
   IPC_STRUCT_TRAITS_MEMBER(initiator_csp)
   IPC_STRUCT_TRAITS_MEMBER(initiator_self_source)
+  IPC_STRUCT_TRAITS_MEMBER(origin_policy)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::NavigationTiming)

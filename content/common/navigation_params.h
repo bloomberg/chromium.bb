@@ -156,6 +156,10 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // We require a copy of the relevant CSP to perform navigation checks.
   std::vector<ContentSecurityPolicy> initiator_csp;
   base::Optional<CSPSource> initiator_self_source;
+
+  // The current origin policy for this request's origin.
+  // (Empty if none applies.)
+  std::string origin_policy;
 };
 
 // Provided by the browser -----------------------------------------------------
