@@ -15,11 +15,11 @@ static void analysis_53_row(int length, tran_low_t *x, tran_low_t *lowpass,
   b = highpass;
   a = lowpass;
   while (--n) {
-    *a++ = (r = *x++) << 1;
+    *a++ = (r = *x++) * 2;
     *b++ = *x - ((r + x[1] + 1) >> 1);
     x++;
   }
-  *a = (r = *x++) << 1;
+  *a = (r = *x++) * 2;
   *b = *x - r;
 
   n = length >> 1;
@@ -42,7 +42,7 @@ static void analysis_53_col(int length, tran_low_t *x, tran_low_t *lowpass,
   a = lowpass;
   while (--n) {
     *a++ = (r = *x++);
-    *b++ = (((*x) << 1) - (r + x[1]) + 2) >> 2;
+    *b++ = (((*x) * 2) - (r + x[1]) + 2) >> 2;
     x++;
   }
   *a = (r = *x++);
