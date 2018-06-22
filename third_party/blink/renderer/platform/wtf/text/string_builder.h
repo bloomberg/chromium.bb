@@ -37,8 +37,7 @@ namespace WTF {
 
 class WTF_EXPORT StringBuilder {
  public:
-  StringBuilder() : buffer_(nullptr), length_(0), is8_bit_(true) {}
-
+  StringBuilder() : no_buffer_() {}
   ~StringBuilder() { Clear(); }
 
   void Append(const UChar*, unsigned length);
@@ -111,7 +110,7 @@ class WTF_EXPORT StringBuilder {
       return;
     }
     EnsureBuffer16(1);
-    buffer16_->push_back(c);
+    buffer16_.push_back(c);
     ++length_;
   }
 
@@ -121,7 +120,7 @@ class WTF_EXPORT StringBuilder {
       return;
     }
     EnsureBuffer8(1);
-    buffer8_->push_back(c);
+    buffer8_.push_back(c);
     ++length_;
   }
 
@@ -172,8 +171,8 @@ class WTF_EXPORT StringBuilder {
       return nullptr;
     if (!string_.IsNull())
       return string_.Characters8();
-    DCHECK(buffer8_);
-    return buffer8_->data();
+    DCHECK(has_buffer_);
+    return buffer8_.data();
   }
 
   const UChar* Characters16() const {
@@ -182,8 +181,8 @@ class WTF_EXPORT StringBuilder {
       return nullptr;
     if (!string_.IsNull())
       return string_.Characters16();
-    DCHECK(buffer16_);
-    return buffer16_->data();
+    DCHECK(has_buffer_);
+    return buffer16_.data();
   }
 
   bool Is8Bit() const { return is8_bit_; }
@@ -195,8 +194,8 @@ class WTF_EXPORT StringBuilder {
   static const unsigned kInlineBufferSize = 16;
   static unsigned InitialBufferSize() { return kInlineBufferSize; }
 
-  typedef Vector<LChar, kInlineBufferSize> Buffer8;
-  typedef Vector<UChar, kInlineBufferSize> Buffer16;
+  typedef Vector<LChar, kInlineBufferSize / sizeof(LChar)> Buffer8;
+  typedef Vector<UChar, kInlineBufferSize / sizeof(UChar)> Buffer16;
 
   void EnsureBuffer8(unsigned added_size) {
     DCHECK(is8_bit_);
@@ -212,16 +211,17 @@ class WTF_EXPORT StringBuilder {
   void CreateBuffer8(unsigned added_size);
   void CreateBuffer16(unsigned added_size);
   void ClearBuffer();
-  bool HasBuffer() const { return buffer_; }
+  bool HasBuffer() const { return has_buffer_; }
 
   String string_;
   union {
-    Buffer8* buffer8_;
-    Buffer16* buffer16_;
-    void* buffer_;
+    char no_buffer_;
+    Buffer8 buffer8_;
+    Buffer16 buffer16_;
   };
-  unsigned length_;
-  bool is8_bit_;
+  unsigned length_ = 0;
+  bool is8_bit_ = true;
+  bool has_buffer_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(StringBuilder);
 };
