@@ -2961,9 +2961,13 @@ if (enable_java_templates) {
       }
       if (defined(invoker.include_java_resources) &&
           invoker.include_java_resources) {
-        # Use original jar_path because _jar_path points to a library without
-        # resources.
-        java_resources_jar = invoker.jar_path
+        if (defined(invoker.jar_path)) {
+          # Use original jar_path because _jar_path points to a library without
+          # resources.
+          java_resources_jar = invoker.jar_path
+        } else {
+          java_resources_jar = _final_jar_path
+        }
       }
     }
     _accumulated_public_deps += [ ":$_build_config_target_name" ]

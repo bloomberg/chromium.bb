@@ -393,7 +393,7 @@ deps = {
   },
 
   'src/third_party/android_tools': {
-      'url': Var('chromium_git') + '/android_tools.git' + '@' + 'c22a664c39af72dd8f89200220713dcad811300a',
+      'url': Var('chromium_git') + '/android_tools.git' + '@' + '3545ab5b9883087a54cb9e5337c32617cb2a443d',
       'condition': 'checkout_android_native_support',
   },
 
@@ -503,7 +503,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/byte_buddy',
-              'version': 'version:1.4.17-cr0',
+              'version': 'version:1.8.8-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -833,7 +833,7 @@ deps = {
   },
 
   'src/third_party/mockito/src': {
-      'url': Var('chromium_git') + '/external/mockito/mockito.git' + '@' + 'de83ad4598ad4cf5ea53c69a8a8053780b04b850',
+      'url': Var('chromium_git') + '/external/mockito/mockito.git' + '@' + '04a2a289a4222f80ad20717c25144981210d2eac',
       'condition': 'checkout_android',
   },
 
