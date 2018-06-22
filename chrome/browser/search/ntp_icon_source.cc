@@ -99,21 +99,24 @@ const ParsedNtpIconPath ParseNtpIconPath(const std::string& path) {
   return parsed;
 }
 
-// Will paint the letter + circle in the specified |canvas|.
-void DrawFallbackIcon(const GURL& icon_url, int size, gfx::Canvas* canvas) {
-  const int kOffsetX = 0;
-  const int kOffsetY = 0;
+// Draws a circle of a given |size| in the |canvas| and fills it with
+// |background_color|.
+void DrawCircleInCanvas(gfx::Canvas* canvas,
+                        int size,
+                        SkColor background_color) {
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
-  // Draw a filled, colored circle.
-  // TODO(crbug.com/853780): Set the appropriate background color.
-  flags.setColor(SK_ColorGRAY);
+  flags.setColor(background_color);
   int corner_radius = static_cast<int>(size * 0.5 + 0.5);
-  canvas->DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
-  canvas->DrawRoundRect(gfx::Rect(kOffsetX, kOffsetY, size, size),
-                        corner_radius, flags);
+  canvas->DrawRoundRect(gfx::Rect(0, 0, size, size), corner_radius, flags);
+}
 
+// Will paint the appropriate letter in the center of specified |canvas| of
+// given |size|.
+void DrawFallbackIconLetter(const GURL& icon_url,
+                            int size,
+                            gfx::Canvas* canvas) {
   // Get the appropriate letter to draw, then eventually draw it.
   base::string16 icon_text = favicon::GetFallbackIconText(icon_url);
   if (icon_text.empty())
@@ -130,20 +133,38 @@ void DrawFallbackIcon(const GURL& icon_url, int size, gfx::Canvas* canvas) {
       icon_text,
       gfx::FontList({l10n_util::GetStringUTF8(IDS_SANS_SERIF_FONT_FAMILY)},
                     gfx::Font::NORMAL, font_size, gfx::Font::Weight::NORMAL),
-      SK_ColorWHITE, gfx::Rect(kOffsetX, kOffsetY, size, size),
+      SK_ColorWHITE, gfx::Rect(0, 0, size, size),
       gfx::Canvas::TEXT_ALIGN_CENTER);
+}
+
+// Will draw |bitmap| in the center of the |canvas| of a given |size|.
+// |bitmap| keeps its size.
+void DrawFavicon(const SkBitmap& bitmap, gfx::Canvas* canvas, int size) {
+  int x_origin = (size - bitmap.width()) / 2;
+  int y_origin = (size - bitmap.height()) / 2;
+  canvas->DrawImageInt(gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, /*scale=*/1.0)),
+                       x_origin, y_origin);
 }
 
 // For the given |icon_url|, will render a fallback icon with an appropriate
 // letter in a circle.
-std::vector<unsigned char> RenderFallbackIconBitmap(const GURL& icon_url,
-                                                    int size) {
-  const int size_to_use = std::min(64, size);
+std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
+                                            const SkBitmap& local_favicon,
+                                            int size) {
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(size_to_use, size_to_use, false);
+  bitmap.allocN32Pixels(size, size, false);
   cc::SkiaPaintCanvas paint_canvas(bitmap);
   gfx::Canvas canvas(&paint_canvas, 1.f);
-  DrawFallbackIcon(icon_url, size_to_use, &canvas);
+  canvas.DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
+  if (!local_favicon.empty()) {
+    constexpr SkColor kFaviconBackground = SkColorSetRGB(0xF1, 0xF3, 0xF4);
+    DrawCircleInCanvas(&canvas, size, /*background_color=*/kFaviconBackground);
+    DrawFavicon(local_favicon, &canvas, size);
+  } else {
+    // TODO(crbug.com/853780): Set the appropriate fallback background color.
+    DrawCircleInCanvas(&canvas, size, /*background_color=*/SK_ColorGRAY);
+    DrawFallbackIconLetter(icon_url, size, &canvas);
+  }
   std::vector<unsigned char> bitmap_data;
   bool result = gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bitmap_data);
   DCHECK(result);
@@ -211,17 +232,21 @@ void NtpIconSource::StartDataRequest(
 void NtpIconSource::OnFaviconDataAvailable(
     const NtpIconRequest& request,
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
+  SkBitmap bitmap;
   if (bitmap_result.is_valid()) {
-    // Local favicon hit, return it.
-    request.callback.Run(bitmap_result.bitmap_data.get());
-  } else {
-    // Draw a fallback (letter in a circle).
-    int desired_size_in_pixel =
-        std::ceil(kFallbackIconSizeDip * request.device_scale_factor);
-    std::vector<unsigned char> bitmap_data =
-        RenderFallbackIconBitmap(request.path, desired_size_in_pixel);
-    request.callback.Run(base::RefCountedBytes::TakeVector(&bitmap_data));
+    // A local favicon was found. Decode it to an SkBitmap so it can be passed
+    // as valid image data to RenderIconBitmap.
+    bool result =
+        gfx::PNGCodec::Decode(bitmap_result.bitmap_data.get()->front(),
+                              bitmap_result.bitmap_data.get()->size(), &bitmap);
+    DCHECK(result);
   }
+
+  int desired_size_in_pixel =
+      std::ceil(kFallbackIconSizeDip * request.device_scale_factor);
+  std::vector<unsigned char> bitmap_data =
+      RenderIconBitmap(request.path, bitmap, desired_size_in_pixel);
+  request.callback.Run(base::RefCountedBytes::TakeVector(&bitmap_data));
 }
 
 std::string NtpIconSource::GetMimeType(const std::string&) const {
