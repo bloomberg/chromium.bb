@@ -647,8 +647,7 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
     NOTIMPLEMENTED();
   }
 
-  existing_user_controller_.reset();  // Only one controller in a time.
-  existing_user_controller_.reset(new ExistingUserController(this));
+  CreateExistingUserController();
 
   if (!signin_screen_controller_.get()) {
     signin_screen_controller_.reset(new SignInScreenController(GetOobeUI()));
@@ -698,9 +697,7 @@ void LoginDisplayHostWebUI::OnStartSignInScreen(
   }
 
   DVLOG(1) << "Starting sign in screen";
-  existing_user_controller_.reset();  // Only one controller in a time.
-  existing_user_controller_.reset(new ExistingUserController(this));
-  login_display_->set_delegate(existing_user_controller_.get());
+  CreateExistingUserController();
 
   if (!signin_screen_controller_.get()) {
     signin_screen_controller_.reset(new SignInScreenController(GetOobeUI()));
@@ -1136,6 +1133,13 @@ void LoginDisplayHostWebUI::OnLoginPromptVisible() {
     return;
   login_prompt_visible_time_ = base::TimeTicks::Now();
   TryToPlayOobeStartupSound();
+}
+
+void LoginDisplayHostWebUI::CreateExistingUserController() {
+  // There can only be one |ExistingUserController| instance at a time.
+  existing_user_controller_.reset();
+  existing_user_controller_.reset(new ExistingUserController(this));
+  login_display_->set_delegate(existing_user_controller_.get());
 }
 
 // static
