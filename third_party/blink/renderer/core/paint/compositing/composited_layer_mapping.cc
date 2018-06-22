@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -1695,6 +1696,23 @@ void CompositedLayerMapping::UpdateChildClippingMaskLayerGeometry() {
       ToIntSize(padding_box.Location()));
 
   // NOTE: also some stuff happening in updateChildContainmentLayerGeometry().
+}
+
+bool CompositedLayerMapping::RequiresHorizontalScrollbarLayer() const {
+  return owning_layer_.GetScrollableArea() &&
+         owning_layer_.GetScrollableArea()->HorizontalScrollbar();
+}
+
+bool CompositedLayerMapping::RequiresVerticalScrollbarLayer() const {
+  return owning_layer_.GetScrollableArea() &&
+         owning_layer_.GetScrollableArea()->VerticalScrollbar();
+}
+
+bool CompositedLayerMapping::RequiresScrollCornerLayer() const {
+  return owning_layer_.GetScrollableArea() &&
+         !owning_layer_.GetScrollableArea()
+              ->ScrollCornerAndResizerRect()
+              .IsEmpty();
 }
 
 void CompositedLayerMapping::UpdateForegroundLayerGeometry() {

@@ -54,7 +54,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_clipper.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_resource_info.h"
-#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_stacking_node.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_result.h"
@@ -72,6 +71,7 @@ class FilterOperations;
 class HitTestResult;
 class HitTestingTransformState;
 class PaintLayerCompositor;
+class PaintLayerScrollableArea;
 class TransformationMatrix;
 
 using PaintLayerId = uint64_t;
@@ -555,9 +555,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool MaskBlendingAppliedByCompositor(const PaintInfo&) const;
   bool HasCompositedClippingMask() const;
-  bool NeedsCompositedScrolling() const {
-    return scrollable_area_ && scrollable_area_->NeedsCompositedScrolling();
-  }
+  bool NeedsCompositedScrolling() const;
 
   // Paint invalidation containers can be self-composited or squashed.
   // In the former case, these methods do nothing.

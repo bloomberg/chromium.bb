@@ -79,6 +79,7 @@
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
@@ -2784,6 +2785,10 @@ bool PaintLayer::MaskBlendingAppliedByCompositor(
 bool PaintLayer::HasCompositedClippingMask() const {
   return rare_data_ && rare_data_->composited_layer_mapping &&
          rare_data_->composited_layer_mapping->HasChildClippingMaskLayer();
+}
+
+bool PaintLayer::NeedsCompositedScrolling() const {
+  return scrollable_area_ && scrollable_area_->NeedsCompositedScrolling();
 }
 
 bool PaintLayer::PaintsWithTransform(
