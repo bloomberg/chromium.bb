@@ -155,6 +155,12 @@ class PasswordFormBuilder {
         name_and_id, name_and_id, value);
   }
 
+  // Add a field with a given type. Useful to add non-text fields.
+  void AddFieldWithType(const char* name_and_id, const char* type) {
+    base::StringAppendF(&html_, "<INPUT type=\"%s\" name=\"%s\" id=\"%s\"/>",
+                        type, name_and_id, name_and_id);
+  }
+
   // Appends a new submit-type field at the end of the form with the specified
   // |name|.
   void AddSubmitButton(const char* name) {
@@ -2512,6 +2518,26 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, TypedValuePreserved) {
   EXPECT_EQ(base::UTF8ToUTF16("email@gmail.com"),
             password_form->form_data.fields[2].value);
   EXPECT_EQ(base::string16(), password_form->form_data.fields[2].typed_value);
+}
+
+// Check that non-text fields are ignored.
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, NonTextFields) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  // Avoid calling the text fields anything related to "username" to prevent the
+  // local HTML classifier from influencing the test result.
+  builder.AddTextField("textField", "", "");
+  builder.AddFieldWithType("radioInput", "radio");
+  builder.AddPasswordField("password", "", "");
+  std::string html = builder.ProduceHTML();
+
+  WebFormElement form;
+  LoadWebFormFromHTML(html, &form, nullptr);
+
+  std::unique_ptr<PasswordForm> password_form =
+      CreatePasswordFormFromWebForm(form, nullptr, nullptr, nullptr);
+
+  ASSERT_TRUE(password_form);
+  EXPECT_EQ(base::UTF8ToUTF16("textField"), password_form->username_element);
 }
 
 }  // namespace autofill
