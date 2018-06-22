@@ -35,13 +35,7 @@ def main_run(args):
 
 
 def main_compile_targets(args):
-  # TODO(https://crbug.com/844014): Merge windows and non-windows cases after
-  # finding the minimum set of sufficient build targets.
-  if sys.platform == 'cygwin' or sys.platform.startswith('win'):
-    json.dump(['chrome', 'remoting/host:host', 'remoting/client:client'],
-              args.output)
-  else:
-    json.dump(['all'], args.output)
+  json.dump(['all'], args.output)
 
 
 if __name__ == '__main__':
