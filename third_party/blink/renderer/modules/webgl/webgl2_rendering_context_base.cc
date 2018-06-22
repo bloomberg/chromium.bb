@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "base/numerics/checked_math.h"
+#include "base/numerics/safe_conversions.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/bindings/modules/v8/webgl_any.h"
@@ -4061,7 +4062,12 @@ void WebGL2RenderingContextBase::SamplerParameter(WebGLSampler* sampler,
   if (isContextLost() || !ValidateWebGLObject("samplerParameter", sampler))
     return;
 
-  GLint param = is_float ? static_cast<GLint>(paramf) : parami;
+  GLint param;
+  if (is_float) {
+    param = base::saturated_cast<GLint>(paramf);
+  } else {
+    param = parami;
+  }
   switch (pname) {
     case GL_TEXTURE_MAX_LOD:
     case GL_TEXTURE_MIN_LOD:
