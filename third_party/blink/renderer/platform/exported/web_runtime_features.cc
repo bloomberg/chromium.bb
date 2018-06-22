@@ -532,10 +532,6 @@ void WebRuntimeFeatures::EnablePWAFullCodeCache(bool enable) {
   RuntimeEnabledFeatures::SetPWAFullCodeCacheEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableMojoBlobURLs(bool enable) {
-  RuntimeEnabledFeatures::SetMojoBlobURLsEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableOffMainThreadWebSocket(bool enable) {
   RuntimeEnabledFeatures::SetOffMainThreadWebSocketEnabled(enable);
 }

@@ -31,6 +31,7 @@
 
 #include "third_party/blink/renderer/core/workers/shared_worker.h"
 
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -82,8 +83,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
     return nullptr;
 
   mojom::blink::BlobURLTokenPtr blob_url_token;
-  if (script_url.ProtocolIs("blob") &&
-      RuntimeEnabledFeatures::MojoBlobURLsEnabled()) {
+  if (script_url.ProtocolIs("blob") && BlobUtils::MojoBlobURLsEnabled()) {
     document->GetPublicURLManager().Resolve(script_url,
                                             MakeRequest(&blob_url_token));
   }

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -96,7 +97,7 @@ FrameLoadRequest::FrameLoadRequest(
         SecurityOrigin::Create(origin_document->Url()));
 
     if (resource_request.Url().ProtocolIs("blob") &&
-        RuntimeEnabledFeatures::MojoBlobURLsEnabled()) {
+        BlobUtils::MojoBlobURLsEnabled()) {
       blob_url_token_ = base::MakeRefCounted<
           base::RefCountedData<mojom::blink::BlobURLTokenPtr>>();
       origin_document->GetPublicURLManager().Resolve(

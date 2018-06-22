@@ -37,6 +37,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
@@ -1370,7 +1371,7 @@ std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(
   // TODO(mek): Move the RequestContext check to the worker side's relevant
   // callsite when we make Shared Worker loading off-main-thread.
   if (document_ && request.Url().ProtocolIs("blob") &&
-      RuntimeEnabledFeatures::MojoBlobURLsEnabled() && !url_loader_factory &&
+      BlobUtils::MojoBlobURLsEnabled() && !url_loader_factory &&
       request.GetRequestContext() !=
           WebURLRequest::kRequestContextSharedWorker) {
     document_->GetPublicURLManager().Resolve(request.Url(),

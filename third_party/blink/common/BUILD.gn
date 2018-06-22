@@ -16,6 +16,7 @@ jumbo_source_set("common") {
   sources = [
     # NOTE: Please do not add public headers that need to be referenced from
     # outside WebKit, add them in public/common instead.
+    "blob/blob_utils.cc",
     "client_hints/client_hints.cc",
     "common_export.h",
     "device_memory/approximated_device_memory.cc",
