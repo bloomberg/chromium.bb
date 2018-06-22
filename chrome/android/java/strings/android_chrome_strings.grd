@@ -309,6 +309,22 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SIGN_IN_SYNC_ERROR_WIDGET" desc="Accessibility description of the sync error widget in settings screen">
         Sync error occurred, tap to get details.
       </message>
+      <!-- Unified consent preferences -->
+      <message name="IDS_USE_SYNC_AND_ALL_SERVICES" desc="Title for switch preference which enables sync'ing of all data types and turns on all Chrome services that communicate with Google.">
+        Use sync and all services
+      </message>
+      <message name="IDS_SYNC_AND_PERSONALIZATION_TITLE" desc="Title for the expandable group of Sync-related entries in Settings. This group contains preferences for data tied to user's Google Account.">
+        Sync and personalization
+      </message>
+      <message name="IDS_SYNC_AND_PERSONALIZATION_SUMMARY" desc="Summary for the expandable group of Sync-related entries in Settings. This group contains preferences for data tied to user's Google Account.">
+        Your browsing data and activity, synced to your Google Account
+      </message>
+      <message name="IDS_PREFS_NONPERSONALIZED_SERVICES_SECTION_TITLE" desc="Title for the expandable group of preferences that control non-personalized Google services. This group contains preferences for data that is not tied to user's Google Account.">
+        Non-personalized services
+      </message>
+      <message name="IDS_PREFS_NONPERSONALIZED_SERVICES_SECTION_SUMMARY" desc="Summary for the expandable group of preferences that control non-personalized Google services. This group contains preferences for data that is not tied to user's Google Account.">
+        Communicates with Google to improve browsing and Chrome
+      </message>
 
       <!-- Search engine preferences -->
       <message name="IDS_PREFS_SEARCH_ENGINE" desc="Title for Search Engine preferences. [CHAR-LIMIT=32]">
