@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
@@ -60,6 +61,9 @@ using base::UserMetricsAction;
 using content::WebContents;
 
 namespace {
+
+const base::Feature kRefreshNewTabButtonAfterTabs = {
+    "RefreshNewTabButtonAfterTabs", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool DetermineTabStripLayoutStacked(PrefService* prefs, bool* adjust_layout) {
   *adjust_layout = false;
@@ -309,8 +313,10 @@ bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {
 
 NewTabButtonPosition BrowserTabStripController::GetNewTabButtonPosition()
     const {
-  if (!ui::MaterialDesignController::IsRefreshUi())
+  if (!ui::MaterialDesignController::IsRefreshUi() ||
+      base::FeatureList::IsEnabled(kRefreshNewTabButtonAfterTabs)) {
     return AFTER_TABS;
+  }
   return GetFrameView()->CaptionButtonsOnLeadingEdge() ? TRAILING : LEADING;
 }
 
