@@ -309,7 +309,7 @@ void OverlayWindowViews::UpdateCloseControlsSize() {
   close_controls_view_->SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(views::kIcCloseIcon,
-                            close_button_size_.width() * 2 / 3,
+                            std::round(close_button_size_.width() * 2.0 / 3.0),
                             kControlIconColor));
   const gfx::ImageSkia close_background =
       gfx::CreateVectorIcon(kPictureInPictureControlBackgroundIcon,
