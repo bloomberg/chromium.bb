@@ -112,6 +112,7 @@ source_set("history_ui") {
   ]
   deps = [
     "public",
+    "resources:empty_history",
     "//base",
     "//base:i18n",
     "//components/browsing_data/core",

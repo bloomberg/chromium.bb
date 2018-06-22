@@ -58,6 +58,14 @@ typedef NS_ENUM(NSInteger, ChromeTableViewControllerStyle) {
 // Removes and stops the loading indicator, if one is present.
 - (void)stopLoadingIndicatorWithCompletion:(ProceduralBlock)completion;
 
+// Adds an empty table view in the center of the ChromeTableViewController which
+// displays |message| with |image| on top. This will remove any existing table
+// view background views.
+- (void)addEmptyTableViewWithMessage:(NSString*)message image:(UIImage*)image;
+
+// Removes the empty table view, if one is present.
+- (void)removeEmptyTableView;
+
 // Methods for reconfiguring and reloading the table view are provided by
 // ChromeTableViewConsumer.
 
