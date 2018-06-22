@@ -58,6 +58,8 @@
 #include "av1/encoder/tokenize.h"
 #include "av1/encoder/tx_prune_model_weights.h"
 
+#define DNN_BASED_RD_INTERP_FILTER 0
+
 // Set this macro as 1 to collect data about tx size selection.
 #define COLLECT_TX_SIZE_DATA 0
 
@@ -2193,10 +2195,14 @@ static void get_2x2_normalized_sses_and_sads(
       for (int col = 0; col < 2; ++col) {
         const int16_t *const this_src_diff =
             src_diff + row * half_height * diff_stride + col * half_width;
-        sse_norm_arr[row * 2 + col] =
-            get_sse_norm(this_src_diff, diff_stride, half_width, half_height);
-        sad_norm_arr[row * 2 + col] =
-            get_sad_norm(this_src_diff, diff_stride, half_width, half_height);
+        if (sse_norm_arr) {
+          sse_norm_arr[row * 2 + col] =
+              get_sse_norm(this_src_diff, diff_stride, half_width, half_height);
+        }
+        if (sad_norm_arr) {
+          sad_norm_arr[row * 2 + col] =
+              get_sad_norm(this_src_diff, diff_stride, half_width, half_height);
+        }
       }
     }
   } else {  // use function pointers to calculate stats
@@ -2210,14 +2216,18 @@ static void get_2x2_normalized_sses_and_sads(
         const uint8_t *const this_dst =
             dst + row * half_height * dst_stride + col * half_width;
 
-        unsigned int this_sse;
-        cpi->fn_ptr[tx_bsize_half].vf(this_src, src_stride, this_dst,
-                                      dst_stride, &this_sse);
-        sse_norm_arr[row * 2 + col] = (double)this_sse / num_samples_half;
+        if (sse_norm_arr) {
+          unsigned int this_sse;
+          cpi->fn_ptr[tx_bsize_half].vf(this_src, src_stride, this_dst,
+                                        dst_stride, &this_sse);
+          sse_norm_arr[row * 2 + col] = (double)this_sse / num_samples_half;
+        }
 
-        const unsigned int this_sad = cpi->fn_ptr[tx_bsize_half].sdf(
-            this_src, src_stride, this_dst, dst_stride);
-        sad_norm_arr[row * 2 + col] = (double)this_sad / num_samples_half;
+        if (sad_norm_arr) {
+          const unsigned int this_sad = cpi->fn_ptr[tx_bsize_half].sdf(
+              this_src, src_stride, this_dst, dst_stride);
+          sad_norm_arr[row * 2 + col] = (double)this_sad / num_samples_half;
+        }
       }
     }
   }
@@ -2428,46 +2438,41 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi,
   const uint8_t *const dst = pd->dst.buf;
   unsigned int sse;
   cpi->fn_ptr[plane_bsize].vf(src, src_stride, dst, dst_stride, &sse);
+  if (sse == 0) {
+    if (rate) *rate = 0;
+    if (dist) *dist = 0;
+    if (rsse) *rsse = 0;
+    return;
+  }
   const double sse_norm = (double)sse / num_samples;
 
   const int diff_stride = block_size_wide[plane_bsize];
   const int16_t *const src_diff = p->src_diff;
 
-  double sse_norm_arr[4], sad_norm_arr[4];
+  double sse_norm_arr[4];
   get_2x2_normalized_sses_and_sads(cpi, plane_bsize, src, src_stride, dst,
                                    dst_stride, src_diff, diff_stride,
-                                   sse_norm_arr, sad_norm_arr);
+                                   sse_norm_arr, NULL);
   const double mean = get_mean(src_diff, diff_stride, bw, bh);
   const double variance = sse_norm - mean * mean;
   const double q_sqr = (double)(q_step * q_step);
-  const double q_sqr_by_variance = q_sqr / variance;
+  const double q_sqr_by_variance = q_sqr / (variance + 1.0);
   double hor_corr, vert_corr;
   get_horver_correlation(src_diff, diff_stride, bw, bh, &hor_corr, &vert_corr);
-  double hdist[4] = { 0 }, vdist[4] = { 0 };
-  get_energy_distribution_fine(cpi, plane_bsize, src, src_stride, dst,
-                               dst_stride, 1, hdist, vdist);
 
-  float features[20];
-  features[0] = (float)hdist[0];
-  features[1] = (float)hdist[1];
-  features[2] = (float)hdist[2];
-  features[3] = (float)hdist[3];
-  features[4] = (float)hor_corr;
-  features[5] = (float)log_numpels;
-  features[6] = (float)mean;
-  features[7] = (float)q_sqr;
-  features[8] = (float)q_sqr_by_variance;
-  features[9] = (float)sse_norm_arr[0];
-  features[10] = (float)sse_norm_arr[1];
-  features[11] = (float)sse_norm_arr[2];
-  features[12] = (float)sse_norm_arr[3];
-  features[13] = (float)sse_norm;
-  features[14] = (float)variance;
-  features[15] = (float)vdist[0];
-  features[16] = (float)vdist[1];
-  features[17] = (float)vdist[2];
-  features[18] = (float)vdist[3];
-  features[19] = (float)vert_corr;
+  float features[12];
+  features[0] = (float)hor_corr;
+  features[1] = (float)log_numpels;
+  features[2] = (float)mean;
+  features[3] = (float)q_sqr;
+  features[4] = (float)q_sqr_by_variance;
+  features[5] = (float)sse_norm_arr[0];
+  features[6] = (float)sse_norm_arr[1];
+  features[7] = (float)sse_norm_arr[2];
+  features[8] = (float)sse_norm_arr[3];
+  features[9] = (float)sse_norm;
+  features[10] = (float)variance;
+  features[11] = (float)vert_corr;
 
   float rate_f, dist_f;
   av1_nn_predict(features, &av1_pustats_dist_nnconfig, &dist_f);
@@ -7610,8 +7615,17 @@ static INLINE int64_t interpolation_filter_rd(
   const int tmp_rs =
       get_switchable_rate(x, mbmi->interp_filters, switchable_ctx);
   av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
+
+  for (int plane = 0; plane < num_planes; ++plane)
+    av1_subtract_plane(x, bsize, plane);
+#if DNN_BASED_RD_INTERP_FILTER
+  model_rd_for_sb_with_dnn(cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate,
+                           &tmp_dist, &tmp_skip_sb, &tmp_skip_sse, NULL, NULL,
+                           NULL);
+#else
   model_rd_for_sb(cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate, &tmp_dist,
                   &tmp_skip_sb, &tmp_skip_sse, NULL, NULL, NULL);
+#endif  // DNN_BASED_RD_INTERP_FILTER
   int64_t tmp_rd = RDCOST(x->rdmult, tmp_rs + tmp_rate, tmp_dist);
   if (tmp_rd < *rd) {
     *rd = tmp_rd;
@@ -7696,8 +7710,16 @@ static int64_t interpolation_filter_search(
   *switchable_rate =
       get_switchable_rate(x, mbmi->interp_filters, switchable_ctx);
   av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
+  for (int plane = 0; plane < num_planes; ++plane)
+    av1_subtract_plane(x, bsize, plane);
+#if DNN_BASED_RD_INTERP_FILTER
+  model_rd_for_sb_with_dnn(cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate,
+                           &tmp_dist, skip_txfm_sb, skip_sse_sb, NULL, NULL,
+                           NULL);
+#else
   model_rd_for_sb(cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate, &tmp_dist,
                   skip_txfm_sb, skip_sse_sb, NULL, NULL, NULL);
+#endif  // DNN_BASED_RD_INTERP_FILTER
   *rd = RDCOST(x->rdmult, *switchable_rate + tmp_rate, tmp_dist);
 
   if (assign_filter != SWITCHABLE || match_found != -1) {
