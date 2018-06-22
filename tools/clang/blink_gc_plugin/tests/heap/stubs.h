@@ -37,19 +37,10 @@ public:
     static const bool isGarbageCollected = false;
 };
 
-template <bool noDestructor>
-class ConditionalDestructor {
- public:
-  ~ConditionalDestructor() {}
-};
-
-template <>
-class ConditionalDestructor<true> {};
-
 template <typename T,
           size_t inlineCapacity = 0,
           typename Allocator = DefaultAllocator>
-class Vector : public ConditionalDestructor<Allocator::isGarbageCollected> {
+class Vector {
  public:
   using iterator = T*;
   using const_iterator = const T*;
@@ -58,63 +49,73 @@ class Vector : public ConditionalDestructor<Allocator::isGarbageCollected> {
 
   size_t size();
   T& operator[](size_t);
+
+  ~Vector() {}
 };
 
 template <typename T,
           size_t inlineCapacity = 0,
           typename Allocator = DefaultAllocator>
-class Deque : public ConditionalDestructor<Allocator::isGarbageCollected> {
+class Deque {
  public:
   using iterator = T*;
   using const_iterator = const T*;
   using reverse_iterator = T*;
   using const_reverse_iterator = const T*;
+
+  ~Deque() {}
 };
 
 template <typename ValueArg,
           typename HashArg = void,
           typename TraitsArg = void,
           typename Allocator = DefaultAllocator>
-class HashSet : public ConditionalDestructor<Allocator::isGarbageCollected> {
+class HashSet {
  public:
   typedef ValueArg* iterator;
   typedef const ValueArg* const_iterator;
   typedef ValueArg* reverse_iterator;
   typedef const ValueArg* const_reverse_iterator;
+
+  ~HashSet() {}
 };
 
 template <typename ValueArg,
           typename HashArg = void,
           typename TraitsArg = void,
           typename Allocator = DefaultAllocator>
-class ListHashSet
-    : public ConditionalDestructor<Allocator::isGarbageCollected> {
+class ListHashSet {
  public:
   typedef ValueArg* iterator;
   typedef const ValueArg* const_iterator;
   typedef ValueArg* reverse_iterator;
   typedef const ValueArg* const_reverse_iterator;
+
+  ~ListHashSet() {}
 };
 
 template <typename ValueArg,
           typename HashArg = void,
           typename TraitsArg = void,
           typename Allocator = DefaultAllocator>
-class LinkedHashSet
-    : public ConditionalDestructor<Allocator::isGarbageCollected> {
+class LinkedHashSet {
  public:
   typedef ValueArg* iterator;
   typedef const ValueArg* const_iterator;
   typedef ValueArg* reverse_iterator;
   typedef const ValueArg* const_reverse_iterator;
+
+  ~LinkedHashSet() {}
 };
 
 template <typename ValueArg,
           typename HashArg = void,
           typename TraitsArg = void,
           typename Allocator = DefaultAllocator>
-class HashCountedSet
-    : public ConditionalDestructor<Allocator::isGarbageCollected> {};
+class HashCountedSet {
+ public:
+  ~HashCountedSet() {}
+};
 
 template <typename KeyArg,
           typename MappedArg,
@@ -122,12 +123,14 @@ template <typename KeyArg,
           typename KeyTraitsArg = void,
           typename MappedTraitsArg = void,
           typename Allocator = DefaultAllocator>
-class HashMap : public ConditionalDestructor<Allocator::isGarbageCollected> {
+class HashMap {
  public:
   typedef MappedArg* iterator;
   typedef const MappedArg* const_iterator;
   typedef MappedArg* reverse_iterator;
   typedef const MappedArg* const_reverse_iterator;
+
+  ~HashMap() {}
 };
 }
 

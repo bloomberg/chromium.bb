@@ -85,9 +85,8 @@ bool RecordInfo::HasOptionalFinalizer() {
   // delayed until FinalizeGarbageCollectedObject() gets called), unless there
   // is an inline buffer. Vector, Deque, and ListHashSet can have an inline
   // buffer.
-  if (name_ != "Vector" && name_ != "Deque" && name_ != "ListHashSet" &&
-      name_ != "HeapVector" && name_ != "HeapDeque" &&
-      name_ != "HeapListHashSet")
+  if (name_ != "Vector" && name_ != "Deque" && name_ != "HeapVector" &&
+      name_ != "HeapDeque")
     return true;
   ClassTemplateSpecializationDecl* tmpl =
       dyn_cast<ClassTemplateSpecializationDecl>(record_);
