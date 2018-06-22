@@ -54,6 +54,29 @@ class PictureInPictureWindowControllerBrowserTest
     return pip_window_controller_;
   }
 
+  void LoadTabAndEnterPictureInPicture(Browser* browser) {
+    GURL test_page_url = ui_test_utils::GetTestUrl(
+        base::FilePath(base::FilePath::kCurrentDirectory),
+        base::FilePath(
+            FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+    ui_test_utils::NavigateToURL(browser, test_page_url);
+
+    content::WebContents* active_web_contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    ASSERT_NE(nullptr, active_web_contents);
+
+    SetUpWindowController(active_web_contents);
+
+    ASSERT_TRUE(content::ExecuteScript(active_web_contents,
+                                       "enterPictureInPicture();"));
+
+    // Wait for confirmation that the window was created.
+    base::string16 expected_title = base::ASCIIToUTF16("1");
+    EXPECT_EQ(expected_title,
+              content::TitleWatcher(active_web_contents, expected_title)
+                  .WaitAndGetTitle());
+  }
+
  private:
   content::PictureInPictureWindowController* pip_window_controller_ = nullptr;
   base::test::ScopedFeatureList feature_list_;
@@ -659,4 +682,21 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   EXPECT_EQ(1u, active_web_contents->GetAllFrames().size());
   EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
+}
+
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       MultipleBrowserWindowOnePIPWindow) {
+  LoadTabAndEnterPictureInPicture(browser());
+
+  content::PictureInPictureWindowController* first_controller =
+      window_controller();
+  EXPECT_TRUE(first_controller->GetWindowForTesting()->IsVisible());
+
+  Browser* second_browser = CreateBrowser(browser()->profile());
+  LoadTabAndEnterPictureInPicture(second_browser);
+
+  content::PictureInPictureWindowController* second_controller =
+      window_controller();
+  EXPECT_FALSE(first_controller->GetWindowForTesting()->IsVisible());
+  EXPECT_TRUE(second_controller->GetWindowForTesting()->IsVisible());
 }

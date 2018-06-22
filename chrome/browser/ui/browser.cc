@@ -67,6 +67,7 @@
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
+#include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
@@ -187,7 +188,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/overscroll_configuration.h"
-#include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -1009,13 +1009,6 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
   // associated with their tab is still valid.
   WebContentsModalDialogManager::FromWebContents(contents)->CloseAllDialogs();
 
-  if (pip_window_controller_ &&
-      pip_window_controller_->GetInitiatorWebContents() == contents) {
-    // When |contents| is closed, the previously referred to
-    // |pip_window_controller_| will also be torn down.
-    pip_window_controller_ = nullptr;
-  }
-
   // Page load metrics need to be informed that the WebContents will soon be
   // destroyed, so that upcoming visiblity changes can be ignored.
   page_load_metrics::MetricsWebContentsObserver* metrics_observer =
@@ -1417,27 +1410,12 @@ void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
 
 gfx::Size Browser::EnterPictureInPicture(const viz::SurfaceId& surface_id,
                                          const gfx::Size& natural_size) {
-  // If there was already a controller, close the existing window before
-  // creating the next one.
-  if (pip_window_controller_)
-    pip_window_controller_->Close(false /* should_pause_video */);
-
-  // Create or update |pip_window_controller_| for the current WebContents.
-  if (!pip_window_controller_ ||
-      pip_window_controller_->GetInitiatorWebContents() !=
-          tab_strip_model_->GetActiveWebContents()) {
-    pip_window_controller_ =
-        content::PictureInPictureWindowController::GetOrCreateForWebContents(
-            tab_strip_model_->GetActiveWebContents());
-  }
-
-  pip_window_controller_->EmbedSurface(surface_id, natural_size);
-  return pip_window_controller_->Show();
+  return PictureInPictureWindowManager::GetInstance()->EnterPictureInPicture(
+      tab_strip_model_->GetActiveWebContents(), surface_id, natural_size);
 }
 
 void Browser::ExitPictureInPicture() {
-  if (pip_window_controller_)
-    pip_window_controller_->Close(false /* should_pause_video */);
+  PictureInPictureWindowManager::GetInstance()->ExitPictureInPicture();
 }
 
 bool Browser::IsMouseLocked() const {
