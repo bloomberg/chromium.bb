@@ -315,6 +315,10 @@ void PaintOpReader::Read(PaintImage* image) {
                  .set_id(PaintImage::GetNextId())
                  .set_image(entry->image(), PaintImage::kNonLazyStableId)
                  .TakePaintImage();
+  } else {
+    // If a transfer cache id exists, we must have a valid entry for it in the
+    // cache.
+    SetInvalid();
   }
 }
 
