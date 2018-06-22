@@ -167,22 +167,22 @@ TEST_F(GridViewControllerTest, MoveUnselectedItem) {
 TEST_F(GridViewControllerTest, ReplaceScrolledOffScreenCell) {
   // This test requires that the collection view be placed on the screen.
   SetRootViewController(view_controller_);
-  bool condition_met = testing::WaitUntilConditionOrTimeout(
+  EXPECT_TRUE(testing::WaitUntilConditionOrTimeout(
       testing::kWaitForUIElementTimeout, ^bool {
-        return [view_controller_ isViewAppeared];
-      });
-  EXPECT_TRUE(condition_met);
-  NSArray* visibleCells = view_controller_.collectionView.visibleCells;
+        return view_controller_.collectionView.visibleCells.count > 0;
+      }));
   NSArray* items = view_controller_.items;
   // Keep adding items until we get an item that is offscreen. Since device
   // sizes may vary, this is better than creating a fixed number of items that
   // we think will overflow to offscreen items.
-  while (visibleCells.count >= items.count) {
+  NSUInteger visibleCellsCount =
+      view_controller_.collectionView.visibleCells.count;
+  while (visibleCellsCount >= items.count) {
     NSString* uniqueID =
         [NSString stringWithFormat:@"%d", base::checked_cast<int>(items.count)];
     GridItem* item = [[GridItem alloc] initWithIdentifier:uniqueID];
     [view_controller_ insertItem:item atIndex:0 selectedItemID:@"A"];
-    visibleCells = view_controller_.collectionView.visibleCells;
+    visibleCellsCount = view_controller_.collectionView.visibleCells.count;
   }
   // The last item ("B") is scrolled off screen.
   GridItem* item = [[GridItem alloc] initWithIdentifier:@"NEW-ITEM"];
