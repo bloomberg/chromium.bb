@@ -36,6 +36,11 @@ struct ChildProcessTerminationInfo {
 
   // True if child service was explicitly killed by browser.
   bool was_killed_intentionally_by_browser = false;
+
+  // Counts of remaining child processes with corresponding binding.
+  int remaining_process_with_strong_binding = 0;
+  int remaining_process_with_moderate_binding = 0;
+  int remaining_process_with_waived_binding = 0;
 #endif
 };
 

@@ -564,6 +564,17 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Not QUIC, destination different from origin"/>
 </enum>
 
+<enum name="Android.ChildProcessBindingStateCombination">
+  <int value="0" label="No waived no moderate no strong"/>
+  <int value="1" label="No waived no moderate has strong"/>
+  <int value="2" label="No waived has moderate no strong"/>
+  <int value="3" label="No waived has moderate has strong"/>
+  <int value="4" label="Has waived no moderate no strong"/>
+  <int value="5" label="Has waived no moderate has strong"/>
+  <int value="6" label="Has waived has moderate no strong"/>
+  <int value="7" label="Has waived has moderate has strong"/>
+</enum>
+
 <enum name="Android.DownloadManager.List.View.Actions">
   <int value="0" label="OPEN"/>
   <int value="1" label="RESUME"/>
