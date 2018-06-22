@@ -1,10 +1,7 @@
-# Android failures
-# TODO(jonross): Triage these
--CompositorEventAckBrowserTest.*
--NavigationHandleImplBrowserTest.BlockCredentialedSubresources
+# Frame submission failures, and invalid compositor locking state.
+# https://crbug.com/855533
 -*CompositorImplLowEndBrowserTest.*
--SitePerProcessHit*
--ScrollLatencyBrowserTest.SmoothWheelScroll
+
+# Flaky failures with incorrect Input event acks. https://crbug.com/855532
 -TouchInputBrowserTest.TouchHandlerConsume
 -TouchInputBrowserTest.TouchHandlerNoConsume
--TouchSelectionControllerClientAndroidSiteIsolationTest.BasicSelectionIsolatedIframe
