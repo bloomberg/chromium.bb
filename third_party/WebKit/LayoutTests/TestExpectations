@@ -2854,6 +2854,8 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/svg/painting/reftests/paint-context-001.svg [ Failure ]
+crbug.com/626703 external/wpt/svg/painting/reftests/paint-context-002.svg [ Failure ]
 crbug.com/626703 external/wpt/html/browsers/browsing-the-web/unloading-documents/unload/pagehide-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-002.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-001.tentative.html [ Failure ]
