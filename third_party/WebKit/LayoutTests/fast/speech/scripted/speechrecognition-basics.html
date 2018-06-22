@@ -2,6 +2,9 @@
 <html>
 <head>
 <script src="../../../resources/js-test.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/third_party/blink/public/mojom/speech/speech_recognizer.mojom.js"></script>
+<script src="mock-speechrecognizer.js"></script>
 </head>
 <body>
 <script type="text/javascript">
@@ -50,10 +53,7 @@ function oneMatchTest() {
         ++count;
         noMatchTest();
     }
-
-    if (window.testRunner) {
-        testRunner.addMockSpeechRecognitionResult('hello, world', 0.42);
-    }
+    mockSpeechRecognizer.addMockSpeechRecognitionResult('hello, world', 0.42);
     r.start();
 }
 

@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/modules/speech/speech_recognition.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_controller.h"
@@ -53,7 +54,18 @@ void SpeechRecognition::start(ExceptionState& exception_state) {
   }
 
   final_results_.clear();
-  controller_->Start(this, grammars_, lang_, continuous_, interim_results_,
+
+  mojom::blink::SpeechRecognitionSessionClientPtrInfo session_client;
+  binding_.Bind(mojo::MakeRequest(&session_client),
+                GetExecutionContext()->GetInterfaceInvalidator());
+  binding_.set_connection_error_handler(WTF::Bind(
+      &SpeechRecognition::OnConnectionError, WrapWeakPersistent(this)));
+
+  mojom::blink::SpeechRecognitionSessionRequest session_request =
+      MakeRequest(&session_, GetExecutionContext()->GetInterfaceInvalidator());
+
+  controller_->Start(std::move(session_request), std::move(session_client),
+                     grammars_, lang_, continuous_, interim_results_,
                      max_alternatives_);
   started_ = true;
 }
@@ -64,7 +76,7 @@ void SpeechRecognition::stopFunction() {
 
   if (started_ && !stopping_) {
     stopping_ = true;
-    controller_->Stop(this);
+    session_->StopCapture();
   }
 }
 
@@ -74,70 +86,94 @@ void SpeechRecognition::abort() {
 
   if (started_ && !stopping_) {
     stopping_ = true;
-    controller_->Abort(this);
+    session_->Abort();
   }
 }
 
-void SpeechRecognition::DidStartAudio() {
-  DispatchEvent(Event::Create(EventTypeNames::audiostart));
+void SpeechRecognition::ResultRetrieved(
+    WTF::Vector<mojom::blink::SpeechRecognitionResultPtr> results) {
+  auto* it = std::stable_partition(
+      results.begin(), results.end(),
+      [](const auto& result) { return !result->is_provisional; });
+  size_t provisional_count = results.end() - it;
+
+  // Add the new results to the previous final results.
+  HeapVector<Member<SpeechRecognitionResult>> aggregated_results =
+      std::move(final_results_);
+  aggregated_results.ReserveCapacity(aggregated_results.size() +
+                                     results.size());
+
+  for (const auto& result : results) {
+    HeapVector<Member<SpeechRecognitionAlternative>> alternatives;
+    alternatives.ReserveInitialCapacity(result->hypotheses.size());
+    for (const auto& hypothesis : result->hypotheses) {
+      alternatives.push_back(SpeechRecognitionAlternative::Create(
+          hypothesis->utterance, hypothesis->confidence));
+    }
+    aggregated_results.push_back(SpeechRecognitionResult::Create(
+        std::move(alternatives), !result->is_provisional));
+  }
+
+  // |aggregated_results| now contains the following (in the given order):
+  //
+  // (1) previous final results from |final_results_|
+  // (2) new final results from |results|
+  // (3) new provisional results from |results|
+
+  // |final_results_| = (1) + (2).
+  HeapVector<Member<SpeechRecognitionResult>> new_final_results;
+  new_final_results.ReserveInitialCapacity(aggregated_results.size() -
+                                           provisional_count);
+  new_final_results.AppendRange(aggregated_results.begin(),
+                                aggregated_results.end() - provisional_count);
+  final_results_ = std::move(new_final_results);
+
+  // We dispatch an event with (1) + (2) + (3).
+  DispatchEvent(SpeechRecognitionEvent::CreateResult(
+      aggregated_results.size() - results.size(),
+      std::move(aggregated_results)));
 }
 
-void SpeechRecognition::DidStartSound() {
-  DispatchEvent(Event::Create(EventTypeNames::soundstart));
+void SpeechRecognition::ErrorOccurred(
+    mojom::blink::SpeechRecognitionErrorPtr error) {
+  if (error->code == mojom::blink::SpeechRecognitionErrorCode::kNoMatch) {
+    DispatchEvent(SpeechRecognitionEvent::CreateNoMatch(nullptr));
+  } else {
+    SpeechRecognitionError::ErrorCode error_code =
+        static_cast<SpeechRecognitionError::ErrorCode>(error->code);
+    // TODO(primiano): message?
+    DispatchEvent(SpeechRecognitionError::Create(error_code, String()));
+  }
 }
 
-void SpeechRecognition::DidStartSpeech() {
-  DispatchEvent(Event::Create(EventTypeNames::speechstart));
-}
-
-void SpeechRecognition::DidEndSpeech() {
-  DispatchEvent(Event::Create(EventTypeNames::speechend));
-}
-
-void SpeechRecognition::DidEndSound() {
-  DispatchEvent(Event::Create(EventTypeNames::soundend));
-}
-
-void SpeechRecognition::DidEndAudio() {
-  DispatchEvent(Event::Create(EventTypeNames::audioend));
-}
-
-void SpeechRecognition::DidReceiveResults(
-    const HeapVector<Member<SpeechRecognitionResult>>& new_final_results,
-    const HeapVector<Member<SpeechRecognitionResult>>&
-        current_interim_results) {
-  size_t result_index = final_results_.size();
-
-  for (size_t i = 0; i < new_final_results.size(); ++i)
-    final_results_.push_back(new_final_results[i]);
-
-  HeapVector<Member<SpeechRecognitionResult>> results = final_results_;
-  for (size_t i = 0; i < current_interim_results.size(); ++i)
-    results.push_back(current_interim_results[i]);
-
-  DispatchEvent(SpeechRecognitionEvent::CreateResult(result_index, results));
-}
-
-void SpeechRecognition::DidReceiveNoMatch(SpeechRecognitionResult* result) {
-  DispatchEvent(SpeechRecognitionEvent::CreateNoMatch(result));
-}
-
-void SpeechRecognition::DidReceiveError(SpeechRecognitionError* error) {
-  DispatchEvent(error);
-  started_ = false;
-}
-
-void SpeechRecognition::DidStart() {
+void SpeechRecognition::Started() {
   DispatchEvent(Event::Create(EventTypeNames::start));
 }
 
-void SpeechRecognition::DidEnd() {
+void SpeechRecognition::AudioStarted() {
+  DispatchEvent(Event::Create(EventTypeNames::audiostart));
+}
+
+void SpeechRecognition::SoundStarted() {
+  DispatchEvent(Event::Create(EventTypeNames::soundstart));
+  DispatchEvent(Event::Create(EventTypeNames::speechstart));
+}
+
+void SpeechRecognition::SoundEnded() {
+  DispatchEvent(Event::Create(EventTypeNames::speechend));
+  DispatchEvent(Event::Create(EventTypeNames::soundend));
+}
+
+void SpeechRecognition::AudioEnded() {
+  DispatchEvent(Event::Create(EventTypeNames::audioend));
+}
+
+void SpeechRecognition::Ended() {
   started_ = false;
   stopping_ = false;
-  // If m_controller is null, this is being aborted from the ExecutionContext
-  // being detached, so don't dispatch an event.
-  if (controller_)
-    DispatchEvent(Event::Create(EventTypeNames::end));
+  session_.reset();
+  binding_.Close();
+  DispatchEvent(Event::Create(EventTypeNames::end));
 }
 
 const AtomicString& SpeechRecognition::InterfaceName() const {
@@ -150,17 +186,30 @@ ExecutionContext* SpeechRecognition::GetExecutionContext() const {
 
 void SpeechRecognition::ContextDestroyed(ExecutionContext*) {
   controller_ = nullptr;
-  if (HasPendingActivity())
-    abort();
 }
 
 bool SpeechRecognition::HasPendingActivity() const {
   return started_;
 }
 
+void SpeechRecognition::PageVisibilityChanged() {
+#if defined(OS_ANDROID)
+  if (!GetPage()->IsPageVisible())
+    abort();
+#endif
+}
+
+void SpeechRecognition::OnConnectionError() {
+  ErrorOccurred(mojom::blink::SpeechRecognitionError::New(
+      mojom::blink::SpeechRecognitionErrorCode::kNetwork,
+      mojom::blink::SpeechAudioErrorDetails::kNone));
+  Ended();
+}
+
 SpeechRecognition::SpeechRecognition(LocalFrame* frame,
                                      ExecutionContext* context)
     : ContextLifecycleObserver(context),
+      PageVisibilityObserver(frame ? frame->GetPage() : nullptr),
       grammars_(SpeechGrammarList::Create()),  // FIXME: The spec is not clear
                                                // on the default value for the
                                                // grammars attribute.
@@ -169,7 +218,8 @@ SpeechRecognition::SpeechRecognition(LocalFrame* frame,
       max_alternatives_(1),
       controller_(SpeechRecognitionController::From(frame)),
       started_(false),
-      stopping_(false) {
+      stopping_(false),
+      binding_(this) {
   // FIXME: Need to hook up to get notified when the visibility changes.
 }
 
@@ -181,6 +231,7 @@ void SpeechRecognition::Trace(blink::Visitor* visitor) {
   visitor->Trace(final_results_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
+  PageVisibilityObserver::Trace(visitor);
 }
 
 }  // namespace blink

@@ -108,7 +108,6 @@ class WebPushClient;
 class WebRTCPeerConnectionHandler;
 class WebRelatedAppsFetcher;
 class WebSocketHandshakeThrottle;
-class WebSpeechRecognizer;
 class WebString;
 class WebURL;
 class WebURLResponse;
@@ -797,11 +796,6 @@ class BLINK_EXPORT WebLocalFrameClient {
       delete callbacks;
     }
   }
-
-  // Speech --------------------------------------------------------------
-
-  // Access the embedder API for speech recognition services.
-  virtual WebSpeechRecognizer* SpeechRecognizer() { return nullptr; }
 
   // Visibility ----------------------------------------------------------
 

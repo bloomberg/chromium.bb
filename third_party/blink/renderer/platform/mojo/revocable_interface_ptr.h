@@ -56,7 +56,7 @@ class RevocableInterfacePtr : public InterfaceInvalidator::Observer {
   // message pipe already bound to this pointer.
   RevocableInterfacePtr& operator=(RevocableInterfacePtr&& other) {
     reset();
-    interface_ptr_ = std::move(other.interface_ptr);
+    interface_ptr_ = std::move(other.interface_ptr_);
     SetInvalidator(other.invalidator_.get());
     // Reset the other interface ptr to remove it as an observer of the
     // invalidator.

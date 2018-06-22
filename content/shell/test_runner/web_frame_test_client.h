@@ -84,7 +84,6 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;
-  blink::WebSpeechRecognizer* SpeechRecognizer() override;
   void DidClearWindowObject() override;
   bool RunFileChooser(const blink::WebFileChooserParams& params,
                       blink::WebFileChooserCompletion* completion) override;

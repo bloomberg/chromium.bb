@@ -607,8 +607,6 @@ target(link_target_type, "renderer") {
     "shared_worker/shared_worker_repository.h",
     "skia_benchmarking_extension.cc",
     "skia_benchmarking_extension.h",
-    "speech_recognition_dispatcher.cc",
-    "speech_recognition_dispatcher.h",
     "stats_collection_controller.cc",
     "stats_collection_controller.h",
     "stats_collection_observer.cc",

@@ -111,6 +111,7 @@ class SpeechRecognitionSession : public blink::mojom::SpeechRecognitionSession,
  private:
   int session_id_;
   blink::mojom::SpeechRecognitionSessionClientPtr client_;
+  bool stopped_;
 
   base::WeakPtrFactory<SpeechRecognitionSession> weak_factory_;
 };

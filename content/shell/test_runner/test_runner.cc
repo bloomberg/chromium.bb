@@ -24,7 +24,6 @@
 #include "content/shell/test_runner/mock_content_settings_client.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/test_runner/mock_web_document_subresource_filter.h"
-#include "content/shell/test_runner/mock_web_speech_recognizer.h"
 #include "content/shell/test_runner/pixel_dump.h"
 #include "content/shell/test_runner/spell_check_client.h"
 #include "content/shell/test_runner/test_common.h"
@@ -112,8 +111,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
-  void AddMockSpeechRecognitionResult(const std::string& transcript,
-                                      double confidence);
   void AddOriginAccessWhitelistEntry(const std::string& source_origin,
                                      const std::string& destination_protocol,
                                      const std::string& destination_host,
@@ -219,8 +216,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetJavaScriptCanAccessClipboard(bool can_access);
   void SetMIDIAccessorResult(bool result);
   void SetMockScreenOrientation(const std::string& orientation);
-  void SetMockSpeechRecognitionError(const std::string& error,
-                                     const std::string& message);
   void SetPOSIXLocale(const std::string& locale);
   void SetPageVisibility(const std::string& new_visibility);
   void SetPermission(const std::string& name,
@@ -364,8 +359,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
   return gin::Wrappable<TestRunnerBindings>::GetObjectTemplateBuilder(isolate)
       .SetMethod("abortModal", &TestRunnerBindings::NotImplemented)
       .SetMethod("addDisallowedURL", &TestRunnerBindings::NotImplemented)
-      .SetMethod("addMockSpeechRecognitionResult",
-                 &TestRunnerBindings::AddMockSpeechRecognitionResult)
       .SetMethod("addOriginAccessWhitelistEntry",
                  &TestRunnerBindings::AddOriginAccessWhitelistEntry)
       .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
@@ -545,8 +538,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::NotImplemented)
       .SetMethod("setMockScreenOrientation",
                  &TestRunnerBindings::SetMockScreenOrientation)
-      .SetMethod("setMockSpeechRecognitionError",
-                 &TestRunnerBindings::SetMockSpeechRecognitionError)
       .SetMethod("setPOSIXLocale", &TestRunnerBindings::SetPOSIXLocale)
       .SetMethod("setPageVisibility", &TestRunnerBindings::SetPageVisibility)
       .SetMethod("setPermission", &TestRunnerBindings::SetPermission)
@@ -1303,20 +1294,6 @@ void TestRunnerBindings::SimulateWebNotificationClose(const std::string& title,
   runner_->SimulateWebNotificationClose(title, by_user);
 }
 
-void TestRunnerBindings::AddMockSpeechRecognitionResult(
-    const std::string& transcript,
-    double confidence) {
-  if (runner_)
-    runner_->AddMockSpeechRecognitionResult(transcript, confidence);
-}
-
-void TestRunnerBindings::SetMockSpeechRecognitionError(
-    const std::string& error,
-    const std::string& message) {
-  if (runner_)
-    runner_->SetMockSpeechRecognitionError(error, message);
-}
-
 void TestRunnerBindings::AddWebPageOverlay() {
   if (view_runner_)
     view_runner_->AddWebPageOverlay();
@@ -1524,8 +1501,6 @@ void TestRunner::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
   mock_content_settings_client_->SetDelegate(delegate);
   spellcheck_->SetDelegate(delegate);
-  if (speech_recognizer_)
-    speech_recognizer_->SetDelegate(delegate);
 }
 
 void TestRunner::SetMainView(WebView* web_view) {
@@ -2126,14 +2101,6 @@ MockScreenOrientationClient* TestRunner::getMockScreenOrientationClient() {
   return mock_screen_orientation_client_.get();
 }
 
-MockWebSpeechRecognizer* TestRunner::getMockWebSpeechRecognizer() {
-  if (!speech_recognizer_.get()) {
-    speech_recognizer_.reset(new MockWebSpeechRecognizer());
-    speech_recognizer_->SetDelegate(delegate_);
-  }
-  return speech_recognizer_.get();
-}
-
 void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
   blink::WebScreenOrientationType orientation;
 
@@ -2551,18 +2518,6 @@ void TestRunner::SimulateWebNotificationClick(
 void TestRunner::SimulateWebNotificationClose(const std::string& title,
                                               bool by_user) {
   delegate_->SimulateWebNotificationClose(title, by_user);
-}
-
-void TestRunner::AddMockSpeechRecognitionResult(const std::string& transcript,
-                                                double confidence) {
-  getMockWebSpeechRecognizer()->AddMockResult(WebString::FromUTF8(transcript),
-                                              confidence);
-}
-
-void TestRunner::SetMockSpeechRecognitionError(const std::string& error,
-                                               const std::string& message) {
-  getMockWebSpeechRecognizer()->SetError(WebString::FromUTF8(error),
-                                         WebString::FromUTF8(message));
 }
 
 void TestRunner::OnLayoutTestRuntimeFlagsChanged() {

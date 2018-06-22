@@ -27,28 +27,65 @@
 
 #include <memory>
 
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/modules/speech/speech_grammar_list.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition.h"
+
 namespace blink {
 
 const char SpeechRecognitionController::kSupplementName[] =
     "SpeechRecognitionController";
 
-SpeechRecognitionController::SpeechRecognitionController(
-    SpeechRecognitionClient* client)
-    : client_(client) {}
+SpeechRecognitionController::SpeechRecognitionController(LocalFrame& frame)
+    : Supplement<LocalFrame>(frame) {}
 
 SpeechRecognitionController::~SpeechRecognitionController() {
   // FIXME: Call m_client->pageDestroyed(); once we have implemented a client.
 }
 
 SpeechRecognitionController* SpeechRecognitionController::Create(
-    SpeechRecognitionClient* client) {
-  return new SpeechRecognitionController(client);
+    LocalFrame& frame) {
+  return new SpeechRecognitionController(frame);
 }
 
-void ProvideSpeechRecognitionTo(LocalFrame& frame,
-                                SpeechRecognitionClient* client) {
+void SpeechRecognitionController::Start(
+    mojom::blink::SpeechRecognitionSessionRequest session_request,
+    mojom::blink::SpeechRecognitionSessionClientPtrInfo session_client,
+    const SpeechGrammarList* grammars,
+    const String& lang,
+    bool continuous,
+    bool interim_results,
+    unsigned long max_alternatives) {
+  mojom::blink::StartSpeechRecognitionRequestParamsPtr msg_params =
+      mojom::blink::StartSpeechRecognitionRequestParams::New();
+  for (unsigned i = 0; i < grammars->length(); i++) {
+    SpeechGrammar* grammar = grammars->item(i);
+    msg_params->grammars.push_back(mojom::blink::SpeechRecognitionGrammar::New(
+        grammar->src(), grammar->weight()));
+  }
+  msg_params->language = lang.IsNull() ? g_empty_string : lang;
+  msg_params->max_hypotheses = max_alternatives;
+  msg_params->continuous = continuous;
+  msg_params->interim_results = interim_results;
+  msg_params->origin = GetSupplementable()->GetDocument()->GetSecurityOrigin();
+  msg_params->client = std::move(session_client);
+  msg_params->session_request = std::move(session_request);
+
+  GetSpeechRecognizer().Start(std::move(msg_params));
+}
+
+void ProvideSpeechRecognitionTo(LocalFrame& frame) {
   SpeechRecognitionController::ProvideTo(
-      frame, SpeechRecognitionController::Create(client));
+      frame, SpeechRecognitionController::Create(frame));
+}
+
+mojom::blink::SpeechRecognizer&
+SpeechRecognitionController::GetSpeechRecognizer() {
+  if (!speech_recognizer_) {
+    GetSupplementable()->GetInterfaceProvider().GetInterface(
+        mojo::MakeRequest(&speech_recognizer_));
+  }
+  return *speech_recognizer_;
 }
 
 }  // namespace blink

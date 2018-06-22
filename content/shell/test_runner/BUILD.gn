@@ -42,8 +42,6 @@ component("test_runner") {
     "mock_web_document_subresource_filter.h",
     "mock_web_midi_accessor.cc",
     "mock_web_midi_accessor.h",
-    "mock_web_speech_recognizer.cc",
-    "mock_web_speech_recognizer.h",
     "mock_web_theme_engine.cc",
     "mock_web_theme_engine.h",
     "pixel_dump.cc",

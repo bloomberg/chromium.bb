@@ -28,10 +28,13 @@
 
 #include <memory>
 
+#include "third_party/blink/public/mojom/speech/speech_recognizer.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/modules/speech/speech_recognition_client.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
+
+class SpeechGrammarList;
 
 class SpeechRecognitionController final
     : public GarbageCollectedFinalized<SpeechRecognitionController>,
@@ -43,34 +46,28 @@ class SpeechRecognitionController final
 
   virtual ~SpeechRecognitionController();
 
-  void Start(SpeechRecognition* recognition,
+  void Start(mojom::blink::SpeechRecognitionSessionRequest session_request,
+             mojom::blink::SpeechRecognitionSessionClientPtrInfo session_client,
              const SpeechGrammarList* grammars,
              const String& lang,
              bool continuous,
              bool interim_results,
-             unsigned long max_alternatives) {
-    client_->Start(recognition, grammars, lang, continuous, interim_results,
-                   max_alternatives);
-  }
+             unsigned long max_alternatives);
 
-  void Stop(SpeechRecognition* recognition) { client_->Stop(recognition); }
-  void Abort(SpeechRecognition* recognition) { client_->Abort(recognition); }
-
-  static SpeechRecognitionController* Create(SpeechRecognitionClient*);
+  static SpeechRecognitionController* Create(LocalFrame& frame);
   static SpeechRecognitionController* From(LocalFrame* frame) {
     return Supplement<LocalFrame>::From<SpeechRecognitionController>(frame);
   }
 
-  void Trace(blink::Visitor* visitor) override {
-    Supplement<LocalFrame>::Trace(visitor);
-    visitor->Trace(client_);
-  }
-
  private:
-  explicit SpeechRecognitionController(SpeechRecognitionClient*);
+  explicit SpeechRecognitionController(LocalFrame& frame);
 
-  Member<SpeechRecognitionClient> client_;
+  mojom::blink::SpeechRecognizer& GetSpeechRecognizer();
+
+  mojom::blink::SpeechRecognizerPtr speech_recognizer_;
 };
+
+MODULES_EXPORT void ProvideSpeechRecognitionTo(LocalFrame& frame);
 
 }  // namespace blink
 
