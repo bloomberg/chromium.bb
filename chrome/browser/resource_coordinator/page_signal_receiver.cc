@@ -84,7 +84,7 @@ void PageSignalReceiver::OnLoadTimePerformanceEstimate(
 void PageSignalReceiver::AddObserver(PageSignalObserver* observer) {
   // When PageSignalReceiver starts to have observer, construct the mojo
   // channel.
-  if (!observers_.might_have_observers()) {
+  if (!binding_.is_bound()) {
     content::ServiceManagerConnection* service_manager_connection =
         content::ServiceManagerConnection::GetForProcess();
     // Ensure service_manager is active before trying to connect to it.
