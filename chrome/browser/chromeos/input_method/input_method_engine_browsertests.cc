@@ -128,25 +128,19 @@ class InputMethodEngineBrowserTest
 class KeyEventDoneCallback {
  public:
   explicit KeyEventDoneCallback(bool expected_argument)
-      : expected_argument_(expected_argument),
-        is_called_(false) {}
+      : expected_argument_(expected_argument) {}
   ~KeyEventDoneCallback() {}
 
   void Run(bool consumed) {
-    if (consumed == expected_argument_) {
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
-      is_called_ = true;
-    }
+    if (consumed == expected_argument_)
+      run_loop_.Quit();
   }
 
-  void WaitUntilCalled() {
-    while (!is_called_)
-      content::RunMessageLoop();
-  }
+  void WaitUntilCalled() { run_loop_.Run(); }
 
  private:
   bool expected_argument_;
-  bool is_called_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyEventDoneCallback);
 };

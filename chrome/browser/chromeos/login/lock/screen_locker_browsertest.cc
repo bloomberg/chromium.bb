@@ -47,7 +47,7 @@ namespace {
 // An object that wait for lock state and fullscreen state.
 class Waiter : public content::NotificationObserver {
  public:
-  explicit Waiter(Browser* browser) : browser_(browser), running_(false) {
+  explicit Waiter(Browser* browser) : browser_(browser) {
     registrar_.Add(this, chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_FULLSCREEN_CHANGED,
@@ -61,30 +61,29 @@ class Waiter : public content::NotificationObserver {
                const content::NotificationDetails& details) override {
     DCHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED ||
            type == chrome::NOTIFICATION_FULLSCREEN_CHANGED);
-    if (running_)
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    if (quit_loop_)
+      std::move(quit_loop_).Run();
   }
 
   // Wait until the two conditions are met.
   void Wait(bool locker_state, bool fullscreen) {
-    running_ = true;
     std::unique_ptr<chromeos::test::ScreenLockerTester> tester(
         chromeos::ScreenLocker::GetTester());
     while (tester->IsLocked() != locker_state ||
            browser_->window()->IsFullscreen() != fullscreen) {
-      content::RunMessageLoop();
+      base::RunLoop run_loop;
+      quit_loop_ = run_loop.QuitClosure();
+      run_loop.Run();
     }
     // Make sure all pending tasks are executed.
     content::RunAllPendingInMessageLoop();
-    running_ = false;
   }
 
  private:
   Browser* browser_;
   content::NotificationRegistrar registrar_;
 
-  // Are we currently running the message loop?
-  bool running_;
+  base::OnceClosure quit_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(Waiter);
 };

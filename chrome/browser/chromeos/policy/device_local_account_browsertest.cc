@@ -2090,7 +2090,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
   // Set up an observer that will quit the message loop when login has succeeded
   // and the first wizard screen, if any, is being shown.
   base::RunLoop login_wait_run_loop;
-  chromeos::MockAuthStatusConsumer login_status_consumer;
+  chromeos::MockAuthStatusConsumer login_status_consumer(
+      login_wait_run_loop.QuitClosure());
   EXPECT_CALL(login_status_consumer, OnAuthSuccess(_)).Times(1).WillOnce(
       InvokeWithoutArgs(&login_wait_run_loop, &base::RunLoop::Quit));
   chromeos::ExistingUserController* controller =
@@ -2308,7 +2309,8 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
   // Set up an observer that will quit the message loop when login has succeeded
   // and the first wizard screen, if any, is being shown.
   base::RunLoop login_wait_run_loop;
-  chromeos::MockAuthStatusConsumer login_status_consumer;
+  chromeos::MockAuthStatusConsumer login_status_consumer(
+      login_wait_run_loop.QuitClosure());
   EXPECT_CALL(login_status_consumer, OnAuthSuccess(_)).Times(1).WillOnce(
       InvokeWithoutArgs(&login_wait_run_loop, &base::RunLoop::Quit));
 

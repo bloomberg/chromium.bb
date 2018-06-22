@@ -10,66 +10,57 @@
 
 namespace chromeos {
 
-MockAuthStatusConsumer::MockAuthStatusConsumer() = default;
+MockAuthStatusConsumer::MockAuthStatusConsumer(base::OnceClosure quit_closure)
+    : quit_closure_(std::move(quit_closure)) {}
 
 MockAuthStatusConsumer::~MockAuthStatusConsumer() = default;
 
-// static
 void MockAuthStatusConsumer::OnRetailModeSuccessQuit(
     const UserContext& user_context) {
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  std::move(quit_closure_).Run();
 }
 
-// static
 void MockAuthStatusConsumer::OnRetailModeSuccessQuitAndFail(
     const UserContext& user_context) {
   ADD_FAILURE() << "Retail mode login should have failed!";
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  std::move(quit_closure_).Run();
 }
 
-// static
 void MockAuthStatusConsumer::OnGuestSuccessQuit() {
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  std::move(quit_closure_).Run();
 }
 
-// static
 void MockAuthStatusConsumer::OnGuestSuccessQuitAndFail() {
   ADD_FAILURE() << "Guest login should have failed!";
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  std::move(quit_closure_).Run();
 }
 
-// static
 void MockAuthStatusConsumer::OnSuccessQuit(const UserContext& user_context) {
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  std::move(quit_closure_).Run();
 }
 
-// static
 void MockAuthStatusConsumer::OnSuccessQuitAndFail(
     const UserContext& user_context) {
   ADD_FAILURE() << "Login should NOT have succeeded!";
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  std::move(quit_closure_).Run();
 }
 
-// static
 void MockAuthStatusConsumer::OnFailQuit(const AuthFailure& error) {
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  std::move(quit_closure_).Run();
 }
 
-// static
 void MockAuthStatusConsumer::OnFailQuitAndFail(const AuthFailure& error) {
   ADD_FAILURE() << "Login should not have failed!";
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  std::move(quit_closure_).Run();
 }
 
-// static
 void MockAuthStatusConsumer::OnMigrateQuit() {
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  std::move(quit_closure_).Run();
 }
 
-// static
 void MockAuthStatusConsumer::OnMigrateQuitAndFail() {
   ADD_FAILURE() << "Should not have detected a PW change!";
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  std::move(quit_closure_).Run();
 }
 
 }  // namespace chromeos
