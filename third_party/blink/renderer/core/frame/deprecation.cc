@@ -182,10 +182,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                          "'navigator.webkitTemporaryStorage' or "
                          "'navigator.webkitPersistentStorage'")};
 
-    case WebFeature::kConsoleMarkTimeline:
-      return {"ConsoleMarkTimeline", kUnknown,
-              ReplacedBy("'console.markTimeline'", "'console.timeStamp'")};
-
     case WebFeature::kPrefixedVideoSupportsFullscreen:
       return {"PrefixedVideoSupportsFullscreen", kUnknown,
               ReplacedBy("'HTMLVideoElement.webkitSupportsFullscreen'",
@@ -230,14 +226,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
       return {"PictureSourceSrc", kUnknown,
               "<source src> with a <picture> parent is invalid and therefore "
               "ignored. Please use <source srcset> instead."};
-
-    case WebFeature::kConsoleTimeline:
-      return {"ConsoleTimeline", kUnknown,
-              ReplacedBy("'console.timeline'", "'console.time'")};
-
-    case WebFeature::kConsoleTimelineEnd:
-      return {"ConsoleTimelineEnd", kUnknown,
-              ReplacedBy("'console.timelineEnd'", "'console.timeEnd'")};
 
     case WebFeature::kXMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload:
       return {"XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload",
