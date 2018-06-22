@@ -667,6 +667,12 @@ static aom_codec_err_t set_encoder_config(
     oxcf->limit = cfg->g_limit;
   }
 
+  if (oxcf->limit == 1) {
+    // still picture mode, display model and timing is meaningless
+    oxcf->display_model_info_present_flag = 0;
+    oxcf->timing_info_present = 0;
+  }
+
   oxcf->aq_mode = extra_cfg->aq_mode;
   oxcf->deltaq_mode = extra_cfg->deltaq_mode;
 
