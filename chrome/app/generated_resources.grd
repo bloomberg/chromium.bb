@@ -4423,19 +4423,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <message name="IDS_TRACE_UPLOAD_URL_CHOICE_OTHER">
-        Other
-      </message>
-      <message name="IDS_TRACE_UPLOAD_URL_CHOICE_EMLOADING">
-        emloading
-      </message>
-      <message name="IDS_TRACE_UPLOAD_URL_CHOICE_QA">
-        QA
-      </message>
-      <message name="IDS_TRACE_UPLOAD_URL_CHOICE_TESTING">
-        Testing
-      </message>
-
       <!-- Preview InfoBar -->
       <message name="IDS_PREVIEWS_INFOBAR_SAVED_DATA_TITLE" desc="The text of the infobar notifying the user that mobile data usage was reduced by showing a preview version of the web page instead of the full page.">
          Saved data
@@ -4515,29 +4502,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_CONFLICTS_CHECK_PAGE_TABLE_TITLE_SUFFIX_ONE" desc="What gets appended after the page title if no conflicts were found.">
           Modules (<ph name="TOTAL_COUNT">$1<ex>50</ex></ph>) - No conflicts detected
         </message>
-        <message name="IDS_CONFLICTS_CHECK_PAGE_TABLE_TITLE_SUFFIX_TWO" desc="What gets appended after the page title (number of conflicts found).">
-          Modules (<ph name="TOTAL_COUNT">$1<ex>50</ex></ph>) - Known conflicts: <ph name="BAD_COUNT">$2<ex>3</ex></ph>, suspected: <ph name="SUSPICIOUS_COUNT">$3<ex>2</ex></ph>
-        </message>
         <message name="IDS_CONFLICTS_EXPLANATION_TEXT" desc="The text blurb explaining what the compatibility page is.">
           This page lists all modules loaded into the main process and modules registered to load at a later point.
         </message>
         <message name="IDS_CONFLICTS_CHECK_INVESTIGATING" desc="A label on the compatibility page saying we are investigating.">
           We are currently investigating this issue.
-        </message>
-        <message name="IDS_CONFLICTS_CHECK_POSSIBLE_ACTIONS" desc="A label on the compatibility page describing possible resolutions.">
-          If you are experiencing frequent problems, you could try the following to resolve the issue with this module:
-        </message>
-        <message name="IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UNINSTALL" desc="An uninstall label. 'It' refers to 'a module'.">
-          Uninstalling
-        </message>
-        <message name="IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UPDATE" desc="An update label. 'It' refers to 'a module'.">
-          Updating
-        </message>
-        <message name="IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_DISABLE" desc="A disable label. 'It' refers to 'a module'.">
-          Disabling
-        </message>
-        <message name="IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_SEPARATOR" desc="The separator separating the words 'Uninstalling it', 'Updating it' and 'Disabling it'">
-          /
         </message>
         <message name="IDS_CONFLICTS_NO_MODULES_LOADED" desc="Error message for when no modules were found in the process">
           Unable to detect any modules loaded.
@@ -4559,9 +4528,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_CONFLICTS_LOADING_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
           Loading...
-        </message>
-        <message name="IDS_CONFLICTS_NOT_LOADED_YET" desc="Shown next to a module that has not been loaded into memory yet">
-          Not loaded yet
         </message>
       </if> <!-- is_win -->
 
@@ -4833,47 +4799,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD" desc="The text displayed in the fakebox (on the New Tab page) when it is empty, Google is the default search engine, and the Material Design UI is enabled.">
         Search Google or type a URL
       </message>
-      <message name="IDS_NTP_CUSTOM_LINKS_ADD_SHORTCUT_TOOLTIP" desc="The tooltip for adding a custom link shortcut. (On the New Tab Page)">
-        Add shortcut
-      </message>
-      <message name="IDS_NTP_CUSTOM_LINKS_ADD_SHORTCUT_TITLE" desc="The title of the custom link add shortcut dialog. (On the New Tab Page)">
-        Add shortcut
-      </message>
-      <message name="IDS_NTP_CUSTOM_LINKS_EDIT_SHORTCUT_TOOLTIP" desc="The tooltip for editing a custom link shortcut. (On the New Tab Page)">
-        Edit shortcut
-      </message>
-      <message name="IDS_NTP_CUSTOM_LINKS_EDIT_SHORTCUT" desc="The title for custom link edit shortcut dialog. (On the New Tab Page)">
-        Edit shortcut
-      </message>
-      <message name="IDS_NTP_CUSTOM_LINKS_NAME" desc="The title for custom link name input field on the edit shortcut dialog. (On the New Tab Page)">
-        Name
-      </message>
-      <message name="IDS_NTP_CUSTOM_LINKS_URL" desc="The title for custom link URL input field on the edit shortcut dialog. (On the New Tab Page)">
-        URL
-      </message>
-      <message name="IDS_NTP_CUSTOM_LINKS_REMOVE" desc="The text label of the custom link remove button on the edit shortcut dialog. (On the New Tab Page)">
-        Remove
-      </message>
-      <message name="IDS_NTP_CUSTOM_LINKS_CANCEL" desc="The text label of the custom link cancel button on the edit shortcut dialog. (On the New Tab Page)">
-        Cancel
-      </message>
       <message name="IDS_NTP_CUSTOM_LINKS_DONE" desc="The text label of the custom link done button on the edit shortcut dialog. (On the New Tab Page)">
         Done
-      </message>
-      <message name="IDS_NTP_CUSTOM_LINKS_INVALID_URL" desc="The text of displayed when an invalid URL is provided when creating a custom link. (On the New Tab Page)">
-       Type a valid URL
-      </message>
-      <message name="IDS_NTP_CONFIRM_MSG_SHORTCUT_REMOVED" desc="The title of the shortcut removed confirmation message when removing a custom link. (On the New Tab Page)">
-        Shortcut removed
-      </message>
-      <message name="IDS_NTP_CONFIRM_MSG_SHORTCUT_EDITED" desc="The title of the shortcut edited confirmation message when editing a custom link. (On the New Tab Page)">
-        Shortcut edited
-      </message>
-      <message name="IDS_NTP_CONFIRM_MSG_SHORTCUT_ADDED" desc="The title of the shortcut added confirmation message when adding a custom link. (On the New Tab Page)">
-        Shortcut added
-      </message>
-      <message name="IDS_NTP_CONFIRM_MSG_RESTORE_DEFAULTS" desc="The text label of the restore default shortcuts button when editing a custom link. (On the New Tab Page)">
-        Restore default shortcuts
       </message>
       <message name="IDS_NTP_CUSTOM_BG_CUSTOMIZE_BACKGROUND" desc="The title for the tooltip for background customization. (On the New Tab Page)">
         Customize background
@@ -4890,14 +4817,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOM_BG_SELECT_A_COLLECTION" desc="The text label of the select a collection submenu for background customization. (On the New Tab Page)">
         Select a collection
       </message>
-      <message name="IDS_NTP_CUSTOM_BG_SELECT_GOOGLE_ALBUM" desc="The text label for the Google Photos submenu for background customization. (On the New Tab Page)">
-        Select a Google Photo Album
-      </message>
       <message name="IDS_NTP_CUSTOM_BG_DAILY_REFRESH" desc="The text label for the daily background randomization option.  (On the New Tab Page)">
         Refresh daily
-      </message>
-      <message name="IDS_NTP_CUSTOM_BG_SURPRISE_ME" desc="The text label for the random background option. (On the New Tab Page)">
-        Surprise me
       </message>
       <message name="IDS_NTP_CUSTOM_BG_RESTORE_DEFAULT" desc="The text label for the restore default option for background customization. (On the New Tab Page)">
         Restore default background
@@ -6231,20 +6152,8 @@ I don't think this site should be blocked!
         </message>
 
         <!-- Reset Profile Settings strings -->
-        <message name="IDS_RESET_PROFILE_SETTINGS_SECTION_TITLE" desc="The title of the section in chrome://settings that allows resetting some settings in a profile">
-          Reset settings
-        </message>
-        <message name="IDS_RESET_PROFILE_SETTINGS_DESCRIPTION" desc="A label describing the purpose of the 'reset profile settings' feature">
-          Restore settings to their original defaults.
-        </message>
         <message name="IDS_RESET_PROFILE_SETTINGS_EXPLANATION" desc="A label describing the consequences of the 'reset profile settings' feature">
           This will reset your startup page, new tab page, search engine, and pinned tabs. It will also disable all extensions and clear temporary data like cookies. Your bookmarks, history and saved passwords will not be cleared.
-        </message>
-        <message name="IDS_RESET_PROFILE_SETTINGS_BUTTON" desc="The text on the button in chrome://settings that allows resetting some settings in a profile">
-          Reset settings
-        </message>
-        <message name="IDS_RESET_PROFILE_SETTINGS_TITLE" desc="Dialog title">
-          Reset settings
         </message>
         <message name="IDS_TRIGGERED_RESET_PROFILE_SETTINGS_TITLE" desc="Dialog title for reset dialog triggered by a third party tool">
           <ph name="THIRD_PARTY_TOOL_NAME">$1<ex>SuperDuper PC Cleaner Pro</ex></ph> wants to reset your settings.
@@ -6254,9 +6163,6 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_TRIGGERED_RESET_PROFILE_SETTINGS_DEFAULT_TOOL_NAME" desc="Default tool name when a reset was triggered but a name could not be found.">
           A cleanup tool
-        </message>
-        <message name="IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON" desc="Reset button of the Reset Profile Settings dialog">
-          Reset
         </message>
         <message name="IDS_RESET_PROFILE_SETTINGS_LOCALE" desc="Locale field in the feedback details of the Reset Profile Settings dialog">
           Locale
@@ -6313,28 +6219,11 @@ I don't think this site should be blocked!
         Google Pay
       </message>
 
-      <if expr="not is_linux or chromeos">
-        <message name="IDS_THEMES_GROUP_NAME" desc="The title of the themes group">
-          Themes
-        </message>
-      </if>
-      <message name="IDS_THEMES_RESET_BUTTON" desc="The button to reset your theme">
-        Reset to default theme
-      </message>
       <if expr="is_linux and not chromeos">
-        <message name="IDS_THEMES_GTK_BUTTON" desc="The button to choose GTK colors and icons as the current theme.">
-          Use GTK+ theme
-        </message>
-        <message name="IDS_THEMES_SET_CLASSIC" desc="The button to choose the classic windows theme in GTK">
-          Use Classic theme
-        </message>
         <message name="IDS_SHOW_WINDOW_DECORATIONS" desc="The label of a radio button in the options dialog for using the system title bar and borders.">
           Use system title bar and borders
         </message>
       </if>
-      <message name="IDS_THEMES_GALLERY_BUTTON" desc="The button to get more themes">
-        Get themes
-      </message>
 
       <!-- Collected cookies window -->
       <message name="IDS_COLLECTED_COOKIES_DIALOG_TITLE" desc="The title of the collect cookies dialog">
@@ -6873,15 +6762,6 @@ I don't think this site should be blocked!
         <message name="IDS_PROFILES_ACCOUNT_BUTTON_AUTH_ERROR_ACCESSIBLE_NAME" desc="Title of the avatar button for accessibility">
           <ph name="PROFILE_NAME">$1<ex>User</ex></ph>: sign in error
         </message>
-        <message name="IDS_PROFILES_NEW_AVATAR_MENU_CHANGE_PHOTO_ACCESSIBLE_NAME" desc="Title of the change photo button for accessibility">
-          Change Photo
-        </message>
-        <message name="IDS_PROFILES_NEW_AVATAR_MENU_PHOTO_ACCESSIBLE_NAME" desc="Title of the change photo button for accessibility">
-          Photo
-        </message>
-        <message name="IDS_PROFILES_NEW_AVATAR_MENU_EDIT_NAME_ACCESSIBLE_NAME" desc="Title of the edit profile name button for accessibility">
-          <ph name="PROFILE_NAME">$1<ex>User</ex></ph>: select to edit
-        </message>
       </if>
       <message name="IDS_PROFILES_PROFILE_SIGNOUT_BUTTON" desc="Button in the avatar menu bubble view to sign-out the current profile.">
         Exit and childlock
@@ -6892,12 +6772,6 @@ I don't think this site should be blocked!
       <message name="IDS_PROFILES_GAIA_SIGNIN_TITLE" desc="Title of the account removal view in the avatar menu bubble.">
         Sign in
       </message>
-      <message name="IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE" desc="Title of the account removal view in the avatar menu bubble.">
-        Add account
-      </message>
-      <message name="IDS_PROFILES_GAIA_REAUTH_TITLE" desc="Title of the account reauthentication view in the avatar menu bubble. Also used in other places to indicate a reauthentication action.">
-        Sign in again
-      </message>
       <message name="IDS_PROFILES_ACCOUNT_REMOVAL_TITLE" desc="Title of the account removal view in the avatar menu bubble.">
         Remove account
       </message>
@@ -6906,9 +6780,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_PROFILES_SYNC_COMPLETE_TITLE" desc="Title of the profile card when sync is complete.">
         Syncing to
-      </message>
-      <message name="IDS_PROFILES_SYNC_SETTINGS_LINK" desc="The link text to the Chrome sync settings page in the avatar menu tutorial card.">
-        Settings
       </message>
       <message name="IDS_PROFILES_DICE_SIGNIN_BUTTON" desc="Button in the profile user menu to sign in and turn on Sync.">
         Sign in
@@ -6927,18 +6798,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_PROFILES_ACCOUNT_REMOVAL_BUTTON" desc="Text of the ok button on the account removal view in the avatar menu bubble.">
         Remove account
-      </message>
-      <message name="IDS_PROFILES_CONFIRM_SIGNIN_TUTORIAL_CONTENT_TEXT" desc="Content of the tutorial card in the avatar menu bubble view shown when a user successfully signs in to Chrome.">
-        Your bookmarks, history, passwords, and other settings will be synced to your Google Account.
-      </message>
-      <message name="IDS_PROFILES_TUTORIAL_OK_BUTTON" desc="Button in the avatar menu tutorial card for dismissing the signin confirmation bubble">
-        OK, got it
-      </message>
-      <message name="IDS_PROFILES_ERROR_TUTORIAL_TITLE" desc="Title in the tutorial card for showing signin errors">
-        Uh-oh!
-      </message>
-      <message name="IDS_PROFILES_TUTORIAL_WHATS_NEW_BUTTON" desc="Button in the avatar menu tutorial card for seeing what is new with the new profile management UI">
-        See what's new
       </message>
       <message name="IDS_PROFILES_EXIT_GUEST" desc="Button in the avatar menu bubble view for exiting the active guest session.">
         Exit Guest
@@ -6971,12 +6830,6 @@ I don't think this site should be blocked!
         <message name="IDS_PROFILES_PROFILE_HIDE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to hide the accounts for a profile.">
           Hide accounts
         </message>
-        <message name="IDS_PROFILES_SWITCH_USERS_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
-          Switch person
-        </message>
-        <message name="IDS_PROFILES_GO_INCOGNITO_BUTTON" desc="Button in the avatar menu bubble view for launching an incognito browser.">
-          Go incognito
-        </message>
         <message name="IDS_PROFILES_MANAGE_USERS_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
           Manage people
         </message>
@@ -7002,15 +6855,6 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_PROFILES_PROFILE_HIDE_MANAGE_ACCOUNTS_BUTTON" desc="Button in the avatar menu bubble view used to hide the accounts for a profile.">
           Hide Accounts
-        </message>
-        <message name="IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE" desc="The Learn More link in the avatar tutorial bubble.">
-          Learn More
-        </message>
-        <message name="IDS_PROFILES_SWITCH_USERS_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
-          Switch Person
-        </message>
-        <message name="IDS_PROFILES_GO_INCOGNITO_BUTTON" desc="Button in the avatar menu bubble view for launching an incognito browser.">
-          Go Incognito
         </message>
         <message name="IDS_PROFILES_MANAGE_USERS_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
           Manage People
@@ -7197,26 +7041,8 @@ I don't think this site should be blocked!
       <message name="IDS_PROFILES_MANAGE_BUTTON_LABEL" desc="The label that appears on the profile manage button in the options dialog to allow a user to manage their profile.">
         Edit...
       </message>
-      <message name="IDS_PROFILES_DELETE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user to delete their profile.">
-        Remove...
-      </message>
-      <message name="IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user with only one profile to delete it.">
-        Delete this person
-      </message>
       <message name="IDS_PROFILES_DEFAULT_NAME" desc="The name to display for a profile when the user is not signed in.">
         Default
-      </message>
-      <message name="IDS_PROFILE_ADD_PERSON_ENABLE" desc="The text for the settings checkbox that indicates whether new profiles can be added from the user manager.">
-        Let anyone add a person to Chrome
-      </message>
-      <message name="IDS_PROFILE_BROWSER_GUEST_ENABLE" desc="The text for the settings checkbox that indicates whether guest mode is available for this browser.">
-        Enable Guest browsing
-      </message>
-      <message name="IDS_SYNC_CUSTOMIZE_LINK_LABEL" desc="The text to display on the link to customize the sync settings.">
-        Advanced
-      </message>
-      <message name="IDS_SYNC_USE_DEFAULT_SETTINGS" desc="The text to display on the link to go back to the default sync settings.">
-        Use default settings
       </message>
       <message name="IDS_SYNC_LOGIN_NAME_PROHIBITED" desc="The error message shown when the user tries to sign in to sync using a name that is not allowed by the admin policy">
         Signing in with this username has been disabled by your administrator.
@@ -7660,21 +7486,10 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON" desc="Button in the header of desktop user menu prompting users to confirm their sync settings.">
         Open settings
       </message>
-      <if expr="chromeos">
-        <message name="IDS_SYNC_NOTIFICATION_ACCEPT" desc="A button label shown in the sync error notification when the passphrase needs to be updated.">
-          Update sync passphrase
-        </message>
-      </if>
 
       <if expr="not use_titlecase">
-        <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to update the passphrase.">
-          Update...
-        </message>
         <message name="IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when sync is not available for their domain.">
           OK...
-        </message>
-        <message name="IDS_SYNC_PASSPHRASE_ERROR_WRENCH_MENU_ITEM" desc="The sync error wrench menu item when the user needs to update the passphrase.">
-          Sync Error: Update Sync passphrase...
         </message>
         <if expr="chromeos">
           <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view/notification when the user needs to sign out and sign in again to Chrome OS.">
@@ -7694,14 +7509,8 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </if>
       </if>
       <if expr="use_titlecase">
-        <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to update the passphrase.">
-          Update...
-        </message>
         <message name="IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when sync is not available for their domain.">
           OK...
-        </message>
-        <message name="IDS_SYNC_PASSPHRASE_ERROR_WRENCH_MENU_ITEM" desc="The sync error wrench menu item when the user needs to update the passphrase.">
-          Sync Error: Update Sync Passphrase...
         </message>
         <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to sign in again.">
           Sign in Again...
@@ -7714,9 +7523,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <!-- Android uses native UI to handle Sync settings -->
       <if expr="not is_android">
         <!-- Sync options dialog strings -->
-        <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
-          Sign in
-        </message>
         <if expr="not chromeos">
           <message name="IDS_SYNC_OVERVIEW" desc="The message that appears in the options dialog when sync has not been set up by the user.">
             Sign in to get your bookmarks, history, passwords and other settings on all your devices. You'll also automatically be signed in to your Google services.
@@ -7724,12 +7530,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </if>
         <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
           Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>
-        </message>
-        <message name="IDS_SYNC_SETUP_BUTTON_LABEL" desc="The label that appears on the sync setup button in the options dialog when sync has been disabled by the user.">
-          Set up sync...
-        </message>
-        <message name="IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR" desc="The error message displayed to the user when setup was aborted because the server reported that a pending clear private data operation is in progress">
-          The sync server is busy, please try again later.
         </message>
         <message name="IDS_SIGNED_IN_WITH_SYNC_DISABLED" desc="The message that appears in the settings page indicating that user is signed in, but sync is not enabled.">
           Sync is disabled by your administrator.
@@ -7768,12 +7568,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           Sync is disabled by your administrator
         </message>
 
-        <message name="IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_PREFIX" desc="Message when explicit passphrase is selected.">
-          Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase, you will need to
-        </message>
-        <message name="IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_POSTFIX" desc="Postfix of the message show when explicit passphrase is selected.">
-          reset sync
-        </message>
         <message name="IDS_SYNC_SERVER_IS_UNREACHABLE" desc="The message to display in the New Tab Page and Settings Page sync section when the server is unreachable.">
           Couldn't connect to the sync server. Retrying...
         </message>
@@ -7806,32 +7600,11 @@ Please help our engineers fix this problem. Tell us what happened right before y
             Failed to get authentication token. Please sign out then sign in again to try again.
           </message>
         </if>
-        <message name="IDS_SYNC_STOP_SYNCING_BUTTON_LABEL" desc="The text to display on the button to indicate stop syncing functionality.">
-          Disconnect your Google Account...
-        </message>
-        <message name="IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL" desc="The text to display on the button to confirm the user wishes to stop syncing.">
-          Sign Out
-        </message>
-        <message name="IDS_SYNC_STOP_SYNCING_DIALOG_TITLE" desc="The title of the dialog that explains what 'stop syncing' means.">
-          Disconnect your Google Account
-        </message>
-        <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
-          By disconnecting your Google Account from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>, your data will remain on this computer but changes will no longer be synced to your Google Account. Data already stored in your Google Account will remain there until you remove it using <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
-        </message>
-        <message name="IDS_SYNC_STOP_DELETE_PROFILE_LABEL" desc="The text to display by the checkbox asking user whether to also delete profile when stopping sync.">
-          Also clear your history, bookmarks, settings, and other Chrome data stored on this device.
-        </message>
         <message name="IDS_SYNC_ADVANCED_OPTIONS" desc="The text in the link that brings up the sync configure screen in the new tab page new data type notification.">
           Advanced settings
         </message>
 
         <!-- Sync New Tab Page strings -->
-        <message name="IDS_SYNC_NTP_PASSWORD_PROMO" desc="The message to display to promote passwords sync now being available.">
-          <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> can now sync your passwords.
-        </message>
-        <message name="IDS_SYNC_NTP_PASSWORD_ENABLE" desc="The link text to present for passwords sync.">
-          Enable
-        </message>
         <message name="IDS_SYNC_NTP_SETUP_IN_PROGRESS" desc="The message to display in the New Tab Page sync section when the sync setup is underway.">
           Setup in progress...
         </message>
@@ -7856,67 +7629,17 @@ Please help our engineers fix this problem. Tell us what happened right before y
           </message>
         </if>
 
-        <!-- Customize Sync dialog -->
-        <message name="IDS_SYNC_SETUP_CONFIGURE_TITLE" desc="The title of the Customize page of the sync setup dialog.">
-          Advanced sync settings
-        </message>
-        <message name="IDS_SYNC_CONFIRM_SYNC_PREFERENCES" desc="The title of the 'Confirm Sync Settings' page of the customize sync dialog.">
-          Confirm sync settings
-        </message>
-        <message name="IDS_SYNC_SYNC_EVERYTHING" desc="The text of the OK button of the 'Confirm Sync Settings' page of the customize sync dialog.">
-          OK, sync everything
-        </message>
-
         <!-- Spinner dialog for waiting sync backend to start up -->
         <message name="IDS_SYNC_SETUP_SPINNER_TITLE" desc="The title of the sync setup dialog showing spinner.">
           Please wait...
         </message>
 
-        <!-- Notify network connection goes time out -->
-        <message name="IDS_SYNC_SETUP_TIME_OUT_TITLE" desc="The title of the 'Timeout' page for sync settings.">
-          Failed to start up the sync backend
-        </message>
-        <message name="IDS_SYNC_SETUP_TIME_OUT_CONTENT" desc="Text explaining what to do if sync times out.">
-          Please make sure your network connection is working and if the problem persists, please sign out and sign in again to refresh your credentials.
-        </message>
-
         <!-- Choose data types dialog strings -->
-        <message name="IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS" desc="Text explaining the 'Choose Datatypes' dialog.">
-          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> securely syncs your data with your Google account. Keep everything synced or customize synced data types and encryption settings.
-        </message>
         <message name="IDS_SYNC_EVERYTHING" desc="A drop-down menu item for users who want to sync all data types.">
           Sync everything
         </message>
-        <message name="IDS_SYNC_CHOOSE_DATATYPES" desc="A drop-down menu item for users who want to select some datatypes to sync.">
-          Choose what to sync
-        </message>
-        <if expr="chromeos">
-          <message name="IDS_SYNC_DATATYPE_THEMES" desc="Themes, one of the data types that we allow syncing.">
-            Themes &amp; wallpapers
-          </message>
-        </if>
-        <if expr="not chromeos">
-          <message name="IDS_SYNC_DATATYPE_THEMES" desc="Themes, one of the data types that we allow syncing.">
-            Themes
-          </message>
-        </if>
-        <message name="IDS_SYNC_DATATYPE_EXTENSIONS" desc="Extensions, one of the data types that we allow syncing.">
-          Extensions
-        </message>
-        <message name="IDS_SYNC_DATATYPE_APPS" desc="Apps, one of the data types that we allow syncing.">
-          Apps
-        </message>
 
         <!-- Encryption tab of the configure sync dialog -->
-        <message name="IDS_SYNC_ENCRYPTION_INSTRUCTIONS" desc="Instructions for the encryption settings tab.">
-          <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> requires you to encrypt your data using either your Google password or your own passphrase.
-        </message>
-        <message name="IDS_SYNC_PASSPHRASE_WARNING" desc="Warning message about using a passphrase for sync.">
-          You are currently using a passphrase.  If you have forgotten your passphrase, you can reset sync to clear your data from Google's servers using the Google Dashboard.
-        </message>
-        <message name="IDS_SYNC_ENCRYPTION_SECTION_MESSAGE" desc="Message explaining that sync data can be encrypted.">
-          For added security, <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> will encrypt your data.
-        </message>
         <message name="IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM" desc="Text of the radio that when selected enables full encryption.">
           All data is encrypted with your sync passphrase
         </message>
@@ -7929,49 +7652,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <ph name="TIME">$1<ex>Sept 1, 2012</ex></ph>
         </message>
 
-        <!-- Personalize Google Services section of the configure sync dialog -->
-        <message name="IDS_SYNC_PERSONALIZE_GOOGLE_SERVICES_MESSAGE" desc="Text of the section containing a link to the Google Activity Controls.">
-          Control how Google uses your browsing history to personalize Search, ads, and other Google services from <ph name="BEGIN_LINK">&lt;a id="activity-controls" href="$1" target=&quot;_blank&quot;&gt;<ex>&lt;a id="activity-controls" href="$1" target=&quot;_blank&quot;&gt;</ex></ph>Google Activity Controls<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
-        </message>
-
-        <!-- Passphrase dialog strings -->
-        <message name="IDS_SYNC_CONFIRM_PASSPHRASE_LABEL" desc="Label for the confirm-passphrase field.">
-          Confirm passphrase
-        </message>
-        <message name="IDS_SYNC_INCORRECT_PASSPHRASE" desc="Message when the passphrase is incorrect.">
-          The passphrase you entered is incorrect.
-        </message>
-        <message name="IDS_SYNC_PASSPHRASE_RECOVER" desc="Message about how to recover from a lost passphrase.">
-          If you've forgotten your passphrase, stop and reset Sync via <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$1" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
-        </message>
-        <message name="IDS_SYNC_PASSPHRASE_CANCEL_YES" desc="String for 'yes' button on passphrase cancel warning dialog.">
-          Skip
-        </message>
-        <message name="IDS_SYNC_PASSPHRASE_CANCEL_NO" desc="String for 'no' button on passphrase cancel warning dialog.">
-          Enter passphrase
-        </message>
-
-        <!-- Login dialog strings -->
-        <message name="IDS_SYNC_SETUP_TITLE" desc="The title of the Sync Setup overlay.">
-          Sign in with your Google Account
-        </message>
-        <message name="IDS_SYNC_SUCCESS" desc="Operation successful">
-          Success!
-        </message>
-
         <!-- Sync promo page chrome://signin -->
-        <message name="IDS_SYNC_PROMO_TAB_TITLE" desc="The title of the sync promo tab.">
-          Sign in
-        </message>
-        <message name="IDS_SYNC_PROMO_MESSAGE_TITLE_SHORT" desc="A short sync promo message displayed under the title.">
-          Sign in to get your bookmarks, history, and settings on all your devices.
-        </message>
-        <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="The link button at the bottom to let the user skip the sync promo.">
-          Skip for now
-        </message>
-        <message name="IDS_SYNC_PROMO_ADVANCED" desc="The link button at the bottom to let the user customize the sync settings.">
-          Advanced...
-        </message>
         <message name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_HEADER" desc="The first line of the of the message shown in NTP when a user is not signed into sync.">
           Not signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
         </message>
@@ -8995,76 +8676,18 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
       <!-- Android does not support multiple profiles and supervised users -->
       <if expr="not is_android">
-        <!-- Manage Profile Dialog -->
-        <message name="IDS_PROFILES_MANAGE_TITLE" desc="Title of the manage profile dialog">
-          Edit
-        </message>
-        <message name="IDS_PROFILES_MANAGE_NAME_LABEL" desc="Label next to the profile name text field.">
-          Name:
-        </message>
-        <message name="IDS_PROFILES_MANAGE_ICON_LABEL" desc="Label above the profile avatar icon chooser.">
-          Choose a picture and name
-        </message>
-
-        <!-- Delete Profile Dialog -->
-        <message name="IDS_PROFILES_DELETE_TITLE" desc="Title of the delete profile dialog">
-          Remove person?
-        </message>
-        <message name="IDS_PROFILES_DELETE_OK_BUTTON_LABEL" desc="The text to display on the button to confirm deleting the profile.">
-          Remove
-        </message>
-        <message name="IDS_PROFILES_DELETE_MESSAGE" desc="Message explaining to the user what will happen if they delete this profile">
-          Are you sure you want to remove "<ph name="PROFILE_NAME">$1<ex>New User</ex></ph>" and all associated Chrome data from this computer? This cannot be undone.
-        </message>
-        <message name="IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TITLE" desc="Title of the disconnect managed profile dialog.">
-          Disconnect your Google Account
-        </message>
-        <message name="IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_DOMAIN_INFORMATION" desc="The text that provides the domain information.">
-          This account is managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph>
-        </message>
-        <message name="IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_OK_BUTTON_LABEL" desc="The text to display on the button that clears the data and disconnect user account.">
-          Clear data and disconnect
-        </message>
-        <message name="IDS_PROFILES_LIST_ITEM_CURRENT" desc="Text to display in the multi-profiles list when this profile is the current profile">
-          <ph name="PROFILE_NAME">$1<ex>New User</ex></ph> (current)
-        </message>
-        <message name="IDS_PROFILES_SINGLE_USER_MESSAGE" desc="Text to display in the multi-profiles section when there is only one user">
-          You are currently the only <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> user.
-        </message>
-
         <!-- Create Profile Dialog -->
         <message name="IDS_PROFILES_CREATE_TITLE" desc="Title of the create profile dialog">
           Add person
         </message>
-        <message name="IDS_PROFILES_CREATE_INSTRUCTIONS" desc="Instructions for the create profile dialog">
-          Choose a picture and name
-        </message>
         <message name="IDS_PROFILES_CREATE_LOCAL_ERROR" desc="Message shown when a local error (for example, a disk error) occurs during profile creation.">
           The new user couldn't be created. Please check your hard drive space and permissions and try again.
-        </message>
-        <message name="IDS_PROFILES_CREATE_REMOTE_ERROR" desc="Message shown when a remote error (for example, a network error) occurs during creation of a new supervised user.">
-          The new supervised user couldn't be created. Please check your network connection and try again later.
-        </message>
-        <message name="IDS_PROFILES_CREATE_SIGN_IN_ERROR" desc="Message shown when a sign-in error occurs during creation of a new supervised user.">
-          The new supervised user couldn't be created. Please make sure you're signed in properly and try again.
         </message>
         <message name="IDS_PROFILES_CREATE_DESKTOP_SHORTCUT_LABEL" desc="Label for the checkbox that controls whether a desktop shortcut should be created for the new profile.">
           Create a desktop shortcut for this user
         </message>
-        <message name="IDS_PROFILES_CREATE_CUSTODIAN_ACCOUNT_DETAILS_OUT_OF_DATE_ERROR" desc="Message shown when the custodian is signed in, but their sign-in information is invalid.">
-          Your account details are out of date. <ph name="BEGIN_LINK">&lt;a is="action-link" id="reauth" data-user-email="$1"&gt;</ph>Sign in again<ph name="END_LINK">&lt;/a&gt;</ph>.
-        </message>
         <message name="IDS_PROFILES_CREATE_SUPERVISED_JUST_SIGNED_IN" desc="Warning message shown in the create-profile dialog when the custodian signed in recently, sync has not yet finished initializing, and so the creation process is likely to take extra time.">
           Creating your supervised user. This may take a few moments.
-        </message>
-        <message name="IDS_PROFILES_CREATE_SHORTCUT_CHECKBOX" desc="Create Shortcut checkbox when creating a new profile">
-          Create a desktop shortcut for this user
-        </message>
-        <message name="IDS_PROFILES_CREATE_SHORTCUT_BUTTON" desc="Create Shortcut button when editing an existing profile">
-          Add desktop shortcut
-        </message>
-        <message name="IDS_PROFILES_REMOVE_SHORTCUT_BUTTON" desc="Remove Shortcut button when editing an existing profile">
-          Remove desktop shortcut
         </message>
 
         <!-- Import existing supervised user dialog -->
@@ -9299,22 +8922,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_METRO_FLOW_SET_DEFAULT"
                  desc="The label of the button invoking Windows8 default app settings window.">
           Next
-        </message>
-        <message name="IDS_METRO_MISSING_PLUGIN_PROMPT"
-                 desc="Infobar message to let user do something about the missing plugin">
-          <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> is required to display some elements on this page
-        </message>
-        <message name="IDS_METRO_NPAPI_PLUGIN_PROMPT"
-                 desc="Infobar message when an NPAPI plugin doesn't run in Metro mode.">
-          <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> only works on the desktop
-        </message>
-        <message name="IDS_METRO_DOWNLOAD_COMPLETE_NOTIFICATION"
-                desc="Notification displayed when a download request is completed">
-          Your download has completed
-        </message>
-        <message name="IDS_METRO_DOWNLOAD_COMPLETE_NOTIFICATION_TITLE"
-                desc="Title for notification displayed when a download request is completed">
-          Download complete notification
         </message>
       </if>
 
