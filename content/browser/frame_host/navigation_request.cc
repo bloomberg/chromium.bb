@@ -1385,7 +1385,13 @@ void NavigationRequest::OnRedirectChecksComplete(
 
   RenderFrameDevToolsAgentHost::OnNavigationRequestWillBeSent(*this);
 
-  loader_->FollowRedirect(base::nullopt, base::nullopt);
+  base::Optional<net::HttpRequestHeaders> embedder_additional_headers;
+  GetContentClient()->browser()->NavigationRequestRedirected(
+      frame_tree_node_->frame_tree_node_id(), common_params_.url,
+      &embedder_additional_headers);
+
+  loader_->FollowRedirect(base::nullopt,
+                          std::move(embedder_additional_headers));
 }
 
 void NavigationRequest::OnFailureChecksComplete(

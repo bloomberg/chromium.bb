@@ -5,6 +5,7 @@
 #include "content/browser/loader/null_resource_controller.h"
 
 #include "base/logging.h"
+#include "net/http/http_request_headers.h"
 
 namespace content {
 
@@ -25,6 +26,14 @@ void NullResourceController::CancelWithError(int error_code) {
 
 void NullResourceController::Resume() {
   *was_resumed_ = true;
+}
+
+void NullResourceController::ResumeForRedirect(
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+  DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
+                                                   "headers was not supported "
+                                                   "yet. crbug.com/845683";
+  Resume();
 }
 
 }  // namespace content

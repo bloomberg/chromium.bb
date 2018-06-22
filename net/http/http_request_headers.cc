@@ -75,7 +75,13 @@ bool HttpRequestHeaders::Iterator::GetNext() {
 HttpRequestHeaders::HttpRequestHeaders() = default;
 HttpRequestHeaders::HttpRequestHeaders(const HttpRequestHeaders& other) =
     default;
+HttpRequestHeaders::HttpRequestHeaders(HttpRequestHeaders&& other) = default;
 HttpRequestHeaders::~HttpRequestHeaders() = default;
+
+HttpRequestHeaders& HttpRequestHeaders::operator=(
+    const HttpRequestHeaders& other) = default;
+HttpRequestHeaders& HttpRequestHeaders::operator=(HttpRequestHeaders&& other) =
+    default;
 
 bool HttpRequestHeaders::GetHeader(const base::StringPiece& key,
                                    std::string* out) const {

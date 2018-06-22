@@ -35,7 +35,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
-#include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "components/policy/core/common/cloud/policy_header_service.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/prefs/pref_service.h"
@@ -67,24 +66,9 @@ using testing::Not;
 
 namespace {
 
-static const char kTestPolicyHeader[] = "test_header";
-static const char kServerRedirectUrl[] = "/server-redirect";
-
 std::unique_ptr<net::test_server::HttpResponse> HandleTestRequest(
     const net::test_server::HttpRequest& request) {
-  if (base::StartsWith(request.relative_url, kServerRedirectUrl,
-                       base::CompareCase::SENSITIVE)) {
-    // Extract the target URL and redirect there.
-    size_t query_string_pos = request.relative_url.find('?');
-    std::string redirect_target =
-        request.relative_url.substr(query_string_pos + 1);
-
-    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
-        new net::test_server::BasicHttpResponse);
-    http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
-    http_response->AddCustomHeader("Location", redirect_target);
-    return std::move(http_response);
-  } else if (request.relative_url == "/") {
+  if (request.relative_url == "/") {
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_OK);
@@ -220,23 +204,6 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&HandleTestRequest));
     ASSERT_TRUE(embedded_test_server()->Start());
-    // Tell chrome that this is our DM server.
-    dm_url_ = embedded_test_server()->GetURL("/DeviceManagement");
-
-    // At this point, the Profile is already initialized and it's too
-    // late to set the DMServer URL via command line flags, so directly
-    // inject it to the PolicyHeaderIOHelper.
-    policy::PolicyHeaderService* policy_header_service =
-        policy::PolicyHeaderServiceFactory::GetForBrowserContext(
-            browser()->profile());
-    std::vector<policy::PolicyHeaderIOHelper*> helpers =
-        policy_header_service->GetHelpersForTest();
-    for (std::vector<policy::PolicyHeaderIOHelper*>::const_iterator it =
-             helpers.begin();
-         it != helpers.end(); ++it) {
-      (*it)->SetServerURLForTest(dm_url_.spec());
-      (*it)->UpdateHeader(kTestPolicyHeader);
-    }
   }
 
   void TearDownOnMainThread() override {
@@ -263,51 +230,11 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
   }
 
  protected:
-  // The fake URL for DMServer we are using.
-  GURL dm_url_;
   std::unique_ptr<TestDispatcherHostDelegate> dispatcher_host_delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeResourceDispatcherHostDelegateBrowserTest);
 };
-
-
-IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
-                       NoPolicyHeader) {
-  // When fetching non-DMServer URLs, we should not add a policy header to the
-  // request.
-  DCHECK(!embedded_test_server()->base_url().spec().empty());
-  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->base_url());
-  ASSERT_FALSE(dispatcher_host_delegate_->request_headers().HasHeader(
-      policy::kChromePolicyHeader));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
-                       PolicyHeader) {
-  // When fetching a DMServer URL, we should add a policy header to the
-  // request.
-  ui_test_utils::NavigateToURL(browser(), dm_url_);
-  std::string value;
-  ASSERT_TRUE(dispatcher_host_delegate_->request_headers().GetHeader(
-      policy::kChromePolicyHeader, &value));
-  ASSERT_EQ(kTestPolicyHeader, value);
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
-                       PolicyHeaderForRedirect) {
-  // Build up a URL that results in a redirect to the DMServer URL to make
-  // sure the policy header is still added.
-  std::string redirect_url;
-  redirect_url += kServerRedirectUrl;
-  redirect_url += "?";
-  redirect_url += dm_url_.spec();
-  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(
-      redirect_url));
-  std::string value;
-  ASSERT_TRUE(dispatcher_host_delegate_->request_headers().GetHeader(
-      policy::kChromePolicyHeader, &value));
-  ASSERT_EQ(kTestPolicyHeader, value);
-}
 
 IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
                        NavigationDataProcessed) {

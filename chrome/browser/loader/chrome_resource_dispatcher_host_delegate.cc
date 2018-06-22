@@ -54,7 +54,6 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/offline_pages/core/request_header/offline_page_navigation_ui_data.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
-#include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "components/previews/content/previews_content_util.h"
 #include "components/previews/content/previews_io_data.h"
 #include "components/previews/core/previews_decider.h"
@@ -427,9 +426,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     request->SetExtraRequestHeaders(headers);
   }
 
-  if (io_data->policy_header_helper())
-    io_data->policy_header_helper()->AddPolicyHeaders(request->url(), request);
-
   signin::ChromeRequestAdapter signin_request_adapter(request);
   signin::FixAccountConsistencyRequestHeader(
       &signin_request_adapter, GURL() /* redirect_url */, io_data);
@@ -684,9 +680,6 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   signin::ResponseAdapter signin_response_adapter(request);
   signin::ProcessAccountConsistencyResponseHeaders(
       &signin_response_adapter, redirect_url, io_data->IsOffTheRecord());
-
-  if (io_data->policy_header_helper())
-    io_data->policy_header_helper()->AddPolicyHeaders(redirect_url, request);
 }
 
 // Notification that a request has completed.

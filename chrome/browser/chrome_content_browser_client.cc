@@ -74,6 +74,7 @@
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
+#include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -180,6 +181,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/payments/content/payment_request_display_manager.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
+#include "components/policy/core/common/cloud/policy_header_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -2160,9 +2162,10 @@ void ChromeContentBrowserClient::NavigationRequestStarted(
     int* extra_load_flags) {
   WebContents* web_contents =
       WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
   *extra_headers =
       client_hints::GetAdditionalNavigationRequestClientHintsHeaders(
-          web_contents->GetBrowserContext(), url);
+          browser_context, url);
   prerender::PrerenderContents* prerender_contents =
       prerender::PrerenderContents::FromWebContents(web_contents);
   if (prerender_contents &&
@@ -2172,6 +2175,37 @@ void ChromeContentBrowserClient::NavigationRequestStarted(
       *extra_headers = std::make_unique<net::HttpRequestHeaders>();
     extra_headers->get()->SetHeader(prerender::kPurposeHeaderName,
                                     prerender::kPurposeHeaderValue);
+  }
+
+  if (!browser_context->IsOffTheRecord()) {
+    // Add policy headers for non-incognito requests.
+    policy::PolicyHeaderService* policy_header_service =
+        policy::PolicyHeaderServiceFactory::GetForBrowserContext(
+            browser_context);
+    if (policy_header_service)
+      policy_header_service->AddPolicyHeaders(url, extra_headers);
+  }
+}
+
+void ChromeContentBrowserClient::NavigationRequestRedirected(
+    int frame_tree_node_id,
+    const GURL& url,
+    base::Optional<net::HttpRequestHeaders>* modified_request_headers) {
+  WebContents* web_contents =
+      WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
+
+  if (!browser_context->IsOffTheRecord()) {
+    // Add policy headers for non-incognito requests.
+    policy::PolicyHeaderService* policy_header_service =
+        policy::PolicyHeaderServiceFactory::GetForBrowserContext(
+            browser_context);
+    if (policy_header_service) {
+      std::unique_ptr<net::HttpRequestHeaders> extra_headers;
+      policy_header_service->AddPolicyHeaders(url, &extra_headers);
+      if (extra_headers)
+        *modified_request_headers = std::move(*extra_headers);
+    }
   }
 }
 

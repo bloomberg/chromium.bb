@@ -29,6 +29,14 @@ class InterceptingResourceHandler::Controller : public ResourceController {
     intercepting_handler_->ResumeInternal();
   }
 
+  void ResumeForRedirect(const base::Optional<net::HttpRequestHeaders>&
+                             modified_request_headers) override {
+    DCHECK(!modified_request_headers.has_value())
+        << "Redirect with modified headers was not supported yet. "
+           "crbug.com/845683";
+    Resume();
+  }
+
   void Cancel() override {
     MarkAsUsed();
     intercepting_handler_->Cancel();

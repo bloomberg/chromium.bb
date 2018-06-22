@@ -59,7 +59,6 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/net_log/chrome_net_log.h"
-#include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "components/policy/core/common/cloud/policy_header_service.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/prefs/pref_service.h"
@@ -533,16 +532,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
         policy::PolicyCertServiceFactory::CreateForProfile(profile);
   }
 #endif
-
-  if (!IsOffTheRecord()) {
-    // Add policy headers for non-incognito requests.
-    policy::PolicyHeaderService* policy_header_service =
-        policy::PolicyHeaderServiceFactory::GetForBrowserContext(profile);
-    if (policy_header_service) {
-      policy_header_helper_ =
-          policy_header_service->CreatePolicyHeaderIOHelper(io_task_runner);
-    }
-  }
 
   incognito_availibility_pref_.Init(
       prefs::kIncognitoModeAvailability, pref_service);

@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/sys_info.h"
+#include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -21,6 +22,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/policy_header_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -30,10 +33,25 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "url/gurl.h"
 
 namespace content {
+
+namespace {
+
+const char kTestPolicyHeader[] = "test_header";
+const char kServerRedirectUrl[] = "/server-redirect";
+
+enum class NetworkServiceState {
+  kDisabled,
+  kEnabled,
+};
+
+}  // namespace
 
 // Use a test class with SetUpCommandLine to ensure the flag is sent to the
 // first renderer process.
@@ -279,6 +297,106 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
   // (i.e. the memory threshold should be ignored).
   EXPECT_FALSE(
       content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
+}
+
+class PolicyHeaderServiceBrowserTest : public InProcessBrowserTest {
+ public:
+  PolicyHeaderServiceBrowserTest() = default;
+
+  void SetUpOnMainThread() override {
+    embedded_test_server()->RegisterRequestHandler(
+        base::BindRepeating(&PolicyHeaderServiceBrowserTest::HandleTestRequest,
+                            base::Unretained(this)));
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    // Forge a dummy DMServer URL.
+    dm_url_ = embedded_test_server()->GetURL("/DeviceManagement");
+
+    // At this point, the Profile is already initialized and it's too
+    // late to set the DMServer URL via command line flags, so directly
+    // inject it to the PolicyHeaderService.
+    policy::PolicyHeaderService* policy_header_service =
+        policy::PolicyHeaderServiceFactory::GetForBrowserContext(
+            browser()->profile());
+    policy_header_service->SetServerURLForTest(dm_url_.spec());
+    policy_header_service->SetHeaderForTest(kTestPolicyHeader);
+  }
+
+  std::unique_ptr<net::test_server::HttpResponse> HandleTestRequest(
+      const net::test_server::HttpRequest& request) {
+    last_request_headers_ = request.headers;
+
+    if (base::StartsWith(request.relative_url, kServerRedirectUrl,
+                         base::CompareCase::SENSITIVE)) {
+      // Extract the target URL and redirect there.
+      size_t query_string_pos = request.relative_url.find('?');
+      std::string redirect_target =
+          request.relative_url.substr(query_string_pos + 1);
+
+      std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+          new net::test_server::BasicHttpResponse);
+      http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+      http_response->AddCustomHeader("Location", redirect_target);
+      return std::move(http_response);
+    } else if (request.relative_url == "/") {
+      std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+          new net::test_server::BasicHttpResponse);
+      http_response->set_code(net::HTTP_OK);
+      http_response->set_content("Success");
+      return std::move(http_response);
+    }
+    return nullptr;
+  }
+
+  const GURL& dm_url() const { return dm_url_; }
+
+  const net::test_server::HttpRequest::HeaderMap& last_request_headers() const {
+    return last_request_headers_;
+  }
+
+ private:
+  // The dummy URL for DMServer.
+  GURL dm_url_;
+
+  // List of request headers received by the embedded server.
+  net::test_server::HttpRequest::HeaderMap last_request_headers_;
+
+  DISALLOW_COPY_AND_ASSIGN(PolicyHeaderServiceBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(PolicyHeaderServiceBrowserTest, NoPolicyHeader) {
+  // When fetching non-DMServer URLs, we should not add a policy header to the
+  // request.
+  DCHECK(!embedded_test_server()->base_url().spec().empty());
+  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->base_url());
+  auto iter = last_request_headers().find(policy::kChromePolicyHeader);
+  EXPECT_EQ(iter, last_request_headers().end());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyHeaderServiceBrowserTest, PolicyHeader) {
+  // When fetching a DMServer URL, we should add a policy header to the
+  // request.
+  ui_test_utils::NavigateToURL(browser(), dm_url());
+
+  auto iter = last_request_headers().find(policy::kChromePolicyHeader);
+  ASSERT_NE(iter, last_request_headers().end());
+  EXPECT_EQ(iter->second, kTestPolicyHeader);
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyHeaderServiceBrowserTest,
+                       PolicyHeaderForRedirect) {
+  // Build up a URL that results in a redirect to the DMServer URL to make
+  // sure the policy header is still added.
+  std::string redirect_url;
+  redirect_url += kServerRedirectUrl;
+  redirect_url += "?";
+  redirect_url += dm_url().spec();
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(redirect_url));
+
+  auto iter = last_request_headers().find(policy::kChromePolicyHeader);
+  ASSERT_NE(iter, last_request_headers().end());
+  EXPECT_EQ(iter->second, kTestPolicyHeader);
 }
 
 }  // namespace content
