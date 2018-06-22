@@ -49,6 +49,7 @@ import json
 import os
 import shutil
 import sys
+import time
 import tempfile
 import traceback
 
@@ -82,8 +83,13 @@ def write_results(
     f.write(benchmark_log)
 
 
+def print_duration(step, start):
+  print 'Duration of %s: %d seconds' % (step, time.time() - start)
+
+
 def execute_benchmark(benchmark, isolated_out_dir,
                       args, rest_args, is_reference, stories=None):
+  start = time.time()
   # While we are between chartjson and histogram set we need
   # to determine which output format to look for or see if it was
   # already passed in in which case that format applies to all benchmarks
@@ -128,6 +134,8 @@ def execute_benchmark(benchmark, isolated_out_dir,
   write_results(
       benchmark_name, perf_results, json_test_results, benchmark_log,
       isolated_out_dir, False)
+
+  print_duration('executing benchmark %s' % benchmark_name, start)
   return rc
 
 
