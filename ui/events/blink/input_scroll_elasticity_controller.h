@@ -52,6 +52,17 @@ class InputScrollElasticityController {
 
   base::WeakPtr<InputScrollElasticityController> GetWeakPtr();
 
+  // These methods that are "real" should only be called if the associated
+  // event is not synthetic. Otherwise, calling them will disrupt elastic
+  // scrolling.
+  void ObserveRealScrollBegin(bool enter_momentum, bool leave_momentum);
+  void ObserveScrollUpdate(const gfx::Vector2dF& event_delta,
+                           const gfx::Vector2dF& unused_scroll_delta,
+                           const base::TimeTicks event_timestamp,
+                           const cc::OverscrollBehavior overscroll_behavior,
+                           bool has_momentum);
+  void ObserveRealScrollEnd(const base::TimeTicks event_timestamp);
+
   // Update the overscroll state based a gesture event that has been processed.
   // Note that this assumes that all events are coming from a single input
   // device. If the user simultaneously uses multiple input devices, Cocoa may
