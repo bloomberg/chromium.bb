@@ -156,8 +156,6 @@ blink_core_sources("paint") {
     "object_painter_base.h",
     "paint_event.h",
     "paint_info.h",
-    "paint_invalidation_capable_scrollable_area.cc",
-    "paint_invalidation_capable_scrollable_area.h",
     "paint_invalidator.cc",
     "paint_invalidator.h",
     "paint_layer.cc",

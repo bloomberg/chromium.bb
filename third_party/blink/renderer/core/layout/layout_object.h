@@ -1930,7 +1930,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
    protected:
     friend class LayoutBoxModelObject;
     friend class LayoutScrollbar;
-    friend class PaintInvalidationCapableScrollableArea;
     friend class PaintInvalidator;
     friend class PaintPropertyTreeBuilder;
     friend class PrePaintTreeWalk;

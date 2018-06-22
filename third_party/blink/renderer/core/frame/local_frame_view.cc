@@ -2443,7 +2443,8 @@ void LocalFrameView::NotifyPageThatContentAreaWillPaint() const {
 }
 
 CompositorElementId LocalFrameView::GetCompositorElementId() const {
-  return PaintInvalidationCapableScrollableArea::GetCompositorElementId();
+  return CompositorElementIdFromUniqueObjectId(
+      GetLayoutView()->UniqueId(), CompositorElementIdNamespace::kScroll);
 }
 
 bool LocalFrameView::ScrollAnimatorEnabled() const {

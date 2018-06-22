@@ -562,9 +562,7 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
     SetAndSelectRootScroller(*MainFrame()->GetDocument(), iframe);
 
     ScrollableArea* container_scroller =
-        static_cast<PaintInvalidationCapableScrollableArea*>(
-            ToLayoutBox(container->GetLayoutObject())->GetScrollableArea());
-
+        ToLayoutBox(container->GetLayoutObject())->GetScrollableArea();
     EXPECT_EQ(main_controller.RootScrollerLayer(),
               container_scroller->LayerForScrolling());
     EXPECT_FALSE(main_controller.IsViewportScrollCallback(
@@ -958,9 +956,7 @@ TEST_F(RootScrollerTest, UseVisualViewportScrollbars) {
   SetAndSelectRootScroller(*MainFrame()->GetDocument(), container);
 
   ScrollableArea* container_scroller =
-      static_cast<PaintInvalidationCapableScrollableArea*>(
-          ToLayoutBox(container->GetLayoutObject())->GetScrollableArea());
-
+      ToLayoutBox(container->GetLayoutObject())->GetScrollableArea();
   EXPECT_FALSE(container_scroller->HorizontalScrollbar());
   EXPECT_FALSE(container_scroller->VerticalScrollbar());
   EXPECT_GT(container_scroller->MaximumScrollOffset().Width(), 0);
@@ -1026,8 +1022,7 @@ TEST_F(RootScrollerTest, TopControlsAdjustmentAppliedToRootScroller) {
   SetAndSelectRootScroller(*MainFrame()->GetDocument(), container);
 
   ScrollableArea* container_scroller =
-      static_cast<PaintInvalidationCapableScrollableArea*>(
-          ToLayoutBox(container->GetLayoutObject())->GetScrollableArea());
+      ToLayoutBox(container->GetLayoutObject())->GetScrollableArea();
 
   // Hide the top controls and scroll down maximally. We should account for the
   // change in maximum scroll offset due to the top controls hiding. That is,
@@ -1067,8 +1062,8 @@ TEST_F(RootScrollerTest, RotationAnchoring) {
         MainFrame()->GetDocument()->getElementById("container");
     SetAndSelectRootScroller(*MainFrame()->GetDocument(), container);
 
-    container_scroller = static_cast<PaintInvalidationCapableScrollableArea*>(
-        ToLayoutBox(container->GetLayoutObject())->GetScrollableArea());
+    container_scroller =
+        ToLayoutBox(container->GetLayoutObject())->GetScrollableArea();
   }
 
   Element* target = MainFrame()->GetDocument()->getElementById("target");

@@ -42,8 +42,8 @@ ScrollableArea* ScrollableAreaForRootScroller(const Node* node) {
   if (!element->GetLayoutObject() || !element->GetLayoutObject()->IsBox())
     return nullptr;
 
-  return static_cast<PaintInvalidationCapableScrollableArea*>(
-      ToLayoutBoxModelObject(element->GetLayoutObject())->GetScrollableArea());
+  return ToLayoutBoxModelObject(element->GetLayoutObject())
+      ->GetScrollableArea();
 }
 
 PaintLayer* PaintLayerForRootScroller(const Node* node) {

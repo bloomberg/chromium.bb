@@ -41,8 +41,8 @@
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/layout_object_counter.h"
-#include "third_party/blink/renderer/core/paint/paint_invalidation_capable_scrollable_area.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -71,7 +71,6 @@ class LayoutBox;
 class LayoutEmbeddedObject;
 class LayoutObject;
 class LayoutSVGRoot;
-class LayoutScrollbarPart;
 class LayoutView;
 class PaintArtifactCompositor;
 class PaintController;
@@ -94,7 +93,7 @@ typedef unsigned long long DOMTimeStamp;
 class CORE_EXPORT LocalFrameView final
     : public GarbageCollectedFinalized<LocalFrameView>,
       public FrameView,
-      public PaintInvalidationCapableScrollableArea {
+      public ScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrameView);
 
   friend class PaintControllerPaintTestBase;
@@ -498,8 +497,6 @@ class CORE_EXPORT LocalFrameView final
   // StyleChanged whenever window focus is changed.
   void RemoveScrollbar(Scrollbar*);
   void AddScrollbar(Scrollbar*);
-
-  LayoutScrollbarPart* ScrollCorner() const override { return nullptr; }
 
   // Functions for setting and retrieving the scrolling mode in each axis
   // (horizontal/vertical). The mode has values of AlwaysOff, AlwaysOn, and
@@ -918,8 +915,7 @@ class CORE_EXPORT LocalFrameView final
 
   void NotifyResizeObservers();
 
-  // PaintInvalidationCapableScrollableArea
-  LayoutScrollbarPart* Resizer() const override { return nullptr; }
+  void ScrollControlWasSetNeedsPaintInvalidation() override {}
 
   bool CheckLayoutInvalidationIsAllowed() const;
 
