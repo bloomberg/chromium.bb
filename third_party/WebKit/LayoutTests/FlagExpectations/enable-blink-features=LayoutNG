@@ -1,9 +1,6 @@
 # These tests currently fail when they run with --enable-blink-features=LayoutNG
 # See https://crbug.com/591099.
 
-# Need support for Range.getClientRects() and Range.getBoundingClientRect()
-crbug.com/755750 accessibility/selection-affinity.html [ Failure ]
-
 # Non-interoperable behavior not worth to fix.
 crbug.com/591099 fast/text/apply-start-width-after-skipped-text.html [ Skip ]
 

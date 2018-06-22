@@ -439,16 +439,12 @@ PositionWithAffinity NGPaintFragment::PositionForPointInText(
       text_offset < text_fragment.EndOffset()) {
     const Position position = NGOffsetMapping::GetFor(GetLayoutObject())
                                   ->GetFirstPosition(text_offset);
-    // TODO(xiaochengh): Adjust TextAffinity.
     return PositionWithAffinity(position, TextAffinity::kDownstream);
   }
   const NGCaretPosition unadjusted_position{
       this, NGCaretPositionType::kAtTextOffset, text_offset};
-  const Position adjusted_position =
-      BidiAdjustment::AdjustForHitTest(unadjusted_position)
-          .ToPositionInDOMTree();
-  // TODO(xiaochengh): Adjust TextAffinity.
-  return PositionWithAffinity(adjusted_position, TextAffinity::kDownstream);
+  return BidiAdjustment::AdjustForHitTest(unadjusted_position)
+      .ToPositionInDOMTreeWithAffinity();
 }
 
 PositionWithAffinity NGPaintFragment::PositionForPointInInlineLevelBox(
