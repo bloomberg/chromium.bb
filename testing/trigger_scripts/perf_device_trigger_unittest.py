@@ -264,5 +264,21 @@ class UnitTest(unittest.TestCase):
     self.assertIn(expected_task_assignment.get(1), new_healthy_bots)
     self.assertIn(expected_task_assignment.get(2), new_healthy_bots)
 
+  def test_previously_duplicate_task_assignemnts(self):
+    triggerer = self.setup_and_trigger(
+        previous_task_assignment_map={0: 'build3', 1: 'build3', 2: 'build5',
+                                      3: 'build6'},
+        alive_bots=['build3', 'build4', 'build5', 'build7'],
+        dead_bots=['build1', 'build6'])
+    expected_task_assignment = self.get_triggered_shard_to_bot(
+        triggerer, num_shards=3)
+
+    # Test that the new assignment will add a new bot to avoid
+    # assign 'build3' to both shard 0 & shard 1 as before.
+    # It also replaces the dead 'build6' bot.
+    self.assertEquals(set(expected_task_assignment.values()),
+        {'build3', 'build4', 'build5', 'build7'})
+
+
 if __name__ == '__main__':
   unittest.main()
