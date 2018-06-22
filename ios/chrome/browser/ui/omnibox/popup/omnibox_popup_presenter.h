@@ -11,7 +11,8 @@
 @interface OmniboxPopupPresenter : NSObject<OmniboxPopupGenericPresenter>
 
 - (instancetype)initWithPopupPositioner:(id<OmniboxPopupPositioner>)positioner
-                    popupViewController:(UIViewController*)viewController;
+                    popupViewController:(UIViewController*)viewController
+                              incognito:(BOOL)incognito;
 
 @end
 

@@ -59,12 +59,14 @@
   self.popupViewController = [[OmniboxPopupViewController alloc] init];
   self.popupViewController.incognito = self.browserState->IsOffTheRecord();
 
-  self.mediator.incognito = self.browserState->IsOffTheRecord();
+  BOOL isIncognito = self.browserState->IsOffTheRecord();
+  self.mediator.incognito = isIncognito;
   self.mediator.consumer = self.popupViewController;
   if (IsUIRefreshPhase1Enabled()) {
     self.mediator.presenter = [[OmniboxPopupPresenter alloc]
         initWithPopupPositioner:self.positioner
-            popupViewController:self.popupViewController];
+            popupViewController:self.popupViewController
+                      incognito:isIncognito];
   } else {
     self.mediator.presenter = [[OmniboxPopupLegacyPresenter alloc]
         initWithPopupPositioner:self.positioner

@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/self_sizing_table_view.h"
 #import "ios/chrome/browser/ui/omnibox/truncating_attributed_label.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -127,6 +128,7 @@ UIColor* BackgroundColorIncognito() {
     self.view.backgroundColor =
         IsIPadIdiom() ? BackgroundColorTablet() : BackgroundColorPhone();
   }
+
   [self.view setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
                                   UIViewAutoresizingFlexibleHeight)];
 
@@ -168,7 +170,21 @@ UIColor* BackgroundColorIncognito() {
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
   [self layoutRows];
+
+  if (!IsUIRefreshPhase1Enabled()) {
+    return;
+  }
+
+  ToolbarConfiguration* configuration = [[ToolbarConfiguration alloc]
+      initWithStyle:self.incognito ? INCOGNITO : NORMAL];
+
+  if (IsRegularXRegularSizeClass(self)) {
+    self.view.backgroundColor = configuration.backgroundColor;
+  } else {
+    self.view.backgroundColor = [UIColor clearColor];
+  }
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
