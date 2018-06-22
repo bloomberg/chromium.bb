@@ -189,9 +189,8 @@ class ChannelTestShutdownAndWriteDelegate : public Channel::Delegate {
       : quit_closure_(std::move(quit_closure)),
         client_channel_(std::move(client_channel)),
         client_thread_(std::move(client_thread)) {
-    channel_ = Channel::Create(
-        this, ConnectionParams(TransportProtocol::kLegacy, std::move(handle)),
-        std::move(task_runner));
+    channel_ = Channel::Create(this, ConnectionParams(std::move(handle)),
+                               std::move(task_runner));
     channel_->Start();
   }
   ~ChannelTestShutdownAndWriteDelegate() override { channel_->ShutDown(); }
@@ -248,11 +247,9 @@ TEST(ChannelTest, PeerShutdownDuringRead) {
   client_thread->StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
-  scoped_refptr<Channel> client_channel =
-      Channel::Create(nullptr,
-                      ConnectionParams(TransportProtocol::kLegacy,
-                                       channel_pair.PassClientHandle()),
-                      client_thread->task_runner());
+  scoped_refptr<Channel> client_channel = Channel::Create(
+      nullptr, ConnectionParams(channel_pair.PassClientHandle()),
+      client_thread->task_runner());
   client_channel->Start();
 
   // On the "client" IO thread, create and write a message.

@@ -1358,8 +1358,7 @@ MojoResult Core::SendInvitation(
     DCHECK_EQ(removed_dispatcher.get(), invitation_dispatcher);
   }
 
-  ConnectionParams connection_params(TransportProtocol::kLegacy,
-                                     std::move(endpoint_handle));
+  ConnectionParams connection_params(std::move(endpoint_handle));
 
   std::vector<std::pair<std::string, ports::PortRef>> attached_ports;
   InvitationDispatcher::PortMapping attached_port_map =
@@ -1436,8 +1435,7 @@ MojoResult Core::AcceptInvitation(
       options && (options->flags & MOJO_ACCEPT_INVITATION_FLAG_ISOLATED);
   NodeController* const node_controller = GetNodeController();
   RequestContext request_context;
-  ConnectionParams connection_params(TransportProtocol::kLegacy,
-                                     std::move(endpoint_handle));
+  ConnectionParams connection_params(std::move(endpoint_handle));
   if (is_isolated) {
     // For an isolated invitation, we simply mint a new port pair here and send
     // one name to the remote endpoint while stashing the other in the accepted

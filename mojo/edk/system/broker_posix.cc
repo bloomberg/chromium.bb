@@ -8,15 +8,16 @@
 #include <unistd.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/broker_messages.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/platform_handle_utils.h"
+#include "mojo/public/cpp/platform/socket_utils_posix.h"
 
 namespace mojo {
 namespace edk {
@@ -31,10 +32,10 @@ Channel::MessagePtr WaitForBrokerMessage(
     std::vector<ScopedInternalPlatformHandle>* incoming_handles) {
   Channel::MessagePtr message(new Channel::Message(
       sizeof(BrokerMessageHeader) + expected_data_size, expected_num_handles));
-  base::circular_deque<ScopedInternalPlatformHandle> incoming_platform_handles;
-  ssize_t read_result = PlatformChannelRecvmsg(
-      platform_handle, const_cast<void*>(message->data()),
-      message->data_num_bytes(), &incoming_platform_handles, true /* block */);
+  std::vector<base::ScopedFD> incoming_fds;
+  ssize_t read_result = SocketRecvmsg(
+      platform_handle.get().handle, const_cast<void*>(message->data()),
+      message->data_num_bytes(), &incoming_fds, true /* block */);
   bool error = false;
   if (read_result < 0) {
     PLOG(ERROR) << "Recvmsg error";
@@ -42,7 +43,7 @@ Channel::MessagePtr WaitForBrokerMessage(
   } else if (static_cast<size_t>(read_result) != message->data_num_bytes()) {
     LOG(ERROR) << "Invalid node channel message";
     error = true;
-  } else if (incoming_platform_handles.size() != expected_num_handles) {
+  } else if (incoming_fds.size() != expected_num_handles) {
     LOG(ERROR) << "Received unexpected number of handles";
     error = true;
   }
@@ -57,9 +58,11 @@ Channel::MessagePtr WaitForBrokerMessage(
     return nullptr;
   }
 
-  incoming_handles->resize(incoming_platform_handles.size());
-  std::move(incoming_platform_handles.begin(), incoming_platform_handles.end(),
-            incoming_handles->begin());
+  incoming_handles->resize(incoming_fds.size());
+  for (size_t i = 0; i < incoming_fds.size(); ++i) {
+    incoming_handles->at(i) = ScopedInternalPlatformHandle(
+        InternalPlatformHandle(incoming_fds[i].release()));
+  }
 
   return message;
 }
@@ -98,8 +101,9 @@ base::WritableSharedMemoryRegion Broker::GetWritableSharedMemoryRegion(
   Channel::MessagePtr out_message = CreateBrokerMessage(
       BrokerMessageType::BUFFER_REQUEST, 0, 0, &buffer_request);
   buffer_request->size = num_bytes;
-  ssize_t write_result = PlatformChannelWrite(
-      sync_channel_, out_message->data(), out_message->data_num_bytes());
+  ssize_t write_result =
+      SocketWrite(sync_channel_.get().handle, out_message->data(),
+                  out_message->data_num_bytes());
   if (write_result < 0) {
     PLOG(ERROR) << "Error sending sync broker message";
     return base::WritableSharedMemoryRegion();
