@@ -15,6 +15,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+from chromite.lib import timeout_util
 
 
 # Name of the LV that contains the active chroot inside the chroot.img file.
@@ -341,6 +342,8 @@ def FindChrootMountSource(chroot_path, proc_mounts='/proc/mounts'):
   return (match.group(1), match.group(2))
 
 
+# Raise an exception if cleanup takes more than 4 minutes.
+@timeout_util.TimeoutDecorator(240)
 def CleanupChrootMount(chroot=None, buildroot=None, delete_image=False,
                        proc_mounts='/proc/mounts'):
   """Unmounts a chroot and cleans up attached devices.
