@@ -321,8 +321,8 @@ public class NonOverlappingStack extends Stack {
     public float getMaxTabHeight() {
         // We want to maintain a constant tab height (via cropping) even as the width is changed as
         // a result of changing the scale.
-        if (getNonDyingTabCount() > 1) return super.getMaxTabHeight();
-        return (SCALE_FRACTION_MULTIPLE_TABS / SCALE_FRACTION_SINGLE_TAB) * super.getMaxTabHeight();
+        if (getNonDyingTabCount() > 1) return mLayout.getHeight();
+        return (SCALE_FRACTION_MULTIPLE_TABS / SCALE_FRACTION_SINGLE_TAB) * mLayout.getHeight();
     }
 
     /**
