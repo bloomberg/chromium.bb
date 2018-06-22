@@ -8,6 +8,9 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
+#include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "components/download/database/download_db_conversions.h"
 #include "components/download/database/download_db_entry.h"
 #include "components/download/database/download_db_impl.h"
@@ -39,7 +42,8 @@ std::string GetKey(const std::string& guid) {
 
 class DownloadDBCacheTest : public testing::Test {
  public:
-  DownloadDBCacheTest() : db_(nullptr) {}
+  DownloadDBCacheTest()
+      : db_(nullptr), task_runner_(new base::TestMockTimeTaskRunner) {}
 
   ~DownloadDBCacheTest() override = default;
 
@@ -52,6 +56,7 @@ class DownloadDBCacheTest : public testing::Test {
         DownloadNamespace::NAMESPACE_BROWSER_DOWNLOAD,
         base::FilePath(FILE_PATH_LITERAL("/test/db/fakepath")), std::move(db));
     db_cache_ = std::make_unique<DownloadDBCache>(std::move(download_db));
+    db_cache_->SetTimerTaskRunnerForTesting(task_runner_);
   }
 
   void InitCallback(std::vector<DownloadDBEntry>* loaded_entries,
@@ -81,6 +86,8 @@ class DownloadDBCacheTest : public testing::Test {
   std::map<std::string, download_pb::DownloadDBEntry> db_entries_;
   leveldb_proto::test::FakeDB<download_pb::DownloadDBEntry>* db_;
   std::unique_ptr<DownloadDBCache> db_cache_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   DISALLOW_COPY_AND_ASSIGN(DownloadDBCacheTest);
 };
 
@@ -103,7 +110,8 @@ TEST_F(DownloadDBCacheTest, InitializeAndRetrieve) {
   }
 }
 
-TEST_F(DownloadDBCacheTest, AddOrReplace) {
+// Test that new entry is added immediately to the database
+TEST_F(DownloadDBCacheTest, AddNewEntry) {
   PrepopulateSampleEntries();
   CreateDBCache();
   std::vector<DownloadDBEntry> loaded_entries;
@@ -117,6 +125,84 @@ TEST_F(DownloadDBCacheTest, AddOrReplace) {
   DownloadDBEntry new_entry = CreateDownloadDBEntry();
   db_cache_->AddOrReplaceEntry(new_entry);
   ASSERT_EQ(new_entry, db_cache_->RetrieveEntry(new_entry.GetGuid()));
+  db_->UpdateCallback(true);
+  loaded_entries.clear();
+  DownloadDB* download_db = GetDownloadDB();
+  download_db->LoadEntries(base::BindOnce(&DownloadDBCacheTest::InitCallback,
+                                          base::Unretained(this),
+                                          &loaded_entries));
+  db_->LoadCallback(true);
+  ASSERT_EQ(loaded_entries.size(), 3u);
+}
+
+// Test that modifying an existing entry could take some time to update the DB.
+TEST_F(DownloadDBCacheTest, ModifyExistingEntry) {
+  PrepopulateSampleEntries();
+  CreateDBCache();
+  std::vector<DownloadDBEntry> loaded_entries;
+  db_cache_->Initialize(base::BindOnce(&DownloadDBCacheTest::InitCallback,
+                                       base::Unretained(this), &loaded_entries,
+                                       true));
+  db_->InitCallback(true);
+  db_->LoadCallback(true);
+  ASSERT_EQ(loaded_entries.size(), 2u);
+
+  loaded_entries[0].download_info->id = 100;
+  loaded_entries[1].download_info->id = 100;
+  db_cache_->AddOrReplaceEntry(loaded_entries[0]);
+  db_cache_->AddOrReplaceEntry(loaded_entries[1]);
+
+  ASSERT_EQ(task_runner_->GetPendingTaskCount(), 1u);
+  ASSERT_GT(task_runner_->NextPendingTaskDelay(), base::TimeDelta());
+  task_runner_->FastForwardUntilNoTasksRemain();
+  db_->UpdateCallback(true);
+
+  loaded_entries.clear();
+  DownloadDB* download_db = GetDownloadDB();
+  download_db->LoadEntries(base::BindOnce(&DownloadDBCacheTest::InitCallback,
+                                          base::Unretained(this),
+                                          &loaded_entries));
+  db_->LoadCallback(true);
+  ASSERT_EQ(loaded_entries.size(), 2u);
+  ASSERT_EQ(loaded_entries[0].download_info->id, 100);
+  ASSERT_EQ(loaded_entries[1].download_info->id, 100);
+}
+
+// Test that modifying current path will immediately update the DB.
+TEST_F(DownloadDBCacheTest, FilePathChange) {
+  DownloadDBEntry entry = CreateDownloadDBEntry();
+  InProgressInfo info;
+  base::FilePath test_path = base::FilePath(FILE_PATH_LITERAL("/tmp"));
+  info.current_path = test_path;
+  entry.download_info->in_progress_info = info;
+  db_entries_.insert(
+      std::make_pair(GetKey(entry.GetGuid()),
+                     DownloadDBConversions::DownloadDBEntryToProto(entry)));
+  CreateDBCache();
+  std::vector<DownloadDBEntry> loaded_entries;
+  db_cache_->Initialize(base::BindOnce(&DownloadDBCacheTest::InitCallback,
+                                       base::Unretained(this), &loaded_entries,
+                                       true));
+  db_->InitCallback(true);
+  db_->LoadCallback(true);
+  ASSERT_EQ(loaded_entries.size(), 1u);
+  ASSERT_EQ(loaded_entries[0].download_info->in_progress_info->current_path,
+            test_path);
+
+  test_path = base::FilePath(FILE_PATH_LITERAL("/test"));
+  loaded_entries[0].download_info->in_progress_info->current_path = test_path;
+  db_cache_->AddOrReplaceEntry(loaded_entries[0]);
+  db_->UpdateCallback(true);
+
+  loaded_entries.clear();
+  DownloadDB* download_db = GetDownloadDB();
+  download_db->LoadEntries(base::BindOnce(&DownloadDBCacheTest::InitCallback,
+                                          base::Unretained(this),
+                                          &loaded_entries));
+  db_->LoadCallback(true);
+  ASSERT_EQ(loaded_entries.size(), 1u);
+  ASSERT_EQ(loaded_entries[0].download_info->in_progress_info->current_path,
+            test_path);
 }
 
 TEST_F(DownloadDBCacheTest, RemoveEntry) {

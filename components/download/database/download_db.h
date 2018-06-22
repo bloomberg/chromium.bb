@@ -32,9 +32,12 @@ class DownloadDB {
   // Initializes this db asynchronously, callback will be run on completion.
   virtual void Initialize(InitializeCallback callback) = 0;
 
-  // Adds or updates |entry| in the storage asynchronously and returns whether
-  // or not that was successful.
+  // Adds or updates |entry| in the storage.
   virtual void AddOrReplace(const DownloadDBEntry& entry) = 0;
+
+  // Adds or updates multiple entries in the storage.
+  virtual void AddOrReplaceEntries(
+      const std::vector<DownloadDBEntry>& entry) = 0;
 
   // Retrieves all entries with the given |download_namespace|.
   virtual void LoadEntries(LoadEntriesCallback callback) = 0;

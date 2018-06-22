@@ -36,6 +36,8 @@ class DownloadDBImpl : public DownloadDB {
   bool IsInitialized() override;
   void Initialize(InitializeCallback callback) override;
   void AddOrReplace(const DownloadDBEntry& entry) override;
+  void AddOrReplaceEntries(
+      const std::vector<DownloadDBEntry>& entries) override;
   void LoadEntries(LoadEntriesCallback callback) override;
   void Remove(const std::string& guid) override;
 

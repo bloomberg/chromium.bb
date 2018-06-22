@@ -7,11 +7,13 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/timer/timer.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_item.h"
 
@@ -41,6 +43,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadDBCache
   friend class DownloadDBCacheTest;
   friend class InProgressDownloadManager;
 
+  // Update all the entries in |download_db_|.
+  void UpdateDownloadDB();
+
   // DownloadItem::Observer
   void OnDownloadUpdated(DownloadItem* download) override;
   void OnDownloadRemoved(DownloadItem* download) override;
@@ -54,6 +59,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadDBCache
       bool success,
       std::unique_ptr<std::vector<DownloadDBEntry>> entries);
 
+  void SetTimerTaskRunnerForTesting(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
+
   // Whether this object has already been initialized.
   bool initialized_;
 
@@ -63,6 +71,12 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadDBCache
   using DownloadDBEntryMap = std::map<std::string, DownloadDBEntry>;
   // All in progress downloads stored in |download_db_|.
   DownloadDBEntryMap entries_;
+
+  // GUIDs of updated entries.
+  std::set<std::string> updated_guids_;
+
+  // Used to trigger db updates.
+  base::OneShotTimer update_timer_;
 
   base::WeakPtrFactory<DownloadDBCache> weak_factory_;
 
