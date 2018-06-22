@@ -59,18 +59,13 @@ class NativeStackSampler {
   // The following functions are all called on the SamplingThread (not the
   // thread being sampled).
 
-  // Notifies the sampler that we're starting to record a new profile. Modules
-  // shared across samples in the profile should be recorded in |modules|.
-  virtual void ProfileRecordingStarting(
-      std::vector<StackSamplingProfiler::Module>* modules) = 0;
+  // Notifies the sampler that we're starting to record a new profile.
+  virtual void ProfileRecordingStarting() = 0;
 
   // Records a set of stack frames and returns them.
-  virtual std::vector<StackSamplingProfiler::Frame> RecordStackFrames(
+  virtual std::vector<StackSamplingProfiler::InternalFrame> RecordStackFrames(
       StackBuffer* stackbuffer,
       StackSamplingProfiler::SamplingProfileBuilder* profile_builder) = 0;
-
-  // Notifies the sampler that we've stopped recording the current profile.
-  virtual void ProfileRecordingStopped() = 0;
 
  protected:
   NativeStackSampler();

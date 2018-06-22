@@ -5,7 +5,6 @@
 #include "base/profiler/stack_sampling_profiler.h"
 
 #include <algorithm>
-#include <map>
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
@@ -25,6 +24,8 @@
 #include "base/timer/elapsed_timer.h"
 
 namespace base {
+
+const size_t kUnknownModuleIndex = static_cast<size_t>(-1);
 
 namespace {
 
@@ -59,12 +60,24 @@ void ChangeAtomicFlags(subtle::Atomic32* flags,
 // StackSamplingProfiler::Module ----------------------------------------------
 
 StackSamplingProfiler::Module::Module() : base_address(0u) {}
+
 StackSamplingProfiler::Module::Module(uintptr_t base_address,
                                       const std::string& id,
                                       const FilePath& filename)
     : base_address(base_address), id(id), filename(filename) {}
 
 StackSamplingProfiler::Module::~Module() = default;
+
+// StackSamplingProfiler::InternalModule --------------------------------------
+
+StackSamplingProfiler::InternalModule::InternalModule() : is_valid(false) {}
+
+StackSamplingProfiler::InternalModule::InternalModule(uintptr_t base_address,
+                                                      const std::string& id,
+                                                      const FilePath& filename)
+    : base_address(base_address), id(id), filename(filename), is_valid(true) {}
+
+StackSamplingProfiler::InternalModule::~InternalModule() = default;
 
 // StackSamplingProfiler::Frame -----------------------------------------------
 
@@ -76,6 +89,16 @@ StackSamplingProfiler::Frame::~Frame() = default;
 
 StackSamplingProfiler::Frame::Frame()
     : instruction_pointer(0), module_index(kUnknownModuleIndex) {}
+
+// StackSamplingProfiler::InternalFrame -------------------------------------
+
+StackSamplingProfiler::InternalFrame::InternalFrame(
+    uintptr_t instruction_pointer,
+    InternalModule internal_module)
+    : instruction_pointer(instruction_pointer),
+      internal_module(std::move(internal_module)) {}
+
+StackSamplingProfiler::InternalFrame::~InternalFrame() = default;
 
 // StackSamplingProfiler::Sample ----------------------------------------------
 
@@ -140,9 +163,30 @@ void StackSamplingProfiler::SamplingProfileBuilder::OnProfileCompleted(
 }
 
 void StackSamplingProfiler::SamplingProfileBuilder::OnSampleCompleted(
-    std::vector<Frame> frames) {
+    std::vector<InternalFrame> internal_frames) {
   DCHECK_EQ(sample_.frames.size(), 0u);
-  sample_.frames = std::move(frames);
+
+  // Dedup modules and convert InternalFrames to Frames.
+  for (const auto& internal_frame : internal_frames) {
+    const InternalModule& module(internal_frame.internal_module);
+    if (!module.is_valid) {
+      sample_.frames.emplace_back(internal_frame.instruction_pointer,
+                                  kUnknownModuleIndex);
+      continue;
+    }
+
+    auto loc = module_index_.find(module.base_address);
+    if (loc == module_index_.end()) {
+      profile_.modules.emplace_back(module.base_address, module.id,
+                                    module.filename);
+      size_t index = profile_.modules.size() - 1;
+      loc = module_index_.insert(std::make_pair(module.base_address, index))
+                .first;
+    }
+    sample_.frames.emplace_back(internal_frame.instruction_pointer,
+                                loc->second);
+  }
+
   profile_.samples.push_back(std::move(sample_));
   sample_ = Sample();
 }
@@ -523,8 +567,6 @@ void StackSamplingProfiler::SamplingThread::FinishCollection(
   TimeDelta profile_duration = Time::Now() - collection->profile_start_time +
                                collection->params.sampling_interval;
 
-  collection->native_sampler->ProfileRecordingStopped();
-
   collection->profile_builder->OnProfileCompleted(
       profile_duration, collection->params.sampling_interval);
 
@@ -611,8 +653,7 @@ void StackSamplingProfiler::SamplingThread::RecordSampleTask(
   if (collection->sample_count == 0) {
     collection->profile_start_time = Time::Now();
     collection->next_sample_time = Time::Now();
-    collection->native_sampler->ProfileRecordingStarting(
-        collection->profile_builder->modules());
+    collection->native_sampler->ProfileRecordingStarting();
   }
 
   // Record a single sample.

@@ -33,7 +33,9 @@
 namespace base {
 
 using Frame = StackSamplingProfiler::Frame;
+using InternalFrame = StackSamplingProfiler::InternalFrame;
 using Module = StackSamplingProfiler::Module;
+using InternalModule = StackSamplingProfiler::InternalModule;
 using SamplingProfileBuilder = StackSamplingProfiler::SamplingProfileBuilder;
 
 // Stack recording functions --------------------------------------------------
@@ -389,27 +391,20 @@ class NativeStackSamplerWin : public NativeStackSampler {
   ~NativeStackSamplerWin() override;
 
   // StackSamplingProfiler::NativeStackSampler:
-  void ProfileRecordingStarting(std::vector<Module>* modules) override;
-  std::vector<Frame> RecordStackFrames(
+  void ProfileRecordingStarting() override;
+  std::vector<InternalFrame> RecordStackFrames(
       StackBuffer* stack_buffer,
       SamplingProfileBuilder* profile_builder) override;
-  void ProfileRecordingStopped() override;
 
  private:
   // Attempts to query the module filename, base address, and id for
-  // |module_handle|, and store them in |module|. Returns true if it succeeded.
-  static bool GetModuleForHandle(HMODULE module_handle, Module* module);
+  // |module_handle|, and returns them in an InternalModule object.
+  static InternalModule GetModuleForHandle(HMODULE module_handle);
 
-  // Gets the index for the Module corresponding to |module_handle| in
-  // |modules|, adding it if it's not already present. Returns
-  // StackSamplingProfiler::Frame::kUnknownModuleIndex if no Module can be
-  // determined for |module|.
-  size_t GetModuleIndex(HMODULE module_handle, std::vector<Module>* modules);
-
-  // Creates a set of frames with the information represented by |stack| and
-  // |modules|.
-  std::vector<Frame> CreateFrames(const std::vector<RecordedFrame>& stack,
-                                  std::vector<Module>* modules);
+  // Creates a set of internal frames with the information represented by
+  // |stack|.
+  std::vector<InternalFrame> CreateInternalFrames(
+      const std::vector<RecordedFrame>& stack);
 
   win::ScopedHandle thread_handle_;
 
@@ -418,13 +413,8 @@ class NativeStackSamplerWin : public NativeStackSampler {
   // The stack base address corresponding to |thread_handle_|.
   const void* const thread_stack_base_address_;
 
-  // Weak. Points to the modules associated with the profile being recorded
-  // between ProfileRecordingStarting() and ProfileRecordingStopped().
-  std::vector<Module>* current_modules_;
-
-  // Maps a module handle to the corresponding Module's index within
-  // current_modules_.
-  std::map<HMODULE, size_t> profile_module_index_;
+  // Maps a module handle to a StackSamplingProfiler::InternalModule object.
+  std::map<HMODULE, InternalModule> module_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeStackSamplerWin);
 };
@@ -437,78 +427,70 @@ NativeStackSamplerWin::NativeStackSamplerWin(
       thread_stack_base_address_(
           GetThreadEnvironmentBlock(thread_handle_.Get())->Tib.StackBase) {}
 
-NativeStackSamplerWin::~NativeStackSamplerWin() {
+NativeStackSamplerWin::~NativeStackSamplerWin() {}
+
+void NativeStackSamplerWin::ProfileRecordingStarting() {
+  module_cache_.clear();
 }
 
-void NativeStackSamplerWin::ProfileRecordingStarting(
-    std::vector<Module>* modules) {
-  current_modules_ = modules;
-  profile_module_index_.clear();
-}
-
-std::vector<Frame> NativeStackSamplerWin::RecordStackFrames(
+std::vector<InternalFrame> NativeStackSamplerWin::RecordStackFrames(
     StackBuffer* stack_buffer,
     SamplingProfileBuilder* profile_builder) {
   DCHECK(stack_buffer);
-  DCHECK(current_modules_);
 
   std::vector<RecordedFrame> stack;
   SuspendThreadAndRecordStack(thread_handle_.Get(), thread_stack_base_address_,
                               stack_buffer->buffer(), stack_buffer->size(),
                               &stack, profile_builder, test_delegate_);
 
-  return CreateFrames(stack, current_modules_);
-}
-
-void NativeStackSamplerWin::ProfileRecordingStopped() {
-  current_modules_ = nullptr;
+  return CreateInternalFrames(stack);
 }
 
 // static
-bool NativeStackSamplerWin::GetModuleForHandle(HMODULE module_handle,
-                                               Module* module) {
+InternalModule NativeStackSamplerWin::GetModuleForHandle(
+    HMODULE module_handle) {
   wchar_t module_name[MAX_PATH];
   DWORD result_length =
       ::GetModuleFileName(module_handle, module_name, size(module_name));
   if (result_length == 0)
-    return false;
+    return InternalModule();
 
-  module->filename = FilePath(module_name);
-  module->base_address = reinterpret_cast<uintptr_t>(module_handle);
-  module->id = GetBuildIDForModule(module_handle);
-  return !module->id.empty();
+  const std::string& module_id = GetBuildIDForModule(module_handle);
+  if (module_id.empty())
+    return InternalModule();
+
+  return InternalModule(reinterpret_cast<uintptr_t>(module_handle), module_id,
+                        FilePath(module_name));
 }
 
-size_t NativeStackSamplerWin::GetModuleIndex(HMODULE module_handle,
-                                             std::vector<Module>* modules) {
-  if (!module_handle)
-    return Frame::kUnknownModuleIndex;
-
-  auto loc = profile_module_index_.find(module_handle);
-  if (loc == profile_module_index_.end()) {
-    Module module;
-    if (!GetModuleForHandle(module_handle, &module))
-      return Frame::kUnknownModuleIndex;
-    modules->push_back(module);
-    loc = profile_module_index_.insert(std::make_pair(
-        module_handle, modules->size() - 1)).first;
-  }
-
-  return loc->second;
-}
-
-std::vector<Frame> NativeStackSamplerWin::CreateFrames(
-    const std::vector<RecordedFrame>& stack,
-    std::vector<Module>* modules) {
-  std::vector<Frame> frames;
-  frames.reserve(stack.size());
+std::vector<InternalFrame> NativeStackSamplerWin::CreateInternalFrames(
+    const std::vector<RecordedFrame>& stack) {
+  std::vector<InternalFrame> internal_frames;
+  internal_frames.reserve(stack.size());
 
   for (const auto& frame : stack) {
-    frames.emplace_back(reinterpret_cast<uintptr_t>(frame.instruction_pointer),
-                        GetModuleIndex(frame.module.Get(), modules));
+    auto frame_ip = reinterpret_cast<uintptr_t>(frame.instruction_pointer);
+
+    HMODULE module_handle = frame.module.Get();
+    if (!module_handle) {
+      internal_frames.emplace_back(frame_ip, InternalModule());
+      continue;
+    }
+
+    auto loc = module_cache_.find(module_handle);
+    if (loc != module_cache_.end()) {
+      internal_frames.emplace_back(frame_ip, loc->second);
+      continue;
+    }
+
+    InternalModule internal_module = GetModuleForHandle(module_handle);
+    if (internal_module.is_valid)
+      module_cache_.insert(std::make_pair(module_handle, internal_module));
+
+    internal_frames.emplace_back(frame_ip, std::move(internal_module));
   }
 
-  return frames;
+  return internal_frames;
 }
 
 }  // namespace

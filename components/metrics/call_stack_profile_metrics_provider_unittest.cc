@@ -361,7 +361,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
 TEST_F(CallStackProfileMetricsProviderTest, UnknownModule) {
   Profile profile = ProfileFactory(100, 10)
                         .NewSample()
-                        .AddFrame(Frame::kUnknownModuleIndex, 0x1234)
+                        .AddFrame(base::kUnknownModuleIndex, 0x1234)
                         .Build();
 
   const ExpectedProtoEntry expected_proto_entries[] = {
@@ -404,7 +404,7 @@ TEST_F(CallStackProfileMetricsProviderTest, ProfileProvidedOnlyOnce) {
         // Use the sampling period to distinguish the two profiles.
         ProfileFactory(100, r)
             .NewSample()
-            .AddFrame(Frame::kUnknownModuleIndex, 0x1234)
+            .AddFrame(base::kUnknownModuleIndex, 0x1234)
             .Build();
 
     CallStackProfileMetricsProvider provider;
@@ -433,7 +433,7 @@ TEST_F(CallStackProfileMetricsProviderTest,
        ProfileProvidedWhenCollectedBeforeInstantiation) {
   Profile profile = ProfileFactory(100, 10)
                         .NewSample()
-                        .AddFrame(Frame::kUnknownModuleIndex, 0x1234)
+                        .AddFrame(base::kUnknownModuleIndex, 0x1234)
                         .Build();
 
   CallStackProfileParams params(CallStackProfileParams::BROWSER_PROCESS,
@@ -455,7 +455,7 @@ TEST_F(CallStackProfileMetricsProviderTest,
 TEST_F(CallStackProfileMetricsProviderTest, ProfileNotProvidedWhileDisabled) {
   Profile profile = ProfileFactory(100, 10)
                         .NewSample()
-                        .AddFrame(Frame::kUnknownModuleIndex, 0x1234)
+                        .AddFrame(base::kUnknownModuleIndex, 0x1234)
                         .Build();
 
   CallStackProfileMetricsProvider provider;
@@ -488,7 +488,7 @@ TEST_F(CallStackProfileMetricsProviderTest,
 
   Profile profile = ProfileFactory(100, 10)
                         .NewSample()
-                        .AddFrame(Frame::kUnknownModuleIndex, 0x1234)
+                        .AddFrame(base::kUnknownModuleIndex, 0x1234)
                         .Build();
   callback.Run(std::move(profile));
   ChromeUserMetricsExtension uma_proto;
@@ -515,7 +515,7 @@ TEST_F(CallStackProfileMetricsProviderTest,
 
   Profile profile = ProfileFactory(100, 10)
                         .NewSample()
-                        .AddFrame(Frame::kUnknownModuleIndex, 0x1234)
+                        .AddFrame(base::kUnknownModuleIndex, 0x1234)
                         .Build();
   callback.Run(std::move(profile));
   ChromeUserMetricsExtension uma_proto;
@@ -541,7 +541,7 @@ TEST_F(CallStackProfileMetricsProviderTest,
 
   Profile profile = ProfileFactory(100, 10)
                         .NewSample()
-                        .AddFrame(Frame::kUnknownModuleIndex, 0x1234)
+                        .AddFrame(base::kUnknownModuleIndex, 0x1234)
                         .Build();
   callback.Run(std::move(profile));
   ChromeUserMetricsExtension uma_proto;

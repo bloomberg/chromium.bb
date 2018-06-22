@@ -56,17 +56,16 @@ struct StructTraits<metrics::mojom::CallStackFrameDataView,
   }
   static uint64_t module_index(
       const base::StackSamplingProfiler::Frame& frame) {
-    return frame.module_index ==
-        base::StackSamplingProfiler::Frame::kUnknownModuleIndex ?
-        static_cast<uint64_t>(-1) :
-        frame.module_index;
+    return frame.module_index == base::kUnknownModuleIndex
+               ? static_cast<uint64_t>(-1)
+               : frame.module_index;
   }
 
   static bool Read(metrics::mojom::CallStackFrameDataView data,
                    base::StackSamplingProfiler::Frame* out) {
-    size_t module_index = data.module_index() == static_cast<uint64_t>(-1) ?
-        base::StackSamplingProfiler::Frame::kUnknownModuleIndex :
-        data.module_index();
+    size_t module_index = data.module_index() == static_cast<uint64_t>(-1)
+                              ? base::kUnknownModuleIndex
+                              : data.module_index();
 
     // We can't know whether the module_index field is valid at this point since
     // we don't have access to the number of modules here. This will be checked
@@ -128,8 +127,7 @@ struct StructTraits<metrics::mojom::CallStackProfileDataView,
     for (const base::StackSamplingProfiler::Sample& sample : samples) {
       for (const base::StackSamplingProfiler::Frame& frame : sample.frames) {
         if (frame.module_index >= module_count &&
-            frame.module_index !=
-                base::StackSamplingProfiler::Frame::kUnknownModuleIndex)
+            frame.module_index != base::kUnknownModuleIndex)
           return false;
       }
     }
