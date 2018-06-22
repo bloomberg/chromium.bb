@@ -334,7 +334,10 @@ bool MockDrmDevice::CreateDumbBuffer(const SkImageInfo& info,
   *handle = allocate_buffer_count_++;
   *stride = info.minRowBytes();
   void* pixels = new char[info.computeByteSize(*stride)];
-  buffers_.push_back(SkSurface::MakeRasterDirect(info, pixels, *stride));
+  buffers_.push_back(SkSurface::MakeRasterDirectReleaseProc(
+      info, pixels, *stride,
+      [](void* pixels, void* context) { delete[] static_cast<char*>(pixels); },
+      /*context=*/nullptr));
   buffers_[*handle]->getCanvas()->clear(SK_ColorBLACK);
 
   return true;
