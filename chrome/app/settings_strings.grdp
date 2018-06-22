@@ -2396,19 +2396,16 @@
   <message name="IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC_UNIFIED_CONSENT" desc="In the advanced options tab, the secondary text next to the checkbox that enables prediction of network actions.">
     Uses cookies to remember your preferences, even if you don’t visit those pages
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Protect you and your device from dangerous sites' checkbox">
-    Protect you and your device from dangerous sites
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION" desc="The section title of 'Protects you and your device from dangerous sites'">
+    Safe Browsing
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION_UNIFIED_CONSENT" desc="The label of the 'Protect you and your device from dangerous sites' checkbox">
-    Protect you and your device from dangerous sites (Safe Browsing)
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION_DESC" desc="Checkbox label: should Chrome protect user and user's device from dangerous sites">
+    Protects you and your device from dangerous sites
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION_DESC_UNIFIED_CONSENT" desc="The secondary label of the 'Protect you and your device from dangerous sites' checkbox">
-    Checks sites you visit and files you download for harmful behavior or content, like phishing or malware
-  </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_UNIFIED_CONSENT" desc="The section title of the 'Sends some system information and page content to Google' checkbox">
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING" desc="The section title of the 'Sends some system information and page content to Google' checkbox">
     Help improve Safe Browsing
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC_UNIFIED_CONSENT" desc="Checkbox label: should Chrome upload some system information and page content to Safe Browsing">
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC" desc="Checkbox label: should Chrome upload some system information and page content to Safe Browsing">
     Sends some system information and page content to Google
   </message>
   <message name="IDS_SETTINGS_SPELLING_PREF" desc="The documentation string of the 'Use Spelling' preference">
