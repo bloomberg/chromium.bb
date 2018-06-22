@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -4603,44 +4604,9 @@ LayoutBlockFlow::LayoutBlockFlowRareData& LayoutBlockFlow::EnsureRareData() {
   return *rare_data_;
 }
 
-base::Optional<LayoutUnit> LayoutBlockFlow::ComputeDialogYPosition(
-    LayoutUnit height) const {
-  DCHECK(IsHTMLDialogElement(GetNode()));
-  HTMLDialogElement* dialog = ToHTMLDialogElement(GetNode());
-  if (dialog->GetCenteringMode() == HTMLDialogElement::kNotCentered)
-    return base::nullopt;
-
-  bool can_center_dialog = (Style()->GetPosition() == EPosition::kAbsolute ||
-                            Style()->GetPosition() == EPosition::kFixed) &&
-                           Style()->HasAutoTopAndBottom();
-
-  if (dialog->GetCenteringMode() == HTMLDialogElement::kCentered) {
-    if (can_center_dialog)
-      return dialog->CenteredPosition();
-    return base::nullopt;
-  }
-
-  DCHECK_EQ(dialog->GetCenteringMode(), HTMLDialogElement::kNeedsCentering);
-  if (!can_center_dialog) {
-    dialog->SetNotCentered();
-    return base::nullopt;
-  }
-
-  auto* scrollable_area = GetDocument().View()->LayoutViewport();
-  LayoutUnit top =
-      LayoutUnit((Style()->GetPosition() == EPosition::kFixed)
-                     ? 0
-                     : scrollable_area->ScrollOffsetInt().Height());
-
-  int visible_height = GetDocument().View()->Height();
-  if (height < visible_height)
-    top += (visible_height - height) / 2;
-  dialog->SetCentered(top);
-  return top;
-}
-
 void LayoutBlockFlow::PositionDialog() {
-  base::Optional<LayoutUnit> y = ComputeDialogYPosition(Size().Height());
+  base::Optional<LayoutUnit> y =
+      ComputeAbsoluteDialogYPosition(*this, Size().Height());
   if (y.has_value())
     SetY(y.value());
 }

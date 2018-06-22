@@ -15,6 +15,7 @@
 namespace blink {
 
 class ComputedStyle;
+class LayoutObject;
 class NGConstraintSpace;
 struct NGStaticPosition;
 
@@ -23,6 +24,13 @@ struct CORE_EXPORT NGAbsolutePhysicalPosition {
   NGPhysicalSize size;
   String ToString() const;
 };
+
+// Implements <dialog> special case abspos static positining.
+// Returns new dialog top position if layout_dialog requires
+// <dialog> abspos centering.
+CORE_EXPORT base::Optional<LayoutUnit> ComputeAbsoluteDialogYPosition(
+    const LayoutObject& layout_dialog,
+    LayoutUnit height);
 
 // The following routines implement absolute size resolution algorithm.
 // https://www.w3.org/TR/css-position-3/#abs-non-replaced-width
