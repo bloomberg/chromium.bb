@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+FAIL push-api interfaces promise_test: Unhandled rejection with value: object "ServiceWorkerGlobalScope inherits WorkerGlobalScope, but WorkerGlobalScope is undefined."
+PASS Partial interface ServiceWorkerRegistration: original interface defined
+PASS Partial interface ServiceWorkerGlobalScope: original interface defined
+PASS Partial interface ServiceWorkerGlobalScope: valid exposure set
+Harness: the test ran to completion.
+
