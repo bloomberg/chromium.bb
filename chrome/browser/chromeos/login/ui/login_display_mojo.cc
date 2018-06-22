@@ -6,7 +6,6 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
@@ -152,12 +151,13 @@ void LoginDisplayMojo::ShowUnrecoverableCrypthomeErrorDialog() {
 
 void LoginDisplayMojo::Login(const UserContext& user_context,
                              const SigninSpecifics& specifics) {
-  if (host_)
-    host_->existing_user_controller()->Login(user_context, specifics);
+  if (delegate_)
+    delegate_->Login(user_context, specifics);
 }
 
 bool LoginDisplayMojo::IsSigninInProgress() const {
-  NOTIMPLEMENTED();
+  if (delegate_)
+    return delegate_->IsSigninInProgress();
   return false;
 }
 
@@ -232,8 +232,7 @@ bool LoginDisplayMojo::AllowNewUserChanged() const {
 }
 
 bool LoginDisplayMojo::IsUserSigninCompleted() const {
-  NOTIMPLEMENTED();
-  return false;
+  return is_signin_completed();
 }
 
 void LoginDisplayMojo::HandleGetUsers() {

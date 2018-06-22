@@ -227,29 +227,35 @@ void LoginDisplayHostMojo::UpdateGaiaDialogVisibility(
     const base::Optional<AccountId>& prefilled_account) {
   DCHECK(dialog_);
 
+  bool is_signing_in = login_display_->IsSigninInProgress();
+
   if (visible) {
+    // Show the dialog.
+
     if (prefilled_account) {
       // Make sure gaia displays |account| if requested.
-      GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(prefilled_account);
-      LoginDisplayHost::default_host()->LoadWallpaper(*prefilled_account);
+      if (!is_signing_in)
+        GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(prefilled_account);
+
+      LoadWallpaper(*prefilled_account);
     } else {
-      LoginDisplayHost::default_host()->LoadSigninWallpaper();
+      LoadSigninWallpaper();
     }
 
     dialog_->Show(can_close /*closable_by_esc*/);
-    return;
-  }
-  // Show the wallpaper of the focused user pod when the dialog is hidden.
-  LoginDisplayHost::default_host()->LoadWallpaper(focused_pod_account_id_);
+  } else {
+    // Hide the dialog.
 
-  if (users_.empty() && GetOobeUI()) {
     // The dialog can not be closed if there is no user on the login screen.
     // Refresh the dialog instead.
-    GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
-    return;
-  }
+    if (!is_signing_in && users_.empty() && GetOobeUI()) {
+      GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(base::nullopt);
+      return;
+    }
 
-  dialog_->Hide();
+    LoadWallpaper(focused_pod_account_id_);
+    dialog_->Hide();
+  }
 }
 
 void LoginDisplayHostMojo::UpdateGaiaDialogSize(int width, int height) {
