@@ -2187,24 +2187,6 @@
   },
 
   'viz_fyi_gtests': {
-    'surface_sync_browser_tests': {
-      'args': [
-        '--enable-surface-synchronization',
-      ],
-      'swarming': {
-        'shards': 10,
-      },
-      'test': 'browser_tests',
-    },
-    'surface_sync_content_browsertests': {
-      'args': [
-        '--enable-surface-synchronization',
-      ],
-      'swarming': {
-        'shards': 2,
-      },
-      'test': 'content_browsertests',
-    },
     'viz_browser_tests': {
       'args': [
         '--enable-features=VizDisplayCompositor',
