@@ -55,7 +55,7 @@ void PageMemoryRegion::PageDeleted(Address page) {
 // TODO(haraken): Like partitionOutOfMemoryWithLotsOfUncommitedPages(),
 // we should probably have a way to distinguish physical memory OOM from
 // virtual address space OOM.
-static NEVER_INLINE void BlinkGCOutOfMemory() {
+static NOINLINE void BlinkGCOutOfMemory() {
   OOM_CRASH();
 }
 

@@ -456,7 +456,7 @@ class WTF_EXPORT StringImpl {
   template <typename CharType, class UCharPredicate>
   scoped_refptr<StringImpl> SimplifyMatchedCharactersToSpace(UCharPredicate,
                                                              StripBehavior);
-  NEVER_INLINE unsigned HashSlowCase() const;
+  NOINLINE unsigned HashSlowCase() const;
 
   void DestroyIfNotStatic() const;
   void UpdateContainsOnlyASCII() const;

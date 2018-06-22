@@ -49,7 +49,7 @@ WTF_EXPORT DEFINE_GLOBAL(String, g_xmlns_with_colon);
 WTF_EXPORT DEFINE_GLOBAL(String, g_empty_string);
 WTF_EXPORT DEFINE_GLOBAL(String, g_empty_string16_bit);
 
-NEVER_INLINE unsigned StringImpl::HashSlowCase() const {
+NOINLINE unsigned StringImpl::HashSlowCase() const {
   if (Is8Bit())
     SetHash(StringHasher::ComputeHashAndMaskTop8Bits(Characters8(), length_));
   else

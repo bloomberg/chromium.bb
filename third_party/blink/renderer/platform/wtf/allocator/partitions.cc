@@ -164,55 +164,55 @@ size_t Partitions::TotalActiveBytes() {
   return dumper.TotalActiveBytes();
 }
 
-static NEVER_INLINE void PartitionsOutOfMemoryUsing2G() {
+static NOINLINE void PartitionsOutOfMemoryUsing2G() {
   size_t signature = 2UL * 1024 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH();
 }
 
-static NEVER_INLINE void PartitionsOutOfMemoryUsing1G() {
+static NOINLINE void PartitionsOutOfMemoryUsing1G() {
   size_t signature = 1UL * 1024 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH();
 }
 
-static NEVER_INLINE void PartitionsOutOfMemoryUsing512M() {
+static NOINLINE void PartitionsOutOfMemoryUsing512M() {
   size_t signature = 512 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH();
 }
 
-static NEVER_INLINE void PartitionsOutOfMemoryUsing256M() {
+static NOINLINE void PartitionsOutOfMemoryUsing256M() {
   size_t signature = 256 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH();
 }
 
-static NEVER_INLINE void PartitionsOutOfMemoryUsing128M() {
+static NOINLINE void PartitionsOutOfMemoryUsing128M() {
   size_t signature = 128 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH();
 }
 
-static NEVER_INLINE void PartitionsOutOfMemoryUsing64M() {
+static NOINLINE void PartitionsOutOfMemoryUsing64M() {
   size_t signature = 64 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH();
 }
 
-static NEVER_INLINE void PartitionsOutOfMemoryUsing32M() {
+static NOINLINE void PartitionsOutOfMemoryUsing32M() {
   size_t signature = 32 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH();
 }
 
-static NEVER_INLINE void PartitionsOutOfMemoryUsing16M() {
+static NOINLINE void PartitionsOutOfMemoryUsing16M() {
   size_t signature = 16 * 1024 * 1024;
   base::debug::Alias(&signature);
   OOM_CRASH();
 }
 
-static NEVER_INLINE void PartitionsOutOfMemoryUsingLessThan16M() {
+static NOINLINE void PartitionsOutOfMemoryUsingLessThan16M() {
   size_t signature = 16 * 1024 * 1024 - 1;
   base::debug::Alias(&signature);
   DLOG(FATAL) << "ParitionAlloc: out of memory with < 16M usage (error:"

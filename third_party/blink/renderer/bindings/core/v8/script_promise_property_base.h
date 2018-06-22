@@ -24,7 +24,7 @@ class DOMWrapperWorld;
 class ExecutionContext;
 class ScriptState;
 
-// TODO(yhirano): Remove NEVER_INLINE once we find the cause of crashes.
+// TODO(yhirano): Remove NOINLINE once we find the cause of crashes.
 class CORE_EXPORT ScriptPromisePropertyBase
     : public GarbageCollectedFinalized<ScriptPromisePropertyBase>,
       public ContextClient {
@@ -71,7 +71,7 @@ class CORE_EXPORT ScriptPromisePropertyBase
       v8::Isolate*,
       v8::Local<v8::Object> creation_context) = 0;
 
-  NEVER_INLINE void ResetBase();
+  NOINLINE void ResetBase();
 
  private:
   typedef Vector<std::unique_ptr<ScopedPersistent<v8::Object>>>
@@ -79,10 +79,10 @@ class CORE_EXPORT ScriptPromisePropertyBase
 
   void ResolveOrRejectInternal(v8::Local<v8::Promise::Resolver>);
   v8::Local<v8::Object> EnsureHolderWrapper(ScriptState*);
-  NEVER_INLINE void ClearWrappers();
+  NOINLINE void ClearWrappers();
   // TODO(yhirano): Remove these functions once we find the cause of crashes.
-  NEVER_INLINE void CheckThis();
-  NEVER_INLINE void CheckWrappers();
+  NOINLINE void CheckThis();
+  NOINLINE void CheckWrappers();
 
   V8PrivateProperty::Symbol PromiseSymbol();
   V8PrivateProperty::Symbol ResolverSymbol();
