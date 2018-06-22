@@ -581,8 +581,9 @@ void SessionStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
     case NO_CONNECTION:
       // If we don't have a filesystem_connection_, we'll need to establish one.
       connection_state_ = CONNECTION_IN_PROGRESS;
+      on_database_opened_callbacks_.push_back(std::move(callback));
       InitiateConnection();
-      FALLTHROUGH;
+      return;
     case CONNECTION_IN_PROGRESS:
       // Queue this OpenSessionStorage call for when we have a level db pointer.
       on_database_opened_callbacks_.push_back(std::move(callback));
