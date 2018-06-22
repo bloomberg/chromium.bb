@@ -12,6 +12,7 @@
 
 namespace quic {
 
+// Merges given strings or numbers with no delimiter.
 template <typename... Args>
 inline QuicString QuicStrCat(const Args&... args) {
   return QuicStrCatImpl(std::forward<const Args&>(args)...);

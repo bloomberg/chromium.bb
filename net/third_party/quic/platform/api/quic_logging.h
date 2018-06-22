@@ -26,6 +26,7 @@
 
 #define QUIC_PREDICT_FALSE(x) QUIC_PREDICT_FALSE_IMPL(x)
 
+// This is a noop in release build.
 #define QUIC_NOTREACHED() QUIC_NOTREACHED_IMPL()
 
 #define QUIC_PLOG(severity) QUIC_PLOG_IMPL(severity)

@@ -14,9 +14,6 @@
 namespace quic {
 namespace test {
 
-using QuicTestRandomBase = QuicTestRandomBaseImpl;
-
-// QuicTestRandomImpl must inherit from QuicTestRandomBaseImpl;
 using QuicTestRandom = QuicTestRandomImpl;
 
 }  // namespace test
