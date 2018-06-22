@@ -33,6 +33,7 @@
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -384,6 +385,28 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, CustomDictionaryChanged) {
 
   ChangeCustomDictionary();
   EXPECT_TRUE(GetCustomDictionaryChangedState());
+}
+
+// Regression test for https://crbug.com/854540.
+IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
+                       CustomDictionaryChangedAfterRendererCrash) {
+  InitSpellcheck(true, "en-US", "");
+  EXPECT_TRUE(GetEnableSpellcheckState());
+
+  // Kill the renderer process.
+  content::RenderProcessHost* process = browser()
+                                            ->tab_strip_model()
+                                            ->GetActiveWebContents()
+                                            ->GetMainFrame()
+                                            ->GetProcess();
+  content::RenderProcessHostWatcher crash_observer(
+      process, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  EXPECT_TRUE(process->Shutdown(0));
+  crash_observer.Wait();
+
+  // Change the custom dictionary - the test passes if there were no crashes or
+  // hangs.
+  ChangeCustomDictionary();
 }
 
 // Starting with only a single-language spellcheck setting, the host should
