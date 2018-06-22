@@ -29,13 +29,15 @@ namespace {
 // Padding used on the edges of the infobar.
 const CGFloat kPadding = 16;
 
+// Line height for the title message.
+const CGFloat kTitleLineHeight = 24;
+
+// Line height for the description and legal messages.
+const CGFloat kDescriptionLineHeight = 20;
+
 // Padding used on the close button to increase the touchable area. This added
 // to the close button icon's intrinsic padding equals kPadding.
 const CGFloat kCloseButtonPadding = 12;
-
-// Intrinsic padding of the icon. Used to set a padding on the icon that equals
-// kPadding.
-const CGFloat kIconIntrinsicPadding = 6;
 
 // Color in RGB to be used as tint color on the icon.
 const CGFloat kIconTintColor = 0x1A73E8;
@@ -226,10 +228,10 @@ UIFont* InfoBarMessageFont() {
     [NSLayoutConstraint activateConstraints:@[
       [iconContainerView.leadingAnchor
           constraintEqualToAnchor:safeAreaLayoutGuide.leadingAnchor
-                         constant:kPadding - kIconIntrinsicPadding],
+                         constant:kPadding],
       [iconContainerView.topAnchor
           constraintEqualToAnchor:safeAreaLayoutGuide.topAnchor
-                         constant:kPadding - kIconIntrinsicPadding],
+                         constant:kPadding],
     ]];
   }
 
@@ -248,8 +250,7 @@ UIFont* InfoBarMessageFont() {
   NSLayoutConstraint* headerViewLeadingConstraint =
       self.icon ? [headerView.leadingAnchor
                       constraintEqualToAnchor:iconContainerView.trailingAnchor
-                                     constant:kHorizontalSpacing -
-                                              kIconIntrinsicPadding]
+                                     constant:kHorizontalSpacing]
                 : [headerView.leadingAnchor
                       constraintEqualToAnchor:safeAreaLayoutGuide.leadingAnchor
                                      constant:kPadding];
@@ -427,7 +428,15 @@ UIFont* InfoBarMessageFont() {
   NSMutableParagraphStyle* paragraphStyle =
       [[NSMutableParagraphStyle alloc] init];
   paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
-  paragraphStyle.lineSpacing = 1.5;
+
+  // Set the line height and vertically center the text.
+  UIFont* font = InfoBarMessageFont();
+  paragraphStyle.lineSpacing =
+      (kTitleLineHeight - (font.ascender - font.descender)) / 2;
+  paragraphStyle.minimumLineHeight =
+      kTitleLineHeight - paragraphStyle.lineSpacing;
+  paragraphStyle.maximumLineHeight = paragraphStyle.minimumLineHeight;
+
   NSDictionary* attributes = @{
     NSParagraphStyleAttributeName : paragraphStyle,
     NSFontAttributeName : InfoBarMessageFont(),
@@ -487,7 +496,8 @@ UIFont* InfoBarMessageFont() {
     NSMutableParagraphStyle* paragraphStyle =
         [[NSMutableParagraphStyle alloc] init];
     paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
-    paragraphStyle.lineSpacing = 1.4;
+    paragraphStyle.minimumLineHeight = kDescriptionLineHeight;
+    paragraphStyle.maximumLineHeight = paragraphStyle.minimumLineHeight;
     NSDictionary* attributes = @{
       NSParagraphStyleAttributeName : paragraphStyle,
       NSFontAttributeName : [MDCTypography body1Font],
@@ -554,7 +564,8 @@ UIFont* InfoBarMessageFont() {
     NSMutableParagraphStyle* paragraphStyle =
         [[NSMutableParagraphStyle alloc] init];
     paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
-    paragraphStyle.lineSpacing = 1.4;
+    paragraphStyle.minimumLineHeight = kDescriptionLineHeight;
+    paragraphStyle.maximumLineHeight = paragraphStyle.minimumLineHeight;
     NSDictionary* attributes = @{
       NSParagraphStyleAttributeName : paragraphStyle,
       NSFontAttributeName : [MDCTypography body1Font],
