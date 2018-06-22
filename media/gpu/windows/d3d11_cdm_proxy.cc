@@ -501,7 +501,8 @@ void D3D11CdmProxy::RemoveKey(uint32_t crypto_session_id,
   cdm_context_->RemoveKey(crypto_session_it->second.Get(), key_id);
 }
 
-void D3D11CdmProxy::SetCreateDeviceCallbackForTesting(CreateDeviceCB callback) {
+void D3D11CdmProxy::SetCreateDeviceCallbackForTesting(
+    D3D11CreateDeviceCB callback) {
   create_device_func_ = std::move(callback);
 }
 

@@ -5,6 +5,9 @@
 #include "media/gpu/windows/d3d11_mocks.h"
 namespace media {
 
+D3D11CreateDeviceMock::D3D11CreateDeviceMock() = default;
+D3D11CreateDeviceMock::~D3D11CreateDeviceMock() = default;
+
 D3D11Texture2DMock::D3D11Texture2DMock() = default;
 D3D11Texture2DMock::~D3D11Texture2DMock() = default;
 

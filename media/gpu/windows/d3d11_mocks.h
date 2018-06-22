@@ -11,6 +11,7 @@
 #include <wrl/implements.h>
 
 #include "base/win/iunknown_impl.h"
+#include "media/gpu/windows/d3d11_create_device_cb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #define MOCK_STDCALL_METHOD0(Name, Types) \
@@ -62,6 +63,14 @@ template <typename Interface>
 Microsoft::WRL::ComPtr<Interface> CreateD3D11Mock() {
   return new Interface();
 }
+
+// Class for mocking D3D11CreateDevice() function.
+class D3D11CreateDeviceMock {
+ public:
+  D3D11CreateDeviceMock();
+  ~D3D11CreateDeviceMock();
+  MOCK_METHOD10(Create, D3D11CreateDeviceCB::RunType);
+};
 
 template <class Interface>
 class MockCOMInterface : public Interface, public base::win::IUnknownImpl {

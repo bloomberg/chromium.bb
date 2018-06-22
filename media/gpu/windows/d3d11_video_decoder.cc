@@ -4,6 +4,8 @@
 
 #include "media/gpu/windows/d3d11_video_decoder.h"
 
+#include <d3d11_4.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "media/base/bind_to_current_loop.h"
@@ -40,7 +42,6 @@ base::Callback<void(Args...)> BindToCurrentThreadIfWeakPtr(
   return media::BindToCurrentLoop(
       base::Bind(&CallbackOnProperThread<T, Args...>, weak_ptr, cb));
 }
-
 }  // namespace
 
 namespace media {
@@ -70,6 +71,7 @@ D3D11VideoDecoder::D3D11VideoDecoder(
       impl_task_runner_(std::move(gpu_task_runner)),
       gpu_preferences_(gpu_preferences),
       gpu_workarounds_(gpu_workarounds),
+      create_device_func_(base::BindRepeating(D3D11CreateDevice)),
       weak_factory_(this) {
   impl_weak_ = impl_->GetWeakPtr();
 }
@@ -144,10 +146,27 @@ int D3D11VideoDecoder::GetMaxDecodeRequests() const {
   return impl_->GetMaxDecodeRequests();
 }
 
+void D3D11VideoDecoder::SetCreateDeviceCallbackForTesting(
+    D3D11CreateDeviceCB callback) {
+  create_device_func_ = std::move(callback);
+}
+
 bool D3D11VideoDecoder::IsPotentiallySupported(
     const VideoDecoderConfig& config) {
   // TODO(liberato): All of this could be moved into MojoVideoDecoder, so that
   // it could run on the client side and save the IPC hop.
+
+  // Make sure that we support at least 11.1.
+  D3D_FEATURE_LEVEL levels[] = {
+      D3D_FEATURE_LEVEL_11_1,
+  };
+  HRESULT hr = create_device_func_.Run(
+      nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, levels, ARRAYSIZE(levels),
+      D3D11_SDK_VERSION, nullptr, nullptr, nullptr);
+  if (FAILED(hr)) {
+    DVLOG(2) << "Insufficient D3D11 feature level";
+    return false;
+  }
 
   // Must be H264.
   const bool is_h264 = config.profile() >= H264PROFILE_MIN &&

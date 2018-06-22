@@ -17,6 +17,7 @@
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/gpu/windows/d3d11_create_device_cb.h"
 
 namespace media {
 
@@ -57,6 +58,9 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
   // init without bothering with a thread hop.
   bool IsPotentiallySupported(const VideoDecoderConfig& config);
 
+  // Override how we create D3D11 devices, to inject mocks.
+  void SetCreateDeviceCallbackForTesting(D3D11CreateDeviceCB callback);
+
  protected:
   // Owners should call Destroy(). This is automatic via
   // std::default_delete<media::VideoDecoder> when held by a
@@ -83,6 +87,8 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
 
   gpu::GpuPreferences gpu_preferences_;
   gpu::GpuDriverBugWorkarounds gpu_workarounds_;
+
+  D3D11CreateDeviceCB create_device_func_;
 
   base::WeakPtrFactory<D3D11VideoDecoder> weak_factory_;
 

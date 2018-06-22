@@ -58,11 +58,6 @@ scoped_refptr<DecoderBuffer> TestDecoderBuffer(
   return encrypted_buffer;
 }
 
-class D3D11CreateDeviceMock {
- public:
-  MOCK_METHOD10(Create, D3D11Decryptor::CreateDeviceCB::RunType);
-};
-
 class CallbackMock {
  public:
   MOCK_METHOD2(DecryptCallback, Decryptor::DecryptCB::RunType);

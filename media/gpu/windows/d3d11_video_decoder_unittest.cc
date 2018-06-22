@@ -21,6 +21,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::DoAll;
+using ::testing::NiceMock;
+using ::testing::Return;
+using ::testing::SaveArg;
 
 namespace media {
 
@@ -63,13 +67,25 @@ class D3D11VideoDecoderTest : public ::testing::Test {
 
   void CreateDecoder() {
     std::unique_ptr<MockD3D11VideoDecoderImpl> impl =
-        std::make_unique<MockD3D11VideoDecoderImpl>();
+        std::make_unique<NiceMock<MockD3D11VideoDecoderImpl>>();
     impl_ = impl.get();
 
     gpu_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
-    decoder_ = base::WrapUnique<VideoDecoder>(new D3D11VideoDecoder(
-        gpu_task_runner_, gpu_preferences_, gpu_workarounds_, std::move(impl)));
+    // We store it in a std::unique_ptr<VideoDecoder> so that the default
+    // deleter works.  The dtor is protected.
+    decoder_ = base::WrapUnique<VideoDecoder>(
+        d3d11_decoder_raw_ =
+            new D3D11VideoDecoder(gpu_task_runner_, gpu_preferences_,
+                                  gpu_workarounds_, std::move(impl)));
+    d3d11_decoder_raw_->SetCreateDeviceCallbackForTesting(
+        base::BindRepeating(&D3D11CreateDeviceMock::Create,
+                            base::Unretained(&create_device_mock_)));
+
+    // Configure CreateDevice to succeed by default.
+    ON_CALL(create_device_mock_,
+            Create(_, D3D_DRIVER_TYPE_HARDWARE, _, _, _, _, _, _, _, _))
+        .WillByDefault(Return(S_OK));
   }
 
   enum InitExpectation {
@@ -88,7 +104,6 @@ class D3D11VideoDecoderTest : public ::testing::Test {
     } else {
       EXPECT_CALL(*this, MockInitCB(false));
     }
-
     decoder_->Initialize(config, low_delay, cdm_context,
                          base::BindRepeating(&D3D11VideoDecoderTest::MockInitCB,
                                              base::Unretained(this)),
@@ -101,13 +116,47 @@ class D3D11VideoDecoderTest : public ::testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
 
   std::unique_ptr<VideoDecoder> decoder_;
+  D3D11VideoDecoder* d3d11_decoder_raw_ = nullptr;
   gpu::GpuPreferences gpu_preferences_;
   gpu::GpuDriverBugWorkarounds gpu_workarounds_;
   MockD3D11VideoDecoderImpl* impl_ = nullptr;
   VideoDecoderConfig supported_config_;
+  D3D11CreateDeviceMock create_device_mock_;
 
   MOCK_METHOD1(MockInitCB, void(bool));
 };
+
+TEST_F(D3D11VideoDecoderTest, RequiresD3D11_1) {
+  D3D_FEATURE_LEVEL feature_levels[100];
+  int num_levels = 0;
+
+  CreateDecoder();
+
+  // Fail to create the D3D11 device, but record the results.
+  D3D11CreateDeviceCB create_device_cb = base::BindRepeating(
+      [](D3D_FEATURE_LEVEL* feature_levels_out, int* num_levels_out,
+         IDXGIAdapter*, D3D_DRIVER_TYPE, HMODULE, UINT,
+         const D3D_FEATURE_LEVEL* feature_levels, UINT num_levels, UINT,
+         ID3D11Device**, D3D_FEATURE_LEVEL*, ID3D11DeviceContext**) -> HRESULT {
+        memcpy(feature_levels_out, feature_levels,
+               num_levels * sizeof(feature_levels_out[0]));
+        *num_levels_out = num_levels;
+        return E_NOTIMPL;
+      },
+      feature_levels, &num_levels);
+  d3d11_decoder_raw_->SetCreateDeviceCallbackForTesting(
+      std::move(create_device_cb));
+  InitializeDecoder(supported_config_, kExpectFailure);
+
+  // Verify that it requests exactly 11.1, and nothing earlier.
+  // Later is okay.
+  bool min_is_d3d11_1 = false;
+  for (int i = 0; i < num_levels; i++) {
+    min_is_d3d11_1 |= feature_levels[i] == D3D_FEATURE_LEVEL_11_1;
+    ASSERT_TRUE(feature_levels[i] >= D3D_FEATURE_LEVEL_11_1);
+  }
+  ASSERT_TRUE(min_is_d3d11_1);
+}
 
 TEST_F(D3D11VideoDecoderTest, SupportsH264) {
   CreateDecoder();

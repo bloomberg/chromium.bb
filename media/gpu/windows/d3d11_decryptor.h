@@ -13,23 +13,12 @@
 #include "media/base/cdm_proxy_context.h"
 #include "media/base/decryptor.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/gpu/windows/d3d11_create_device_cb.h"
 
 namespace media {
 
 class MEDIA_GPU_EXPORT D3D11Decryptor : public Decryptor {
  public:
-  using CreateDeviceCB =
-      base::RepeatingCallback<HRESULT(IDXGIAdapter*,
-                                      D3D_DRIVER_TYPE,
-                                      HMODULE,
-                                      UINT,
-                                      const D3D_FEATURE_LEVEL*,
-                                      UINT,
-                                      UINT,
-                                      ID3D11Device**,
-                                      D3D_FEATURE_LEVEL*,
-                                      ID3D11DeviceContext**)>;
-
   explicit D3D11Decryptor(CdmProxyContext* cdm_proxy_context);
   ~D3D11Decryptor() final;
 
@@ -51,7 +40,7 @@ class MEDIA_GPU_EXPORT D3D11Decryptor : public Decryptor {
   void ResetDecoder(StreamType stream_type) final;
   void DeinitializeDecoder(StreamType stream_type) final;
 
-  void SetCreateDeviceCallbackForTesting(CreateDeviceCB callback) {
+  void SetCreateDeviceCallbackForTesting(D3D11CreateDeviceCB callback) {
     create_device_func_ = callback;
   }
 
@@ -103,7 +92,7 @@ class MEDIA_GPU_EXPORT D3D11Decryptor : public Decryptor {
 
   // Can be set in tests via SetCreateDeviceCallbackForTesting().
   // Is D3D11CreateDevice() when not mocked.
-  CreateDeviceCB create_device_func_;
+  D3D11CreateDeviceCB create_device_func_;
 
   base::WeakPtrFactory<D3D11Decryptor> weak_factory_;
 
