@@ -65,9 +65,10 @@ void PasswordAccessoryViewAndroid::OnItemsAvailable(
 void PasswordAccessoryViewAndroid::OnFillingTriggered(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
+    jboolean isPassword,
     const base::android::JavaParamRef<_jstring*>& textToFill) {
   controller_->OnFillingTriggered(
-      base::android::ConvertJavaStringToUTF16(textToFill));
+      isPassword, base::android::ConvertJavaStringToUTF16(textToFill));
 }
 
 // static

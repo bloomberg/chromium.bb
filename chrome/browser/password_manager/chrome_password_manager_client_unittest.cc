@@ -149,6 +149,9 @@ class FakePasswordAutofillAgent
       int key,
       const autofill::PasswordFormFillData& form_data) override {}
 
+  void FillIntoFocusedField(bool is_password,
+                            const base::string16& credential) override {}
+
   void SetLoggingState(bool active) override {
     called_set_logging_state_ = true;
     logging_state_active_ = active;

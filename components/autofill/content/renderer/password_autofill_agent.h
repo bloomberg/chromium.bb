@@ -66,6 +66,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // mojom::PasswordAutofillAgent:
   void FillPasswordForm(int key,
                         const PasswordFormFillData& form_data) override;
+  void FillIntoFocusedField(bool is_password,
+                            const base::string16& credential) override;
   void SetLoggingState(bool active) override;
   void AutofillUsernameAndPasswordDataReceived(
       const FormsPredictionsMap& predictions) override;
@@ -266,6 +268,16 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // their previous filled state.
   void ClearPreview(blink::WebInputElement* username,
                     blink::WebInputElement* password);
+
+  // Checks that a given input field is valid before filling the given |input|
+  // with the given |credential| and marking the field as auto-filled.
+  void FillField(blink::WebInputElement* input,
+                 const base::string16& credential);
+
+  // Uses |FillField| to fill the given |credential| into the |password_input|.
+  // Saves the password for its associated form.
+  void FillPasswordFieldAndSave(blink::WebInputElement* password_input,
+                                const base::string16& credential);
 
   // Saves |form| and |input| in |provisionally_saved_form_|, as long as it
   // satisfies |restriction|. |form| and |input| are the elements user has just

@@ -69,6 +69,11 @@ class PasswordManagerDriver
   virtual void FillSuggestion(const base::string16& username,
                               const base::string16& password) = 0;
 
+  // Tells the renderer to fill the given credential into the focused element.
+  virtual void FillIntoFocusedField(
+      bool is_password,
+      const base::string16& user_provided_credential) {}
+
   // Tells the driver to preview filling form with the |username| and
   // |password|.
   virtual void PreviewSuggestion(const base::string16& username,

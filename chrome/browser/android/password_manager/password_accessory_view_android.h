@@ -30,6 +30,7 @@ class PasswordAccessoryViewAndroid : public PasswordAccessoryViewInterface {
   void OnFillingTriggered(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
+      jboolean isPassword,
       const base::android::JavaParamRef<jstring>& textToFill);
 
  private:

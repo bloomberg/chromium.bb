@@ -22,6 +22,7 @@ using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using base::UTF16ToASCII;
 using base::UTF16ToWide;
+using testing::_;
 using testing::ElementsAre;
 using testing::Eq;
 using testing::Mock;
@@ -138,6 +139,7 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
     PasswordAccessoryController::CreateForWebContentsForTesting(
         web_contents(),
         std::make_unique<StrictMock<MockPasswordAccessoryView>>());
+    NavigateAndCommit(GURL("https://example.com"));
   }
 
   PasswordAccessoryController* controller() {
@@ -238,4 +240,11 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
                                                    ItemType::LABEL))));
 
   controller()->OnPasswordsAvailable({}, GURL("https://example.com"));
+}
+
+TEST_F(PasswordAccessoryControllerTest, IgnoresCrossOriginCalls) {
+  // Don't expect any call to |OnItemsAvailable|. (https://crbug.com/854150)
+  EXPECT_CALL(*view(), OnItemsAvailable(_, _)).Times(0);
+  controller()->OnPasswordsAvailable({CreateEntry("Ben", "S3cur3").first},
+                                     GURL("https://other-domain.com"));
 }

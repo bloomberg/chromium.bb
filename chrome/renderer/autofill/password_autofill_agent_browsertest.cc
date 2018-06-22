@@ -1624,6 +1624,68 @@ TEST_F(PasswordAutofillAgentTest,
   }
 }
 
+// Tests that |FillIntoFocusedField| doesn't fill read-only text fields.
+TEST_F(PasswordAutofillAgentTest, FillIntoFocusedReadonlyTextField) {
+  // Neither field should be autocompleted.
+  CheckTextFieldsDOMState(std::string(), false, std::string(), false);
+
+  // If the field is readonly, it should not be affected.
+  SetElementReadOnly(username_element_, true);
+  SimulateElementClick(kUsernameName);
+  password_autofill_agent_->FillIntoFocusedField(/*is_password=*/false,
+                                                 ASCIIToUTF16(kAliceUsername));
+  CheckTextFieldsDOMState(std::string(), false, std::string(), false);
+}
+
+// Tests that |FillIntoFocusedField| properly fills user-provided credentials.
+TEST_F(PasswordAutofillAgentTest, FillIntoFocusedWritableTextField) {
+  // Neither field should be autocompleted.
+  CheckTextFieldsDOMState(std::string(), false, std::string(), false);
+
+  // The same field should be filled if it is writable.
+  SetFocused(username_element_);
+
+  SetElementReadOnly(username_element_, false);
+  password_autofill_agent_->FillIntoFocusedField(/*is_password=*/false,
+                                                 ASCIIToUTF16(kAliceUsername));
+  CheckTextFieldsDOMState(kAliceUsername, true, std::string(), false);
+  CheckUsernameSelection(strlen(kAliceUsername), strlen(kAliceUsername));
+}
+
+// Tests that |FillIntoFocusedField| doesn't fill passwords in userfields.
+TEST_F(PasswordAutofillAgentTest, FillIntoFocusedFieldOnlyIntoPasswordFields) {
+  // Neither field should be autocompleted.
+  CheckTextFieldsDOMState(std::string(), false, std::string(), false);
+
+  // Filling a password into a username field doesn't work.
+  SimulateElementClick(kUsernameName);
+  password_autofill_agent_->FillIntoFocusedField(/*is_password=*/true,
+                                                 ASCIIToUTF16(kAlicePassword));
+  CheckTextFieldsDOMState(std::string(), false, std::string(), false);
+
+  // When a password field is focus, the filling works.
+  SimulateElementClick(kPasswordName);
+  password_autofill_agent_->FillIntoFocusedField(/*is_password=*/true,
+                                                 ASCIIToUTF16(kAlicePassword));
+  CheckTextFieldsDOMState(std::string(), false, kAlicePassword, true);
+}
+
+// Tests that |FillIntoFocusedField| fills last focused, not last clicked field.
+TEST_F(PasswordAutofillAgentTest, FillIntoFocusedFieldForNonClickFocus) {
+  // Neither field should be autocompleted.
+  CheckTextFieldsDOMState(std::string(), false, std::string(), false);
+
+  // Click the username but shift the focus without click to the password.
+  SimulateElementClick(kUsernameName);
+  SetFocused(password_element_);
+  // The completion should now affect ONLY the password field. Don't fill a
+  // password so the error on failure shows where the filling happened.
+  // (see FillIntoFocusedFieldOnlyIntoPasswordFields).
+  password_autofill_agent_->FillIntoFocusedField(/*is_password=*/false,
+                                                 ASCIIToUTF16("TextToFill"));
+  CheckTextFieldsDOMState(std::string(), false, "TextToFill", true);
+}
+
 // Tests that |ClearPreview| properly clears previewed username and password
 // with neither username nor password being previously autofilled.
 TEST_F(PasswordAutofillAgentTest,
