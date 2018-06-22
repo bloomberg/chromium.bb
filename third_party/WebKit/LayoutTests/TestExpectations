@@ -4720,7 +4720,6 @@ crbug.com/853360 [ Mac ] fast/forms/select/menulist-appearance-rtl.html [ Failur
 
 # Sheriff 2018-06-18
 crbug.com/853852 [ Linux ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-wheel-block-manual.tentative.html [ Pass Timeout ]
-crbug.com/854053 [ Mac10.13 Debug ] virtual/threaded/fast/animationworklet/animation-worklet-scroll-timeline.html [ Pass Crash ]
 
 crbug.com/854538 [ Win7 ] http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored-with-redirect.html [ Skip ]
 

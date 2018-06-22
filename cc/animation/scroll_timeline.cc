@@ -14,24 +14,15 @@ namespace cc {
 ScrollTimeline::ScrollTimeline(base::Optional<ElementId> scroller_id,
                                ScrollDirection orientation,
                                double time_range)
-    : active_id_(scroller_id),
+    : active_id_(),
       pending_id_(scroller_id),
-      orientation_(orientation),
-      time_range_(time_range) {}
-
-ScrollTimeline::ScrollTimeline(base::Optional<ElementId> active_id,
-                               base::Optional<ElementId> pending_id,
-                               ScrollDirection orientation,
-                               double time_range)
-    : active_id_(active_id),
-      pending_id_(pending_id),
       orientation_(orientation),
       time_range_(time_range) {}
 
 ScrollTimeline::~ScrollTimeline() {}
 
 std::unique_ptr<ScrollTimeline> ScrollTimeline::CreateImplInstance() const {
-  return std::make_unique<ScrollTimeline>(active_id_, pending_id_, orientation_,
+  return std::make_unique<ScrollTimeline>(pending_id_, orientation_,
                                           time_range_);
 }
 
@@ -76,7 +67,6 @@ double ScrollTimeline::CurrentTime(const ScrollTree& scroll_tree,
 
 void ScrollTimeline::PushPropertiesTo(ScrollTimeline* impl_timeline) {
   DCHECK(impl_timeline);
-  impl_timeline->active_id_ = active_id_;
   impl_timeline->pending_id_ = pending_id_;
 }
 
