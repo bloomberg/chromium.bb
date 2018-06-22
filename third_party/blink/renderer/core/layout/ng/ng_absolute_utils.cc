@@ -4,9 +4,12 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
 
+#include "third_party/blink/renderer/core/html/html_dialog_element.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_static_position.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/length_functions.h"
 
@@ -493,6 +496,50 @@ bool AbsoluteNeedsChildInlineSize(const ComputedStyle& style) {
     return AbsoluteHorizontalNeedsEstimate(style);
   else
     return AbsoluteVerticalNeedsEstimate(style);
+}
+
+base::Optional<LayoutUnit> ComputeAbsoluteDialogYPosition(
+    const LayoutObject& dialog,
+    LayoutUnit height) {
+  if (!IsHTMLDialogElement(dialog.GetNode()))
+    return base::nullopt;
+
+  // This code implements <dialog> static position spec.
+  // //
+  // https://html.spec.whatwg.org/multipage/interactive-elements.html#the-dialog-element
+  HTMLDialogElement* dialog_node = ToHTMLDialogElement(dialog.GetNode());
+  if (dialog_node->GetCenteringMode() == HTMLDialogElement::kNotCentered)
+    return base::nullopt;
+
+  bool can_center_dialog =
+      (dialog.Style()->GetPosition() == EPosition::kAbsolute ||
+       dialog.Style()->GetPosition() == EPosition::kFixed) &&
+      dialog.Style()->HasAutoTopAndBottom();
+
+  if (dialog_node->GetCenteringMode() == HTMLDialogElement::kCentered) {
+    if (can_center_dialog)
+      return dialog_node->CenteredPosition();
+    return base::nullopt;
+  }
+
+  DCHECK_EQ(dialog_node->GetCenteringMode(),
+            HTMLDialogElement::kNeedsCentering);
+  if (!can_center_dialog) {
+    dialog_node->SetNotCentered();
+    return base::nullopt;
+  }
+
+  auto* scrollable_area = dialog.GetDocument().View()->LayoutViewport();
+  LayoutUnit top =
+      LayoutUnit((dialog.Style()->GetPosition() == EPosition::kFixed)
+                     ? 0
+                     : scrollable_area->ScrollOffsetInt().Height());
+
+  int visible_height = dialog.GetDocument().View()->Height();
+  if (height < visible_height)
+    top += (visible_height - height) / 2;
+  dialog_node->SetCentered(top);
+  return top;
 }
 
 NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(

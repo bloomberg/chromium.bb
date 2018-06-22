@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
 
-#include "third_party/blink/renderer/core/html/html_dialog_element.h"
-#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
@@ -379,18 +377,14 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
       container_info.default_container_offset.inline_offset;
   offset->block_offset += container_info.default_container_offset.block_offset;
 
-  LayoutObject* layout_object = descendant.node.GetLayoutObject();
-  if (IsHTMLDialogElement(layout_object->GetNode())) {
-    base::Optional<LayoutUnit> y =
-        ToLayoutBlockFlow(layout_object)
-            ->ComputeDialogYPosition(
-                layout_result->PhysicalFragment()->Size().height);
-    if (y.has_value()) {
-      if (IsHorizontalWritingMode(container_writing_mode))
-        offset->block_offset = y.value();
-      else
-        offset->inline_offset = y.value();
-    }
+  base::Optional<LayoutUnit> y = ComputeAbsoluteDialogYPosition(
+      *descendant.node.GetLayoutObject(),
+      layout_result->PhysicalFragment()->Size().height);
+  if (y.has_value()) {
+    if (IsHorizontalWritingMode(container_writing_mode))
+      offset->block_offset = y.value();
+    else
+      offset->inline_offset = y.value();
   }
 
   return layout_result;
