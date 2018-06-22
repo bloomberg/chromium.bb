@@ -3269,7 +3269,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
         Establishing a tunnel via proxy server failed
       </message>
       <message name="IDS_TWA_RUNNING_IN_CHROME" desc="Disclosure on opening a TWA that it may use Chrome data. Shown on a Toast." translateable="false">
-        Running in Chrome.
+        Running in Chrome
       </message>
 
       <!-- Keyboard shortcuts in Android N-->
