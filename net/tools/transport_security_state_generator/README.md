@@ -64,8 +64,9 @@ Make sure you have build the `transport_security_state_generator` target.
 The preload data is stored in the Chromium binary as a trie encoded in a byte
 array (`net::TransportSecurityStateSource::preloaded_data`). The hostnames are
 stored in their canonicalized form and compressed using a Huffman coding. The
-decoder (`DecodeHSTSPreloadRaw`) lives in
-`net/http/transport_security_state.cc`.
+generic decoder for preloaded Huffman encoded trie data is `PreloadDecoder` and
+lives in `net/extras/preload_data/decoder.cc`. The HSTS specific implementation
+is `DecodeHSTSPreload` and lives in `net/http/transport_security_state.cc`.
 
 ### Huffman Coding
 
