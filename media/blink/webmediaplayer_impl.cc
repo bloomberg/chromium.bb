@@ -2126,8 +2126,12 @@ void WebMediaPlayerImpl::OnPictureInPictureModeEnded() {
   // for validity.
   DCHECK(pip_surface_id_.is_valid());
 
-  if (client_)
+  // It is possible for |pip_surface_id_| to be valid when |client_| is not in
+  // Picture-in-Picture mode. In this case, do nothing.
+  if (client_ && client_->DisplayType() ==
+                     WebMediaPlayer::DisplayType::kPictureInPicture) {
     client_->PictureInPictureStopped();
+  }
 }
 
 void WebMediaPlayerImpl::ScheduleRestart() {
