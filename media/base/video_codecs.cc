@@ -94,8 +94,12 @@ std::string GetProfileName(VideoCodecProfile profile) {
       return "dolby vision profile 7";
     case THEORAPROFILE_ANY:
       return "theora";
-    case AV1PROFILE_PROFILE0:
-      return "av1 profile0";
+    case AV1PROFILE_PROFILE_MAIN:
+      return "av1 profile main";
+    case AV1PROFILE_PROFILE_HIGH:
+      return "av1 profile high";
+    case AV1PROFILE_PROFILE_PRO:
+      return "av1 profile pro";
   }
   NOTREACHED();
   return "";

@@ -47387,7 +47387,9 @@ Full version information for the fingerprint enum values:
   <int value="21" label="DolbyVision profile5"/>
   <int value="22" label="DolbyVision profile7"/>
   <int value="23" label="Theora"/>
-  <int value="24" label="AV1 Profile0"/>
+  <int value="24" label="AV1 Profile Main"/>
+  <int value="25" label="AV1 Profile High"/>
+  <int value="26" label="AV1 Profile Pro"/>
 </enum>
 
 <enum name="VideoDecodeAcceleratorError">

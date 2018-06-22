@@ -497,7 +497,7 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
       break;
     case kCodecAV1:
       format = PIXEL_FORMAT_I420;
-      profile = AV1PROFILE_PROFILE0;
+      profile = AV1PROFILE_PROFILE_MAIN;
       break;
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
     case kCodecHEVC:

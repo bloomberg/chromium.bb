@@ -79,8 +79,12 @@ EnumTraits<gpu::mojom::VideoCodecProfile, gpu::VideoCodecProfile>::ToMojom(
       return gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE7;
     case gpu::VideoCodecProfile::THEORAPROFILE_ANY:
       return gpu::mojom::VideoCodecProfile::THEORAPROFILE_ANY;
-    case gpu::VideoCodecProfile::AV1PROFILE_PROFILE0:
-      return gpu::mojom::VideoCodecProfile::AV1PROFILE_PROFILE0;
+    case gpu::VideoCodecProfile::AV1PROFILE_PROFILE_MAIN:
+      return gpu::mojom::VideoCodecProfile::AV1PROFILE_PROFILE_MAIN;
+    case gpu::VideoCodecProfile::AV1PROFILE_PROFILE_HIGH:
+      return gpu::mojom::VideoCodecProfile::AV1PROFILE_PROFILE_HIGH;
+    case gpu::VideoCodecProfile::AV1PROFILE_PROFILE_PRO:
+      return gpu::mojom::VideoCodecProfile::AV1PROFILE_PROFILE_PRO;
   }
   NOTREACHED() << "Invalid VideoCodecProfile:" << video_codec_profile;
   return gpu::mojom::VideoCodecProfile::VIDEO_CODEC_PROFILE_UNKNOWN;
@@ -166,8 +170,14 @@ bool EnumTraits<gpu::mojom::VideoCodecProfile, gpu::VideoCodecProfile>::
     case gpu::mojom::VideoCodecProfile::THEORAPROFILE_ANY:
       *out = gpu::VideoCodecProfile::THEORAPROFILE_ANY;
       return true;
-    case gpu::mojom::VideoCodecProfile::AV1PROFILE_PROFILE0:
-      *out = gpu::VideoCodecProfile::AV1PROFILE_PROFILE0;
+    case gpu::mojom::VideoCodecProfile::AV1PROFILE_PROFILE_MAIN:
+      *out = gpu::VideoCodecProfile::AV1PROFILE_PROFILE_MAIN;
+      return true;
+    case gpu::mojom::VideoCodecProfile::AV1PROFILE_PROFILE_HIGH:
+      *out = gpu::VideoCodecProfile::AV1PROFILE_PROFILE_HIGH;
+      return true;
+    case gpu::mojom::VideoCodecProfile::AV1PROFILE_PROFILE_PRO:
+      *out = gpu::VideoCodecProfile::AV1PROFILE_PROFILE_PRO;
       return true;
   }
   NOTREACHED() << "Invalid VideoCodecProfile: " << input;
