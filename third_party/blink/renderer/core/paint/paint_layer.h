@@ -72,6 +72,7 @@ class HitTestResult;
 class HitTestingTransformState;
 class PaintLayerCompositor;
 class PaintLayerScrollableArea;
+class ScrollingCoordinator;
 class TransformationMatrix;
 
 using PaintLayerId = uint64_t;
