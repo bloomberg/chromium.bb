@@ -1875,9 +1875,7 @@ public abstract class Stack implements ChromeAnimation.Animatable<Stack.Property
     /**
      * @return The maximum height of a layout tab in the tab switcher.
      */
-    public float getMaxTabHeight() {
-        return mLayout.getHeightMinusBrowserControls();
-    }
+    public abstract float getMaxTabHeight();
 
     /**
      * @return The current spacing between tabs.

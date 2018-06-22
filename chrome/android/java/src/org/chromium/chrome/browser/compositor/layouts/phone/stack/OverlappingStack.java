@@ -619,6 +619,11 @@ public class OverlappingStack extends Stack {
     }
 
     @Override
+    public float getMaxTabHeight() {
+        return mLayout.getHeightMinusBrowserControls();
+    }
+
+    @Override
     protected void updateCurrentMode(int orientation) {
         setWarpState(true, false);
         super.updateCurrentMode(orientation);
