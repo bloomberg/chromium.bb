@@ -85,11 +85,19 @@ void DownloadDBImpl::DestroyAndReinitialize(InitializeCallback callback) {
 }
 
 void DownloadDBImpl::AddOrReplace(const DownloadDBEntry& entry) {
+  AddOrReplaceEntries(std::vector<DownloadDBEntry>{entry});
+}
+
+void DownloadDBImpl::AddOrReplaceEntries(
+    const std::vector<DownloadDBEntry>& entries) {
   DCHECK(IsInitialized());
   auto entries_to_save = std::make_unique<ProtoKeyEntryVector>();
-  download_pb::DownloadDBEntry proto =
-      DownloadDBConversions::DownloadDBEntryToProto(entry);
-  entries_to_save->emplace_back(GetEntryKey(entry.GetGuid()), std::move(proto));
+  for (const auto& entry : entries) {
+    download_pb::DownloadDBEntry proto =
+        DownloadDBConversions::DownloadDBEntryToProto(entry);
+    entries_to_save->emplace_back(GetEntryKey(entry.GetGuid()),
+                                  std::move(proto));
+  }
   db_->UpdateEntries(std::move(entries_to_save),
                      std::make_unique<ProtoKeyVector>(),
                      base::BindOnce(&DownloadDBImpl::OnUpdateDone,

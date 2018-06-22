@@ -12,6 +12,47 @@ namespace download {
 
 namespace {
 
+// Interval between download DB updates.
+// TODO(qinmin): make this finch configurable.
+const int kUpdateDBIntervalMs = 10000;
+
+enum class ShouldUpdateDownloadDBResult {
+  NO_UPDATE,
+  UPDATE,
+  UPDATE_IMMEDIATELY,
+};
+
+ShouldUpdateDownloadDBResult ShouldUpdateDownloadDB(
+    base::Optional<DownloadDBEntry> previous,
+    const DownloadDBEntry& current) {
+  if (!previous)
+    return ShouldUpdateDownloadDBResult::UPDATE_IMMEDIATELY;
+
+  base::Optional<InProgressInfo> previous_info;
+  if (previous->download_info)
+    previous_info = previous->download_info->in_progress_info;
+  base::FilePath previous_path =
+      previous_info ? previous_info->current_path : base::FilePath();
+
+  base::Optional<InProgressInfo> current_info;
+  if (current.download_info)
+    current_info = current.download_info->in_progress_info;
+
+  base::FilePath current_path =
+      current_info ? current_info->current_path : base::FilePath();
+
+  // When download path is determined, Chrome should commit the history
+  // immediately. Otherwise the file will be left permanently on the external
+  // storage if Chrome crashes right away.
+  if (current_path != previous_path)
+    return ShouldUpdateDownloadDBResult::UPDATE_IMMEDIATELY;
+
+  if (previous.value() == current)
+    return ShouldUpdateDownloadDBResult::NO_UPDATE;
+
+  return ShouldUpdateDownloadDBResult::UPDATE;
+}
+
 bool GetFetchErrorBody(base::Optional<DownloadDBEntry> entry) {
   if (!entry)
     return false;
@@ -112,17 +153,42 @@ void DownloadDBCache::AddOrReplaceEntry(const DownloadDBEntry& entry) {
   if (!entry.download_info)
     return;
   const std::string& guid = entry.download_info->guid;
-  base::Optional<DownloadDBEntry> current = RetrieveEntry(guid);
-  if (!current || entry != current.value()) {
-    entries_.emplace(guid, entry);
-    download_db_->AddOrReplace(entry);
+  ShouldUpdateDownloadDBResult result =
+      ShouldUpdateDownloadDB(RetrieveEntry(guid), entry);
+  if (result == ShouldUpdateDownloadDBResult::NO_UPDATE)
+    return;
+  if (!update_timer_.IsRunning() &&
+      result == ShouldUpdateDownloadDBResult::UPDATE) {
+    update_timer_.Start(FROM_HERE,
+                        base::TimeDelta::FromMilliseconds(kUpdateDBIntervalMs),
+                        this, &DownloadDBCache::UpdateDownloadDB);
+  }
+
+  entries_[guid] = entry;
+  updated_guids_.emplace(guid);
+  if (result == ShouldUpdateDownloadDBResult::UPDATE_IMMEDIATELY) {
+    UpdateDownloadDB();
+    update_timer_.Stop();
   }
 }
 
 void DownloadDBCache::RemoveEntry(const std::string& guid) {
   entries_.erase(guid);
+  updated_guids_.erase(guid);
   if (download_db_)
     download_db_->Remove(guid);
+}
+
+void DownloadDBCache::UpdateDownloadDB() {
+  DCHECK(!updated_guids_.empty());
+
+  std::vector<DownloadDBEntry> entries;
+  for (auto guid : updated_guids_) {
+    base::Optional<DownloadDBEntry> entry = RetrieveEntry(guid);
+    DCHECK(entry);
+    entries.emplace_back(entry.value());
+  }
+  download_db_->AddOrReplaceEntries(entries);
 }
 
 void DownloadDBCache::OnDownloadUpdated(DownloadItem* download) {
@@ -136,8 +202,6 @@ void DownloadDBCache::OnDownloadUpdated(DownloadItem* download) {
   DownloadUrlParameters::RequestHeadersType request_header_type =
       GetRequestHeadersType(current);
   DownloadSource download_source = GetDownloadSource(current);
-  // TODO(http://crbug.com/850990): Throttle the database updates, it is very
-  // costly.
   DownloadDBEntry entry = CreateDownloadDBEntryFromItem(
       *download, download_source, fetch_error_body, request_header_type);
   AddOrReplaceEntry(entry);
@@ -166,12 +230,17 @@ void DownloadDBCache::OnDownloadDBEntriesLoaded(
     initialized_ = true;
     for (auto& entry : *entries) {
       CleanUpInProgressEntry(entry);
-      entries_.emplace(entry.download_info->guid, entry);
+      entries_[entry.download_info->guid] = entry;
     }
     std::move(callback).Run(std::move(entries));
   }
   // TODO(qinmin): Recreate the database if |success| is false.
   // http://crbug.com/847661.
+}
+
+void DownloadDBCache::SetTimerTaskRunnerForTesting(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  update_timer_.SetTaskRunner(task_runner);
 }
 
 }  //  namespace download
