@@ -18,7 +18,6 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.support.v7.app.AlertDialog;
-import android.test.mock.MockPackageManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -30,6 +29,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -82,6 +87,9 @@ public class AppBannerManagerTest {
 
     @Rule
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
+
+    @Rule
+    public MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
     private static final String NATIVE_APP_MANIFEST_WITH_ID =
             "/chrome/test/data/banners/play_app_manifest.json";
@@ -138,22 +146,6 @@ public class AppBannerManagerTest {
         public void destroy() {}
     }
 
-    private static class TestPackageManager extends MockPackageManager {
-        public boolean isInstalled = false;
-
-        @Override
-        public PackageInfo getPackageInfo(String packageName, int flags)
-                throws NameNotFoundException {
-            if (isInstalled) {
-                PackageInfo info = new PackageInfo();
-                info.packageName = NATIVE_APP_PACKAGE;
-                return info;
-            } else {
-                throw new PackageManager.NameNotFoundException();
-            }
-        }
-    }
-
     private static class TestDataStorageFactory extends WebappDataStorage.Factory {
         public String mSplashImage;
 
@@ -190,12 +182,12 @@ public class AppBannerManagerTest {
     }
 
     private MockAppDetailsDelegate mDetailsDelegate;
-    private TestPackageManager mPackageManager;
+    @Mock
+    private PackageManager mPackageManager;
     private EmbeddedTestServer mTestServer;
 
     @Before
     public void setUp() throws Exception {
-        mPackageManager = new TestPackageManager();
         AppBannerManager.setIsSupported(true);
         InstallerDelegate.setPackageManagerForTesting(mPackageManager);
         ShortcutHelper.setDelegateForTests(new ShortcutHelper.Delegate() {
@@ -287,6 +279,11 @@ public class AppBannerManagerTest {
 
     private void runFullNativeInstallPathway(
             String url, String expectedReferrer, String expectedTitle) throws Exception {
+        // Say that the package isn't installed.
+        Mockito.when(mPackageManager.getPackageInfo(
+                             ArgumentMatchers.anyString(), ArgumentMatchers.anyInt()))
+                .thenThrow(new PackageManager.NameNotFoundException());
+
         // Visit a site that requests a banner.
         Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
         resetEngagementForUrl(url, 0);
@@ -339,7 +336,13 @@ public class AppBannerManagerTest {
         }
 
         // Say that the package is installed.  Infobar should say that the app is ready to open.
-        mPackageManager.isInstalled = true;
+        Mockito.reset(mPackageManager);
+        PackageInfo info = new PackageInfo();
+        info.packageName = NATIVE_APP_PACKAGE;
+        Mockito.when(mPackageManager.getPackageInfo(
+                             ArgumentMatchers.anyString(), ArgumentMatchers.anyInt()))
+                .thenReturn(info);
+
         final String openText =
                 InstrumentationRegistry.getTargetContext().getString(R.string.app_banner_open);
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
