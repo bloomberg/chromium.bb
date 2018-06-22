@@ -1003,12 +1003,6 @@ void LayerTreeImpl::SetDeviceScaleFactor(float device_scale_factor) {
 
 void LayerTreeImpl::SetLocalSurfaceIdFromParent(
     const viz::LocalSurfaceId& local_surface_id_from_parent) {
-  // If surface synchronization is on then we expect that if the viewport size
-  // has changed then either the |local_surface_id_from_parent| or there is a
-  // pending impl-side request for new viz::LocalSurfaceId allocation.
-  CHECK(!settings().enable_surface_synchronization || !viewport_size_invalid_ ||
-        local_surface_id_from_parent_ != local_surface_id_from_parent ||
-        new_local_surface_id_request_);
   local_surface_id_from_parent_ = local_surface_id_from_parent;
 }
 
