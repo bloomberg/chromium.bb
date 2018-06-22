@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:orientation="vertical"
-            android:background="@drawable/menu_bg"
+            android:background="@drawable/popup_bg"
             app:maxWidthLandscape="@dimen/dialog_max_width"
             app:maxWidthPortrait="@dimen/dialog_max_width" >
 
