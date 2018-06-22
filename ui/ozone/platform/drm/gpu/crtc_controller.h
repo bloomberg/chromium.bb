@@ -48,14 +48,14 @@ class CrtcController : public base::SupportsWeakPtr<CrtcController> {
 
   // Perform the initial modesetting operation using |plane| as the buffer for
   // the primary plane. The CRTC configuration is specified by |mode|.
-  bool Modeset(const OverlayPlane& plane, drmModeModeInfo mode);
+  bool Modeset(const DrmOverlayPlane& plane, drmModeModeInfo mode);
 
   // Disables the controller.
   bool Disable();
 
   // Schedule a page flip event and present the overlays in |planes|.
   bool SchedulePageFlip(HardwareDisplayPlaneList* plane_list,
-                        const OverlayPlaneList& planes,
+                        const DrmOverlayPlaneList& planes,
                         bool test_only,
                         scoped_refptr<PageFlipRequest> page_flip_request);
 
@@ -90,8 +90,8 @@ class CrtcController : public base::SupportsWeakPtr<CrtcController> {
 
   // Buffers need to be declared first so that they are destroyed last. Needed
   // since the controllers may reference the buffers.
-  OverlayPlaneList current_planes_;
-  OverlayPlaneList pending_planes_;
+  DrmOverlayPlaneList current_planes_;
+  DrmOverlayPlaneList pending_planes_;
   scoped_refptr<ScanoutBuffer> cursor_buffer_;
   scoped_refptr<PageFlipRequest> page_flip_request_;
 

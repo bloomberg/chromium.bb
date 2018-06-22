@@ -15,7 +15,7 @@
 namespace ui {
 
 class DrmThread;
-struct OverlayPlane;
+struct DrmOverlayPlane;
 
 class DrmWindowProxy {
  public:
@@ -24,7 +24,7 @@ class DrmWindowProxy {
 
   gfx::AcceleratedWidget widget() const { return widget_; }
 
-  void SchedulePageFlip(const std::vector<OverlayPlane>& planes,
+  void SchedulePageFlip(const std::vector<DrmOverlayPlane>& planes,
                         SwapCompletionOnceCallback callback);
 
   void GetVSyncParameters(

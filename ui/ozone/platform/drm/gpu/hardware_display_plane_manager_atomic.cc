@@ -153,7 +153,7 @@ bool HardwareDisplayPlaneManagerAtomic::SetColorCorrectionOnAllCrtcPlanes(
 }
 
 bool HardwareDisplayPlaneManagerAtomic::ValidatePrimarySize(
-    const OverlayPlane& primary,
+    const DrmOverlayPlane& primary,
     const drmModeModeInfo& mode) {
   // Atomic KMS allows for primary planes that don't match the size of
   // the current mode.
@@ -161,7 +161,7 @@ bool HardwareDisplayPlaneManagerAtomic::ValidatePrimarySize(
 }
 
 void HardwareDisplayPlaneManagerAtomic::RequestPlanesReadyCallback(
-    const OverlayPlaneList& planes,
+    const DrmOverlayPlaneList& planes,
     base::OnceClosure callback) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                    std::move(callback));
@@ -170,7 +170,7 @@ void HardwareDisplayPlaneManagerAtomic::RequestPlanesReadyCallback(
 bool HardwareDisplayPlaneManagerAtomic::SetPlaneData(
     HardwareDisplayPlaneList* plane_list,
     HardwareDisplayPlane* hw_plane,
-    const OverlayPlane& overlay,
+    const DrmOverlayPlane& overlay,
     uint32_t crtc_id,
     const gfx::Rect& src_rect,
     CrtcController* crtc) {

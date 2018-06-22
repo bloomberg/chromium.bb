@@ -94,10 +94,10 @@ class HardwareDisplayController {
 
   // Performs the initial CRTC configuration. If successful, it will display the
   // framebuffer for |primary| with |mode|.
-  bool Modeset(const OverlayPlane& primary, drmModeModeInfo mode);
+  bool Modeset(const DrmOverlayPlane& primary, drmModeModeInfo mode);
 
   // Performs a CRTC configuration re-using the modes from the CRTCs.
-  bool Enable(const OverlayPlane& primary);
+  bool Enable(const DrmOverlayPlane& primary);
 
   // Disables the CRTC.
   void Disable();
@@ -116,12 +116,12 @@ class HardwareDisplayController {
   //
   // Note that this function does not block. Also, this function should not be
   // called again before the page flip occurrs.
-  bool SchedulePageFlip(const OverlayPlaneList& plane_list,
+  bool SchedulePageFlip(const DrmOverlayPlaneList& plane_list,
                         SwapCompletionOnceCallback callback);
 
   // Returns true if the page flip with the |plane_list| would succeed. This
   // doesn't change any state.
-  bool TestPageFlip(const OverlayPlaneList& plane_list);
+  bool TestPageFlip(const DrmOverlayPlaneList& plane_list);
 
   // Return the supported modifiers for |fourcc_format| for this
   // controller.
@@ -164,7 +164,7 @@ class HardwareDisplayController {
   scoped_refptr<DrmDevice> GetAllocationDrmDevice() const;
 
  private:
-  bool ActualSchedulePageFlip(const OverlayPlaneList& plane_list,
+  bool ActualSchedulePageFlip(const DrmOverlayPlaneList& plane_list,
                               bool test_only,
                               SwapCompletionOnceCallback callback);
 

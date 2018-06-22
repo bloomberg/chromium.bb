@@ -46,7 +46,7 @@ class GbmBuffer;
 class ScanoutBufferGenerator;
 class ScreenManager;
 
-struct OverlayPlane;
+struct DrmOverlayPlane;
 
 // Holds all the DRM related state and performs all DRM related operations.
 //
@@ -84,7 +84,7 @@ class DrmThread : public base::Thread,
 
   // DrmWindowProxy (on GPU thread) is the client for these methods.
   void SchedulePageFlip(gfx::AcceleratedWidget widget,
-                        const std::vector<OverlayPlane>& planes,
+                        const std::vector<DrmOverlayPlane>& planes,
                         SwapCompletionOnceCallback callback);
   void GetVSyncParameters(
       gfx::AcceleratedWidget widget,
@@ -143,7 +143,7 @@ class DrmThread : public base::Thread,
 
  private:
   void OnPlanesReadyForPageFlip(gfx::AcceleratedWidget widget,
-                                const std::vector<OverlayPlane>& planes,
+                                const std::vector<DrmOverlayPlane>& planes,
                                 SwapCompletionOnceCallback callback);
 
   std::unique_ptr<DrmDeviceManager> device_manager_;

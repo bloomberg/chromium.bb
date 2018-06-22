@@ -44,7 +44,8 @@ CrtcController::~CrtcController() {
   }
 }
 
-bool CrtcController::Modeset(const OverlayPlane& plane, drmModeModeInfo mode) {
+bool CrtcController::Modeset(const DrmOverlayPlane& plane,
+                             drmModeModeInfo mode) {
   if (!drm_->SetCrtc(crtc_, plane.buffer->GetOpaqueFramebufferId(),
                      std::vector<uint32_t>(1, connector_), &mode)) {
     PLOG(ERROR) << "Failed to modeset: crtc=" << crtc_
@@ -63,7 +64,7 @@ bool CrtcController::Modeset(const OverlayPlane& plane, drmModeModeInfo mode) {
   // planes have been updated. However if a page flip is still pending, set the
   // pending planes to the same values so that the callback keeps the correct
   // state.
-  current_planes_ = std::vector<OverlayPlane>(1, plane);
+  current_planes_ = std::vector<DrmOverlayPlane>(1, plane);
   if (page_flip_request_.get())
     pending_planes_ = current_planes_;
 
@@ -82,13 +83,13 @@ bool CrtcController::Disable() {
 
 bool CrtcController::SchedulePageFlip(
     HardwareDisplayPlaneList* plane_list,
-    const OverlayPlaneList& overlays,
+    const DrmOverlayPlaneList& overlays,
     bool test_only,
     scoped_refptr<PageFlipRequest> page_flip_request) {
   DCHECK(!page_flip_request_.get() || test_only);
   DCHECK(!is_disabled_);
 
-  const OverlayPlane* primary = OverlayPlane::GetPrimaryPlane(overlays);
+  const DrmOverlayPlane* primary = DrmOverlayPlane::GetPrimaryPlane(overlays);
   if (primary && !drm_->plane_manager()->ValidatePrimarySize(*primary, mode_)) {
     VLOG(2) << "Trying to pageflip a buffer with the wrong size. Expected "
             << mode_.hdisplay << "x" << mode_.vdisplay << " got "

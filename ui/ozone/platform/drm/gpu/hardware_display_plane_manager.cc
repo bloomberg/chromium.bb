@@ -127,7 +127,7 @@ std::unique_ptr<HardwareDisplayPlane> HardwareDisplayPlaneManager::CreatePlane(
 HardwareDisplayPlane* HardwareDisplayPlaneManager::FindNextUnusedPlane(
     size_t* index,
     uint32_t crtc_index,
-    const OverlayPlane& overlay) const {
+    const DrmOverlayPlane& overlay) const {
   for (size_t i = *index; i < planes_.size(); ++i) {
     auto* plane = planes_[i].get();
     if (!plane->in_use() && IsCompatible(plane, overlay, crtc_index)) {
@@ -146,7 +146,7 @@ int HardwareDisplayPlaneManager::LookupCrtcIndex(uint32_t crtc_id) const {
 }
 
 bool HardwareDisplayPlaneManager::IsCompatible(HardwareDisplayPlane* plane,
-                                               const OverlayPlane& overlay,
+                                               const DrmOverlayPlane& overlay,
                                                uint32_t crtc_index) const {
   if (plane->type() == HardwareDisplayPlane::kCursor ||
       !plane->CanUseForCrtc(crtc_index))
@@ -198,7 +198,7 @@ void HardwareDisplayPlaneManager::BeginFrame(
 
 bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
     HardwareDisplayPlaneList* plane_list,
-    const OverlayPlaneList& overlay_list,
+    const DrmOverlayPlaneList& overlay_list,
     uint32_t crtc_id,
     CrtcController* crtc) {
   int crtc_index = LookupCrtcIndex(crtc_id);

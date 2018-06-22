@@ -26,21 +26,21 @@ class HardwareDisplayPlaneManagerLegacy : public HardwareDisplayPlaneManager {
       uint32_t crtc_id,
       ScopedDrmColorCtmPtr ctm_blob_data) override;
 
-  bool ValidatePrimarySize(const OverlayPlane& primary,
+  bool ValidatePrimarySize(const DrmOverlayPlane& primary,
                            const drmModeModeInfo& mode) override;
 
-  void RequestPlanesReadyCallback(const OverlayPlaneList& planes,
+  void RequestPlanesReadyCallback(const DrmOverlayPlaneList& planes,
                                   base::OnceClosure callback) override;
 
  protected:
   bool SetPlaneData(HardwareDisplayPlaneList* plane_list,
                     HardwareDisplayPlane* hw_plane,
-                    const OverlayPlane& overlay,
+                    const DrmOverlayPlane& overlay,
                     uint32_t crtc_id,
                     const gfx::Rect& src_rect,
                     CrtcController* crtc) override;
   bool IsCompatible(HardwareDisplayPlane* plane,
-                    const OverlayPlane& overlay,
+                    const DrmOverlayPlane& overlay,
                     uint32_t crtc_index) const override;
   bool CommitColorMatrix(const CrtcProperties& crtc_props) override;
   bool CommitGammaCorrection(const CrtcProperties& crtc_props) override;

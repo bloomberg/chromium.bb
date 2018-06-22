@@ -44,7 +44,7 @@ GbmSurfaceless::GbmSurfaceless(GbmSurfaceFactory* surface_factory,
   unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());
 }
 
-void GbmSurfaceless::QueueOverlayPlane(const OverlayPlane& plane) {
+void GbmSurfaceless::QueueOverlayPlane(const DrmOverlayPlane& plane) {
   is_on_external_drm_device_ = plane.buffer->RequiresGlFinish();
   planes_.push_back(plane);
 }

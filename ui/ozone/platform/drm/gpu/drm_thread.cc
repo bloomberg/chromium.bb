@@ -202,7 +202,7 @@ void DrmThread::GetScanoutFormats(
 }
 
 void DrmThread::SchedulePageFlip(gfx::AcceleratedWidget widget,
-                                 const std::vector<OverlayPlane>& planes,
+                                 const std::vector<DrmOverlayPlane>& planes,
                                  SwapCompletionOnceCallback callback) {
   scoped_refptr<ui::DrmDevice> drm_device =
       device_manager_->GetDrmDevice(widget);
@@ -215,7 +215,7 @@ void DrmThread::SchedulePageFlip(gfx::AcceleratedWidget widget,
 
 void DrmThread::OnPlanesReadyForPageFlip(
     gfx::AcceleratedWidget widget,
-    const std::vector<OverlayPlane>& planes,
+    const std::vector<DrmOverlayPlane>& planes,
     SwapCompletionOnceCallback callback) {
   DrmWindow* window = screen_manager_->GetWindow(widget);
   if (window) {

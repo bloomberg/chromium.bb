@@ -114,7 +114,7 @@ void DrmWindow::MoveCursor(const gfx::Point& location) {
     controller_->MoveCursor(location);
 }
 
-bool DrmWindow::SchedulePageFlip(const std::vector<OverlayPlane>& planes,
+bool DrmWindow::SchedulePageFlip(const std::vector<DrmOverlayPlane>& planes,
                                  SwapCompletionOnceCallback callback) {
   if (controller_) {
     const DrmDevice* drm = controller_->GetAllocationDrmDevice().get();
@@ -154,8 +154,8 @@ std::vector<OverlayCheckReturn_Params> DrmWindow::TestPageFlip(
                                           last_submitted_planes_);
 }
 
-const OverlayPlane* DrmWindow::GetLastModesetBuffer() {
-  return OverlayPlane::GetPrimaryPlane(last_submitted_planes_);
+const DrmOverlayPlane* DrmWindow::GetLastModesetBuffer() {
+  return DrmOverlayPlane::GetPrimaryPlane(last_submitted_planes_);
 }
 
 void DrmWindow::GetVSyncParameters(
