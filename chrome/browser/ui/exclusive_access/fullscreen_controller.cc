@@ -134,6 +134,10 @@ void FullscreenController::EnterFullscreenModeForTab(WebContents* web_contents,
 
   ExclusiveAccessContext* exclusive_access_context =
       exclusive_access_manager()->context();
+  // This is needed on Mac as entering into Tab Fullscreen might change the top
+  // UI style.
+  exclusive_access_context->UpdateUIForTabFullscreen(
+      ExclusiveAccessContext::STATE_ENTER_TAB_FULLSCREEN);
 
   if (!exclusive_access_context->IsFullscreen()) {
     // Normal -> Tab Fullscreen.
@@ -143,11 +147,8 @@ void FullscreenController::EnterFullscreenModeForTab(WebContents* web_contents,
   }
 
   // Browser Fullscreen -> Tab Fullscreen.
-  if (exclusive_access_context->IsFullscreen()) {
-    exclusive_access_context->UpdateUIForTabFullscreen(
-        ExclusiveAccessContext::STATE_ENTER_TAB_FULLSCREEN);
+  if (exclusive_access_context->IsFullscreen())
     state_prior_to_tab_fullscreen_ = STATE_BROWSER_FULLSCREEN;
-  }
 
   // We need to update the fullscreen exit bubble, e.g., going from browser
   // fullscreen to tab fullscreen will need to show different content.

@@ -65,6 +65,13 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns the amount that the theme background should be inset.
   virtual int GetThemeBackgroundXInset() const = 0;
 
+  // Updates the top UI state to be hidden or shown in fullscreen according to
+  // the preference's state. Currently only used on Mac.
+  virtual void UpdateFullscreenTopUI(bool is_exiting_fullscreen);
+
+  // Returns whether the top UI should hide.
+  virtual bool ShouldHideTopUIForFullscreen() const;
+
   // Retrieves the icon to use in the frame to indicate an incognito window.
   gfx::ImageSkia GetIncognitoAvatarIcon() const;
 
