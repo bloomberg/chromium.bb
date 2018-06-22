@@ -65,12 +65,6 @@ DEFINE_GUID(CRYPTO_TYPE_GUID,
 
 }  // namespace
 
-// Class for mocking D3D11CreateDevice() function.
-class D3D11CreateDeviceMock {
- public:
-  MOCK_METHOD10(Create, D3D11CdmProxy::CreateDeviceCB::RunType);
-};
-
 // Class for mocking the callbacks that get passed to the proxy methods.
 class CallbackMock {
  public:
