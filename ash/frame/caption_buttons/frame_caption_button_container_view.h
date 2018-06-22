@@ -8,6 +8,7 @@
 #include <map>
 
 #include "ash/ash_export.h"
+#include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_size_button_delegate.h"
 #include "base/macros.h"
@@ -26,8 +27,6 @@ class Widget;
 
 namespace ash {
 
-class CaptionButtonModel;
-
 // Container view for the frame caption buttons. It performs the appropriate
 // action when a caption button is clicked.
 class ASH_EXPORT FrameCaptionButtonContainerView
@@ -39,9 +38,9 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   static const char kViewClassName[];
 
   // |frame| is the views::Widget that the caption buttons act on.
-  explicit FrameCaptionButtonContainerView(views::Widget* frame);
-  FrameCaptionButtonContainerView(views::Widget* frame,
-                                  std::unique_ptr<CaptionButtonModel> model);
+  FrameCaptionButtonContainerView(
+      views::Widget* frame,
+      std::unique_ptr<CaptionButtonModel> model = nullptr);
   ~FrameCaptionButtonContainerView() override;
 
   // For testing.

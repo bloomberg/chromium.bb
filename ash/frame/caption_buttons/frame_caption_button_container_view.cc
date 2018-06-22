@@ -160,10 +160,6 @@ const char FrameCaptionButtonContainerView::kViewClassName[] =
     "FrameCaptionButtonContainerView";
 
 FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
-    views::Widget* frame)
-    : FrameCaptionButtonContainerView(frame, nullptr) {}
-
-FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
     views::Widget* frame,
     std::unique_ptr<CaptionButtonModel> model)
     : frame_(frame),
