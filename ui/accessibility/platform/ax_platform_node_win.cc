@@ -1404,6 +1404,43 @@ STDMETHODIMP AXPlatformNodeWin::GetIAccessiblePair(IAccessible** accessible,
 }
 
 //
+// IExpandCollapseProvider implementation.
+//
+
+STDMETHODIMP AXPlatformNodeWin::Collapse() {
+  AXActionData action_data;
+  action_data.action = ax::mojom::Action::kDoDefault;
+
+  if (delegate_->AccessibilityPerformAction(action_data))
+    return S_OK;
+  return E_FAIL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::Expand() {
+  AXActionData action_data;
+  action_data.action = ax::mojom::Action::kDoDefault;
+
+  if (delegate_->AccessibilityPerformAction(action_data))
+    return S_OK;
+  return E_FAIL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_ExpandCollapseState(
+    ExpandCollapseState* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  const AXNodeData& data = GetData();
+  if (data.HasState(ax::mojom::State::kExpanded)) {
+    *result = ExpandCollapseState_Expanded;
+  } else if (data.HasState(ax::mojom::State::kCollapsed)) {
+    *result = ExpandCollapseState_Collapsed;
+  } else {
+    NOTREACHED();
+    return E_FAIL;
+  }
+  return S_OK;
+}
+
+//
 // IScrollItemProvider implementation.
 //
 
@@ -1421,6 +1458,32 @@ STDMETHODIMP AXPlatformNodeWin::ScrollIntoView() {
   if (delegate_->AccessibilityPerformAction(action_data))
     return S_OK;
   return E_FAIL;
+}
+
+//
+// IToggleProvider implementation.
+//
+
+STDMETHODIMP AXPlatformNodeWin::Toggle() {
+  AXActionData action_data;
+  action_data.action = ax::mojom::Action::kDoDefault;
+
+  if (delegate_->AccessibilityPerformAction(action_data))
+    return S_OK;
+  return E_FAIL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_ToggleState(ToggleState* result) {
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  const auto checked_state = GetData().GetCheckedState();
+  if (checked_state == ax::mojom::CheckedState::kTrue) {
+    *result = ToggleState_On;
+  } else if (checked_state == ax::mojom::CheckedState::kMixed) {
+    *result = ToggleState_Indeterminate;
+  } else {
+    *result = ToggleState_Off;
+  }
+  return S_OK;
 }
 
 //
@@ -2667,11 +2730,21 @@ STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PATTERN_PROVIDER);
   COM_OBJECT_VALIDATE_1_ARG(result);
 
+  const AXNodeData& data = GetData();
+
   switch (pattern_id) {
     // Supported by IAccessibleEx.
     // TODO(suproteem): Implementations where applicable.
     case UIA_DockPatternId:
+      break;
+
     case UIA_ExpandCollapsePatternId:
+      if (SupportsExpandCollapse(data.role)) {
+        AddRef();
+        *result = static_cast<IRawElementProviderSimple*>(this);
+      }
+      break;
+
     case UIA_GridPatternId:
     case UIA_GridItemPatternId:
     case UIA_MultipleViewPatternId:
@@ -2700,7 +2773,13 @@ STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
     case UIA_InvokePatternId:
     case UIA_SelectionItemPatternId:
     case UIA_SelectionPatternId:
+      break;
+
     case UIA_TogglePatternId:
+      if (SupportsToggle(data.role)) {
+        AddRef();
+        *result = static_cast<IRawElementProviderSimple*>(this);
+      }
       break;
 
     case UIA_ValuePatternId:
@@ -2709,6 +2788,7 @@ STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       break;
 
     case UIA_WindowPatternId:
+      break;
 
     // Overlap with MSAA, not supported.
     case UIA_AnnotationPatternId:

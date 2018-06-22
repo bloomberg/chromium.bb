@@ -258,4 +258,28 @@ bool SupportsOrientation(ax::mojom::Role role) {
       return false;
   }
 }
+
+bool SupportsToggle(ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kCheckBox:
+    case ax::mojom::Role::kMenuItemCheckBox:
+    case ax::mojom::Role::kSwitch:
+    case ax::mojom::Role::kToggleButton:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool SupportsExpandCollapse(ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kComboBoxGrouping:
+    case ax::mojom::Role::kComboBoxMenuButton:
+    case ax::mojom::Role::kDisclosureTriangle:
+    case ax::mojom::Role::kTextFieldWithComboBox:
+      return true;
+    default:
+      return false;
+  }
+}
 }  // namespace ui

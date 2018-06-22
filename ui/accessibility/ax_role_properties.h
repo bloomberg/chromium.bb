@@ -55,6 +55,12 @@ AX_EXPORT bool IsHeadingOrTableHeader(ax::mojom::Role role);
 
 // Returns true if this node can have an orientation
 AX_EXPORT bool SupportsOrientation(ax::mojom::Role role);
+
+// Returns true if the provided role supports toggle
+AX_EXPORT bool SupportsToggle(ax::mojom::Role role);
+
+// Returns true if the provided role supports expand/collapse
+AX_EXPORT bool SupportsExpandCollapse(ax::mojom::Role role);
 }  // namespace ui
 
 #endif  // UI_ACCESSIBILITY_AX_ROLE_PROPERTIES_H_
