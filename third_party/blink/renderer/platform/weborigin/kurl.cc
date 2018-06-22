@@ -647,7 +647,7 @@ String EncodeWithURLEscapeSequences(const String& not_encoded_string) {
     buffer.Resize(input_length * 3);
 
   url::EncodeURIComponent(utf8.data(), input_length, &buffer);
-  String escaped(buffer.data(), buffer.length());
+  String escaped(buffer.data(), static_cast<unsigned>(buffer.length()));
   // Unescape '/'; it's safe and much prettier.
   escaped.Replace("%2F", "/");
   return escaped;

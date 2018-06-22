@@ -390,7 +390,7 @@ void MarkupFormatter::AppendAttribute(StringBuilder& result,
           // This behavior is in process of being standardized. See
           // crbug.com/248044 and
           // https://www.w3.org/Bugs/Public/show_bug.cgi?id=24208
-          String prefix_prefix("ns", 2);
+          String prefix_prefix("ns", 2u);
           for (unsigned i = attribute.NamespaceURI().Impl()->ExistingHash();;
                ++i) {
             AtomicString new_prefix(String(prefix_prefix + String::Number(i)));

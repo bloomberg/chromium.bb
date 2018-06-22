@@ -30,7 +30,7 @@ namespace WTF {
 
 TextCodec::~TextCodec() = default;
 
-int TextCodec::GetUnencodableReplacement(
+uint32_t TextCodec::GetUnencodableReplacement(
     unsigned code_point,
     UnencodableHandling handling,
     UnencodableReplacementArray replacement) {
@@ -38,16 +38,16 @@ int TextCodec::GetUnencodableReplacement(
     case kEntitiesForUnencodables:
       snprintf(replacement, sizeof(UnencodableReplacementArray), "&#%u;",
                code_point);
-      return static_cast<int>(strlen(replacement));
+      return static_cast<uint32_t>(strlen(replacement));
     case kURLEncodedEntitiesForUnencodables:
       snprintf(replacement, sizeof(UnencodableReplacementArray),
                "%%26%%23%u%%3B", code_point);
-      return static_cast<int>(strlen(replacement));
+      return static_cast<uint32_t>(strlen(replacement));
 
     case kCSSEncodedEntitiesForUnencodables:
       snprintf(replacement, sizeof(UnencodableReplacementArray), "\\%x ",
                code_point);
-      return static_cast<int>(strlen(replacement));
+      return static_cast<uint32_t>(strlen(replacement));
   }
   NOTREACHED();
   replacement[0] = 0;

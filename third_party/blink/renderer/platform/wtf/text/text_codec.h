@@ -93,9 +93,9 @@ class WTF_EXPORT TextCodec {
   // Fills a null-terminated string representation of the given
   // unencodable character into the given replacement buffer.
   // The length of the string (not including the null) will be returned.
-  static int GetUnencodableReplacement(unsigned code_point,
-                                       UnencodableHandling,
-                                       UnencodableReplacementArray);
+  static uint32_t GetUnencodableReplacement(unsigned code_point,
+                                            UnencodableHandling,
+                                            UnencodableReplacementArray);
 
   DISALLOW_COPY_AND_ASSIGN(TextCodec);
 };

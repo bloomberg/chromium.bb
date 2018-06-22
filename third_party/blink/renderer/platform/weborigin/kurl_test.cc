@@ -279,7 +279,7 @@ TEST(KURLTest, EncodeWithURLEscapeSequences) {
   }
 
   // Our encode escapes NULLs for safety, so we need to check that too.
-  String input("\x00\x01", 2);
+  String input("\x00\x01", 2u);
   String reference("%00%01");
 
   String output = EncodeWithURLEscapeSequences(input);

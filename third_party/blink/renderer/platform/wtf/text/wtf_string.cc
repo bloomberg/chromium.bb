@@ -58,6 +58,11 @@ String::String(const char* characters, unsigned length)
                                      length)
                 : nullptr) {}
 
+#if defined(ARCH_CPU_64_BITS)
+String::String(const char* characters, size_t length)
+    : String(characters, SafeCast<unsigned>(length)) {}
+#endif  // defined(ARCH_CPU_64_BITS)
+
 void String::append(const StringView& string) {
   if (string.IsEmpty())
     return;

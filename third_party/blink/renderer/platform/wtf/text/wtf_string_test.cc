@@ -475,16 +475,16 @@ TEST(StringTest, StringPrinter) {
   EXPECT_EQ(CString("\"\\\\\""), ToCStringThroughPrinter("\\"));
   EXPECT_EQ(
       CString("\"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\""),
-      ToCStringThroughPrinter(String("\x00\x01\x02\x03\x04\x05\x06\x07", 8)));
+      ToCStringThroughPrinter(String("\x00\x01\x02\x03\x04\x05\x06\x07", 8u)));
   EXPECT_EQ(
       CString("\"\\u0008\\t\\n\\u000B\\u000C\\r\\u000E\\u000F\""),
-      ToCStringThroughPrinter(String("\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F", 8)));
+      ToCStringThroughPrinter(String("\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F", 8u)));
   EXPECT_EQ(
       CString("\"\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\""),
-      ToCStringThroughPrinter(String("\x10\x11\x12\x13\x14\x15\x16\x17", 8)));
+      ToCStringThroughPrinter(String("\x10\x11\x12\x13\x14\x15\x16\x17", 8u)));
   EXPECT_EQ(
       CString("\"\\u0018\\u0019\\u001A\\u001B\\u001C\\u001D\\u001E\\u001F\""),
-      ToCStringThroughPrinter(String("\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F", 8)));
+      ToCStringThroughPrinter(String("\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F", 8u)));
   EXPECT_EQ(CString("\"\\u007F\\u0080\\u0081\""),
             ToCStringThroughPrinter("\x7F\x80\x81"));
   EXPECT_EQ(CString("\"\""), ToCStringThroughPrinter(g_empty_string));

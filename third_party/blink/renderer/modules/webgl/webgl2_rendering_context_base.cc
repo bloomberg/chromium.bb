@@ -4487,11 +4487,12 @@ WebGLActiveInfo* WebGL2RenderingContextBase::getTransformFeedbackVarying(
                                            max_name_length, &length, &size,
                                            &type, name.get());
 
-  if (length == 0 || size == 0 || type == 0) {
+  if (length <= 0 || size == 0 || type == 0) {
     return nullptr;
   }
 
-  return WebGLActiveInfo::Create(String(name.get(), length), type, size);
+  return WebGLActiveInfo::Create(
+      String(name.get(), static_cast<uint32_t>(length)), type, size);
 }
 
 void WebGL2RenderingContextBase::pauseTransformFeedback() {
@@ -4879,7 +4880,9 @@ String WebGL2RenderingContextBase::getActiveUniformBlockName(
                                          uniform_block_index, max_name_length,
                                          &length, name.get());
 
-  return String(name.get(), length);
+  if (length <= 0)
+    return String();
+  return String(name.get(), static_cast<uint32_t>(length));
 }
 
 void WebGL2RenderingContextBase::uniformBlockBinding(

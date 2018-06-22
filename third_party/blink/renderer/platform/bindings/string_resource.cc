@@ -71,7 +71,7 @@ AtomicString StringTraits<AtomicString>::FromV8String(
   if (length <= kInlineBufferSize) {
     typename V8StringTrait::CharType inline_buffer[kInlineBufferSize];
     V8StringTrait::Write(v8_string, inline_buffer, length);
-    return AtomicString(inline_buffer, length);
+    return AtomicString(inline_buffer, static_cast<unsigned>(length));
   }
   typename V8StringTrait::CharType* buffer;
   String string = String::CreateUninitialized(length, buffer);

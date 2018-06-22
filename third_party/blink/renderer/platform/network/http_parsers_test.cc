@@ -148,7 +148,7 @@ TEST(HTTPParsersTest, HTTPToken) {
   EXPECT_FALSE(blink::IsValidHTTPToken("t a"));
   EXPECT_FALSE(blink::IsValidHTTPToken("()"));
   EXPECT_FALSE(blink::IsValidHTTPToken("(foobar)"));
-  EXPECT_FALSE(blink::IsValidHTTPToken(String("\0", 1)));
+  EXPECT_FALSE(blink::IsValidHTTPToken(String("\0", 1u)));
   EXPECT_FALSE(blink::IsValidHTTPToken(String(kHiraganaA)));
 }
 
