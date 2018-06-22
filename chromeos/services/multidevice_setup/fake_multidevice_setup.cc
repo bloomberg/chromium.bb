@@ -13,10 +13,8 @@ FakeMultiDeviceSetup::FakeMultiDeviceSetup() = default;
 FakeMultiDeviceSetup::~FakeMultiDeviceSetup() = default;
 
 void FakeMultiDeviceSetup::SetAccountStatusChangeDelegate(
-    mojom::AccountStatusChangeDelegatePtr delegate,
-    SetAccountStatusChangeDelegateCallback callback) {
+    mojom::AccountStatusChangeDelegatePtr delegate) {
   delegate_ = std::move(delegate);
-  std::move(callback).Run();
 }
 
 void FakeMultiDeviceSetup::TriggerEventForDebugging(

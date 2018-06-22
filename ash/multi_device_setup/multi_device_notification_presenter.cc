@@ -190,7 +190,7 @@ void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
       delegate_ptr;
   binding_.Bind(mojo::MakeRequest(&delegate_ptr));
   multidevice_setup_ptr_->SetAccountStatusChangeDelegate(
-      std::move(delegate_ptr), base::DoNothing());
+      std::move(delegate_ptr));
 }
 
 void MultiDeviceNotificationPresenter::OnNotificationClicked() {

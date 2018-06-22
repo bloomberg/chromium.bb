@@ -63,11 +63,10 @@ MultiDeviceSetupInitializer::MultiDeviceSetupInitializer(
 MultiDeviceSetupInitializer::~MultiDeviceSetupInitializer() = default;
 
 void MultiDeviceSetupInitializer::SetAccountStatusChangeDelegate(
-    mojom::AccountStatusChangeDelegatePtr delegate,
-    SetAccountStatusChangeDelegateCallback callback) {
+    mojom::AccountStatusChangeDelegatePtr delegate) {
   if (multidevice_setup_impl_) {
     multidevice_setup_impl_->SetAccountStatusChangeDelegate(
-        std::move(delegate), std::move(callback));
+        std::move(delegate));
     return;
   }
 
@@ -76,8 +75,6 @@ void MultiDeviceSetupInitializer::SetAccountStatusChangeDelegate(
                << "service was initialized; will be set once initialization is "
                << "complete.";
   pending_delegate_ = std::move(delegate);
-
-  std::move(callback).Run();
 }
 
 void MultiDeviceSetupInitializer::TriggerEventForDebugging(
@@ -111,7 +108,7 @@ void MultiDeviceSetupInitializer::InitializeImplementation() {
     return;
 
   multidevice_setup_impl_->SetAccountStatusChangeDelegate(
-      std::move(pending_delegate_), base::DoNothing());
+      std::move(pending_delegate_));
 }
 
 }  // namespace multidevice_setup

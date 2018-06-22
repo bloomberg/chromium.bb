@@ -110,8 +110,7 @@ class MultiDeviceSetupServiceTest : public testing::Test {
         std::make_unique<FakeAccountStatusChangeDelegate>();
 
     multidevice_setup_ptr_->SetAccountStatusChangeDelegate(
-        fake_account_status_change_delegate_->GenerateInterfacePtr(),
-        base::DoNothing());
+        fake_account_status_change_delegate_->GenerateInterfacePtr());
     multidevice_setup_ptr_.FlushForTesting();
   }
 
