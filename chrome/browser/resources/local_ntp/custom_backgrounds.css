@@ -79,7 +79,6 @@
 }
 
 .bg-option-img {
-  background: url(../../../../ui/webui/resources/images/settings.svg) no-repeat center;
   background-size: 24px 24px;
   display: inline-block;
   height: 24px;
@@ -88,6 +87,24 @@
   text-align: center;
   vertical-align: middle;
   width: 24px;
+}
+
+#edit-bg-google-photos .bg-option-img {
+  background: url(photos.svg) no-repeat center;
+}
+
+#edit-bg-default-wallpapers .bg-option-img {
+  background: url(wallpapers.svg) no-repeat center;
+}
+
+#edit-bg-upload-image .bg-option-img {
+  background: rgb(241, 243, 244) url(upload.svg) no-repeat center;
+  border-radius: 50%;
+}
+
+#edit-bg-restore-default .bg-option-img {
+  background: rgb(241, 243, 244) url(chrome.svg)  no-repeat center;
+  border-radius: 50%;
 }
 
 .bg-option-text {
