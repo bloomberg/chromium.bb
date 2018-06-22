@@ -259,7 +259,7 @@ class ChannelPosix : public Channel,
       ignore_result(handle_.release());
     handle_.reset();
 #if defined(OS_MACOSX)
-    handles_to_close_.clear();
+    fds_to_close_.clear();
 #endif
 
     // May destroy the |this| if it was the last reference.
@@ -385,21 +385,23 @@ class ChannelPosix : public Channel,
           // letting us know that it is now safe to close the file
           // descriptor. For more information, see:
           // http://crbug.com/298276
-          std::vector<int> fds;
-          for (auto& handle : handles)
-            fds.push_back(handle.get().handle);
-          {
-            base::AutoLock l(handles_to_close_lock_);
-            for (auto& handle : handles)
-              handles_to_close_.emplace_back(std::move(handle));
-          }
           MessagePtr fds_message(
               new Channel::Message(sizeof(fds[0]) * fds.size(), 0,
                                    Message::MessageType::HANDLES_SENT));
           memcpy(fds_message->mutable_payload(), fds.data(),
                  sizeof(fds[0]) * fds.size());
           outgoing_messages_.emplace_back(std::move(fds_message), 0);
+          {
+            base::AutoLock l(fds_to_close_lock_);
+            for (auto& fd : fds)
+              fds_to_close_.emplace_back(std::move(fd));
+          }
 #endif  // defined(OS_MACOSX)
+        } else {
+          // Message transmission failed, so pull the FDs back into |handles|
+          // so they can be held by the Message again.
+          for (size_t i = 0; i < fds.size(); ++i)
+            handles[i].reset(InternalPlatformHandle(fds[i].release()));
         }
       } else {
         result = SocketWrite(handle_.get().handle, message_view.data(),
@@ -503,37 +505,35 @@ class ChannelPosix : public Channel,
   }
 
   // Closes handles referenced by |fds|. Returns false if |num_fds| is 0, or if
-  // |fds| does not match a sequence of handles in |handles_to_close_|.
+  // |fds| does not match a sequence of handles in |fds_to_close_|.
   bool CloseHandles(const int* fds, size_t num_fds) {
-    base::AutoLock l(handles_to_close_lock_);
+    base::AutoLock l(fds_to_close_lock_);
     if (!num_fds)
       return false;
 
-    auto start =
-        std::find_if(handles_to_close_.begin(), handles_to_close_.end(),
-                     [&fds](const ScopedInternalPlatformHandle& handle) {
-                       return handle.get().handle == fds[0];
-                     });
-    if (start == handles_to_close_.end())
+    auto start = std::find_if(
+        fds_to_close_.begin(), fds_to_close_.end(),
+        [&fds](const base::ScopedFD& fd) { return fd.get() == fds[0]; });
+    if (start == fds_to_close_.end())
       return false;
 
     auto it = start;
     size_t i = 0;
     // The FDs in the message should match a sequence of handles in
-    // |handles_to_close_|.
-    // TODO(wez): Consider making handles_to_close_ a circular_deque<>
+    // |fds_to_close_|.
+    // TODO(wez): Consider making |fds_to_close_| a circular_deque<>
     // for greater efficiency? Or assign a unique Id to each FD-containing
     // message, and map that to a vector of FDs to close, to avoid the
     // need for this traversal? Id could even be the first FD in the message.
-    for (; i < num_fds && it != handles_to_close_.end(); i++, ++it) {
-      if (it->get().handle != fds[i])
+    for (; i < num_fds && it != fds_to_close_.end(); i++, ++it) {
+      if (it->get() != fds[i])
         return false;
     }
     if (i != num_fds)
       return false;
 
-    // Close the FDs by erase()ing their ScopedInternalPlatformHandles.
-    handles_to_close_.erase(start, it);
+    // Close the FDs by erase()ing their ScopedFDs.
+    fds_to_close_.erase(start, it);
     return true;
   }
 #endif  // defined(OS_MACOSX)
@@ -576,8 +576,8 @@ class ChannelPosix : public Channel,
   bool leak_handle_ = false;
 
 #if defined(OS_MACOSX)
-  base::Lock handles_to_close_lock_;
-  std::vector<ScopedInternalPlatformHandle> handles_to_close_;
+  base::Lock fds_to_close_lock_;
+  std::vector<base::ScopedFD> fds_to_close_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChannelPosix);
