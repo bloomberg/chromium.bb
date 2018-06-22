@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_menu_builder.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,8 +31,8 @@ void ArcLauncherContextMenu::GetMenuModel(GetMenuModelCallback callback) {
 }
 
 void ArcLauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
-  if (command_id >= LAUNCH_APP_SHORTCUT_FIRST &&
-      command_id <= LAUNCH_APP_SHORTCUT_LAST) {
+  if (command_id >= ash::LAUNCH_APP_SHORTCUT_FIRST &&
+      command_id <= ash::LAUNCH_APP_SHORTCUT_LAST) {
     DCHECK(app_shortcuts_menu_builder_);
     app_shortcuts_menu_builder_->ExecuteCommand(command_id);
     return;
@@ -60,7 +61,7 @@ void ArcLauncherContextMenu::BuildMenu(
   const bool app_is_open = controller()->IsOpen(item().id);
   if (!app_is_open) {
     DCHECK(app_info->launchable);
-    AddContextMenuOption(menu_model.get(), MENU_OPEN_NEW,
+    AddContextMenuOption(menu_model.get(), ash::MENU_OPEN_NEW,
                          IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
     if (!features::IsTouchableAppContextMenuEnabled())
       menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
@@ -70,7 +71,7 @@ void ArcLauncherContextMenu::BuildMenu(
     AddPinMenu(menu_model.get());
 
   if (app_is_open) {
-    AddContextMenuOption(menu_model.get(), MENU_CLOSE,
+    AddContextMenuOption(menu_model.get(), ash::MENU_CLOSE,
                          IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
   }
   if (!features::IsTouchableAppContextMenuEnabled())
@@ -86,7 +87,7 @@ void ArcLauncherContextMenu::BuildMenu(
   app_shortcuts_menu_builder_ =
       std::make_unique<arc::ArcAppShortcutsMenuBuilder>(
           controller()->profile(), item().id.app_id, display_id(),
-          LAUNCH_APP_SHORTCUT_FIRST, LAUNCH_APP_SHORTCUT_LAST);
+          ash::LAUNCH_APP_SHORTCUT_FIRST, ash::LAUNCH_APP_SHORTCUT_LAST);
   app_shortcuts_menu_builder_->BuildMenu(
       app_info->package_name, std::move(menu_model), std::move(callback));
 }

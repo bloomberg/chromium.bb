@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
@@ -1929,17 +1930,15 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
   // Open a context menu for the existing browser window.
   std::unique_ptr<LauncherContextMenu> menu1 = CreateBrowserItemContextMenu();
   // Check if "Close" is added to in the context menu.
-  ASSERT_TRUE(
-      IsItemPresentInMenu(menu1.get(), LauncherContextMenu::MENU_CLOSE));
+  ASSERT_TRUE(IsItemPresentInMenu(menu1.get(), ash::MENU_CLOSE));
 
   // Close all windows via the menu item.
-  CloseBrowserWindow(browser(), menu1.get(), LauncherContextMenu::MENU_CLOSE);
+  CloseBrowserWindow(browser(), menu1.get(), ash::MENU_CLOSE);
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
 
   // Check if "Close" is removed from the context menu.
   std::unique_ptr<LauncherContextMenu> menu2 = CreateBrowserItemContextMenu();
-  ASSERT_FALSE(
-      IsItemPresentInMenu(menu2.get(), LauncherContextMenu::MENU_CLOSE));
+  ASSERT_FALSE(IsItemPresentInMenu(menu2.get(), ash::MENU_CLOSE));
 }
 
 // Chrome's ShelfModel should have back button, AppList and browser items and

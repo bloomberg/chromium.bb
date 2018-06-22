@@ -74,30 +74,30 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
 LauncherContextMenu::~LauncherContextMenu() = default;
 
 bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
-  DCHECK(command_id < MENU_ITEM_COUNT);
+  DCHECK(command_id < ash::COMMAND_ID_COUNT);
   return false;
 }
 
 bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
-  if (command_id == MENU_PIN) {
+  if (command_id == ash::MENU_PIN) {
     // Users cannot modify the pinned state of apps pinned by policy.
     return !item_.pinned_by_policy &&
            (item_.type == ash::TYPE_PINNED_APP || item_.type == ash::TYPE_APP);
   }
 
-  DCHECK(command_id < MENU_ITEM_COUNT);
+  DCHECK(command_id < ash::COMMAND_ID_COUNT);
   return true;
 }
 
 void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
-  switch (static_cast<MenuItem>(command_id)) {
-    case MENU_OPEN_NEW:
+  switch (static_cast<ash::CommandId>(command_id)) {
+    case ash::MENU_OPEN_NEW:
       // Use a copy of the id to avoid crashes, as this menu's owner will be
       // destroyed if LaunchApp replaces the ShelfItemDelegate instance.
       controller_->LaunchApp(ash::ShelfID(item_.id), ash::LAUNCH_FROM_UNKNOWN,
                              ui::EF_NONE, display_id_);
       break;
-    case MENU_CLOSE:
+    case ash::MENU_CLOSE:
       if (item_.type == ash::TYPE_DIALOG) {
         ash::ShelfItemDelegate* item_delegate =
             controller_->shelf_model()->GetShelfItemDelegate(item_.id);
@@ -113,7 +113,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
             base::UserMetricsAction("Tablet_WindowCloseFromContextMenu"));
       }
       break;
-    case MENU_PIN:
+    case ash::MENU_PIN:
       if (controller_->IsAppPinned(item_.id.app_id))
         controller_->UnpinAppWithID(item_.id.app_id);
       else
@@ -143,15 +143,15 @@ void LauncherContextMenu::AddPinMenu(ui::SimpleMenuModel* menu_model) {
       NOTREACHED();
       return;
   }
-  AddContextMenuOption(menu_model, MENU_PIN, menu_pin_string_id);
+  AddContextMenuOption(menu_model, ash::MENU_PIN, menu_pin_string_id);
 }
 
 bool LauncherContextMenu::ExecuteCommonCommand(int command_id,
                                                int event_flags) {
   switch (command_id) {
-    case MENU_OPEN_NEW:
-    case MENU_CLOSE:
-    case MENU_PIN:
+    case ash::MENU_OPEN_NEW:
+    case ash::MENU_CLOSE:
+    case ash::MENU_PIN:
       LauncherContextMenu::ExecuteCommand(command_id, event_flags);
       return true;
     default:
@@ -160,9 +160,9 @@ bool LauncherContextMenu::ExecuteCommonCommand(int command_id,
 }
 
 void LauncherContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
-                                               MenuItem type,
+                                               ash::CommandId type,
                                                int string_id) {
-  const gfx::VectorIcon& icon = GetMenuItemVectorIcon(type, string_id);
+  const gfx::VectorIcon& icon = GetCommandIdVectorIcon(type, string_id);
   if (features::IsTouchableAppContextMenuEnabled() && !icon.is_empty()) {
     const views::MenuConfig& menu_config = views::MenuConfig::instance();
     menu_model->AddItemWithStringIdAndIcon(
@@ -172,13 +172,14 @@ void LauncherContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
     return;
   }
   // If the MenuType is a check item.
-  if (type == LAUNCH_TYPE_REGULAR_TAB || type == LAUNCH_TYPE_PINNED_TAB ||
-      type == LAUNCH_TYPE_WINDOW || type == LAUNCH_TYPE_FULLSCREEN) {
+  if (type == ash::LAUNCH_TYPE_REGULAR_TAB ||
+      type == ash::LAUNCH_TYPE_PINNED_TAB || type == ash::LAUNCH_TYPE_WINDOW ||
+      type == ash::LAUNCH_TYPE_FULLSCREEN) {
     menu_model->AddCheckItemWithStringId(type, string_id);
     return;
   }
   // NOTIFICATION_CONTAINER is added by NotificationMenuController.
-  if (type == NOTIFICATION_CONTAINER) {
+  if (type == ash::NOTIFICATION_CONTAINER) {
     NOTREACHED()
         << "NOTIFICATION_CONTAINER is added by NotificationMenuController.";
     return;
@@ -186,39 +187,42 @@ void LauncherContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
   menu_model->AddItemWithStringId(type, string_id);
 }
 
-const gfx::VectorIcon& LauncherContextMenu::GetMenuItemVectorIcon(
-    MenuItem type,
+const gfx::VectorIcon& LauncherContextMenu::GetCommandIdVectorIcon(
+    ash::CommandId type,
     int string_id) const {
   static const gfx::VectorIcon blank = {};
   switch (type) {
-    case MENU_OPEN_NEW:
+    case ash::MENU_OPEN_NEW:
       if (string_id == IDS_APP_LIST_CONTEXT_MENU_NEW_TAB)
         return views::kNewTabIcon;
       if (string_id == IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW)
         return views::kNewWindowIcon;
       return views::kOpenIcon;
-    case MENU_CLOSE:
+    case ash::MENU_CLOSE:
       return views::kCloseIcon;
-    case MENU_PIN:
+    case ash::MENU_PIN:
       return controller_->IsPinned(item_.id) ? views::kUnpinIcon
                                              : views::kPinIcon;
-    case MENU_NEW_WINDOW:
+    case ash::MENU_NEW_WINDOW:
       return views::kNewWindowIcon;
-    case MENU_NEW_INCOGNITO_WINDOW:
+    case ash::MENU_NEW_INCOGNITO_WINDOW:
       return views::kNewIncognitoWindowIcon;
-    case LAUNCH_TYPE_PINNED_TAB:
-    case LAUNCH_TYPE_REGULAR_TAB:
-    case LAUNCH_TYPE_FULLSCREEN:
-    case LAUNCH_TYPE_WINDOW:
+    case ash::LAUNCH_TYPE_PINNED_TAB:
+    case ash::LAUNCH_TYPE_REGULAR_TAB:
+    case ash::LAUNCH_TYPE_FULLSCREEN:
+    case ash::LAUNCH_TYPE_WINDOW:
       // Check items use a default icon in touchable and default context menus.
       return blank;
-    case NOTIFICATION_CONTAINER:
+    case ash::NOTIFICATION_CONTAINER:
       NOTREACHED() << "NOTIFICATION_CONTAINER does not have an icon, and it is "
                       "added to the model by NotificationMenuController.";
       return blank;
-    case LAUNCH_APP_SHORTCUT_FIRST:
-    case LAUNCH_APP_SHORTCUT_LAST:
-    case MENU_ITEM_COUNT:
+    case ash::LAUNCH_APP_SHORTCUT_FIRST:
+    case ash::LAUNCH_APP_SHORTCUT_LAST:
+    case ash::COMMAND_ID_COUNT:
+      NOTREACHED();
+      return blank;
+    default:
       NOTREACHED();
       return blank;
   }
