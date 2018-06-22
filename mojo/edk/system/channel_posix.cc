@@ -20,7 +20,7 @@
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/public/cpp/platform/socket_utils_posix.h"
 
 #if !defined(OS_NACL)

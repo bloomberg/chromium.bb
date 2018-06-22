@@ -65,9 +65,7 @@ template("core_impl_source_set") {
 
     public = [
       "embedder/configuration.h",
-      "embedder/platform_handle.h",
       "embedder/process_error_callback.h",
-      "embedder/scoped_platform_handle.h",
       "system/channel.h",
       "system/configuration.h",
       "system/connection_params.h",
@@ -83,17 +81,18 @@ template("core_impl_source_set") {
       "system/message_pipe_dispatcher.h",
       "system/node_controller.h",
       "system/options_validation.h",
+      "system/platform_handle.h",
       "system/platform_handle_dispatcher.h",
       "system/platform_handle_utils.h",
       "system/platform_shared_memory_mapping.h",
       "system/request_context.h",
+      "system/scoped_platform_handle.h",
       "system/scoped_process_handle.h",
       "system/shared_buffer_dispatcher.h",
       "system/user_message_impl.h",
     ]
 
     sources = [
-      "embedder/platform_handle.cc",
       "system/atomic_flag.h",
       "system/broker.h",
       "system/broker_win.cc",
@@ -113,6 +112,7 @@ template("core_impl_source_set") {
       "system/node_channel.cc",
       "system/node_channel.h",
       "system/node_controller.cc",
+      "system/platform_handle.cc",
       "system/platform_handle_dispatcher.cc",
       "system/platform_handle_utils.cc",
       "system/platform_shared_memory_mapping.cc",

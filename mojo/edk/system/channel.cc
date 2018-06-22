@@ -16,9 +16,9 @@
 #include "base/numerics/safe_math.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
+#include "mojo/edk/system/platform_handle.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mach_logging.h"

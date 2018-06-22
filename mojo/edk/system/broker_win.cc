@@ -11,12 +11,12 @@
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
-#include "mojo/edk/embedder/platform_handle.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/broker.h"
 #include "mojo/edk/system/broker_messages.h"
 #include "mojo/edk/system/channel.h"
+#include "mojo/edk/system/platform_handle.h"
 #include "mojo/edk/system/platform_handle_utils.h"
+#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 
 namespace mojo {

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 
 namespace mojo {

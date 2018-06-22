@@ -6,7 +6,7 @@
 #define MOJO_EDK_SYSTEM_PLATFORM_HANDLE_UTILS_H_
 
 #include "base/memory/platform_shared_memory_region.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/platform_handle.h"
 #include "mojo/public/c/system/types.h"

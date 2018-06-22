@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_EMBEDDER_PLATFORM_HANDLE_H_
-#define MOJO_EDK_EMBEDDER_PLATFORM_HANDLE_H_
+#ifndef MOJO_EDK_SYSTEM_PLATFORM_HANDLE_H_
+#define MOJO_EDK_SYSTEM_PLATFORM_HANDLE_H_
 
 #include "build/build_config.h"
 #include "mojo/edk/system/system_impl_export.h"
@@ -123,4 +123,4 @@ struct MOJO_SYSTEM_IMPL_EXPORT InternalPlatformHandle {
 }  // namespace edk
 }  // namespace mojo
 
-#endif  // MOJO_EDK_EMBEDDER_PLATFORM_HANDLE_H_
+#endif  // MOJO_EDK_SYSTEM_PLATFORM_HANDLE_H_

@@ -17,10 +17,10 @@
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/process_error_callback.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/connection_params.h"
 #include "mojo/edk/system/ports/name.h"
+#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/scoped_process_handle.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
