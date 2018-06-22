@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 
 import java.util.concurrent.TimeoutException;
@@ -88,7 +89,10 @@ public class PasswordAccessoryIntegrationTest {
 
     @Test
     @SmallTest
-    public void testPasswordSheetUnavailableWithoutFeature() throws InterruptedException {
+    @DisableFeatures(
+            {ChromeFeatureList.EXPERIMENTAL_UI, ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
+    public void
+    testPasswordSheetUnavailableWithoutFeature() throws InterruptedException {
         mHelper.loadTestPage(false);
 
         Assert.assertNull("Password Sheet should not have been created.",

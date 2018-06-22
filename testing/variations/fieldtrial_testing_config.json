@@ -2778,6 +2778,22 @@
             ]
         }
     ],
+    "PasswordKeyboardAccessory": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutomaticPasswordGeneration",
+                        "PasswordsKeyboardAccessory"
+                    ]
+                }
+            ]
+        }
+    ],
     "PasswordManagerSearchSettings": [
         {
             "platforms": [
