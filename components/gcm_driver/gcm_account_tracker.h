@@ -129,9 +129,6 @@ class GCMAccountTracker : public AccountTracker::Observer,
   bool IsTokenFetchingRequired() const;
   // Gets the time until next token reporting.
   base::TimeDelta GetTimeToNextTokenReporting() const;
-  // Deletes a token request. Should be called from OnGetTokenSuccess(..) or
-  // OnGetTokenFailure(..).
-  void DeleteTokenRequest(const OAuth2TokenService::Request* request);
   // Checks on all known accounts, and calls GetToken(..) for those with
   // |state == TOKEN_NEEDED|.
   void GetAllNeededTokens();
@@ -157,8 +154,12 @@ class GCMAccountTracker : public AccountTracker::Observer,
   // Indicates whether shutdown has been called.
   bool shutdown_called_;
 
-  std::vector<std::unique_ptr<OAuth2TokenService::Request>>
-      pending_token_requests_;
+  // Stores the ongoing access token requests for deletion either upon
+  // completion or upon signout of the account for which the request is being
+  // made.
+  using AccountIDToTokenRequestMap =
+      std::map<std::string, std::unique_ptr<OAuth2TokenService::Request>>;
+  AccountIDToTokenRequestMap pending_token_requests_;
 
   // Creates weak pointers used to postpone reporting tokens. See
   // ScheduleReportTokens.
