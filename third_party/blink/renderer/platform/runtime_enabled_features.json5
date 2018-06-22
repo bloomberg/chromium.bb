@@ -371,7 +371,7 @@
     },
     {
       name: "DeprecationReporting",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "DesktopCaptureDisableLocalEchoControl",
@@ -612,6 +612,10 @@
     {
       name: "IntersectionObserverV2",
       settable_from_internals: true,
+    },
+    {
+      name: "InterventionReporting",
+      status: "experimental",
     },
     {
       // Tracks "jank" from layout objects changing their visual location
@@ -1041,7 +1045,8 @@
     },
     {
       name: "ReportingObserver",
-      status: "experimental",
+      implied_by: ["DeprecationReporting", "InterventionReporting"],
+      status: "stable",
     },
     {
       name: "RequestIsHistoryNavigation",
