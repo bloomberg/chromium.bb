@@ -27,6 +27,11 @@ void ServiceWorkerContentSettingsProxyImpl::AllowIndexedDB(
     const base::string16& name,
     AllowIndexedDBCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // May be shutting down.
+  if (!context_ || !context_->wrapper()->resource_context()) {
+    std::move(callback).Run(false);
+    return;
+  }
   if (origin_.unique()) {
     std::move(callback).Run(false);
     return;
