@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace ash {
@@ -60,7 +60,7 @@ class ASH_EXPORT VoiceInteractionController
   mojom::AssistantAllowedState allowed_state_ =
       mojom::AssistantAllowedState::ALLOWED;
 
-  mojo::Binding<mojom::VoiceInteractionController> binding_;
+  mojo::BindingSet<mojom::VoiceInteractionController> bindings_;
 
   mojo::InterfacePtrSet<mojom::VoiceInteractionObserver> observers_;
 

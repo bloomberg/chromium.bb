@@ -11,6 +11,7 @@
 
 // TODO(xiaohuic): replace with "base/macros.h" once we remove
 // libassistant/contrib dependency.
+#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "chromeos/assistant/internal/action/cros_action_module.h"
 #include "chromeos/assistant/internal/cros_display_connection.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
@@ -105,8 +106,11 @@ class AssistantManagerServiceImpl
       assistant_client::AssistantManager* assistant_manager);
   std::string BuildUserAgent(const std::string& arc_version) const;
 
-  // Update device id and type when assistant service starts.
-  void UpdateDeviceIdAndType();
+  // Update device id, type, and call |UpdateDeviceLocale| when assistant
+  // service starts.
+  void UpdateDeviceSettings();
+  // Update device locale if |is_setup_completed| is true;
+  void UpdateDeviceLocale(bool is_setup_completed);
 
   void HandleGetSettingsResponse(
       base::RepeatingCallback<void(const std::string&)> callback,
@@ -129,6 +133,10 @@ class AssistantManagerServiceImpl
           recognition_result);
   void OnSpeechLevelUpdatedOnMainThread(const float speech_level);
 
+  void IsVoiceInteractionSetupCompleted(
+      ash::mojom::VoiceInteractionController::IsSetupCompletedCallback
+          callback);
+
   State state_ = State::STOPPED;
   PlatformApiImpl platform_api_;
   std::unique_ptr<action::CrosActionModule> action_module_;
@@ -138,6 +146,7 @@ class AssistantManagerServiceImpl
   std::unique_ptr<CrosDisplayConnection> display_connection_;
   mojo::InterfacePtrSet<mojom::AssistantEventSubscriber> subscribers_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  ash::mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
   base::WeakPtrFactory<AssistantManagerServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantManagerServiceImpl);
