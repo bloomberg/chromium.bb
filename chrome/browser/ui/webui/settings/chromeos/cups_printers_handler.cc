@@ -334,7 +334,8 @@ void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
 
   // TODO(xdai): Replace "on-add-cups-printer" callback with Promise resolve
   // function.
-  FireWebUIListener("on-add-cups-printer", base::Value(true),
+  FireWebUIListener("on-add-cups-printer",
+                    base::Value(PrinterSetupResult::kSuccess),
                     base::Value(printer_name));
 }
 
