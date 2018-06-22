@@ -241,8 +241,11 @@ inline void ElementRareData::ClearPseudoElements() {
 
 inline void ElementRareData::SetPseudoElement(PseudoId pseudo_id,
                                               PseudoElement* element) {
-  if (!pseudo_element_data_)
+  if (!pseudo_element_data_) {
+    if (!element)
+      return;
     pseudo_element_data_ = PseudoElementData::Create();
+  }
   pseudo_element_data_->SetPseudoElement(pseudo_id, element);
 }
 
