@@ -560,6 +560,12 @@ WallpaperUtil.getDailyRefreshInfo = function(callback) {
  * @param {Object} dailyRefreshInfo The daily refresh info.
  */
 WallpaperUtil.saveDailyRefreshInfo = function(dailyRefreshInfo) {
+  // Discard |resumeToken| to prevent the server from potentially fingerprinting
+  // the end user. Therefore, |resumeToken| will always be null when sending
+  // |getSurpriseMeImage| requests.
+  // TODO(crbug.com/810169): Implement the mechanism to avoid duplicate
+  // wallpapers on the client side.
+  dailyRefreshInfo.resumeToken = null;
   var dailyRefreshInfoJson = JSON.stringify(dailyRefreshInfo);
   WallpaperUtil.saveToLocalStorage(
       Constants.AccessLocalDailyRefreshInfoKey, dailyRefreshInfoJson,
