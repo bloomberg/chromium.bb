@@ -501,6 +501,11 @@ BrowserMainLoop* BrowserMainLoop::GetInstance() {
   return g_current_browser_main_loop;
 }
 
+// static
+media::AudioManager* BrowserMainLoop::GetAudioManager() {
+  return g_current_browser_main_loop->audio_manager();
+}
+
 BrowserMainLoop::BrowserMainLoop(const MainFunctionParams& parameters)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
@@ -1133,13 +1138,6 @@ media::AudioManager* BrowserMainLoop::audio_manager() const {
   return audio_manager_.get();
 }
 
-base::SequencedTaskRunner* BrowserMainLoop::audio_service_runner() {
-  DCHECK(audio_service_runner_) << "The audio service task runner is not "
-                                   "instantiated - running the audio service "
-                                   "out of process?";
-  return audio_service_runner_.get();
-}
-
 #if !defined(OS_ANDROID)
 viz::FrameSinkManagerImpl* BrowserMainLoop::GetFrameSinkManager() const {
   return frame_sink_manager_impl_.get();
@@ -1186,9 +1184,6 @@ void BrowserMainLoop::InitializeMainThread() {
 
 int BrowserMainLoop::BrowserThreadsStarted() {
   TRACE_EVENT0("startup", "BrowserMainLoop::BrowserThreadsStarted");
-
-  audio_service_runner_ =
-      base::MakeRefCounted<base::DeferredSequencedTaskRunner>();
 
   // Bring up Mojo IPC and the embedded Service Manager as early as possible.
   // Initializaing mojo requires the IO thread to have been initialized first,
@@ -1542,6 +1537,7 @@ void BrowserMainLoop::InitializeMojo() {
 
   service_manager_context_.reset(
       new ServiceManagerContext(io_thread_->task_runner()));
+  ServiceManagerContext::StartBrowserConnection();
 #if defined(OS_MACOSX)
   mojo::edk::SetMachPortProvider(MachBroker::GetInstance());
 #endif  // defined(OS_MACOSX)
@@ -1658,7 +1654,8 @@ void BrowserMainLoop::InitializeAudio() {
 
     TRACE_EVENT_INSTANT0("startup", "Starting Audio service task runner",
                          TRACE_EVENT_SCOPE_THREAD);
-    audio_service_runner_->StartWithTaskRunner(audio_manager_->GetTaskRunner());
+    ServiceManagerContext::GetAudioServiceRunner()->StartWithTaskRunner(
+        audio_manager_->GetTaskRunner());
   }
 
   if (base::FeatureList::IsEnabled(features::kAudioServiceLaunchOnStartup)) {

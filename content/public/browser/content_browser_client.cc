@@ -569,16 +569,14 @@ ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo() =
     default;
 
 ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo(
-    const base::string16& process_name)
-    : process_name(process_name) {
-  DCHECK(!process_name.empty());
-}
+    const ProcessNameCallback& process_name_callback)
+    : process_name_callback(process_name_callback) {}
 
 ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo(
-    const base::string16& process_name,
+    const ProcessNameCallback& process_name_callback,
     const std::string& process_group)
-    : process_name(process_name), process_group(process_group) {
-  DCHECK(!process_name.empty());
+    : process_name_callback(process_name_callback),
+      process_group(process_group) {
   DCHECK(!process_group.empty());
 }
 

@@ -32,7 +32,6 @@ class Env;
 
 namespace base {
 class CommandLine;
-class DeferredSequencedTaskRunner;
 class FilePath;
 class HighResolutionTimerManager;
 class MemoryPressureMonitor;
@@ -121,6 +120,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   // that return objects which are owned by this class.
   static BrowserMainLoop* GetInstance();
 
+  static media::AudioManager* GetAudioManager();
+
   // The TaskScheduler instance must exist but not to be started when building
   // BrowserMainLoop.
   explicit BrowserMainLoop(const MainFunctionParams& parameters);
@@ -160,7 +161,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   int GetResultCode() const { return result_code_; }
 
   media::AudioManager* audio_manager() const;
-  base::SequencedTaskRunner* audio_service_runner();
   bool AudioServiceOutOfProcess() const;
   media::AudioSystem* audio_system() const { return audio_system_.get(); }
   MediaStreamManager* media_stream_manager() const {
@@ -346,9 +346,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   // |audio_manager_| is not instantiated when the audio service runs out of
   // process.
   std::unique_ptr<media::AudioManager> audio_manager_;
-
-  // Task runner for the audio service when it runs in the browser process.
-  scoped_refptr<base::DeferredSequencedTaskRunner> audio_service_runner_;
 
   std::unique_ptr<media::AudioSystem> audio_system_;
 

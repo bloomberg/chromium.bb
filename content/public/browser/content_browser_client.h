@@ -868,15 +868,18 @@ class CONTENT_EXPORT ContentBrowserClient {
       const std::string& name,
       mojo::ScopedMessagePipeHandle* handle) {}
 
+  using ProcessNameCallback = base::RepeatingCallback<base::string16()>;
+
   struct CONTENT_EXPORT OutOfProcessServiceInfo {
     OutOfProcessServiceInfo();
-    OutOfProcessServiceInfo(const base::string16& process_name);
-    OutOfProcessServiceInfo(const base::string16& process_name,
+    OutOfProcessServiceInfo(const ProcessNameCallback& process_name_callback);
+    OutOfProcessServiceInfo(const ProcessNameCallback& process_name_callback,
                             const std::string& process_group);
     ~OutOfProcessServiceInfo();
 
-    // The display name of the service process launched for the service.
-    base::string16 process_name;
+    // The callback function to get the display name of the service process
+    // launched for the service.
+    ProcessNameCallback process_name_callback;
 
     // If provided, a string which groups this service into a process shared
     // by other services using the same string.

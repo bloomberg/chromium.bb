@@ -31,6 +31,7 @@
 #include "base/android/locale_utils.h"
 #include "base/base_paths_android.h"
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/scoped_file.h"
@@ -723,7 +724,7 @@ bool AwContentBrowserClient::HandleExternalProtocol(
 void AwContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
   (*services)[heap_profiling::mojom::kServiceName] =
-      base::ASCIIToUTF16("Heap Profiling Service");
+      base::BindRepeating(&base::ASCIIToUTF16, "Heap Profiling Service");
 }
 
 // static

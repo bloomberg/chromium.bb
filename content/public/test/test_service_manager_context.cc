@@ -17,6 +17,7 @@ TestServiceManagerContext::TestServiceManagerContext() {
   ServiceManagerConnection::DestroyForProcess();
   context_.reset(new ServiceManagerContext(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
+  ServiceManagerContext::StartBrowserConnection();
 }
 
 TestServiceManagerContext::~TestServiceManagerContext() {

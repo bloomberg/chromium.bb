@@ -14,6 +14,10 @@
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 
+namespace base {
+class DeferredSequencedTaskRunner;
+}
+
 namespace service_manager {
 class Connector;
 }
@@ -39,6 +43,12 @@ class CONTENT_EXPORT ServiceManagerContext {
   // called on the IO thread.
   static bool HasValidProcessForProcessGroup(
       const std::string& process_group_name);
+
+  // Starts the browser connction to the ServiceManager. It must be called after
+  // the BrowserMainLoop starts.
+  static void StartBrowserConnection();
+
+  static base::DeferredSequencedTaskRunner* GetAudioServiceRunner();
 
  private:
   class InProcessServiceManagerContext;
