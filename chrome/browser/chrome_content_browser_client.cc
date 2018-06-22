@@ -2003,8 +2003,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
     // Please keep this in alphabetical order.
     static const char* const kSwitchNames[] = {
-      autofill::switches::kDisablePasswordGeneration,
-      autofill::switches::kEnablePasswordGeneration,
       autofill::switches::kEnableSuggestionsWithSubstringMatch,
       autofill::switches::kIgnoreAutocompleteOffForAutofill,
       autofill::switches::kLocalHeuristicsOnlyForPasswordGeneration,

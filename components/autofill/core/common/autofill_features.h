@@ -20,6 +20,7 @@ extern const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForUpload;
 extern const base::Feature kAutofillManualFallback;
+extern const base::Feature kAutofillPrefilledFields;
 extern const base::Feature kAutofillRequireSecureCreditCardContext;
 extern const base::Feature kAutofillResetFullServerCardsOnAuthError;
 extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
@@ -29,8 +30,8 @@ extern const base::Feature kAutofillShowAutocompleteConsoleWarnings;
 extern const base::Feature kAutofillShowTypePredictions;
 extern const base::Feature kAutofillSkipComparingInferredLabels;
 extern const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile;
+extern const base::Feature kAutomaticPasswordGeneration;
 extern const base::Feature kSingleClickAutofill;
-extern const base::Feature kAutofillPrefilledFields;
 
 }  // namespace features
 }  // namespace autofill

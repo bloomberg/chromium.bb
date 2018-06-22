@@ -58,6 +58,9 @@ extern const char kAppBannersDescription[];
 extern const char kAshSidebarName[];
 extern const char kAshSidebarDescription[];
 
+extern const char kAutomaticPasswordGenerationName[];
+extern const char kAutomaticPasswordGenerationDescription[];
+
 extern const char kEnableBlinkHeapIncrementalMarkingName[];
 extern const char kEnableBlinkHeapIncrementalMarkingDescription[];
 
@@ -804,9 +807,6 @@ extern const char kPassiveDocumentEventListenersDescription[];
 
 extern const char kPasswordForceSavingName[];
 extern const char kPasswordForceSavingDescription[];
-
-extern const char kPasswordGenerationName[];
-extern const char kPasswordGenerationDescription[];
 
 extern const char kPasswordExportName[];
 extern const char kPasswordExportDescription[];

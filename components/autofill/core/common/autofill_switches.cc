@@ -17,18 +17,10 @@ const char kAutofillServerURL[] = "autofill-server-url";
 const char kDisableOfferStoreUnmaskedWalletCards[] =
     "disable-offer-store-unmasked-wallet-cards";
 
-// Disables password generation when we detect that the user is going through
-// account creation.
-const char kDisablePasswordGeneration[]     = "disable-password-generation";
-
 // Force showing the local save checkbox in the autofill dialog box for getting
 // the full credit card number for a wallet card.
 const char kEnableOfferStoreUnmaskedWalletCards[] =
     "enable-offer-store-unmasked-wallet-cards";
-
-// Enables password generation when we detect that the user is going through
-// account creation.
-const char kEnablePasswordGeneration[]      = "enable-password-generation";
 
 // Enables suggestions with substring matching instead of prefix matching.
 const char kEnableSuggestionsWithSubstringMatch[] =
