@@ -6,6 +6,9 @@
 /adobe/flash/binaries
 /adobe/flash/symbols
 /amd/
+/android_build_tools/aapt2/aapt2
+/android_build_tools/aapt2/lib64/*.so
+/android_build_tools/bundletool/*.jar
 /android_ndk/
 /android_sdk/public/
 /android_sdk/sources/

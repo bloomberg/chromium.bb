@@ -397,6 +397,28 @@ deps = {
       'condition': 'checkout_android_native_support',
   },
 
+  'src/third_party/android_build_tools/aapt2': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_tools_aapt2',
+              'version': 'version:3.2.0-alpha18-4804415-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_build_tools/bundletool': {
+      'packages': [
+          {
+	      'package': 'chromium/third_party/android_tools_bundletool',
+	      'version': 'version:0.4.2-cr0',
+	  },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
   'src/third_party/android_sdk/public': {
       'packages': [
           {
