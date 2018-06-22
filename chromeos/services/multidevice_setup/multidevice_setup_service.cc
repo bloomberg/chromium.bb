@@ -5,16 +5,29 @@
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
-#include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
+#include "chromeos/services/multidevice_setup/multidevice_setup_initializer.h"
 
 namespace chromeos {
 
 namespace multidevice_setup {
 
-MultiDeviceSetupService::MultiDeviceSetupService()
+// static
+void MultiDeviceSetupService::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  AccountStatusChangeDelegateNotifierImpl::RegisterPrefs(registry);
+}
+
+MultiDeviceSetupService::MultiDeviceSetupService(
+    PrefService* pref_service,
+    device_sync::DeviceSyncClient* device_sync_client,
+    secure_channel::SecureChannelClient* secure_channel_client)
     : multidevice_setup_(
-          MultiDeviceSetupImpl::Factory::Get()->BuildInstance()) {}
+          MultiDeviceSetupInitializer::Factory::Get()->BuildInstance(
+              pref_service,
+              device_sync_client,
+              secure_channel_client)) {}
 
 MultiDeviceSetupService::~MultiDeviceSetupService() = default;
 

@@ -6,7 +6,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "base/time/default_clock.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
+#include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
 
 namespace chromeos {
 
@@ -33,44 +36,63 @@ void MultiDeviceSetupImpl::Factory::SetFactoryForTesting(
 
 MultiDeviceSetupImpl::Factory::~Factory() = default;
 
-std::unique_ptr<MultiDeviceSetupBase>
-MultiDeviceSetupImpl::Factory::BuildInstance() {
-  return base::WrapUnique(new MultiDeviceSetupImpl());
+std::unique_ptr<mojom::MultiDeviceSetup>
+MultiDeviceSetupImpl::Factory::BuildInstance(
+    PrefService* pref_service,
+    device_sync::DeviceSyncClient* device_sync_client,
+    secure_channel::SecureChannelClient* secure_channel_client) {
+  return base::WrapUnique(new MultiDeviceSetupImpl(
+      pref_service, device_sync_client, secure_channel_client));
 }
 
-MultiDeviceSetupImpl::MultiDeviceSetupImpl() = default;
+MultiDeviceSetupImpl::MultiDeviceSetupImpl(
+    PrefService* pref_service,
+    device_sync::DeviceSyncClient* device_sync_client,
+    secure_channel::SecureChannelClient* secure_channel_client)
+    : setup_flow_completion_recorder_(
+          SetupFlowCompletionRecorderImpl::Factory::Get()->BuildInstance(
+              pref_service,
+              base::DefaultClock::GetInstance())),
+      delegate_notifier_(
+          AccountStatusChangeDelegateNotifierImpl::Factory::Get()
+              ->BuildInstance(device_sync_client,
+                              pref_service,
+                              setup_flow_completion_recorder_.get(),
+                              base::DefaultClock::GetInstance())) {}
 
 MultiDeviceSetupImpl::~MultiDeviceSetupImpl() = default;
 
 void MultiDeviceSetupImpl::SetAccountStatusChangeDelegate(
     mojom::AccountStatusChangeDelegatePtr delegate,
     SetAccountStatusChangeDelegateCallback callback) {
-  delegate_ = std::move(delegate);
+  delegate_notifier_->SetAccountStatusChangeDelegatePtr(std::move(delegate));
   std::move(callback).Run();
 }
 
 void MultiDeviceSetupImpl::TriggerEventForDebugging(
     mojom::EventTypeForDebugging type,
     TriggerEventForDebuggingCallback callback) {
-  PA_LOG(INFO) << "MultiDeviceSetupImpl::TriggerEventForDebugging(" << type
-               << ") called.";
-
-  if (!delegate_.is_bound()) {
+  if (!delegate_notifier_->delegate_ptr_) {
     PA_LOG(ERROR) << "MultiDeviceSetupImpl::TriggerEventForDebugging(): No "
                   << "delgate has been set; cannot proceed.";
     std::move(callback).Run(false /* success */);
     return;
   }
 
+  PA_LOG(INFO) << "MultiDeviceSetupImpl::TriggerEventForDebugging(" << type
+               << ") called.";
+  mojom::AccountStatusChangeDelegate* delegate =
+      delegate_notifier_->delegate_ptr_.get();
+
   switch (type) {
     case mojom::EventTypeForDebugging::kNewUserPotentialHostExists:
-      delegate_->OnPotentialHostExistsForNewUser();
+      delegate->OnPotentialHostExistsForNewUser();
       break;
     case mojom::EventTypeForDebugging::kExistingUserConnectedHostSwitched:
-      delegate_->OnConnectedHostSwitchedForExistingUser();
+      delegate->OnConnectedHostSwitchedForExistingUser();
       break;
     case mojom::EventTypeForDebugging::kExistingUserNewChromebookAdded:
-      delegate_->OnNewChromebookAddedForExistingUser();
+      delegate->OnNewChromebookAddedForExistingUser();
       break;
     default:
       NOTREACHED();

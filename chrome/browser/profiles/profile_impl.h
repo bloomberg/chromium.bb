@@ -209,6 +209,7 @@ class ProfileImpl : public Profile, public content_settings::Observer {
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<service_manager::Service> CreateDeviceSyncService();
+  std::unique_ptr<service_manager::Service> CreateMultiDeviceSetupService();
 #endif  // defined(OS_CHROMEOS)
 
   PrefChangeRegistrar pref_change_registrar_;
