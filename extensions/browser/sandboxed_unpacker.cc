@@ -351,6 +351,10 @@ void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
 void SandboxedUnpacker::StartWithDirectory(const std::string& extension_id,
                                            const std::string& public_key,
                                            const base::FilePath& directory) {
+  // We assume that we are started on the thread that the client wants us
+  // to do file IO on.
+  DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
+
   extension_id_ = extension_id;
   public_key_ = public_key;
   if (!CreateTempDirectory())
@@ -368,9 +372,7 @@ void SandboxedUnpacker::StartWithDirectory(const std::string& extension_id,
     return;
   }
 
-  unpacker_io_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SandboxedUnpacker::Unpack, this, extension_root_));
+  Unpack(extension_root_);
 }
 
 SandboxedUnpacker::~SandboxedUnpacker() {
@@ -410,11 +412,8 @@ void SandboxedUnpacker::UnzipDone(const base::FilePath& zip_file,
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
   if (!error.empty()) {
-    unpacker_io_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&SandboxedUnpacker::ReportFailure, this,
-                                  SandboxedUnpackerFailureReason::UNZIP_FAILED,
-                                  l10n_util::GetStringUTF16(
-                                      IDS_EXTENSION_PACKAGE_UNZIP_ERROR)));
+    ReportFailure(SandboxedUnpackerFailureReason::UNZIP_FAILED,
+                  l10n_util::GetStringUTF16(IDS_EXTENSION_PACKAGE_UNZIP_ERROR));
     return;
   }
 
