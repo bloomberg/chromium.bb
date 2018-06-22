@@ -40,10 +40,10 @@ class CORE_EXPORT LayoutNGListMarker final
 
   const char* GetName() const override { return "LayoutNGListMarker"; }
 
+  LayoutNGListItem* ListItem() const;
+
  private:
   bool IsOfType(LayoutObjectType) const override;
-
-  LayoutNGListItem* ListItem() const;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGListMarker, IsLayoutNGListMarker());
