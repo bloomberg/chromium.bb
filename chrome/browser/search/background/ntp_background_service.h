@@ -17,6 +17,13 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
+class GoogleServiceAuthError;
+
+namespace identity {
+class IdentityManager;
+class PrimaryAccountAccessTokenFetcher;
+}  // namespace identity
+
 namespace network {
 class SimpleURLLoader;
 class SharedURLLoaderFactory;
@@ -27,9 +34,11 @@ class SharedURLLoaderFactory;
 class NtpBackgroundService : public KeyedService {
  public:
   NtpBackgroundService(
+      identity::IdentityManager* const identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const base::Optional<GURL>& collections_api_url_override,
       const base::Optional<GURL>& collection_images_api_url_override,
+      const base::Optional<GURL>& albums_api_url_override,
       const base::Optional<std::string>& image_options_override);
   ~NtpBackgroundService() override;
 
@@ -46,6 +55,12 @@ class NtpBackgroundService : public KeyedService {
   // is in progress will be dropped until the currently active loader completes.
   void FetchCollectionImageInfo(const std::string& collection_id);
 
+  // Initially requests an access token for the signed-in user, and then
+  // requests an asynchronous fetch of album information using the access token,
+  // if it is available. After the fetch completes, OnAlbumInfoAvailable will be
+  // called on the observers.
+  void FetchAlbumInfo();
+
   // Add/remove observers. All observers must unregister themselves before the
   // NtpBackgroundService is destroyed.
   void AddObserver(NtpBackgroundServiceObserver* observer);
@@ -61,18 +76,28 @@ class NtpBackgroundService : public KeyedService {
     return collection_images_;
   }
 
+  // Returns the currently cached AlbumInfo, if any.
+  const std::vector<AlbumInfo>& album_info() const { return album_info_; }
+
   GURL GetCollectionsLoadURLForTesting() const;
   GURL GetImagesURLForTesting() const;
+  GURL GetAlbumsURLForTesting() const;
 
  private:
   GURL collections_api_url_;
   GURL collection_images_api_url_;
+  GURL albums_api_url_;
   std::string image_options_;
 
   // Used to download the proto from the Backdrop service.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<network::SimpleURLLoader> collections_loader_;
   std::unique_ptr<network::SimpleURLLoader> image_info_loader_;
+  std::unique_ptr<network::SimpleURLLoader> albums_loader_;
+
+  identity::IdentityManager* const identity_manager_;
+  // The current OAuth2 token fetcher.
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
   base::ObserverList<NtpBackgroundServiceObserver, true> observers_;
 
@@ -87,11 +112,20 @@ class NtpBackgroundService : public KeyedService {
   void OnCollectionImageInfoFetchComplete(
       const std::unique_ptr<std::string> response_body);
 
+  void GetAccessTokenCallback(GoogleServiceAuthError error, std::string token);
+
+  // Callback that processes the response from the FetchAlbumInfo request,
+  // refreshing the contents of album_info_ with server-provided data.
+  void OnAlbumInfoFetchComplete(
+      const std::unique_ptr<std::string> response_body);
+
   enum class FetchComplete {
     // Indicates that asynchronous fetch of CollectionInfo has completed.
     COLLECTION_INFO,
     // Indicates that asynchronous fetch of CollectionImages has completed.
-    COLLECTION_IMAGE_INFO
+    COLLECTION_IMAGE_INFO,
+    // Indicates that asynchronous fetch of AlbumInfo has completed.
+    ALBUM_INFO
   };
   void NotifyObservers(FetchComplete fetch_complete);
 
@@ -99,6 +133,8 @@ class NtpBackgroundService : public KeyedService {
 
   std::vector<CollectionImage> collection_images_;
   std::string requested_collection_id_;
+
+  std::vector<AlbumInfo> album_info_;
 
   DISALLOW_COPY_AND_ASSIGN(NtpBackgroundService);
 };

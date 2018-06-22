@@ -277,6 +277,20 @@ base::Value ConvertCollectionImageToDict(
   return images;
 }
 
+base::Value ConvertAlbumInfoToDict(const std::vector<AlbumInfo>& album_info) {
+  base::Value albums(base::Value::Type::LIST);
+  albums.GetList().reserve(album_info.size());
+  for (const AlbumInfo& album : album_info) {
+    base::Value dict(base::Value::Type::DICTIONARY);
+    dict.SetKey("albumId", base::Value(std::to_string(album.album_id)));
+    dict.SetKey("photoContainerId", base::Value(album.photo_container_id));
+    dict.SetKey("albumName", base::Value(album.album_name));
+    dict.SetKey("previewImageUrl", base::Value(album.preview_image_url.spec()));
+    albums.GetList().push_back(std::move(dict));
+  }
+  return albums;
+}
+
 std::unique_ptr<base::DictionaryValue> ConvertOGBDataToDict(
     const OneGoogleBarData& og) {
   auto result = std::make_unique<base::DictionaryValue>();
@@ -612,9 +626,22 @@ void LocalNtpSource::StartDataRequest(
       return;
     }
 
-    ntp_background_collections_requests_.emplace_back(base::TimeTicks::Now(),
-                                                      callback);
-    ntp_background_service_->FetchCollectionInfo();
+    std::string collection_type_param;
+    GURL path_url = GURL(chrome::kChromeSearchLocalNtpUrl).Resolve(path);
+    if (net::GetValueForKeyInQuery(path_url, "collection_type",
+                                   &collection_type_param) &&
+        (collection_type_param == "album")) {
+      ntp_background_albums_requests_.emplace_back(base::TimeTicks::Now(),
+                                                   callback);
+      ntp_background_service_->FetchAlbumInfo();
+    } else {
+      // If there's no "collection_type" param, default to getting collections.
+      // TODO(ramyan): Explicitly require a collection_type when frontend
+      //  supports it.
+      ntp_background_collections_requests_.emplace_back(base::TimeTicks::Now(),
+                                                        callback);
+      ntp_background_service_->FetchCollectionInfo();
+    }
     return;
   }
 
@@ -825,6 +852,30 @@ void LocalNtpSource::OnCollectionImagesAvailable() {
     }
   }
   ntp_background_image_info_requests_.clear();
+}
+
+void LocalNtpSource::OnAlbumInfoAvailable() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (ntp_background_albums_requests_.empty())
+    return;
+
+  scoped_refptr<base::RefCountedString> result;
+  std::string js;
+  base::JSONWriter::Write(
+      ConvertAlbumInfoToDict(ntp_background_service_->album_info()), &js);
+  js = "var albums = " + js + ";";
+  result = base::RefCountedString::TakeString(&js);
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  for (const auto& request : ntp_background_albums_requests_) {
+    request.callback.Run(result);
+    base::TimeDelta delta = now - request.start_time;
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "NewTabPage.BackgroundService.Albums.RequestLatency", delta);
+    // TODO(ramyan): Define and capture latency for failed requests.
+  }
+  ntp_background_albums_requests_.clear();
 }
 
 void LocalNtpSource::OnNtpBackgroundServiceShuttingDown() {

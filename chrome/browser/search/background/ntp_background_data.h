@@ -70,4 +70,32 @@ struct CollectionImage {
 bool operator==(const CollectionImage& lhs, const CollectionImage& rhs);
 bool operator!=(const CollectionImage& lhs, const CollectionImage& rhs);
 
+// This struct contains the data required to display information about a photo
+// album, including a representative image. The photos in an album must be
+// requested separately, by referencing the album_id and photo_container_id
+// specified here.
+struct AlbumInfo {
+  AlbumInfo();
+  AlbumInfo(const AlbumInfo&);
+  AlbumInfo(AlbumInfo&&);
+  ~AlbumInfo();
+
+  AlbumInfo& operator=(const AlbumInfo&);
+  AlbumInfo& operator=(AlbumInfo&&);
+
+  static AlbumInfo CreateFromProto(const ntp::background::AlbumMetaData& album);
+
+  // A unique identifier for the album.
+  int64_t album_id;
+  // A generic photo container ID based on the photo provider.
+  std::string photo_container_id;
+  // A human-readable name for the album.
+  std::string album_name;
+  // A representative image from the album.
+  GURL preview_image_url;
+};
+
+bool operator==(const AlbumInfo& lhs, const AlbumInfo& rhs);
+bool operator!=(const AlbumInfo& lhs, const AlbumInfo& rhs);
+
 #endif  // CHROME_BROWSER_SEARCH_BACKGROUND_NTP_BACKGROUND_DATA_H_
