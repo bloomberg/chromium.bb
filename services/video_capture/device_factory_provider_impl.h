@@ -20,8 +20,7 @@ namespace video_capture {
 class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
  public:
   DeviceFactoryProviderImpl(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref,
-      base::Callback<void(float)> set_shutdown_delay_cb);
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
   ~DeviceFactoryProviderImpl() override;
 
   // mojom::DeviceFactoryProvider implementation.
@@ -29,7 +28,6 @@ class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
       ui::mojom::GpuMemoryBufferFactoryPtr memory_buffer_factory,
       mojom::AcceleratorFactoryPtr accelerator_factory) override;
   void ConnectToDeviceFactory(mojom::DeviceFactoryRequest request) override;
-  void SetShutdownDelayInSeconds(float seconds) override;
 
  private:
   class GpuDependenciesContext;
@@ -41,7 +39,6 @@ class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
   std::unique_ptr<mojom::DeviceFactory> device_factory_;
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   std::unique_ptr<GpuDependenciesContext> gpu_dependencies_context_;
-  base::Callback<void(float)> set_shutdown_delay_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceFactoryProviderImpl);
 };

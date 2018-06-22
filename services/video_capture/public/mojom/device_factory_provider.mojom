@@ -27,11 +27,4 @@ interface DeviceFactoryProvider  {
                         AcceleratorFactory accelerator_factory);
 
   ConnectToDeviceFactory(DeviceFactory& request);
-
-  // The service shuts down after a certain delay when no client is connected.
-  // This method allows clients to customize this delay.
-  // An example use case for a custom delay is integration tests that want to
-  // minimize wait time.
-  // The default value is found in constants.mojom.
-  SetShutdownDelayInSeconds(float seconds);
 };
