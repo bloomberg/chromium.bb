@@ -138,6 +138,8 @@ class WorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
 
 WorkerFetchContextImpl::WorkerFetchContextImpl(
     mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
+    mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+        service_worker_worker_client_registry_info,
     mojom::ServiceWorkerContainerHostPtrInfo service_worker_container_host_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
@@ -149,6 +151,8 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
     std::unique_ptr<service_manager::Connector> service_manager_connection)
     : binding_(this),
       service_worker_client_request_(std::move(service_worker_client_request)),
+      service_worker_worker_client_registry_info_(
+          std::move(service_worker_worker_client_registry_info)),
       service_worker_container_host_info_(
           std::move(service_worker_container_host_info)),
       loader_factory_info_(std::move(loader_factory_info)),
@@ -176,6 +180,7 @@ WorkerFetchContextImpl::CloneForNestedWorker() {
   // behavior. See https://crbug.com/731604
   auto new_context = std::make_unique<WorkerFetchContextImpl>(
       mojom::ServiceWorkerWorkerClientRequest(),
+      mojom::ServiceWorkerWorkerClientRegistryPtrInfo(),
       mojom::ServiceWorkerContainerHostPtrInfo(), loader_factory_->Clone(),
       fallback_factory_->Clone(),
       throttle_provider_ ? throttle_provider_->Clone() : nullptr,
@@ -202,6 +207,9 @@ void WorkerFetchContextImpl::InitializeOnWorkerThread() {
       std::move(fallback_factory_info_));
   if (service_worker_client_request_.is_pending())
     binding_.Bind(std::move(service_worker_client_request_));
+
+  service_worker_worker_client_registry_.Bind(
+      std::move(service_worker_worker_client_registry_info_));
 
   if (ServiceWorkerUtils::IsServicificationEnabled()) {
     service_worker_container_host_.Bind(

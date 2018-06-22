@@ -38,7 +38,11 @@ class CONTENT_EXPORT WorkerFetchContextImpl
     : public blink::WebWorkerFetchContext,
       public mojom::ServiceWorkerWorkerClient {
  public:
-  // |loader_factory_info| is used for regular loading by the worker.
+  // |service_worker_client_request| is bound to |this| to receive
+  // OnControllerChanged() notifications.
+  // |service_worker_worker_client_registry_info| is a host pointer to register
+  // a new ServiceWorkerWorkerClient, which is needed when creating a nested
+  // worker. |loader_factory_info| is used for regular loading by the worker.
   //
   // S13nServiceWorker:
   // If the worker is controlled by a service worker, this class makes another
@@ -54,6 +58,8 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   // chrome-extension://).
   WorkerFetchContextImpl(
       mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
+      mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+          service_worker_worker_client_registry_info,
       mojom::ServiceWorkerContainerHostPtrInfo
           service_worker_container_host_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
@@ -125,9 +131,15 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   void ResetServiceWorkerURLLoaderFactory();
 
   mojo::Binding<mojom::ServiceWorkerWorkerClient> binding_;
+  mojom::ServiceWorkerWorkerClientRegistryPtr
+      service_worker_worker_client_registry_;
 
   // Bound to |this| on the worker thread.
   mojom::ServiceWorkerWorkerClientRequest service_worker_client_request_;
+  // Consumed on the worker thread to create
+  // |service_worker_worker_client_registry_|.
+  mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+      service_worker_worker_client_registry_info_;
   // Consumed on the worker thread to create |service_worker_container_host_|.
   mojom::ServiceWorkerContainerHostPtrInfo service_worker_container_host_info_;
   // Consumed on the worker thread to create |loader_factory_|.
