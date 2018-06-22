@@ -52,7 +52,8 @@ struct ServiceWorkerProviderContextDeleter;
 class CONTENT_EXPORT ServiceWorkerProviderContext
     : public base::RefCountedThreadSafe<ServiceWorkerProviderContext,
                                         ServiceWorkerProviderContextDeleter>,
-      public mojom::ServiceWorkerContainer {
+      public mojom::ServiceWorkerContainer,
+      public mojom::ServiceWorkerWorkerClientRegistry {
  public:
   // Constructor for service worker clients.
   //
@@ -137,15 +138,17 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   void SetWebServiceWorkerProvider(
       base::WeakPtr<WebServiceWorkerProviderImpl> provider);
 
-  // For service worker clients. Creates a ServiceWorkerWorkerClientRequest
-  // which can be used to bind with a WorkerFetchContextImpl in a (dedicated or
-  // shared) worker thread and receive SetControllerServiceWorker() method call
-  // from the main thread.
-  // A dedicated worker's WorkerFetchContext calls CreateWorkerClientRequest()
-  // on its parent Document's ServiceWorkerProviderContext. A shared worker's
-  // fetch context calls CreateWorkerClientRequest() on its own
-  // ServiceWorkerProviderContext.
-  mojom::ServiceWorkerWorkerClientRequest CreateWorkerClientRequest();
+  // mojom::ServiceWorkerWorkerClientRegistry:
+  // For service worker clients. ServiceWorkerProviderContext is also a
+  // mojom::ServiceWorkerWorkerHost (or Registry). If it's a provider for a
+  // document, then it tracks all the dedicated workers created from the
+  // document (including nested workers). If it's a provider for a shared
+  // worker, then it tracks only the shared worker itself.
+  void RegisterWorkerClient(
+      mojom::ServiceWorkerWorkerClientPtr client) override;
+  // For cloning the worker host pointer.
+  void CloneWorkerClientRegistry(
+      mojom::ServiceWorkerWorkerClientRegistryRequest request) override;
 
   // S13nServiceWorker:
   // For service worker clients. Creates a ServiceWorkerContainerHostPtrInfo

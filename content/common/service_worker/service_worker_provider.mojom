@@ -70,3 +70,18 @@ interface ServiceWorkerWorkerClient {
   // may or may not have been one previously), but not the other way around.
   OnControllerChanged(blink.mojom.ControllerServiceWorkerMode mode);
 };
+
+// ServiceWorkerWorkerClientRegistry is a mojo interface for hosting and
+// registering ServiceWorkerWorkerClients. An instance of this interface is
+// implemented by ServiceWorkerProviderContext and lives in the same renderer
+// process as the worker clients.
+// This interface is useful when one needs to register a new worker client
+// for an existing ServiceWorkerProviderContext on non-main thread, i.e. for
+// nested workers.
+interface ServiceWorkerWorkerClientRegistry {
+  // Adds a new ServiceWorkerWorkerClient.
+  RegisterWorkerClient(ServiceWorkerWorkerClient client);
+
+  // Clones this host.
+  CloneWorkerClientRegistry(ServiceWorkerWorkerClientRegistry& host);
+};

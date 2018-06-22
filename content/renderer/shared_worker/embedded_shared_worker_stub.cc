@@ -355,8 +355,16 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
           web_network_provider)
           ->provider()
           ->context();
-  mojom::ServiceWorkerWorkerClientRequest request =
-      context->CreateWorkerClientRequest();
+
+  mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+      worker_client_registry_ptr_info;
+  context->CloneWorkerClientRegistry(
+      mojo::MakeRequest(&worker_client_registry_ptr_info));
+
+  mojom::ServiceWorkerWorkerClientPtr worker_client_ptr;
+  mojom::ServiceWorkerWorkerClientRequest worker_client_request =
+      mojo::MakeRequest(&worker_client_ptr);
+  context->RegisterWorkerClient(std::move(worker_client_ptr));
 
   mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
   if (ServiceWorkerUtils::IsServicificationEnabled())
@@ -375,8 +383,10 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory =
       loader_factories_->Clone();
   auto worker_fetch_context = std::make_unique<WorkerFetchContextImpl>(
-      std::move(request), std::move(container_host_ptr_info),
-      loader_factories_->Clone(), std::move(fallback_factory),
+      std::move(worker_client_request),
+      std::move(worker_client_registry_ptr_info),
+      std::move(container_host_ptr_info), loader_factories_->Clone(),
+      std::move(fallback_factory),
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker),
       GetContentClient()

@@ -76,6 +76,10 @@ struct ServiceWorkerProviderContext::ProviderStateForClient {
   //   the shared worker.
   std::vector<mojom::ServiceWorkerWorkerClientPtr> worker_clients;
 
+  // For adding new ServiceWorkerWorkerClients.
+  mojo::BindingSet<mojom::ServiceWorkerWorkerClientRegistry>
+      worker_client_registry_bindings;
+
   // S13nServiceWorker
   // Used in |subresource_loader_factory| to get the connection to the
   // controller service worker. Kept here in order to call
@@ -207,17 +211,22 @@ void ServiceWorkerProviderContext::SetWebServiceWorkerProvider(
   state_for_client_->web_service_worker_provider = provider;
 }
 
-mojom::ServiceWorkerWorkerClientRequest
-ServiceWorkerProviderContext::CreateWorkerClientRequest() {
+void ServiceWorkerProviderContext::RegisterWorkerClient(
+    mojom::ServiceWorkerWorkerClientPtr client) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_for_client_);
-  mojom::ServiceWorkerWorkerClientPtr client;
-  mojom::ServiceWorkerWorkerClientRequest request = mojo::MakeRequest(&client);
   client.set_connection_error_handler(base::BindOnce(
       &ServiceWorkerProviderContext::UnregisterWorkerFetchContext,
       base::Unretained(this), client.get()));
   state_for_client_->worker_clients.push_back(std::move(client));
-  return request;
+}
+
+void ServiceWorkerProviderContext::CloneWorkerClientRegistry(
+    mojom::ServiceWorkerWorkerClientRegistryRequest request) {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(state_for_client_);
+  state_for_client_->worker_client_registry_bindings.AddBinding(
+      this, std::move(request));
 }
 
 mojom::ServiceWorkerContainerHostPtrInfo

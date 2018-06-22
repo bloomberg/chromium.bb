@@ -3333,13 +3333,20 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
           web_provider);
   mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
+  mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+      service_worker_worker_client_registry_ptr_info;
   mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
   ServiceWorkerProviderContext* provider_context = provider->context();
   // Some sandboxed iframes are not allowed to use service worker so don't have
   // a real service worker provider, so the provider context is null.
   if (provider_context) {
-    service_worker_client_request =
-        provider_context->CreateWorkerClientRequest();
+    provider_context->CloneWorkerClientRegistry(
+        mojo::MakeRequest(&service_worker_worker_client_registry_ptr_info));
+
+    mojom::ServiceWorkerWorkerClientPtr worker_client_ptr;
+    service_worker_client_request = mojo::MakeRequest(&worker_client_ptr);
+    provider_context->RegisterWorkerClient(std::move(worker_client_ptr));
+
     // TODO(horo): Use this host pointer also when S13nServiceWorker is not
     // enabled once we support navigator.serviceWorker on dedicated workers:
     // crbug.com/371690. Currently we use this only to call
@@ -3352,6 +3359,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
   std::unique_ptr<WorkerFetchContextImpl> worker_fetch_context =
       std::make_unique<WorkerFetchContextImpl>(
           std::move(service_worker_client_request),
+          std::move(service_worker_worker_client_registry_ptr_info),
           std::move(container_host_ptr_info), GetLoaderFactoryBundle()->Clone(),
           GetLoaderFactoryBundle()->CloneWithoutDefaultFactory(),
           GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
