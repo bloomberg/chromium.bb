@@ -248,10 +248,6 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
                                                          web_callbacks);
   }
 
-  blink::WebSpeechRecognizer* SpeechRecognizer() override {
-    return test_client()->SpeechRecognizer();
-  }
-
   void DidClearWindowObject() override {
     test_client()->DidClearWindowObject();
     Base::DidClearWindowObject();

@@ -10,7 +10,7 @@ notAllowedTest():
 onerror
 PASS count is 0
 PASS event.error is "not-allowed"
-PASS event.message is "not allowed"
+PASS event.message is ""
 PASS event.type is "error"
 onend
 PASS count is 1

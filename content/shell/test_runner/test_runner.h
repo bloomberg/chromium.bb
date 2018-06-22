@@ -45,7 +45,6 @@ namespace test_runner {
 
 class MockContentSettingsClient;
 class MockScreenOrientationClient;
-class MockWebSpeechRecognizer;
 class SpellCheckClient;
 class TestInterfaces;
 class TestRunnerForSpecificView;
@@ -104,7 +103,6 @@ class TestRunner : public WebTestRunner {
   std::string GetAcceptLanguages() const;
   bool shouldStayOnPageAfterHandlingBeforeUnload() const;
   MockScreenOrientationClient* getMockScreenOrientationClient();
-  MockWebSpeechRecognizer* getMockWebSpeechRecognizer();
   bool isPrinting() const;
   bool shouldDumpAsCustomText() const;
   std::string customDumpText() const;
@@ -500,12 +498,6 @@ class TestRunner : public WebTestRunner {
   // Simulates closing a Web Notification.
   void SimulateWebNotificationClose(const std::string& title, bool by_user);
 
-  // Speech recognition related functions.
-  void AddMockSpeechRecognitionResult(const std::string& transcript,
-                                      double confidence);
-  void SetMockSpeechRecognitionError(const std::string& error,
-                                     const std::string& message);
-
   // Takes care of notifying the delegate after a change to layout test runtime
   // flags.
   void OnLayoutTestRuntimeFlagsChanged();
@@ -579,7 +571,6 @@ class TestRunner : public WebTestRunner {
   bool use_mock_theme_;
 
   std::unique_ptr<MockScreenOrientationClient> mock_screen_orientation_client_;
-  std::unique_ptr<MockWebSpeechRecognizer> speech_recognizer_;
   std::unique_ptr<SpellCheckClient> spellcheck_;
 
   // Number of currently active color choosers.

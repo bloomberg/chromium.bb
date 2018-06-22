@@ -200,9 +200,15 @@ SpeechRecognitionSession::SpeechRecognitionSession(
     blink::mojom::SpeechRecognitionSessionClientPtrInfo client_ptr_info)
     : session_id_(SpeechRecognitionManager::kSessionIDInvalid),
       client_(std::move(client_ptr_info)),
+      stopped_(false),
       weak_factory_(this) {}
 
-SpeechRecognitionSession::~SpeechRecognitionSession() = default;
+SpeechRecognitionSession::~SpeechRecognitionSession() {
+  // If a connection error happens and the session hasn't been stopped yet,
+  // abort it.
+  if (!stopped_)
+    Abort();
+}
 
 base::WeakPtr<SpeechRecognitionSession> SpeechRecognitionSession::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
@@ -210,11 +216,13 @@ base::WeakPtr<SpeechRecognitionSession> SpeechRecognitionSession::AsWeakPtr() {
 
 void SpeechRecognitionSession::Abort() {
   SpeechRecognitionManager::GetInstance()->AbortSession(session_id_);
+  stopped_ = true;
 }
 
 void SpeechRecognitionSession::StopCapture() {
   SpeechRecognitionManager::GetInstance()->StopAudioCaptureForSession(
       session_id_);
+  stopped_ = true;
 }
 
 // -------- SpeechRecognitionEventListener interface implementation -----------
@@ -241,6 +249,8 @@ void SpeechRecognitionSession::OnAudioEnd(int session_id) {
 
 void SpeechRecognitionSession::OnRecognitionEnd(int session_id) {
   client_->Ended();
+  stopped_ = true;
+  client_.reset();
 }
 
 void SpeechRecognitionSession::OnRecognitionResults(
