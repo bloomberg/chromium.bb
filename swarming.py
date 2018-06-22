@@ -288,13 +288,14 @@ def trigger_task_shards(swarming, task_request, shards):
 STATUS_UPDATE_INTERVAL = 15 * 60.
 
 
-class State(object):
-  """States in which a task can be.
+class TaskState(object):
+  """Represents the current task state.
 
-  WARNING: Copy-pasted from appengine/swarming/server/task_result.py. These
-  values are part of the API so if they change, the API changed.
+  For documentation, see the comments in the swarming_rpcs.TaskState enum, which
+  is the source of truth for these values:
+  https://cs.chromium.org/chromium/infra/luci/appengine/swarming/swarming_rpcs.py?q=TaskState\(
 
-  It's in fact an enum. Values should be in decreasing order of importance.
+  It's in fact an enum.
   """
   RUNNING = 0x10
   PENDING = 0x20
@@ -306,27 +307,7 @@ class State(object):
   KILLED = 0x80
   NO_RESOURCE = 0x100
 
-  STATES = (
-      'RUNNING', 'PENDING', 'EXPIRED', 'TIMED_OUT', 'BOT_DIED', 'CANCELED',
-      'COMPLETED', 'KILLED', 'NO_RESOURCE')
-  STATES_RUNNING = ('RUNNING', 'PENDING')
-  STATES_NOT_RUNNING = (
-      'EXPIRED', 'TIMED_OUT', 'BOT_DIED', 'CANCELED', 'COMPLETED', 'KILLED',
-      'NO_RESOURCE')
-  STATES_DONE = ('TIMED_OUT', 'COMPLETED', 'KILLED')
-  STATES_ABANDONED = ('EXPIRED', 'BOT_DIED', 'CANCELED', 'NO_RESOURCE')
-
-  _NAMES = {
-    RUNNING: 'Running',
-    PENDING: 'Pending',
-    EXPIRED: 'Expired',
-    TIMED_OUT: 'Execution timed out',
-    BOT_DIED: 'Bot died',
-    CANCELED: 'User canceled',
-    COMPLETED: 'Completed',
-    KILLED: 'User killed',
-    NO_RESOURCE: 'No resource',
-  }
+  STATES_RUNNING = ('PENDING', 'RUNNING')
 
   _ENUMS = {
     'RUNNING': RUNNING,
@@ -339,13 +320,6 @@ class State(object):
     'KILLED': KILLED,
     'NO_RESOURCE': NO_RESOURCE,
   }
-
-  @classmethod
-  def to_string(cls, state):
-    """Returns a user-readable string representing a State."""
-    if state not in cls._NAMES:
-      raise ValueError('Invalid state %s' % state)
-    return cls._NAMES[state]
 
   @classmethod
   def from_enum(cls, state):
@@ -569,7 +543,7 @@ def retrieve_results(
 
     # When timeout == -1, always return on first attempt. 500s are already
     # retried in this case.
-    if result['state'] in State.STATES_NOT_RUNNING or timeout == -1:
+    if result['state'] not in TaskState.STATES_RUNNING or timeout == -1:
       if fetch_stdout:
         out = net.url_read_json(output_url)
         result['output'] = out.get('output', '') if out else ''
@@ -618,7 +592,7 @@ def convert_to_old_format(result):
   # server_version
   # Endpoints result 'state' as string. For compatibility with old code, convert
   # to int.
-  result['state'] = State.from_enum(result['state'])
+  result['state'] = TaskState.from_enum(result['state'])
   result['try_number'] = (
       int(result['try_number']) if result.get('try_number') else None)
   if 'bot_dimensions' in result:
