@@ -69,8 +69,8 @@ public class PasswordAccessorySheetControllerTest {
     public void testModelNotifiesAboutActionsChangedByProvider() {
         final KeyboardAccessoryData.PropertyProvider<KeyboardAccessoryData.Item> testProvider =
                 new KeyboardAccessoryData.PropertyProvider<>();
-        final KeyboardAccessoryData.Item testItem = new KeyboardAccessoryData.Item(
-                KeyboardAccessoryData.Item.TYPE_LABEL, "Test Item", null, false, null);
+        final KeyboardAccessoryData.Item testItem =
+                KeyboardAccessoryData.Item.createLabel("Test Item", null);
 
         mModel.addObserver(mMockItemListObserver);
         mCoordinator.registerItemProvider(testProvider);

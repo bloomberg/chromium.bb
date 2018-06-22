@@ -71,14 +71,22 @@ void PasswordAccessoryController::OnPasswordsAvailable(
   for (const auto& pair : best_matches) {
     const PasswordForm* form = pair.second;
     base::string16 username = GetDisplayUsername(*form);
-    items.emplace_back(username, username,
-                       /*is_password=*/false, Item::Type::SUGGESTION);
+    items.emplace_back(username, username, /*is_password=*/false,
+                       form->username_value.empty()
+                           ? Item::Type::NON_INTERACTIVE_SUGGESTION
+                           : Item::Type::SUGGESTION);
     items.emplace_back(
         form->password_value,
         l10n_util::GetStringFUTF16(
             IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_DESCRIPTION, username),
         /*is_password=*/true, Item::Type::SUGGESTION);
   }
+  items.emplace_back(base::string16(), base::string16(), false,
+                     Item::Type::DIVIDER);
+  base::string16 manage_passwords_title = l10n_util::GetStringUTF16(
+      IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK);
+  items.emplace_back(manage_passwords_title, manage_passwords_title, false,
+                     Item::Type::OPTION);
   view_->OnItemsAvailable(origin, items);
 }
 

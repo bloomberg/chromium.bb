@@ -32,6 +32,10 @@ class PasswordAccessoryViewAndroid : public PasswordAccessoryViewInterface {
       const base::android::JavaParamRef<jobject>& obj,
       jboolean isPassword,
       const base::android::JavaParamRef<jstring>& textToFill);
+  void OnOptionSelected(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<_jstring*>& selectedOption);
 
  private:
   // The controller provides data for this view and owns it.

@@ -108,12 +108,11 @@ public class PasswordAccessoryIntegrationTest {
     public void testPasswordSheetDisplaysProvidedItems()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
-        provideItems(new Item[] {
-                createLabel("Passwords"), createSuggestion("mayapark@gmail.com", null),
+        provideItems(new Item[] {Item.createLabel("Passwords", "Description_Passwords"),
+                createSuggestion("mayapark@gmail.com", (item) -> {}),
                 createPassword("SomeHiddenPassword"),
-                createSuggestion("mayaelisabethmercedesgreenepark@googlemail.com", null),
-                createPassword("ExtremelyLongPasswordThatUsesQuiteSomeSpaceInTheSheet"),
-        });
+                createSuggestion("mayaelisabethmercedesgreenepark@googlemail.com", (item) -> {}),
+                createPassword("ExtremelyLongPasswordThatUsesQuiteSomeSpaceInTheSheet")});
 
         // Focus the field to bring up the accessory.
         mHelper.clickPasswordField();
@@ -130,14 +129,44 @@ public class PasswordAccessoryIntegrationTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
+    public void testPasswordSheetDisplaysNoPasswordsMessageAndOptions()
+            throws InterruptedException, TimeoutException {
+        mHelper.loadTestPage(false);
+        final AtomicReference<Item> clicked = new AtomicReference<>();
+        provideItems(new Item[] {
+                Item.createLabel("No saved passwords for abc.com", "Description_Passwords"),
+                Item.createDivider(),
+                Item.createOption(
+                        "Suggest strong password...", "Description_Generate", clicked::set),
+                Item.createOption("Manage passwords...", "Description_Manage", (item) -> {})});
+
+        // Focus the field to bring up the accessory.
+        mHelper.clickPasswordField();
+        mHelper.waitForKeyboard();
+        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+
+        // Scroll down and click the suggestion.
+        whenDisplayed(withChild(withText("Suggest strong password...")))
+                .perform(scrollToPosition(2));
+        whenDisplayed(withText("Suggest strong password...")).perform(click());
+
+        // The callback should have triggered and set the reference to the selected Item.
+        assertThat(clicked.get(), notNullValue());
+        assertThat(clicked.get().getCaption(), equalTo("Suggest strong password..."));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
     public void testPasswordSheetTriggersCallback() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
         final AtomicReference<Item> clicked = new AtomicReference<>();
         provideItems(new Item[] {
-                createLabel("Passwords"), createSuggestion("mpark@abc.com", null),
-                createPassword("ShorterPassword"), createSuggestion("mayap@xyz.com", null),
-                createPassword("PWD"), createSuggestion("park@googlemail.com", null),
-                createPassword("P@$$W0rt"), createSuggestion("mayapark@gmail.com", clicked::set),
+                Item.createLabel("Passwords", "Description_Passwords"),
+                createSuggestion("mpark@abc.com", null), createPassword("ShorterPassword"),
+                createSuggestion("mayap@xyz.com", null), createPassword("PWD"),
+                createSuggestion("park@googlemail.com", null), createPassword("P@$$W0rt"),
+                createSuggestion("mayapark@gmail.com", clicked::set),
                 createPassword("SomeHiddenLongPassword"),
         });
 
@@ -189,15 +218,11 @@ public class PasswordAccessoryIntegrationTest {
         itemProvider.notifyObservers(items);
     }
 
-    private static Item createLabel(String caption) {
-        return new Item(Item.TYPE_LABEL, caption, "Description_" + caption, false, null);
-    }
-
     private static Item createSuggestion(String caption, Callback<Item> callback) {
-        return new Item(Item.TYPE_SUGGESTIONS, caption, "Description_" + caption, false, callback);
+        return Item.createSuggestion(caption, "Description_" + caption, false, callback);
     }
 
     private static Item createPassword(String caption) {
-        return new Item(Item.TYPE_SUGGESTIONS, caption, "Description_" + caption, true, null);
+        return Item.createSuggestion(caption, "Description_" + caption, true, null);
     }
 }
