@@ -19,12 +19,13 @@ ArcPlayStoreAppContextMenu::~ArcPlayStoreAppContextMenu() = default;
 
 void ArcPlayStoreAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   // App Info item.
-  menu_model->AddItemWithStringId(INSTALL, IDS_APP_CONTEXT_MENU_INSTALL_ARC);
+  menu_model->AddItemWithStringId(ash::INSTALL,
+                                  IDS_APP_CONTEXT_MENU_INSTALL_ARC);
 }
 
 bool ArcPlayStoreAppContextMenu::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
-    case INSTALL:
+    case ash::INSTALL:
       return true;
     default:
       return app_list::AppContextMenu::IsCommandIdEnabled(command_id);
@@ -34,7 +35,7 @@ bool ArcPlayStoreAppContextMenu::IsCommandIdEnabled(int command_id) const {
 void ArcPlayStoreAppContextMenu::ExecuteCommand(int command_id,
                                                 int event_flags) {
   switch (command_id) {
-    case INSTALL:
+    case ash::INSTALL:
       delegate()->ExecuteLaunchCommand(event_flags);
       break;
     default:

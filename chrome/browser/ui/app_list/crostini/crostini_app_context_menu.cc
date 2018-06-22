@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
 
+#include "ash/public/cpp/app_menu_constants.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -26,12 +27,13 @@ void CrostiniAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
     if (!features::IsTouchableAppContextMenuEnabled())
       menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
 
-    AddContextMenuOption(menu_model, UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM);
+    AddContextMenuOption(menu_model, ash::UNINSTALL,
+                         IDS_APP_LIST_UNINSTALL_ITEM);
   }
 }
 
 bool CrostiniAppContextMenu::IsCommandIdEnabled(int command_id) const {
-  if (command_id == UNINSTALL) {
+  if (command_id == ash::UNINSTALL) {
     if (app_id() == kCrostiniTerminalId) {
       return IsCrostiniEnabled(profile());
     }
@@ -41,7 +43,7 @@ bool CrostiniAppContextMenu::IsCommandIdEnabled(int command_id) const {
 
 void CrostiniAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
-    case UNINSTALL:
+    case ash::UNINSTALL:
       if (app_id() == kCrostiniTerminalId) {
         ShowCrostiniUninstallerView(profile(), CrostiniUISurface::kAppList);
         return;

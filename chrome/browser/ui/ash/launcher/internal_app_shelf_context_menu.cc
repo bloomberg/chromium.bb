@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -28,7 +29,7 @@ void InternalAppShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
 void InternalAppShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   const bool app_is_open = controller()->IsOpen(item().id);
   if (!app_is_open) {
-    AddContextMenuOption(menu_model, MENU_OPEN_NEW,
+    AddContextMenuOption(menu_model, ash::MENU_OPEN_NEW,
                          IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
     if (!features::IsTouchableAppContextMenuEnabled())
       menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
@@ -40,7 +41,7 @@ void InternalAppShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
     AddPinMenu(menu_model);
 
   if (app_is_open) {
-    AddContextMenuOption(menu_model, MENU_CLOSE,
+    AddContextMenuOption(menu_model, ash::MENU_CLOSE,
                          IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
   }
 

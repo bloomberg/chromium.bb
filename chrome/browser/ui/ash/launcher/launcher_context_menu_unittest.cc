@@ -164,10 +164,9 @@ TEST_F(LauncherContextMenuTest,
       CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT, display_id);
   std::unique_ptr<ui::MenuModel> menu =
       GetMenuModel(launcher_context_menu.get());
-  ASSERT_TRUE(IsItemPresentInMenu(
-      menu.get(), LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW));
+  ASSERT_TRUE(IsItemPresentInMenu(menu.get(), ash::MENU_NEW_INCOGNITO_WINDOW));
   EXPECT_TRUE(launcher_context_menu->IsCommandIdEnabled(
-      LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW));
+      ash::MENU_NEW_INCOGNITO_WINDOW));
 
   // Disable Incognito mode.
   IncognitoModePrefs::SetAvailability(profile()->GetPrefs(),
@@ -176,10 +175,9 @@ TEST_F(LauncherContextMenuTest,
       CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT, display_id);
   menu = GetMenuModel(launcher_context_menu.get());
   // The item should be disabled.
-  ASSERT_TRUE(IsItemPresentInMenu(
-      menu.get(), LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW));
+  ASSERT_TRUE(IsItemPresentInMenu(menu.get(), ash::MENU_NEW_INCOGNITO_WINDOW));
   EXPECT_FALSE(launcher_context_menu->IsCommandIdEnabled(
-      LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW));
+      ash::MENU_NEW_INCOGNITO_WINDOW));
 }
 
 // Verifies that "New window" menu item in the launcher context
@@ -192,10 +190,8 @@ TEST_F(LauncherContextMenuTest,
       CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT, display_id);
   std::unique_ptr<ui::MenuModel> menu =
       GetMenuModel(launcher_context_menu.get());
-  ASSERT_TRUE(
-      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_NEW_WINDOW));
-  EXPECT_TRUE(launcher_context_menu->IsCommandIdEnabled(
-      LauncherContextMenu::MENU_NEW_WINDOW));
+  ASSERT_TRUE(IsItemPresentInMenu(menu.get(), ash::MENU_NEW_WINDOW));
+  EXPECT_TRUE(launcher_context_menu->IsCommandIdEnabled(ash::MENU_NEW_WINDOW));
 
   // Disable Incognito mode.
   IncognitoModePrefs::SetAvailability(profile()->GetPrefs(),
@@ -203,10 +199,8 @@ TEST_F(LauncherContextMenuTest,
   launcher_context_menu =
       CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT, display_id);
   menu = GetMenuModel(launcher_context_menu.get());
-  ASSERT_TRUE(
-      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_NEW_WINDOW));
-  EXPECT_FALSE(launcher_context_menu->IsCommandIdEnabled(
-      LauncherContextMenu::MENU_NEW_WINDOW));
+  ASSERT_TRUE(IsItemPresentInMenu(menu.get(), ash::MENU_NEW_WINDOW));
+  EXPECT_FALSE(launcher_context_menu->IsCommandIdEnabled(ash::MENU_NEW_WINDOW));
 }
 
 // Verifies that "Close" is not shown in context menu if no browser window is
@@ -218,8 +212,7 @@ TEST_F(LauncherContextMenuTest,
       CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT, display_id);
   std::unique_ptr<ui::MenuModel> menu =
       GetMenuModel(launcher_context_menu.get());
-  ASSERT_FALSE(
-      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
+  ASSERT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_CLOSE));
 }
 
 // Verifies context menu and app menu items for ARC app.
@@ -248,11 +241,9 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   ASSERT_TRUE(menu);
 
   // ARC app is pinned but not running.
-  EXPECT_TRUE(
-      IsItemEnabledInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
-  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), LauncherContextMenu::MENU_PIN));
-  EXPECT_FALSE(
-      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_OPEN_NEW));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_PIN));
+  EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_CLOSE));
 
   // ARC app is running.
   std::string window_app_id1("org.chromium.arc.1");
@@ -270,10 +261,9 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   menu = GetContextMenu(item_delegate, display_id);
   ASSERT_TRUE(menu);
 
-  EXPECT_FALSE(
-      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
-  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), LauncherContextMenu::MENU_PIN));
-  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
+  EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_OPEN_NEW));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_PIN));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_CLOSE));
 
   // ARC non-launchable app is running.
   const std::string app_id2 = ArcAppTest::GetAppId(arc_test().fake_apps()[1]);
@@ -297,10 +287,9 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   menu = GetContextMenu(item_delegate2, display_id);
   ASSERT_TRUE(menu);
 
-  EXPECT_FALSE(
-      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
-  EXPECT_FALSE(IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_PIN));
-  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
+  EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_OPEN_NEW));
+  EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_PIN));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_CLOSE));
 
   // Shelf group context menu.
   std::vector<arc::mojom::ShortcutInfo> shortcuts = arc_test().fake_shortcuts();
@@ -339,12 +328,9 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
     menu = GetContextMenu(item_delegate3, display_id);
     ASSERT_TRUE(menu);
 
-    EXPECT_FALSE(
-        IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
-    EXPECT_FALSE(
-        IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_PIN));
-    EXPECT_TRUE(
-        IsItemEnabledInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
+    EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_OPEN_NEW));
+    EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_PIN));
+    EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_CLOSE));
 
     menu_list = item_delegate3->GetAppMenuItems(0 /* event_flags */);
     ASSERT_EQ(i + 1, menu_list.size());
@@ -389,44 +375,33 @@ TEST_F(LauncherContextMenuTest, ArcDeferredLauncherContextMenuItemCheck) {
       GetContextMenu(item_delegate, 0 /* display_id */);
   ASSERT_TRUE(menu);
 
-  EXPECT_FALSE(
-      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
-  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), LauncherContextMenu::MENU_PIN));
-  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
+  EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_OPEN_NEW));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_PIN));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_CLOSE));
 
   item_delegate = model()->GetShelfItemDelegate(shelf_id2);
   ASSERT_TRUE(item_delegate);
   menu = GetContextMenu(item_delegate, 0 /* display_id */);
   ASSERT_TRUE(menu);
 
-  EXPECT_FALSE(
-      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
-  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), LauncherContextMenu::MENU_PIN));
-  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
+  EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_OPEN_NEW));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_PIN));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_CLOSE));
 }
 
 TEST_F(LauncherContextMenuTest, CommandIdsMatchEnumsForHistograms) {
   // Tests that CommandId enums are not changed as the values are used in
   // histograms.
-  EXPECT_EQ(0, LauncherContextMenu::MENU_OPEN_NEW);
-  EXPECT_EQ(1, LauncherContextMenu::MENU_CLOSE);
-  EXPECT_EQ(2, LauncherContextMenu::MENU_PIN);
-  EXPECT_EQ(3, LauncherContextMenu::LAUNCH_TYPE_PINNED_TAB);
-  EXPECT_EQ(4, LauncherContextMenu::LAUNCH_TYPE_REGULAR_TAB);
-  EXPECT_EQ(5, LauncherContextMenu::LAUNCH_TYPE_FULLSCREEN);
-  EXPECT_EQ(6, LauncherContextMenu::LAUNCH_TYPE_WINDOW);
-  EXPECT_EQ(7, LauncherContextMenu::MENU_NEW_WINDOW);
-  EXPECT_EQ(8, LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW);
-  EXPECT_EQ(9, LauncherContextMenu::NOTIFICATION_CONTAINER);
-}
-
-// Tests that LauncherContextMenu::NOTIFICATION_CONTAINER matches
-// ash::NOTIFICATION_CONTAINER.
-TEST_F(LauncherContextMenuTest, CommandIdEquivalency) {
-  // TODO(newcomer): Remove this test when NOTIFICATION_CONTAINER and other
-  // command ids are consolidated.
-  EXPECT_EQ(static_cast<int>(LauncherContextMenu::NOTIFICATION_CONTAINER),
-            static_cast<int>(ash::NOTIFICATION_CONTAINER));
+  EXPECT_EQ(0, ash::MENU_OPEN_NEW);
+  EXPECT_EQ(1, ash::MENU_CLOSE);
+  EXPECT_EQ(2, ash::MENU_PIN);
+  EXPECT_EQ(3, ash::LAUNCH_TYPE_PINNED_TAB);
+  EXPECT_EQ(4, ash::LAUNCH_TYPE_REGULAR_TAB);
+  EXPECT_EQ(5, ash::LAUNCH_TYPE_FULLSCREEN);
+  EXPECT_EQ(6, ash::LAUNCH_TYPE_WINDOW);
+  EXPECT_EQ(7, ash::MENU_NEW_WINDOW);
+  EXPECT_EQ(8, ash::MENU_NEW_INCOGNITO_WINDOW);
+  EXPECT_EQ(9, ash::NOTIFICATION_CONTAINER);
 }
 
 TEST_F(LauncherContextMenuTest, ArcContextMenuOptions) {
@@ -479,11 +454,9 @@ TEST_F(LauncherContextMenuTest, InternalAppShelfContextMenu) {
     ASSERT_TRUE(menu);
 
     // Internal app is pinned but not running.
-    EXPECT_TRUE(
-        IsItemEnabledInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
-    EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), LauncherContextMenu::MENU_PIN));
-    EXPECT_FALSE(
-        IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
+    EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_OPEN_NEW));
+    EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_PIN));
+    EXPECT_FALSE(IsItemPresentInMenu(menu.get(), ash::MENU_CLOSE));
   }
 }
 
