@@ -605,6 +605,26 @@ TEST(X509CertificateTest, DoesNotHaveTLSFeatureExtension) {
       x509_util::CryptoBufferAsStringPiece(cert->cert_buffer())));
 }
 
+TEST(X509CertificateTest, HasTestCanSignHttpExchangesExtension) {
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  scoped_refptr<X509Certificate> cert = ImportCertFromFile(
+      certs_dir, "test_can_sign_http_exchanges_extension.pem");
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), cert.get());
+
+  EXPECT_TRUE(asn1::HasTestCanSignHttpExchangesExtension(
+      x509_util::CryptoBufferAsStringPiece(cert->cert_buffer())));
+}
+
+TEST(X509CertificateTest, DoesNotHaveTestCanSignHttpExchangesExtension) {
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  scoped_refptr<X509Certificate> cert =
+      ImportCertFromFile(certs_dir, "ok_cert.pem");
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), cert.get());
+
+  EXPECT_FALSE(asn1::HasTestCanSignHttpExchangesExtension(
+      x509_util::CryptoBufferAsStringPiece(cert->cert_buffer())));
+}
+
 // Tests CRYPTO_BUFFER deduping via X509Certificate::CreateFromBuffer.  We
 // call X509Certificate::CreateFromBuffer several times and observe whether
 // it returns a cached or new CRYPTO_BUFFER.

@@ -147,6 +147,30 @@ bool SeekToExtensions(der::Input in,
   return true;
 }
 
+bool HasExtensionWithOID(base::StringPiece cert, der::Input extension_oid) {
+  bool present;
+  der::Parser extensions_parser;
+  if (!SeekToExtensions(der::Input(cert), &present, &extensions_parser))
+    return false;
+  if (!present)
+    return false;
+
+  while (extensions_parser.HasMore()) {
+    der::Parser extension_parser;
+    if (!extensions_parser.ReadSequence(&extension_parser))
+      return false;
+
+    der::Input oid;
+    if (!extension_parser.ReadTag(der::kOid, &oid))
+      return false;
+
+    if (oid == extension_oid)
+      return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 bool ExtractSubjectFromDERCert(base::StringPiece cert,
@@ -203,31 +227,22 @@ bool ExtractSubjectPublicKeyFromSPKI(base::StringPiece spki,
 }
 
 bool HasTLSFeatureExtension(base::StringPiece cert) {
-  bool present;
-  der::Parser extensions_parser;
-  if (!SeekToExtensions(der::Input(cert), &present, &extensions_parser))
-    return false;
-  if (!present)
-    return false;
+  // kTLSFeatureExtensionOID is the DER encoding of the OID for the
+  // X.509 TLS Feature Extension.
+  static const uint8_t kTLSFeatureExtensionOID[] = {0x2B, 0x06, 0x01, 0x05,
+                                                    0x05, 0x07, 0x01, 0x18};
 
-  while (extensions_parser.HasMore()) {
-    der::Parser extension_parser;
-    if (!extensions_parser.ReadSequence(&extension_parser))
-      return false;
+  return HasExtensionWithOID(cert, der::Input(kTLSFeatureExtensionOID));
+}
 
-    der::Input oid;
-    if (!extension_parser.ReadTag(der::kOid, &oid))
-      return false;
+bool HasTestCanSignHttpExchangesExtension(base::StringPiece cert) {
+  // kTestCanSignHttpExchangesOid is the DER encoding of the OID for
+  // testCanSignHttpExchanges defined in:
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html
+  static const uint8_t kTestCanSignHttpExchangesOid[] = {
+      0x2B, 0x06, 0x01, 0x04, 0x01, 0xd6, 0x79, 0x02, 0x01, 0x16};
 
-    // kTLSFeatureExtensionOID is the DER encoding of the OID for the
-    // X.509 TLS Feature Extension.
-    static const uint8_t kTLSFeatureExtensionOID[] = {0x2B, 0x06, 0x01, 0x05,
-                                                      0x05, 0x07, 0x01, 0x18};
-    if (oid == der::Input(kTLSFeatureExtensionOID))
-      return true;
-  }
-
-  return false;
+  return HasExtensionWithOID(cert, der::Input(kTestCanSignHttpExchangesOid));
 }
 
 bool ExtractSignatureAlgorithmsFromDERCert(
