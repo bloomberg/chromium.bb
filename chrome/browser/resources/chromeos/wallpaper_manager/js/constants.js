@@ -56,6 +56,12 @@
   AccessSyncDailyRefreshInfoKey: 'sync-daily-refresh-info-key',
 
   /**
+   * Key to access the images info (on the new wallpaper picker) in
+   * chrome.storage.local.
+   */
+  AccessLocalImagesInfoKey: 'images-info-key',
+
+  /**
    * URL to get latest wallpaper RSS feed.
    */
   WallpaperRssURL: 'https://storage.googleapis.com/' +
