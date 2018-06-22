@@ -2083,16 +2083,36 @@ TEST_F(ShelfViewTest, ShelfDragViewAndContextMenu) {
   EXPECT_FALSE(shelf_view_->drag_view());
 }
 
-class ShelfViewTouchableContextMenuTest : public ShelfViewTest {
+struct TouchableAppContextMenuTestParams {
+  TouchableAppContextMenuTestParams(bool enable_touchable_app_context_menu,
+                                    bool context_menu)
+      : enable_touchable_app_context_menu(enable_touchable_app_context_menu),
+        context_menu(context_menu) {}
+  // Whether to enable the touchable app context menu feature.
+  bool enable_touchable_app_context_menu;
+  // Whether the menu is shown as an application or context menu.
+  bool context_menu;
+};
+
+class ShelfViewTouchableContextMenuTest
+    : public ShelfViewTest,
+      public testing::WithParamInterface<TouchableAppContextMenuTestParams> {
  public:
   ShelfViewTouchableContextMenuTest() = default;
   ~ShelfViewTouchableContextMenuTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kTouchableAppContextMenu, features::kNotificationIndicator},
-        {});
-
+    // If the test is parameterized, respect the parameter. Otherwise enable
+    // touchable app context menus by default.
+    const bool enable_touchable_app_context_menu =
+        testing::UnitTest::GetInstance()->current_test_info()->value_param()
+            ? GetParam().enable_touchable_app_context_menu
+            : true;
+    std::vector<base::Feature> enabled_features = {
+        features::kNotificationIndicator};
+    if (enable_touchable_app_context_menu)
+      enabled_features.push_back(features::kTouchableAppContextMenu);
+    scoped_feature_list_.InitWithFeatures(enabled_features, {});
     ShelfViewTest::SetUp();
   }
 
@@ -2102,27 +2122,59 @@ class ShelfViewTouchableContextMenuTest : public ShelfViewTest {
   DISALLOW_COPY_AND_ASSIGN(ShelfViewTouchableContextMenuTest);
 };
 
+INSTANTIATE_TEST_CASE_P(
+    TouchableDisabledAppMenu,
+    ShelfViewTouchableContextMenuTest,
+    ::testing::Values(TouchableAppContextMenuTestParams(false, false)));
+
+INSTANTIATE_TEST_CASE_P(
+    TouchableEnabledAppMenu,
+    ShelfViewTouchableContextMenuTest,
+    ::testing::Values(TouchableAppContextMenuTestParams(true, false)));
+
+INSTANTIATE_TEST_CASE_P(
+    TouchableDisabledContextMenu,
+    ShelfViewTouchableContextMenuTest,
+    ::testing::Values(TouchableAppContextMenuTestParams(false, true)));
+
+INSTANTIATE_TEST_CASE_P(
+    TouchableEnabledContextMenu,
+    ShelfViewTouchableContextMenuTest,
+    ::testing::Values(TouchableAppContextMenuTestParams(true, true)));
+
 // Tests that menu anchor points are aligned with the shelf button bounds.
-TEST_F(ShelfViewTouchableContextMenuTest, ShelfViewMenuAnchorPoint) {
+TEST_P(ShelfViewTouchableContextMenuTest, ShelfViewMenuAnchorPoint) {
   const ShelfButton* shelf_button = GetButtonByID(AddApp());
+  const bool context_menu = GetParam().context_menu;
   EXPECT_EQ(ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM,
             GetPrimaryShelf()->alignment());
 
   // Test for bottom shelf.
-  EXPECT_EQ(shelf_button->GetBoundsInScreen().y(),
-            test_api_->GetMenuAnchorRect(*shelf_button, gfx::Point()).y());
+  EXPECT_EQ(
+      shelf_button->GetBoundsInScreen().y(),
+      test_api_->GetMenuAnchorRect(*shelf_button, gfx::Point(), context_menu)
+          .y());
 
   // Test for left shelf.
   GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_LEFT);
 
-  EXPECT_EQ(shelf_button->GetBoundsInScreen().x(),
-            test_api_->GetMenuAnchorRect(*shelf_button, gfx::Point()).x());
+  int expected_x = shelf_button->GetBoundsInScreen().x();
+  // Left shelf context menus when TouchableAppContextMenu is disabled anchor
+  // off of the right edge of the shelf.
+  if (context_menu && !features::IsTouchableAppContextMenuEnabled())
+    expected_x = shelf_button->GetBoundsInScreen().right();
+  EXPECT_EQ(
+      expected_x,
+      test_api_->GetMenuAnchorRect(*shelf_button, gfx::Point(), context_menu)
+          .x());
 
   // Test for right shelf.
   GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_RIGHT);
 
-  EXPECT_EQ(shelf_button->GetBoundsInScreen().x(),
-            test_api_->GetMenuAnchorRect(*shelf_button, gfx::Point()).x());
+  EXPECT_EQ(
+      shelf_button->GetBoundsInScreen().x(),
+      test_api_->GetMenuAnchorRect(*shelf_button, gfx::Point(), context_menu)
+          .x());
 }
 
 // Tests that the app list button does not show a context menu on right click
