@@ -132,11 +132,14 @@ void UnifiedSystemTrayController::HandlePowerAction() {
 }
 
 void UnifiedSystemTrayController::HandleOpenDateTimeSettingsAction() {
-  if (Shell::Get()->system_tray_model()->clock()->can_set_time()) {
-    Shell::Get()->system_tray_model()->clock()->ShowSetTimeDialog();
-  } else {
-    Shell::Get()->system_tray_model()->clock()->ShowDateSettings();
-  }
+  ClockModel* model = Shell::Get()->system_tray_model()->clock();
+  if (!model->can_set_time())
+    return;
+
+  if (Shell::Get()->session_controller()->ShouldEnableSettings())
+    model->ShowDateSettings();
+  else
+    model->ShowSetTimeDialog();
   CloseBubble();
 }
 
