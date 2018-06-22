@@ -763,7 +763,12 @@ GLenum GLRenderer::GetFramebufferCopyTextureFormat() {
     format = GLCopyTextureInternalFormat(BackbufferFormat());
   // Verify the format is valid for GLES2's glCopyTexSubImage2D.
   DCHECK(format == GL_ALPHA || format == GL_LUMINANCE ||
-         format == GL_LUMINANCE_ALPHA || format == GL_RGB || format == GL_RGBA)
+         format == GL_LUMINANCE_ALPHA || format == GL_RGB ||
+         format == GL_RGBA ||
+         (output_surface_->context_provider()
+              ->ContextCapabilities()
+              .texture_format_bgra8888 &&
+          format == GL_BGRA_EXT))
       << format;
   return format;
 }
