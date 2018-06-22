@@ -22,7 +22,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/test_utils.h"

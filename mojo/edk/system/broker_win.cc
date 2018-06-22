@@ -11,14 +11,13 @@
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/broker.h"
 #include "mojo/edk/system/broker_messages.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/platform_handle_utils.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
 
 namespace mojo {
 namespace edk {
@@ -110,8 +109,11 @@ Broker::Broker(ScopedInternalPlatformHandle handle)
     const base::char16* name_data =
         reinterpret_cast<const base::char16*>(data + 1);
     CHECK(data->pipe_name_length);
-    inviter_channel_ = CreateClientHandle(NamedPlatformHandle(
-        base::StringPiece16(name_data, data->pipe_name_length)));
+    inviter_channel_ = PlatformHandleToScopedInternalPlatformHandle(
+        NamedPlatformChannel::ConnectToServer(
+            base::StringPiece16(name_data, data->pipe_name_length).as_string())
+            .TakePlatformHandle());
+    inviter_channel_.get().needs_connection = true;
   }
 }
 

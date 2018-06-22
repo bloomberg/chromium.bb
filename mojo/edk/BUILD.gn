@@ -65,10 +65,6 @@ template("core_impl_source_set") {
 
     public = [
       "embedder/configuration.h",
-      "embedder/named_platform_channel_pair.h",
-      "embedder/named_platform_handle.h",
-      "embedder/named_platform_handle_utils.h",
-      "embedder/platform_channel_pair.h",
       "embedder/platform_handle.h",
       "embedder/process_error_callback.h",
       "embedder/scoped_platform_handle.h",
@@ -96,16 +92,7 @@ template("core_impl_source_set") {
       "system/user_message_impl.h",
     ]
 
-    if (is_win) {
-      public += [ "embedder/named_platform_handle_win.h" ]
-    } else if (is_posix || is_fuchsia) {
-      public += [ "embedder/named_platform_handle_posix.h" ]
-    }
-
     sources = [
-      "embedder/named_platform_handle_utils_win.cc",
-      "embedder/platform_channel_pair.cc",
-      "embedder/platform_channel_pair_win.cc",
       "embedder/platform_handle.cc",
       "system/atomic_flag.h",
       "system/broker.h",
@@ -149,27 +136,17 @@ template("core_impl_source_set") {
     ]
 
     if (is_fuchsia) {
-      sources += [
-        "embedder/named_platform_handle_utils_fuchsia.cc",
-        "embedder/platform_channel_pair_fuchsia.cc",
-        "system/channel_fuchsia.cc",
-      ]
+      sources += [ "system/channel_fuchsia.cc" ]
 
       public_deps += [ "//third_party/fuchsia-sdk:fdio" ]
     }
 
     if (is_posix) {
-      sources += [ "embedder/platform_channel_pair_posix.cc" ]
-
       if (!is_nacl || is_nacl_nonsfi) {
         sources += [
           "system/broker_posix.cc",
           "system/channel_posix.cc",
         ]
-      }
-
-      if (!is_nacl) {
-        sources += [ "embedder/named_platform_handle_utils_posix.cc" ]
       }
     }
 
@@ -197,7 +174,6 @@ template("core_impl_source_set") {
       deps += [ "//third_party/ashmem" ]
     }
     if (!is_nacl) {
-      sources += [ "embedder/named_platform_channel_pair.cc" ]
       deps += [ "//crypto" ]
     }
 
