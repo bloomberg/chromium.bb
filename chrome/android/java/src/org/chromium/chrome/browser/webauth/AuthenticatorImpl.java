@@ -60,7 +60,7 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
         }
 
         mIsOperationPending = true;
-        onError(AuthenticatorStatus.NOT_IMPLEMENTED);
+        Fido2ApiHandler.getInstance().getAssertion(options, mRenderFrameHost, this);
     }
 
     @Override
@@ -88,7 +88,8 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
 
     @Override
     public void onError(Integer status) {
-        assert(mMakeCredentialCallback != null || mGetAssertionCallback != null);
+        assert((mMakeCredentialCallback != null && mGetAssertionCallback == null)
+                || (mMakeCredentialCallback == null && mGetAssertionCallback != null));
         if (mMakeCredentialCallback != null) {
             mMakeCredentialCallback.call(status, null);
         } else if (mGetAssertionCallback != null) {
