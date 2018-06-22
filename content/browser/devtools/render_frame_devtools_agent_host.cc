@@ -427,8 +427,11 @@ WebContents* RenderFrameDevToolsAgentHost::GetWebContents() {
 }
 
 bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
-  if (session->restricted() && !IsFrameHostAllowedForRestrictedSessions())
+  const bool is_webui =
+      frame_host_ && (frame_host_->web_ui() || frame_host_->pending_web_ui());
+  if (!session->client()->MayAttachToRenderer(frame_host_, is_webui))
     return false;
+
   session->SetRenderer(frame_host_ ? frame_host_->GetProcess()->GetID()
                                    : ChildProcessHost::kInvalidUniqueID,
                        frame_host_);
@@ -592,8 +595,17 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
   frame_host_ = frame_host;
   agent_ptr_.reset();
 
-  if (!IsFrameHostAllowedForRestrictedSessions())
-    ForceDetachRestrictedSessions();
+  std::vector<DevToolsSession*> restricted_sessions;
+  const bool is_webui =
+      frame_host && (frame_host->web_ui() || frame_host->pending_web_ui());
+
+  for (DevToolsSession* session : sessions()) {
+    if (!session->client()->MayAttachToRenderer(frame_host, is_webui))
+      restricted_sessions.push_back(session);
+  }
+
+  if (!restricted_sessions.empty())
+    ForceDetachRestrictedSessions(restricted_sessions);
 
   if (!render_frame_alive_) {
     render_frame_alive_ = true;
@@ -959,11 +971,6 @@ bool RenderFrameDevToolsAgentHost::EnsureAgent() {
 
 bool RenderFrameDevToolsAgentHost::IsChildFrame() {
   return frame_tree_node_ && frame_tree_node_->parent();
-}
-
-bool RenderFrameDevToolsAgentHost::IsFrameHostAllowedForRestrictedSessions() {
-  return !frame_host_ ||
-         (!frame_host_->web_ui() && !frame_host_->pending_web_ui());
 }
 
 }  // namespace content

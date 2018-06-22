@@ -310,16 +310,11 @@ void DevToolsAgentHostImpl::ForceDetachAllSessions() {
   }
 }
 
-void DevToolsAgentHostImpl::ForceDetachRestrictedSessions() {
-  if (sessions_.empty())
-    return;
+void DevToolsAgentHostImpl::ForceDetachRestrictedSessions(
+    const std::vector<DevToolsSession*>& restricted_sessions) {
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
-  std::vector<DevToolsSession*> restricted;
-  for (DevToolsSession* session : sessions_) {
-    if (session->restricted())
-      restricted.push_back(session);
-  }
-  for (DevToolsSession* session : restricted) {
+
+  for (DevToolsSession* session : restricted_sessions) {
     DevToolsAgentHostClient* client = session->client();
     DetachClient(client);
     client->AgentHostClosed(this);

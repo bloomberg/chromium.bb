@@ -183,7 +183,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void OnPageScaleFactorChanged(float page_scale_factor) override;
 
   bool IsChildFrame();
-  bool IsFrameHostAllowedForRestrictedSessions();
 
   void OnSwapCompositorFrame(const IPC::Message& message);
   void DestroyOnRenderFrameGone();
