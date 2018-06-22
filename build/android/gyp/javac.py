@@ -572,7 +572,7 @@ def main(argv):
                       options.processorpath)
   # GN already knows of java_files, so listing them just make things worse when
   # they change.
-  depfile_deps = [javac_path] + classpath_inputs + options.java_srcjars
+  depfile_deps = ([javac_path] + classpath_inputs + options.java_srcjars)
   input_paths = depfile_deps + java_files
 
   output_paths = [
