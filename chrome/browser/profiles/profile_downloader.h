@@ -79,7 +79,10 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   friend class ProfileDownloaderTest;
   FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest, AccountInfoReady);
   FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest, AccountInfoNotReady);
-  FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest, DefaultURL);
+  FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest,
+                           AccountInfoNoPictureDoesNotCrash);
+  FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest,
+                           AccountInfoInvalidPictureURLDoesNotCrash);
 
   void FetchImageData();
 
