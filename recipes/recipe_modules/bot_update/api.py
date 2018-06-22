@@ -67,7 +67,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
   def ensure_checkout(self, gclient_config=None, suffix=None,
                       patch=True, update_presentation=True,
-                      patch_root=None, no_shallow=True,
+                      patch_root=None,
                       with_branch_heads=False, with_tags=False, refs=None,
                       patch_oauth2=None, oauth2_json=None,
                       use_site_config_creds=None, clobber=False,
@@ -208,8 +208,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     if clobber:
       cmd.append('--clobber')
-    if no_shallow is False:
-      cmd.append('--maybe_shallow')
     if with_branch_heads or cfg.with_branch_heads:
       cmd.append('--with_branch_heads')
     if with_tags or cfg.with_tags:

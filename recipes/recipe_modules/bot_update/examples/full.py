@@ -40,7 +40,6 @@ def RunSteps(api):
 
   patch = api.properties.get('patch', True)
   clobber = True if api.properties.get('clobber') else False
-  no_shallow = True if api.properties.get('no_shallow', 1) else False
   with_branch_heads = api.properties.get('with_branch_heads', False)
   with_tags = api.properties.get('with_tags', False)
   refs = api.properties.get('refs', [])
@@ -69,7 +68,6 @@ def RunSteps(api):
     )
   else:
     bot_update_step = api.bot_update.ensure_checkout(
-        no_shallow=no_shallow,
         patch=patch,
         with_branch_heads=with_branch_heads,
         with_tags=with_tags,
@@ -148,9 +146,6 @@ def GenTests(api):
       rietveld='https://rietveld.example.com/',
       fail_patch='download'
   ) + api.step_data('bot_update', retcode=87)
-  yield api.test('shallow') + api.properties(
-      no_shallow=0
-  )
   yield api.test('clobber') + api.properties(
       clobber=1
   )
