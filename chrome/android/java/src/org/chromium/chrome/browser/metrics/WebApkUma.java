@@ -15,7 +15,6 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
 import org.chromium.chrome.browser.preferences.website.Website;
 import org.chromium.chrome.browser.preferences.website.WebsitePermissionsFetcher;
@@ -91,8 +90,8 @@ public class WebApkUma {
     // Obsolete: WEBAPK_OPEN_NO_LAUNCH_INTENT = 1;
     public static final int WEBAPK_OPEN_ACTIVITY_NOT_FOUND = 2;
 
-    private static final String ADJUST_WEBAPK_INSTALLATION_SPACE_PARAM =
-            "webapk_extra_installation_space_mb";
+    private static final long WEBAPK_EXTRA_INSTALLATION_SPACE_BYTES =
+            100 * (long) ConversionUtils.BYTES_PER_MEGABYTE; // 100 MB
 
     /**
      * Records the time point when a request to update a WebAPK is sent to the WebAPK Server.
@@ -365,10 +364,7 @@ public class WebApkUma {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Extra installation space is only allowed >= Android L
-            webApkExtraSpaceBytes = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                                            ChromeFeatureList.ADJUST_WEBAPK_INSTALLATION_SPACE,
-                                            ADJUST_WEBAPK_INSTALLATION_SPACE_PARAM, 0)
-                    * (long) ConversionUtils.BYTES_PER_MEGABYTE;
+            webApkExtraSpaceBytes = WEBAPK_EXTRA_INSTALLATION_SPACE_BYTES;
         }
 
         return partitionAvailableBytes - minimumFreeBytes + webApkExtraSpaceBytes;
