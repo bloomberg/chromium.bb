@@ -377,9 +377,9 @@ class DeleteStreamDelegate : public TestDelegateBase {
 };
 
 // A Timer that does not start a delayed task unless the timer is fired.
-class MockTimer : public base::MockTimer {
+class MockTimer : public base::MockOneShotTimer {
  public:
-  MockTimer() : base::MockTimer(false, false) {}
+  MockTimer() {}
   ~MockTimer() override = default;
 
   void Start(const base::Location& posted_from,
@@ -387,7 +387,7 @@ class MockTimer : public base::MockTimer {
              const base::Closure& user_task) override {
     // Sets a maximum delay, so the timer does not fire unless it is told to.
     base::TimeDelta infinite_delay = base::TimeDelta::Max();
-    base::MockTimer::Start(posted_from, infinite_delay, user_task);
+    base::MockOneShotTimer::Start(posted_from, infinite_delay, user_task);
   }
 
  private:

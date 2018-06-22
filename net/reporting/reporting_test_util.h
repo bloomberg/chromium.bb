@@ -22,7 +22,7 @@
 class GURL;
 
 namespace base {
-class MockTimer;
+class MockOneShotTimer;
 class SimpleTestClock;
 class SimpleTestTickClock;
 class Value;
@@ -145,8 +145,8 @@ class TestReportingContext : public ReportingContext {
                        const ReportingPolicy& policy);
   ~TestReportingContext();
 
-  base::MockTimer* test_delivery_timer() { return delivery_timer_; }
-  base::MockTimer* test_garbage_collection_timer() {
+  base::MockOneShotTimer* test_delivery_timer() { return delivery_timer_; }
+  base::MockOneShotTimer* test_garbage_collection_timer() {
     return garbage_collection_timer_;
   }
   TestReportingUploader* test_uploader() {
@@ -164,8 +164,8 @@ class TestReportingContext : public ReportingContext {
   // Owned by the DeliveryAgent and GarbageCollector, respectively, but
   // referenced here to preserve type:
 
-  base::MockTimer* delivery_timer_;
-  base::MockTimer* garbage_collection_timer_;
+  base::MockOneShotTimer* delivery_timer_;
+  base::MockOneShotTimer* garbage_collection_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestReportingContext);
 };
@@ -191,8 +191,10 @@ class ReportingTestBase : public TestWithScopedTaskEnvironment {
 
   base::SimpleTestClock* clock() { return &clock_; }
   base::SimpleTestTickClock* tick_clock() { return &tick_clock_; }
-  base::MockTimer* delivery_timer() { return context_->test_delivery_timer(); }
-  base::MockTimer* garbage_collection_timer() {
+  base::MockOneShotTimer* delivery_timer() {
+    return context_->test_delivery_timer();
+  }
+  base::MockOneShotTimer* garbage_collection_timer() {
     return context_->test_garbage_collection_timer();
   }
   TestReportingUploader* uploader() { return context_->test_uploader(); }
