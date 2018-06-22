@@ -148,9 +148,12 @@ void RemoteDeviceLifeCycleImpl::OnAuthenticationResult(
 
 void RemoteDeviceLifeCycleImpl::CreateMessenger() {
   DCHECK(state_ == RemoteDeviceLifeCycle::State::AUTHENTICATING);
-  DCHECK(secure_context_);
-  messenger_.reset(
-      new MessengerImpl(std::move(connection_), std::move(secure_context_)));
+
+  // TODO(crbug.com/752273): Inject a real ClientChannel.
+  messenger_.reset(new MessengerImpl(std::move(connection_),
+                                     std::move(secure_context_),
+                                     nullptr /* channel */));
+
   messenger_->AddObserver(this);
 
   TransitionToState(RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
