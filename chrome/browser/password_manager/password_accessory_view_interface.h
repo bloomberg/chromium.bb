@@ -22,8 +22,26 @@ class PasswordAccessoryViewInterface {
   // Represents an item that will be shown in the bottom sheet below a keyboard
   // accessory.
   struct AccessoryItem {
-    // Maps to its java counterpart PasswordAccessoryModel.Item.Type.
-    enum class Type { LABEL = 1, SUGGESTION = 2 };
+    // Defines which item types exist. A java IntDef@ is generated from this.
+    // GENERATED_JAVA_ENUM_PACKAGE: (
+    //   org.chromium.chrome.browser.autofill.keyboard_accessory)
+    // GENERATED_JAVA_CLASS_NAME_OVERRIDE: ItemType
+    enum class Type {
+      // An item in title style to purely to display text. Non-interactive.
+      LABEL = 1,  // e.g. the "Passwords for this site" section header.
+
+      // An item in list style to displaying an interactive suggestion.
+      SUGGESTION = 2,  // e.g. a user's email address used for sign-up.
+
+      // An item in list style to displaying a non-interactive suggestion.
+      NON_INTERACTIVE_SUGGESTION = 3,  // e.g. the "(No username)" suggestion.
+
+      // A horizontal, non-interactive divider used to visually divide sections.
+      DIVIDER = 4,
+
+      // A single, usually static and interactive suggestion.
+      OPTION = 5,  // e.g. the "Manage passwords..." link.
+    };
     // The |text| is caption of the item and what will be filled if selected.
     base::string16 text;
     // The |content_description| is used for accessibility on displayed items.

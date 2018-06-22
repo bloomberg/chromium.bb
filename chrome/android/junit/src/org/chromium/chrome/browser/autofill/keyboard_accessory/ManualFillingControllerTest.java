@@ -13,7 +13,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item.TYPE_SUGGESTIONS;
 import static org.chromium.chrome.browser.tab.Tab.INVALID_TAB_ID;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType.FROM_BROWSER_ACTIONS;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FROM_CLOSE;
@@ -150,15 +149,15 @@ public class ManualFillingControllerTest {
         Tab firstTab = addTab(mediator, 1111, null);
         mController.registerPasswordProvider(firstTabProvider);
         firstTabProvider.notifyObservers(new Item[] {
-                new Item(TYPE_SUGGESTIONS, "FirstPassword", "FirstPassword", true, result -> {})});
+                Item.createSuggestion("FirstPassword", "FirstPassword", true, result -> {})});
         assertThat(mediator.getPasswordAccessorySheet().getModelForTesting().get(0).getCaption(),
                 is("FirstPassword"));
 
         // Simulate creating a second tab:
         Tab secondTab = addTab(mediator, 2222, firstTab);
         mController.registerPasswordProvider(secondTabProvider);
-        secondTabProvider.notifyObservers(new Item[] {new Item(
-                TYPE_SUGGESTIONS, "SecondPassword", "SecondPassword", true, result -> {})});
+        secondTabProvider.notifyObservers(new Item[] {
+                Item.createSuggestion("SecondPassword", "SecondPassword", true, result -> {})});
         assertThat(mediator.getPasswordAccessorySheet().getModelForTesting().get(0).getCaption(),
                 is("SecondPassword"));
 

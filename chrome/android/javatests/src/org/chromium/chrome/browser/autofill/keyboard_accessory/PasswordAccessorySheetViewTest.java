@@ -94,8 +94,7 @@ public class PasswordAccessorySheetViewTest {
     public void testAddingCaptionsToTheModelRendersThem() {
         assertThat(mView.get().getChildCount(), is(0));
 
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> mModel.add(new Item(Item.TYPE_LABEL, "Passwords", null, false, null)));
+        ThreadUtils.runOnUiThreadBlocking(() -> mModel.add(Item.createLabel("Passwords", null)));
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
         assertThat(mView.get().getChildAt(0), instanceOf(TextView.class));
@@ -110,8 +109,8 @@ public class PasswordAccessorySheetViewTest {
 
         ThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> mModel.add(new Item(Item.TYPE_SUGGESTIONS, "Name Suggestion", null,
-                                false, item -> clicked.set(true))));
+                        -> mModel.add(Item.createSuggestion(
+                                "Name Suggestion", null, false, item -> clicked.set(true))));
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
         assertThat(mView.get().getChildAt(0), instanceOf(TextView.class));
@@ -131,8 +130,8 @@ public class PasswordAccessorySheetViewTest {
 
         ThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> mModel.add(new Item(Item.TYPE_SUGGESTIONS, "Password Suggestion", null,
-                                true, item -> clicked.set(true))));
+                        -> mModel.add(Item.createSuggestion(
+                                "Password Suggestion", null, true, item -> clicked.set(true))));
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
         assertThat(mView.get().getChildAt(0), instanceOf(TextView.class));

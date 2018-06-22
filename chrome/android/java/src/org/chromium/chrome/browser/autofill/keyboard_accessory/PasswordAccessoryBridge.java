@@ -43,15 +43,40 @@ class PasswordAccessoryBridge {
             String[] text, String[] description, int[] isPassword, int[] type) {
         Item[] items = new Item[text.length];
         for (int i = 0; i < text.length; i++) {
-            items[i] = new Item(type[i], text[i], description[i], isPassword[i] == 1, (item) -> {
-                assert mNativeView
-                        != 0 : "Controller has been destroyed but the bridge wasn't cleaned up!";
-                nativeOnFillingTriggered(mNativeView, item.isPassword(), item.getCaption());
-            });
+            switch (type[i]) {
+                case ItemType.LABEL:
+                    items[i] = Item.createLabel(text[i], description[i]);
+                    continue;
+                case ItemType.SUGGESTION:
+                    items[i] = Item.createSuggestion(
+                            text[i], description[i], isPassword[i] == 1, (item) -> {
+                                assert mNativeView
+                                        != 0 : "Controller was destroyed but the bridge wasn't!";
+                                nativeOnFillingTriggered(
+                                        mNativeView, item.isPassword(), item.getCaption());
+                            });
+                    continue;
+                case ItemType.NON_INTERACTIVE_SUGGESTION:
+                    items[i] = Item.createSuggestion(
+                            text[i], description[i], isPassword[i] == 1, null);
+                    continue;
+                case ItemType.DIVIDER:
+                    items[i] = Item.createDivider();
+                    continue;
+                case ItemType.OPTION:
+                    items[i] = Item.createOption(text[i], description[i], (item) -> {
+                        assert mNativeView != 0 : "Controller was destroyed but the bridge wasn't!";
+                        nativeOnOptionSelected(mNativeView, item.getCaption());
+                    });
+                    continue;
+            }
+            assert false : "Cannot create item for type '" + type[i] + "'.";
         }
         return items;
     }
 
     private native void nativeOnFillingTriggered(
             long nativePasswordAccessoryViewAndroid, boolean isPassword, String textToFill);
+    private native void nativeOnOptionSelected(
+            long nativePasswordAccessoryViewAndroid, String selectedOption);
 }

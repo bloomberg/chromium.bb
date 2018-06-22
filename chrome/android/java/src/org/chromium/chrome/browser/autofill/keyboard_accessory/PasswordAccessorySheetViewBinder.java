@@ -24,44 +24,78 @@ import org.chromium.chrome.browser.modelutil.SimpleListObservable;
  */
 class PasswordAccessorySheetViewBinder {
     /**
-     * Holds a TextView that represents a list entry.
+     * Holds any View that represents a list entry.
      */
-    static class TextViewHolder extends RecyclerView.ViewHolder {
-        TextViewHolder(View itemView) {
+    static class ItemViewHolder extends RecyclerView.ViewHolder {
+        ItemViewHolder(View itemView) {
             super(itemView);
         }
 
-        static TextViewHolder create(ViewGroup parent, @Item.Type int viewType) {
+        static ItemViewHolder create(ViewGroup parent, @ItemType int viewType) {
             switch (viewType) {
-                case Item.TYPE_LABEL: {
+                case ItemType.LABEL:
                     return new TextViewHolder(
                             LayoutInflater.from(parent.getContext())
                                     .inflate(R.layout.password_accessory_sheet_label, parent,
                                             false));
-                }
-                case Item.TYPE_SUGGESTIONS: {
+                case ItemType.SUGGESTION: // Intentional fallthrough.
+                case ItemType.NON_INTERACTIVE_SUGGESTION: {
                     return new TextViewHolder(
                             LayoutInflater.from(parent.getContext())
                                     .inflate(R.layout.password_accessory_sheet_suggestion, parent,
                                             false));
                 }
+                case ItemType.DIVIDER:
+                    return new ItemViewHolder(
+                            LayoutInflater.from(parent.getContext())
+                                    .inflate(R.layout.password_accessory_sheet_divider, parent,
+                                            false));
+                case ItemType.OPTION:
+                    return new TextViewHolder(
+                            LayoutInflater.from(parent.getContext())
+                                    .inflate(R.layout.password_accessory_sheet_option, parent,
+                                            false));
             }
             assert false : viewType;
             return null;
         }
 
-        void bind(Item item, @Nullable Void payload) {
-            if (item.isPassword()) {
-                getView().setTransformationMethod(new PasswordTransformationMethod());
-            }
-            getView().setText(item.getCaption());
-            if (item.getItemSelectedCallback() != null) {
-                getView().setOnClickListener(src -> item.getItemSelectedCallback().onResult(item));
-            }
+        /**
+         * Binds the item's state to the held {@link View}. Subclasses of this generic view holder
+         * might want to actually bind the item state to the view.
+         * @param item The item that determines the state of the held View.
+         * @param payload Optional generic payload that might be needed during the binding.
+         */
+        protected void bind(Item item, @Nullable Void payload) {}
+    }
+
+    /**
+     * Holds a TextView that represents a list entry.
+     */
+    static class TextViewHolder extends ItemViewHolder {
+        TextViewHolder(View itemView) {
+            super(itemView);
         }
 
-        private TextView getView() {
+        /**
+         * Returns the text view of this item if there is one.
+         * @return Returns a {@link TextView}.
+         */
+        private TextView getTextView() {
             return (TextView) itemView;
+        }
+
+        @Override
+        protected void bind(Item item, @Nullable Void payload) {
+            super.bind(item, payload);
+            if (item.isPassword()) {
+                getTextView().setTransformationMethod(new PasswordTransformationMethod());
+            }
+            getTextView().setText(item.getCaption());
+            if (item.getItemSelectedCallback() != null) {
+                getTextView().setOnClickListener(
+                        src -> item.getItemSelectedCallback().onResult(item));
+            }
         }
     }
 

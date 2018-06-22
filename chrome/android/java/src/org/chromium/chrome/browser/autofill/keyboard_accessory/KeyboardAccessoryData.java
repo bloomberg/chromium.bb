@@ -5,15 +5,12 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.graphics.drawable.Drawable;
-import android.support.annotation.IntDef;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -148,26 +145,64 @@ public class KeyboardAccessoryData {
         private final String mCaption;
         private final String mContentDescription;
         private final boolean mIsPassword;
-        private final Callback<Item> mItemSelectedCallback;
+        private final @Nullable Callback<Item> mItemSelectedCallback;
 
-        @Retention(RetentionPolicy.SOURCE)
-        @IntDef({TYPE_LABEL, TYPE_SUGGESTIONS})
-        @interface Type {}
-        public final static int TYPE_LABEL = 1;
-        public final static int TYPE_SUGGESTIONS = 2;
+        /**
+         * Creates a new Item of type {@link ItemType#LABEL}. It is not interactive.
+         * @param caption The text of the displayed item.
+         * @param contentDescription The description of this item (i.e. used for accessibility).
+         */
+        public static Item createLabel(String caption, String contentDescription) {
+            return new Item(ItemType.LABEL, caption, contentDescription, false, null);
+        }
+        /**
+         * Creates a new Item of type {@link ItemType#SUGGESTION} if has a callback, otherwise, it
+         * will be {@link ItemType#NON_INTERACTIVE_SUGGESTION}. It usually is part of a list of
+         * suggestions and can have a callback that is triggered on selection.
+         * @param caption The text of the displayed item. Only plain text if |isPassword| is false.
+         * @param contentDescription The description of this item (i.e. used for accessibility).
+         * @param isPassword If true, the displayed caption is transformed into stars.
+         * @param itemSelectedCallback A click on this item will invoke this callback. Optional.
+         */
+        public static Item createSuggestion(String caption, String contentDescription,
+                boolean isPassword, @Nullable Callback<Item> itemSelectedCallback) {
+            if (itemSelectedCallback == null) {
+                return new Item(ItemType.NON_INTERACTIVE_SUGGESTION, caption, contentDescription,
+                        isPassword, null);
+            }
+            return new Item(ItemType.SUGGESTION, caption, contentDescription, isPassword,
+                    itemSelectedCallback);
+        }
+
+        /**
+         * Creates an Item of type {@link ItemType#DIVIDER}. Basically, it's a horizontal line.
+         */
+        public static Item createDivider() {
+            return new Item(ItemType.DIVIDER, null, null, false, null);
+        }
+
+        /**
+         * Creates a new Item of type {@link ItemType#OPTION}. They are normally independent items
+         * that trigger a unique action (e.g. generate a password or navigate to an overview).
+         * @param caption The text of the displayed option.
+         * @param contentDescription The description of this option (i.e. used for accessibility).
+         * @param callback A click on this item will invoke this callback.
+         */
+        public static Item createOption(
+                String caption, String contentDescription, Callback<Item> callback) {
+            return new Item(ItemType.OPTION, caption, contentDescription, false, callback);
+        }
 
         /**
          * Creates a new item.
-         * @param type Type of the item (e.g. non-clickable TYPE_LABEL or clickable
-         * TYPE_SUGGESTIONS).
-         * @param caption The text of the displayed item. Only in plain text if |isPassword| is
-         * false.
+         * @param type Type of the item (e.g. non-clickable LABEL or clickable SUGGESTION).
+         * @param caption The text of the displayed item. Only plain text if |isPassword| is false.
          * @param contentDescription The description of this item (i.e. used for accessibility).
          * @param isPassword If true, the displayed caption is transformed into stars.
          * @param itemSelectedCallback If the Item is interactive, a click on it will trigger this.
          */
-        public Item(@Type int type, String caption, String contentDescription, boolean isPassword,
-                Callback<Item> itemSelectedCallback) {
+        private Item(@ItemType int type, String caption, String contentDescription,
+                boolean isPassword, @Nullable Callback<Item> itemSelectedCallback) {
             mType = type;
             mCaption = caption;
             mContentDescription = contentDescription;
@@ -177,9 +212,9 @@ public class KeyboardAccessoryData {
 
         /**
          * Returns the type of the item.
-         * @return Returns a {@link Type}.
+         * @return Returns a {@link ItemType}.
          */
-        public @Type int getType() {
+        public @ItemType int getType() {
             return mType;
         }
 

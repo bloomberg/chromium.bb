@@ -13,7 +13,7 @@ import android.view.View;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetViewBinder.TextViewHolder;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetViewBinder.ItemViewHolder;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
@@ -78,12 +78,12 @@ public class PasswordAccessorySheetCoordinator {
      * @param model the {@link SimpleListObservable<Item>} the adapter gets its data from.
      * @return Returns a fully initialized and wired adapter to a PasswordAccessorySheetViewBinder.
      */
-    static RecyclerViewAdapter<TextViewHolder, Void> createAdapter(
+    static RecyclerViewAdapter<ItemViewHolder, Void> createAdapter(
             SimpleListObservable<Item> model) {
-        SimpleRecyclerViewMcp<Item, TextViewHolder, Void> processor =
-                new SimpleRecyclerViewMcp<>(model, Item::getType, TextViewHolder::bind);
-        RecyclerViewAdapter<TextViewHolder, Void> adapter =
-                new RecyclerViewAdapter<>(processor, TextViewHolder::create);
+        SimpleRecyclerViewMcp<Item, ItemViewHolder, Void> processor =
+                new SimpleRecyclerViewMcp<>(model, Item::getType, ItemViewHolder::bind);
+        RecyclerViewAdapter<ItemViewHolder, Void> adapter =
+                new RecyclerViewAdapter<>(processor, ItemViewHolder::create);
         model.addObserver(processor);
         processor.addObserver(adapter);
         return adapter;

@@ -71,6 +71,14 @@ void PasswordAccessoryViewAndroid::OnFillingTriggered(
       isPassword, base::android::ConvertJavaStringToUTF16(textToFill));
 }
 
+void PasswordAccessoryViewAndroid::OnOptionSelected(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<_jstring*>& selectedOption) {
+  controller_->OnOptionSelected(
+      base::android::ConvertJavaStringToUTF16(selectedOption));
+}
+
 // static
 std::unique_ptr<PasswordAccessoryViewInterface>
 PasswordAccessoryViewInterface::Create(

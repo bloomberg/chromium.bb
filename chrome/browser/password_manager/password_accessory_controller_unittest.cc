@@ -71,6 +71,18 @@ MATCHER_P(MatchesLabel, text, PrintItem(text, text, false, ItemType::LABEL)) {
          arg.content_description == text && arg.itemType == ItemType::LABEL;
 }
 
+// Compares whether a given AccessoryItem is a label with the given text.
+MATCHER(IsDivider, "is a divider") {
+  return arg.text.empty() && arg.is_password == false &&
+         arg.content_description.empty() && arg.itemType == ItemType::DIVIDER;
+}
+
+// Compares whether a given AccessoryItem is a label with the given text.
+MATCHER_P(MatchesOption, text, PrintItem(text, text, false, ItemType::OPTION)) {
+  return arg.text == text && arg.is_password == false &&
+         arg.content_description == text && arg.itemType == ItemType::OPTION;
+}
+
 // Compares whether a given AccessoryItem had the given properties.
 MATCHER_P4(MatchesItem,
            text,
@@ -120,6 +132,10 @@ base::string16 passwords_title_str(const std::string& domain) {
 
 base::string16 no_user_str() {
   return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN);
+}
+base::string16 manage_passwords_str() {
+  return l10n_util::GetStringUTF16(
+      IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK);
 }
 
 }  // namespace
@@ -181,22 +197,25 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
               MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
                           ItemType::SUGGESTION),
               MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
-                          ItemType::SUGGESTION))));
+                          ItemType::SUGGESTION),
+              IsDivider(), MatchesOption(manage_passwords_str()))));
 
   controller()->OnPasswordsAvailable({CreateEntry("Ben", "S3cur3").first},
                                      GURL(kExampleSite));
 }
 
 TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(
-                  GURL(kExampleSite),
-                  ElementsAre(MatchesLabel(passwords_title_str(kExampleDomain)),
-                              MatchesItem(no_user_str(), no_user_str(), false,
-                                          ItemType::SUGGESTION),
-                              MatchesItem(ASCIIToUTF16("S3cur3"),
-                                          password_for_str(no_user_str()), true,
-                                          ItemType::SUGGESTION))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(
+          GURL(kExampleSite),
+          ElementsAre(MatchesLabel(passwords_title_str(kExampleDomain)),
+                      MatchesItem(no_user_str(), no_user_str(), false,
+                                  ItemType::NON_INTERACTIVE_SUGGESTION),
+                      MatchesItem(ASCIIToUTF16("S3cur3"),
+                                  password_for_str(no_user_str()), true,
+                                  ItemType::SUGGESTION),
+                      IsDivider(), MatchesOption(manage_passwords_str()))));
 
   controller()->OnPasswordsAvailable({CreateEntry("", "S3cur3").first},
                                      GURL(kExampleSite));
@@ -228,7 +247,8 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
               MatchesItem(ASCIIToUTF16("Zebra"), ASCIIToUTF16("Zebra"), false,
                           ItemType::SUGGESTION),
               MatchesItem(ASCIIToUTF16("M3h"), password_for_str("Zebra"), true,
-                          ItemType::SUGGESTION))));
+                          ItemType::SUGGESTION),
+              IsDivider(), MatchesOption(manage_passwords_str()))));
 
   controller()->OnPasswordsAvailable(
       {CreateEntry("Ben", "S3cur3").first, CreateEntry("Zebra", "M3h").first,
@@ -247,7 +267,8 @@ TEST_F(PasswordAccessoryControllerTest, ClearsSuggestionsOnFrameNavigation) {
       *view(),
       OnItemsAvailable(
           GURL(kExampleSite),
-          ElementsAre(MatchesLabel(passwords_empty_str(kExampleDomain)))));
+          ElementsAre(MatchesLabel(passwords_empty_str(kExampleDomain)),
+                      IsDivider(), MatchesOption(manage_passwords_str()))));
 
   controller()->DidNavigateMainFrame();
 }
@@ -257,7 +278,8 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
       *view(),
       OnItemsAvailable(
           GURL(kExampleSite),
-          ElementsAre(MatchesLabel(passwords_empty_str(kExampleDomain)))));
+          ElementsAre(MatchesLabel(passwords_empty_str(kExampleDomain)),
+                      IsDivider(), MatchesOption(manage_passwords_str()))));
 
   controller()->OnPasswordsAvailable({}, GURL(kExampleSite));
 }
