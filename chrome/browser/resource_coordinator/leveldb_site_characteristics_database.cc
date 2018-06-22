@@ -6,14 +6,85 @@
 
 #include <string>
 
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace resource_coordinator {
+
+namespace {
+
+const char kInitStatusHistogramLabel[] =
+    "TabManager.Discarding.LocalDatabase.DatabaseInit";
+const char kInitStatusAfterRepairHistogramLabel[] =
+    "TabManager.Discarding.LocalDatabase.DatabaseInitAfterRepair";
+const char kInitStatusAfterDeleteHistogramLabel[] =
+    "TabManager.Discarding.LocalDatabase.DatabaseInitAfterDelete";
+
+enum class InitStatus {
+  kInitStatusOk,
+  kInitStatusCorruption,
+  kInitStatusIOError,
+  kInitStatusUnknownError,
+  kInitStatusMax
+};
+
+// Report the database's initialization status metrics.
+void ReportInitStatus(const char* histogram_name,
+                      const leveldb::Status& status) {
+  if (status.ok()) {
+    base::UmaHistogramEnumeration(histogram_name, InitStatus::kInitStatusOk,
+                                  InitStatus::kInitStatusMax);
+  } else if (status.IsCorruption()) {
+    base::UmaHistogramEnumeration(histogram_name,
+                                  InitStatus::kInitStatusCorruption,
+                                  InitStatus::kInitStatusMax);
+  } else if (status.IsIOError()) {
+    base::UmaHistogramEnumeration(histogram_name,
+                                  InitStatus::kInitStatusIOError,
+                                  InitStatus::kInitStatusMax);
+  } else {
+    base::UmaHistogramEnumeration(histogram_name,
+                                  InitStatus::kInitStatusUnknownError,
+                                  InitStatus::kInitStatusMax);
+  }
+}
+
+void ReportRepairResult(bool repair_succeeded) {
+  UMA_HISTOGRAM_BOOLEAN("TabManager.Discarding.LocalDatabase.DatabaseRepair",
+                        repair_succeeded);
+}
+
+// Attempt to repair the database stored in |db_path|.
+bool RepairDatabase(const std::string& db_path) {
+  leveldb_env::Options options;
+  options.reuse_logs = false;
+  options.max_open_files = 0;
+  if (!leveldb::RepairDB(db_path, options).ok())
+    return false;
+  return true;
+}
+
+bool ShouldAttemptDbRepair(const leveldb::Status& status) {
+  // A corrupt database might be repaired (some data might be loss but it's
+  // better than losing everything).
+  if (status.IsCorruption())
+    return true;
+  // An I/O error might be caused by a missing manifest, it's sometime possible
+  // to repair this (some data might be loss).
+  if (status.IsIOError())
+    return true;
+
+  return false;
+}
+
+}  // namespace
 
 // Helper class used to run all the blocking operations posted by
 // LocalSiteCharacteristicDatabase on a TaskScheduler sequence with the
@@ -47,6 +118,8 @@ class LevelDBSiteCharacteristicsDatabase::AsyncHelper {
       const std::vector<url::Origin>& site_origin);
   void ClearDatabase();
 
+  bool DBIsInitialized() { return db_ != nullptr; }
+
  private:
   static const std::string& SerializeOrigin(const url::Origin& origin) {
     return origin.host();
@@ -73,12 +146,34 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::OpenOrCreateDatabase() {
   options.create_if_missing = true;
   leveldb::Status status =
       leveldb_env::OpenDB(options, db_path_.AsUTF8Unsafe(), &db_);
-  // TODO(sebmarchand): Do more validation here, try to repair the database if
-  // it's corrupt and report some metrics.
-  if (!status.ok()) {
-    LOG(ERROR) << "Unable to open the Site Characteristics database: "
-               << status.ToString();
-    db_.reset();
+
+  ReportInitStatus(kInitStatusHistogramLabel, status);
+
+  if (status.ok())
+    return;
+
+  db_.reset();
+
+  if (!ShouldAttemptDbRepair(status))
+    return;
+
+  if (RepairDatabase(db_path_.AsUTF8Unsafe())) {
+    ReportRepairResult(true);
+    status = leveldb_env::OpenDB(options, db_path_.AsUTF8Unsafe(), &db_);
+    ReportInitStatus(kInitStatusAfterRepairHistogramLabel, status);
+    if (status.ok())
+      return;
+  } else {
+    ReportRepairResult(false);
+  }
+
+  db_.reset();
+  // Delete the database and try to open it one last time.
+  if (base::DeleteFile(db_path_, true /* recursive */)) {
+    status = leveldb_env::OpenDB(options, db_path_.AsUTF8Unsafe(), &db_);
+    ReportInitStatus(kInitStatusAfterDeleteHistogramLabel, status);
+    if (!status.ok())
+      db_.reset();
   }
 }
 
@@ -210,6 +305,10 @@ void LevelDBSiteCharacteristicsDatabase::ClearDatabase() {
       base::BindOnce(
           &LevelDBSiteCharacteristicsDatabase::AsyncHelper::ClearDatabase,
           base::Unretained(async_helper_.get())));
+}
+
+bool LevelDBSiteCharacteristicsDatabase::DatabaseIsInitializedForTesting() {
+  return async_helper_->DBIsInitialized();
 }
 
 }  // namespace resource_coordinator

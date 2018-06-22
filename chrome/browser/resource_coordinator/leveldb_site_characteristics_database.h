@@ -43,6 +43,8 @@ class LevelDBSiteCharacteristicsDatabase
       const std::vector<url::Origin>& site_origins) override;
   void ClearDatabase() override;
 
+  bool DatabaseIsInitializedForTesting();
+
  private:
   class AsyncHelper;
 

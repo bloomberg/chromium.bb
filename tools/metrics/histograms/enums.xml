@@ -26722,6 +26722,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="SinkNeverStarted"/>
 </enum>
 
+<enum name="LocalSiteCharacteristicsDBInitStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Corruption"/>
+  <int value="2" label="IO Error"/>
+  <int value="3" label="Unknown Error"/>
+</enum>
+
 <enum name="LocalStorageOpenError">
   <int value="0" label="Directory open failed"/>
   <int value="1" label="Database open failed"/>
