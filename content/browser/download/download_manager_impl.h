@@ -203,9 +203,9 @@ class CONTENT_EXPORT DownloadManagerImpl
       override;
   net::URLRequestContextGetter* GetURLRequestContextGetter(
       const download::DownloadCreateInfo& info) override;
-
-  // Called when InProgressDownloadManager is initialzed.
-  void OnInProgressDownloadManagerInitialized();
+  void OnInProgressDownloadsLoaded(
+      std::vector<std::unique_ptr<download::DownloadItemImpl>>
+          in_progress_downloads) override;
 
   // Creates a new download item and call |callback|.
   void CreateNewDownloadItemToStart(
