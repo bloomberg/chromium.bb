@@ -6,6 +6,7 @@ include_rules = [
   "+services/service_manager/public/cpp",
   "+services/service_manager/sandbox",
   "+services/network/public",
+  "+ui/ozone/public",
 ]
 
 specific_include_rules = {

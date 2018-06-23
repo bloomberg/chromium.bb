@@ -237,6 +237,19 @@ fuchsia_sdk_fidl_pkg("netstack") {
   ]
 }
 
+fuchsia_sdk_fidl_pkg("policy") {
+  namespace = "fuchsia.ui"
+  namespace_path = "fuchsia/ui"
+  sources = [
+    "display_usage.fidl",
+    "presentation.fidl",
+    "presenter.fidl",
+  ]
+  deps = [
+    ":views_v1",
+  ]
+}
+
 fuchsia_sdk_fidl_pkg("scenic") {
   namespace = "fuchsia.ui"
   namespace_path = "fuchsia/ui"
