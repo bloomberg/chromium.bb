@@ -302,11 +302,12 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     download::UrlDownloadHandlerFactory::Install(new UrlDownloaderFactory());
   in_progress_manager_ = std::make_unique<download::InProgressDownloadManager>(
-      this, IsOffTheRecord() ? base::FilePath() : browser_context_->GetPath(),
-      base::BindRepeating(&IsOriginSecure));
-  in_progress_manager_->NotifyWhenInitialized(base::BindOnce(
-      &DownloadManagerImpl::OnInProgressDownloadManagerInitialized,
-      weak_factory_.GetWeakPtr()));
+      this, base::BindRepeating(&IsOriginSecure));
+  in_progress_manager_->Initialize(
+      IsOffTheRecord() ? base::FilePath() : browser_context_->GetPath(),
+      base::BindOnce(&DownloadManagerImpl::PostInitialization,
+                     weak_factory_.GetWeakPtr(),
+                     DOWNLOAD_INITIALIZATION_DEPENDENCY_IN_PROGRESS_CACHE));
 }
 
 DownloadManagerImpl::~DownloadManagerImpl() {
@@ -472,9 +473,9 @@ base::FilePath DownloadManagerImpl::GetDefaultDownloadDirectory() {
   return default_download_directory;
 }
 
-void DownloadManagerImpl::OnInProgressDownloadManagerInitialized() {
-  std::vector<std::unique_ptr<download::DownloadItemImpl>>
-      in_progress_downloads = in_progress_manager_->TakeInProgressDownloads();
+void DownloadManagerImpl::OnInProgressDownloadsLoaded(
+    std::vector<std::unique_ptr<download::DownloadItemImpl>>
+        in_progress_downloads) {
   for (auto& download : in_progress_downloads) {
     DCHECK(!base::ContainsKey(downloads_by_guid_, download->GetGuid()));
     DCHECK(!base::ContainsKey(downloads_, download->GetId()));
@@ -487,7 +488,6 @@ void DownloadManagerImpl::OnInProgressDownloadManagerInitialized() {
       observer.OnDownloadCreated(this, item);
     DVLOG(20) << __func__ << "() download = " << item->DebugString(true);
   }
-  PostInitialization(DOWNLOAD_INITIALIZATION_DEPENDENCY_IN_PROGRESS_CACHE);
 }
 
 void DownloadManagerImpl::StartDownloadItem(
