@@ -91,6 +91,8 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool IsThrottled() const;
   bool KeepActive() const;
 
+  bool IsLoading() const;
+
   void RegisterFrameSchedulerImpl(FrameSchedulerImpl* frame_scheduler);
 
   MainThreadSchedulerImpl* GetMainThreadScheduler() const;

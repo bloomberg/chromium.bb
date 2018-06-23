@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/use_case.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
 
@@ -255,6 +256,10 @@ bool PageSchedulerImpl::KeepActive() const {
 
 bool PageSchedulerImpl::IsMainFrameLocal() const {
   return is_main_frame_local_;
+}
+
+bool PageSchedulerImpl::IsLoading() const {
+  return main_thread_scheduler_->current_use_case() == UseCase::kLoading;
 }
 
 void PageSchedulerImpl::SetIsMainFrameLocal(bool is_local) {
