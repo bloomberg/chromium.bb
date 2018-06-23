@@ -797,7 +797,7 @@ TEST_F(LowPriorityHiddenFrameDuringLoadingExperimentTest,
        FrameQueuesPriorities) {
   // Main thread scheduler is in the loading use case.
   scheduler_->DidStartProvisionalLoad(true);
-  EXPECT_TRUE(scheduler_->IsLoading());
+  EXPECT_TRUE(page_scheduler_->IsLoading());
 
   // Hidden Frame Task Queues.
   frame_scheduler_->SetFrameVisible(false);
@@ -816,7 +816,7 @@ TEST_F(LowPriorityHiddenFrameDuringLoadingExperimentTest,
 
   // Main thread scheduler is no longer in loading use case.
   scheduler_->OnFirstMeaningfulPaint();
-  EXPECT_FALSE(scheduler_->IsLoading());
+  EXPECT_FALSE(page_scheduler_->IsLoading());
 
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
@@ -867,7 +867,7 @@ class LowPrioritySubFrameDuringLoadingExperimentTest
 TEST_F(LowPrioritySubFrameDuringLoadingExperimentTest, FrameQueuesPriorities) {
   // Main thread scheduler is in the loading use case.
   scheduler_->DidStartProvisionalLoad(true);
-  EXPECT_TRUE(scheduler_->IsLoading());
+  EXPECT_TRUE(page_scheduler_->IsLoading());
 
   // Sub-Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
@@ -885,7 +885,7 @@ TEST_F(LowPrioritySubFrameDuringLoadingExperimentTest, FrameQueuesPriorities) {
 
   // Main thread scheduler is no longer in loading use case.
   scheduler_->OnFirstMeaningfulPaint();
-  EXPECT_FALSE(scheduler_->IsLoading());
+  EXPECT_FALSE(page_scheduler_->IsLoading());
 
   // Sub-Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
@@ -940,7 +940,7 @@ TEST_F(LowPrioritySubFrameThrottleableTaskDuringLoadingExperimentTest,
        FrameQueuesPriorities) {
   // Main thread scheduler is in the loading use case.
   scheduler_->DidStartProvisionalLoad(true);
-  EXPECT_TRUE(scheduler_->IsLoading());
+  EXPECT_TRUE(page_scheduler_->IsLoading());
 
   // Sub-Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
@@ -958,7 +958,7 @@ TEST_F(LowPrioritySubFrameThrottleableTaskDuringLoadingExperimentTest,
 
   // Main thread scheduler is no longer in loading use case.
   scheduler_->OnFirstMeaningfulPaint();
-  EXPECT_FALSE(scheduler_->IsLoading());
+  EXPECT_FALSE(page_scheduler_->IsLoading());
 
   // Sub-Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
@@ -1029,7 +1029,7 @@ TEST_F(LowPriorityThrottleableTaskDuringLoadingExperimentTest,
        SubFrameQueuesPriorities) {
   // Main thread is in the loading use case.
   scheduler_->DidStartProvisionalLoad(true);
-  EXPECT_TRUE(scheduler_->IsLoading());
+  EXPECT_TRUE(page_scheduler_->IsLoading());
 
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
@@ -1046,7 +1046,7 @@ TEST_F(LowPriorityThrottleableTaskDuringLoadingExperimentTest,
 
   // Main thread is no longer in loading use case.
   scheduler_->OnFirstMeaningfulPaint();
-  EXPECT_FALSE(scheduler_->IsLoading());
+  EXPECT_FALSE(page_scheduler_->IsLoading());
 
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
@@ -1069,7 +1069,7 @@ TEST_F(LowPriorityThrottleableTaskDuringLoadingExperimentTest,
 
   // Main thread is in the loading use case.
   scheduler_->DidStartProvisionalLoad(true);
-  EXPECT_TRUE(scheduler_->IsLoading());
+  EXPECT_TRUE(page_scheduler_->IsLoading());
 
   // Main Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
@@ -1087,7 +1087,7 @@ TEST_F(LowPriorityThrottleableTaskDuringLoadingExperimentTest,
 
   // Main thread is no longer in loading use case.
   scheduler_->OnFirstMeaningfulPaint();
-  EXPECT_FALSE(scheduler_->IsLoading());
+  EXPECT_FALSE(page_scheduler_->IsLoading());
 
   // Main Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),

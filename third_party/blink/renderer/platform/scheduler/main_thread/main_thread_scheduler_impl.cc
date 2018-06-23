@@ -2765,8 +2765,8 @@ bool MainThreadSchedulerImpl::ShouldUpdateTaskQueuePriorities(
              main_thread_only().current_policy.compositor_priority();
 }
 
-bool MainThreadSchedulerImpl::IsLoading() const {
-  return main_thread_only().current_use_case == UseCase::kLoading;
+UseCase MainThreadSchedulerImpl::current_use_case() const {
+  return main_thread_only().current_use_case;
 }
 
 const MainThreadSchedulerImpl::SchedulingSettings&

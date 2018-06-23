@@ -712,9 +712,8 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
   if (fixed_priority)
     return fixed_priority.value();
 
-  bool background_page_with_no_audio = !IsPageVisible() && !IsAudioPlaying();
-
-  if (background_page_with_no_audio) {
+  // A hidden page with no audio.
+  if (parent_page_scheduler_->IsBackgrounded()) {
     if (main_thread_scheduler_->scheduling_settings()
             .low_priority_background_page)
       return TaskQueue::QueuePriority::kLowPriority;
@@ -724,9 +723,9 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
       return TaskQueue::QueuePriority::kBestEffortPriority;
   }
 
-  // If main thread is in the loading use case or if the priority experiments
-  // should take place at all times.
-  if (main_thread_scheduler_->IsLoading() ||
+  // If the page is loading or if the priority experiments should take place at
+  // all times.
+  if (parent_page_scheduler_->IsLoading() ||
       !main_thread_scheduler_->scheduling_settings()
            .experiment_only_when_loading) {
     // Low priority feature enabled for hidden frame.
