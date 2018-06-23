@@ -283,7 +283,7 @@ camera.util.orientPhoto = function(blob, onSuccess, onFailure) {
 /**
  * Checks the board name if the user is using a chromebook.
  * @param {string} name Board name.
- * @return {!Promise<boolean>} promise Promise with result.
+ * @return {!Promise<boolean>} Promise for the result.
  */
 camera.util.isBoard = function(name, callback) {
   if (!chrome.chromeosInfoPrivate) {

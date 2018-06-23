@@ -211,28 +211,30 @@ camera.Camera.prototype = {
  * Starts the app by initializing views and showing the camera view.
  */
 camera.Camera.prototype.start = function() {
+  var onFailure = function(error) {
+    if (error) {
+      console.error(error);
+    }
+    this.onError_('filesystem-failure',
+        chrome.i18n.getMessage('errorMsgFileSystemFailed'));
+  }.bind(this);
+
   var initAllViews = function() {
     // Initialize all views, and then start the app.
+    // TODO(yuli): Make views' initialize() throw no error.
     Promise.all([
-        new Promise(this.cameraView_.initialize.bind(this.cameraView_)),
-        new Promise(this.albumView_.initialize.bind(this.albumView_)),
-        new Promise(this.browserView_.initialize.bind(this.browserView_))])
-      .then(() => {
-        this.tooltipManager_.initialize();
-        this.viewsStack_.push(this.cameraView_);
-        camera.util.makeElementsUnfocusableByMouse();
-        camera.util.setAriaAttributes();
-      }).catch(error => {
-        console.error('Failed to initialize the Camera app.', error);
-        this.onError_('view-failure', 'App initialize failed.');
-      });
+      new Promise(this.cameraView_.initialize.bind(this.cameraView_)),
+      new Promise(this.albumView_.initialize.bind(this.albumView_)),
+      new Promise(this.browserView_.initialize.bind(this.browserView_))
+    ]).then(() => {
+      this.tooltipManager_.initialize();
+      this.viewsStack_.push(this.cameraView_);
+      camera.util.makeElementsUnfocusableByMouse();
+      camera.util.setAriaAttributes();
+    }).catch(onFailure);
   }.bind(this);
 
   camera.models.FileSystem.initialize(function() {
-    var onFailure = function() {
-      this.onError_('migration-failure', 'Migration failed.');
-    }.bind(this);
-
     var promptMigrate = function() {
       this.router_.navigate(camera.Router.ViewIdentifier.DIALOG, {
         type: camera.views.Dialog.Type.ALERT,
@@ -253,14 +255,8 @@ camera.Camera.prototype.start = function() {
       } else {
         camera.models.FileSystem.migratePictures(initAllViews, onFailure);
       }
-    }, function() {
-      initAllViews();
-    }, function(error) {
-      this.onError_('filesystem-failure', error);
-    }.bind(this));
-  }.bind(this), function(error) {
-    this.onError_('filesystem-failure', error);
-  }.bind(this));
+    }, initAllViews, onFailure);
+  }.bind(this), onFailure);
 };
 
 /**
@@ -381,6 +377,7 @@ camera.Camera.prototype.onAspectRatio_ = function(aspectRatio) {
  * @private
  */
 camera.Camera.prototype.onError_ = function(identifier, message, opt_hint) {
+  // TODO(yuli): Use error-identifier to look up its message and hint.
   document.body.classList.add('has-error');
   this.context_.hasError = true;
   document.querySelector('#error-msg').textContent = message;

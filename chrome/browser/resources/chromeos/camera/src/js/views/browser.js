@@ -329,7 +329,7 @@ camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
     var picture = domPicture.picture;
     if (domPicture == selectedPicture) {
       picture.pictureURL(function(url) {
-        if (picture.pictureType == camera.models.Gallery.PictureType.MOTION) {
+        if (picture.isMotionPicture) {
           updateVideo(wrapper, url);
         } else {
           updateImage(wrapper, url);

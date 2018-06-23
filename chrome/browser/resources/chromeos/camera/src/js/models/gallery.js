@@ -36,39 +36,6 @@ camera.models.Gallery = function() {
 };
 
 /**
- * The prefix of image files.
- *
- * @type {string}
- * @const
- */
-camera.models.Gallery.IMAGE_PREFIX = 'IMG_';
-
-/**
- * The prefix of video files.
- *
- * @type {string}
- * @const
- */
-camera.models.Gallery.VIDEO_PREFIX = 'VID_';
-
-/**
- * The prefix of thumbnail files.
- *
- * @type {string}
- * @const
- */
-camera.models.Gallery.THUMBNAIL_PREFIX = 'thumb-';
-
-/**
- * Picture types.
- * @enum {number}
- */
-camera.models.Gallery.PictureType = Object.freeze({
-  STILL: 0,  // Still pictures (images).
-  MOTION: 1  // Motion pictures (video).
-});
-
-/**
  * Instance of the singleton gallery model.
  * @type {camera.models.Gallery}
  * @private
@@ -85,13 +52,14 @@ camera.models.Gallery.queue_ = new camera.util.Queue();
 /**
  * Wraps a picture file as well as the thumbnail file of a picture in the
  * gallery.
- *
  * @param {FileEntry} thumbnailEntry Thumbnail file entry.
  * @param {FileEntry} pictureEntry Picture file entry.
- * @param {camera.models.Gallery.PictureType} type Picture type.
+ * @param {boolean} isMotionPicture True if it's a motion picture (video),
+ *     false it's a still picture (image).
  * @constructor
  */
-camera.models.Gallery.Picture = function(thumbnailEntry, pictureEntry, type) {
+camera.models.Gallery.Picture = function(
+    thumbnailEntry, pictureEntry, isMotionPicture) {
   /**
    * @type {FileEntry}
    * @private
@@ -105,10 +73,10 @@ camera.models.Gallery.Picture = function(thumbnailEntry, pictureEntry, type) {
   this.pictureEntry_ = pictureEntry;
 
   /**
-   * @type {camera.models.Gallery.PictureType}
+   * @type {boolean}
    * @private
    */
-  this.pictureType_ = type;
+  this.isMotionPicture_ = isMotionPicture;
 
   // End of properties. Freeze the object.
   Object.freeze(this);
@@ -124,8 +92,8 @@ camera.models.Gallery.Picture.prototype = {
   get pictureEntry() {
     return this.pictureEntry_;
   },
-  get pictureType() {
-    return this.pictureType_;
+  get isMotionPicture() {
+    return this.isMotionPicture_;
   }
 };
 
@@ -161,7 +129,7 @@ camera.models.Gallery.Observer.prototype.onPictureAdded = function(picture) {
 /**
  * Returns a singleton instance to the model.
  * @param {function(camera.models.Gallery)} onSuccess Success callback.
- * @param {function()} onFailure Failure callback.
+ * @param {function(*=)} onFailure Failure callback.
  */
 camera.models.Gallery.getInstance = function(onSuccess, onFailure) {
   camera.models.Gallery.queue_.run(function(callback) {
@@ -200,16 +168,15 @@ camera.models.Gallery.prototype = {
 
 /**
  * Initializes the gallery model.
- *
  * @param {function()} onSuccess Success callback.
- * @param {function()} onFailure Failure callback.
+ * @param {function(*=)} onFailure Failure callback.
  * @private
  */
 camera.models.Gallery.prototype.initialize_ = function(onSuccess, onFailure) {
   camera.models.FileSystem.getEntries(
-      function(pictureEntries, thumbnailEntries) {
+      function(pictureEntries, thumbnailEntriesByName) {
     this.loadStoredPictures_(
-        pictureEntries, thumbnailEntries, onSuccess, onFailure);
+        pictureEntries, thumbnailEntriesByName, onSuccess, onFailure);
   }.bind(this), onFailure);
 };
 
@@ -232,17 +199,16 @@ camera.models.Gallery.prototype.removeObserver = function(observer) {
 
 /**
  * Loads the pictures from the storages and adds them to the picture list.
+ * @param {Array.<FileEntry>} pictureEntries Picture entries.
+ * @param {Object{string, FileEntry}} thumbnailEntriesByName Thumbanil entries
+ *     mapped by thumbnail names.
  * @param {function()} onSuccess Success callback.
- * @param {function()} onFailure Failure callback.
+ * @param {function(*=)} onFailure Failure callback.
  * @private
  */
 camera.models.Gallery.prototype.loadStoredPictures_ = function(
-    pictureEntries, thumbnailEntries, onSuccess, onFailure) {
+    pictureEntries, thumbnailEntriesByName, onSuccess, onFailure) {
   var queue = new camera.util.Queue();
-  var entriesByName = {};
-  for (var index = 0; index < thumbnailEntries.length; index++) {
-    entriesByName[thumbnailEntries[index].name] = thumbnailEntries[index];
-  }
 
   for (var index = pictureEntries.length - 1; index >= 0; index--) {
     var entry = pictureEntries[index];
@@ -251,43 +217,25 @@ camera.models.Gallery.prototype.loadStoredPictures_ = function(
       continue;
     }
 
-    var type = (entry.name.indexOf(camera.models.Gallery.VIDEO_PREFIX) === 0) ?
-        camera.models.Gallery.PictureType.MOTION :
-        camera.models.Gallery.PictureType.STILL;
+    var isMotionPicture = camera.models.FileSystem.hasVideoPrefix(entry);
     queue.run(function(entry, callback) {
-      var thumbnailName = camera.models.Gallery.getThumbnailName(entry.name);
-      var thumbnailEntry = entriesByName[thumbnailName];
-      // No thumbnail, most probably pictures taken by the old Camera App.
-      // So, create the thumbnail now.
-      if (!thumbnailEntry) {
-        camera.models.FileSystem.pictureURL(entry, function(url) {
-          this.createThumbnail_(url, type,
-              function(thumbnailBlob) {
-            camera.models.FileSystem.saveThumbnail(
-                thumbnailName,
-                thumbnailBlob,
-                function(recreatedThumbnailEntry) {
-                  this.pictures_.push(new camera.models.Gallery.Picture(
-                      recreatedThumbnailEntry, entry, type));
-                  callback();
-                }.bind(this), function() {
-                  // Ignore this error, since it is better to load something
-                  // than nothing.
-                  console.warn('Unabled to save the recreated thumbnail.');
-                  callback();
-                });
-          }.bind(this), function() {
-            // Ignore this error, since it is better to load something than
-            // nothing.
-            console.warn('Unable to recreate the thumbnail.');
-            callback();
-          });
-        }.bind(this));
-      } else {
-        // The thumbnail is available.
+      // TODO(yuli): Remove unused thumbnails.
+      var thumbnailName = camera.models.FileSystem.getThumbnailName(entry);
+      var thumbnailEntry = thumbnailEntriesByName[thumbnailName];
+      if (thumbnailEntry) {
         this.pictures_.push(new camera.models.Gallery.Picture(
-            thumbnailEntry, entry, type));
+            thumbnailEntry, entry, isMotionPicture));
         callback();
+      } else {
+        // No thumbnail, most probably pictures taken by the old Camera App.
+        // Create the thumbnail now and ignore errors since it is better to
+        // load something than nothing.
+        // TODO(yuli): Add the picture even if unable to save its thumbnail.
+        camera.models.FileSystem.saveThumbnail(entry, thumbnailEntry => {
+          this.pictures_.push(new camera.models.Gallery.Picture(
+              thumbnailEntry, entry, isMotionPicture));
+          callback();
+        }, callback);
       }
     }.bind(this, entry));
   }
@@ -302,10 +250,9 @@ camera.models.Gallery.prototype.loadStoredPictures_ = function(
 /**
  * Deletes the picture with the specified index by removing it from DOM and
  * removing from the storage.
- *
  * @param {camera.models.Gallery.Picture} picture Picture to be deleted.
  * @param {function()} onSuccess Success callback.
- * @param {function()} onFailure Failure callback.
+ * @param {function(*=)} onFailure Failure callback.
  */
 camera.models.Gallery.prototype.deletePicture = function(
     picture, onSuccess, onFailure) {
@@ -325,11 +272,10 @@ camera.models.Gallery.prototype.deletePicture = function(
 
 /**
  * Saves the picture to the external storage.
- *
  * @param {camera.models.Gallery.Picture} picture Picture to be exported.
  * @param {FileEntry} fileEntry Target file entry.
  * @param {function()} onSuccess Success callback.
- * @param {function()} onFailure Failure callback,
+ * @param {function(*=)} onFailure Failure callback,
  */
 camera.models.Gallery.prototype.exportPicture = function(
     picture, fileEntry, onSuccess, onFailure) {
@@ -341,56 +287,6 @@ camera.models.Gallery.prototype.exportPicture = function(
 };
 
 /**
- * Creates a thumbnail from the original picture.
- *
- * @param {string} url Original picture as an URL.
- * @param {camera.models.Gallery.PictureType} type Original picture's type.
- * @param {function(Blob)} onSuccess Success callback with the thumbnail as a
- *     blob.
- * @param {function()} onFailure Failure callback.
- * @private
- */
-camera.models.Gallery.prototype.createThumbnail_ = function(
-    url, type, onSuccess, onFailure) {
-  var name = (type == camera.models.Gallery.PictureType.MOTION) ?
-      'video' : 'img';
-  var original = document.createElement(name);
-
-  var drawThumbnail = function() {
-    var canvas = document.createElement('canvas');
-    var context = canvas.getContext('2d');
-    var thumbnailWidth = 480;  // Twice wider than in CSS for hi-dpi,
-                               // like Pixel.
-    var ratio = (name == 'video') ?
-        original.videoHeight / original.videoWidth :
-        original.height / original.width;
-    var thumbnailHeight = Math.round(480 * ratio);
-    canvas.width = thumbnailWidth;
-    canvas.height = thumbnailHeight;
-    context.drawImage(original, 0, 0, thumbnailWidth, thumbnailHeight);
-    canvas.toBlob(function(blob) {
-      if (blob) {
-        onSuccess(blob);
-      } else {
-        onFailure();
-      }
-    }, 'image/jpeg');
-  };
-
-  if (name == 'video') {
-    original.onloadeddata = drawThumbnail;
-  } else {
-    original.onload = drawThumbnail;
-  }
-
-  original.onerror = function() {
-    onFailure();
-  };
-
-  original.src = url;
-};
-
-/**
  * Sorts pictures by the taken order; the most recent picture will be at the end
  * of the picture array.
  * @private
@@ -399,25 +295,25 @@ camera.models.Gallery.prototype.sortPictures_ = function() {
   // Sort pictures in ascending order of the taken time deduced from filenames.
   // Assume no more than one picture taken within one millisecond.
   this.pictures_.sort(function(a, b) {
-    var parseDate = function(filename) {
+    var parseDate = function(entry) {
       var num = function(str) {
         return parseInt(str, 10);
       };
 
-      var fileName = camera.models.Gallery.regulateFileName(filename);
+      var name = camera.models.FileSystem.regulatePictureName(entry);
       // Match numeric parts from filenames, e.g. IMG_'yyyyMMdd_HHmmss (n)'.jpg.
-      var match = fileName.match(
+      var match = name.match(
           /_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?: \((\d+)\))?/);
       return match ? new Date(num(match[1]), num(match[2]) - 1, num(match[3]),
           num(match[4]), num(match[5]), num(match[6]),
           match[7] ? num(match[7]) : 0) : null;
     };
 
-    var dateA = parseDate(a.pictureEntry.name);
+    var dateA = parseDate(a.pictureEntry);
     if (dateA == null) {
       return -1;
     }
-    var dateB = parseDate(b.pictureEntry.name);
+    var dateB = parseDate(b.pictureEntry);
     if (dateB == null) {
       return 1;
     }
@@ -426,122 +322,40 @@ camera.models.Gallery.prototype.sortPictures_ = function() {
 };
 
 /**
- * Generates a file name base for the picture.
- *
- * @param {camera.models.Gallery.PictureType} type Type of the picture.
- * @param {int} time Timestamp of the picture in millisecond.
- * @return {string} File name base.
- * @private
- */
-camera.models.Gallery.generateFileNameBase_ = function(type, time) {
-  function pad(n) {
-    if (n < 10)
-      n = '0' + n;
-    return n;
-  }
-
-  // File name base will be formatted as IMG_yyyyMMdd_HHmmss.
-  var prefix = (type == camera.models.Gallery.PictureType.MOTION) ?
-      camera.models.Gallery.VIDEO_PREFIX : camera.models.Gallery.IMAGE_PREFIX;
-  var now = new Date(time);
-  var result = prefix + now.getFullYear() + pad(now.getMonth() + 1) +
-      pad(now.getDate()) + '_' + pad(now.getHours()) + pad(now.getMinutes()) +
-      pad(now.getSeconds());
-
-  return result;
-};
-
-/**
- * Generates a file name extension for the picture.
- *
- * @param {camera.models.Gallery.PictureType} type Type of the picture.
- * @return {string} File name extension.
- * @private
- */
-camera.models.Gallery.generateFileNameExt_ = function(type) {
-  return (type == camera.models.Gallery.PictureType.MOTION) ?
-      '.webm' : '.jpg';
-};
-
-/**
- * Regulates the file name to the desired format if it's a legacy file name.
- *
- * @param {string} filename File name to be regulated.
- * @return {string} File name in the desired format.
- */
-camera.models.Gallery.regulateFileName = function(filename) {
-  if (!filename.startsWith(camera.models.Gallery.VIDEO_PREFIX) &&
-      !filename.startsWith(camera.models.Gallery.IMAGE_PREFIX)) {
-    // Early pictures are in legacy filename format (crrev.com/c/310064).
-    var match = filename.match(/(\d+).(?:\d+)/);
-    if (match) {
-      var type = camera.models.Gallery.PictureType.STILL;
-      return camera.models.Gallery.generateFileNameBase_(type, parseInt(match[1], 10)) +
-             camera.models.Gallery.generateFileNameExt_(type);
-    }
-  } else {
-    var match = filename.match(/(\w{3}_\d{8}_\d{6})(?:_(\d+))(\..+)?$/);
-    if (match && match[2]) {
-      filename = match[1] + ' (' + match[2] + ')' + match[3];
-    }
-  }
-  return filename;
-};
-
-/**
- * Generates thumbnail name according to the file name.
- *
- * @param {string} filename File name.
- * @return {string} Thumbnail name.
- */
-camera.models.Gallery.getThumbnailName = function(filename) {
-  var type = (filename.indexOf(camera.models.Gallery.VIDEO_PREFIX) === 0) ?
-      camera.models.Gallery.PictureType.MOTION :
-      camera.models.Gallery.PictureType.STILL;
-  var thumbnailName = camera.models.Gallery.THUMBNAIL_PREFIX + filename;
-  if (type == camera.models.Gallery.PictureType.MOTION) {
-    thumbnailName = (thumbnailName.substr(0, thumbnailName.lastIndexOf('.')) ||
-        thumbnailName) + '.jpg';
-  }
-  return thumbnailName;
-};
-
-/**
- * Adds a picture to the gallery and saves it in the internal storage.
- *
+ * Saves and adds a picture to the gallery model.
  * @param {Blob} blob Data of the picture to be added.
- * @param {camera.models.Gallery.PictureType} type Type of the picture to be
- *     added.
- * @param {function()} onFailure Failure callback.
+ * @param {boolean} isMotionPicture Picture to be added is a video.
+ * @param {function(*=)} onFailure Failure callback.
  */
 camera.models.Gallery.prototype.addPicture = function(
-    blob, type, onFailure) {
-  var fileNameBase = camera.models.Gallery.generateFileNameBase_(type, Date.now());
-
-  var savePicture = function(pictureBlob) {
-    camera.models.FileSystem.savePicture(
-        fileNameBase + camera.models.Gallery.generateFileNameExt_(type),
-        pictureBlob, function(pictureEntry) {
-      this.createThumbnail_(
-          URL.createObjectURL(pictureBlob), type, function(thumbnailBlob) {
-        camera.models.FileSystem.saveThumbnail(
-            camera.models.Gallery.getThumbnailName(pictureEntry.name),
-            thumbnailBlob, function(thumbnailEntry) {
-          var picture = new camera.models.Gallery.Picture(
-              thumbnailEntry, pictureEntry, type);
-          this.pictures_.push(picture);
-          // Notify observers.
-          for (var i = 0; i < this.observers_.length; i++) {
-            this.observers_[i].onPictureAdded(picture);
-          }
-        }.bind(this), onFailure);
-      }.bind(this), onFailure);
-    }.bind(this), onFailure);
-  }.bind(this);
-
-  if (type == camera.models.Gallery.PictureType.MOTION) {
-    savePicture(blob);
-  } else {
-    camera.util.orientPhoto(blob, savePicture, onFailure);
-  }
+    blob, isMotionPicture, onFailure) {
+  // TODO(yuli): models.Gallery listens to models.FileSystem's file-added event
+  // and then add a new picture into the model.
+  new Promise(resolve => {
+    if (isMotionPicture) {
+      resolve(blob);
+    } else {
+      // Ignore errors since it is better to save something than nothing.
+      // TODO(yuli): Support showing images by EXIF orientation instead.
+      camera.util.orientPhoto(blob, resolve, () => {
+        resolve(blob);
+      });
+    }
+  }).then(blob => {
+    return new Promise((resolve, reject) => {
+      camera.models.FileSystem.savePicture(
+          isMotionPicture, blob, resolve, reject);
+    });
+  }).then(pictureEntry => {
+    // TODO(yuli): Add the picture even if unable to save its thumbnail.
+    camera.models.FileSystem.saveThumbnail(pictureEntry, thumbnailEntry => {
+      var picture = new camera.models.Gallery.Picture(
+          thumbnailEntry, pictureEntry, isMotionPicture);
+      this.pictures_.push(picture);
+      // Notify observers.
+      for (var i = 0; i < this.observers_.length; i++) {
+        this.observers_[i].onPictureAdded(picture);
+      }
+    }, onFailure);
+  }).catch(onFailure);
 };

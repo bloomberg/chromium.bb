@@ -46,8 +46,8 @@ camera.bg.TOPBAR_COLOR = "#1E2023";
  */
 camera.bg.create = function() {
   new Promise(resolve => {
-    chrome.storage.local.get(
-        {maximized: false, fullscreen: false}, function(values) {
+    chrome.storage.local.get({maximized: false, fullscreen: false},
+        values => {
       resolve(values.maximized || values.fullscreen);
     });
   }).then(maximized => {
@@ -58,9 +58,7 @@ camera.bg.create = function() {
 
     chrome.app.window.create('views/main.html', {
       id: 'main',
-      frame: {
-        color: camera.bg.TOPBAR_COLOR
-      },
+      frame: {color: camera.bg.TOPBAR_COLOR},
       hidden: true,  // Will be shown from main.js once loaded.
       innerBounds: {
         width: camera.bg.MIN_WIDTH,
