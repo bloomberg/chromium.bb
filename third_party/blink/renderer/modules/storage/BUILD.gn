@@ -14,11 +14,34 @@ blink_modules_sources("storage") {
     "inspector_dom_storage_agent.h",
     "storage_area.cc",
     "storage_area.h",
+    "storage_area_map.cc",
+    "storage_area_map.h",
     "storage_event.cc",
     "storage_event.h",
     "storage_namespace.cc",
     "storage_namespace.h",
     "storage_namespace_controller.cc",
     "storage_namespace_controller.h",
+  ]
+}
+
+jumbo_source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "storage_area_map_test.cc",
+  ]
+
+  configs += [
+    "//third_party/blink/renderer:config",
+    "//third_party/blink/renderer:inside_blink",
+    "//third_party/blink/renderer/core:blink_core_pch",
+  ]
+
+  deps = [
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/blink/renderer/modules",
+    "//third_party/blink/renderer/platform",
+    "//third_party/blink/renderer/platform/wtf",
   ]
 }
