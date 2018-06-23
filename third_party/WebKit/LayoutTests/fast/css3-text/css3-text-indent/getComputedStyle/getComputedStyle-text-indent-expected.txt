@@ -38,8 +38,8 @@ PASS computedStyle.textIndent is '100px each-line'
 PASS computedStyle.getPropertyValue('text-indent') is '100px each-line'
 
 Value 'each-line 100px':
-PASS e.style.textIndent is 'each-line 100px'
-PASS e.style.getPropertyValue('text-indent') is 'each-line 100px'
+PASS e.style.textIndent is '100px each-line'
+PASS e.style.getPropertyValue('text-indent') is '100px each-line'
 PASS computedStyle.textIndent is '100px each-line'
 PASS computedStyle.getPropertyValue('text-indent') is '100px each-line'
 
@@ -50,8 +50,8 @@ PASS computedStyle.textIndent is '200px each-line'
 PASS computedStyle.getPropertyValue('text-indent') is '200px each-line'
 
 Value 'each-line 20em':
-PASS e.style.textIndent is 'each-line 20em'
-PASS e.style.getPropertyValue('text-indent') is 'each-line 20em'
+PASS e.style.textIndent is '20em each-line'
+PASS e.style.getPropertyValue('text-indent') is '20em each-line'
 PASS computedStyle.textIndent is '200px each-line'
 PASS computedStyle.getPropertyValue('text-indent') is '200px each-line'
 
@@ -62,8 +62,8 @@ PASS computedStyle.textIndent is '30% each-line'
 PASS computedStyle.getPropertyValue('text-indent') is '30% each-line'
 
 Value 'each-line 30%':
-PASS e.style.textIndent is 'each-line 30%'
-PASS e.style.getPropertyValue('text-indent') is 'each-line 30%'
+PASS e.style.textIndent is '30% each-line'
+PASS e.style.getPropertyValue('text-indent') is '30% each-line'
 PASS computedStyle.textIndent is '30% each-line'
 PASS computedStyle.getPropertyValue('text-indent') is '30% each-line'
 
@@ -74,8 +74,8 @@ PASS computedStyle.textIndent is '30px each-line'
 PASS computedStyle.getPropertyValue('text-indent') is '30px each-line'
 
 Value 'each-line calc(10px + 20px)':
-PASS e.style.textIndent is 'each-line calc(30px)'
-PASS e.style.getPropertyValue('text-indent') is 'each-line calc(30px)'
+PASS e.style.textIndent is 'calc(30px) each-line'
+PASS e.style.getPropertyValue('text-indent') is 'calc(30px) each-line'
 PASS computedStyle.textIndent is '30px each-line'
 PASS computedStyle.getPropertyValue('text-indent') is '30px each-line'
 
@@ -86,8 +86,8 @@ PASS computedStyle.textIndent is '100px hanging'
 PASS computedStyle.getPropertyValue('text-indent') is '100px hanging'
 
 Value 'hanging 100px':
-PASS e.style.textIndent is 'hanging 100px'
-PASS e.style.getPropertyValue('text-indent') is 'hanging 100px'
+PASS e.style.textIndent is '100px hanging'
+PASS e.style.getPropertyValue('text-indent') is '100px hanging'
 PASS computedStyle.textIndent is '100px hanging'
 PASS computedStyle.getPropertyValue('text-indent') is '100px hanging'
 
@@ -98,8 +98,8 @@ PASS computedStyle.textIndent is '200px hanging'
 PASS computedStyle.getPropertyValue('text-indent') is '200px hanging'
 
 Value 'hanging 20em':
-PASS e.style.textIndent is 'hanging 20em'
-PASS e.style.getPropertyValue('text-indent') is 'hanging 20em'
+PASS e.style.textIndent is '20em hanging'
+PASS e.style.getPropertyValue('text-indent') is '20em hanging'
 PASS computedStyle.textIndent is '200px hanging'
 PASS computedStyle.getPropertyValue('text-indent') is '200px hanging'
 
@@ -110,8 +110,8 @@ PASS computedStyle.textIndent is '30% hanging'
 PASS computedStyle.getPropertyValue('text-indent') is '30% hanging'
 
 Value 'hanging 30%':
-PASS e.style.textIndent is 'hanging 30%'
-PASS e.style.getPropertyValue('text-indent') is 'hanging 30%'
+PASS e.style.textIndent is '30% hanging'
+PASS e.style.getPropertyValue('text-indent') is '30% hanging'
 PASS computedStyle.textIndent is '30% hanging'
 PASS computedStyle.getPropertyValue('text-indent') is '30% hanging'
 
@@ -122,82 +122,82 @@ PASS computedStyle.textIndent is '30px hanging'
 PASS computedStyle.getPropertyValue('text-indent') is '30px hanging'
 
 Value 'hanging calc(10px + 20px)':
-PASS e.style.textIndent is 'hanging calc(30px)'
-PASS e.style.getPropertyValue('text-indent') is 'hanging calc(30px)'
+PASS e.style.textIndent is 'calc(30px) hanging'
+PASS e.style.getPropertyValue('text-indent') is 'calc(30px) hanging'
 PASS computedStyle.textIndent is '30px hanging'
 PASS computedStyle.getPropertyValue('text-indent') is '30px hanging'
 
 Value '100px each-line hanging':
-PASS e.style.textIndent is '100px each-line hanging'
-PASS e.style.getPropertyValue('text-indent') is '100px each-line hanging'
-PASS computedStyle.textIndent is '100px each-line hanging'
-PASS computedStyle.getPropertyValue('text-indent') is '100px each-line hanging'
+PASS e.style.textIndent is '100px hanging each-line'
+PASS e.style.getPropertyValue('text-indent') is '100px hanging each-line'
+PASS computedStyle.textIndent is '100px hanging each-line'
+PASS computedStyle.getPropertyValue('text-indent') is '100px hanging each-line'
 
 Value 'each-line 100px hanging':
-PASS e.style.textIndent is 'each-line 100px hanging'
-PASS e.style.getPropertyValue('text-indent') is 'each-line 100px hanging'
-PASS computedStyle.textIndent is '100px each-line hanging'
-PASS computedStyle.getPropertyValue('text-indent') is '100px each-line hanging'
+PASS e.style.textIndent is '100px hanging each-line'
+PASS e.style.getPropertyValue('text-indent') is '100px hanging each-line'
+PASS computedStyle.textIndent is '100px hanging each-line'
+PASS computedStyle.getPropertyValue('text-indent') is '100px hanging each-line'
 
 Value 'each-line hanging 100px':
-PASS e.style.textIndent is 'each-line hanging 100px'
-PASS e.style.getPropertyValue('text-indent') is 'each-line hanging 100px'
-PASS computedStyle.textIndent is '100px each-line hanging'
-PASS computedStyle.getPropertyValue('text-indent') is '100px each-line hanging'
+PASS e.style.textIndent is '100px hanging each-line'
+PASS e.style.getPropertyValue('text-indent') is '100px hanging each-line'
+PASS computedStyle.textIndent is '100px hanging each-line'
+PASS computedStyle.getPropertyValue('text-indent') is '100px hanging each-line'
 
 Value '100px hanging each-line':
 PASS e.style.textIndent is '100px hanging each-line'
 PASS e.style.getPropertyValue('text-indent') is '100px hanging each-line'
-PASS computedStyle.textIndent is '100px each-line hanging'
-PASS computedStyle.getPropertyValue('text-indent') is '100px each-line hanging'
+PASS computedStyle.textIndent is '100px hanging each-line'
+PASS computedStyle.getPropertyValue('text-indent') is '100px hanging each-line'
 
 Value 'hanging 100px each-line':
-PASS e.style.textIndent is 'hanging 100px each-line'
-PASS e.style.getPropertyValue('text-indent') is 'hanging 100px each-line'
-PASS computedStyle.textIndent is '100px each-line hanging'
-PASS computedStyle.getPropertyValue('text-indent') is '100px each-line hanging'
+PASS e.style.textIndent is '100px hanging each-line'
+PASS e.style.getPropertyValue('text-indent') is '100px hanging each-line'
+PASS computedStyle.textIndent is '100px hanging each-line'
+PASS computedStyle.getPropertyValue('text-indent') is '100px hanging each-line'
 
 Value 'hanging each-line 100px':
-PASS e.style.textIndent is 'hanging each-line 100px'
-PASS e.style.getPropertyValue('text-indent') is 'hanging each-line 100px'
-PASS computedStyle.textIndent is '100px each-line hanging'
-PASS computedStyle.getPropertyValue('text-indent') is '100px each-line hanging'
+PASS e.style.textIndent is '100px hanging each-line'
+PASS e.style.getPropertyValue('text-indent') is '100px hanging each-line'
+PASS computedStyle.textIndent is '100px hanging each-line'
+PASS computedStyle.getPropertyValue('text-indent') is '100px hanging each-line'
 
 Value '30% each-line hanging':
-PASS e.style.textIndent is '30% each-line hanging'
-PASS e.style.getPropertyValue('text-indent') is '30% each-line hanging'
-PASS computedStyle.textIndent is '30% each-line hanging'
-PASS computedStyle.getPropertyValue('text-indent') is '30% each-line hanging'
+PASS e.style.textIndent is '30% hanging each-line'
+PASS e.style.getPropertyValue('text-indent') is '30% hanging each-line'
+PASS computedStyle.textIndent is '30% hanging each-line'
+PASS computedStyle.getPropertyValue('text-indent') is '30% hanging each-line'
 
 Value 'each-line 30% hanging':
-PASS e.style.textIndent is 'each-line 30% hanging'
-PASS e.style.getPropertyValue('text-indent') is 'each-line 30% hanging'
-PASS computedStyle.textIndent is '30% each-line hanging'
-PASS computedStyle.getPropertyValue('text-indent') is '30% each-line hanging'
+PASS e.style.textIndent is '30% hanging each-line'
+PASS e.style.getPropertyValue('text-indent') is '30% hanging each-line'
+PASS computedStyle.textIndent is '30% hanging each-line'
+PASS computedStyle.getPropertyValue('text-indent') is '30% hanging each-line'
 
 Value 'each-line hanging 30%':
-PASS e.style.textIndent is 'each-line hanging 30%'
-PASS e.style.getPropertyValue('text-indent') is 'each-line hanging 30%'
-PASS computedStyle.textIndent is '30% each-line hanging'
-PASS computedStyle.getPropertyValue('text-indent') is '30% each-line hanging'
+PASS e.style.textIndent is '30% hanging each-line'
+PASS e.style.getPropertyValue('text-indent') is '30% hanging each-line'
+PASS computedStyle.textIndent is '30% hanging each-line'
+PASS computedStyle.getPropertyValue('text-indent') is '30% hanging each-line'
 
 Value '30% hanging each-line':
 PASS e.style.textIndent is '30% hanging each-line'
 PASS e.style.getPropertyValue('text-indent') is '30% hanging each-line'
-PASS computedStyle.textIndent is '30% each-line hanging'
-PASS computedStyle.getPropertyValue('text-indent') is '30% each-line hanging'
+PASS computedStyle.textIndent is '30% hanging each-line'
+PASS computedStyle.getPropertyValue('text-indent') is '30% hanging each-line'
 
 Value 'hanging 30% each-line':
-PASS e.style.textIndent is 'hanging 30% each-line'
-PASS e.style.getPropertyValue('text-indent') is 'hanging 30% each-line'
-PASS computedStyle.textIndent is '30% each-line hanging'
-PASS computedStyle.getPropertyValue('text-indent') is '30% each-line hanging'
+PASS e.style.textIndent is '30% hanging each-line'
+PASS e.style.getPropertyValue('text-indent') is '30% hanging each-line'
+PASS computedStyle.textIndent is '30% hanging each-line'
+PASS computedStyle.getPropertyValue('text-indent') is '30% hanging each-line'
 
 Value 'hanging each-line 30%':
-PASS e.style.textIndent is 'hanging each-line 30%'
-PASS e.style.getPropertyValue('text-indent') is 'hanging each-line 30%'
-PASS computedStyle.textIndent is '30% each-line hanging'
-PASS computedStyle.getPropertyValue('text-indent') is '30% each-line hanging'
+PASS e.style.textIndent is '30% hanging each-line'
+PASS e.style.getPropertyValue('text-indent') is '30% hanging each-line'
+PASS computedStyle.textIndent is '30% hanging each-line'
+PASS computedStyle.getPropertyValue('text-indent') is '30% hanging each-line'
 
 
 Invalid value test - '10m':

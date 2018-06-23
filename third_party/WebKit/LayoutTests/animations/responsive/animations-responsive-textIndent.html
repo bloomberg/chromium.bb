@@ -28,32 +28,32 @@ test(function() {
 test(function() {
     var keyframes = [
         {textIndent: 'inherit'},
-        {textIndent: '200px each-line hanging'}
+        {textIndent: '200px hanging each-line'}
     ];
 
-    container.style.textIndent = '100px each-line hanging';
+    container.style.textIndent = '100px hanging each-line';
     var player = element.animate(keyframes, 10);
 
     player.pause();
     player.currentTime = 5;
-    assert_equals(getComputedStyle(element).textIndent, '150px each-line hanging');
+    assert_equals(getComputedStyle(element).textIndent, '150px hanging each-line');
 
     container.style.textIndent = '400px hanging';
-    assert_equals(getComputedStyle(element).textIndent, '200px each-line hanging');
+    assert_equals(getComputedStyle(element).textIndent, '200px hanging each-line');
 
-    container.style.textIndent = '400px each-line hanging';
-    assert_equals(getComputedStyle(element).textIndent, '300px each-line hanging');
+    container.style.textIndent = '400px hanging each-line';
+    assert_equals(getComputedStyle(element).textIndent, '300px hanging each-line');
 
-    container.style.textIndent = '800px each-line hanging';
-    assert_equals(getComputedStyle(element).textIndent, '500px each-line hanging');
+    container.style.textIndent = '800px hanging each-line';
+    assert_equals(getComputedStyle(element).textIndent, '500px hanging each-line');
 
     container.style.textIndent = '400px each-line';
-    assert_equals(getComputedStyle(element).textIndent, '200px each-line hanging');
+    assert_equals(getComputedStyle(element).textIndent, '200px hanging each-line');
 
-    container.style.textIndent = '800px each-line hanging';
-    assert_equals(getComputedStyle(element).textIndent, '500px each-line hanging');
+    container.style.textIndent = '800px hanging each-line';
+    assert_equals(getComputedStyle(element).textIndent, '500px hanging each-line');
 
-    container.style.textIndent = '400px each-line hanging';
-    assert_equals(getComputedStyle(element).textIndent, '300px each-line hanging');
+    container.style.textIndent = '400px hanging each-line';
+    assert_equals(getComputedStyle(element).textIndent, '300px hanging each-line');
 }, 'textIndent responsive to inherited textIndent changes');
 </script>
