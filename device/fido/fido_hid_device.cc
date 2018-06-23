@@ -15,10 +15,6 @@
 
 namespace device {
 
-namespace switches {
-static constexpr char kEnableU2fHidTest[] = "enable-u2f-hid-tests";
-}  // namespace switches
-
 namespace {
 // U2F devices only provide a single report so specify a report ID of 0 here.
 static constexpr uint8_t kReportId = 0x00;
@@ -43,7 +39,12 @@ void FidoHidDevice::Cancel() {
   if (state_ != State::kBusy && state_ != State::kReady)
     return;
 
-  Transition(std::vector<uint8_t>(), base::DoNothing());
+  // Delete any remaining pending requests on this Channel ID.
+  pending_transactions_ = {};
+  WriteMessage(
+      FidoHidMessage::Create(channel_id_, FidoHidDeviceCommand::kCancel,
+                             std::vector<uint8_t>()),
+      false /* response_expected */, base::DoNothing());
 }
 
 void FidoHidDevice::Transition(std::vector<uint8_t> command,
@@ -68,18 +69,6 @@ void FidoHidDevice::Transition(std::vector<uint8_t> command,
     case State::kReady: {
       state_ = State::kBusy;
       ArmTimeout(repeating_callback);
-
-      // If cancel command has been received, send HID_CANCEL with no-op
-      // callback.
-      // TODO(hongjunchoi): Re-factor cancel logic and consolidate it with
-      // FidoBleDevice::Cancel().
-      if (command.empty()) {
-        WriteMessage(
-            FidoHidMessage::Create(channel_id_, FidoHidDeviceCommand::kCancel,
-                                   std::move(command)),
-            false, base::DoNothing());
-        return;
-      }
 
       // Write message to the device.
       const auto command_type = supported_protocol() == ProtocolVersion::kCtap
@@ -392,12 +381,6 @@ std::string FidoHidDevice::GetId() const {
 std::string FidoHidDevice::GetIdForDevice(
     const device::mojom::HidDeviceInfo& device_info) {
   return "hid:" + device_info.guid;
-}
-
-// static
-bool FidoHidDevice::IsTestEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kEnableU2fHidTest);
 }
 
 base::WeakPtr<FidoDevice> FidoHidDevice::GetWeakPtr() {
