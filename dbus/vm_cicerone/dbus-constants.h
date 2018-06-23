@@ -29,6 +29,9 @@ const char kStartLxdContainerMethod[] = "StartLxdContainer";
 const char kGetLxdContainerUsernameMethod[] = "GetLxdContainerUsername";
 const char kSetUpLxdContainerUserMethod[] = "SetUpLxdContainerUser";
 
+// Methods to be called from debugd.
+const char kGetDebugInformation[] = "GetDebugInformation";
+
 // Signals.
 const char kContainerStartedSignal[] = "ContainerStarted";
 const char kContainerShutdownSignal[] = "ContainerShutdown";

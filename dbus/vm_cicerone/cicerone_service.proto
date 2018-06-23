@@ -538,3 +538,13 @@ message SetUpLxdContainerUserResponse {
   // The failure_reason if the user was not set up successfully.
   string failure_reason = 2;
 }
+
+// Request for debug information about virtual machine and container state.
+message GetDebugInformationRequest {
+}
+
+// Response for debug information about virtual machine and container state.
+message GetDebugInformationResponse {
+  // Debug information about virtual machine and container state in arbitrary format.
+  string debug_information = 1;
+}
