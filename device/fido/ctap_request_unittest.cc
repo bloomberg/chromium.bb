@@ -16,88 +16,6 @@ namespace device {
 // Leveraging example 4 of section 6.1 of the spec
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html
 TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
-  static constexpr uint8_t kSerializedRequest[] = {
-      // clang-format off
-      0x01,        // authenticatorMakeCredential command
-      0xa5,        // map(5)
-      0x01,        //  clientDataHash
-      0x58, 0x20,  // bytes(32)
-      0x68, 0x71, 0x34, 0x96, 0x82, 0x22, 0xec, 0x17, 0x20, 0x2e, 0x42, 0x50,
-      0x5f, 0x8e, 0xd2, 0xb1, 0x6a, 0xe2, 0x2f, 0x16, 0xbb, 0x05, 0xb8, 0x8c,
-      0x25, 0xdb, 0x9e, 0x60, 0x26, 0x45, 0xf1, 0x41,
-
-      0x02,        // unsigned(2) - rp
-      0xa2,        // map(2)
-      0x62,        // text(2)
-      0x69, 0x64,  // "id"
-      0x68,        // text(8)
-      // "acme.com"
-      0x61, 0x63, 0x6d, 0x65, 0x2e, 0x63, 0x6f, 0x6d,
-      0x64,                    // text(4)
-      0x6e, 0x61, 0x6d, 0x65,  // "name"
-      0x64,                    // text(4)
-      0x41, 0x63, 0x6d, 0x65,  // "Acme"
-
-      0x03,        // unsigned(3) - user
-      0xa4,        // map(4)
-      0x62,        // text(2)
-      0x69, 0x64,  // "id"
-      0x48,        // bytes(8) - user id
-      0x10, 0x98, 0x23, 0x72, 0x35, 0x40, 0x98, 0x72,
-      0x64,                    // text(4)
-      0x69, 0x63, 0x6f, 0x6e,  // "icon"
-      0x78, 0x28,              // text(40)
-      // "https://pics.acme.com/00/p/aBjjjpqPb.png"
-      0x68, 0x74, 0x74, 0x70, 0x73, 0x3a, 0x2f, 0x2f, 0x70, 0x69, 0x63, 0x73,
-      0x2e, 0x61, 0x63, 0x6d, 0x65, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x30, 0x30,
-      0x2f, 0x70, 0x2f, 0x61, 0x42, 0x6a, 0x6a, 0x6a, 0x70, 0x71, 0x50, 0x62,
-      0x2e, 0x70, 0x6e, 0x67,
-      0x64,                    // text(4)
-      0x6e, 0x61, 0x6d, 0x65,  // "name"
-      0x76,                    // text(22)
-      // "johnpsmith@example.com"
-      0x6a, 0x6f, 0x68, 0x6e, 0x70, 0x73, 0x6d, 0x69, 0x74, 0x68, 0x40, 0x65,
-      0x78, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x2e, 0x63, 0x6f, 0x6d,
-      0x6b,  // text(11)
-      // "displayName"
-      0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x4e, 0x61, 0x6d, 0x65,
-      0x6d,  // text(13)
-      // "John P. Smith"
-      0x4a, 0x6f, 0x68, 0x6e, 0x20, 0x50, 0x2e, 0x20, 0x53, 0x6d, 0x69, 0x74,
-      0x68,
-
-      0x04,                    // unsigned(4) - pubKeyCredParams
-      0x82,                    // array(2)
-      0xa2,                    // map(2)
-      0x63,                    // text(3)
-      0x61, 0x6c, 0x67,        // "alg"
-      0x07,                    // 7
-      0x64,                    // text(4)
-      0x74, 0x79, 0x70, 0x65,  // "type"
-      0x6a,                    // text(10)
-      // "public-key"
-      0x70, 0x75, 0x62, 0x6C, 0x69, 0x63, 0x2D, 0x6B, 0x65, 0x79,
-      0xa2,                    // map(2)
-      0x63,                    // text(3)
-      0x61, 0x6c, 0x67,        // "alg"
-      0x19, 0x01, 0x01,        // 257
-      0x64,                    // text(4)
-      0x74, 0x79, 0x70, 0x65,  // "type"
-      0x6a,                    // text(10)
-      // "public-key"
-      0x70, 0x75, 0x62, 0x6C, 0x69, 0x63, 0x2D, 0x6B, 0x65, 0x79,
-
-      0x07,        // unsigned(7) - options
-      0xa2,        // map(2)
-      0x62,        // text(2)
-      0x72, 0x6b,  // "rk"
-      0xf5,        // True(21)
-      0x62,        // text(2)
-      0x75, 0x76,  // "uv"
-      0xf5         // True(21)
-      // clang-format on
-  };
-
   PublicKeyCredentialRpEntity rp("acme.com");
   rp.SetRpName("Acme");
 
@@ -114,7 +32,8 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
   auto serialized_data = make_credential_param.SetResidentKeySupported(true)
                              .SetUserVerificationRequired(true)
                              .EncodeAsCBOR();
-  EXPECT_THAT(serialized_data, ::testing::ElementsAreArray(kSerializedRequest));
+  EXPECT_THAT(serialized_data, ::testing::ElementsAreArray(
+                                   test_data::kCtapMakeCredentialRequest));
 }
 
 TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
@@ -220,6 +139,38 @@ TEST(CTAPRequestTest, TestConstructCtapAuthenticatorRequestParam) {
               ::testing::ElementsAre(kSerializedGetNextAssertionCmd));
   EXPECT_THAT(AuthenticatorResetRequest().Serialize(),
               ::testing::ElementsAre(kSerializedResetCmd));
+}
+
+TEST(CTAPRequestTest, ParseMakeCredentialRequestForVirtualCtapKey) {
+  const auto request = ParseCtapMakeCredentialRequest(
+      base::make_span(test_data::kCtapMakeCredentialRequest).subspan(1));
+  ASSERT_TRUE(request);
+  EXPECT_THAT(request->client_data_hash(),
+              ::testing::ElementsAreArray(test_data::kClientDataHash));
+  EXPECT_EQ(test_data::kRelyingPartyId, request->rp().rp_id());
+  EXPECT_EQ("Acme", request->rp().rp_name());
+  EXPECT_THAT(request->user().user_id(),
+              ::testing::ElementsAreArray(test_data::kUserId));
+  ASSERT_TRUE(request->user().user_name());
+  EXPECT_EQ("johnpsmith@example.com", *request->user().user_name());
+  ASSERT_TRUE(request->user().user_display_name());
+  EXPECT_EQ("John P. Smith", *request->user().user_display_name());
+  ASSERT_TRUE(request->user().user_icon_url());
+  EXPECT_EQ("https://pics.acme.com/00/p/aBjjjpqPb.png",
+            request->user().user_icon_url()->spec());
+  ASSERT_EQ(2u, request->public_key_credential_params()
+                    .public_key_credential_params()
+                    .size());
+  EXPECT_EQ(7, request->public_key_credential_params()
+                   .public_key_credential_params()
+                   .at(0)
+                   .algorithm);
+  EXPECT_EQ(257, request->public_key_credential_params()
+                     .public_key_credential_params()
+                     .at(1)
+                     .algorithm);
+  EXPECT_TRUE(request->user_verification_required());
+  EXPECT_TRUE(request->resident_key_supported());
 }
 
 }  // namespace device

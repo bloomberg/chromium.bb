@@ -21,6 +21,9 @@ namespace device {
 // and optional relying party display image url.
 class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialRpEntity {
  public:
+  static base::Optional<PublicKeyCredentialRpEntity> CreateFromCBORValue(
+      const cbor::CBORValue& cbor);
+
   explicit PublicKeyCredentialRpEntity(std::string rp_id);
   PublicKeyCredentialRpEntity(const PublicKeyCredentialRpEntity& other);
   PublicKeyCredentialRpEntity(PublicKeyCredentialRpEntity&& other);

@@ -12,6 +12,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "components/cbor/cbor_values.h"
 #include "device/fido/fido_constants.h"
 
@@ -26,6 +27,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialParams {
     CredentialType type = CredentialType::kPublicKey;
     int algorithm = base::strict_cast<int>(CoseAlgorithmIdentifier::kCoseEs256);
   };
+
+  static base::Optional<PublicKeyCredentialParams> CreateFromCBORValue(
+      const cbor::CBORValue& cbor_value);
 
   explicit PublicKeyCredentialParams(
       std::vector<CredentialInfo> credential_params);
