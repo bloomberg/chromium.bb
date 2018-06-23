@@ -260,15 +260,9 @@ group("gn_all") {
     deps += [
       "//ui/ozone",
       "//ui/ozone:ozone_unittests",
+      "//ui/ozone/demo",
+      "//ui/ozone/gl:ozone_gl_unittests",
     ]
-
-    # TODO(crbug.com/766360): These require a working GL implementation.
-    if (!is_fuchsia) {
-      deps += [
-        "//ui/ozone/demo",
-        "//ui/ozone/gl:ozone_gl_unittests",
-      ]
-    }
 
     if (ozone_platform_x11) {
       deps += [ "//ui/ozone:ozone_x11_unittests" ]

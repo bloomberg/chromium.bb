@@ -191,7 +191,7 @@ component("gl") {
       "gl_surface_egl.h",
     ]
 
-    if (is_linux || (is_win && use_ozone)) {
+    if (is_linux || use_ozone) {
       sources += [
         "gl_image_native_pixmap.cc",
         "gl_image_native_pixmap.h",
