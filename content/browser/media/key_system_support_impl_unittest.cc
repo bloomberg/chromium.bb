@@ -60,20 +60,25 @@ class KeySystemSupportTest : public testing::Test {
     KeySystemSupportImpl::Create(mojo::MakeRequest(&key_system_support_));
   }
 
-  // Registers |key_system| with supported capabilities. All other values for
-  // CdmInfo have some default value as they're not returned by
-  // IsKeySystemSupported().
-  void Register(const std::string& key_system,
-                const std::vector<VideoCodec>& video_codecs,
-                const base::flat_set<CdmSessionType>& session_types,
-                const base::flat_set<EncryptionMode>& encryption_schemes) {
+  // TODO(xhwang): Add tests for hardware secure video codecs and encryption
+  // schemes.
+  CdmCapability GetTestCdmCapability() {
+    return CdmCapability({VideoCodec::kCodecVP8, VideoCodec::kCodecVP9},
+                         {EncryptionMode::kCenc, EncryptionMode::kCbcs},
+                         {CdmSessionType::TEMPORARY_SESSION,
+                          CdmSessionType::PERSISTENT_LICENSE_SESSION},
+                         {});
+  }
+
+  // Registers |key_system| with |capability|. All other values for CdmInfo have
+  // some default value as they're not returned by IsKeySystemSupported().
+  void Register(const std::string& key_system, CdmCapability capability) {
     DVLOG(1) << __func__;
 
     CdmRegistry::GetInstance()->RegisterCdm(
         CdmInfo(key_system, kTestCdmGuid, base::Version(kVersion),
                 base::FilePath::FromUTF8Unsafe(kTestPath), kTestFileSystemId,
-                CdmCapability(video_codecs, encryption_schemes, session_types),
-                key_system, false));
+                std::move(capability), key_system, false));
   }
 
   // Determines if |key_system| is registered. If it is, updates |codecs_|
@@ -103,43 +108,25 @@ TEST_F(KeySystemSupportTest, NoKeySystems) {
 }
 
 TEST_F(KeySystemSupportTest, OneKeySystem) {
-  Register("KeySystem2", {VideoCodec::kCodecVP8},
-           {CdmSessionType::TEMPORARY_SESSION,
-            CdmSessionType::PERSISTENT_LICENSE_SESSION},
-           {EncryptionMode::kCenc, EncryptionMode::kCbcs});
+  Register("KeySystem2", GetTestCdmCapability());
 
   EXPECT_TRUE(IsSupported("KeySystem2"));
-  EXPECT_VIDEO_CODECS(VideoCodec::kCodecVP8);
+  EXPECT_VIDEO_CODECS(VideoCodec::kCodecVP8, VideoCodec::kCodecVP9);
   EXPECT_ENCRYPTION_SCHEMES(EncryptionMode::kCenc, EncryptionMode::kCbcs);
   EXPECT_SESSION_TYPES(CdmSessionType::TEMPORARY_SESSION,
                        CdmSessionType::PERSISTENT_LICENSE_SESSION);
 }
 
 TEST_F(KeySystemSupportTest, MultipleKeySystems) {
-  Register("KeySystem3", {VideoCodec::kCodecVP8, VideoCodec::kCodecVP9},
-           {CdmSessionType::TEMPORARY_SESSION,
-            CdmSessionType::PERSISTENT_LICENSE_SESSION},
-           {EncryptionMode::kCenc});
-  Register("KeySystem4", {VideoCodec::kCodecVP9},
-           {CdmSessionType::TEMPORARY_SESSION}, {EncryptionMode::kCbcs});
+  Register("KeySystem3", GetTestCdmCapability());
+  Register("KeySystem4", GetTestCdmCapability());
 
   EXPECT_TRUE(IsSupported("KeySystem3"));
-  EXPECT_VIDEO_CODECS(VideoCodec::kCodecVP8, VideoCodec::kCodecVP9);
-  EXPECT_ENCRYPTION_SCHEMES(EncryptionMode::kCenc);
-  EXPECT_SESSION_TYPES(CdmSessionType::TEMPORARY_SESSION,
-                       CdmSessionType::PERSISTENT_LICENSE_SESSION);
-
   EXPECT_TRUE(IsSupported("KeySystem4"));
-  EXPECT_VIDEO_CODECS(VideoCodec::kCodecVP9);
-  EXPECT_ENCRYPTION_SCHEMES(EncryptionMode::kCbcs);
-  EXPECT_SESSION_TYPES(CdmSessionType::TEMPORARY_SESSION);
 }
 
 TEST_F(KeySystemSupportTest, MissingKeySystem) {
-  Register("KeySystem5", {VideoCodec::kCodecVP8},
-           {CdmSessionType::TEMPORARY_SESSION,
-            CdmSessionType::PERSISTENT_LICENSE_SESSION},
-           {EncryptionMode::kCenc});
+  Register("KeySystem5", GetTestCdmCapability());
 
   EXPECT_FALSE(IsSupported("KeySystem6"));
   EXPECT_FALSE(capability_);

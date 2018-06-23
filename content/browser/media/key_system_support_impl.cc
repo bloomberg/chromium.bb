@@ -117,6 +117,7 @@ void KeySystemSupportImpl::IsKeySystemSupported(
 
     // TODO(xhwang): Call into GetContentClient()->browser() to get key system
     // specific hardware secure decryption capability on Windows.
+    // TODO(xhwang): Also check cdm_info->capability.cdm_proxy_protocols.
     NOTIMPLEMENTED();
   }
 
