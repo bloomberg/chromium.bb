@@ -5456,11 +5456,7 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingTableSectionInPagedMedia) {
   EXPECT_EQ(LayoutPoint(0, 1400), FragmentAt(foot, 2).PaintOffset());
 
   const auto& painting_layer_object = head->PaintingLayer()->GetLayoutObject();
-  ASSERT_EQ(5u, NumFragments(&painting_layer_object));
-  for (int i = 0; i < 3; i++) {
-    const auto& fragment = FragmentAt(&painting_layer_object, i);
-    EXPECT_EQ(LayoutUnit(i * 400), fragment.LogicalTopInFlowThread());
-  }
+  ASSERT_EQ(1u, NumFragments(&painting_layer_object));
 
   GetFrame().EndPrinting();
   GetDocument().View()->UpdateAllLifecyclePhases();

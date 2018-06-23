@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/paint/collapsed_border_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/table_cell_painter.h"
 #include "third_party/blink/renderer/core/paint/table_row_painter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
@@ -171,12 +172,36 @@ void TableSectionPainter::PaintRepeatingFooterGroup(
 
 void TableSectionPainter::Paint(const PaintInfo& paint_info,
                                 const LayoutPoint& paint_offset) {
-  if (!paint_info.FragmentToPaint(layout_table_section_))
-    return;
-
   // TODO(crbug.com/805514): Paint mask for table section.
   if (paint_info.phase == PaintPhase::kMask)
     return;
+
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    // If the section has multiple fragments, it should repeatedly paint the
+    // fragments by itself if:
+    // - It's not a self-painting layer (otherwise PaintLayerPainter should
+    //   initiate painting of the multiple fragments);
+    // - the table doesn't have multiple fragments (otherwise the table's
+    //   containing painting layer should initiate painting of the fragments).
+    bool should_paint_fragments_by_itself =
+        layout_table_section_.FirstFragment().NextFragment() &&
+        !layout_table_section_.HasSelfPaintingLayer() &&
+        !layout_table_section_.Table()->FirstFragment().NextFragment();
+
+    if (!should_paint_fragments_by_itself) {
+      PaintSection(paint_info, paint_offset);
+      return;
+    }
+
+    for (const auto* fragment = &layout_table_section_.FirstFragment();
+         fragment; fragment = fragment->NextFragment()) {
+      PaintInfo fragment_paint_info = paint_info;
+      fragment_paint_info.SetFragmentLogicalTopInFlowThread(
+          fragment->LogicalTopInFlowThread());
+      PaintSection(fragment_paint_info, paint_offset);
+    }
+    return;
+  }
 
   PaintSection(paint_info, paint_offset);
   LayoutTable* table = layout_table_section_.Table();
@@ -223,6 +248,32 @@ void TableSectionPainter::PaintSection(const PaintInfo& paint_info,
 void TableSectionPainter::PaintCollapsedBorders(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    // If the section has multiple fragments, it should repeatedly paint the
+    // fragments for collapsed borders by itself if the table doesn't have
+    // multiple fragments (otherwise the table's containing painting layer
+    // should initiate painting of the fragments). The condition here is
+    // different from that in Paint() because the table always initiate painting
+    // of collapsed borders regardless of self-painting status of the section.
+    bool should_paint_fragments_by_itself =
+        layout_table_section_.FirstFragment().NextFragment() &&
+        !layout_table_section_.Table()->FirstFragment().NextFragment();
+
+    if (!should_paint_fragments_by_itself) {
+      PaintCollapsedSectionBorders(paint_info, paint_offset);
+      return;
+    }
+
+    for (const auto* fragment = &layout_table_section_.FirstFragment();
+         fragment; fragment = fragment->NextFragment()) {
+      PaintInfo fragment_paint_info = paint_info;
+      fragment_paint_info.SetFragmentLogicalTopInFlowThread(
+          fragment->LogicalTopInFlowThread());
+      PaintCollapsedSectionBorders(fragment_paint_info, paint_offset);
+    }
+    return;
+  }
+
   PaintCollapsedSectionBorders(paint_info, paint_offset);
   LayoutTable* table = layout_table_section_.Table();
   if (table->Header() == layout_table_section_) {
