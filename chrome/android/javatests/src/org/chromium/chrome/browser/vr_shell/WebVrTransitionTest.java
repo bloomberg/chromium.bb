@@ -324,7 +324,7 @@ public class WebVrTransitionTest {
         // Send an autopresent intent, which will open the link in a CCT
         VrTransitionUtils.sendVrLaunchIntent(
                 VrTestFramework.getFileUrlForHtmlTestFile("test_webvr_autopresent"),
-                mTestRule.getActivity(), true /* autopresent */, true /* avoidRelaunch */);
+                true /* autopresent */, true /* avoidRelaunch */);
 
         // Wait until a CCT is opened due to the intent
         final AtomicReference<CustomTabActivity> cct = new AtomicReference<CustomTabActivity>();

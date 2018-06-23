@@ -153,7 +153,7 @@ public class VrShellTransitionTest {
         // Send a VR intent, which will open the link in a CTA.
         String url = VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
         VrTransitionUtils.sendVrLaunchIntent(
-                url, mTestRule.getActivity(), false /* autopresent */, true /* avoidRelaunch */);
+                url, false /* autopresent */, true /* avoidRelaunch */);
 
         // Wait until a CTA is opened due to the intent
         final AtomicReference<ChromeTabbedActivity> cta =
@@ -185,6 +185,63 @@ public class VrShellTransitionTest {
 
         VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         Assert.assertTrue(VrShellDelegate.isInVr());
+        Assert.assertEquals("Url correct", url, mTestRule.getWebContents().getVisibleUrl());
+    }
+
+    /**
+     * Verifies that browser successfully transitions from 2D Chrome to the VR
+     * browser when Chrome gets a VR intent, and returns to 2D when Chrome receives a 2D Intent.
+     */
+    @Test
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @MediumTest
+    public void test2dIntentExitsVrShell() {
+        TestVrShellDelegate.getInstance().setAllow2dIntents(true);
+
+        // Send a VR intent, which will open the link in a CTA.
+        String url = VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
+        VrTransitionUtils.sendVrLaunchIntent(
+                url, false /* autopresent */, true /* avoidRelaunch */);
+
+        // Wait until a CTA is opened due to the intent
+        final AtomicReference<ChromeTabbedActivity> cta =
+                new AtomicReference<ChromeTabbedActivity>();
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                List<WeakReference<Activity>> list = ApplicationStatus.getRunningActivities();
+                for (WeakReference<Activity> ref : list) {
+                    Activity activity = ref.get();
+                    if (activity == null) continue;
+                    if (activity instanceof ChromeTabbedActivity) {
+                        cta.set((ChromeTabbedActivity) activity);
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+
+        // Wait until the tab is ready
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                if (cta.get().getActivityTab() == null) return false;
+                return !cta.get().getActivityTab().isLoading();
+            }
+        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+
+        VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        Assert.assertTrue(VrShellDelegate.isInVr());
+        Assert.assertEquals("Url correct", url, mTestRule.getWebContents().getVisibleUrl());
+
+        VrTransitionUtils.send2dMainIntent();
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !VrShellDelegate.isInVr();
+            }
+        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
         Assert.assertEquals("Url correct", url, mTestRule.getWebContents().getVisibleUrl());
     }
 

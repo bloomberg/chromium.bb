@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.vr_shell.util;
 
 import static org.chromium.chrome.browser.vr_shell.TestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 
@@ -14,6 +13,7 @@ import org.junit.Assert;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.vr.VrMainActivity;
 import org.chromium.chrome.browser.vr_shell.TestFramework;
 import org.chromium.chrome.browser.vr_shell.TestVrShellDelegate;
@@ -191,11 +191,9 @@ public class TransitionUtils {
      * VrShellDelegate.
      *
      * @param url String containing the URL to open
-     * @param activity The activity to launch the intent from
      * @param autopresent If this intent is expected to auto-present WebVR
      */
-    public static void sendVrLaunchIntent(
-            String url, final Activity activity, boolean autopresent, boolean avoidRelaunch) {
+    public static void sendVrLaunchIntent(String url, boolean autopresent, boolean avoidRelaunch) {
         // Create an intent that will launch Chrome at the specified URL.
         final Intent intent =
                 new Intent(ContextUtils.getApplicationContext(), VrMainActivity.class);
@@ -216,6 +214,15 @@ public class TransitionUtils {
                 VrShellDelegate.getVrDaydreamApi().launchInVr(intent);
             }
         });
+    }
+
+    public static void send2dMainIntent() {
+        final Intent intent =
+                new Intent(ContextUtils.getApplicationContext(), ChromeTabbedActivity.class);
+        intent.setAction(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { ContextUtils.getApplicationContext().startActivity(intent); });
     }
 
     /**
