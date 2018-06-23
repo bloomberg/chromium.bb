@@ -1170,7 +1170,12 @@ void aom_highbd_dc_predictor_16x16_c(uint16_t* dst,
                                      const uint16_t* above,
                                      const uint16_t* left,
                                      int bd);
-#define aom_highbd_dc_predictor_16x16 aom_highbd_dc_predictor_16x16_c
+void aom_highbd_dc_predictor_16x16_neon(uint16_t* dst,
+                                        ptrdiff_t y_stride,
+                                        const uint16_t* above,
+                                        const uint16_t* left,
+                                        int bd);
+#define aom_highbd_dc_predictor_16x16 aom_highbd_dc_predictor_16x16_neon
 
 void aom_highbd_dc_predictor_16x32_c(uint16_t* dst,
                                      ptrdiff_t y_stride,
@@ -1219,7 +1224,12 @@ void aom_highbd_dc_predictor_32x32_c(uint16_t* dst,
                                      const uint16_t* above,
                                      const uint16_t* left,
                                      int bd);
-#define aom_highbd_dc_predictor_32x32 aom_highbd_dc_predictor_32x32_c
+void aom_highbd_dc_predictor_32x32_neon(uint16_t* dst,
+                                        ptrdiff_t y_stride,
+                                        const uint16_t* above,
+                                        const uint16_t* left,
+                                        int bd);
+#define aom_highbd_dc_predictor_32x32 aom_highbd_dc_predictor_32x32_neon
 
 void aom_highbd_dc_predictor_32x64_c(uint16_t* dst,
                                      ptrdiff_t y_stride,
@@ -1247,7 +1257,12 @@ void aom_highbd_dc_predictor_4x4_c(uint16_t* dst,
                                    const uint16_t* above,
                                    const uint16_t* left,
                                    int bd);
-#define aom_highbd_dc_predictor_4x4 aom_highbd_dc_predictor_4x4_c
+void aom_highbd_dc_predictor_4x4_neon(uint16_t* dst,
+                                      ptrdiff_t y_stride,
+                                      const uint16_t* above,
+                                      const uint16_t* left,
+                                      int bd);
+#define aom_highbd_dc_predictor_4x4 aom_highbd_dc_predictor_4x4_neon
 
 void aom_highbd_dc_predictor_4x8_c(uint16_t* dst,
                                    ptrdiff_t y_stride,
@@ -1275,7 +1290,12 @@ void aom_highbd_dc_predictor_64x64_c(uint16_t* dst,
                                      const uint16_t* above,
                                      const uint16_t* left,
                                      int bd);
-#define aom_highbd_dc_predictor_64x64 aom_highbd_dc_predictor_64x64_c
+void aom_highbd_dc_predictor_64x64_neon(uint16_t* dst,
+                                        ptrdiff_t y_stride,
+                                        const uint16_t* above,
+                                        const uint16_t* left,
+                                        int bd);
+#define aom_highbd_dc_predictor_64x64 aom_highbd_dc_predictor_64x64_neon
 
 void aom_highbd_dc_predictor_8x16_c(uint16_t* dst,
                                     ptrdiff_t y_stride,
@@ -1303,7 +1323,12 @@ void aom_highbd_dc_predictor_8x8_c(uint16_t* dst,
                                    const uint16_t* above,
                                    const uint16_t* left,
                                    int bd);
-#define aom_highbd_dc_predictor_8x8 aom_highbd_dc_predictor_8x8_c
+void aom_highbd_dc_predictor_8x8_neon(uint16_t* dst,
+                                      ptrdiff_t y_stride,
+                                      const uint16_t* above,
+                                      const uint16_t* left,
+                                      int bd);
+#define aom_highbd_dc_predictor_8x8 aom_highbd_dc_predictor_8x8_neon
 
 void aom_highbd_dc_top_predictor_16x16_c(uint16_t* dst,
                                          ptrdiff_t y_stride,
