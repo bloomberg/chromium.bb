@@ -37,7 +37,6 @@ customBackgrounds.IDS = {
   EDIT_BG_OVERLAY: 'edit-bg-overlay',
   MENU: 'bg-sel-menu',
   OPTIONS_TITLE: 'edit-bg-title',
-  OVERLAY: 'bg-sel-menu-overlay',
   RESTORE_DEFAULT: 'edit-bg-restore-default',
   RESTORE_DEFAULT_TEXT: 'edit-bg-restore-default-text',
   REFRESH_TEXT: 'bg-sel-refresh-text',
@@ -97,18 +96,16 @@ customBackgrounds.resetSelectionDialog = function() {
  */
 customBackgrounds.showCollectionSelectionDialog = function() {
   var tileContainer = $(customBackgrounds.IDS.TILES);
-  var overlay = $(customBackgrounds.IDS.OVERLAY);
+  var menu = $(customBackgrounds.IDS.MENU);
 
-  if (!overlay.open)
-    overlay.showModal();
+  if (!menu.open)
+    menu.showModal();
 
   // Create dialog header
   $(customBackgrounds.IDS.TITLE).textContent =
       configData.translatedStrings.selectChromeWallpaper;
-  $(customBackgrounds.IDS.MENU)
-      .classList.add(customBackgrounds.CLASSES.COLLECTION_DIALOG);
-  $(customBackgrounds.IDS.MENU)
-      .classList.remove(customBackgrounds.CLASSES.IMAGE_DIALOG);
+  menu.classList.add(customBackgrounds.CLASSES.COLLECTION_DIALOG);
+  menu.classList.remove(customBackgrounds.CLASSES.IMAGE_DIALOG);
 
   // Create dialog tiles
   for (var i = 0; i < coll.length; ++i) {
@@ -146,7 +143,7 @@ customBackgrounds.showCollectionSelectionDialog = function() {
             coll_img[0].collectionId == tile.dataset.id) {
           customBackgrounds.showImageSelectionDialog(tile.dataset.name);
         } else {
-          overlay.close();
+          menu.close();
           customBackgrounds.resetSelectionDialog();
         }
       };
@@ -169,9 +166,9 @@ customBackgrounds.showCollectionSelectionDialog = function() {
   $(customBackgrounds.IDS.DONE).textContent =
       configData.translatedStrings.selectionDone;
 
-  overlay.onclick = function(event) {
-    if (event.target == overlay) {
-      overlay.close();
+  menu.onclick = function(event) {
+    if (event.target == menu) {
+      menu.close();
       customBackgrounds.resetSelectionDialog();
     }
   };
@@ -210,15 +207,13 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
   var backButton = $(customBackgrounds.IDS.BACK);
   var dailyRefresh = $(customBackgrounds.IDS.REFRESH_TOGGLE);
   var doneButton = $(customBackgrounds.IDS.DONE);
-  var overlay = $(customBackgrounds.IDS.OVERLAY);
+  var menu = $(customBackgrounds.IDS.MENU);
   var selectedTile = null;
   var tileContainer = $(customBackgrounds.IDS.TILES);
 
   $(customBackgrounds.IDS.TITLE).textContent = dialogTitle;
-  $(customBackgrounds.IDS.MENU)
-      .classList.remove(customBackgrounds.CLASSES.COLLECTION_DIALOG);
-  $(customBackgrounds.IDS.MENU)
-      .classList.add(customBackgrounds.CLASSES.IMAGE_DIALOG);
+  menu.classList.remove(customBackgrounds.CLASSES.COLLECTION_DIALOG);
+  menu.classList.add(customBackgrounds.CLASSES.IMAGE_DIALOG);
 
   for (var i = 0; i < coll_img.length; ++i) {
     var tile = document.createElement('div');
@@ -270,7 +265,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
     if (!selectedTile)
       return;
 
-    overlay.close();
+    menu.close();
     window.chrome.embeddedSearch.newTabPage.setBackgroundURL(
         selectedTile.dataset.url);
     customBackgrounds.resetSelectionDialog();
@@ -413,7 +408,7 @@ customBackgrounds.initCustomBackgrounds = function() {
       if ($(customBackgrounds.IDS.MENU)
               .classList.contains(
                   customBackgrounds.CLASSES.COLLECTION_DIALOG)) {
-        $(customBackgrounds.IDS.OVERLAY).close();
+        $(customBackgrounds.IDS.MENU).close();
         $(customBackgrounds.IDS.EDIT_BG).focus();
       } else {
         customBackgrounds.resetSelectionDialog();
