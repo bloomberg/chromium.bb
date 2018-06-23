@@ -188,6 +188,7 @@ class CleanUpStage(generic_stages.BuilderStage):
 
     buildbucket_client = self.GetBuildbucketClient()
     if not buildbucket_client:
+      logging.info('No buildbucket_client, not cancelling slaves.')
       return
 
     # Find the 3 most recent master buildbucket ids.
@@ -202,7 +203,9 @@ class CleanUpStage(generic_stages.BuilderStage):
     slave_ids = []
 
     # Find the scheduled or started slaves for those master builds.
-    for master_id in buildbucket_lib.ExtractBuildIds(master_builds):
+    master_ids = buildbucket_lib.ExtractBuildIds(master_builds)
+    logging.info('Found Previous Master builds: %s', ', '.join(master_ids))
+    for master_id in master_ids:
       for status in [constants.BUILDBUCKET_BUILDER_STATUS_SCHEDULED,
                      constants.BUILDBUCKET_BUILDER_STATUS_STARTED]:
         builds = buildbucket_client.SearchAllBuilds(
