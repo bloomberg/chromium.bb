@@ -21,6 +21,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
@@ -87,12 +88,21 @@ class TestContentBrowserClient : public ChromeContentBrowserClient {
   void CreateUsbChooserService(
       content::RenderFrameHost* render_frame_host,
       device::mojom::UsbChooserServiceRequest request) override {
-    mojo::MakeStrongBinding(
-        std::make_unique<FakeChooserService>(render_frame_host),
-        std::move(request));
+    if (use_real_chooser_) {
+      ChromeContentBrowserClient::CreateUsbChooserService(render_frame_host,
+                                                          std::move(request));
+    } else {
+      mojo::MakeStrongBinding(
+          std::make_unique<FakeChooserService>(render_frame_host),
+          std::move(request));
+    }
   }
 
+  void UseRealChooser() { use_real_chooser_ = true; }
+
  private:
+  bool use_real_chooser_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(TestContentBrowserClient);
 };
 
@@ -139,6 +149,8 @@ class WebUsbTest : public InProcessBrowserTest {
   }
 
   const GURL& origin() { return origin_; }
+
+  void UseRealChooser() { test_content_browser_client_.UseRealChooser(); }
 
  private:
   std::unique_ptr<MockDeviceClient> device_client_;
@@ -285,6 +297,24 @@ IN_PROC_BROWSER_TEST_F(WebUsbTest, AddRemoveDeviceEphemeral) {
       "}",
       &result));
   EXPECT_EQ("", result);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUsbTest, NavigateWithChooserCrossOrigin) {
+  UseRealChooser();
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::TestNavigationObserver observer(
+      web_contents, 1 /* number_of_navigations */,
+      content::MessageLoopRunner::QuitMode::DEFERRED);
+
+  EXPECT_TRUE(content::ExecuteScript(
+      web_contents,
+      "navigator.usb.requestDevice({ filters: [] });"
+      "document.location.href = \"https://google.com\";"));
+
+  observer.Wait();
+  EXPECT_EQ(0u, browser()->GetBubbleManager()->GetBubbleCountForTesting());
 }
 
 }  // namespace
