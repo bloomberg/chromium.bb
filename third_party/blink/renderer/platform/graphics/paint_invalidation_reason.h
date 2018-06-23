@@ -40,6 +40,9 @@ enum class PaintInvalidationReason : unsigned {
   kChunkUncacheable,
   kChunkReordered,
   kPaintProperty,
+  // For tracking of direct raster invalidation of full composited layers. The
+  // invalidation may be implicit, e.g. when a layer is created.
+  kFullLayer,
   kForTesting,
   // kDelayedFull means that kFull is needed in order to fully paint the
   // content, but that painting of the object can be delayed until a future

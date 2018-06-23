@@ -46,7 +46,7 @@
         {
           "object": "Scroll Corner Layer",
           "rect": [0, 0, 15, 15],
-          "reason": "full"
+          "reason": "full layer"
         }
       ]
     }

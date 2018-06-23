@@ -27,17 +27,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [0, 0, 406, 546],
-          "reason": "paint property change"
+          "reason": "full layer"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [0, 0, 200, 200],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "rect": [0, 0, 200, 200],
-          "reason": "paint property change"
+          "reason": "full layer"
         }
       ]
     },

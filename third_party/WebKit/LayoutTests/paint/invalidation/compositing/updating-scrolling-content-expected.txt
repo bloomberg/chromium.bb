@@ -61,7 +61,7 @@
         {
           "object": "Vertical Scrollbar Layer",
           "rect": [0, 0, 15, 185],
-          "reason": "full"
+          "reason": "full layer"
         }
       ]
     },

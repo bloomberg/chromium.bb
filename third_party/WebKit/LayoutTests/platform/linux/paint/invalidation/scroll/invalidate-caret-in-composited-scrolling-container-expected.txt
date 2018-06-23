@@ -26,32 +26,12 @@
         {
           "object": "LayoutTextControl INPUT id='root'",
           "rect": [0, 0, 63, 24],
-          "reason": "paint property change"
+          "reason": "full layer"
         },
         {
           "object": "LayoutTextControl INPUT id='root'",
           "rect": [0, 0, 61, 22],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTextControl INPUT id='root'",
-          "rect": [0, 0, 61, 22],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [2, 3, 57, 16],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [3, 4, 56, 16],
-          "reason": "paint property change"
-        },
-        {
-          "object": "Caret",
-          "rect": [58, 4, 1, 16],
-          "reason": "chunk appeared"
+          "reason": "full layer"
         }
       ]
     }

@@ -18,6 +18,13 @@
       "position": [-30, -30],
       "bounds": [260, 260],
       "backgroundColor": "#008000",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='box' class='green box blurry'",
+          "rect": [0, 0, 260, 260],
+          "reason": "full layer"
+        }
+      ],
       "transform": 1
     }
   ],
