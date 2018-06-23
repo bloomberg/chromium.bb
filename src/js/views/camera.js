@@ -244,18 +244,15 @@ camera.views.Camera.prototype = {
  */
 camera.views.Camera.prototype.initialize = function(callback) {
   // Select the default state of the toggle buttons.
-  chrome.storage.local.get(
-      {
-        toggleTimer: false,
-        toggleMirror: true,  // Deprecated.
-        mirroringToggles: {},  // Per device.
-      },
-      function(values) {
-        document.querySelector('#toggle-timer').checked =
-            values.toggleTimer;
-        this.legacyMirroringToggle_ = values.toggleMirror;
-        this.mirroringToggles_ = values.mirroringToggles;
-      }.bind(this));
+  chrome.storage.local.get({
+    toggleTimer: false,
+    toggleMirror: true,  // Deprecated.
+    mirroringToggles: {},  // Per device.
+  }, values => {
+    document.querySelector('#toggle-timer').checked = values.toggleTimer;
+    this.legacyMirroringToggle_ = values.toggleMirror;
+    this.mirroringToggles_ = values.mirroringToggles;
+  });
   // Remove the deprecated values.
   chrome.storage.local.remove(['effectIndex', 'toggleMulti']);
 
@@ -677,9 +674,12 @@ camera.views.Camera.prototype.endTakePicture_ = function() {
 camera.views.Camera.prototype.doTakePicture_ = function(timeout) {
   this.doTakePictureTimer_ = setTimeout(function() {
     // Add picture to the model.
-    var addPicture = function(blob, type) {
-      var saveFailure = function() {
-        this.showToastMessage_('errorMsgGallerySaveFailed', true);
+    var addPicture = function(blob, isMotionPicture) {
+      var saveFailure = function(error) {
+        if (error) {
+          console.error(error);
+        }
+        this.showToastMessage_('errorMsgSaveFileFailed', true);
       }.bind(this);
       if (!this.model_) {
         saveFailure();
@@ -688,7 +688,7 @@ camera.views.Camera.prototype.doTakePicture_ = function(timeout) {
       var albumButton = document.querySelector('#toolbar #album-enter');
       camera.util.setAnimationClass(albumButton, albumButton, 'flash');
 
-      this.model_.addPicture(blob, type, saveFailure);
+      this.model_.addPicture(blob, isMotionPicture, saveFailure);
     }.bind(this);
 
     // Update toolbar after finishing taking-photo/recording-video.
@@ -711,7 +711,7 @@ camera.views.Camera.prototype.doTakePicture_ = function(timeout) {
         this.recordEndSound_.currentTime = 0;
         this.recordEndSound_.play();
         stopRecordingUI();
-        addPicture(blob, camera.models.Gallery.PictureType.MOTION);
+        addPicture(blob, true);
       }.bind(this), function() {
         stopRecordingUI();
         // The recording may have no data available because it's too short or
@@ -730,7 +730,7 @@ camera.views.Camera.prototype.doTakePicture_ = function(timeout) {
         // Play a shutter sound.
         this.shutterSound_.currentTime = 0;
         this.shutterSound_.play();
-        addPicture(blob, camera.models.Gallery.PictureType.STILL);
+        addPicture(blob, false);
       }.bind(this), function() {
         this.showToastMessage_('errorMsgTakePhotoFailed', true);
       }.bind(this), onFinish);
@@ -742,7 +742,7 @@ camera.views.Camera.prototype.doTakePicture_ = function(timeout) {
  * Starts a recording and creates a blob of it after the recorder is stopped.
  * @param {function(Blob)} onSuccess Success callback with the recorded video
  *     as a blob.
- * @param {function()} onFailure Failure callback.
+ * @param {function(*=)} onFailure Failure callback.
  * @param {function()} onFinish Finish callback.
  * @private
  */
@@ -777,7 +777,7 @@ camera.views.Camera.prototype.createBlobOnRecordStop_ = function(
  * Takes a photo and creates a blob of it.
  * @param {function(Blob)} onSuccess Success callback with the taken photo as a
  *     blob.
- * @param {function()} onFailure Failure callback.
+ * @param {function(*=)} onFailure Failure callback.
  * @param {function()} onFinish Finish callback.
  * @private
  */
@@ -803,7 +803,7 @@ camera.views.Camera.prototype.createBlobOnPhotoTake_ = function(
           imageHeight: photoCapabilities.imageHeight.max
       };
       return this.imageCapture_.takePhoto(photoSettings);
-    }).then(onSuccess).catch(error => { onFailure(); }).finally(onFinish);
+    }).then(onSuccess).catch(onFailure).finally(onFinish);
   } else {
     var canvas = document.createElement('canvas');
     var context = canvas.getContext('2d');
@@ -871,7 +871,7 @@ camera.views.Camera.prototype.updateVideoDeviceId_ = function(constraints) {
  * Starts capturing with the specified constraints.
  * @param {!Object} constraints Constraints passed to WebRTC.
  * @param {function()} onSuccess Success callback.
- * @param {function()} onFailure Failure callback, eg. the constraints are
+ * @param {function(*=)} onFailure Failure callback, eg. the constraints are
  *     not supported.
  * @private
  */
@@ -922,13 +922,7 @@ camera.views.Camera.prototype.updateVideoDeviceId_ = function(constraints) {
     // Load the stream and wait for the metadata.
     this.video_.addEventListener('loadedmetadata', onLoadedMetadata);
     this.video_.play();
-  }.bind(this), function(error) {
-    if (error && error.name != 'ConstraintNotSatisfiedError') {
-      // Constraint errors are expected, so don't report them.
-      console.error(error);
-    }
-    onFailure();
-  });
+  }.bind(this), onFailure);
 };
 
 /**
@@ -1103,7 +1097,10 @@ camera.views.Camera.prototype.start_ = function() {
     this.context_.onErrorRecovered('no-camera');
   }.bind(this);
 
-  var onFailure = function() {
+  var onFailure = function(error) {
+    if (error) {
+      console.error(error);
+    }
     this.context_.onError(
         'no-camera',
         chrome.i18n.getMessage('errorMsgNoCamera'),
@@ -1123,10 +1120,14 @@ camera.views.Camera.prototype.start_ = function() {
       return;
     }
     this.startWithConstraints_(
-        constraintsCandidates[index], onSuccess, function() {
-          // TODO(mtomasz): Workaround for crbug.com/383241.
-          setTimeout(tryStartWithConstraints.bind(this, index + 1), 0);
-        });
+        constraintsCandidates[index], onSuccess, function(error) {
+      if (error && error.name != 'ConstraintNotSatisfiedError') {
+        // Constraint errors are expected, so don't report them.
+        console.error(error);
+      }
+      // TODO(mtomasz): Workaround for crbug.com/383241.
+      setTimeout(tryStartWithConstraints.bind(this, index + 1), 0);
+    });
   }.bind(this);
 
   this.sortVideoDeviceIds_().then(function(sortedDeviceIds) {
@@ -1136,10 +1137,7 @@ camera.views.Camera.prototype.start_ = function() {
     }.bind(this));
 
     tryStartWithConstraints(0);
-  }.bind(this)).catch(function(error) {
-    console.error('Failed to start camera.', error);
-    onFailure();
-  });
+  }.bind(this)).catch(onFailure);
 };
 
 /**

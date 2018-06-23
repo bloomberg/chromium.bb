@@ -7,6 +7,10 @@
     "message": "Take pictures and record videos with your camera.",
     "description": "Short description of the Camera App."
   },
+  "errorMsgFileSystemFailed": {
+    "message": "File system errors.",
+    "description": "Error message shown when failing to read or write the file system."
+  },
   "errorMsgNoCamera": {
     "message": "Your camera is currently unavailable.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
@@ -19,19 +23,19 @@
     "message": "Unable to load the gallery.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Unable to add to the gallery.",
-    "description": "Error message shown when saving and adding a image or video to the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Unable to save $file$.",
-    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "message": "Unable to export $file$.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
         "example": "IMG_20160520_000000.jpg."
       }
     }
+  },
+  "errorMsgSaveFileFailed": {
+    "message": "Unable to save the file.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
     "message": "Unable to take picture.",
@@ -54,7 +58,7 @@
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Save to disk",
+    "message": "Export to disk",
     "description": "Label for the exporting button."
   },
   "printButton": {

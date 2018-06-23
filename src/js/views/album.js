@@ -207,7 +207,7 @@ camera.views.Album.prototype.updateButtons_ = function() {
  */
 camera.views.Album.prototype.openPicture_ = function(picture) {
   if (camera.models.FileSystem.externalFs && chrome.fileManagerPrivate) {
-    var id = picture.pictureType == camera.models.Gallery.PictureType.MOTION ?
+    var id = picture.isMotionPicture ?
         camera.views.Album.VIDEO_PLAYER_APP : camera.views.Album.GALLERY_APP;
     chrome.fileManagerPrivate.executeTask(
         id, [picture.pictureEntry], function(result) {
@@ -498,7 +498,7 @@ camera.views.Album.prototype.addPictureToDOM = function(picture) {
   }.bind(this);
   img.src = picture.thumbnailURL;
   wrapper.appendChild(img);
-  if (picture.pictureType == camera.models.Gallery.PictureType.MOTION) {
+  if (picture.isMotionPicture) {
     wrapper.classList.add('motion-picture');
   }
   album.insertBefore(wrapper, album.firstChild);
