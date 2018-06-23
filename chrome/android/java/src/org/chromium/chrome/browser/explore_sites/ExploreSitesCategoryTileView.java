@@ -49,11 +49,12 @@ public class ExploreSitesCategoryTileView extends LinearLayout {
         mIconView = findViewById(R.id.explore_sites_category_tile_icon);
     }
 
-    public void initialize(ExploreSitesCategoryTile category, int widthPx, int heightPx) {
+    public void initialize(ExploreSitesCategoryTile category, int widthPx) {
         mCategoryData = category;
-        mIconWidthPx = widthPx;
-        mIconHeightPx = heightPx;
-        mIconGenerator = new RoundedIconGenerator(widthPx, heightPx,
+        mIconWidthPx =
+                widthPx - (2 * mResources.getDimensionPixelSize(R.dimen.explore_sites_padding));
+        mIconHeightPx = mIconWidthPx * 2 / 3;
+        mIconGenerator = new RoundedIconGenerator(mIconWidthPx, mIconHeightPx,
                 mResources.getDimensionPixelSize(R.dimen.explore_sites_radius),
                 ApiCompatibilityUtils.getColor(
                         mResources, R.color.default_favicon_background_color),

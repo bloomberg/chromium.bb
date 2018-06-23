@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.explore_sites;
 
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 
 import org.chromium.chrome.R;
@@ -51,13 +54,11 @@ public class ExploreSitesSection {
     private void initializeTiles(List<ExploreSitesCategoryTile> tileList) {
         if (tileList == null) return;
 
-        int parentWidth = mExploreSection.getWidth();
-        int tileWidth = (parentWidth
-                                - (mExploreSection.getResources().getDimensionPixelSize(
-                                           R.dimen.explore_sites_padding)
-                                          * 2))
-                / MAX_TILES;
-        int tileHeight = tileWidth / 3 * 2;
+        Point screenSize = new Point();
+        ((WindowManager) mExploreSection.getContext().getSystemService(Context.WINDOW_SERVICE))
+                .getDefaultDisplay()
+                .getSize(screenSize);
+        int tileWidth = screenSize.x / MAX_TILES;
 
         int tileCount = 0;
         for (final ExploreSitesCategoryTile tile : tileList) {
@@ -69,7 +70,8 @@ public class ExploreSitesSection {
                     (ExploreSitesCategoryTileView) LayoutInflater.from(mExploreSection.getContext())
                             .inflate(R.layout.explore_sites_category_tile_view, mCategorySection,
                                     false);
-            tileView.initialize(tile, tileWidth, tileHeight);
+
+            tileView.initialize(tile, tileWidth);
             mCategorySection.addView(tileView);
             tileView.setOnClickListener(
                     (View v)
