@@ -1810,7 +1810,7 @@
   # TODO(thakis): Fix all failing tests, add them here, then remove this.
   'linux_chromeos_rel_specific_gtests_asan_bringup': {
     'chromevox_tests': {},
-    #'exo_unittests': {},  # https://crbug.com/855573
+    'exo_unittests': {},
     'gl_unittests_ozone': {},
     'ozone_gl_unittests': {
       'args': [
