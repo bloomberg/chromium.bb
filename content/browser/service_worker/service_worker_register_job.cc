@@ -623,6 +623,16 @@ void ServiceWorkerRegisterJob::OnScriptLoaded() {
   new_version()->embedded_worker()->ResumeAfterDownload();
 }
 
+void ServiceWorkerRegisterJob::OnDetached(EmbeddedWorkerStatus old_status) {
+  // The version's EmbeddedWorkerInstance may be getting destructed soon, so
+  // remove the observer to avoid a use-after-free. We expect to continue when
+  // the StartWorker() callback is called with failure.
+  // TODO(crbug.com/855852): Remove the EmbeddedWorkerInstance::Listener
+  // interface and have this class listen to ServiceWorkerVersion directly.
+  if (observer_.IsObserving(new_version()->embedded_worker()))
+    observer_.Remove(new_version()->embedded_worker());
+}
+
 void ServiceWorkerRegisterJob::BumpLastUpdateCheckTimeIfNeeded() {
   // Bump the last update check time only when the register/update job fetched
   // the version having bypassed the network cache. We assume that the
