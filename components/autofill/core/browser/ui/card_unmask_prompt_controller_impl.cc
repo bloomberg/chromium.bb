@@ -28,14 +28,7 @@ namespace autofill {
 CardUnmaskPromptControllerImpl::CardUnmaskPromptControllerImpl(
     PrefService* pref_service,
     bool is_off_the_record)
-    : pref_service_(pref_service),
-      new_card_link_clicked_(false),
-      is_off_the_record_(is_off_the_record),
-      card_unmask_view_(nullptr),
-      unmasking_result_(AutofillClient::NONE),
-      unmasking_initial_should_store_pan_(false),
-      unmasking_number_of_attempts_(0),
-      weak_pointer_factory_(this) {}
+    : pref_service_(pref_service), is_off_the_record_(is_off_the_record) {}
 
 CardUnmaskPromptControllerImpl::~CardUnmaskPromptControllerImpl() {
   if (card_unmask_view_)
@@ -62,15 +55,6 @@ void CardUnmaskPromptControllerImpl::ShowPrompt(
   unmasking_number_of_attempts_ = 0;
   unmasking_initial_should_store_pan_ = GetStoreLocallyStartState();
   AutofillMetrics::LogUnmaskPromptEvent(AutofillMetrics::UNMASK_PROMPT_SHOWN);
-}
-
-bool CardUnmaskPromptControllerImpl::AllowsRetry(
-    AutofillClient::PaymentsRpcResult result) {
-  if (result == AutofillClient::NETWORK_ERROR ||
-      result == AutofillClient::PERMANENT_FAILURE) {
-    return false;
-  }
-  return true;
 }
 
 void CardUnmaskPromptControllerImpl::OnVerificationResult(
@@ -119,66 +103,6 @@ void CardUnmaskPromptControllerImpl::OnUnmaskDialogClosed() {
   LogOnCloseEvents();
   if (delegate_)
     delegate_->OnUnmaskPromptClosed();
-}
-
-void CardUnmaskPromptControllerImpl::LogOnCloseEvents() {
-  AutofillMetrics::UnmaskPromptEvent close_reason_event = GetCloseReasonEvent();
-  AutofillMetrics::LogUnmaskPromptEvent(close_reason_event);
-  AutofillMetrics::LogUnmaskPromptEventDuration(
-      AutofillClock::Now() - shown_timestamp_, close_reason_event);
-
-  if (close_reason_event == AutofillMetrics::UNMASK_PROMPT_CLOSED_NO_ATTEMPTS)
-    return;
-
-  if (close_reason_event ==
-      AutofillMetrics::UNMASK_PROMPT_CLOSED_ABANDON_UNMASKING) {
-    AutofillMetrics::LogTimeBeforeAbandonUnmasking(AutofillClock::Now() -
-                                                   verify_timestamp_);
-  }
-
-  bool final_should_store_pan = pending_response_.should_store_pan;
-  if (unmasking_result_ == AutofillClient::SUCCESS && final_should_store_pan) {
-    AutofillMetrics::LogUnmaskPromptEvent(
-        AutofillMetrics::UNMASK_PROMPT_SAVED_CARD_LOCALLY);
-  }
-
-  if (CanStoreLocally()) {
-    // Tracking changes in local save preference.
-    AutofillMetrics::UnmaskPromptEvent event;
-    if (unmasking_initial_should_store_pan_ && final_should_store_pan) {
-      event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT;
-    } else if (!unmasking_initial_should_store_pan_ &&
-               !final_should_store_pan) {
-      event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_IN;
-    } else if (unmasking_initial_should_store_pan_ && !final_should_store_pan) {
-      event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_OUT;
-    } else {
-      event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_IN;
-    }
-    AutofillMetrics::LogUnmaskPromptEvent(event);
-  }
-}
-
-AutofillMetrics::UnmaskPromptEvent
-CardUnmaskPromptControllerImpl::GetCloseReasonEvent() {
-  if (unmasking_number_of_attempts_ == 0)
-    return AutofillMetrics::UNMASK_PROMPT_CLOSED_NO_ATTEMPTS;
-
-  // If NONE and we have a pending request, we have a pending GetRealPan
-  // request.
-  if (unmasking_result_ == AutofillClient::NONE)
-    return AutofillMetrics::UNMASK_PROMPT_CLOSED_ABANDON_UNMASKING;
-
-  if (unmasking_result_ == AutofillClient::SUCCESS) {
-    return unmasking_number_of_attempts_ == 1
-        ? AutofillMetrics::UNMASK_PROMPT_UNMASKED_CARD_FIRST_ATTEMPT
-        : AutofillMetrics::UNMASK_PROMPT_UNMASKED_CARD_AFTER_FAILED_ATTEMPTS;
-  }
-  return AllowsRetry(unmasking_result_)
-             ? AutofillMetrics::
-                   UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_RETRIABLE_FAILURE
-             : AutofillMetrics::
-                   UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE;
 }
 
 void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
@@ -330,6 +254,81 @@ base::TimeDelta CardUnmaskPromptControllerImpl::GetSuccessMessageDuration()
       card_.record_type() == CreditCard::LOCAL_CARD ||
               reason_ == AutofillClient::UNMASK_FOR_PAYMENT_REQUEST
           ? 0 : 500);
+}
+
+AutofillClient::PaymentsRpcResult
+CardUnmaskPromptControllerImpl::GetVerificationResult() const {
+  return unmasking_result_;
+}
+
+bool CardUnmaskPromptControllerImpl::AllowsRetry(
+    AutofillClient::PaymentsRpcResult result) {
+  if (result == AutofillClient::NETWORK_ERROR ||
+      result == AutofillClient::PERMANENT_FAILURE) {
+    return false;
+  }
+  return true;
+}
+
+void CardUnmaskPromptControllerImpl::LogOnCloseEvents() {
+  AutofillMetrics::UnmaskPromptEvent close_reason_event = GetCloseReasonEvent();
+  AutofillMetrics::LogUnmaskPromptEvent(close_reason_event);
+  AutofillMetrics::LogUnmaskPromptEventDuration(
+      AutofillClock::Now() - shown_timestamp_, close_reason_event);
+
+  if (close_reason_event == AutofillMetrics::UNMASK_PROMPT_CLOSED_NO_ATTEMPTS)
+    return;
+
+  if (close_reason_event ==
+      AutofillMetrics::UNMASK_PROMPT_CLOSED_ABANDON_UNMASKING) {
+    AutofillMetrics::LogTimeBeforeAbandonUnmasking(AutofillClock::Now() -
+                                                   verify_timestamp_);
+  }
+
+  bool final_should_store_pan = pending_response_.should_store_pan;
+  if (unmasking_result_ == AutofillClient::SUCCESS && final_should_store_pan) {
+    AutofillMetrics::LogUnmaskPromptEvent(
+        AutofillMetrics::UNMASK_PROMPT_SAVED_CARD_LOCALLY);
+  }
+
+  if (CanStoreLocally()) {
+    // Tracking changes in local save preference.
+    AutofillMetrics::UnmaskPromptEvent event;
+    if (unmasking_initial_should_store_pan_ && final_should_store_pan) {
+      event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT;
+    } else if (!unmasking_initial_should_store_pan_ &&
+               !final_should_store_pan) {
+      event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_IN;
+    } else if (unmasking_initial_should_store_pan_ && !final_should_store_pan) {
+      event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_OUT;
+    } else {
+      event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_IN;
+    }
+    AutofillMetrics::LogUnmaskPromptEvent(event);
+  }
+}
+
+AutofillMetrics::UnmaskPromptEvent
+CardUnmaskPromptControllerImpl::GetCloseReasonEvent() {
+  if (unmasking_number_of_attempts_ == 0)
+    return AutofillMetrics::UNMASK_PROMPT_CLOSED_NO_ATTEMPTS;
+
+  // If NONE and we have a pending request, we have a pending GetRealPan
+  // request.
+  if (unmasking_result_ == AutofillClient::NONE)
+    return AutofillMetrics::UNMASK_PROMPT_CLOSED_ABANDON_UNMASKING;
+
+  if (unmasking_result_ == AutofillClient::SUCCESS) {
+    return unmasking_number_of_attempts_ == 1
+               ? AutofillMetrics::UNMASK_PROMPT_UNMASKED_CARD_FIRST_ATTEMPT
+               : AutofillMetrics::
+                     UNMASK_PROMPT_UNMASKED_CARD_AFTER_FAILED_ATTEMPTS;
+  }
+  return AllowsRetry(unmasking_result_)
+             ? AutofillMetrics::
+                   UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_RETRIABLE_FAILURE
+             : AutofillMetrics::
+                   UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE;
 }
 
 }  // namespace autofill

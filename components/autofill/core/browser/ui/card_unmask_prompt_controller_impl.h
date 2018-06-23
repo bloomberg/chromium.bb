@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -54,6 +53,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
                               const base::string16& year) const override;
   int GetExpectedCvcLength() const override;
   base::TimeDelta GetSuccessMessageDuration() const override;
+  AutofillClient::PaymentsRpcResult GetVerificationResult() const override;
 
  protected:
   // Exposed for testing.
@@ -66,23 +66,24 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   AutofillMetrics::UnmaskPromptEvent GetCloseReasonEvent();
 
   PrefService* pref_service_;
-  bool new_card_link_clicked_;
+  bool new_card_link_clicked_ = false;
   bool is_off_the_record_;
   CreditCard card_;
   AutofillClient::UnmaskCardReason reason_;
   base::WeakPtr<CardUnmaskDelegate> delegate_;
-  CardUnmaskPromptView* card_unmask_view_;
+  CardUnmaskPromptView* card_unmask_view_ = nullptr;
 
-  AutofillClient::PaymentsRpcResult unmasking_result_;
-  bool unmasking_initial_should_store_pan_;
-  int unmasking_number_of_attempts_;
+  AutofillClient::PaymentsRpcResult unmasking_result_ = AutofillClient::NONE;
+  bool unmasking_initial_should_store_pan_ = false;
+  int unmasking_number_of_attempts_ = 0;
   base::Time shown_timestamp_;
   // Timestamp of the last time the user clicked the Verify button.
   base::Time verify_timestamp_;
 
   CardUnmaskDelegate::UnmaskResponse pending_response_;
 
-  base::WeakPtrFactory<CardUnmaskPromptControllerImpl> weak_pointer_factory_;
+  base::WeakPtrFactory<CardUnmaskPromptControllerImpl> weak_pointer_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptControllerImpl);
 };

@@ -107,6 +107,15 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
     return base::TimeDelta::FromMilliseconds(10);
   }
 
+  AutofillClient::PaymentsRpcResult GetVerificationResult() const override {
+    if (expected_failure_temporary_)
+      return AutofillClient::TRY_AGAIN_FAILURE;
+    if (expected_failure_permanent_)
+      return AutofillClient::PERMANENT_FAILURE;
+
+    return AutofillClient::SUCCESS;
+  }
+
   void set_expected_verification_failure(bool allow_retry) {
     if (allow_retry) {
       expected_failure_temporary_ = true;
