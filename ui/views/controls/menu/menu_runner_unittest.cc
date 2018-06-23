@@ -64,8 +64,12 @@ class MenuRunnerTest : public ViewsTestBase {
   MenuRunnerTest();
   ~MenuRunnerTest() override;
 
-  // Initializes a MenuRunner with |run_types|. It takes ownership of
-  // |menu_item_view_|.
+  // Initializes the delegates and views needed for a menu. It does not create
+  // the MenuRunner.
+  void InitMenuViews();
+
+  // Initializes all delegates and views needed for a menu. A MenuRunner is also
+  // created with |run_types|, it takes ownership of |menu_item_view_|.
   void InitMenuRunner(int32_t run_types);
 
   MenuItemView* menu_item_view() { return menu_item_view_; }
@@ -74,12 +78,11 @@ class MenuRunnerTest : public ViewsTestBase {
   Widget* owner() { return owner_.get(); }
 
   // ViewsTestBase:
-  void SetUp() override;
   void TearDown() override;
 
  private:
-  // Owned by MenuRunner.
-  MenuItemView* menu_item_view_;
+  // Owned by menu_runner_.
+  MenuItemView* menu_item_view_ = nullptr;
 
   std::unique_ptr<TestMenuDelegate> menu_delegate_;
   std::unique_ptr<MenuRunner> menu_runner_;
@@ -92,12 +95,7 @@ MenuRunnerTest::MenuRunnerTest() {}
 
 MenuRunnerTest::~MenuRunnerTest() {}
 
-void MenuRunnerTest::InitMenuRunner(int32_t run_types) {
-  menu_runner_.reset(new MenuRunner(menu_item_view_, run_types));
-}
-
-void MenuRunnerTest::SetUp() {
-  ViewsTestBase::SetUp();
+void MenuRunnerTest::InitMenuViews() {
   menu_delegate_.reset(new TestMenuDelegate);
   menu_item_view_ = new MenuItemView(menu_delegate_.get());
   menu_item_view_->AppendMenuItemWithLabel(1, base::ASCIIToUTF16("One"));
@@ -111,8 +109,14 @@ void MenuRunnerTest::SetUp() {
   owner_->Show();
 }
 
+void MenuRunnerTest::InitMenuRunner(int32_t run_types) {
+  InitMenuViews();
+  menu_runner_.reset(new MenuRunner(menu_item_view_, run_types));
+}
+
 void MenuRunnerTest::TearDown() {
-  owner_->CloseNow();
+  if (owner_)
+    owner_->CloseNow();
   ViewsTestBase::TearDown();
 }
 
@@ -367,7 +371,21 @@ TEST_F(MenuRunnerWidgetTest, ClearsMouseHandlerOnRun) {
   EXPECT_EQ(1, second_event_count_view->GetEventCount(ui::ET_MOUSE_PRESSED));
 }
 
-typedef MenuRunnerTest MenuRunnerImplTest;
+class MenuRunnerImplTest : public MenuRunnerTest {
+ public:
+  MenuRunnerImplTest() {}
+  ~MenuRunnerImplTest() override {}
+
+  void SetUp() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MenuRunnerImplTest);
+};
+
+void MenuRunnerImplTest::SetUp() {
+  MenuRunnerTest::SetUp();
+  InitMenuViews();
+}
 
 // Tests that when nested menu runners are destroyed out of order, that
 // MenuController is not accessed after it has been destroyed. This should not
@@ -472,6 +490,7 @@ void MenuRunnerDestructionTest::SetUp() {
   views_delegate_ = views_delegate.get();
   set_views_delegate(std::move(views_delegate));
   MenuRunnerTest::SetUp();
+  InitMenuViews();
 }
 
 // Tests that when ViewsDelegate is released that a nested Cancel of the
