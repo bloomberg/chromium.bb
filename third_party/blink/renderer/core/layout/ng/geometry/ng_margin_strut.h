@@ -24,6 +24,10 @@ struct CORE_EXPORT NGMarginStrut {
   // See comment inside NGBlockLayoutAlgorithm for when this occurs.
   bool is_quirky_container_start = false;
 
+  // If set, we will discard all adjoining margins, which is the
+  // effect of -webkit-margin-collapse:discard.
+  bool discard_margins = false;
+
   // Appends negative or positive value to the current margin strut.
   void Append(const LayoutUnit& value, bool is_quirky);
 
