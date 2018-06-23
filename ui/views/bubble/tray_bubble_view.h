@@ -130,6 +130,9 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
   // ResetDelegate.
   void ResetDelegate();
 
+  // Anchors the bubble to |anchor_view|.
+  void ChangeAnchorView(views::View* anchor_view);
+
   Delegate* delegate() { return delegate_; }
 
   void set_gesture_dragging(bool dragging) { is_gesture_dragging_ = dragging; }

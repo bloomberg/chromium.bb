@@ -5,13 +5,16 @@
 #include "ash/system/unified/unified_system_tray_bubble.h"
 
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/metrics/histogram_macros.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -68,9 +71,12 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   }
 
   tray->tray_event_filter()->AddBubble(this);
+  Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
 UnifiedSystemTrayBubble::~UnifiedSystemTrayBubble() {
+  if (Shell::Get()->tablet_mode_controller())
+    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   tray_->tray_event_filter()->RemoveBubble(this);
   if (bubble_widget_) {
     bubble_widget_->RemoveObserver(this);
@@ -142,6 +148,33 @@ void UnifiedSystemTrayBubble::RecordTimeToClick() {
                       base::TimeTicks::Now() - time_shown_by_click_.value());
 
   time_shown_by_click_.reset();
+}
+
+void UnifiedSystemTrayBubble::OnTabletModeStarted() {
+  UpdateBubbleBounds();
+}
+
+void UnifiedSystemTrayBubble::OnTabletModeEnded() {
+  UpdateBubbleBounds();
+}
+
+void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
+  // If the bubble is open while switching to and from tablet mode, change the
+  // bubble anchor if needed. The new anchor view may also have a translation
+  // applied to it so shift the bubble bounds so that it appears in the correct
+  // location.
+  bubble_view_->ChangeAnchorView(
+      tray_->shelf()->GetSystemTrayAnchor()->GetBubbleAnchor());
+  gfx::Rect bounds =
+      bubble_view_->GetWidget()->GetNativeWindow()->GetBoundsInScreen();
+  const gfx::Vector2dF translation = tray_->shelf()
+                                         ->GetSystemTrayAnchor()
+                                         ->layer()
+                                         ->transform()
+                                         .To2dTranslation();
+  bounds.set_x(bounds.x() - translation.x());
+  bounds.set_y(bounds.y() - translation.y());
+  bubble_view_->GetWidget()->GetNativeWindow()->SetBounds(bounds);
 }
 
 }  // namespace ash

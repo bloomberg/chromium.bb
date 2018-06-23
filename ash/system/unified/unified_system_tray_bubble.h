@@ -9,6 +9,7 @@
 
 #include "ash/system/tray/time_to_click_recorder.h"
 #include "ash/system/tray/tray_bubble_base.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -30,7 +31,8 @@ class UnifiedSystemTrayView;
 // case, this class calls UnifiedSystemTray::CloseBubble() to delete itself.
 class UnifiedSystemTrayBubble : public TrayBubbleBase,
                                 public views::WidgetObserver,
-                                public TimeToClickRecorder::Delegate {
+                                public TimeToClickRecorder::Delegate,
+                                public TabletModeObserver {
  public:
   explicit UnifiedSystemTrayBubble(UnifiedSystemTray* tray, bool show_by_click);
   ~UnifiedSystemTrayBubble() override;
@@ -58,8 +60,14 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
   // TimeToClickRecorder::Delegate:
   void RecordTimeToClick() override;
 
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
+
  private:
   friend class UnifiedSystemTrayTestApi;
+
+  void UpdateBubbleBounds();
 
   // Controller of UnifiedSystemTrayView. As the view is owned by views
   // hierarchy, we have to own the controller here.

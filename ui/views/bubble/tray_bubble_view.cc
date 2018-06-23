@@ -312,6 +312,10 @@ void TrayBubbleView::ResetDelegate() {
   delegate_ = nullptr;
 }
 
+void TrayBubbleView::ChangeAnchorView(views::View* anchor_view) {
+  BubbleDialogDelegateView::SetAnchorView(anchor_view);
+}
+
 int TrayBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
