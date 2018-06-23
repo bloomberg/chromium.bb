@@ -17,6 +17,9 @@ blobstore_qcow_path = "$root_out_dir/fvm.blk.qcow2"
 #   package: The package() target which will be run.
 #   package_name_override: Specifies the name of the generated package, if its
 #       name is different than the |package| target name.
+#   package_deps: An array of [package, package_name_override] array pairs
+#       which specify additional dependency packages to be installed
+#       prior to execution.
 #   runner_script: The runner script implementation to use, relative to
 #       "build/fuchsia". Defaults to "exe_runner.py".
 template("fuchsia_package_runner") {
@@ -77,6 +80,19 @@ template("fuchsia_package_runner") {
 
     if (defined(invoker.use_test_server) && invoker.use_test_server) {
       args += [ "--enable-test-server" ]
+    }
+
+    if (defined(invoker.package_deps)) {
+      foreach(cur_package, invoker.package_deps) {
+        deps += [ cur_package[0] ]
+        dep_package_path =
+            "$root_out_dir/gen/" + get_label_info(cur_package[0], "dir") + "/" +
+            cur_package[1] + "/" + cur_package[1] + ".far"
+        args += [
+          "--package-dep",
+          rebase_path(dep_package_path, root_out_dir, root_build_dir),
+        ]
+      }
     }
 
     # Arguments used at runtime by the test runner.

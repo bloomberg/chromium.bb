@@ -83,8 +83,8 @@ def DrainStreamToStdout(stream, quit_event):
     poll.unregister(stream.fileno())
 
 
-def RunPackage(output_dir, target, package_path, package_name, run_args,
-               system_logging, symbolizer_config=None):
+def RunPackage(output_dir, target, package_path, package_name, package_deps,
+               run_args, system_logging, symbolizer_config=None):
   """Copies the Fuchsia package at |package_path| to the target,
   executes it with |run_args|, and symbolizes its output.
 
@@ -102,7 +102,6 @@ def RunPackage(output_dir, target, package_path, package_name, run_args,
 
 
   system_logger = _AttachKernelLogReader(target) if system_logging else None
-  package_copied = False
   try:
     if system_logger:
       # Spin up a thread to asynchronously dump the system log to stdout
@@ -114,21 +113,25 @@ def RunPackage(output_dir, target, package_path, package_name, run_args,
       log_output_thread.daemon = True
       log_output_thread.start()
 
-    logging.info('Copying package to target.')
-    install_path = os.path.join('/data', os.path.basename(package_path))
-    target.PutFile(package_path, install_path)
-    package_copied = True
+    for next_package_path in ([package_path] + package_deps):
+      logging.info('Installing ' + os.path.basename(next_package_path) + '.')
 
-    logging.info('Installing package.')
-    p = target.RunCommandPiped(['pm', 'install', install_path],
-                               stderr=subprocess.PIPE)
-    output = p.stderr.readlines()
-    p.wait()
+      # Copy the package archive.
+      install_path = os.path.join('/data', os.path.basename(next_package_path))
+      target.PutFile(next_package_path, install_path)
 
-    if p.returncode != 0:
-      # Don't error out if the package already exists on the device.
-      if len(output) != 1 or 'ErrAlreadyExists' not in output[0]:
-        raise Exception('Error while installing: %s' % '\n'.join(output))
+      # Install the package.
+      p = target.RunCommandPiped(['pm', 'install', install_path],
+                                 stderr=subprocess.PIPE)
+      output = p.stderr.readlines()
+      p.wait()
+      if p.returncode != 0:
+        # Don't error out if the package already exists on the device.
+        if len(output) != 1 or 'ErrAlreadyExists' not in output[0]:
+          raise Exception('Error while installing: %s' % '\n'.join(output))
+
+      # Clean up the package archive.
+      target.RunCommand(['rm', install_path])
 
     if system_logger:
       log_output_quit_event.set()
@@ -172,10 +175,6 @@ def RunPackage(output_dir, target, package_path, package_name, run_args,
       log_output_quit_event.set()
       log_output_thread.join()
       system_logger.kill()
-
-    if package_copied:
-      logging.info('Removing package source from device.')
-      target.RunCommand(['rm', install_path])
 
 
   return process.returncode
