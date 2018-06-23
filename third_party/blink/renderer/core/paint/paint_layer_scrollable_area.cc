@@ -713,10 +713,6 @@ void PaintLayerScrollableArea::ContentsResized() {
   GetLayoutBox()->SetNeedsPaintPropertyUpdate();
 }
 
-bool PaintLayerScrollableArea::IsScrollable() const {
-  return ScrollsOverflow();
-}
-
 IntPoint PaintLayerScrollableArea::LastKnownMousePosition() const {
   return GetLayoutBox()->GetFrame() ? GetLayoutBox()
                                           ->GetFrame()

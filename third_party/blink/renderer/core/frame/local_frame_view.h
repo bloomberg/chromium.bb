@@ -371,16 +371,6 @@ class CORE_EXPORT LocalFrameView final
   FloatPoint ConvertToLayoutObject(const LayoutObject&,
                                    const FloatPoint&) const;
 
-  enum ScrollingReasons {
-    kScrollable,
-    kNotScrollableNoOverflow,
-    kNotScrollableNotVisible,
-    kNotScrollableExplicitlyDisabled
-  };
-
-  ScrollingReasons GetScrollingReasons() const;
-  bool IsScrollable() const override;
-
   IntPoint LastKnownMousePosition() const override;
   bool ShouldSetCursor() const;
 

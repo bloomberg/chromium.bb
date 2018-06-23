@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 
 #include "third_party/blink/public/platform/platform.h"
 
@@ -65,10 +66,7 @@ bool CompositingReasonFinder::RequiresCompositingForScrollableFrame() const {
   if (!(compositing_triggers_ & kScrollableInnerFrameTrigger))
     return false;
 
-  if (layout_view_.GetFrameView()->VisibleContentSize().IsEmpty())
-    return false;
-
-  return layout_view_.GetFrameView()->IsScrollable();
+  return layout_view_.GetFrameView()->LayoutViewport()->ScrollsOverflow();
 }
 
 CompositingReasons
@@ -280,15 +278,13 @@ bool CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(
   EPosition position = layer->GetLayoutObject().Style()->GetPosition();
   if (position == EPosition::kFixed) {
     return layer->FixedToViewport() &&
-           layout_view_.GetFrameView()->IsScrollable();
+           layout_view_.GetFrameView()->LayoutViewport()->ScrollsOverflow();
   }
   DCHECK_EQ(position, EPosition::kSticky);
 
   // Don't promote sticky position elements that cannot move with scrolls.
   if (!layer->SticksToScroller())
     return false;
-  if (layer->AncestorOverflowLayer()->IsRootLayer())
-    return layout_view_.GetFrameView()->IsScrollable();
   return layer->AncestorOverflowLayer()->ScrollsOverflow();
 }
 

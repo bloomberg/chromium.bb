@@ -2365,47 +2365,6 @@ IntRect LocalFrameView::ScrollableAreaBoundingBox() const {
           .EnclosingBoundingBox()));
 }
 
-bool LocalFrameView::IsScrollable() const {
-  return GetScrollingReasons() == kScrollable;
-}
-
-LocalFrameView::ScrollingReasons LocalFrameView::GetScrollingReasons() const {
-  // Check for:
-  // 1) If there an actual overflow.
-  // 2) display:none or visibility:hidden set to self or inherited.
-  // 3) overflow{-x,-y}: hidden;
-  // 4) scrolling: no;
-
-  // Covers #1
-  IntSize contents_size;
-  if (GetLayoutView())
-    contents_size = GetLayoutView()->DocumentRect().Size();
-  else
-    contents_size = ContentsSize();
-
-  IntSize visible_content_size = VisibleContentSize();
-  if (contents_size.Height() <= visible_content_size.Height() &&
-      contents_size.Width() <= visible_content_size.Width())
-    return kNotScrollableNoOverflow;
-
-  // Covers #2.
-  // FIXME: Do we need to fix this for OOPI?
-  HTMLFrameOwnerElement* owner = frame_->DeprecatedLocalOwner();
-  if (owner && (!owner->GetLayoutObject() ||
-                !owner->GetLayoutObject()->VisibleToHitTesting()))
-    return kNotScrollableNotVisible;
-
-  // Cover #3 and #4.
-  ScrollbarMode horizontal_mode;
-  ScrollbarMode vertical_mode;
-  GetLayoutView()->CalculateScrollbarModes(horizontal_mode, vertical_mode);
-  if (horizontal_mode == kScrollbarAlwaysOff &&
-      vertical_mode == kScrollbarAlwaysOff)
-    return kNotScrollableExplicitlyDisabled;
-
-  return kScrollable;
-}
-
 bool LocalFrameView::ShouldSuspendScrollAnimations() const {
   return !frame_->GetDocument()->LoadEventFinished();
 }
@@ -3692,12 +3651,12 @@ void LocalFrameView::RemoveResizerArea(LayoutBox& resizer_box) {
 bool LocalFrameView::FrameIsScrollableDidChange() {
   DCHECK(GetFrame().IsLocalRoot());
   return GetScrollingContext()->WasScrollable() !=
-         LayoutViewport()->IsScrollable();
+         LayoutViewport()->ScrollsOverflow();
 }
 
 void LocalFrameView::ClearFrameIsScrollableDidChange() {
   GetScrollingContext()->SetWasScrollable(
-      GetFrame().LocalFrameRoot().View()->LayoutViewport()->IsScrollable());
+      GetFrame().LocalFrameRoot().View()->LayoutViewport()->ScrollsOverflow());
 }
 
 void LocalFrameView::ScrollableAreasDidChange() {
@@ -4754,17 +4713,13 @@ MainThreadScrollingReasons LocalFrameView::MainThreadScrollingReasonsPerFrame()
   if (HasBackgroundAttachmentFixedObjects())
     reasons |= MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
 
-  ScrollingReasons scrolling_reasons = GetScrollingReasons();
-  const bool may_be_scrolled_by_input = (scrolling_reasons == kScrollable);
-  const bool may_be_scrolled_by_script =
-      may_be_scrolled_by_input ||
-      (scrolling_reasons == kNotScrollableExplicitlyDisabled);
-
-  // TODO(awoloszyn) Currently crbug.com/304810 will let certain
-  // overflow:hidden elements scroll on the compositor thread, so we should
-  // not let this move there path as an optimization, when we have
-  // slow-repaint elements.
-  if (may_be_scrolled_by_script &&
+  // Force main-thread scrolling if the frame has uncomposited position: fixed
+  // elements.  Note: we care about this not only for input-scrollable frames
+  // but also for overflow: hidden frames, because script can run composited
+  // smooth-scroll animations.  For this reason, we use HasOverflow instead of
+  // ScrollsOverflow (which is false for overflow: hidden).
+  if (LayoutViewport()->HasOverflow() &&
+      GetLayoutView()->Style()->VisibleToHitTesting() &&
       HasVisibleSlowRepaintViewportConstrainedObjects()) {
     reasons |=
         MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects;
