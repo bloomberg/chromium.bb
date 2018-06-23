@@ -58,9 +58,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/glsl/bugs/' +
         'vector-scalar-arithmetic-inside-loop-complex.html',
         ['nvidia'], bug=772651)
-    self.Fail('conformance/misc/webgl-specific-stencil-settings.html',
-        ['passthrough', 'nvidia'], bug=844349)
-
     # All platforms.
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
     self.Fail('conformance2/glsl3/array-length-side-effects.html',
@@ -330,6 +327,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance/*', ['win', 'intel', 'd3d11'], bug=628395)
     self.Flaky('conformance2/*', ['win', 'intel', 'd3d11'], bug=628395)
     self.Flaky('deqp/*', ['win', 'intel', 'd3d11'], bug=628395)
+
+    # Passthrough command decoder
+    self.Fail('conformance/misc/webgl-specific-stencil-settings.html',
+        ['passthrough'], bug=844349)
 
     # Passthrough command decoder / D3D11
     self.Fail('deqp/functional/gles3/shaderstruct.html',
