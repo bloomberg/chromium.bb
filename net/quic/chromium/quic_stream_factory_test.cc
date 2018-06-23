@@ -254,8 +254,6 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
             quic::kMaxTimeForCryptoHandshakeSecs),
         max_idle_time_before_crypto_handshake_seconds_(
             quic::kInitialIdleTimeoutSecs),
-        migrate_sessions_on_network_change_(false),
-        migrate_sessions_early_(false),
         migrate_sessions_on_network_change_v2_(false),
         migrate_sessions_early_v2_(false),
         allow_server_migration_(false),
@@ -280,7 +278,8 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         idle_connection_timeout_seconds_, reduced_ping_timeout_seconds_,
         max_time_before_crypto_handshake_seconds_,
         max_idle_time_before_crypto_handshake_seconds_,
-        migrate_sessions_on_network_change_, migrate_sessions_early_,
+        /*migrate_sessions_on_network_change*/ false,
+        /*migrate_sessions_early*/ false,
         migrate_sessions_on_network_change_v2_, migrate_sessions_early_v2_,
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
@@ -289,19 +288,6 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         client_connection_options_, /*enable_token_binding*/ false,
         /*enable_channel_id*/ false,
         /*enable_socket_recv_optimization*/ false));
-  }
-
-  void InitializeConnectionMigrationTest(
-      NetworkChangeNotifier::NetworkList connected_networks) {
-    scoped_mock_network_change_notifier_.reset(
-        new ScopedMockNetworkChangeNotifier());
-    MockNetworkChangeNotifier* mock_ncn =
-        scoped_mock_network_change_notifier_->mock_network_change_notifier();
-    mock_ncn->ForceNetworkHandlesSupported();
-    mock_ncn->SetConnectedNetworksList(connected_networks);
-    migrate_sessions_on_network_change_ = true;
-    migrate_sessions_early_ = true;
-    Initialize();
   }
 
   void InitializeConnectionMigrationV2Test(
@@ -831,8 +817,6 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   int reduced_ping_timeout_seconds_;
   int max_time_before_crypto_handshake_seconds_;
   int max_idle_time_before_crypto_handshake_seconds_;
-  bool migrate_sessions_on_network_change_;
-  bool migrate_sessions_early_;
   bool migrate_sessions_on_network_change_v2_;
   bool migrate_sessions_early_v2_;
   bool allow_server_migration_;
