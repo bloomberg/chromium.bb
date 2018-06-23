@@ -247,6 +247,14 @@ void CardUnmaskPromptViews::DeleteDelegate() {
   delete this;
 }
 
+int CardUnmaskPromptViews::GetDialogButtons() const {
+  // In permanent error state, only the "close" button is shown.
+  if (controller_->GetVerificationResult() == AutofillClient::PERMANENT_FAILURE)
+    return ui::DIALOG_BUTTON_CANCEL;
+
+  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+}
+
 base::string16 CardUnmaskPromptViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
