@@ -91,8 +91,27 @@ void av1_build_compound_diffwtd_mask_d16_c(uint8_t* mask,
                                            int w,
                                            ConvolveParams* conv_params,
                                            int bd);
-#define av1_build_compound_diffwtd_mask_d16 \
-  av1_build_compound_diffwtd_mask_d16_c
+void av1_build_compound_diffwtd_mask_d16_neon(uint8_t* mask,
+                                              DIFFWTD_MASK_TYPE mask_type,
+                                              const CONV_BUF_TYPE* src0,
+                                              int src0_stride,
+                                              const CONV_BUF_TYPE* src1,
+                                              int src1_stride,
+                                              int h,
+                                              int w,
+                                              ConvolveParams* conv_params,
+                                              int bd);
+RTCD_EXTERN void (*av1_build_compound_diffwtd_mask_d16)(
+    uint8_t* mask,
+    DIFFWTD_MASK_TYPE mask_type,
+    const CONV_BUF_TYPE* src0,
+    int src0_stride,
+    const CONV_BUF_TYPE* src1,
+    int src1_stride,
+    int h,
+    int w,
+    ConvolveParams* conv_params,
+    int bd);
 
 void av1_build_compound_diffwtd_mask_highbd_c(uint8_t* mask,
                                               DIFFWTD_MASK_TYPE mask_type,
@@ -1095,6 +1114,10 @@ static void setup_rtcd_internal(void) {
 
   (void)flags;
 
+  av1_build_compound_diffwtd_mask_d16 = av1_build_compound_diffwtd_mask_d16_c;
+  if (flags & HAS_NEON)
+    av1_build_compound_diffwtd_mask_d16 =
+        av1_build_compound_diffwtd_mask_d16_neon;
   av1_convolve_2d_copy_sr = av1_convolve_2d_copy_sr_c;
   if (flags & HAS_NEON)
     av1_convolve_2d_copy_sr = av1_convolve_2d_copy_sr_neon;
