@@ -21,7 +21,14 @@ executable("layout_test_proxy") {
   ]
 }
 
-fuchsia_executable_runner("layout_test_proxy_runner") {
+fuchsia_package("layout_test_proxy_pkg") {
   testonly = true
-  exe_target = ":layout_test_proxy"
+  binary = ":layout_test_proxy"
+  package_name_override = "layout_test_proxy"
+}
+
+fuchsia_package_runner("layout_test_proxy_runner") {
+  testonly = true
+  package = ":layout_test_proxy_pkg"
+  package_name_override = "layout_test_proxy"
 }
