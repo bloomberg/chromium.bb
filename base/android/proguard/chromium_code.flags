@@ -15,6 +15,7 @@
 -keep @interface org.chromium.base.annotations.AccessedByNative
 -keep @interface org.chromium.base.annotations.CalledByNative
 -keep @interface org.chromium.base.annotations.CalledByNativeUnchecked
+-keep @interface org.chromium.base.annotations.DoNotInline
 -keep @interface org.chromium.base.annotations.RemovableInRelease
 -keep @interface org.chromium.base.annotations.UsedByReflection
 
@@ -44,6 +45,15 @@
 # Remove methods annotated with this if their return value is unused.
 -assumenosideeffects class ** {
   @org.chromium.base.annotations.RemovableInRelease <methods>;
+}
+
+# Never inline classes or methods with this annotation, but allow shrinking and
+# obfuscation.
+-keepnames,allowobfuscation @org.chromium.base.annotations.DoNotInline class * {
+  *;
+}
+-keepclassmembernames,allowobfuscation class * {
+  @org.chromium.base.annotations.DoNotInline <methods>;
 }
 
 # Keep all CREATOR fields within Parcelable that are kept.
