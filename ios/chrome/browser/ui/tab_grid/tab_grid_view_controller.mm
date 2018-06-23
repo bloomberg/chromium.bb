@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_top_toolbar.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -557,15 +558,21 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   button.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:button];
   self.floatingButton = button;
-  NSArray* constraints = @[
+  CGFloat verticalInset = kTabGridFloatingButtonVerticalInsetSmall;
+  if (self.traitCollection.verticalSizeClass ==
+          UIUserInterfaceSizeClassRegular &&
+      self.traitCollection.horizontalSizeClass ==
+          UIUserInterfaceSizeClassRegular) {
+    verticalInset = kTabGridFloatingButtonVerticalInsetLarge;
+  }
+  id<LayoutGuideProvider> safeAreaGuide = SafeAreaLayoutGuideForView(self.view);
+  [NSLayoutConstraint activateConstraints:@[
     [button.trailingAnchor
-        constraintEqualToAnchor:self.view.trailingAnchor
+        constraintEqualToAnchor:safeAreaGuide.trailingAnchor
                        constant:-kTabGridFloatingButtonHorizontalInset],
-    [button.bottomAnchor
-        constraintEqualToAnchor:self.view.bottomAnchor
-                       constant:-kTabGridFloatingButtonVerticalInset]
-  ];
-  [NSLayoutConstraint activateConstraints:constraints];
+    [button.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor
+                                        constant:-verticalInset]
+  ]];
 }
 
 - (void)configureViewControllerForCurrentSizeClassesAndPage {
