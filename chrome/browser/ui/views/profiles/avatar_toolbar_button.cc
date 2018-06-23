@@ -14,10 +14,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -40,18 +37,9 @@ AvatarToolbarButton::AvatarToolbarButton(Profile* profile,
 #if !defined(OS_CHROMEOS)
       error_controller_(this, profile_),
 #endif  // !defined(OS_CHROMEOS)
-      profile_observer_(this),
-      cookie_manager_service_observer_(this),
-      account_tracker_service_observer_(this) {
+      profile_observer_(this) {
   profile_observer_.Add(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
-
-  if (!IsIncognito() && !profile_->IsGuestSession()) {
-    cookie_manager_service_observer_.Add(
-        GaiaCookieManagerServiceFactory::GetForProfile(profile_));
-    account_tracker_service_observer_.Add(
-        AccountTrackerServiceFactory::GetForProfile(profile_));
-  }
 
   SetImageAlignment(HorizontalAlignment::ALIGN_CENTER,
                     VerticalAlignment::ALIGN_MIDDLE);
@@ -134,18 +122,6 @@ void AvatarToolbarButton::OnProfileNameChanged(
   UpdateTooltipText();
 }
 
-void AvatarToolbarButton::OnGaiaAccountsInCookieUpdated(
-    const std::vector<gaia::ListedAccount>& accounts,
-    const std::vector<gaia::ListedAccount>& signed_out_accounts,
-    const GoogleServiceAuthError& error) {
-  UpdateIcon();
-}
-
-void AvatarToolbarButton::OnAccountImageUpdated(const std::string& account_id,
-                                                const gfx::Image& image) {
-  UpdateIcon();
-}
-
 bool AvatarToolbarButton::IsIncognito() const {
   return profile_->IsOffTheRecord() && !profile_->IsGuestSession();
 }
@@ -155,10 +131,6 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
   // sessions should be handled separately and never call this function.
   DCHECK(!profile_->IsGuestSession());
   DCHECK(!profile_->IsOffTheRecord());
-#if !defined(OS_CHROMEOS)
-  if (!signin_ui_util::GetAccountsForDicePromos(profile_).empty())
-    return false;
-#endif  // !defined(OS_CHROMEOS)
   return g_browser_process->profile_manager()
                  ->GetProfileAttributesStorage()
                  .GetNumberOfProfiles() == 1 &&
@@ -250,20 +222,6 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
       return *gaia_image;
     return gfx::Image();
   }
-
-#if !defined(OS_CHROMEOS)
-  // If the user isn't signed in and the profile icon wasn't changed explicitly,
-  // try to use the first account icon of the sync promo.
-  if (!SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated() &&
-      entry->GetAvatarIconIndex() == 0) {
-    std::vector<AccountInfo> promo_accounts =
-        signin_ui_util::GetAccountsForDicePromos(profile_);
-    if (!promo_accounts.empty()) {
-      return AccountTrackerServiceFactory::GetForProfile(profile_)
-          ->GetAccountImage(promo_accounts[0].account_id);
-    }
-  }
-#endif  // !defined(OS_CHROMEOS)
 
   return entry->GetAvatarIcon();
 }
