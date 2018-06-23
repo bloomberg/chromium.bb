@@ -225,6 +225,40 @@ video files, instead of all files.">
     Audio/Video
   </message>
 
+  <!-- Media Remoting Dialog -->
+  <message name="IDS_MEDIA_ROUTER_REMOTING_DIALOG_TITLE" desc="Title text shown at the top of the dialog asking the user whether they want to enable the Media Remoting feature. Media Remoting is a feature that can be enabled during a Cast session for improved playback.">
+    Optimize fullscreen casting?
+  </message>
+  <message name="IDS_MEDIA_ROUTER_REMOTING_DIALOG_BODY_TEXT" desc="Body text shown in the dialog to enable/disable Media Remoting. Media Remoting is a feature that can be enabled during a Cast session for improved playback.">
+    Get better quality video and save battery life. Video will play only on your Cast-enabled screen.
+  </message>
+  <message name="IDS_MEDIA_ROUTER_REMOTING_DIALOG_CHECKBOX" desc="Label for the checkbox that the user can click on to get their preference to enable/disable Media Remoting recorded. Media Remoting is a feature that can be enabled during a Cast session for improved playback.">
+    Don't ask again
+  </message>
+  <message name="IDS_MEDIA_ROUTER_REMOTING_DIALOG_OPTIMIZE_BUTTON" desc="Label for a button in the Media Remoting dialog that the user can click on to enable the feature. Shown next to the 'Cancel' button. Media Remoting is a feature that can be enabled during a Cast session for improved playback.">
+    Optimize
+  </message>
+  <message name="IDS_MEDIA_ROUTER_REMOTING_DIALOG_CANCEL_BUTTON" desc="Label for a button in the Media Remoting dialog that the user can click on to cancel enabling the feature. Shown next to the 'Optimize' button. Media Remoting is a feature that can be enabled during a Cast session for improved playback.">
+    No thanks
+  </message>
+  <message name="IDS_MEDIA_ROUTER_REMOTING_DIALOG_CANCEL_BUTTON_MACOS" desc="Label for a button in the Media Remoting dialog that the user can click on to cancel enabling the feature, shown on macOS. Shown next to the 'Optimize' button. Media Remoting is a feature that can be enabled during a Cast session for improved playback.">
+    No Thanks
+  </message>
+
+  <!-- Cloud Services Dialog -->
+  <message name="IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_TITLE" desc="Title of the dialog asking whether the user wants to enable the feature allowing them to Cast to cloud services (Google Hangouts, Google Meet, Cast for Education extension).">
+    Enable cloud services for Cast?
+  </message>
+  <message name="IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_BODY" desc="Body text of the dialog asking whether the user wants to enable the feature allowing them to Cast to cloud services (Google Hangouts, Google Meet, Cast for Education extension).">
+    Use of Hangouts and Cast for Education is governed by the Google Privacy Policy.
+  </message>
+  <message name="IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_ENABLE" desc="Label for a button in the dialog asking whether the user wants to enable the feature allowing them to Cast to cloud services. When this button is clicked, the preference to enable the feature gets saved.">
+    Enable
+  </message>
+  <message name="IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_CANCEL" desc="Label for a button in the dialog asking whether the user wants to enable the feature allowing them to Cast to cloud services. No changes are made when this button is clicked.">
+    Cancel
+  </message>
+
   <!-- Wired Display Media Route Provider -->
   <message name="IDS_MEDIA_ROUTER_WIRED_DISPLAY_ROUTE_DESCRIPTION" desc="Description shown to indicate that a website is being presented to another display.">
     Presenting (<ph name="PAGE_ORIGIN">$1<ex>example.com</ex></ph>)
