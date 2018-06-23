@@ -175,9 +175,7 @@ static inline bool IsAcceleratedContents(LayoutObject& layout_object) {
 // position offset for this composited layer.
 static bool UsesCompositedStickyPosition(PaintLayer& layer) {
   return layer.GetLayoutObject().Style()->HasStickyConstrainedPosition() &&
-         (layer.AncestorOverflowLayer()->IsRootLayer()
-              ? layer.GetLayoutObject().View()->GetFrameView()->IsScrollable()
-              : layer.AncestorOverflowLayer()->NeedsCompositedScrolling());
+         layer.AncestorOverflowLayer()->NeedsCompositedScrolling();
 }
 
 // Returns the sticky position offset that should be removed from a given layer

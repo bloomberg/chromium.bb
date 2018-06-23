@@ -1039,12 +1039,8 @@ void LayoutBox::Autoscroll(const IntPoint& position_in_root_frame) {
                               kUserScroll));
 }
 
-// There are two kinds of layoutObject that can autoscroll.
 bool LayoutBox::CanAutoscroll() const {
-  if (GetNode() && GetNode()->IsDocumentNode())
-    return View()->GetFrameView()->IsScrollable();
-
-  // Check for a box that can be scrolled in its own right.
+  // TODO(skobes): Remove one of these methods.
   return CanBeScrolledAndHasScrollableArea();
 }
 

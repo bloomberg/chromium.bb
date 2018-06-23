@@ -246,10 +246,6 @@ void RootFrameViewport::SetScrollOffset(const ScrollOffset& offset,
   if (scroll_behavior == kScrollBehaviorAuto)
     scroll_behavior = ScrollBehaviorStyle();
 
-  if (scroll_type == kProgrammaticScroll &&
-      !LayoutViewport().IsProgrammaticallyScrollable())
-    return;
-
   if (scroll_type == kAnchoringScroll) {
     DistributeScrollBetweenViewports(offset, scroll_type, scroll_behavior,
                                      kLayoutViewport);

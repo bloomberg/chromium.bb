@@ -339,15 +339,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return kScrollBehaviorInstant;
   }
 
-  virtual bool IsScrollable() const { return true; }
-
-  // TODO(bokan): FrameView::setScrollOffset uses updateScrollbars to scroll
-  // which bails out early if its already in updateScrollbars, the effect being
-  // that programmatic scrolls (i.e. setScrollOffset) are disabled when in
-  // updateScrollbars. Expose this here to allow RootFrameViewport to match the
-  // semantics for now but it should be cleaned up at the source.
-  virtual bool IsProgrammaticallyScrollable() { return true; }
-
   // Subtracts space occupied by this ScrollableArea's scrollbars.
   // Does nothing if overlay scrollbars are enabled.
   IntSize ExcludeScrollbars(const IntSize&) const;

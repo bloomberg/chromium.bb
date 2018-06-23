@@ -311,7 +311,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
   IntSize ContentsSize() const override;
   void ContentsResized() override;
-  bool IsScrollable() const override;
   IntPoint LastKnownMousePosition() const override;
   bool ScrollAnimatorEnabled() const override;
   bool ShouldSuspendScrollAnimations() const override;
@@ -369,6 +368,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
   }
   bool HasOverflowControls() const {
     return HasScrollbar() || ScrollCorner() || Resizer();
+  }
+  bool HasOverflow() const {
+    return HasHorizontalOverflow() || HasVerticalOverflow();
   }
 
   LayoutScrollbarPart* ScrollCorner() const { return scroll_corner_; }

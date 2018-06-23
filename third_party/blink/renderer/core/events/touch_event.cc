@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -181,7 +182,7 @@ void LogTouchTargetHistogram(EventTarget* event_target,
 
   if (document) {
     LocalFrameView* view = document->View();
-    if (view && view->IsScrollable())
+    if (view && view->LayoutViewport()->ScrollsOverflow())
       result += kTouchTargetHistogramScrollableDocumentOffset;
   }
 
