@@ -690,6 +690,7 @@ class AutofillMetrics {
     void LogSelectedMaskedServerCard(
         const base::TimeTicks& form_parsed_timestamp);
     void LogDidFillSuggestion(int record_type,
+                              bool is_for_credit_card,
                               const FormStructure& form,
                               const AutofillField& field);
     void LogTextFieldDidChange(const FormStructure& form,
