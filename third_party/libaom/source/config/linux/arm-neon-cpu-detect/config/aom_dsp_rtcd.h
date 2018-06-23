@@ -30,7 +30,24 @@ void aom_blend_a64_hmask_c(uint8_t* dst,
                            const uint8_t* mask,
                            int w,
                            int h);
-#define aom_blend_a64_hmask aom_blend_a64_hmask_c
+void aom_blend_a64_hmask_neon(uint8_t* dst,
+                              uint32_t dst_stride,
+                              const uint8_t* src0,
+                              uint32_t src0_stride,
+                              const uint8_t* src1,
+                              uint32_t src1_stride,
+                              const uint8_t* mask,
+                              int w,
+                              int h);
+RTCD_EXTERN void (*aom_blend_a64_hmask)(uint8_t* dst,
+                                        uint32_t dst_stride,
+                                        const uint8_t* src0,
+                                        uint32_t src0_stride,
+                                        const uint8_t* src1,
+                                        uint32_t src1_stride,
+                                        const uint8_t* mask,
+                                        int w,
+                                        int h);
 
 void aom_blend_a64_mask_c(uint8_t* dst,
                           uint32_t dst_stride,
@@ -55,7 +72,24 @@ void aom_blend_a64_vmask_c(uint8_t* dst,
                            const uint8_t* mask,
                            int w,
                            int h);
-#define aom_blend_a64_vmask aom_blend_a64_vmask_c
+void aom_blend_a64_vmask_neon(uint8_t* dst,
+                              uint32_t dst_stride,
+                              const uint8_t* src0,
+                              uint32_t src0_stride,
+                              const uint8_t* src1,
+                              uint32_t src1_stride,
+                              const uint8_t* mask,
+                              int w,
+                              int h);
+RTCD_EXTERN void (*aom_blend_a64_vmask)(uint8_t* dst,
+                                        uint32_t dst_stride,
+                                        const uint8_t* src0,
+                                        uint32_t src0_stride,
+                                        const uint8_t* src1,
+                                        uint32_t src1_stride,
+                                        const uint8_t* mask,
+                                        int w,
+                                        int h);
 
 void aom_convolve8_horiz_c(const uint8_t* src,
                            ptrdiff_t src_stride,
@@ -3352,6 +3386,12 @@ static void setup_rtcd_internal(void) {
 
   (void)flags;
 
+  aom_blend_a64_hmask = aom_blend_a64_hmask_c;
+  if (flags & HAS_NEON)
+    aom_blend_a64_hmask = aom_blend_a64_hmask_neon;
+  aom_blend_a64_vmask = aom_blend_a64_vmask_c;
+  if (flags & HAS_NEON)
+    aom_blend_a64_vmask = aom_blend_a64_vmask_neon;
   aom_dc_128_predictor_16x16 = aom_dc_128_predictor_16x16_c;
   if (flags & HAS_NEON)
     aom_dc_128_predictor_16x16 = aom_dc_128_predictor_16x16_neon;

@@ -91,8 +91,18 @@ void av1_build_compound_diffwtd_mask_d16_c(uint8_t* mask,
                                            int w,
                                            ConvolveParams* conv_params,
                                            int bd);
+void av1_build_compound_diffwtd_mask_d16_neon(uint8_t* mask,
+                                              DIFFWTD_MASK_TYPE mask_type,
+                                              const CONV_BUF_TYPE* src0,
+                                              int src0_stride,
+                                              const CONV_BUF_TYPE* src1,
+                                              int src1_stride,
+                                              int h,
+                                              int w,
+                                              ConvolveParams* conv_params,
+                                              int bd);
 #define av1_build_compound_diffwtd_mask_d16 \
-  av1_build_compound_diffwtd_mask_d16_c
+  av1_build_compound_diffwtd_mask_d16_neon
 
 void av1_build_compound_diffwtd_mask_highbd_c(uint8_t* mask,
                                               DIFFWTD_MASK_TYPE mask_type,
