@@ -235,7 +235,7 @@ class RunCommandError(Exception):
         'ascii', 'xmlcharrefreplace')
 
   def __eq__(self, other):
-    return (type(self) == type(other) and
+    return (isinstance(other, type(self)) and
             self.args == other.args)
 
   def __ne__(self, other):

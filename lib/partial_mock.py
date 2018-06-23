@@ -26,7 +26,7 @@ class Comparator(object):
 
   def Equals(self, rhs):
     """Returns whether rhs compares the same thing."""
-    return type(self) == type(rhs) and self.__dict__ == rhs.__dict__
+    return isinstance(rhs, type(self)) and self.__dict__ == rhs.__dict__
 
   def __eq__(self, rhs):
     return self.Equals(rhs)
@@ -178,7 +178,7 @@ def _RecursiveCompare(lhs, rhs):
   if isinstance(lhs, Comparator):
     return lhs.Match(rhs)
   elif isinstance(lhs, (tuple, list)):
-    return (type(lhs) == type(rhs) and
+    return (isinstance(rhs, type(lhs)) and
             len(lhs) == len(rhs) and
             all(_RecursiveCompare(i, j) for i, j in zip(lhs, rhs)))
   elif isinstance(lhs, dict):

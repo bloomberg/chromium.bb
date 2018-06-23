@@ -7,7 +7,7 @@
 
 from __future__ import print_function
 
-_BUILTINS = {str, int, float, bool, type(None)}
+_BUILTINS = (str, int, float, bool, type(None))
 
 
 class Structured(object):
@@ -41,7 +41,7 @@ def ToStructure(value):
     StackOverflow if the object has circular references (parent -> child ->
     parent).
   """
-  if type(value) in _BUILTINS:
+  if isinstance(value, _BUILTINS):
     return value
 
   elif hasattr(value, '_Keys'):

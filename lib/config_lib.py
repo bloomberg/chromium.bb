@@ -227,7 +227,7 @@ class BuildConfig(AttrDict):
                    'tast_vm_tests'):
           result[k] = [copy.copy(x) for x in v]
         # type(v) is faster than isinstance.
-        elif type(v) is list:
+        elif type(v) is list:  # pylint: disable=unidiomatic-typecheck
           result[k] = v[:]
 
     return result

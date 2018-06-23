@@ -81,8 +81,7 @@ class PInfo(object):
 
   def __eq__(self, other):
     """Equality support.  Used in unittests."""
-
-    if type(self) != type(other):
+    if not isinstance(other, type(self)):
       return False
 
     no_attr = object()

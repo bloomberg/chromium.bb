@@ -290,7 +290,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
         raise failures_lib.TestWarning(
             'VMTestStage succeeded, but some optional tests failed.')
     except Exception as e:
-      if type(e) is not failures_lib.TestWarning:
+      if not isinstance(e, failures_lib.TestWarning):
         logging.error(_ERROR_MSG % dict(test_name='VMTests',
                                         test_results=test_basename))
       self._ArchiveVMFiles(test_results_root)

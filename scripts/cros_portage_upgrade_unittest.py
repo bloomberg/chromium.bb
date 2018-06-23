@@ -275,7 +275,7 @@ def _VerifyDepsGraphOnePkg(deps_graph, pkg):
     print('Error: no dependency graph passed into _GetPreOrderDepGraph')
     return False
 
-  if type(deps_graph) != dict:
+  if not isinstance(deps_graph, dict):
     print('Error: dependency graph is expected to be a dict.  Instead:\n%r' %
           deps_graph)
     return False
@@ -360,8 +360,7 @@ class ManifestLine(object):
 
   def __eq__(self, other):
     """Equality support."""
-
-    if type(self) != type(other):
+    if not isinstance(other, type(self)):
       return False
 
     no_attr = object()

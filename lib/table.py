@@ -91,7 +91,7 @@ class Table(object):
   @staticmethod
   def LoadFromCSV(csv_file, name=None):
     """Create a new Table object by loading contents of |csv_file|."""
-    if type(csv_file) is file:
+    if isinstance(csv_file, file):
       file_handle = csv_file
     else:
       file_handle = open(csv_file, 'r')
