@@ -3309,6 +3309,37 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_nil()];
 }
 
+- (void)testNavigateAwayFromFolderBeingEdited {
+  [BookmarksTestCase setupBookmarksWhichExceedsScreenHeight];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Verify bottom URL is not visible before scrolling to bottom (make sure
+  // setupBookmarksWhichExceedsScreenHeight works as expected).
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Bottom URL")]
+      assertWithMatcher:grey_notVisible()];
+
+  // Verify the top URL is visible (isn't covered by the navigation bar).
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Top URL")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Test new folder could be created.  This verifies bookmarks scrolled to
+  // bottom successfully for folder name editng.
+  NSString* newFolderTitle = @"New Folder";
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:NO];
+
+  // Scroll to top to navigate away from the folder being created.
+  [BookmarksTestCase scrollToTop];
+
+  // Scroll back to the Folder being created.
+  [BookmarksTestCase scrollToBottom];
+
+  // Folder should still be in Edit mode, because of this match for Value.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityValue(@"New Folder")]
+      assertWithMatcher:grey_notNil()];
+}
+
 - (void)testDeleteSingleFolderNode {
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];

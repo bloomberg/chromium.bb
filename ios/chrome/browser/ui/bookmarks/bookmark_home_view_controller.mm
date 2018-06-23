@@ -1718,7 +1718,22 @@ const CGFloat kShadowRadius = 12.0f;
   if (item.type == BookmarkHomeItemTypeBookmark) {
     BookmarkHomeNodeItem* nodeItem =
         base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
-    if (!experimental_flags::IsBookmarksUIRebootEnabled()) {
+    if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+      if (nodeItem.bookmarkNode->is_folder() &&
+          nodeItem.bookmarkNode == self.sharedState.editingFolderNode) {
+        TableViewBookmarkFolderCell* tableCell =
+            base::mac::ObjCCastStrict<TableViewBookmarkFolderCell>(cell);
+        // Delay starting edit, so that the cell is fully created. This is
+        // needed when scrolling away and then back into the editingCell,
+        // without the delay the cell will resign first responder before its
+        // created.
+        dispatch_async(dispatch_get_main_queue(), ^{
+          self.sharedState.editingFolderCell = tableCell;
+          [tableCell startEdit];
+          tableCell.textDelegate = self;
+        });
+      }
+    } else {
       BookmarkTableCell* tableCell =
           base::mac::ObjCCastStrict<BookmarkTableCell>(cell);
       if (nodeItem.bookmarkNode == self.sharedState.editingFolderNode) {
@@ -1730,6 +1745,7 @@ const CGFloat kShadowRadius = 12.0f;
         });
       }
     }
+
     // Cancel previous load attempts.
     [self cancelLoadingFaviconAtIndexPath:indexPath];
     // Load the favicon from cache.  If not found, try fetching it from a
@@ -1751,8 +1767,8 @@ const CGFloat kShadowRadius = 12.0f;
 
   // If the cell at |indexPath| is being edited (which happens when creating a
   // new Folder) return NO.
-  if (self.sharedState.editingFolderCell ==
-      [self.tableView cellForRowAtIndexPath:indexPath]) {
+  if ([tableView indexPathForCell:self.sharedState.editingFolderCell] ==
+      indexPath) {
     return NO;
   }
 
@@ -1864,27 +1880,6 @@ const CGFloat kShadowRadius = 12.0f;
     DCHECK(node);
     self.sharedState.editNodes.erase(node);
     [self handleSelectEditNodes:self.sharedState.editNodes];
-  }
-}
-
-- (void)tableView:(UITableView*)tableView
-      willDisplayCell:(UITableViewCell*)cell
-    forRowAtIndexPath:(NSIndexPath*)indexPath {
-  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-    TableViewItem* item =
-        [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
-    if (item.type == BookmarkHomeItemTypeBookmark) {
-      BookmarkHomeNodeItem* nodeItem =
-          base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
-      if (nodeItem.bookmarkNode->is_folder() &&
-          nodeItem.bookmarkNode == self.sharedState.editingFolderNode) {
-        TableViewBookmarkFolderCell* tableCell =
-            base::mac::ObjCCastStrict<TableViewBookmarkFolderCell>(cell);
-        self.sharedState.editingFolderCell = tableCell;
-        [tableCell startEdit];
-        tableCell.textDelegate = self;
-      }
-    }
   }
 }
 
