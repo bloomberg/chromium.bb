@@ -115,7 +115,7 @@ struct CORE_EXPORT PaintInfo {
   }
 
   DisplayItem::Type DisplayItemTypeForClipping() const {
-    return DisplayItem::PaintPhaseToClipBoxType(phase);
+    return DisplayItem::PaintPhaseToClipType(phase);
   }
 
   const LayoutBoxModelObject* PaintContainer() const {

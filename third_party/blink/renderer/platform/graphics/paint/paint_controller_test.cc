@@ -807,8 +807,8 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
   container2_properties.SetEffect(container2_effect.get());
 
   {
-      GetPaintController().UpdateCurrentPaintChunkProperties(
-          PaintChunk::Id(container1, kBackgroundType), container1_properties);
+    GetPaintController().UpdateCurrentPaintChunkProperties(
+        PaintChunk::Id(container1, kBackgroundType), container1_properties);
 
     SubsequenceRecorder r(context, container1);
     DrawRect(context, container1, kBackgroundType,
@@ -819,8 +819,8 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
              FloatRect(100, 100, 100, 100));
   }
   {
-      GetPaintController().UpdateCurrentPaintChunkProperties(
-          PaintChunk::Id(container2, kBackgroundType), container2_properties);
+    GetPaintController().UpdateCurrentPaintChunkProperties(
+        PaintChunk::Id(container2, kBackgroundType), container2_properties);
 
     SubsequenceRecorder r(context, container2);
     DrawRect(context, container2, kBackgroundType,
@@ -872,9 +872,9 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
     EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
         context, container2));
     {
-        PaintChunk::Id id(container2, kBackgroundType);
-        GetPaintController().UpdateCurrentPaintChunkProperties(
-            id, container2_properties);
+      PaintChunk::Id id(container2, kBackgroundType);
+      GetPaintController().UpdateCurrentPaintChunkProperties(
+          id, container2_properties);
 
       SubsequenceRecorder r(context, container2);
       DrawRect(context, container2, kBackgroundType,
@@ -889,9 +889,9 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
     EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
         context, container1));
     {
-        PaintChunk::Id id(container1, kBackgroundType);
-        GetPaintController().UpdateCurrentPaintChunkProperties(
-            id, container1_properties);
+      PaintChunk::Id id(container1, kBackgroundType);
+      GetPaintController().UpdateCurrentPaintChunkProperties(
+          id, container1_properties);
 
       SubsequenceRecorder r(context, container1);
       DrawRect(context, container1, kBackgroundType,

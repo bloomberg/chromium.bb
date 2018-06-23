@@ -130,7 +130,7 @@ const DisplayItem::Type kForegroundType =
 const DisplayItem::Type kDocumentBackgroundType =
     DisplayItem::kDocumentBackground;
 const DisplayItem::Type kScrollHitTestType = DisplayItem::kScrollHitTest;
-const DisplayItem::Type kClipType = DisplayItem::kClipFirst;
+const DisplayItem::Type kClipType = DisplayItem::kClipPaintPhaseFirst;
 
 }  // namespace blink
 

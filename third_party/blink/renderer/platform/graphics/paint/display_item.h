@@ -84,6 +84,7 @@ class PLATFORM_EXPORT DisplayItem {
     kSVGImage,
     kLinkHighlight,
     kImageAreaFocusRing,
+    kOverflowControls,
     kPageOverlay,
     kPopupContainerBorder,
     kPopupListBoxBackground,
@@ -127,47 +128,11 @@ class PLATFORM_EXPORT DisplayItem {
     kForeignLayerContentsWrapper,
     kForeignLayerLast = kForeignLayerContentsWrapper,
 
-    kClipFirst,
-    kClipBoxPaintPhaseFirst = kClipFirst,
-    kClipBoxPaintPhaseLast = kClipBoxPaintPhaseFirst + kPaintPhaseMax,
-    kClipColumnBoundsPaintPhaseFirst,
-    kClipColumnBoundsPaintPhaseLast =
-        kClipColumnBoundsPaintPhaseFirst + kPaintPhaseMax,
-    kClipLayerFragmentPaintPhaseFirst,
-    kClipLayerFragmentPaintPhaseLast =
-        kClipLayerFragmentPaintPhaseFirst + kPaintPhaseMax,
-    kClipFileUploadControlRect,
-    kClipFrameToVisibleContentRect,
-    kClipFrameScrollbars,
-    kClipLayerBackground,
-    kClipLayerColumnBounds,
-    kClipLayerFilter,
-    kClipLayerForeground,
-    kClipLayerParent,
-    kClipLayerOverflowControls,
-    kClipPopupListBoxFrame,
-    kClipScrollbarsToBoxBounds,
-    kClipSelectionImage,
-    kClipLast = kClipSelectionImage,
+    kClipPaintPhaseFirst,
+    kClipPaintPhaseLast = kClipPaintPhaseFirst + kPaintPhaseMax,
 
-    kEndClipFirst,
-    kEndClipLast = kEndClipFirst + kClipLast - kClipFirst,
-
-    kFloatClipFirst,
-    kFloatClipPaintPhaseFirst = kFloatClipFirst,
-    kFloatClipPaintPhaseLast = kFloatClipFirst + kPaintPhaseMax,
-    kFloatClipClipPathBounds,
-    kFloatClipLast = kFloatClipClipPathBounds,
-    kEndFloatClipFirst,
-    kEndFloatClipLast = kEndFloatClipFirst + kFloatClipLast - kFloatClipFirst,
-
-    kScrollFirst,
-    kScrollPaintPhaseFirst = kScrollFirst,
+    kScrollPaintPhaseFirst,
     kScrollPaintPhaseLast = kScrollPaintPhaseFirst + kPaintPhaseMax,
-    kScrollOverflowControls,
-    kScrollLast = kScrollOverflowControls,
-    kEndScrollFirst,
-    kEndScrollLast = kEndScrollFirst + kScrollLast - kScrollFirst,
 
     kSVGTransformPaintPhaseFirst,
     kSVGTransformPaintPhaseLast = kSVGTransformPaintPhaseFirst + kPaintPhaseMax,
@@ -175,21 +140,6 @@ class PLATFORM_EXPORT DisplayItem {
     kSVGEffectPaintPhaseFirst,
     kSVGEffectPaintPhaseLast = kSVGEffectPaintPhaseFirst + kPaintPhaseMax,
 
-    kTransform3DFirst,
-    kTransform3DElementTransform = kTransform3DFirst,
-    kTransform3DLast = kTransform3DElementTransform,
-    kEndTransform3DFirst,
-    kEndTransform3DLast =
-        kEndTransform3DFirst + kTransform3DLast - kTransform3DFirst,
-
-    kBeginFilter,
-    kEndFilter,
-    kBeginCompositing,
-    kEndCompositing,
-    kBeginTransform,
-    kEndTransform,
-    kBeginClipPath,
-    kEndClipPath,
     kScrollHitTest,
 
     kLayerChunkBackground,
@@ -308,11 +258,6 @@ class PLATFORM_EXPORT DisplayItem {
                              k##Category1##First);                            \
   }
 
-#define DEFINE_PAIRED_CATEGORY_METHODS(Category, category) \
-  DEFINE_CATEGORY_METHODS(Category)                        \
-  DEFINE_CATEGORY_METHODS(End##Category)                   \
-  DEFINE_CONVERSION_METHODS(Category, category, End##Category, end##Category)
-
 #define DEFINE_PAINT_PHASE_CONVERSION_METHOD(Category)                \
   static Type PaintPhaseTo##Category##Type(PaintPhase paint_phase) {  \
     static_assert(                                                    \
@@ -329,21 +274,10 @@ class PLATFORM_EXPORT DisplayItem {
 
   DEFINE_CATEGORY_METHODS(ForeignLayer)
 
-  DEFINE_PAIRED_CATEGORY_METHODS(Clip, clip)
-  DEFINE_PAINT_PHASE_CONVERSION_METHOD(ClipLayerFragment)
-  DEFINE_PAINT_PHASE_CONVERSION_METHOD(ClipBox)
-  DEFINE_PAINT_PHASE_CONVERSION_METHOD(ClipColumnBounds)
-
-  DEFINE_PAIRED_CATEGORY_METHODS(FloatClip, floatClip)
-  DEFINE_PAINT_PHASE_CONVERSION_METHOD(FloatClip)
-
-  DEFINE_PAIRED_CATEGORY_METHODS(Scroll, scroll)
+  DEFINE_PAINT_PHASE_CONVERSION_METHOD(Clip)
   DEFINE_PAINT_PHASE_CONVERSION_METHOD(Scroll)
-
   DEFINE_PAINT_PHASE_CONVERSION_METHOD(SVGTransform)
   DEFINE_PAINT_PHASE_CONVERSION_METHOD(SVGEffect)
-
-  DEFINE_PAIRED_CATEGORY_METHODS(Transform3D, transform3D)
 
   static bool IsScrollHitTestType(Type type) { return type == kScrollHitTest; }
   bool IsScrollHitTest() const { return IsScrollHitTestType(GetType()); }
@@ -353,15 +287,6 @@ class PLATFORM_EXPORT DisplayItem {
   bool IsCacheable() const {
     return !SkippedCache() && IsCacheableType(GetType());
   }
-
-  virtual bool IsBegin() const { return false; }
-  virtual bool IsEnd() const { return false; }
-
-#if DCHECK_IS_ON()
-  virtual bool IsEndAndPairedWith(DisplayItem::Type other_type) const {
-    return false;
-  }
-#endif
 
   virtual bool Equals(const DisplayItem& other) const {
     // Failure of this DCHECK would cause bad casts in subclasses.
@@ -417,36 +342,6 @@ inline bool operator==(const DisplayItem::Id& a, const DisplayItem::Id& b) {
 inline bool operator!=(const DisplayItem::Id& a, const DisplayItem::Id& b) {
   return !(a == b);
 }
-
-class PLATFORM_EXPORT PairedBeginDisplayItem : public DisplayItem {
- protected:
-  PairedBeginDisplayItem(const DisplayItemClient& client,
-                         Type type,
-                         size_t derived_size)
-      : DisplayItem(client, type, derived_size) {
-    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-  }
-
- private:
-  bool IsBegin() const final { return true; }
-};
-
-class PLATFORM_EXPORT PairedEndDisplayItem : public DisplayItem {
- protected:
-  PairedEndDisplayItem(const DisplayItemClient& client,
-                       Type type,
-                       size_t derived_size)
-      : DisplayItem(client, type, derived_size) {
-    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-  }
-
-#if DCHECK_IS_ON()
-  bool IsEndAndPairedWith(DisplayItem::Type other_type) const override = 0;
-#endif
-
- private:
-  bool IsEnd() const final { return true; }
-};
 
 }  // namespace blink
 

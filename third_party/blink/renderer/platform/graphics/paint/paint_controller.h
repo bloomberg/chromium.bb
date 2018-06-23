@@ -123,23 +123,6 @@ class PLATFORM_EXPORT PaintController {
     ProcessNewItem(display_item);
   }
 
-  // Creates and appends an ending display item to pair with a preceding
-  // beginning item iff the display item actually draws content. For no-op
-  // items, rather than creating an ending item, the begin item will
-  // instead be removed, thereby maintaining brevity of the list. If display
-  // item construction is disabled, no list mutations will be performed.
-  template <typename DisplayItemClass, typename... Args>
-  void EndItem(Args&&... args) {
-    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-
-    if (DisplayItemConstructionIsDisabled())
-      return;
-    if (LastDisplayItemIsNoopBegin())
-      RemoveLastDisplayItem();
-    else
-      CreateAndAppend<DisplayItemClass>(std::forward<Args>(args)...);
-  }
-
   // Tries to find the cached drawing display item corresponding to the given
   // parameters. If found, appends the cached display item to the new display
   // list and returns true. Otherwise returns false.
@@ -155,8 +138,6 @@ class PLATFORM_EXPORT PaintController {
   // BeginSubsequence().
   void EndSubsequence(const DisplayItemClient&, size_t start);
 
-  // True if the last display item is a begin that doesn't draw content.
-  void RemoveLastDisplayItem();
   const DisplayItem* LastDisplayItem(unsigned offset);
 
   void BeginSkippingCache() { ++skipping_cache_count_; }
@@ -212,7 +193,7 @@ class PLATFORM_EXPORT PaintController {
 
   void AppendDebugDrawingAfterCommit(const DisplayItemClient&,
                                      sk_sp<const PaintRecord>,
-                                     const PropertyTreeState*);
+                                     const PropertyTreeState&);
 
 #if DCHECK_IS_ON()
   void ShowDebugData() const;
@@ -276,8 +257,6 @@ class PLATFORM_EXPORT PaintController {
 
   void InvalidateAllForTesting() { InvalidateAllInternal(); }
   void InvalidateAllInternal();
-
-  bool LastDisplayItemIsNoopBegin() const;
 
   void EnsureNewDisplayItemListInitialCapacity() {
     if (new_display_item_list_.IsEmpty()) {
@@ -458,10 +437,6 @@ class PLATFORM_EXPORT PaintController {
   size_t under_invalidation_checking_begin_;
   size_t under_invalidation_checking_end_;
 
-  // Number of probable under-invalidations that have been skipped temporarily
-  // because the mismatching display items may be removed in the future because
-  // of no-op pairs or compositing folding.
-  int skipped_probable_under_invalidation_count_;
   String under_invalidation_message_prefix_;
 
   struct RasterInvalidationTrackingInfo {

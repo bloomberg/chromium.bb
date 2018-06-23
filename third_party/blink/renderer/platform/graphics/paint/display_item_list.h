@@ -56,19 +56,6 @@ class PLATFORM_EXPORT DisplayItemList
     return result;
   }
 
-  // This is used by PaintUnderInvalidationChecking in SPv1 to restore a
-  // paired-begin display item that was moved to the new display item list then
-  // was removed because the pair is a no-op. This ensures that we won't compare
-  // the next new display item against the tombstone display item.
-  void RestoreTombstone(size_t index, DisplayItem& item) {
-    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-    DCHECK((*this)[index].IsTombstone());
-    SECURITY_CHECK((*this)[index].DerivedSize() == item.DerivedSize());
-    memcpy(static_cast<void*>(&(*this)[index]), static_cast<void*>(&item),
-           item.DerivedSize());
-    new (&item) DisplayItem;
-  }
-
   // Useful for iterating with a range-based for loop.
   template <typename Iterator>
   class Range {
