@@ -627,6 +627,7 @@
 
       'linux_chromium_rel_ng': 'gpu_tests_release_trybot_no_symbols',
       'linux_chromium_tsan_rel_ng': 'tsan_disable_nacl_release_trybot',
+      'linux_chromium_ubsan_rel_ng': 'ubsan_vptr_release_trybot',
       'linux_layout_tests_layout_ng': 'release_trybot',
       'linux_layout_tests_root_layer_scrolls': 'release_trybot',
       'linux_layout_tests_slimming_paint_v2': 'release_trybot',
@@ -1606,6 +1607,10 @@
 
     'ubsan_vptr_release_bot': [
       'ubsan_vptr', 'ubsan_no_recover_hack', 'release_bot',
+    ],
+
+    'ubsan_vptr_release_trybot': [
+      'ubsan_vptr', 'ubsan_no_recover_hack', 'release_trybot',
     ],
 
     'v8_future_debug_bot': [
