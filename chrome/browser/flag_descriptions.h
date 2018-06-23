@@ -87,9 +87,6 @@ extern const char kAutofillEnforceMinRequiredFieldsForUploadDescription[];
 extern const char kAutofillPrefilledFieldsName[];
 extern const char kAutofillPrefilledFieldsDescription[];
 
-extern const char kAutofillRationalizeRepeatedServerPredictionsName[];
-extern const char kAutofillRationalizeRepeatedServerPredictionsDescription[];
-
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
 

@@ -32,8 +32,7 @@ extern const base::Feature kAutofillSkipComparingInferredLabels;
 extern const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile;
 extern const base::Feature kAutomaticPasswordGeneration;
 extern const base::Feature kSingleClickAutofill;
-extern const base::Feature kAutofillPrefilledFields;
-extern const base::Feature kAutofillRationalizeRepeatedServerPredictions;
+
 }  // namespace features
 }  // namespace autofill
 
