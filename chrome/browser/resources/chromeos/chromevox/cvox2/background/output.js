@@ -370,10 +370,11 @@ Output.RULES = {
           $description $restriction`
     },
     abstractRange: {
-      speak: `$if($valueForRange, $valueForRange, $value)
+      speak: `$name $node(activeDescendant) $description $role
+          $if($value, $value, $if($valueForRange, $valueForRange))
+          $state $restriction
           $if($minValueForRange, @aria_value_min($minValueForRange))
-          $if($maxValueForRange, @aria_value_max($maxValueForRange))
-          $name $node(activeDescendant) $role $description $state $restriction`
+          $if($maxValueForRange, @aria_value_max($maxValueForRange))`
     },
     alert: {
       enter: `$name $role $state`,
@@ -716,6 +717,8 @@ Output.isTruthy = function(node, attrib) {
     // These attributes default to false for empty strings.
     case 'roleDescription':
       return !!node.roleDescription;
+    case 'value':
+      return !!node.value;
     case 'selected':
       return node.selected === true;
     default:

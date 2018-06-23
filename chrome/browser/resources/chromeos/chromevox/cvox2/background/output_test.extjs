@@ -251,18 +251,19 @@ TEST_F('OutputE2ETest', 'Audio', function() {
       var o = new Output()
           .withoutHints()
           .withSpeechAndBraille(range, prevRange, 'navigate');
-      checkSpeechOutput('0|Min 0|Max 0||Slider|audio time scrubber',
+      checkSpeechOutput('|audio time scrubber|Slider|0:00|Min 0|Max 0',
           [
-            {value: 'valueForRange', start: 0, end: 1},
-            {value: 'name', start: 14, end: 14},
-            {value: new Output.EarconAction('SLIDER'), start: 14, end: 14},
-            {value: 'role', start: 15, end: 21},
-            {value: 'description', start: 22, end: 41}
+            {value: 'name', start: 0, end: 0},
+            {value: new Output.EarconAction('SLIDER'), start: 0, end: 0},
+            {value: 'description', start: 1, end: 20},
+            {value: 'role', start: 21, end: 27},
+            {value: 'value', start: 28, end: 32}
           ],
           o);
       checkBrailleOutput(
-          '0 min:0 max:0 sldr audio time scrubber',
-          [{value: new Output.NodeSpan(el), start: 0, end: 38}],
+          'audio time scrubber sldr 0:00 min:0 max:0',
+          [
+            {value: new Output.NodeSpan(el), start: 0, end: 41}],
           o);
   });
 });
@@ -293,12 +294,12 @@ TEST_F('OutputE2ETest', 'Input', function() {
         '||Edit text, email entry',
         '||Password edit text',
         '||Edit text numeric only',
-        ['||Spin button',
-          [{value: new Output.SelectionSpan(0, 0), start: 0, end: 0},
-           {value: 'value', start: 0, end: 0},
-           {value: 'name', start: 1, end: 1},
-           {value: new Output.EarconAction('LISTBOX'), start: 1, end: 1},
-           {value: 'role', start: 2, end: 13}]
+        ['|Spin button',
+         [
+           {value: 'name', start: 0, end: 0},
+           {value: new Output.EarconAction('LISTBOX'), start: 0, end: 0},
+           {value: 'role', start: 1, end: 12}
+         ]
         ],
         ['Time control',
          [{value: 'role', start: 0, end: 12}]
@@ -322,7 +323,7 @@ TEST_F('OutputE2ETest', 'Input', function() {
         ' @ed 8dot',
         ' pwded',
         ' #ed',
-        ' spnbtn',
+        {string_: 'spnbtn', spans_: []},
         {string_: 'time'},
         {string_: 'date'},
         {string_: 'Choose File No file chosen btn'},
@@ -361,11 +362,12 @@ TEST_F('OutputE2ETest', 'Input', function() {
                 end: expectedValue.length}],
               o);
         } else {
-          checkBrailleOutput(
-              expectedValue.string_,
-              [{value: new Output.NodeSpan(el), start: 0,
-                end: expectedValue.string_.length}],
-              o);
+          var spans = [{value: new Output.NodeSpan(el), start: 0,
+                        end: expectedValue.string_.length}];
+          if (expectedValue.spans_)
+            spans = spans.concat(expectedValue.spans_);
+
+          checkBrailleOutput(expectedValue.string_, spans, o);
         }
         el = el.nextSibling;
       });
@@ -800,12 +802,12 @@ TEST_F('OutputE2ETest', 'RangeOutput', function() {
     var o = new Output()
         .withoutHints()
         .withSpeech(cursors.Range.fromNode(obj));
-      checkSpeechOutput('2|Min 1|Max 10|volume|Slider',
+      checkSpeechOutput('volume|Slider|2|Min 1|Max 10',
           [
-            {value: 'valueForRange', start: 0, end: 1},
-            {value: 'name', start: 15,end: 21},
-            {value: new Output.EarconAction('SLIDER'), start: 15, end: 21},
-            {value: 'role', start: 22, end: 28}
+            {value: 'name', start: 0, end: 6},
+            {value: new Output.EarconAction('SLIDER'), start: 0, end: 6},
+            {value: 'role', start: 7, end: 13},
+            {value: 'valueForRange', start: 14, end: 15}
           ],
           o);
 
@@ -813,11 +815,11 @@ TEST_F('OutputE2ETest', 'RangeOutput', function() {
     o = new Output()
         .withoutHints()
         .withSpeech(cursors.Range.fromNode(obj));
-      checkSpeechOutput('2|Min 1|Max 10|volume|Progress indicator',
+    checkSpeechOutput('volume|Progress indicator|2|Min 1|Max 10',
           [
-            {value: 'valueForRange', start: 0, end: 1},
-            {value: 'name', start: 15,end: 21},
-            {value: 'role', start: 22, end: 40}
+            {value: 'name', start: 0,end: 6},
+            {value: 'role', start: 7, end: 25},
+            {value: 'valueForRange', start: 26, end: 27}
           ],
           o);
 
@@ -825,11 +827,11 @@ TEST_F('OutputE2ETest', 'RangeOutput', function() {
     o = new Output()
         .withoutHints()
         .withSpeech(cursors.Range.fromNode(obj));
-      checkSpeechOutput('2|Min 1|Max 10|volume|Meter',
+    checkSpeechOutput('volume|Meter|2|Min 1|Max 10',
           [
-            {value: 'valueForRange', start: 0, end: 1},
-            {value: 'name', start: 15,end: 21},
-            {value: 'role', start: 22, end: 27}
+            {value: 'name', start: 0,end: 6},
+            {value: 'role', start: 7, end: 12},
+            {value: 'valueForRange', start: 13, end: 14}
           ],
           o);
 
@@ -837,12 +839,12 @@ TEST_F('OutputE2ETest', 'RangeOutput', function() {
     o = new Output()
         .withoutHints()
         .withSpeech(cursors.Range.fromNode(obj));
-      checkSpeechOutput('2|Min 1|Max 10|volume|Spin button',
+    checkSpeechOutput('volume|Spin button|2|Min 1|Max 10',
           [
-            {value: 'valueForRange', start: 0, end: 1},
-            {value: 'name', start: 15,end: 21},
-            {value: new Output.EarconAction('LISTBOX'), start: 15, end: 21},
-            {value: 'role', start: 22, end: 33}
+            {value: 'name', start: 0,end: 6},
+            {value: new Output.EarconAction('LISTBOX'), start: 0, end: 6},
+            {value: 'role', start: 7, end: 18},
+            {value: 'valueForRange', start: 19, end: 20}
           ],
           o);
   });
