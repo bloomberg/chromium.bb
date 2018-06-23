@@ -55,13 +55,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 #endif  // defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        MAYBE_UpdateWindowSizeExitsFullscreen) {
-#if defined(OS_LINUX)
-  // TODO(crbug.com/853057): Test fails on Refresh because
-  // "window_update/sizing" fails for unknown reasons. Needs investigation.
-  if (ui::MaterialDesignController::IsRefreshUi())
-    return;
-#endif
-
   browser()->exclusive_access_manager()->context()->EnterFullscreen(
       GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
   ASSERT_TRUE(RunExtensionTest("window_update/sizing")) << message_;

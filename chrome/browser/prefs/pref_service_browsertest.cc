@@ -28,7 +28,7 @@
 typedef InProcessBrowserTest PreservedWindowPlacement;
 
 IN_PROC_BROWSER_TEST_F(PreservedWindowPlacement, PRE_Test) {
-  browser()->window()->SetBounds(gfx::Rect(20, 30, 400, 500));
+  browser()->window()->SetBounds(gfx::Rect(20, 30, 500, 600));
 }
 
 // Fails on Chrome OS as the browser thinks it is restarting after a crash, see
@@ -39,14 +39,8 @@ IN_PROC_BROWSER_TEST_F(PreservedWindowPlacement, PRE_Test) {
 #define MAYBE_Test Test
 #endif
 IN_PROC_BROWSER_TEST_F(PreservedWindowPlacement, MAYBE_Test) {
-#if defined(OS_LINUX)
-  // TODO(crbug.com/853044): Test fails on Refresh because the window is too
-  // tall. Needs investigation.
-  if (ui::MaterialDesignController::IsRefreshUi())
-    return;
-#endif
   gfx::Rect bounds = browser()->window()->GetBounds();
-  gfx::Rect expected_bounds(gfx::Rect(20, 30, 400, 500));
+  gfx::Rect expected_bounds(gfx::Rect(20, 30, 500, 600));
   ASSERT_EQ(expected_bounds.ToString(), bounds.ToString());
 }
 

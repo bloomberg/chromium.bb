@@ -6,8 +6,8 @@ var pass = chrome.test.callbackPass;
 
 var finalTop = 400;
 var finalLeft = 10;
-var finalWidth = 480;
-var finalHeight = 301;
+var finalWidth = 580;
+var finalHeight = 401;
 
 var chromeWindow = null;
 

@@ -1,10 +1,10 @@
 {
    "browser" : {
       "window_placement" : {
-         "bottom" : 400,
+         "bottom" : 600,
          "left" : 50,
          "maximized" : false,
-         "right" : 450,
+         "right" : 650,
          "top" : 50
       }
    }
