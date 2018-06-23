@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "base/files/scoped_file.h"
+#include "build/build_config.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
@@ -282,6 +284,11 @@ gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
     }
   }
 
+#if defined(OS_FUCHSIA)
+  // TODO(crbug.com/852011): Implement image handle export on Fuchsia.
+  NOTIMPLEMENTED();
+  return gfx::NativePixmapHandle();
+#else   // defined(OS_FUCHSIA)
   std::vector<int> fds(num_planes);
   std::vector<EGLint> strides(num_planes);
   std::vector<EGLint> offsets(num_planes);
@@ -317,6 +324,7 @@ gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
   }
 
   return handle;
+#endif  // !defined(OS_FUCHSIA)
 }
 
 unsigned GLImageNativePixmap::GetInternalFormat() {
