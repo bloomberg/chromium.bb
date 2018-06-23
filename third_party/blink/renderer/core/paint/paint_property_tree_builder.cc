@@ -2300,34 +2300,6 @@ void PaintPropertyTreeBuilder::
     context_.fragments[page - first_page].logical_top_in_flow_thread =
         page * page_height;
   }
-
-  // We should also create fragments for the painting layer so that it will
-  // initiate painting of the repeating fragments of the table section.
-  const auto& painting_object = context_.painting_layer->GetLayoutObject();
-  if (painting_object == object_)
-    return;
-
-  int page_count = ceilf(view->DocumentRect().Height() / page_height);
-  auto* fragment = &painting_object.GetMutableForPainting().FirstFragment();
-  // Check if we have created the fragments of the painting layer for another
-  // repeating table section.
-  if (fragment->NextFragment()) {
-#if DCHECK_IS_ON()
-    int fragment_count = 1;
-    while ((fragment = fragment->NextFragment()))
-      fragment_count++;
-    DCHECK_EQ(fragment_count, page_count);
-#endif
-    return;
-  }
-
-  for (int page = 1; page < page_count; page++) {
-    auto* new_fragment = &fragment->EnsureNextFragment();
-    new_fragment->SetLocalBorderBoxProperties(
-        fragment->LocalBorderBoxProperties());
-    new_fragment->SetLogicalTopInFlowThread(page * page_height);
-    fragment = new_fragment;
-  }
 }
 
 bool PaintPropertyTreeBuilder::IsRepeatingInPagedMedia() const {

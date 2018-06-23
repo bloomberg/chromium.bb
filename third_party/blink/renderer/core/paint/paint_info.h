@@ -153,6 +153,10 @@ struct CORE_EXPORT PaintInfo {
     return nullptr;
   }
 
+  void SetFragmentLogicalTopInFlowThread(LayoutUnit fragment_logical_top) {
+    fragment_logical_top_in_flow_thread_ = fragment_logical_top;
+  }
+
   // FIXME: Introduce setters/getters at some point. Requires a lot of changes
   // throughout layout/.
   GraphicsContext& context;
