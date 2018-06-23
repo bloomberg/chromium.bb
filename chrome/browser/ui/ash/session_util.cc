@@ -42,7 +42,7 @@ content::BrowserContext* GetBrowserContextForWindow(aura::Window* window,
 
 }  // namespace
 
-content::BrowserContext* GetActiveBrowserContext() {
+const content::BrowserContext* GetActiveBrowserContext() {
   DCHECK(user_manager::UserManager::Get()->GetLoggedInUsers().size());
   return ProfileManager::GetActiveUserProfile();
 }
@@ -52,11 +52,11 @@ bool CanShowWindowForUser(
     const GetActiveBrowserContextCallback& get_context_callback) {
   DCHECK(window);
   if (user_manager::UserManager::Get()->GetLoggedInUsers().size() > 1u) {
-    content::BrowserContext* active_browser_context =
+    const content::BrowserContext* active_browser_context =
         get_context_callback.Run();
-    content::BrowserContext* owner_browser_context =
+    const content::BrowserContext* owner_browser_context =
         GetBrowserContextForWindow(window, false);
-    content::BrowserContext* shown_browser_context =
+    const content::BrowserContext* shown_browser_context =
         GetBrowserContextForWindow(window, true);
 
     if (owner_browser_context && active_browser_context &&

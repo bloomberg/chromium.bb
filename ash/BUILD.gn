@@ -1456,8 +1456,6 @@ component("ash_with_content") {
     "content/keyboard_overlay/keyboard_overlay_view.h",
     "content/screen_orientation_delegate_chromeos.cc",
     "content/screen_orientation_delegate_chromeos.h",
-    "content/shell_content_state.cc",
-    "content/shell_content_state.h",
   ]
 
   defines = [ "ASH_WITH_CONTENT_IMPLEMENTATION" ]
@@ -1555,8 +1553,6 @@ static_library("ash_shell_lib_with_content") {
     "shell/content/client/shell_content_browser_client.h",
     "shell/content/client/shell_main_delegate.cc",
     "shell/content/client/shell_main_delegate.h",
-    "shell/content/shell_content_state_impl.cc",
-    "shell/content/shell_content_state_impl.h",
   ]
 
   deps = [
@@ -2121,8 +2117,6 @@ static_library("test_support_with_content") {
   sources = [
     "test/ash_test_environment_content.cc",
     "test/ash_test_environment_content.h",
-    "test/content/test_shell_content_state.cc",
-    "test/content/test_shell_content_state.h",
   ]
   configs += [ "//build/config:precompiled_headers" ]
 

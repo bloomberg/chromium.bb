@@ -7,7 +7,6 @@
 #include <set>
 #include <vector>
 
-#include "ash/content/shell_content_state.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -70,36 +69,22 @@ const char kBAccountIdString[] =
 const char kArrowBAccountIdString[] =
     "->{\"account_type\":\"unknown\",\"email\":\"B\"}";
 
-// TODO(beng): This implementation seems only superficially different to the
-//             production impl. Evaluate whether or not we can just use that
-//             one.
-class TestShellContentState : public ash::ShellContentState {
- public:
-  TestShellContentState() {}
-  ~TestShellContentState() override {}
-
- private:
-  content::BrowserContext* GetActiveBrowserContext() override {
-    const user_manager::UserManager* user_manager =
-        user_manager::UserManager::Get();
-    const user_manager::User* active_user = user_manager->GetActiveUser();
-    return active_user ? multi_user_util::GetProfileFromAccountId(
-                             active_user->GetAccountId())
-                       : NULL;
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(TestShellContentState);
-};
+const content::BrowserContext* GetActiveContext() {
+  const user_manager::UserManager* user_manager =
+      user_manager::UserManager::Get();
+  const user_manager::User* active_user = user_manager->GetActiveUser();
+  return active_user ? multi_user_util::GetProfileFromAccountId(
+                           active_user->GetAccountId())
+                     : nullptr;
+}
 
 class TestShellDelegateChromeOS : public ash::TestShellDelegate {
  public:
   TestShellDelegateChromeOS() {}
 
   bool CanShowWindowForUser(aura::Window* window) const override {
-    return ::CanShowWindowForUser(
-        window,
-        base::Bind(&ash::ShellContentState::GetActiveBrowserContext,
-                   base::Unretained(ash::ShellContentState::GetInstance())));
+    return ::CanShowWindowForUser(window,
+                                  base::BindRepeating(&GetActiveContext));
   }
 
  private:
@@ -289,10 +274,6 @@ void MultiUserWindowManagerChromeOSTest::SetUp() {
   chromeos::DeviceSettingsService::Initialize();
   chromeos::CrosSettings::Initialize();
   ash_test_helper()->set_test_shell_delegate(new TestShellDelegateChromeOS);
-  ash::AshTestEnvironmentContent* test_environment =
-      static_cast<ash::AshTestEnvironmentContent*>(
-          ash_test_helper()->ash_test_environment());
-  test_environment->set_content_state(new ::TestShellContentState);
   AshTestBase::SetUp();
   profile_manager_.reset(
       new TestingProfileManager(TestingBrowserProcess::GetGlobal()));

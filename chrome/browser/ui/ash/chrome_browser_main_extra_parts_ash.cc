@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/ash/ash_shell_init.h"
 #include "chrome/browser/ui/ash/cast_config_client_media_router.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
-#include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
@@ -237,9 +236,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
-  if (!features::IsAshInBrowserProcess())
-    chrome_shell_content_state_ = std::make_unique<ChromeShellContentState>();
-
   cast_config_client_media_router_ =
       std::make_unique<CastConfigClientMediaRouter>();
   login_screen_client_ = std::make_unique<LoginScreenClient>();

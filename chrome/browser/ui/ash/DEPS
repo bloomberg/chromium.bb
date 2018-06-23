@@ -51,10 +51,6 @@ specific_include_rules = {
     "+ash/screenshot_delegate.h",
     "+ash/shell.h",
   ],
-  # https://crbug.com/672277
-  "chrome_shell_content_state\.h": [
-    "+ash/content/shell_content_state.h",
-  ],
   # https://crbug.com/665064
   "chrome_shell_delegate.*": [
     # https://crbug.com/756054
@@ -62,10 +58,6 @@ specific_include_rules = {
     # https://crbug.com/557397
     "+ash/screenshot_delegate.h",
     "+ash/shell_delegate.h",
-  ],
-  # https://crbug.com/672277
-  "session_util\.cc": [
-    "+ash/content/shell_content_state.h",
   ],
   # For ash::Shell::GetContainer (!mash)
   "system_tray_client\.cc": [
