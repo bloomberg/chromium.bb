@@ -413,7 +413,7 @@ class NativeStackSamplerWin : public NativeStackSampler {
   // The stack base address corresponding to |thread_handle_|.
   const void* const thread_stack_base_address_;
 
-  // Maps a module handle to a StackSamplingProfiler::InternalModule object.
+  // The internal module objects, indexed by the module handle.
   std::map<HMODULE, InternalModule> module_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeStackSamplerWin);

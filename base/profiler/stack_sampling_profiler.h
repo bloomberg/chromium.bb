@@ -290,7 +290,7 @@ class BASE_EXPORT StackSamplingProfiler {
     // The current sample being recorded.
     Sample sample_;
 
-    // Maps Module's base_address to index.
+    // The indexes of internal modules, indexed by module's base_address.
     std::map<uintptr_t, size_t> module_index_;
 
     // Callback made when sampling a profile completes.

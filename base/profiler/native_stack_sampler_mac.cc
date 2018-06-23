@@ -19,7 +19,6 @@
 #include <sys/syslimits.h>
 
 #include <algorithm>
-#include <map>
 #include <memory>
 
 #include "base/logging.h"
@@ -42,7 +41,8 @@ using SamplingProfileBuilder = StackSamplingProfiler::SamplingProfileBuilder;
 
 namespace {
 
-// Maps a module's address range (half-open) in memory to an internal module.
+// ModuleCacheEntry records a module's address range (half-open) in memory and
+// the module itself.
 struct ModuleCacheEntry {
   ModuleCacheEntry(uintptr_t start,
                    uintptr_t end,

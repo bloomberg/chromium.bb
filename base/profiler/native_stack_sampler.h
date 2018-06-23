@@ -62,7 +62,7 @@ class NativeStackSampler {
   // Notifies the sampler that we're starting to record a new profile.
   virtual void ProfileRecordingStarting() = 0;
 
-  // Records a set of stack frames and returns them.
+  // Records a set of internal frames and returns them.
   virtual std::vector<StackSamplingProfiler::InternalFrame> RecordStackFrames(
       StackBuffer* stackbuffer,
       StackSamplingProfiler::SamplingProfileBuilder* profile_builder) = 0;
