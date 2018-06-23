@@ -14,6 +14,7 @@ import android.webkit.WebViewClient;
 
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwWebResourceResponse;
+import org.chromium.base.annotations.DoNotInline;
 
 /**
  * Utility class to use new APIs that were added in M (API level 23). These need to exist in a
@@ -21,6 +22,7 @@ import org.chromium.android_webview.AwWebResourceResponse;
  * encountering the new APIs.
  */
 
+@DoNotInline
 @TargetApi(Build.VERSION_CODES.M)
 public final class ApiHelperForM {
     private ApiHelperForM() {}
