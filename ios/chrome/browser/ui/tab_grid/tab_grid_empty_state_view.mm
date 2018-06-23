@@ -16,15 +16,11 @@
 @interface TabGridEmptyStateView ()
 @property(nonatomic, copy, readonly) NSString* title;
 @property(nonatomic, copy, readonly) NSString* body;
-@property(nonatomic, strong) NSArray* centeredConstraints;
-@property(nonatomic, strong) NSArray* trailingAlignedConstraints;
 @end
 
 @implementation TabGridEmptyStateView
 @synthesize title = _title;
 @synthesize body = _body;
-@synthesize centeredConstraints = _centeredConstraints;
-@synthesize trailingAlignedConstraints = _trailingAlignedConstraints;
 
 - (instancetype)initWithPage:(TabGridPage)page {
   if (self = [super initWithFrame:CGRectZero]) {
@@ -58,22 +54,6 @@
   }
 }
 
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
-  if (self.traitCollection.verticalSizeClass ==
-          UIUserInterfaceSizeClassRegular &&
-      self.traitCollection.horizontalSizeClass ==
-          UIUserInterfaceSizeClassCompact) {
-    // The only centered configuration is when the UI is narrow but
-    // vertically long.
-    [NSLayoutConstraint deactivateConstraints:self.trailingAlignedConstraints];
-    [NSLayoutConstraint activateConstraints:self.centeredConstraints];
-  } else {
-    [NSLayoutConstraint deactivateConstraints:self.centeredConstraints];
-    [NSLayoutConstraint activateConstraints:self.trailingAlignedConstraints];
-  }
-}
-
 #pragma mark - Private
 
 - (void)setupViews {
@@ -95,8 +75,7 @@
   bottomLabel.numberOfLines = 0;
   bottomLabel.textAlignment = NSTextAlignmentCenter;
   [self addSubview:bottomLabel];
-
-  self.centeredConstraints = @[
+  [NSLayoutConstraint activateConstraints:@[
     [topLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
     [topLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
     [topLabel.bottomAnchor
@@ -107,20 +86,7 @@
                        constant:kTabGridEmptyStateVerticalMargin / 2.0f],
     [bottomLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
     [bottomLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-  ];
-  self.trailingAlignedConstraints = @[
-    [bottomLabel.trailingAnchor
-        constraintEqualToAnchor:self.trailingAnchor
-                       constant:-kTabGridEmptyStateHorizontalInset],
-    [bottomLabel.bottomAnchor
-        constraintEqualToAnchor:self.bottomAnchor
-                       constant:-kTabGridEmptyStateVerticalInset],
-    [bottomLabel.topAnchor
-        constraintEqualToAnchor:topLabel.bottomAnchor
-                       constant:kTabGridEmptyStateVerticalMargin],
-    [bottomLabel.trailingAnchor
-        constraintEqualToAnchor:topLabel.trailingAnchor],
-  ];
+  ]];
 }
 
 @end

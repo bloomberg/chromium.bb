@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_layout.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -146,11 +147,17 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   _emptyStateView = emptyStateView;
   emptyStateView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.collectionView.backgroundView addSubview:emptyStateView];
+  id<LayoutGuideProvider> safeAreaGuide =
+      SafeAreaLayoutGuideForView(self.collectionView.backgroundView);
   [NSLayoutConstraint activateConstraints:@[
     [self.collectionView.backgroundView.centerXAnchor
         constraintEqualToAnchor:emptyStateView.centerXAnchor],
     [self.collectionView.backgroundView.centerYAnchor
-        constraintEqualToAnchor:emptyStateView.centerYAnchor]
+        constraintEqualToAnchor:emptyStateView.centerYAnchor],
+    [safeAreaGuide.leadingAnchor
+        constraintLessThanOrEqualToAnchor:emptyStateView.leadingAnchor],
+    [safeAreaGuide.trailingAnchor
+        constraintGreaterThanOrEqualToAnchor:emptyStateView.trailingAnchor],
   ]];
 }
 
