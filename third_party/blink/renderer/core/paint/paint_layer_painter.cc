@@ -985,7 +985,7 @@ void PaintLayerPainter::PaintOverflowControlsForFragments(
           fragment_paint_chunk_properties.emplace(
               context.GetPaintController(),
               fragment.fragment_data->LocalBorderBoxProperties(), paint_layer_,
-              DisplayItem::kScrollOverflowControls);
+              DisplayItem::kOverflowControls);
         }
 
         // We need to apply the same clips and transforms that
