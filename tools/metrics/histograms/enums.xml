@@ -27475,8 +27475,6 @@ from previous Chrome versions.
   <int value="-898594349" label="ash-enable-stable-overview-order"/>
   <int value="-898499262" label="ImprovedA2HS:enabled"/>
   <int value="-898005938" label="disable-pinch-virtual-viewport"/>
-  <int value="-897069393"
-      label="kAutofillRationalizeRepeatedServerPredictions:disabled"/>
   <int value="-894214299" label="fill-on-account-select:enabled"/>
   <int value="-894185031" label="HighDynamicRange:disabled"/>
   <int value="-891856063" label="MidiManagerAndroid:enabled"/>
@@ -28438,8 +28436,6 @@ from previous Chrome versions.
   <int value="1220464509" label="enable-first-run-ui-transitions"/>
   <int value="1221559505" label="enable-spelling-feedback-field-trial"/>
   <int value="1222017136" label="WebRtcUseEchoCanceller3:disabled"/>
-  <int value="1222032915"
-      label="kAutofillRationalizeRepeatedServerPredictions:enabled"/>
   <int value="1226624874" label="Mus:disabled"/>
   <int value="1228115769" label="SiteCharacteristicsDatabase:disabled"/>
   <int value="1235800887" label="V8Ignition:enabled"/>
