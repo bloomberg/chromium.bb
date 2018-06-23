@@ -40,6 +40,7 @@
 // rename it to EncryptionScheme.
 #include "media/base/decrypt_config.h"
 #include "media/base/video_codecs.h"
+#include "media/cdm/cdm_proxy.h"
 #include "media/cdm/supported_cdm_versions.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
@@ -106,6 +107,8 @@ const char kCdmPersistentLicenseSupportName[] =
     "x-cdm-persistent-license-support";
 const char kCdmSupportedEncryptionSchemesName[] =
     "x-cdm-supported-encryption-schemes";
+const char kCdmSupportedCdmProxyProtocolsName[] =
+    "x-cdm-supported-cdm-proxy-protocols";
 
 // The following strings are used to specify supported codecs in the
 // parameter |kCdmCodecsListName|.
@@ -119,6 +122,10 @@ const char kCdmSupportedCodecAvc1[] = "avc1";
 // the parameter |kCdmSupportedEncryptionSchemesName|.
 const char kCdmSupportedEncryptionSchemeCenc[] = "cenc";
 const char kCdmSupportedEncryptionSchemeCbcs[] = "cbcs";
+
+// The following string(s) are used to specify supported CdmProxy protocols in
+// the parameter |kCdmSupportedCdmProxyProtocolsName|.
+const char kCdmSupportedCdmProxyProtocolIntel[] = "intel";
 
 // Widevine CDM is packaged as a multi-CRX. Widevine CDM binaries are located in
 // _platform_specific/<platform_arch> folder in the package. This function
@@ -294,6 +301,47 @@ bool GetEncryptionSchemes(
   return true;
 }
 
+// Returns true and updates |cdm_proxy_protocols| if the appropriate manifest
+// entry is valid. Returns false and does not modify |cdm_proxy_protocols| if
+// the manifest entry is incorrectly formatted. Incorrect types in the manifest
+// entry will log the error and fail. Unrecognized values will be reported but
+// otherwise ignored.
+bool GetCdmProxyProtocols(
+    const base::DictionaryValue& manifest,
+    base::flat_set<media::CdmProxy::Protocol>* cdm_proxy_protocols) {
+  const auto* value = manifest.FindKey(kCdmSupportedCdmProxyProtocolsName);
+  if (!value)
+    return true;
+
+  if (!value->is_list()) {
+    DLOG(ERROR) << "Manifest entry " << kCdmSupportedCdmProxyProtocolsName
+                << " is not a list.";
+    return false;
+  }
+
+  const base::Value::ListStorage& list = value->GetList();
+  base::flat_set<media::CdmProxy::Protocol> result;
+  for (const auto& item : list) {
+    if (!item.is_string()) {
+      DLOG(ERROR) << "Unrecognized item type in manifest entry "
+                  << kCdmSupportedCdmProxyProtocolsName;
+      return false;
+    }
+
+    const std::string& protocol = item.GetString();
+    if (protocol == kCdmSupportedCdmProxyProtocolIntel) {
+      result.insert(media::CdmProxy::Protocol::kIntel);
+    } else {
+      DLOG(WARNING) << "Unrecognized CdmProxy protocol" << protocol
+                    << " in manifest entry "
+                    << kCdmSupportedCdmProxyProtocolsName;
+    }
+  }
+
+  cdm_proxy_protocols->swap(result);
+  return true;
+}
+
 // Returns true if the entries in the manifest can be parsed correctly,
 // false otherwise. Updates |capability|, with the values obtained from the
 // manifest, if they are provided. If this method returns false, |capability|
@@ -302,7 +350,8 @@ bool ParseManifest(const base::DictionaryValue& manifest,
                    content::CdmCapability* capability) {
   return GetCodecs(manifest, &capability->video_codecs) &&
          GetEncryptionSchemes(manifest, &capability->encryption_schemes) &&
-         GetSessionTypes(manifest, &capability->session_types);
+         GetSessionTypes(manifest, &capability->session_types) &&
+         GetCdmProxyProtocols(manifest, &capability->cdm_proxy_protocols);
 }
 
 void RegisterWidevineCdmWithChrome(

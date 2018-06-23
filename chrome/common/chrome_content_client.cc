@@ -561,7 +561,8 @@ void ChromeContentClient::AddContentDecryptionModules(
       content::CdmCapability capability(
           {}, {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs},
           {media::CdmSessionType::TEMPORARY_SESSION,
-           media::CdmSessionType::PERSISTENT_LICENSE_SESSION});
+           media::CdmSessionType::PERSISTENT_LICENSE_SESSION},
+          {});
 
       // Register kExternalClearKeyDifferentGuidTestKeySystem first separately.
       // Otherwise, it'll be treated as a sub-key-system of normal
