@@ -6,17 +6,9 @@
 
 #include <utility>
 
+#include "device/fido/fido_constants.h"
+
 namespace device {
-
-namespace {
-
-// Keys for storing user entity information in CBOR map.
-constexpr char kUserIdKey[] = "id";
-constexpr char kUserNameKey[] = "name";
-constexpr char kUserDisplayNameKey[] = "displayName";
-constexpr char kUserIconUrlKey[] = "icon";
-
-}  // namespace
 
 // static
 base::Optional<PublicKeyCredentialUserEntity>
@@ -27,24 +19,24 @@ PublicKeyCredentialUserEntity::CreateFromCBORValue(
 
   const cbor::CBORValue::MapValue& cbor_map = cbor.GetMap();
 
-  auto user_id = cbor_map.find(cbor::CBORValue(kUserIdKey));
+  auto user_id = cbor_map.find(cbor::CBORValue(kEntityIdMapKey));
   if (user_id == cbor_map.end() || !user_id->second.is_bytestring())
     return base::nullopt;
 
   PublicKeyCredentialUserEntity user(user_id->second.GetBytestring());
 
-  auto user_name = cbor_map.find(cbor::CBORValue(kUserNameKey));
+  auto user_name = cbor_map.find(cbor::CBORValue(kEntityNameMapKey));
   if (user_name != cbor_map.end() && user_name->second.is_string()) {
     user.SetUserName(user_name->second.GetString());
   }
 
-  auto user_display_name = cbor_map.find(cbor::CBORValue(kUserDisplayNameKey));
+  auto user_display_name = cbor_map.find(cbor::CBORValue(kDisplayNameMapKey));
   if (user_display_name != cbor_map.end() &&
       user_display_name->second.is_string()) {
     user.SetDisplayName(user_display_name->second.GetString());
   }
 
-  auto user_icon_url = cbor_map.find(cbor::CBORValue(kUserIconUrlKey));
+  auto user_icon_url = cbor_map.find(cbor::CBORValue(kIconUrlMapKey));
   if (user_icon_url != cbor_map.end() && user_icon_url->second.is_string()) {
     user.SetIconUrl(GURL(user_icon_url->second.GetString()));
   }
@@ -72,15 +64,13 @@ PublicKeyCredentialUserEntity::~PublicKeyCredentialUserEntity() = default;
 
 cbor::CBORValue PublicKeyCredentialUserEntity::ConvertToCBOR() const {
   cbor::CBORValue::MapValue user_map;
-  user_map[cbor::CBORValue(kUserIdKey)] = cbor::CBORValue(user_id_);
+  user_map.emplace(kEntityIdMapKey, user_id_);
   if (user_name_)
-    user_map[cbor::CBORValue(kUserNameKey)] = cbor::CBORValue(*user_name_);
+    user_map.emplace(kEntityNameMapKey, *user_name_);
   if (user_icon_url_)
-    user_map[cbor::CBORValue(kUserIconUrlKey)] =
-        cbor::CBORValue(user_icon_url_->spec());
+    user_map.emplace(kIconUrlMapKey, user_icon_url_->spec());
   if (user_display_name_) {
-    user_map[cbor::CBORValue(kUserDisplayNameKey)] =
-        cbor::CBORValue(*user_display_name_);
+    user_map.emplace(kDisplayNameMapKey, *user_display_name_);
   }
   return cbor::CBORValue(std::move(user_map));
 }

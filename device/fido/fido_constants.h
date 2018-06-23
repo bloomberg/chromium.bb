@@ -282,6 +282,12 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kUserVerificationMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kUserPresenceMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kClientPinMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kPlatformDeviceMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kEntityIdMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kEntityNameMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kDisplayNameMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kIconUrlMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCredentialTypeMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCredentialAlgorithmMapKey[];
 
 // HID transport specific constants.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidPacketSize;

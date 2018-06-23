@@ -4,9 +4,48 @@
 
 #include "device/fido/public_key_credential_rp_entity.h"
 
+#include <algorithm>
 #include <utility>
 
+#include "device/fido/fido_constants.h"
+
 namespace device {
+
+// static
+base::Optional<PublicKeyCredentialRpEntity>
+PublicKeyCredentialRpEntity::CreateFromCBORValue(const cbor::CBORValue& cbor) {
+  if (!cbor.is_map() || cbor.GetMap().size() > 3)
+    return base::nullopt;
+
+  const auto& rp_map = cbor.GetMap();
+  bool is_rp_map_format_correct =
+      std::all_of(rp_map.begin(), rp_map.end(), [](const auto& element) {
+        if (!element.first.is_string() || !element.second.is_string())
+          return false;
+
+        const auto& key = element.first.GetString();
+        return (key == kEntityIdMapKey || key == kEntityNameMapKey ||
+                key == kIconUrlMapKey);
+      });
+
+  if (!is_rp_map_format_correct)
+    return base::nullopt;
+
+  const auto& id_it = rp_map.find(cbor::CBORValue(kEntityIdMapKey));
+  const auto& name_it = rp_map.find(cbor::CBORValue(kEntityNameMapKey));
+  const auto& icon_it = rp_map.find(cbor::CBORValue(kIconUrlMapKey));
+  if (id_it == rp_map.end())
+    return base::nullopt;
+  PublicKeyCredentialRpEntity rp(id_it->second.GetString());
+
+  if (name_it != rp_map.end())
+    rp.SetRpName(name_it->second.GetString());
+
+  if (icon_it != rp_map.end())
+    rp.SetRpIconUrl(GURL(icon_it->second.GetString()));
+
+  return rp;
+}
 
 PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity(std::string rp_id)
     : rp_id_(std::move(rp_id)) {}
@@ -39,11 +78,13 @@ PublicKeyCredentialRpEntity& PublicKeyCredentialRpEntity::SetRpIconUrl(
 
 cbor::CBORValue PublicKeyCredentialRpEntity::ConvertToCBOR() const {
   cbor::CBORValue::MapValue rp_map;
-  rp_map[cbor::CBORValue("id")] = cbor::CBORValue(rp_id_);
+  rp_map.emplace(kEntityIdMapKey, rp_id_);
   if (rp_name_)
-    rp_map[cbor::CBORValue("name")] = cbor::CBORValue(*rp_name_);
+    rp_map.emplace(kEntityNameMapKey, *rp_name_);
+
   if (rp_icon_url_)
-    rp_map[cbor::CBORValue("icon")] = cbor::CBORValue(rp_icon_url_->spec());
+    rp_map.emplace(kIconUrlMapKey, rp_icon_url_->spec());
+
   return cbor::CBORValue(std::move(rp_map));
 }
 

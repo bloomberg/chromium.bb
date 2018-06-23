@@ -85,6 +85,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   base::Optional<uint8_t> pin_protocol_;
 };
 
+COMPONENT_EXPORT(DEVICE_FIDO)
+base::Optional<CtapMakeCredentialRequest> ParseCtapMakeCredentialRequest(
+    base::span<const uint8_t> request_bytes);
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_CTAP_MAKE_CREDENTIAL_REQUEST_H_

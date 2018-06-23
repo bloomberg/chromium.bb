@@ -21,6 +21,12 @@ const char kUserVerificationMapKey[] = "uv";
 const char kUserPresenceMapKey[] = "up";
 const char kClientPinMapKey[] = "clientPin";
 const char kPlatformDeviceMapKey[] = "plat";
+const char kEntityIdMapKey[] = "id";
+const char kEntityNameMapKey[] = "name";
+const char kDisplayNameMapKey[] = "displayName";
+const char kIconUrlMapKey[] = "icon";
+const char kCredentialTypeMapKey[] = "type";
+const char kCredentialAlgorithmMapKey[] = "alg";
 
 const size_t kHidPacketSize = 64;
 const uint32_t kHidBroadcastChannel = 0xffffffff;
