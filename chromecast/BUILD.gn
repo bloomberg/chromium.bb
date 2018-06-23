@@ -457,14 +457,20 @@ cast_executable("cast_shell") {
 }
 
 if (is_fuchsia) {
-  fuchsia_executable_runner("cast_shell_fuchsia") {
-    exe_target = ":cast_shell"
+  fuchsia_package("cast_shell_pkg") {
+    binary = ":cast_shell"
+    package_name_override = "cast_shell"
 
     if (chromecast_branding != "public") {
       deps = [
         "//chromecast/internal:fuchsia_internal_data_deps",
       ]
     }
+  }
+
+  fuchsia_package_runner("cast_shell_fuchsia") {
+    package = ":cast_shell_pkg"
+    package_name_override = "cast_shell"
   }
 }
 

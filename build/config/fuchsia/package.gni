@@ -8,15 +8,25 @@ import("//build/config/sysroot.gni")
 # Creates a Fuchsia .far package file.
 #
 # Parameters are:
-# package_name: The name of the package to build.
-# binary: The name of the executable which should be launched by the package.
-#         Will be renamed as "bin/app" in the package contents.
-# sandbox_policy: A path to the sandbox_policy applied to this package.
-# deps: A list of targets whose output will be included in the package.
-template("package") {
+# package_name_override: Specifies the name of the package to generate,
+#     if different than |target_name|.
+# binary: The executable target which should be launched.
+# sandbox_policy: A path to the sandbox_policy that will be used.
+#     Defaults to //build/config/fuchsia/sandbox_policy.
+# deps: Additional targets to build and include in the package (optional).
+template("fuchsia_package") {
   pkg = {
-    package_name = target_name
     forward_variables_from(invoker, "*")
+
+    if (defined(package_name_override)) {
+      package_name = package_name_override
+    } else {
+      package_name = invoker.target_name
+    }
+
+    if (!defined(sandbox_policy)) {
+      sandbox_policy = "//build/config/fuchsia/sandbox_policy"
+    }
   }
   assert(defined(pkg.binary))
 
@@ -44,7 +54,6 @@ template("package") {
     forward_variables_from(invoker,
                            [
                              "deps",
-                             "public_deps",
                              "testonly",
                            ])
 
@@ -52,7 +61,7 @@ template("package") {
 
     inputs = [
       _runtime_deps_file,
-      "//build/config/fuchsia/sandbox_policy",
+      pkg.sandbox_policy,
     ]
 
     outputs = [
@@ -60,7 +69,11 @@ template("package") {
       _component_manifest,
     ]
 
-    data_deps = pkg.deps
+    if (!defined(deps)) {
+      deps = []
+    }
+    deps += [ pkg.binary ]
+    data_deps = deps
 
     # Use a depfile to trigger package rebuilds if any of the files (static
     # assets, shared libraries, etc.) included by the package have changed.
@@ -70,7 +83,7 @@ template("package") {
       rebase_path("//"),
       rebase_path(root_out_dir),
       pkg.package_name,
-      pkg.binary,
+      get_label_info(pkg.binary, "name"),
       rebase_path(pkg.sandbox_policy),
       rebase_path(_runtime_deps_file),
       rebase_path(_depfile),

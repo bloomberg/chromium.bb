@@ -604,9 +604,16 @@ if (is_android) {
   }
 
   if (is_fuchsia) {
-    fuchsia_executable_runner("content_shell_fuchsia") {
+    fuchsia_package("content_shell_pkg") {
       testonly = true
-      exe_target = ":content_shell"
+      binary = ":content_shell"
+      package_name_override = "content_shell"
+    }
+
+    fuchsia_package_runner("content_shell_fuchsia") {
+      testonly = true
+      package = ":content_shell_pkg"
+      package_name_override = "content_shell"
     }
   }
 }
