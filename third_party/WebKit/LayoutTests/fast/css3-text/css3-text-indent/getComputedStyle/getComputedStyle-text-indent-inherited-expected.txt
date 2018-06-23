@@ -15,9 +15,9 @@ Value of ancestor is '10px hanging':
 PASS window.getComputedStyle(ancestor).getPropertyValue('text-indent') is '10px hanging'
 PASS window.getComputedStyle(child).getPropertyValue('text-indent') is '10px hanging'
 
-Value of ancestor is '10px each-line hanging':
-PASS window.getComputedStyle(ancestor).getPropertyValue('text-indent') is '10px each-line hanging'
-PASS window.getComputedStyle(child).getPropertyValue('text-indent') is '10px each-line hanging'
+Value of ancestor is '10px hanging each-line':
+PASS window.getComputedStyle(ancestor).getPropertyValue('text-indent') is '10px hanging each-line'
+PASS window.getComputedStyle(child).getPropertyValue('text-indent') is '10px hanging each-line'
 
 Value of ancestor is '10px each-line', while child is '10px':
 PASS window.getComputedStyle(ancestor).getPropertyValue('text-indent') is '10px each-line'
@@ -27,8 +27,8 @@ Value of ancestor is '10px hanging', while child is '10px':
 PASS window.getComputedStyle(ancestor).getPropertyValue('text-indent') is '10px hanging'
 PASS window.getComputedStyle(child).getPropertyValue('text-indent') is '10px'
 
-Value of ancestor is '10px each-line hanging', while child is '10px':
-PASS window.getComputedStyle(ancestor).getPropertyValue('text-indent') is '10px each-line hanging'
+Value of ancestor is '10px hanging each-line', while child is '10px':
+PASS window.getComputedStyle(ancestor).getPropertyValue('text-indent') is '10px hanging each-line'
 PASS window.getComputedStyle(child).getPropertyValue('text-indent') is '10px'
 
 PASS successfullyParsed is true

@@ -28,8 +28,8 @@ child = document.getElementById('child');
 inheritanceTest("10px");
 inheritanceTest("10px each-line");
 inheritanceTest("10px hanging");
-inheritanceTest("10px each-line hanging");
+inheritanceTest("10px hanging each-line");
 
 ownValueTest("10px each-line", "10px");
 ownValueTest("10px hanging", "10px");
-ownValueTest("10px each-line hanging", "10px");
+ownValueTest("10px hanging each-line", "10px");
