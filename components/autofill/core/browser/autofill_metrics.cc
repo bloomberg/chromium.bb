@@ -1541,7 +1541,8 @@ void AutofillMetrics::FormEventLogger::OnDidFillSuggestion(
     const AutofillField& field) {
   DCHECK(is_for_credit_card_);
   form_interactions_ukm_logger_->LogDidFillSuggestion(
-      static_cast<int>(credit_card.record_type()), form, field);
+      static_cast<int>(credit_card.record_type()),
+      /*is_for_credit_card=*/true, form, field);
 
   if (credit_card.record_type() == CreditCard::MASKED_SERVER_CARD)
     Log(AutofillMetrics::FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED);
@@ -1585,7 +1586,8 @@ void AutofillMetrics::FormEventLogger::OnDidFillSuggestion(
     const AutofillField& field) {
   DCHECK(!is_for_credit_card_);
   form_interactions_ukm_logger_->LogDidFillSuggestion(
-      static_cast<int>(profile.record_type()), form, field);
+      static_cast<int>(profile.record_type()),
+      /*is_for_for_credit_card=*/false, form, field);
 
   if (profile.record_type() == AutofillProfile::SERVER_PROFILE)
     Log(AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_FILLED);
@@ -1781,6 +1783,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSelectedMaskedServerCard(
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(
     int record_type,
+    bool is_for_credit_card,
     const FormStructure& form,
     const AutofillField& field) {
   if (!CanLog())
@@ -1788,6 +1791,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(
 
   ukm::builders::Autofill_SuggestionFilled(source_id_)
       .SetRecordType(record_type)
+      .SetIsForCreditCard(is_for_credit_card)
       .SetMillisecondsSinceFormParsed(
           MillisecondsSinceFormParsed(form.form_parsed_timestamp()))
       .SetFormSignature(HashFormSignature(form.form_signature()))

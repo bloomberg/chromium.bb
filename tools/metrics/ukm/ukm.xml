@@ -316,6 +316,11 @@ be describing additional metrics about the same event.
       The signature of the form.
     </summary>
   </metric>
+  <metric name="IsForCreditCard">
+    <summary>
+      True for credit card forms, false for address/profile forms.
+    </summary>
+  </metric>
   <metric name="MillisecondsSinceFormParsed">
     <summary>
       Time since form parse.
