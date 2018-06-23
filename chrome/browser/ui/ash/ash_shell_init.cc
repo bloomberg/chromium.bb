@@ -13,7 +13,6 @@
 #include "ash/shell_port_classic.h"
 #include "ash/window_manager.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "content/public/browser/context_factory.h"
 
@@ -49,13 +48,10 @@ void AshShellInit::RegisterDisplayPrefs(PrefRegistrySimple* registry) {
 }
 
 AshShellInit::AshShellInit() {
-  // Balanced by a call to DestroyInstance() below.
-  ash::ShellContentState::SetInstance(new ChromeShellContentState);
   CreateClassicShell();
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 }
 
 AshShellInit::~AshShellInit() {
   ash::Shell::DeleteInstance();
-  ash::ShellContentState::DestroyInstance();
 }

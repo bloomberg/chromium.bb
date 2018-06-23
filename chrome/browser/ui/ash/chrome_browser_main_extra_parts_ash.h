@@ -29,7 +29,6 @@ class AppListClientImpl;
 class AshShellInit;
 class CastConfigClientMediaRouter;
 class ChromeNewWindowClient;
-class ChromeShellContentState;
 class DataPromoNotification;
 class ImeControllerClient;
 class ImmersiveContextMus;
@@ -118,9 +117,6 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
   std::unique_ptr<AssistantClient> assistant_client_;
 #endif
-
-  // Initialized in PostProfileInit if ash config == MASH:
-  std::unique_ptr<ChromeShellContentState> chrome_shell_content_state_;
 
   // Initialized in PostProfileInit in all configs:
   std::unique_ptr<CastConfigClientMediaRouter> cast_config_client_media_router_;

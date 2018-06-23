@@ -20,10 +20,10 @@ namespace user_manager {
 class User;
 }
 
-content::BrowserContext* GetActiveBrowserContext();
+const content::BrowserContext* GetActiveBrowserContext();
 
 using GetActiveBrowserContextCallback =
-    base::Callback<content::BrowserContext*(void)>;
+    base::RepeatingCallback<const content::BrowserContext*(void)>;
 
 // See documentation in ash::ShellDelegate for the method of the same name.
 // |context| is the content::BrowserContext deemed active for the current

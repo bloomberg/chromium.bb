@@ -1787,8 +1787,6 @@ split_static_library("ui") {
       "ash/chrome_screenshot_grabber.cc",
       "ash/chrome_screenshot_grabber.h",
       "ash/chrome_screenshot_grabber_test_observer.h",
-      "ash/chrome_shell_content_state.cc",
-      "ash/chrome_shell_content_state.h",
       "ash/chrome_shell_delegate.cc",
       "ash/chrome_shell_delegate.h",
       "ash/ime_controller_client.cc",

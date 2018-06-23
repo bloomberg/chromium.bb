@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/test/ash_test_views_delegate.h"
-#include "ash/test/content/test_shell_content_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 
@@ -38,20 +37,13 @@ AshTestEnvironmentContent::AshTestEnvironmentContent()
 AshTestEnvironmentContent::~AshTestEnvironmentContent() = default;
 
 void AshTestEnvironmentContent::SetUp() {
-  ShellContentState* content_state = content_state_;
-  if (!content_state) {
-    test_shell_content_state_ = new TestShellContentState;
-    content_state = test_shell_content_state_;
-  }
   scoped_web_contents_creator_ =
       std::make_unique<views::WebView::ScopedWebContentsCreatorForTesting>(
           base::BindRepeating(&CreateWebContents));
-  ShellContentState::SetInstance(content_state);
 }
 
 void AshTestEnvironmentContent::TearDown() {
   scoped_web_contents_creator_.reset();
-  ShellContentState::DestroyInstance();
 }
 
 std::unique_ptr<AshTestViewsDelegate>
