@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BLUETOOTH_BLUETOOTH_CHOOSER_DESKTOP_H_
 
 #include "base/macros.h"
+#include "components/bubble/bubble_reference.h"
 #include "content/public/browser/bluetooth_chooser.h"
 
 class BluetoothChooserController;
@@ -29,9 +30,17 @@ class BluetoothChooserDesktop : public content::BluetoothChooser {
                          bool is_paired,
                          int signal_strength_level) override;
 
+  // Sets a reference to the bubble being displayed so that it can be closed if
+  // this object is destroyed.
+  void set_bubble(base::WeakPtr<BubbleController> bubble) {
+    bubble_ = std::move(bubble);
+  }
+
  private:
   // Weak. DeviceChooserContentView[Cocoa] owns it.
   BluetoothChooserController* bluetooth_chooser_controller_;
+
+  base::WeakPtr<BubbleController> bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothChooserDesktop);
 };

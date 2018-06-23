@@ -70,6 +70,9 @@ class BubbleManager {
   // Remove an observer from this BubbleManager.
   void RemoveBubbleManagerObserver(BubbleManagerObserver* observer);
 
+  // Returns the number of bubbles currently being managed.
+  size_t GetBubbleCountForTesting() const;
+
  protected:
   // Will close any open bubbles and prevent new ones from being shown.
   void FinalizePendingRequests();

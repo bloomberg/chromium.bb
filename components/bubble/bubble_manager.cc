@@ -81,6 +81,10 @@ void BubbleManager::RemoveBubbleManagerObserver(
   observers_.RemoveObserver(observer);
 }
 
+size_t BubbleManager::GetBubbleCountForTesting() const {
+  return controllers_.size();
+}
+
 void BubbleManager::FinalizePendingRequests() {
   // Return if already "Finalized".
   if (manager_state_ == NO_MORE_BUBBLES)

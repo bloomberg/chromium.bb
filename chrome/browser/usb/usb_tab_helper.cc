@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/usb/web_usb_permission_provider.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
 #include "device/usb/mojo/device_manager_impl.h"
@@ -111,6 +112,13 @@ UsbTabHelper::UsbTabHelper(WebContents* web_contents)
 void UsbTabHelper::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
   frame_usb_services_.erase(render_frame_host);
   NotifyTabStateChanged();
+}
+
+void UsbTabHelper::DidFinishNavigation(content::NavigationHandle* handle) {
+  if (handle->HasCommitted() && !handle->IsSameDocument()) {
+    frame_usb_services_.erase(handle->GetRenderFrameHost());
+    NotifyTabStateChanged();
+  }
 }
 
 FrameUsbServices* UsbTabHelper::GetFrameUsbService(
