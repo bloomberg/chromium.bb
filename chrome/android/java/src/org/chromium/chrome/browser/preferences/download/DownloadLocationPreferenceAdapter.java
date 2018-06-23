@@ -26,11 +26,19 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
  */
 public class DownloadLocationPreferenceAdapter
         extends DownloadDirectoryAdapter implements OnClickListener {
+    private DownloadLocationPreference mPreference;
+
     /**
      * Constructor of DownloadLocationPreferenceAdapter.
      */
-    public DownloadLocationPreferenceAdapter(Context context, Delegate delegate) {
-        super(context, delegate);
+    public DownloadLocationPreferenceAdapter(
+            Context context, DownloadLocationPreference preference) {
+        super(context);
+        mPreference = preference;
+
+        if (getSelectedItemId() == NO_SELECTED_ITEM_ID) {
+            useFirstValidSelectableItemId();
+        }
     }
 
     @Override
@@ -106,7 +114,7 @@ public class DownloadLocationPreferenceAdapter
         mSelectedPosition = selectedId;
 
         // Update the preference after selected position is updated.
-        if (mDelegate != null) mDelegate.onDirectorySelectionChanged();
+        mPreference.updateSummary();
 
         option.recordDirectoryOptionType();
 

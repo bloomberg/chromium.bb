@@ -20,11 +20,9 @@ import org.chromium.chrome.browser.download.DirectoryOption;
 /**
  * The preference used to save the download directory in download settings page.
  */
-public class DownloadLocationPreference
-        extends DialogPreference implements DownloadDirectoryAdapter.Delegate {
+public class DownloadLocationPreference extends DialogPreference {
     /**
-     * Provides data for the list of available download directories options. Uses an asynchronous
-     * operation to query the directory options.
+     * Provides data for the list of available download directories options.
      */
     private DownloadLocationPreferenceAdapter mAdapter;
 
@@ -38,15 +36,13 @@ public class DownloadLocationPreference
      */
     public DownloadLocationPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mAdapter = new DownloadLocationPreferenceAdapter(getContext(), this);
+        mAdapter = new DownloadLocationPreferenceAdapter(context, this);
     }
 
     /**
      * Updates the summary that shows the download location directory.
      */
     public void updateSummary() {
-        if (!mAdapter.isDirectoryOptionsReady()) return;
-
         DirectoryOption directoryOption =
                 (DirectoryOption) mAdapter.getItem(mAdapter.getSelectedItemId());
         final SpannableStringBuilder summaryBuilder = new SpannableStringBuilder();
@@ -64,28 +60,7 @@ public class DownloadLocationPreference
         View view = LayoutInflater.from(getContext())
                             .inflate(R.layout.download_location_preference, null);
         mListView = (ListView) (view.findViewById(R.id.location_preference_list_view));
-
-        // Hook to the adapter if |onDirectoryOptionsReady| is called before |onCreateDialogView|.
-        if (mAdapter.isDirectoryOptionsReady()) {
-            mListView.setAdapter(mAdapter);
-        }
+        mListView.setAdapter(mAdapter);
         return view;
-    }
-
-    @Override
-    public void onDirectoryOptionsReady() {
-        if (mAdapter.getSelectedItemId() == DownloadDirectoryAdapter.NO_SELECTED_ITEM_ID) {
-            mAdapter.useFirstValidSelectableItemId();
-        }
-
-        // Hook to the adapter if |onCreateDialogView| is called before |onDirectoryOptionsReady|.
-        if (mListView != null) mListView.setAdapter(mAdapter);
-
-        updateSummary();
-    }
-
-    @Override
-    public void onDirectorySelectionChanged() {
-        updateSummary();
     }
 }
