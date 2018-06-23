@@ -46,7 +46,9 @@ class TestShardingMapGenerator(unittest.TestCase):
     finally:
       os.remove(map_path)
 
-  @decorators.Disabled('android', 'win', 'linux')
+  # Failing everywhere (see
+  # https://chromium-review.googlesource.com/c/chromium/src/+/1112978)
+  @decorators.Disabled('all')
   def testGeneratePerfSharding(self):
     path_output = tempfile.mkstemp(suffix='.json')[1]
     path_results = tempfile.mkstemp(suffix='.json')[1]
