@@ -5,7 +5,6 @@
 #ifndef DEVICE_FIDO_FIDO_HID_DEVICE_H_
 #define DEVICE_FIDO_FIDO_HID_DEVICE_H_
 
-#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,6 +12,7 @@
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/component_export.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/apdu/apdu_command.h"
@@ -45,13 +45,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   // Get a string identifier for a given device info.
   static std::string GetIdForDevice(
       const device::mojom::HidDeviceInfo& device_info);
-  // Command line flag to enable tests on actual HID hardware.
-  static bool IsTestEnabled();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FidoHidDeviceTest, TestConnectionFailure);
   FRIEND_TEST_ALL_PREFIXES(FidoHidDeviceTest, TestDeviceError);
   FRIEND_TEST_ALL_PREFIXES(FidoHidDeviceTest, TestRetryChannelAllocation);
+  FRIEND_TEST_ALL_PREFIXES(FidoHidDeviceTest, TestCancel);
 
   static constexpr uint8_t kWinkCapability = 0x01;
   static constexpr uint8_t kLockCapability = 0x02;
@@ -105,7 +104,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   uint8_t capabilities_ = 0;
 
   base::CancelableOnceClosure timeout_callback_;
-  std::queue<std::pair<std::vector<uint8_t>, DeviceCallback>>
+  base::queue<std::pair<std::vector<uint8_t>, DeviceCallback>>
       pending_transactions_;
 
   // All the FidoHidDevice instances are owned by U2fRequest. So it is safe to

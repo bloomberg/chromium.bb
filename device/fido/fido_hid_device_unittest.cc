@@ -492,7 +492,11 @@ TEST_F(FidoHidDeviceTest, TestCancel) {
   device->set_supported_protocol(ProtocolVersion::kCtap);
   TestDeviceCallbackReceiver cb;
   device->DeviceTransact(GetMockDeviceRequest(), cb.callback());
-  device->Cancel();
+  auto delay_before_cancel = base::TimeDelta::FromSeconds(1);
+  auto cancel_callback = base::BindOnce(&FidoHidDevice::Cancel,
+                                        device->weak_factory_.GetWeakPtr());
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, std::move(cancel_callback), delay_before_cancel);
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
 }
 
