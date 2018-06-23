@@ -316,6 +316,7 @@ static_library("content_shell_lib") {
       "//components/crash/content/app:test_support",
       "//components/crash/content/browser",
     ]
+    deps += [ "//third_party/fuchsia-sdk:policy" ]
   }
 
   # Annoyingly, this target and layouttest_support have circular includes.
@@ -412,6 +413,10 @@ static_library("content_shell_lib") {
 
   if (is_linux) {
     deps += [ "//build/config/freetype" ]
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
   }
 
   if (!enable_plugins) {
