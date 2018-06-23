@@ -12,7 +12,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_utils.h"
@@ -162,34 +161,6 @@ TEST_F(LoginAuthUserViewUnittest, OnlineSignInMessage) {
   EXPECT_FALSE(online_sign_in_message->visible());
   view_->SetAuthMethods(LoginAuthUserView::AUTH_TAP);
   EXPECT_FALSE(online_sign_in_message->visible());
-}
-
-// Verifies that password is cleared after AUTH_PASSWORD is disabled.
-TEST_F(LoginAuthUserViewUnittest,
-       PasswordClearedAfterAnimationIfPasswordDisabled) {
-  LoginPasswordView::TestApi password_test(view_->password_view());
-  auto has_password = [&]() {
-    return !password_test.textfield()->text().empty();
-  };
-
-  // Set a password.
-  view_->SetAuthMethods(LoginAuthUserView::AUTH_PASSWORD);
-  password_test.textfield()->SetText(base::ASCIIToUTF16("Hello"));
-
-  // Enable some other auth method (PIN), password is not cleared.
-  view_->CaptureStateForAnimationPreLayout();
-  view_->SetAuthMethods(LoginAuthUserView::AUTH_PASSWORD |
-                        LoginAuthUserView::AUTH_PIN);
-  EXPECT_TRUE(has_password());
-  view_->ApplyAnimationPostLayout();
-  EXPECT_TRUE(has_password());
-
-  // Disable password, password is cleared.
-  view_->CaptureStateForAnimationPreLayout();
-  view_->SetAuthMethods(LoginAuthUserView::AUTH_NONE);
-  EXPECT_TRUE(has_password());
-  view_->ApplyAnimationPostLayout();
-  EXPECT_FALSE(has_password());
 }
 
 }  // namespace ash
