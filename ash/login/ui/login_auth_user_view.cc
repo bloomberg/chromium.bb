@@ -101,26 +101,6 @@ ui::CallbackLayerAnimationObserver* BuildObserverToHideView(views::View* view) {
       view));
 }
 
-// Clears the password for the given |LoginPasswordView| instance and then
-// deletes itself.
-class ClearPasswordAnimationObserver : public ui::ImplicitAnimationObserver {
- public:
-  explicit ClearPasswordAnimationObserver(LoginPasswordView* view)
-      : view_(view) {}
-  ~ClearPasswordAnimationObserver() override = default;
-
-  // ui::ImplicitAnimationObserver:
-  void OnImplicitAnimationsCompleted() override {
-    view_->Clear();
-    delete this;
-  }
-
- private:
-  LoginPasswordView* view_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClearPasswordAnimationObserver);
-};
-
 // A view which has a round border and a fingerprint icon at the center.
 class FingerprintIconView : public views::View {
  public:
@@ -568,10 +548,6 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
       settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
           login_constants::kChangeUserAnimationDurationMs));
       settings.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
-      if (cached_animation_state_->had_password && !has_password) {
-        settings.AddObserver(
-            new ClearPasswordAnimationObserver(password_view_));
-      }
 
       password_view_->layer()->SetOpacity(opacity_end);
     }
