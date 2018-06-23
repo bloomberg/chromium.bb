@@ -430,8 +430,7 @@ public class VrShellDelegate
      */
     public static boolean canLaunch2DIntents() {
         if (!isInVr()) return true;
-        return getVrClassesWrapper().supports2dInVr()
-                && !sVrModeEnabledActivitys.contains(sInstance.mActivity);
+        return sInstance.canLaunch2DIntentsInternal();
     }
 
     /**
@@ -2132,6 +2131,11 @@ public class VrShellDelegate
                 GVR_KEYBOARD_UPDATE_RESULT);
     }
 
+    protected boolean canLaunch2DIntentsInternal() {
+        return getVrClassesWrapper().supports2dInVr()
+                && !sVrModeEnabledActivitys.contains(sInstance.mActivity);
+    }
+
     protected boolean createVrShell() {
         assert mVrShell == null;
         if (getVrClassesWrapper() == null) return false;
@@ -2224,6 +2228,10 @@ public class VrShellDelegate
 
     protected void acceptDoffPromptForTesting() {
         mVrShell.acceptDoffPromptForTesting();
+    }
+
+    protected boolean allow2dIntentsForTesting() {
+        return false;
     }
 
     protected void onBroadcastReceived() {}

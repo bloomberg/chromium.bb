@@ -21,6 +21,7 @@ public class TestVrShellDelegate extends VrShellDelegate {
     private boolean mDisableVrBrowsing;
     private boolean mExpectingBroadcast;
     private boolean mExpectingIntent;
+    private Boolean mAllow2dIntents;
 
     protected TestVrShellDelegate(ChromeActivity activity) {
         super(activity);
@@ -159,5 +160,15 @@ public class TestVrShellDelegate extends VrShellDelegate {
                     .setOnVSyncPausedForTesting(mOnVSyncPausedCallback);
         }
         return result;
+    }
+
+    @Override
+    protected boolean canLaunch2DIntentsInternal() {
+        if (mAllow2dIntents == null) return super.canLaunch2DIntentsInternal();
+        return mAllow2dIntents;
+    }
+
+    public void setAllow2dIntents(boolean allow) {
+        mAllow2dIntents = allow;
     }
 }
