@@ -277,16 +277,18 @@ RasterInvalidationTracking& RasterInvalidator::EnsureTracking() {
 void RasterInvalidator::Generate(const PaintArtifact& paint_artifact,
                                  const gfx::Rect& layer_bounds,
                                  const PropertyTreeState& layer_state,
-                                 const FloatSize& visual_rect_subpixel_offset) {
+                                 const FloatSize& visual_rect_subpixel_offset,
+                                 const DisplayItemClient* layer_client) {
   Generate(paint_artifact, paint_artifact.PaintChunks(), layer_bounds,
-           layer_state, visual_rect_subpixel_offset);
+           layer_state, visual_rect_subpixel_offset, layer_client);
 }
 
 void RasterInvalidator::Generate(const PaintArtifact& paint_artifact,
                                  const PaintChunkSubset& paint_chunks,
                                  const gfx::Rect& layer_bounds,
                                  const PropertyTreeState& layer_state,
-                                 const FloatSize& visual_rect_subpixel_offset) {
+                                 const FloatSize& visual_rect_subpixel_offset,
+                                 const DisplayItemClient* layer_client) {
   if (RasterInvalidationTracking::ShouldAlwaysTrack())
     EnsureTracking();
 
@@ -313,6 +315,12 @@ void RasterInvalidator::Generate(const PaintArtifact& paint_artifact,
       mapper.SwitchToChunk(chunk);
       new_chunks_info.emplace_back(*this, mapper, chunk);
     }
+
+    if (tracking_info_ && layer_bounds_was_empty && !layer_bounds.IsEmpty() &&
+        paint_chunks.size()) {
+      TrackImplicitFullLayerInvalidation(
+          layer_client ? *layer_client : paint_chunks[0].id.client);
+    }
   } else {
     GenerateRasterInvalidations(paint_artifact, paint_chunks, layer_state,
                                 visual_rect_subpixel_offset, new_chunks_info);
@@ -326,8 +334,29 @@ void RasterInvalidator::Generate(const PaintArtifact& paint_artifact,
   }
 }
 
+void RasterInvalidator::TrackImplicitFullLayerInvalidation(
+    const DisplayItemClient& layer_client) {
+  DCHECK(tracking_info_);
+
+  // Early return if we have already invalidated the whole layer.
+  IntRect full_layer_rect(0, 0, layer_bounds_.width(), layer_bounds_.height());
+  for (const auto& invalidation : tracking_info_->tracking.Invalidations()) {
+    if (invalidation.rect.Contains(full_layer_rect))
+      return;
+  }
+
+  tracking_info_->tracking.AddInvalidation(
+      &layer_client, layer_client.DebugName(), full_layer_rect,
+      PaintInvalidationReason::kFullLayer);
+}
+
 size_t RasterInvalidator::ApproximateUnsharedMemoryUsage() const {
   return sizeof(*this) + paint_chunks_info_.capacity() * sizeof(PaintChunkInfo);
+}
+
+void RasterInvalidator::ClearOldStates() {
+  paint_chunks_info_.clear();
+  layer_bounds_ = gfx::Rect();
 }
 
 }  // namespace blink

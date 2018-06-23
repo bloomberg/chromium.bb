@@ -387,7 +387,7 @@ void LinkHighlightImpl::UpdateGeometry() {
             gfx::RectF(Layer()->position(), gfx::SizeF(Layer()->bounds())));
         current_graphics_layer_->TrackRasterInvalidation(
             LinkHighlightDisplayItemClientForTracking(), IntRect(rect),
-            PaintInvalidationReason::kFull);
+            PaintInvalidationReason::kFullLayer);
       }
     }
   } else {

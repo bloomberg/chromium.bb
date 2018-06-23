@@ -37,7 +37,8 @@ class PLATFORM_EXPORT RasterInvalidator {
   void Generate(const PaintArtifact&,
                 const gfx::Rect& layer_bounds,
                 const PropertyTreeState& layer_state,
-                const FloatSize& visual_rect_subpixel_offset = FloatSize());
+                const FloatSize& visual_rect_subpixel_offset = FloatSize(),
+                const DisplayItemClient* layer_client = nullptr);
 
   // Generate raster invalidations for a subset of the paint chunks in the
   // paint artifact.
@@ -45,7 +46,8 @@ class PLATFORM_EXPORT RasterInvalidator {
                 const PaintChunkSubset&,
                 const gfx::Rect& layer_bounds,
                 const PropertyTreeState& layer_state,
-                const FloatSize& visual_rect_subpixel_offset = FloatSize());
+                const FloatSize& visual_rect_subpixel_offset = FloatSize(),
+                const DisplayItemClient* layer_client = nullptr);
 
   bool Matches(const PaintChunk& paint_chunk) const {
     return paint_chunks_info_.size() && paint_chunks_info_[0].is_cacheable &&
@@ -55,6 +57,8 @@ class PLATFORM_EXPORT RasterInvalidator {
   const gfx::Rect& LayerBounds() const { return layer_bounds_; }
 
   size_t ApproximateUnsharedMemoryUsage() const;
+
+  void ClearOldStates();
 
  private:
   friend class RasterInvalidatorTest;
@@ -124,6 +128,8 @@ class PLATFORM_EXPORT RasterInvalidator {
     return Intersection(
         r, Rect(0, 0, layer_bounds_.width(), layer_bounds_.height()));
   }
+
+  void TrackImplicitFullLayerInvalidation(const DisplayItemClient&);
 
   RasterInvalidationFunction raster_invalidation_function_;
   gfx::Rect layer_bounds_;

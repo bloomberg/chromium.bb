@@ -362,7 +362,7 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
     IntRect layer_bounds(layer_state_->offset, Size());
     EnsureRasterInvalidator().Generate(GetPaintController().GetPaintArtifact(),
                                        layer_bounds, layer_state_->state,
-                                       VisualRectSubpixelOffset());
+                                       VisualRectSubpixelOffset(), this);
   }
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
@@ -636,8 +636,9 @@ void GraphicsLayer::TrackRasterInvalidation(const DisplayItemClient& client,
   if (RasterInvalidationTracking::ShouldAlwaysTrack())
     EnsureRasterInvalidator().EnsureTracking();
 
-  // For SPv175, this only tracks invalidations that the cc::Layer is fully
-  // invalidated directly, e.g. from SetContentsNeedsDisplay(), etc.
+  // This only tracks invalidations that the cc::Layer is fully invalidated
+  // directly, e.g. from SetContentsNeedsDisplay(), etc. Other raster
+  // invalidations are tracked in RasterInvalidator.
   if (auto* tracking = GetRasterInvalidationTracking())
     tracking->AddInvalidation(&client, client.DebugName(), rect, reason);
 }
@@ -1157,7 +1158,7 @@ void GraphicsLayer::SetContentsNeedsDisplay() {
   if (cc::Layer* contents_layer = ContentsLayerIfRegistered()) {
     contents_layer->SetNeedsDisplay();
     TrackRasterInvalidation(*this, contents_rect_,
-                            PaintInvalidationReason::kFull);
+                            PaintInvalidationReason::kFullLayer);
   }
 }
 
@@ -1170,10 +1171,14 @@ void GraphicsLayer::SetNeedsDisplay() {
   layer_->SetNeedsDisplay();
   for (size_t i = 0; i < link_highlights_.size(); ++i)
     link_highlights_[i]->Invalidate();
+
   GetPaintController().InvalidateAll();
 
+  if (raster_invalidator_)
+    raster_invalidator_->ClearOldStates();
+
   TrackRasterInvalidation(*this, IntRect(IntPoint(), size_),
-                          PaintInvalidationReason::kFull);
+                          PaintInvalidationReason::kFullLayer);
 }
 
 DISABLE_CFI_PERF
