@@ -684,8 +684,16 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_MultipleBrowserWindowOnePIPWindow \
+  DISABLED_MultipleBrowserWindowOnePIPWindow
+#else
+#define MAYBE_MultipleBrowserWindowOnePIPWindow \
+  MultipleBrowserWindowOnePIPWindow
+#endif
+
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       MultipleBrowserWindowOnePIPWindow) {
+                       MAYBE_MultipleBrowserWindowOnePIPWindow) {
   LoadTabAndEnterPictureInPicture(browser());
 
   content::PictureInPictureWindowController* first_controller =
