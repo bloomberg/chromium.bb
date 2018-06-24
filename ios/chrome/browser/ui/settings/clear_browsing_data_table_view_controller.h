@@ -11,6 +11,8 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+@protocol ClearBrowsingDataLocalCommands;
+
 // TableView for clearing browsing data (including history,
 // cookies, caches, passwords, and autofill).
 @interface ClearBrowsingDataTableViewController : ChromeTableViewController
@@ -22,6 +24,9 @@ class ChromeBrowserState;
                            appBarStyle:
                                (ChromeTableViewControllerStyle)appBarStyle
     NS_UNAVAILABLE;
+
+// Local Dispatcher for this ClearBrowsingDataTableView.
+@property(nonatomic, weak) id<ClearBrowsingDataLocalCommands> localDispatcher;
 
 @end
 

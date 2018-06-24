@@ -31,6 +31,7 @@ source_set("history") {
     "legacy_history_entry_item.mm",
   ]
   deps = [
+    ":clear_browsing_data",
     ":feature_flags",
     ":history_ui",
     "//base",
@@ -136,6 +137,24 @@ source_set("history_ui") {
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/util",
     "//ui/base",
+  ]
+}
+
+source_set("clear_browsing_data") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "history_clear_browsing_data_coordinator.h",
+    "history_clear_browsing_data_coordinator.mm",
+  ]
+  deps = [
+    ":history_ui",
+    "//base",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/history/public",
+    "//ios/chrome/browser/ui/settings",
+    "//ios/chrome/browser/ui/table_view",
+    "//ios/web/public",
   ]
 }
 
