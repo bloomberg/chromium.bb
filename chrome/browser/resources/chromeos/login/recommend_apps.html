@@ -9,19 +9,16 @@
 <dom-module id="recommend-apps">
   <template>
     <link rel="stylesheet" href="recommend_apps.css">
-    <link rel="stylesheet" href="oobe_dialog_parameters.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-dialog id="recommend-apps-dialog" role="dialog" has-buttons
         aria-label$="[[i18nDynamic(locale, 'recommendAppsScreenTitle')]]"
         no-footer-padding class="recommend-apps-loading">
       <iron-icon src="chrome://oobe/playstore.svg" slot="oobe-icon">
       </iron-icon>
-      <div slot="header">
-        <h1 class="title">
-          [[i18nDynamic(locale, 'recommendAppsScreenTitle')]]
-        </h1>
-        <div id="subtitle" class="subtitle"></div>
-      </div>
+      <h1 slot="title">
+        [[i18nDynamic(locale, 'recommendAppsScreenTitle')]]
+      </h1>
+      <div id="subtitle" slot="subtitle"></div>
       <div id="app-list-view-container" slot="footer">
         <webview id="app-list-view"
                  src="../arc_support/recommend_app_list_view.html"></webview>

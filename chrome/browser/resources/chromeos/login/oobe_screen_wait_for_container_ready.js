@@ -13,6 +13,7 @@ login.createScreen(
         /** @Override */
         onBeforeShow: function(data) {
           Oobe.getInstance().headerHidden = true;
-        }
+          $('wait-for-container-ready-md').onBeforeShow();
+        },
       };
     });

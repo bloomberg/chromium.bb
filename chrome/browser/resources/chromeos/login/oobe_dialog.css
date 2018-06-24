@@ -3,19 +3,40 @@
  * found in the LICENSE file. */
 
 #header-container {
-  padding: 64px 64px 0 64px;
+  padding: 60px 64px 0 64px;
 }
 
 #header-container[android] {
   padding: 48px 48px 0 48px;
 }
 
-.oobe-header {
-  min-height: 84px; /* 64 title + 20 subtitle */
+#oobe-title {
+  min-height: 71px; /* 64 title + 7 (distance to baseline for 28px font) */
+}
+
+#oobe-title ::slotted(h1) {
+  color: color: var(--google-grey-900);
+  font-size: 28px;
+  font-weight: normal;
+  margin: 0;
+}
+
+#oobe-subtitle {
+  min-height: 57px; /* 64 - 7 (distance to baseline for title font) */
+}
+
+#oobe-subtitle ::slotted(*) {
+  color: color: var(--google-grey-900);
+  font-size: 13px;
+  line-height: 18px;
+  /*margin = 32 - line-height
+             - 5 (lihe height - font size)
+             + 3 (distance to baseline 13px) */
+  margin: 12px 0 0 0;
 }
 
 #footer-container {
-  padding: 44px 64px 0 64px;
+  padding: 0 64px;
 }
 
 #footer-container[noFooterPadding] {
@@ -23,16 +44,34 @@
 }
 
 #oobe-bottom {
-  box-shadow: 0 -1px 1px rgba(0, 0, 0, 0.14);
   height: 80px;
-  padding: 0;
+  padding: 0 62px; /* 64 - 2px button border */
   z-index: 1;
 }
 
-#oobe-bottom[hideShadow] {
-  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+:host(:not([full-screen-dialog])) #oobe-bottom {
+  padding: 0 30px; /* 32 - 2px button border */
+}
+
+#oobe-bottom[android] {
+  box-shadow: 0 -1px 1px rgba(0, 0, 0, 0.14);
+}
+
+#oobe-bottom[android][hideShadow] {
+  box-shadow: unset;
 }
 
 #oobe-bottom[android] {
   height: 60px;
+}
+
+#oobe-bottom ::slotted(*) {
+  width: 100%;
+}
+
+#oobe-icon-div ::slotted(hd-iron-icon),
+#oobe-icon-div ::slotted(iron-icon) {
+  --iron-icon-height: 32px;
+  --iron-icon-width: 32px;
+  --iron-icon-fill-color: var(--google-blue-500);
 }

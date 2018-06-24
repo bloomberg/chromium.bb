@@ -45,10 +45,6 @@ cr-checkbox {
   padding: 0 6px; /* = 8px - 2px button border */
 }
 
-#acceptAndContinue {
-  -webkit-padding-end: 18px;
-}
-
 /* --------------- Sync Make Chrome ... --------------- */
 
 #syncConsentNewDialog [slot='oobe-icon'] {

@@ -560,6 +560,9 @@ cr.define('cr.ui.login', function() {
       if (newStep.onBeforeShow)
         newStep.onBeforeShow(screenData);
 
+      if (newStep.defaultControl && newStep.defaultControl.onBeforeShow)
+        newStep.defaultControl.onBeforeShow();
+
       newStep.classList.remove('hidden');
 
       if (this.isOobeUI() &&

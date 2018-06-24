@@ -36,12 +36,19 @@
 }
 
 .title {
+  color: rgb(32, 33, 36); /* #202124 */
   font-size: 18px;
+  font-weight: normal;
+  margin: 0;
+  min-height: 71px; /* 64 title + 7 (distance to baseline for 28px font) */
 }
 
 #subtitle {
-  font-size: 12px;
-  padding: 14px 0 0 0;
+  color: rgb(32, 33, 36); /* #202124 */
+  font-size: 13px;
+  line-height: 18px;
+  margin: 12px 0 0 0;
+  min-height: 57px; /* 64 - 7 (distance to baseline for title font) */
 }
 
 #loading-message {

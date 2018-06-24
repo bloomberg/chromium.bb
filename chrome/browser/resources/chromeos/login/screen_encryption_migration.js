@@ -20,6 +20,13 @@ login.createScreen(
          */
         ignoreAccelerators: true,
 
+        /**
+         * Returns default event target element.
+         */
+        get defaultControl() {
+          return $('encryption-migration-element');
+        },
+
         /** @override */
         decorate: function() {
           var encryptionMigration = $('encryption-migration-element');

@@ -30,6 +30,14 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
       }.bind(this));
     },
 
+    /**
+     * Returns default event target element.
+     * @type {Object}
+     */
+    get defaultControl() {
+      return $('saml-confirm-password');
+    },
+
     /** @override */
     onBeforeShow: function(data) {
       $('login-header-bar').signinUIState =

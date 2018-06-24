@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://oobe/custom_elements.html">
 
 <div id="error-message" class="step hidden show-offline-error no-logo" hidden>
-  <link rel="stylesheet" href="oobe_dialog_parameters.css">
   <link rel="stylesheet" href="oobe_flex_layout.css">
 
   <iron-iconset-svg name="error-message-24" size="24">
@@ -15,32 +14,30 @@
   <oobe-dialog role="dialog" id="error-message-md" has-buttons>
     <iron-icon icon="error-message-24:dialog-icon" slot="oobe-icon">
     </iron-icon>
-    <div slot="header">
-      <h1 id="error-message-md-header" class="title">
-        <div id="error-header-id" class="error-header" aria-live="assertive">
-          <img alt class="error-icon"
-              src="chrome://theme/IDR_ERROR_NETWORK_OFFLINE">
-          <div id="captive-portal-title" i18n-content="captivePortalTitle"
-              class="error-title
-                     show-with-error-state-portal
-                     show-with-error-state-offline"></div>
-          <div id="login-error-title" i18n-content="loginErrorTitle"
-              class="error-title
-                     show-with-error-state-proxy
-                     show-with-error-state-auth-ext-timeout
-                     show-with-ui-state-local-state-error">
-          </div>
-          <div id="kiosk-online-title" i18n-content="kioskOnlineTitle"
-              class="error-title
-                     show-with-error-state-kiosk-online">
-          </div>
-          <div id="rollback-error-title" i18n-content="rollbackErrorTitle"
-               class="error-title
-                     show-with-ui-state-rollback-error">
-          </div>
+    <h1 id="error-message-md-header" slot="title">
+      <div id="error-header-id" class="error-header" aria-live="assertive">
+        <img alt class="error-icon"
+            src="chrome://theme/IDR_ERROR_NETWORK_OFFLINE">
+        <div id="captive-portal-title" i18n-content="captivePortalTitle"
+            class="error-title
+                   show-with-error-state-portal
+                   show-with-error-state-offline"></div>
+        <div id="login-error-title" i18n-content="loginErrorTitle"
+            class="error-title
+                   show-with-error-state-proxy
+                   show-with-error-state-auth-ext-timeout
+                   show-with-ui-state-local-state-error">
         </div>
-      </h1>
-    </div>
+        <div id="kiosk-online-title" i18n-content="kioskOnlineTitle"
+            class="error-title
+                   show-with-error-state-kiosk-online">
+        </div>
+        <div id="rollback-error-title" i18n-content="rollbackErrorTitle"
+            class="error-title
+                   show-with-ui-state-rollback-error">
+        </div>
+      </div>
+    </h1>
     <div id="error-message-md-footer" slot="footer"
         class="flex layout vertical">
       <div id="error-body-id" class="error-body" aria-live="assertive">

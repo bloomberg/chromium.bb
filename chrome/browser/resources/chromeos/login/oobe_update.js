@@ -9,6 +9,8 @@
 Polymer({
   is: 'oobe-update-md',
 
+  behaviors: [OobeDialogHostBehavior],
+
   properties: {
     /**
      * Shows "Checking for update ..." section and hides "Updating..." section.

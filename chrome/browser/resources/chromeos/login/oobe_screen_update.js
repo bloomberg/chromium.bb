@@ -66,6 +66,14 @@ login.createScreen('UpdateScreen', 'update', function() {
     },
 
     /**
+     * Returns default event target element.
+     * @type {Object}
+     */
+    get defaultControl() {
+      return $('oobe-update-md');
+    },
+
+    /**
      * Cancels the screen.
      */
     cancel: function() {
