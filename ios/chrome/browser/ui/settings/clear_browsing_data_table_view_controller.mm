@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
+#include "ios/chrome/browser/ui/settings/clear_browsing_data_local_commands.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_manager.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
@@ -44,6 +45,7 @@ class ChromeBrowserState;
 @implementation ClearBrowsingDataTableViewController
 @synthesize browserState = _browserState;
 @synthesize dataManager = _dataManager;
+@synthesize localDispatcher = _localDispatcher;
 
 #pragma mark - ViewController Lifecycle.
 
@@ -75,6 +77,12 @@ class ChromeBrowserState;
 
   // Navigation controller configuration.
   self.title = l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
+  // Adds the "Done" button and hooks it up to |dismiss|.
+  UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemDone
+                           target:self
+                           action:@selector(dismiss)];
+  self.navigationItem.rightBarButtonItem = dismissButton;
 
   [self loadModel];
 }
@@ -82,6 +90,10 @@ class ChromeBrowserState;
 - (void)loadModel {
   [super loadModel];
   [self.dataManager loadModel:self.tableViewModel];
+}
+
+- (void)dismiss {
+  [self.localDispatcher dismissClearBrowsingDataWithCompletion:nil];
 }
 
 #pragma mark - UITableViewDataSource
@@ -162,7 +174,8 @@ class ChromeBrowserState;
 
 - (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
             didRequestOpenURL:(const GURL&)URL {
-  [self openURLInNewTab:URL];
+  GURL copiedURL(URL);
+  [self.localDispatcher openURL:copiedURL];
 }
 
 #pragma mark - TextButtonItemDelegate
@@ -183,14 +196,6 @@ class ChromeBrowserState;
   if (alertController) {
     [self presentViewController:alertController animated:YES completion:nil];
   }
-}
-
-#pragma mark - Private Methods
-
-// Opens URL in a new non-incognito tab and dismisses the clear browsing data
-// view.
-- (void)openURLInNewTab:(const GURL&)URL {
-  // TODO(crbug.com/854882): Implement open URL logic.
 }
 
 @end

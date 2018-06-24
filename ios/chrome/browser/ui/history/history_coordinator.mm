@@ -11,12 +11,12 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/history/history_clear_browsing_data_coordinator.h"
 #include "ios/chrome/browser/ui/history/history_local_commands.h"
 #import "ios/chrome/browser/ui/history/history_mediator.h"
 #include "ios/chrome/browser/ui/history/history_table_view_controller.h"
 #import "ios/chrome/browser/ui/history/history_transitioning_delegate.h"
 #include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data_coordinator.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -42,12 +42,13 @@
 
 // The coordinator that will present Clear Browsing Data.
 @property(nonatomic, strong)
-    ClearBrowsingDataCoordinator* clearBrowsingDataCoordinator;
+    HistoryClearBrowsingDataCoordinator* historyClearBrowsingDataCoordinator;
 @end
 
 @implementation HistoryCoordinator
-@synthesize clearBrowsingDataCoordinator = _clearBrowsingDataCoordinator;
 @synthesize dispatcher = _dispatcher;
+@synthesize historyClearBrowsingDataCoordinator =
+    _historyClearBrowsingDataCoordinator;
 @synthesize historyNavigationController = _historyNavigationController;
 @synthesize historyTransitioningDelegate = _historyTransitioningDelegate;
 @synthesize loader = _loader;
@@ -118,10 +119,15 @@
 
 - (void)displayPrivacySettings {
   if (experimental_flags::IsCollectionsUIRebootEnabled()) {
-    self.clearBrowsingDataCoordinator = [[ClearBrowsingDataCoordinator alloc]
-        initWithBaseViewController:self.historyNavigationController
-                      browserState:self.browserState];
-    [self.clearBrowsingDataCoordinator start];
+    self.historyClearBrowsingDataCoordinator =
+        [[HistoryClearBrowsingDataCoordinator alloc]
+            initWithBaseViewController:self.historyNavigationController
+                          browserState:self.browserState];
+    self.historyClearBrowsingDataCoordinator.localDispatcher = self;
+    self.historyClearBrowsingDataCoordinator.presentationDelegate =
+        self.presentationDelegate;
+    self.historyClearBrowsingDataCoordinator.loader = self.loader;
+    [self.historyClearBrowsingDataCoordinator start];
   } else {
     [self.dispatcher showClearBrowsingDataSettingsFromViewController:
                          self.historyNavigationController];
