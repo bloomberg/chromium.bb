@@ -15,12 +15,13 @@ from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 
-def SetupOrRemoveDevices(sysroot_path, remove):
-  """Setup or remove devices in |sysroot_path|/dev.
+def SetUpOrRemoveDevices(sysroot_path, remove):
+  """Set up or remove devices in |sysroot_path|/dev.
 
-  If null, random and urandom don't already exist in |sysroot_path|/dev and
-  |remove| is False then they are created. If they do exist and |remove| is True
-  then they are removed.
+  If |remove| is True, then dev/null, dev/random, and dev/urandom are removed if
+  they exist.
+  If |remove| is not True, then dev/null, dev/random, and dev/urandom are
+  created, if they already exist then they are recreated.
   """
   dev_path = os.path.join(sysroot_path, 'dev')
   if not remove and not os.path.exists(dev_path):
@@ -37,9 +38,12 @@ def SetupOrRemoveDevices(sysroot_path, remove):
 
   for device in DEVICE_TO_CMD:
     device_path = get_path(device)
-    if os.path.exists(device_path) and remove:
-      cros_build_lib.SudoRunCommand(['rm', device_path])
-    elif not os.path.exists(device_path) and not remove:
+    # Remove devices in case they were added to dev, but are not what we expect.
+    if os.path.exists(device_path):
+      # Use -r since dev/null is sometimes a directory.
+      cros_build_lib.SudoRunCommand(['rm', '-r', device_path])
+
+    if not remove:
       cros_build_lib.SudoRunCommand(DEVICE_TO_CMD[device])
 
 
@@ -81,10 +85,10 @@ def GetParser():
 
 
 def main(argv):
-  """Parse arguments and handle setup or cleanup of fuzzing environment.
+  """Parse arguments and handle setting up or cleanup of fuzzing environment.
 
-  Parse arguments, call MountOrUnmountProc, SetupOrRemoveDevices, & copies
-  files.
+  Parse arguments, copies necessary files, calls MountOrUnmountProc, and calls
+  SetUpOrRemoveDevices.
   """
 
   cros_build_lib.AssertOutsideChroot()
@@ -97,7 +101,7 @@ def main(argv):
   sysroot_path = os.path.join(chroot_path, 'build', options.board)
 
   MountOrUnmountProc(sysroot_path, options.cleanup)
-  SetupOrRemoveDevices(sysroot_path, options.cleanup)
+  SetUpOrRemoveDevices(sysroot_path, options.cleanup)
 
   # Do not copy the files if we are cleaning up.
   if not options.cleanup:
