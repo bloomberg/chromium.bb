@@ -5,3 +5,7 @@
 # Flaky failures with incorrect Input event acks. https://crbug.com/855532
 -TouchInputBrowserTest.TouchHandlerConsume
 -TouchInputBrowserTest.TouchHandlerNoConsume
+
+# TODO(fsamuel) triage consistent failure with relatively empty logs.
+# https://crubg.com/855920
+-ScrollLatencyBrowserTest.SmoothWheelScroll
