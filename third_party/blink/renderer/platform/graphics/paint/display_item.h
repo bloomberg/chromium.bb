@@ -34,7 +34,7 @@ class PLATFORM_EXPORT DisplayItem {
  public:
   enum {
     // Must be kept in sync with core/paint/PaintPhase.h.
-    kPaintPhaseMax = 11,
+    kPaintPhaseMax = 10,
   };
 
   // A display item type uniquely identifies a display item of a client.
@@ -75,6 +75,7 @@ class PLATFORM_EXPORT DisplayItem {
     kDrawingPaintPhaseLast = kDrawingFirst + kPaintPhaseMax,
     kBoxDecorationBackground,
     kCaret,
+    kClippingMask,
     kColumnRules,
     kDebugDrawing,
     kDocumentBackground,

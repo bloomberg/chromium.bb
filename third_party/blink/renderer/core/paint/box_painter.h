@@ -29,7 +29,6 @@ class BoxPainter {
   void PaintChildren(const PaintInfo&, const LayoutPoint&);
   void PaintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
   void PaintMask(const PaintInfo&, const LayoutPoint&);
-  void PaintClippingMask(const PaintInfo&, const LayoutPoint&);
 
   void PaintMaskImages(const PaintInfo&, const LayoutRect&);
   void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,

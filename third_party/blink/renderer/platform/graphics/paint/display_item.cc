@@ -43,10 +43,8 @@ static WTF::String PaintPhaseAsDebugString(int paint_phase) {
       return "PaintPhaseSelection";
     case 9:
       return "PaintPhaseTextClip";
-    case 10:
-      return "PaintPhaseMask";
     case DisplayItem::kPaintPhaseMax:
-      return "PaintPhaseClippingMask";
+      return "PaintPhaseMask";
     default:
       NOTREACHED();
       return "Unknown";
@@ -72,6 +70,7 @@ static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
   switch (type) {
     DEBUG_STRING_CASE(BoxDecorationBackground);
     DEBUG_STRING_CASE(Caret);
+    DEBUG_STRING_CASE(ClippingMask);
     DEBUG_STRING_CASE(ColumnRules);
     DEBUG_STRING_CASE(DebugDrawing);
     DEBUG_STRING_CASE(DocumentBackground);

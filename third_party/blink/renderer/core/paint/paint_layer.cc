@@ -2782,11 +2782,6 @@ bool PaintLayer::MaskBlendingAppliedByCompositor(
          rare_data_->composited_layer_mapping->HasMaskLayer();
 }
 
-bool PaintLayer::HasCompositedClippingMask() const {
-  return rare_data_ && rare_data_->composited_layer_mapping &&
-         rare_data_->composited_layer_mapping->HasChildClippingMaskLayer();
-}
-
 bool PaintLayer::NeedsCompositedScrolling() const {
   return scrollable_area_ && scrollable_area_->NeedsCompositedScrolling();
 }
