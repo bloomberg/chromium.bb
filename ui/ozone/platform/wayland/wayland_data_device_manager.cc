@@ -16,12 +16,12 @@ WaylandDataDeviceManager::~WaylandDataDeviceManager() = default;
 
 wl_data_device* WaylandDataDeviceManager::GetDevice() {
   DCHECK(connection_->seat());
-  return wl_data_device_manager_get_data_device(device_manager_,
+  return wl_data_device_manager_get_data_device(device_manager_.get(),
                                                 connection_->seat());
 }
 
 wl_data_source* WaylandDataDeviceManager::CreateSource() {
-  return wl_data_device_manager_create_data_source(device_manager_);
+  return wl_data_device_manager_create_data_source(device_manager_.get());
 }
 
 }  // namespace ui
