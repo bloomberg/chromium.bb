@@ -567,17 +567,14 @@ bool X509Certificate::VerifyHostname(
 
   // Now step through the DNS names doing wild card comparison (if necessary)
   // on each against the reference name.
-  std::vector<std::string> common_name_as_vector;
-  const std::vector<std::string>* presented_names = &cert_san_dns_names;
-  for (std::vector<std::string>::const_iterator it =
-           presented_names->begin();
-       it != presented_names->end(); ++it) {
+  for (const auto& cert_san_dns_name : cert_san_dns_names) {
     // Catch badly corrupt cert names up front.
-    if (it->empty() || it->find('\0') != std::string::npos) {
-      DVLOG(1) << "Bad name in cert: " << *it;
+    if (cert_san_dns_name.empty() ||
+        cert_san_dns_name.find('\0') != std::string::npos) {
+      DVLOG(1) << "Bad name in cert: " << cert_san_dns_name;
       continue;
     }
-    std::string presented_name(base::ToLowerASCII(*it));
+    std::string presented_name(base::ToLowerASCII(cert_san_dns_name));
 
     // Remove trailing dot, if any.
     if (*presented_name.rbegin() == '.')
