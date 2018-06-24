@@ -39,12 +39,13 @@ Polymer({
     },
 
     /**
-     * Switches styles to "Welcome screen".
+     * True when dialog is displayed in full-screen mode.
      */
-    welcomeScreen: {
+    fullScreenDialog: {
       type: Boolean,
       value: false,
       reflectToAttribute: true,
+      observer: 'onfullScreenDialogChanged_',
     },
 
     android: {
@@ -61,6 +62,11 @@ Polymer({
        TODO (alemate): fix this once event flow is updated.
     */
     this.show();
+  },
+
+  onBeforeShow: function() {
+    if (document.documentElement.getAttribute('full-screen-dialog'))
+      this.fullScreenDialog = true;
   },
 
   /**
@@ -81,5 +87,10 @@ Polymer({
       focusedElements[0].focus();
 
     this.fire('show-dialog');
+  },
+
+  onfullScreenDialogChanged_: function() {
+    if (this.fullScreenDialog)
+      document.documentElement.setAttribute('full-screen-dialog', true);
   },
 });

@@ -1,0 +1,16 @@
+/* Copyright 2018 The Chromium Authors. All rights reserved.
+   Use of this source code is governed by a BSD-style license that can be
+   found in the LICENSE file. */
+
+paper-button {
+  -webkit-padding-end: 8px;
+  -webkit-padding-start: 16px;
+}
+
+slot {
+  -webkit-padding-end: 4px;
+}
+
+hd-iron-icon {
+  -webkit-padding-start: 4px;
+}

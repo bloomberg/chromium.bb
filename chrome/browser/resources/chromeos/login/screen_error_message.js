@@ -91,6 +91,14 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       return Oobe.getInstance().hasUserPods;
     },
 
+    /**
+     * Returns default event target element.
+     * @type {Object}
+     */
+    get defaultControl() {
+      return $('error-message-md');
+    },
+
     /** @override */
     decorate: function() {
       this.updateLocalizedContent();

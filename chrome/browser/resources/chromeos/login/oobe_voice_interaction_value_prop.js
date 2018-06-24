@@ -10,6 +10,8 @@
 Polymer({
   is: 'voice-interaction-value-prop-md',
 
+  behaviors: [OobeDialogHostBehavior],
+
   properties: {
     /**
      * Buttons are disabled when the value prop content is loading.

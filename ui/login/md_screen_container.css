@@ -60,35 +60,37 @@
 }
 
 /* Screens that have a border and background. */
-#oobe.auto-enrollment-check #inner-container,
-#oobe.autolaunch #inner-container,
-#oobe.confirm-password #inner-container,
-#oobe.debugging #inner-container,
-#oobe.enrollment #inner-container,
-#oobe.fatal-error #inner-container,
-#oobe.gaia-signin #inner-container,
-#oobe.hid-detection #inner-container,
-#oobe.kiosk-enable #inner-container,
-#oobe.oauth-enrollment #inner-container,
-#oobe.password-changed #inner-container,
-#oobe.ad-password-change #inner-container,
-#oobe.supervised-user-creation #inner-container,
-#oobe.supervised-user-creation-dialog #inner-container,
-#oobe.terms-of-service #inner-container,
-#oobe.arc-tos #inner-container,
-#oobe.update #inner-container,
-#oobe.update-required #inner-container,
-#oobe.user-image #inner-container,
-#oobe.wrong-hwid #inner-container,
-#oobe.unrecoverable-cryptohome-error #inner-container {
+html:not([full-screen-dialog]) #oobe.auto-enrollment-check #inner-container,
+html:not([full-screen-dialog]) #oobe.autolaunch #inner-container,
+html:not([full-screen-dialog]) #oobe.confirm-password #inner-container,
+html:not([full-screen-dialog]) #oobe.debugging #inner-container,
+html:not([full-screen-dialog]) #oobe.enrollment #inner-container,
+html:not([full-screen-dialog]) #oobe.fatal-error #inner-container,
+html:not([full-screen-dialog]) #oobe.gaia-signin #inner-container,
+html:not([full-screen-dialog]) #oobe.hid-detection #inner-container,
+html:not([full-screen-dialog]) #oobe.kiosk-enable #inner-container,
+html:not([full-screen-dialog]) #oobe.oauth-enrollment #inner-container,
+html:not([full-screen-dialog]) #oobe.password-changed #inner-container,
+html:not([full-screen-dialog]) #oobe.ad-password-change #inner-container,
+html:not([full-screen-dialog]) #oobe.supervised-user-creation #inner-container,
+html:not([full-screen-dialog]) #oobe.supervised-user-creation-dialog
+    #inner-container,
+html:not([full-screen-dialog]) #oobe.terms-of-service #inner-container,
+html:not([full-screen-dialog]) #oobe.arc-tos #inner-container,
+html:not([full-screen-dialog]) #oobe.update #inner-container,
+html:not([full-screen-dialog]) #oobe.update-required #inner-container,
+html:not([full-screen-dialog]) #oobe.user-image #inner-container,
+html:not([full-screen-dialog]) #oobe.wrong-hwid #inner-container,
+html:not([full-screen-dialog]) #oobe.unrecoverable-cryptohome-error
+    #inner-container {
   background: white;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
               0 4px 23px 5px rgba(0, 0, 0, 0.2),
               0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-#oobe.error-message #inner-container,
-#oobe.tpm-error-message #inner-container {
+html:not([full-screen-dialog]) #oobe.error-message #inner-container,
+html:not([full-screen-dialog]) #oobe.tpm-error-message #inner-container {
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
               0 4px 23px 5px rgba(0, 0, 0, 0.2),
               0 2px 6px rgba(0, 0, 0, 0.15);

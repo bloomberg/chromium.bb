@@ -7,4 +7,9 @@
  * container ready screen.
  */
 
-Polymer({is: 'wait-for-container-ready-md'});
+Polymer({
+  is: 'wait-for-container-ready-md',
+
+  behaviors: [OobeDialogHostBehavior],
+
+});

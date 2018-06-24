@@ -9,7 +9,7 @@
 Polymer({
   is: 'oobe-welcome-md',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**
@@ -97,6 +97,19 @@ Polymer({
   /** @override */
   ready: function() {
     this.updateLocalizedContent();
+  },
+
+  onBeforeShow: function() {
+    if (document.documentElement.getAttribute('full-screen-dialog'))
+      this.fullScreenDialog = true;
+
+    if (this.fullScreenDialog)
+      this.$.welcomeScreen.fullScreenDialog = true;
+
+    this.behaviors.forEach((behavior) => {
+      if (behavior.onBeforeShow)
+        behavior.onBeforeShow.call(this);
+    });
   },
 
   /**

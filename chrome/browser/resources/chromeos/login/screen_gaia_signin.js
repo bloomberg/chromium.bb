@@ -577,6 +577,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       this.lastBackMessageValue_ = false;
       this.updateControlsState();
+
+      return $('signin-frame-dialog').onBeforeShow();
     },
 
     get navigationDisabled_() {

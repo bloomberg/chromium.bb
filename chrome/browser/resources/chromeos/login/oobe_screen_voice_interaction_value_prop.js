@@ -16,6 +16,7 @@ login.createScreen(
           Oobe.getInstance().headerHidden = true;
           $('voice-interaction-value-prop-md').locale =
               loadTimeData.getString('locale');
+          $('voice-interaction-value-prop-md').onBeforeShow();
           $('voice-interaction-value-prop-md').onShow();
         }
       };

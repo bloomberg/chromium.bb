@@ -23,6 +23,10 @@ body {
   top: 0;
 }
 
+html[full-screen-dialog] body {
+  background-color: white;
+}
+
 body.solid {
   background-color: white;
 }

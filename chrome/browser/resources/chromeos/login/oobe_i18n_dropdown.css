@@ -3,7 +3,10 @@
  * found in the LICENSE file. */
 
 :host {
-  font-family: Roboto, sans-serif;
   font-size: 13px;
   --md-select-width: 240px;
+}
+
+select {
+  height: 32px;
 }

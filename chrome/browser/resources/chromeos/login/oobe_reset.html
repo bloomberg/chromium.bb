@@ -29,7 +29,6 @@
 <dom-module id="oobe-reset-md">
   <template>
     <link rel="stylesheet" href="chrome://resources/css/throbber.css">
-    <link rel="stylesheet" href="oobe_dialog_parameters.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <link rel="stylesheet" href="oobe_reset.css">
     <oobe-dialog id="resetDialog" role="dialog"
@@ -37,28 +36,26 @@
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-reset-32:alert" icon2x="oobe-reset-64:alert">
       </hd-iron-icon>
-      <div slot="header">
-        <h1 class="title" i18n-content="resetWarningTitle"></h1>
-        <div class="subtitle powerwash-warning">
-          <div hidden="[[!isState_(uiState_, 'powerwash-proposal-view')]]"
-              i18n-content="resetPowerwashWarningDetails"></div>
-          <div hidden="[[!isState_(uiState_, 'powerwash-proposal-view')]]"
-              i18n-content="resetWarningDataDetails"></div>
-          <div hidden="[[!isState_(uiState_, 'rollback-proposal-view')]]"
-              i18n-content="resetPowerwashRollbackWarningDetails"></div>
-          <div hidden="[[!isState_(uiState_, 'rollback-proposal-view')]]"
-              i18n-content="resetWarningDataDetails"></div>
-          <div hidden="[[!isState_(uiState_, 'restart-required-view')]]"
-              i18n-content="resetRestartMessage"></div>
-          <a id="powerwash-help-link-md" href="#"
-              hidden="[[isHelpLinkHidden_(uiState_, isOfficial_)]]"
-              on-tap="onLearnMoreTap_" i18n-content="learnMore"></a>
-          <div hidden="[[!isState_(uiState_, 'revert-promise-view')]]">
-            <div i18n-content="resetRevertPromise"></div>
-            <div class="flex horizontal layout">
-              <div id="reset-revert-spinner" class="throbber"></div>
-              <div i18n-content="resetRevertSpinnerMessage"></div>
-            </div>
+      <h1 slot="title" i18n-content="resetWarningTitle"></h1>
+      <div slot="subtitle" class="powerwash-warning">
+        <div hidden="[[!isState_(uiState_, 'powerwash-proposal-view')]]"
+            i18n-content="resetPowerwashWarningDetails"></div>
+        <div hidden="[[!isState_(uiState_, 'powerwash-proposal-view')]]"
+            i18n-content="resetWarningDataDetails"></div>
+        <div hidden="[[!isState_(uiState_, 'rollback-proposal-view')]]"
+            i18n-content="resetPowerwashRollbackWarningDetails"></div>
+        <div hidden="[[!isState_(uiState_, 'rollback-proposal-view')]]"
+            i18n-content="resetWarningDataDetails"></div>
+        <div hidden="[[!isState_(uiState_, 'restart-required-view')]]"
+            i18n-content="resetRestartMessage"></div>
+        <a id="powerwash-help-link-md" href="#"
+            hidden="[[isHelpLinkHidden_(uiState_, isOfficial_)]]"
+            on-tap="onLearnMoreTap_" i18n-content="learnMore"></a>
+        <div hidden="[[!isState_(uiState_, 'revert-promise-view')]]">
+          <div i18n-content="resetRevertPromise"></div>
+          <div class="flex horizontal layout">
+            <div id="reset-revert-spinner" class="throbber"></div>
+            <div i18n-content="resetRevertSpinnerMessage"></div>
           </div>
         </div>
       </div>

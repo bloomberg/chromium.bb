@@ -10,6 +10,8 @@
 Polymer({
   is: 'oobe-eula-md',
 
+  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+
   properties: {
     /**
      * Shows "Loading..." section.
@@ -73,6 +75,7 @@ Polymer({
   updateLocalizedContent: function(event) {
     // This forces frame to reload.
     this.screen.loadEulaToWebview_(this.$.crosEulaFrame);
+    this.i18nUpdateLocale();
   },
 
   /**

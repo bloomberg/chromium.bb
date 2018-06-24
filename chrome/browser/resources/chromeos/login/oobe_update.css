@@ -8,10 +8,8 @@
   line-height: 18px;
 }
 
-.subtitle.update-subtitle {
+.update-subtitle {
   color: #333;
-  font: 13px Roboto, sans-serif;
-  line-height: 18px;
 }
 
 #estimated-time-left,

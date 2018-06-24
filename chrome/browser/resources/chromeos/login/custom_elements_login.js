@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// <include src="oobe_dialog_host_behavior.js">
 // <include src="gaia_buttons.js">
 // <include src="gaia_card.js">
 // <include src="gaia_header.js">

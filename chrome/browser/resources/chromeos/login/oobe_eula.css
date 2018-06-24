@@ -18,7 +18,7 @@ a {
 #crosEulaFrame,
 #installationSettings,
 #logging {
-  font: 13px Roboto, sans-serif;
+  font-size: 13px;
 }
 
 #crosEulaFrame {
@@ -48,11 +48,6 @@ cr-toggle {
   line-height: 20px;
 }
 
-[slot='bottom-buttons'] {
-  padding: 0 6px; /* = 8px - 2px back button border */
-}
-
-#eula-accept-button,
 #settings-close-button {
   -webkit-padding-end: 18px;
 }

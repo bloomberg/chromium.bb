@@ -9,6 +9,7 @@
 // <{controller,host}-paring-screen> depend of it.
 // <include src="oobe-screen.js">
 
+// <include src="oobe_dialog_host_behavior.js">
 // <include src="controller-pairing-screen.js">
 // <include src="gaia_buttons.js">
 // <include src="gaia_card.js">

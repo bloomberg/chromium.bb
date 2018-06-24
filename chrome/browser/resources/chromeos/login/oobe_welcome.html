@@ -86,7 +86,6 @@
   <template>
     <link rel="stylesheet" href="oobe_dialog_host.css">
     <link rel="stylesheet" href="oobe_welcome.css">
-    <link rel="stylesheet" href="oobe_dialog_parameters.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-welcome-dialog id="welcomeScreen" role="dialog"
         aria-label$="[[i18nDynamic(locale, 'networkScreenGreeting')]]"
@@ -105,9 +104,7 @@
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-welcome-32:language" icon2x="oobe-welcome-64:language">
       </hd-iron-icon>
-      <div slot="header">
-        <h1 class="title">[[i18nDynamic(locale, 'languageSectionTitle')]]</h1>
-      </div>
+      <h1 slot="title">[[i18nDynamic(locale, 'languageSectionTitle')]]</h1>
       <div slot="footer" class="layout vertical">
         <template is="dom-if" if="[[enabled]]">
           <div id="languageDropdownContainer"
@@ -150,13 +147,11 @@
           icon1x="oobe-welcome-32:accessibility"
           icon2x="oobe-welcome-64:accessibility">
       </hd-iron-icon>
-      <div slot="header">
-        <h1 class="title">
-          [[i18nDynamic(locale, 'accessibilitySectionTitle')]]
-        </h1>
-        <div class="subtitle">
-          [[i18nDynamic(locale, 'accessibilitySectionHint')]]
-        </div>
+      <h1 slot="title">
+        [[i18nDynamic(locale, 'accessibilitySectionTitle')]]
+      </h1>
+      <div slot="subtitle">
+        [[i18nDynamic(locale, 'accessibilitySectionHint')]]
       </div>
       <div slot="footer" class="layout vertical">
         <oobe-a11y-option checked="[[a11yStatus.spokenFeedbackEnabled]]"
@@ -240,9 +235,7 @@
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-welcome-32:timezone" icon2x="oobe-welcome-64:timezone">
       </hd-iron-icon>
-      <div slot="header">
-        <h1 class="title">[[i18nDynamic(locale, 'timezoneSectionTitle')]]</h1>
-      </div>
+      <h1 slot="title">[[i18nDynamic(locale, 'timezoneSectionTitle')]]</h1>
       <div slot="footer" class="layout vertical">
         <div class="flex layout center horizontal justified
               timezone-selection-entry">
@@ -268,11 +261,9 @@
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-welcome-32:settings" icon2x="oobe-welcome-64:settings">
       </hd-iron-icon>
-      <div slot="header">
-        <h1 class="title">
-          [[i18nDynamic(locale, 'advancedOptionsSectionTitle')]]
-        </h1>
-      </div>
+      <h1 slot="title">
+        [[i18nDynamic(locale, 'advancedOptionsSectionTitle')]]
+      </h1>
       <div slot="footer" class="layout vertical">
         <div class="flex layout vertical center-justified
             advanced-options-entry">
@@ -320,11 +311,9 @@
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-welcome-32:wifi" icon2x="oobe-welcome-64:wifi">
       </hd-iron-icon>
-      <div slot="header">
-        <h1 class="title">[[i18nDynamic(locale, 'networkSectionTitle')]]</h1>
-        <div class="subtitle">
-          [[i18nDynamic(locale, 'networkSectionHint')]]
-        </div>
+      <h1 slot="title">[[i18nDynamic(locale, 'networkSectionTitle')]]</h1>
+      <div slot="subtitle">
+        [[i18nDynamic(locale, 'networkSectionHint')]]
       </div>
       <div slot="footer" class="layout vertical">
         <network-select-login id="networkSelectLogin"
@@ -332,11 +321,9 @@
         </network-select-login>
       </div>
       <div slot="bottom-buttons" class="layout horizontal justified">
-        <oobe-back-button on-tap="onNetworkSelectionBackButtonPressed_">
-        </oobe-back-button>
+        <oobe-back-button on-tap="onNetworkSelectionBackButtonPressed_"></oobe-back-button>
         <oobe-next-button disabled="[[!isConnected_]]"
-            on-tap="onNetworkNextTap_">
-        </oobe-next-button>
+            on-tap="onNetworkNextTap_"></oobe-next-button>
       </div>
     </oobe-dialog>
   </template>
