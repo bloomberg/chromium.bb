@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "ash/ash_export.h"
+#include "ash/session/session_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "ui/base/ime/chromeos/public/interfaces/ime_keyset.mojom.h"
@@ -25,7 +26,8 @@ class ASH_EXPORT VirtualKeyboardController
     : public TabletModeObserver,
       public ui::InputDeviceEventObserver,
       public keyboard::KeyboardLayoutDelegate,
-      public keyboard::KeyboardControllerObserver {
+      public keyboard::KeyboardControllerObserver,
+      public SessionObserver {
  public:
   VirtualKeyboardController();
   ~VirtualKeyboardController() override;
@@ -55,6 +57,9 @@ class ASH_EXPORT VirtualKeyboardController
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardClosed() override;
   void OnKeyboardHidden() override;
+
+  // SessionObserver
+  void OnActiveUserSessionChanged(const AccountId& account_id) override;
 
  private:
   // Updates the list of active input devices.

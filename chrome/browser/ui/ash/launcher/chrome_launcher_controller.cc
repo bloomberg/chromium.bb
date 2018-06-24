@@ -552,12 +552,6 @@ void ChromeLauncherController::ActiveUserChanged(
   // Restore the order of running, but unpinned applications for the activated
   // user.
   RestoreUnpinnedRunningApplicationOrder(user_email);
-  // TODO(crbug.com/557406): Fix this interaction pattern in Mash.
-  if (features::IsAshInBrowserProcess()) {
-    // Force on-screen keyboard to reset.
-    if (keyboard::IsKeyboardEnabled())
-      ash::Shell::Get()->EnableKeyboard();
-  }
 }
 
 void ChromeLauncherController::AdditionalUserAddedToSession(Profile* profile) {
