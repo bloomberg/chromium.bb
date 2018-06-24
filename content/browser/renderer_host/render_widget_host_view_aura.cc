@@ -1829,8 +1829,8 @@ void RenderWidgetHostViewAura::OnHostMovedInPixels(
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, RenderFrameMetadataProvider::Observer
 // implementation:
-void RenderWidgetHostViewAura::OnRenderFrameMetadataChanged() {
-  RenderWidgetHostViewBase::OnRenderFrameMetadataChanged();
+void RenderWidgetHostViewAura::OnRenderFrameMetadataChangedAfterActivation() {
+  RenderWidgetHostViewBase::OnRenderFrameMetadataChangedAfterActivation();
   const cc::RenderFrameMetadata& metadata =
       host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
   SetContentBackgroundColor(metadata.root_background_color);

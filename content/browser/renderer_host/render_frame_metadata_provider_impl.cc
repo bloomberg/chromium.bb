@@ -48,11 +48,12 @@ RenderFrameMetadataProviderImpl::LastRenderFrameMetadata() const {
   return last_render_frame_metadata_;
 }
 
-void RenderFrameMetadataProviderImpl::OnFrameTokenRenderFrameMetadataChanged(
-    cc::RenderFrameMetadata metadata) {
+void RenderFrameMetadataProviderImpl::
+    OnRenderFrameMetadataChangedAfterActivation(
+        cc::RenderFrameMetadata metadata) {
   last_render_frame_metadata_ = std::move(metadata);
   for (Observer& observer : observers_)
-    observer.OnRenderFrameMetadataChanged();
+    observer.OnRenderFrameMetadataChangedAfterActivation();
 }
 
 void RenderFrameMetadataProviderImpl::OnFrameTokenFrameSubmissionForTesting() {
@@ -68,6 +69,9 @@ void RenderFrameMetadataProviderImpl::SetLastRenderFrameMetadataForTest(
 void RenderFrameMetadataProviderImpl::OnRenderFrameMetadataChanged(
     uint32_t frame_token,
     const cc::RenderFrameMetadata& metadata) {
+  for (Observer& observer : observers_)
+    observer.OnRenderFrameMetadataChangedBeforeActivation(metadata);
+
   if (metadata.local_surface_id != last_local_surface_id_) {
     last_local_surface_id_ = metadata.local_surface_id;
     for (Observer& observer : observers_)
@@ -80,7 +84,7 @@ void RenderFrameMetadataProviderImpl::OnRenderFrameMetadataChanged(
   frame_token_message_queue_->EnqueueOrRunFrameTokenCallback(
       frame_token,
       base::BindOnce(&RenderFrameMetadataProviderImpl::
-                         OnFrameTokenRenderFrameMetadataChanged,
+                         OnRenderFrameMetadataChangedAfterActivation,
                      weak_factory_.GetWeakPtr(), std::move(metadata)));
 }
 

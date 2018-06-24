@@ -230,7 +230,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void OnGestureEvent(const ui::GestureEventData& gesture) override;
 
   // RenderFrameMetadataProvider::Observer
-  void OnRenderFrameMetadataChanged() override;
+  void OnRenderFrameMetadataChangedAfterActivation() override;
 
   // IPC::Sender implementation.
   bool Send(IPC::Message* message) override;

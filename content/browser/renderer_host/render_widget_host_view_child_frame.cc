@@ -968,8 +968,9 @@ RenderWidgetHostViewChildFrame::GetTouchSelectionControllerClientManager() {
   return root_view->GetTouchSelectionControllerClientManager();
 }
 
-void RenderWidgetHostViewChildFrame::OnRenderFrameMetadataChanged() {
-  RenderWidgetHostViewBase::OnRenderFrameMetadataChanged();
+void RenderWidgetHostViewChildFrame::
+    OnRenderFrameMetadataChangedAfterActivation() {
+  RenderWidgetHostViewBase::OnRenderFrameMetadataChangedAfterActivation();
   if (selection_controller_client_) {
     const cc::RenderFrameMetadata& metadata =
         host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
