@@ -3574,10 +3574,8 @@ int32_t AXPlatformNodeWin::ComputeIA2State() {
   const AXNodeData& data = GetData();
   int32_t ia2_state = IA2_STATE_OPAQUE;
 
-  const auto checked_state = data.GetCheckedState();
-  if (checked_state != ax::mojom::CheckedState::kNone) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kCheckedState))
     ia2_state |= IA2_STATE_CHECKABLE;
-  }
 
   if (HasIntAttribute(ax::mojom::IntAttribute::kInvalidState) &&
       GetIntAttribute(ax::mojom::IntAttribute::kInvalidState) !=
@@ -3849,7 +3847,7 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
   IntAttributeToIA2(result, ax::mojom::IntAttribute::kPosInSet, "posinset");
 
   if (HasIntAttribute(ax::mojom::IntAttribute::kCheckedState))
-    result.push_back(L"checkable:true");
+    result.emplace_back(L"checkable:true");
 
   // Expose live region attributes.
   StringAttributeToIA2(result, ax::mojom::StringAttribute::kLiveStatus, "live");
@@ -4584,14 +4582,45 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
                                  "busy");
   HtmlAttributeToUIAAriaProperty(properties, "aria-channel", "channel");
 
-  if (HasIntAttribute(ax::mojom::IntAttribute::kCheckedState)) {
-    base::string16 checked_property =
-        data.role == ax::mojom::Role::kToggleButton ? L"pressed" : L"checked";
-    bool is_checked = static_cast<ax::mojom::CheckedState>(GetIntAttribute(
-                          ax::mojom::IntAttribute::kCheckedState)) ==
-                      ax::mojom::CheckedState::kTrue;
-    properties.push_back(checked_property + L"=" +
-                         (is_checked ? L"true" : L"false"));
+  switch (data.GetCheckedState()) {
+    case ax::mojom::CheckedState::kNone:
+      break;
+    case ax::mojom::CheckedState::kFalse:
+      if (data.role == ax::mojom::Role::kToggleButton) {
+        properties.emplace_back(L"pressed=false");
+      } else if (data.role == ax::mojom::Role::kSwitch) {
+        // ARIA switches are exposed to Windows accessibility as toggle buttons.
+        // For maximum compatibility with ATs, we expose both the pressed and
+        // checked states.
+        properties.emplace_back(L"pressed=false");
+        properties.emplace_back(L"checked=false");
+      } else {
+        properties.emplace_back(L"checked=false");
+      }
+      break;
+    case ax::mojom::CheckedState::kTrue:
+      if (data.role == ax::mojom::Role::kToggleButton) {
+        properties.emplace_back(L"pressed=true");
+      } else if (data.role == ax::mojom::Role::kSwitch) {
+        // ARIA switches are exposed to Windows accessibility as toggle buttons.
+        // For maximum compatibility with ATs, we expose both the pressed and
+        // checked states.
+        properties.emplace_back(L"pressed=true");
+        properties.emplace_back(L"checked=true");
+      } else {
+        properties.emplace_back(L"checked=true");
+      }
+      break;
+    case ax::mojom::CheckedState::kMixed:
+      if (data.role == ax::mojom::Role::kToggleButton) {
+        properties.emplace_back(L"pressed=mixed");
+      } else if (data.role == ax::mojom::Role::kSwitch) {
+        // This is disallowed both by the ARIA standard and by Blink.
+        NOTREACHED();
+      } else {
+        properties.emplace_back(L"checked=mixed");
+      }
+      break;
   }
 
   const auto restriction = static_cast<ax::mojom::Restriction>(
@@ -5367,18 +5396,25 @@ int AXPlatformNodeWin::MSAAState() {
   //
   // Checked state
   //
-  const auto checked_state = static_cast<ax::mojom::CheckedState>(
-      GetIntAttribute(ax::mojom::IntAttribute::kCheckedState));
-  switch (checked_state) {
+
+  switch (data.GetCheckedState()) {
+    case ax::mojom::CheckedState::kNone:
+    case ax::mojom::CheckedState::kFalse:
+      break;
     case ax::mojom::CheckedState::kTrue:
-      msaa_state |= data.role == ax::mojom::Role::kToggleButton
-                        ? STATE_SYSTEM_PRESSED
-                        : STATE_SYSTEM_CHECKED;
+      if (data.role == ax::mojom::Role::kToggleButton) {
+        msaa_state |= STATE_SYSTEM_PRESSED;
+      } else if (data.role == ax::mojom::Role::kSwitch) {
+        // ARIA switches are exposed to Windows accessibility as toggle buttons.
+        // For maximum compatibility with ATs, we expose both the pressed and
+        // checked states.
+        msaa_state |= STATE_SYSTEM_PRESSED | STATE_SYSTEM_CHECKED;
+      } else {
+        msaa_state |= STATE_SYSTEM_CHECKED;
+      }
       break;
     case ax::mojom::CheckedState::kMixed:
       msaa_state |= STATE_SYSTEM_MIXED;
-      break;
-    default:
       break;
   }
 
