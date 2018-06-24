@@ -555,7 +555,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void SetGroupedMapping(CompositedLayerMapping*, SetGroupMappingOptions);
 
   bool MaskBlendingAppliedByCompositor(const PaintInfo&) const;
-  bool HasCompositedClippingMask() const;
   bool NeedsCompositedScrolling() const;
 
   // Paint invalidation containers can be self-composited or squashed.

@@ -652,24 +652,20 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     // for just CSS clip-path but without a CSS mask. In that case we need to
     // paint a fully filled mask (which will subsequently clipped by the
     // clip-path), otherwise the mask layer will be empty.
-
-    base::Optional<ScopedPaintChunkProperties> path_based_clip_path_scope;
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      const auto& fragment_data =
-          paint_layer_.GetLayoutObject().FirstFragment();
-      auto state = fragment_data.LocalBorderBoxProperties();
-      const auto* properties = fragment_data.PaintProperties();
-      DCHECK(properties && properties->Mask());
-      state.SetEffect(properties->Mask());
-      if (properties && properties->ClipPathClip()) {
-        DCHECK_EQ(properties->ClipPathClip()->Parent(), properties->MaskClip());
-        state.SetClip(properties->ClipPathClip());
-      }
-      path_based_clip_path_scope.emplace(
-          context.GetPaintController(), state,
-          *paint_layer_.GetCompositedLayerMapping()->MaskLayer(),
-          DisplayItem::PaintPhaseToDrawingType(PaintPhase::kClippingMask));
+    const auto& fragment_data = paint_layer_.GetLayoutObject().FirstFragment();
+    auto state = fragment_data.LocalBorderBoxProperties();
+    const auto* properties = fragment_data.PaintProperties();
+    DCHECK(properties && properties->Mask());
+    state.SetEffect(properties->Mask());
+    if (properties && properties->ClipPathClip()) {
+      DCHECK_EQ(properties->ClipPathClip()->Parent(), properties->MaskClip());
+      state.SetClip(properties->ClipPathClip());
     }
+    ScopedPaintChunkProperties path_based_clip_path_scope(
+        context.GetPaintController(), state,
+        *paint_layer_.GetCompositedLayerMapping()->MaskLayer(),
+        DisplayItem::kClippingMask);
+
     const GraphicsLayer* mask_layer =
         paint_layer_.GetCompositedLayerMapping()->MaskLayer();
     ClipRect layer_rect = LayoutRect(
@@ -1017,26 +1013,22 @@ void PaintLayerPainter::PaintFragmentWithPhase(
     PaintLayerFlags paint_flags) {
   DCHECK(paint_layer_.IsSelfPaintingLayer());
 
-  base::Optional<ScopedPaintChunkProperties> fragment_paint_chunk_properties;
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    DCHECK(phase != PaintPhase::kClippingMask);
-    auto chunk_properties = fragment.fragment_data->LocalBorderBoxProperties();
-    if (phase == PaintPhase::kMask) {
-      const auto* properties = fragment.fragment_data->PaintProperties();
-      DCHECK(properties && properties->Mask());
-      chunk_properties.SetEffect(properties->Mask());
-      // Special case for SPv1 composited mask layer. Path-based clip-path
-      // is only applies to the mask chunk, but not to the layer property
-      // or local box box property.
-      if (properties->ClipPathClip() &&
-          properties->ClipPathClip()->Parent() == properties->MaskClip()) {
-        chunk_properties.SetClip(properties->ClipPathClip());
-      }
+  auto chunk_properties = fragment.fragment_data->LocalBorderBoxProperties();
+  if (phase == PaintPhase::kMask) {
+    const auto* properties = fragment.fragment_data->PaintProperties();
+    DCHECK(properties && properties->Mask());
+    chunk_properties.SetEffect(properties->Mask());
+    // Special case for SPv1 composited mask layer. Path-based clip-path
+    // is only applies to the mask chunk, but not to the layer property
+    // or local box box property.
+    if (properties->ClipPathClip() &&
+        properties->ClipPathClip()->Parent() == properties->MaskClip()) {
+      chunk_properties.SetClip(properties->ClipPathClip());
     }
-    fragment_paint_chunk_properties.emplace(
-        context.GetPaintController(), chunk_properties, paint_layer_,
-        DisplayItem::PaintPhaseToDrawingType(phase));
   }
+  ScopedPaintChunkProperties fragment_paint_chunk_properties(
+      context.GetPaintController(), chunk_properties, paint_layer_,
+      DisplayItem::PaintPhaseToDrawingType(phase));
 
   LayoutRect new_cull_rect(clip_rect.Rect());
   LayoutPoint paint_offset = -paint_layer_.LayoutBoxLocation();
@@ -1212,9 +1204,8 @@ void PaintLayerPainter::PaintAncestorClippingMask(
   // This is a hack to incorporate mask-based clip-path.
   // See CompositingLayerPropertyUpdater.cpp about AncestorClippingMaskLayer.
   state.SetEffect(layer_fragment.PreFilter());
-  ScopedPaintChunkProperties properties(
-      context.GetPaintController(), state, client,
-      DisplayItem::PaintPhaseToDrawingType(PaintPhase::kClippingMask));
+  ScopedPaintChunkProperties properties(context.GetPaintController(), state,
+                                        client, DisplayItem::kClippingMask);
   ClipRect mask_rect = fragment.background_rect;
   mask_rect.MoveBy(layer_fragment.PaintOffset());
   FillMaskingFragment(context, mask_rect, client);
@@ -1241,7 +1232,7 @@ void PaintLayerPainter::PaintChildClippingMaskForFragments(
         state.SetClip(fragment.fragment_data->ContentsProperties().Clip());
         ScopedPaintChunkProperties fragment_paint_chunk_properties(
             context.GetPaintController(), state, client,
-            DisplayItem::PaintPhaseToDrawingType(PaintPhase::kClippingMask));
+            DisplayItem::kClippingMask);
         ClipRect mask_rect = fragment.background_rect;
         FillMaskingFragment(context, mask_rect, client);
       });
@@ -1265,12 +1256,11 @@ void PaintLayerPainter::PaintOverlayScrollbars(
 void PaintLayerPainter::FillMaskingFragment(GraphicsContext& context,
                                             const ClipRect& clip_rect,
                                             const DisplayItemClient& client) {
-  DisplayItem::Type type =
-      DisplayItem::PaintPhaseToDrawingType(PaintPhase::kClippingMask);
-  if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
+  if (DrawingRecorder::UseCachedDrawingIfPossible(context, client,
+                                                  DisplayItem::kClippingMask))
     return;
 
-  DrawingRecorder recorder(context, client, type);
+  DrawingRecorder recorder(context, client, DisplayItem::kClippingMask);
   IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
   context.FillRect(snapped_clip_rect, Color::kBlack);
 }

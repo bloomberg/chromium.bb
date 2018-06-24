@@ -100,7 +100,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                              const LayoutPoint& paint_offset);
   void PaintFloats(const PaintInfo&, const LayoutPoint&);
   void PaintMask(const PaintInfo&, const LayoutPoint&);
-  void PaintClippingMask(const PaintInfo&, const LayoutPoint&);
   void PaintOverflowControlsIfNeeded(const PaintInfo&, const LayoutPoint&);
   void PaintAtomicInline(const PaintInfo&, const LayoutPoint& paint_offset);
   void PaintBackground(const PaintInfo&,
