@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "ui/ozone/platform/wayland/wayland_object.h"
 
 namespace ui {
 
@@ -28,7 +29,7 @@ class WaylandDataDeviceManager {
   }
 
  private:
-  wl_data_device_manager* device_manager_;
+  wl::Object<wl_data_device_manager> device_manager_;
 
   WaylandConnection* connection_ = nullptr;
 
