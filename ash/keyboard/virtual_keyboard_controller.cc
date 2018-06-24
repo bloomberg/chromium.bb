@@ -11,6 +11,7 @@
 #include "ash/keyboard/keyboard_ui.h"
 #include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -84,6 +85,7 @@ VirtualKeyboardController::VirtualKeyboardController()
       has_touchscreen_(false),
       ignore_external_keyboard_(false) {
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  Shell::Get()->session_controller()->AddObserver(this);
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
   UpdateDevices();
 
@@ -97,6 +99,8 @@ VirtualKeyboardController::VirtualKeyboardController()
 VirtualKeyboardController::~VirtualKeyboardController() {
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  if (Shell::Get()->session_controller())
+    Shell::Get()->session_controller()->RemoveObserver(this);
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
 
   // Reset the emoji panel callback
@@ -307,6 +311,13 @@ void VirtualKeyboardController::OnKeyboardHidden() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(DisableVirtualKeyboard));
   }
+}
+
+void VirtualKeyboardController::OnActiveUserSessionChanged(
+    const AccountId& account_id) {
+  // Force on-screen keyboard to reset.
+  if (keyboard::IsKeyboardEnabled())
+    Shell::Get()->EnableKeyboard();
 }
 
 }  // namespace ash
