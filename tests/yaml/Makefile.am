@@ -1,5 +1,6 @@
 EXTRA_DIST =					\
 	back_cont_then_punc.yaml		\
+	backtranslate.yaml				\
 	before_begmidword.yaml			\
 	begcaps_endcaps.yaml			\
 	capsnocont.yaml				\

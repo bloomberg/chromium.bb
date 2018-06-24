@@ -200,6 +200,7 @@ endif
 
 dist_yaml_TESTS =			  \
 	yaml/back_cont_then_punc.yaml	  \
+	yaml/backtranslate.yaml		\
 	yaml/begcaps_endcaps.yaml	  \
 	yaml/before_begmidword.yaml	  \
 	yaml/broken_equals_operand.yaml	  \

@@ -1,0 +1,58 @@
+# Misc. back-translation tests
+
+table: [tables/unicode.dis, tables/en-us-g2.ctb]
+flags: {testmode: backward}
+tests:
+
+# Converted from backtranslate.c
+  - [⠅⠢, ken]
+  - [⠍⠢, men]
+  - [⠍⠜⠅, mark]
+  - [⠋⠢, fen]
+  - [⠇⠢, len]
+  - [⠞⠢, ten]
+
+# Test with letsign
+# converted from backtranslate_with_letsign.c
+
+flags: {testmode: bothDirections}
+tests:
+  - ["but b can ", "⠃ ⠰⠃ ⠉ "]
+
+# partialTrans
+# Converted from backtranslate_partialTrans.c
+
+flags: {testmode: backward}
+tests:
+
+  # word
+  - [⠁⠃, about]
+  - [⠁⠃, ab, mode: [partialTrans]]
+
+  # lowword
+  - [⠶, were]
+  - [⠶, "(", mode: [partialTrans]]
+
+  # joinword
+  - [⠴, was]
+  - [⠴, by, mode: [partialTrans]]
+
+  # prfword
+  - [⠥⠝⠝⠑⠉, unnecessary]
+  - [⠥⠝⠝⠑⠉, unnec, mode: [partialTrans]]
+
+  # midword
+  - [⠁⠆, "a;"]
+  - [⠁⠆, abb, mode: [partialTrans]]
+
+  # postpunc
+  - [⠁⠲, "a."]
+  - [⠁⠲, add, mode: [partialTrans]]
+
+# noUndefinedDots
+# Converted from backtranslate_noUndefinedDots.c
+table: [tables/unicode.dis, tables/en-ueb-g1.ctb]
+flags: {testmode: backward}
+tests:
+  - [⠸, \x005c456/] # Returns dot pattern
+  - [⠸, "", mode: [noUndefinedDots]]
