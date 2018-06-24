@@ -3,6 +3,7 @@ EXTRA_DIST =					\
 	backtranslate.yaml				\
 	before_begmidword.yaml			\
 	begcaps_endcaps.yaml			\
+	capitalization.yaml				\
 	capsnocont.yaml				\
 	capsword_for_back.yaml			\
 	compbrlAtCursor_with_equals.yaml	\

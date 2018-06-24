@@ -204,6 +204,7 @@ dist_yaml_TESTS =			  \
 	yaml/begcaps_endcaps.yaml	  \
 	yaml/before_begmidword.yaml	  \
 	yaml/broken_equals_operand.yaml	  \
+	yaml/capitalization.yaml		\
 	yaml/capsnocont.yaml		  \
 	yaml/capsword_for_back.yaml	  \
 	yaml/compbrlAtCursor_with_equals.yaml	\
