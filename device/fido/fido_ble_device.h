@@ -42,6 +42,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
   void Cancel() override;
   std::string GetId() const override;
 
+  // Returns whether or not the underlying BLE device is currently in pairing
+  // mode by investigating the advertisement payload.
+  bool IsInPairingMode() const;
+
   FidoBleConnection::ConnectionStatusCallback
   GetConnectionStatusCallbackForTesting();
   FidoBleConnection::ReadCallback GetReadCallbackForTesting();

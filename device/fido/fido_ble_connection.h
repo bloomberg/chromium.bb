@@ -68,6 +68,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
   ~FidoBleConnection() override;
 
   const std::string& address() const { return address_; }
+  const BluetoothDevice* GetBleDevice() const;
 
   virtual void Connect();
   virtual void ReadControlPointLength(ControlPointLengthCallback callback);
@@ -79,6 +80,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
 
  protected:
   explicit FidoBleConnection(std::string device_address);
+
+  std::string address_;
+  ConnectionStatusCallback connection_status_callback_;
+  ReadCallback read_callback_;
 
  private:
   // BluetoothAdapter::Observer:
@@ -136,10 +141,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
   static void OnWrite(WriteCallback callback);
   static void OnWriteError(WriteCallback callback,
                            BluetoothGattService::GattErrorCode error_code);
-
-  std::string address_;
-  ConnectionStatusCallback connection_status_callback_;
-  ReadCallback read_callback_;
 
   scoped_refptr<BluetoothAdapter> adapter_;
   std::unique_ptr<BluetoothGattConnection> connection_;

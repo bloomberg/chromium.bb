@@ -94,7 +94,8 @@ void FakeCentral::SimulateAdvertisementReceived(
       std::move(manufacturer_data),
       (scan_result_ptr->scan_record->tx_power->has_value)
           ? &scan_result_ptr->scan_record->tx_power->value
-          : nullptr);
+          : nullptr,
+      nullptr /* flags */);
 
   if (is_new_device) {
     // Call DeviceAdded on observers because it is a newly detected peripheral.

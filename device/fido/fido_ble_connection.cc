@@ -91,6 +91,10 @@ FidoBleConnection::~FidoBleConnection() {
     adapter_->RemoveObserver(this);
 }
 
+const BluetoothDevice* FidoBleConnection::GetBleDevice() const {
+  return adapter_ ? adapter_->GetDevice(address()) : nullptr;
+}
+
 void FidoBleConnection::Connect() {
   BluetoothAdapterFactory::GetAdapter(
       base::Bind(&FidoBleConnection::OnGetAdapter, weak_factory_.GetWeakPtr()));

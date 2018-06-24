@@ -222,6 +222,18 @@ enum class FidoBleDeviceCommand : uint8_t {
   kError = 0xBF,
 };
 
+// Relevant LE Discoverable Mode bits. Reference:
+// Bluetooth Core Specification Supplement, Part A, section 1.3
+constexpr uint8_t kLeLimitedDiscoverableModeBit = 0;
+constexpr uint8_t kLeGeneralDiscoverableModeBit = 1;
+
+// Fido Service Data Flags as specified in
+// https://fidoalliance.org/specs/fido-v2.0-id-20180227/fido-client-to-authenticator-protocol-v2.0-id-20180227.html#ble-pairing-authnr-considerations
+enum class FidoServiceDataFlags : uint8_t {
+  kPairingMode = 0x80,
+  kPasskeyEntry = 0x40,
+};
+
 // Authenticator API commands supported by CTAP devices, as specified in
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#authenticator-api
 enum class CtapRequestCommand : uint8_t {

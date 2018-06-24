@@ -4,10 +4,14 @@
 
 #include "device/fido/fido_ble_device.h"
 
+#include <bitset>
+
 #include "base/bind.h"
 #include "base/strings/string_piece.h"
 #include "components/apdu/apdu_response.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "device/fido/fido_ble_frames.h"
+#include "device/fido/fido_ble_uuids.h"
 #include "device/fido/fido_constants.h"
 
 namespace device {
@@ -61,6 +65,35 @@ void FidoBleDevice::Cancel() {
 
 std::string FidoBleDevice::GetId() const {
   return GetId(connection_->address());
+}
+
+bool FidoBleDevice::IsInPairingMode() const {
+  const BluetoothDevice* const ble_device = connection_->GetBleDevice();
+  if (!ble_device)
+    return false;
+
+  // The spec requires exactly one of the LE Limited Discoverable Mode and LE
+  // General Discoverable Mode bits to be set to one when in pairing mode.
+  // https://fidoalliance.org/specs/fido-v2.0-id-20180227/fido-client-to-authenticator-protocol-v2.0-id-20180227.html#ble-advertising-format
+  const base::Optional<uint8_t> flags = ble_device->GetAdvertisingDataFlags();
+  if (flags.has_value()) {
+    const std::bitset<8> flags_set = *flags;
+    return flags_set[kLeLimitedDiscoverableModeBit] ^
+           flags_set[kLeGeneralDiscoverableModeBit];
+  }
+
+  // Since the advertisement flags might not be available due to platform
+  // limitations, authenticators should also provide a specific pairing mode bit
+  // in FIDO's service data.
+  // https://fidoalliance.org/specs/fido-v2.0-id-20180227/fido-client-to-authenticator-protocol-v2.0-id-20180227.html#ble-pairing-authnr-considerations
+  const std::vector<uint8_t>* const fido_service_data =
+      ble_device->GetServiceDataForUUID(BluetoothUUID(kFidoServiceUUID));
+  if (!fido_service_data)
+    return false;
+
+  return !fido_service_data->empty() &&
+         (fido_service_data->front() &
+          static_cast<int>(FidoServiceDataFlags::kPairingMode)) != 0;
 }
 
 FidoBleConnection::ConnectionStatusCallback
