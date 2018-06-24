@@ -1411,23 +1411,23 @@ This file contains the strings for ash.
       </message>
 
       <!-- Strings shown within MultiDevice setup notifications -->
-      <message name="IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_TITLE" desc="Title of the notification shown to a user that has not completed the MultiDevice setup flow when a potential host device is found." translateable="false">
-        PLACEHOLDER TEXT blah blah blah (Better together in sickness and in health)
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_TITLE" desc="Title of the notification shown to a user that has not completed the MultiDevice setup when their Chromebook recognizes that they have a phone on their account that the Chromebook can connect to">
+        Your devices work even better together
       </message>
-      <message name="IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_MESSAGE" desc="Message shown as part of the notification shown to a user that has not completed the MultiDevice setup flow when a potential host device is found. Clicking it opens the setup WebUI." translateable="false">
-        PLACEHOLDER TEXT blah blah blah (Your Chromebook works better with your phone)
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_MESSAGE" desc="Message shown as part of the notification shown to a user that has not completed the MultiDevice setup when their Chromebook recognizes that they have a phone on their account that the Chromebook can connect to. Clicking it opens a prompt to guide them through setting up.">
+        Connect your Chromebook with your phone
       </message>
-      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_TITLE" desc="Title of the notification shown to a user that has already completed the MultiDevice setup flow that a new host device is replacing the current one (i.e., when the user purchases a new Android phone)." translateable="false">
-        PLACEHOLDER TEXT blah blah blah (Better together phone changed)
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_TITLE" desc="Title of the notification shown to a user that has already completed the MultiDevice setup flow that a new phone is replacing the phone they currently have set up to connect to their Chromebook.">
+        <ph name="DEVICE_NAME">$1<ex>Pixel XL</ex></ph> added
       </message>
-      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_MESSAGE" desc="Message shown as part of the notification shown to a user that has already completed the MultiDevice setup flow that a new host device is replacing the current one (i.e., when the user purchases a new Android phone)." translateable="false">
-        PLACEHOLDER TEXT blah blah blah (A new phone was connected to your Chromebook)
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_MESSAGE" desc="Message shown as part of the notification shown to a user that has already completed the MultiDevice setup flow that a new phone is replacing the phone they currently have set up to connect to their Chromebook.">
+        Better Together switched to a new phone
       </message>
-      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_TITLE" desc="Title of the notification shown to a user that has already completed the MultiDevice setup flow logging into a new Chromebook that all their Chromebooks are MultiDevice enabled." translateable="false">
-        PLACEHOLDER TEXT blah blah blah (New Chromebook added to Better together)
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_TITLE" desc="Title of the notification shown to a user that has already completed the MultiDevice setup flow logging into a new Chromebook that all their Chromebooks are MultiDevice enabled.">
+        Better Together is on
       </message>
-      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_MESSAGE" desc="Message shown as part of the notification shown to a user that has already completed the MultiDevice setup flow logging into a new Chromebook that all their Chromebooks are MultiDevice enabled." translateable="false">
-        PLACEHOLDER TEXT blah blah blah (All Chromebooks work better with your phone)
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_MESSAGE" desc="Message shown as part of the notification shown to a user that has already completed the MultiDevice setup flow logging into a new Chromebook that all their Chromebooks are MultiDevice enabled.">
+        This Chromebook and your phone will connect automatically
       </message>
 
       <!-- Window teleportation warning dialog -->

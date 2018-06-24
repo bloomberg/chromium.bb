@@ -24,9 +24,8 @@ constexpr int kDialogHeightPx = 640;
 constexpr int kDialogWidthPx = 768;
 
 void AddMultiDeviceSetupStrings(content::WebUIDataSource* html_source) {
-  // TODO(jordynass): Add translations for other strings appearing in the
-  // dialog by adding new name/translation pairs to |kLocalizedStrings| below.
-  // String definitions belong in //chrome/app/chromeos_strings.grdp.
+  // TODO(jordynass): Translate the newly added strings from
+  // //chrome/app/chromeos_strings.grdp.
   static constexpr struct {
     const char* name;
     int id;
@@ -46,7 +45,10 @@ void AddMultiDeviceSetupStrings(content::WebUIDataSource* html_source) {
       {"setupSucceededPageMessage",
        IDS_MULTIDEVICE_SETUP_SETUP_SUCCEEDED_PAGE_MESSAGE},
       {"startSetupPageHeader", IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_HEADER},
-      {"startSetupPageMessage", IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE},
+      {"startSetupPageMessagePart1",
+       IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE_PART_1},
+      {"startSetupPageMessagePart2",
+       IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE_PART_2},
       {"title", IDS_MULTIDEVICE_SETUP_DIALOG_TITLE},
       {"tryAgain", IDS_MULTIDEVICE_SETUP_TRY_AGAIN_LABEL},
   };
