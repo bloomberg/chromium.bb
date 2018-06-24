@@ -116,7 +116,10 @@ bool RenderWidgetHostViewBase::OnMessageReceived(const IPC::Message& msg){
   return false;
 }
 
-void RenderWidgetHostViewBase::OnRenderFrameMetadataChanged() {
+void RenderWidgetHostViewBase::OnRenderFrameMetadataChangedBeforeActivation(
+    const cc::RenderFrameMetadata& metadata) {}
+
+void RenderWidgetHostViewBase::OnRenderFrameMetadataChangedAfterActivation() {
   is_scroll_offset_at_top_ = host_->render_frame_metadata_provider()
                                  ->LastRenderFrameMetadata()
                                  .is_scroll_offset_at_top;

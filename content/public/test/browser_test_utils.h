@@ -737,7 +737,8 @@ class RenderFrameSubmissionObserver
   // Blocks the browser ui thread until the next OnRenderFrameSubmission.
   void WaitForAnyFrameSubmission();
 
-  // Blocks the browser ui thread until the next OnRenderFrameMetadataChanged.
+  // Blocks the browser ui thread until the next
+  // OnRenderFrameMetadataChangedAfterActivation.
   void WaitForMetadataChange();
 
   // Blocks the browser ui thread until RenderFrameMetadata arrives where its
@@ -761,14 +762,16 @@ class RenderFrameSubmissionObserver
   void Wait();
 
   // RenderFrameMetadataProvider::Observer
-  void OnRenderFrameMetadataChanged() override;
+  void OnRenderFrameMetadataChangedBeforeActivation(
+      const cc::RenderFrameMetadata& metadata) override;
+  void OnRenderFrameMetadataChangedAfterActivation() override;
   void OnRenderFrameSubmission() override;
   void OnLocalSurfaceIdChanged(
       const cc::RenderFrameMetadata& metadata) override;
 
   // If true then the next OnRenderFrameSubmission will cancel the blocking
   // |run_loop_| otherwise the blocking will continue until the next
-  // OnRenderFrameMetadataChanged.
+  // OnRenderFrameMetadataChangedAfterActivation.
   bool break_on_any_frame_ = false;
 
   RenderFrameMetadataProvider* render_frame_metadata_provider_ = nullptr;

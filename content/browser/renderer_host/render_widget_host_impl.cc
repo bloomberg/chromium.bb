@@ -3104,7 +3104,10 @@ void RenderWidgetHostImpl::UnlockKeyboard() {
     view_->UnlockKeyboard();
 }
 
-void RenderWidgetHostImpl::OnRenderFrameMetadataChanged() {
+void RenderWidgetHostImpl::OnRenderFrameMetadataChangedBeforeActivation(
+    const cc::RenderFrameMetadata& metadata) {}
+
+void RenderWidgetHostImpl::OnRenderFrameMetadataChangedAfterActivation() {
   bool is_mobile_optimized =
       render_frame_metadata_provider_.LastRenderFrameMetadata()
           .is_mobile_optimized;

@@ -579,12 +579,12 @@ void RenderWidgetHostViewMac::OnGestureEvent(
   }
 }
 
-void RenderWidgetHostViewMac::OnRenderFrameMetadataChanged() {
+void RenderWidgetHostViewMac::OnRenderFrameMetadataChangedAfterActivation() {
   last_frame_root_background_color_ = host()
                                           ->render_frame_metadata_provider()
                                           ->LastRenderFrameMetadata()
                                           .root_background_color;
-  RenderWidgetHostViewBase::OnRenderFrameMetadataChanged();
+  RenderWidgetHostViewBase::OnRenderFrameMetadataChangedAfterActivation();
 }
 
 void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,

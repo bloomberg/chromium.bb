@@ -3463,7 +3463,7 @@ TEST_F(RenderWidgetHostViewAuraTest, BackgroundColorMatchesCompositorFrame) {
   cc::RenderFrameMetadata metadata;
   metadata.root_background_color = SK_ColorRED;
   view_->SetRenderFrameMetadata(metadata);
-  view_->OnRenderFrameMetadataChanged();
+  view_->OnRenderFrameMetadataChangedAfterActivation();
   ui::Layer* parent_layer = view_->GetNativeView()->layer();
 
   EXPECT_EQ(gfx::Rect(0, 0, 100, 100), parent_layer->bounds());
@@ -3484,7 +3484,7 @@ TEST_F(RenderWidgetHostViewAuraTest, BackgroundColorOrder) {
   cc::RenderFrameMetadata metadata;
   metadata.root_background_color = SK_ColorWHITE;
   view_->SetRenderFrameMetadata(metadata);
-  view_->OnRenderFrameMetadataChanged();
+  view_->OnRenderFrameMetadataChangedAfterActivation();
   ASSERT_TRUE(view_->GetBackgroundColor());
   EXPECT_EQ(static_cast<unsigned>(SK_ColorWHITE), *view_->GetBackgroundColor());
 

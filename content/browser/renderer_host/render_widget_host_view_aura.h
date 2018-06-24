@@ -292,7 +292,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            const gfx::Point& new_origin_in_pixels) override;
 
   // RenderFrameMetadataProvider::Observer
-  void OnRenderFrameMetadataChanged() override;
+  void OnRenderFrameMetadataChangedAfterActivation() override;
 
 #if defined(OS_WIN)
   // Gets the HWND of the host window.

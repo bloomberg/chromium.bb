@@ -903,7 +903,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 #endif
 
   // RenderFrameMetadataProvider::Observer implementation.
-  void OnRenderFrameMetadataChanged() override;
+  void OnRenderFrameMetadataChangedBeforeActivation(
+      const cc::RenderFrameMetadata& metadata) override;
+  void OnRenderFrameMetadataChangedAfterActivation() override;
   void OnRenderFrameSubmission() override {}
   void OnLocalSurfaceIdChanged(
       const cc::RenderFrameMetadata& metadata) override;

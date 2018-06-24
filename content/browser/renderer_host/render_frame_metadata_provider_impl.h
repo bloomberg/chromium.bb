@@ -51,7 +51,8 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
   // methods are enqueued in |frame_token_message_queue_|. They are invoked when
   // the browser process receives their associated frame tokens. These then
   // notify any |observers_|.
-  void OnFrameTokenRenderFrameMetadataChanged(cc::RenderFrameMetadata metadata);
+  void OnRenderFrameMetadataChangedAfterActivation(
+      cc::RenderFrameMetadata metadata);
   void OnFrameTokenFrameSubmissionForTesting();
 
   // Set |last_render_frame_metadata_| to the given |metadata| for testing

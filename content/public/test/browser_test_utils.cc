@@ -1948,7 +1948,12 @@ void RenderFrameSubmissionObserver::Wait() {
   run_loop.Run();
 }
 
-void RenderFrameSubmissionObserver::OnRenderFrameMetadataChanged() {
+void RenderFrameSubmissionObserver::
+    OnRenderFrameMetadataChangedBeforeActivation(
+        const cc::RenderFrameMetadata& metadata) {}
+
+void RenderFrameSubmissionObserver::
+    OnRenderFrameMetadataChangedAfterActivation() {
   Quit();
 }
 
