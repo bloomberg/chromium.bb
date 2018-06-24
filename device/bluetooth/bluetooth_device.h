@@ -548,7 +548,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
                                UUIDList advertised_uuids,
                                ServiceDataMap service_data,
                                ManufacturerDataMap manufacturer_data,
-                               const int8_t* tx_power);
+                               const int8_t* tx_power,
+                               const uint8_t* flags);
 
   // Called by BluetoothAdapter when it stops discoverying.
   void ClearAdvertisementData();

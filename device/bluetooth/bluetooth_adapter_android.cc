@@ -238,7 +238,7 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
       service_data_map, manufacturer_data_map,
       // Android uses INT32_MIN to indicate no Advertised Tx Power.
       // https://developer.android.com/reference/android/bluetooth/le/ScanRecord.html#getTxPowerLevel()
-      tx_power == INT32_MIN ? nullptr : &clamped_tx_power);
+      tx_power == INT32_MIN ? nullptr : &clamped_tx_power, nullptr /* flags */);
 
   if (is_new_device) {
     devices_[device_address] = std::move(device_android_owner);

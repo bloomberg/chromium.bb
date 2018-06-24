@@ -175,9 +175,10 @@ void ExtractAndUpdateAdvertisementData(
 
   // TODO(https://crbug.com/821766): Implement extraction of service data,
   // manufacturer data and tx power.
-  device->UpdateAdvertisementData(
-      rssi, std::move(*advertised_uuids), BluetoothDevice::ServiceDataMap(),
-      BluetoothDevice::ManufacturerDataMap(), nullptr /* tx_power */);
+  device->UpdateAdvertisementData(rssi, std::move(*advertised_uuids),
+                                  BluetoothDevice::ServiceDataMap(),
+                                  BluetoothDevice::ManufacturerDataMap(),
+                                  nullptr /* tx_power */, nullptr /* flags */);
 }
 
 }  // namespace

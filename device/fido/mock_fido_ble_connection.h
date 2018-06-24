@@ -45,9 +45,6 @@ class MockFidoBleConnection : public FidoBleConnection {
   ReadCallback& read_callback() { return read_callback_; }
 
  private:
-  ConnectionStatusCallback connection_status_callback_;
-  ReadCallback read_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(MockFidoBleConnection);
 };
 

@@ -623,7 +623,7 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
   device_mac->UpdateAdvertisementData(
       BluetoothDevice::ClampPower(rssi), std::move(advertised_uuids),
       std::move(service_data_map), std::move(manufacturer_data_map),
-      tx_power == nil ? nullptr : &clamped_tx_power);
+      tx_power == nil ? nullptr : &clamped_tx_power, nullptr /* flags */);
 
   if (is_new_device) {
     std::string device_address =

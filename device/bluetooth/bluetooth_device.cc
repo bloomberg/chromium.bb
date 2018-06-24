@@ -7,6 +7,7 @@
 #include <iterator>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
@@ -418,7 +419,8 @@ void BluetoothDevice::UpdateAdvertisementData(
     UUIDList advertised_uuids,
     ServiceDataMap service_data,
     ManufacturerDataMap manufacturer_data,
-    const int8_t* tx_power) {
+    const int8_t* tx_power,
+    const uint8_t* flags) {
   UpdateTimestamp();
 
   inquiry_rssi_ = rssi;
@@ -431,6 +433,12 @@ void BluetoothDevice::UpdateAdvertisementData(
     inquiry_tx_power_ = *tx_power;
   } else {
     inquiry_tx_power_ = base::nullopt;
+  }
+
+  if (flags != nullptr) {
+    advertising_data_flags_ = *flags;
+  } else {
+    advertising_data_flags_.reset();
   }
 }
 
