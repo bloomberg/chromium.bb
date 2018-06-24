@@ -17,6 +17,7 @@
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
+#include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_atomic.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_atomic.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
@@ -370,7 +371,7 @@ TEST_P(HardwareDisplayPlaneManagerAtomicTest,
   fake_drm_->InitializeState(crtc_properties_, plane_properties_,
                              property_names_, use_atomic_);
 
-  ui::ScopedDrmColorCtmPtr ctm_blob(new drm_color_ctm());
+  ui::ScopedDrmColorCtmPtr ctm_blob(ui::CreateCTMBlob(std::vector<float>(9)));
   EXPECT_TRUE(fake_drm_->plane_manager()->SetColorCorrectionOnAllCrtcPlanes(
       crtc_properties_[0].id, std::move(ctm_blob)));
   EXPECT_EQ(1, fake_drm_->get_commit_count());
@@ -382,7 +383,7 @@ TEST_P(HardwareDisplayPlaneManagerAtomicTest,
   fake_drm_->InitializeState(crtc_properties_, plane_properties_,
                              property_names_, use_atomic_);
 
-  ui::ScopedDrmColorCtmPtr ctm_blob(new drm_color_ctm());
+  ui::ScopedDrmColorCtmPtr ctm_blob(ui::CreateCTMBlob(std::vector<float>(9)));
   EXPECT_FALSE(fake_drm_->plane_manager()->SetColorCorrectionOnAllCrtcPlanes(
       crtc_properties_[0].id, std::move(ctm_blob)));
   EXPECT_EQ(0, fake_drm_->get_commit_count());
@@ -395,7 +396,7 @@ TEST_P(HardwareDisplayPlaneManagerAtomicTest,
   fake_drm_->InitializeState(crtc_properties_, plane_properties_,
                              property_names_, use_atomic_);
 
-  ui::ScopedDrmColorCtmPtr ctm_blob(new drm_color_ctm());
+  ui::ScopedDrmColorCtmPtr ctm_blob(ui::CreateCTMBlob(std::vector<float>(9)));
   EXPECT_FALSE(fake_drm_->plane_manager()->SetColorCorrectionOnAllCrtcPlanes(
       crtc_properties_[0].id, std::move(ctm_blob)));
   EXPECT_EQ(0, fake_drm_->get_commit_count());
