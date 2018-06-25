@@ -4141,7 +4141,7 @@ void Document::UpdateViewportDescription() {
 
       // Even though we bind the mojo interface above there still may be cases
       // where this will fail (e.g. unit tests).
-      display_cutout_host_->ViewportFitChanged(current_viewport_fit);
+      display_cutout_host_->NotifyViewportFitChanged(current_viewport_fit);
     }
 
     viewport_fit_ = current_viewport_fit;

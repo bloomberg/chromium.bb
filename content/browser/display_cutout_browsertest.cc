@@ -11,6 +11,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -35,9 +36,13 @@ class TestWebContentsObserver : public WebContentsObserver {
       run_loop_.Quit();
   }
 
+  bool has_value() const { return value_.has_value(); }
+
   void WaitForWantedValue(blink::mojom::ViewportFit wanted_value) {
-    if (value_.has_value() && value_ == wanted_value)
+    if (value_.has_value()) {
+      EXPECT_EQ(wanted_value, value_);
       return;
+    }
 
     wanted_value_ = wanted_value;
     run_loop_.Run();
@@ -75,10 +80,6 @@ class DisplayCutoutBrowserTest : public ContentBrowserTest {
         "DisplayCutoutAPI,CSSViewport,CSSEnvironmentVariables");
   }
 
-  content::RenderFrameHost* MainFrame() {
-    return shell()->web_contents()->GetMainFrame();
-  }
-
   void LoadTestPageWithViewportFitFromMeta(const std::string& value) {
     LoadTestPageWithData(
         "<!DOCTYPE html>"
@@ -86,32 +87,28 @@ class DisplayCutoutBrowserTest : public ContentBrowserTest {
         value + "'><iframe></iframe>");
   }
 
-  void LoadTestPageWithViewportFitFromCSS(const std::string& value) {
-    LoadTestPageWithData(
-        "<!DOCTYPE html><head>"
-        "<style>@viewport { viewport-fit: " +
-        value +
-        "; }</style>"
-        "<iframe></iframe>");
-  }
-
   void LoadSubFrameWithViewportFitMetaValue(const std::string& value) {
-    LoadSubFrameWithData(
-        "<meta name='viewport' content='viewport-fit=" + value + "'>");
-  }
+    const std::string data =
+        "data:text/html;charset=utf-8,<!DOCTYPE html>"
+        "<meta name='viewport' content='viewport-fit=" +
+        value + "'>";
 
-  void LoadTestPageWithNoViewportFit() {
-    LoadTestPageWithData("<!DOCTYPE html>");
-  }
+    FrameTreeNode* root = web_contents_impl()->GetFrameTree()->root();
+    FrameTreeNode* child = root->child_at(0);
 
-  void LoadTestPageWithDifferentOrigin() {
-    GURL url("https://www.example.org");
-    content::LoadDataWithBaseURL(shell(), url, "<!DOCTYPE html>", url);
+    TestFrameNavigationObserver observer(child);
+    NavigationController::LoadURLParams params(GURL::EmptyGURL());
+    params.url = GURL(data);
+    params.frame_tree_node_id = child->frame_tree_node_id();
+    params.load_type = NavigationController::LOAD_TYPE_DATA;
+    web_contents_impl()->GetController().LoadURLWithParams(params);
+    web_contents_impl()->Focus();
+    observer.Wait();
   }
 
   bool ClearViewportFitTag() {
     return ExecuteScript(
-        shell()->web_contents(),
+        web_contents_impl(),
         "document.getElementsByTagName('meta')[0].content = ''");
   }
 
@@ -150,134 +147,89 @@ class DisplayCutoutBrowserTest : public ContentBrowserTest {
     same_tab_observer.Wait();
   }
 
- private:
-  void LoadSubFrameWithData(const std::string& html_data) {
-    const std::string data =
-        "data:text/html;charset=utf-8,"
-        "<!DOCTYPE html>" +
-        html_data;
-
-    WebContentsImpl* web_contents =
-        static_cast<WebContentsImpl*>(shell()->web_contents());
-    FrameTreeNode* root = web_contents->GetFrameTree()->root();
-
-    NavigationController::LoadURLParams params(GURL::EmptyGURL());
-    params.url = GURL(data);
-    params.frame_tree_node_id = root->child_at(0)->frame_tree_node_id();
-    params.load_type = NavigationController::LOAD_TYPE_DATA;
-    web_contents->GetController().LoadURLWithParams(params);
-    web_contents->Focus();
+  void SimulateFullscreenStateChanged(RenderFrameHost* frame,
+                                      bool is_fullscreen) {
+    web_contents_impl()->FullscreenStateChanged(frame, is_fullscreen);
   }
 
+  void SimulateFullscreenExit() {
+    web_contents_impl()->ExitFullscreenMode(true);
+  }
+
+  RenderFrameHost* MainFrame() { return web_contents_impl()->GetMainFrame(); }
+
+  RenderFrameHost* ChildFrame() {
+    FrameTreeNode* root = web_contents_impl()->GetFrameTree()->root();
+    return root->child_at(0)->current_frame_host();
+  }
+
+  WebContentsImpl* web_contents_impl() {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
+  }
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(DisplayCutoutBrowserTest);
 };
 
 // The viewport meta tag is only enabled on Android.
 #if defined(OS_ANDROID)
 
-IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_Meta_Auto) {
-  // Since kAuto is the default we need to load a page first to force the
-  // WebContents to fire an event when we change it.
+IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_Fullscreen) {
+  LoadTestPageWithViewportFitFromMeta("cover");
+  LoadSubFrameWithViewportFitMetaValue("contain");
+
+  {
+    TestWebContentsObserver observer(web_contents_impl());
+    SimulateFullscreenStateChanged(MainFrame(), true);
+    observer.WaitForWantedValue(blink::mojom::ViewportFit::kCover);
+  }
+
+  {
+    TestWebContentsObserver observer(web_contents_impl());
+    SimulateFullscreenStateChanged(ChildFrame(), true);
+    observer.WaitForWantedValue(blink::mojom::ViewportFit::kContain);
+  }
+
+  {
+    TestWebContentsObserver observer(web_contents_impl());
+    SimulateFullscreenStateChanged(ChildFrame(), false);
+    observer.WaitForWantedValue(blink::mojom::ViewportFit::kCover);
+  }
+
+  {
+    TestWebContentsObserver observer(web_contents_impl());
+    SimulateFullscreenStateChanged(MainFrame(), false);
+    SimulateFullscreenExit();
+    observer.WaitForWantedValue(blink::mojom::ViewportFit::kAuto);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest,
+                       ViewportFit_Fullscreen_Update) {
   LoadTestPageWithViewportFitFromMeta("cover");
 
-  TestWebContentsObserver observer(shell()->web_contents());
-  LoadTestPageWithViewportFitFromMeta("auto");
-  observer.WaitForWantedValue(blink::mojom::ViewportFit::kAuto);
+  {
+    TestWebContentsObserver observer(web_contents_impl());
+    SimulateFullscreenStateChanged(MainFrame(), true);
+    observer.WaitForWantedValue(blink::mojom::ViewportFit::kCover);
+  }
+
+  {
+    TestWebContentsObserver observer(web_contents_impl());
+    EXPECT_TRUE(ClearViewportFitTag());
+    observer.WaitForWantedValue(blink::mojom::ViewportFit::kAuto);
+  }
 }
 
-IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_Meta_Contain) {
-  TestWebContentsObserver observer(shell()->web_contents());
-  LoadTestPageWithViewportFitFromMeta("contain");
-  observer.WaitForWantedValue(blink::mojom::ViewportFit::kContain);
-}
-
-IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_Meta_Cover) {
-  TestWebContentsObserver observer(shell()->web_contents());
-  LoadTestPageWithViewportFitFromMeta("cover");
-  observer.WaitForWantedValue(blink::mojom::ViewportFit::kCover);
-}
-
-IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_Meta_Default) {
-  // Since kAuto is the default we need to load a page first to force the
-  // WebContents to fire an event when we change it.
-  LoadTestPageWithViewportFitFromMeta("cover");
-
-  TestWebContentsObserver observer(shell()->web_contents());
-  LoadTestPageWithNoViewportFit();
-  observer.WaitForWantedValue(blink::mojom::ViewportFit::kAuto);
-}
-
-IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_Meta_Invalid) {
-  // Since kAuto is the default we need to load a page first to force the
-  // WebContents to fire an event when we change it.
-  LoadTestPageWithViewportFitFromMeta("cover");
-
-  TestWebContentsObserver observer(shell()->web_contents());
-  LoadTestPageWithViewportFitFromMeta("invalid");
-  observer.WaitForWantedValue(blink::mojom::ViewportFit::kAuto);
-}
-
-IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_Meta_Update) {
-  TestWebContentsObserver observer(shell()->web_contents());
-  LoadTestPageWithViewportFitFromMeta("cover");
-  observer.WaitForWantedValue(blink::mojom::ViewportFit::kCover);
-
-  EXPECT_TRUE(ClearViewportFitTag());
-  observer.WaitForWantedValue(blink::mojom::ViewportFit::kAuto);
-}
-
-IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_Meta_SubFrame) {
-  TestWebContentsObserver observer(shell()->web_contents());
-  LoadTestPageWithViewportFitFromMeta("contain");
-  observer.WaitForWantedValue(blink::mojom::ViewportFit::kContain);
-
-  LoadSubFrameWithViewportFitMetaValue("cover");
-  observer.WaitForWantedValue(blink::mojom::ViewportFit::kCover);
+IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_Noop) {
+  {
+    TestWebContentsObserver observer(web_contents_impl());
+    LoadTestPageWithViewportFitFromMeta("cover");
+    EXPECT_FALSE(observer.has_value());
+  }
 }
 
 #endif
-
-IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_CSS_Auto) {
-  // Since kAuto is the default we need to load a page first to force the
-  // WebContents to fire an event when we change it.
-  LoadTestPageWithViewportFitFromCSS("cover");
-
-  TestWebContentsObserver observer(shell()->web_contents());
-  LoadTestPageWithViewportFitFromCSS("auto");
-  observer.WaitForWantedValue(blink::mojom::ViewportFit::kAuto);
-}
-
-IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_CSS_Contain) {
-  TestWebContentsObserver observer(shell()->web_contents());
-  LoadTestPageWithViewportFitFromCSS("contain");
-  observer.WaitForWantedValue(blink::mojom::ViewportFit::kContain);
-}
-
-IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_CSS_Cover) {
-  TestWebContentsObserver observer(shell()->web_contents());
-  LoadTestPageWithViewportFitFromCSS("cover");
-  observer.WaitForWantedValue(blink::mojom::ViewportFit::kCover);
-}
-
-IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_CSS_Default) {
-  // Since kAuto is the default we need to load a page first to force the
-  // WebContents to fire an event when we change it.
-  LoadTestPageWithViewportFitFromCSS("cover");
-
-  TestWebContentsObserver observer(shell()->web_contents());
-  LoadTestPageWithNoViewportFit();
-  observer.WaitForWantedValue(blink::mojom::ViewportFit::kAuto);
-}
-
-IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, ViewportFit_CSS_Invalid) {
-  // Since kAuto is the default we need to load a page first to force the
-  // WebContents to fire an event when we change it.
-  LoadTestPageWithViewportFitFromCSS("cover");
-
-  TestWebContentsObserver observer(shell()->web_contents());
-  LoadTestPageWithViewportFitFromCSS("invalid");
-  observer.WaitForWantedValue(blink::mojom::ViewportFit::kAuto);
-}
 
 IN_PROC_BROWSER_TEST_F(DisplayCutoutBrowserTest, PublishSafeAreaVariables) {
   LoadTestPageWithData(kTestHTML);

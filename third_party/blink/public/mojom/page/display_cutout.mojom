@@ -22,7 +22,7 @@ enum ViewportFit {
 // Used for renderer -> browser calls about display cutout.
 interface DisplayCutoutHost {
   // Notify the browser that the ViewportFit for the renderer has changed.
-  ViewportFitChanged(blink.mojom.ViewportFit value);
+  NotifyViewportFitChanged(blink.mojom.ViewportFit value);
 };
 
 // Contains the four safe areas for the display cutout. These are insets from
