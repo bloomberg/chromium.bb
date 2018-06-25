@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/animationworklet/worklet_animation.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/animation_effect_or_animation_effect_sequence.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"

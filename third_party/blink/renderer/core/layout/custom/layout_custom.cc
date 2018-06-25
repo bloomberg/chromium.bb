@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"

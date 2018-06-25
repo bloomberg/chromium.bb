@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class HTMLVideoElement;
+
 // PictureInPictureController allows to know if Picture-in-Picture is allowed
 // for a video element in Blink outside of modules/ module. It
 // is an interface that the module will implement and add a provider for.

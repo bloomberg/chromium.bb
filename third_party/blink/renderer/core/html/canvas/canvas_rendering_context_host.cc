@@ -16,6 +16,11 @@ namespace blink {
 
 CanvasRenderingContextHost::CanvasRenderingContextHost() = default;
 
+void CanvasRenderingContextHost::PushFrame(scoped_refptr<StaticBitmapImage>,
+                                           const SkIRect&) {
+  NOTIMPLEMENTED();
+}
+
 scoped_refptr<StaticBitmapImage>
 CanvasRenderingContextHost::CreateTransparentImage(const IntSize& size) const {
   if (!IsValidImageSize(size))
@@ -31,6 +36,11 @@ CanvasRenderingContextHost::CreateTransparentImage(const IntSize& size) const {
   if (!surface)
     return nullptr;
   return StaticBitmapImage::Create(surface->makeImageSnapshot());
+}
+
+void CanvasRenderingContextHost::Commit(scoped_refptr<StaticBitmapImage>,
+                                        const SkIRect&) {
+  NOTIMPLEMENTED();
 }
 
 bool CanvasRenderingContextHost::IsPaintable() const {
