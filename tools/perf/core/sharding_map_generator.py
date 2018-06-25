@@ -65,41 +65,54 @@ import argparse
 from collections import OrderedDict
 import core.path_util
 import json
-import optparse
 
 core.path_util.AddTelemetryToPath()
 
-from telemetry.internal.browser import browser_options
 
+def main(options, benchmarks_data):
+  """
+    benchmarks_data is a dictionary of all benchmarks to be sharded. Its
+    structure is as follows:
+    {
+      "benchmark_1": {
+         "stories": [ "storyA", "storyB",...],
+         "repeat": <number of pageset_repeat> },
+      "benchmark_2": {
+         ...
+      },...
+    }
 
-def main(args, benchmarks):
+    The "stories" field contains a list of ordered story names. Notes that
+    this should match the actual order of how the benchmark stories are
+    executed for the sharding algorithm to be effective.
+  """
   story_timing_ordered_dict = _load_timing_data_from_file(
-      benchmarks, args.timing_data, True)
+      benchmarks_data, options.timing_data, True)
 
   all_stories = {}
-  for b in benchmarks:
-    all_stories[b.Name()] = _get_stories_for_benchmark(b)
+  for b in benchmarks_data:
+    all_stories[b] = benchmarks_data[b]['stories']
 
   sharding_map = generate_sharding_map(story_timing_ordered_dict,
-      all_stories, args.num_shards, args.debug)
+      all_stories, options.num_shards, options.debug)
 
-  with open(args.output_file, 'w') as output_file:
+  with open(options.output_file, 'w') as output_file:
     json.dump(sharding_map, output_file, indent = 4, separators=(',', ': '))
 
-  if args.test_data:
+  if options.test_data:
     story_timing_ordered_dict = _load_timing_data_from_file(
-        benchmarks, args.test_data, False)
+        benchmarks_data, options.test_data, False)
     test_results = test_sharding_map(
-        args.output_file, story_timing_ordered_dict, all_stories)
-    if args.test_data_output:
-      with open(args.test_data_output, 'w') as output_file:
+        options.output_file, story_timing_ordered_dict, all_stories)
+    if options.test_data_output:
+      with open(options.test_data_output, 'w') as output_file:
         json.dump(test_results, output_file, indent = 4, separators=(',', ': '))
 
     else:
       print test_results
 
 
-def get_args():
+def get_parser():
   parser = argparse.ArgumentParser(
       description='Generate perf test sharding map.')
   parser.add_argument(
@@ -217,9 +230,8 @@ def _add_benchmarks_to_shard(sharding_map, shard_index, stories_in_shard,
   sharding_map[str(shard_index)] = {'benchmarks': benchmarks_in_shard}
 
 
-def _load_timing_data_from_file(benchmarks, timing_data_file, repeat):
-  story_timing_ordered_dict = _init_timing_dict_for_benchmarks(benchmarks)
-  pageset_repeat_dict = _init_pageset_repeat_dict_for_benchmarks(benchmarks)
+def _load_timing_data_from_file(benchmarks_data, timing_data_file, repeat):
+  story_timing_ordered_dict = _init_timing_dict_for_benchmarks(benchmarks_data)
   with open(timing_data_file, 'r') as timing_data_file:
     story_timing = json.load(timing_data_file)
     for run in story_timing:
@@ -228,45 +240,19 @@ def _load_timing_data_from_file(benchmarks, timing_data_file, repeat):
         if run['duration']:
           if repeat:
             story_timing_ordered_dict[run['name']] = (float(run['duration'])
-                * pageset_repeat_dict[benchmark])
+                * benchmarks_data[benchmark]['repeat'])
           else:
             story_timing_ordered_dict[run['name']] += float(run['duration'])
   return story_timing_ordered_dict
 
 
-def _init_pageset_repeat_dict_for_benchmarks(benchmarks):
-  pageset_repeat = {}
-  for b in benchmarks:
-    pageset_repeat[b.Name()] = b().options.get('pageset_repeat', 1)
-  return pageset_repeat
-
-
-def _init_timing_dict_for_benchmarks(benchmarks):
+def _init_timing_dict_for_benchmarks(benchmarks_data):
   timing_data = OrderedDict()
-  for b in benchmarks:
-    story_list = _get_stories_for_benchmark(b)
+  for b in benchmarks_data:
+    story_list = benchmarks_data[b]['stories']
     for story in story_list:
-      timing_data[b.Name() + '/' + story] = 0
+      timing_data[b + '/' + story] = 0
   return timing_data
-
-
-def _get_stories_for_benchmark(b):
-    story_list = []
-    benchmark = b()
-    options = browser_options.BrowserFinderOptions()
-    # Add default values for any extra commandline options
-    # provided by the benchmark.
-    parser = optparse.OptionParser()
-    before, _ = parser.parse_args([])
-    benchmark.AddBenchmarkCommandLineArgs(parser)
-    after, _ = parser.parse_args([])
-    for extra_option in dir(after):
-      if extra_option not in dir(before):
-        setattr(options, extra_option, getattr(after, extra_option))
-    for story in benchmark.CreateStorySet(options).stories:
-      if story.name not in story_list:
-        story_list.append(story.name)
-    return story_list
 
 
 def _generate_empty_sharding_map(num_shards):

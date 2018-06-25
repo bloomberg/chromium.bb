@@ -7,11 +7,10 @@ import copy
 from core import sharding_map_generator
 import json
 import os
-import subprocess
-import sys
-from telemetry import decorators
 import tempfile
 import unittest
+
+from py_utils import tempfile_ext
 
 
 class TestShardingMapGenerator(unittest.TestCase):
@@ -46,24 +45,26 @@ class TestShardingMapGenerator(unittest.TestCase):
     finally:
       os.remove(map_path)
 
-  # Failing everywhere (see
-  # https://chromium-review.googlesource.com/c/chromium/src/+/1112978)
-  @decorators.Disabled('all')
   def testGeneratePerfSharding(self):
-    path_output = tempfile.mkstemp(suffix='.json')[1]
-    path_results = tempfile.mkstemp(suffix='.json')[1]
-    try:
-      cmd = [sys.executable,
-          os.path.normpath('tools/perf/generate_perf_sharding')]
+    with tempfile_ext.NamedTemporaryDirectory() as temp_dir:
+      path_output = os.path.join(temp_dir, 'path_output')
+      path_results = os.path.join(temp_dir, 'path_results')
+      test_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
       args = [
           '--output-file', path_output,
-          '--timing-data', 'tools/perf/core/test_data/test_timing_data.json',
+          '--timing-data', os.path.join(test_data_dir, 'test_timing_data.json'),
           '--num-shards', '5',
           '--test-data',
-          'tools/perf/core/test_data/test_timing_data_1_build.json',
+          os.path.join(test_data_dir, 'test_timing_data_1_build.json'),
           '--test-data-output', path_results
       ]
-      subprocess.check_call(cmd + args)
+
+      with open(os.path.join(test_data_dir, 'benchmarks_data.json')) as f:
+        benchmark_data = json.load(f)
+
+      parser = sharding_map_generator.get_parser()
+      options = parser.parse_args(args)
+      sharding_map_generator.main(options, benchmark_data)
 
       with open(path_results, 'r') as test_results:
         results = json.load(test_results)
@@ -71,6 +72,3 @@ class TestShardingMapGenerator(unittest.TestCase):
         for shard in results:
           shard_total_timing.append(results[shard]['full_time'])
         self.assertTrue(max(shard_total_timing) - min(shard_total_timing) < 400)
-    finally:
-      os.remove(path_output)
-      os.remove(path_results)
