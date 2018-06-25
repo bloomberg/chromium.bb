@@ -3,11 +3,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  # https://crbug.com/826370
-  "tether_notification_presenter\.h": [
-    "+ash/system/network/network_icon.h",
-  ],
-  # https://crbug.com/651157
+  # TODO(mash): Fix. https://crbug.com/651157
   "networking_config_delegate_chromeos\.h": [
     "+ash/system/networking_config_delegate.h",
   ],

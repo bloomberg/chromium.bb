@@ -1,5 +1,6 @@
-include_rules = [
-  # TODO(mash): Remove. http://crbug.com/678705
-  "+ash/accelerators/accelerator_controller.h",
-  "+ash/shell.h",
-]
+specific_include_rules = {
+  "automation_apitest\.cc": [
+    "+ash/accelerators/accelerator_controller.h",
+    "+ash/shell.h",
+  ]
+}

@@ -1,5 +1,5 @@
-# TODO(mash): Remove ash includes. http://crbug.com/770866
 specific_include_rules = {
+  # TODO(mash): Fix. https://crbug.com/770866
   "core_oobe_handler\.cc": [
     "+ash/shell.h",
   ],
@@ -7,6 +7,16 @@ specific_include_rules = {
     "+ash/display/window_tree_host_manager.h",
     "+ash/shell.h",
   ],
+  # TODO(mash): Fix. https://crbug.com/678990
+  "signin_screen_handler\.cc": [
+    "+ash/detachable_base",
+    "+ash/shell.h",
+  ],
+  "signin_screen_handler\.h": [
+    "+ash/detachable_base/detachable_base_observer.h",
+  ],
+
+  # Tests.
   "oobe_display_chooser_browsertest\.cc": [
     "+ash/shell.h",
   ],
@@ -16,13 +26,6 @@ specific_include_rules = {
     "+ash/test/ash_test_base.h",
     # TODO(mash): Remove. http://crbug.com/720917.
     "+ui/events/devices/device_data_manager.h",
-  ],
-  "signin_screen_handler\.cc": [
-    "+ash/detachable_base",
-    "+ash/shell.h",
-  ],
-  "signin_screen_handler\.h": [
-    "+ash/detachable_base/detachable_base_observer.h",
   ],
   "signin_userlist_unittest\.cc": [
     "+ash/test/ash_test_base.h"

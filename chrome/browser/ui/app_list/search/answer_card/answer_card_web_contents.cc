@@ -25,6 +25,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/webview/web_contents_set_background_color.h"
 #include "ui/views/controls/webview/webview.h"
@@ -39,10 +40,12 @@ constexpr char kSearchAnswerHasResult[] = "SearchAnswer-HasResult";
 constexpr char kSearchAnswerIssuedQuery[] = "SearchAnswer-IssuedQuery";
 constexpr char kSearchAnswerTitle[] = "SearchAnswer-Title";
 
+// SearchAnswerWebView is only created in non-mash mode, see comment below.
 class SearchAnswerWebView : public views::WebView {
  public:
   explicit SearchAnswerWebView(content::BrowserContext* browser_context)
       : WebView(browser_context) {
+    DCHECK(::features::IsAshInBrowserProcess());
     holder()->set_can_process_events_within_subtree(false);
   }
 
@@ -162,6 +165,8 @@ AnswerCardWebContents::AnswerCardWebContents(Profile* profile)
   if (rvh)
     AttachToHost(rvh->GetWidget());
 
+  // AnswerCardContentsRegistry::Get() returns null in mash. See
+  // answer_card_contents_registry.h for details.
   if (AnswerCardContentsRegistry::Get()) {
     web_view_ = std::make_unique<SearchAnswerWebView>(profile);
     web_view_->set_owned_by_client();

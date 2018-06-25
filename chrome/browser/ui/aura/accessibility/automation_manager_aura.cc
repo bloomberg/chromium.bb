@@ -29,8 +29,8 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/shell.h"           // nogncheck
-#include "ash/wm/window_util.h"  // nogncheck
+#include "ash/shell.h"
+#include "ash/wm/window_util.h"
 #include "components/session_manager/core/session_manager.h"
 #include "ui/base/ui_base_features.h"
 #endif

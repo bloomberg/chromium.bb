@@ -1,0 +1,6 @@
+specific_include_rules = {
+  # mash-ok. Mash uses window_finder_mus.cc instead of window_finder_ash.cc.
+  "window_finder_ash\.cc": [
+    "+ash/wm/root_window_finder.h",
+  ],
+}

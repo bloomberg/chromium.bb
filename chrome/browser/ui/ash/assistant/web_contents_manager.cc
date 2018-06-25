@@ -135,7 +135,7 @@ class ManagedWebContents : public content::WebContentsDelegate {
 
       std::move(callback).Run(embed_token_.value());
     } else {
-      // TODO(dmblack): Handle Mash case.
+      // TODO(dmblack): Handle Mash case. https://crbug.com/854787.
       std::move(callback).Run(base::nullopt);
     }
   }
