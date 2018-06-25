@@ -221,7 +221,11 @@ void VizMainImpl::CreateGpuService(
     mojo::ScopedSharedBufferHandle activity_flags,
     gfx::FontRenderParams::SubpixelRendering subpixel_rendering) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
-  gpu_service_->UpdateGPUInfo();
+
+  // If GL is disabled then don't try to collect GPUInfo, we're not using GPU.
+  if (gl::GetGLImplementation() != gl::kGLImplementationDisabled)
+    gpu_service_->UpdateGPUInfo();
+
   for (const LogMessage& log : log_messages_)
     gpu_host->RecordLogMessage(log.severity, log.header, log.message);
   log_messages_.clear();

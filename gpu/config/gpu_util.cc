@@ -325,16 +325,15 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
                                      bool* needs_more_info) {
   DCHECK(!needs_more_info || !(*needs_more_info));
   bool use_swift_shader = false;
-  bool use_swift_shader_for_webgl = false;
   if (command_line->HasSwitch(switches::kUseGL)) {
     std::string use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
     if (use_gl == gl::kGLImplementationSwiftShaderName)
       use_swift_shader = true;
     else if (use_gl == gl::kGLImplementationSwiftShaderForWebGLName)
-      use_swift_shader_for_webgl = true;
+      return ComputeGpuFeatureInfoForSwiftShader();
+    else if (use_gl == gl::kGLImplementationDisabledName)
+      return ComputeGpuFeatureInfoWithNoGpu();
   }
-  if (use_swift_shader_for_webgl)
-    return ComputeGpuFeatureInfoForSwiftShader();
 
   GpuFeatureInfo gpu_feature_info;
   std::set<int> blacklisted_features;

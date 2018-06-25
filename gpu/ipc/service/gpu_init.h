@@ -75,7 +75,6 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
   base::Optional<GpuFeatureInfo> gpu_feature_info_for_hardware_gpu_;
 
   void AdjustInfoToSwiftShader();
-  void AdjustInfoToNoGpu();
 
   DISALLOW_COPY_AND_ASSIGN(GpuInit);
 };
