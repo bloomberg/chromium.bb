@@ -21,6 +21,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_buffer.h"
+#include "ui/ozone/platform/drm/gpu/gbm_overlay_surface.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surfaceless.h"
 #include "ui/ozone/platform/drm/gpu/proxy_helpers.h"
@@ -135,6 +136,12 @@ GbmSurfaceFactory::CreateVulkanImplementation() {
   return std::make_unique<ui::VulkanImplementationGbm>();
 }
 #endif
+
+std::unique_ptr<OverlaySurface> GbmSurfaceFactory::CreateOverlaySurface(
+    gfx::AcceleratedWidget window) {
+  return std::make_unique<GbmOverlaySurface>(
+      drm_thread_proxy_->CreateDrmWindowProxy(window));
+}
 
 std::unique_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
