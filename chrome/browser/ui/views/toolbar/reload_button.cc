@@ -135,9 +135,10 @@ void ReloadButton::ButtonPressed(views::Button* /* button */,
   ClearPendingMenu();
 
   if (visible_mode_ == Mode::kStop) {
-    if (command_updater_)
+    if (command_updater_) {
       command_updater_->ExecuteCommandWithDisposition(
           IDC_STOP, WindowOpenDisposition::CURRENT_TAB);
+    }
     // The user has clicked, so we can feel free to update the button, even if
     // the mouse is still hovering.
     ChangeMode(Mode::kReload, true);
@@ -216,8 +217,8 @@ void ReloadButton::ExecuteCommand(int command_id, int event_flags) {
 
 std::unique_ptr<ui::SimpleMenuModel> ReloadButton::CreateMenuModel() {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
-  for (size_t i = 0; i < arraysize(kReloadMenuItems); ++i)
-    menu_model->AddItemWithStringId(kReloadMenuItems[i], kReloadMenuItems[i]);
+  for (int item : kReloadMenuItems)
+    menu_model->AddItemWithStringId(item, item);
   return menu_model;
 }
 

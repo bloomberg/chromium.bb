@@ -229,17 +229,18 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
 
   AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr /* event */);
 
-  // Exit if the model is null.
-  if (!model_.get())
+  // Exit if the model is null. Although ToolbarButton::ShouldShowMenu()
+  // performs the same check, its overrides may not.
+  if (!model_)
     return;
 
   // Create and run menu.
-  menu_model_adapter_.reset(new views::MenuModelAdapter(
-      model_.get(),
-      base::Bind(&ToolbarButton::OnMenuClosed, base::Unretained(this))));
+  menu_model_adapter_ = std::make_unique<views::MenuModelAdapter>(
+      model_.get(), base::BindRepeating(&ToolbarButton::OnMenuClosed,
+                                        base::Unretained(this)));
   menu_model_adapter_->set_triggerable_event_flags(triggerable_event_flags());
-  menu_runner_.reset(new views::MenuRunner(menu_model_adapter_->CreateMenu(),
-                                           views::MenuRunner::HAS_MNEMONICS));
+  menu_runner_ = std::make_unique<views::MenuRunner>(
+      menu_model_adapter_->CreateMenu(), views::MenuRunner::HAS_MNEMONICS);
   menu_runner_->RunMenuAt(GetWidget(), nullptr,
                           gfx::Rect(menu_position, gfx::Size(0, 0)),
                           views::MENU_ANCHOR_TOPLEFT, source_type);
