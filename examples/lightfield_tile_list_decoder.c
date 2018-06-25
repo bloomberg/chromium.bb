@@ -16,12 +16,12 @@
 // contains the anchor frames that are references of the coded tiles, the camera
 // frame header, and tile list OBUs that include the tile information and the
 // compressed tile data. This input file is reconstructed from the encoded
-// lightfield ivf file, and is decodable by AV1 decoder. The lf_width and
-// lf_height arguments are the number of lightfield images in each dimension.
-// The lf_blocksize determines the number of reference images used.
+// lightfield ivf file, and is decodable by AV1 decoder. num_references is
+// the number of anchor frames coded at the beginning of the light field file.
+// num_tile_lists is the number of tile lists need to be decoded.
 // Run lightfield tile list decoder to decode an AV1 tile list file:
 // examples/lightfield_tile_list_decoder vase_tile_list.ivf vase_tile_list.yuv
-// 10 10 5 2
+// 4 2
 
 #include <stdio.h>
 #include <stdlib.h>

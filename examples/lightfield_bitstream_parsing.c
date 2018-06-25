@@ -12,13 +12,14 @@
 // Lightfield Bitstream Parsing
 // ============================
 //
-// This is an lightfield bitstream parsing example. It takes an input file
+// This is a lightfield bitstream parsing example. It takes an input file
 // containing the whole compressed lightfield bitstream(ivf file), and parses it
 // and constructs and outputs a new bitstream that can be decoded by an AV1
-// decoder. The output bitstream contains tile list OBUs.  num_references is
-// the number of references encoded at the beginning of the light field file.
+// decoder. The output bitstream contains reference frames(i.e. anchor frames),
+// camera frame header, and tile list OBUs. num_references is the number of
+// anchor frames coded at the beginning of the light field file.
 // After running the lightfield encoder, run lightfield bitstream parsing:
-// examples/lightfield_bitstream_parsing vase10x10.ivf vase_tile_list.ivf 64
+// examples/lightfield_bitstream_parsing vase10x10.ivf vase_tile_list.ivf 4
 
 #include <stdio.h>
 #include <stdlib.h>

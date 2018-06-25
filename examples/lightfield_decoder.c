@@ -17,7 +17,7 @@
 // data (in ivf format), treating it as a lightfield instead of a video.
 // After running the lightfield encoder, run lightfield decoder to decode a
 // batch of tiles:
-// examples/lightfield_decoder vase10x10.ivf vase_reference.yuv 10
+// examples/lightfield_decoder vase10x10.ivf vase_reference.yuv 4
 
 #include <stdio.h>
 #include <stdlib.h>
