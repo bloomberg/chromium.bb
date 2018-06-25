@@ -853,6 +853,23 @@ TEST_F(LowPrioritySubFrameExperimentTest, FrameQueuesPriorities) {
             TaskQueue::QueuePriority::kLowPriority);
   EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kLowPriority);
+
+  frame_scheduler_ = FrameSchedulerImpl::Create(
+      page_scheduler_.get(), nullptr, FrameScheduler::FrameType::kMainFrame);
+
+  // Main Frame Task Queues.
+  EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kHighestPriority);
+  EXPECT_EQ(DeferrableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(ThrottleableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(PausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
 }
 
 class LowPrioritySubFrameDuringLoadingExperimentTest
@@ -921,6 +938,23 @@ TEST_F(LowPrioritySubFrameThrottleableTaskExperimentTest,
             TaskQueue::QueuePriority::kNormalPriority);
   EXPECT_EQ(ThrottleableTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(PausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+
+  frame_scheduler_ = FrameSchedulerImpl::Create(
+      page_scheduler_.get(), nullptr, FrameScheduler::FrameType::kMainFrame);
+
+  // Main Frame Task Queues.
+  EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kHighestPriority);
+  EXPECT_EQ(DeferrableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(ThrottleableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
   EXPECT_EQ(PausableTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
   EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
