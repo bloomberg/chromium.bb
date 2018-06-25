@@ -38,13 +38,10 @@ base::LazyInstance<
 // Run continuous profiling 2% of the time.
 constexpr const double kFractionOfExecutionTimeToSample = 0.02;
 
-base::StackSamplingProfiler::SamplingParams GetSamplingParams() {
-  base::StackSamplingProfiler::SamplingParams params;
-  params.initial_delay = base::TimeDelta::FromMilliseconds(0);
-  params.samples_per_profile = 300;
-  params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
-  return params;
-}
+constexpr struct base::StackSamplingProfiler::SamplingParams kSamplingParams = {
+    /* initial_delay= */ base::TimeDelta::FromMilliseconds(0),
+    /* samples_per_profile= */ 300,
+    /* sampling_interval= */ base::TimeDelta::FromMilliseconds(100)};
 
 metrics::CallStackProfileParams::Process GetProcess() {
   const base::CommandLine* command_line =
@@ -194,7 +191,7 @@ ThreadProfiler::ThreadProfiler(
     return;
 
   startup_profiler_ = std::make_unique<base::StackSamplingProfiler>(
-      base::PlatformThread::CurrentId(), GetSamplingParams(),
+      base::PlatformThread::CurrentId(), kSamplingParams,
       BindRepeating(&ThreadProfiler::ReceiveStartupProfile,
                     GetReceiverCallback(metrics::CallStackProfileParams(
                         GetProcess(), thread,
@@ -202,19 +199,16 @@ ThreadProfiler::ThreadProfiler(
                         metrics::CallStackProfileParams::MAY_SHUFFLE))));
   startup_profiler_->Start();
 
-  const base::StackSamplingProfiler::SamplingParams& sampling_params =
-      GetSamplingParams();
-
   // Estimated time at which the startup profiling will be completed. It's OK if
   // this doesn't exactly coincide with the end of the startup profiling, since
   // there's no harm in having a brief overlap of startup and periodic
   // profiling.
   base::TimeTicks startup_profiling_completion_time =
       base::TimeTicks::Now() +
-      sampling_params.samples_per_profile * sampling_params.sampling_interval;
+      kSamplingParams.samples_per_profile * kSamplingParams.sampling_interval;
 
   periodic_sampling_scheduler_ = std::make_unique<PeriodicSamplingScheduler>(
-      sampling_params.samples_per_profile * sampling_params.sampling_interval,
+      kSamplingParams.samples_per_profile * kSamplingParams.sampling_interval,
       kFractionOfExecutionTimeToSample, startup_profiling_completion_time);
 
   if (owning_thread_task_runner_)
@@ -278,7 +272,7 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // NB: Destroys the previous profiler as side effect.
   periodic_profiler_ = std::make_unique<base::StackSamplingProfiler>(
-      base::PlatformThread::CurrentId(), GetSamplingParams(),
+      base::PlatformThread::CurrentId(), kSamplingParams,
       BindRepeating(&ThreadProfiler::ReceivePeriodicProfile,
                     GetReceiverCallback(periodic_profile_params_),
                     owning_thread_task_runner_, weak_factory_.GetWeakPtr()));
