@@ -43,8 +43,8 @@ const base::Feature kTouchOptimizedUi = {"TouchOptimizedUi",
 
 MaterialDesignController::Mode GetDefaultTouchDeviceMode() {
   return base::FeatureList::IsEnabled(kTouchOptimizedUi)
-             ? MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED
-             : MaterialDesignController::MATERIAL_HYBRID;
+             ? MaterialDesignController::MATERIAL_TOUCH_REFRESH
+             : MaterialDesignController::MATERIAL_REFRESH;
 }
 
 bool HasTouchscreen() {
@@ -163,9 +163,15 @@ MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
   base::ScopedAllowBlocking allow_io;
   if (HasTouchscreen())
     return GetDefaultTouchDeviceMode();
+
+  return MATERIAL_REFRESH;
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_WIN) || defined(OS_LINUX)
+  return MATERIAL_REFRESH;
+#else
   return MATERIAL_NORMAL;
+#endif
 }
 
 // static
