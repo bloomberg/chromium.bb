@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -296,6 +297,8 @@ ExtensionTtsEngineUpdateVoicesFunction::Run() {
     }
     if (voice_data->HasKey(constants::kGenderKey))
       voice_data->GetString(constants::kGenderKey, &voice.gender);
+    UMA_HISTOGRAM_BOOLEAN("TextToSpeechEngine.UpdateVoice.HasGender",
+                          !voice.gender.empty());
     if (voice_data->HasKey(constants::kRemoteKey))
       voice_data->GetBoolean(constants::kRemoteKey, &voice.remote);
     if (voice_data->HasKey(constants::kExtensionIdKey)) {
