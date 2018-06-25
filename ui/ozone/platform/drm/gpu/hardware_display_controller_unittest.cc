@@ -47,8 +47,8 @@ class HardwareDisplayControllerTest : public testing::Test {
 
   void InitializeDrmDevice(bool use_atomic);
   void SchedulePageFlip(ui::DrmOverlayPlaneList planes);
-  void PageFlipCallback(gfx::SwapResult result,
-                        const gfx::PresentationFeedback& feedback);
+  void OnSubmission(gfx::SwapResult swap_result);
+  void OnPresentation(const gfx::PresentationFeedback& feedback);
 
  protected:
   std::unique_ptr<ui::HardwareDisplayController> controller_;
@@ -138,15 +138,19 @@ void HardwareDisplayControllerTest::SchedulePageFlip(
     ui::DrmOverlayPlaneList planes) {
   controller_->SchedulePageFlip(
       std::move(planes),
-      base::BindOnce(&HardwareDisplayControllerTest::PageFlipCallback,
+      base::BindOnce(&HardwareDisplayControllerTest::OnSubmission,
+                     base::Unretained(this)),
+      base::BindOnce(&HardwareDisplayControllerTest::OnPresentation,
                      base::Unretained(this)));
 }
 
-void HardwareDisplayControllerTest::PageFlipCallback(
-    gfx::SwapResult result,
+void HardwareDisplayControllerTest::OnSubmission(gfx::SwapResult result) {
+  last_swap_result_ = result;
+}
+
+void HardwareDisplayControllerTest::OnPresentation(
     const gfx::PresentationFeedback& feedback) {
   page_flips_++;
-  last_swap_result_ = result;
   last_presentation_feedback_ = feedback;
 }
 
@@ -430,7 +434,9 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterAddCrtc) {
   primary_crtc_plane->set_owning_crtc(0);
   hdc_controller->SchedulePageFlip(
       ui::DrmOverlayPlane::Clone(planes),
-      base::BindOnce(&HardwareDisplayControllerTest::PageFlipCallback,
+      base::BindOnce(&HardwareDisplayControllerTest::OnSubmission,
+                     base::Unretained(this)),
+      base::BindOnce(&HardwareDisplayControllerTest::OnPresentation,
                      base::Unretained(this)));
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);

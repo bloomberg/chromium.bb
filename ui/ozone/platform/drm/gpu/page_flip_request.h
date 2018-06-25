@@ -28,7 +28,7 @@ class PageFlipRequest : public base::RefCounted<PageFlipRequest> {
   //
   // This is only called once all of the individual flips have have been
   // successfully submitted.
-  void TakeCallback(SwapCompletionOnceCallback callback);
+  void TakeCallback(PresentationOnceCallback callback);
 
   // Add a page flip to this request. Once all page flips return, the
   // overall callback is made with the timestamp from the page flip event
@@ -43,7 +43,7 @@ class PageFlipRequest : public base::RefCounted<PageFlipRequest> {
   friend class base::RefCounted<PageFlipRequest>;
   ~PageFlipRequest();
 
-  SwapCompletionOnceCallback callback_;
+  PresentationOnceCallback callback_;
   int page_flip_count_ = 0;
   base::TimeDelta refresh_interval_;
   gfx::SwapResult result_ = gfx::SwapResult::SWAP_ACK;

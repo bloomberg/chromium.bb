@@ -117,7 +117,8 @@ class HardwareDisplayController {
   // Note that this function does not block. Also, this function should not be
   // called again before the page flip occurrs.
   void SchedulePageFlip(DrmOverlayPlaneList plane_list,
-                        SwapCompletionOnceCallback callback);
+                        SwapCompletionOnceCallback submission_callback,
+                        PresentationOnceCallback presentation_callback);
 
   // Returns true if the page flip with the |plane_list| would succeed. This
   // doesn't change any state.

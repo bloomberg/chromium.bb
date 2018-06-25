@@ -86,7 +86,8 @@ class DrmWindow {
   void MoveCursor(const gfx::Point& location);
 
   void SchedulePageFlip(std::vector<DrmOverlayPlane> planes,
-                        SwapCompletionOnceCallback callback);
+                        SwapCompletionOnceCallback submission_callback,
+                        PresentationOnceCallback presentation_callback);
   std::vector<OverlayCheckReturn_Params> TestPageFlip(
       const std::vector<OverlayCheck_Params>& overlay_params);
 

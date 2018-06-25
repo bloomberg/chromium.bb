@@ -83,6 +83,7 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
     void Flush();
 
     bool ready = false;
+    gfx::SwapResult swap_result = gfx::SwapResult::SWAP_FAILED;
     std::vector<gl::GLSurfaceOverlay> overlays;
     SwapCompletionCallback completion_callback;
     PresentationCallback presentation_callback;
@@ -93,9 +94,8 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
   EGLSyncKHR InsertFence(bool implicit);
   void FenceRetired(PendingFrame* frame);
 
-  void SwapCompleted(std::unique_ptr<PendingFrame> pending_frame,
-                     gfx::SwapResult result,
-                     const gfx::PresentationFeedback& feedback);
+  void OnSubmission(gfx::SwapResult result);
+  void OnPresentation(const gfx::PresentationFeedback& feedback);
 
   GbmSurfaceFactory* surface_factory_;
   std::unique_ptr<DrmWindowProxy> window_;
@@ -105,9 +105,9 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
   gfx::AcceleratedWidget widget_;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
   std::vector<std::unique_ptr<PendingFrame>> unsubmitted_frames_;
+  std::unique_ptr<PendingFrame> submitted_frame_;
   bool has_implicit_external_sync_;
   bool last_swap_buffers_result_ = true;
-  bool swap_buffers_pending_ = false;
   bool use_egl_fence_sync_ = true;
   // Conservatively assume we begin on a device that requires
   // explicit synchronization.

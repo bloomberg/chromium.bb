@@ -72,10 +72,12 @@ class DrmWindowTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  void OnSwapBuffers(gfx::SwapResult result,
-                     const gfx::PresentationFeedback& feedback) {
-    on_swap_buffers_count_++;
+  void OnSubmission(gfx::SwapResult result) {
     last_swap_buffers_result_ = result;
+  }
+
+  void OnPresentation(const gfx::PresentationFeedback& feedback) {
+    on_swap_buffers_count_++;
     last_presentation_feedback_ = feedback;
   }
 
@@ -188,7 +190,8 @@ TEST_F(DrmWindowTest, CheckDeathOnFailedSwap) {
   // Window was re-sized, so the expectation is to re-create the buffers first.
   window->SchedulePageFlip(
       ui::DrmOverlayPlane::Clone(planes),
-      base::BindOnce(&DrmWindowTest::OnSwapBuffers, base::Unretained(this)));
+      base::BindOnce(&DrmWindowTest::OnSubmission, base::Unretained(this)),
+      base::BindOnce(&DrmWindowTest::OnPresentation, base::Unretained(this)));
   EXPECT_EQ(1, on_swap_buffers_count_);
   EXPECT_EQ(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS,
             last_swap_buffers_result_);
@@ -196,8 +199,10 @@ TEST_F(DrmWindowTest, CheckDeathOnFailedSwap) {
             last_presentation_feedback_.flags);
 
   EXPECT_DEATH_IF_SUPPORTED(
-      window->SchedulePageFlip(ui::DrmOverlayPlane::Clone(planes),
-                               base::BindOnce(&DrmWindowTest::OnSwapBuffers,
-                                              base::Unretained(this))),
+      window->SchedulePageFlip(
+          ui::DrmOverlayPlane::Clone(planes),
+          base::BindOnce(&DrmWindowTest::OnSubmission, base::Unretained(this)),
+          base::BindOnce(&DrmWindowTest::OnPresentation,
+                         base::Unretained(this))),
       "SchedulePageFlip failed");
 }
