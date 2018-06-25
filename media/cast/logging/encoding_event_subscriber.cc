@@ -43,7 +43,7 @@ BasePacketEvent* GetNewBasePacketEvent(AggregatedPacketEvent* event_proto,
   return base;
 }
 
-}
+}  // namespace
 
 namespace media {
 namespace cast {
@@ -150,7 +150,7 @@ void EncodingEventSubscriber::OnReceivePacketEvent(
   PacketEventMap::iterator it =
       packet_event_map_.find(relative_rtp_timestamp);
   linked_ptr<AggregatedPacketEvent> event_proto;
-  BasePacketEvent* base_packet_event_proto = NULL;
+  BasePacketEvent* base_packet_event_proto = nullptr;
 
   // Look up existing entry. If not found, create a new entry and add to map.
   if (it == packet_event_map_.end()) {

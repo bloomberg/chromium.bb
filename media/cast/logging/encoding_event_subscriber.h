@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
@@ -32,10 +33,8 @@ static const int kMaxEventsPerProto = 16;
 // further events for that frame will be dropped.
 static const int kMaxProtosPerFrame = 10;
 
-typedef std::vector<linked_ptr<media::cast::proto::AggregatedFrameEvent> >
-    FrameEventList;
-typedef std::vector<linked_ptr<media::cast::proto::AggregatedPacketEvent> >
-    PacketEventList;
+using FrameEventList = std::vector<linked_ptr<proto::AggregatedFrameEvent>>;
+using PacketEventList = std::vector<linked_ptr<proto::AggregatedPacketEvent>>;
 
 // A RawEventSubscriber implementation that subscribes to events,
 // encodes them in protocol buffer format, and aggregates them into a more
@@ -67,17 +66,15 @@ class EncodingEventSubscriber : public RawEventSubscriber {
   // In addition, assign metadata associated with these events to |metadata|.
   // The protos in |frame_events| and |packets_events| are sorted in
   // ascending RTP timestamp order.
-  void GetEventsAndReset(media::cast::proto::LogMetadata* metadata,
+  void GetEventsAndReset(proto::LogMetadata* metadata,
                          FrameEventList* frame_events,
                          PacketEventList* packet_events);
 
  private:
-  typedef std::map<RtpTimeDelta,
-                   linked_ptr<media::cast::proto::AggregatedFrameEvent>>
-      FrameEventMap;
-  typedef std::map<RtpTimeDelta,
-                   linked_ptr<media::cast::proto::AggregatedPacketEvent>>
-      PacketEventMap;
+  using FrameEventMap =
+      std::map<RtpTimeDelta, linked_ptr<proto::AggregatedFrameEvent>>;
+  using PacketEventMap =
+      std::map<RtpTimeDelta, linked_ptr<proto::AggregatedPacketEvent>>;
 
   // Transfer up to |max_num_entries| smallest entries from |frame_event_map_|
   // to |frame_event_storage_|. This helps keep size of |frame_event_map_| small
@@ -87,11 +84,9 @@ class EncodingEventSubscriber : public RawEventSubscriber {
   void TransferPacketEvents(size_t max_num_entries);
 
   void AddFrameEventToStorage(
-      const linked_ptr<media::cast::proto::AggregatedFrameEvent>&
-          frame_event_proto);
+      const linked_ptr<proto::AggregatedFrameEvent>& frame_event_proto);
   void AddPacketEventToStorage(
-      const linked_ptr<media::cast::proto::AggregatedPacketEvent>&
-          packet_event_proto);
+      const linked_ptr<proto::AggregatedPacketEvent>& packet_event_proto);
 
   bool ShouldCreateNewProto(
       uint32_t relative_rtp_timestamp_lower_32_bits) const;
