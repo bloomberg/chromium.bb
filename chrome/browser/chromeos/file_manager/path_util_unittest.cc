@@ -364,7 +364,41 @@ TEST_F(FileManagerPathUtilConvertUrlTest,
   run_loop.Run();
 }
 
-TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrls_MultipeUrls) {
+TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrls_AndroidFiles) {
+  base::RunLoop run_loop;
+  ConvertToContentUrls(
+      std::vector<FileSystemURL>{
+          CreateExternalURL(base::FilePath::FromUTF8Unsafe(
+              "/run/arc/sdcard/write/emulated/0/Pictures/a/b.jpg"))},
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const std::vector<GURL>& urls) {
+            run_loop->Quit();
+            ASSERT_EQ(1U, urls.size());
+            EXPECT_EQ(
+                GURL("content://org.chromium.arc.intent_helper.fileprovider/"
+                     "external_files/Pictures/a/b.jpg"),
+                urls[0]);
+          },
+          &run_loop));
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest,
+       ConvertToContentUrls_InvalidAndroidFiles) {
+  base::RunLoop run_loop;
+  ConvertToContentUrls(
+      std::vector<FileSystemURL>{
+          CreateExternalURL(base::FilePath::FromUTF8Unsafe(
+              "/run/arc/sdcard/read/emulated/0/a/b/c"))},
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const std::vector<GURL>& urls) {
+            run_loop->Quit();
+            ASSERT_EQ(1U, urls.size());
+            EXPECT_EQ(GURL(), urls[0]);  // Invalid URL.
+          },
+          &run_loop));
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrls_MultipleUrls) {
   base::RunLoop run_loop;
   ConvertToContentUrls(
       std::vector<FileSystemURL>{
@@ -372,11 +406,12 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrls_MultipeUrls) {
           CreateExternalURL(
               base::FilePath::FromUTF8Unsafe("/media/removable/a/b/c")),
           CreateExternalURL(drive_mount_point_.AppendASCII("a/b/c")),
-      },
+          CreateExternalURL(base::FilePath::FromUTF8Unsafe(
+              "/run/arc/sdcard/write/emulated/0/a/b/c"))},
       base::BindOnce(
           [](base::RunLoop* run_loop, const std::vector<GURL>& urls) {
             run_loop->Quit();
-            ASSERT_EQ(3U, urls.size());
+            ASSERT_EQ(4U, urls.size());
             EXPECT_EQ(GURL(), urls[0]);  // Invalid URL.
             EXPECT_EQ(
                 GURL("content://org.chromium.arc.removablemediaprovider/a/b/c"),
@@ -386,6 +421,10 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrls_MultipeUrls) {
                     "content://org.chromium.arc.chromecontentprovider/"
                     "externalfile%3Adrive-user%2540gmail.com-hash%2Fa%2Fb%2Fc"),
                 urls[2]);
+            EXPECT_EQ(
+                GURL("content://org.chromium.arc.intent_helper.fileprovider/"
+                     "external_files/a/b/c"),
+                urls[3]);
           },
           &run_loop));
   run_loop.Run();

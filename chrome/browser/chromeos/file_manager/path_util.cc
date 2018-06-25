@@ -36,6 +36,8 @@ constexpr char kArcFileProviderUrl[] =
 // Sync with the root name defined with the file provider in ARC++ side.
 constexpr base::FilePath::CharType kArcDownloadRoot[] =
     FILE_PATH_LITERAL("/download");
+constexpr base::FilePath::CharType kArcExternalFilesRoot[] =
+    FILE_PATH_LITERAL("/external_files");
 // Sync with the removable media provider in ARC++ side.
 constexpr char kArcRemovableMediaProviderUrl[] =
     "content://org.chromium.arc.removablemediaprovider/";
@@ -68,6 +70,9 @@ void OnAllContentUrlsResolved(ConvertToContentUrlsCallback callback,
 
 const base::FilePath::CharType kRemovableMediaPath[] =
     FILE_PATH_LITERAL("/media/removable");
+
+const base::FilePath::CharType kAndroidFilesPath[] =
+    FILE_PATH_LITERAL("/run/arc/sdcard/write/emulated/0");
 
 base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
   // On non-ChromeOS system (test+development), the primary profile uses
@@ -141,6 +146,15 @@ bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
       GetDownloadsFolderForProfile(primary_profile);
   base::FilePath result_path(kArcDownloadRoot);
   if (primary_downloads.AppendRelativePath(path, &result_path)) {
+    *arc_url_out = GURL(kArcFileProviderUrl)
+                       .Resolve(net::EscapePath(result_path.AsUTF8Unsafe()));
+    return true;
+  }
+
+  // Convert paths under Android files root (/run/arc/sdcard/write/emulated/0).
+  result_path = base::FilePath(kArcExternalFilesRoot);
+  if (base::FilePath(kAndroidFilesPath)
+          .AppendRelativePath(path, &result_path)) {
     *arc_url_out = GURL(kArcFileProviderUrl)
                        .Resolve(net::EscapePath(result_path.AsUTF8Unsafe()));
     return true;

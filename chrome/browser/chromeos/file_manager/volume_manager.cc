@@ -54,8 +54,6 @@ const char kFileManagerMTPMountNamePrefix[] = "fileman-mtp-";
 const char kMtpVolumeIdPrefix[] = "mtp:";
 const char kRootPath[] = "/";
 const char kAndroidFilesMountPointName[] = "android_files";
-const base::FilePath::CharType kAndroidFilesPath[] =
-    FILE_PATH_LITERAL("/run/arc/sdcard/write/emulated/0");
 
 // Registers |path| as the "Downloads" folder to the FileSystem API backend.
 // If another folder is already mounted. It revokes and overrides the old one.
@@ -89,10 +87,10 @@ bool IsShowAndroidFilesEnabled() {
 bool RegisterAndroidFilesMountPoint() {
   storage::ExternalMountPoints* const mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
-  return mount_points->RegisterFileSystem(kAndroidFilesMountPointName,
-                                          storage::kFileSystemTypeNativeLocal,
-                                          storage::FileSystemMountOption(),
-                                          base::FilePath(kAndroidFilesPath));
+  return mount_points->RegisterFileSystem(
+      kAndroidFilesMountPointName, storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(),
+      base::FilePath(util::kAndroidFilesPath));
 }
 
 // Finds the path register as the "Downloads" folder to FileSystem API backend.
@@ -349,7 +347,7 @@ std::unique_ptr<Volume> Volume::CreateForAndroidFiles() {
   volume->device_type_ = chromeos::DEVICE_TYPE_UNKNOWN;
   // Keep source_path empty.
   volume->source_ = SOURCE_SYSTEM;
-  volume->mount_path_ = base::FilePath(kAndroidFilesPath);
+  volume->mount_path_ = base::FilePath(util::kAndroidFilesPath);
   volume->mount_condition_ = chromeos::disks::MOUNT_CONDITION_NONE;
   volume->volume_id_ = GenerateVolumeId(*volume);
   volume->watchable_ = true;
