@@ -76,8 +76,12 @@ public class AccessorySheetCoordinator {
         mMediator.addTab(tab);
     }
 
-    public void removeTab(KeyboardAccessoryData.Tab tab) {
+    void removeTab(KeyboardAccessoryData.Tab tab) {
         mMediator.removeTab(tab);
+    }
+
+    void setTabs(KeyboardAccessoryData.Tab[] tabs) {
+        mMediator.setTabs(tabs);
     }
 
     /**
