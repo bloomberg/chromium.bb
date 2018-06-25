@@ -416,6 +416,11 @@ string MDGUIDToString(const MDGUID& uuid) {
   return std::string(buf);
 }
 
+bool IsDevAshmem(const string& filename) {
+  const string kDevAshmem("/dev/ashmem/");
+  return filename.compare(0, kDevAshmem.length(), kDevAshmem) == 0;
+}
+
 }  // namespace
 
 //
@@ -2674,8 +2679,7 @@ bool MinidumpModuleList::Read(uint32_t expected_size) {
     scoped_ptr<MinidumpModules> modules(
         new MinidumpModules(module_count, MinidumpModule(minidump_)));
 
-    for (unsigned int module_index = 0;
-         module_index < module_count;
+    for (uint32_t module_index = 0; module_index < module_count;
          ++module_index) {
       MinidumpModule* module = &(*modules)[module_index];
 
@@ -2693,17 +2697,16 @@ bool MinidumpModuleList::Read(uint32_t expected_size) {
     // included in the loop above, additional seeks would be needed where
     // none are now to read contiguous data.
     uint64_t last_end_address = 0;
-    for (unsigned int module_index = 0;
-         module_index < module_count;
+    for (uint32_t module_index = 0; module_index < module_count;
          ++module_index) {
-      MinidumpModule* module = &(*modules)[module_index];
+      MinidumpModule& module = (*modules)[module_index];
 
       // ReadAuxiliaryData fails if any data that the module indicates should
       // exist is missing, but we treat some such cases as valid anyway.  See
       // issue #222: if a debugging record is of a format that's too large to
       // handle, it shouldn't render the entire dump invalid.  Check module
       // validity before giving up.
-      if (!module->ReadAuxiliaryData() && !module->valid()) {
+      if (!module.ReadAuxiliaryData() && !module.valid()) {
         BPLOG(ERROR) << "MinidumpModuleList could not read required module "
                         "auxiliary data for module " <<
                         module_index << "/" << module_count;
@@ -2713,52 +2716,35 @@ bool MinidumpModuleList::Read(uint32_t expected_size) {
       // It is safe to use module->code_file() after successfully calling
       // module->ReadAuxiliaryData or noting that the module is valid.
 
-      uint64_t base_address = module->base_address();
-      uint64_t module_size = module->size();
+      uint64_t base_address = module.base_address();
+      uint64_t module_size = module.size();
       if (base_address == static_cast<uint64_t>(-1)) {
-        BPLOG(ERROR) << "MinidumpModuleList found bad base address "
-                        "for module " << module_index << "/" << module_count <<
-                        ", " << module->code_file();
+        BPLOG(ERROR) << "MinidumpModuleList found bad base address for module "
+                     << module_index << "/" << module_count << ", "
+                     << module.code_file();
         return false;
       }
 
-      if (!range_map_->StoreRange(base_address, module_size, module_index)) {
-        // Android's shared memory implementation /dev/ashmem can contain
-        // duplicate entries for JITted code, so ignore these.
-        // TODO(wfh): Remove this code when Android is fixed.
-        // See https://crbug.com/439531
-        const string kDevAshmem("/dev/ashmem/");
-        if (module->code_file().compare(
-            0, kDevAshmem.length(), kDevAshmem) != 0) {
-          if (base_address < last_end_address) {
-            // If failed due to apparent range overlap the cause may be
-            // the client correction applied for Android packed relocations.
-            // If this is the case, back out the client correction and retry.
-            module_size -= last_end_address - base_address;
-            base_address = last_end_address;
-            if (!range_map_->StoreRange(base_address,
-                                        module_size, module_index)) {
-              BPLOG(ERROR) << "MinidumpModuleList could not store module " <<
-                              module_index << "/" << module_count << ", " <<
-                              module->code_file() << ", " <<
-                              HexString(base_address) << "+" <<
-                              HexString(module_size) << ", after adjusting";
-              return false;
-            }
-          } else {
-            BPLOG(ERROR) << "MinidumpModuleList could not store module " <<
-                            module_index << "/" << module_count << ", " <<
-                            module->code_file() << ", " <<
-                            HexString(base_address) << "+" <<
-                            HexString(module_size);
-            return false;
-          }
-        } else {
-          BPLOG(INFO) << "MinidumpModuleList ignoring overlapping module " <<
-                          module_index << "/" << module_count << ", " <<
-                          module->code_file() << ", " <<
-                          HexString(base_address) << "+" <<
-                          HexString(module_size);
+      if (!StoreRange(module, base_address, module_index, module_count)) {
+        if (base_address >= last_end_address) {
+          BPLOG(ERROR) << "MinidumpModuleList could not store module "
+                       << module_index << "/" << module_count << ", "
+                       << module.code_file() << ", " << HexString(base_address)
+                       << "+" << HexString(module_size);
+          return false;
+        }
+
+        // If failed due to apparent range overlap the cause may be the client
+        // correction applied for Android packed relocations.  If this is the
+        // case, back out the client correction and retry.
+        module_size -= last_end_address - base_address;
+        base_address = last_end_address;
+        if (!range_map_->StoreRange(base_address, module_size, module_index)) {
+          BPLOG(ERROR) << "MinidumpModuleList could not store module "
+                       << module_index << "/" << module_count << ", "
+                       << module.code_file() << ", " << HexString(base_address)
+                       << "+" << HexString(module_size) << ", after adjusting";
+          return false;
         }
       }
       last_end_address = base_address + module_size;
@@ -2773,6 +2759,27 @@ bool MinidumpModuleList::Read(uint32_t expected_size) {
   return true;
 }
 
+bool MinidumpModuleList::StoreRange(const MinidumpModule& module,
+                                    uint64_t base_address,
+                                    uint32_t module_index,
+                                    uint32_t module_count) {
+  if (range_map_->StoreRange(base_address, module.size(), module_index))
+    return true;
+
+  // Android's shared memory implementation /dev/ashmem can contain duplicate
+  // entries for JITted code, so ignore these.
+  // TODO(wfh): Remove this code when Android is fixed.
+  // See https://crbug.com/439531
+  if (IsDevAshmem(module.code_file())) {
+    BPLOG(INFO) << "MinidumpModuleList ignoring overlapping module "
+                << module_index << "/" << module_count << ", "
+                << module.code_file() << ", " << HexString(base_address) << "+"
+                << HexString(module.size());
+    return true;
+  }
+
+  return false;
+}
 
 const MinidumpModule* MinidumpModuleList::GetModuleForAddress(
     uint64_t address) const {
