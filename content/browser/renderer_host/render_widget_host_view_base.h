@@ -621,13 +621,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // Indicates whether keyboard lock is active for this view.
   bool keyboard_locked_ = false;
 
-  // While the mouse is locked, the cursor is hidden from the user. Mouse events
-  // are still generated. However, the position they report is the last known
-  // mouse position just as mouse lock was entered; the movement they report
-  // indicates what the change in position of the mouse would be had it not been
-  // locked.
-  bool mouse_locked_ = false;
-
   // Indicates whether the scroll offset of the root layer is at top, i.e.,
   // whether scroll_offset.y() == 0.
   bool is_scroll_offset_at_top_ = true;

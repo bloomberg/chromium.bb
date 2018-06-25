@@ -10,13 +10,12 @@
 
 namespace content {
 
-namespace {
-
-class MockRenderWidgetHostView : public RenderWidgetHostViewMac {
+class MockPointerLockRenderWidgetHostView : public RenderWidgetHostViewMac {
  public:
-  MockRenderWidgetHostView(RenderWidgetHost* host, bool is_guest_view_hack)
+  MockPointerLockRenderWidgetHostView(RenderWidgetHost* host,
+                                      bool is_guest_view_hack)
       : RenderWidgetHostViewMac(host, is_guest_view_hack) {}
-  ~MockRenderWidgetHostView() override {
+  ~MockPointerLockRenderWidgetHostView() override {
     if (mouse_locked_)
       UnlockMouse();
   }
@@ -40,13 +39,12 @@ class MockRenderWidgetHostView : public RenderWidgetHostViewMac {
   bool HasFocus() const override { return true; }
 };
 
-}  // namespace
-
 void InstallCreateHooksForPointerLockBrowserTests() {
   WebContentsViewMac::InstallCreateHookForTests(
       [](RenderWidgetHost* host,
          bool is_guest_view_hack) -> RenderWidgetHostViewMac* {
-        return new MockRenderWidgetHostView(host, is_guest_view_hack);
+        return new MockPointerLockRenderWidgetHostView(host,
+                                                       is_guest_view_hack);
       });
 }
 
