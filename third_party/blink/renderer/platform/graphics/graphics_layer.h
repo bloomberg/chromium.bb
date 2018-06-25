@@ -125,25 +125,13 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   }
   void SetContentsClippingMaskLayer(GraphicsLayer*);
 
-  enum ShouldSetNeedsDisplay { kDontSetNeedsDisplay, kSetNeedsDisplay };
-
   // The offset is the origin of the layoutObject minus the origin of the
   // graphics layer (so either zero or negative).
   IntSize OffsetFromLayoutObject() const {
-    return FlooredIntSize(offset_from_layout_object_);
-  }
-  void SetOffsetFromLayoutObject(const IntSize&,
-                                 ShouldSetNeedsDisplay = kSetNeedsDisplay);
-  LayoutSize OffsetFromLayoutObjectWithSubpixelAccumulation() const;
-
-  // The double version is only used in updateScrollingLayerGeometry() for
-  // detecting a scroll offset change at floating point precision.
-  DoubleSize OffsetDoubleFromLayoutObject() const {
     return offset_from_layout_object_;
   }
-  void SetOffsetDoubleFromLayoutObject(
-      const DoubleSize&,
-      ShouldSetNeedsDisplay = kSetNeedsDisplay);
+  void SetOffsetFromLayoutObject(const IntSize&);
+  LayoutSize OffsetFromLayoutObjectWithSubpixelAccumulation() const;
 
   // The position of the layer (the location of its top-left corner in its
   // parent).
@@ -381,7 +369,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   GraphicsLayerClient& client_;
 
   // Offset from the owning layoutObject
-  DoubleSize offset_from_layout_object_;
+  IntSize offset_from_layout_object_;
 
   // Position is relative to the parent GraphicsLayer
   FloatPoint position_;

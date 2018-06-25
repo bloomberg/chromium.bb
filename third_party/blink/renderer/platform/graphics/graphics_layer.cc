@@ -264,24 +264,16 @@ void GraphicsLayer::RemoveFromParent() {
   CcLayer()->RemoveFromParent();
 }
 
-void GraphicsLayer::SetOffsetFromLayoutObject(
-    const IntSize& offset,
-    ShouldSetNeedsDisplay should_set_needs_display) {
-  SetOffsetDoubleFromLayoutObject(DoubleSize(offset));
-}
-
-void GraphicsLayer::SetOffsetDoubleFromLayoutObject(
-    const DoubleSize& offset,
-    ShouldSetNeedsDisplay should_set_needs_display) {
+void GraphicsLayer::SetOffsetFromLayoutObject(const IntSize& offset) {
   if (offset == offset_from_layout_object_)
     return;
 
   offset_from_layout_object_ = offset;
-  CcLayer()->SetFiltersOrigin(FloatPoint() - ToFloatSize(offset));
+  CcLayer()->SetFiltersOrigin(FloatPoint() -
+                              FloatSize(offset_from_layout_object_));
 
   // If the compositing layer offset changes, we need to repaint.
-  if (should_set_needs_display == kSetNeedsDisplay)
-    SetNeedsDisplay();
+  SetNeedsDisplay();
 }
 
 LayoutSize GraphicsLayer::OffsetFromLayoutObjectWithSubpixelAccumulation()
@@ -772,7 +764,7 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
     json->SetArray("position", PointAsJSONArray(position));
 
   if (flags & kLayerTreeIncludesDebugInfo &&
-      offset_from_layout_object_ != DoubleSize()) {
+      offset_from_layout_object_ != IntSize()) {
     json->SetArray("offsetFromLayoutObject",
                    SizeAsJSONArray(offset_from_layout_object_));
   }
