@@ -870,10 +870,8 @@ TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
   EXPECT_TRUE(properties.goog_typing_noise_detection);
   EXPECT_TRUE(properties.goog_noise_suppression);
   EXPECT_TRUE(properties.goog_experimental_noise_suppression);
-  EXPECT_TRUE(properties.goog_beamforming);
   EXPECT_TRUE(properties.goog_highpass_filter);
   EXPECT_TRUE(properties.goog_experimental_auto_gain_control);
-  EXPECT_TRUE(properties.goog_array_geometry.empty());
 
   EXPECT_TRUE(video_capture_settings.HasValue());
   EXPECT_EQ(video_capture_settings.Width(),
@@ -936,10 +934,8 @@ TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
   EXPECT_FALSE(properties.goog_typing_noise_detection);
   EXPECT_FALSE(properties.goog_noise_suppression);
   EXPECT_FALSE(properties.goog_experimental_noise_suppression);
-  EXPECT_FALSE(properties.goog_beamforming);
   EXPECT_FALSE(properties.goog_highpass_filter);
   EXPECT_FALSE(properties.goog_experimental_auto_gain_control);
-  EXPECT_TRUE(properties.goog_array_geometry.empty());
 
   EXPECT_TRUE(video_capture_settings.HasValue());
   EXPECT_EQ(video_capture_settings.Width(), kDefaultScreenCastWidth);
@@ -999,10 +995,8 @@ TEST_F(UserMediaClientImplTest, DefaultDesktopCapturePropagate) {
   EXPECT_FALSE(properties.goog_typing_noise_detection);
   EXPECT_FALSE(properties.goog_noise_suppression);
   EXPECT_FALSE(properties.goog_experimental_noise_suppression);
-  EXPECT_FALSE(properties.goog_beamforming);
   EXPECT_FALSE(properties.goog_highpass_filter);
   EXPECT_FALSE(properties.goog_experimental_auto_gain_control);
-  EXPECT_TRUE(properties.goog_array_geometry.empty());
 
   EXPECT_TRUE(video_capture_settings.HasValue());
   EXPECT_EQ(video_capture_settings.Width(), kDefaultScreenCastWidth);
@@ -1038,8 +1032,6 @@ TEST_F(UserMediaClientImplTest, NonDefaultAudioConstraintsPropagate) {
   factory.basic().echo_cancellation.SetExact(false);
   factory.basic().goog_audio_mirroring.SetExact(true);
   factory.basic().goog_typing_noise_detection.SetExact(true);
-  factory.basic().goog_array_geometry.SetExact(
-      blink::WebString::FromASCII("1 1 1"));
   blink::WebMediaConstraints audio_constraints =
       factory.CreateWebMediaConstraints();
   // Request contains only audio
@@ -1071,11 +1063,8 @@ TEST_F(UserMediaClientImplTest, NonDefaultAudioConstraintsPropagate) {
   EXPECT_TRUE(properties.goog_typing_noise_detection);
   EXPECT_FALSE(properties.goog_noise_suppression);
   EXPECT_FALSE(properties.goog_experimental_noise_suppression);
-  EXPECT_FALSE(properties.goog_beamforming);
   EXPECT_FALSE(properties.goog_highpass_filter);
   EXPECT_FALSE(properties.goog_experimental_auto_gain_control);
-  const std::vector<media::Point> kGeometry = {{1.0, 1.0, 1.0}};
-  EXPECT_EQ(kGeometry, properties.goog_array_geometry);
 }
 
 TEST_F(UserMediaClientImplTest, CreateWithMandatoryInvalidAudioDeviceId) {

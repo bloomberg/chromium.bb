@@ -44,7 +44,6 @@ enum BoolConstraint {
   GOOG_TYPING_NOISE_DETECTION,
   GOOG_NOISE_SUPPRESSION,
   GOOG_EXPERIMENTAL_NOISE_SUPPRESSION,
-  GOOG_BEAMFORMING,
   GOOG_HIGHPASS_FILTER,
   GOOG_EXPERIMENTAL_AUTO_GAIN_CONTROL,
   NUM_BOOL_CONSTRAINTS
@@ -70,36 +69,9 @@ const AudioPropertyConstraintPair kAudioPropertyConstraintMap[] = {
      GOOG_NOISE_SUPPRESSION},
     {&AudioProcessingProperties::goog_experimental_noise_suppression,
      GOOG_EXPERIMENTAL_NOISE_SUPPRESSION},
-    {&AudioProcessingProperties::goog_beamforming, GOOG_BEAMFORMING},
     {&AudioProcessingProperties::goog_highpass_filter, GOOG_HIGHPASS_FILTER},
     {&AudioProcessingProperties::goog_experimental_auto_gain_control,
      GOOG_EXPERIMENTAL_AUTO_GAIN_CONTROL}};
-
-// TODO(guidou): Remove this function. http://crbug.com/796955
-std::string MediaPointToString(const media::Point& point) {
-  std::string point_string;
-  point_string.append(base::NumberToString(point.x()));
-  point_string.append(" ");
-  point_string.append(base::NumberToString(point.y()));
-  point_string.append(" ");
-  point_string.append(base::NumberToString(point.z()));
-
-  return point_string;
-}
-
-// TODO(guidou): Remove this function. http://crbug.com/796955
-std::string MediaPointsToString(const std::vector<media::Point>& points) {
-  std::string points_string;
-  if (!points.empty()) {
-    for (size_t i = 0; i < points.size() - 1; ++i) {
-      points_string.append(MediaPointToString(points[i]));
-      points_string.append("  ");
-    }
-    points_string.append(MediaPointToString(points.back()));
-  }
-
-  return points_string;
-}
 
 // Selects the best value from the nonempty |set|, subject to |constraint|. The
 // first selection criteria is equality to |constraint.Ideal()|, followed by
@@ -152,27 +124,6 @@ std::string SelectString(const DiscreteSet<std::string>& set,
 
   if (set.Contains(default_value))
     return default_value;
-
-  return set.FirstElement();
-}
-
-// Selects the best value from the nonempty |set|, subject to |constraint|. The
-// only decision criteria is inclusion in |constraint.Ideal()|. If there is no
-// single best value in |set|, returns nullopt.
-base::Optional<std::string> SelectOptionalString(
-    const DiscreteSet<std::string>& set,
-    const blink::StringConstraint& constraint) {
-  DCHECK(!set.IsEmpty());
-  if (constraint.HasIdeal()) {
-    for (const auto& ideal_candidate : constraint.Ideal()) {
-      std::string candidate = ideal_candidate.Utf8();
-      if (set.Contains(candidate))
-        return candidate;
-    }
-  }
-
-  if (set.is_universal())
-    return base::Optional<std::string>();
 
   return set.FirstElement();
 }
@@ -291,15 +242,6 @@ class SingleDeviceCandidateSet {
       DCHECK(!bool_set.IsEmpty());
     }
 #endif
-
-    // This fails with input strings that are equivalent to
-    // |properties.goog_array_geometry|, but not exactly equal to the string
-    // returned by MediaPointsToString().
-    // TODO(guidou): Change |goog_array_geometry_set_| to be a set of vectors of
-    // points instead of a set of strings. http://crbug.com/796955
-    std::string mic_positions =
-        MediaPointsToString(properties.goog_array_geometry);
-    goog_array_geometry_set_ = DiscreteSet<std::string>({mic_positions});
   }
 
   // Accessors
@@ -323,14 +265,6 @@ class SingleDeviceCandidateSet {
         media_constraints::StringSetFromConstraint(constraint_set.group_id));
     if (group_id_set_.IsEmpty()) {
       failed_constraint_name_ = constraint_set.group_id.GetName();
-      return;
-    }
-
-    goog_array_geometry_set_ = goog_array_geometry_set_.Intersection(
-        media_constraints::StringSetFromConstraint(
-            constraint_set.goog_array_geometry));
-    if (goog_array_geometry_set_.IsEmpty()) {
-      failed_constraint_name_ = constraint_set.goog_array_geometry.GetName();
       return;
     }
 
@@ -404,16 +338,6 @@ class SingleDeviceCandidateSet {
           bool_sets_[i].Contains(
               (constraint_set.*kBlinkBoolConstraintFields[i]).Ideal())) {
         fitness += 1.0;
-      }
-    }
-
-    if (constraint_set.goog_array_geometry.HasIdeal()) {
-      for (const blink::WebString& ideal_value :
-           constraint_set.goog_array_geometry.Ideal()) {
-        if (goog_array_geometry_set_.Contains(ideal_value.Utf8())) {
-          fitness += 1.0;
-          break;
-        }
       }
     }
 
@@ -564,18 +488,6 @@ class SingleDeviceCandidateSet {
           default_audio_processing_value && properties.*entry.audio_property);
     }
 
-    base::Optional<std::string> array_geometry = SelectOptionalString(
-        goog_array_geometry_set_, basic_constraint_set.goog_array_geometry);
-    std::vector<media::Point> parsed_positions;
-    if (array_geometry)
-      parsed_positions = media::ParsePointsFromString(*array_geometry);
-    bool are_valid_parsed_positions =
-        !parsed_positions.empty() ||
-        (array_geometry && array_geometry->empty());
-    properties.goog_array_geometry = are_valid_parsed_positions
-                                         ? std::move(parsed_positions)
-                                         : parameters_.mic_positions();
-
     return properties;
   }
 
@@ -595,7 +507,6 @@ class SingleDeviceCandidateSet {
               &blink::WebMediaTrackConstraintSet::goog_noise_suppression,
               &blink::WebMediaTrackConstraintSet::
                   goog_experimental_noise_suppression,
-              &blink::WebMediaTrackConstraintSet::goog_beamforming,
               &blink::WebMediaTrackConstraintSet::goog_highpass_filter,
               &blink::WebMediaTrackConstraintSet::
                   goog_experimental_auto_gain_control};
@@ -604,7 +515,6 @@ class SingleDeviceCandidateSet {
   DiscreteSet<std::string> device_id_set_;
   DiscreteSet<std::string> group_id_set_;
   std::array<DiscreteSet<bool>, NUM_BOOL_CONSTRAINTS> bool_sets_;
-  DiscreteSet<std::string> goog_array_geometry_set_;
   DiscreteSet<std::string> echo_cancellation_type_set_;
   media::AudioParameters parameters_;
 };

@@ -67,11 +67,6 @@ AudioProcessingProperties::AudioProcessingProperties(
     const AudioProcessingProperties& other) = default;
 AudioProcessingProperties& AudioProcessingProperties::operator=(
     const AudioProcessingProperties& other) = default;
-AudioProcessingProperties::AudioProcessingProperties(
-    AudioProcessingProperties&& other) = default;
-AudioProcessingProperties& AudioProcessingProperties::operator=(
-    AudioProcessingProperties&& other) = default;
-AudioProcessingProperties::~AudioProcessingProperties() = default;
 
 void AudioProcessingProperties::DisableDefaultProperties() {
   enable_sw_echo_cancellation = false;
@@ -81,7 +76,6 @@ void AudioProcessingProperties::DisableDefaultProperties() {
   goog_typing_noise_detection = false;
   goog_noise_suppression = false;
   goog_experimental_noise_suppression = false;
-  goog_beamforming = false;
   goog_highpass_filter = false;
   goog_experimental_auto_gain_control = false;
 }

@@ -257,8 +257,6 @@ struct WebMediaTrackConstraintSet {
   BooleanConstraint goog_highpass_filter;
   BooleanConstraint goog_typing_noise_detection;
   BooleanConstraint goog_experimental_noise_suppression;
-  BooleanConstraint goog_beamforming;
-  StringConstraint goog_array_geometry;
   BooleanConstraint goog_audio_mirroring;
   BooleanConstraint goog_da_echo_cancellation;
   BooleanConstraint goog_noise_reduction;
