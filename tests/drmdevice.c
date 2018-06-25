@@ -112,12 +112,15 @@ main(void)
     drmDevicePtr device;
     int fd, ret, max_devices;
 
+    printf("--- Checking the number of DRM device available ---\n");
     max_devices = drmGetDevices2(0, NULL, 0);
 
     if (max_devices <= 0) {
         printf("drmGetDevices2() has returned %d\n", max_devices);
         return -1;
     }
+    printf("--- Devices reported %d ---\n", max_devices);
+
 
     devices = calloc(max_devices, sizeof(drmDevicePtr));
     if (devices == NULL) {
@@ -125,6 +128,7 @@ main(void)
         return -1;
     }
 
+    printf("--- Retrieving devices information (PCI device revision is ignored) ---\n");
     ret = drmGetDevices2(0, devices, max_devices);
     if (ret < 0) {
         printf("drmGetDevices2() returned an error %d\n", ret);
@@ -137,13 +141,14 @@ main(void)
 
         for (int j = 0; j < DRM_NODE_MAX; j++) {
             if (devices[i]->available_nodes & 1 << j) {
-                printf("Opening device %d node %s\n", i, devices[i]->nodes[j]);
+                printf("--- Opening device node %s ---\n", devices[i]->nodes[j]);
                 fd = open(devices[i]->nodes[j], O_RDONLY | O_CLOEXEC, 0);
                 if (fd < 0) {
                     printf("Failed - %s (%d)\n", strerror(errno), errno);
                     continue;
                 }
 
+                printf("--- Retrieving device info, for node %s ---\n", devices[i]->nodes[j]);
                 if (drmGetDevice2(fd, DRM_DEVICE_GET_PCI_REVISION, &device) == 0) {
                     print_device_info(device, i, true);
                     drmFreeDevice(&device);
