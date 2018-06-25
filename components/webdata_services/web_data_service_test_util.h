@@ -32,7 +32,11 @@ class MockWebDataServiceWrapper : public MockWebDataServiceWrapperBase {
 
   ~MockWebDataServiceWrapper() override;
 
-  scoped_refptr<autofill::AutofillWebDataService> GetAutofillWebData() override;
+  scoped_refptr<autofill::AutofillWebDataService> GetProfileAutofillWebData()
+      override;
+
+  scoped_refptr<autofill::AutofillWebDataService> GetAccountAutofillWebData()
+      override;
 
   scoped_refptr<TokenWebData> GetTokenWebData() override;
 

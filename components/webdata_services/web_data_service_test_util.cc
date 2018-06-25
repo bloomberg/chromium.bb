@@ -30,8 +30,14 @@ MockWebDataServiceWrapper::~MockWebDataServiceWrapper() {
 }
 
 scoped_refptr<AutofillWebDataService>
-MockWebDataServiceWrapper::GetAutofillWebData() {
+MockWebDataServiceWrapper::GetProfileAutofillWebData() {
   return fake_autofill_web_data_;
+}
+
+scoped_refptr<AutofillWebDataService>
+MockWebDataServiceWrapper::GetAccountAutofillWebData() {
+  // TODO(feuunk): Implement when there are tests covering account data.
+  return nullptr;
 }
 
 scoped_refptr<TokenWebData> MockWebDataServiceWrapper::GetTokenWebData() {
