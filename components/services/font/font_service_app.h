@@ -23,6 +23,10 @@ class FontServiceApp : public service_manager::Service,
   FontServiceApp();
   ~FontServiceApp() override;
 
+  static std::unique_ptr<service_manager::Service> CreateService();
+
+  void CreateSelf(mojom::FontServiceRequest request);
+
  private:
   // service_manager::Service:
   void OnStart() override;
@@ -35,9 +39,23 @@ class FontServiceApp : public service_manager::Service,
                        mojom::TypefaceStylePtr requested_style,
                        MatchFamilyNameCallback callback) override;
   void OpenStream(uint32_t id_number, OpenStreamCallback callback) override;
-
-  void Create(mojom::FontServiceRequest request);
-
+  void FallbackFontForCharacter(
+      uint32_t character,
+      const std::string& locale,
+      FallbackFontForCharacterCallback callback) override;
+  void FontRenderStyleForStrike(
+      const std::string& family,
+      uint32_t size,
+      bool italic,
+      bool bold,
+      float device_scale_factor,
+      FontRenderStyleForStrikeCallback callback) override;
+  void MatchFontWithFallback(const std::string& family,
+                             bool is_bold,
+                             bool is_italic,
+                             uint32_t charset,
+                             uint32_t fallbackFamilyType,
+                             MatchFontWithFallbackCallback callback) override;
   int FindOrAddPath(const SkString& path);
 
   service_manager::BinderRegistry registry_;

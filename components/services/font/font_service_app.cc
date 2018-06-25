@@ -10,8 +10,20 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/test/fontconfig_util_linux.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/service_context.h"
+#include "ui/gfx/font_fallback_linux.h"
+#include "ui/gfx/font_render_params.h"
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "components/services/font/ppapi_fontconfig_matching.h"  // nogncheck
+#endif
+
+#if defined(OS_LINUX)
+#include "base/test/fontconfig_util_linux.h"
+#endif
 
 static_assert(
     static_cast<uint32_t>(SkFontStyle::kUpright_Slant) ==
@@ -42,9 +54,43 @@ bool FontConfigTestingEnvironmentEnabled() {
       switches::kFontConfigTestingEnvironment);
 }
 
+int ConvertHinting(gfx::FontRenderParams::Hinting hinting) {
+  switch (hinting) {
+    case gfx::FontRenderParams::HINTING_NONE:
+      return 0;
+    case gfx::FontRenderParams::HINTING_SLIGHT:
+      return 1;
+    case gfx::FontRenderParams::HINTING_MEDIUM:
+      return 2;
+    case gfx::FontRenderParams::HINTING_FULL:
+      return 3;
+  }
+  NOTREACHED() << "Unexpected hinting value " << hinting;
+  return 0;
+}
+
+font_service::mojom::RenderStyleSwitch ConvertSubpixelRendering(
+    gfx::FontRenderParams::SubpixelRendering rendering) {
+  switch (rendering) {
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE:
+      return font_service::mojom::RenderStyleSwitch::OFF;
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB:
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR:
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB:
+    case gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR:
+      return font_service::mojom::RenderStyleSwitch::ON;
+  }
+  NOTREACHED() << "Unexpected subpixel rendering value " << rendering;
+  return font_service::mojom::RenderStyleSwitch::NO_PREFERENCE;
+}
+
 }  // namespace
 
 namespace font_service {
+
+std::unique_ptr<service_manager::Service> FontServiceApp::CreateService() {
+  return std::make_unique<FontServiceApp>();
+}
 
 FontServiceApp::FontServiceApp() {
   // TODO(thomasanderson) https://crbug.com/831146: Remove this once a reland of
@@ -55,7 +101,7 @@ FontServiceApp::FontServiceApp() {
   if (FontConfigTestingEnvironmentEnabled())
     base::SetUpFontconfig();
   registry_.AddInterface(
-      base::Bind(&FontServiceApp::Create, base::Unretained(this)));
+      base::BindRepeating(&FontServiceApp::CreateSelf, base::Unretained(this)));
 }
 
 FontServiceApp::~FontServiceApp() {
@@ -115,6 +161,7 @@ void FontServiceApp::MatchFamilyName(const std::string& family_name,
 
 void FontServiceApp::OpenStream(uint32_t id_number,
                                 OpenStreamCallback callback) {
+  DCHECK_LT(id_number, static_cast<uint32_t>(paths_.size()));
   base::File file;
   if (id_number < static_cast<uint32_t>(paths_.size())) {
     file = GetFileForPath(base::FilePath(paths_[id_number].c_str()));
@@ -123,7 +170,76 @@ void FontServiceApp::OpenStream(uint32_t id_number,
   std::move(callback).Run(std::move(file));
 }
 
-void FontServiceApp::Create(mojom::FontServiceRequest request) {
+void FontServiceApp::FallbackFontForCharacter(
+    uint32_t character,
+    const std::string& locale,
+    FallbackFontForCharacterCallback callback) {
+  auto fallback_font = gfx::GetFallbackFontForChar(character, locale);
+  int index = FindOrAddPath(SkString(fallback_font.filename.data()));
+
+  mojom::FontIdentityPtr identity(mojom::FontIdentity::New());
+  identity->id = static_cast<uint32_t>(index);
+  identity->ttc_index = fallback_font.ttc_index;
+  identity->str_representation = fallback_font.filename;
+
+  std::move(callback).Run(std::move(identity), fallback_font.name,
+                          fallback_font.is_bold, fallback_font.is_italic);
+}
+
+void FontServiceApp::FontRenderStyleForStrike(
+    const std::string& family,
+    uint32_t size,
+    bool is_bold,
+    bool is_italic,
+    float device_scale_factor,
+    FontRenderStyleForStrikeCallback callback) {
+  gfx::FontRenderParamsQuery query;
+
+  query.device_scale_factor = device_scale_factor;
+  query.families.push_back(family);
+  query.pixel_size = size;
+  query.style = is_italic ? gfx::Font::ITALIC : 0;
+  query.weight = is_bold ? gfx::Font::Weight::BOLD : gfx::Font::Weight::NORMAL;
+  const gfx::FontRenderParams params = gfx::GetFontRenderParams(query, nullptr);
+
+  mojom::FontRenderStylePtr font_render_style(mojom::FontRenderStyle::New(
+      params.use_bitmaps ? mojom::RenderStyleSwitch::ON
+                         : mojom::RenderStyleSwitch::OFF,
+      params.autohinter ? mojom::RenderStyleSwitch::ON
+                        : mojom::RenderStyleSwitch::OFF,
+      params.hinting != gfx::FontRenderParams::HINTING_NONE
+          ? mojom::RenderStyleSwitch::ON
+          : mojom::RenderStyleSwitch::OFF,
+      ConvertHinting(params.hinting),
+      params.antialiasing ? mojom::RenderStyleSwitch::ON
+                          : mojom::RenderStyleSwitch::OFF,
+      ConvertSubpixelRendering(params.subpixel_rendering),
+      params.subpixel_positioning ? mojom::RenderStyleSwitch::ON
+                                  : mojom::RenderStyleSwitch::OFF));
+  std::move(callback).Run(std::move(font_render_style));
+}
+
+void FontServiceApp::MatchFontWithFallback(
+    const std::string& family,
+    bool is_bold,
+    bool is_italic,
+    uint32_t charset,
+    uint32_t fallbackFamilyType,
+    MatchFontWithFallbackCallback callback) {
+#if BUILDFLAG(ENABLE_PLUGINS)
+  base::File matched_font_file;
+  int font_file_descriptor = MatchFontFaceWithFallback(
+      family, is_bold, is_italic, charset, fallbackFamilyType);
+  matched_font_file = base::File(font_file_descriptor);
+  if (!matched_font_file.IsValid())
+    matched_font_file = base::File();
+  std::move(callback).Run(std::move(matched_font_file));
+#else
+  NOTREACHED();
+#endif
+}
+
+void FontServiceApp::CreateSelf(mojom::FontServiceRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
