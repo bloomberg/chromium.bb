@@ -57,13 +57,6 @@ class CookieStore final : public EventTargetWithInlineData,
                     const String& name,
                     const CookieStoreGetOptions&,
                     ExceptionState&);
-  ScriptPromise has(ScriptState*,
-                    const CookieStoreGetOptions&,
-                    ExceptionState&);
-  ScriptPromise has(ScriptState*,
-                    const String& name,
-                    const CookieStoreGetOptions&,
-                    ExceptionState&);
 
   ScriptPromise set(ScriptState*,
                     const CookieStoreSetOptions&,
@@ -141,12 +134,6 @@ class CookieStore final : public EventTargetWithInlineData,
   // Converts the result of a RestrictedCookieManager::GetAllForUrl mojo call to
   // the promise result expected by CookieStore.get.
   static void GetAllForUrlToGetResult(
-      ScriptPromiseResolver*,
-      const Vector<WebCanonicalCookie>& backend_result);
-
-  // Converts the result of a RestrictedCookieManager::GetAllForUrl mojo call to
-  // the promise result expected by CookieStore.has.
-  static void GetAllForUrlToHasResult(
       ScriptPromiseResolver*,
       const Vector<WebCanonicalCookie>& backend_result);
 

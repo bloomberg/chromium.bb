@@ -165,7 +165,6 @@ interface CookieStore : EventTarget
     method get
     method getAll
     method getChangeSubscriptions
-    method has
     method set
     method subscribeToChanges
 interface CountQueuingStrategy
