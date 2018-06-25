@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LAYOUT_LOCALE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LAYOUT_LOCALE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_LAYOUT_LOCALE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_LAYOUT_LOCALE_H_
 
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/hyphenation.h"
@@ -65,17 +65,9 @@ class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
   static void SetHyphenationForTesting(const AtomicString&,
                                        scoped_refptr<Hyphenation>);
 
-  struct PerThreadData {
-    HashMap<AtomicString, scoped_refptr<LayoutLocale>, CaseFoldingHash>
-        locale_map;
-    const LayoutLocale* default_locale = nullptr;
-    const LayoutLocale* system_locale = nullptr;
-    const LayoutLocale* default_locale_for_han = nullptr;
-    bool default_locale_for_han_computed = false;
-    String current_accept_languages;
-  };
-
   static void AcceptLanguagesChanged(const String&);
+
+  static void ClearForTesting();
 
  private:
   explicit LayoutLocale(const AtomicString&);
@@ -98,4 +90,4 @@ class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LAYOUT_LOCALE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_LAYOUT_LOCALE_H_

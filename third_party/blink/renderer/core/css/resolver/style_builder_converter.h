@@ -54,6 +54,7 @@ namespace blink {
 
 class ClipPathOperation;
 class CSSToLengthConversionData;
+class Font;
 class FontBuilder;
 class RotateTransformOperation;
 class ScaleTransformOperation;

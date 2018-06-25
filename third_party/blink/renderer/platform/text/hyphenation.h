@@ -14,8 +14,6 @@
 
 namespace blink {
 
-class Font;
-
 class PLATFORM_EXPORT Hyphenation : public RefCounted<Hyphenation> {
  public:
   virtual ~Hyphenation() = default;
@@ -35,7 +33,6 @@ class PLATFORM_EXPORT Hyphenation : public RefCounted<Hyphenation> {
 
   static const unsigned kMinimumPrefixLength = 2;
   static const unsigned kMinimumSuffixLength = 2;
-  static int MinimumPrefixWidth(const Font&);
 
  private:
   friend class LayoutLocale;
