@@ -28,6 +28,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -158,6 +160,7 @@ public class DownloadActivityTest {
 
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/855168")
     public void testSpaceDisplay() throws Exception {
         // This first check is a Criteria because initialization of the Adapter is asynchronous.
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -217,6 +220,7 @@ public class DownloadActivityTest {
     }
 
     /** Clicking on filters affects various things in the UI. */
+    @DisabledTest(message = "crbug.com/855389")
     @Test
     @MediumTest
     public void testFilters() throws Exception {
@@ -251,6 +255,7 @@ public class DownloadActivityTest {
     @Test
     @MediumTest
     @RetryOnFailure
+    @FlakyTest(message = "crbug.com/854241")
     public void testDeleteFiles() throws Exception {
         SnackbarManager.setDurationForTesting(1);
 
@@ -290,6 +295,7 @@ public class DownloadActivityTest {
     @Test
     @MediumTest
     @RetryOnFailure
+    @FlakyTest(message = "crbug.com/855219")
     public void testDeleteFileFromMenu() throws Exception {
         SnackbarManager.setDurationForTesting(1);
 
@@ -321,6 +327,7 @@ public class DownloadActivityTest {
         Assert.assertEquals("5.00 GB downloaded", mSpaceUsedDisplay.getText());
     }
 
+    @DisabledTest(message = "crbug.com/855389")
     @Test
     @MediumTest
     @RetryOnFailure
@@ -391,6 +398,7 @@ public class DownloadActivityTest {
         Assert.assertEquals("6.50 GB downloaded", mSpaceUsedDisplay.getText());
     }
 
+    @DisabledTest(message = "crbug.com/855389")
     @Test
     @MediumTest
     @RetryOnFailure
@@ -456,6 +464,7 @@ public class DownloadActivityTest {
         Assert.assertEquals("6.50 GB downloaded", mSpaceUsedDisplay.getText());
     }
 
+    @DisabledTest(message = "crbug.com/855389")
     @Test
     @MediumTest
     @RetryOnFailure
@@ -521,6 +530,7 @@ public class DownloadActivityTest {
     @Test
     @MediumTest
     @DisableFeatures("OfflinePagesSharing")
+    @FlakyTest(message = "crbug.com/855167")
     public void testShareFiles() throws Exception {
         // Adapter positions:
         // 0 = space display
@@ -595,6 +605,7 @@ public class DownloadActivityTest {
 
     // TODO(carlosk): OfflineItems used here come from StubbedProvider so this might not be the best
     // place to test peer-2-peer sharing.
+    @DisabledTest(message = "crbug.com/855389")
     @Test
     @MediumTest
     @EnableFeatures("OfflinePagesSharing")
