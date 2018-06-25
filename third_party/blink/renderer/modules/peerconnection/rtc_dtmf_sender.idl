@@ -23,14 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://w3c.github.io/webrtc-pc/#rtcdtmfsender
+
 interface RTCDTMFSender : EventTarget {
-    readonly attribute boolean canInsertDTMF;
-    [Measure] readonly attribute MediaStreamTrack track;
-    readonly attribute DOMString toneBuffer;
-    [Measure] readonly attribute long duration;
-    [Measure] readonly attribute long interToneGap;
-
     [RaisesException] void insertDTMF(DOMString tones, optional long duration, optional long interToneGap);
-
     attribute EventHandler ontonechange;
+    readonly attribute boolean canInsertDTMF;
+    readonly attribute DOMString toneBuffer;
 };
