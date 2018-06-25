@@ -29,6 +29,7 @@
 
 #include <memory>
 #include <utility>
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -69,9 +70,13 @@ class PLATFORM_EXPORT HTTPHeaderMap final {
     return headers_.at(k);
   }
   AddResult Set(const AtomicString& k, const AtomicString& v) {
+    SECURITY_DCHECK(!k.Contains('\n') && !k.Contains('\r'));
+    SECURITY_DCHECK(!v.Contains('\n') && !v.Contains('\r'));
     return headers_.Set(k, v);
   }
   AddResult Add(const AtomicString& k, const AtomicString& v) {
+    SECURITY_DCHECK(!k.Contains('\n') && !k.Contains('\r'));
+    SECURITY_DCHECK(!v.Contains('\n') && !v.Contains('\r'));
     return headers_.insert(k, v);
   }
   void Remove(const AtomicString& k) { headers_.erase(k); }

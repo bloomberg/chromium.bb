@@ -628,9 +628,6 @@ TEST_F(WebAssociatedURLLoaderTest, MAYBE_UntrustedCheckHeaders) {
   // Check that validation is case-insensitive.
   CheckHeaderFails("AcCePt-ChArSeT");
   CheckHeaderFails("ProXy-FoO");
-
-  // Check invalid header values.
-  CheckHeaderFails("foo", "bar\x0d\x0ax-csrf-token:\x20test1234");
 }
 
 // Test that the loader filters response headers according to the CORS standard.
