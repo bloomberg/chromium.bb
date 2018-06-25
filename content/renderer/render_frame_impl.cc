@@ -2358,13 +2358,22 @@ bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,
                          message_length);
   }
 
+  if (is_main_frame_)
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.MainFrame", message_length);
+  else
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.Subframe", message_length);
+
+  // 10k ought to be enough for anyone.
+  const base::string16::size_type kMaxMessageSize = 10 * 1024;
+  base::string16 truncated_message = message.substr(0, kMaxMessageSize);
+
   bool success = false;
   base::string16 result_temp;
   if (!result)
     result = &result_temp;
 
-  Send(new FrameHostMsg_RunJavaScriptDialog(routing_id_, message, default_value,
-                                            type, &success, result));
+  Send(new FrameHostMsg_RunJavaScriptDialog(
+      routing_id_, truncated_message, default_value, type, &success, result));
   return success;
 }
 
