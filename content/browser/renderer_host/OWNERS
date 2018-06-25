@@ -11,6 +11,10 @@ asvitkine@chromium.org
 kbr@chromium.org
 ccameron@chromium.org
 
+# for *android*
+per-file *android*=ericrk@chromium.org
+per-file *android*=khushalsagar@chromium.org
+
 # For touch/gesture specific changes
 rjkroege@chromium.org
 sadrul@chromium.org
