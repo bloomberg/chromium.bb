@@ -455,7 +455,7 @@ void NewTabButton::PaintFill(bool pressed,
       // For touch, the background matches the active tab background
       // positioning in Tab::PaintTab().
       const int offset_y =
-          is_touch_ui ? -GetLayoutInsets(TAB).top() : non_touch_offset_y;
+          is_touch_ui ? -Tab::GetStrokeHeight() : non_touch_offset_y;
       // The new tab background is mirrored in RTL mode, but the theme
       // background should never be mirrored. Mirror it here to compensate.
       float x_scale = 1.0f;

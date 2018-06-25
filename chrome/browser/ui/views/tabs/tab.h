@@ -187,6 +187,10 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the width for pinned tabs. Pinned tabs always have this width.
   static int GetPinnedWidth();
 
+  // Returns the height of any area reserved for a stroke at the top and bottom
+  // of the tab, in DIP.
+  static int GetStrokeHeight();
+
   // Returns the inverse of the slope of the diagonal portion of the tab outer
   // border.  (This is a positive value, so it's specifically for the slope of
   // the leading edge.)

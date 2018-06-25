@@ -332,8 +332,8 @@ void BrowserNonClientFrameView::PaintToolbarBackground(
   if (tp->HasCustomImage(IDR_THEME_TOOLBAR)) {
     canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
                          x + GetThemeBackgroundXInset(),
-                         y - GetTopInset(false) - GetLayoutInsets(TAB).top(), x,
-                         y, w, toolbar_bounds.height());
+                         y - GetTopInset(false) - Tab::GetStrokeHeight(), x, y,
+                         w, toolbar_bounds.height());
   } else {
     canvas->FillRect(toolbar_bounds,
                      tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
