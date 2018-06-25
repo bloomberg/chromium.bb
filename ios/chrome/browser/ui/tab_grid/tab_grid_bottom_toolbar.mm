@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_bottom_toolbar.h"
 
+#include "base/i18n/rtl.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_new_tab_button.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -46,8 +47,27 @@
   UIButton* leadingButton = [UIButton buttonWithType:UIButtonTypeSystem];
   leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
   leadingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
+  leadingButton.titleLabel.lineBreakMode = NSLineBreakByClipping;
   UIButton* trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
   trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
+
+  if (@available(iOS 11, *)) {
+    leadingButton.contentHorizontalAlignment =
+        UIControlContentHorizontalAlignmentLeading;
+    trailingButton.contentHorizontalAlignment =
+        UIControlContentHorizontalAlignmentTrailing;
+  } else if (base::i18n::IsRTL()) {
+    leadingButton.contentHorizontalAlignment =
+        UIControlContentHorizontalAlignmentRight;
+    trailingButton.contentHorizontalAlignment =
+        UIControlContentHorizontalAlignmentLeft;
+  } else {
+    leadingButton.contentHorizontalAlignment =
+        UIControlContentHorizontalAlignmentLeft;
+    trailingButton.contentHorizontalAlignment =
+        UIControlContentHorizontalAlignmentRight;
+  }
+
   trailingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
   TabGridNewTabButton* centerButton = [TabGridNewTabButton
       buttonWithSizeClass:TabGridNewTabButtonSizeClassSmall];
@@ -76,6 +96,8 @@
                        constant:kTabGridBottomToolbarHeight / 2.0f],
     [trailingButton.heightAnchor
         constraintEqualToConstant:kTabGridBottomToolbarHeight],
+    [trailingButton.leadingAnchor
+        constraintEqualToAnchor:centerButton.trailingAnchor],
     [trailingButton.trailingAnchor
         constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
     [trailingButton.topAnchor constraintEqualToAnchor:toolbar.topAnchor],
