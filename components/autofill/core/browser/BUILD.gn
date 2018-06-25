@@ -113,8 +113,6 @@ static_library("browser") {
     "name_field.h",
     "password_generator.cc",
     "password_generator.h",
-    "password_generator_fips181.cc",
-    "password_generator_fips181.h",
     "password_requirements_spec_fetcher.h",
     "password_requirements_spec_fetcher_impl.cc",
     "password_requirements_spec_fetcher_impl.h",
@@ -235,6 +233,7 @@ static_library("browser") {
     "//third_party/libaddressinput",
   ]
   deps = [
+    ":password_generator_fips181",
     "//base",
     "//base:i18n",
     "//components/data_use_measurement/core",
@@ -257,7 +256,6 @@ static_library("browser") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//sql",
-    "//third_party/fips181",
     "//third_party/icu",
     "//third_party/libphonenumber",
     "//third_party/re2",
@@ -343,6 +341,17 @@ static_library("test_support") {
     "//third_party/libaddressinput:util",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
+  ]
+}
+
+static_library("password_generator_fips181") {
+  sources = [
+    "password_generator_fips181.cc",
+    "password_generator_fips181.h",
+  ]
+  deps = [
+    "//base",
+    "//third_party/fips181",
   ]
 }
 
@@ -447,6 +456,7 @@ source_set("unit_tests") {
 
   deps = [
     ":browser",
+    ":password_generator_fips181",
     ":test_support",
     ":unit_tests_bundle_data",
     "//base",
@@ -500,4 +510,13 @@ fuzzer_test("form_structure_fuzzer") {
   ]
   seed_corpus = "form_structure_fuzzer_corpus"
   dict = "form_structure_fuzzer.dict"
+}
+
+fuzzer_test("password_generator_fips181_fuzzer") {
+  sources = [
+    "password_generator_fips181_fuzzer.cc",
+  ]
+  deps = [
+    ":password_generator_fips181",
+  ]
 }
