@@ -52,12 +52,13 @@
            in renderer/core/script/layered_api.cc -->
       <include name="IDR_LAYERED_API_ASYNC_LOCAL_STORAGE_INDEX_JS" file="../renderer/core/script/resources/layered_api/async-local-storage/index.js" type="BINDATA" skip_minify="true"/>
       <include name="IDR_LAYERED_API_BLANK_INDEX_JS" file="../renderer/core/script/resources/layered_api/blank/index.js" type="BINDATA" skip_minify="true"/>
-      <include name="IDR_LAYERED_API_VIRTUAL_LIST_INDEX_JS" file="../renderer/core/script/resources/layered_api/virtual-list/index.js" type="BINDATA" skip_minify="true"/>
-      <include name="IDR_LAYERED_API_VIRTUAL_LIST_LAYOUTS_LAYOUT_1D_BASE_JS" file="../renderer/core/script/resources/layered_api/virtual-list/layouts/layout-1d-base.js" type="BINDATA" skip_minify="true"/>
-      <include name="IDR_LAYERED_API_VIRTUAL_LIST_LAYOUTS_LAYOUT_1D_GRID_JS" file="../renderer/core/script/resources/layered_api/virtual-list/layouts/layout-1d-grid.js" type="BINDATA" skip_minify="true"/>
-      <include name="IDR_LAYERED_API_VIRTUAL_LIST_LAYOUTS_LAYOUT_1D_JS" file="../renderer/core/script/resources/layered_api/virtual-list/layouts/layout-1d.js" type="BINDATA" skip_minify="true"/>
-      <include name="IDR_LAYERED_API_VIRTUAL_LIST_VIRTUAL_LIST_JS" file="../renderer/core/script/resources/layered_api/virtual-list/virtual-list.js" type="BINDATA" skip_minify="true"/>
-      <include name="IDR_LAYERED_API_VIRTUAL_LIST_VIRTUAL_REPEATER_JS" file="../renderer/core/script/resources/layered_api/virtual-list/virtual-repeater.js" type="BINDATA" skip_minify="true"/>
+      <include name="IDR_LAYERED_API_VIRTUAL_SCROLLER_INDEX_JS" file="../renderer/core/script/resources/layered_api/virtual-scroller/index.js" type="BINDATA" skip_minify="true"/>
+      <include name="IDR_LAYERED_API_VIRTUAL_SCROLLER_ITEM_SOURCE_JS" file="../renderer/core/script/resources/layered_api/virtual-scroller/item-source.js" type="BINDATA" skip_minify="true"/>
+      <include name="IDR_LAYERED_API_VIRTUAL_SCROLLER_LAYOUTS_LAYOUT_1D_BASE_JS" file="../renderer/core/script/resources/layered_api/virtual-scroller/layouts/layout-1d-base.js" type="BINDATA" skip_minify="true"/>
+      <include name="IDR_LAYERED_API_VIRTUAL_SCROLLER_LAYOUTS_LAYOUT_1D_GRID_JS" file="../renderer/core/script/resources/layered_api/virtual-scroller/layouts/layout-1d-grid.js" type="BINDATA" skip_minify="true"/>
+      <include name="IDR_LAYERED_API_VIRTUAL_SCROLLER_LAYOUTS_LAYOUT_1D_JS" file="../renderer/core/script/resources/layered_api/virtual-scroller/layouts/layout-1d.js" type="BINDATA" skip_minify="true"/>
+      <include name="IDR_LAYERED_API_VIRTUAL_SCROLLER_VIRTUAL_SCROLLER_JS" file="../renderer/core/script/resources/layered_api/virtual-scroller/virtual-scroller.js" type="BINDATA" skip_minify="true"/>
+      <include name="IDR_LAYERED_API_VIRTUAL_SCROLLER_VIRTUAL_REPEATER_JS" file="../renderer/core/script/resources/layered_api/virtual-scroller/virtual-repeater.js" type="BINDATA" skip_minify="true"/>
 
     </includes>
   </release>
