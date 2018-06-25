@@ -138,10 +138,20 @@ namespace gpu {
 
 bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
                               GPUInfo* gpu_info) {
-  const char* software_gl_impl_name =
+  std::string use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
+
+  // If GL is disabled then we don't need GPUInfo.
+  if (use_gl == gl::kGLImplementationDisabledName) {
+    gpu_info->gl_vendor = "Disabled";
+    gpu_info->gl_renderer = "Disabled";
+    gpu_info->gl_version = "Disabled";
+
+    return true;
+  }
+
+  base::StringPiece software_gl_impl_name =
       gl::GetGLImplementationName(gl::GetSoftwareGLImplementation());
-  if ((command_line->GetSwitchValueASCII(switches::kUseGL) ==
-       software_gl_impl_name) ||
+  if (use_gl == software_gl_impl_name ||
       command_line->HasSwitch(switches::kOverrideUseSoftwareGLForTests)) {
     // If using the software GL implementation, use fake vendor and
     // device ids to make sure it never gets blacklisted. It allows us
@@ -154,7 +164,7 @@ bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
     // Also declare the driver_vendor to be <software GL> to be able to
     // specify exceptions based on driver_vendor==<software GL> for some
     // blacklist rules.
-    gpu_info->gpu.driver_vendor = software_gl_impl_name;
+    gpu_info->gpu.driver_vendor = software_gl_impl_name.as_string();
 
     return true;
   }

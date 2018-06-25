@@ -237,8 +237,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   }
   if (use_swiftshader) {
     AdjustInfoToSwiftShader();
-  } else if (gl_disabled) {
-    AdjustInfoToNoGpu();
   }
 
   if (kGpuFeatureStatusEnabled !=
@@ -373,8 +371,6 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   }
   if (use_swiftshader) {
     AdjustInfoToSwiftShader();
-  } else if (gl_disabled) {
-    AdjustInfoToNoGpu();
   }
 
   if (!gl_disabled) {
@@ -394,15 +390,6 @@ void GpuInit::AdjustInfoToSwiftShader() {
   gpu_feature_info_for_hardware_gpu_ = gpu_feature_info_;
   gpu_feature_info_ = ComputeGpuFeatureInfoForSwiftShader();
   CollectContextGraphicsInfo(&gpu_info_, gpu_preferences_);
-}
-
-void GpuInit::AdjustInfoToNoGpu() {
-  gpu_info_for_hardware_gpu_ = gpu_info_;
-  gpu_feature_info_for_hardware_gpu_ = gpu_feature_info_;
-  gpu_feature_info_ = ComputeGpuFeatureInfoWithNoGpu();
-  gpu_info_.gl_vendor = "Disabled";
-  gpu_info_.gl_renderer = "Disabled";
-  gpu_info_.gl_version = "Disabled";
 }
 
 }  // namespace gpu
