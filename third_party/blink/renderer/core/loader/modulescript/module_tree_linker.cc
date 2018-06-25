@@ -185,7 +185,7 @@ void ModuleTreeLinker::FetchRoot(const KURL& original_url,
   ModuleScriptFetchRequest request(
       url, destination_, options,
       SecurityPolicy::GenerateReferrer(
-          fetch_client_settings_object_.GetReferrerPolicy(), url,
+          options.GetReferrerPolicy(), url,
           fetch_client_settings_object_.GetOutgoingReferrer()),
       TextPosition::MinimumPosition());
 
@@ -366,7 +366,8 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
   ScriptFetchOptions options(module_script->FetchOptions().Nonce(),
                              IntegrityMetadataSet(), String(),
                              module_script->FetchOptions().ParserState(),
-                             module_script->FetchOptions().CredentialsMode());
+                             module_script->FetchOptions().CredentialsMode(),
+                             module_script->FetchOptions().GetReferrerPolicy());
 
   // [FD] Step 7. For each url in urls, ...
   //
@@ -374,12 +375,13 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
   // procedure should be performed in parallel to each other.
   for (size_t i = 0; i < urls.size(); ++i) {
     // [FD] Step 7. ... perform the internal module script graph fetching
-    // procedure given ... with the top-level module fetch flag unset. ...
+    // procedure given url, fetch client settings object, destination, options,
+    // module script's settings object, visited set, module script's base URL,
+    // and with the top-level module fetch flag unset. ...
     ModuleScriptFetchRequest request(
         urls[i], destination_, options,
-        SecurityPolicy::GenerateReferrer(
-            fetch_client_settings_object_.GetReferrerPolicy(), urls[i],
-            module_script->BaseURL().GetString()),
+        SecurityPolicy::GenerateReferrer(options.GetReferrerPolicy(), urls[i],
+                                         module_script->BaseURL().GetString()),
         positions[i]);
     InitiateInternalModuleScriptGraphFetching(
         request, ModuleGraphLevel::kDependentModuleFetch);

@@ -199,6 +199,9 @@ void WorkerOrWorkletGlobalScope::BindContentSecurityPolicyToExecutionContext() {
   GetContentSecurityPolicy()->BindToExecutionContext(GetExecutionContext());
 }
 
+// Implementation of the "fetch a module worker script graph" algorithm in the
+// HTML spec:
+// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
 void WorkerOrWorkletGlobalScope::FetchModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
@@ -210,11 +213,13 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
   String nonce;
   // integrity metadata is the empty string,
   String integrity_attribute;
-  // parser metadata is "not-parser-inserted",
+  // parser metadata is "not-parser-inserted,
   ParserDisposition parser_state = kNotParserInserted;
-  // and credentials mode is credentials mode."
+  // credentials mode is credentials mode, and referrer policy is the empty
+  // string."
   ScriptFetchOptions options(nonce, IntegrityMetadataSet(), integrity_attribute,
-                             parser_state, credentials_mode);
+                             parser_state, credentials_mode,
+                             kReferrerPolicyDefault);
 
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
   // Step 3. "Perform the internal module script graph fetching procedure ..."

@@ -331,7 +331,14 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     SubresourceIntegrityHelper::DoReport(element_document, report_info);
   }
 
-  // <spec step="20">Let parser metadata be "parser-inserted" if the script
+  // <spec step="20">Let referrer policy be the current state of the element's
+  // referrerpolicy content attribute.</spec>
+  // TODO(domfarolino): Implement referrerpolicy attribute on script elements.
+  // As a stopgap, we set |referrer_policy| to document's referrer policy to
+  // keep the backward compatibility (https://crbug.com/841673).
+  ReferrerPolicy referrer_policy = element_document.GetReferrerPolicy();
+
+  // <spec step="21">Let parser metadata be "parser-inserted" if the script
   // element has been flagged as "parser-inserted", and "not-parser-inserted"
   // otherwise.</spec>
   ParserDisposition parser_state =
@@ -355,27 +362,27 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   TextPosition position =
       is_in_document_write ? TextPosition() : script_start_position;
 
-  // <spec step="21">Let options be a script fetch options whose cryptographic
+  // <spec step="22">Let options be a script fetch options whose cryptographic
   // nonce is cryptographic nonce, integrity metadata is integrity metadata,
   // parser metadata is parser metadata, credentials mode is module script
-  // credentials mode, and referrer policy is the empty string.</spec>
+  // credentials mode, and referrer policy is referrer_policy.</spec>
   ScriptFetchOptions options(nonce, integrity_metadata, integrity_attr,
-                             parser_state, credentials_mode);
+                             parser_state, credentials_mode, referrer_policy);
 
-  // <spec step="22">Let settings object be the element's node document's Window
+  // <spec step="23">Let settings object be the element's node document's Window
   // object's environment settings object.</spec>
   //
   // Note: We use |element_document| as "settings object" in the steps below.
   FetchClientSettingsObjectSnapshot settings_object(element_document);
 
-  // <spec step="23">If the element has a src content attribute, then:</spec>
+  // <spec step="24">If the element has a src content attribute, then:</spec>
   if (element_->HasSourceAttribute()) {
-    // <spec step="23.1">Let src be the value of the element's src
+    // <spec step="24.1">Let src be the value of the element's src
     // attribute.</spec>
     String src =
         StripLeadingAndTrailingHTMLSpaces(element_->SourceAttributeValue());
 
-    // <spec step="23.2">If src is the empty string, queue a task to fire an
+    // <spec step="24.2">If src is the empty string, queue a task to fire an
     // event named error at the element, and return.</spec>
     if (src.IsEmpty()) {
       element_document.GetTaskRunner(TaskType::kDOMManipulation)
@@ -385,14 +392,14 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       return false;
     }
 
-    // <spec step="23.3">Set the element's from an external file flag.</spec>
+    // <spec step="24.3">Set the element's from an external file flag.</spec>
     is_external_script_ = true;
 
-    // <spec step="23.4">Parse src relative to the element's node
+    // <spec step="24.4">Parse src relative to the element's node
     // document.</spec>
     KURL url = element_document.CompleteURL(src);
 
-    // <spec step="23.5">If the previous step failed, queue a task to fire an
+    // <spec step="24.5">If the previous step failed, queue a task to fire an
     // event named error at the element, and return. Otherwise, let url be the
     // resulting URL record.</spec>
     if (!url.IsValid()) {
@@ -403,7 +410,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       return false;
     }
 
-    // <spec step="23.6">Switch on the script's type:</spec>
+    // <spec step="24.6">Switch on the script's type:</spec>
     if (GetScriptType() == ScriptType::kClassic) {
       // - "classic":
 
@@ -420,7 +427,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       else
         encoding = element_document.Encoding();
 
-      // <spec step="23.6.A">"classic"
+      // <spec step="24.6.A">"classic"
       //
       // Fetch a classic script given url, settings object, options, classic
       // script CORS setting, and encoding.</spec>
@@ -431,7 +438,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       // Step 15 is skipped because they are not used in module
       // scripts.
 
-      // <spec step="23.6.B">"module"
+      // <spec step="24.6.B">"module"
       //
       // Fetch a module script graph given url, settings object, "script", and
       // options.</spec>
@@ -439,7 +446,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
           ToScriptStateForMainWorld(context_document->GetFrame()));
       FetchModuleScriptTree(url, settings_object, modulator, options);
     }
-    // <spec step="23.6">When the chosen algorithm asynchronously completes, set
+    // <spec step="24.6">When the chosen algorithm asynchronously completes, set
     // the script's script to the result. At that time, the script is ready.
     // ...</spec>
     //
@@ -451,30 +458,30 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // depending on the conditions in Step 25 of "prepare a script".
   }
 
-  // <spec step="24">If the element does not have a src content attribute, run
+  // <spec step="25">If the element does not have a src content attribute, run
   // these substeps:</spec>
   if (!element_->HasSourceAttribute()) {
-    // <spec step="23.1">Let src be the value of the element's src
+    // <spec step="25.1">Let src be the value of the element's src
     // attribute.</spec>
     //
     // This step is done later as ScriptElementBase::TextFromChildren():
-    // - in ScriptLoader::PrepareScript() (Step 25, 6th Clause),
+    // - in ScriptLoader::PrepareScript() (Step 26, 6th Clause),
     // - in HTMLParserScriptRunner::ProcessScriptElementInternal()
-    //   (Duplicated code of Step 25, 6th Clause),
-    // - in XMLDocumentParser::EndElementNs() (Step 25, 5th Clause), or
+    //   (Duplicated code of Step 26, 6th Clause),
+    // - in XMLDocumentParser::EndElementNs() (Step 26, 5th Clause), or
     // - in PendingScript::GetSource() (Indirectly used via
     //   HTMLParserScriptRunner::ProcessScriptElementInternal(),
-    //   Step 25, 5th Clause).
+    //   Step 26, 5th Clause).
 
-    // <spec step="24.1">Let base URL be the script element's node document's
+    // <spec step="25.1">Let base URL be the script element's node document's
     // document base URL.</spec>
     KURL base_url = element_document.BaseURL();
 
-    // <spec step="24.2">Switch on the script's type:</spec>
+    // <spec step="25.2">Switch on the script's type:</spec>
     switch (GetScriptType()) {
-      // Step 24.2.A. "classic" [spec text]
+      // Step 25.2.A. "classic" [spec text]
       case ScriptType::kClassic: {
-        // <spec step="24.2.A.1">Let script be the result of creating a classic
+        // <spec step="25.2.A.1">Let script be the result of creating a classic
         // script using source text, settings object, base URL, and
         // options.</spec>
 
@@ -491,17 +498,17 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         prepared_pending_script_ = ClassicPendingScript::CreateInline(
             element_, position, script_location_type, options);
 
-        // <spec step="24.2.A.2">Set the script's script to script.</spec>
+        // <spec step="25.2.A.2">Set the script's script to script.</spec>
         //
-        // <spec step="24.2.A.3">The script is ready.</spec>
+        // <spec step="25.2.A.3">The script is ready.</spec>
         //
         // Implemented by ClassicPendingScript.
         break;
       }
 
-      // Step 24.2.B. "module" [spec text]
+      // Step 25.2.B. "module" [spec text]
       case ScriptType::kModule: {
-        // <spec step="24.2.B.1">Let script be the result of creating a module
+        // <spec step="25.2.B.1">Let script be the result of creating a module
         // script using source text, settings object, base URL, and
         // options.</spec>
         const KURL& source_url = element_document.Url();
@@ -511,12 +518,12 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
             element_->TextFromChildren(), modulator, source_url, base_url,
             options, kSharableCrossOrigin, position);
 
-        // <spec step="24.2.B.2">If this returns null, set the script's script
+        // <spec step="25.2.B.2">If this returns null, set the script's script
         // to null and return; the script is ready.</spec>
         if (!module_script)
           return false;
 
-        // <spec step="24.2.B.3">Fetch the descendants of and instantiate
+        // <spec step="25.2.B.3">Fetch the descendants of and instantiate
         // script, given the destination "script". When this asynchronously
         // completes, set the script's script to the result. At that time, the
         // script is ready.</spec>
@@ -533,17 +540,17 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   DCHECK(prepared_pending_script_);
 
-  // <spec step="25">Then, follow the first of the following options that
+  // <spec step="26">Then, follow the first of the following options that
   // describes the situation:</spec>
 
   // Three flags are used to instruct the caller of prepareScript() to execute
-  // a part of Step 24, when |m_willBeParserExecuted| is true:
+  // a part of Step 25, when |m_willBeParserExecuted| is true:
   // - |m_willBeParserExecuted|
   // - |m_willExecuteWhenDocumentFinishedParsing|
   // - |m_readyToBeParserExecuted|
   // TODO(hiroshige): Clean up the dependency.
 
-  // <spec step="25.A">If the script's type is "classic", and the element has a
+  // <spec step="26.A">If the script's type is "classic", and the element has a
   // src attribute, and the element has a defer attribute, and the element has
   // been flagged as "parser-inserted", and the element does not have an async
   // attribute
@@ -565,7 +572,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     return true;
   }
 
-  // <spec step="25.B">If the script's type is "classic", and the element has a
+  // <spec step="26.B">If the script's type is "classic", and the element has a
   // src attribute, and the element has been flagged as "parser-inserted", and
   // the element does not have an async attribute ...</spec>
   if (GetScriptType() == ScriptType::kClassic &&
@@ -579,7 +586,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     return true;
   }
 
-  // <spec step="25.C">If the script's type is "classic", and the element has a
+  // <spec step="26.C">If the script's type is "classic", and the element has a
   // src attribute, and the element does not have an async attribute, and the
   // element does not have the "non-blocking" flag set
   //
@@ -591,7 +598,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
        !non_blocking_) ||
       (GetScriptType() == ScriptType::kModule &&
        !element_->AsyncAttributeValue() && !non_blocking_)) {
-    // <spec step="25.C">... Add the element to the end of the list of scripts
+    // <spec step="26.C">... Add the element to the end of the list of scripts
     // that will execute in order as soon as possible associated with the node
     // document of the script element at the time the prepare a script algorithm
     // started. ...</spec>
@@ -609,14 +616,14 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     return true;
   }
 
-  // <spec step="25.D">If the script's type is "classic", and the element has a
+  // <spec step="26.D">If the script's type is "classic", and the element has a
   // src attribute
   //
   // If the script's type is "module" ...</spec>
   if ((GetScriptType() == ScriptType::kClassic &&
        element_->HasSourceAttribute()) ||
       GetScriptType() == ScriptType::kModule) {
-    // <spec step="25.D">... The element must be added to the set of scripts
+    // <spec step="26.D">... The element must be added to the set of scripts
     // that will execute as soon as possible of the node document of the script
     // element at the time the prepare a script algorithm started. When the
     // script is ready, execute the script block and then remove the element
@@ -640,7 +647,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   DCHECK_EQ(GetScriptType(), ScriptType::kClassic);
   DCHECK(!is_external_script_);
 
-  // <spec step="25.E">If the element does not have a src attribute, and the
+  // <spec step="26.E">If the element does not have a src attribute, and the
   // element has been flagged as "parser-inserted", and either the parser that
   // created the script is an XML parser or it's an HTML parser whose script
   // nesting level is not greater than one, and the Document of the HTML parser
@@ -659,14 +666,14 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // - HTMLParserScriptRunner::requestParsingBlockingScript()
     // - TODO(hiroshige): Investigate XMLDocumentParser::endElementNs()
     will_be_parser_executed_ = true;
-    // <spec step="25.E">... Set the element's "ready to be parser-executed"
+    // <spec step="26.E">... Set the element's "ready to be parser-executed"
     // flag. ...</spec>
     ready_to_be_parser_executed_ = true;
 
     return true;
   }
 
-  // <spec step="25.F">Otherwise
+  // <spec step="26.F">Otherwise
   //
   // Immediately execute the script block, even if other scripts are already
   // executing.</spec>

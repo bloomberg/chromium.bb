@@ -109,9 +109,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
       const Vector<CSPHeaderAndType>& headers);
   virtual void BindContentSecurityPolicyToExecutionContext();
 
-  // Implementation of the "fetch a module worker script graph" algorithm in the
-  // HTML spec:
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
   void FetchModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,

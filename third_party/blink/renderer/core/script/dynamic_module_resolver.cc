@@ -207,7 +207,8 @@ void DynamicModuleResolver::ResolveDynamically(
   // string.</spec>
   ScriptFetchOptions options(referrer_info.Nonce(), IntegrityMetadataSet(),
                              String(), referrer_info.ParserState(),
-                             referrer_info.CredentialsMode());
+                             referrer_info.CredentialsMode(),
+                             referrer_info.GetReferrerPolicy());
 
   // Step 2.4. "Fetch a module script graph given url, settings object,
   // "script", and options. Wait until the algorithm asynchronously completes
