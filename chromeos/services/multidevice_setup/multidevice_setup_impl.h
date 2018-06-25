@@ -25,6 +25,7 @@ class SecureChannelClient;
 namespace multidevice_setup {
 
 class AccountStatusChangeDelegateNotifier;
+class HostBackendDelegate;
 class SetupFlowCompletionRecorder;
 
 // Concrete MultiDeviceSetup implementation.
@@ -59,6 +60,7 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup {
       mojom::EventTypeForDebugging type,
       TriggerEventForDebuggingCallback callback) override;
 
+  std::unique_ptr<HostBackendDelegate> host_backend_delegate_;
   std::unique_ptr<SetupFlowCompletionRecorder> setup_flow_completion_recorder_;
   std::unique_ptr<AccountStatusChangeDelegateNotifier> delegate_notifier_;
 

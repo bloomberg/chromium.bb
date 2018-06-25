@@ -10,7 +10,9 @@
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate_notifier.h"
+#include "chromeos/services/multidevice_setup/fake_host_backend_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_setup_flow_completion_recorder.h"
+#include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
@@ -23,6 +25,42 @@ namespace chromeos {
 namespace multidevice_setup {
 
 namespace {
+
+class FakeHostBackendDelegateFactory : public HostBackendDelegateImpl::Factory {
+ public:
+  FakeHostBackendDelegateFactory(
+      sync_preferences::TestingPrefServiceSyncable*
+          expected_testing_pref_service,
+      device_sync::FakeDeviceSyncClient* expected_device_sync_client)
+      : expected_testing_pref_service_(expected_testing_pref_service),
+        expected_device_sync_client_(expected_device_sync_client) {}
+
+  ~FakeHostBackendDelegateFactory() override = default;
+
+  FakeHostBackendDelegate* instance() { return instance_; }
+
+ private:
+  // HostBackendDelegateImpl::Factory:
+  std::unique_ptr<HostBackendDelegate> BuildInstance(
+      PrefService* pref_service,
+      device_sync::DeviceSyncClient* device_sync_client,
+      std::unique_ptr<base::OneShotTimer> timer) override {
+    EXPECT_FALSE(instance_);
+    EXPECT_EQ(expected_testing_pref_service_, pref_service);
+    EXPECT_EQ(expected_device_sync_client_, device_sync_client);
+
+    auto instance = std::make_unique<FakeHostBackendDelegate>();
+    instance_ = instance.get();
+    return instance;
+  }
+
+  sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
+  device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
+
+  FakeHostBackendDelegate* instance_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeHostBackendDelegateFactory);
+};
 
 class FakeSetupFlowCompletionRecorderFactory
     : public SetupFlowCompletionRecorderImpl::Factory {
@@ -117,6 +155,12 @@ class MultiDeviceSetupImplTest : public testing::Test {
     fake_secure_channel_client_ =
         std::make_unique<secure_channel::FakeSecureChannelClient>();
 
+    fake_host_backend_delegate_factory_ =
+        std::make_unique<FakeHostBackendDelegateFactory>(
+            test_pref_service_.get(), fake_device_sync_client_.get());
+    HostBackendDelegateImpl::Factory::SetFactoryForTesting(
+        fake_host_backend_delegate_factory_.get());
+
     fake_setup_flow_completion_recorder_factory_ =
         std::make_unique<FakeSetupFlowCompletionRecorderFactory>(
             test_pref_service_.get());
@@ -136,6 +180,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
   }
 
   void TearDown() override {
+    HostBackendDelegateImpl::Factory::SetFactoryForTesting(nullptr);
     SetupFlowCompletionRecorderImpl::Factory::SetFactoryForTesting(nullptr);
     AccountStatusChangeDelegateNotifierImpl::Factory::SetFactoryForTesting(
         nullptr);
@@ -195,6 +240,8 @@ class MultiDeviceSetupImplTest : public testing::Test {
   std::unique_ptr<secure_channel::FakeSecureChannelClient>
       fake_secure_channel_client_;
 
+  std::unique_ptr<FakeHostBackendDelegateFactory>
+      fake_host_backend_delegate_factory_;
   std::unique_ptr<FakeSetupFlowCompletionRecorderFactory>
       fake_setup_flow_completion_recorder_factory_;
   std::unique_ptr<FakeAccountStatusChangeDelegateNotifierFactory>
