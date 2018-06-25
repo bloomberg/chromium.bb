@@ -10,16 +10,21 @@
 namespace blink {
 
 AXRange::AXRange(const AXPosition& start, const AXPosition& end)
-    : start_(start), end_(end) {
-  DCHECK(start.IsValid());
-  DCHECK(end.IsValid());
-  DCHECK_LE(start, end);
+    : start_(), end_() {
+  if (!start.IsValid() || !end.IsValid() || start > end)
+    return;
 
   const Document* document = start.ContainerObject()->GetDocument();
   DCHECK(document);
   DCHECK(document->IsActive());
   DCHECK(!document->NeedsLayoutTreeUpdate());
-  DCHECK_EQ(end.ContainerObject()->GetDocument(), document);
+  // We don't support ranges that span across documents.
+  if (end.ContainerObject()->GetDocument() != document)
+    return;
+
+  start_ = start;
+  end_ = end;
+
 #if DCHECK_IS_ON()
   dom_tree_version_ = document->DomTreeVersion();
   style_version_ = document->StyleVersion();

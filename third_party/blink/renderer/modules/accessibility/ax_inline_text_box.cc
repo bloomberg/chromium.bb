@@ -121,9 +121,11 @@ void AXInlineTextBox::GetWordBoundaries(Vector<AXRange>& words) const {
   inline_text_box_->GetWordBoundaries(boundaries);
   words.ReserveCapacity(boundaries.size());
   for (const auto& boundary : boundaries) {
-    words.emplace_back(
+    const AXRange range(
         AXPosition::CreatePositionInTextObject(*this, boundary.start_index),
         AXPosition::CreatePositionInTextObject(*this, boundary.end_index));
+    if (range.IsValid())
+      words.push_back(range);
   }
 }
 

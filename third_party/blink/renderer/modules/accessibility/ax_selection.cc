@@ -60,6 +60,10 @@ const AXSelection AXSelection::Builder::Build() {
   DCHECK(document);
   DCHECK(document->IsActive());
   DCHECK(!document->NeedsLayoutTreeUpdate());
+  // We don't support selections that span across documents.
+  if (selection_.Extent().ContainerObject()->GetDocument() != document)
+    return {};
+
 #if DCHECK_IS_ON()
   selection_.dom_tree_version_ = document->DomTreeVersion();
   selection_.style_version_ = document->StyleVersion();
