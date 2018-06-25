@@ -692,7 +692,7 @@
   },
   {
     "prefix": "user-activation-v2",
-    "base": "user-activation-v2",
+    "base": "gamepad",
     "args": ["--enable-features=UserActivationV2"]
   },
   {
