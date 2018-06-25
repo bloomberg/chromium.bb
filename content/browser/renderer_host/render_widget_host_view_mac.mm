@@ -553,6 +553,8 @@ void RenderWidgetHostViewMac::OnTextSelectionChanged(
     return;
   ns_view_bridge_->SetTextSelection(selection->text(), selection->offset(),
                                     selection->range());
+  if (host() && host()->delegate())
+    host()->delegate()->DidChangeTextSelection(selection->selected_text());
 }
 
 bool RenderWidgetHostViewMac::ShouldWaitInPreCommit() {

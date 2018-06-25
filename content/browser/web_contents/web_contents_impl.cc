@@ -3140,6 +3140,15 @@ void WebContentsImpl::SelectRange(const gfx::Point& base,
   focused_frame->GetFrameInputHandler()->SelectRange(base, extent);
 }
 
+#if defined(OS_MACOSX)
+void WebContentsImpl::DidChangeTextSelection(
+    const base::string16& new_selected_text) {
+  for (auto& observer : observers_) {
+    observer.DidChangeTextSelection(new_selected_text);
+  }
+}
+#endif
+
 void WebContentsImpl::MoveCaret(const gfx::Point& extent) {
   RenderFrameHostImpl* focused_frame = GetFocusedFrame();
   if (!focused_frame)
