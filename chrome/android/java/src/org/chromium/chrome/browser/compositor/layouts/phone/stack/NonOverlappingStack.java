@@ -91,7 +91,21 @@ public class NonOverlappingStack extends Stack {
      * Multiplier for adjusting the scrolling friction from the amount provided by
      * ViewConfiguration.
      */
-    private static final float FRICTION_MULTIPLIER = 0.2f;
+    private static final float FRICTION_MULTIPLIER = 0.6f;
+
+    /**
+     * For short scrolls of duration less than this (in milliseconds), we assume the user wants to
+     * scroll over to the next tab. If the scroll is longer in duration, we assume they're
+     * reconsidering their scroll, so we leave them on the current tab (unless they drag over far
+     * enough to center a new tab).
+     */
+    private static final int SCROLL_BOOST_TIMEOUT_MS = 250;
+
+    /**
+     * The minimum fraction of a tab the user has to scroll over by before we apply the boost to
+     * scroll them to the next tab.
+     */
+    private static final float SCROLL_BOOST_THRESHOLD = 0.05f;
 
     /**
      * Used to prevent mScrollOffset from being changed as a result of clamping during the switch
@@ -105,6 +119,11 @@ public class NonOverlappingStack extends Stack {
      * us avoid re-playing animations if they're triggered multiple times.
      */
     private boolean mSwitchedAway;
+
+    /** Time at which the last touch down event occurred. */
+    private long mLastTouchDownTime;
+    /** Index of the tab that was centered when the last touch down event occurred. */
+    private int mCenteredTabAtTouchDown;
 
     /**
      * @param layout The parent layout.
@@ -180,6 +199,14 @@ public class NonOverlappingStack extends Stack {
     }
 
     @Override
+    public void onDown(long time) {
+        super.onDown(time);
+        mLastTouchDownTime = time;
+        mCenteredTabAtTouchDown = getCenteredTabIndex();
+        mScroller.setCenteredYSnapIndexAtTouchDown(mCenteredTabAtTouchDown);
+    }
+
+    @Override
     public void onLongPress(long time, float x, float y) {
         // Ignore long presses
     }
@@ -191,12 +218,25 @@ public class NonOverlappingStack extends Stack {
 
     @Override
     protected void springBack(long time) {
-        if (mScroller.isFinished()) {
-            int newTarget = Math.round(mScrollTarget / mSpacing) * mSpacing;
-            mScroller.springBack(0, (int) mScrollTarget, 0, 0, newTarget, newTarget, time);
-            setScrollTarget(newTarget, false);
-            mLayout.requestUpdate();
+        if (!mScroller.isFinished()) return;
+
+        int offsetAtTouchDown = -mCenteredTabAtTouchDown * mSpacing;
+        float scrollFractionToNextTab = (offsetAtTouchDown - mScrollOffset) / mSpacing;
+
+        int newCenteredTab;
+        // Make quick, short scrolls go over to the next tab (if a scroll is short but not quick, we
+        // assume the user might have decided to stay on the current tab).
+        if (time < mLastTouchDownTime + SCROLL_BOOST_TIMEOUT_MS
+                && Math.abs(scrollFractionToNextTab) > SCROLL_BOOST_THRESHOLD) {
+            newCenteredTab = mCenteredTabAtTouchDown + (int) Math.signum(scrollFractionToNextTab);
+        } else {
+            newCenteredTab = getCenteredTabIndex();
         }
+
+        int newTarget = -newCenteredTab * mSpacing;
+        mScroller.flingYTo((int) mScrollTarget, newTarget, time);
+        setScrollTarget(newTarget, false);
+        mLayout.requestUpdate();
     }
 
     @Override
@@ -271,6 +311,11 @@ public class NonOverlappingStack extends Stack {
         }
 
         return 0;
+    }
+
+    @Override
+    protected boolean allowOverscroll() {
+        return false;
     }
 
     @Override
