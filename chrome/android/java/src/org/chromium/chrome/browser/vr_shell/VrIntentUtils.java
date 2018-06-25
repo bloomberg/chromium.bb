@@ -31,11 +31,6 @@ public class VrIntentUtils {
     // the relaunch logic does not work properly with the DON flow skipped.
     public static final String AVOID_RELAUNCH_EXTRA =
             "org.chromium.chrome.browser.vr_shell.AVOID_RELAUNCH";
-    // Tells Chrome to attempts a relaunch of the intent if it is received outside of VR and doesn't
-    // have the Daydream category set. This is a workaround for https://crbug.com/854327 where
-    // launchInVr can sometimes launch the given intent before entering VR.
-    public static final String ENABLE_TEST_RELAUNCH_WORKAROUND_EXTRA =
-            "org.chromium.chrome.browser.vr_shell.ENABLE_TEST_RELUANCH_WORKAROUND";
 
     static final String VR_FRE_INTENT_EXTRA = "org.chromium.chrome.browser.vr_shell.VR_FRE";
     static final String VR_FRE_CALLER_INTENT_EXTRA =

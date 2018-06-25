@@ -96,12 +96,9 @@ public class TransitionUtils {
      * to errors, e.g. if there's dialog in the center of the screen blocking the canvas.
      *
      * Only meant to be used alongside the test framework from VrTestFramework.
-     * @param webContents The WebContents for the tab the canvas is in.
+     * @param cvc The ContentViewCore for the tab the canvas is in.
      */
     public static void enterPresentation(WebContents webContents) {
-        // TODO(https://crbug.com/762724): Remove this workaround when the issue with being resumed
-        // before receiving the VR broadcast is fixed on VrCore's end.
-        VrShellDelegateUtils.getDelegateInstance().setExpectingBroadcast();
         try {
             DOMUtils.clickNode(webContents, "webgl-canvas", false /* goThroughRootAndroidView */);
         } catch (InterruptedException | TimeoutException e) {
@@ -210,10 +207,6 @@ public class TransitionUtils {
             intent.putExtra(VrIntentUtils.AUTOPRESENT_WEVBVR_EXTRA, true);
         }
         if (avoidRelaunch) intent.putExtra(VrIntentUtils.AVOID_RELAUNCH_EXTRA, true);
-
-        // TODO(https://crbug.com/854327): Remove this workaround once the issue with launchInVr
-        // sometimes launching the given intent before entering VR is fixed.
-        intent.putExtra(VrIntentUtils.ENABLE_TEST_RELAUNCH_WORKAROUND_EXTRA, true);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override

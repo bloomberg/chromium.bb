@@ -47,19 +47,6 @@ public class VrMainActivity extends Activity {
 
             if (!VrShellDelegate.deviceSupportsVrLaunches()
                     || (!hasDaydreamCategory && !VrShellDelegate.isInVrSession())) {
-                // TODO(https://crbug.com/854327): Remove this workaround once the issue with
-                // launchInVr sometimes launching the given intent before entering VR is fixed.
-                if (IntentUtils.safeGetBooleanExtra(getIntent(),
-                            VrIntentUtils.ENABLE_TEST_RELAUNCH_WORKAROUND_EXTRA, false)) {
-                    Log.d(TAG,
-                            "Relaunching given intent due to test workaround boolean being set.");
-                    // Disable the workaround after the first time so we don't get into a loop
-                    getIntent().putExtra(
-                            VrIntentUtils.ENABLE_TEST_RELAUNCH_WORKAROUND_EXTRA, false);
-                    VrIntentUtils.launchInVr(getIntent(), this);
-                    finish();
-                    return;
-                }
                 StringBuilder error = new StringBuilder("Attempted to launch Chrome into VR ");
                 if (!VrShellDelegate.deviceSupportsVrLaunches()) {
                     error.append("on a device that doesn't support Chrome in VR.");
