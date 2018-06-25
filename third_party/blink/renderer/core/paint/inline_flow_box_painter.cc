@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
 #include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
@@ -359,22 +358,13 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
   const auto* mask_box_image = mask_nine_piece_image.GetImage();
 
   // Figure out if we need to push a transparency layer to render our mask.
-  bool push_transparency_layer = false;
-  DCHECK(box_model.HasLayer());
-  if (!box_model.Layer()->MaskBlendingAppliedByCompositor(paint_info)) {
-    push_transparency_layer = true;
-    FloatRect bounds(paint_rect);
-    paint_info.context.BeginLayer(1.0f, SkBlendMode::kDstIn, &bounds);
-  }
-
   PaintFillLayers(paint_info, Color::kTransparent,
                   box_model.StyleRef().MaskLayers(), paint_rect);
 
   bool has_box_image = mask_box_image && mask_box_image->CanRender();
   if (!has_box_image || !mask_box_image->IsLoaded()) {
-    if (push_transparency_layer)
-      paint_info.context.EndLayer();
-    return;  // Don't paint anything while we wait for the image to load.
+    // Don't paint anything while we wait for the image to load.
+    return;
   }
 
   // The simple case is where we are the only box for this object. In those
@@ -401,9 +391,6 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
                                  image_strip_paint_rect, box_model.StyleRef(),
                                  mask_nine_piece_image);
   }
-
-  if (push_transparency_layer)
-    paint_info.context.EndLayer();
 }
 
 // This method should not be needed. See crbug.com/530659.

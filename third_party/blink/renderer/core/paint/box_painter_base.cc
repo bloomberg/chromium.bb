@@ -320,8 +320,7 @@ BoxPainterBase::FillLayerInfo::FillLayerInfo(
 
 namespace {
 
-inline bool PaintFastBottomLayer(const DisplayItemClient& image_client,
-                                 Node* node,
+inline bool PaintFastBottomLayer(Node* node,
                                  const PaintInfo& paint_info,
                                  const BoxPainterBase::FillLayerInfo& info,
                                  const LayoutRect& rect,
@@ -377,7 +376,7 @@ inline bool PaintFastBottomLayer(const DisplayItemClient& image_client,
     // When the rrect is not renderable, we resort to clipping.
     // RoundedInnerRectClipper handles this case via discrete, corner-wise
     // clipping.
-    clipper.emplace(image_client, paint_info, rect, border, kApplyToContext);
+    clipper.emplace(context, rect, border);
     border.SetRadii(FloatRoundedRect::Radii());
   }
 
@@ -590,16 +589,15 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
       bleed_avoidance, border_padding_insets);
 
   // Fast path for drawing simple color backgrounds.
-  if (PaintFastBottomLayer(display_item_, node_, paint_info, info, rect,
-                           border_rect, geometry, image.get(), composite_op)) {
+  if (PaintFastBottomLayer(node_, paint_info, info, rect, border_rect, geometry,
+                           image.get(), composite_op)) {
     return;
   }
 
   base::Optional<RoundedInnerRectClipper> clip_to_border;
-  if (info.is_rounded_fill) {
-    clip_to_border.emplace(display_item_, paint_info, rect, border_rect,
-                           kApplyToContext);
-  }
+  if (info.is_rounded_fill)
+    clip_to_border.emplace(context, rect, border_rect);
+
   if (bg_layer.Clip() == EFillBox::kText) {
     PaintFillLayerTextFillBox(context, info, image.get(), composite_op,
                               geometry, rect, scrolled_paint_rect,
@@ -699,39 +697,15 @@ void BoxPainterBase::PaintMaskImages(const PaintInfo& paint_info,
                                      BackgroundImageGeometry& geometry,
                                      bool include_logical_left_edge,
                                      bool include_logical_right_edge) {
-  // Figure out if we need to push a transparency layer to render our mask.
-  bool push_transparency_layer = false;
-  bool all_mask_images_loaded = true;
-
   if (!style_.HasMask() || style_.Visibility() != EVisibility::kVisible)
     return;
 
-  DCHECK(paint_layer_);
-  if (!paint_layer_->MaskBlendingAppliedByCompositor(paint_info)) {
-    push_transparency_layer = true;
-    StyleImage* mask_box_image = style_.MaskBoxImage().GetImage();
-    const FillLayer& mask_layers = style_.MaskLayers();
-
-    // Don't render a masked element until all the mask images have loaded, to
-    // prevent a flash of unmasked content.
-    if (mask_box_image)
-      all_mask_images_loaded &= mask_box_image->IsLoaded();
-    all_mask_images_loaded &= mask_layers.ImagesAreLoaded();
-
-    paint_info.context.BeginLayer(1, SkBlendMode::kDstIn);
-  }
-
-  if (all_mask_images_loaded) {
-    PaintFillLayers(paint_info, Color::kTransparent, style_.MaskLayers(),
-                    paint_rect, geometry);
-    NinePieceImagePainter::Paint(paint_info.context, obj, *document_, node_,
-                                 paint_rect, style_, style_.MaskBoxImage(),
-                                 include_logical_left_edge,
-                                 include_logical_right_edge);
-  }
-
-  if (push_transparency_layer)
-    paint_info.context.EndLayer();
+  PaintFillLayers(paint_info, Color::kTransparent, style_.MaskLayers(),
+                  paint_rect, geometry);
+  NinePieceImagePainter::Paint(paint_info.context, obj, *document_, node_,
+                               paint_rect, style_, style_.MaskBoxImage(),
+                               include_logical_left_edge,
+                               include_logical_right_edge);
 }
 
 }  // namespace blink

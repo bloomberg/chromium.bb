@@ -109,8 +109,7 @@ bool PaintLayerPainter::ShouldAdjustPaintingRoot(
   // Cull rects and clips can't be propagated across a filter which moves
   // pixels, since the input of the filter may be outside the cull rect/clips
   // yet still result in painted output.
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      paint_layer_.HasFilterThatMovesPixels())
+  if (paint_layer_.HasFilterThatMovesPixels())
     return true;
 
   return false;
@@ -262,28 +261,16 @@ static bool ShouldRepaintSubsequence(
   }
   paint_layer.SetPreviousPaintDirtyRect(painting_info.paint_dirty_rect);
 
-  // TODO(wangxianzhu): Get rid of scroll_offset_accumulation for SPv175.
-  // Repaint if scroll offset accumulation changes.
-  if (painting_info.scroll_offset_accumulation !=
-      paint_layer.PreviousScrollOffsetAccumulationForPainting()) {
-    needs_repaint = true;
-    should_clear_empty_paint_phase_flags = true;
-  }
-  paint_layer.SetPreviousScrollOffsetAccumulationForPainting(
-      painting_info.scroll_offset_accumulation);
-
   return needs_repaint;
 }
 
 void PaintLayerPainter::AdjustForPaintProperties(
     PaintLayerPaintingInfo& painting_info,
     PaintLayerFlags& paint_flags) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
   // Paint properties for transforms, composited layers or LayoutView is already
   // taken care of.
   // TODO(wangxianzhu): Also use this for PaintsWithTransform() and remove
-  // PaintLayerWithTransform() for SPv175.
+  // PaintLayerWithTransform().
   if (&paint_layer_ == painting_info.root_layer ||
       paint_layer_.PaintsWithTransform(painting_info.GetGlobalPaintFlags()) ||
       paint_layer_.PaintsIntoOwnOrGroupedBacking(
@@ -553,8 +540,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
 
     base::Optional<ScopedPaintChunkProperties>
         subsequence_forced_chunk_properties;
-    if (subsequence_recorder && paint_layer_.HasSelfPaintingLayerDescendant() &&
-        RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    if (subsequence_recorder && paint_layer_.HasSelfPaintingLayerDescendant()) {
       // Prepare for forced paint chunks to ensure chunk id stability to avoid
       // unnecessary full chunk raster invalidations on changed chunk ids.
       // TODO(crbug.com/834606): This may be unnecessary after we refactor
@@ -614,8 +600,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
                                         local_painting_info, paint_flags);
     }
 
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-        !is_painting_overlay_scrollbars && paint_layer_.PaintsWithFilters() &&
+    if (!is_painting_overlay_scrollbars && paint_layer_.PaintsWithFilters() &&
         display_item_list_size_before_painting ==
             context.GetPaintController().NewDisplayItemList().size()) {
       // If a layer with filters painted nothing, we need to issue a no-op
@@ -871,13 +856,6 @@ PaintResult PaintLayerPainter::PaintChildren(
   if (!child)
     return result;
 
-  IntSize scroll_offset_accumulation_for_children =
-      painting_info.scroll_offset_accumulation;
-  if (paint_layer_.GetLayoutObject().HasOverflowClip()) {
-    scroll_offset_accumulation_for_children +=
-        paint_layer_.GetLayoutBox()->ScrolledContentOffset();
-  }
-
   for (; child; child = iterator.Next()) {
     // If this Layer should paint into its own backing or a grouped backing,
     // that will be done via CompositedLayerMapping::PaintContents() and
@@ -889,25 +867,8 @@ PaintResult PaintLayerPainter::PaintChildren(
     if (child->Layer()->IsReplacedNormalFlowStacking())
       continue;
 
-    PaintLayerPaintingInfo child_painting_info = painting_info;
-    child_painting_info.scroll_offset_accumulation =
-        scroll_offset_accumulation_for_children;
-    // Rare case: accumulate scroll offset of non-stacking-context ancestors up
-    // to m_paintLayer.
-    Vector<PaintLayer*> scroll_parents;
-    for (PaintLayer* parent_layer = child->Layer()->Parent();
-         parent_layer != &paint_layer_; parent_layer = parent_layer->Parent()) {
-      if (parent_layer->GetLayoutObject().HasOverflowClip())
-        scroll_parents.push_back(parent_layer);
-    }
-
-    for (const auto* scroller : scroll_parents) {
-      child_painting_info.scroll_offset_accumulation +=
-          scroller->GetLayoutBox()->ScrolledContentOffset();
-    }
-
     if (PaintLayerPainter(*child->Layer())
-            .Paint(context, child_painting_info, paint_flags) ==
+            .Paint(context, painting_info, paint_flags) ==
         kMayBeClippedByPaintDirtyRect)
       result = kMayBeClippedByPaintDirtyRect;
   }
@@ -926,14 +887,10 @@ void PaintLayerPainter::PaintOverflowControlsForFragments(
 
   ForAllFragments(
       context, layer_fragments, [&](const PaintLayerFragment& fragment) {
-        base::Optional<ScopedPaintChunkProperties>
-            fragment_paint_chunk_properties;
-        if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-          fragment_paint_chunk_properties.emplace(
-              context.GetPaintController(),
-              fragment.fragment_data->LocalBorderBoxProperties(), paint_layer_,
-              DisplayItem::kOverflowControls);
-        }
+        ScopedPaintChunkProperties fragment_paint_chunk_properties(
+            context.GetPaintController(),
+            fragment.fragment_data->LocalBorderBoxProperties(), paint_layer_,
+            DisplayItem::kOverflowControls);
 
         // We need to apply the same clips and transforms that
         // paintFragmentWithPhase would have.
@@ -1219,7 +1176,6 @@ void PaintLayerPainter::FillMaskingFragment(GraphicsContext& context,
 // Generate a no-op DrawingDisplayItem to ensure a non-empty chunk for the
 // filter without content.
 void PaintLayerPainter::PaintEmptyContentForFilters(GraphicsContext& context) {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
   DCHECK(paint_layer_.PaintsWithFilters());
 
   ScopedPaintChunkProperties paint_chunk_properties(

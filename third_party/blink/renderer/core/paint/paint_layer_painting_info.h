@@ -96,7 +96,6 @@ struct PaintLayerPaintingInfo {
   const PaintLayer* root_layer;
   LayoutRect paint_dirty_rect;  // relative to rootLayer;
   LayoutSize sub_pixel_accumulation;
-  IntSize scroll_offset_accumulation;
 
  private:
   const GlobalPaintFlags global_paint_flags_;

@@ -84,14 +84,12 @@ bool FragmentVisibleToHitTestRequest(const NGPaintFragment& fragment,
 
 NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
     : BoxPainterBase(
-          box,
           &box.GetLayoutObject()->GetDocument(),
           box.Style(),
           box.GetLayoutObject()->GeneratingNode(),
           BoxStrutToLayoutRectOutsets(box.PhysicalFragment().BorderWidths()),
           BoxStrutToLayoutRectOutsets(
-              ToNGPhysicalBoxFragment(box.PhysicalFragment()).Padding()),
-          box.PhysicalFragment().Layer()),
+              ToNGPhysicalBoxFragment(box.PhysicalFragment()).Padding())),
       box_fragment_(box),
       border_edges_(
           NGBorderEdges::FromPhysical(box.PhysicalFragment().BorderEdges(),
@@ -213,7 +211,6 @@ void NGBoxFragmentPainter::PaintObject(
     base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
     base::Optional<PaintInfo> scrolled_paint_info;
     if (const auto* fragment = paint_info.FragmentToPaint(layout_object)) {
-      DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
       const auto* object_properties = fragment->PaintProperties();
       auto* scroll_translation =
           object_properties ? object_properties->ScrollTranslation() : nullptr;

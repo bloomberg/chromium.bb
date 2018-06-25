@@ -554,7 +554,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   };
   void SetGroupedMapping(CompositedLayerMapping*, SetGroupMappingOptions);
 
-  bool MaskBlendingAppliedByCompositor(const PaintInfo&) const;
   bool NeedsCompositedScrolling() const;
 
   // Paint invalidation containers can be self-composited or squashed.
@@ -953,13 +952,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // shouldCreateSubsequence() in PaintLayerPainter.cpp for the cases we use
   // subsequence when painting a PaintLayer.
 
-  IntSize PreviousScrollOffsetAccumulationForPainting() const {
-    return previous_scroll_offset_accumulation_for_painting_;
-  }
-  void SetPreviousScrollOffsetAccumulationForPainting(const IntSize& s) {
-    previous_scroll_offset_accumulation_for_painting_ = s;
-  }
-
   LayoutRect PreviousPaintDirtyRect() const {
     return previous_paint_dirty_rect_;
   }
@@ -1346,7 +1338,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   std::unique_ptr<PaintLayerStackingNode> stacking_node_;
 
-  IntSize previous_scroll_offset_accumulation_for_painting_;
   LayoutRect previous_paint_dirty_rect_;
 
   std::unique_ptr<PaintLayerRareData> rare_data_;
