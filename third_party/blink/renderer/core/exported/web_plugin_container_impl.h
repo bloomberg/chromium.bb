@@ -94,9 +94,8 @@ class CORE_EXPORT WebPluginContainerImpl final
   void FrameRectsChanged() override;
   void SetFrameRect(const IntRect&) override;
   IntRect FrameRect() const override;
-  // |paint_offset| is a workaround for SlimmingPaintV175 to paint the contents
-  // at the correct location. It should be issued as a transform operation
-  // before painting the contents.
+  // |paint_offset| is used to to paint the contents at the correct location.
+  // It should be issued as a transform operation before painting the contents.
   void Paint(GraphicsContext&,
              const GlobalPaintFlags,
              const CullRect&,

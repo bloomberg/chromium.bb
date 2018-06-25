@@ -26,10 +26,8 @@ PaintRecordBuilder::PaintRecordBuilder(SkMetaData* meta_data,
     paint_controller_ = own_paint_controller_.get();
   }
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    paint_controller_->UpdateCurrentPaintChunkProperties(
-        base::nullopt, PropertyTreeState::Root());
-  }
+  paint_controller_->UpdateCurrentPaintChunkProperties(
+      base::nullopt, PropertyTreeState::Root());
 
   const HighContrastSettings* high_contrast_settings =
       containing_context ? &containing_context->high_contrast_settings()
@@ -58,12 +56,8 @@ sk_sp<PaintRecord> PaintRecordBuilder::EndRecording(
 
 void PaintRecordBuilder::EndRecording(PaintCanvas& canvas,
                                       const PropertyTreeState& replay_state) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    canvas.drawPicture(EndRecording());
-  } else {
-    paint_controller_->CommitNewDisplayItems();
-    paint_controller_->GetPaintArtifact().Replay(canvas, replay_state);
-  }
+  paint_controller_->CommitNewDisplayItems();
+  paint_controller_->GetPaintArtifact().Replay(canvas, replay_state);
 }
 
 }  // namespace blink

@@ -133,44 +133,28 @@ bool LayoutSVGForeignObject::NodeAtFloatPoint(HitTestResult& result,
     return false;
 
   FloatPoint local_point = local_transform.Inverse().MapPoint(point_in_parent);
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    LayoutPoint point_in_foreign_object(local_point);
-    // |local_point| already includes the offset of the <foreignObject> element,
-    // but PaintLayer::HitTestLayer assumes it has not been.
-    point_in_foreign_object.MoveBy(-Layer()->LayoutBoxLocation());
-    HitTestResult layer_result(result.GetHitTestRequest(),
-                               point_in_foreign_object);
-    bool retval = Layer()->HitTest(layer_result);
+  LayoutPoint point_in_foreign_object(local_point);
+  // |local_point| already includes the offset of the <foreignObject> element,
+  // but PaintLayer::HitTestLayer assumes it has not been.
+  point_in_foreign_object.MoveBy(-Layer()->LayoutBoxLocation());
+  HitTestResult layer_result(result.GetHitTestRequest(),
+                             point_in_foreign_object);
+  bool retval = Layer()->HitTest(layer_result);
 
-    // Preserve the "point in inner node frame" from the original request,
-    // since |layer_result| is a hit test rooted at the <foreignObject> element,
-    // not the frame, due to the constructor above using
-    // |point_in_foreign_object| as its "point in inner node frame".
-    // TODO(chrishtr): refactor the PaintLayer and HitTestResults code around
-    // this, to better support hit tests that don't start at frame boundaries.
-    LayoutPoint original_point_in_inner_node_frame =
-        result.PointInInnerNodeFrame();
-    if (result.GetHitTestRequest().ListBased())
-      result.Append(layer_result);
-    else
-      result = layer_result;
-    result.SetPointInInnerNodeFrame(original_point_in_inner_node_frame);
-    return retval;
-  }
-
-  // Early exit if local point is not contained in clipped viewport area
-  if (SVGLayoutSupport::IsOverflowHidden(*this) &&
-      !FrameRect().Contains(LayoutPoint(local_point)))
-    return false;
-
-  // FOs establish a stacking context, so we need to hit-test all layers.
-  HitTestLocation hit_test_location(local_point);
-  return LayoutBlock::NodeAtPoint(result, hit_test_location, LayoutPoint(),
-                                  kHitTestForeground) ||
-         LayoutBlock::NodeAtPoint(result, hit_test_location, LayoutPoint(),
-                                  kHitTestFloat) ||
-         LayoutBlock::NodeAtPoint(result, hit_test_location, LayoutPoint(),
-                                  kHitTestChildBlockBackgrounds);
+  // Preserve the "point in inner node frame" from the original request,
+  // since |layer_result| is a hit test rooted at the <foreignObject> element,
+  // not the frame, due to the constructor above using
+  // |point_in_foreign_object| as its "point in inner node frame".
+  // TODO(chrishtr): refactor the PaintLayer and HitTestResults code around
+  // this, to better support hit tests that don't start at frame boundaries.
+  LayoutPoint original_point_in_inner_node_frame =
+      result.PointInInnerNodeFrame();
+  if (result.GetHitTestRequest().ListBased())
+    result.Append(layer_result);
+  else
+    result = layer_result;
+  result.SetPointInInnerNodeFrame(original_point_in_inner_node_frame);
+  return retval;
 }
 
 bool LayoutSVGForeignObject::NodeAtPoint(
@@ -178,22 +162,14 @@ bool LayoutSVGForeignObject::NodeAtPoint(
     const HitTestLocation& location_in_parent,
     const LayoutPoint& accumulated_offset,
     HitTestAction hit_test_action) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    return LayoutBlock::NodeAtPoint(result, location_in_parent,
-                                    accumulated_offset, hit_test_action);
-  }
-  NOTREACHED();
-  return false;
+  // Skip LayoutSVGBlock's override.
+  return LayoutBlockFlow::NodeAtPoint(result, location_in_parent,
+                                      accumulated_offset, hit_test_action);
 }
 
 PaintLayerType LayoutSVGForeignObject::LayerTypeRequired() const {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return LayoutBlockFlow::LayerTypeRequired();
-  return kNoPaintLayer;
-}
-
-bool LayoutSVGForeignObject::AllowsOverflowClip() const {
-  return RuntimeEnabledFeatures::SlimmingPaintV175Enabled();
+  // Skip LayoutSVGBlock's override.
+  return LayoutBlockFlow::LayerTypeRequired();
 }
 
 void LayoutSVGForeignObject::StyleDidChange(StyleDifference diff,

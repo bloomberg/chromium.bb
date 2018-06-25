@@ -239,7 +239,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutRect VisualRect() const final;
 
   void ClearPartialInvalidationVisualRect() const final {
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
     return GetMutableForPainting()
         .FirstFragment()
         .SetPartialInvalidationVisualRect(LayoutRect());

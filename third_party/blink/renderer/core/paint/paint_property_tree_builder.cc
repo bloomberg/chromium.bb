@@ -595,11 +595,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
       if (has_spv1_composited_clip_path || has_mask_based_clip_path) {
         clip_path_clip = fragment_data_.ClipPathBoundingBox();
       }
-      if ((mask_clip || clip_path_clip) &&
-          // TODO(crbug.com/768691): Remove the following condition after mask
-          // clip doesn't fail fast/borders/inline-mask-overlay-image-outset-
-          // vertical-rl.html.
-          RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      if (mask_clip || clip_path_clip) {
         IntRect combined_clip = mask_clip ? *mask_clip : *clip_path_clip;
         if (mask_clip && clip_path_clip)
           combined_clip.Intersect(*clip_path_clip);
@@ -791,9 +787,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
 }
 
 static FloatRoundedRect ToClipRect(const LayoutRect& rect) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return FloatRoundedRect(FloatRect(PixelSnappedIntRect(rect)));
-  return FloatRoundedRect(FloatRect(rect));
+  return FloatRoundedRect(FloatRect(PixelSnappedIntRect(rect)));
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateFragmentClip() {
@@ -885,9 +879,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
         PropertyTreeState(context_.current.transform, context_.current.clip,
                           context_.current_effect);
 
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-        (!fragment_data_.HasLocalBorderBoxProperties() ||
-         local_border_box != fragment_data_.LocalBorderBoxProperties()))
+    if (!fragment_data_.HasLocalBorderBoxProperties() ||
+        local_border_box != fragment_data_.LocalBorderBoxProperties())
       property_added_or_removed_ = true;
 
     fragment_data_.SetLocalBorderBoxProperties(std::move(local_border_box));
@@ -919,11 +912,7 @@ static bool IsPrintingRootLayoutView(const LayoutObject& object) {
 }
 
 static bool NeedsOverflowClip(const LayoutObject& object) {
-  // Though a SVGForeignObject is a LayoutBox, its overflow clip logic is
-  // special because it doesn't create a PaintLayer.
-  // See LayoutSVGBlock::AllowsOverflowClip().
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      object.IsSVGViewportContainer() &&
+  if (object.IsSVGViewportContainer() &&
       SVGLayoutSupport::IsOverflowHidden(object))
     return true;
 
@@ -1076,10 +1065,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
       ClipPaintPropertyNode::State state;
       state.local_transform_space = context_.current.transform;
 
-      if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-          object_.IsSVGForeignObject()) {
-        state.clip_rect = ToClipRect(ToLayoutBox(object_).FrameRect());
-      } else if (object_.IsBox()) {
+      if (object_.IsBox()) {
         state.clip_rect = ToClipRect(ToLayoutBox(object_).OverflowClipRect(
             context_.current.paint_offset));
         state.clip_rect_excluding_overlay_scrollbars =
@@ -1591,8 +1577,7 @@ void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
   // CSS mask and clip-path comes with an implicit clip to the border box.
   // Currently only SPv2 generate and take advantage of those.
   const bool box_generates_property_nodes_for_mask_and_clip_path =
-      RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      (box.HasMask() || box.HasClipPath());
+      box.HasMask() || box.HasClipPath();
   // The overflow clip paint property depends on the border box rect through
   // overflowClipRect(). The border box rect's size equals the frame rect's
   // size so we trigger a paint property update when the frame rect changes.
@@ -1695,8 +1680,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
   if (properties_) {
     UpdateTransform();
     UpdateClipPathClip(false);
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-      UpdateEffect();
+    UpdateEffect();
     UpdateClipPathClip(true);  // Special pass for SPv1 composited clip-path.
     UpdateCssClip();
     UpdateFilter();
@@ -2433,12 +2417,10 @@ bool PaintPropertyTreeBuilder::UpdateForSelf() {
   DCHECK(!fragment_data);
 
   // We need to update property tree states of paint chunks.
-  if (property_added_or_removed &&
-      RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+  if (property_added_or_removed)
     context_.painting_layer->SetNeedsRepaint();
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      !context_.supports_composited_raster_invalidation)
+  if (!context_.supports_composited_raster_invalidation)
     return property_changed || property_added_or_removed;
 
   return property_changed;
@@ -2468,8 +2450,7 @@ bool PaintPropertyTreeBuilder::UpdateForChildren() {
     context_.container_for_fixed_position = &object_;
 
   // We need to update property tree states of paint chunks.
-  if (property_added_or_removed &&
-      RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+  if (property_added_or_removed)
     context_.painting_layer->SetNeedsRepaint();
 
   return property_changed;

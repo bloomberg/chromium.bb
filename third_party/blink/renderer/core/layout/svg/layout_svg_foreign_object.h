@@ -78,7 +78,6 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
   PaintLayerType LayerTypeRequired() const override;
 
  private:
-  bool AllowsOverflowClip() const override;
   LayoutUnit ElementX() const;
   LayoutUnit ElementY() const;
   LayoutUnit ElementWidth() const;

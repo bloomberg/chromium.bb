@@ -141,12 +141,9 @@ void EmbeddedContentPainter::PaintContents(const PaintInfo& paint_info,
       paint_location - embedded_content_view->FrameRect().Location();
   CullRect adjusted_cull_rect(local_paint_info.GetCullRect(),
                               -view_paint_offset);
-  embedded_content_view->Paint(
-      local_paint_info.context, local_paint_info.GetGlobalPaintFlags(),
-      adjusted_cull_rect,
-      // For SPv175 we need to apply the transform during painting.
-      RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ? view_paint_offset
-                                                         : IntSize());
+  embedded_content_view->Paint(local_paint_info.context,
+                               local_paint_info.GetGlobalPaintFlags(),
+                               adjusted_cull_rect, view_paint_offset);
 }
 
 }  // namespace blink

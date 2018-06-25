@@ -95,7 +95,7 @@ class LayoutTableCol final : public LayoutTableBoxComponent {
   bool CanHaveChildren() const override;
   PaintLayerType LayerTypeRequired() const override { return kNoPaintLayer; }
 
-  LayoutRect LocalVisualRectIgnoringVisibility() const final;
+  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final;
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 

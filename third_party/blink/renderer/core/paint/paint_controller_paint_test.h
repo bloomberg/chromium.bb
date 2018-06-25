@@ -67,7 +67,7 @@ class PaintControllerPaintTestBase : public RenderingTest {
 
   const DisplayItemClient& ViewBackgroundClient() {
     if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      // With SPv1*, the document background uses the scrolling contents
+      // With SPv1, the document background uses the scrolling contents
       // layer as its DisplayItemClient.
       return *GetLayoutView().Layer()->GraphicsLayerBacking();
     }

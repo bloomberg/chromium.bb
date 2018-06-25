@@ -612,7 +612,7 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(nullptr, transform_properties->PaintOffsetTranslation());
   } else {
-    // Pre-SPv2 creates PaintOffsetTranslation for composited layers.
+    // SPv1 creates PaintOffsetTranslation for composited layers.
     EXPECT_EQ(TransformationMatrix().Translate(50, 100),
               transform_properties->PaintOffsetTranslation()->Matrix());
   }
@@ -1777,7 +1777,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
     EXPECT_EQ(DocScrollTranslation(),
               child.FirstFragment().LocalBorderBoxProperties().Transform());
   } else {
-    // For SPv1*, |child| is composited so we created PaintOffsetTranslation.
+    // For SPv1, |child| is composited so we created PaintOffsetTranslation.
     EXPECT_EQ(child.FirstFragment().PaintProperties()->PaintOffsetTranslation(),
               child.FirstFragment().LocalBorderBoxProperties().Transform());
   }
@@ -3946,7 +3946,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedUnderMultiColumn) {
     EXPECT_EQ(LayoutUnit(),
               FragmentAt(composited_child, 0).LogicalTopInFlowThread());
   } else {
-    // SPv1* forces single fragment for composited layers.
+    // SPv1 forces single fragment for composited layers.
     EXPECT_EQ(1u, NumFragments(composited));
     EXPECT_EQ(LayoutPoint(100, 100), FragmentAt(composited, 0).PaintOffset());
     EXPECT_EQ(LayoutPoint(100, -200),
@@ -4575,7 +4575,7 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskEscapeClip) {
     EXPECT_EQ(DocPreTranslation(),
               absolute->FirstFragment().LocalBorderBoxProperties().Transform());
   } else {
-    // For SPv1*, |absolute| is composited so we created PaintOffsetTranslation.
+    // For SPv1, |absolute| is composited so we created PaintOffsetTranslation.
     EXPECT_EQ(
         absolute->FirstFragment().PaintProperties()->PaintOffsetTranslation(),
         absolute->FirstFragment().LocalBorderBoxProperties().Transform());
@@ -4796,7 +4796,7 @@ TEST_P(PaintPropertyTreeBuilderTest, BackfaceHidden) {
     EXPECT_EQ(nullptr, paint_offset_translation);
     EXPECT_EQ(LayoutPoint(60, 50), target->FirstFragment().PaintOffset());
   } else {
-    // For SPv1*, |target| is composited so we created PaintOffsetTranslation.
+    // For SPv1, |target| is composited so we created PaintOffsetTranslation.
     ASSERT_NE(nullptr, paint_offset_translation);
     EXPECT_EQ(TransformationMatrix().Translate(60, 50),
               paint_offset_translation->Matrix());

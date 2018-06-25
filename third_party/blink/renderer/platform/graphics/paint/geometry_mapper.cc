@@ -214,12 +214,12 @@ bool GeometryMapper::LocalToAncestorVisualRectInternal(
   }
 
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // On SPv1* we may fail when the paint invalidation container creates an
+    // On SPv1 we may fail when the paint invalidation container creates an
     // overflow clip (in ancestor_state) which is not in localState of an
     // out-of-flow positioned descendant. See crbug.com/513108 and layout test
     // compositing/overflow/handle-non-ancestor-clip-parent.html (run with
     // --enable-prefer-compositing-to-lcd-text) for details.
-    // Ignore it for SPv1* for now.
+    // Ignore it for SPv1 for now.
     success = true;
     rect_to_map.ClearIsTight();
   }

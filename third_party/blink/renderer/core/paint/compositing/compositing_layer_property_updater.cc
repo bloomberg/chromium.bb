@@ -12,8 +12,7 @@
 namespace blink {
 
 void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ||
-      RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   if (!object.HasLayer())

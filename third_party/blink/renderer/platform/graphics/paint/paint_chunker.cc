@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunker.h"
 
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-
 namespace blink {
 
 static const PropertyTreeState& UninitializedProperties() {
@@ -30,7 +28,6 @@ bool PaintChunker::IsInInitialState() const {
 void PaintChunker::UpdateCurrentPaintChunkProperties(
     const base::Optional<PaintChunk::Id>& chunk_id,
     const PropertyTreeState& properties) {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
   // If properties are the same, continue to use the previously set
   // |next_chunk_id_| because the id of the outer painting is likely to be
   // more stable to reduce invalidation because of chunk id changes.
@@ -51,7 +48,6 @@ void PaintChunker::ForceNewChunk() {
 }
 
 bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
   // Property nodes should never be null because they should either be set to
   // properties created by a LayoutObject/FrameView, or be set to a non-null
   // root node. If these DCHECKs are hit we are missing a call to update the

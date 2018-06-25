@@ -23,13 +23,12 @@ GraphicsContext* SVGFilterRecordingContext::BeginContent() {
   paint_controller_ = PaintController::Create();
   context_ = std::make_unique<GraphicsContext>(*paint_controller_);
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // Use initial_context_'s current paint chunk properties so that any new
-    // chunk created during painting the content will be in the correct state.
-    paint_controller_->UpdateCurrentPaintChunkProperties(
-        base::nullopt,
-        initial_context_.GetPaintController().CurrentPaintChunkProperties());
-  }
+  // Use initial_context_'s current paint chunk properties so that any new
+  // chunk created during painting the content will be in the correct state.
+  paint_controller_->UpdateCurrentPaintChunkProperties(
+      base::nullopt,
+      initial_context_.GetPaintController().CurrentPaintChunkProperties());
+
   return context_.get();
 }
 

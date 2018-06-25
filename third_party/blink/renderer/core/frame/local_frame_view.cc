@@ -1566,7 +1566,6 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
     // layer->SubtreeIsInvisible() here.
     layout_object->SetMayNeedPaintInvalidationSubtree();
     if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
-        RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
         !layer->NeedsRepaint()) {
       // Paint properties of the layer relative to its containing graphics
       // layer may change if the paint properties escape the graphics layer's

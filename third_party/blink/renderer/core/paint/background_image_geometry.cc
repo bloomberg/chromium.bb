@@ -458,20 +458,18 @@ LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
   if (container)
     rect.MoveBy(LayoutPoint(-container->LocalToAbsolute(FloatPoint())));
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // By now we have converted the viewport rect to the border box space of
-    // |container|, however |container| does not necessarily create a paint
-    // offset translation node, thus its paint offset must be added to convert
-    // the rect to the space of the transform node.
-    // TODO(trchen): This function does only one simple thing -- mapping the
-    // viewport rect from frame space to whatever space the current paint
-    // context uses. However we can't always invoke geometry mapper because
-    // there are at least one caller uses this before PrePaint phase.
-    if (container) {
-      DCHECK_GE(container->GetDocument().Lifecycle().GetState(),
-                DocumentLifecycle::kPrePaintClean);
-      rect.MoveBy(container->FirstFragment().PaintOffset());
-    }
+  // By now we have converted the viewport rect to the border box space of
+  // |container|, however |container| does not necessarily create a paint
+  // offset translation node, thus its paint offset must be added to convert
+  // the rect to the space of the transform node.
+  // TODO(trchen): This function does only one simple thing -- mapping the
+  // viewport rect from frame space to whatever space the current paint
+  // context uses. However we can't always invoke geometry mapper because
+  // there are at least one caller uses this before PrePaint phase.
+  if (container) {
+    DCHECK_GE(container->GetDocument().Lifecycle().GetState(),
+              DocumentLifecycle::kPrePaintClean);
+    rect.MoveBy(container->FirstFragment().PaintOffset());
   }
 
   return rect;

@@ -341,23 +341,6 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     }
   }
 
-  // Fixed-position is painted using transform. In the case that the object
-  // gets the same layout after changing position property, although no
-  // re-raster (rect-based invalidation) is needed, display items should
-  // still update their paint offset.
-  // For SPv175, invalidation for paint offset change is done during PrePaint.
-  if (old_style && !RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    bool new_style_is_fixed_position =
-        Style()->GetPosition() == EPosition::kFixed;
-    bool old_style_is_fixed_position =
-        old_style->GetPosition() == EPosition::kFixed;
-    if (new_style_is_fixed_position != old_style_is_fixed_position) {
-      ObjectPaintInvalidator(*this)
-          .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-              PaintInvalidationReason::kStyle);
-    }
-  }
-
   // The used style for body background may change due to computed style change
   // on the document element because of background stealing.
   // Refer to backgroundStolenForBeingBody() and
@@ -429,8 +412,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     }
   }
 
-  if (old_style && RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      HasLayer() && !Layer()->NeedsRepaint()) {
+  if (old_style && HasLayer() && !Layer()->NeedsRepaint()) {
     if (old_style->BackfaceVisibility() != StyleRef().BackfaceVisibility()) {
       // We need to repaint the layer to update the backface visibility value of
       // the paint chunk.
