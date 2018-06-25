@@ -151,7 +151,7 @@ class VIEWS_EXPORT ViewsDelegate {
   // Retrieves the default window icon to use for windows if none is specified.
   virtual HICON GetDefaultWindowIcon() const;
   // Retrieves the small window icon to use for windows if none is specified.
-  virtual HICON GetSmallWindowIcon() const = 0;
+  virtual HICON GetSmallWindowIcon() const;
   // Returns true if the window passed in is in the Windows 8 metro
   // environment.
   virtual bool IsWindowInMetro(gfx::NativeWindow window) const;
@@ -171,7 +171,7 @@ class VIEWS_EXPORT ViewsDelegate {
 
   // Gives the platform a chance to modify the properties of a Widget.
   virtual void OnBeforeWidgetInit(Widget::InitParams* params,
-                                  internal::NativeWidgetDelegate* delegate) = 0;
+                                  internal::NativeWidgetDelegate* delegate);
 
   // Returns the password reveal duration for Textfield.
   virtual base::TimeDelta GetTextfieldPasswordRevealDuration();

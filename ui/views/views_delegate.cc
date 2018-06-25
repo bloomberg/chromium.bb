@@ -80,6 +80,10 @@ HICON ViewsDelegate::GetDefaultWindowIcon() const {
   return nullptr;
 }
 
+HICON ViewsDelegate::GetSmallWindowIcon() const {
+  return nullptr;
+}
+
 bool ViewsDelegate::IsWindowInMetro(gfx::NativeWindow window) const {
   return false;
 }
@@ -99,6 +103,10 @@ void ViewsDelegate::AddRef() {
 
 void ViewsDelegate::ReleaseRef() {
 }
+
+void ViewsDelegate::OnBeforeWidgetInit(
+    Widget::InitParams* params,
+    internal::NativeWidgetDelegate* delegate) {}
 
 base::TimeDelta ViewsDelegate::GetTextfieldPasswordRevealDuration() {
   return base::TimeDelta();
