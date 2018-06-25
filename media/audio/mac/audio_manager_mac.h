@@ -16,6 +16,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/mac/audio_device_listener_mac.h"
 
@@ -214,6 +215,8 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // Set to true in the destructor. Ensures that methods that touches native
   // Core Audio APIs are not executed during shutdown.
   bool in_shutdown_;
+
+  base::WeakPtrFactory<AudioManagerMac> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerMac);
 };

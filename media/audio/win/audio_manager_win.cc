@@ -92,12 +92,20 @@ AudioManagerWin::AudioManagerWin(std::unique_ptr<AudioThread> audio_thread,
 
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
 
-  // WARNING: This is executed on the UI loop, do not add any code here which
-  // loads libraries or attempts to call out into the OS.  Instead add such code
-  // to the InitializeOnAudioThread() method below.
+  // WARNING: This may be executed on the UI loop, do not add any code here
+  // which loads libraries or attempts to call out into the OS.  Instead add
+  // such code to the InitializeOnAudioThread() method below.
+
+  // In case we are already on the audio thread (i.e. when running out of
+  // process audio), don't post.
+  if (GetTaskRunner()->BelongsToCurrentThread()) {
+    this->InitializeOnAudioThread();
+    return;
+  }
 
   // Task must be posted last to avoid races from handing out "this" to the
-  // audio thread.
+  // audio thread. Unretained is safe since we join the audio thread before
+  // destructing |this|.
   GetTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&AudioManagerWin::InitializeOnAudioThread,
                             base::Unretained(this)));
