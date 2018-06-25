@@ -147,17 +147,25 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
 
   if (model_error_) {
     activation_request_.error_handler.Run(model_error_.value());
-  } else {
-    auto activation_response = std::make_unique<DataTypeActivationResponse>();
-    activation_response->model_type_state = model_type_state_;
-    activation_response->type_processor =
-        std::make_unique<ModelTypeProcessorProxy>(
-            weak_ptr_factory_for_worker_.GetWeakPtr(),
-            base::ThreadTaskRunnerHandle::Get());
-    std::move(start_callback_).Run(std::move(activation_response));
+    start_callback_.Reset();
+    return;
   }
 
-  start_callback_.Reset();
+  if (!model_type_state_.has_cache_guid()) {
+    model_type_state_.set_cache_guid(activation_request_.cache_guid);
+  }
+  // TODO(crbug.com/820049): Check if there is a mismatch between the retrieved
+  //   cache guid and stored in |model_type_state_| and the one received from
+  //   sync and stored it |activation_request|. Note that many clients will have
+  //   an empty proto field, since the field was introduced recently.
+
+  auto activation_response = std::make_unique<DataTypeActivationResponse>();
+  activation_response->model_type_state = model_type_state_;
+  activation_response->type_processor =
+      std::make_unique<ModelTypeProcessorProxy>(
+          weak_ptr_factory_for_worker_.GetWeakPtr(),
+          base::ThreadTaskRunnerHandle::Get());
+  std::move(start_callback_).Run(std::move(activation_response));
 }
 
 bool ClientTagBasedModelTypeProcessor::IsConnected() const {
