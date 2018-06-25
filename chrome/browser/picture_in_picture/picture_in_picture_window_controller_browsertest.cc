@@ -684,7 +684,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
-#if defined(OS_CHROMEOS)
+// https://crbug.com/855883
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #define MAYBE_MultipleBrowserWindowOnePIPWindow \
   DISABLED_MultipleBrowserWindowOnePIPWindow
 #else
