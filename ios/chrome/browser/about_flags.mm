@@ -372,6 +372,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"web-frame-messaging", flag_descriptions::kWebFrameMessagingName,
      flag_descriptions::kWebFrameMessagingDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kWebFrameMessaging)},
+    {"copy-image", flag_descriptions::kCopyImageName,
+     flag_descriptions::kCopyImageDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kCopyImage)},
 };
 
 // Add all switches from experimental flags to |command_line|.

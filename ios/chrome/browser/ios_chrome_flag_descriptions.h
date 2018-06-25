@@ -101,6 +101,10 @@ extern const char kContextualSearchDescription[];
 extern const char kContextMenuElementPostMessageName[];
 extern const char kContextMenuElementPostMessageDescription[];
 
+// Title and description for the flag to enable copying image.
+extern const char kCopyImageName[];
+extern const char kCopyImageDescription[];
+
 // Title and description for the flag to enable drag and drop.
 extern const char kDragAndDropName[];
 extern const char kDragAndDropDescription[];
