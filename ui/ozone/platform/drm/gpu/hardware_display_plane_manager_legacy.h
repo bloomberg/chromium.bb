@@ -29,8 +29,9 @@ class HardwareDisplayPlaneManagerLegacy : public HardwareDisplayPlaneManager {
   bool ValidatePrimarySize(const DrmOverlayPlane& primary,
                            const drmModeModeInfo& mode) override;
 
-  void RequestPlanesReadyCallback(const DrmOverlayPlaneList& planes,
-                                  base::OnceClosure callback) override;
+  void RequestPlanesReadyCallback(
+      DrmOverlayPlaneList planes,
+      base::OnceCallback<void(DrmOverlayPlaneList)> callback) override;
 
  protected:
   bool SetPlaneData(HardwareDisplayPlaneList* plane_list,

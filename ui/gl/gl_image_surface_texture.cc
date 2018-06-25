@@ -88,7 +88,7 @@ bool GLImageSurfaceTexture::ScheduleOverlayPlane(
     const gfx::Rect& bounds_rect,
     const gfx::RectF& crop_rect,
     bool enable_blend,
-    gfx::GpuFence* gpu_fence) {
+    std::unique_ptr<gfx::GpuFence> gpu_fence) {
   return false;
 }
 

@@ -3579,7 +3579,7 @@ class MockGLImage : public gl::GLImage {
                     const gfx::Rect&,
                     const gfx::RectF&,
                     bool,
-                    gfx::GpuFence* gpu_fence));
+                    std::unique_ptr<gfx::GpuFence> gpu_fence));
   MOCK_METHOD1(SetColorSpace, void(const gfx::ColorSpace&));
   MOCK_METHOD0(Flush, void());
   MOCK_METHOD3(OnMemoryDump,

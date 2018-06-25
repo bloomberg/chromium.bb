@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_console_buffer.h"
@@ -364,10 +365,10 @@ DrmOverlayPlane ScreenManager::GetModesetBuffer(
       // to see if the controller supports the buffers format
       // modifier.
       if (modifiers.empty())
-        return *primary;
+        return primary->Clone();
       for (const uint64_t modifier : modifiers) {
         if (modifier == primary->buffer->GetFormatModifier())
-          return *primary;
+          return primary->Clone();
       }
     }
   }

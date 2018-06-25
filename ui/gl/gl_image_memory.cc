@@ -10,6 +10,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_enums.h"
@@ -498,13 +499,14 @@ bool GLImageMemory::CopyTexSubImage(unsigned target,
   return true;
 }
 
-bool GLImageMemory::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                                         int z_order,
-                                         gfx::OverlayTransform transform,
-                                         const gfx::Rect& bounds_rect,
-                                         const gfx::RectF& crop_rect,
-                                         bool enable_blend,
-                                         gfx::GpuFence* gpu_fence) {
+bool GLImageMemory::ScheduleOverlayPlane(
+    gfx::AcceleratedWidget widget,
+    int z_order,
+    gfx::OverlayTransform transform,
+    const gfx::Rect& bounds_rect,
+    const gfx::RectF& crop_rect,
+    bool enable_blend,
+    std::unique_ptr<gfx::GpuFence> gpu_fence) {
   return false;
 }
 

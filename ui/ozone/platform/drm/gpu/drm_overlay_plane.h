@@ -27,7 +27,7 @@ typedef std::vector<DrmOverlayPlane> DrmOverlayPlaneList;
 struct DrmOverlayPlane {
   // Simpler constructor for the primary plane.
   explicit DrmOverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
-                           gfx::GpuFence* gpu_fence);
+                           std::unique_ptr<gfx::GpuFence> gpu_fence);
 
   DrmOverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
                   int z_order,
@@ -35,8 +35,9 @@ struct DrmOverlayPlane {
                   const gfx::Rect& display_bounds,
                   const gfx::RectF& crop_rect,
                   bool enable_blend,
-                  gfx::GpuFence* gpu_fence);
-  DrmOverlayPlane(const DrmOverlayPlane& other);
+                  std::unique_ptr<gfx::GpuFence> gpu_fence);
+  DrmOverlayPlane(DrmOverlayPlane&& other);
+  DrmOverlayPlane& operator=(DrmOverlayPlane&& other);
 
   bool operator<(const DrmOverlayPlane& plane) const;
 
@@ -46,13 +47,18 @@ struct DrmOverlayPlane {
   static const DrmOverlayPlane* GetPrimaryPlane(
       const DrmOverlayPlaneList& overlays);
 
+  DrmOverlayPlane Clone() const;
+
+  static std::vector<DrmOverlayPlane> Clone(
+      const std::vector<DrmOverlayPlane>& planes);
+
   scoped_refptr<ScanoutBuffer> buffer;
   int z_order = 0;
   gfx::OverlayTransform plane_transform;
   gfx::Rect display_bounds;
   gfx::RectF crop_rect;
   bool enable_blend;
-  gfx::GpuFence* gpu_fence;
+  std::unique_ptr<gfx::GpuFence> gpu_fence;
 };
 
 }  // namespace ui

@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
@@ -181,9 +182,12 @@ TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
 
   drm_->set_page_flip_expectation(false);
 
+  ui::DrmOverlayPlaneList planes;
+  planes.push_back(plane.Clone());
+
   // Window was re-sized, so the expectation is to re-create the buffers first.
   window->SchedulePageFlip(
-      std::vector<ui::DrmOverlayPlane>(1, ui::DrmOverlayPlane(plane)),
+      ui::DrmOverlayPlane::Clone(planes),
       base::BindOnce(&DrmWindowTest::OnSwapBuffers, base::Unretained(this)));
   EXPECT_EQ(1, on_swap_buffers_count_);
   EXPECT_EQ(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS,
@@ -192,7 +196,7 @@ TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
             last_presentation_feedback_.flags);
 
   window->SchedulePageFlip(
-      std::vector<ui::DrmOverlayPlane>(1, ui::DrmOverlayPlane(plane)),
+      ui::DrmOverlayPlane::Clone(planes),
       base::BindOnce(&DrmWindowTest::OnSwapBuffers, base::Unretained(this)));
   EXPECT_EQ(2, on_swap_buffers_count_);
   EXPECT_EQ(gfx::SwapResult::SWAP_FAILED, last_swap_buffers_result_);

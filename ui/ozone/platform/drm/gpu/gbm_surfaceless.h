@@ -32,7 +32,7 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
                  std::unique_ptr<DrmWindowProxy> window,
                  gfx::AcceleratedWidget widget);
 
-  void QueueOverlayPlane(const DrmOverlayPlane& plane);
+  void QueueOverlayPlane(DrmOverlayPlane plane);
 
   // gl::GLSurface:
   bool Initialize(gl::GLSurfaceFormat format) override;

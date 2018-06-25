@@ -11,6 +11,7 @@
 #include "base/files/platform_file.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
@@ -501,9 +502,9 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
 
   scoped_refptr<ui::ScanoutBuffer> buffer = buffer_generator_->Create(
       drm_, DRM_FORMAT_XRGB8888, {}, GetPrimaryBounds().size());
-  window->SchedulePageFlip(
-      std::vector<ui::DrmOverlayPlane>(1, ui::DrmOverlayPlane(buffer, nullptr)),
-      base::DoNothing());
+  ui::DrmOverlayPlaneList planes;
+  planes.push_back(ui::DrmOverlayPlane(buffer, nullptr));
+  window->SchedulePageFlip(std::move(planes), base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
@@ -527,9 +528,9 @@ TEST_F(ScreenManagerTest, RejectBufferWithIncompatibleModifiers) {
                                             I915_FORMAT_MOD_X_TILED,
                                             GetPrimaryBounds().size());
 
-  window->SchedulePageFlip(
-      std::vector<ui::DrmOverlayPlane>(1, ui::DrmOverlayPlane(buffer, nullptr)),
-      base::DoNothing());
+  ui::DrmOverlayPlaneList planes;
+  planes.push_back(ui::DrmOverlayPlane(buffer, nullptr));
+  window->SchedulePageFlip(std::move(planes), base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);

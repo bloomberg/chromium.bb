@@ -6,18 +6,31 @@
 
 #include <stddef.h>
 
+#include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
 
+namespace {
+
+std::unique_ptr<gfx::GpuFence> CloneGpuFence(
+    const std::unique_ptr<gfx::GpuFence>& gpu_fence) {
+  if (!gpu_fence)
+    return nullptr;
+  return std::make_unique<gfx::GpuFence>(
+      gfx::CloneHandleForIPC(gpu_fence->GetGpuFenceHandle()));
+}
+
+}  // namespace
+
 DrmOverlayPlane::DrmOverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
-                                 gfx::GpuFence* gpu_fence)
+                                 std::unique_ptr<gfx::GpuFence> gpu_fence)
     : buffer(buffer),
       plane_transform(gfx::OVERLAY_TRANSFORM_NONE),
       display_bounds(gfx::Point(), buffer->GetSize()),
       crop_rect(0, 0, 1, 1),
       enable_blend(false),
-      gpu_fence(gpu_fence) {}
+      gpu_fence(std::move(gpu_fence)) {}
 
 DrmOverlayPlane::DrmOverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
                                  int z_order,
@@ -25,16 +38,18 @@ DrmOverlayPlane::DrmOverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
                                  const gfx::Rect& display_bounds,
                                  const gfx::RectF& crop_rect,
                                  bool enable_blend,
-                                 gfx::GpuFence* gpu_fence)
+                                 std::unique_ptr<gfx::GpuFence> gpu_fence)
     : buffer(buffer),
       z_order(z_order),
       plane_transform(plane_transform),
       display_bounds(display_bounds),
       crop_rect(crop_rect),
       enable_blend(enable_blend),
-      gpu_fence(gpu_fence) {}
+      gpu_fence(std::move(gpu_fence)) {}
 
-DrmOverlayPlane::DrmOverlayPlane(const DrmOverlayPlane& other) = default;
+DrmOverlayPlane::DrmOverlayPlane(DrmOverlayPlane&& other) = default;
+
+DrmOverlayPlane& DrmOverlayPlane::operator=(DrmOverlayPlane&& other) = default;
 
 DrmOverlayPlane::~DrmOverlayPlane() {}
 
@@ -53,6 +68,21 @@ const DrmOverlayPlane* DrmOverlayPlane::GetPrimaryPlane(
   }
 
   return nullptr;
+}
+
+DrmOverlayPlane DrmOverlayPlane::Clone() const {
+  return DrmOverlayPlane(buffer, z_order, plane_transform, display_bounds,
+                         crop_rect, enable_blend, CloneGpuFence(gpu_fence));
+}
+
+// static
+std::vector<DrmOverlayPlane> DrmOverlayPlane::Clone(
+    const std::vector<DrmOverlayPlane>& planes) {
+  std::vector<DrmOverlayPlane> cloned_planes;
+  cloned_planes.reserve(planes.size());
+  for (auto& plane : planes)
+    cloned_planes.push_back(plane.Clone());
+  return cloned_planes;
 }
 
 }  // namespace ui

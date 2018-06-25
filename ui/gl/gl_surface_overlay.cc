@@ -32,11 +32,10 @@ GLSurfaceOverlay::GLSurfaceOverlay(GLSurfaceOverlay&& other) = default;
 
 GLSurfaceOverlay::~GLSurfaceOverlay() {}
 
-bool GLSurfaceOverlay::ScheduleOverlayPlane(
-    gfx::AcceleratedWidget widget) const {
+bool GLSurfaceOverlay::ScheduleOverlayPlane(gfx::AcceleratedWidget widget) {
   return image_->ScheduleOverlayPlane(widget, z_order_, transform_,
                                       bounds_rect_, crop_rect_, enable_blend_,
-                                      gpu_fence_.get());
+                                      std::move(gpu_fence_));
 }
 
 void GLSurfaceOverlay::Flush() const {

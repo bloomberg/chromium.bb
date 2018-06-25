@@ -64,9 +64,10 @@ bool CrtcController::Modeset(const DrmOverlayPlane& plane,
   // planes have been updated. However if a page flip is still pending, set the
   // pending planes to the same values so that the callback keeps the correct
   // state.
-  current_planes_ = std::vector<DrmOverlayPlane>(1, plane);
+  current_planes_.clear();
+  current_planes_.push_back(plane.Clone());
   if (page_flip_request_.get())
-    pending_planes_ = current_planes_;
+    pending_planes_ = DrmOverlayPlane::Clone(current_planes_);
 
   ResetCursor();
 
@@ -115,7 +116,7 @@ bool CrtcController::SchedulePageFlip(
     page_flip_request->Signal(gfx::SwapResult::SWAP_ACK,
                               gfx::PresentationFeedback());
   } else {
-    pending_planes_ = overlays;
+    pending_planes_ = DrmOverlayPlane::Clone(overlays);
     page_flip_request_ = page_flip_request;
   }
 

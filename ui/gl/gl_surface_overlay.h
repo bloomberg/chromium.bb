@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gl/gl_export.h"
@@ -34,10 +35,10 @@ class GL_EXPORT GLSurfaceOverlay {
   ~GLSurfaceOverlay();
 
   // Schedule the image as an overlay plane to be shown at swap time for
-  // |widget|. The caller needs to ensure that after calling this method the
-  // object will stay valid for as long as the associated gpu fence needs to
-  // remain valid (typically until after displaying the overlay).
-  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget) const;
+  // |widget|.
+  //
+  // This should be called at most once.
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget);
 
   void Flush() const;
 

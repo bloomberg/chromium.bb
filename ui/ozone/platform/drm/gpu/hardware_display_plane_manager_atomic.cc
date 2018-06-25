@@ -161,10 +161,10 @@ bool HardwareDisplayPlaneManagerAtomic::ValidatePrimarySize(
 }
 
 void HardwareDisplayPlaneManagerAtomic::RequestPlanesReadyCallback(
-    const DrmOverlayPlaneList& planes,
-    base::OnceClosure callback) {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                   std::move(callback));
+    DrmOverlayPlaneList planes,
+    base::OnceCallback<void(DrmOverlayPlaneList planes)> callback) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(planes)));
 }
 
 bool HardwareDisplayPlaneManagerAtomic::SetPlaneData(

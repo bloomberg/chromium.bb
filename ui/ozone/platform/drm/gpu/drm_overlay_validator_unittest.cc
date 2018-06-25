@@ -12,6 +12,7 @@
 #include "base/files/platform_file.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
@@ -191,10 +192,9 @@ void DrmOverlayValidatorTest::AddPlane(const ui::OverlayCheck_Params& params) {
   scoped_refptr<ui::ScanoutBuffer> scanout_buffer = buffer_generator_->Create(
       drm, ui::GetFourCCFormatFromBufferFormat(params.format), {},
       params.buffer_size);
-  ui::DrmOverlayPlane plane(std::move(scanout_buffer), params.plane_z_order,
-                            params.transform, params.display_rect,
-                            params.crop_rect, true, nullptr);
-  plane_list_.push_back(plane);
+  plane_list_.push_back(ui::DrmOverlayPlane(
+      std::move(scanout_buffer), params.plane_z_order, params.transform,
+      params.display_rect, params.crop_rect, true, nullptr));
 }
 
 void DrmOverlayValidatorTest::TearDown() {

@@ -43,7 +43,7 @@ class GFX_EXPORT NativePixmapDmaBuf : public gfx::NativePixmap {
                             const gfx::Rect& display_bounds,
                             const gfx::RectF& crop_rect,
                             bool enable_blend,
-                            gfx::GpuFence* gpu_fence) override;
+                            std::unique_ptr<gfx::GpuFence> gpu_fence) override;
   gfx::NativePixmapHandle ExportHandle() override;
 
  protected:
