@@ -2033,7 +2033,7 @@ public class LocationBarLayout extends FrameLayout
      *                        scrim.
      */
     protected void updateFadingBackgroundView(boolean visible, boolean ignoreNtpChecks) {
-        if (mScrim == null) return;
+        if (mScrim == null || mScrimParams == null) return;
         NewTabPage ntp = mToolbarDataProvider.getNewTabPageForCurrentTab();
         boolean locationBarShownInNTP = ntp != null && ntp.isLocationBarShownInNTP();
 
