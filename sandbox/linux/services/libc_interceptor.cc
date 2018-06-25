@@ -100,18 +100,18 @@ bool ReadTimeStruct(base::PickleIterator* iter,
   return true;
 }
 
-void WriteTimeStruct(base::Pickle* pickle, const struct tm* time) {
-  pickle->WriteInt(time->tm_sec);
-  pickle->WriteInt(time->tm_min);
-  pickle->WriteInt(time->tm_hour);
-  pickle->WriteInt(time->tm_mday);
-  pickle->WriteInt(time->tm_mon);
-  pickle->WriteInt(time->tm_year);
-  pickle->WriteInt(time->tm_wday);
-  pickle->WriteInt(time->tm_yday);
-  pickle->WriteInt(time->tm_isdst);
-  pickle->WriteInt(time->tm_gmtoff);
-  pickle->WriteString(time->tm_zone);
+void WriteTimeStruct(base::Pickle* pickle, const struct tm& time) {
+  pickle->WriteInt(time.tm_sec);
+  pickle->WriteInt(time.tm_min);
+  pickle->WriteInt(time.tm_hour);
+  pickle->WriteInt(time.tm_mday);
+  pickle->WriteInt(time.tm_mon);
+  pickle->WriteInt(time.tm_year);
+  pickle->WriteInt(time.tm_wday);
+  pickle->WriteInt(time.tm_yday);
+  pickle->WriteInt(time.tm_isdst);
+  pickle->WriteInt(time.tm_gmtoff);
+  pickle->WriteString(time.tm_zone);
 }
 
 // See
@@ -150,18 +150,11 @@ bool HandleLocalTime(int fd,
 
   time_t time;
   memcpy(&time, time_string.data(), sizeof(time));
-  // We use |localtime| here because we need the |tm_zone| field to be filled
-  // out. Since we are a single-threaded process, this is safe.
-  const struct tm* expanded_time = localtime(&time);
+  struct tm expanded_time = {};
+  localtime_r(&time, &expanded_time);
 
   base::Pickle reply;
-  if (expanded_time) {
-    WriteTimeStruct(&reply, expanded_time);
-  } else {
-    // The {} constructor ensures the struct is 0-initialized.
-    struct tm zeroed_time = {};
-    WriteTimeStruct(&reply, &zeroed_time);
-  }
+  WriteTimeStruct(&reply, expanded_time);
 
   struct msghdr msg;
   memset(&msg, 0, sizeof(msg));
