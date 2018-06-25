@@ -301,23 +301,13 @@ Polymer({
     if (languageState.language.code == prospectiveUILanguage)
       return true;
 
-    // Check if the language is allowed by the current "AllowedUILocales"
+    // Check if the language is prohibited by the current "AllowedUILocales"
     // policy.
-    if (!languageState.language.isAllowedUILocale)
+    if (languageState.language.isProhibitedUILocale)
       return true;
 
     // Otherwise, the prospective language can be changed to this language.
     return false;
-  },
-
-  /**
-   * @param {!chrome.languageSettingsPrivate.Language} language
-   * @return {string} 'userPolicy' if the language is not allowed by the
-   *     AllowedUILocales policy, 'none' otherwise.
-   * @private
-   */
-  getPolicyIndicatorStatus_: function(language) {
-    return (language.isAllowedUILocale ? 'none' : 'userPolicy');
   },
 
   /**
