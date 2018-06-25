@@ -148,14 +148,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("videoOpenDrive"),
                       TestCase("videoOpenDrive").EnableDriveFs()));
 
-// TIMEOUT PASS on MSAN, https://crbug.com/836254
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_OpenAudioFiles DISABLED_OpenAudioFiles
-#else
-#define MAYBE_OpenAudioFiles OpenAudioFiles
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_OpenAudioFiles, /* open_audio_files.js */
+    OpenAudioFiles, /* open_audio_files.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("audioOpenCloseDownloads"),
                       TestCase("audioOpenCloseDownloads").InGuestMode(),
