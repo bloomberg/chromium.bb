@@ -75,8 +75,9 @@ std::atomic<int> g_data_index;
 // Dump offsets when a memory dump is requested. Used only if
 // switches::kDevtoolsInstrumentationDumping is set.
 class OrderfileMemoryDumpHook : public base::trace_event::MemoryDumpProvider {
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override {
+  NO_INSTRUMENT_FUNCTION bool OnMemoryDump(
+      const base::trace_event::MemoryDumpArgs& args,
+      base::trace_event::ProcessMemoryDump* pmd) override {
     // Disable instrumentation now to cut down on orderfile pollution.
     if (!Disable()) {
       return true;  // A dump has already been started.
