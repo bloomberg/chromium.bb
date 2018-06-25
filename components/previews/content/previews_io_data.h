@@ -17,10 +17,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_delegate.h"
 #include "components/previews/content/previews_optimization_guide.h"
-#include "components/previews/core/blacklist_data.h"
 #include "components/previews/core/previews_black_list.h"
-#include "components/previews/core/previews_black_list_delegate.h"
 #include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_logger.h"
@@ -28,12 +28,15 @@
 
 class GURL;
 
+namespace blacklist {
+class OptOutStore;
+}
+
 namespace net {
 class URLRequest;
 }
 
 namespace previews {
-class PreviewsOptOutStore;
 class PreviewsUIService;
 
 typedef base::Callback<bool(PreviewsType)> PreviewsIsEnabledCallback;
@@ -42,14 +45,14 @@ typedef base::Callback<bool(PreviewsType)> PreviewsIsEnabledCallback;
 // previews/ objects. Created on the UI thread, but used only on the IO thread
 // after initialization.
 class PreviewsIOData : public PreviewsDecider,
-                       public PreviewsBlacklistDelegate {
+                       public blacklist::OptOutBlacklistDelegate {
  public:
   PreviewsIOData(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~PreviewsIOData() override;
 
-  // PreviewsBlacklistDelegate:
+  // blacklist::OptOutBlacklistDelegate:
   void OnNewBlacklistedHost(const std::string& host, base::Time time) override;
   void OnUserBlacklistedStatusChange(bool blacklisted) override;
   void OnBlacklistCleared(base::Time time) override;
@@ -58,10 +61,10 @@ class PreviewsIOData : public PreviewsDecider,
   // InitializeOnIOThread on the IO thread.
   virtual void Initialize(
       base::WeakPtr<PreviewsUIService> previews_ui_service,
-      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+      std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       const PreviewsIsEnabledCallback& is_enabled_callback,
-      BlacklistData::AllowedTypesAndVersions allowed_previews);
+      blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews);
 
   // Adds log message of the navigation asynchronously.
   void LogPreviewNavigation(const GURL& url,
@@ -122,8 +125,8 @@ class PreviewsIOData : public PreviewsDecider,
   // Posts a task to SetIOData for |previews_ui_service_| on the UI thread with
   // a weak pointer to |this|. Virtualized for testing.
   virtual void InitializeOnIOThread(
-      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
-      BlacklistData::AllowedTypesAndVersions allowed_previews);
+      std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
+      blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews);
 
   // Sets a blacklist for testing.
   void SetPreviewsBlacklistForTesting(

@@ -13,11 +13,11 @@ namespace previews {
 PreviewsUIService::PreviewsUIService(
     PreviewsIOData* previews_io_data,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-    std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+    std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
     std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
     const PreviewsIsEnabledCallback& is_enabled_callback,
     std::unique_ptr<PreviewsLogger> logger,
-    BlacklistData::AllowedTypesAndVersions allowed_previews)
+    blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews)
     : io_task_runner_(io_task_runner),
       logger_(std::move(logger)),
       weak_factory_(this) {

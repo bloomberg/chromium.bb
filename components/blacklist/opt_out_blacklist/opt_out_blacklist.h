@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CORE_OPT_OUT_BLACKLIST_H_
-#define COMPONENTS_PREVIEWS_CORE_OPT_OUT_BLACKLIST_H_
+#ifndef COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_BLACKLIST_H_
+#define COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_BLACKLIST_H_
 
 #include <stdint.h>
 
@@ -19,17 +19,17 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "components/previews/core/blacklist_data.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 
 namespace base {
 class Clock;
 }
 
-namespace previews {
+namespace blacklist {
 
 class BlacklistData;
-class PreviewsBlacklistDelegate;
-class PreviewsOptOutStore;
+class OptOutBlacklistDelegate;
+class OptOutStore;
 
 class OptOutBlacklist {
  public:
@@ -39,9 +39,9 @@ class OptOutBlacklist {
   // it will be used to load the in-memory map asynchronously.
   // |blacklist_delegate| is a single object listening for blacklist events, and
   // it is guaranteed to outlive the life time of |this|.
-  OptOutBlacklist(std::unique_ptr<PreviewsOptOutStore> opt_out_store,
+  OptOutBlacklist(std::unique_ptr<OptOutStore> opt_out_store,
                   base::Clock* clock,
-                  PreviewsBlacklistDelegate* blacklist_delegate);
+                  OptOutBlacklistDelegate* blacklist_delegate);
   virtual ~OptOutBlacklist();
 
   // Creates the BlacklistData that backs the blacklist.
@@ -63,7 +63,7 @@ class OptOutBlacklist {
 
   // Synchronously determines if the action should be allowed for |host_name|
   // and |type|. Returns the reason the blacklist disallowed the action, or
-  // kAllowed if the preview is allowed. Record checked reasons in
+  // kAllowed if the action is allowed. Record checked reasons in
   // |passed_reasons|. |ignore_long_term_black_list_rules| will cause session,
   // type, and host rules, but the session rule will still be queried.
   BlacklistReason IsLoadedAndAllowed(
@@ -159,7 +159,7 @@ class OptOutBlacklist {
   bool loaded_;
 
   // The backing store of the blacklist information.
-  std::unique_ptr<PreviewsOptOutStore> opt_out_store_;
+  std::unique_ptr<OptOutStore> opt_out_store_;
 
   // Callbacks to be run after loading information from the backing store has
   // completed.
@@ -169,7 +169,7 @@ class OptOutBlacklist {
 
   // The delegate listening to this blacklist. |blacklist_delegate_| lifetime is
   // guaranteed to outlive |this|.
-  PreviewsBlacklistDelegate* blacklist_delegate_;
+  OptOutBlacklistDelegate* blacklist_delegate_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -178,6 +178,6 @@ class OptOutBlacklist {
   DISALLOW_COPY_AND_ASSIGN(OptOutBlacklist);
 };
 
-}  // namespace previews
+}  // namespace blacklist
 
-#endif  // COMPONENTS_PREVIEWS_CORE_OPT_OUT_BLACKLIST_H_
+#endif  // COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_BLACKLIST_H_

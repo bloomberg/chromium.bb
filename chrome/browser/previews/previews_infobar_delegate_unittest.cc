@@ -34,6 +34,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -44,7 +45,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/previews/content/previews_io_data.h"
 #include "components/previews/content/previews_ui_service.h"
-#include "components/previews/core/blacklist_data.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_logger.h"
@@ -203,7 +203,7 @@ class PreviewsInfoBarDelegateUnitTest
         previews_io_data_.get(), base::MessageLoopCurrent::Get()->task_runner(),
         nullptr /* previews_opt_out_store */, nullptr /* previews_opt_guide */,
         base::BindRepeating(&IsPreviewsEnabled), std::move(previews_logger),
-        previews::BlacklistData::AllowedTypesAndVersions());
+        blacklist::BlacklistData::AllowedTypesAndVersions());
     base::RunLoop().RunUntilIdle();
   }
 

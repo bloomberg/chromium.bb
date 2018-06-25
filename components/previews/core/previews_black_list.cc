@@ -18,20 +18,20 @@ namespace previews {
 namespace {
 
 PreviewsEligibilityReason BlacklistReasonToPreviewsReason(
-    BlacklistReason reason) {
+    blacklist::BlacklistReason reason) {
   switch (reason) {
-    case BlacklistReason::kBlacklistNotLoaded:
+    case blacklist::BlacklistReason::kBlacklistNotLoaded:
       return PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED;
-    case BlacklistReason::kUserOptedOutInSession:
+    case blacklist::BlacklistReason::kUserOptedOutInSession:
       return PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT;
-    case BlacklistReason::kUserOptedOutInGeneral:
+    case blacklist::BlacklistReason::kUserOptedOutInGeneral:
       return PreviewsEligibilityReason::USER_BLACKLISTED;
-    case BlacklistReason::kUserOptedOutOfHost:
+    case blacklist::BlacklistReason::kUserOptedOutOfHost:
       return PreviewsEligibilityReason::HOST_BLACKLISTED;
-    case BlacklistReason::kUserOptedOutOfType:
+    case blacklist::BlacklistReason::kUserOptedOutOfType:
       NOTREACHED() << "Previews does not support type-base blacklisting";
       return PreviewsEligibilityReason::ALLOWED;
-    case BlacklistReason::kAllowed:
+    case blacklist::BlacklistReason::kAllowed:
       return PreviewsEligibilityReason::ALLOWED;
   }
 }
@@ -39,11 +39,13 @@ PreviewsEligibilityReason BlacklistReasonToPreviewsReason(
 }
 
 PreviewsBlackList::PreviewsBlackList(
-    std::unique_ptr<PreviewsOptOutStore> opt_out_store,
+    std::unique_ptr<blacklist::OptOutStore> opt_out_store,
     base::Clock* clock,
-    PreviewsBlacklistDelegate* blacklist_delegate,
-    BlacklistData::AllowedTypesAndVersions allowed_types)
-    : OptOutBlacklist(std::move(opt_out_store), clock, blacklist_delegate),
+    blacklist::OptOutBlacklistDelegate* blacklist_delegate,
+    blacklist::BlacklistData::AllowedTypesAndVersions allowed_types)
+    : blacklist::OptOutBlacklist(std::move(opt_out_store),
+                                 clock,
+                                 blacklist_delegate),
       allowed_types_(std::move(allowed_types)) {
   DCHECK(blacklist_delegate);
   Init();
@@ -82,8 +84,8 @@ bool PreviewsBlackList::ShouldUseTypePolicy(base::TimeDelta* duration,
   return false;
 }
 
-BlacklistData::AllowedTypesAndVersions PreviewsBlackList::GetAllowedTypes()
-    const {
+blacklist::BlacklistData::AllowedTypesAndVersions
+PreviewsBlackList::GetAllowedTypes() const {
   return allowed_types_;
 }
 
@@ -100,7 +102,8 @@ base::Time PreviewsBlackList::AddPreviewNavigation(const GURL& url,
       base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(opt_out);
 
-  return OptOutBlacklist::AddEntry(url.host(), opt_out, static_cast<int>(type));
+  return blacklist::OptOutBlacklist::AddEntry(url.host(), opt_out,
+                                              static_cast<int>(type));
 }
 
 PreviewsEligibilityReason PreviewsBlackList::IsLoadedAndAllowed(
@@ -110,10 +113,11 @@ PreviewsEligibilityReason PreviewsBlackList::IsLoadedAndAllowed(
     std::vector<PreviewsEligibilityReason>* passed_reasons) const {
   DCHECK(url.has_host());
 
-  std::vector<BlacklistReason> passed_blacklist_reasons;
-  BlacklistReason reason = OptOutBlacklist::IsLoadedAndAllowed(
-      url.host(), static_cast<int>(type), ignore_long_term_black_list_rules,
-      &passed_blacklist_reasons);
+  std::vector<blacklist::BlacklistReason> passed_blacklist_reasons;
+  blacklist::BlacklistReason reason =
+      blacklist::OptOutBlacklist::IsLoadedAndAllowed(
+          url.host(), static_cast<int>(type), ignore_long_term_black_list_rules,
+          &passed_blacklist_reasons);
   for (auto passed_reason : passed_blacklist_reasons) {
     passed_reasons->push_back(BlacklistReasonToPreviewsReason(passed_reason));
   }

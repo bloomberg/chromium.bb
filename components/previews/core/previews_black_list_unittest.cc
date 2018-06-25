@@ -22,10 +22,10 @@
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/previews/core/previews_black_list_delegate.h"
-#include "components/previews/core/previews_black_list_item.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_delegate.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/previews_opt_out_store.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,11 +37,11 @@ namespace {
 
 // Mock class to test that PreviewsBlackList notifies the delegate with correct
 // events (e.g. New host blacklisted, user blacklisted, and blacklist cleared).
-class TestPreviewsBlacklistDelegate : public PreviewsBlacklistDelegate {
+class TestOptOutBlacklistDelegate : public blacklist::OptOutBlacklistDelegate {
  public:
-  TestPreviewsBlacklistDelegate() {}
+  TestOptOutBlacklistDelegate() {}
 
-  // PreviewsBlacklistDelegate:
+  // blacklist::OptOutBlacklistDelegate:
   void OnNewBlacklistedHost(const std::string& host, base::Time time) override {
   }
   void OnUserBlacklistedStatusChange(bool blacklisted) override {
@@ -52,10 +52,11 @@ class TestPreviewsBlacklistDelegate : public PreviewsBlacklistDelegate {
 
 class TestPreviewsBlackList : public PreviewsBlackList {
  public:
-  TestPreviewsBlackList(std::unique_ptr<PreviewsOptOutStore> opt_out_store,
-                        base::Clock* clock,
-                        PreviewsBlacklistDelegate* blacklist_delegate,
-                        BlacklistData::AllowedTypesAndVersions allowed_types)
+  TestPreviewsBlackList(
+      std::unique_ptr<blacklist::OptOutStore> opt_out_store,
+      base::Clock* clock,
+      blacklist::OptOutBlacklistDelegate* blacklist_delegate,
+      blacklist::BlacklistData::AllowedTypesAndVersions allowed_types)
       : PreviewsBlackList(std::move(opt_out_store),
                           clock,
                           blacklist_delegate,
@@ -104,7 +105,7 @@ class PreviewsBlackListTest : public testing::Test {
       params_.clear();
     }
 
-    BlacklistData::AllowedTypesAndVersions allowed_types;
+    blacklist::BlacklistData::AllowedTypesAndVersions allowed_types;
     allowed_types[static_cast<int>(PreviewsType::OFFLINE)] = 0;
     black_list_ = std::make_unique<TestPreviewsBlackList>(
         nullptr, &test_clock_, &blacklist_delegate_, std::move(allowed_types));
@@ -156,7 +157,7 @@ class PreviewsBlackListTest : public testing::Test {
   base::MessageLoop loop_;
 
   // Observer to |black_list_|.
-  TestPreviewsBlacklistDelegate blacklist_delegate_;
+  TestOptOutBlacklistDelegate blacklist_delegate_;
 
   base::SimpleTestClock test_clock_;
   std::map<std::string, std::string> params_;

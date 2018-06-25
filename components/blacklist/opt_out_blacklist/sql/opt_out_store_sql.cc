@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/core/previews_opt_out_store_sql.h"
+#include "components/blacklist/opt_out_blacklist/sql/opt_out_store_sql.h"
 
 #include <map>
 #include <string>
@@ -20,23 +20,23 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/previews/core/blacklist_data.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "sql/connection.h"
 #include "sql/recovery.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
-namespace previews {
+namespace blacklist {
 
 namespace {
 
-// Command line switch to change the previews per row DB size.
-const char kMaxRowsPerHost[] = "previews-max-opt-out-rows-per-host";
+// Command line switch to change the entry per host DB size.
+const char kMaxRowsPerHost[] = "max-opt-out-rows-per-host";
 
-// Command line switch to change the previews DB size.
-const char kMaxRows[] = "previews-max-opt-out-rows";
+// Command line switch to change the DB size.
+const char kMaxRows[] = "max-opt-out-rows";
 
-// Returns the maximum number of table rows allowed per host for the previews
+// Returns the maximum number of table rows allowed per host for the sql
 // opt out store. This is enforced during insertion of new navigation entries.
 int MaxRowsPerHostInOptOutDB() {
   std::string max_rows =
@@ -46,7 +46,7 @@ int MaxRowsPerHostInOptOutDB() {
   return base::StringToInt(max_rows, &value) ? value : 32;
 }
 
-// Returns the maximum number of table rows allowed for the previews opt out
+// Returns the maximum number of table rows allowed for the blacklist opt out
 // store. This is enforced during load time; thus the database can grow
 // larger than this temporarily.
 int MaxRowsInOptOutDB() {
@@ -59,29 +59,30 @@ int MaxRowsInOptOutDB() {
 // Table names use a macro instead of a const, so they can be used inline in
 // other SQL statements below.
 
-// The Previews OptOut table holds entries for hosts that should not use a
-// specified PreviewsType treatment. Also known as the previews blacklist.
-#define PREVIEWS_OPT_OUT_TABLE_NAME "previews_v1"
+// The Opt Out table holds entries for hosts that should not use a specified
+// type. Historically, this was named previews_v1.
+#define OPT_OUT_TABLE_NAME "previews_v1"
 
-// The Enabled Previews table hold the list of enabled PreviewsType
+// The Enabled types table hold the list of enabled types
 // treatments with a version for that enabled treatment. If the version
-// changes or the type becomes disabled, then any entries in the OptOut
-// table for that treatment type should be cleared.
-#define ENABLED_PREVIEWS_TABLE_NAME "enabled_previews_v1"
+// changes or the type becomes disabled, then any entries in the Opt Out
+// table for that treatment type should be cleared. Historically, this was named
+// enabled_previews_v1.
+#define ENABLED_TYPES_TABLE_NAME "enabled_previews_v1"
 
 void CreateSchema(sql::Connection* db) {
-  const char kSqlCreatePreviewsTable[] =
-      "CREATE TABLE IF NOT EXISTS " PREVIEWS_OPT_OUT_TABLE_NAME
+  const char kSqlCreateTable[] =
+      "CREATE TABLE IF NOT EXISTS " OPT_OUT_TABLE_NAME
       " (host_name VARCHAR NOT NULL,"
       " time INTEGER NOT NULL,"
       " opt_out INTEGER NOT NULL,"
       " type INTEGER NOT NULL,"
       " PRIMARY KEY(host_name, time DESC, opt_out, type))";
-  if (!db->Execute(kSqlCreatePreviewsTable))
+  if (!db->Execute(kSqlCreateTable))
     return;
 
   const char kSqlCreateEnabledTypeVersionTable[] =
-      "CREATE TABLE IF NOT EXISTS " ENABLED_PREVIEWS_TABLE_NAME
+      "CREATE TABLE IF NOT EXISTS " ENABLED_TYPES_TABLE_NAME
       " (type INTEGER NOT NULL,"
       " version INTEGER NOT NULL,"
       " PRIMARY KEY(type))";
@@ -125,10 +126,10 @@ void InitDatabase(sql::Connection* db, base::FilePath path) {
   // The total size of the database will be capped at 3200 entries.
   db->set_page_size(4096);
   db->set_cache_size(250);
-  db->set_histogram_tag("PreviewsOptOut");
+  db->set_histogram_tag("OptOutBlacklist");
   db->set_exclusive_locking();
 
-  db->set_error_callback(base::Bind(&DatabaseErrorCallback, db, path));
+  db->set_error_callback(base::BindRepeating(&DatabaseErrorCallback, db, path));
 
   base::File::Error err;
   if (!base::CreateDirectoryAndGetError(path.DirName(), &err)) {
@@ -142,13 +143,13 @@ void InitDatabase(sql::Connection* db, base::FilePath path) {
 }
 
 // Adds a new OptOut entry to the data base.
-void AddPreviewNavigationToDataBase(sql::Connection* db,
-                                    bool opt_out,
-                                    const std::string& host_name,
-                                    int type,
-                                    base::Time now) {
+void AddEntryToDataBase(sql::Connection* db,
+                        bool opt_out,
+                        const std::string& host_name,
+                        int type,
+                        base::Time now) {
   // Adds the new entry.
-  const char kSqlInsert[] = "INSERT INTO " PREVIEWS_OPT_OUT_TABLE_NAME
+  const char kSqlInsert[] = "INSERT INTO " OPT_OUT_TABLE_NAME
                             " (host_name, time, opt_out, type)"
                             " VALUES "
                             " (?, ?, ?, ?)";
@@ -156,7 +157,7 @@ void AddPreviewNavigationToDataBase(sql::Connection* db,
   sql::Statement statement_insert(
       db->GetCachedStatement(SQL_FROM_HERE, kSqlInsert));
   statement_insert.BindString(0, host_name);
-  statement_insert.BindInt64(1, now.ToInternalValue());
+  statement_insert.BindInt64(1, (now - base::Time()).InMicroseconds());
   statement_insert.BindBool(2, opt_out);
   statement_insert.BindInt(3, type);
   statement_insert.Run();
@@ -169,13 +170,12 @@ void MaybeEvictHostEntryFromDataBase(sql::Connection* db,
   // Delete the oldest entries if there are more than |MaxRowsPerHostInOptOutDB|
   // for |host_name|.
   // DELETE ... LIMIT -1 OFFSET x means delete all but the first x entries.
-  const char kSqlDeleteByHost[] =
-      "DELETE FROM " PREVIEWS_OPT_OUT_TABLE_NAME
-      " WHERE ROWID IN"
-      " (SELECT ROWID from " PREVIEWS_OPT_OUT_TABLE_NAME
-      " WHERE host_name == ?"
-      " ORDER BY time DESC"
-      " LIMIT -1 OFFSET ?)";
+  const char kSqlDeleteByHost[] = "DELETE FROM " OPT_OUT_TABLE_NAME
+                                  " WHERE ROWID IN"
+                                  " (SELECT ROWID from " OPT_OUT_TABLE_NAME
+                                  " WHERE host_name == ?"
+                                  " ORDER BY time DESC"
+                                  " LIMIT -1 OFFSET ?)";
 
   sql::Statement statement_delete_by_host(
       db->GetCachedStatement(SQL_FROM_HERE, kSqlDeleteByHost));
@@ -184,38 +184,35 @@ void MaybeEvictHostEntryFromDataBase(sql::Connection* db,
   statement_delete_by_host.Run();
 }
 
-// Deletes every preview navigation/OptOut entry for |type|.
+// Deletes every entry for |type|.
 void ClearBlacklistForTypeInDataBase(sql::Connection* db, int type) {
-  const char kSql[] =
-      "DELETE FROM " PREVIEWS_OPT_OUT_TABLE_NAME " WHERE type == ?";
+  const char kSql[] = "DELETE FROM " OPT_OUT_TABLE_NAME " WHERE type == ?";
   sql::Statement statement(db->GetUniqueStatement(kSql));
   statement.BindInt(0, type);
   statement.Run();
 }
 
-// Retrieves the list of previously enabled previews types with their version
-// from the Enabled Previews table.
-BlacklistData::AllowedTypesAndVersions GetStoredPreviews(sql::Connection* db) {
-  const char kSqlLoadEnabledPreviewsVersions[] =
-      "SELECT type, version FROM " ENABLED_PREVIEWS_TABLE_NAME;
+// Retrieves the list of previously enabled types with their version from the
+// Enabled table.
+BlacklistData::AllowedTypesAndVersions GetStoredEntries(sql::Connection* db) {
+  const char kSqlLoadEnabledTypesVersions[] =
+      "SELECT type, version FROM " ENABLED_TYPES_TABLE_NAME;
 
   sql::Statement statement(
-      db->GetUniqueStatement(kSqlLoadEnabledPreviewsVersions));
+      db->GetUniqueStatement(kSqlLoadEnabledTypesVersions));
 
-  BlacklistData::AllowedTypesAndVersions stored_previews;
+  BlacklistData::AllowedTypesAndVersions stored_entries;
   while (statement.Step()) {
     int type = statement.ColumnInt(0);
     int version = statement.ColumnInt(1);
-    stored_previews.insert({type, version});
+    stored_entries.insert({type, version});
   }
-  return stored_previews;
+  return stored_entries;
 }
 
-// Adds a newly enabled |type| with its |version| to the Enabled Previews table.
-void InsertEnabledPreviewInDataBase(sql::Connection* db,
-                                    int type,
-                                    int version) {
-  const char kSqlInsert[] = "INSERT INTO " ENABLED_PREVIEWS_TABLE_NAME
+// Adds a newly enabled |type| with its |version| to the Enabled types table.
+void InsertEnabledTypesInDataBase(sql::Connection* db, int type, int version) {
+  const char kSqlInsert[] = "INSERT INTO " ENABLED_TYPES_TABLE_NAME
                             " (type, version)"
                             " VALUES "
                             " (?, ?)";
@@ -226,12 +223,9 @@ void InsertEnabledPreviewInDataBase(sql::Connection* db,
   statement_insert.Run();
 }
 
-// Updates the |version| of an enabled previews |type| in the Enabled Previews
-// table.
-void UpdateEnabledPreviewInDataBase(sql::Connection* db,
-                                    int type,
-                                    int version) {
-  const char kSqlUpdate[] = "UPDATE " ENABLED_PREVIEWS_TABLE_NAME
+// Updates the |version| of an enabled |type| in the Enabled table.
+void UpdateEnabledTypesInDataBase(sql::Connection* db, int type, int version) {
+  const char kSqlUpdate[] = "UPDATE " ENABLED_TYPES_TABLE_NAME
                             " SET version = ?"
                             " WHERE type = ?";
 
@@ -242,47 +236,46 @@ void UpdateEnabledPreviewInDataBase(sql::Connection* db,
   statement_update.Run();
 }
 
-// Deletes a previously enabled previews |type| from the Enabled Previews table.
-void DeleteEnabledPreviewInDataBase(sql::Connection* db, int type) {
+// Deletes a previously enabled |type| from the Enabled table.
+void DeleteEnabledTypesInDataBase(sql::Connection* db, int type) {
   const char kSqlDelete[] =
-      "DELETE FROM " ENABLED_PREVIEWS_TABLE_NAME " WHERE type == ?";
+      "DELETE FROM " ENABLED_TYPES_TABLE_NAME " WHERE type == ?";
 
   sql::Statement statement_delete(db->GetUniqueStatement(kSqlDelete));
   statement_delete.BindInt(0, type);
   statement_delete.Run();
 }
 
-// Checks the current set of enabled previews (with their current version)
-// and where a preview is now disabled or has a different version, cleans up
+// Checks the current set of enabled types (with their current version)
+// and where a type is now disabled or has a different version, cleans up
 // any associated blacklist entries.
-void CheckAndReconcileEnabledPreviewsWithDataBase(
+void CheckAndReconcileEnabledTypesWithDataBase(
     sql::Connection* db,
     const BlacklistData::AllowedTypesAndVersions& allowed_types) {
-  BlacklistData::AllowedTypesAndVersions stored_previews =
-      GetStoredPreviews(db);
+  BlacklistData::AllowedTypesAndVersions stored_entries = GetStoredEntries(db);
 
   for (auto enabled_it : allowed_types) {
     int type = enabled_it.first;
     int current_version = enabled_it.second;
-    auto stored_it = stored_previews.find(type);
-    if (stored_it == stored_previews.end()) {
-      InsertEnabledPreviewInDataBase(db, type, current_version);
+    auto stored_it = stored_entries.find(type);
+    if (stored_it == stored_entries.end()) {
+      InsertEnabledTypesInDataBase(db, type, current_version);
     } else {
       if (stored_it->second != current_version) {
         DCHECK_GE(current_version, stored_it->second);
         ClearBlacklistForTypeInDataBase(db, type);
-        UpdateEnabledPreviewInDataBase(db, type, current_version);
+        UpdateEnabledTypesInDataBase(db, type, current_version);
       }
       // Erase entry from the local map to detect any newly disabled types.
-      stored_previews.erase(stored_it);
+      stored_entries.erase(stored_it);
     }
   }
 
   // Now check for any types that are no longer enabled.
-  for (auto stored_it : stored_previews) {
+  for (auto stored_it : stored_entries) {
     int type = stored_it.first;
     ClearBlacklistForTypeInDataBase(db, type);
-    DeleteEnabledPreviewInDataBase(db, type);
+    DeleteEnabledTypesInDataBase(db, type);
   }
 }
 
@@ -291,16 +284,16 @@ void LoadBlackListFromDataBase(
     std::unique_ptr<BlacklistData> blacklist_data,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     LoadBlackListCallback callback) {
-  // First handle any update needed wrt enabled previews and their versions.
-  CheckAndReconcileEnabledPreviewsWithDataBase(db,
-                                               blacklist_data->allowed_types());
+  // First handle any update needed wrt enabled types and their versions.
+  CheckAndReconcileEnabledTypesWithDataBase(db,
+                                            blacklist_data->allowed_types());
 
   // Gets the table sorted by host and time. Limits the number of hosts using
   // most recent opt_out time as the limiting function. Sorting is free due to
   // the table structure, and it improves performance in the loop below.
   const char kSql[] =
       "SELECT host_name, time, opt_out, type"
-      " FROM " PREVIEWS_OPT_OUT_TABLE_NAME " ORDER BY host_name, time DESC";
+      " FROM " OPT_OUT_TABLE_NAME " ORDER BY host_name, time DESC";
 
   sql::Statement statement(db->GetUniqueStatement(kSql));
 
@@ -317,12 +310,11 @@ void LoadBlackListFromDataBase(
   if (count > MaxRowsInOptOutDB()) {
     // Delete the oldest entries if there are more than |kMaxEntriesInDB|.
     // DELETE ... LIMIT -1 OFFSET x means delete all but the first x entries.
-    const char kSqlDeleteByDBSize[] =
-        "DELETE FROM " PREVIEWS_OPT_OUT_TABLE_NAME
-        " WHERE ROWID IN"
-        " (SELECT ROWID from " PREVIEWS_OPT_OUT_TABLE_NAME
-        " ORDER BY time DESC"
-        " LIMIT -1 OFFSET ?)";
+    const char kSqlDeleteByDBSize[] = "DELETE FROM " OPT_OUT_TABLE_NAME
+                                      " WHERE ROWID IN"
+                                      " (SELECT ROWID from " OPT_OUT_TABLE_NAME
+                                      " ORDER BY time DESC"
+                                      " LIMIT -1 OFFSET ?)";
 
     sql::Statement statement_delete(
         db->GetCachedStatement(SQL_FROM_HERE, kSqlDeleteByDBSize));
@@ -353,8 +345,8 @@ void LoadBlackListSync(sql::Connection* db,
 void ClearBlackListSync(sql::Connection* db,
                         base::Time begin_time,
                         base::Time end_time) {
-  const char kSql[] = "DELETE FROM " PREVIEWS_OPT_OUT_TABLE_NAME
-                      " WHERE time >= ? and time <= ?";
+  const char kSql[] =
+      "DELETE FROM " OPT_OUT_TABLE_NAME " WHERE time >= ? and time <= ?";
 
   sql::Statement statement(db->GetUniqueStatement(kSql));
   statement.BindInt64(0, (begin_time - base::Time()).InMicroseconds());
@@ -370,14 +362,14 @@ void AddEntrySync(bool opt_out,
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return;
-  AddPreviewNavigationToDataBase(db, opt_out, host_name, type, now);
+  AddEntryToDataBase(db, opt_out, host_name, type, now);
   MaybeEvictHostEntryFromDataBase(db, host_name);
   transaction.Commit();
 }
 
 }  // namespace
 
-PreviewsOptOutStoreSQL::PreviewsOptOutStoreSQL(
+OptOutStoreSQL::OptOutStoreSQL(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const base::FilePath& path)
@@ -385,17 +377,17 @@ PreviewsOptOutStoreSQL::PreviewsOptOutStoreSQL(
       background_task_runner_(background_task_runner),
       db_file_path_(path) {}
 
-PreviewsOptOutStoreSQL::~PreviewsOptOutStoreSQL() {
+OptOutStoreSQL::~OptOutStoreSQL() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (db_) {
     background_task_runner_->DeleteSoon(FROM_HERE, db_.release());
   }
 }
 
-void PreviewsOptOutStoreSQL::AddEntry(bool opt_out,
-                                      const std::string& host_name,
-                                      int type,
-                                      base::Time now) {
+void OptOutStoreSQL::AddEntry(bool opt_out,
+                              const std::string& host_name,
+                              int type,
+                              base::Time now) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(db_);
   background_task_runner_->PostTask(
@@ -403,16 +395,16 @@ void PreviewsOptOutStoreSQL::AddEntry(bool opt_out,
       base::BindOnce(&AddEntrySync, opt_out, host_name, type, now, db_.get()));
 }
 
-void PreviewsOptOutStoreSQL::ClearBlackList(base::Time begin_time,
-                                            base::Time end_time) {
+void OptOutStoreSQL::ClearBlackList(base::Time begin_time,
+                                    base::Time end_time) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(db_);
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ClearBlackListSync, db_.get(), begin_time, end_time));
+      base::BindOnce(&ClearBlackListSync, db_.get(), begin_time, end_time));
 }
 
-void PreviewsOptOutStoreSQL::LoadBlackList(
+void OptOutStoreSQL::LoadBlackList(
     std::unique_ptr<BlacklistData> blacklist_data,
     LoadBlackListCallback callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -425,4 +417,4 @@ void PreviewsOptOutStoreSQL::LoadBlackList(
                      base::ThreadTaskRunnerHandle::Get(), std::move(callback)));
 }
 
-}  // namespace previews
+}  // namespace blacklist

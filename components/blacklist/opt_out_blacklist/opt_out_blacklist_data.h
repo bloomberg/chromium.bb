@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CORE_BLACKLIST_DATA_H_
-#define COMPONENTS_PREVIEWS_CORE_BLACKLIST_DATA_H_
+#ifndef COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_BLACKLIST_DATA_H_
+#define COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_BLACKLIST_DATA_H_
 
 #include <stdint.h>
 
@@ -15,9 +15,9 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "components/previews/core/previews_black_list_item.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
 
-namespace previews {
+namespace blacklist {
 
 // The various reasons the Blacklist may tell that the user is blacklisted.
 enum class BlacklistReason {
@@ -127,7 +127,7 @@ class BlacklistData {
   bool IsUserOptedOutInGeneral(base::Time time) const;
 
   // Exposed for logging purposes only.
-  const std::map<std::string, PreviewsBlackListItem>& black_list_item_host_map()
+  const std::map<std::string, OptOutBlacklistItem>& black_list_item_host_map()
       const {
     return black_list_item_host_map_;
   }
@@ -141,24 +141,24 @@ class BlacklistData {
   // The session rule policy. If non-null the session rule is enforced.
   std::unique_ptr<Policy> session_policy_;
   // The session rule history.
-  std::unique_ptr<PreviewsBlackListItem> session_black_list_item_;
+  std::unique_ptr<OptOutBlacklistItem> session_black_list_item_;
 
   // The persistent rule policy. If non-null the persistent rule is enforced.
   std::unique_ptr<Policy> persistent_policy_;
   // The persistent rule history.
-  std::unique_ptr<PreviewsBlackListItem> persistent_black_list_item_;
+  std::unique_ptr<OptOutBlacklistItem> persistent_black_list_item_;
 
   // The host rule policy. If non-null the host rule is enforced.
   std::unique_ptr<Policy> host_policy_;
   // The maximum number of hosts allowed in the host blacklist.
   size_t max_hosts_;
   // The host rule history. Each host is stored as a separate blacklist history.
-  std::map<std::string, PreviewsBlackListItem> black_list_item_host_map_;
+  std::map<std::string, OptOutBlacklistItem> black_list_item_host_map_;
 
   // The type rule policy. If non-null the type rule is enforced.
   std::unique_ptr<Policy> type_policy_;
   // The type rule history. Each type is stored as a separate blacklist history.
-  std::map<int, PreviewsBlackListItem> black_list_item_type_map_;
+  std::map<int, OptOutBlacklistItem> black_list_item_type_map_;
 
   // The allowed types and what version they are. If it is non-empty, it is used
   // to remove stale entries from the database and to DCHECK that other methods
@@ -168,6 +168,6 @@ class BlacklistData {
   DISALLOW_COPY_AND_ASSIGN(BlacklistData);
 };
 
-}  // namespace previews
+}  // namespace blacklist
 
-#endif  // COMPONENTS_PREVIEWS_CORE_BLACKLIST_DATA_H_
+#endif  // COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_BLACKLIST_DATA_H_

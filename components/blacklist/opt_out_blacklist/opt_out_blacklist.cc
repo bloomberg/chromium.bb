@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/core/opt_out_blacklist.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -10,17 +10,15 @@
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
-#include "components/previews/core/previews_black_list_delegate.h"
-#include "components/previews/core/previews_black_list_item.h"
-#include "components/previews/core/previews_opt_out_store.h"
-#include "url/gurl.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_delegate.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 
-namespace previews {
+namespace blacklist {
 
-OptOutBlacklist::OptOutBlacklist(
-    std::unique_ptr<PreviewsOptOutStore> opt_out_store,
-    base::Clock* clock,
-    PreviewsBlacklistDelegate* blacklist_delegate)
+OptOutBlacklist::OptOutBlacklist(std::unique_ptr<OptOutStore> opt_out_store,
+                                 base::Clock* clock,
+                                 OptOutBlacklistDelegate* blacklist_delegate)
     : loaded_(false),
       opt_out_store_(std::move(opt_out_store)),
       clock_(clock),
@@ -220,4 +218,4 @@ void OptOutBlacklist::LoadBlackListDone(
   }
 }
 
-}  // namespace previews
+}  // namespace blacklist

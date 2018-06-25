@@ -10,8 +10,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/previews/content/previews_io_data.h"
-#include "components/previews/core/blacklist_data.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_logger.h"
@@ -26,7 +26,7 @@ class TestPreviewsUIService : public PreviewsUIService {
   TestPreviewsUIService(
       PreviewsIOData* previews_io_data,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+      std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       std::unique_ptr<PreviewsLogger> logger)
       : PreviewsUIService(previews_io_data,
@@ -35,7 +35,7 @@ class TestPreviewsUIService : public PreviewsUIService {
                           std::move(previews_opt_guide),
                           PreviewsIsEnabledCallback(),
                           std::move(logger),
-                          BlacklistData::AllowedTypesAndVersions()),
+                          blacklist::BlacklistData::AllowedTypesAndVersions()),
         io_data_set_(false) {}
   ~TestPreviewsUIService() override {}
 

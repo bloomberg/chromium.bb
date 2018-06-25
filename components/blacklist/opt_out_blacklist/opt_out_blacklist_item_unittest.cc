@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/core/previews_black_list_item.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
 
 #include <memory>
 
@@ -12,13 +12,13 @@
 
 namespace {
 
-using PreviewsBlackListItemTest = testing::Test;
+using OptOutBlacklistItemTest = testing::Test;
 
 }  // namespace
 
-namespace previews {
+namespace blacklist {
 
-TEST_F(PreviewsBlackListItemTest, BlackListState) {
+TEST_F(OptOutBlacklistItemTest, BlackListState) {
   const int history = 4;
   const int threshold = 2;
   const base::TimeDelta max_blacklist_duration =
@@ -28,8 +28,8 @@ TEST_F(PreviewsBlackListItemTest, BlackListState) {
   const base::Time later =
       now + max_blacklist_duration + (delay_between_entries * 3);
 
-  PreviewsBlackListItem black_list_item(history, threshold,
-                                        max_blacklist_duration);
+  OptOutBlacklistItem black_list_item(history, threshold,
+                                      max_blacklist_duration);
 
   // Empty black list item should report that the host is allowed.
   EXPECT_FALSE(black_list_item.IsBlackListed(now));
@@ -77,4 +77,4 @@ TEST_F(PreviewsBlackListItemTest, BlackListState) {
   EXPECT_FALSE(black_list_item.IsBlackListed(later));
 }
 
-}  // namespace previews
+}  // namespace blacklist

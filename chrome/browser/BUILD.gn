@@ -1656,6 +1656,8 @@ jumbo_split_static_library("browser") {
     "//components/assist_ranker",
     "//components/autofill/content/browser",
     "//components/autofill/core/browser",
+    "//components/blacklist/opt_out_blacklist:opt_out_blacklist",
+    "//components/blacklist/opt_out_blacklist/sql:opt_out_blacklist_sql",
     "//components/bookmarks/browser",
     "//components/bookmarks/managed",
     "//components/browser_sync",
