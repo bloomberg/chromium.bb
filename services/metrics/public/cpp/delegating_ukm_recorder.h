@@ -43,11 +43,13 @@ class METRICS_EXPORT DelegatingUkmRecorder : public UkmRecorder {
   void RemoveDelegate(UkmRecorder* delegate);
 
  private:
+  friend class AppSourceUrlRecorder;
   friend class internal::SourceUrlRecorderWebContentsObserver;
   friend class internal::SourceUrlRecorderWebStateObserver;
 
   // UkmRecorder:
   void UpdateSourceURL(SourceId source_id, const GURL& url) override;
+  void UpdateAppURL(SourceId source_id, const GURL& url) override;
   void AddEntry(mojom::UkmEntryPtr entry) override;
 
   void UpdateSourceURLImpl(SourceId source_id, const GURL& url);
@@ -65,6 +67,7 @@ class METRICS_EXPORT DelegatingUkmRecorder : public UkmRecorder {
     ~Delegate();
 
     void UpdateSourceURL(SourceId source_id, const GURL& url);
+    void UpdateAppURL(SourceId source_id, const GURL& url);
     void AddEntry(mojom::UkmEntryPtr entry);
 
    private:

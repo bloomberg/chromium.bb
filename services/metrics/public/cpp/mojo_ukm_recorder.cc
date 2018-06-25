@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "services/metrics/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -30,6 +31,10 @@ base::WeakPtr<MojoUkmRecorder> MojoUkmRecorder::GetWeakPtr() {
 
 void MojoUkmRecorder::UpdateSourceURL(SourceId source_id, const GURL& url) {
   interface_->UpdateSourceURL(source_id, url.spec());
+}
+
+void MojoUkmRecorder::UpdateAppURL(SourceId source_id, const GURL& url) {
+  NOTREACHED();
 }
 
 void MojoUkmRecorder::AddEntry(mojom::UkmEntryPtr entry) {

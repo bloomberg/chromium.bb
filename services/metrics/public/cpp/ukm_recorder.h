@@ -127,6 +127,10 @@ class METRICS_EXPORT UkmRecorder {
   // maintain privacy constraints.
   virtual void UpdateSourceURL(SourceId source_id, const GURL& url) = 0;
 
+  // Associates the SourceId with an app URL for APP_ID sources. This method
+  // should only be called by AppSourceUrlRecorder and DelegatingUkmRecorder.
+  virtual void UpdateAppURL(SourceId source_id, const GURL& url) = 0;
+
   DISALLOW_COPY_AND_ASSIGN(UkmRecorder);
 };
 

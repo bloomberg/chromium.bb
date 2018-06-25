@@ -16,6 +16,7 @@ typedef int64_t SourceId;
 enum class SourceIdType : int64_t {
   UKM = 0,
   NAVIGATION_ID = 1,
+  APP_ID = 2,
 };
 
 const SourceId kInvalidSourceId = 0;

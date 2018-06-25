@@ -70,6 +70,7 @@ class UkmRecorderImpl : public UkmRecorder {
 
   // UkmRecorder:
   void UpdateSourceURL(SourceId source_id, const GURL& url) override;
+  void UpdateAppURL(SourceId source_id, const GURL& url) override;
 
   virtual bool ShouldRestrictToWhitelistedSourceIds() const;
 
