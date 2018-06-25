@@ -271,6 +271,10 @@ class MOJO_CPP_BINDINGS_EXPORT Connector : public MessageReceiver {
   // nested dispatch operations.
   bool is_dispatching_ = false;
 
+#if defined(ENABLE_IPC_FUZZER)
+  std::unique_ptr<MessageReceiver> message_dumper_;
+#endif
+
   // Create a single weak ptr and use it everywhere, to avoid the malloc/free
   // cost of creating a new weak ptr whenever it is needed.
   // NOTE: This weak pointer is invalidated when the message pipe is closed or

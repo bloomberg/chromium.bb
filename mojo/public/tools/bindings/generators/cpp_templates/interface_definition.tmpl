@@ -142,6 +142,11 @@ bool {{proxy_name}}::{{method.name}}(
       "message")}}
 {%-   endif %}
 
+#if defined(ENABLE_IPC_FUZZER)
+  message.set_interface_name({{class_name}}::Name_);
+  message.set_method_name("{{method.name}}");
+#endif
+
   bool result = false;
   std::unique_ptr<mojo::MessageReceiver> responder(
       new {{class_name}}_{{method.name}}_HandleSyncResponse(
@@ -179,6 +184,11 @@ void {{proxy_name}}::{{method.name}}(
       message_name, "in_%s", params_struct, params_description, "kFlags",
       "message")}}
 {%-   endif %}
+
+#if defined(ENABLE_IPC_FUZZER)
+  message.set_interface_name({{class_name}}::Name_);
+  message.set_method_name("{{method.name}}");
+#endif
 
 {%- if method.response_parameters != None %}
   std::unique_ptr<mojo::MessageReceiver> responder(
@@ -329,6 +339,12 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
   TRACE_EVENT1("mojom", "(Impl){{namespace_as_string}}::{{class_name}}::{{method.name}}Callback",
                "message", message.name());
 #endif
+
+#if defined(ENABLE_IPC_FUZZER)
+  message.set_interface_name({{class_name}}::Name_);
+  message.set_method_name("{{method.name}}");
+#endif
+
   message.set_request_id(request_id_);
   ignore_result(responder_->Accept(&message));
   // TODO(darin): Accept() returning false indicates a malformed message, and

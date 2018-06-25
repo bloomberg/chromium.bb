@@ -5,7 +5,9 @@
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 config("ipc_fuzzer_config") {
-  defines = [ "ENABLE_IPC_FUZZER" ]
+  if (current_toolchain == host_toolchain) {
+    defines = [ "ENABLE_IPC_FUZZER" ]
+  }
 }
 
 config("ipc_fuzzer_tool_config") {

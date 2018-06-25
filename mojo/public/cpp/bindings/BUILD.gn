@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
+import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
+
 declare_args() {
   enable_mojo_tracing = false
 }
@@ -91,6 +93,10 @@ component("bindings_base") {
     "//base",
     "//mojo/public/cpp/system",
   ]
+
+  if (enable_ipc_fuzzer) {
+    all_dependent_configs = [ "//tools/ipc_fuzzer:ipc_fuzzer_config" ]
+  }
 }
 
 component("bindings") {
@@ -160,6 +166,13 @@ component("bindings") {
     "thread_safe_interface_ptr.h",
     "unique_ptr_impl_ref_traits.h",
   ]
+
+  if (enable_ipc_fuzzer && current_toolchain == host_toolchain) {
+    sources += [
+      "lib/message_dumper.cc",
+      "message_dumper.h",
+    ]
+  }
 
   public_deps = [
     ":bindings_base",
