@@ -97,6 +97,11 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   // when it is shut down.  Specify those dependencies here to build the proper
   // destruction order.
   DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
+  // TODO(crbug.com/850428): This should have
+  // DependsOn(ConsentAuditorFactory::GetInstance()), but it can't due to a
+  // BUILD.gn dependency cycle. Note that this can be added only after
+  // ConsentAuditorFactory does not depend on both UserEventService and
+  // SyncService.
   DependsOn(ios::AboutSigninInternalsFactory::GetInstance());
   DependsOn(ios::BookmarkModelFactory::GetInstance());
   DependsOn(ios::BookmarkUndoServiceFactory::GetInstance());
