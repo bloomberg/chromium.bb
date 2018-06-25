@@ -1514,8 +1514,8 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       new_policy.compositor_priority() =
           TaskQueue::QueuePriority::kHighestPriority;
       new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
-      new_policy.loading_queue_policy().is_blocked = true;
-      new_policy.timer_queue_policy().is_blocked = true;
+      new_policy.loading_queue_policy().is_deferred = true;
+      new_policy.timer_queue_policy().is_deferred = true;
       // NOTE this is a nop due to the above.
       expensive_task_policy = ExpensiveTaskPolicy::kBlock;
       break;
@@ -1555,9 +1555,9 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
     case ExpensiveTaskPolicy::kBlock:
       if (loading_tasks_seem_expensive)
-        new_policy.loading_queue_policy().is_blocked = true;
+        new_policy.loading_queue_policy().is_deferred = true;
       if (timer_tasks_seem_expensive)
-        new_policy.timer_queue_policy().is_blocked = true;
+        new_policy.timer_queue_policy().is_deferred = true;
       break;
 
     case ExpensiveTaskPolicy::kThrottle:
@@ -2167,7 +2167,7 @@ bool MainThreadSchedulerImpl::TaskQueuePolicy::IsQueueEnabled(
     return false;
   if (is_paused && task_queue->CanBePaused())
     return false;
-  if (is_blocked && task_queue->CanBeDeferred())
+  if (is_deferred && task_queue->CanBeDeferred())
     return false;
   return true;
 }
@@ -2187,7 +2187,7 @@ void MainThreadSchedulerImpl::TaskQueuePolicy::AsValueInto(
   state->SetBoolean("is_enabled", is_enabled);
   state->SetBoolean("is_paused", is_paused);
   state->SetBoolean("is_throttled", is_throttled);
-  state->SetBoolean("is_blocked", is_blocked);
+  state->SetBoolean("is_deferred", is_deferred);
   state->SetBoolean("use_virtual_time", use_virtual_time);
 }
 

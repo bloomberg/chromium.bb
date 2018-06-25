@@ -401,13 +401,13 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         : is_enabled(true),
           is_paused(false),
           is_throttled(false),
-          is_blocked(false),
+          is_deferred(false),
           use_virtual_time(false) {}
 
     bool is_enabled;
     bool is_paused;
     bool is_throttled;
-    bool is_blocked;
+    bool is_deferred;
     bool use_virtual_time;
 
     bool IsQueueEnabled(MainThreadTaskQueue* task_queue) const;
@@ -417,7 +417,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     bool operator==(const TaskQueuePolicy& other) const {
       return is_enabled == other.is_enabled && is_paused == other.is_paused &&
              is_throttled == other.is_throttled &&
-             is_blocked == other.is_blocked &&
+             is_deferred == other.is_deferred &&
              use_virtual_time == other.use_virtual_time;
     }
 
