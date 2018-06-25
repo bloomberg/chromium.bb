@@ -34,7 +34,6 @@ namespace {
 constexpr gfx::Size kMinWindowSize = gfx::Size(144, 100);
 
 const int kOverlayBorderThickness = 5;
-const int kResizeAreaCornerSize = 16;
 
 // |play_pause_controls_view_| scales at 30% the size of the smaller of the
 // screen's width and height.
@@ -66,6 +65,7 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
     if (!bounds().Contains(point))
       return HTNOWHERE;
 
+    constexpr int kResizeAreaCornerSize = 16;
     int window_component = GetHTComponentForFrame(
         point, kOverlayBorderThickness, kOverlayBorderThickness,
         kResizeAreaCornerSize, kResizeAreaCornerSize,
