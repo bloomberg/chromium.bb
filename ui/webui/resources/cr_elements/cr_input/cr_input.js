@@ -102,7 +102,7 @@ Polymer({
       reflectToAttribute: true,
     },
 
-    /** @type {number|undefined} */
+    /** @type {?number} */
     tabindex: {
       type: Number,
       value: 0,
@@ -135,11 +135,19 @@ Polymer({
     'pointerdown': 'onPointerDown_',
   },
 
+  /** @private {?number} */
+  originalTabIndex_: null,
+
   /** @override */
   attached: function() {
     const ariaLabel = this.ariaLabel || this.label || this.placeholder;
     if (ariaLabel)
       this.inputElement.setAttribute('aria-label', ariaLabel);
+
+    // Run this for the first time in attached instead of in disabledChanged_
+    // since this.tabindex might not be set yet then.
+    if (this.disabled)
+      this.reconcileTabindex_();
   },
 
   /** @return {!HTMLInputElement} */
@@ -147,20 +155,30 @@ Polymer({
     return this.$.input;
   },
 
-  /** @private {number} */
-  originalTabIndex_: 0,
-
   /** @private */
-  disabledChanged_: function() {
+  disabledChanged_: function(current, previous) {
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
     // In case input was focused when disabled changes.
     this.removeAttribute('focused_');
 
+    // Don't change tabindex until after finished attaching, since this.tabindex
+    // might not be intialized yet.
+    if (previous !== undefined)
+      this.reconcileTabindex_();
+  },
+
+  /**
+   * This helper function manipulates the tabindex based on disabled state. If
+   * this element is disabled, this function will remember the tabindex and
+   * unset it. If the element is enabled again, it will restore the tabindex
+   * to it's previous value.
+   * @private
+   */
+  reconcileTabindex_: function() {
     if (this.disabled) {
-      this.originalTabIndex_ = /** @type {number} */ (this.tabindex);
-      this.tabindex = -1;
+      this.recordAndUnsetTabIndex_();
     } else {
-      this.tabindex = this.originalTabIndex_;
+      this.restoreTabIndex_();
     }
   },
 
@@ -183,6 +201,21 @@ Polymer({
       this.inputElement.focus();
   },
 
+  /** @private */
+  recordAndUnsetTabIndex_: function() {
+    // Don't change originalTabIndex_ if it just got changed.
+    if (this.originalTabIndex_ === null)
+      this.originalTabIndex_ = this.tabindex;
+
+    this.tabindex = null;
+  },
+
+  /** @private */
+  restoreTabIndex_: function() {
+    this.tabindex = this.originalTabIndex_;
+    this.originalTabIndex_ = null;
+  },
+
   /**
    * Prevents clicking random spaces within cr-input but outside of <input>
    * from triggering focus.
@@ -190,15 +223,18 @@ Polymer({
    * @private
    */
   onPointerDown_: function(e) {
+    // Don't need to manipulate tabindex if cr-input is already disabled.
+    if (this.disabled)
+      return;
+
     // Should not mess with tabindex when <input> is clicked, otherwise <input>
     // will lose and regain focus, and replay the focus animation.
     if (e.path[0].tagName !== 'INPUT') {
-      // This is intentionally different from this.originalTabIndex_ since this
-      // only needs to be temporarily stored.
-      const prevTabindex = this.tabindex;
-      this.tabindex = undefined;
+      this.recordAndUnsetTabIndex_();
       setTimeout(() => {
-        this.tabindex = prevTabindex;
+        // Restore tabindex, unless disabled in the same cycle as pointerdown.
+        if (!this.disabled)
+          this.restoreTabIndex_();
       }, 0);
     }
   },
