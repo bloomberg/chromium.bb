@@ -32,7 +32,7 @@
 
 AvatarToolbarButton::AvatarToolbarButton(Profile* profile,
                                          views::ButtonListener* listener)
-    : ToolbarButton(profile, listener, nullptr),
+    : ToolbarButton(listener, nullptr),
       profile_(profile),
 #if !defined(OS_CHROMEOS)
       error_controller_(this, profile_),

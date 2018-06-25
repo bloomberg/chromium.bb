@@ -9,7 +9,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -27,11 +26,9 @@
 #include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
-ToolbarButton::ToolbarButton(Profile* profile,
-                             views::ButtonListener* listener,
+ToolbarButton::ToolbarButton(views::ButtonListener* listener,
                              std::unique_ptr<ui::MenuModel> model)
     : views::ImageButton(listener),
-      profile_(profile),
       model_(std::move(model)),
       show_menu_factory_(this) {
   set_has_ink_drop_action_on_click(true);

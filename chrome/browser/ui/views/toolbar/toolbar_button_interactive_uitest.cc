@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 
-#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/view_event_test_base.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -38,13 +37,12 @@ class ToolbarButtonUITest : public ViewEventTestBase {
     // ToolbarButton takes ownership of the |model|.
     auto model = std::make_unique<ui::SimpleMenuModel>(nullptr);
     model->AddItem(0, base::string16());
-    button_ = new ToolbarButton(&profile_, nullptr, std::move(model));
+    button_ = new ToolbarButton(nullptr, std::move(model));
     return button_;
   }
   void DoTestOnMessageLoop() override {}
 
  protected:
-  TestingProfile profile_;
   ToolbarButton* button_ = nullptr;
 
  private:

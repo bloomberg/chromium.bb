@@ -148,9 +148,8 @@ void ToolbarView::Init() {
   }
 
   back_ = new ToolbarButton(
-      browser_->profile(), this,
-      std::make_unique<BackForwardMenuModel>(
-          browser_, BackForwardMenuModel::ModelType::kBackward));
+      this, std::make_unique<BackForwardMenuModel>(
+                browser_, BackForwardMenuModel::ModelType::kBackward));
   back_->set_hide_ink_drop_when_showing_context_menu(false);
   back_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
@@ -163,9 +162,8 @@ void ToolbarView::Init() {
   back_->Init();
 
   forward_ = new ToolbarButton(
-      browser_->profile(), this,
-      std::make_unique<BackForwardMenuModel>(
-          browser_, BackForwardMenuModel::ModelType::kForward));
+      this, std::make_unique<BackForwardMenuModel>(
+                browser_, BackForwardMenuModel::ModelType::kForward));
   forward_->set_hide_ink_drop_when_showing_context_menu(false);
   forward_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
@@ -177,8 +175,7 @@ void ToolbarView::Init() {
   forward_->set_id(VIEW_ID_FORWARD_BUTTON);
   forward_->Init();
 
-  reload_ =
-      new ReloadButton(browser_->profile(), browser_->command_controller());
+  reload_ = new ReloadButton(browser_->command_controller());
   reload_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
   reload_->set_tag(IDC_RELOAD);

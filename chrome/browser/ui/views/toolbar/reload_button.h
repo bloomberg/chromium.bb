@@ -32,7 +32,7 @@ class ReloadButton : public ToolbarButton,
   // The button's class name.
   static const char kViewClassName[];
 
-  ReloadButton(Profile* profile, CommandUpdater* command_updater);
+  explicit ReloadButton(CommandUpdater* command_updater);
   ~ReloadButton() override;
 
   // Ask for a specified button state.  If |force| is true this will be applied
