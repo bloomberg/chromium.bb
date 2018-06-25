@@ -189,7 +189,7 @@ class PartitionAllocTest : public testing::Test {
     if (!IsLargeMemoryDevice()) {
       LOG(WARNING)
           << "Skipping test on this device because of crbug.com/678782";
-      return;
+      LOG(FATAL) << "DoReturnNullTest";
     }
 
     ASSERT_TRUE(SetAddressSpaceLimit());
@@ -242,6 +242,7 @@ class PartitionAllocTest : public testing::Test {
     generic_allocator.root()->Free(ptrs);
 
     EXPECT_TRUE(ClearAddressSpaceLimit());
+    LOG(FATAL) << "DoReturnNullTest";
   }
 
   SizeSpecificPartitionAllocator<kTestMaxAllocation> allocator;
@@ -1282,6 +1283,9 @@ TEST_F(PartitionAllocTest, LostFreePagesBug) {
   EXPECT_TRUE(bucket->decommitted_pages_head);
 }
 
+// Death tests misbehave on Android, http://crbug.com/643760.
+#if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
+
 // Unit tests that check if an allocation fails in "return null" mode,
 // repeating it doesn't crash, and still returns null. The tests need to
 // stress memory subsystem limits to do so, hence they try to allocate
@@ -1295,46 +1299,43 @@ TEST_F(PartitionAllocTest, LostFreePagesBug) {
 // they tend to get OOM-killed rather than pass.
 // TODO(https://crbug.com/779645): Fuchsia currently sets OS_POSIX, but does
 // not provide a working setrlimit().
-#if !defined(ARCH_CPU_64_BITS) || \
-    (defined(OS_POSIX) &&         \
-     !(defined(OS_FUCHSIA) || defined(OS_MACOSX) || defined(OS_ANDROID)))
+//
+// Disable these test on Windows, since they run slower, so tend to timout and
+// cause flake.
+#if !defined(OS_WIN) &&            \
+    (!defined(ARCH_CPU_64_BITS) || \
+     (defined(OS_POSIX) &&         \
+      !(defined(OS_FUCHSIA) || defined(OS_MACOSX) || defined(OS_ANDROID))))
 
-// This is defined as a separate test class because RepeatedReturnNull
-// test exhausts the process memory, and breaks any test in the same
-// class that runs after it.
-class PartitionAllocReturnNullTest : public PartitionAllocTest {};
-
-// Test "return null" for larger, direct-mapped allocations first. As a
-// direct-mapped allocation's pages are unmapped and freed on release, this
-// test is performd first for these "return null" tests in order to leave
-// sufficient unreserved virtual memory around for the later one(s).
-TEST_F(PartitionAllocReturnNullTest, RepeatedReturnNullDirect) {
+// The following four tests wrap a called function in an expect death statement
+// to perform their test, because they are non-hermetic. Specifically they are
+// going to attempt to exhaust the allocatable memory, which leaves the
+// allocator in a bad global state.
+// Performing them as death tests causes them to be forked into their own
+// process, so they won't pollute other tests.
+TEST_F(PartitionAllocDeathTest, RepeatedAllocReturnNullDirect) {
   // A direct-mapped allocation size.
-  DoReturnNullTest(32 * 1024 * 1024, false);
+  EXPECT_DEATH(DoReturnNullTest(32 * 1024 * 1024, false), "DoReturnNullTest");
+}
+
+// Repeating above test with Realloc
+TEST_F(PartitionAllocDeathTest, RepeatedReallocReturnNullDirect) {
+  EXPECT_DEATH(DoReturnNullTest(32 * 1024 * 1024, true), "DoReturnNullTest");
 }
 
 // Test "return null" with a 512 kB block size.
-TEST_F(PartitionAllocReturnNullTest, RepeatedReturnNull) {
+TEST_F(PartitionAllocDeathTest, RepeatedAllocReturnNull) {
   // A single-slot but non-direct-mapped allocation size.
-  DoReturnNullTest(512 * 1024, false);
+  EXPECT_DEATH(DoReturnNullTest(512 * 1024, false), "DoReturnNullTest");
 }
 
-// Repeating the above tests using Realloc instead of Alloc.
-class PartitionReallocReturnNullTest : public PartitionAllocTest {};
-
-TEST_F(PartitionReallocReturnNullTest, RepeatedReturnNullDirect) {
-  DoReturnNullTest(32 * 1024 * 1024, true);
-}
-
-TEST_F(PartitionReallocReturnNullTest, RepeatedReturnNull) {
-  DoReturnNullTest(512 * 1024, true);
+// Repeating above test with Realloc.
+TEST_F(PartitionAllocDeathTest, RepeatedReallocReturnNull) {
+  EXPECT_DEATH(DoReturnNullTest(512 * 1024, true), "DoReturnNullTest");
 }
 
 #endif  // !defined(ARCH_CPU_64_BITS) || (defined(OS_POSIX) &&
         // !(defined(OS_FUCHSIA) || defined(OS_MACOSX) || defined(OS_ANDROID)))
-
-// Death tests misbehave on Android, http://crbug.com/643760.
-#if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
 // Make sure that malloc(-1) dies.
 // In the past, we had an integer overflow that would alias malloc(-1) to
