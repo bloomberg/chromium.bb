@@ -383,7 +383,8 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
 #dialog-header,
 #no-images-message,
 #current-wallpaper-info-bar,
-#message-container {
+#message-container,
+#preview-canvas {
   display: none;
 }
 
@@ -726,6 +727,13 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
 
 .v2.preview-mode .more-options .preview-option {
   display: flex;
+}
+
+.v2.preview-mode:not(.wallpaper-set-successfully) #preview-canvas {
+  -webkit-app-region: no-drag;
+  display: block;
+  height: 100%;
+  width: 100%;
 }
 
 .v2 #no-images-message {
