@@ -4,9 +4,12 @@
 
 #include "storage/browser/blob/blob_url_store_impl.h"
 
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -236,6 +239,56 @@ TEST_F(BlobURLStoreImplTest, ResolveInvalidURL) {
 
   BlobPtr blob = ResolveURL(&url_store, kInvalidUrl);
   EXPECT_FALSE(blob);
+}
+
+TEST_F(BlobURLStoreImplTest, ResolveAsURLLoaderFactory) {
+  BlobPtr blob = CreateBlobFromString(kId, "hello world");
+
+  BlobURLStoreImpl url_store(context_->AsWeakPtr(), &delegate_);
+  RegisterURL(&url_store, std::move(blob), kValidUrl);
+
+  network::mojom::URLLoaderFactoryPtr factory;
+  url_store.ResolveAsURLLoaderFactory(kValidUrl, MakeRequest(&factory));
+
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = kValidUrl;
+  auto loader = network::SimpleURLLoader::Create(std::move(request),
+                                                 TRAFFIC_ANNOTATION_FOR_TESTS);
+  base::RunLoop loop;
+  loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      factory.get(), base::BindLambdaForTesting(
+                         [&](std::unique_ptr<std::string> response_body) {
+                           loop.Quit();
+                           ASSERT_TRUE(response_body);
+                           EXPECT_EQ("hello world", *response_body);
+                         }));
+  loop.Run();
+}
+
+TEST_F(BlobURLStoreImplTest, ResolveForNavigation) {
+  BlobPtr blob = CreateBlobFromString(kId, "hello world");
+
+  BlobURLStoreImpl url_store(context_->AsWeakPtr(), &delegate_);
+  RegisterURL(&url_store, std::move(blob), kValidUrl);
+
+  blink::mojom::BlobURLTokenPtr token_ptr;
+  url_store.ResolveForNavigation(kValidUrl, MakeRequest(&token_ptr));
+
+  base::UnguessableToken token;
+  base::RunLoop loop;
+  token_ptr->GetToken(base::BindLambdaForTesting(
+      [&](const base::UnguessableToken& received_token) {
+        token = received_token;
+        loop.Quit();
+      }));
+  loop.Run();
+
+  GURL blob_url;
+  std::string blob_uuid;
+  EXPECT_TRUE(
+      context_->registry().GetTokenMapping(token, &blob_url, &blob_uuid));
+  EXPECT_EQ(kValidUrl, blob_url);
+  EXPECT_EQ(kId, blob_uuid);
 }
 
 }  // namespace storage
