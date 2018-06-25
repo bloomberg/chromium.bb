@@ -775,6 +775,6 @@
     <!-- Explore sites section -->
     <style name="ExploreSitesAction" parent="ButtonCompatBorderless">
         <item name="android:textAppearance">@style/BlueLink2</item>
-        <item name="android:background">@drawable/button_white_border</item>
+        <item name="android:background">@drawable/explore_sites_button_background</item>
     </style>
 </resources>
