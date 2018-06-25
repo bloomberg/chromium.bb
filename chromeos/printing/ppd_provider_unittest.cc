@@ -24,8 +24,10 @@
 #include "chromeos/printing/ppd_cache.h"
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "net/url_request/test_url_request_interceptor.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -63,9 +65,9 @@ class PpdProviderTest : public ::testing::Test {
  public:
   PpdProviderTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
-        request_context_getter_(new net::TestURLRequestContextGetter(
-            scoped_task_environment_.GetMainThreadTaskRunner())) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+    TurnOffFakePpdServer();
+  }
 
   void SetUp() override {
     ASSERT_TRUE(ppd_cache_temp_dir_.CreateUniqueTempDir());
@@ -92,119 +94,24 @@ class PpdProviderTest : public ::testing::Test {
     } else {
       ppd_cache_ = PpdCache::Create(ppd_cache_temp_dir_.GetPath());
     }
-    return PpdProvider::Create(locale, request_context_getter_.get(),
-                               ppd_cache_, base::Version("40.8.6753.09"),
-                               provider_options);
+    return PpdProvider::Create(locale, &loader_factory_, ppd_cache_,
+                               base::Version("40.8.6753.09"), provider_options);
   }
 
-  // Create an interceptor that serves a small fileset of ppd server files.
+  // Fill loader_factory_ with preset contents for test URLs
   void StartFakePpdServer() {
-    ASSERT_TRUE(interceptor_temp_dir_.CreateUniqueTempDir());
-    interceptor_ = std::make_unique<net::TestURLRequestInterceptor>(
-        "https", kPpdServer, scoped_task_environment_.GetMainThreadTaskRunner(),
-        scoped_task_environment_.GetMainThreadTaskRunner());
-    // Use brace initialization to express the desired server contents as "url",
-    // "contents" pairs.
-    std::vector<std::pair<std::string, std::string>> server_contents = {
-        {"metadata_v2/locales.json",
-         R"(["en",
-             "es-mx",
-             "en-gb"])"},
-        {"metadata_v2/index-01.json",
-         R"([
-             ["printer_a_ref", "printer_a.ppd"]
-            ])"},
-        {"metadata_v2/index-02.json",
-         R"([
-             ["printer_b_ref", "printer_b.ppd"]
-            ])"},
-        {"metadata_v2/index-03.json",
-         R"([
-             ["printer_c_ref", "printer_c.ppd"]
-            ])"},
-        {"metadata_v2/index-04.json",
-         R"([
-             ["printer_d_ref", "printer_d.ppd"]
-            ])"},
-        {"metadata_v2/index-05.json",
-         R"([
-             ["printer_e_ref", "printer_e.ppd"]
-            ])"},
-        {"metadata_v2/index-13.json",
-         R"([
-            ])"},
-        {"metadata_v2/usb-031f.json",
-         R"([
-             [1592, "Some canonical reference"],
-             [6535, "Some other canonical reference"]
-            ])"},
-        {"metadata_v2/manufacturers-en.json",
-         R"([
-            ["manufacturer_a_en", "manufacturer_a.json"],
-            ["manufacturer_b_en", "manufacturer_b.json"]
-            ])"},
-        {"metadata_v2/manufacturers-en-gb.json",
-         R"([
-            ["manufacturer_a_en-gb", "manufacturer_a.json"],
-            ["manufacturer_b_en-gb", "manufacturer_b.json"]
-            ])"},
-        {"metadata_v2/manufacturers-es-mx.json",
-         R"([
-            ["manufacturer_a_es-mx", "manufacturer_a.json"],
-            ["manufacturer_b_es-mx", "manufacturer_b.json"]
-            ])"},
-        {"metadata_v2/manufacturer_a.json",
-         R"([
-            ["printer_a", "printer_a_ref"],
-            ["printer_b", "printer_b_ref"],
-            ["printer_d", "printer_d_ref"]
-            ])"},
-        {"metadata_v2/manufacturer_a.json",
-         R"([
-            ["printer_a", "printer_a_ref",
-              {"min_milestone":25.0000}],
-            ["printer_b", "printer_b_ref",
-              {"min_milestone":30.0000, "max_milestone":45.0000}],
-            ["printer_d", "printer_d_ref",
-              {"min_milestone":60.0000, "max_milestone":75.0000}]
-            ])"},
-        {"metadata_v2/manufacturer_b.json",
-         R"([
-            ["printer_c", "printer_c_ref"],
-            ["printer_e", "printer_e_ref"]
-            ])"},
-        {"metadata_v2/reverse_index-en-01.json",
-         R"([
-             ["printer_a_ref", "manufacturer_a_en", "printer_a"]
-             ])"},
-        {"metadata_v2/reverse_index-en-19.json",
-         R"([
-             ])"},
-        {"metadata_v2/manufacturer_b.json",
-         R"([
-            ["printer_c", "printer_c_ref",
-              {"max_milestone":55.0000}],
-            ["printer_e", "printer_e_ref",
-              {"min_milestone":17.0000, "max_milestone":33.0000}]
-            ])"},
-        {"ppds/printer_a.ppd", kCupsFilterPpdContents},
-        {"ppds/printer_b.ppd", kCupsFilter2PpdContents},
-        {"ppds/printer_c.ppd", "c"},
-        {"ppds/printer_d.ppd", "d"},
-        {"ppds/printer_e.ppd", "e"},
-        {"user_supplied_ppd_directory/user_supplied.ppd", "u"}};
-    int next_file_num = 0;
-    for (const auto& entry : server_contents) {
-      base::FilePath filename = interceptor_temp_dir_.GetPath().Append(
-          base::StringPrintf("%d.json", next_file_num++));
-      ASSERT_EQ(
-          base::WriteFile(filename, entry.second.data(), entry.second.size()),
-          static_cast<int>(entry.second.size()))
-          << "Failed to write temp server file";
-      interceptor_->SetResponse(
-          GURL(base::StringPrintf("https://%s/%s", kPpdServer,
-                                  entry.first.c_str())),
-          filename);
+    loader_factory_.ClearResponses();
+    for (const auto& entry : server_contents()) {
+      network::URLLoaderCompletionStatus status;
+      if (!entry.second.empty()) {
+        status.decoded_body_length = entry.second.size();
+      } else {
+        status.error_code = net::ERR_ADDRESS_UNREACHABLE;
+      }
+
+      loader_factory_.AddResponse(FileToURL(entry.first),
+                                  network::ResourceResponseHead(), entry.second,
+                                  status);
     }
   }
 
@@ -216,7 +123,7 @@ class PpdProviderTest : public ::testing::Test {
   //
   // Note this is harmless to call if we haven't started a fake ppd server.
   void StopFakePpdServer() {
-    interceptor_.reset();
+    TurnOffFakePpdServer();
     scoped_task_environment_.RunUntilIdle();
   }
 
@@ -282,6 +189,115 @@ class PpdProviderTest : public ::testing::Test {
                  result_vec.end());
   }
 
+  // Fake server being down, return ERR_ADDRESS_UNREACHABLE for all endpoints
+  void TurnOffFakePpdServer() {
+    loader_factory_.ClearResponses();
+    network::URLLoaderCompletionStatus status(net::ERR_ADDRESS_UNREACHABLE);
+    for (const auto& entry : server_contents()) {
+      loader_factory_.AddResponse(FileToURL(entry.first),
+                                  network::ResourceResponseHead(), "", status);
+    }
+  }
+
+  GURL FileToURL(std::string filename) {
+    return GURL(
+        base::StringPrintf("https://%s/%s", kPpdServer, filename.c_str()));
+  }
+
+  // List of relevant endpoint for this FakeServer
+  std::vector<std::pair<std::string, std::string>> server_contents() const {
+    // Use brace initialization to express the desired server contents as "url",
+    // "contents" pairs.
+    return {{"metadata_v2/locales.json",
+             R"(["en",
+             "es-mx",
+             "en-gb"])"},
+            {"metadata_v2/index-01.json",
+             R"([
+             ["printer_a_ref", "printer_a.ppd"]
+            ])"},
+            {"metadata_v2/index-02.json",
+             R"([
+             ["printer_b_ref", "printer_b.ppd"]
+            ])"},
+            {"metadata_v2/index-03.json",
+             R"([
+             ["printer_c_ref", "printer_c.ppd"]
+            ])"},
+            {"metadata_v2/index-04.json",
+             R"([
+             ["printer_d_ref", "printer_d.ppd"]
+            ])"},
+            {"metadata_v2/index-05.json",
+             R"([
+             ["printer_e_ref", "printer_e.ppd"]
+            ])"},
+            {"metadata_v2/index-13.json",
+             R"([
+            ])"},
+            {"metadata_v2/usb-031f.json",
+             R"([
+             [1592, "Some canonical reference"],
+             [6535, "Some other canonical reference"]
+            ])"},
+            {"metadata_v2/usb-1234.json", ""},
+            {"metadata_v2/manufacturers-en.json",
+             R"([
+            ["manufacturer_a_en", "manufacturer_a.json"],
+            ["manufacturer_b_en", "manufacturer_b.json"]
+            ])"},
+            {"metadata_v2/manufacturers-en-gb.json",
+             R"([
+            ["manufacturer_a_en-gb", "manufacturer_a.json"],
+            ["manufacturer_b_en-gb", "manufacturer_b.json"]
+            ])"},
+            {"metadata_v2/manufacturers-es-mx.json",
+             R"([
+            ["manufacturer_a_es-mx", "manufacturer_a.json"],
+            ["manufacturer_b_es-mx", "manufacturer_b.json"]
+            ])"},
+            {"metadata_v2/manufacturer_a.json",
+             R"([
+            ["printer_a", "printer_a_ref"],
+            ["printer_b", "printer_b_ref"],
+            ["printer_d", "printer_d_ref"]
+            ])"},
+            {"metadata_v2/manufacturer_a.json",
+             R"([
+            ["printer_a", "printer_a_ref",
+              {"min_milestone":25.0000}],
+            ["printer_b", "printer_b_ref",
+              {"min_milestone":30.0000, "max_milestone":45.0000}],
+            ["printer_d", "printer_d_ref",
+              {"min_milestone":60.0000, "max_milestone":75.0000}]
+            ])"},
+            {"metadata_v2/manufacturer_b.json",
+             R"([
+            ["printer_c", "printer_c_ref"],
+            ["printer_e", "printer_e_ref"]
+            ])"},
+            {"metadata_v2/reverse_index-en-01.json",
+             R"([
+             ["printer_a_ref", "manufacturer_a_en", "printer_a"]
+             ])"},
+            {"metadata_v2/reverse_index-en-19.json",
+             R"([
+             ])"},
+            {"metadata_v2/manufacturer_b.json",
+             R"([
+            ["printer_c", "printer_c_ref",
+              {"max_milestone":55.0000}],
+            ["printer_e", "printer_e_ref",
+              {"min_milestone":17.0000, "max_milestone":33.0000}]
+            ])"},
+            {"ppds/printer_a.ppd", kCupsFilterPpdContents},
+            {"ppds/printer_b.ppd", kCupsFilter2PpdContents},
+            {"ppds/printer_c.ppd", "c"},
+            {"ppds/printer_d.ppd", "d"},
+            {"ppds/printer_e.ppd", "e"},
+            {"user_supplied_ppd_directory/user_supplied.ppd", "u"}};
+  }
+
   // Environment for task schedulers.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
@@ -310,8 +326,6 @@ class PpdProviderTest : public ::testing::Test {
   };
   std::vector<CapturedReverseLookup> captured_reverse_lookup_;
 
-  std::unique_ptr<net::TestURLRequestInterceptor> interceptor_;
-
   base::ScopedTempDir ppd_cache_temp_dir_;
   base::ScopedTempDir interceptor_temp_dir_;
 
@@ -321,7 +335,7 @@ class PpdProviderTest : public ::testing::Test {
 
   // Misc extra stuff needed for the test environment to function.
   //  base::TestMessageLoop loop_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  network::TestURLLoaderFactory loader_factory_;
 };
 
 // Test that we get back manufacturer maps as expected.
@@ -445,7 +459,7 @@ TEST_F(PpdProviderTest, UsbResolution) {
   // the URL interceptor we're using considers all nonexistant files to
   // be effectively CONNECTION REFUSED, so we just check for non-success
   // on this one.
-  search_data.usb_vendor_id = 1234;
+  search_data.usb_vendor_id = 0x1234;
   search_data.usb_product_id = 1782;
   provider->ResolvePpdReference(
       search_data, base::BindOnce(&PpdProviderTest::CaptureResolvePpdReference,
@@ -823,7 +837,6 @@ TEST_F(PpdProviderTest, StaleCacheGetsRefreshed) {
   // Should get the served results back, not the stale cached ones.
   EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].code);
   EXPECT_EQ(captured_resolve_ppd_[0].ppd_contents, expected_ppd);
-  EXPECT_GT(interceptor_->GetHitCount(), 0);
 
   // Check that the cache was also updated.
   PpdCache::FindResult captured_find_result;

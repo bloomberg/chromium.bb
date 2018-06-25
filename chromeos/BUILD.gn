@@ -51,7 +51,7 @@ component("chromeos") {
     "//google_apis",
     "//media/base:video_facing",
     "//net",
-    "//services/network/public/cpp",
+    "//services/network/public/cpp:cpp",
     "//skia",  # For components/user_manager
     "//third_party/icu",
     "//third_party/protobuf:protobuf_lite",
@@ -594,6 +594,7 @@ static_library("test_support") {
     "//dbus:test_support",
     "//google_apis",
     "//net:test_support",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -692,6 +693,8 @@ test("chromeos_unittests") {
     "//mojo/edk",
     "//net",
     "//net:test_support",
+    "//services/network:test_support",
+    "//services/network/public/cpp:cpp_base",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/icu",

@@ -17,8 +17,10 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/printing/printer_configuration.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+namespace mojom {
+class URLLoaderFactory;
+}
 }
 
 namespace chromeos {
@@ -151,7 +153,7 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   // A references to |url_context_getter| is taken.
   static scoped_refptr<PpdProvider> Create(
       const std::string& browser_locale,
-      scoped_refptr<net::URLRequestContextGetter> url_context_getter,
+      network::mojom::URLLoaderFactory* loader_factory,
       scoped_refptr<PpdCache> cache,
       const base::Version& current_version,
       const Options& options = Options());
