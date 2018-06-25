@@ -159,6 +159,11 @@ ChromeClientImpl* ChromeClientImpl::Create(WebViewImpl* web_view) {
   return new ChromeClientImpl(web_view);
 }
 
+void ChromeClientImpl::Trace(Visitor* visitor) {
+  visitor->Trace(popup_opening_observers_);
+  ChromeClient::Trace(visitor);
+}
+
 WebViewImpl* ChromeClientImpl::GetWebView() const {
   return web_view_;
 }
@@ -1097,8 +1102,9 @@ void ChromeClientImpl::UnregisterPopupOpeningObserver(
 }
 
 void ChromeClientImpl::NotifyPopupOpeningObservers() const {
-  const Vector<PopupOpeningObserver*> observers(popup_opening_observers_);
-  for (auto* const observer : observers)
+  const HeapVector<Member<PopupOpeningObserver>> observers(
+      popup_opening_observers_);
+  for (const auto& observer : observers)
     observer->WillOpenPopup();
 }
 

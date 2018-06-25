@@ -52,6 +52,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
  public:
   static ChromeClientImpl* Create(WebViewImpl*);
   ~ChromeClientImpl() override;
+  void Trace(Visitor* visitor) override;
 
   WebViewImpl* GetWebView() const override;
 
@@ -243,7 +244,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   WebAutofillClient* AutofillClientFromFrame(LocalFrame*);
 
   WebViewImpl* web_view_;  // Weak pointer.
-  Vector<PopupOpeningObserver*> popup_opening_observers_;
+  HeapVector<Member<PopupOpeningObserver>> popup_opening_observers_;
   Cursor last_set_mouse_cursor_for_testing_;
   bool cursor_overridden_;
   bool did_request_non_empty_tool_tip_;
