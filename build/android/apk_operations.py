@@ -845,6 +845,13 @@ class _Command(object):
           self._parser.error(_GenerateMissingAllFlagMessage(devices))
 
       if self.supports_incremental:
+        if args.incremental_json:
+          with open(args.incremental_json) as f:
+            install_dict = json.load(f)
+            apk_path = os.path.join(args.output_directory,
+                                    install_dict['apk_path'])
+            incremental_apk_exists = os.path.exists(apk_path)
+
         if args.incremental and args.non_incremental:
           self._parser.error('Must use only one of --incremental and '
                              '--non-incremental')
@@ -853,21 +860,17 @@ class _Command(object):
             self._parser.error('Apk has not been built.')
           args.incremental_json = None
         elif args.incremental:
-          if not args.incremental_json:
+          if not (args.incremental_json and incremental_apk_exists):
             self._parser.error('Incremental apk has not been built.')
           args.apk_path = None
 
-        if args.apk_path and args.incremental_json:
+        if args.apk_path and args.incremental_json and incremental_apk_exists:
           self._parser.error('Both incremental and non-incremental apks exist. '
                              'Select using --incremental or --non-incremental')
 
       if self.needs_apk_path or args.apk_path or args.incremental_json:
         if args.incremental_json:
-          with open(args.incremental_json) as f:
-            install_dict = json.load(f)
-          apk_path = os.path.join(args.output_directory,
-                                  install_dict['apk_path'])
-          if os.path.exists(apk_path):
+          if incremental_apk_exists:
             self.install_dict = install_dict
             self.apk_helper = apk_helper.ToHelper(
                 os.path.join(args.output_directory,
