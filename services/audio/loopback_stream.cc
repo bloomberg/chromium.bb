@@ -68,10 +68,11 @@ LoopbackStream::LoopbackStream(
   // the consumer. If successful, create the FlowNetwork too.
   if (base::TimeTicks::IsHighResolution()) {
     base::CancelableSyncSocket foreign_socket;
-    std::unique_ptr<InputSyncWriter> writer = InputSyncWriter::Create(
-        base::BindRepeating(
-            [](const std::string& message) { VLOG(1) << message; }),
-        shared_memory_count, params, &foreign_socket);
+    std::unique_ptr<media::AudioInputSyncWriter> writer =
+        media::AudioInputSyncWriter::Create(
+            base::BindRepeating(
+                [](const std::string& message) { VLOG(1) << message; }),
+            shared_memory_count, params, &foreign_socket);
     if (writer) {
       base::ReadOnlySharedMemoryRegion shared_memory_region =
           writer->TakeSharedMemoryRegion();
@@ -231,7 +232,7 @@ void LoopbackStream::OnError() {
 LoopbackStream::FlowNetwork::FlowNetwork(
     scoped_refptr<base::SequencedTaskRunner> flow_task_runner,
     const media::AudioParameters& output_params,
-    std::unique_ptr<InputSyncWriter> writer)
+    std::unique_ptr<media::AudioInputSyncWriter> writer)
     : clock_(base::DefaultTickClock::GetInstance()),
       flow_task_runner_(flow_task_runner),
       output_params_(output_params),

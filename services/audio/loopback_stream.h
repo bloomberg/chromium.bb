@@ -21,14 +21,14 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
+#include "media/audio/audio_input_controller.h"
+#include "media/audio/audio_input_sync_writer.h"
 #include "media/base/audio_parameters.h"
 #include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/audio/group_coordinator.h"
 #include "services/audio/group_member.h"
-#include "services/audio/input_controller.h"
-#include "services/audio/input_sync_writer.h"
 #include "services/audio/snooper_node.h"
 
 namespace base {
@@ -89,7 +89,7 @@ class LoopbackStream : public media::mojom::AudioInputStream,
     network_->set_clock_for_testing(clock);
   }
   void set_sync_writer_for_testing(
-      std::unique_ptr<InputController::SyncWriter> writer) {
+      std::unique_ptr<media::AudioInputController::SyncWriter> writer) {
     network_->set_writer_for_testing(std::move(writer));
   }
 
@@ -114,12 +114,12 @@ class LoopbackStream : public media::mojom::AudioInputStream,
    public:
     FlowNetwork(scoped_refptr<base::SequencedTaskRunner> flow_task_runner,
                 const media::AudioParameters& output_params,
-                std::unique_ptr<InputSyncWriter> writer);
+                std::unique_ptr<media::AudioInputSyncWriter> writer);
 
     // These must be called to override the Clock/SyncWriter before Start().
     void set_clock_for_testing(const base::TickClock* clock) { clock_ = clock; }
     void set_writer_for_testing(
-        std::unique_ptr<InputController::SyncWriter> writer) {
+        std::unique_ptr<media::AudioInputController::SyncWriter> writer) {
       writer_ = std::move(writer);
     }
 
@@ -169,7 +169,7 @@ class LoopbackStream : public media::mojom::AudioInputStream,
     const media::AudioParameters output_params_;
 
     // Destination for the output of this FlowNetwork.
-    std::unique_ptr<InputController::SyncWriter> writer_;
+    std::unique_ptr<media::AudioInputController::SyncWriter> writer_;
 
     // Ensures thread-safe access to changing the |inputs_| and |volume_| while
     // running.

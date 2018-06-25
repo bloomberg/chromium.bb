@@ -9,13 +9,13 @@
 
 #include "base/bind_helpers.h"
 #include "base/trace_event/trace_event.h"
+#include "media/audio/audio_input_sync_writer.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/user_input_monitor.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/audio/input_sync_writer.h"
 #include "services/audio/user_input_monitor.h"
 
 namespace audio {
@@ -45,7 +45,7 @@ InputStream::InputStream(CreatedCallback created_callback,
       created_callback_(std::move(created_callback)),
       delete_callback_(std::move(delete_callback)),
       foreign_socket_(),
-      writer_(InputSyncWriter::Create(
+      writer_(media::AudioInputSyncWriter::Create(
           log_ ? base::BindRepeating(&media::mojom::AudioLog::OnLogMessage,
                                      base::Unretained(log_->get()))
                : base::DoNothing(),
@@ -88,9 +88,9 @@ InputStream::InputStream(CreatedCallback created_callback,
     return;
   }
 
-  controller_ = InputController::Create(audio_manager, this, writer_.get(),
-                                        user_input_monitor_.get(), params,
-                                        device_id, enable_agc);
+  controller_ = media::AudioInputController::Create(
+      audio_manager, this, writer_.get(), user_input_monitor_.get(), params,
+      device_id, enable_agc);
 }
 
 InputStream::~InputStream() {
@@ -116,7 +116,7 @@ InputStream::~InputStream() {
     return;
   }
 
-  // TODO(https://crbug.com/803102): remove InputController::Close() after
+  // TODO(https://crbug.com/803102): remove AudioInputController::Close() after
   // content/ streams are removed, destructor should suffice.
   controller_->Close(base::OnceClosure());
 
@@ -183,7 +183,7 @@ void InputStream::OnCreated(bool initially_muted) {
            initially_muted, id_);
 }
 
-void InputStream::OnError(InputController::ErrorCode error_code) {
+void InputStream::OnError(media::AudioInputController::ErrorCode error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", "Error", this);
 
