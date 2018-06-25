@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/shell.h"
 #include "base/json/json_writer.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -280,7 +279,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
     arc::ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context);
     ChromeLauncherController* chrome_controller =
         ChromeLauncherController::instance();
-    DCHECK(chrome_controller || !ash::Shell::HasInstance());
+    // chrome_controller may be null in tests.
     if (chrome_controller) {
       chrome_controller->GetShelfSpinnerController()->AddSpinnerToShelf(
           app_id, std::make_unique<ArcShelfSpinnerItemController>(

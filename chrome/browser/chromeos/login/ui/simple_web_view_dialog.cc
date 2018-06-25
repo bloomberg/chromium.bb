@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/login/ui/simple_web_view_dialog.h"
 
-#include "ash/public/cpp/shell_window_ids.h"
-#include "ash/shell.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"

@@ -351,10 +351,6 @@ void WebUILoginView::LoadURL(const GURL& url) {
   if (!is_reusing_webview_)
     web_view()->LoadInitialURL(url);
   web_view()->RequestFocus();
-
-  // There is no Shell instance while running in mash.
-  if (!features::IsAshInBrowserProcess())
-    return;
 }
 
 content::WebUI* WebUILoginView::GetWebUI() {
