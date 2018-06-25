@@ -7,15 +7,15 @@ layer at (0,0) size 800x600
         LayoutInline {FONT} at (0,0) size 296x19
           LayoutText {#text} at (244,0) size 296x19
             text run at (244,0) width 296: "You should see a 100x100 green Image below."
-      LayoutNGBlockFlow (anonymous) at (0,20) size 784x100
-        LayoutInline {FONT} at (0,0) size 100x100
+      LayoutNGBlockFlow (anonymous) at (0,20) size 784x105
+        LayoutInline {FONT} at (0,0) size 100x19
           LayoutNGBlockFlow {IMG} at (0,0) size 100x100 [bgcolor=#008000]
           LayoutText {#text} at (0,0) size 0x0
-      LayoutTable {TABLE} at (0,120) size 6x6
+      LayoutTable {TABLE} at (0,125) size 6x6
         LayoutTableSection {TBODY} at (0,0) size 6x6
           LayoutTableRow {TR} at (0,2) size 6x2
             LayoutNGTableCell {TD} at (2,2) size 2x2 [r=0 c=0 rs=1 cs=1]
-      LayoutNGBlockFlow (anonymous) at (0,126) size 784x0
+      LayoutNGBlockFlow (anonymous) at (0,131) size 784x0
         LayoutInline {FONT} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
 layer at (8,28) size 100x100 clip at (9,29) size 98x98

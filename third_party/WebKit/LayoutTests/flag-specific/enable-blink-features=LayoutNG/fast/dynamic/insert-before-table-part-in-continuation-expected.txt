@@ -21,7 +21,7 @@ layer at (0,0) size 800x600
           text run at (0,40) width 783: "specifying the table part as the \"before child\". The resulting render tree should look just like it would look if the parent was a"
           text run at (0,60) width 39: "block."
       LayoutNGBlockFlow {DIV} at (0,132) size 784x20
-        LayoutInline {SPAN} at (0,0) size 230x20
+        LayoutInline {SPAN} at (0,0) size 230x19
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "Text..."
           LayoutText {#text} at (40,0) size 87x19
@@ -33,7 +33,7 @@ layer at (0,0) size 800x600
                   LayoutText {#text} at (0,0) size 103x19
                     text run at (0,0) width 103: "...continues here"
       LayoutNGBlockFlow {DIV} at (0,152) size 784x20
-        LayoutInline {SPAN} at (0,0) size 143x20
+        LayoutInline {SPAN} at (0,0) size 143x19
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "Text..."
           LayoutTable (anonymous) at (40,0) size 103x20
@@ -44,7 +44,7 @@ layer at (0,0) size 800x600
                   LayoutText {#text} at (0,0) size 103x19
                     text run at (0,0) width 103: "...continues here"
       LayoutNGBlockFlow {DIV} at (0,172) size 784x35
-        LayoutInline {SPAN} at (0,0) size 143x35
+        LayoutInline {SPAN} at (0,0) size 143x19
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "Text..."
           LayoutTable (anonymous) at (40,15) size 103x20
@@ -55,7 +55,7 @@ layer at (0,0) size 800x600
                   LayoutText {#text} at (0,0) size 103x19
                     text run at (0,0) width 103: "...continues here"
       LayoutNGBlockFlow {DIV} at (0,207) size 784x20
-        LayoutInline {SPAN} at (0,0) size 143x20
+        LayoutInline {SPAN} at (0,0) size 143x19
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "Text..."
           LayoutInline {SPAN} at (0,0) size 0x0
@@ -73,7 +73,7 @@ layer at (0,0) size 800x600
         LayoutNGBlockFlow (anonymous) at (0,20) size 784x0
           LayoutNGBlockFlow {DIV} at (0,0) size 784x0
         LayoutNGBlockFlow (anonymous) at (0,20) size 784x20
-          LayoutInline {SPAN} at (0,0) size 103x20
+          LayoutInline {SPAN} at (0,0) size 103x19
             LayoutTable (anonymous) at (0,0) size 103x20
               LayoutTableSection (anonymous) at (0,0) size 103x20
                 LayoutTableRow (anonymous) at (0,0) size 103x20
@@ -81,7 +81,7 @@ layer at (0,0) size 800x600
                     LayoutText {#text} at (0,0) size 103x19
                       text run at (0,0) width 103: "...continues here"
       LayoutNGBlockFlow {DIV} at (0,267) size 784x20
-        LayoutInline {SPAN} at (0,0) size 230x20
+        LayoutInline {SPAN} at (0,0) size 230x19
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "Text..."
           LayoutText {#text} at (40,0) size 87x19
@@ -93,7 +93,7 @@ layer at (0,0) size 800x600
                   LayoutText {#text} at (0,0) size 103x19
                     text run at (0,0) width 103: "...continues here"
       LayoutNGBlockFlow {DIV} at (0,287) size 784x35
-        LayoutInline {SPAN} at (0,0) size 143x35
+        LayoutInline {SPAN} at (0,0) size 143x19
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "Text..."
           LayoutTable (anonymous) at (40,15) size 103x20
@@ -105,7 +105,7 @@ layer at (0,0) size 800x600
                   LayoutText {#text} at (0,0) size 103x19
                     text run at (0,0) width 103: "...continues here"
       LayoutNGBlockFlow {DIV} at (0,322) size 784x35
-        LayoutInline {SPAN} at (0,0) size 143x35
+        LayoutInline {SPAN} at (0,0) size 143x19
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "Text..."
           LayoutTable (anonymous) at (40,15) size 103x20
@@ -116,7 +116,7 @@ layer at (0,0) size 800x600
                   LayoutText {#text} at (0,0) size 103x19
                     text run at (0,0) width 103: "...continues here"
       LayoutNGBlockFlow {DIV} at (0,357) size 784x20
-        LayoutInline {SPAN} at (0,0) size 143x20
+        LayoutInline {SPAN} at (0,0) size 143x19
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "Text..."
           LayoutInline {SPAN} at (0,0) size 0x0
@@ -134,7 +134,7 @@ layer at (0,0) size 800x600
         LayoutNGBlockFlow (anonymous) at (0,20) size 784x0
           LayoutNGBlockFlow {DIV} at (0,0) size 784x0
         LayoutNGBlockFlow (anonymous) at (0,20) size 784x20
-          LayoutInline {SPAN} at (0,0) size 103x20
+          LayoutInline {SPAN} at (0,0) size 103x19
             LayoutTable (anonymous) at (0,0) size 103x20
               LayoutTableSection (anonymous) at (0,0) size 103x20
                 LayoutTableRow {DIV} at (0,0) size 103x20
@@ -142,7 +142,7 @@ layer at (0,0) size 800x600
                     LayoutText {#text} at (0,0) size 103x19
                       text run at (0,0) width 103: "...continues here"
       LayoutNGBlockFlow {DIV} at (0,417) size 784x20
-        LayoutInline {SPAN} at (0,0) size 230x20
+        LayoutInline {SPAN} at (0,0) size 230x19
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "Text..."
           LayoutText {#text} at (40,0) size 87x19
@@ -154,7 +154,7 @@ layer at (0,0) size 800x600
                   LayoutText {#text} at (0,0) size 103x19
                     text run at (0,0) width 103: "...continues here"
       LayoutNGBlockFlow {DIV} at (0,437) size 784x35
-        LayoutInline {SPAN} at (0,0) size 143x35
+        LayoutInline {SPAN} at (0,0) size 143x19
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "Text..."
           LayoutTable (anonymous) at (40,15) size 103x20
@@ -167,7 +167,7 @@ layer at (0,0) size 800x600
                   LayoutText {#text} at (0,0) size 103x19
                     text run at (0,0) width 103: "...continues here"
       LayoutNGBlockFlow {DIV} at (0,472) size 784x35
-        LayoutInline {SPAN} at (0,0) size 143x35
+        LayoutInline {SPAN} at (0,0) size 143x19
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "Text..."
           LayoutTable (anonymous) at (40,15) size 103x20
@@ -179,7 +179,7 @@ layer at (0,0) size 800x600
                   LayoutText {#text} at (0,0) size 103x19
                     text run at (0,0) width 103: "...continues here"
       LayoutNGBlockFlow {DIV} at (0,507) size 784x20
-        LayoutInline {SPAN} at (0,0) size 143x20
+        LayoutInline {SPAN} at (0,0) size 143x19
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "Text..."
           LayoutInline {SPAN} at (0,0) size 0x0
@@ -197,7 +197,7 @@ layer at (0,0) size 800x600
         LayoutNGBlockFlow (anonymous) at (0,20) size 784x0
           LayoutNGBlockFlow {DIV} at (0,0) size 784x0
         LayoutNGBlockFlow (anonymous) at (0,20) size 784x20
-          LayoutInline {SPAN} at (0,0) size 103x20
+          LayoutInline {SPAN} at (0,0) size 103x19
             LayoutTable (anonymous) at (0,0) size 103x20
               LayoutTableSection {DIV} at (0,0) size 103x20
                 LayoutTableRow (anonymous) at (0,0) size 103x20

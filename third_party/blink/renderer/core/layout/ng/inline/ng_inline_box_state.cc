@@ -245,11 +245,16 @@ void NGInlineBoxState::SetLineRightForBoxFragment(
 }
 
 bool NGInlineBoxState::ParentNeedsBoxFragment() const {
+  // Below are the known cases where parent rect may not equal the union of
+  // its child rects.
   if (margin_inline_start || margin_inline_end)
     return true;
-  // TODO(xiaochengh): Include other cases:
-  // - current box has a different font-size
-  // - current box is an atomic inline
+  // Inline box height is determined by font metrics, which can be different
+  // from the height of its child atomic inline.
+  if (item && item->Type() == NGInlineItem::kAtomicInline)
+    return true;
+  // TODO(xiaochengh): We may need to create box fragment when this box and
+  // parent have differnt 'font-size' values. Not capured by layout test yet.
   return false;
 }
 

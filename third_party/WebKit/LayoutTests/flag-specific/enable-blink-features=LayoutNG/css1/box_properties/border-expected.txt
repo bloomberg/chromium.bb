@@ -68,7 +68,7 @@ layer at (0,0) size 785x1475 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 25: "The"
         LayoutText {#text} at (25,0) size 715x19
           text run at (25,0) width 715: " following image is also an anchor which points to a target on this page, but it should not have a border around it: "
-        LayoutInline {A} at (0,0) size 15x15 [color=#0000FF]
+        LayoutInline {A} at (0,0) size 15x19 [color=#0000FF]
           LayoutImage {IMG} at (740,0) size 15x15
         LayoutText {#text} at (755,0) size 4x19
           text run at (755,0) width 4: "."
@@ -151,7 +151,7 @@ layer at (0,0) size 785x1475 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (0,0) width 25: "The"
                 LayoutText {#text} at (25,0) size 711x19
                   text run at (25,0) width 711: " following image is also an anchor which points to a target on this page, but it should not have a border around it:"
-                LayoutInline {A} at (0,0) size 15x15 [color=#0000FF]
+                LayoutInline {A} at (0,0) size 15x19 [color=#0000FF]
                   LayoutImage {IMG} at (0,20) size 15x15
                 LayoutText {#text} at (15,20) size 4x19
                   text run at (15,20) width 4: "."

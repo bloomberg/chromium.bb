@@ -28,6 +28,21 @@ crbug.com/854889 accessibility/css-styles.html [ Failure ]
 # Hit test failure due to vertical-rl writing mode
 crbug.com/851075 fast/writing-mode/vertical-inline-block-hittest.html [ Failure ]
 
+# Wrong image alignment in vertical-rl writing mode
+crbug.com/636993 fast/writing-mode/vertical-baseline-alignment.html [ Failure ]
+
+# Need bidi inline fragmentation
+crbug.com/636993 fast/text/nested-bidi-with-continuation-crash.html [ Crash ]
+crbug.com/636993 fast/text/international/unicode-bidi-isolate-nested-with-removes-not-adjacent.html [ Crash ]
+crbug.com/636993 fast/text/international/unicode-bidi-isolate-nested-with-removes.html [ Crash ]
+
+# Wrong quirks mode line height for pattern <div><a><img></a></div>
+crbug.com/854840 fast/table/backgr_border-table-quirks-collapsed-border.html [ Failure ]
+crbug.com/854840 fast/table/backgr_border-table-quirks.html [ Failure ]
+
+# Fails to layout everything with 'position:absolute' inside inline block
+crbug.com/855749 fast/block/positioning/rtl-static-positioning-inline-block.html [ Crash ]
+
 # New passes
 crbug.com/774229 editing/pasteboard/copy-paste-white-space.html [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-adjoining-opposite-float.html [ Pass ]
@@ -429,7 +444,6 @@ crbug.com/714962 fast/dom/elementsFromPoint/elementsFromPoint-inline.html [ Fail
 crbug.com/591099 fast/dom/nodesFromRect/nodesFromRect-basic.html [ Failure ]
 crbug.com/714962 fast/dom/nodesFromRect/nodesFromRect-culled-inline-with-linebreak.html [ Failure ]
 crbug.com/714962 fast/dom/nodesFromRect/nodesFromRect-culled-inlines.html [ Failure ]
-crbug.com/591099 fast/dom/nodesFromRect/nodesFromRect-inline-image.html [ Failure ]
 crbug.com/591099 fast/dom/nodesFromRect/nodesFromRect-inner-documents.html [ Failure ]
 crbug.com/714962 fast/dom/nodesFromRect/nodesFromRect-links-and-text.html [ Failure ]
 crbug.com/591099 fast/dynamic/first-letter-after-list-marker.html [ Failure ]
@@ -438,7 +452,6 @@ crbug.com/591099 fast/encoding/utf-16-big-endian.html [ Failure ]
 crbug.com/591099 fast/encoding/utf-16-little-endian.html [ Failure ]
 crbug.com/591099 fast/events/mouse-relative-position.html [ Failure ]
 crbug.com/591099 fast/events/select-element.html [ Failure ]
-crbug.com/591099 fast/events/sequential-focus-navigation-starting-point.html [ Failure ]
 crbug.com/591099 fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/591099 fast/events/wheel/mainthread-touchpad-fling-latching.html [ Pass ]
 crbug.com/591099 fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Pass ]
@@ -851,7 +864,6 @@ crbug.com/824918 virtual/layout_ng_experimental/ [ Skip ]
 crbug.com/591099 virtual/mojo-blob-urls/external/wpt/FileAPI/url/sandboxed-iframe.html [ Pass ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/mouse-relative-position.html [ Failure ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/select-element.html [ Failure ]
-crbug.com/591099 virtual/mouseevent_fractional/fast/events/sequential-focus-navigation-starting-point.html [ Failure ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/wheel/mainthread-touchpad-fling-latching.html [ Pass ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Pass ]
@@ -872,7 +884,6 @@ crbug.com/591099 virtual/user-activation-v2/fast/dom/Window/window-lookup-preced
 crbug.com/591099 virtual/user-activation-v2/fast/events/mouse-cursor.html [ Failure ]
 crbug.com/591099 virtual/user-activation-v2/fast/events/mouse-relative-position.html [ Failure ]
 crbug.com/591099 virtual/user-activation-v2/fast/events/select-element.html [ Failure ]
-crbug.com/591099 virtual/user-activation-v2/fast/events/sequential-focus-navigation-starting-point.html [ Failure ]
 crbug.com/591099 virtual/user-activation-v2/fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/591099 virtual/user-activation-v2/fullscreen/full-screen-with-flex-item.html [ Failure ]
 crbug.com/591099 virtual/video-surface-layer/media/audio-controls-rendering.html [ Failure ]
