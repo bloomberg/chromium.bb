@@ -367,7 +367,8 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
         attempt_build()
       except build_utils.CalledProcessError as e:
         # Work-around for a bug in jmake (http://crbug.com/551449).
-        if 'project database corrupted' not in e.output:
+        if ('project database corrupted' not in e.output
+            and 'jmake: internal Java exception' not in e.output):
           raise
         print ('Applying work-around for jmake project database corrupted '
                '(http://crbug.com/551449).')
