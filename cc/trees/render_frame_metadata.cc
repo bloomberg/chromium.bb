@@ -30,7 +30,6 @@ bool RenderFrameMetadata::HasAlwaysUpdateMetadataChanged(
          rfm1.top_controls_shown_ratio != rfm2.top_controls_shown_ratio ||
          rfm1.bottom_controls_height != rfm2.bottom_controls_height ||
          rfm1.bottom_controls_shown_ratio != rfm2.bottom_controls_shown_ratio ||
-         rfm1.root_scroll_offset != rfm2.root_scroll_offset ||
          rfm1.min_page_scale_factor != rfm2.min_page_scale_factor ||
          rfm1.max_page_scale_factor != rfm2.max_page_scale_factor ||
          rfm1.root_overflow_y_hidden != rfm2.root_overflow_y_hidden ||
