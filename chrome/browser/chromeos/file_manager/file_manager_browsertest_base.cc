@@ -580,8 +580,6 @@ class DriveTestVolume : public TestVolume {
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(error == google_apis::HTTP_SUCCESS);
     ASSERT_TRUE(entry);
-
-    CheckForUpdates();
   }
 
   // Creates a test file with the given spec.
@@ -623,8 +621,6 @@ class DriveTestVolume : public TestVolume {
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(error == google_apis::HTTP_SUCCESS);
     ASSERT_TRUE(entry);
-
-    CheckForUpdates();
   }
 
   // Notifies FileSystem that the contents in FakeDriveService have changed,
