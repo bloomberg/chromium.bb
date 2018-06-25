@@ -50,6 +50,9 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   // Binds the mojom::LoginScreen interface to this object.
   void BindRequest(mojom::LoginScreenRequest request);
 
+  // Check to see if an authentication attempt is in-progress.
+  bool IsAuthenticating() const;
+
   // Hash the password and send AuthenticateUser request to LoginScreenClient.
   // LoginScreenClient (in the chrome process) will do the authentication and
   // request to show error messages in the screen if auth fails, or request to

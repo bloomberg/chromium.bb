@@ -930,6 +930,10 @@ void LockContentsView::AddRotationAction(const OnRotate& on_rotate) {
 
 void LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary(
     bool is_primary) {
+  // Do not allow user-swap during authentication.
+  if (Shell::Get()->login_screen_controller()->IsAuthenticating())
+    return;
+
   if (is_primary && !primary_big_view_->IsAuthEnabled()) {
     LayoutAuth(primary_big_view_, opt_secondary_big_view_, true /*animate*/);
     OnBigUserChanged();
@@ -984,6 +988,10 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
 }
 
 void LockContentsView::SwapToBigUser(int user_index) {
+  // Do not allow user-swap during authentication.
+  if (Shell::Get()->login_screen_controller()->IsAuthenticating())
+    return;
+
   DCHECK(users_list_);
   LoginUserView* view = users_list_->user_view_at(user_index);
   DCHECK(view);
@@ -1002,6 +1010,11 @@ void LockContentsView::OnRemoveUserWarningShown(bool is_primary) {
 }
 
 void LockContentsView::RemoveUser(bool is_primary) {
+  // Do not allow removing a user during authentication, such as if the user
+  // tried to remove the currently authenticating user.
+  if (Shell::Get()->login_screen_controller()->IsAuthenticating())
+    return;
+
   LoginBigUserView* to_remove =
       is_primary ? primary_big_view_ : opt_secondary_big_view_;
   DCHECK(to_remove->GetCurrentUser()->can_remove);
