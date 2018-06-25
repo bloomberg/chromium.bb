@@ -66,12 +66,17 @@ class ANIMATION_EXPORT Tween {
   // specified by www.w3.org/TR/css3-transitions.
   static int LinearIntValueBetween(double value, int start, int target);
 
+  // Interpolates between |start| and |target| rects, animating the rect corners
+  // (as opposed to animating the rect origin and size) to minimize rounding
+  // error accumulation at intermediate stages.
   static gfx::Rect RectValueBetween(double value,
                                     const gfx::Rect& start,
                                     const gfx::Rect& target);
+
   static gfx::Transform TransformValueBetween(double value,
                                               const gfx::Transform& start,
                                               const gfx::Transform& target);
+
   static gfx::SizeF SizeValueBetween(double value,
                                      const gfx::SizeF& start,
                                      const gfx::SizeF& target);
