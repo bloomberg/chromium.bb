@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "components/sync/protocol/bookmark_model_metadata.pb.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
+#include "components/sync/protocol/unique_position.pb.h"
 
 namespace bookmarks {
 class BookmarkNode;
@@ -83,6 +84,7 @@ class SyncedBookmarkTracker {
            const bookmarks::BookmarkNode* bookmark_node,
            int64_t server_version,
            base::Time modification_time,
+           const sync_pb::UniquePosition& unique_position,
            const sync_pb::EntitySpecifics& specifics);
 
   // Adds an existing entry for the |sync_id| and the corresponding metadata in

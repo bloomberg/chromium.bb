@@ -82,6 +82,7 @@ void SyncedBookmarkTracker::Add(const std::string& sync_id,
                                 const bookmarks::BookmarkNode* bookmark_node,
                                 int64_t server_version,
                                 base::Time creation_time,
+                                const sync_pb::UniquePosition& unique_position,
                                 const sync_pb::EntitySpecifics& specifics) {
   DCHECK_GT(specifics.ByteSize(), 0);
   auto metadata = std::make_unique<sync_pb::EntityMetadata>();
@@ -91,6 +92,7 @@ void SyncedBookmarkTracker::Add(const std::string& sync_id,
   metadata->set_creation_time(syncer::TimeToProtoTime(creation_time));
   metadata->set_sequence_number(0);
   metadata->set_acked_sequence_number(0);
+  metadata->mutable_unique_position()->CopyFrom(unique_position);
   HashSpecifics(specifics, metadata->mutable_specifics_hash());
   sync_id_to_entities_map_[sync_id] =
       std::make_unique<Entity>(bookmark_node, std::move(metadata));

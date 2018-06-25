@@ -40,8 +40,8 @@ namespace syncer {
 // though it could be adapted to be more generally useful.
 class UniquePosition {
  public:
-  static const size_t kSuffixLength;
-  static const size_t kCompressBytesThreshold;
+  static constexpr size_t kSuffixLength = 28;
+  static constexpr size_t kCompressBytesThreshold = 128;
 
   static bool IsValidSuffix(const std::string& suffix);
   static bool IsValidBytes(const std::string& bytes);
@@ -82,7 +82,7 @@ class UniquePosition {
   bool Equals(const UniquePosition& other) const;
 
   // Serializes the position's internal state to a protobuf.
-  void ToProto(sync_pb::UniquePosition* proto) const;
+  sync_pb::UniquePosition ToProto() const;
 
   // Serializes the protobuf representation of this object as a string.
   void SerializeToString(std::string* blob) const;

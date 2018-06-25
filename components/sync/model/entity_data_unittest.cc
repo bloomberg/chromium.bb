@@ -39,7 +39,7 @@ TEST_F(EntityDataTest, Swap) {
   UniquePosition unique_position =
       UniquePosition::InitialPosition(UniquePosition::RandomSuffix());
 
-  unique_position.ToProto(&data.unique_position);
+  data.unique_position = unique_position.ToProto();
 
   // Remember addresses of some data within EntitySpecific and UniquePosition
   // to make sure that the underlying data isn't copied.

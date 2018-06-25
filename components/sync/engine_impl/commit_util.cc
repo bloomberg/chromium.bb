@@ -160,8 +160,8 @@ void BuildCommitItem(const syncable::Entry& meta_entry,
       // in sync.proto for more information.
       sync_entry->set_position_in_parent(
           meta_entry.GetUniquePosition().ToInt64());
-      meta_entry.GetUniquePosition().ToProto(
-          sync_entry->mutable_unique_position());
+      sync_entry->mutable_unique_position()->CopyFrom(
+          meta_entry.GetUniquePosition().ToProto());
     }
     // Always send specifics for bookmarks.
     SetEntrySpecifics(meta_entry, sync_entry);
