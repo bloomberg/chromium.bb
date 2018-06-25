@@ -150,7 +150,9 @@ class GpuMemoryBufferImplGbm : public gfx::GpuMemoryBuffer {
 
   gfx::GpuMemoryBufferId GetId() const override { return handle_.id; }
 
-  gfx::GpuMemoryBufferHandle GetHandle() const override { return handle_; }
+  gfx::GpuMemoryBufferHandle GetHandle() const override {
+    return gfx::CloneHandleForIPC(handle_);
+  }
 
   ClientBuffer AsClientBuffer() override {
     return reinterpret_cast<ClientBuffer>(this);

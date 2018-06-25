@@ -141,7 +141,7 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
   auto handle = gpu::GpuMemoryBufferImplSharedMemory::CreateGpuMemoryBuffer(
       id, size, format, usage);
   buffers.find(id)->second.shared_memory_guid = handle.handle.GetGUID();
-  std::move(callback).Run(handle);
+  std::move(callback).Run(std::move(handle));
 }
 
 void BrowserGpuMemoryBufferManager::SetDestructionSyncToken(
@@ -310,7 +310,7 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO(
 
 void BrowserGpuMemoryBufferManager::HandleGpuMemoryBufferCreatedOnIO(
     CreateGpuMemoryBufferRequest* request,
-    const gfx::GpuMemoryBufferHandle& handle) {
+    gfx::GpuMemoryBufferHandle handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Early out if factory failed to create the buffer.
@@ -321,15 +321,16 @@ void BrowserGpuMemoryBufferManager::HandleGpuMemoryBufferCreatedOnIO(
 
   // Note: Unretained is safe as IO thread is stopped before manager is
   // destroyed.
+  auto handle_id = handle.id;
   request->result =
       gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
-          handle, request->size, request->format, request->usage,
+          std::move(handle), request->size, request->format, request->usage,
           base::Bind(
               &GpuMemoryBufferDeleted,
               BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
               base::Bind(
                   &BrowserGpuMemoryBufferManager::DestroyGpuMemoryBufferOnIO,
-                  base::Unretained(this), handle.id, request->client_id)));
+                  base::Unretained(this), handle_id, request->client_id)));
   request->event.Signal();
 }
 
@@ -377,7 +378,7 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO(
     int client_id,
     int gpu_host_id,
     CreateCallback callback,
-    const gfx::GpuMemoryBufferHandle& handle,
+    gfx::GpuMemoryBufferHandle handle,
     GpuProcessHost::BufferCreationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -432,7 +433,7 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO(
   buffer_it->second.gpu_host_id = gpu_host_id;
   buffer_it->second.shared_memory_guid = handle.handle.GetGUID();
 
-  std::move(callback).Run(handle);
+  std::move(callback).Run(std::move(handle));
 }
 
 void BrowserGpuMemoryBufferManager::DestroyGpuMemoryBufferOnIO(

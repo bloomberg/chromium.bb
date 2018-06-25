@@ -891,7 +891,7 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
   QueueOnceTask(
       false,
       base::BindOnce(&InProcessCommandBuffer::CreateImageOnGpuThread,
-                     base::Unretained(this), new_id, handle,
+                     base::Unretained(this), new_id, std::move(handle),
                      gfx::Size(base::checked_cast<int>(width),
                                base::checked_cast<int>(height)),
                      gpu_memory_buffer->GetFormat(),
@@ -910,7 +910,7 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
 
 void InProcessCommandBuffer::CreateImageOnGpuThread(
     int32_t id,
-    const gfx::GpuMemoryBufferHandle& handle,
+    gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
     uint32_t internalformat,
@@ -947,7 +947,7 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
 
       scoped_refptr<gl::GLImage> image =
           image_factory_->CreateImageForGpuMemoryBuffer(
-              handle, size, format, internalformat, kGpuClientId,
+              std::move(handle), size, format, internalformat, kGpuClientId,
               kNullSurfaceHandle);
       if (!image.get()) {
         LOG(ERROR) << "Failed to create image for buffer.";

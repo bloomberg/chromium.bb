@@ -56,7 +56,7 @@ void ServerGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     gpu::SurfaceHandle surface_handle,
-    base::OnceCallback<void(const gfx::GpuMemoryBufferHandle&)> callback) {
+    base::OnceCallback<void(gfx::GpuMemoryBufferHandle)> callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (gpu_memory_buffer_support_->GetNativeGpuMemoryBufferType() !=
       gfx::EMPTY_BUFFER) {
@@ -93,8 +93,8 @@ void ServerGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
         std::make_pair(buffer_handle.id, buffer_info));
   }
 
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(std::move(callback), buffer_handle));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(buffer_handle)));
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
@@ -111,8 +111,8 @@ ServerGpuMemoryBufferManager::CreateGpuMemoryBuffer(
   DCHECK(!task_runner_->RunsTasksInCurrentSequence());
   auto reply_callback = base::BindOnce(
       [](gfx::GpuMemoryBufferHandle* handle, base::WaitableEvent* wait_event,
-         const gfx::GpuMemoryBufferHandle& allocated_buffer_handle) {
-        *handle = allocated_buffer_handle;
+         gfx::GpuMemoryBufferHandle allocated_buffer_handle) {
+        *handle = std::move(allocated_buffer_handle);
         wait_event->Signal();
       },
       &handle, &wait_event);
@@ -131,7 +131,7 @@ ServerGpuMemoryBufferManager::CreateGpuMemoryBuffer(
   // intermediate callback here as the destruction callback, which bounces off
   // onto the |task_runner_| thread to do the real work.
   return gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
-      handle, size, format, usage,
+      std::move(handle), size, format, usage,
       base::Bind(
           &OnGpuMemoryBufferDestroyed, task_runner_,
           base::Bind(&ServerGpuMemoryBufferManager::DestroyGpuMemoryBuffer,
@@ -226,8 +226,8 @@ uint64_t ServerGpuMemoryBufferManager::ClientIdToTracingId(
 void ServerGpuMemoryBufferManager::OnGpuMemoryBufferAllocated(
     int client_id,
     size_t buffer_size_in_bytes,
-    base::OnceCallback<void(const gfx::GpuMemoryBufferHandle&)> callback,
-    const gfx::GpuMemoryBufferHandle& handle) {
+    base::OnceCallback<void(gfx::GpuMemoryBufferHandle)> callback,
+    gfx::GpuMemoryBufferHandle handle) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (pending_buffers_.find(client_id) == pending_buffers_.end()) {
     // The client has been destroyed since the allocation request was made.
@@ -245,7 +245,7 @@ void ServerGpuMemoryBufferManager::OnGpuMemoryBufferAllocated(
     allocated_buffers_[client_id].insert(
         std::make_pair(handle.id, buffer_info));
   }
-  std::move(callback).Run(handle);
+  std::move(callback).Run(std::move(handle));
 }
 
 }  // namespace viz

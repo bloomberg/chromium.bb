@@ -47,7 +47,7 @@ class TestGpuService : public mojom::GpuService {
         handle.id = id;
         handle.type = gfx::SHARED_MEMORY_BUFFER;
         DCHECK(req.callback);
-        std::move(req.callback).Run(handle);
+        std::move(req.callback).Run(std::move(handle));
         return;
       }
     }
@@ -266,7 +266,7 @@ TEST_F(ServerGpuMemoryBufferManagerTest, AllocationRequestsForDestroyedClient) {
   const gfx::BufferUsage usage = gfx::BufferUsage::GPU_READ;
   manager.AllocateGpuMemoryBuffer(
       buffer_id, client_id, size, format, usage, gpu::kNullSurfaceHandle,
-      base::BindOnce([](const gfx::GpuMemoryBufferHandle& handle) {}));
+      base::BindOnce([](gfx::GpuMemoryBufferHandle handle) {}));
   EXPECT_TRUE(gpu_service.HasAllocationRequest(buffer_id, client_id));
   EXPECT_FALSE(gpu_service.HasDestructionRequest(buffer_id, client_id));
 
@@ -312,8 +312,8 @@ TEST_F(ServerGpuMemoryBufferManagerTest,
         base::BindOnce(
             [](gfx::GpuMemoryBufferHandle* allocated_handle,
                const base::Closure& callback,
-               const gfx::GpuMemoryBufferHandle& handle) {
-              *allocated_handle = handle;
+               gfx::GpuMemoryBufferHandle handle) {
+              *allocated_handle = std::move(handle);
               callback.Run();
             },
             &allocated_handle, runloop.QuitClosure()));

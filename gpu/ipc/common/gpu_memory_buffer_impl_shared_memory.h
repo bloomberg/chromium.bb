@@ -37,7 +37,7 @@ class GPU_EXPORT GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
       gfx::BufferUsage usage);
 
   static std::unique_ptr<GpuMemoryBufferImplSharedMemory> CreateFromHandle(
-      const gfx::GpuMemoryBufferHandle& handle,
+      gfx::GpuMemoryBufferHandle handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,

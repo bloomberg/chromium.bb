@@ -34,7 +34,7 @@ InProcessGpuMemoryBufferManager::CreateGpuMemoryBuffer(
       channel_manager_->gpu_memory_buffer_factory()->CreateGpuMemoryBuffer(
           id, size, format, usage, client_id_, surface_handle);
   return gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
-      buffer_handle, size, format, usage,
+      std::move(buffer_handle), size, format, usage,
       base::Bind(&InProcessGpuMemoryBufferManager::DestroyGpuMemoryBuffer,
                  weak_ptr_, id, client_id_));
 }

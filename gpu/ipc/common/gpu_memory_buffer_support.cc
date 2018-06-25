@@ -157,7 +157,7 @@ bool GpuMemoryBufferSupport::IsConfigurationSupported(
 
 std::unique_ptr<GpuMemoryBufferImpl>
 GpuMemoryBufferSupport::CreateGpuMemoryBufferImplFromHandle(
-    const gfx::GpuMemoryBufferHandle& handle,
+    gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
@@ -165,27 +165,27 @@ GpuMemoryBufferSupport::CreateGpuMemoryBufferImplFromHandle(
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER:
       return GpuMemoryBufferImplSharedMemory::CreateFromHandle(
-          handle, size, format, usage, callback);
+          std::move(handle), size, format, usage, callback);
 #if defined(OS_MACOSX)
     case gfx::IO_SURFACE_BUFFER:
       return GpuMemoryBufferImplIOSurface::CreateFromHandle(
-          handle, size, format, usage, callback);
+          std::move(handle), size, format, usage, callback);
 #endif
 #if defined(OS_LINUX)
     case gfx::NATIVE_PIXMAP:
       return GpuMemoryBufferImplNativePixmap::CreateFromHandle(
-          client_native_pixmap_factory(), handle, size, format, usage,
-          callback);
+          client_native_pixmap_factory(), std::move(handle), size, format,
+          usage, callback);
 #endif
 #if defined(OS_WIN)
     case gfx::DXGI_SHARED_HANDLE:
-      return GpuMemoryBufferImplDXGI::CreateFromHandle(handle, size, format,
-                                                       usage, callback);
+      return GpuMemoryBufferImplDXGI::CreateFromHandle(std::move(handle), size,
+                                                       format, usage, callback);
 #endif
 #if defined(OS_ANDROID)
     case gfx::ANDROID_HARDWARE_BUFFER:
       return GpuMemoryBufferImplAndroidHardwareBuffer::CreateFromHandle(
-          handle, size, format, usage, callback);
+          std::move(handle), size, format, usage, callback);
 #endif
     default:
       // TODO(dcheng): Remove default case (https://crbug.com/676224).

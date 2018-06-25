@@ -47,7 +47,7 @@ class ClientGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   void OnGpuMemoryBufferAllocatedOnThread(
       gfx::GpuMemoryBufferHandle* ret_handle,
       base::WaitableEvent* wait,
-      const gfx::GpuMemoryBufferHandle& handle);
+      gfx::GpuMemoryBufferHandle handle);
   void DeletedGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               const gpu::SyncToken& sync_token);
 
