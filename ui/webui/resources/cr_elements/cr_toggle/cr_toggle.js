@@ -137,6 +137,11 @@ Polymer({
     e.stopPropagation();
     e.preventDefault();
 
+    // Ignore case where 'click' handler is triggered while disabled. Can happen
+    // via calling the click() method.
+    if (this.disabled)
+      return;
+
     // User gesture has already been taken care of inside |pointermove|
     // handlers, Do nothing here.
     if (this.handledInPointerMove_)
