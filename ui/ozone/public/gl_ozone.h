@@ -76,6 +76,7 @@ class OZONE_BASE_EXPORT GLOzone {
   // semantics. The surface is not backed by any buffers and is used for
   // overlay-only displays. This will return null if surfaceless mode is
   // unsupported.
+  // TODO(spang): Consider deprecating this and using OverlaySurface for GL.
   virtual scoped_refptr<gl::GLSurface> CreateSurfacelessViewGLSurface(
       gfx::AcceleratedWidget window) = 0;
 
