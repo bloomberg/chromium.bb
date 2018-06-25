@@ -266,7 +266,7 @@ static void InvalidatePaintRectangleOnWindow(
   DCHECK(!frame_view->GetFrame().OwnerLayoutObject());
 
   IntRect paint_rect = dirty_rect;
-  paint_rect.Intersect(frame_view->VisibleContentRect());
+  paint_rect.Intersect(IntRect(IntPoint(), frame_view->Size()));
   if (paint_rect.IsEmpty())
     return;
 

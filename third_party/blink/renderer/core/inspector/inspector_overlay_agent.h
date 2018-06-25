@@ -151,8 +151,7 @@ class CORE_EXPORT InspectorOverlayAgent final
 
   Page* OverlayPage();
   LocalFrame* OverlayMainFrame();
-  void Reset(const IntSize& viewport_size,
-             const IntPoint& document_scroll_offset);
+  void Reset(const IntSize& viewport_size);
   void EvaluateInOverlay(const String& method, const String& argument);
   void EvaluateInOverlay(const String& method,
                          std::unique_ptr<protocol::Value> argument);

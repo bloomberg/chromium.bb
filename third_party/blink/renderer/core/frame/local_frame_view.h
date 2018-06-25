@@ -536,9 +536,7 @@ class CORE_EXPORT LocalFrameView final
   // to communicate the fractional scroll offset with chromium compositor which
   // can do sub-pixel positioning.  Do not call these if the scroll offset is
   // used in Blink for positioning. Use the Int version instead.
-  IntSize ScrollOffsetInt() const override {
-    return ToIntSize(VisibleContentRect().Location());
-  }
+  IntSize ScrollOffsetInt() const override { return IntSize(); }
   ScrollOffset GetScrollOffset() const override { return scroll_offset_; }
   IntSize MinimumScrollOffsetInt()
       const override;  // The minimum offset we can be scrolled to.

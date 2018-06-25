@@ -2115,8 +2115,8 @@ LayoutUnit LayoutBox::PerpendicularContainingBlockLogicalHeight() const {
   if (!logical_height_length.IsFixed()) {
     LayoutUnit fill_fallback_extent =
         LayoutUnit(containing_block_style.IsHorizontalWritingMode()
-                       ? View()->GetFrameView()->VisibleContentSize().Height()
-                       : View()->GetFrameView()->VisibleContentSize().Width());
+                       ? View()->GetFrameView()->Size().Height()
+                       : View()->GetFrameView()->Size().Width());
     LayoutUnit fill_available_extent =
         ContainingBlock()->AvailableLogicalHeight(kExcludeMarginBorderPadding);
     if (fill_available_extent == -1)
@@ -3720,10 +3720,9 @@ LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
     const Length& h,
     AvailableLogicalHeightType height_type) const {
   if (IsLayoutView()) {
-    return LayoutUnit(
-        IsHorizontalWritingMode()
-            ? ToLayoutView(this)->GetFrameView()->VisibleContentSize().Height()
-            : ToLayoutView(this)->GetFrameView()->VisibleContentSize().Width());
+    return LayoutUnit(IsHorizontalWritingMode()
+                          ? ToLayoutView(this)->GetFrameView()->Size().Height()
+                          : ToLayoutView(this)->GetFrameView()->Size().Width());
   }
 
   // We need to stop here, since we don't want to increase the height of the

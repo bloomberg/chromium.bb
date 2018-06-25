@@ -847,7 +847,7 @@ std::unique_ptr<TracedValue> LocalFrameView::AnalyzerCounters() {
       String::Format("0x%" PRIxPTR, reinterpret_cast<uintptr_t>(frame_.Get())));
   value->SetInteger("contentsHeightAfterLayout",
                     GetLayoutView()->DocumentRect().Height());
-  value->SetInteger("visibleHeight", VisibleHeight());
+  value->SetInteger("visibleHeight", Height());
   value->SetInteger("approximateBlankCharacterCount",
                     FontFaceSetDocument::ApproximateBlankCharacterCount(
                         *frame_->GetDocument()));
@@ -923,7 +923,7 @@ void LocalFrameView::PerformLayout(bool in_subtree_layout) {
   FirstMeaningfulPaintDetector::From(*frame_->GetDocument())
       .MarkNextPaintAsMeaningfulIfNeeded(
           layout_object_counter_, contents_height_before_layout,
-          GetLayoutView()->DocumentRect().Height(), VisibleHeight());
+          GetLayoutView()->DocumentRect().Height(), Height());
 }
 
 void LocalFrameView::ScheduleOrPerformPostLayoutTasks() {
@@ -3837,7 +3837,7 @@ IntSize LocalFrameView::MaximumScrollOffsetInt() const {
   // Make the same calculation as in CC's LayerImpl::MaxScrollOffset()
   // FIXME: We probably shouldn't be storing the bounds in a float.
   // crbug.com/422331.
-  IntSize visible_size = VisibleContentSize(kExcludeScrollbars);
+  IntSize visible_size = Size();
   IntSize content_bounds = ContentsSize();
 
   Page* page = frame_->GetPage();
@@ -3904,22 +3904,20 @@ ScrollbarMode LocalFrameView::EffectiveVerticalScrollbarMode() const {
 
 IntSize LocalFrameView::VisibleContentSize(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
-  return scrollbar_inclusion == kExcludeScrollbars ? ExcludeScrollbars(Size())
-                                                   : Size();
+  NOTREACHED();
+  return IntSize();
 }
 
 IntRect LocalFrameView::VisibleContentRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
-  return IntRect(IntPoint(FlooredIntSize(scroll_offset_)),
-                 VisibleContentSize(scrollbar_inclusion));
+  NOTREACHED();
+  return IntRect();
 }
 
 LayoutRect LocalFrameView::VisibleScrollSnapportRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   const ComputedStyle* style = GetLayoutBox()->Style();
-  LayoutRect visible_content_rect =
-      LayoutRect(LayoutPoint(DoublePoint(scroll_offset_)),
-                 LayoutSize(VisibleContentSize(scrollbar_inclusion)));
+  LayoutRect visible_content_rect((LayoutPoint()), LayoutSize(Size()));
   LayoutRectOutsets padding(
       MinimumValueForLength(style->ScrollPaddingTop(),
                             visible_content_rect.Height()),
@@ -3941,7 +3939,7 @@ void LocalFrameView::ClipPaintRect(FloatRect* paint_rect) const {
 
   paint_rect->Intersect(
       GetPage()->GetChromeClient().VisibleContentRectForPainting().value_or(
-          VisibleContentRect()));
+          IntRect(IntPoint(), Size())));
 }
 
 IntSize LocalFrameView::MinimumScrollOffsetInt() const {
@@ -3949,10 +3947,7 @@ IntSize LocalFrameView::MinimumScrollOffsetInt() const {
 }
 
 int LocalFrameView::ScrollSize(ScrollbarOrientation orientation) const {
-  IntSize scroll_size = ContentsSize() - VisibleContentSize();
-  scroll_size.ClampNegativeToZero();
-  return orientation == kHorizontalScrollbar ? scroll_size.Width()
-                                             : scroll_size.Height();
+  return 0;
 }
 
 void LocalFrameView::UpdateScrollOffset(const ScrollOffset& offset,

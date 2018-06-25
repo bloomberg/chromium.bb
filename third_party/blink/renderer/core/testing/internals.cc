@@ -2007,8 +2007,8 @@ StaticNodeList* Internals::nodesFromRect(
   LayoutRect rect(x, y, width, height);
   if (ignore_clipping) {
     hit_type |= HitTestRequest::kIgnoreClipping;
-  } else if (!frame->View()->VisibleContentRect().Intersects(
-                 EnclosingIntRect(rect))) {
+  } else if (!IntRect(IntPoint(), frame->View()->Size())
+                  .Intersects(EnclosingIntRect(rect))) {
     return nullptr;
   }
   if (allow_child_frame_content)

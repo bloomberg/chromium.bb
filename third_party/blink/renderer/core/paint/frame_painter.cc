@@ -31,15 +31,9 @@ void FramePainter::Paint(GraphicsContext& context,
 
   GetFrameView().NotifyPageThatContentAreaWillPaint();
 
-  IntRect document_dirty_rect;
-  IntPoint frame_view_location(GetFrameView().Location());
-  IntRect visible_area_without_scrollbars(frame_view_location,
-                                          GetFrameView().VisibleContentSize());
-  IntPoint content_offset =
-      -frame_view_location + GetFrameView().ScrollOffsetInt();
-  document_dirty_rect = rect.rect_;
-  document_dirty_rect.Intersect(visible_area_without_scrollbars);
-  document_dirty_rect.MoveBy(content_offset);
+  IntRect document_dirty_rect(rect.rect_);
+  document_dirty_rect.Intersect(GetFrameView().FrameRect());
+  document_dirty_rect.MoveBy(-GetFrameView().Location());
 
   if (document_dirty_rect.IsEmpty())
     return;

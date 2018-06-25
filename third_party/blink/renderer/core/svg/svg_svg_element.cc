@@ -473,16 +473,6 @@ AffineTransform SVGSVGElement::LocalCoordinateSpaceTransform(
       // #96361).
       transform.Scale(1.0 / layout_object->StyleRef().EffectiveZoom());
 
-      // Origin in the document. (This, together with the inverse-scale above,
-      // performs the same operation as
-      // Document::adjustFloatRectForScrollAndAbsoluteZoom, but in
-      // transformation matrix form.)
-      if (LocalFrameView* view = GetDocument().View()) {
-        LayoutRect visible_content_rect(view->VisibleContentRect());
-        transform.Translate(-visible_content_rect.X(),
-                            -visible_content_rect.Y());
-      }
-
       // Apply transforms from our ancestor coordinate space, including any
       // non-SVG ancestor transforms.
       transform.Multiply(layout_object->LocalToAbsoluteTransform());

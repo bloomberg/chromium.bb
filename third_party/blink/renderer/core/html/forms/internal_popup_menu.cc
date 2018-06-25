@@ -514,11 +514,7 @@ void InternalPopupMenu::Update() {
     return;
   needs_update_ = false;
 
-  if (!OwnerElement()
-           .GetDocument()
-           .GetFrame()
-           ->View()
-           ->VisibleContentRect()
+  if (!IntRect(IntPoint(), OwnerElement().GetDocument().View()->Size())
            .Intersects(OwnerElement().PixelSnappedBoundingBox())) {
     Hide();
     return;
