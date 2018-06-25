@@ -427,7 +427,7 @@ void AssertURLIs(const GURL& expectedURL) {
 // Tests that the header is shown when loading an error page in a native view
 // even if fullscreen was enabled previously.
 - (void)testShowHeaderOnErrorPage {
-#if TARGET_OS_SIMULATOR
+#if !TARGET_OS_SIMULATOR
   if (!base::ios::IsRunningOnIOS11OrLater()) {
     // TODO(crbug.com/855368): Reenable this test.
     EARL_GREY_TEST_DISABLED(@"Test failing on iOS 10 devices");
