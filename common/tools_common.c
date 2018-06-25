@@ -347,7 +347,7 @@ void aom_img_truncate_16_to_8(aom_image_t *dst, aom_image_t *src) {
   }
 }
 
-static void highbd_img_downshift(aom_image_t *dst, aom_image_t *src,
+static void highbd_img_downshift(aom_image_t *dst, const aom_image_t *src,
                                  int down_shift) {
   int plane;
   if (dst->d_w != src->d_w || dst->d_h != src->d_h ||
@@ -380,7 +380,7 @@ static void highbd_img_downshift(aom_image_t *dst, aom_image_t *src,
   }
 }
 
-static void lowbd_img_downshift(aom_image_t *dst, aom_image_t *src,
+static void lowbd_img_downshift(aom_image_t *dst, const aom_image_t *src,
                                 int down_shift) {
   int plane;
   if (dst->d_w != src->d_w || dst->d_h != src->d_h ||
@@ -414,7 +414,8 @@ static void lowbd_img_downshift(aom_image_t *dst, aom_image_t *src,
   }
 }
 
-void aom_img_downshift(aom_image_t *dst, aom_image_t *src, int down_shift) {
+void aom_img_downshift(aom_image_t *dst, const aom_image_t *src,
+                       int down_shift) {
   if (dst->fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
     highbd_img_downshift(dst, src, down_shift);
   } else {
