@@ -1382,6 +1382,7 @@ split_static_library("ui") {
       "media_router/cast_dialog_model.h",
       "media_router/cast_modes_with_media_sources.cc",
       "media_router/cast_modes_with_media_sources.h",
+      "media_router/cloud_services_dialog.h",
       "media_router/media_cast_mode.cc",
       "media_router/media_cast_mode.h",
       "media_router/media_router_dialog_controller_impl_base.cc",
@@ -1747,6 +1748,10 @@ split_static_library("ui") {
       "//third_party/libaddressinput:strings",
       "//ui/events",
     ]
+
+    if (!toolkit_views) {
+      sources += [ "media_router/cloud_services_dialog.cc" ]
+    }
   }
 
   if (is_chromeos) {
@@ -3200,6 +3205,8 @@ split_static_library("ui") {
         "views/media_router/cast_dialog_sink_button.h",
         "views/media_router/cast_dialog_view.cc",
         "views/media_router/cast_dialog_view.h",
+        "views/media_router/cloud_services_dialog_view.cc",
+        "views/media_router/cloud_services_dialog_view.h",
         "views/media_router/media_router_dialog_controller_views.cc",
         "views/media_router/media_router_dialog_controller_views.h",
         "views/media_router/media_router_views_ui.cc",

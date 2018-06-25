@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/media_router/cloud_services_dialog.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
@@ -142,7 +143,6 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
   const char kCastLearnMorePageUrl[] =
       "https://support.google.com/chromecast/answer/2998338";
 
-  PrefService* pref_service;
   switch (command_id) {
     case IDC_MEDIA_ROUTER_ABOUT:
       ShowSingletonTab(browser_, GURL(kAboutPageUrl));
@@ -151,12 +151,7 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
       SetAlwaysShowActionPref(!GetAlwaysShowActionPref());
       break;
     case IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE:
-      pref_service = browser_->profile()->GetPrefs();
-      pref_service->SetBoolean(prefs::kMediaRouterEnableCloudServices,
-          !pref_service->GetBoolean(prefs::kMediaRouterEnableCloudServices));
-
-      // If this has been set before, this is a no-op.
-      pref_service->SetBoolean(prefs::kMediaRouterCloudServicesPrefSet, true);
+      ToggleCloudServices();
       break;
     case IDC_MEDIA_ROUTER_HELP:
       ShowSingletonTab(browser_, GURL(kCastHelpCenterPageUrl));
@@ -182,6 +177,18 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
       break;
     default:
       NOTREACHED();
+  }
+}
+
+void MediaRouterContextualMenu::ToggleCloudServices() {
+  PrefService* pref_service = browser_->profile()->GetPrefs();
+  if (pref_service->GetBoolean(prefs::kMediaRouterCloudServicesPrefSet)) {
+    pref_service->SetBoolean(
+        prefs::kMediaRouterEnableCloudServices,
+        !pref_service->GetBoolean(prefs::kMediaRouterEnableCloudServices));
+  } else {
+    // If the user hasn't enabled cloud services before, show the opt-in dialog.
+    media_router::ShowCloudServicesDialog(browser_);
   }
 }
 

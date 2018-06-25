@@ -34,6 +34,8 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
                            ToggleCloudServicesItem);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
+                           ShowCloudServicesDialog);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
                            ToggleAlwaysShowIconItem);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
                            ActionShownByPolicy);
@@ -47,6 +49,11 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   bool IsCommandIdEnabled(int command_id) const override;
   bool IsCommandIdVisible(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
+
+  // Toggles the enabled/disabled state of cloud services. This may show a
+  // dialog asking the user to acknowledge the Google Privacy Policy before
+  // enabling the services.
+  void ToggleCloudServices();
 
   // Opens feedback page loaded from the media router extension.
   void ReportIssue();
