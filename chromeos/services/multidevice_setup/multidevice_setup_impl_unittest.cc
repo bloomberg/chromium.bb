@@ -11,8 +11,10 @@
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate_notifier.h"
 #include "chromeos/services/multidevice_setup/fake_host_backend_delegate.h"
+#include "chromeos/services/multidevice_setup/fake_host_verifier.h"
 #include "chromeos/services/multidevice_setup/fake_setup_flow_completion_recorder.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
+#include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
@@ -60,6 +62,46 @@ class FakeHostBackendDelegateFactory : public HostBackendDelegateImpl::Factory {
   FakeHostBackendDelegate* instance_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FakeHostBackendDelegateFactory);
+};
+
+class FakeHostVerifierFactory : public HostVerifierImpl::Factory {
+ public:
+  FakeHostVerifierFactory(
+      FakeHostBackendDelegateFactory* fake_host_backend_delegate_factory,
+      device_sync::FakeDeviceSyncClient* expected_device_sync_client,
+      secure_channel::FakeSecureChannelClient* expected_secure_channel_client)
+      : fake_host_backend_delegate_factory_(fake_host_backend_delegate_factory),
+        expected_device_sync_client_(expected_device_sync_client),
+        expected_secure_channel_client_(expected_secure_channel_client) {}
+
+  ~FakeHostVerifierFactory() override = default;
+
+  FakeHostVerifier* instance() { return instance_; }
+
+ private:
+  // HostVerifierImpl::Factory:
+  std::unique_ptr<HostVerifier> BuildInstance(
+      HostBackendDelegate* host_backend_delegate,
+      device_sync::DeviceSyncClient* device_sync_client,
+      secure_channel::SecureChannelClient* secure_channel_client) override {
+    EXPECT_FALSE(instance_);
+    EXPECT_EQ(fake_host_backend_delegate_factory_->instance(),
+              host_backend_delegate);
+    EXPECT_EQ(expected_device_sync_client_, device_sync_client);
+    EXPECT_EQ(expected_secure_channel_client_, secure_channel_client);
+
+    auto instance = std::make_unique<FakeHostVerifier>();
+    instance_ = instance.get();
+    return instance;
+  }
+
+  FakeHostBackendDelegateFactory* fake_host_backend_delegate_factory_;
+  device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
+  secure_channel::FakeSecureChannelClient* expected_secure_channel_client_;
+
+  FakeHostVerifier* instance_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeHostVerifierFactory);
 };
 
 class FakeSetupFlowCompletionRecorderFactory
@@ -161,6 +203,12 @@ class MultiDeviceSetupImplTest : public testing::Test {
     HostBackendDelegateImpl::Factory::SetFactoryForTesting(
         fake_host_backend_delegate_factory_.get());
 
+    fake_host_verifier_factory_ = std::make_unique<FakeHostVerifierFactory>(
+        fake_host_backend_delegate_factory_.get(),
+        fake_device_sync_client_.get(), fake_secure_channel_client_.get());
+    HostVerifierImpl::Factory::SetFactoryForTesting(
+        fake_host_verifier_factory_.get());
+
     fake_setup_flow_completion_recorder_factory_ =
         std::make_unique<FakeSetupFlowCompletionRecorderFactory>(
             test_pref_service_.get());
@@ -181,6 +229,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
 
   void TearDown() override {
     HostBackendDelegateImpl::Factory::SetFactoryForTesting(nullptr);
+    HostVerifierImpl::Factory::SetFactoryForTesting(nullptr);
     SetupFlowCompletionRecorderImpl::Factory::SetFactoryForTesting(nullptr);
     AccountStatusChangeDelegateNotifierImpl::Factory::SetFactoryForTesting(
         nullptr);
@@ -242,6 +291,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
 
   std::unique_ptr<FakeHostBackendDelegateFactory>
       fake_host_backend_delegate_factory_;
+  std::unique_ptr<FakeHostVerifierFactory> fake_host_verifier_factory_;
   std::unique_ptr<FakeSetupFlowCompletionRecorderFactory>
       fake_setup_flow_completion_recorder_factory_;
   std::unique_ptr<FakeAccountStatusChangeDelegateNotifierFactory>

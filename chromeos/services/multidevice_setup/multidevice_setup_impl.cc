@@ -10,6 +10,7 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
+#include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 #include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
 
 namespace chromeos {
@@ -54,6 +55,10 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
           HostBackendDelegateImpl::Factory::Get()->BuildInstance(
               pref_service,
               device_sync_client)),
+      host_verifier_(HostVerifierImpl::Factory::Get()->BuildInstance(
+          host_backend_delegate_.get(),
+          device_sync_client,
+          secure_channel_client)),
       setup_flow_completion_recorder_(
           SetupFlowCompletionRecorderImpl::Factory::Get()->BuildInstance(
               pref_service,
