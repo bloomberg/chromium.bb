@@ -1451,7 +1451,7 @@
     },
   },
 
-  'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests': {
+  'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests': {
     'webgl2_conformance_tests': {
       'telemetry_test_name': 'webgl_conformance',
       'args': [
@@ -2604,19 +2604,19 @@
 
   'gpu_fyi_mac_release_telemetry_tests': [
     'gpu_common_and_optional_telemetry_tests',
-    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
     'gpu_telemetry_tests',
   ],
 
   'gpu_fyi_optional_linux_telemetry_tests': [
     'gpu_common_and_optional_telemetry_tests',
     'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
-    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
   ],
 
   'gpu_fyi_optional_telemetry_tests': [
     'gpu_common_and_optional_telemetry_tests',
-    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
   ],
 
   'gpu_fyi_win_and_linux_intel_and_nvidia_release_telemetry_tests': [
@@ -2624,7 +2624,7 @@
     'gpu_default_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests',
-    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
     'gpu_telemetry_tests',
   ],
 
@@ -2632,7 +2632,7 @@
     'gpu_common_and_optional_telemetry_tests',
     'gpu_default_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
-    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
     'gpu_telemetry_tests',
   ],
 
@@ -2673,7 +2673,7 @@
     'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
     'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests',
     'gpu_fyi_only_win_nvidia_release_specific_telemetry_tests',
-    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
     'gpu_telemetry_tests',
   ],
 
@@ -2692,7 +2692,7 @@
     'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
     'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
-    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
     'gpu_telemetry_tests',
   ],
 
@@ -2714,7 +2714,7 @@
     'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
     'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
-    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
     'gpu_telemetry_tests',
   ],
 
@@ -2723,12 +2723,12 @@
     'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
     'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
     'gpu_fyi_and_optional_win_specific_gpu_telemetry_tests',
-    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
   ],
 
   'gpu_v8_desktop_telemetry_tests': [
     'gpu_common_and_optional_telemetry_tests',
-    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
+    'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
     'gpu_telemetry_tests',
   ],
 
@@ -2739,7 +2739,6 @@
 
   'gpu_win_angle_amd_telemetry_tests': [
     'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
-    'gpu_fyi_optional_v8_and_win_angle_amd_desktop_release_specific_telemetry_tests',
   ],
 
   'gpu_win_gtests': [
