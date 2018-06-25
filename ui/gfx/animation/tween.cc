@@ -179,11 +179,12 @@ int Tween::LinearIntValueBetween(double value, int start, int target) {
 gfx::Rect Tween::RectValueBetween(double value,
                                   const gfx::Rect& start,
                                   const gfx::Rect& target) {
-  return gfx::Rect(
-      LinearIntValueBetween(value, start.x(), target.x()),
-      LinearIntValueBetween(value, start.y(), target.y()),
-      LinearIntValueBetween(value, start.width(), target.width()),
-      LinearIntValueBetween(value, start.height(), target.height()));
+  const int x = LinearIntValueBetween(value, start.x(), target.x());
+  const int y = LinearIntValueBetween(value, start.y(), target.y());
+  const int right = LinearIntValueBetween(value, start.right(), target.right());
+  const int bottom =
+      LinearIntValueBetween(value, start.bottom(), target.bottom());
+  return gfx::Rect(x, y, right - x, bottom - y);
 }
 
 // static

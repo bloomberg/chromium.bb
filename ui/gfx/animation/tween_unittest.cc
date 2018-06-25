@@ -155,6 +155,20 @@ TEST(TweenTest, ClampedFloatValueBetweenTimeTicks) {
   EXPECT_EQ(v2, Tween::ClampedFloatValueBetween(t_after, from, v1, to, v2));
 }
 
+// Verifies the corners of the rect are animated, rather than the origin/size
+// (which would result in different rounding).
+TEST(TweenTest, RectValueBetween) {
+  constexpr gfx::Rect r1(0, 0, 10, 10);
+  constexpr gfx::Rect r2(10, 10, 30, 30);
+
+  // TODO(pkasting): Move the geometry test helpers from
+  // cc/test/geometry_test_utils.h to ui/gfx/test/gfx_util.h or similar and use
+  // a rect-comparison function here.
+  const gfx::Rect tweened = Tween::RectValueBetween(0.08, r1, r2);
+  EXPECT_EQ(11, tweened.width());
+  EXPECT_EQ(11, tweened.height());
+}
+
 TEST(TweenTest, SizeValueBetween) {
   const gfx::SizeF s1(12.0f, 24.0f);
   const gfx::SizeF s2(36.0f, 48.0f);
