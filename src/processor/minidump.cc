@@ -79,17 +79,18 @@
 
 namespace google_breakpad {
 
-
 using std::istream;
 using std::ifstream;
 using std::numeric_limits;
 using std::vector;
 
+namespace {
+
 // Returns true iff |context_size| matches exactly one of the sizes of the
 // various MDRawContext* types.
 // TODO(blundell): This function can be removed once
 // https://bugs.chromium.org/p/google-breakpad/issues/detail?id=550 is fixed.
-static bool IsContextSizeUnique(uint32_t context_size) {
+bool IsContextSizeUnique(uint32_t context_size) {
   int num_matching_contexts = 0;
   if (context_size == sizeof(MDRawContextX86))
     num_matching_contexts++;
@@ -122,9 +123,7 @@ static bool IsContextSizeUnique(uint32_t context_size) {
 // to account for certain templatized operations that require swapping for
 // wider types but handle uint8_t too
 // (MinidumpMemoryRegion::GetMemoryAtAddressInternal).
-static inline void Swap(uint8_t* value) {
-}
-
+inline void Swap(uint8_t* value) {}
 
 // Optimization: don't need to AND the furthest right shift, because we're
 // shifting an unsigned quantity.  The standard requires zero-filling in this
@@ -132,22 +131,18 @@ static inline void Swap(uint8_t* value) {
 // right shift to avoid an arithmetic shift (which retains the sign bit).
 // The furthest left shift never needs to be ANDed bitmask.
 
-
-static inline void Swap(uint16_t* value) {
-  *value = (*value >> 8) |
-           (*value << 8);
+inline void Swap(uint16_t* value) {
+  *value = (*value >> 8) | (*value << 8);
 }
 
-
-static inline void Swap(uint32_t* value) {
+inline void Swap(uint32_t* value) {
   *value =  (*value >> 24) |
            ((*value >> 8)  & 0x0000ff00) |
            ((*value << 8)  & 0x00ff0000) |
             (*value << 24);
 }
 
-
-static inline void Swap(uint64_t* value) {
+inline void Swap(uint64_t* value) {
   uint32_t* value32 = reinterpret_cast<uint32_t*>(value);
   Swap(&value32[0]);
   Swap(&value32[1]);
@@ -159,7 +154,7 @@ static inline void Swap(uint64_t* value) {
 
 // Given a pointer to a 128-bit int in the minidump data, set the "low"
 // and "high" fields appropriately.
-static void Normalize128(uint128_struct* value, bool is_big_endian) {
+void Normalize128(uint128_struct* value, bool is_big_endian) {
   // The struct format is [high, low], so if the format is big-endian,
   // the most significant bytes will already be in the high field.
   if (!is_big_endian) {
@@ -171,36 +166,34 @@ static void Normalize128(uint128_struct* value, bool is_big_endian) {
 
 // This just swaps each int64 half of the 128-bit value.
 // The value should also be normalized by calling Normalize128().
-static void Swap(uint128_struct* value) {
+void Swap(uint128_struct* value) {
   Swap(&value->low);
   Swap(&value->high);
 }
 
 // Swapping signed integers
-static inline void Swap(int32_t* value) {
+inline void Swap(int32_t* value) {
   Swap(reinterpret_cast<uint32_t*>(value));
 }
 
-static inline void Swap(MDLocationDescriptor* location_descriptor) {
+inline void Swap(MDLocationDescriptor* location_descriptor) {
   Swap(&location_descriptor->data_size);
   Swap(&location_descriptor->rva);
 }
 
-
-static inline void Swap(MDMemoryDescriptor* memory_descriptor) {
+inline void Swap(MDMemoryDescriptor* memory_descriptor) {
   Swap(&memory_descriptor->start_of_memory_range);
   Swap(&memory_descriptor->memory);
 }
 
-
-static inline void Swap(MDGUID* guid) {
+inline void Swap(MDGUID* guid) {
   Swap(&guid->data1);
   Swap(&guid->data2);
   Swap(&guid->data3);
   // Don't swap guid->data4[] because it contains 8-bit quantities.
 }
 
-static inline void Swap(MDSystemTime* system_time) {
+inline void Swap(MDSystemTime* system_time) {
   Swap(&system_time->year);
   Swap(&system_time->month);
   Swap(&system_time->day_of_week);
@@ -211,12 +204,12 @@ static inline void Swap(MDSystemTime* system_time) {
   Swap(&system_time->milliseconds);
 }
 
-static inline void Swap(MDXStateFeature* xstate_feature) {
+inline void Swap(MDXStateFeature* xstate_feature) {
   Swap(&xstate_feature->offset);
   Swap(&xstate_feature->size);
 }
 
-static inline void Swap(MDXStateConfigFeatureMscInfo* xstate_feature_info) {
+inline void Swap(MDXStateConfigFeatureMscInfo* xstate_feature_info) {
   Swap(&xstate_feature_info->size_of_info);
   Swap(&xstate_feature_info->context_size);
   Swap(&xstate_feature_info->enabled_features);
@@ -226,12 +219,12 @@ static inline void Swap(MDXStateConfigFeatureMscInfo* xstate_feature_info) {
   }
 }
 
-static inline void Swap(MDRawSimpleStringDictionaryEntry* entry) {
+inline void Swap(MDRawSimpleStringDictionaryEntry* entry) {
   Swap(&entry->key);
   Swap(&entry->value);
 }
 
-static inline void Swap(uint16_t* data, size_t size_in_bytes) {
+inline void Swap(uint16_t* data, size_t size_in_bytes) {
   size_t data_length = size_in_bytes / sizeof(data[0]);
   for (size_t i = 0; i < data_length; i++) {
     Swap(&data[i]);
@@ -252,8 +245,7 @@ static inline void Swap(uint16_t* data, size_t size_in_bytes) {
 // parameter, a converter that uses iconv would also need to take the host
 // CPU's endianness into consideration.  It doesn't seems worth the trouble
 // of making it a dependency when we don't care about anything but UTF-16.
-static string* UTF16ToUTF8(const vector<uint16_t>& in,
-                           bool swap) {
+string* UTF16ToUTF8(const vector<uint16_t>& in, bool swap) {
   scoped_ptr<string> out(new string());
 
   // Set the string's initial capacity to the number of UTF-16 characters,
@@ -326,14 +318,14 @@ static string* UTF16ToUTF8(const vector<uint16_t>& in,
 
 // Return the smaller of the number of code units in the UTF-16 string,
 // not including the terminating null word, or maxlen.
-static size_t UTF16codeunits(const uint16_t *string, size_t maxlen) {
+size_t UTF16codeunits(const uint16_t* string, size_t maxlen) {
   size_t count = 0;
   while (count < maxlen && string[count] != 0)
     count++;
   return count;
 }
 
-static inline void Swap(MDTimeZoneInformation* time_zone) {
+inline void Swap(MDTimeZoneInformation* time_zone) {
   Swap(&time_zone->bias);
   // Skip time_zone->standard_name.  No need to swap UTF-16 fields.
   // The swap will be done as part of the conversion to UTF-8.
@@ -345,10 +337,10 @@ static inline void Swap(MDTimeZoneInformation* time_zone) {
   Swap(&time_zone->daylight_bias);
 }
 
-static void ConvertUTF16BufferToUTF8String(const uint16_t* utf16_data,
-                                           size_t max_length_in_bytes,
-                                           string* utf8_result,
-                                           bool swap) {
+void ConvertUTF16BufferToUTF8String(const uint16_t* utf16_data,
+                                    size_t max_length_in_bytes,
+                                    string* utf8_result,
+                                    bool swap) {
   // Since there is no explicit byte length for each string, use
   // UTF16codeunits to calculate word length, then derive byte
   // length from that.
@@ -377,9 +369,9 @@ enum NumberFormat {
   kNumberFormatHexadecimal,
 };
 
-static void PrintValueOrInvalid(bool valid,
-                                NumberFormat number_format,
-                                uint32_t value) {
+void PrintValueOrInvalid(bool valid,
+                         NumberFormat number_format,
+                         uint32_t value) {
   if (!valid) {
     printf("(invalid)\n");
   } else if (number_format == kNumberFormatDecimal) {
@@ -390,7 +382,7 @@ static void PrintValueOrInvalid(bool valid,
 }
 
 // Converts a time_t to a string showing the time in UTC.
-static string TimeTToUTCString(time_t tt) {
+string TimeTToUTCString(time_t tt) {
   struct tm timestruct;
 #ifdef _WIN32
   gmtime_s(&timestruct, &tt);
@@ -407,8 +399,7 @@ static string TimeTToUTCString(time_t tt) {
   return string(timestr);
 }
 
-
-static string MDGUIDToString(const MDGUID& uuid) {
+string MDGUIDToString(const MDGUID& uuid) {
   char buf[37];
   snprintf(buf, sizeof(buf), "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
            uuid.data1,
@@ -425,6 +416,7 @@ static string MDGUIDToString(const MDGUID& uuid) {
   return std::string(buf);
 }
 
+}  // namespace
 
 //
 // MinidumpObject
@@ -5816,6 +5808,5 @@ T* Minidump::GetStream(T** stream) {
   info->stream = *stream;
   return *stream;
 }
-
 
 }  // namespace google_breakpad
