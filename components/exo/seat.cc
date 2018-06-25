@@ -15,6 +15,8 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/events/event_utils.h"
+#include "ui/events/platform/platform_event_source.h"
 
 namespace exo {
 namespace {
@@ -40,6 +42,10 @@ Seat::Seat() : changing_clipboard_data_to_selection_source_(false) {
   // Prepend handler as it's critical that we see all events.
   WMHelper::GetInstance()->PrependPreTargetHandler(this);
   ui::ClipboardMonitor::GetInstance()->AddObserver(this);
+  // TODO(reveman): Need to handle the mus case where PlatformEventSource is
+  // null. https://crbug.com/856230
+  if (ui::PlatformEventSource::GetInstance())
+    ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
 }
 
 Seat::~Seat() {
@@ -48,6 +54,8 @@ Seat::~Seat() {
       ->RemoveObserver(this);
   WMHelper::GetInstance()->RemovePreTargetHandler(this);
   ui::ClipboardMonitor::GetInstance()->RemoveObserver(this);
+  if (ui::PlatformEventSource::GetInstance())
+    ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(this);
 }
 
 void Seat::AddObserver(SeatObserver* observer) {
@@ -104,22 +112,50 @@ void Seat::OnWindowFocused(aura::Window* gained_focus,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ui::PlatformEventObserver overrides:
+
+void Seat::WillProcessEvent(const ui::PlatformEvent& event) {
+  switch (ui::EventTypeFromNative(event)) {
+    case ui::ET_KEY_PRESSED:
+    case ui::ET_KEY_RELEASED:
+      physical_code_for_currently_processing_event_ = ui::CodeFromNative(event);
+      break;
+    default:
+      break;
+  }
+}
+
+void Seat::DidProcessEvent(const ui::PlatformEvent& event) {
+  switch (ui::EventTypeFromNative(event)) {
+    case ui::ET_KEY_PRESSED:
+    case ui::ET_KEY_RELEASED:
+      physical_code_for_currently_processing_event_ = ui::DomCode::NONE;
+      break;
+    default:
+      break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ui::EventHandler overrides:
 
 void Seat::OnKeyEvent(ui::KeyEvent* event) {
   // Ignore synthetic key repeat events.
   if (event->is_repeat())
     return;
-  switch (event->type()) {
-    case ui::ET_KEY_PRESSED:
-      pressed_keys_.insert(event->code());
-      break;
-    case ui::ET_KEY_RELEASED:
-      pressed_keys_.erase(event->code());
-      break;
-    default:
-      NOTREACHED();
-      break;
+  if (physical_code_for_currently_processing_event_ != ui::DomCode::NONE) {
+    switch (event->type()) {
+      case ui::ET_KEY_PRESSED:
+        pressed_keys_.insert(
+            {physical_code_for_currently_processing_event_, event->code()});
+        break;
+      case ui::ET_KEY_RELEASED:
+        pressed_keys_.erase(physical_code_for_currently_processing_event_);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
   }
   modifier_flags_ = event->flags();
 }

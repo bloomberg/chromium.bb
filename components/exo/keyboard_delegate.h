@@ -25,7 +25,7 @@ class KeyboardDelegate {
   // Called when keyboard focus enters a new valid target surface.
   virtual void OnKeyboardEnter(
       Surface* surface,
-      const base::flat_set<ui::DomCode>& pressed_keys) = 0;
+      const base::flat_map<ui::DomCode, ui::DomCode>& pressed_keys) = 0;
 
   // Called when keyboard focus leaves a valid target surface.
   virtual void OnKeyboardLeave(Surface* surface) = 0;

@@ -3767,16 +3767,16 @@ class WaylandKeyboardDelegate : public WaylandInputDelegate,
   }
   void OnKeyboardEnter(
       Surface* surface,
-      const base::flat_set<ui::DomCode>& pressed_keys) override {
+      const base::flat_map<ui::DomCode, ui::DomCode>& pressed_keys) override {
     wl_resource* surface_resource = GetSurfaceResource(surface);
     DCHECK(surface_resource);
     wl_array keys;
     wl_array_init(&keys);
-    for (auto key : pressed_keys) {
+    for (const auto& entry : pressed_keys) {
       uint32_t* value =
           static_cast<uint32_t*>(wl_array_add(&keys, sizeof(uint32_t)));
       DCHECK(value);
-      *value = DomCodeToKey(key);
+      *value = DomCodeToKey(entry.second);
     }
     wl_keyboard_send_enter(keyboard_resource_, next_serial(), surface_resource,
                            &keys);
