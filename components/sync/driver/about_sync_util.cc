@@ -58,6 +58,8 @@ const char kSetIncludeSpecifics[] = "setIncludeSpecifics";
 const char kUserEventsVisibilityCallback[] =
     "chrome.sync.userEventsVisibilityCallback";
 const char kWriteUserEvent[] = "writeUserEvent";
+const char kRequestStart[] = "requestStart";
+const char kRequestStop[] = "requestStop";
 const char kTriggerRefresh[] = "triggerRefresh";
 
 // Other strings.

@@ -132,6 +132,16 @@ void SyncInternalsMessageHandler::RegisterMessages() {
                           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
+      syncer::sync_ui_util::kRequestStart,
+      base::BindRepeating(&SyncInternalsMessageHandler::HandleRequestStart,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      syncer::sync_ui_util::kRequestStop,
+      base::BindRepeating(&SyncInternalsMessageHandler::HandleRequestStop,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
       syncer::sync_ui_util::kTriggerRefresh,
       base::BindRepeating(&SyncInternalsMessageHandler::HandleTriggerRefresh,
                           base::Unretained(this)));
@@ -261,6 +271,28 @@ void SyncInternalsMessageHandler::HandleWriteUserEvent(
   }
 
   user_event_service->RecordUserEvent(event_specifics);
+}
+
+void SyncInternalsMessageHandler::HandleRequestStart(
+    const base::ListValue* args) {
+  DCHECK_EQ(0U, args->GetSize());
+
+  SyncService* service = GetSyncService();
+  if (!service)
+    return;
+
+  service->RequestStart();
+}
+
+void SyncInternalsMessageHandler::HandleRequestStop(
+    const base::ListValue* args) {
+  DCHECK_EQ(0U, args->GetSize());
+
+  SyncService* service = GetSyncService();
+  if (!service)
+    return;
+
+  service->RequestStop(SyncService::KEEP_DATA);
 }
 
 void SyncInternalsMessageHandler::HandleTriggerRefresh(
