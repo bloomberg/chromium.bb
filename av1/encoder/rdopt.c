@@ -2730,13 +2730,18 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         // Calculate distortion quickly in transform domain.
         dist_block_tx_domain(x, plane, block, tx_size, &this_rd_stats.dist,
                              &this_rd_stats.sse);
+
+        const int64_t best_rd_ = AOMMIN(best_rd, ref_best_rd);
+        const int64_t dist_cost_estimate =
+            RDCOST(x->rdmult, 0, AOMMIN(this_rd_stats.dist, this_rd_stats.sse));
+        if (dist_cost_estimate - (dist_cost_estimate >> 3) > best_rd_) continue;
+
         rate_cost = av1_cost_coeffs(cm, x, plane, block, tx_size, tx_type,
                                     txb_ctx, use_fast_coef_costing);
         const int64_t rd_estimate =
             AOMMIN(RDCOST(x->rdmult, rate_cost, this_rd_stats.dist),
                    RDCOST(x->rdmult, 0, this_rd_stats.sse));
-        if (rd_estimate - (rd_estimate >> 3) > AOMMIN(best_rd, ref_best_rd))
-          continue;
+        if (rd_estimate - (rd_estimate >> 3) > best_rd_) continue;
       }
       av1_optimize_b(cpi, x, plane, block, tx_size, tx_type, txb_ctx, 1,
                      &rate_cost);
