@@ -3,7 +3,7 @@ Script changing col's width, whether via the width attribute on the col
 element, or setting width:500px via css, should work.
 <table border="1">
     <colgroup span="3">
-        <col id="colForAttribute" />
+        <col width=500 />
         <col />
         <col />
     </colgroup>
@@ -22,7 +22,7 @@ element, or setting width:500px via css, should work.
 </table>
 <table border="1">
     <colgroup span="3">
-        <col id="colForStyle" />
+        <col width=500 />
         <col />
         <col />
     </colgroup>
@@ -39,8 +39,3 @@ element, or setting width:500px via css, should work.
     </tr>
     </tbody>
 </table>
-<script>
-  document.body.offsetTop;
-  colForAttribute.width = "500px";
-  colForStyle.style.width = "500px";
-</script>
