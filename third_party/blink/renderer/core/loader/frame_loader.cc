@@ -1458,24 +1458,7 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   // for a placeholder simply being replaced with a new DocumentLoader.
   if (had_placeholder_client_document_loader)
     provisional_document_loader_->SetSentDidFinishLoad();
-  frame_->GetDocument()->CancelParsing();
-
-  // If we're starting a regular navigation on a regular document (i.e., there
-  // was no placeholder DocumentLoader), it's not enough to cancel parsing, but
-  // we also have to check whether the document was completed, so it's in a
-  // defined state should the navigation fail.
-  if (!had_placeholder_client_document_loader &&
-      type == WebFrameLoadType::kStandard &&
-      (navigation_policy == kNavigationPolicyCurrentTab ||
-       navigation_policy == kNavigationPolicyHandledByClient)) {
-    frame_->GetDocument()->CheckCompleted();
-  }
   DetachDocumentLoader(provisional_document_loader_);
-
-  // beforeunload fired above, and detaching a DocumentLoader can fire events,
-  // which can detach this frame.
-  if (!frame_->GetPage())
-    return;
 
   progress_tracker_->ProgressStarted();
   // TODO(japhet): This case wants to flag the frame as loading and do nothing
@@ -1488,6 +1471,17 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
 
   provisional_document_loader_ = CreateDocumentLoader(
       resource_request, frame_load_request, type, navigation_type);
+
+  // This seems to correspond to step 9 of the specification:
+  // "9. Abort the active document of browsingContext."
+  // https://html.spec.whatwg.org/#navigate
+  frame_->GetDocument()->CancelParsing();
+  frame_->GetDocument()->CheckCompleted();
+
+  // document.onreadystatechange can fire in CancelParsing(), which can detach
+  // this frame.
+  if (!frame_->GetPage())
+    return;
 
   // PlzNavigate: We need to ensure that script initiated navigations are
   // honored.
