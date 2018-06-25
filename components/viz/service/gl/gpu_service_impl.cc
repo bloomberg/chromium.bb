@@ -165,13 +165,16 @@ GpuServiceImpl::~GpuServiceImpl() {
     scheduler_->DestroySequence(skia_output_surface_sequence_id_);
   }
 
-  if (context_for_skia_) {
-    // Initialize an offscreen surface, so MakeCurrent can work.
-    auto surface = gl::init::CreateOffscreenGLSurface(gfx::Size(1, 1));
-    context_for_skia_->MakeCurrent(surface.get());
-    gr_context_ = nullptr;
-    context_for_skia_ = nullptr;
+  if (context_for_skia_ && !context_for_skia_->IsCurrent(nullptr)) {
+    if (!context_for_skia_->MakeCurrent(
+        gpu_channel_manager_->GetDefaultOffscreenSurface())) {
+      LOG(ERROR) << "Failed to make current.";
+      gr_context_->abandonContext();
+    }
   }
+  gr_context_ = nullptr;
+  context_for_skia_ = nullptr;
+
   DCHECK(!gr_context_);
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
