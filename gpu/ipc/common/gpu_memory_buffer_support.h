@@ -58,7 +58,7 @@ class GPU_EXPORT GpuMemoryBufferSupport {
   // non-null, is called when instance is deleted, which is not necessarily on
   // the same thread as this function was called on and instance was created on.
   std::unique_ptr<GpuMemoryBufferImpl> CreateGpuMemoryBufferImplFromHandle(
-      const gfx::GpuMemoryBufferHandle& handle,
+      gfx::GpuMemoryBufferHandle handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,

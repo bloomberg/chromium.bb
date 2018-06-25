@@ -61,7 +61,7 @@ class GpuClientImpl : public ui::mojom::GpuMemoryBufferFactory,
                              const gpu::GpuFeatureInfo& gpu_feature_info,
                              GpuProcessHost::EstablishChannelStatus status);
   void OnCreateGpuMemoryBuffer(CreateGpuMemoryBufferCallback callback,
-                               const gfx::GpuMemoryBufferHandle& handle);
+                               gfx::GpuMemoryBufferHandle handle);
   void ClearCallback();
 
   const int client_id_;

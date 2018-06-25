@@ -1118,13 +1118,13 @@ void GpuProcessHost::OnChannelEstablished(
 }
 
 void GpuProcessHost::OnGpuMemoryBufferCreated(
-    const gfx::GpuMemoryBufferHandle& handle) {
+    gfx::GpuMemoryBufferHandle handle) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnGpuMemoryBufferCreated");
 
   DCHECK(!create_gpu_memory_buffer_requests_.empty());
   auto callback = std::move(create_gpu_memory_buffer_requests_.front());
   create_gpu_memory_buffer_requests_.pop();
-  std::move(callback).Run(handle, BufferCreationStatus::SUCCESS);
+  std::move(callback).Run(std::move(handle), BufferCreationStatus::SUCCESS);
 }
 
 #if defined(OS_ANDROID)

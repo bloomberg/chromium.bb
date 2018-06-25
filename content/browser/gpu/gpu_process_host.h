@@ -89,7 +89,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
     SUCCESS,
   };
   using CreateGpuMemoryBufferCallback =
-      base::OnceCallback<void(const gfx::GpuMemoryBufferHandle& handle,
+      base::OnceCallback<void(gfx::GpuMemoryBufferHandle handle,
                               BufferCreationStatus status)>;
 
   using RequestGPUInfoCallback = base::Callback<void(const gpu::GPUInfo&)>;
@@ -244,7 +244,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void OnChannelEstablished(int client_id,
                             const EstablishChannelCallback& callback,
                             mojo::ScopedMessagePipeHandle channel_handle);
-  void OnGpuMemoryBufferCreated(const gfx::GpuMemoryBufferHandle& handle);
+  void OnGpuMemoryBufferCreated(gfx::GpuMemoryBufferHandle handle);
 
   // Message handlers.
 #if defined(OS_ANDROID)

@@ -100,8 +100,8 @@ void GpuClientImpl::OnEstablishGpuChannel(
 
 void GpuClientImpl::OnCreateGpuMemoryBuffer(
     CreateGpuMemoryBufferCallback callback,
-    const gfx::GpuMemoryBufferHandle& handle) {
-  std::move(callback).Run(handle);
+    gfx::GpuMemoryBufferHandle handle) {
+  std::move(callback).Run(std::move(handle));
 }
 
 void GpuClientImpl::ClearCallback() {

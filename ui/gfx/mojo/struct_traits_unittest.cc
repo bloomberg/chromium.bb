@@ -62,9 +62,9 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   }
 
   void EchoGpuMemoryBufferHandle(
-      const GpuMemoryBufferHandle& handle,
+      GpuMemoryBufferHandle handle,
       EchoGpuMemoryBufferHandleCallback callback) override {
-    std::move(callback).Run(handle);
+    std::move(callback).Run(std::move(handle));
   }
 
   base::MessageLoop loop_;
@@ -169,7 +169,7 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   gfx::GpuMemoryBufferHandle output;
-  proxy->EchoGpuMemoryBufferHandle(handle, &output);
+  proxy->EchoGpuMemoryBufferHandle(std::move(handle), &output);
   EXPECT_EQ(gfx::SHARED_MEMORY_BUFFER, output.type);
   EXPECT_EQ(kId, output.id);
   EXPECT_EQ(kOffset, output.offset);
@@ -179,13 +179,16 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
   EXPECT_TRUE(output_memory.Map(1024));
 
 #if defined(OS_LINUX)
+  gfx::GpuMemoryBufferHandle handle2;
   const uint64_t kSize = kOffset + kStride;
   const uint64_t kModifier = 2;
-  handle.type = gfx::NATIVE_PIXMAP;
-  handle.id = kId;
-  handle.native_pixmap_handle.planes.emplace_back(kOffset, kStride, kSize,
-                                                  kModifier);
-  proxy->EchoGpuMemoryBufferHandle(handle, &output);
+  handle2.type = gfx::NATIVE_PIXMAP;
+  handle2.id = kId;
+  handle2.offset = kOffset;
+  handle2.stride = kStride;
+  handle2.native_pixmap_handle.planes.emplace_back(kOffset, kStride, kSize,
+                                                   kModifier);
+  proxy->EchoGpuMemoryBufferHandle(std::move(handle2), &output);
   EXPECT_EQ(gfx::NATIVE_PIXMAP, output.type);
   EXPECT_EQ(kId, output.id);
   ASSERT_EQ(1u, output.native_pixmap_handle.planes.size());

@@ -305,7 +305,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void SignalQueryOnGpuThread(unsigned query_id, base::OnceClosure callback);
   void DestroyTransferBufferOnGpuThread(int32_t id);
   void CreateImageOnGpuThread(int32_t id,
-                              const gfx::GpuMemoryBufferHandle& handle,
+                              gfx::GpuMemoryBufferHandle handle,
                               const gfx::Size& size,
                               gfx::BufferFormat format,
                               uint32_t internalformat,

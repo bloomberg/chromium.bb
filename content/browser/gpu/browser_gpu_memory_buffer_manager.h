@@ -33,7 +33,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       public base::trace_event::MemoryDumpProvider {
  public:
   using CreateCallback =
-      base::OnceCallback<void(const gfx::GpuMemoryBufferHandle& handle)>;
+      base::OnceCallback<void(gfx::GpuMemoryBufferHandle handle)>;
   using AllocationCallback = CreateCallback;
 
   BrowserGpuMemoryBufferManager(int gpu_client_id,
@@ -98,9 +98,8 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
 
   // Functions that handle synchronous buffer creation requests.
   void HandleCreateGpuMemoryBufferOnIO(CreateGpuMemoryBufferRequest* request);
-  void HandleGpuMemoryBufferCreatedOnIO(
-      CreateGpuMemoryBufferRequest* request,
-      const gfx::GpuMemoryBufferHandle& handle);
+  void HandleGpuMemoryBufferCreatedOnIO(CreateGpuMemoryBufferRequest* request,
+                                        gfx::GpuMemoryBufferHandle handle);
 
   // Functions that implement asynchronous buffer creation.
   void CreateGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
@@ -115,7 +114,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
                                   int client_id,
                                   int gpu_host_id,
                                   CreateCallback callback,
-                                  const gfx::GpuMemoryBufferHandle& handle,
+                                  gfx::GpuMemoryBufferHandle handle,
                                   GpuProcessHost::BufferCreationStatus status);
   void DestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
                                   int client_id,

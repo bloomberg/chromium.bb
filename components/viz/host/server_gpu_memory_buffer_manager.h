@@ -53,7 +53,7 @@ class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       gpu::SurfaceHandle surface_handle,
-      base::OnceCallback<void(const gfx::GpuMemoryBufferHandle&)> callback);
+      base::OnceCallback<void(gfx::GpuMemoryBufferHandle)> callback);
 
   // Overridden from gpu::GpuMemoryBufferManager:
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
@@ -73,8 +73,8 @@ class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
   void OnGpuMemoryBufferAllocated(
       int client_id,
       size_t buffer_size_in_bytes,
-      base::OnceCallback<void(const gfx::GpuMemoryBufferHandle&)> callback,
-      const gfx::GpuMemoryBufferHandle& handle);
+      base::OnceCallback<void(gfx::GpuMemoryBufferHandle)> callback,
+      gfx::GpuMemoryBufferHandle handle);
 
   mojom::GpuService* gpu_service_;
   const int client_id_;
