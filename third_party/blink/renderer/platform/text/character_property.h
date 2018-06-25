@@ -16,6 +16,7 @@ enum class CharacterProperty : CharacterPropertyType {
   kIsUprightInMixedVertical = 0x0002,
   kIsPotentialCustomElementNameChar = 0x0004,
   kIsBidiControl = 0x0008,
+  kIsHangul = 0x0010
 };
 
 inline CharacterProperty operator|(CharacterProperty a, CharacterProperty b) {

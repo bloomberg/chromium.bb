@@ -95,19 +95,21 @@ bool ShouldRemoveNewlineSlow(const StringBuilder& before,
   if (before.Is8Bit() || after.Is8Bit())
     return false;
 
-  // Remove if East Asian Widths of both before/after the newline are Wide.
+  // Remove if East Asian Widths of both before/after the newline are Wide, and
+  // neither side is Hangul.
+  // TODO(layout-dev): Don't remove if any side is Emoji.
   if (U16_IS_TRAIL(last) && space_index >= 2) {
     UChar last_last = before[space_index - 2];
     if (U16_IS_LEAD(last_last))
       last = U16_GET_SUPPLEMENTARY(last_last, last);
   }
-  if (IsEastAsianWidthWide(last, before_style)) {
+  if (!Character::IsHangul(last) && IsEastAsianWidthWide(last, before_style)) {
     if (U16_IS_LEAD(next) && after.length() > 1) {
       UChar next_next = after[1];
       if (U16_IS_TRAIL(next_next))
         next = U16_GET_SUPPLEMENTARY(next, next_next);
     }
-    if (IsEastAsianWidthWide(next, after_style))
+    if (!Character::IsHangul(next) && IsEastAsianWidthWide(next, after_style))
       return true;
   }
 

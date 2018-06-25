@@ -122,6 +122,10 @@ bool Character::IsBidiControl(UChar32 character) {
   RETURN_HAS_PROPERTY(character, kIsBidiControl);
 }
 
+bool Character::IsHangulSlow(UChar32 character) {
+  RETURN_HAS_PROPERTY(character, kIsHangul);
+}
+
 unsigned Character::ExpansionOpportunityCount(const LChar* characters,
                                               size_t length,
                                               TextDirection direction,

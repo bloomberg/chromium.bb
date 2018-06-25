@@ -72,6 +72,11 @@ class PLATFORM_EXPORT Character {
            !(U_GET_GC_MASK(c) & (U_GC_M_MASK | U_GC_LM_MASK | U_GC_SK_MASK));
   }
 
+  static bool IsHangul(UChar32 c) {
+    // Below U+1100 is likely a common case.
+    return c < 0x1100 ? false : IsHangulSlow(c);
+  }
+
   static unsigned ExpansionOpportunityCount(const LChar*,
                                             size_t length,
                                             TextDirection,
@@ -182,6 +187,7 @@ class PLATFORM_EXPORT Character {
 
  private:
   static bool IsCJKIdeographOrSymbolSlow(UChar32);
+  static bool IsHangulSlow(UChar32);
 };
 
 }  // namespace blink

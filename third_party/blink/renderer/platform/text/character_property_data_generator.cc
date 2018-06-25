@@ -82,6 +82,7 @@ static void Generate(FILE* fp) {
   SET(kIsUprightInMixedVertical);
   SET(kIsPotentialCustomElementNameChar);
   SET(kIsBidiControl);
+  SET(kIsHangul);
 
   // Create a trie from the value array.
   UErrorCode error = U_ZERO_ERROR;
