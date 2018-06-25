@@ -27,6 +27,14 @@ bool RenderWidgetHostDelegate::PreHandleGestureEvent(
   return false;
 }
 
+double RenderWidgetHostDelegate::GetPendingPageZoomLevel() const {
+  return 0.0;
+}
+
+bool RenderWidgetHostDelegate::UsesTemporaryZoomLevel() const {
+  return false;
+}
+
 BrowserAccessibilityManager*
     RenderWidgetHostDelegate::GetRootBrowserAccessibilityManager() {
   return nullptr;

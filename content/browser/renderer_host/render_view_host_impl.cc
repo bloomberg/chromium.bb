@@ -335,7 +335,6 @@ bool RenderViewHostImpl::CreateRenderView(
     params->has_committed_real_load =
         main_rfh->frame_tree_node()->has_committed_real_load();
   }
-  params->page_zoom_level = delegate_->GetPendingPageZoomLevel();
   params->devtools_main_frame_token = devtools_frame_token;
   // GuestViews in the same StoragePartition need to find each other's frames.
   params->renderer_wide_named_frame_lookup =

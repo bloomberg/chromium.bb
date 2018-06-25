@@ -1035,8 +1035,9 @@ void BrowserPluginGuest::OnSynchronizeVisualProperties(
   if (local_surface_id_ > local_surface_id ||
       ((frame_rect_.size() != visual_properties.screen_space_rect.size() ||
         screen_info_ != visual_properties.screen_info ||
-        capture_sequence_number_ !=
-            visual_properties.capture_sequence_number) &&
+        capture_sequence_number_ != visual_properties.capture_sequence_number ||
+        zoom_level_ != visual_properties.zoom_level ||
+        uses_temporary_zoom_ != visual_properties.uses_temporary_zoom) &&
        local_surface_id_ == local_surface_id)) {
     SiteInstance* owner_site_instance = delegate_->GetOwnerSiteInstance();
     bad_message::ReceivedBadMessage(
@@ -1047,6 +1048,9 @@ void BrowserPluginGuest::OnSynchronizeVisualProperties(
 
   screen_info_ = visual_properties.screen_info;
   frame_rect_ = visual_properties.screen_space_rect;
+  zoom_level_ = visual_properties.zoom_level;
+  uses_temporary_zoom_ = visual_properties.uses_temporary_zoom;
+
   GetWebContents()->SendScreenRects();
   local_surface_id_ = local_surface_id;
   bool capture_sequence_number_changed =

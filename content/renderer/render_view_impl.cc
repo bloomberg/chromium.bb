@@ -452,7 +452,7 @@ RenderViewImpl::RenderViewImpl(
       top_controls_height_(0.f),
       bottom_controls_height_(0.f),
       webview_(nullptr),
-      page_zoom_level_(params.page_zoom_level),
+      page_zoom_level_(0),
       main_render_frame_(nullptr),
       frame_widget_(nullptr),
 #if defined(OS_ANDROID)
@@ -587,8 +587,7 @@ void RenderViewImpl::Initialize(
   idle_user_detector_.reset(new IdleUserDetector());
 
   GetContentClient()->renderer()->RenderViewCreated(this);
-
-  page_zoom_level_ = params->page_zoom_level;
+  page_zoom_level_ = 0;
 
   nav_state_sync_timer_.SetTaskRunner(task_runner);
   check_preferred_size_timer_.SetTaskRunner(std::move(task_runner));
@@ -1085,7 +1084,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     // Page messages.
     IPC_MESSAGE_HANDLER(PageMsg_UpdateWindowScreenRect,
                         OnUpdateWindowScreenRect)
-    IPC_MESSAGE_HANDLER(PageMsg_SetZoomLevel, OnSetZoomLevel)
     IPC_MESSAGE_HANDLER(PageMsg_WasHidden, OnPageWasHidden)
     IPC_MESSAGE_HANDLER(PageMsg_WasShown, OnPageWasShown)
     IPC_MESSAGE_HANDLER(PageMsg_SetHistoryOffsetAndLength,
@@ -1336,7 +1334,6 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   view_params->hidden = is_background_tab;
   view_params->never_visible = never_visible;
   view_params->visual_properties = visual_properties;
-  view_params->page_zoom_level = page_zoom_level_;
 
   // Unretained() is safe here because our calling function will also call
   // show().
@@ -1825,24 +1822,16 @@ void RenderViewImpl::OnSetPageScale(float page_scale_factor) {
   webview()->SetPageScaleFactor(page_scale_factor);
 }
 
-void RenderViewImpl::OnSetZoomLevel(
-    PageMsg_SetZoomLevel_Command command,
-    double zoom_level) {
-  switch (command) {
-    case PageMsg_SetZoomLevel_Command::CLEAR_TEMPORARY:
-      uses_temporary_zoom_level_ = false;
-      break;
-    case PageMsg_SetZoomLevel_Command::SET_TEMPORARY:
-      uses_temporary_zoom_level_ = true;
-      break;
-    case PageMsg_SetZoomLevel_Command::USE_CURRENT_TEMPORARY_MODE:
-      // Don't override a temporary zoom level without an explicit SET.
-      if (uses_temporary_zoom_level_)
-        return;
-      break;
-    default:
-      NOTIMPLEMENTED();
-  }
+void RenderViewImpl::SetUsesTemporaryZoomLevel(
+    const bool uses_temporary_zoom_level) {
+  uses_temporary_zoom_level_ = uses_temporary_zoom_level;
+}
+
+void RenderViewImpl::UpdateZoomLevel(bool temporary_zoom, double zoom_level) {
+  // Don't override a temporary zoom level without an explicit SET.
+  if (uses_temporary_zoom_level() && temporary_zoom)
+    return;
+  uses_temporary_zoom_level_ = temporary_zoom;
   webview()->HidePopups();
   SetZoomLevel(zoom_level);
 }
@@ -2361,6 +2350,25 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   if (compositor_)
     compositor_->RequestNewLocalSurfaceId();
+
+  OnSynchronizeVisualProperties(visual_properties);
+}
+
+void RenderViewImpl::SetZoomLevelForTesting(bool uses_temporary_zoom,
+                                            double zoom_level) {
+  VisualProperties visual_properties;
+  visual_properties.screen_info = screen_info_;
+  visual_properties.new_size = size();
+  visual_properties.visible_viewport_size = visible_viewport_size_;
+  visual_properties.compositor_viewport_pixel_size =
+      compositor_viewport_pixel_size_;
+  visual_properties.browser_controls_shrink_blink_size = false;
+  visual_properties.top_controls_height = 0.f;
+  visual_properties.is_fullscreen_granted = is_fullscreen_granted();
+  visual_properties.display_mode = display_mode_;
+  visual_properties.local_surface_id = local_surface_id_from_parent_;
+  visual_properties.zoom_level = zoom_level;
+  visual_properties.uses_temporary_zoom = uses_temporary_zoom;
 
   OnSynchronizeVisualProperties(visual_properties);
 }

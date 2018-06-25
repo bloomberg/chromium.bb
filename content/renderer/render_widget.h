@@ -906,6 +906,8 @@ class CONTENT_EXPORT RenderWidget
                          std::unique_ptr<ui::DidOverscrollParams>,
                          base::Optional<cc::TouchAction>);
 
+  void UpdateZoom(bool uses_temporary_zoom, double zoom_level);
+
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Returns the focused pepper plugin, if any, inside the WebWidget. That is
   // the pepper plugin which is focused inside a frame which belongs to the

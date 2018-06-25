@@ -1180,26 +1180,21 @@ void WebContentsImpl::RecursiveRequestAXTreeSnapshotOnFrame(
 }
 
 #if !defined(OS_ANDROID)
-void WebContentsImpl::SetTemporaryZoomLevel(double level,
-                                            bool temporary_zoom_enabled) {
-  SendPageMessage(new PageMsg_SetZoomLevel(
-      MSG_ROUTING_NONE,
-      temporary_zoom_enabled ? PageMsg_SetZoomLevel_Command::SET_TEMPORARY
-                             : PageMsg_SetZoomLevel_Command::CLEAR_TEMPORARY,
-      level));
+
+void WebContentsImpl::UpdateZoom() {
+  RenderWidgetHostImpl* rwh = GetRenderViewHost()->GetWidget();
+  if (rwh->GetView())
+    rwh->SynchronizeVisualProperties();
 }
 
-void WebContentsImpl::UpdateZoom(double level) {
-  // Individual frames may still ignore the new zoom level if their RenderView
-  // contains a plugin document or if it uses a temporary zoom level.
-  SendPageMessage(new PageMsg_SetZoomLevel(
-      MSG_ROUTING_NONE,
-      PageMsg_SetZoomLevel_Command::USE_CURRENT_TEMPORARY_MODE, level));
+bool WebContentsImpl::UsesTemporaryZoomLevel() const {
+  return HostZoomMap::GetForWebContents(this)->UsesTemporaryZoomLevel(
+      GetMainFrame()->GetProcess()->GetID(),
+      GetRenderViewHost()->GetRoutingID());
 }
 
 void WebContentsImpl::UpdateZoomIfNecessary(const std::string& scheme,
-                                            const std::string& host,
-                                            double level) {
+                                            const std::string& host) {
   NavigationEntry* entry = GetController().GetLastCommittedEntry();
   if (!entry)
     return;
@@ -1210,7 +1205,7 @@ void WebContentsImpl::UpdateZoomIfNecessary(const std::string& scheme,
     return;
   }
 
-  UpdateZoom(level);
+  UpdateZoom();
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -5161,7 +5156,7 @@ WebContents* WebContentsImpl::GetAsWebContents() {
 }
 
 #if !defined(OS_ANDROID)
-double WebContentsImpl::GetPendingPageZoomLevel() {
+double WebContentsImpl::GetPendingPageZoomLevel() const {
   NavigationEntry* pending_entry = GetController().GetPendingEntry();
   if (!pending_entry)
     return HostZoomMap::GetZoomLevel(this);

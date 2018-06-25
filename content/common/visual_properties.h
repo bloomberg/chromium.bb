@@ -74,6 +74,17 @@ struct CONTENT_EXPORT VisualProperties {
   // incremented, that means the caller wants to synchronize surfaces which
   // should cause a new LocalSurfaceId to be generated.
   uint32_t capture_sequence_number = 0u;
+
+  // This represents the page zoom level for a WebContents.
+  // (0 is the default value which results in 1.0 zoom factor).
+  double zoom_level = 0;
+
+  // Set a temporary zoom level for frames associated with WebContents.
+  // If |uses_temporary_zoom| is true, we are setting a new temporary zoom
+  // level, otherwise we are clearing a previously set temporary zoom level.
+  // Always false unless the host is explicitly set to use temporary zoom in
+  // HostZoomMap.
+  bool uses_temporary_zoom = false;
 };
 
 }  // namespace content

@@ -28,7 +28,6 @@
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/navigation_gesture.h"
-#include "content/common/page_message_enums.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/drop_data.h"
@@ -227,6 +226,8 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // Change the device ICC color profile while running a layout test.
   void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);
 
+  void SetZoomLevelForTesting(bool uses_temporary_zoom, double zoom_level);
+
   // Used to force the size of a window when running layout tests.
   void ForceResizeForTesting(const gfx::Size& new_size);
 
@@ -356,6 +357,8 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
 
   bool uses_temporary_zoom_level() const { return uses_temporary_zoom_level_; }
 
+  void SetUsesTemporaryZoomLevel(bool uses_temporary_zoom_level);
+
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions
   // nearer to the top you can add it to.
@@ -371,6 +374,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   bool renderer_wide_named_frame_lookup() {
     return renderer_wide_named_frame_lookup_;
   }
+  void UpdateZoomLevel(bool uses_temporary_zoom, double zoom_level);
 
  protected:
   // RenderWidget overrides:
@@ -536,7 +540,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
 
   // Page message handlers -----------------------------------------------------
   void OnUpdateWindowScreenRect(gfx::Rect window_screen_rect);
-  void OnSetZoomLevel(PageMsg_SetZoomLevel_Command command, double zoom_level);
   void OnPageWasHidden();
   void OnPageWasShown();
   void OnUpdateScreenInfo(const ScreenInfo& screen_info);
