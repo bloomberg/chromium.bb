@@ -106,6 +106,7 @@ public class PasswordAccessoryIntegrationTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
+    @FlakyTest(message = "https://crbug.com/854326")
     public void testPasswordSheetDisplaysProvidedItems()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
@@ -130,6 +131,7 @@ public class PasswordAccessoryIntegrationTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
+    @FlakyTest(message = "https://crbug.com/854326")
     public void testPasswordSheetDisplaysNoPasswordsMessageAndOptions()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
