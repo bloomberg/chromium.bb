@@ -1715,6 +1715,9 @@ extern const char kArcAvailableForChildDescription[];
 extern const char kArcBootCompleted[];
 extern const char kArcBootCompletedDescription[];
 
+extern const char kArcCupsApiName[];
+extern const char kArcCupsApiDescription[];
+
 extern const char kArcNativeBridgeExperimentName[];
 extern const char kArcNativeBridgeExperimentDescription[];
 

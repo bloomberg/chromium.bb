@@ -3985,6 +3985,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kSuggestedTextTouchBar)},
 #endif
 
+#if defined(OS_CHROMEOS)
+    {"enable-arc-cups-api", flag_descriptions::kArcCupsApiName,
+     flag_descriptions::kArcCupsApiDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kArcCupsApi)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
