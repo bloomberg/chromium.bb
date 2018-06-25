@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-#include "base/ios/ios_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
 #include "ios/testing/embedded_test_server_handlers.h"
@@ -1210,10 +1209,6 @@ TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
 
 // Tests going forward to a page rendered from post response.
 TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
-  // TODO(crbug.com/854615): Test fails on iOS12.
-  if (base::ios::IsRunningOnIOS12OrLater()) {
-    return;
-  }
   const GURL url = test_server_->GetURL("/form?echo");
   const GURL action = test_server_->GetURL("/echo");
 
@@ -1276,8 +1271,13 @@ TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
   }
 
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
+  if (@available(iOS 12, *)) {
+    // On iOS 11 and earlier, ShouldAllowResponse is not called when going back
+    // after form submission.
+    EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
+        .WillOnce(Return(true));
+  }
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
-  // ShouldAllowResponse is not called when going back after form submission.
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
