@@ -940,10 +940,13 @@ bool ConsumeOneOrTwoValuedPosition(CSSParserTokenRange& range,
   if (!value1->IsIdentifierValue())
     horizontal_edge = true;
 
-  CSSValue* value2 = nullptr;
-  if (!vertical_edge || range.Peek().GetType() == kIdentToken)
-    value2 = ConsumePositionComponent(range, css_parser_mode, unitless,
-                                      horizontal_edge, vertical_edge);
+  if (vertical_edge && ConsumeLengthOrPercent(range, css_parser_mode,
+                                              kValueRangeAll, unitless)) {
+    // <length-percentage> is not permitted after top | bottom.
+    return false;
+  }
+  CSSValue* value2 = ConsumePositionComponent(range, css_parser_mode, unitless,
+                                              horizontal_edge, vertical_edge);
   if (!value2) {
     PositionFromOneValue(value1, result_x, result_y);
     return true;
