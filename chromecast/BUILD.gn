@@ -200,10 +200,10 @@ cast_test_group("cast_tests") {
     gtest_excludes = []
     if (target_os == "linux") {
       if (is_cast_desktop_build) {
-        # Disable PartitionAllocReturnNullTest.RepeatedReturnNullDirect (b/67975693)
+        # Disable PartitionAllocDeathTest.Repeated*ReturnNullDirect (b/67975693)
         gtest_excludes += [
-          "PartitionAllocReturnNullTest.RepeatedReturnNullDirect",
-          "PartitionReallocReturnNullTest.RepeatedReturnNullDirect",
+          "PartitionAllocDeathTest.RepeatedAllocReturnNullDirect",
+          "PartitionAllocDeathTest.RepeatedReallocReturnNullDirect",
         ]
       } else {
         # Disable ProcessMetricsTest.GetNumberOfThreads (b/15610509)
