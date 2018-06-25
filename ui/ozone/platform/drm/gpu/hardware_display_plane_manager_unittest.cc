@@ -68,7 +68,7 @@ void HardwareDisplayPlaneManagerTest::SetUp() {
   use_atomic_ = GetParam();
   fake_buffer_ = new ui::MockScanoutBuffer(kDefaultBufferSize);
 
-  fake_drm_ = new ui::MockDrmDevice(/* use_sync_flips= */ false);
+  fake_drm_ = new ui::MockDrmDevice;
   fake_drm_->SetPropertyBlob(ui::MockDrmDevice::AllocateInFormatsBlob(
       kInFormatsBlobPropId, {DRM_FORMAT_XRGB8888}, {}));
 }
@@ -349,17 +349,20 @@ TEST_P(HardwareDisplayPlaneManagerLegacyTest, UnusedPlanesAreReleased) {
   assigns.push_back(ui::DrmOverlayPlane(overlay_buffer, nullptr));
   ui::HardwareDisplayPlaneList hdpl;
   ui::CrtcController crtc(fake_drm_, crtc_properties_[0].id, 0);
+
+  scoped_refptr<ui::PageFlipRequest> page_flip_request =
+      base::MakeRefCounted<ui::PageFlipRequest>(base::TimeDelta());
   fake_drm_->plane_manager()->BeginFrame(&hdpl);
   EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
       &hdpl, assigns, crtc_properties_[0].id, &crtc));
-  EXPECT_TRUE(fake_drm_->plane_manager()->Commit(&hdpl, false));
+  EXPECT_TRUE(fake_drm_->plane_manager()->Commit(&hdpl, page_flip_request));
   assigns.clear();
   assigns.push_back(ui::DrmOverlayPlane(primary_buffer, nullptr));
   fake_drm_->plane_manager()->BeginFrame(&hdpl);
   EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
       &hdpl, assigns, crtc_properties_[0].id, &crtc));
   EXPECT_EQ(0, fake_drm_->get_overlay_clear_call_count());
-  EXPECT_TRUE(fake_drm_->plane_manager()->Commit(&hdpl, false));
+  EXPECT_TRUE(fake_drm_->plane_manager()->Commit(&hdpl, page_flip_request));
   EXPECT_EQ(1, fake_drm_->get_overlay_clear_call_count());
 }
 

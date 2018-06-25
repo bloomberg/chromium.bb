@@ -218,12 +218,10 @@ void DrmThread::OnPlanesReadyForPageFlip(gfx::AcceleratedWidget widget,
                                          std::vector<DrmOverlayPlane> planes) {
   DrmWindow* window = screen_manager_->GetWindow(widget);
   if (window) {
-    bool result =
-        window->SchedulePageFlip(std::move(planes), std::move(callback));
-    CHECK(result) << "DrmThread::SchedulePageFlip failed.";
+    window->SchedulePageFlip(std::move(planes), std::move(callback));
   } else {
     std::move(callback).Run(gfx::SwapResult::SWAP_ACK,
-                            gfx::PresentationFeedback());
+                            gfx::PresentationFeedback::Failure());
   }
 }
 

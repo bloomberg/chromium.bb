@@ -56,7 +56,7 @@ class ScreenManagerTest : public testing::Test {
   }
 
   void SetUp() override {
-    drm_ = new ui::MockDrmDevice(false);
+    drm_ = new ui::MockDrmDevice;
     device_manager_.reset(new ui::DrmDeviceManager(nullptr));
     buffer_generator_.reset(new ui::MockScanoutBufferGenerator());
     screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
@@ -360,7 +360,7 @@ TEST_F(ScreenManagerTest, CheckMirrorModeAfterBeginReEnabled) {
 
 TEST_F(ScreenManagerTest,
        CheckProperConfigurationWithDifferentDeviceAndSameCrtc) {
-  scoped_refptr<ui::MockDrmDevice> drm2 = new ui::MockDrmDevice(false);
+  scoped_refptr<ui::MockDrmDevice> drm2 = new ui::MockDrmDevice;
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
   screen_manager_->AddDisplayController(drm2, kPrimaryCrtc, kPrimaryConnector);
@@ -554,8 +554,8 @@ TEST_F(ScreenManagerTest, RejectBufferWithIncompatibleModifiers) {
 }
 
 TEST(ScreenManagerTest2, ShouldNotHardwareMirrorDifferentDrmDevices) {
-  auto drm_device1 = base::MakeRefCounted<MockDrmDevice>(false);
-  auto drm_device2 = base::MakeRefCounted<MockDrmDevice>(false);
+  auto drm_device1 = base::MakeRefCounted<MockDrmDevice>();
+  auto drm_device2 = base::MakeRefCounted<MockDrmDevice>();
   DrmDeviceManager drm_device_manager(nullptr);
   MockScanoutBufferGenerator buffer_generator;
   ScreenManager screen_manager(&buffer_generator);

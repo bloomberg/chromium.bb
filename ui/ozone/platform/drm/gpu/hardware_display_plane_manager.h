@@ -15,6 +15,7 @@
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_overlay_plane.h"
+#include "ui/ozone/public/swap_completion_callback.h"
 
 namespace gfx {
 class Rect;
@@ -97,8 +98,11 @@ class HardwareDisplayPlaneManager {
                                    CrtcController* crtc);
 
   // Commit the plane states in |plane_list|.
+  //
+  // If |page_flip_request| is null, this tests the plane configuration without
+  // submitting it.
   virtual bool Commit(HardwareDisplayPlaneList* plane_list,
-                      bool test_only) = 0;
+                      scoped_refptr<PageFlipRequest> page_flip_request) = 0;
 
   // Disable all the overlay planes previously submitted and now stored in
   // plane_list->old_plane_list.

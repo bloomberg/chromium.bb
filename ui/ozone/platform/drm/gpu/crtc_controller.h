@@ -18,21 +18,16 @@
 #include "ui/ozone/platform/drm/gpu/drm_overlay_plane.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
 
-namespace gfx {
-struct PresentationFeedback;
-}  // namespace gfx
-
 namespace ui {
 
 class DrmDevice;
-class PageFlipRequest;
 
 // Wrapper around a CRTC.
 //
 // One CRTC can be paired up with one or more connectors. The simplest
 // configuration represents one CRTC driving one monitor, while pairing up a
 // CRTC with multiple connectors results in hardware mirroring.
-class CrtcController : public base::SupportsWeakPtr<CrtcController> {
+class CrtcController {
  public:
   CrtcController(const scoped_refptr<DrmDevice>& drm,
                  uint32_t crtc,
@@ -44,7 +39,6 @@ class CrtcController : public base::SupportsWeakPtr<CrtcController> {
   uint32_t connector() const { return connector_; }
   const scoped_refptr<DrmDevice>& drm() const { return drm_; }
   bool is_disabled() const { return is_disabled_; }
-  base::TimeTicks time_of_last_flip() const { return time_of_last_flip_; }
 
   // Perform the initial modesetting operation using |plane| as the buffer for
   // the primary plane. The CRTC configuration is specified by |mode|.
@@ -53,11 +47,8 @@ class CrtcController : public base::SupportsWeakPtr<CrtcController> {
   // Disables the controller.
   bool Disable();
 
-  // Schedule a page flip event and present the overlays in |planes|.
-  bool SchedulePageFlip(HardwareDisplayPlaneList* plane_list,
-                        const DrmOverlayPlaneList& planes,
-                        bool test_only,
-                        scoped_refptr<PageFlipRequest> page_flip_request);
+  bool AssignOverlayPlanes(HardwareDisplayPlaneList* plane_list,
+                           const DrmOverlayPlaneList& planes);
 
   // Returns a vector of format modifiers for the given fourcc format
   // on this CRTCs primary plane. A format modifier describes the
@@ -69,16 +60,6 @@ class CrtcController : public base::SupportsWeakPtr<CrtcController> {
   // gbm will pick a modifier as it allocates the bo.
   std::vector<uint64_t> GetFormatModifiers(uint32_t fourcc_format);
 
-  // Called if the page flip event wasn't scheduled (ie: page flip fails). This
-  // will then signal the request such that the caller doesn't wait for the
-  // event forever.
-  void SignalPageFlipRequest(gfx::SwapResult result,
-                             const gfx::PresentationFeedback& feedback);
-
-  // Called when the page flip event occurred. The event is provided by the
-  // kernel when a VBlank event finished. This allows the controller to
-  // update internal state and propagate the update to the surface.
-  void OnPageFlipEvent(unsigned int frame, base::TimeTicks timestamp);
 
   bool SetCursor(const scoped_refptr<ScanoutBuffer>& buffer);
   bool MoveCursor(const gfx::Point& location);
@@ -90,10 +71,7 @@ class CrtcController : public base::SupportsWeakPtr<CrtcController> {
 
   // Buffers need to be declared first so that they are destroyed last. Needed
   // since the controllers may reference the buffers.
-  DrmOverlayPlaneList current_planes_;
-  DrmOverlayPlaneList pending_planes_;
   scoped_refptr<ScanoutBuffer> cursor_buffer_;
-  scoped_refptr<PageFlipRequest> page_flip_request_;
 
   uint32_t crtc_;
 
@@ -105,9 +83,6 @@ class CrtcController : public base::SupportsWeakPtr<CrtcController> {
   // Keeps track of the CRTC state. If a surface has been bound, then the value
   // is set to false. Otherwise it is true.
   bool is_disabled_ = true;
-
-  // The time of the last page flip event as reported by the kernel callback.
-  base::TimeTicks time_of_last_flip_;
 
   DISALLOW_COPY_AND_ASSIGN(CrtcController);
 };

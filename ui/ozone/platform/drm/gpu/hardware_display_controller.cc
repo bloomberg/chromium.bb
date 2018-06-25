@@ -28,15 +28,27 @@ namespace ui {
 
 namespace {
 
-void EmptyFlipCallback(gfx::SwapResult,
-                       const gfx::PresentationFeedback& feedback) {}
+void CompletePageFlip(
+    base::WeakPtr<HardwareDisplayController> hardware_display_controller_,
+    SwapCompletionOnceCallback callback,
+    DrmOverlayPlaneList plane_list,
+    gfx::SwapResult swap_result,
+    const gfx::PresentationFeedback& presentation_feedback) {
+  if (hardware_display_controller_) {
+    hardware_display_controller_->OnPageFlipComplete(std::move(plane_list),
+                                                     presentation_feedback);
+  }
+  std::move(callback).Run(swap_result, presentation_feedback);
+}
 
 }  // namespace
 
 HardwareDisplayController::HardwareDisplayController(
     std::unique_ptr<CrtcController> controller,
     const gfx::Point& origin)
-    : origin_(origin), is_disabled_(controller->is_disabled()) {
+    : origin_(origin),
+      is_disabled_(controller->is_disabled()),
+      weak_ptr_factory_(this) {
   AddCrtc(std::move(controller));
 }
 
@@ -54,7 +66,7 @@ bool HardwareDisplayController::Modeset(const DrmOverlayPlane& primary,
     status &= controller->Modeset(primary, mode);
 
   is_disabled_ = false;
-
+  OnModesetComplete(primary);
   return status;
 }
 
@@ -66,7 +78,7 @@ bool HardwareDisplayController::Enable(const DrmOverlayPlane& primary) {
     status &= controller->Modeset(primary, controller->mode());
 
   is_disabled_ = false;
-
+  OnModesetComplete(primary);
   return status;
 }
 
@@ -82,54 +94,63 @@ void HardwareDisplayController::Disable() {
   is_disabled_ = true;
 }
 
-bool HardwareDisplayController::SchedulePageFlip(
-    const DrmOverlayPlaneList& plane_list,
+void HardwareDisplayController::SchedulePageFlip(
+    DrmOverlayPlaneList plane_list,
     SwapCompletionOnceCallback callback) {
-  return ActualSchedulePageFlip(plane_list, false /* test_only */,
-                                std::move(callback));
+  DCHECK(!page_flip_request_);
+  scoped_refptr<PageFlipRequest> page_flip_request =
+      base::MakeRefCounted<PageFlipRequest>(GetRefreshInterval());
+
+  bool status = ScheduleOrTestPageFlip(plane_list, page_flip_request);
+  CHECK(status) << "SchedulePageFlip failed";
+
+  if (page_flip_request->page_flip_count() == 0) {
+    // Apparently, there was nothing to do. This probably should not be
+    // able to happen but both CrtcController::AssignOverlayPlanes and
+    // HardwareDisplayPlaneManagerLegacy::Commit appear to have cases
+    // where we ACK without actually scheduling a page flip.
+    std::move(callback).Run(gfx::SwapResult::SWAP_ACK,
+                            gfx::PresentationFeedback::Failure());
+    return;
+  }
+
+  // Everything was submitted successfully, wait for asynchronous completion.
+  page_flip_request->TakeCallback(
+      base::BindOnce(&CompletePageFlip, weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(&callback), base::Passed(&plane_list)));
+  page_flip_request_ = std::move(page_flip_request);
 }
 
 bool HardwareDisplayController::TestPageFlip(
     const DrmOverlayPlaneList& plane_list) {
-  return ActualSchedulePageFlip(plane_list, true /* test_only */,
-                                base::BindOnce(&EmptyFlipCallback));
+  return ScheduleOrTestPageFlip(plane_list, nullptr);
 }
 
-bool HardwareDisplayController::ActualSchedulePageFlip(
+bool HardwareDisplayController::ScheduleOrTestPageFlip(
     const DrmOverlayPlaneList& plane_list,
-    bool test_only,
-    SwapCompletionOnceCallback callback) {
+    scoped_refptr<PageFlipRequest> page_flip_request) {
   TRACE_EVENT0("drm", "HDC::SchedulePageFlip");
-
   DCHECK(!is_disabled_);
 
   // Ignore requests with no planes to schedule.
-  if (plane_list.empty()) {
-    std::move(callback).Run(gfx::SwapResult::SWAP_ACK,
-                            gfx::PresentationFeedback());
+  if (plane_list.empty())
     return true;
-  }
 
   DrmOverlayPlaneList pending_planes = DrmOverlayPlane::Clone(plane_list);
   std::sort(pending_planes.begin(), pending_planes.end(),
             [](const DrmOverlayPlane& l, const DrmOverlayPlane& r) {
               return l.z_order < r.z_order;
             });
-  scoped_refptr<PageFlipRequest> page_flip_request =
-      new PageFlipRequest(crtc_controllers_.size(), std::move(callback));
-
   GetDrmDevice()->plane_manager()->BeginFrame(&owned_hardware_planes_);
 
   bool status = true;
   for (const auto& controller : crtc_controllers_) {
-    status &= controller->SchedulePageFlip(
-        &owned_hardware_planes_, pending_planes, test_only, page_flip_request);
+    status &= controller->AssignOverlayPlanes(&owned_hardware_planes_,
+                                              pending_planes);
   }
 
-  if (!GetDrmDevice()->plane_manager()->Commit(&owned_hardware_planes_,
-                                               test_only)) {
-    status = false;
-  }
+  status &= GetDrmDevice()->plane_manager()->Commit(&owned_hardware_planes_,
+                                                    page_flip_request);
 
   return status;
 }
@@ -284,14 +305,19 @@ gfx::Size HardwareDisplayController::GetModeSize() const {
                    crtc_controllers_[0]->mode().vdisplay);
 }
 
-base::TimeTicks HardwareDisplayController::GetTimeOfLastFlip() const {
-  base::TimeTicks time;
-  for (const auto& controller : crtc_controllers_) {
-    if (time < controller->time_of_last_flip())
-      time = controller->time_of_last_flip();
-  }
+uint32_t HardwareDisplayController::GetRefreshRate() const {
+  // If there are multiple CRTCs they should all have the same size.
+  return crtc_controllers_[0]->mode().vrefresh;
+}
 
-  return time;
+base::TimeDelta HardwareDisplayController::GetRefreshInterval() const {
+  uint32_t vrefresh = GetRefreshRate();
+  return vrefresh ? base::TimeDelta::FromSeconds(1) / vrefresh
+                  : base::TimeDelta();
+}
+
+base::TimeTicks HardwareDisplayController::GetTimeOfLastFlip() const {
+  return time_of_last_flip_;
 }
 
 scoped_refptr<DrmDevice> HardwareDisplayController::GetDrmDevice() const {
@@ -299,6 +325,28 @@ scoped_refptr<DrmDevice> HardwareDisplayController::GetDrmDevice() const {
   // TODO(dnicoara) When we support mirroring across DRM devices, figure out
   // which device should be used for allocations.
   return crtc_controllers_[0]->drm();
+}
+
+void HardwareDisplayController::OnPageFlipComplete(
+    DrmOverlayPlaneList pending_planes,
+    const gfx::PresentationFeedback& presentation_feedback) {
+  if (!page_flip_request_)
+    return;  // Modeset occured during this page flip.
+  time_of_last_flip_ = presentation_feedback.timestamp;
+  current_planes_ = std::move(pending_planes);
+  page_flip_request_ = nullptr;
+}
+
+void HardwareDisplayController::OnModesetComplete(
+    const DrmOverlayPlane& primary) {
+  // drmModeSetCrtc has an immediate effect, so we can assume that the current
+  // planes have been updated. However if a page flip is still pending, set the
+  // pending planes to the same values so that the callback keeps the correct
+  // state.
+  page_flip_request_ = nullptr;
+  current_planes_.clear();
+  current_planes_.push_back(primary.Clone());
+  time_of_last_flip_ = base::TimeTicks::Now();
 }
 
 }  // namespace ui

@@ -34,13 +34,6 @@ CrtcController::~CrtcController() {
 
     SetCursor(nullptr);
     drm_->DisableCrtc(crtc_);
-    if (page_flip_request_) {
-      // The controller is being destroyed, so signal the pending page flip
-      // request with an empty presentation feedback which means the buffer
-      // is never presented on a screen.
-      SignalPageFlipRequest(gfx::SwapResult::SWAP_ACK,
-                            gfx::PresentationFeedback::Failure());
-    }
   }
 }
 
@@ -57,17 +50,7 @@ bool CrtcController::Modeset(const DrmOverlayPlane& plane,
   }
 
   mode_ = mode;
-  pending_planes_.clear();
   is_disabled_ = false;
-
-  // drmModeSetCrtc has an immediate effect, so we can assume that the current
-  // planes have been updated. However if a page flip is still pending, set the
-  // pending planes to the same values so that the callback keeps the correct
-  // state.
-  current_planes_.clear();
-  current_planes_.push_back(plane.Clone());
-  if (page_flip_request_.get())
-    pending_planes_ = DrmOverlayPlane::Clone(current_planes_);
 
   ResetCursor();
 
@@ -82,12 +65,8 @@ bool CrtcController::Disable() {
   return drm_->DisableCrtc(crtc_);
 }
 
-bool CrtcController::SchedulePageFlip(
-    HardwareDisplayPlaneList* plane_list,
-    const DrmOverlayPlaneList& overlays,
-    bool test_only,
-    scoped_refptr<PageFlipRequest> page_flip_request) {
-  DCHECK(!page_flip_request_.get() || test_only);
+bool CrtcController::AssignOverlayPlanes(HardwareDisplayPlaneList* plane_list,
+                                         const DrmOverlayPlaneList& overlays) {
   DCHECK(!is_disabled_);
 
   const DrmOverlayPlane* primary = DrmOverlayPlane::GetPrimaryPlane(overlays);
@@ -96,28 +75,13 @@ bool CrtcController::SchedulePageFlip(
             << mode_.hdisplay << "x" << mode_.vdisplay << " got "
             << primary->buffer->GetSize().ToString() << " for"
             << " crtc=" << crtc_ << " connector=" << connector_;
-    page_flip_request->Signal(gfx::SwapResult::SWAP_ACK,
-                              gfx::PresentationFeedback::Failure());
     return true;
   }
 
   if (!drm_->plane_manager()->AssignOverlayPlanes(plane_list, overlays, crtc_,
                                                   this)) {
     PLOG(ERROR) << "Failed to assign overlay planes for crtc " << crtc_;
-    page_flip_request->Signal(gfx::SwapResult::SWAP_FAILED,
-                              gfx::PresentationFeedback::Failure());
     return false;
-  }
-
-  if (test_only) {
-    // If |test_only| is true, we just verify overlay configuration and don't
-    // present anything on a screen, so signal the request with an empty
-    // presentation feedback.
-    page_flip_request->Signal(gfx::SwapResult::SWAP_ACK,
-                              gfx::PresentationFeedback());
-  } else {
-    pending_planes_ = DrmOverlayPlane::Clone(overlays);
-    page_flip_request_ = page_flip_request;
   }
 
   return true;
@@ -125,24 +89,6 @@ bool CrtcController::SchedulePageFlip(
 
 std::vector<uint64_t> CrtcController::GetFormatModifiers(uint32_t format) {
   return drm_->plane_manager()->GetFormatModifiers(crtc_, format);
-}
-
-void CrtcController::OnPageFlipEvent(unsigned int frame,
-                                     base::TimeTicks timestamp) {
-  time_of_last_flip_ = timestamp;
-  // For Ozone DRM, the page flip is aligned with VSYNC, and the timestamp is
-  // provided by kernel DRM driver (kHWClock) and the buffer has been presented
-  // on the screen (kHWCompletion).
-  const uint32_t kFlags = gfx::PresentationFeedback::Flags::kVSync |
-                          gfx::PresentationFeedback::Flags::kHWClock |
-                          gfx::PresentationFeedback::Flags::kHWCompletion;
-  SignalPageFlipRequest(
-      gfx::SwapResult::SWAP_ACK,
-      gfx::PresentationFeedback(
-          time_of_last_flip_,
-          mode_.vrefresh ? base::TimeDelta::FromSeconds(1) / mode_.vrefresh
-                         : base::TimeDelta(),
-          kFlags));
 }
 
 bool CrtcController::SetCursor(const scoped_refptr<ScanoutBuffer>& buffer) {
@@ -174,19 +120,6 @@ bool CrtcController::ResetCursor() {
   }
 
   return status;
-}
-
-void CrtcController::SignalPageFlipRequest(
-    gfx::SwapResult result,
-    const gfx::PresentationFeedback& feedback) {
-  if (result == gfx::SwapResult::SWAP_ACK)
-    current_planes_.swap(pending_planes_);
-
-  pending_planes_.clear();
-
-  scoped_refptr<PageFlipRequest> request;
-  request.swap(page_flip_request_);
-  request->Signal(result, feedback);
 }
 
 }  // namespace ui

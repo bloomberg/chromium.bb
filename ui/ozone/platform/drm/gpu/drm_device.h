@@ -21,6 +21,7 @@
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/common/linux/gbm_device_linux.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
+#include "ui/ozone/platform/drm/gpu/page_flip_request.h"
 
 typedef struct _drmEventContext drmEventContext;
 typedef struct _drmModeModeInfo drmModeModeInfo;
@@ -139,9 +140,12 @@ class DrmDevice : public GbmDeviceLinux,
   // immediately. Upon completion of the pageflip event, the CRTC will be
   // displaying the buffer with ID |framebuffer| and will have a DRM event
   // queued on |fd_|.
+  //
+  // On success, true is returned and |page_flip_request| will receive a
+  // callback signalling completion of the flip.
   virtual bool PageFlip(uint32_t crtc_id,
                         uint32_t framebuffer,
-                        PageFlipCallback callback);
+                        scoped_refptr<PageFlipRequest> page_flip_request);
 
   // Schedule an overlay to be show during the page flip for CRTC |crtc_id|.
   // |source| location from |framebuffer| will be shown on overlay
@@ -222,10 +226,13 @@ class DrmDevice : public GbmDeviceLinux,
 
   virtual bool CloseBufferHandle(uint32_t handle);
 
-  virtual bool CommitProperties(drmModeAtomicReq* properties,
-                                uint32_t flags,
-                                uint32_t crtc_count,
-                                PageFlipCallback callback);
+  // On success, true is returned and |page_flip_request| will receive a
+  // callback signalling completion of the flip, if provided.
+  virtual bool CommitProperties(
+      drmModeAtomicReq* properties,
+      uint32_t flags,
+      uint32_t crtc_count,
+      scoped_refptr<PageFlipRequest> page_flip_request);
 
   virtual bool SetCapability(uint64_t capability, uint64_t value);
 

@@ -99,7 +99,7 @@ void DrmWindowTest::SetUp() {
   last_swap_buffers_result_ = gfx::SwapResult::SWAP_FAILED;
 
   message_loop_.reset(new base::MessageLoopForUI);
-  drm_ = new ui::MockDrmDevice(false);
+  drm_ = new ui::MockDrmDevice;
   buffer_generator_.reset(new ui::MockDumbBufferGenerator());
   screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
   screen_manager_->AddDisplayController(drm_, kDefaultCrtc, kDefaultConnector);
@@ -156,7 +156,7 @@ TEST_F(DrmWindowTest, CheckCursorSurfaceAfterChangingDevice) {
                   gfx::Point(4, 2), 0);
 
   // Add another device.
-  scoped_refptr<ui::MockDrmDevice> drm = new ui::MockDrmDevice(false);
+  scoped_refptr<ui::MockDrmDevice> drm = new ui::MockDrmDevice;
   screen_manager_->AddDisplayController(drm, kDefaultCrtc, kDefaultConnector);
   screen_manager_->ConfigureDisplayController(
       drm, kDefaultCrtc, kDefaultConnector,
@@ -172,7 +172,7 @@ TEST_F(DrmWindowTest, CheckCursorSurfaceAfterChangingDevice) {
   EXPECT_NE(0u, drm->get_cursor_handle_for_crtc(kDefaultCrtc));
 }
 
-TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
+TEST_F(DrmWindowTest, CheckDeathOnFailedSwap) {
   const gfx::Size window_size(6, 4);
   ui::MockDumbBufferGenerator buffer_generator;
   ui::DrmWindow* window = screen_manager_->GetWindow(kDefaultWidgetHandle);
@@ -195,11 +195,9 @@ TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
   EXPECT_EQ(static_cast<uint32_t>(gfx::PresentationFeedback::Flags::kFailure),
             last_presentation_feedback_.flags);
 
-  window->SchedulePageFlip(
-      ui::DrmOverlayPlane::Clone(planes),
-      base::BindOnce(&DrmWindowTest::OnSwapBuffers, base::Unretained(this)));
-  EXPECT_EQ(2, on_swap_buffers_count_);
-  EXPECT_EQ(gfx::SwapResult::SWAP_FAILED, last_swap_buffers_result_);
-  EXPECT_EQ(static_cast<uint32_t>(gfx::PresentationFeedback::Flags::kFailure),
-            last_presentation_feedback_.flags);
+  EXPECT_DEATH_IF_SUPPORTED(
+      window->SchedulePageFlip(ui::DrmOverlayPlane::Clone(planes),
+                               base::BindOnce(&DrmWindowTest::OnSwapBuffers,
+                                              base::Unretained(this))),
+      "SchedulePageFlip failed");
 }
