@@ -31,6 +31,8 @@ const char kBrailleImeExtensionPath[] = "chromeos/braille_ime";
 const char kBrailleImeEngineId[] =
     "_comp_ime_jddehjeebkoimngcbdkaahpobgicbffpbraille";
 
+const char kArcImeLanguage[] = "_arc_ime_language_";
+
 std::string GetInputMethodID(const std::string& extension_id,
                              const std::string& engine_id) {
   DCHECK(!extension_id.empty());
@@ -148,6 +150,10 @@ bool IsKeyboardLayoutExtension(const std::string& input_method_id) {
     return base::StartsWith(GetComponentIDByInputMethodID(input_method_id),
                             "xkb:", base::CompareCase::SENSITIVE);
   return false;
+}
+
+bool IsLanguageForArcIME(const std::string& language) {
+  return language == kArcImeLanguage;
 }
 
 std::string MaybeGetLegacyXkbId(const std::string& input_method_id) {

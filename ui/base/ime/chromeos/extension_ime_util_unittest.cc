@@ -109,4 +109,11 @@ TEST(ExtensionIMEUtilTest, IsMemberOfExtension) {
                                                        extention3));
 }
 
+TEST(ExtensionIMEUtilTest, IsLanguageForArcIMETest) {
+  EXPECT_TRUE(extension_ime_util::IsLanguageForArcIME(
+      extension_ime_util::kArcImeLanguage));
+  EXPECT_FALSE(extension_ime_util::IsLanguageForArcIME(
+      extension_ime_util::kArcImeLanguage + std::string(" ")));
+}
+
 }  // namespace chromeos
