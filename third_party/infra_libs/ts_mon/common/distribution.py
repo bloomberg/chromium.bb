@@ -73,6 +73,13 @@ class _Bucketer(object):
         self._lower_bounds, self._lower_bounds[1:])), (
         'bucket boundaries must be monotonically increasing')
 
+  def __eq__(self, other):
+    return (type(self) is type(other) and
+            self.width == other.width and
+            self.growth_factor == other.growth_factor and
+            self.num_finite_buckets == other.num_finite_buckets and
+            self.scale == other.scale)
+
   def _linear_bounds(self):
     return [self.width * i for i in xrange(self.num_finite_buckets + 1)]
 

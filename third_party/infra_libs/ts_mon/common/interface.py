@@ -101,10 +101,13 @@ state = State()
 
 
 def flush():
-  """Send all metrics that are registered in the application."""
+  """Send all metrics that are registered in the application.
+
+  Returns True if flush was successful.
+  """
   if not state.flush_enabled_fn():
     logging.debug('ts_mon: sending metrics is disabled.')
-    return
+    return True
 
   if not state.global_monitor or not state.target:
     raise errors.MonitoringNoConfiguredMonitorError(None)
@@ -118,7 +121,11 @@ def flush():
   for rpc in rpcs:
     if rpc is not None:
       state.global_monitor.wait(rpc)
+  if state.global_monitor.failed():
+    return False
+  # Only update last_flushed on successful flush.
   state.last_flushed = datetime.datetime.utcnow()
+  return True
 
 
 def _generate_proto():
@@ -265,32 +272,36 @@ class _FlushThread(threading.Thread):
 
   def _flush_and_log_exceptions(self):
     try:
-      flush()
+      return flush()
     except Exception:
       logging.exception('Automatic monitoring flush failed.')
+      return False
 
   def run(self):
     # Jitter the first interval so tasks started at the same time (say, by cron)
     # on different machines don't all send metrics simultaneously.
     next_timeout = random.uniform(self.interval_secs / 2.0, self.interval_secs)
+    retry_interval = 1
 
     while True:
       if self.stop_event.wait(next_timeout):
         return
 
       # Try to flush every N seconds exactly so rate calculations are more
-      # consistent.
+      # consistent. If the flush fails, retry with backoff.
       start = time.time()
-      self._flush_and_log_exceptions()
-      flush_duration = time.time() - start
-      next_timeout = self.interval_secs - flush_duration
-
-      if next_timeout < 0:
-        logging.warning(
-            'Last monitoring flush took %f seconds (longer than '
-            '--ts-mon-flush-interval-secs = %f seconds)',
-            flush_duration, self.interval_secs)
-        next_timeout = 0
+      if self._flush_and_log_exceptions():
+        now = time.time()
+        next_timeout = self.interval_secs - (now - start)
+        if next_timeout < 0:
+          next_timeout = 0
+        retry_interval = 1
+      else:
+        # Flush failed, so retry at increasing delays, up to the interval.
+        next_timeout = retry_interval
+        retry_interval *= 2
+        if retry_interval > self.interval_secs:
+          retry_interval = self.interval_secs
 
   def stop(self):
     """Stops the background thread and performs a final flush."""
