@@ -126,14 +126,14 @@ class ScriptProcessorNode final
   // The value chosen must carefully balance between latency and audio quality.
   static ScriptProcessorNode* Create(BaseAudioContext&, ExceptionState&);
   static ScriptProcessorNode* Create(BaseAudioContext&,
-                                     size_t buffer_size,
+                                     size_t requested_buffer_size,
                                      ExceptionState&);
   static ScriptProcessorNode* Create(BaseAudioContext&,
-                                     size_t buffer_size,
+                                     size_t requested_buffer_size,
                                      unsigned number_of_input_channels,
                                      ExceptionState&);
   static ScriptProcessorNode* Create(BaseAudioContext&,
-                                     size_t buffer_size,
+                                     size_t requested_buffer_size,
                                      unsigned number_of_input_channels,
                                      unsigned number_of_output_channels,
                                      ExceptionState&);

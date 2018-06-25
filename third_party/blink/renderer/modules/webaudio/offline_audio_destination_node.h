@@ -66,10 +66,6 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
 
   void RestartRendering() override;
 
-  // Returns the rendering callback buffer size.  This should never be
-  // called.
-  size_t CallbackBufferSize() const override;
-
   double SampleRate() const override { return sample_rate_; }
 
   size_t RenderQuantumFrames() const {

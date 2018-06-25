@@ -147,11 +147,6 @@ class MODULES_EXPORT BaseAudioContext
                : ClosedContextSampleRate();
   }
 
-  size_t CallbackBufferSize() const {
-    return destination_node_ ? destination_node_->Handler().CallbackBufferSize()
-                             : 0;
-  }
-
   String state() const;
   AudioContextState ContextState() const { return context_state_; }
   void ThrowExceptionForClosedState(ExceptionState&);

@@ -238,11 +238,6 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   void UpdateChannelCountMode();
   void UpdateChannelInterpretation();
 
-  // Default callbackBufferSize should be the render quantum size
-  virtual size_t CallbackBufferSize() const {
-    return AudioUtilities::kRenderQuantumFrames;
-  }
-
  protected:
   // Inputs and outputs must be created before the AudioHandler is
   // initialized.
