@@ -33880,6 +33880,11 @@ Called by update_net_trust_anchors.py.-->
       label="Account was not seeded before FireRefreshTokenAvailable"/>
 </enum>
 
+<enum name="OfflineIndicatorCTREvent">
+  <int value="0" label="Displayed"/>
+  <int value="1" label="Clicked"/>
+</enum>
+
 <enum name="OfflineItemsStateAtCancel">
   <int value="0" label="Downloading"/>
   <int value="1" label="Paused"/>
@@ -42805,6 +42810,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="22" label="CHROME_HOME_OPT_OUT_SURVEY"/>
   <int value="23" label="SNIPPET_FETCH_NO_NEW_SUGGESTIONS"/>
   <int value="24" label="MISSING_FILES_NO_SD_CARD"/>
+  <int value="25" label="OFFLINE_INDICATOR"/>
 </enum>
 
 <enum name="SnippetOpenMethod">

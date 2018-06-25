@@ -105,6 +105,7 @@ import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorController;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
@@ -641,6 +642,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             @Override
             public void onShown(Tab tab) {
                 setStatusBarColor(tab, tab.getThemeColor());
+                OfflineIndicatorController.onUpdate();
             }
 
             @Override
@@ -840,6 +842,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         super.onStartWithNative();
         UpdateMenuItemHelper.getInstance().onStart();
         ChromeActivitySessionTracker.getInstance().onStartWithNative();
+        OfflineIndicatorController.initialize();
 
         // postDeferredStartupIfNeeded() is called in TabModelSelectorTabObsever#onLoadStopped(),
         // #onPageLoadFinished() and #onCrash(). If we are not actively loading a tab (e.g.
@@ -971,6 +974,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mPictureInPictureController.cleanup(this);
         }
         VrShellDelegate.maybeRegisterVrEntryHook(this);
+
+        OfflineIndicatorController.onUpdate();
     }
 
     @Override
