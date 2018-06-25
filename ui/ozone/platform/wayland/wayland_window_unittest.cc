@@ -27,6 +27,38 @@ using ::testing::_;
 
 namespace ui {
 
+namespace {
+
+class ScopedWlArray {
+ public:
+  ScopedWlArray() { wl_array_init(&array_); }
+
+  ScopedWlArray(ScopedWlArray&& rhs) {
+    array_ = rhs.array_;
+    // wl_array_init sets rhs.array_'s fields to nullptr, so that
+    // the free() in wl_array_release() is a no-op.
+    wl_array_init(&rhs.array_);
+  }
+
+  ~ScopedWlArray() { wl_array_release(&array_); }
+
+  ScopedWlArray& operator=(ScopedWlArray&& rhs) {
+    wl_array_release(&array_);
+    array_ = rhs.array_;
+    // wl_array_init sets rhs.array_'s fields to nullptr, so that
+    // the free() in wl_array_release() is a no-op.
+    wl_array_init(&rhs.array_);
+    return *this;
+  }
+
+  wl_array* get() { return &array_; }
+
+ private:
+  wl_array array_;
+};
+
+}  // namespace
+
 class WaylandWindowTest : public WaylandTest {
  public:
   WaylandWindowTest()
@@ -71,15 +103,14 @@ class WaylandWindowTest : public WaylandTest {
     return xdg_surface_->xdg_toplevel();
   }
 
-  void SetWlArrayWithState(uint32_t state, wl_array* states) {
-    uint32_t* s;
-    s = static_cast<uint32_t*>(wl_array_add(states, sizeof *s));
-    *s = state;
+  void AddStateToWlArray(uint32_t state, wl_array* states) {
+    *static_cast<uint32_t*>(wl_array_add(states, sizeof state)) = state;
   }
 
-  void InitializeWlArrayWithActivatedState(wl_array* states) {
-    wl_array_init(states);
-    SetWlArrayWithState(XDG_SURFACE_STATE_ACTIVATED, states);
+  ScopedWlArray InitializeWlArrayWithActivatedState() {
+    ScopedWlArray states;
+    AddStateToWlArray(XDG_SURFACE_STATE_ACTIVATED, states.get());
+    return states;
   }
 
   std::unique_ptr<WaylandWindow> CreateWaylandWindowWithParams(
@@ -114,16 +145,15 @@ TEST_P(WaylandWindowTest, SetTitle) {
 }
 
 TEST_P(WaylandWindowTest, MaximizeAndRestore) {
-  wl_array states;
-  InitializeWlArrayWithActivatedState(&states);
+  ScopedWlArray states = InitializeWlArrayWithActivatedState();
 
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_MAXIMIZED)));
-  SetWlArrayWithState(XDG_SURFACE_STATE_MAXIMIZED, &states);
+  AddStateToWlArray(XDG_SURFACE_STATE_MAXIMIZED, states.get());
 
   EXPECT_CALL(*GetXdgSurface(), SetMaximized());
   window_->Maximize();
-  SendConfigureEvent(0, 0, 1, &states);
+  SendConfigureEvent(0, 0, 1, states.get());
   Sync();
 
   EXPECT_CALL(delegate_,
@@ -131,19 +161,18 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
   EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
   window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
-  InitializeWlArrayWithActivatedState(&states);
-  SendConfigureEvent(0, 0, 2, &states);
+  states = InitializeWlArrayWithActivatedState();
+  SendConfigureEvent(0, 0, 2, states.get());
   Sync();
 }
 
 TEST_P(WaylandWindowTest, Minimize) {
-  wl_array states;
-  wl_array_init(&states);
+  ScopedWlArray states;
 
   // Initialize to normal first.
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
-  SendConfigureEvent(0, 0, 1, &states);
+  SendConfigureEvent(0, 0, 1, states.get());
   Sync();
 
   EXPECT_CALL(*GetXdgSurface(), SetMinimized());
@@ -156,33 +185,32 @@ TEST_P(WaylandWindowTest, Minimize) {
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_MINIMIZED)));
   window_->Minimize();
   // Reinitialize wl_array, which removes previous old states.
-  wl_array_init(&states);
-  SendConfigureEvent(0, 0, 2, &states);
+  states = ScopedWlArray();
+  SendConfigureEvent(0, 0, 2, states.get());
   Sync();
 
   // Send one additional empty configuration event (which means the surface is
   // not maximized, fullscreen or activated) to ensure, WaylandWindow stays in
   // the same minimized state and doesn't notify its delegate.
   EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(0);
-  SendConfigureEvent(0, 0, 3, &states);
+  SendConfigureEvent(0, 0, 3, states.get());
   Sync();
 
   // And one last time to ensure the behaviour.
-  SendConfigureEvent(0, 0, 4, &states);
+  SendConfigureEvent(0, 0, 4, states.get());
   Sync();
 }
 
 TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
-  wl_array states;
-  InitializeWlArrayWithActivatedState(&states);
+  ScopedWlArray states = InitializeWlArrayWithActivatedState();
 
-  SetWlArrayWithState(XDG_SURFACE_STATE_FULLSCREEN, &states);
+  AddStateToWlArray(XDG_SURFACE_STATE_FULLSCREEN, states.get());
 
   EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_FULLSCREEN)));
   window_->ToggleFullscreen();
-  SendConfigureEvent(0, 0, 1, &states);
+  SendConfigureEvent(0, 0, 1, states.get());
   Sync();
 
   EXPECT_CALL(*GetXdgSurface(), UnsetFullscreen());
@@ -190,29 +218,28 @@ TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
   window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
-  InitializeWlArrayWithActivatedState(&states);
-  SendConfigureEvent(0, 0, 2, &states);
+  states = InitializeWlArrayWithActivatedState();
+  SendConfigureEvent(0, 0, 2, states.get());
   Sync();
 }
 
 TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
-  wl_array states;
-  InitializeWlArrayWithActivatedState(&states);
+  ScopedWlArray states = InitializeWlArrayWithActivatedState();
 
   EXPECT_CALL(*GetXdgSurface(), SetMaximized());
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_MAXIMIZED)));
   window_->Maximize();
-  SetWlArrayWithState(XDG_SURFACE_STATE_MAXIMIZED, &states);
-  SendConfigureEvent(0, 0, 2, &states);
+  AddStateToWlArray(XDG_SURFACE_STATE_MAXIMIZED, states.get());
+  SendConfigureEvent(0, 0, 2, states.get());
   Sync();
 
   EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_FULLSCREEN)));
   window_->ToggleFullscreen();
-  SetWlArrayWithState(XDG_SURFACE_STATE_FULLSCREEN, &states);
-  SendConfigureEvent(0, 0, 3, &states);
+  AddStateToWlArray(XDG_SURFACE_STATE_FULLSCREEN, states.get());
+  SendConfigureEvent(0, 0, 3, states.get());
   Sync();
 
   EXPECT_CALL(*GetXdgSurface(), UnsetFullscreen());
@@ -221,23 +248,22 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
   window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
-  InitializeWlArrayWithActivatedState(&states);
-  SendConfigureEvent(0, 0, 4, &states);
+  states = InitializeWlArrayWithActivatedState();
+  SendConfigureEvent(0, 0, 4, states.get());
   Sync();
 }
 
 TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximize) {
   const gfx::Rect current_bounds = window_->GetBounds();
 
-  wl_array states;
-  InitializeWlArrayWithActivatedState(&states);
+  ScopedWlArray states = InitializeWlArrayWithActivatedState();
 
   const gfx::Rect maximized_bounds = gfx::Rect(0, 0, 1024, 768);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(maximized_bounds)));
   window_->Maximize();
-  SetWlArrayWithState(XDG_SURFACE_STATE_MAXIMIZED, &states);
+  AddStateToWlArray(XDG_SURFACE_STATE_MAXIMIZED, states.get());
   SendConfigureEvent(maximized_bounds.width(), maximized_bounds.height(), 1,
-                     &states);
+                     states.get());
   Sync();
 
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(current_bounds)));
@@ -248,23 +274,22 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximize) {
                                                current_bounds.height()));
   window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
-  InitializeWlArrayWithActivatedState(&states);
-  SendConfigureEvent(0, 0, 2, &states);
+  states = InitializeWlArrayWithActivatedState();
+  SendConfigureEvent(0, 0, 2, states.get());
   Sync();
 }
 
 TEST_P(WaylandWindowTest, RestoreBoundsAfterFullscreen) {
   const gfx::Rect current_bounds = window_->GetBounds();
 
-  wl_array states;
-  InitializeWlArrayWithActivatedState(&states);
+  ScopedWlArray states = InitializeWlArrayWithActivatedState();
 
   const gfx::Rect fullscreen_bounds = gfx::Rect(0, 0, 1280, 720);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(fullscreen_bounds)));
   window_->ToggleFullscreen();
-  SetWlArrayWithState(XDG_SURFACE_STATE_FULLSCREEN, &states);
+  AddStateToWlArray(XDG_SURFACE_STATE_FULLSCREEN, states.get());
   SendConfigureEvent(fullscreen_bounds.width(), fullscreen_bounds.height(), 1,
-                     &states);
+                     states.get());
   Sync();
 
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(current_bounds)));
@@ -275,40 +300,39 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterFullscreen) {
                                                current_bounds.height()));
   window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
-  InitializeWlArrayWithActivatedState(&states);
-  SendConfigureEvent(0, 0, 2, &states);
+  states = InitializeWlArrayWithActivatedState();
+  SendConfigureEvent(0, 0, 2, states.get());
   Sync();
 }
 
 TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
   const gfx::Rect current_bounds = window_->GetBounds();
 
-  wl_array states;
-  InitializeWlArrayWithActivatedState(&states);
+  ScopedWlArray states = InitializeWlArrayWithActivatedState();
 
   const gfx::Rect maximized_bounds = gfx::Rect(0, 0, 1024, 768);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(maximized_bounds)));
   window_->Maximize();
-  SetWlArrayWithState(XDG_SURFACE_STATE_MAXIMIZED, &states);
+  AddStateToWlArray(XDG_SURFACE_STATE_MAXIMIZED, states.get());
   SendConfigureEvent(maximized_bounds.width(), maximized_bounds.height(), 1,
-                     &states);
+                     states.get());
   Sync();
 
   const gfx::Rect fullscreen_bounds = gfx::Rect(0, 0, 1280, 720);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(fullscreen_bounds)));
   window_->ToggleFullscreen();
-  SetWlArrayWithState(XDG_SURFACE_STATE_FULLSCREEN, &states);
+  AddStateToWlArray(XDG_SURFACE_STATE_FULLSCREEN, states.get());
   SendConfigureEvent(fullscreen_bounds.width(), fullscreen_bounds.height(), 2,
-                     &states);
+                     states.get());
   Sync();
 
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(maximized_bounds)));
   window_->Maximize();
   // Reinitialize wl_array, which removes previous old states.
-  InitializeWlArrayWithActivatedState(&states);
-  SetWlArrayWithState(XDG_SURFACE_STATE_MAXIMIZED, &states);
+  states = InitializeWlArrayWithActivatedState();
+  AddStateToWlArray(XDG_SURFACE_STATE_MAXIMIZED, states.get());
   SendConfigureEvent(maximized_bounds.width(), maximized_bounds.height(), 3,
-                     &states);
+                     states.get());
   Sync();
 
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(current_bounds)));
@@ -319,8 +343,8 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
                                                current_bounds.height()));
   window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
-  InitializeWlArrayWithActivatedState(&states);
-  SendConfigureEvent(0, 0, 4, &states);
+  states = InitializeWlArrayWithActivatedState();
+  SendConfigureEvent(0, 0, 4, states.get());
   Sync();
 }
 
@@ -332,21 +356,20 @@ TEST_P(WaylandWindowTest, SendsBoundsOnRequest) {
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(new_bounds)));
   window_->SetBounds(new_bounds);
 
-  wl_array states;
-  InitializeWlArrayWithActivatedState(&states);
+  ScopedWlArray states = InitializeWlArrayWithActivatedState();
 
   // First case is when Wayland sends a configure event with 0,0 height and
-  // widht.
+  // width.
   EXPECT_CALL(*xdg_surface_,
               SetWindowGeometry(0, 0, new_bounds.width(), new_bounds.height()))
       .Times(2);
-  SendConfigureEvent(0, 0, 2, &states);
+  SendConfigureEvent(0, 0, 2, states.get());
   Sync();
 
   // Second case is when Wayland sends a configure event with 1, 1 height and
   // width. It looks more like a bug in Gnome Shell with Wayland as long as the
   // documentation says it must be set to 0, 0, when wayland requests bounds.
-  SendConfigureEvent(0, 0, 3, &states);
+  SendConfigureEvent(0, 0, 3, states.get());
   Sync();
 }
 
@@ -419,10 +442,9 @@ TEST_P(WaylandWindowTest, HasCaptureUpdatedOnPointerEvents) {
 }
 
 TEST_P(WaylandWindowTest, ConfigureEvent) {
-  wl_array states;
-  wl_array_init(&states);
-  SendConfigureEvent(1000, 1000, 12, &states);
-  SendConfigureEvent(1500, 1000, 13, &states);
+  ScopedWlArray states;
+  SendConfigureEvent(1000, 1000, 12, states.get());
+  SendConfigureEvent(1500, 1000, 13, states.get());
 
   // Make sure that the implementation does not call OnBoundsChanged for each
   // configure event if it receives multiple in a row.
@@ -437,13 +459,12 @@ TEST_P(WaylandWindowTest, ConfigureEvent) {
 }
 
 TEST_P(WaylandWindowTest, ConfigureEventWithNulledSize) {
-  wl_array states;
-  wl_array_init(&states);
+  ScopedWlArray states;
 
   // If Wayland sends configure event with 0 width and 0 size, client should
   // call back with desired sizes. In this case, that's the actual size of
   // the window.
-  SendConfigureEvent(0, 0, 14, &states);
+  SendConfigureEvent(0, 0, 14, states.get());
   // |xdg_surface_| must receive the following calls in both xdg_shell_v5 and
   // xdg_shell_v6. Other calls like SetTitle or SetMaximized are recieved by
   // xdg_toplevel in xdg_shell_v6 and by xdg_surface_ in xdg_shell_v5.
@@ -455,18 +476,16 @@ TEST_P(WaylandWindowTest, OnActivationChanged) {
   EXPECT_FALSE(window_->is_active());
 
   {
-    wl_array states;
-    InitializeWlArrayWithActivatedState(&states);
+    ScopedWlArray states = InitializeWlArrayWithActivatedState();
     EXPECT_CALL(delegate_, OnActivationChanged(Eq(true)));
-    SendConfigureEvent(0, 0, 1, &states);
+    SendConfigureEvent(0, 0, 1, states.get());
     Sync();
     EXPECT_TRUE(window_->is_active());
   }
 
-  wl_array states;
-  wl_array_init(&states);
+  ScopedWlArray states;
   EXPECT_CALL(delegate_, OnActivationChanged(Eq(false)));
-  SendConfigureEvent(0, 0, 2, &states);
+  SendConfigureEvent(0, 0, 2, states.get());
   Sync();
   EXPECT_FALSE(window_->is_active());
 }

@@ -1781,12 +1781,6 @@
       'Out of Process Profiling Windows',
     ],
   },
-  'ozone_unittests': {
-    'remove_from': [
-      # chromium.memory
-      'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/855588
-    ],
-  },
   'printing_unittests': {
     'remove_from': [
       # chromium.chromiumos
