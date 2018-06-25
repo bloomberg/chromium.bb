@@ -126,6 +126,10 @@ const char kContextMenuElementPostMessageDescription[] =
     "webkit postMessage call instead of directly returned from the JavaScript "
     "function.";
 
+const char kCopyImageName[] = "Copy Image";
+const char kCopyImageDescription[] =
+    "Enable copying image to system pasteboard via context menu.";
+
 const char kDragAndDropName[] = "Drag and Drop";
 const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 

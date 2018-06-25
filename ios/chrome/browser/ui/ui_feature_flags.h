@@ -36,4 +36,7 @@ extern const base::Feature kInfobarsUIReboot;
 // responder.
 extern const base::Feature kFirstResponderKeyWindow;
 
+// Feature to copy image to system pasteboard via context menu.
+extern const base::Feature kCopyImage;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_
