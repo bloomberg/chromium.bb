@@ -26,7 +26,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
@@ -51,10 +50,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 
-import java.lang.ref.WeakReference;
-import java.util.List;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * End-to-end tests for state transitions in VR, e.g. exiting WebVR presentation
@@ -143,49 +139,31 @@ public class VrShellTransitionTest {
     }
 
     /**
-     * Verifies that browser successfully transitions from 2D chrome to the VR
+     * Verifies that browser successfully transitions from 2D Chrome to the VR
      * browser when Chrome gets a VR intent.
      */
     @Test
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @MediumTest
     public void testVrIntentStartsVrShell() {
+        testVrEntryIntentInternal();
+    }
+
+    private String testVrEntryIntentInternal() {
         // Send a VR intent, which will open the link in a CTA.
-        String url = VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
+        final String url = VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
         VrTransitionUtils.sendVrLaunchIntent(
                 url, false /* autopresent */, true /* avoidRelaunch */);
 
-        // Wait until a CTA is opened due to the intent
-        final AtomicReference<ChromeTabbedActivity> cta =
-                new AtomicReference<ChromeTabbedActivity>();
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                List<WeakReference<Activity>> list = ApplicationStatus.getRunningActivities();
-                for (WeakReference<Activity> ref : list) {
-                    Activity activity = ref.get();
-                    if (activity == null) continue;
-                    if (activity instanceof ChromeTabbedActivity) {
-                        cta.set((ChromeTabbedActivity) activity);
-                        return true;
-                    }
-                }
-                return false;
-            }
-        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
-
-        // Wait until the tab is ready
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (cta.get().getActivityTab() == null) return false;
-                return !cta.get().getActivityTab().isLoading();
-            }
-        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
-
+        // Wait until we enter VR and have the correct URL.
         VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
-        Assert.assertTrue(VrShellDelegate.isInVr());
-        Assert.assertEquals("Url correct", url, mTestRule.getWebContents().getVisibleUrl());
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mTestRule.getWebContents().getVisibleUrl().equals(url);
+            }
+        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+        return url;
     }
 
     /**
@@ -197,43 +175,7 @@ public class VrShellTransitionTest {
     @MediumTest
     public void test2dIntentExitsVrShell() {
         TestVrShellDelegate.getInstance().setAllow2dIntents(true);
-
-        // Send a VR intent, which will open the link in a CTA.
-        String url = VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
-        VrTransitionUtils.sendVrLaunchIntent(
-                url, false /* autopresent */, true /* avoidRelaunch */);
-
-        // Wait until a CTA is opened due to the intent
-        final AtomicReference<ChromeTabbedActivity> cta =
-                new AtomicReference<ChromeTabbedActivity>();
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                List<WeakReference<Activity>> list = ApplicationStatus.getRunningActivities();
-                for (WeakReference<Activity> ref : list) {
-                    Activity activity = ref.get();
-                    if (activity == null) continue;
-                    if (activity instanceof ChromeTabbedActivity) {
-                        cta.set((ChromeTabbedActivity) activity);
-                        return true;
-                    }
-                }
-                return false;
-            }
-        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
-
-        // Wait until the tab is ready
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (cta.get().getActivityTab() == null) return false;
-                return !cta.get().getActivityTab().isLoading();
-            }
-        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
-
-        VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
-        Assert.assertTrue(VrShellDelegate.isInVr());
-        Assert.assertEquals("Url correct", url, mTestRule.getWebContents().getVisibleUrl());
+        String url = testVrEntryIntentInternal();
 
         VrTransitionUtils.send2dMainIntent();
         CriteriaHelper.pollUiThread(new Criteria() {
