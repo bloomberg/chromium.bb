@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.feed;
 
+import com.google.android.libraries.feed.api.common.ThreadUtils;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
+import com.google.android.libraries.feed.feedapplifecyclelistener.FeedAppLifecycleListener;
 import com.google.android.libraries.feed.host.config.Configuration;
 import com.google.android.libraries.feed.host.config.Configuration.ConfigKey;
 import com.google.android.libraries.feed.host.config.DebugBehavior;
@@ -52,11 +54,14 @@ public class FeedProcessScopeFactory {
                         .put(ConfigKey.SESSION_LIFETIME_MS, 300000L)
                         .build();
         sFeedSchedulerBridge = new FeedSchedulerBridge(profile);
-        sFeedProcessScope = new FeedProcessScope
-                                    .Builder(configHostApi, Executors.newSingleThreadExecutor(),
-                                            new LoggingApiImpl(), new FeedNetworkBridge(profile),
-                                            sFeedSchedulerBridge, DebugBehavior.SILENT)
-                                    .build();
+        FeedAppLifecycleListener lifecycleListener =
+                new FeedAppLifecycleListener(new ThreadUtils());
+        sFeedProcessScope =
+                new FeedProcessScope
+                        .Builder(configHostApi, Executors.newSingleThreadExecutor(),
+                                new LoggingApiImpl(), new FeedNetworkBridge(profile),
+                                sFeedSchedulerBridge, lifecycleListener, DebugBehavior.SILENT)
+                        .build();
         sFeedSchedulerBridge.setRequestManager(sFeedProcessScope.getRequestManager());
     }
 }
