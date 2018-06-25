@@ -209,10 +209,15 @@ void ArcInputMethodManagerService::SwitchImeTo(const std::string& ime_id) {
 chromeos::input_method::InputMethodDescriptor
 ArcInputMethodManagerService::BuildInputMethodDescriptor(
     const mojom::ImeInfo* info) {
-  // TODO(yhanada): Set the special layout/language value for ARC IMEs after
-  // making settings and IME menu tray support it.
-  std::vector<std::string> layouts{"us"};
-  std::vector<std::string> languages{"en-US"};
+  // We don't care too much about |layouts| at this point since the feature is
+  // for tablet mode.
+  const std::vector<std::string> layouts{"us"};
+
+  // Set the fake language so that the IME is shown in the special section in
+  // chrome://settings.
+  const std::vector<std::string> languages{
+      chromeos::extension_ime_util::kArcImeLanguage};
+
   const std::string display_name = info->display_name;
 
   const std::string& input_method_id =
