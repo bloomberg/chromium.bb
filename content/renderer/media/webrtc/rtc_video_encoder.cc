@@ -114,7 +114,8 @@ class RTCVideoEncoder::Impl
       public base::RefCountedThreadSafe<RTCVideoEncoder::Impl> {
  public:
   Impl(media::GpuVideoAcceleratorFactories* gpu_factories,
-       webrtc::VideoCodecType video_codec_type);
+       webrtc::VideoCodecType video_codec_type,
+       webrtc::VideoContentType video_content_type);
 
   // Create the VEA and call Initialize() on it.  Called once per instantiation,
   // and then the instance is bound forevermore to whichever thread made the
@@ -266,6 +267,9 @@ class RTCVideoEncoder::Impl
   // The video codec type, as reported to WebRTC.
   const webrtc::VideoCodecType video_codec_type_;
 
+  // The content type, as reported to WebRTC (screenshare vs realtime video).
+  const webrtc::VideoContentType video_content_type_;
+
   // Protect |status_|. |status_| is read or written on |gpu_task_runner_| in
   // Impl. It can be read in RTCVideoEncoder on other threads.
   mutable base::Lock status_lock_;
@@ -280,7 +284,8 @@ class RTCVideoEncoder::Impl
 };
 
 RTCVideoEncoder::Impl::Impl(media::GpuVideoAcceleratorFactories* gpu_factories,
-                            webrtc::VideoCodecType video_codec_type)
+                            webrtc::VideoCodecType video_codec_type,
+                            webrtc::VideoContentType video_content_type)
     : gpu_factories_(gpu_factories),
       async_waiter_(nullptr),
       async_retval_(nullptr),
@@ -290,6 +295,7 @@ RTCVideoEncoder::Impl::Impl(media::GpuVideoAcceleratorFactories* gpu_factories,
       output_buffers_free_count_(0),
       encoded_image_callback_(nullptr),
       video_codec_type_(video_codec_type),
+      video_content_type_(video_content_type),
       status_(WEBRTC_VIDEO_CODEC_UNINITIALIZED) {
   thread_checker_.DetachFromThread();
 }
@@ -559,6 +565,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
   image.capture_time_ms_ = capture_timestamp_ms.value();
   image._frameType =
       (key_frame ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta);
+  image.content_type_ = video_content_type_;
   image._completeFrame = true;
 
   ReturnEncodedImage(image, bitstream_buffer_id);
@@ -841,7 +848,11 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
     }
   }
 
-  impl_ = new Impl(gpu_factories_, ProfileToWebRtcVideoCodecType(profile_));
+  impl_ =
+      new Impl(gpu_factories_, ProfileToWebRtcVideoCodecType(profile_),
+               (codec_settings->mode == webrtc::VideoCodecMode::kScreensharing)
+                   ? webrtc::VideoContentType::SCREENSHARE
+                   : webrtc::VideoContentType::UNSPECIFIED);
 
   base::WaitableEvent initialization_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
