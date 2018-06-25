@@ -66,15 +66,11 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     // TODO(qinmin): remove this once network service is fully enabled.
     virtual net::URLRequestContextGetter* GetURLRequestContextGetter(
         const DownloadCreateInfo& download_create_info) = 0;
-
-    // Called when all in-progress downloads are loaded from the database.
-    virtual void OnInProgressDownloadsLoaded(
-        std::vector<std::unique_ptr<download::DownloadItemImpl>>
-            in_progress_downloads) = 0;
   };
 
   using IsOriginSecureCallback = base::RepeatingCallback<bool(const GURL&)>;
   InProgressDownloadManager(Delegate* delegate,
+                            const base::FilePath& metadata_cache_dir,
                             const IsOriginSecureCallback& is_origin_secure_cb);
   ~InProgressDownloadManager() override;
   // Called to start a download.
@@ -99,9 +95,6 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       net::CertStatus cert_status,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter);
-
-  void Initialize(const base::FilePath& metadata_cache_dir,
-                  base::OnceClosure callback);
 
   void StartDownload(
       std::unique_ptr<DownloadCreateInfo> info,
@@ -129,9 +122,18 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Called to retrieve an in-progress download.
   DownloadItemImpl* GetInProgressDownload(const std::string& guid);
 
+  // Run |on_initialized_cb| once this object is initialized.
+  void NotifyWhenInitialized(base::OnceClosure on_initialized_cb);
+
   void set_download_start_observer(DownloadStartObserver* observer) {
     download_start_observer_ = observer;
   }
+
+  // Called to get all in-progress DownloadItemImpl.
+  // TODO(qinmin): remove this method once InProgressDownloadManager owns
+  // all in-progress downloads.
+  virtual std::vector<std::unique_ptr<download::DownloadItemImpl>>
+  TakeInProgressDownloads();
 
   void set_file_factory(std::unique_ptr<DownloadFileFactory> file_factory) {
     file_factory_ = std::move(file_factory);
@@ -143,7 +145,11 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     url_loader_factory_getter_ = std::move(url_loader_factory_getter);
   }
 
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+
  private:
+  void Initialize(const base::FilePath& metadata_cache_dir);
+
   // UrlDownloadHandler::Delegate implementations.
   void OnUrlDownloadStarted(
       std::unique_ptr<DownloadCreateInfo> download_create_info,
@@ -154,10 +160,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   void OnUrlDownloadHandlerCreated(
       UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader) override;
 
-  // Called download db is initialized.
-  void OnDownloadDBInitialized(
-      base::OnceClosure callback,
-      std::unique_ptr<std::vector<DownloadDBEntry>> entries);
+  // Called when the object is initialized.
+  void OnInitialized(std::unique_ptr<std::vector<DownloadDBEntry>> entries);
 
   // Start a DownloadItemImpl.
   void StartDownloadWithItem(
@@ -165,6 +169,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
       std::unique_ptr<DownloadCreateInfo> info,
       DownloadItemImpl* download);
+
+  // Whether |download_db_cache_| is initialized.
+  bool is_initialized_;
 
   // Active download handlers.
   std::vector<UrlDownloadHandler::UniqueUrlDownloadHandlerPtr>
@@ -187,6 +194,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
 
   // Observer to notify when a download starts.
   DownloadStartObserver* download_start_observer_;
+
+  // Callbacks to call once this object is initialized.
+  std::vector<std::unique_ptr<base::OnceClosure>> on_initialized_callbacks_;
 
   // callback to check if an origin is secure.
   IsOriginSecureCallback is_origin_secure_cb_;

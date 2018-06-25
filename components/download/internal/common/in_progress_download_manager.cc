@@ -192,12 +192,16 @@ void InProgressDownloadObserver::OnDownloadRemoved(DownloadItem* download) {
 
 InProgressDownloadManager::InProgressDownloadManager(
     Delegate* delegate,
+    const base::FilePath& metadata_cache_dir,
     const IsOriginSecureCallback& is_origin_secure_cb)
-    : delegate_(delegate),
+    : is_initialized_(false),
+      delegate_(delegate),
       file_factory_(new DownloadFileFactory()),
       download_start_observer_(nullptr),
       is_origin_secure_cb_(is_origin_secure_cb),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  Initialize(metadata_cache_dir);
+}
 
 InProgressDownloadManager::~InProgressDownloadManager() = default;
 
@@ -270,8 +274,7 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
 }
 
 void InProgressDownloadManager::Initialize(
-    const base::FilePath& metadata_cache_dir,
-    base::OnceClosure callback) {
+    const base::FilePath& metadata_cache_dir) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableDownloadDB)) {
     // TODO(qinmin): migrate all the data from InProgressCache into
@@ -279,9 +282,8 @@ void InProgressDownloadManager::Initialize(
     download_db_cache_ =
         std::make_unique<DownloadDBCache>(std::make_unique<DownloadDBImpl>(
             DownloadNamespace::NAMESPACE_BROWSER_DOWNLOAD, metadata_cache_dir));
-    download_db_cache_->Initialize(
-        base::BindOnce(&InProgressDownloadManager::OnDownloadDBInitialized,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
+    download_db_cache_->Initialize(base::BindOnce(
+        &InProgressDownloadManager::OnInitialized, weak_factory_.GetWeakPtr()));
   } else {
     download_metadata_cache_ = std::make_unique<InProgressCacheImpl>(
         metadata_cache_dir.empty()
@@ -290,7 +292,9 @@ void InProgressDownloadManager::Initialize(
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), base::TaskPriority::BACKGROUND,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
-    download_metadata_cache_->Initialize(std::move(callback));
+    download_metadata_cache_->Initialize(base::BindOnce(
+        &InProgressDownloadManager::OnInitialized, weak_factory_.GetWeakPtr(),
+        std::make_unique<std::vector<DownloadDBEntry>>()));
   }
 }
 
@@ -478,14 +482,14 @@ void InProgressDownloadManager::StartDownloadWithItem(
     download_start_observer_->OnDownloadStarted(download);
 }
 
-void InProgressDownloadManager::OnDownloadDBInitialized(
-    base::OnceClosure callback,
+void InProgressDownloadManager::OnInitialized(
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
   for (const auto& entry : *entries)
     in_progress_downloads_.emplace_back(CreateDownloadItemImpl(this, entry));
-  if (delegate_)
-    delegate_->OnInProgressDownloadsLoaded(std::move(in_progress_downloads_));
-  std::move(callback).Run();
+  is_initialized_ = true;
+  for (auto& callback : on_initialized_callbacks_)
+    std::move(*callback).Run();
+  on_initialized_callbacks_.clear();
 }
 
 DownloadItemImpl* InProgressDownloadManager::GetInProgressDownload(
@@ -497,4 +501,19 @@ DownloadItemImpl* InProgressDownloadManager::GetInProgressDownload(
   return nullptr;
 }
 
+void InProgressDownloadManager::NotifyWhenInitialized(
+    base::OnceClosure on_initialized_cb) {
+  if (is_initialized_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(on_initialized_cb));
+    return;
+  }
+  on_initialized_callbacks_.emplace_back(
+      std::make_unique<base::OnceClosure>(std::move(on_initialized_cb)));
+}
+
+std::vector<std::unique_ptr<download::DownloadItemImpl>>
+InProgressDownloadManager::TakeInProgressDownloads() {
+  return std::move(in_progress_downloads_);
+}
 }  // namespace download
