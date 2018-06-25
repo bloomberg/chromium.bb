@@ -961,7 +961,7 @@ var intAttributes = [
 
 // Int attribute, relation property to expose, reverse relation to expose.
 var nodeRefAttributes = [
-    ['activedescendantId', 'activeDescendant', null],
+    ['activedescendantId', 'activeDescendant', 'activeDescendantFor'],
     ['detailsId', 'details', 'detailsFor'],
     ['errorMessageId', 'errorMessage', 'errorMessageFor'],
     ['inPageLinkTargetId', 'inPageLinkTarget', null],

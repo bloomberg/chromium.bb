@@ -571,6 +571,9 @@
     // applicable
     AutomationNode? activeDescendant;
 
+    // Reverse relationship for active descendant.
+    AutomationNode[]? activeDescendantFor;
+
     // The target of an in-page link.
     AutomationNode? inPageLinkTarget;
 

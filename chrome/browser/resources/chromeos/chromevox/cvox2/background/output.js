@@ -1165,6 +1165,13 @@ Output.prototype = {
           var earcon = node ? this.findEarcon_(node, opt_prevNode) : null;
           if (earcon)
             options.annotation.push(earcon);
+
+          // Place the selection on the first character of the name if the node
+          // is the active descendant. This ensures the braille window is panned
+          // appropriately.
+          if (node.activeDescendantFor && node.activeDescendantFor.length > 0)
+            options.annotation.push(new Output.SelectionSpan(0, 0));
+
           this.append_(buff, node.name || '', options);
         } else if (token == 'description') {
           if (node.name == node.description)
