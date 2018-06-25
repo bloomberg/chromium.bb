@@ -19,7 +19,7 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
 
   // HardwareDisplayPlaneManager:
   bool Commit(HardwareDisplayPlaneList* plane_list,
-              bool test_only) override;
+              scoped_refptr<PageFlipRequest> page_flip_request) override;
   bool DisableOverlayPlanes(HardwareDisplayPlaneList* plane_list) override;
 
   bool SetColorCorrectionOnAllCrtcPlanes(

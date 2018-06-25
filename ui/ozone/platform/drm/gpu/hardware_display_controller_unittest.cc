@@ -66,7 +66,7 @@ void HardwareDisplayControllerTest::SetUp() {
   page_flips_ = 0;
   last_swap_result_ = gfx::SwapResult::SWAP_FAILED;
 
-  drm_ = new ui::MockDrmDevice(false);
+  drm_ = new ui::MockDrmDevice;
   InitializeDrmDevice(/* use_atomic= */ false);
 
   controller_.reset(new ui::HardwareDisplayController(
@@ -208,14 +208,8 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
                              nullptr);
   std::vector<ui::DrmOverlayPlane> planes;
   planes.push_back(plane2.Clone());
-  SchedulePageFlip(std::move(planes));
-  drm_->RunCallbacks();
-  planes.clear();
-
-  EXPECT_EQ(gfx::SwapResult::SWAP_FAILED, last_swap_result_);
-  EXPECT_EQ(1, page_flips_);
-  EXPECT_FALSE(plane1.buffer->HasOneRef());
-  EXPECT_TRUE(plane2.buffer->HasOneRef());
+  EXPECT_DEATH_IF_SUPPORTED(SchedulePageFlip(std::move(planes)),
+                            "SchedulePageFlip failed");
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckOverlayPresent) {
@@ -469,11 +463,8 @@ TEST_F(HardwareDisplayControllerTest, FailPageFlipping) {
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::DrmOverlayPlane> planes;
   planes.push_back(plane1.Clone());
-  SchedulePageFlip(std::move(planes));
-
-  drm_->RunCallbacks();
-  EXPECT_EQ(gfx::SwapResult::SWAP_FAILED, last_swap_result_);
-  EXPECT_EQ(1, page_flips_);
+  EXPECT_DEATH_IF_SUPPORTED(SchedulePageFlip(std::move(planes)),
+                            "SchedulePageFlip failed");
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckNoPrimaryPlane) {
@@ -520,7 +511,6 @@ TEST_F(HardwareDisplayControllerTest, RemoveCrtcMidPageFlip) {
 
   controller_->RemoveCrtc(drm_, kPrimaryCrtc);
 
-  EXPECT_EQ(1, page_flips_);
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
   EXPECT_EQ(1, page_flips_);

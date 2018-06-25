@@ -15,6 +15,7 @@
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
+#include "ui/ozone/platform/drm/gpu/page_flip_request.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
@@ -42,7 +43,8 @@ HardwareDisplayPlaneManagerLegacy::~HardwareDisplayPlaneManagerLegacy() {
 
 bool HardwareDisplayPlaneManagerLegacy::Commit(
     HardwareDisplayPlaneList* plane_list,
-    bool test_only) {
+    scoped_refptr<PageFlipRequest> page_flip_request) {
+  bool test_only = !page_flip_request;
   if (test_only) {
     for (HardwareDisplayPlane* plane : plane_list->plane_list) {
       plane->set_in_use(false);
@@ -69,14 +71,10 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
         PLOG(ERROR) << "Cannot display plane on overlay: crtc=" << flip.crtc
                     << " plane=" << plane.plane;
         ret = false;
-        flip.crtc->SignalPageFlipRequest(gfx::SwapResult::SWAP_FAILED,
-                                         gfx::PresentationFeedback::Failure());
         break;
       }
     }
-    if (!drm_->PageFlip(flip.crtc_id, flip.framebuffer,
-                        base::BindOnce(&CrtcController::OnPageFlipEvent,
-                                       flip.crtc->AsWeakPtr()))) {
+    if (!drm_->PageFlip(flip.crtc_id, flip.framebuffer, page_flip_request)) {
       // 1) Permission Denied is a legitimate error.
       // 2) Device or resource busy is possible if we're page flipping a
       // disconnected CRTC. Pretend we're fine since a hotplug event is supposed
@@ -90,9 +88,6 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
                     << " framebuffer=" << flip.framebuffer;
         ret = false;
       }
-      flip.crtc->SignalPageFlipRequest(
-          ret ? gfx::SwapResult::SWAP_ACK : gfx::SwapResult::SWAP_FAILED,
-          gfx::PresentationFeedback::Failure());
     }
   }
   // For each element in |old_plane_list|, if it hasn't been reclaimed (by

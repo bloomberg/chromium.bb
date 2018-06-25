@@ -97,7 +97,7 @@ void DrmOverlayValidatorTest::SetUp() {
   last_swap_buffers_result_ = gfx::SwapResult::SWAP_FAILED;
 
   message_loop_.reset(new base::MessageLoopForUI);
-  drm_ = new ui::MockDrmDevice(false);
+  drm_ = new ui::MockDrmDevice;
 
   CrtcState crtc_state = {.planes = {
                               {.formats = {DRM_FORMAT_XRGB8888}},

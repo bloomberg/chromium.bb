@@ -17,23 +17,10 @@
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_atomic.h"
+#include "ui/ozone/platform/drm/gpu/page_flip_request.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
-
-namespace {
-
-void AtomicPageFlipCallback(std::vector<base::WeakPtr<CrtcController>> crtcs,
-                            unsigned int frame,
-                            base::TimeTicks timestamp) {
-  for (auto& crtc : crtcs) {
-    auto* crtc_ptr = crtc.get();
-    if (crtc_ptr)
-      crtc_ptr->OnPageFlipEvent(frame, timestamp);
-  }
-}
-
-}  // namespace
 
 HardwareDisplayPlaneManagerAtomic::HardwareDisplayPlaneManagerAtomic() {
 }
@@ -43,7 +30,8 @@ HardwareDisplayPlaneManagerAtomic::~HardwareDisplayPlaneManagerAtomic() {
 
 bool HardwareDisplayPlaneManagerAtomic::Commit(
     HardwareDisplayPlaneList* plane_list,
-    bool test_only) {
+    scoped_refptr<PageFlipRequest> page_flip_request) {
+  bool test_only = !page_flip_request;
   for (HardwareDisplayPlane* plane : plane_list->old_plane_list) {
     if (!base::ContainsValue(plane_list->plane_list, plane)) {
       // This plane is being released, so we need to zero it.
@@ -56,12 +44,12 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
     }
   }
 
-  std::vector<base::WeakPtr<CrtcController>> crtcs;
+  std::vector<CrtcController*> crtcs;
   for (HardwareDisplayPlane* plane : plane_list->plane_list) {
     HardwareDisplayPlaneAtomic* atomic_plane =
         static_cast<HardwareDisplayPlaneAtomic*>(plane);
-    if (crtcs.empty() || crtcs.back().get() != atomic_plane->crtc())
-      crtcs.push_back(atomic_plane->crtc()->AsWeakPtr());
+    if (crtcs.empty() || crtcs.back() != atomic_plane->crtc())
+      crtcs.push_back(atomic_plane->crtc());
   }
 
   if (test_only) {
@@ -76,12 +64,11 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
   if (test_only) {
     flags = DRM_MODE_ATOMIC_TEST_ONLY;
   } else {
-    flags = DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_ATOMIC_NONBLOCK;
+    flags = DRM_MODE_ATOMIC_NONBLOCK;
   }
 
   if (!drm_->CommitProperties(plane_list->atomic_property_set.get(), flags,
-                              crtcs.size(),
-                              base::BindOnce(&AtomicPageFlipCallback, crtcs))) {
+                              crtcs.size(), page_flip_request)) {
     if (!test_only) {
       PLOG(ERROR) << "Failed to commit properties for page flip.";
     } else {
@@ -111,13 +98,8 @@ bool HardwareDisplayPlaneManagerAtomic::DisableOverlayPlanes(
         plane_list->atomic_property_set.get(), 0, 0, gfx::Rect(), gfx::Rect(),
         gfx::OVERLAY_TRANSFORM_NONE, base::kInvalidPlatformFile);
   }
-  // The list of crtcs is only useful if flags contains DRM_MODE_PAGE_FLIP_EVENT
-  // to get the pageflip callback. In this case we don't need to be notified
-  // at the next page flip, so the list of crtcs can be empty.
-  std::vector<base::WeakPtr<CrtcController>> crtcs;
-  bool ret = drm_->CommitProperties(
-      plane_list->atomic_property_set.get(), DRM_MODE_ATOMIC_NONBLOCK,
-      crtcs.size(), base::BindOnce(&AtomicPageFlipCallback, crtcs));
+  bool ret = drm_->CommitProperties(plane_list->atomic_property_set.get(),
+                                    DRM_MODE_ATOMIC_NONBLOCK, 0, nullptr);
   PLOG_IF(ERROR, !ret) << "Failed to commit properties for page flip.";
 
   plane_list->atomic_property_set.reset(drmModeAtomicAlloc());
@@ -149,7 +131,7 @@ bool HardwareDisplayPlaneManagerAtomic::SetColorCorrectionOnAllCrtcPlanes(
   }
 
   return drm_->CommitProperties(property_set.get(), DRM_MODE_ATOMIC_NONBLOCK, 0,
-                                DrmDevice::PageFlipCallback());
+                                nullptr);
 }
 
 bool HardwareDisplayPlaneManagerAtomic::ValidatePrimarySize(
@@ -222,8 +204,7 @@ bool HardwareDisplayPlaneManagerAtomic::CommitColorMatrix(
   // API) to ensure the properties are applied.
   // TODO(dnicoara): Should cache these values locally and aggregate them with
   // the page flip event otherwise this "steals" a vsync to apply the property.
-  return drm_->CommitProperties(property_set.get(), 0, 0,
-                                DrmDevice::PageFlipCallback());
+  return drm_->CommitProperties(property_set.get(), 0, 0, nullptr);
 }
 
 bool HardwareDisplayPlaneManagerAtomic::CommitGammaCorrection(
@@ -258,8 +239,7 @@ bool HardwareDisplayPlaneManagerAtomic::CommitGammaCorrection(
   // API) to ensure the properties are applied.
   // TODO(dnicoara): Should cache these values locally and aggregate them with
   // the page flip event otherwise this "steals" a vsync to apply the property.
-  return drm_->CommitProperties(property_set.get(), 0, 0,
-                                DrmDevice::PageFlipCallback());
+  return drm_->CommitProperties(property_set.get(), 0, 0, nullptr);
 }
 
 }  // namespace ui

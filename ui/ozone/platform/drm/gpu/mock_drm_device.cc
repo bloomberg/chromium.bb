@@ -49,7 +49,7 @@ MockDrmDevice::PlaneProperties::PlaneProperties(const PlaneProperties&) =
     default;
 MockDrmDevice::PlaneProperties::~PlaneProperties() = default;
 
-MockDrmDevice::MockDrmDevice(bool use_sync_flips)
+MockDrmDevice::MockDrmDevice()
     : DrmDevice(base::FilePath(), base::File(), true /* is_primary_device */),
       get_crtc_call_count_(0),
       set_crtc_call_count_(0),
@@ -64,7 +64,6 @@ MockDrmDevice::MockDrmDevice(bool use_sync_flips)
       add_framebuffer_expectation_(true),
       page_flip_expectation_(true),
       create_dumb_buffer_expectation_(true),
-      use_sync_flips_(use_sync_flips),
       current_framebuffer_(0) {
   plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
 }
@@ -216,16 +215,12 @@ ScopedDrmFramebufferPtr MockDrmDevice::GetFramebuffer(uint32_t framebuffer) {
 
 bool MockDrmDevice::PageFlip(uint32_t crtc_id,
                              uint32_t framebuffer,
-                             PageFlipCallback callback) {
+                             scoped_refptr<PageFlipRequest> page_flip_request) {
   page_flip_call_count_++;
+  DCHECK(page_flip_request);
   current_framebuffer_ = framebuffer;
-  if (page_flip_expectation_) {
-    if (use_sync_flips_)
-      std::move(callback).Run(0, base::TimeTicks());
-    else
-      callbacks_.push(std::move(callback));
-  }
-
+  if (page_flip_expectation_)
+    callbacks_.push(page_flip_request->AddPageFlip());
   return page_flip_expectation_;
 }
 
@@ -369,16 +364,15 @@ bool MockDrmDevice::CloseBufferHandle(uint32_t handle) {
   return true;
 }
 
-bool MockDrmDevice::CommitProperties(drmModeAtomicReq* properties,
-                                     uint32_t flags,
-                                     uint32_t crtc_count,
-                                     PageFlipCallback callback) {
-  if (use_sync_flips_)
-    std::move(callback).Run(0, base::TimeTicks());
-  else
-    callbacks_.push(std::move(callback));
-
+bool MockDrmDevice::CommitProperties(
+    drmModeAtomicReq* properties,
+    uint32_t flags,
+    uint32_t crtc_count,
+    scoped_refptr<PageFlipRequest> page_flip_request) {
   commit_count_++;
+  if (page_flip_request) {
+    callbacks_.push(page_flip_request->AddPageFlip());
+  }
   return true;
 }
 

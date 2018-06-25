@@ -116,7 +116,7 @@ class HardwareDisplayController {
   //
   // Note that this function does not block. Also, this function should not be
   // called again before the page flip occurrs.
-  bool SchedulePageFlip(const DrmOverlayPlaneList& plane_list,
+  void SchedulePageFlip(DrmOverlayPlaneList plane_list,
                         SwapCompletionOnceCallback callback);
 
   // Returns true if the page flip with the |plane_list| would succeed. This
@@ -155,6 +155,8 @@ class HardwareDisplayController {
   gfx::Point origin() const { return origin_; }
   void set_origin(const gfx::Point& origin) { origin_ = origin; }
 
+  uint32_t GetRefreshRate() const;
+  base::TimeDelta GetRefreshInterval() const;
   base::TimeTicks GetTimeOfLastFlip() const;
 
   const std::vector<std::unique_ptr<CrtcController>>& crtc_controllers() const {
@@ -163,10 +165,14 @@ class HardwareDisplayController {
 
   scoped_refptr<DrmDevice> GetDrmDevice() const;
 
+  void OnPageFlipComplete(
+      DrmOverlayPlaneList pending_planes,
+      const gfx::PresentationFeedback& presentation_feedback);
+
  private:
-  bool ActualSchedulePageFlip(const DrmOverlayPlaneList& plane_list,
-                              bool test_only,
-                              SwapCompletionOnceCallback callback);
+  void OnModesetComplete(const DrmOverlayPlane& primary);
+  bool ScheduleOrTestPageFlip(const DrmOverlayPlaneList& plane_list,
+                              scoped_refptr<PageFlipRequest> page_flip_request);
 
   HardwareDisplayPlaneList owned_hardware_planes_;
 
@@ -177,7 +183,13 @@ class HardwareDisplayController {
   // Location of the controller on the screen.
   gfx::Point origin_;
 
+  scoped_refptr<PageFlipRequest> page_flip_request_;
+  DrmOverlayPlaneList current_planes_;
+  base::TimeTicks time_of_last_flip_;
+
   bool is_disabled_;
+
+  base::WeakPtrFactory<HardwareDisplayController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayController);
 };

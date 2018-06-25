@@ -43,7 +43,7 @@ class MockDrmDevice : public DrmDevice {
     std::vector<DrmDevice::Property> properties;
   };
 
-  explicit MockDrmDevice(bool use_sync_flips);
+  MockDrmDevice();
 
   static ScopedDrmPropertyBlobPtr AllocateInFormatsBlob(
       uint32_t id,
@@ -122,7 +122,7 @@ class MockDrmDevice : public DrmDevice {
   ScopedDrmFramebufferPtr GetFramebuffer(uint32_t framebuffer) override;
   bool PageFlip(uint32_t crtc_id,
                 uint32_t framebuffer,
-                PageFlipCallback callback) override;
+                scoped_refptr<PageFlipRequest> page_flip_request) override;
   bool PageFlipOverlay(uint32_t crtc_id,
                        uint32_t framebuffer,
                        const gfx::Rect& location,
@@ -159,7 +159,7 @@ class MockDrmDevice : public DrmDevice {
   bool CommitProperties(drmModeAtomicReq* properties,
                         uint32_t flags,
                         uint32_t crtc_count,
-                        PageFlipCallback callback) override;
+                        scoped_refptr<PageFlipRequest> callback) override;
   bool SetGammaRamp(
       uint32_t crtc_id,
       const std::vector<display::GammaRampRGBEntry>& lut) override;
@@ -185,8 +185,6 @@ class MockDrmDevice : public DrmDevice {
   bool page_flip_expectation_;
   bool create_dumb_buffer_expectation_;
   bool legacy_gamma_ramp_expectation_ = false;
-
-  bool use_sync_flips_;
 
   uint32_t current_framebuffer_;
 

@@ -13,25 +13,39 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/public/swap_completion_callback.h"
 
-namespace gfx {
-struct PresentationFeedback;
-}  // namespace gfx
-
 namespace ui {
 
 class PageFlipRequest : public base::RefCounted<PageFlipRequest> {
  public:
-  PageFlipRequest(int crtc_count, SwapCompletionOnceCallback callback);
+  using PageFlipCallback =
+      base::OnceCallback<void(unsigned int /* frame */,
+                              base::TimeTicks /* timestamp */)>;
 
-  void Signal(gfx::SwapResult result,
-              const gfx::PresentationFeedback& feedback);
+  PageFlipRequest(const base::TimeDelta& refresh_interval);
+
+  // Takes ownership of the swap completion callback to allow
+  // asynchronous notification of completion.
+  //
+  // This is only called once all of the individual flips have have been
+  // successfully submitted.
+  void TakeCallback(SwapCompletionOnceCallback callback);
+
+  // Add a page flip to this request. Once all page flips return, the
+  // overall callback is made with the timestamp from the page flip event
+  // that returned last.
+  PageFlipCallback AddPageFlip();
+
+  int page_flip_count() const { return page_flip_count_; }
 
  private:
+  void Signal(unsigned int frame, base::TimeTicks timestamp);
+
   friend class base::RefCounted<PageFlipRequest>;
   ~PageFlipRequest();
 
   SwapCompletionOnceCallback callback_;
-  int crtc_count_;
+  int page_flip_count_ = 0;
+  base::TimeDelta refresh_interval_;
   gfx::SwapResult result_ = gfx::SwapResult::SWAP_ACK;
 
   DISALLOW_COPY_AND_ASSIGN(PageFlipRequest);
