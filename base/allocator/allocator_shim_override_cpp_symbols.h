@@ -49,3 +49,11 @@ SHIM_ALWAYS_EXPORT void operator delete[](void* p,
                                           const std::nothrow_t&) __THROW {
   ShimCppDelete(p);
 }
+
+SHIM_ALWAYS_EXPORT void operator delete(void* p, size_t) __THROW {
+  ShimCppDelete(p);
+}
+
+SHIM_ALWAYS_EXPORT void operator delete[](void* p, size_t) __THROW {
+  ShimCppDelete(p);
+}
