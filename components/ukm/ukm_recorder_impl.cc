@@ -31,9 +31,11 @@ namespace {
 
 // Note: kChromeUIScheme is defined in content, which this code can't
 // depend on - since it's used by iOS too. kExtensionScheme is defined
-// in extensions which also isn't always available here.
+// in extensions which also isn't always available here. kAppScheme
+// will be defined in code that isn't available here.
 const char kChromeUIScheme[] = "chrome";
 const char kExtensionScheme[] = "chrome-extension";
+const char kAppScheme[] = "app";
 
 const base::Feature kUkmSamplingRateFeature{"UkmSamplingRate",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
@@ -78,7 +80,7 @@ size_t GetMaxEntries() {
 bool HasSupportedScheme(const GURL& url) {
   return url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(url::kFtpScheme) ||
          url.SchemeIs(url::kAboutScheme) || url.SchemeIs(kChromeUIScheme) ||
-         url.SchemeIs(kExtensionScheme);
+         url.SchemeIs(kExtensionScheme) || url.SchemeIs(kAppScheme);
 }
 
 // True if we should record the initial_url field of the UKM Source proto.
