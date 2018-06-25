@@ -35,29 +35,32 @@ cross builds ([.asm bug](https://crbug.com/762167)).
 1. `gclient sync`, follow instructions on screen.
 
 If you're at Google, this will automatically download the Windows SDK for you.
-If this fails with an error: Please follow the instructions at
-https://www.chromium.org/developers/how-tos/build-instructions-windows
+If this fails with an error:
+
+    Please follow the instructions at
+    https://chromium.googlesource.com/chromium/src/+/master/docs/windows_build_instructions.md
+
 then you may need to re-authenticate via:
 
     cd path/to/chrome/src
     # Follow instructions, enter 0 as project id.
     download_from_google_storage --config
 
-If you are not at Google, you can obtain the Windows SDK packaged in a zip
-file by running the following in a Windows machine:
+If you are not at Google, you can package your Windows SDK installation
+into a zip file by running the following on a Windows machine:
 
     cd path/to/depot_tools/win_toolchain
     # customize the Windows SDK version numbers
     python package_from_installed.py 2017 -w 10.0.17134.0
 
-These commands create a zip file named '<hash value>.zip'. Then, to use the
+These commands create a zip file named `<hash value>.zip`. Then, to use the
 generated file in a Linux or Mac host, the following environment variables
 need to be set:
 
     export DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL=<path/to/sdk/zip/file>
     export GYP_MSVS_<toolchain hash>=<hash value>
 
-`toolchain_hash` is hardcoded in src/build/vs_toolchain.py and can be found by
+`toolchain_hash` is hardcoded in `src/build/vs_toolchain.py` and can be found by
 setting `DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL` and running `gclient sync`:
 
     gclient sync
@@ -88,7 +91,7 @@ You can run the Windows binaries you built on swarming, like so:
 
 See the contents of run-swarmed.py for how to do this manually.
 
-There's a bot doing 64-bit release cross builds at
-https://ci.chromium.org/buildbot/chromium.clang/linux-win_cross-rel/
-which also runs tests. You can look at it to get an idea of which tests pass in
-the cross build.
+The
+[linux-win_cross-rel](https://ci.chromium.org/buildbot/chromium.clang/linux-win_cross-rel/)
+buildbot does 64-bit release cross builds, and also runs tests. You can look at
+it to get an idea of which tests pass in the cross build.
