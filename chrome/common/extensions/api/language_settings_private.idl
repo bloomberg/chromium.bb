@@ -32,9 +32,9 @@ namespace languageSettingsPrivate {
     // Defaults to false.
     boolean? supportsTranslate;
 
-    // Whether this language is in the list of allowed locales (see
-    // 'AllowedUILocales' policy). Defaults to false.
-    boolean? isAllowedUILocale;
+    // Whether this language is prohibited as a UI locale (not in the list of
+    // the 'AllowedUILocales' policy). Defaults to false.
+    boolean? isProhibitedUILocale;
   };
 
   dictionary SpellcheckDictionaryStatus {

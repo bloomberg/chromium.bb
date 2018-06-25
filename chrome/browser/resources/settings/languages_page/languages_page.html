@@ -107,6 +107,10 @@
       .name-with-error-list[disabled] {
         pointer-events: none;
       }
+
+      iron-icon.policy {
+        -webkit-margin-start: 10px;
+      }
     </style>
     <settings-languages languages="{{languages}}" prefs="{{prefs}}"
         language-helper="{{languageHelper}}">
@@ -328,10 +332,9 @@
                   disabled="[[disableUILanguageCheckbox_(
                       detailLanguage_, languages.prospectiveUILanguage)]]">
                 <span>$i18n{displayInThisLanguage}</span>
-                <cr-policy-indicator indicator-type="[[
-                getPolicyIndicatorStatus_(
-                  detailLanguage_.language)]]">
-                </cr-policy-indicator>
+                <iron-icon class="policy" icon="cr20:domain" hidden$="[[
+                    !detailLanguage_.language.isProhibitedUILocale]]">
+                </iron-icon>
               </cr-checkbox>
 </if>
               <cr-checkbox id="offerTranslations" slot="item"
