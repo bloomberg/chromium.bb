@@ -1278,6 +1278,114 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, OpenPDFWithReplaceState) {
   EXPECT_EQ("http://www.example.com/", url.spec());
 }
 
+class PDFExtensionInternalLinkClickTest : public PDFExtensionTest {
+ public:
+  PDFExtensionInternalLinkClickTest() : guest_contents_(nullptr) {}
+  ~PDFExtensionInternalLinkClickTest() override {}
+
+ protected:
+  void LoadTestLinkPdfGetGuestContents() {
+    GURL test_pdf_url(
+        embedded_test_server()->GetURL("/pdf/test-internal-link.pdf"));
+    guest_contents_ = LoadPdfGetGuestContents(test_pdf_url);
+    ASSERT_TRUE(guest_contents_);
+  }
+
+  gfx::Point GetLinkPosition() {
+    // The whole first page is a link.
+    gfx::Point link_position(100, 100);
+    ConvertPageCoordToScreenCoord(guest_contents_, &link_position);
+    return link_position;
+  }
+
+ private:
+  WebContents* guest_contents_;
+};
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, CtrlLeft) {
+  LoadTestLinkPdfGetGuestContents();
+
+  WebContents* web_contents = GetActiveWebContents();
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  content::SimulateMouseClickAt(web_contents, kDefaultKeyModifier,
+                                blink::WebMouseEvent::Button::kLeft,
+                                GetLinkPosition());
+  observer.Wait();
+
+  int tab_count = browser()->tab_strip_model()->count();
+  ASSERT_EQ(2, tab_count);
+
+  WebContents* active_web_contents = GetActiveWebContents();
+  ASSERT_EQ(web_contents, active_web_contents);
+
+  WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  ASSERT_TRUE(new_web_contents);
+  ASSERT_NE(web_contents, new_web_contents);
+
+  const GURL& url = new_web_contents->GetURL();
+  EXPECT_EQ("/pdf/test-internal-link.pdf", url.path());
+  EXPECT_EQ("page=2&zoom=100,0,200", url.ref());
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, Middle) {
+  LoadTestLinkPdfGetGuestContents();
+
+  WebContents* web_contents = GetActiveWebContents();
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  content::SimulateMouseClickAt(web_contents, 0,
+                                blink::WebMouseEvent::Button::kMiddle,
+                                GetLinkPosition());
+  observer.Wait();
+
+  int tab_count = browser()->tab_strip_model()->count();
+  ASSERT_EQ(2, tab_count);
+
+  WebContents* active_web_contents = GetActiveWebContents();
+  ASSERT_EQ(web_contents, active_web_contents);
+
+  WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  ASSERT_TRUE(new_web_contents);
+  ASSERT_NE(web_contents, new_web_contents);
+
+  const GURL& url = new_web_contents->GetURL();
+  EXPECT_EQ("/pdf/test-internal-link.pdf", url.path());
+  EXPECT_EQ("page=2&zoom=100,0,200", url.ref());
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, ShiftLeft) {
+  LoadTestLinkPdfGetGuestContents();
+
+  ASSERT_EQ(1U, chrome::GetTotalBrowserCount());
+
+  WebContents* web_contents = GetActiveWebContents();
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_BROWSER_OPENED,
+      content::NotificationService::AllSources());
+  content::SimulateMouseClickAt(web_contents, blink::WebInputEvent::kShiftKey,
+                                blink::WebMouseEvent::Button::kLeft,
+                                GetLinkPosition());
+  observer.Wait();
+
+  ASSERT_EQ(2U, chrome::GetTotalBrowserCount());
+
+  WebContents* active_web_contents =
+      chrome::FindLastActive()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(web_contents, active_web_contents);
+
+  const GURL& url = active_web_contents->GetURL();
+  EXPECT_EQ("/pdf/test-internal-link.pdf", url.path());
+  EXPECT_EQ("page=2&zoom=100,0,200", url.ref());
+}
+
 class PDFExtensionClipboardTest : public PDFExtensionTest {
  public:
   PDFExtensionClipboardTest() : guest_contents_(nullptr) {}

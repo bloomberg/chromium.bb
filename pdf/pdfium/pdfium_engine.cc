@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -1508,18 +1509,18 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
 
   // Open link on mouse up for same link for which mouse down happened earlier.
   if (mouse_down_state_.Matches(area, target)) {
+    uint32_t modifiers = event.GetModifiers();
+    bool middle_button =
+        !!(modifiers & PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN);
+    bool alt_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_ALTKEY);
+    bool ctrl_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_CONTROLKEY);
+    bool meta_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_METAKEY);
+    bool shift_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_SHIFTKEY);
+
+    WindowOpenDisposition disposition = ui::DispositionFromClick(
+        middle_button, alt_key, ctrl_key, meta_key, shift_key);
+
     if (area == PDFiumPage::WEBLINK_AREA) {
-      uint32_t modifiers = event.GetModifiers();
-      bool middle_button =
-          !!(modifiers & PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN);
-      bool alt_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_ALTKEY);
-      bool ctrl_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_CONTROLKEY);
-      bool meta_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_METAKEY);
-      bool shift_key = !!(modifiers & PP_INPUTEVENT_MODIFIER_SHIFTKEY);
-
-      WindowOpenDisposition disposition = ui::DispositionFromClick(
-          middle_button, alt_key, ctrl_key, meta_key, shift_key);
-
       client_->NavigateTo(target.url, disposition);
       SetInFormTextArea(false);
       return true;
@@ -1528,12 +1529,25 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
       if (!PageIndexInBounds(target.page))
         return true;
 
-      pp::Rect page_rect(GetPageScreenRect(target.page));
-      int y = position_.y() + page_rect.y();
-      if (target.y_in_pixels)
-        y += target.y_in_pixels.value() * current_zoom_;
-      client_->ScrollToY(y, /*compensate_for_toolbar=*/true);
+      if (disposition == WindowOpenDisposition::CURRENT_TAB) {
+        pp::Rect page_rect(GetPageScreenRect(target.page));
+        int y = position_.y() + page_rect.y();
+        if (target.y_in_pixels)
+          y += target.y_in_pixels.value() * current_zoom_;
+
+        client_->ScrollToY(y, /*compensate_for_toolbar=*/true);
+      } else {
+        std::string parameters =
+            base::StringPrintf("#page=%d", target.page + 1);
+        if (target.y_in_pixels) {
+          parameters += base::StringPrintf(
+              "&zoom=100,0,%d", static_cast<int>(target.y_in_pixels.value()));
+        }
+
+        client_->NavigateTo(parameters, disposition);
+      }
       SetInFormTextArea(false);
+
       return true;
     }
   }
