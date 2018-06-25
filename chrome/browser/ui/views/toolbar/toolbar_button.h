@@ -13,8 +13,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 
-class Profile;
-
 namespace test {
 class ToolbarButtonTestApi;
 }
@@ -35,10 +33,9 @@ class MenuRunner;
 class ToolbarButton : public views::ImageButton,
                       public views::ContextMenuController {
  public:
-  // The profile and listener pointers must outlive this class. The model can
-  // be null if no menu is to be shown.
-  ToolbarButton(Profile* profile,
-                views::ButtonListener* listener,
+  // The listener pointers must outlive this class. The model can be null if no
+  // menu is to be shown.
+  ToolbarButton(views::ButtonListener* listener,
                 std::unique_ptr<ui::MenuModel> model);
   ~ToolbarButton() override;
 
@@ -91,9 +88,6 @@ class ToolbarButton : public views::ImageButton,
 
   // views::ImageButton:
   const char* GetClassName() const override;
-
-  // The associated profile. The browser theme affects rendering.
-  Profile* profile_;
 
   // The model that populates the attached menu.
   std::unique_ptr<ui::MenuModel> model_;
