@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/video_codecs.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -112,7 +111,7 @@ void VideoDecodePerfHistory::AssessStats(
   // this will be janky.
 
   // No stats? Lets be optimistic.
-  if (!stats || stats->frames_decoded == 0) {
+  if (!stats) {
     *is_power_efficient = true;
     *is_smooth = true;
     return;
@@ -145,7 +144,7 @@ void VideoDecodePerfHistory::OnGotStatsForRequest(
 
   AssessStats(stats.get(), &is_smooth, &is_power_efficient);
 
-  if (stats && stats->frames_decoded) {
+  if (stats) {
     DCHECK(database_success);
     percent_dropped =
         static_cast<double>(stats->frames_dropped) / stats->frames_decoded;
@@ -361,29 +360,6 @@ void VideoDecodePerfHistory::OnClearedHistory(base::OnceClosure clear_done_cb) {
   InitDatabase();
 
   std::move(clear_done_cb).Run();
-}
-
-void VideoDecodePerfHistory::GetVideoDecodeStatsDB(GetCB get_db_cb) {
-  DVLOG(3) << __func__;
-  DCHECK(get_db_cb);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (db_init_status_ == FAILED) {
-    std::move(get_db_cb).Run(nullptr);
-    return;
-  }
-
-  // Defer this request until the DB is initialized.
-  if (db_init_status_ != COMPLETE) {
-    init_deferred_api_calls_.push_back(
-        base::BindOnce(&VideoDecodePerfHistory::GetVideoDecodeStatsDB,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(get_db_cb)));
-    InitDatabase();
-    return;
-  }
-
-  // DB is already initialized. BindToCurrentLoop to avoid reentrancy.
-  std::move(BindToCurrentLoop(std::move(get_db_cb))).Run(db_.get());
 }
 
 }  // namespace media
