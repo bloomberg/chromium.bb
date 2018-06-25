@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.firstrun;
 
-import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 
 import org.chromium.base.metrics.RecordUserAction;
@@ -23,8 +23,8 @@ public class SigninFirstRunFragment extends SigninFragmentBase implements FirstR
     public SigninFirstRunFragment() {}
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
 
         Bundle freProperties = getPageDelegate().getProperties();
         String forceAccountTo =
