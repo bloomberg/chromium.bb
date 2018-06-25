@@ -57,7 +57,7 @@ class GetUpdatePositionTest : public ::testing::Test {
   }
 
   void InitProtoPosition() {
-    test_position.ToProto(update.mutable_unique_position());
+    update.mutable_unique_position()->CopyFrom(test_position.ToProto());
   }
 
   void InitInt64Position(int64_t pos_value) {

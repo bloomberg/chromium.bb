@@ -330,6 +330,7 @@ void BookmarkModelTypeProcessor::ProcessRemoteCreate(
   }
   bookmark_tracker_->Add(update_entity.id, bookmark_node,
                          update.response_version, update_entity.creation_time,
+                         update_entity.unique_position,
                          update_entity.specifics);
 }
 
@@ -446,6 +447,7 @@ void BookmarkModelTypeProcessor::AssociatePermanentFolder(
   if (permanent_node != nullptr) {
     bookmark_tracker_->Add(update_entity.id, permanent_node,
                            update.response_version, update_entity.creation_time,
+                           update_entity.unique_position,
                            update_entity.specifics);
   }
 }

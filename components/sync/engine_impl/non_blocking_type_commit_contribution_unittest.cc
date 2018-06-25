@@ -105,7 +105,7 @@ TEST(NonBlockingTypeCommitContribution, PopulateCommitProtoBookmark) {
   data.is_folder = true;
   syncer::UniquePosition uniquePosition = syncer::UniquePosition::FromInt64(
       10, syncer::UniquePosition::RandomSuffix());
-  uniquePosition.ToProto(&data.unique_position);
+  data.unique_position = uniquePosition.ToProto();
 
   CommitRequestData request_data;
   request_data.entity = data.PassToPtr();

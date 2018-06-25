@@ -8,6 +8,7 @@
 #include "base/sha1.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/time.h"
+#include "components/sync/base/unique_position.h"
 #include "components/sync/model/entity_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,11 +39,15 @@ TEST(SyncedBookmarkTrackerTest, ShouldGetAssociatedNodes) {
   const int64_t kServerVersion = 1000;
   const base::Time kCreationTime(base::Time::Now() -
                                  base::TimeDelta::FromSeconds(1));
+  const syncer::UniquePosition unique_position =
+      syncer::UniquePosition::InitialPosition(
+          syncer::UniquePosition::RandomSuffix());
   const sync_pb::EntitySpecifics specifics =
       GenerateSpecifics(/*title=*/std::string(), /*url=*/std::string());
 
   bookmarks::BookmarkNode node(kId, kUrl);
-  tracker.Add(kSyncId, &node, kServerVersion, kCreationTime, specifics);
+  tracker.Add(kSyncId, &node, kServerVersion, kCreationTime,
+              unique_position.ToProto(), specifics);
   const SyncedBookmarkTracker::Entity* entity =
       tracker.GetEntityForSyncId(kSyncId);
   ASSERT_THAT(entity, NotNull());
@@ -51,6 +56,10 @@ TEST(SyncedBookmarkTrackerTest, ShouldGetAssociatedNodes) {
   EXPECT_THAT(entity->metadata()->server_version(), Eq(kServerVersion));
   EXPECT_THAT(entity->metadata()->creation_time(),
               Eq(syncer::TimeToProtoTime(kCreationTime)));
+  EXPECT_TRUE(
+      syncer::UniquePosition::FromProto(entity->metadata()->unique_position())
+          .Equals(unique_position));
+
   syncer::EntityData data;
   *data.specifics.mutable_bookmark() = specifics.bookmark();
   EXPECT_TRUE(entity->MatchesData(data));
@@ -65,10 +74,12 @@ TEST(SyncedBookmarkTrackerTest, ShouldReturnNullForDisassociatedNodes) {
   const int64_t kServerVersion = 1000;
   const base::Time kModificationTime(base::Time::Now() -
                                      base::TimeDelta::FromSeconds(1));
+  const sync_pb::UniquePosition unique_position;
   const sync_pb::EntitySpecifics specifics =
       GenerateSpecifics(/*title=*/std::string(), /*url=*/std::string());
   bookmarks::BookmarkNode node(kId, GURL());
-  tracker.Add(kSyncId, &node, kServerVersion, kModificationTime, specifics);
+  tracker.Add(kSyncId, &node, kServerVersion, kModificationTime,
+              unique_position, specifics);
   ASSERT_THAT(tracker.GetEntityForSyncId(kSyncId), NotNull());
   tracker.Remove(kSyncId);
   EXPECT_THAT(tracker.GetEntityForSyncId(kSyncId), IsNull());
@@ -83,10 +94,12 @@ TEST(SyncedBookmarkTrackerTest,
   const int64_t kServerVersion = 1000;
   const base::Time kModificationTime(base::Time::Now() -
                                      base::TimeDelta::FromSeconds(1));
+  const sync_pb::UniquePosition unique_position;
   const sync_pb::EntitySpecifics specifics =
       GenerateSpecifics(/*title=*/std::string(), /*url=*/std::string());
   bookmarks::BookmarkNode node(kId, GURL());
-  tracker.Add(kSyncId, &node, kServerVersion, kModificationTime, specifics);
+  tracker.Add(kSyncId, &node, kServerVersion, kModificationTime,
+              unique_position, specifics);
 
   EXPECT_THAT(tracker.HasLocalChanges(), Eq(false));
   tracker.IncrementSequenceNumber(kSyncId);

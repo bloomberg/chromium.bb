@@ -17,8 +17,8 @@
 
 namespace syncer {
 
-const size_t UniquePosition::kSuffixLength = 28;
-const size_t UniquePosition::kCompressBytesThreshold = 128;
+constexpr size_t UniquePosition::kSuffixLength;
+constexpr size_t UniquePosition::kCompressBytesThreshold;
 
 // static.
 bool UniquePosition::IsValidSuffix(const std::string& suffix) {
@@ -150,11 +150,12 @@ bool UniquePosition::Equals(const UniquePosition& other) const {
   return compressed_ == other.compressed_;
 }
 
-void UniquePosition::ToProto(sync_pb::UniquePosition* proto) const {
-  proto->Clear();
+sync_pb::UniquePosition UniquePosition::ToProto() const {
+  sync_pb::UniquePosition proto;
 
   // This is the current preferred foramt.
-  proto->set_custom_compressed_v1(compressed_);
+  proto.set_custom_compressed_v1(compressed_);
+  return proto;
 
   // Older clients used to write other formats.  We don't bother doing that
   // anymore because that form of backwards compatibility is expensive.  We no
@@ -164,9 +165,7 @@ void UniquePosition::ToProto(sync_pb::UniquePosition* proto) const {
 
 void UniquePosition::SerializeToString(std::string* blob) const {
   DCHECK(blob);
-  sync_pb::UniquePosition proto;
-  ToProto(&proto);
-  proto.SerializeToString(blob);
+  ToProto().SerializeToString(blob);
 }
 
 int64_t UniquePosition::ToInt64() const {

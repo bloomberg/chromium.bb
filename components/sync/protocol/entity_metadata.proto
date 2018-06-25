@@ -8,6 +8,8 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
+import "unique_position.proto";
+
 // Sync proto to store entity metadata in model type storage.
 message EntityMetadata {
   // A hash based on the client tag and model type.
@@ -57,4 +59,10 @@ message EntityMetadata {
   // value will be the empty string only in the following cases: the entity is
   // in sync with the server, has never been synced, or is deleted.
   optional string base_specifics_hash = 10;
+
+  // Used for positioning entities among their siblings. Relevant only for data
+  // types that support positions (e.g bookmarks). Refer to its definition in
+  // unique_position.proto for more information about its internal
+  // representation.
+  optional UniquePosition unique_position = 11;
 }

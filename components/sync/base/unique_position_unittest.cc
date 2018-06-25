@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/sha1.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/sync/protocol/unique_position.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,6 +21,14 @@
 namespace syncer {
 
 namespace {
+
+// This function exploits internal knowledge of how the protobufs are serialized
+// to help us build UniquePositions from strings described in this file.
+static UniquePosition FromBytes(const std::string& bytes) {
+  sync_pb::UniquePosition proto;
+  proto.set_value(bytes);
+  return UniquePosition::FromProto(proto);
+}
 
 class UniquePositionTest : public ::testing::Test {
  protected:
@@ -31,19 +40,8 @@ class UniquePositionTest : public ::testing::Test {
   // so you can see how well the algorithm performs in various insertion
   // scenarios.
   size_t GetLength(const UniquePosition& pos) {
-    sync_pb::UniquePosition proto;
-    pos.ToProto(&proto);
-    return proto.ByteSize();
+    return pos.ToProto().ByteSize();
   }
-};
-
-// This function exploits internal knowledge of how the protobufs are serialized
-// to help us build UniquePositions from strings described in this file.
-static UniquePosition FromBytes(const std::string& bytes) {
-  sync_pb::UniquePosition proto;
-  proto.set_value(bytes);
-  return UniquePosition::FromProto(proto);
-}
 
 const size_t kMinLength = UniquePosition::kSuffixLength;
 const size_t kGenericPredecessorLength = kMinLength + 2;
@@ -70,12 +68,45 @@ const UniquePosition kSmallPositionPlusOne =
 const UniquePosition kHugePosition = FromBytes(
     std::string(UniquePosition::kCompressBytesThreshold, '\xFF') + '\xAB');
 
-const std::string kMinSuffix =
-    std::string(UniquePosition::kSuffixLength - 1, '\x00') + '\x01';
-const std::string kMaxSuffix(UniquePosition::kSuffixLength, '\xFF');
-const std::string kNormalSuffix(
-    "\x68\x44\x6C\x6B\x32\x58\x78\x34\x69\x70\x46\x34\x79\x49"
-    "\x44\x4F\x66\x4C\x58\x41\x31\x34\x68\x59\x56\x43\x6F\x3D");
+const UniquePosition kPositionArray[7] = {
+    kGenericPredecessor,   kGenericSuccessor, kBigPosition,
+    kBigPositionLessTwo,   kBiggerPosition,   kSmallPosition,
+    kSmallPositionPlusOne,
+};
+
+const UniquePosition kSortedPositionArray[7] = {
+    kSmallPosition,    kSmallPositionPlusOne, kGenericPredecessor,
+    kGenericSuccessor, kBigPositionLessTwo,   kBigPosition,
+    kBiggerPosition,
+};
+
+const size_t kNumPositions = base::size(kPositionArray);
+const size_t kNumSortedPositions = base::size(kSortedPositionArray);
+};
+
+static constexpr char kMinSuffix[] = {
+    '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
+    '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
+    '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
+    '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x01'};
+static_assert(base::size(kMinSuffix) == UniquePosition::kSuffixLength,
+              "Wrong size of kMinSuffix.");
+
+static constexpr char kMaxSuffix[] = {
+    '\xFF', '\xFF', '\xFF', '\xFF', '\xFF', '\xFF', '\xFF',
+    '\xFF', '\xFF', '\xFF', '\xFF', '\xFF', '\xFF', '\xFF',
+    '\xFF', '\xFF', '\xFF', '\xFF', '\xFF', '\xFF', '\xFF',
+    '\xFF', '\xFF', '\xFF', '\xFF', '\xFF', '\xFF', '\xFF'};
+static_assert(base::size(kMaxSuffix) == UniquePosition::kSuffixLength,
+              "Wrong size of kMaxSuffix.");
+
+static constexpr char kNormalSuffix[] = {
+    '\x68', '\x44', '\x6C', '\x6B', '\x32', '\x58', '\x78',
+    '\x34', '\x69', '\x70', '\x46', '\x34', '\x79', '\x49',
+    '\x44', '\x4F', '\x66', '\x4C', '\x58', '\x41', '\x31',
+    '\x34', '\x68', '\x59', '\x56', '\x43', '\x6F', '\x3D'};
+static_assert(base::size(kNormalSuffix) == UniquePosition::kSuffixLength,
+              "Wrong size of kNormalSuffix.");
 
 ::testing::AssertionResult LessThan(const char* m_expr,
                                     const char* n_expr,
@@ -148,21 +179,6 @@ TEST_F(UniquePositionTest, DeserializeObsoleteGzippedPosition) {
 }
 
 class RelativePositioningTest : public UniquePositionTest {};
-
-const UniquePosition kPositionArray[] = {
-    kGenericPredecessor,   kGenericSuccessor, kBigPosition,
-    kBigPositionLessTwo,   kBiggerPosition,   kSmallPosition,
-    kSmallPositionPlusOne,
-};
-
-const UniquePosition kSortedPositionArray[] = {
-    kSmallPosition,    kSmallPositionPlusOne, kGenericPredecessor,
-    kGenericSuccessor, kBigPositionLessTwo,   kBigPosition,
-    kBiggerPosition,
-};
-
-static const size_t kNumPositions = arraysize(kPositionArray);
-static const size_t kNumSortedPositions = arraysize(kSortedPositionArray);
 
 struct PositionLessThan {
   bool operator()(const UniquePosition& a, const UniquePosition& b) {
@@ -469,13 +485,16 @@ TEST_F(PositionScenariosTest, TwoClientsInsertAtEnd_B) {
 
 INSTANTIATE_TEST_CASE_P(MinSuffix,
                         PositionInsertTest,
-                        ::testing::Values(kMinSuffix));
+                        ::testing::Values(std::string(kMinSuffix,
+                                                      base::size(kMinSuffix))));
 INSTANTIATE_TEST_CASE_P(MaxSuffix,
                         PositionInsertTest,
-                        ::testing::Values(kMaxSuffix));
-INSTANTIATE_TEST_CASE_P(NormalSuffix,
-                        PositionInsertTest,
-                        ::testing::Values(kNormalSuffix));
+                        ::testing::Values(std::string(kMaxSuffix,
+                                                      base::size(kMaxSuffix))));
+INSTANTIATE_TEST_CASE_P(
+    NormalSuffix,
+    PositionInsertTest,
+    ::testing::Values(std::string(kNormalSuffix, base::size(kNormalSuffix))));
 
 class PositionFromIntTest : public UniquePositionTest {
  public:
@@ -650,9 +669,7 @@ TEST_F(CompressedPositionTest, SerializeAndDeserialize) {
        it != positions_.end(); ++it) {
     SCOPED_TRACE("iteration: " + it->ToDebugString());
 
-    sync_pb::UniquePosition proto;
-    it->ToProto(&proto);
-    UniquePosition deserialized = UniquePosition::FromProto(proto);
+    UniquePosition deserialized = UniquePosition::FromProto(it->ToProto());
 
     EXPECT_PRED_FORMAT2(Equals, *it, deserialized);
   }
