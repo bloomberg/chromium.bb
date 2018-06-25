@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.support.annotation.Nullable;
 
-import org.chromium.chrome.browser.modelutil.ListObservable;
+import org.chromium.chrome.browser.modelutil.ListObservableImpl;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 
 /**
@@ -14,7 +14,8 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCal
  *
  * This class mostly serves as a convenience base class for implementations of {@link TreeNode}.
  */
-public abstract class ChildNode extends ListObservable<PartialBindCallback> implements TreeNode {
+public abstract class ChildNode
+        extends ListObservableImpl<PartialBindCallback> implements TreeNode {
     private int mNumItems = 0;
 
     @Override

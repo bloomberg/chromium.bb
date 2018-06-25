@@ -39,6 +39,7 @@ class DateOrderedListView {
 
         public ModelChangeProcessor(DecoratedListItemModel model) {
             mModel = model;
+            model.addObserver(this);
         }
 
         @Override
@@ -71,12 +72,6 @@ class DateOrderedListView {
         mPrefetchVerticalPaddingPx = context.getResources().getDimensionPixelSize(
                 R.dimen.download_manager_prefetch_vertical_margin);
 
-        ModelChangeProcessor processor = new ModelChangeProcessor(mModel);
-        RecyclerViewAdapter<ListItemViewHolder, Void> adapter =
-                new DateOrderedListViewAdapter(mModel, processor, ListItemViewHolder::create);
-        processor.addObserver(adapter);
-        mModel.addObserver(processor);
-
         mView = new RecyclerView(context);
         mView.setHasFixedSize(true);
         mView.getItemAnimator().setChangeDuration(0);
@@ -89,7 +84,8 @@ class DateOrderedListView {
                 mModel.getProperties(), mView, propertyViewBinder));
 
         // Do the final hook up to the underlying data adapter.
-        mView.setAdapter(adapter);
+        mView.setAdapter(new DateOrderedListViewAdapter(
+                mModel, new ModelChangeProcessor(mModel), ListItemViewHolder::create));
     }
 
     /** @return The Android {@link View} representing this widget. */

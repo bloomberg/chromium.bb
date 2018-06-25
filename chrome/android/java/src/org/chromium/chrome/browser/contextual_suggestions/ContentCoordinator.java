@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
-import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.ChildNode;
@@ -46,12 +45,12 @@ class ContentCoordinator {
      * TODO(bauerb): Merge {@link TreeNode} into {@link RecyclerViewAdapter.Delegate}.
      */
     private static class ModelChangeProcessor extends ForwardingListObservable<PartialBindCallback>
-            implements RecyclerViewAdapter.Delegate<NewTabPageViewHolder, PartialBindCallback>,
-                       ListObservable.ListObserver<PartialBindCallback> {
+            implements RecyclerViewAdapter.Delegate<NewTabPageViewHolder, PartialBindCallback> {
         private final TreeNode mTreeNode;
 
         private ModelChangeProcessor(ChildNode treeNode) {
             mTreeNode = treeNode;
+            treeNode.addObserver(this);
         }
 
         @Override
@@ -119,13 +118,9 @@ class ContentCoordinator {
 
         final ClusterList clusterList = mModel.getClusterList();
         mModelChangeProcessor = new ModelChangeProcessor(clusterList);
-        ContextualSuggestionsAdapter adapter =
+        mRecyclerView.setAdapter(
                 new ContextualSuggestionsAdapter(profile, new UiConfig(mRecyclerView), uiDelegate,
-                        mContextMenuManager, mModelChangeProcessor);
-        mRecyclerView.setAdapter(adapter);
-
-        mModelChangeProcessor.addObserver(adapter);
-        clusterList.addObserver(mModelChangeProcessor);
+                        mContextMenuManager, mModelChangeProcessor));
 
         // TODO(twellington): Should this be a proper model property, set by the mediator and bound
         // to the RecyclerView?

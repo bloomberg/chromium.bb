@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
-import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
@@ -64,9 +63,8 @@ class PasswordAccessorySheetViewBinder {
          * Binds the item's state to the held {@link View}. Subclasses of this generic view holder
          * might want to actually bind the item state to the view.
          * @param item The item that determines the state of the held View.
-         * @param payload Optional generic payload that might be needed during the binding.
          */
-        protected void bind(Item item, @Nullable Void payload) {}
+        protected void bind(Item item) {}
     }
 
     /**
@@ -86,8 +84,8 @@ class PasswordAccessorySheetViewBinder {
         }
 
         @Override
-        protected void bind(Item item, @Nullable Void payload) {
-            super.bind(item, payload);
+        protected void bind(Item item) {
+            super.bind(item);
             if (item.isPassword()) {
                 getTextView().setTransformationMethod(new PasswordTransformationMethod());
             }

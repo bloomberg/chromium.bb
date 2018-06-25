@@ -30,7 +30,7 @@ public class RecyclerViewAdapter<VH extends ViewHolder, P>
      * @param <P> The payload type for partial updates, or {@link Void} if the adapter does not
      * support partial updates.
      */
-    public interface Delegate<VH, P> {
+    public interface Delegate<VH, P> extends ListObservable<P> {
         /**
          * @return The number of items represented by the adapter.
          * @see RecyclerView.Adapter#getItemCount
@@ -82,6 +82,7 @@ public class RecyclerViewAdapter<VH extends ViewHolder, P>
     public RecyclerViewAdapter(Delegate<VH, P> delegate, ViewHolderFactory<VH> factory) {
         mDelegate = delegate;
         mFactory = factory;
+        mDelegate.addObserver(this);
     }
 
     private final Delegate<VH, P> mDelegate;

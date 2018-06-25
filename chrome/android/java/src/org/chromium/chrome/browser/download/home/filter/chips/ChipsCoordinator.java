@@ -39,14 +39,10 @@ public class ChipsCoordinator implements ChipsProvider.Observer {
 
         // Build the underlying components.
         mView = createView(context);
-        SimpleRecyclerViewMcp<Chip, ChipsViewHolder, Void> processor =
-                new SimpleRecyclerViewMcp<>(mModel, null, ChipsViewHolder::bind);
-        RecyclerViewAdapter<ChipsViewHolder, Void> adapter =
-                new RecyclerViewAdapter<>(processor, ChipsViewHolder::create);
 
-        mView.setAdapter(adapter);
-        processor.addObserver(adapter);
-        mModel.addObserver(processor);
+        mView.setAdapter(new RecyclerViewAdapter<>(
+                new SimpleRecyclerViewMcp<>(mModel, null, ChipsViewHolder::bind),
+                ChipsViewHolder::create));
 
         mProvider.addObserver(this);
         mModel.set(mProvider.getChips());
