@@ -64,7 +64,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
   void PaintWithAdjustedOffset(PaintInfo&, const LayoutPoint&);
   void PaintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
-  void PaintAllPhasesAtomically(const PaintInfo&, const LayoutPoint&);
+  void PaintAllPhasesAtomically(const PaintInfo&,
+                                const LayoutPoint&,
+                                bool is_self_painting);
   void PaintBlockChildren(const PaintInfo&, const LayoutPoint&);
   void PaintLineBoxChildren(const Vector<std::unique_ptr<NGPaintFragment>>&,
                             const PaintInfo&,
