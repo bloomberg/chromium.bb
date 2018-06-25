@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate.VrModeObserver;
+import org.chromium.ui.UiUtils;
 
 /**
  * Controls the bottom system navigation bar color for the provided {@link Window}.
@@ -126,6 +127,8 @@ public class NavigationBarColorController implements VrModeObserver {
         } else {
             useLightNavigation = !mTabModelSelector.isIncognitoSelected() && !overviewVisible;
         }
+
+        useLightNavigation &= !UiUtils.isSystemUiThemingDisabled();
 
         if (mUseLightNavigation == useLightNavigation) return;
 

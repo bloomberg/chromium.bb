@@ -142,6 +142,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.widget.Toast;
@@ -2154,7 +2155,7 @@ public class ChromeTabbedActivity
 
     @Override
     protected void setStatusBarColor(@Nullable Tab tab, int color) {
-        if (isTablet()) return;
+        if (isTablet() || UiUtils.isSystemUiThemingDisabled()) return;
 
         if (!isInOverviewMode()) {
             super.setStatusBarColor(tab, color);

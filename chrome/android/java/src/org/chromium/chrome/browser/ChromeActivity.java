@@ -157,6 +157,7 @@ import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
 import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -884,6 +885,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @param isDefaultThemeColor Whether {@code color} is the default theme color.
      */
     protected void setStatusBarColor(int color, boolean isDefaultThemeColor) {
+        if (UiUtils.isSystemUiThemingDisabled()) return;
+
         boolean useModernDesign =
                 supportsModernDesign() && FeatureUtilities.isChromeModernDesignEnabled();
         int statusBarColor = color;
