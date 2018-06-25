@@ -1158,10 +1158,13 @@ void LoginDisplayHostWebUI::StartVoiceInteractionOobe() {
   login_view_->set_should_emit_login_prompt_visible(false);
 }
 
-void LoginDisplayHostWebUI::UpdateGaiaDialogVisibility(
-    bool visible,
+void LoginDisplayHostWebUI::ShowGaiaDialog(
     bool can_close,
     const base::Optional<AccountId>& prefilled_account) {
+  NOTREACHED();
+}
+
+void LoginDisplayHostWebUI::HideGaiaDialog() {
   NOTREACHED();
 }
 

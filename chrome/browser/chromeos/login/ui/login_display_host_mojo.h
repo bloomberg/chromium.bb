@@ -85,10 +85,10 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void OnBrowserCreated() override;
   void StartVoiceInteractionOobe() override;
   bool IsVoiceInteractionOobe() override;
-  void UpdateGaiaDialogVisibility(
-      bool visible,
+  void ShowGaiaDialog(
       bool can_close,
       const base::Optional<AccountId>& prefilled_account) override;
+  void HideGaiaDialog() override;
   void UpdateGaiaDialogSize(int width, int height) override;
   const user_manager::UserList GetUsers() override;
   void CancelPasswordChangedFlow() override;
@@ -131,6 +131,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // Called after host deletion.
   std::vector<base::OnceClosure> completion_callbacks_;
   OobeUIDialogDelegate* dialog_ = nullptr;
+  bool can_close_dialog_ = true;
   std::unique_ptr<WizardController> wizard_controller_;
 
   // Users that are visible in the views login screen.

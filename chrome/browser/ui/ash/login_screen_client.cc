@@ -113,8 +113,8 @@ void LoginScreenClient::ShowGaiaSignin(
     bool can_close,
     const base::Optional<AccountId>& prefilled_account) {
   if (chromeos::LoginDisplayHost::default_host()) {
-    chromeos::LoginDisplayHost::default_host()->UpdateGaiaDialogVisibility(
-        true /*visible*/, can_close, prefilled_account);
+    chromeos::LoginDisplayHost::default_host()->ShowGaiaDialog(
+        can_close, prefilled_account);
   }
 }
 
