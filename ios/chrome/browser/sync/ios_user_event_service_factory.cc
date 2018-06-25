@@ -60,7 +60,7 @@ IOSUserEventServiceFactory::BuildServiceInstanceFor(
       std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
           syncer::USER_EVENTS, /*dump_stack=*/base::BindRepeating(
               &syncer::ReportUnrecoverableError, ::GetChannel())),
-      sync_service->GetGlobalIdMapper(), sync_service);
+      sync_service->GetGlobalIdMapper());
   return std::make_unique<syncer::UserEventServiceImpl>(sync_service,
                                                         std::move(bridge));
 }

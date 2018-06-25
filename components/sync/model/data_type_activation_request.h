@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_ENGINE_DATA_TYPE_ACTIVATION_REQUEST_H_
-#define COMPONENTS_SYNC_ENGINE_DATA_TYPE_ACTIVATION_REQUEST_H_
+#ifndef COMPONENTS_SYNC_MODEL_DATA_TYPE_ACTIVATION_REQUEST_H_
+#define COMPONENTS_SYNC_MODEL_DATA_TYPE_ACTIVATION_REQUEST_H_
 
 #include <string>
 
@@ -19,6 +19,10 @@ struct DataTypeActivationRequest {
   DataTypeActivationRequest(DataTypeActivationRequest&& request);
   ~DataTypeActivationRequest();
 
+  DataTypeActivationRequest& operator=(
+      const DataTypeActivationRequest& request);
+  DataTypeActivationRequest& operator=(DataTypeActivationRequest&& request);
+
   ModelErrorHandler error_handler;
   std::string authenticated_account_id;
   std::string cache_guid;
@@ -26,4 +30,4 @@ struct DataTypeActivationRequest {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_ENGINE_DATA_TYPE_ACTIVATION_REQUEST_H_
+#endif  // COMPONENTS_SYNC_MODEL_DATA_TYPE_ACTIVATION_REQUEST_H_

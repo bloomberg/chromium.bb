@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
+#include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mutable_data_batch.h"
@@ -72,14 +73,10 @@ std::unique_ptr<EntityData> CopyToEntityData(
 UserEventSyncBridge::UserEventSyncBridge(
     OnceModelTypeStoreFactory store_factory,
     std::unique_ptr<ModelTypeChangeProcessor> change_processor,
-    GlobalIdMapper* global_id_mapper,
-    SyncService* sync_service)
+    GlobalIdMapper* global_id_mapper)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      global_id_mapper_(global_id_mapper),
-      sync_service_(sync_service),
-      is_sync_starting_or_started_(false) {
+      global_id_mapper_(global_id_mapper) {
   DCHECK(global_id_mapper_);
-  DCHECK(sync_service_);
   std::move(store_factory)
       .Run(USER_EVENTS, base::BindOnce(&UserEventSyncBridge::OnStoreCreated,
                                        base::AsWeakPtr(this)));
@@ -154,13 +151,13 @@ std::string UserEventSyncBridge::GetStorageKey(const EntityData& entity_data) {
   return GetStorageKeyFromSpecifics(entity_data.specifics.user_event());
 }
 
-void UserEventSyncBridge::OnSyncStarting() {
-#if !defined(OS_IOS)  // https://crbug.com/834042
-  DCHECK(!GetAuthenticatedAccountId().empty());
-#endif  // !defined(OS_IOS)
-  DCHECK(!is_sync_starting_or_started_);
+void UserEventSyncBridge::OnSyncStarting(
+    const DataTypeActivationRequest& request) {
+  DCHECK(!request.authenticated_account_id.empty());
+  DCHECK(syncing_account_id_.empty());
 
-  is_sync_starting_or_started_ = true;
+  syncing_account_id_ = request.authenticated_account_id;
+
   if (store_ && change_processor()->IsTrackingMetadata()) {
     ReadAllDataAndResubmit();
   }
@@ -171,7 +168,7 @@ ModelTypeSyncBridge::StopSyncResponse UserEventSyncBridge::ApplyStopSyncChanges(
   // Sync can only be stopped after initialization.
   DCHECK(deferred_user_events_while_initializing_.empty());
 
-  is_sync_starting_or_started_ = false;
+  syncing_account_id_.clear();
 
   if (delete_metadata_change_list) {
     // Delete everything except user consents. With DICE the signout may happen
@@ -215,7 +212,7 @@ void UserEventSyncBridge::OnReadAllDataToDelete(
 }
 
 void UserEventSyncBridge::ReadAllDataAndResubmit() {
-  DCHECK(is_sync_starting_or_started_);
+  DCHECK(!syncing_account_id_.empty());
   DCHECK(change_processor()->IsTrackingMetadata());
   DCHECK(store_);
   store_->ReadAllData(base::BindOnce(
@@ -225,7 +222,7 @@ void UserEventSyncBridge::ReadAllDataAndResubmit() {
 void UserEventSyncBridge::OnReadAllDataToResubmit(
     const base::Optional<ModelError>& error,
     std::unique_ptr<RecordList> data_records) {
-  if (!is_sync_starting_or_started_) {
+  if (syncing_account_id_.empty()) {
     // Meanwhile the sync has been disabled. We will try next time.
     return;
   }
@@ -241,7 +238,7 @@ void UserEventSyncBridge::OnReadAllDataToResubmit(
     if (specifics->ParseFromString(r.value) &&
         specifics->event_case() ==
             UserEventSpecifics::EventCase::kUserConsent &&
-        specifics->user_consent().account_id() == GetAuthenticatedAccountId()) {
+        specifics->user_consent().account_id() == syncing_account_id_) {
       RecordUserEventImpl(std::move(specifics));
     }
   }
@@ -249,6 +246,8 @@ void UserEventSyncBridge::OnReadAllDataToResubmit(
 
 void UserEventSyncBridge::RecordUserEvent(
     std::unique_ptr<UserEventSpecifics> specifics) {
+  // TODO(vitaliii): Sanity-check specifics->user_consent().account_id() against
+  // syncing_account_id_, maybe DCHECK.
   DCHECK(!specifics->has_user_consent() ||
          !specifics->user_consent().account_id().empty());
   if (change_processor()->IsTrackingMetadata()) {
@@ -324,7 +323,7 @@ void UserEventSyncBridge::OnReadAllMetadata(
   } else {
     change_processor()->ModelReadyToSync(std::move(metadata_batch));
     DCHECK(change_processor()->IsTrackingMetadata());
-    if (is_sync_starting_or_started_) {
+    if (!syncing_account_id_.empty()) {
       ReadAllDataAndResubmit();
     }
     ProcessQueuedEvents();
@@ -389,10 +388,6 @@ void UserEventSyncBridge::HandleGlobalIdChange(int64_t old_global_id,
     specifics->set_navigation_id(new_global_id);
     RecordUserEvent(std::move(specifics));
   }
-}
-
-std::string UserEventSyncBridge::GetAuthenticatedAccountId() const {
-  return sync_service_->GetAuthenticatedAccountInfo().account_id;
 }
 
 }  // namespace syncer

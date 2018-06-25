@@ -60,7 +60,8 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
   syncer::ModelTypeSyncBridge* GetModelTypeSyncBridge() override;
 
   // ModelTypeSyncBridge implementation.
-  void OnSyncStarting() override;
+  void OnSyncStarting(
+      const syncer::DataTypeActivationRequest& request) override;
   std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
       override;
   base::Optional<syncer::ModelError> MergeSyncData(

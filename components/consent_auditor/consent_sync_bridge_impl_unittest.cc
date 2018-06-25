@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "components/sync/model/data_batch.h"
+#include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -67,13 +68,19 @@ std::unique_ptr<UserConsentSpecifics> SpecificsUniquePtr(
       CreateSpecifics(client_consent_time_usec));
 }
 
+DataTypeActivationRequest CreateActivationRequest(
+    const std::string& account_id) {
+  DataTypeActivationRequest request;
+  request.authenticated_account_id = account_id;
+  return request;
+}
+
 class ConsentSyncBridgeImplTest : public testing::Test {
  protected:
   ConsentSyncBridgeImplTest() {
     bridge_ = std::make_unique<ConsentSyncBridgeImpl>(
         ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest(),
-        mock_processor_.CreateForwardingProcessor(),
-        GetAuthenticatedAccountIdCallback());
+        mock_processor_.CreateForwardingProcessor());
     ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
   }
 
@@ -81,21 +88,6 @@ class ConsentSyncBridgeImplTest : public testing::Test {
     EntityData entity_data;
     *entity_data.specifics.mutable_user_consent() = specifics;
     return bridge()->GetStorageKey(entity_data);
-  }
-
-  void SetAuthenticatedAccountId(const std::string& new_id) {
-    authenticated_account_id_ = new_id;
-  }
-
-  std::string GetAuthenticatedAccountId() const {
-    return authenticated_account_id_;
-  }
-
-  base::RepeatingCallback<std::string()> GetAuthenticatedAccountIdCallback()
-      const {
-    return base::BindRepeating(
-        &ConsentSyncBridgeImplTest::GetAuthenticatedAccountId,
-        base::Unretained(this));
   }
 
   ConsentSyncBridgeImpl* bridge() { return bridge_.get(); }
@@ -154,8 +146,6 @@ class ConsentSyncBridgeImplTest : public testing::Test {
   std::unique_ptr<ConsentSyncBridgeImpl> bridge_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   base::MessageLoop message_loop_;
-
-  std::string authenticated_account_id_;
 };
 
 TEST_F(ConsentSyncBridgeImplTest, ShouldCallModelReadyToSyncOnStartup) {
@@ -272,8 +262,7 @@ TEST_F(ConsentSyncBridgeImplTest,
             store_init_type = type;
             store_init_callback = std::move(callback);
           }),
-      processor()->CreateForwardingProcessor(),
-      GetAuthenticatedAccountIdCallback());
+      processor()->CreateForwardingProcessor());
 
   // Record consent before the store is initialized.
   late_init_bridge.RecordConsent(
@@ -287,8 +276,7 @@ TEST_F(ConsentSyncBridgeImplTest,
            ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(store_init_type));
   base::RunLoop().RunUntilIdle();
 
-  SetAuthenticatedAccountId("account_id");
-  late_init_bridge.OnSyncStarting();
+  late_init_bridge.OnSyncStarting(CreateActivationRequest("account_id"));
 
   // Record consent after initializaiton is done.
   late_init_bridge.RecordConsent(
@@ -323,12 +311,11 @@ TEST_F(ConsentSyncBridgeImplTest,
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
   // Reenable sync.
-  SetAuthenticatedAccountId("account_id");
   ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
   std::string storage_key;
   EXPECT_CALL(*processor(), Put(_, _, _))
       .WillOnce(WithArg<0>(SaveArg<0>(&storage_key)));
-  bridge()->OnSyncStarting();
+  bridge()->OnSyncStarting(CreateActivationRequest("account_id"));
 
   // The bridge may asynchronously query the store to choose what to resubmit.
   base::RunLoop().RunUntilIdle();
@@ -356,13 +343,11 @@ TEST_F(ConsentSyncBridgeImplTest,
             store_init_type = type;
             store_init_callback = std::move(callback);
           }),
-      processor()->CreateForwardingProcessor(),
-      GetAuthenticatedAccountIdCallback());
+      processor()->CreateForwardingProcessor());
 
   // Sync is active, but the store is not ready yet.
-  SetAuthenticatedAccountId("account_id");
   EXPECT_CALL(*processor(), ModelReadyToSync(_)).Times(0);
-  late_init_bridge.OnSyncStarting();
+  late_init_bridge.OnSyncStarting(CreateActivationRequest("account_id"));
 
   // Initialize the store.
   std::unique_ptr<ModelTypeStore> store =
@@ -414,8 +399,7 @@ TEST_F(ConsentSyncBridgeImplTest,
             store_init_type = type;
             store_init_callback = std::move(callback);
           }),
-      processor()->CreateForwardingProcessor(),
-      GetAuthenticatedAccountIdCallback());
+      processor()->CreateForwardingProcessor());
 
   // Initialize the store.
   std::unique_ptr<ModelTypeStore> store =
@@ -440,8 +424,7 @@ TEST_F(ConsentSyncBridgeImplTest,
            ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(store_init_type));
   base::RunLoop().RunUntilIdle();
 
-  SetAuthenticatedAccountId("account_id");
-  late_init_bridge.OnSyncStarting();
+  late_init_bridge.OnSyncStarting(CreateActivationRequest("account_id"));
 
   std::string storage_key;
   EXPECT_CALL(*processor(), Put(_, _, _))
@@ -456,7 +439,7 @@ TEST_F(ConsentSyncBridgeImplTest,
 
 TEST_F(ConsentSyncBridgeImplTest,
        ShouldResubmitPersistedConsentOnlyIfSameAccount) {
-  SetAuthenticatedAccountId("first_account");
+  // This consent is being recorded while sync is stopped.
   UserConsentSpecifics user_consent_specifics(
       CreateSpecifics(/*client_consent_time_usec=*/2u));
   user_consent_specifics.set_account_id("first_account");
@@ -474,13 +457,11 @@ TEST_F(ConsentSyncBridgeImplTest,
               ElementsAre(Pair(_, MatchesUserConsent(user_consent_specifics))));
 
   // A new user signs in and enables sync.
-  SetAuthenticatedAccountId("second_account");
-
   // The previous account consent should not be resubmited, because the new sync
   // account is different.
   EXPECT_CALL(*processor(), Put(_, _, _)).Times(0);
   ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
-  bridge()->OnSyncStarting();
+  bridge()->OnSyncStarting(CreateActivationRequest("second_account"));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(
@@ -488,13 +469,10 @@ TEST_F(ConsentSyncBridgeImplTest,
       Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
   base::RunLoop().RunUntilIdle();
 
-  // The previous user signs in again and enables sync.
-  SetAuthenticatedAccountId("first_account");
-
   std::string storage_key;
   EXPECT_CALL(*processor(), Put(_, _, _))
       .WillOnce(WithArg<0>(SaveArg<0>(&storage_key)));
-  bridge()->OnSyncStarting();
+  bridge()->OnSyncStarting(CreateActivationRequest("first_account"));
   // The bridge may asynchronously query the store to choose what to resubmit.
   base::RunLoop().RunUntilIdle();
 

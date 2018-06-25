@@ -16,7 +16,6 @@
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
-#include "components/sync/engine/data_type_activation_request.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/model_impl/processor_entity_tracker.h"
@@ -80,12 +79,13 @@ void ClientTagBasedModelTypeProcessor::OnSyncStarting(
   DCHECK(start_callback);
   DVLOG(1) << "Sync is starting for " << ModelTypeToString(type_);
 
+  start_callback_ = std::move(start_callback);
+  activation_request_ = request;
+
   // Notify the bridge sync is starting before calling the |start_callback_|
   // which in turn creates the worker.
-  bridge_->OnSyncStarting();
+  bridge_->OnSyncStarting(request);
 
-  error_handler_ = request.error_handler;
-  start_callback_ = std::move(start_callback);
   ConnectIfReady();
 }
 
@@ -146,7 +146,7 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
     return;
 
   if (model_error_) {
-    error_handler_.Run(model_error_.value());
+    activation_request_.error_handler.Run(model_error_.value());
   } else {
     auto activation_response = std::make_unique<DataTypeActivationResponse>();
     activation_response->model_type_state = model_type_state_;
@@ -241,10 +241,10 @@ void ClientTagBasedModelTypeProcessor::ReportError(const ModelError& error) {
   if (start_callback_) {
     // Tell sync about the error instead of connecting.
     ConnectIfReady();
-  } else if (error_handler_) {
+  } else if (activation_request_.error_handler) {
     // Connecting was already initiated; just tell sync about the error instead
     // of going through ConnectIfReady().
-    error_handler_.Run(error);
+    activation_request_.error_handler.Run(error);
   }
 }
 
@@ -1054,7 +1054,7 @@ void ClientTagBasedModelTypeProcessor::ResetState(
   worker_.reset();
   model_error_.reset();
   start_callback_ = StartCallback();
-  error_handler_ = ModelErrorHandler();
+  activation_request_ = DataTypeActivationRequest();
   cached_gc_directive_version_ = 0;
   cached_gc_directive_aged_out_day_ = base::Time::FromDoubleT(0);
 

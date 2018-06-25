@@ -21,7 +21,6 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
 
@@ -49,10 +48,6 @@ ConsentAuditorFactory::ConsentAuditorFactory()
     : BrowserStateKeyedServiceFactory(
           "ConsentAuditor",
           BrowserStateDependencyManager::GetInstance()) {
-  // TODO(crbug.com/850428): This is missing
-  // DependsOn(ProfileSyncServiceFactory::GetInstance()), which we can't
-  // simply add because ProfileSyncServiceFactory itself depends on this
-  // factory.
   DependsOn(IOSUserEventServiceFactory::GetInstance());
 }
 
@@ -77,17 +72,8 @@ std::unique_ptr<KeyedService> ConsentAuditorFactory::BuildServiceInstanceFor(
             syncer::USER_CONSENTS,
             base::BindRepeating(&syncer::ReportUnrecoverableError,
                                 ::GetChannel()));
-    syncer::SyncService* sync_service =
-        ProfileSyncServiceFactory::GetForBrowserState(
-            ios::ChromeBrowserState::FromBrowserState(browser_state));
     bridge = std::make_unique<syncer::ConsentSyncBridgeImpl>(
-        std::move(store_factory), std::move(change_processor),
-        /*authenticated_account_id_callback=*/
-        base::BindRepeating(
-            [](syncer::SyncService* sync_service) {
-              return sync_service->GetAuthenticatedAccountInfo().account_id;
-            },
-            sync_service));
+        std::move(store_factory), std::move(change_processor));
   }
 
   return std::make_unique<consent_auditor::ConsentAuditor>(

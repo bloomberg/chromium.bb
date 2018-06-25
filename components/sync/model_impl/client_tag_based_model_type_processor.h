@@ -21,6 +21,7 @@
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/data_batch.h"
+#include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
@@ -253,9 +254,8 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // Stores the start callback in between OnSyncStarting() and ReadyToConnect().
   StartCallback start_callback_;
 
-  // The callback used for informing sync of errors; will be non-null after
-  // OnSyncStarting has been called.
-  ModelErrorHandler error_handler_;
+  // The request context passed in as part of OnSyncStarting().
+  DataTypeActivationRequest activation_request_;
 
   // Reference to the CommitQueue.
   //

@@ -112,7 +112,7 @@ class UserEventServiceImplTest : public testing::Test {
   std::unique_ptr<UserEventSyncBridge> MakeBridge() {
     return std::make_unique<UserEventSyncBridge>(
         ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest(),
-        mock_processor_.CreateForwardingProcessor(), &mapper_, &sync_service_);
+        mock_processor_.CreateForwardingProcessor(), &mapper_);
   }
 
   TestSyncService* sync_service() { return &sync_service_; }

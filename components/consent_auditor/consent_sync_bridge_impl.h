@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/consent_auditor/consent_sync_bridge.h"
@@ -26,12 +25,11 @@ class ConsentSyncBridgeImpl : public ConsentSyncBridge,
  public:
   ConsentSyncBridgeImpl(
       OnceModelTypeStoreFactory store_factory,
-      std::unique_ptr<ModelTypeChangeProcessor> change_processor,
-      base::RepeatingCallback<std::string()> authenticated_account_id_callback);
+      std::unique_ptr<ModelTypeChangeProcessor> change_processor);
   ~ConsentSyncBridgeImpl() override;
 
   // ModelTypeSyncBridge implementation.
-  void OnSyncStarting() override;
+  void OnSyncStarting(const DataTypeActivationRequest& request) override;
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
   base::Optional<ModelError> MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
@@ -89,9 +87,8 @@ class ConsentSyncBridgeImpl : public ConsentSyncBridge,
   std::vector<std::unique_ptr<sync_pb::UserConsentSpecifics>>
       deferred_consents_while_initializing_;
 
-  base::RepeatingCallback<std::string()> authenticated_account_id_callback_;
-
-  bool is_sync_starting_or_started_;
+  // Empty if sync not running.
+  std::string syncing_account_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsentSyncBridgeImpl);
 };

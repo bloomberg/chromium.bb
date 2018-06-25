@@ -67,7 +67,7 @@ KeyedService* UserEventServiceFactory::BuildServiceInstanceFor(
                               chrome::GetChannel()));
   auto bridge = std::make_unique<syncer::UserEventSyncBridge>(
       std::move(store_factory), std::move(change_processor),
-      sync_service->GetGlobalIdMapper(), sync_service);
+      sync_service->GetGlobalIdMapper());
   return new syncer::UserEventServiceImpl(sync_service, std::move(bridge));
 }
 
