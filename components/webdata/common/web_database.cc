@@ -17,6 +17,9 @@ const int WebDatabase::kCurrentVersionNumber = 78;
 
 const int WebDatabase::kDeprecatedVersionNumber = 51;
 
+const base::FilePath::CharType WebDatabase::kInMemoryPath[] =
+    FILE_PATH_LITERAL(":memory");
+
 namespace {
 
 const int kCompatibleVersionNumber = 78;
@@ -89,8 +92,10 @@ sql::InitStatus WebDatabase::Init(const base::FilePath& db_name) {
   // database while we're running, and this will give somewhat improved perf.
   db_.set_exclusive_locking();
 
-  if (!db_.Open(db_name))
+  if ((db_name.value() == kInMemoryPath) ? !db_.OpenInMemory()
+                                         : !db_.Open(db_name)) {
     return sql::INIT_FAILURE;
+  }
 
   // Clobber really old databases.
   static_assert(kDeprecatedVersionNumber < kCurrentVersionNumber,

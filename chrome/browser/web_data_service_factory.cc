@@ -37,6 +37,9 @@ ProfileErrorType ProfileErrorFromWebDataServiceWrapperError(
     case WebDataServiceWrapper::ERROR_LOADING_AUTOFILL:
       return ProfileErrorType::DB_AUTOFILL_WEB_DATA;
 
+    case WebDataServiceWrapper::ERROR_LOADING_ACCOUNT_AUTOFILL:
+      return ProfileErrorType::DB_ACCOUNT_AUTOFILL_WEB_DATA;
+
     case WebDataServiceWrapper::ERROR_LOADING_KEYWORD:
       return ProfileErrorType::DB_KEYWORD_WEB_DATA;
 
@@ -109,7 +112,19 @@ WebDataServiceFactory::GetAutofillWebDataForProfile(
   WebDataServiceWrapper* wrapper =
       WebDataServiceFactory::GetForProfile(profile, access_type);
   // |wrapper| can be null in Incognito mode.
-  return wrapper ? wrapper->GetAutofillWebData()
+  return wrapper ? wrapper->GetProfileAutofillWebData()
+                 : scoped_refptr<autofill::AutofillWebDataService>(nullptr);
+}
+
+// static
+scoped_refptr<autofill::AutofillWebDataService>
+WebDataServiceFactory::GetAutofillWebDataForAccount(
+    Profile* profile,
+    ServiceAccessType access_type) {
+  WebDataServiceWrapper* wrapper =
+      WebDataServiceFactory::GetForProfile(profile, access_type);
+  // |wrapper| can be null in Incognito mode.
+  return wrapper ? wrapper->GetAccountAutofillWebData()
                  : scoped_refptr<autofill::AutofillWebDataService>(nullptr);
 }
 

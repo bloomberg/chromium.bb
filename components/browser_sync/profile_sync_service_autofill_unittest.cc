@@ -359,7 +359,7 @@ class ProfileSyncServiceAutofillTest
         new TokenWebDataServiceFake(base::ThreadTaskRunnerHandle::Get(),
                                     data_type_thread()->task_runner()));
     web_data_service_ = static_cast<WebDataServiceFake*>(
-        web_data_wrapper_->GetAutofillWebData().get());
+        web_data_wrapper_->GetProfileAutofillWebData().get());
     web_data_service_->SetDatabase(web_database_.get());
 
     personal_data_manager_ = std::make_unique<MockPersonalDataManager>();

@@ -49,6 +49,11 @@ class WebDataServiceFactory : public BrowserContextKeyedServiceFactory {
   static scoped_refptr<autofill::AutofillWebDataService>
   GetAutofillWebDataForProfile(Profile* profile, ServiceAccessType access_type);
 
+  // Returns the account-scoped AutofillWebDataService associated with the
+  // |profile|.
+  static scoped_refptr<autofill::AutofillWebDataService>
+  GetAutofillWebDataForAccount(Profile* profile, ServiceAccessType access_type);
+
   // Returns the KeywordWebDataService associated with the |profile|.
   static scoped_refptr<KeywordWebDataService> GetKeywordWebDataForProfile(
       Profile* profile,

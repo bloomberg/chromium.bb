@@ -8,16 +8,13 @@
 #include <map>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "components/webdata/common/web_database_table.h"
 #include "components/webdata/common/webdata_export.h"
 #include "sql/connection.h"
 #include "sql/init_status.h"
 #include "sql/meta_table.h"
-
-namespace base {
-class FilePath;
-}
 
 // This class manages a SQLite database that stores various web page meta data.
 class WEBDATA_EXPORT WebDatabase {
@@ -30,6 +27,8 @@ class WEBDATA_EXPORT WebDatabase {
   static const int kCurrentVersionNumber;
   // The newest version of the database Chrome will NOT try to migrate.
   static const int kDeprecatedVersionNumber;
+  // Use this as a path to create an in-memory database.
+  static const base::FilePath::CharType kInMemoryPath[];
 
   WebDatabase();
   virtual ~WebDatabase();
