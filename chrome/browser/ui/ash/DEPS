@@ -1,13 +1,4 @@
 include_rules = [
-  # Code under //ash runs out-of-process in mash so it must be accessed via mojo
-  # interfaces in //ash/public/interfaces. See //ash/README.md.
-  "+ash/public",
-
-  # Use //ui/wm/core/window_util.h when manipulating chrome browser windows.
-  # Consult mustash-team@ if you need to manipulate non-browser windows because
-  # those are owned by the ash process under mash. See //ash/README.md.
-  "-ash/wm/window_util.h",
-
   # ash depends on views, so code in ui/ash is allowed to depend on ui/views.
   "+chrome/browser/ui/views",
 
@@ -46,7 +37,7 @@ specific_include_rules = {
   "chrome_new_window_client\.cc": [
     "+ash/content/keyboard_overlay/keyboard_overlay_view.h",
   ],
-  # https://crbug.com/706246
+  # https://crbug.com/557397
   "chrome_screenshot_grabber.*": [
     "+ash/screenshot_delegate.h",
     "+ash/shell.h",
@@ -57,6 +48,7 @@ specific_include_rules = {
     "+ash/accessibility/accessibility_delegate.h",
     # https://crbug.com/557397
     "+ash/screenshot_delegate.h",
+    # https://crbug.com/665064
     "+ash/shell_delegate.h",
   ],
   # For ash::Shell::GetContainer (!mash)

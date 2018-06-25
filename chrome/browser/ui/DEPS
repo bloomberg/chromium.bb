@@ -13,9 +13,3 @@ include_rules = [
   "+mash/public/mojom",
   "+services/device/public/mojom",
 ]
-
-specific_include_rules = {
-  "browser_command_controller\.cc": [
-    "+ash/accelerators/accelerator_commands_classic.h",
-  ],
-}

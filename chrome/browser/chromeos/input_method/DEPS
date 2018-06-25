@@ -1,9 +1,4 @@
 include_rules = [
-  # TODO(crbug.com/678705): Convert to using mojo interfaces in
-  # //ash/public/interfaces and eliminate this.
-  "!ash",
-  # Public interfaces are OK.
-  "+ash/public",
   "-chrome",
   "+chrome/browser/chromeos/input_method",
   "+chrome/grit",
@@ -12,30 +7,44 @@ include_rules = [
 
 specific_include_rules = {
   # The configuration layer.
-  '(input_method_delegate_impl|input_method_persistence|browser_state_monitor)'
-  '\.(h|cc)': [
+  "(input_method_delegate_impl|input_method_persistence|browser_state_monitor)"
+  "\.(h|cc)": [
     "+chrome/common",
     "+chrome/browser",
     "+chrome/test",
     "+content/public",
   ],
-  # For testing.
-  '.*(_browsertest|_unittest|_test_helper|)\.(h|cc)': [
-    "+chrome/common",
-    "+chrome/browser",
-    "+chrome/test",
-    "+content/public",
+  # TODO(mash): Fix. https://crbug.com/738531
+  "candidate_window_controller_impl\.cc": [
+    "+ash/shell.h",
+    "+ash/wm/window_util.h",
   ],
+  # TODO(mash): Fix these. https://crbug.com/756059
+  "input_method_engine\.cc": [
+    "+ash/shell.h",
+  ],
+  "mode_indicator_controller\.cc": [
+    "+ash/shell.h",
+    "+ash/wm/window_util.h",
+  ],
+
   # TODO(erikwright): Bring this list to zero.
-  #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  'input_method_manager_impl\.cc': [
+  "input_method_manager_impl\.cc": [
     # TODO(erikwright): Much/all of language_preferences can/should be decoupled
     # from chrome/browser.
     "!chrome/browser/chromeos/language_preferences.h"
   ],
-  'xkeyboard_unittest\.cc': [
+
+  # For testing.
+  ".*(_browsertest|_unittest|_test_helper|)\.(h|cc)": [
+    "+chrome/common",
+    "+chrome/browser",
+    "+chrome/test",
+    "+content/public",
+  ],
+  "xkeyboard_unittest\.cc": [
     "!content/public/test/test_browser_thread.h",
   ],
 }

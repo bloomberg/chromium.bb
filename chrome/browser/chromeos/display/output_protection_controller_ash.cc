@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/display/output_protection_controller_ash.h"
 
-#include "ash/shell.h"
+#include "ash/shell.h"  // mash-ok
 
 namespace chromeos {
 

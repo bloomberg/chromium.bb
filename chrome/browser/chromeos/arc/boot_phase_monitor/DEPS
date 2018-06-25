@@ -1,6 +1,6 @@
 specific_include_rules = {
-  "automation_manager_aura\.cc": [
-    # TODO(mash): Fix. https://crbug.com/756054
+  "arc_instance_throttle\.cc": [
+    # TODO(mash): Fix. https://crbug.com/826386.
     "+ash/shell.h",
     "+ash/wm/window_util.h",
   ],

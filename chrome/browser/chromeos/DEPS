@@ -1,8 +1,4 @@
 include_rules = [
-  "-ash",
-  # Public ash interfaces are OK.
-  "+ash/public",
-
   # TODO(ananta): Remove this when we move files which display UI in
   # chrome/browser/chromeos to chrome/browser/ui/views/chromeos
   # crbug.com/728877
@@ -36,12 +32,10 @@ include_rules = [
 specific_include_rules = {
   ".*test.*": [
    "!ash",
-   "+ash/public",
   ],
   "chrome_browser_main_chromeos\.cc": [
     # TODO(mash): Support EventRewriters, http://crbug.com/647781.
     "+ash/events/event_rewriter_controller.h",
-    "+ash/root_window_controller.h",
     "+ash/shell.h",
     "+ash/sticky_keys/sticky_keys_controller.h",
   ],
