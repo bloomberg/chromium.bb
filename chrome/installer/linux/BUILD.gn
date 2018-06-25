@@ -405,6 +405,8 @@ template("linux_package") {
       deb_arch = "amd64"
     } else if (current_cpu == "arm") {
       deb_arch = "arm"
+    } else if (current_cpu == "arm64") {
+      deb_arch = "arm64"
     } else if (current_cpu == "mipsel") {
       deb_arch = "mipsel"
     } else if (current_cpu == "mips64el") {
@@ -461,6 +463,8 @@ template("linux_package") {
         rpm_arch = "x86_64"
       } else if (current_cpu == "arm") {
         rpm_arch = "arm"
+      } else if (current_cpu == "arm64") {
+        rpm_arch = "arm64"
       } else if (current_cpu == "mipsel") {
         rpm_arch = "mipsel"
       } else if (current_cpu == "mips64el") {
