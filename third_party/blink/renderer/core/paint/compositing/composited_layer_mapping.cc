@@ -59,7 +59,6 @@
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/css_mask_painter.h"
 #include "third_party/blink/renderer/core/paint/frame_paint_timing.h"
-#include "third_party/blink/renderer/core/paint/layer_clip_recorder.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
@@ -567,27 +566,63 @@ void CompositedLayerMapping::UpdateCompositingReasons() {
       owning_layer_.GetSquashingDisallowedReasons());
 }
 
+static bool InContainingBlockChain(const PaintLayer* start_layer,
+                                   const PaintLayer* end_layer) {
+  if (start_layer == end_layer)
+    return true;
+
+  LayoutView* view = start_layer->GetLayoutObject().View();
+  for (const LayoutBlock* current_block =
+           start_layer->GetLayoutObject().ContainingBlock();
+       current_block && current_block != view;
+       current_block = current_block->ContainingBlock()) {
+    if (current_block->Layer() == end_layer)
+      return true;
+  }
+
+  return false;
+}
+
 bool CompositedLayerMapping::AncestorRoundedCornersWillClip(
     const FloatRect& bounds_in_ancestor_space) const {
-  // Collect all border-radius clips between us and the state we inherited.
-  LayoutPoint zero_offset;
-  Vector<FloatRoundedRect> rounded_rect_clips;
-  LayerClipRecorder::CollectRoundedRectClips(
-      owning_layer_, clip_inheritance_ancestor_, zero_offset, true,
-      LayerClipRecorder::kDoNotIncludeSelfForBorderRadius, rounded_rect_clips);
+  // Check border-radius clips between us and the state we inherited.
+  for (const PaintLayer* layer = owning_layer_.Parent(); layer;
+       layer = layer->Parent()) {
+    // Check clips for embedded content despite their lack of overflow,
+    // because in practice they do need to clip. However, the clip is only
+    // used when painting child clipping masks to avoid clipping out border
+    // decorations.
+    if ((layer->GetLayoutObject().HasOverflowClip() ||
+         layer->GetLayoutObject().IsLayoutEmbeddedContent()) &&
+        layer->GetLayoutObject().Style()->HasBorderRadius() &&
+        InContainingBlockChain(&owning_layer_, layer)) {
+      LayoutPoint delta;
+      layer->ConvertToLayerCoords(clip_inheritance_ancestor_, delta);
 
-  for (auto clip_rect : rounded_rect_clips) {
-    FloatRect inner_clip_rect = clip_rect.RadiusCenterRect();
-    // The first condition catches cases where the child is certainly inside
-    // the rounded corner portion of the border, and cannot be clipped by
-    // the rounded portion. The second catches cases where the child is
-    // entirely outside the rectangular border (ignoring rounded corners) so
-    // is also unaffected by the rounded corners. In both cases the existing
-    // rectangular clip is adequate and the mask is unnecessary.
-    if (!inner_clip_rect.Contains(bounds_in_ancestor_space) &&
-        bounds_in_ancestor_space.Intersects(clip_rect.Rect())) {
-      return true;
+      // The PaintLayer's size is pixel-snapped if it is a LayoutBox. We can't
+      // use a pre-snapped border rect for clipping, since
+      // getRoundedInnerBorderFor assumes it has not been snapped yet.
+      LayoutSize size(layer->GetLayoutBox()
+                          ? ToLayoutBox(layer->GetLayoutObject()).Size()
+                          : LayoutSize(layer->Size()));
+      auto clip_rect =
+          layer->GetLayoutObject().StyleRef().GetRoundedInnerBorderFor(
+              LayoutRect(delta, size));
+      auto inner_clip_rect = clip_rect.RadiusCenterRect();
+
+      // The first condition catches cases where the child is certainly inside
+      // the rounded corner portion of the border, and cannot be clipped by
+      // the rounded portion. The second catches cases where the child is
+      // entirely outside the rectangular border (ignoring rounded corners) so
+      // is also unaffected by the rounded corners. In both cases the existing
+      // rectangular clip is adequate and the mask is unnecessary.
+      if (!inner_clip_rect.Contains(bounds_in_ancestor_space) &&
+          bounds_in_ancestor_space.Intersects(clip_rect.Rect())) {
+        return true;
+      }
     }
+    if (layer == clip_inheritance_ancestor_)
+      break;
   }
   return false;
 }
@@ -1099,7 +1134,7 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
   // We can't squashing_layer_->SetOffsetFromLayoutObject().
   // Squashing layer has special paint and invalidation logic that already
   // compensated for compositing bounds, setting it here would end up
-  // double adjustment. The value is stored to be used by SPv175.
+  // double adjustment.
   auto new_offset = squash_layer_bounds.Location() -
                     snapped_offset_from_composited_ancestor +
                     ToIntSize(graphics_layer_parent_location);
