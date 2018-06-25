@@ -20,22 +20,7 @@
         {
           "object": "Scrolling Contents Layer",
           "rect": [0, 0, 939, 235],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [10, 8, 920, 212],
-          "reason": "paint property change"
-        },
-        {
-          "object": "Scrolling Contents Layer",
-          "rect": [0, 0, 600, 235],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [168, 8, 423, 227],
-          "reason": "paint property change"
+          "reason": "full layer"
         }
       ],
       "transform": 1
@@ -154,12 +139,7 @@
         {
           "object": "Scrolling Contents Layer",
           "rect": [0, 0, 939, 235],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [10, 8, 920, 212],
-          "reason": "paint property change"
+          "reason": "full layer"
         }
       ],
       "transform": 1
@@ -278,22 +258,7 @@
         {
           "object": "Scrolling Contents Layer",
           "rect": [0, 0, 400, 600],
-          "reason": "paint property change"
-        },
-        {
-          "object": "Scrolling Contents Layer",
-          "rect": [0, 0, 400, 235],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [10, 8, 390, 212],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [39, 8, 352, 562],
-          "reason": "paint property change"
+          "reason": "full layer"
         }
       ]
     }
