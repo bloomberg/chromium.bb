@@ -63,7 +63,8 @@ class MockKeyboardDelegate : public exo::KeyboardDelegate {
   MOCK_METHOD1(OnKeyboardDestroying, void(exo::Keyboard*));
   MOCK_CONST_METHOD1(CanAcceptKeyboardEventsForSurface, bool(exo::Surface*));
   MOCK_METHOD2(OnKeyboardEnter,
-               void(exo::Surface*, const base::flat_set<ui::DomCode>&));
+               void(exo::Surface*,
+                    const base::flat_map<ui::DomCode, ui::DomCode>&));
   MOCK_METHOD1(OnKeyboardLeave, void(exo::Surface*));
   MOCK_METHOD3(OnKeyboardKey, uint32_t(base::TimeTicks, ui::DomCode, bool));
   MOCK_METHOD1(OnKeyboardModifiers, void(int));
@@ -529,6 +530,8 @@ TEST_F(ArcNotificationContentViewTest, AcceptInputTextWithActivate) {
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   EXPECT_CALL(delegate, OnKeyboardKey(testing::_, ui::DomCode::US_A, true));
+  seat.set_physical_code_for_currently_processing_event_for_testing(
+      ui::DomCode::US_A);
   generator.PressKey(ui::VKEY_A, 0);
 
   keyboard.reset();
@@ -553,6 +556,8 @@ TEST_F(ArcNotificationContentViewTest, NotAcceptInputTextWithoutActivate) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   EXPECT_CALL(delegate, OnKeyboardKey(testing::_, testing::_, testing::_))
       .Times(0);
+  seat.set_physical_code_for_currently_processing_event_for_testing(
+      ui::DomCode::US_A);
   generator.PressKey(ui::VKEY_A, 0);
 
   keyboard.reset();

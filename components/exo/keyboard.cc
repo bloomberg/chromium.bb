@@ -241,11 +241,13 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
   }
 
   switch (event->type()) {
-    case ui::ET_KEY_PRESSED:
-      // Process key press event if not already handled and not
-      // already pressed.
-      if (!consumed_by_ime && !event->handled() &&
-          pressed_keys_.insert(event->code()).second) {
+    case ui::ET_KEY_PRESSED: {
+      // Process key press event if not already handled and not already pressed.
+      auto it = pressed_keys_.find(
+          seat_->physical_code_for_currently_processing_event());
+      if (it == pressed_keys_.end() && !consumed_by_ime && !event->handled() &&
+          seat_->physical_code_for_currently_processing_event() !=
+              ui::DomCode::NONE) {
         uint32_t serial =
             delegate_->OnKeyboardKey(event->time_stamp(), event->code(), true);
         if (are_keyboard_key_acks_needed_) {
@@ -255,13 +257,24 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
                             expiration_delay_for_pending_key_acks_}});
           event->SetHandled();
         }
+        // Keep track of both the physical code and potentially re-written
+        // code that this event generated.
+        pressed_keys_.insert(
+            {seat_->physical_code_for_currently_processing_event(),
+             event->code()});
       }
-      break;
-    case ui::ET_KEY_RELEASED:
+    } break;
+    case ui::ET_KEY_RELEASED: {
       // Process key release event if currently pressed.
-      if (pressed_keys_.erase(event->code())) {
+      auto it = pressed_keys_.find(
+          seat_->physical_code_for_currently_processing_event());
+      if (it != pressed_keys_.end()) {
+        // We use the code that was generate when the physical key was
+        // pressed rather than the current event code. This allows events
+        // to be re-written before dispatch, while still allowing the
+        // client to track the state of the physical keyboard.
         uint32_t serial =
-            delegate_->OnKeyboardKey(event->time_stamp(), event->code(), false);
+            delegate_->OnKeyboardKey(event->time_stamp(), it->second, false);
         if (are_keyboard_key_acks_needed_) {
           pending_key_acks_.insert(
               {serial,
@@ -269,8 +282,9 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
                             expiration_delay_for_pending_key_acks_}});
           event->SetHandled();
         }
+        pressed_keys_.erase(it);
       }
-      break;
+    } break;
     default:
       NOTREACHED();
       break;

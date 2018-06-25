@@ -111,8 +111,10 @@ class Keyboard : public ui::EventHandler,
   // The current focus surface for the keyboard.
   Surface* focus_ = nullptr;
 
-  // Set of currently pressed keys.
-  base::flat_set<ui::DomCode> pressed_keys_;
+  // Set of currently pressed keys. First value is a platform code and second
+  // value is the code that was delivered to client. See Seat.h for more
+  // details.
+  base::flat_map<ui::DomCode, ui::DomCode> pressed_keys_;
 
   // Current set of modifier flags.
   int modifier_flags_ = 0;
