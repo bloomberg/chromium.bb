@@ -694,6 +694,25 @@ public class ObservableAndControllerTest {
         assertThat(result, contains("it worked!"));
     }
 
+    @Test
+    public void testSetWithDuplicateValueIsNoOp() {
+        Controller<String> controller = new Controller<>();
+        ReactiveRecorder recorder = ReactiveRecorder.record(controller);
+        controller.set("stop copying me");
+        controller.set("stop copying me");
+        recorder.verify().entered("stop copying me").end();
+    }
+
+    @Test
+    public void testSetUnitControllerInActivatedStateIsNoOp() {
+        Controller<Unit> controller = new Controller<>();
+        ReactiveRecorder recorder = ReactiveRecorder.record(controller);
+        controller.set(Unit.unit());
+        recorder.verify().entered(Unit.unit()).end();
+        controller.set(Unit.unit());
+        recorder.verify().end();
+    }
+
     // Any Scope's constructor whose parameters match the scope can be used as a method reference.
     private static class TransitionLogger implements Scope {
         public static final List<String> sResult = new ArrayList<>();
