@@ -60,6 +60,10 @@ def GetArgumentParser(doc=__doc__):
                       help='Force cleaning existing installations')
   parser.add_argument('--write-full-results-to', metavar='FILENAME',
                       help='Path to write the list of full results to.')
+  # Here to satisfy the isolated script test interface. See
+  # //testing/scripts/run_isolated_script_test.py
+  parser.add_argument('--test-list', metavar='FILENAME',
+                      help='File path containing the list of tests to run.')
   parser.add_argument('test', nargs='*',
                       help='Name(s) of tests to run.')
 
@@ -499,7 +503,16 @@ def GetAbsoluteConfigPath(path):
 
 
 def DoMain():
-  args = GetArgumentParser().parse_args()
+  parser = GetArgumentParser()
+  args = parser.parse_args()
+
+  tests_to_run = args.test
+  if args.test_list:
+    if tests_to_run:
+      parser.error('cannot specify both --test-list and |test|')
+
+    with open(args.test_list) as f:
+      tests_to_run = [test.strip() for test in f.readlines()]
 
   # Due to what looks like a bug the root handlers need to be cleared out
   # so the right handler will be created.
@@ -540,7 +553,7 @@ def DoMain():
     test_name = '%s.%s.%s' % (InstallerTest.__module__,
                               InstallerTest.__name__,
                               test['name'])
-    if not args.test or test_name in args.test:
+    if not tests_to_run or test_name in tests_to_run:
       suite.addTest(InstallerTest(test['name'], test['traversal'], config,
                                   variable_expander))
 
