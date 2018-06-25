@@ -30,8 +30,11 @@ import org.chromium.base.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,6 +51,24 @@ public class UiUtils {
     public static final String EXTERNAL_IMAGE_FILE_PATH = "browser-images";
     // Keep this variable in sync with the value defined in file_paths.xml.
     public static final String IMAGE_FILE_PATH = "images";
+
+    /**
+     * A static map of manufacturers to the version where theming Android UI is completely
+     * supported. If there is no entry, it means the manufacturer supports theming at the same
+     * version Android did.
+     */
+    private static final Map<String, Integer> sAndroidUiThemeBlacklist = new HashMap<>();
+    static {
+        // Xiaomi doesn't support SYSTEM_UI_FLAG_LIGHT_STATUS_BAR until Android N; more info at
+        // https://crbug.com/823264.
+        sAndroidUiThemeBlacklist.put("xiaomi", Build.VERSION_CODES.N);
+        // HTC doesn't respect theming flags on activity restart until Android O; this affects both
+        // the system nav and status bar. More info at https://crbug.com/831737.
+        sAndroidUiThemeBlacklist.put("htc", Build.VERSION_CODES.O);
+    }
+
+    /** Whether theming the Android system UI has been disabled. */
+    private static Boolean sSystemUiThemingDisabled;
 
     /**
      * Guards this class from being instantiated.
@@ -500,5 +521,20 @@ public class UiUtils {
             }
         }
         return indexInParent;
+    }
+
+    /**
+     * @return Whether the support for theming on a particular device has been completely disabled
+     *         due to lack of support by the OEM.
+     */
+    public static boolean isSystemUiThemingDisabled() {
+        if (sSystemUiThemingDisabled == null) {
+            sSystemUiThemingDisabled = false;
+            if (sAndroidUiThemeBlacklist.containsKey(Build.MANUFACTURER.toLowerCase(Locale.US))) {
+                sSystemUiThemingDisabled = Build.VERSION.SDK_INT
+                        < sAndroidUiThemeBlacklist.get(Build.MANUFACTURER.toLowerCase(Locale.US));
+            }
+        }
+        return sSystemUiThemingDisabled;
     }
 }
