@@ -41,6 +41,15 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
 #if BUILDFLAG(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanImplementation> CreateVulkanImplementation()
       override;
+  scoped_refptr<gfx::NativePixmap> CreateNativePixmapForVulkan(
+      gfx::AcceleratedWidget widget,
+      gfx::Size size,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
+      const gpu::VulkanFunctionPointers* vulkan_function_pointers,
+      VkDevice vk_device,
+      VkDeviceMemory* vk_device_memory,
+      VkImage* vk_image) override;
 #endif
 
   std::unique_ptr<OverlaySurface> CreateOverlaySurface(

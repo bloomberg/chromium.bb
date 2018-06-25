@@ -29,7 +29,11 @@
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/vulkan/vulkan_function_pointers.h"
 #include "ui/ozone/platform/drm/gpu/vulkan_implementation_gbm.h"
+#if defined(OS_CHROMEOS)
+#include <vulkan/vulkan_intel.h>
+#endif
 #endif
 
 namespace ui {
@@ -135,6 +139,60 @@ std::unique_ptr<gpu::VulkanImplementation>
 GbmSurfaceFactory::CreateVulkanImplementation() {
   return std::make_unique<ui::VulkanImplementationGbm>();
 }
+
+scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
+    gfx::AcceleratedWidget widget,
+    gfx::Size size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    const gpu::VulkanFunctionPointers* vulkan_function_pointers,
+    VkDevice vk_device,
+    VkDeviceMemory* vk_device_memory,
+    VkImage* vk_image) {
+#if defined(OS_CHROMEOS)
+  scoped_refptr<GbmBuffer> buffer = drm_thread_proxy_->CreateBuffer(
+      widget, size, format, usage, GbmBuffer::kFlagNoModifiers);
+  if (!buffer.get())
+    return nullptr;
+
+  PFN_vkCreateDmaBufImageINTEL create_dma_buf_image_intel =
+      reinterpret_cast<PFN_vkCreateDmaBufImageINTEL>(
+          vulkan_function_pointers->vkGetDeviceProcAddr(
+              vk_device, "vkCreateDmaBufImageINTEL"));
+  if (!create_dma_buf_image_intel) {
+    LOG(ERROR) << "Scanout buffers can only be imported into vulkan when "
+                  "vkCreateDmaBufImageINTEL is available.";
+    return nullptr;
+  }
+
+  DCHECK(buffer->AreFdsValid());
+  DCHECK_EQ(buffer->GetFdCount(), 1U);
+
+  base::ScopedFD vk_image_fd(dup(buffer->GetFd(0)));
+  DCHECK(vk_image_fd.is_valid());
+
+  VkDmaBufImageCreateInfo dma_buf_image_create_info = {
+      .sType = static_cast<VkStructureType>(
+          VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_CREATE_INFO_INTEL),
+      .fd = vk_image_fd.release(),
+      .format = VK_FORMAT_B8G8R8A8_SRGB,
+      .extent = (VkExtent3D){size.width(), size.height(), 1},
+      .strideInBytes = buffer->GetStride(0),
+  };
+
+  VkResult result =
+      create_dma_buf_image_intel(vk_device, &dma_buf_image_create_info, nullptr,
+                                 vk_device_memory, vk_image);
+  if (result != VK_SUCCESS) {
+    LOG(ERROR) << "Failed to create a Vulkan image from a dmabuf.";
+    return nullptr;
+  }
+
+  return base::MakeRefCounted<GbmPixmap>(this, buffer);
+#else
+  return nullptr;
+#endif
+}
 #endif
 
 std::unique_ptr<OverlaySurface> GbmSurfaceFactory::CreateOverlaySurface(
@@ -162,8 +220,8 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  scoped_refptr<GbmBuffer> buffer =
-      drm_thread_proxy_->CreateBuffer(widget, size, format, usage);
+  scoped_refptr<GbmBuffer> buffer = drm_thread_proxy_->CreateBuffer(
+      widget, size, format, usage, 0 /* flags */);
   if (!buffer.get())
     return nullptr;
 

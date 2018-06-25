@@ -70,6 +70,7 @@ class DrmThread : public base::Thread,
                     const gfx::Size& size,
                     gfx::BufferFormat format,
                     gfx::BufferUsage usage,
+                    uint32_t flags,
                     scoped_refptr<GbmBuffer>* buffer);
   void CreateBufferFromFds(gfx::AcceleratedWidget widget,
                            const gfx::Size& size,

@@ -119,6 +119,7 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
                              const gfx::Size& size,
                              gfx::BufferFormat format,
                              gfx::BufferUsage usage,
+                             uint32_t client_flags,
                              scoped_refptr<GbmBuffer>* buffer) {
   scoped_refptr<GbmDevice> gbm =
       static_cast<GbmDevice*>(device_manager_->GetDrmDevice(widget).get());
@@ -169,7 +170,8 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
   // buffer in that case.
   bool retry_without_scanout = usage != gfx::BufferUsage::SCANOUT;
   do {
-    if (modifiers.size() > 0 && !(flags & GBM_BO_USE_LINEAR))
+    if (modifiers.size() > 0 && !(flags & GBM_BO_USE_LINEAR) &&
+        !(client_flags & GbmBuffer::kFlagNoModifiers))
       *buffer = GbmBuffer::CreateBufferWithModifiers(gbm, fourcc_format, size,
                                                      flags, modifiers);
     else

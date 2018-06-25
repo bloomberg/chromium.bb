@@ -35,7 +35,8 @@ class DrmThreadProxy {
   scoped_refptr<GbmBuffer> CreateBuffer(gfx::AcceleratedWidget widget,
                                         const gfx::Size& size,
                                         gfx::BufferFormat format,
-                                        gfx::BufferUsage usage);
+                                        gfx::BufferUsage usage,
+                                        uint32_t flags);
 
   scoped_refptr<GbmBuffer> CreateBufferFromFds(
       gfx::AcceleratedWidget widget,
