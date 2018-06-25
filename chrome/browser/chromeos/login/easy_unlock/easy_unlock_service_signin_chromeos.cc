@@ -167,8 +167,10 @@ EasyUnlockServiceSignin::UserData::UserData()
 
 EasyUnlockServiceSignin::UserData::~UserData() {}
 
-EasyUnlockServiceSignin::EasyUnlockServiceSignin(Profile* profile)
-    : EasyUnlockService(profile),
+EasyUnlockServiceSignin::EasyUnlockServiceSignin(
+    Profile* profile,
+    secure_channel::SecureChannelClient* secure_channel_client)
+    : EasyUnlockService(profile, secure_channel_client),
       account_id_(EmptyAccountId()),
       user_pod_last_focused_timestamp_(base::TimeTicks::Now()),
       remote_device_cache_(

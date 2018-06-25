@@ -47,6 +47,10 @@ class PrefRegistrySimple;
 
 namespace chromeos {
 
+namespace secure_channel {
+class SecureChannelClient;
+}  // namespace secure_channel
+
 class EasyUnlockAppManager;
 class EasyUnlockServiceObserver;
 class UserContext;
@@ -196,7 +200,8 @@ class EasyUnlockService : public KeyedService {
   }
 
  protected:
-  explicit EasyUnlockService(Profile* profile);
+  EasyUnlockService(Profile* profile,
+                    secure_channel::SecureChannelClient* secure_channel_client);
   ~EasyUnlockService() override;
 
   // Does a service type specific initialization.
@@ -300,6 +305,7 @@ class EasyUnlockService : public KeyedService {
   void EnsureTpmKeyPresentIfNeeded();
 
   Profile* const profile_;
+  secure_channel::SecureChannelClient* secure_channel_client_;
 
   ChromeProximityAuthClient proximity_auth_client_;
 

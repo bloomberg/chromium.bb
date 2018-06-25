@@ -219,8 +219,11 @@ class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
   DISALLOW_COPY_AND_ASSIGN(PowerMonitor);
 };
 
-EasyUnlockService::EasyUnlockService(Profile* profile)
+EasyUnlockService::EasyUnlockService(
+    Profile* profile,
+    secure_channel::SecureChannelClient* secure_channel_client)
     : profile_(profile),
+      secure_channel_client_(secure_channel_client),
       proximity_auth_client_(profile),
       bluetooth_detector_(new BluetoothDetector(this)),
       shut_down_(false),
@@ -682,12 +685,11 @@ void EasyUnlockService::SetProximityAuthDevices(
 
   if (!proximity_auth_system_) {
     PA_LOG(INFO) << "Creating ProximityAuthSystem.";
-    // TODO(crbug.com/752273): Inject a real secure_channel_client.
     proximity_auth_system_.reset(new proximity_auth::ProximityAuthSystem(
         GetType() == TYPE_SIGNIN
             ? proximity_auth::ProximityAuthSystem::SIGN_IN
             : proximity_auth::ProximityAuthSystem::SESSION_LOCK,
-        proximity_auth_client(), nullptr /* secure_channel_client */));
+        proximity_auth_client(), secure_channel_client_));
   }
 
   proximity_auth_system_->SetRemoteDevicesForUser(account_id, remote_devices,

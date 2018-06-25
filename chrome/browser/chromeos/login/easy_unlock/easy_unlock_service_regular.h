@@ -43,6 +43,10 @@ class Profile;
 
 namespace chromeos {
 
+namespace secure_channel {
+class SecureChannelClient;
+}  // namespace secure_channel
+
 class EasyUnlockNotificationController;
 
 // EasyUnlockService instance that should be used for regular, non-signin
@@ -53,13 +57,15 @@ class EasyUnlockServiceRegular
       public cryptauth::CryptAuthDeviceManager::Observer,
       public device_sync::DeviceSyncClient::Observer {
  public:
-  explicit EasyUnlockServiceRegular(
+  EasyUnlockServiceRegular(
       Profile* profile,
+      secure_channel::SecureChannelClient* secure_channel_client,
       device_sync::DeviceSyncClient* device_sync_client);
 
   // Constructor for tests.
   EasyUnlockServiceRegular(
       Profile* profile,
+      secure_channel::SecureChannelClient* secure_channel_client,
       std::unique_ptr<EasyUnlockNotificationController> notification_controller,
       device_sync::DeviceSyncClient* device_sync_client);
 
