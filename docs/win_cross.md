@@ -43,8 +43,30 @@ then you may need to re-authenticate via:
     # Follow instructions, enter 0 as project id.
     download_from_google_storage --config
 
-If you are not at Google, you'll have to figure out how to get the SDK, and
-you'll need to put a JSON file describing the SDK layout in a certain location.
+If you are not at Google, you can obtain the Windows SDK packaged in a zip
+file by running the following in a Windows machine:
+
+    cd path/to/depot_tools/win_toolchain
+    # customize the Windows SDK version numbers
+    python package_from_installed.py 2017 -w 10.0.17134.0
+
+These commands create a zip file named '<hash value>.zip'. Then, to use the
+generated file in a Linux or Mac host, the following environment variables
+need to be set:
+
+    export DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL=<path/to/sdk/zip/file>
+    export GYP_MSVS_<toolchain hash>=<hash value>
+
+`toolchain_hash` is hardcoded in src/build/vs_toolchain.py and can be found by
+setting `DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL` and running `gclient sync`:
+
+    gclient sync
+    ...
+    Running hooks:  17% (11/64) win_toolchain
+    ________ running '/usr/bin/python src/build/vs_toolchain.py update --force' in <chromium dir>
+    Windows toolchain out of date or doesn't exist, updating (Pro)...
+    current_hashes:
+    desired_hash: <toolchain hash>
 
 ## GN setup
 
