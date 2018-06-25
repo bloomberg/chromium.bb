@@ -32,6 +32,10 @@ namespace gfx {
 class NativePixmap;
 }
 
+namespace gpu {
+struct VulkanFunctionPointers;
+}
+
 namespace ui {
 
 class SurfaceOzoneCanvas;
@@ -80,6 +84,19 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   // creating surfaces that swap to a platform window.
   virtual std::unique_ptr<gpu::VulkanImplementation>
   CreateVulkanImplementation();
+
+  // Creates a scanout NativePixmap that can be rendered using Vulkan.
+  // TODO(spang): Remove this once VK_EXT_image_drm_format_modifier is
+  // available.
+  virtual scoped_refptr<gfx::NativePixmap> CreateNativePixmapForVulkan(
+      gfx::AcceleratedWidget widget,
+      gfx::Size size,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
+      const gpu::VulkanFunctionPointers* vulkan_function_pointers,
+      VkDevice vk_device,
+      VkDeviceMemory* vk_device_memory,
+      VkImage* vk_image);
 #endif
 
   // Creates an overlay surface for a platform window.

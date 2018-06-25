@@ -23,6 +23,8 @@ class GbmSurfaceFactory;
 
 class GbmBuffer : public ScanoutBuffer {
  public:
+  static constexpr uint32_t kFlagNoModifiers = 1U << 0;
+
   static scoped_refptr<GbmBuffer> CreateBuffer(
       const scoped_refptr<GbmDevice>& gbm,
       uint32_t format,

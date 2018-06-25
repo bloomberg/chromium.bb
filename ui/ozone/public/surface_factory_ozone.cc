@@ -36,6 +36,20 @@ std::unique_ptr<gpu::VulkanImplementation>
 SurfaceFactoryOzone::CreateVulkanImplementation() {
   return nullptr;
 }
+
+scoped_refptr<gfx::NativePixmap>
+SurfaceFactoryOzone::CreateNativePixmapForVulkan(
+    gfx::AcceleratedWidget widget,
+    gfx::Size size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    const gpu::VulkanFunctionPointers* vulkan_function_pointers,
+    VkDevice vk_device,
+    VkDeviceMemory* vk_device_memory,
+    VkImage* vk_image) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
 #endif
 
 std::unique_ptr<OverlaySurface> SurfaceFactoryOzone::CreateOverlaySurface(
