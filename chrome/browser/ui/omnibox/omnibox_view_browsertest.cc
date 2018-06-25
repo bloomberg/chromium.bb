@@ -445,7 +445,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_BrowserAccelerators) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PopupAccelerators) {
+// Fails on Linux.  http://crbug.com/408634
+#if defined(OS_LINUX)
+#define MAYBE_PopupAccelerators DISABLED_PopupAccelerators
+#else
+#define MAYBE_PopupAccelerators PopupAccelerators
+#endif
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_PopupAccelerators) {
   // Create a popup.
   Browser* popup = CreateBrowserForPopup(browser()->profile());
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(popup));
@@ -471,19 +478,19 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PopupAccelerators) {
       GetOmniboxViewForBrowser(popup, &omnibox_view));
 #endif
 
-  // Navigate to https://helloworld.com
-  ui_test_utils::NavigateToURL(popup, GURL("https://helloworld.com"));
+  // Set the edit text to "Hello world".
+  omnibox_view->SetUserText(ASCIIToUTF16("Hello world"));
   chrome::FocusLocationBar(popup);
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
   // Try editing the location bar text -- should be disallowed.
   ASSERT_NO_FATAL_FAILURE(SendKeyForBrowser(popup, ui::VKEY_S, 0));
-  EXPECT_EQ(ASCIIToUTF16("https://helloworld.com"), omnibox_view->GetText());
+  EXPECT_EQ(ASCIIToUTF16("Hello world"), omnibox_view->GetText());
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
   ASSERT_NO_FATAL_FAILURE(
       SendKeyForBrowser(popup, ui::VKEY_X, kCtrlOrCmdMask));
-  EXPECT_EQ(ASCIIToUTF16("https://helloworld.com"), omnibox_view->GetText());
+  EXPECT_EQ(ASCIIToUTF16("Hello world"), omnibox_view->GetText());
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
 #if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
@@ -871,13 +878,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_B, 0));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_C, 0));
 
-  // Check if RevertAll() resets the text and resets cursor position
+  // Check if RevertAll() resets the text and preserves the cursor position.
   omnibox_view->RevertAll();
   EXPECT_FALSE(omnibox_view->IsSelectAll());
   EXPECT_EQ(old_text, omnibox_view->GetText());
   omnibox_view->GetSelectionBounds(&start, &end);
-  EXPECT_EQ(11U, start);
-  EXPECT_EQ(11U, end);
+  EXPECT_EQ(3U, start);
+  EXPECT_EQ(3U, end);
 
   // Check that reverting clamps the cursor to the bounds of the new text.
   // Move the cursor to the end.

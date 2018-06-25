@@ -274,9 +274,3 @@ TEST_F(OmniboxEditModelTest, DisablePasteAndGoForLongTexts) {
       std::string(OmniboxEditModel::kMaxPasteAndGoTextLength + 1, '.'));
   EXPECT_FALSE(model()->OmniboxEditModel::CanPasteAndGo(long_text));
 }
-
-// Verify ResetDisplayUrls returns true even if omnibox text has not been
-// modified
-TEST_F(OmniboxEditModelTest, ResetOmniboxTextOnRenavigatingCurrentPage) {
-  EXPECT_TRUE(model()->ResetDisplayUrls());
-}
