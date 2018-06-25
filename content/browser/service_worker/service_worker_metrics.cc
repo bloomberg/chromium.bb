@@ -804,34 +804,6 @@ void ServiceWorkerMetrics::RecordTimeToURLJob(base::TimeDelta duration,
                                     duration);
 }
 
-void ServiceWorkerMetrics::RecordTimeToLoad(base::TimeDelta duration,
-                                            LoadSource source,
-                                            StartSituation situation) {
-  std::string name;
-  switch (source) {
-    case LoadSource::NETWORK:
-      name = "EmbeddedWorkerInstance.Start.TimeToLoad.Network";
-      UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-      RecordSuffixedMediumTimeHistogram(name, StartSituationToSuffix(situation),
-                                        duration);
-      break;
-    case LoadSource::HTTP_CACHE:
-      name = "EmbeddedWorkerInstance.Start.TimeToLoad.HttpCache";
-      UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-      RecordSuffixedMediumTimeHistogram(name, StartSituationToSuffix(situation),
-                                        duration);
-      break;
-    case LoadSource::SERVICE_WORKER_STORAGE:
-      name = "EmbeddedWorkerInstance.Start.TimeToLoad.InstalledScript";
-      UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-      RecordSuffixedMediumTimeHistogram(name, StartSituationToSuffix(situation),
-                                        duration);
-      break;
-    default:
-      NOTREACHED() << static_cast<int>(source);
-  }
-}
-
 void ServiceWorkerMetrics::RecordTimeToStartThread(base::TimeDelta duration,
                                                    StartSituation situation) {
   std::string name = "EmbeddedWorkerInstance.Start.TimeToStartThread";
@@ -893,19 +865,6 @@ void ServiceWorkerMetrics::RecordEmbeddedWorkerStartTiming(
   } else {
     RecordWaitedForRendererSetup(false);
   }
-}
-
-const char* ServiceWorkerMetrics::LoadSourceToString(LoadSource source) {
-  switch (source) {
-    case LoadSource::NETWORK:
-      return "Network";
-    case LoadSource::HTTP_CACHE:
-      return "HTTP cache";
-    case LoadSource::SERVICE_WORKER_STORAGE:
-      return "Service worker storage";
-  }
-  NOTREACHED() << static_cast<int>(source);
-  return nullptr;
 }
 
 void ServiceWorkerMetrics::RecordStartStatusAfterFailure(

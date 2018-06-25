@@ -191,10 +191,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // Called when the worker is doomed.
   void OnWorkerVersionDoomed();
 
-  // Called when the net::URLRequestJob to load the service worker script
-  // created. Not called for import scripts.
-  void OnURLJobCreatedForMainScript();
-
   // Add message to the devtools console.
   void AddMessageToConsole(blink::WebConsoleMessage::Level level,
                            const std::string& message);
