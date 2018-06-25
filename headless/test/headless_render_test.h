@@ -34,7 +34,6 @@ class GetSnapshotResult;
 
 // Base class for tests that render a particular page and verify the output.
 class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
-                           public HeadlessBrowserContext::Observer,
                            public page::ExperimentalObserver,
                            public runtime::ExperimentalObserver,
                            public TestInMemoryProtocolHandler::RequestDeferrer {
@@ -118,11 +117,6 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
   bool GetEnableBeginFrameControl() override;
   void PostRunAsynchronousTest() override;
   ProtocolHandlerMap GetProtocolHandlers() override;
-
-  // HeadlessBrowserContext::Observer
-  void UrlRequestFailed(net::URLRequest* request,
-                        int net_error,
-                        DevToolsStatus devtools_status) override;
 
   // page::ExperimentalObserver implementation:
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override;

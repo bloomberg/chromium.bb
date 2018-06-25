@@ -83,7 +83,6 @@ HeadlessBrowserContextImpl::HeadlessBrowserContextImpl(
     : browser_(browser),
       context_options_(std::move(context_options)),
       resource_context_(std::make_unique<HeadlessResourceContext>()),
-      should_remove_headers_(true),
       permission_manager_(std::make_unique<HeadlessPermissionManager>(this)) {
   InitWhileIOAllowed();
 }
@@ -91,13 +90,6 @@ HeadlessBrowserContextImpl::HeadlessBrowserContextImpl(
 HeadlessBrowserContextImpl::~HeadlessBrowserContextImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   NotifyWillBeDestroyed(this);
-
-  // Inform observers that we're going away.
-  {
-    base::AutoLock lock(observers_lock_);
-    for (auto& observer : observers_)
-      observer.OnHeadlessBrowserContextDestruct();
-  }
 
   // Destroy all web contents before shutting down storage partitions.
   web_contents_map_.clear();
@@ -362,43 +354,8 @@ const HeadlessBrowserContextOptions* HeadlessBrowserContextImpl::options()
   return context_options_.get();
 }
 
-void HeadlessBrowserContextImpl::SetRemoveHeaders(bool should_remove_headers) {
-  should_remove_headers_ = should_remove_headers;
-}
-
-bool HeadlessBrowserContextImpl::ShouldRemoveHeaders() const {
-  return should_remove_headers_;
-}
-
 const std::string& HeadlessBrowserContextImpl::Id() const {
   return UniqueId();
-}
-
-void HeadlessBrowserContextImpl::AddObserver(Observer* obs) {
-  base::AutoLock lock(observers_lock_);
-  observers_.AddObserver(obs);
-}
-
-void HeadlessBrowserContextImpl::RemoveObserver(Observer* obs) {
-  base::AutoLock lock(observers_lock_);
-  observers_.RemoveObserver(obs);
-}
-
-void HeadlessBrowserContextImpl::NotifyUrlRequestFailed(
-    net::URLRequest* request,
-    int net_error,
-    DevToolsStatus devtools_status) {
-  base::AutoLock lock(observers_lock_);
-  for (auto& observer : observers_)
-    observer.UrlRequestFailed(request, net_error, devtools_status);
-}
-
-void HeadlessBrowserContextImpl::NotifyMetadataForResource(const GURL& url,
-                                                           net::IOBuffer* buf,
-                                                           int buf_len) {
-  base::AutoLock lock(observers_lock_);
-  for (auto& observer : observers_)
-    observer.OnMetadataForResource(url, buf, buf_len);
 }
 
 void HeadlessBrowserContextImpl::SetNetworkConditions(
@@ -509,13 +466,6 @@ HeadlessBrowserContext::Builder&
 HeadlessBrowserContext::Builder::SetOverrideWebPreferencesCallback(
     base::RepeatingCallback<void(WebPreferences*)> callback) {
   options_->override_web_preferences_callback_ = std::move(callback);
-  return *this;
-}
-
-HeadlessBrowserContext::Builder&
-HeadlessBrowserContext::Builder::SetCaptureResourceMetadata(
-    bool capture_resource_metadata) {
-  options_->capture_resource_metadata_ = capture_resource_metadata;
   return *this;
 }
 

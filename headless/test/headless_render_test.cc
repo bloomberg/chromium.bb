@@ -337,15 +337,6 @@ gfx::Size HeadlessRenderTest::GetEmulatedWindowSize() {
   return gfx::Size(800, 600);
 }
 
-void HeadlessRenderTest::UrlRequestFailed(net::URLRequest* request,
-                                          int net_error,
-                                          DevToolsStatus devtools_status) {
-  if (devtools_status != DevToolsStatus::kNotCanceled)
-    return;
-  ADD_FAILURE() << "Network request failed: " << net_error << " for "
-                << request->url().spec();
-}
-
 void HeadlessRenderTest::OnLoadEventFired(const page::LoadEventFiredParams&) {
   CHECK_NE(INIT, state_);
   if (state_ == LOADING || state_ == STARTING) {
