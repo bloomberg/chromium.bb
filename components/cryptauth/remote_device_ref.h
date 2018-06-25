@@ -83,9 +83,7 @@ class RemoteDeviceRef {
   std::string GetTruncatedDeviceIdForLogs() const;
 
   bool operator==(const RemoteDeviceRef& other) const;
-
-  // This function is necessary in order to use |RemoteDeviceRef| as a key of a
-  // std::map.
+  bool operator!=(const RemoteDeviceRef& other) const;
   bool operator<(const RemoteDeviceRef& other) const;
 
  private:
