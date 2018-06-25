@@ -56,17 +56,6 @@ bool ShouldDisplaySuppressCheckbox(
   return extra_data->has_already_shown_a_dialog_;
 }
 
-void LogUMAMessageLengthStats(const base::string16& message) {
-  UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfJSDialogMessageCharacters",
-                       static_cast<int32_t>(message.length()));
-
-  int32_t newline_count =
-      std::count_if(message.begin(), message.end(),
-                    [](const base::char16& c) { return c == '\n'; });
-  UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfJSDialogMessageNewlines",
-                       newline_count);
-}
-
 }  // namespace
 
 // static
@@ -217,7 +206,6 @@ void JavaScriptDialogManager::RunJavaScriptDialog(
 
   extensions_client_->OnDialogOpened(web_contents);
 
-  LogUMAMessageLengthStats(message_text);
   AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
       web_contents, &javascript_dialog_extra_data_, dialog_title, dialog_type,
       message_text, default_prompt_text,

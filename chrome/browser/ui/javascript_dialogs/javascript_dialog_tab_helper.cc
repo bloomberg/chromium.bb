@@ -325,11 +325,6 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
 
   if (!dialog_shown_.is_null())
     std::move(dialog_shown_).Run();
-
-  if (did_suppress_message) {
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCountUserSuppressed",
-                         message_text.length());
-  }
 }
 
 void JavaScriptDialogTabHelper::RunBeforeUnloadDialog(
