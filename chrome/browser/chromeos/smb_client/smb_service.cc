@@ -32,6 +32,7 @@ bool ContainsAt(const std::string& username) {
   return username.find('@') != std::string::npos;
 }
 
+// Metric recording functions.
 void RecordMountResult(SmbMountResult result) {
   DCHECK_LE(result, SmbMountResult::kMaxValue);
   UMA_HISTOGRAM_ENUMERATION("NativeSmbFileShare.MountResult", result);
@@ -268,19 +269,19 @@ void SmbService::FireMountCallback(MountResponse callback,
   std::move(callback).Run(result);
 }
 
-void SmbService::RecordMountCount() const {
-  const std::vector<ProvidedFileSystemInfo> file_systems =
-      GetProviderService()->GetProvidedFileSystemInfoList(provider_id_);
-  UMA_HISTOGRAM_COUNTS_100("NativeSmbFileShare.MountCount",
-                           file_systems.size());
-}
-
 void SmbService::RegisterHostLocators() {
   SetUpMdnsHostLocator();
 }
 
 void SmbService::SetUpMdnsHostLocator() {
   share_finder_->RegisterHostLocator(std::make_unique<MDnsHostLocator>());
+}
+
+void SmbService::RecordMountCount() const {
+  const std::vector<ProvidedFileSystemInfo> file_systems =
+      GetProviderService()->GetProvidedFileSystemInfoList(provider_id_);
+  UMA_HISTOGRAM_COUNTS_100("NativeSmbFileShare.MountCount",
+                           file_systems.size());
 }
 
 }  // namespace smb_client

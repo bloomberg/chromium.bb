@@ -67,6 +67,7 @@ bool RequestedThumbnail(ProvidedFileSystemInterface::MetadataFieldMask fields) {
          ProvidedFileSystemInterface::MetadataField::METADATA_FIELD_THUMBNAIL;
 }
 
+// Metrics recording.
 void RecordReadDirectoryCount(int count) {
   UMA_HISTOGRAM_COUNTS_100000("NativeSmbFileShare.ReadDirectoryCount", count);
 }

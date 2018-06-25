@@ -124,13 +124,14 @@ class SmbService : public KeyedService,
   // Fires |callback| with |result|.
   void FireMountCallback(MountResponse callback, SmbMountResult result);
 
-  void RecordMountCount() const;
-
   // Registers host locators for |share_finder_|.
   void RegisterHostLocators();
 
   // Set up Multicast DNS host locator.
   void SetUpMdnsHostLocator();
+
+  // Records metrics on the number of SMB mounts a user has.
+  void RecordMountCount() const;
 
   const ProviderId provider_id_;
   Profile* profile_;
