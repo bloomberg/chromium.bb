@@ -45,9 +45,15 @@ void ServicesDirectory::AddService(StringPiece name,
 
   std::string name_str = name.as_string();
   services_[name_str] = connect_callback;
+
   zx_status_t status =
       svc_dir_add_service(svc_dir_, "public", name_str.c_str(), this,
                           &ServicesDirectory::HandleConnectRequest);
+  ZX_DCHECK(status == ZX_OK, status);
+
+  // Publish to the legacy "flat" namespace, which is required by some clients.
+  status = svc_dir_add_service(svc_dir_, nullptr, name_str.c_str(), this,
+                               &ServicesDirectory::HandleConnectRequest);
   ZX_DCHECK(status == ZX_OK, status);
 }
 
@@ -62,6 +68,10 @@ void ServicesDirectory::RemoveService(StringPiece name) {
 
   zx_status_t status =
       svc_dir_remove_service(svc_dir_, "public", name_str.c_str());
+  ZX_DCHECK(status == ZX_OK, status);
+
+  // Unregister from the legacy "flat" namespace.
+  status = svc_dir_remove_service(svc_dir_, nullptr, name_str.c_str());
   ZX_DCHECK(status == ZX_OK, status);
 }
 

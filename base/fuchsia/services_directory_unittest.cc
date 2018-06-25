@@ -74,5 +74,53 @@ TEST(ServicesDirectoryTest, Connect) {
   EXPECT_FALSE(error);
 }
 
+// Verify that services are also exported to the legacy flat service namespace.
+TEST(ServicesDirectoryTest, ConnectLegacy) {
+  MessageLoopForIO message_loop_;
+
+  zx::channel dir_service_channel;
+  zx::channel dir_client_channel;
+  ASSERT_EQ(zx::channel::create(0, &dir_service_channel, &dir_client_channel),
+            ZX_OK);
+
+  // Mount service dir and publish the service.
+  ServicesDirectory service_dir(std::move(dir_service_channel));
+  TestInterfaceImpl test_service;
+  ScopedServiceBinding<test_fidl::TestInterface> service_binding(&service_dir,
+                                                                 &test_service);
+
+  // Open public directory from the service directory.
+  zx::channel public_dir_service_channel;
+  zx::channel public_dir_client_channel;
+  ASSERT_EQ(zx::channel::create(0, &public_dir_service_channel,
+                                &public_dir_client_channel),
+            ZX_OK);
+  ASSERT_EQ(fdio_open_at(dir_client_channel.get(), ".", 0,
+                         public_dir_service_channel.release()),
+            ZX_OK);
+
+  // Create ComponentContext and connect to the test service.
+  ComponentContext client_context(std::move(public_dir_client_channel));
+  auto stub = client_context.ConnectToService<test_fidl::TestInterface>();
+
+  // Call the service and wait for response.
+  base::RunLoop run_loop;
+  bool error = false;
+
+  stub.set_error_handler([&run_loop, &error]() {
+    error = true;
+    run_loop.Quit();
+  });
+
+  stub->Add(2, 2, [&run_loop](int32_t result) {
+    EXPECT_EQ(result, 4);
+    run_loop.Quit();
+  });
+
+  run_loop.Run();
+
+  EXPECT_FALSE(error);
+}
+
 }  // namespace fuchsia
 }  // namespace base
