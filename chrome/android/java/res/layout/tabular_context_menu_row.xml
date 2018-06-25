@@ -30,7 +30,7 @@
         android:paddingStart="12dp"
         android:paddingEnd="15dp"
         android:scaleType="centerInside"
-        android:contentDescription="@null"
+        tools:ignore="ContentDescription"
         android:visibility="gone"/>
     <Space
         android:id="@+id/context_menu_right_padding"

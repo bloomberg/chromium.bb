@@ -5,7 +5,9 @@
      found in the LICENSE file.
 -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/autofill_card_unmask_prompt"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
@@ -106,7 +108,7 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="16dp"
-                android:contentDescription="@null" />
+                tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/new_card_link"
@@ -191,7 +193,7 @@
             android:layout_marginTop="16dp"
             android:src="@drawable/verify_checkmark"
             android:visibility="gone"
-            android:contentDescription="@null" />
+            tools:ignore="ContentDescription" />
 
         <TextView
             android:id="@+id/verification_message"

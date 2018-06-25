@@ -39,7 +39,7 @@
             android:scaleType="center"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:contentDescription="@null" />
+            tools:ignore="ContentDescription" />
 
          <TextView
              android:id="@+id/title"
@@ -77,7 +77,7 @@
         android:layout_marginTop="@dimen/bottom_control_container_peek_height"
         android:src="@drawable/modern_toolbar_shadow"
         android:scaleType="fitXY"
-        android:contentDescription="@null"
+        tools:ignore="ContentDescription"
         android:visibility="gone" />
 
 </org.chromium.chrome.browser.contextual_suggestions.ToolbarView>

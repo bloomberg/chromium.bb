@@ -7,6 +7,7 @@
 
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     style="@style/PreferenceLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -14,7 +15,7 @@
 
     <ImageView
         android:id="@android:id/icon"
-        android:contentDescription="@null"
+        tools:ignore="ContentDescription"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top" />

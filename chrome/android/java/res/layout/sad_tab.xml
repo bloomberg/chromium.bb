@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:paddingBottom="26dp"
             android:src="@drawable/sad_tab"
-            android:contentDescription="@null"
+            tools:ignore="ContentDescription"
             android:layout_gravity="start" />
 
         <TextView

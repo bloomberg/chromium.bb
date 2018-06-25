@@ -7,6 +7,7 @@
 <org.chromium.chrome.browser.signin.AccountSigninView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/signin_body_background">
@@ -89,7 +90,7 @@
                         android:layout_height="@dimen/signin_account_image_size"
                         android:layout_marginBottom="24dp"
                         android:scaleType="fitCenter"
-                        android:contentDescription="@null"/>
+                        tools:ignore="ContentDescription"/>
 
                     <TextView
                         android:id="@+id/signin_account_name"

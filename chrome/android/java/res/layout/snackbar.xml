@@ -3,7 +3,9 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="bottom|start" >
@@ -55,7 +57,7 @@
             android:layout_marginEnd="-12dp"
             android:scaleType="fitCenter"
             android:visibility="visible"
-            android:contentDescription="@null"/>
+            tools:ignore="ContentDescription"/>
 
         <org.chromium.chrome.browser.snackbar.TemplatePreservingTextView
             android:id="@+id/snackbar_message"

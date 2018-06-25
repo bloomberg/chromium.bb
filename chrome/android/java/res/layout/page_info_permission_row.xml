@@ -6,6 +6,7 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/page_info_permission_row"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -16,7 +17,7 @@
         android:layout_width="@dimen/page_info_popup_permission_icon_size"
         android:layout_height="@dimen/page_info_popup_permission_icon_size"
         android:layout_marginEnd="16dp"
-        android:contentDescription="@null" />
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/page_info_permission_status"

@@ -9,8 +9,10 @@
      in landscape.  If these become more frequently used, we should investigate optimizing the
      layout.
 -->
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto" >
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <org.chromium.chrome.browser.widget.PromoDialogLayout
             android:id="@+id/promo_dialog_layout"
@@ -47,7 +49,7 @@
                         android:layout_marginStart="@dimen/promo_dialog_illustration_margin"
                         android:layout_marginEnd="@dimen/promo_dialog_illustration_margin"
                         android:scaleType="fitCenter"
-                        android:contentDescription="@null" />
+                        tools:ignore="ContentDescription" />
 
                 <org.chromium.chrome.browser.widget.BoundedLinearLayout
                         android:id="@+id/scrollable_promo_content"

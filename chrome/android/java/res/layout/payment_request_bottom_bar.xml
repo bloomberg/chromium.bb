@@ -7,6 +7,7 @@
 <org.chromium.chrome.browser.payments.ui.PaymentRequestBottomBar
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottom_bar"
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
@@ -19,14 +20,14 @@
         android:layout_width="72dp"
         android:layout_height="20dp"
         android:src="@drawable/product_logo_name"
-        android:contentDescription="@null" />
+        tools:ignore="ContentDescription" />
 
     <ImageView
         android:id="@+id/logo"
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:src="@drawable/fre_product_logo"
-        android:contentDescription="@null" />
+        tools:ignore="ContentDescription" />
 
     <Space
         android:id="@+id/space"

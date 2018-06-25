@@ -6,6 +6,7 @@
 -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -18,7 +19,7 @@
         android:layout_height="24dp"
         android:layout_marginBottom="32dp"
         android:layout_marginStart="24dp"
-        android:contentDescription="@null"
+        tools:ignore="ContentDescription"
         android:scaleType="fitCenter"
         android:src="@drawable/product_logo_name" />
 

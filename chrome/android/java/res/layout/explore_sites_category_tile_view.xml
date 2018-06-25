@@ -7,6 +7,7 @@
 <org.chromium.chrome.browser.explore_sites.ExploreSitesCategoryTileView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -18,7 +19,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="@null" />
+        tools:ignore="ContentDescription" />
 
     <!-- Category title -->
     <TextView
