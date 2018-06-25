@@ -9,60 +9,30 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_screen_exit_code.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
-#include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 namespace chromeos {
 
 // Controller for chrome://assistant-optin/ page.
-class AssistantOptInUI
-    : public ui::WebDialogUI,
-      public arc::VoiceInteractionControllerClient::Observer {
+class AssistantOptInUI : public ui::WebDialogUI {
  public:
   explicit AssistantOptInUI(content::WebUI* web_ui);
   ~AssistantOptInUI() override;
 
-  // arc::VoiceInteractionControllerClient::Observer overrides
-  void OnStateChanged(ash::mojom::VoiceInteractionState state) override;
-
  private:
-  // Initilize connection to settings manager.
-  void Initialize();
-
   // Add message handler for optin screens.
   void AddScreenHandler(std::unique_ptr<BaseWebUIHandler> handler);
 
   // Called by a screen when user's done with it.
   void OnExit(AssistantOptInScreenExitCode exit_code);
 
-  void OnActivityControlOptInResult(bool opted_in);
-  void OnEmailOptInResult(bool opted_in);
-
-  // Handle response from the settings manager.
-  void OnGetSettingsResponse(const std::string& settings);
-  void OnUpdateSettingsResponse(const std::string& settings);
-
-  // Show next screen in the optin flow.
-  void Next();
-
-  // Consent token used to complete the opt-in.
-  std::string consent_token_;
-
-  // Whether activity control is needed for user.
-  bool activity_control_needed_ = true;
-
-  // Whether email optin is needed for user.
-  bool email_optin_needed_ = false;
-
   AssistantOptInHandler* assistant_handler_ = nullptr;
   std::unique_ptr<JSCallsContainer> js_calls_container_;
-  assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
   std::vector<BaseWebUIHandler*> screen_handlers_;
   base::WeakPtrFactory<AssistantOptInUI> weak_factory_;
 

@@ -95,6 +95,10 @@ cr.define('assistantOptin', function() {
       }
     },
 
+    closeDialog: function() {
+      chrome.send('dialogClose');
+    },
+
     /**
      * Show the given screen.
      *
