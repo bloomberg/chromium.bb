@@ -81,7 +81,7 @@ promise_test(async (t) => {
     new DOMException(
       "getParameters() needs to be called before setParameters().",
       "InvalidStateError"),
-    videoSender.setParameters({ rtcp: {}}));
+    videoSender.setParameters({ rtcp: {}, headerExtensions: []}));
 }, 'setParameters() fails without getParameters()');
 
 /**
@@ -184,20 +184,9 @@ var readOnlyParameters = [
     transform: (p) => { p.encodings[0].rid = "rid"; },
   },
   {
-    name: "headerExtensions removed",
-    transform: (p) => { delete p.headerExtensions; },
-    check: (p) => { return p.headerExtensions !== undefined; },
-  },
-  {
-    name: "headerExtensions created",
-    transform: (p) => { p.headerExtensions = []; },
-    check: (p) => { return p.headerExtensions === undefined; },
-  },
-  {
     name: "headerExtensions remove one",
     transform: (p) => { p.headerExtensions.pop(); },
-    check: (p) => { return p.headerExtensions !== undefined
-                      && p.headerExtensions.length != 0; },
+    check: (p) => { return p.headerExtensions.length != 0; },
   },
   {
     name: "headerExtensions add one",
@@ -208,19 +197,16 @@ var readOnlyParameters = [
         encrypted: false,
       });
     },
-    check: (p) => { return p.headerExtensions !== undefined; },
   },
   {
     name: "headerExtensions.uri modification",
     transform: (p) => { p.headerExtensions[0].uri = "uri"; },
-    check: (p) => { return p.headerExtensions !== undefined
-                      && p.headerExtensions.length != 0; },
+    check: (p) => { return p.headerExtensions.length != 0; },
   },
   {
     name: "headerExtensions.uri removed",
     transform: (p) => { delete p.headerExtensions[0].uri; },
-    check: (p) => { return p.headerExtensions !== undefined
-                      && p.headerExtensions.length != 0; },
+    check: (p) => { return p.headerExtensions.length != 0; },
   },
   {
     name: "headerExtensions.id modification",
@@ -228,14 +214,13 @@ var readOnlyParameters = [
       p.headerExtensions[0].id = p.headerExtensions[0].id + 1;
     },
     check: (p) => {
-      return p.headerExtensions !== undefined && p.headerExtensions.length != 0;
+      return p.headerExtensions.length != 0;
     },
   },
   {
     name: "headerExtensions.id removed",
     transform: (p) => { delete p.headerExtensions[0].id; },
-    check: (p) => { return p.headerExtensions !== undefined
-                      && p.headerExtensions.length != 0; },
+    check: (p) => { return p.headerExtensions.length != 0; },
   },
   {
     name: "headerExtensions.encrypted modification",
@@ -243,7 +228,7 @@ var readOnlyParameters = [
       p.headerExtensions[0].encrypted = !p.headerExtensions[0].encrypted;
     },
     check: (p) => {
-      return p.headerExtensions !== undefined && p.headerExtensions.length != 0;
+      return p.headerExtensions.length != 0;
     },
   },
   {
@@ -252,7 +237,7 @@ var readOnlyParameters = [
       p.headerExtensions[0].encrypted = !p.headerExtensions[0].encrypted;
     },
     check: (p) => {
-      return p.headerExtensions !== undefined && p.headerExtensions.length != 0
+      return p.headerExtensions.length != 0
         && p.headerExtensions[0].encrypted !== undefined;
     },
   },

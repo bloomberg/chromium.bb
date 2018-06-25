@@ -97,6 +97,32 @@ bool HasInvalidModification(const RTCRtpParameters& parameters,
       return true;
   }
 
+  if (parameters.hasHeaderExtensions() != new_parameters.hasHeaderExtensions())
+    return true;
+
+  if (parameters.hasHeaderExtensions()) {
+    if (parameters.headerExtensions().size() !=
+        new_parameters.headerExtensions().size())
+      return true;
+
+    for (size_t i = 0; i < parameters.headerExtensions().size(); ++i) {
+      const auto& header_extension = parameters.headerExtensions()[i];
+      const auto& new_header_extension = new_parameters.headerExtensions()[i];
+      if (header_extension.hasUri() != new_header_extension.hasUri() ||
+          (header_extension.hasUri() &&
+           header_extension.uri() != new_header_extension.uri()) ||
+          header_extension.hasId() != new_header_extension.hasId() ||
+          (header_extension.hasId() &&
+           header_extension.id() != new_header_extension.id()) ||
+          header_extension.hasEncrypted() !=
+              new_header_extension.hasEncrypted() ||
+          (header_extension.hasEncrypted() &&
+           header_extension.encrypted() != new_header_extension.encrypted())) {
+        return true;
+      }
+    }
+  }
+
   if (parameters.hasRtcp() != new_parameters.hasRtcp() ||
       (parameters.hasRtcp() &&
        ((parameters.rtcp().hasCname() != new_parameters.rtcp().hasCname() ||
@@ -276,6 +302,17 @@ void RTCRtpSender::getParameters(RTCRtpParameters& parameters) {
         PriorityFromDouble(web_encoding.bitrate_priority).c_str());
   }
   parameters.setEncodings(encodings);
+
+  HeapVector<RTCRtpHeaderExtensionParameters> headers;
+  headers.ReserveCapacity(webrtc_parameters->header_extensions.size());
+  for (const auto& web_header : webrtc_parameters->header_extensions) {
+    headers.emplace_back();
+    RTCRtpHeaderExtensionParameters& header = headers.back();
+    header.setUri(web_header.uri.c_str());
+    header.setId(web_header.id);
+    header.setEncrypted(web_header.encrypt);
+  }
+  parameters.setHeaderExtensions(headers);
 
   HeapVector<RTCRtpCodecParameters> codecs;
   codecs.ReserveCapacity(webrtc_parameters->codecs.size());
