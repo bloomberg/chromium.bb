@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/android/base_jni_onload.h"
+#include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/jni_string.h"
@@ -22,6 +23,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/task_scheduler.h"
+#include "build/build_config.h"
 #include "components/cronet/android/cronet_jni_registration.h"
 #include "components/cronet/cronet_global_state.h"
 #include "components/cronet/version.h"
@@ -30,6 +32,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "third_party/zlib/zlib.h"
 #include "url/url_features.h"
 #include "url/url_util.h"
 
@@ -112,6 +115,14 @@ void JNI_CronetLibraryLoader_CronetInitOnInitThread(
 ScopedJavaLocalRef<jstring> JNI_CronetLibraryLoader_GetCronetVersion(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
+#if defined(ARCH_CPU_ARM64)
+  // Attempt to avoid crashes on some ARM64 Marshmallow devices by
+  // prompting zlib ARM feature detection early on. https://crbug.com/853725
+  if (base::android::BuildInfo::GetInstance()->sdk_int() ==
+      base::android::SDK_VERSION_MARSHMALLOW) {
+    crc32(0, Z_NULL, 0);
+  }
+#endif
   return base::android::ConvertUTF8ToJavaString(env, CRONET_VERSION);
 }
 

@@ -173,6 +173,7 @@ source_set("cronet_static") {
     "//components/metrics",
     "//components/prefs",
     "//net",
+    "//third_party/zlib:zlib",
     "//url",
     "//url:url_features",
   ]
