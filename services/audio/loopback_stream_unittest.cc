@@ -87,7 +87,8 @@ class MockClientAndObserver : public media::mojom::AudioInputStreamClient,
 
 // Subclass of FakeConsumer that adapts the SyncWriter interface to allow the
 // tests to record and analyze the audio data from the LoopbackStream.
-class FakeSyncWriter : public FakeConsumer, public InputController::SyncWriter {
+class FakeSyncWriter : public FakeConsumer,
+                       public media::AudioInputController::SyncWriter {
  public:
   FakeSyncWriter(int channels, int sample_rate)
       : FakeConsumer(channels, sample_rate) {}

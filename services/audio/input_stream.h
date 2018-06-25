@@ -11,14 +11,15 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sync_socket.h"
 #include "base/unguessable_token.h"
+#include "media/audio/audio_input_controller.h"
 #include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "media/mojo/interfaces/audio_logging.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/audio/input_controller.h"
 
 namespace media {
 
+class AudioInputSyncWriter;
 class AudioManager;
 class AudioParameters;
 
@@ -26,11 +27,10 @@ class AudioParameters;
 
 namespace audio {
 
-class InputSyncWriter;
 class UserInputMonitor;
 
 class InputStream final : public media::mojom::AudioInputStream,
-                          public InputController::EventHandler {
+                          public media::AudioInputController::EventHandler {
  public:
   using CreatedCallback =
       base::OnceCallback<void(media::mojom::ReadOnlyAudioDataPipePtr,
@@ -59,9 +59,9 @@ class InputStream final : public media::mojom::AudioInputStream,
   void Record() override;
   void SetVolume(double volume) override;
 
-  // InputController::EventHandler implementation.
+  // media::AudioInputController::EventHandler implementation.
   void OnCreated(bool initially_muted) override;
-  void OnError(InputController::ErrorCode error_code) override;
+  void OnError(media::AudioInputController::ErrorCode error_code) override;
   void OnLog(base::StringPiece) override;
   void OnMuted(bool is_muted) override;
 
@@ -83,8 +83,8 @@ class InputStream final : public media::mojom::AudioInputStream,
   DeleteCallback delete_callback_;
 
   base::CancelableSyncSocket foreign_socket_;
-  const std::unique_ptr<InputSyncWriter> writer_;
-  scoped_refptr<InputController> controller_;
+  const std::unique_ptr<media::AudioInputSyncWriter> writer_;
+  scoped_refptr<media::AudioInputController> controller_;
   const std::unique_ptr<UserInputMonitor> user_input_monitor_;
 
   SEQUENCE_CHECKER(owning_sequence_);
