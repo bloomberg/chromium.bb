@@ -6,6 +6,7 @@
 dictionary RTCRtpParameters {
     DOMString                                 transactionId;
     sequence<RTCRtpEncodingParameters>        encodings;
+    required sequence<RTCRtpHeaderExtensionParameters> headerExtensions;
     required RTCRtcpParameters                rtcp;
     sequence<RTCRtpCodecParameters>           codecs;
 };
