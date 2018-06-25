@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/shell.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/camera_detector.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
