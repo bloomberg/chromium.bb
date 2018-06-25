@@ -14,11 +14,6 @@ LDADD =							\
 	$(top_builddir)/tools/gnulib/libgnutools.la	\
 	$(LTLIBINTL)
 
-backtranslate_SOURCES = backtranslate.c
-backtranslate_noUndefinedDots_SOURCES = backtranslate_noUndefinedDots.c
-backtranslate_partialTrans_SOURCES = backtranslate_noUndefinedDots.c
-backtranslate_with_letsign_SOURCES = backtranslate_with_letsign.c
-capitalization_SOURCES = capitalization.c
 capitalized_word_SOURCES = default_table.h capitalized_word.c
 checkTable_SOURCES = checkTable.c
 compbrlAtCursor_SOURCES = compbrlAtCursor.c
@@ -47,11 +42,6 @@ check_metadata_SOURCES = check_metadata.c
 suggestChunks_SOURCES = suggestChunks.c
 
 program_TESTS =					\
-	backtranslate				\
-	backtranslate_noUndefinedDots		\
-	backtranslate_partialTrans		\
-	backtranslate_with_letsign		\
-	capitalization				\
 	capitalized_with_sentance		\
 	capitalized_word			\
 	checkTable				\
