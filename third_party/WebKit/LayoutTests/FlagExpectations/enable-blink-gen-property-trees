@@ -422,7 +422,6 @@ Bug(none) virtual/threaded/fast/scrolling/doc-write-to-iframe.html [ Crash Failu
 Bug(none) fast/events/drag-and-drop-dataTransfer-types-nocrash.html [ Failure Pass ]
 Bug(none) fast/events/onchange-textfield.html [ Failure Pass ]
 Bug(none) fast/events/pointerevents/mouse-pointer-chorded-buttons.html [ Failure Pass ]
-Bug(none) virtual/threaded/fast/animationworklet/animation-worklet-scroll-timeline-dispose.html [ Crash Failure Pass ]
 Bug(none) virtual/threaded/fast/scrolling/hide-scrollbars.html [ Crash Failure Pass ]
 Bug(none) virtual/threaded/fast/scrolling/scrollbar-mousedown-move-mouseup.html [ Failure Pass ]
 Bug(none) virtual/threaded/fast/scrolling/scrollbar-prevent-default.html [ Crash Failure Pass ]
