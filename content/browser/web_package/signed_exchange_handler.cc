@@ -25,8 +25,11 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/ct_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/filter/source_stream.h"
+#include "net/http/transport_security_state.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_info.h"
@@ -294,6 +297,10 @@ void SignedExchangeHandler::OnCertReceived(
     RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }
+
+  // TODO(https://crbug.com/849935): The code below reaching into
+  // URLRequestContext will not work with Network service.
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   net::URLRequestContext* request_context =
       request_context_getter_->GetURLRequestContext();
   if (!request_context) {
@@ -341,6 +348,93 @@ bool SignedExchangeHandler::CheckOCSPStatus(
   return true;
 }
 
+// TODO(https://crbug.com/815025, https://crbug.com/849935): This is temporary
+// code until we have Network Service friendly CT verification.
+int SignedExchangeHandler::VerifyCT(net::ct::CTVerifyResult* ct_verify_result) {
+  // This function will not work with Network Service.
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+
+  net::URLRequestContext* request_context =
+      request_context_getter_->GetURLRequestContext();
+  if (!request_context)
+    return net::ERR_CONTEXT_SHUT_DOWN;
+
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-trust
+  // Step 6.4 Validate that valid SCTs from trusted logs are available from any
+  // of:
+  // - The SignedCertificateTimestampList in main-certificate’s sct property
+  //   (Section 3.3),
+  const std::string& sct_list_from_cert_cbor = unverified_cert_chain_->sct();
+  // - An OCSP extension in the OCSP response in main-certificate’s ocsp
+  //   property, or
+  const std::string& stapled_ocsp_response = unverified_cert_chain_->ocsp();
+  // - An X.509 extension in the certificate in main-certificate’s cert
+  //   property,
+  net::X509Certificate* verified_cert = cert_verify_result_.verified_cert.get();
+  // as described by Section 3.3 of [RFC6962]. [spec text]
+  request_context->cert_transparency_verifier()->Verify(
+      envelope_->request_url().host(), verified_cert, stapled_ocsp_response,
+      sct_list_from_cert_cbor, &ct_verify_result->scts, net_log_);
+
+  net::ct::SCTList verified_scts = net::ct::SCTsMatchingStatus(
+      ct_verify_result->scts, net::ct::SCT_STATUS_OK);
+
+  ct_verify_result->policy_compliance =
+      request_context->ct_policy_enforcer()->CheckCompliance(
+          verified_cert, verified_scts, net_log_);
+
+  // TODO(https://crbug.com/803774): We should determine whether EV & HTXG
+  // should be a thing (due to the online/offline signing difference)
+  if (cert_verify_result_.cert_status & net::CERT_STATUS_IS_EV &&
+      ct_verify_result->policy_compliance !=
+          net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS &&
+      ct_verify_result->policy_compliance !=
+          net::ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY) {
+    cert_verify_result_.cert_status |= net::CERT_STATUS_CT_COMPLIANCE_FAILED;
+    cert_verify_result_.cert_status &= ~net::CERT_STATUS_IS_EV;
+  }
+
+  net::TransportSecurityState::CTRequirementsStatus ct_requirement_status =
+      request_context->transport_security_state()->CheckCTRequirements(
+          net::HostPortPair::FromURL(envelope_->request_url()),
+          cert_verify_result_.is_issued_by_known_root,
+          cert_verify_result_.public_key_hashes, verified_cert,
+          unverified_cert_chain_->cert().get(), ct_verify_result->scts,
+          net::TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
+          ct_verify_result->policy_compliance);
+
+  switch (ct_requirement_status) {
+    case net::TransportSecurityState::CT_REQUIREMENTS_NOT_MET:
+      return net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED;
+    case net::TransportSecurityState::CT_REQUIREMENTS_MET:
+      ct_verify_result->policy_compliance_required = true;
+      break;
+    case net::TransportSecurityState::CT_NOT_REQUIRED:
+      // CT is not required if the certificate does not chain to a publicly
+      // trusted root certificate.
+      if (!cert_verify_result_.is_issued_by_known_root) {
+        ct_verify_result->policy_compliance_required = false;
+        break;
+      }
+      // For old certificates (issued before 2018-05-01), CheckCTRequirements()
+      // may return CT_NOT_REQUIRED, so we check the compliance status here.
+      // TODO(https://crbug.com/851778): Remove this condition once we require
+      // signing certificates to have CanSignHttpExchanges extension, because
+      // such certificates should be naturally after 2018-05-01.
+      if (ct_verify_result->policy_compliance ==
+              net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS ||
+          ct_verify_result->policy_compliance ==
+              net::ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY) {
+        ct_verify_result->policy_compliance_required = true;
+        break;
+      }
+      // Require CT compliance, by overriding CT_NOT_REQUIRED and treat it as
+      // ERR_CERTIFICATE_TRANSPARENCY_REQUIRED.
+      return net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED;
+  }
+  return net::OK;
+}
+
 void SignedExchangeHandler::OnCertVerifyComplete(int result) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeHandler::OnCertVerifyComplete");
@@ -363,6 +457,21 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
             "OCSP check failed. response status: %d, revocation status: %d",
             cert_verify_result_.ocsp_result.response_status,
             cert_verify_result_.ocsp_result.revocation_status),
+        std::make_pair(0 /* signature_index */,
+                       SignedExchangeError::Field::kSignatureCertUrl));
+    RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
+    return;
+  }
+
+  net::ct::CTVerifyResult ct_verify_result;
+  int ct_result = VerifyCT(&ct_verify_result);
+  if (ct_result != net::OK) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy_.get(),
+        base::StringPrintf(
+            "CT verification failed. result: %s, policy compliance: %d",
+            net::ErrorToShortString(ct_result).c_str(),
+            ct_verify_result.policy_compliance),
         std::make_pair(0 /* signature_index */,
                        SignedExchangeError::Field::kSignatureCertUrl));
     RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
@@ -405,6 +514,7 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
   ssl_info.is_fatal_cert_error =
       net::IsCertStatusError(ssl_info.cert_status) &&
       !net::IsCertStatusMinorError(ssl_info.cert_status);
+  ssl_info.UpdateCertificateTransparencyInfo(ct_verify_result);
 
   if (devtools_proxy_) {
     devtools_proxy_->OnSignedExchangeReceived(
@@ -412,7 +522,6 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
   }
 
   response_head.ssl_info = std::move(ssl_info);
-  // TODO(https://crbug.com/815025): Verify the Certificate Transparency status.
   std::move(headers_callback_)
       .Run(net::OK, envelope_->request_url(), envelope_->request_method(),
            response_head, std::move(mi_stream));

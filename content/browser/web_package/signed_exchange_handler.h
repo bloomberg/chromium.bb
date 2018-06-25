@@ -99,6 +99,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
       std::unique_ptr<SignedExchangeCertificateChain> cert_chain);
   void OnCertVerifyComplete(int result);
   bool CheckOCSPStatus(const net::OCSPVerifyResult& ocsp_result);
+  int VerifyCT(net::ct::CTVerifyResult* ct_verify_result);
 
   ExchangeHeadersCallback headers_callback_;
   base::Optional<SignedExchangeVersion> version_;
