@@ -9,6 +9,7 @@
 #include "base/time/default_clock.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
+#include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
 #include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
 
 namespace chromeos {
@@ -49,7 +50,11 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client)
-    : setup_flow_completion_recorder_(
+    : host_backend_delegate_(
+          HostBackendDelegateImpl::Factory::Get()->BuildInstance(
+              pref_service,
+              device_sync_client)),
+      setup_flow_completion_recorder_(
           SetupFlowCompletionRecorderImpl::Factory::Get()->BuildInstance(
               pref_service,
               base::DefaultClock::GetInstance())),
