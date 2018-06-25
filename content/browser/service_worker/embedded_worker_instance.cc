@@ -748,43 +748,14 @@ void EmbeddedWorkerInstance::OnScriptReadFinished() {
 }
 
 void EmbeddedWorkerInstance::OnScriptLoaded() {
-  using LoadSource = ServiceWorkerMetrics::LoadSource;
-
   if (!inflight_start_task_)
     return;
-  LoadSource source;
-  if (network_accessed_for_script_) {
-    DCHECK(!inflight_start_task_->is_installed());
-    source = LoadSource::NETWORK;
-  } else if (inflight_start_task_->is_installed()) {
-    source = LoadSource::SERVICE_WORKER_STORAGE;
-  } else {
-    source = LoadSource::HTTP_CACHE;
-  }
-
-  // Don't record the time when script streaming is enabled because
-  // OnScriptLoaded is called at the different timing.
-  if (starting_phase_ != SCRIPT_STREAMING && !step_time_.is_null()) {
-    base::TimeDelta duration = UpdateStepTime();
-    ServiceWorkerMetrics::RecordTimeToLoad(duration, source, start_situation_);
-  }
 
   // Renderer side has started to launch the worker thread.
   starting_phase_ = SCRIPT_LOADED;
   for (auto& observer : listener_list_)
     observer.OnScriptLoaded();
   // |this| may be destroyed by the callback.
-}
-
-void EmbeddedWorkerInstance::OnURLJobCreatedForMainScript() {
-  if (!inflight_start_task_)
-    return;
-
-  if (!step_time_.is_null()) {
-    base::TimeDelta duration = UpdateStepTime();
-    if (inflight_start_task_->is_installed())
-      ServiceWorkerMetrics::RecordTimeToURLJob(duration, start_situation_);
-  }
 }
 
 void EmbeddedWorkerInstance::OnWorkerVersionInstalled() {

@@ -247,9 +247,6 @@ class ServiceWorkerMetrics {
     NUM_TYPES
   };
 
-  // Not used for UMA.
-  enum class LoadSource { NETWORK, HTTP_CACHE, SERVICE_WORKER_STORAGE };
-
   class ScopedEventRecorder {
    public:
     explicit ScopedEventRecorder(EventType start_worker_purpose);
@@ -389,9 +386,6 @@ class ServiceWorkerMetrics {
                                           StartSituation start_situation);
   static void RecordTimeToURLJob(base::TimeDelta duration,
                                  StartSituation start_situation);
-  static void RecordTimeToLoad(base::TimeDelta duration,
-                               LoadSource source,
-                               StartSituation start_situation);
   static void RecordTimeToStartThread(base::TimeDelta duration,
                                       StartSituation start_situation);
   static void RecordTimeToEvaluateScript(base::TimeDelta duration,
@@ -402,8 +396,6 @@ class ServiceWorkerMetrics {
       mojom::EmbeddedWorkerStartTimingPtr start_timing,
       base::TimeTicks start_worker_sent_time,
       StartSituation start_situation);
-
-  static const char* LoadSourceToString(LoadSource source);
 
   // Records the result of a start attempt that occurred after the worker had
   // failed |failure_count| consecutive times.

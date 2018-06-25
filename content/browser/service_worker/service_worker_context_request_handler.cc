@@ -158,8 +158,6 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJobImpl(
   if (resource_id != kInvalidServiceWorkerResourceId) {
     if (ServiceWorkerVersion::IsInstalled(version_->status())) {
       // An installed worker is loading a stored script.
-      if (is_main_script)
-        version_->embedded_worker()->OnURLJobCreatedForMainScript();
       *out_status = CreateJobStatus::READ_JOB;
     } else {
       // A new worker is loading a stored script. The script was already
@@ -212,7 +210,6 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJobImpl(
       incumbent_resource_id =
           stored_version->script_cache_map()->LookupResourceId(request->url());
     }
-    version_->embedded_worker()->OnURLJobCreatedForMainScript();
   }
   *out_status = incumbent_resource_id == kInvalidServiceWorkerResourceId
                     ? CreateJobStatus::WRITE_JOB
