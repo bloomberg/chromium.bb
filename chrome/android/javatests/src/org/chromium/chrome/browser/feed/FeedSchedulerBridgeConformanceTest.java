@@ -10,6 +10,7 @@ import android.support.test.rule.UiThreadTestRule;
 import com.google.android.libraries.feed.api.requestmanager.RequestManager;
 import com.google.android.libraries.feed.common.Result;
 import com.google.android.libraries.feed.common.functional.Consumer;
+import com.google.android.libraries.feed.common.functional.Supplier;
 import com.google.android.libraries.feed.testing.conformance.scheduler.SchedulerConformanceTest;
 import com.google.search.now.feed.client.StreamDataProto.StreamDataOperation;
 import com.google.search.now.feed.client.StreamDataProto.StreamToken;
@@ -66,6 +67,11 @@ public final class FeedSchedulerBridgeConformanceTest extends SchedulerConforman
         @Override
         public void triggerRefresh(RequestReason reason,
                                    Consumer < Result < List<StreamDataOperation>>> consumer) {}
+        @Override
+        public void triggerRefresh(RequestReason reason) {}
+        @Override
+        public void setDefaultTriggerRefreshConsumerSupplier(
+                Supplier < Consumer < Result<List<StreamDataOperation>>>> consumer) {}
     }
 
     private boolean mUseRequestManager;
