@@ -5,15 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_COLLECTION_VIEW_CELL_H_
 #define IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_COLLECTION_VIEW_CELL_H_
 
+#import "ios/chrome/browser/ui/reading_list/reading_list_ui_distillation_status.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 @class FaviconViewNew;
-
-typedef NS_ENUM(NSInteger, ReadingListUIDistillationStatus) {
-  ReadingListUIDistillationStatusPending,
-  ReadingListUIDistillationStatusSuccess,
-  ReadingListUIDistillationStatusFailure
-};
 
 // Cell for ReadingListCollectionViewItem.
 @interface ReadingListCell : MDCCollectionViewCell
