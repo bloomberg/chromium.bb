@@ -393,18 +393,19 @@ class WebContentsImpl::ColorChooser : public blink::mojom::ColorChooser {
 // WebContentsImpl::DisplayCutoutHostImpl --------------------------------------
 
 class WebContentsImpl::DisplayCutoutHostImpl
-    : public blink::mojom::DisplayCutoutHost {
+    : public blink::mojom::DisplayCutoutHost,
+      public WebContentsObserver {
  public:
   explicit DisplayCutoutHostImpl(WebContentsImpl* web_contents)
-      : web_contents_(web_contents), bindings_(web_contents, this) {}
+      : WebContentsObserver(web_contents), bindings_(web_contents, this) {}
 
   // blink::mojom::DisplayCutoutHost
-  void ViewportFitChanged(blink::mojom::ViewportFit value) override {
+  void NotifyViewportFitChanged(blink::mojom::ViewportFit value) override {
     ViewportFitChangedForFrame(bindings_.GetCurrentTargetFrame(), value);
   }
 
-  // Stores the updated viewport fit value for a frame and notifies observers if
-  // it has changed.
+  // Stores the updated viewport fit value for a |frame| and notifies observers
+  // if it has changed.
   void ViewportFitChangedForFrame(RenderFrameHost* rfh,
                                   blink::mojom::ViewportFit value) {
     if (GetValueOrDefault(rfh) == value)
@@ -412,16 +413,34 @@ class WebContentsImpl::DisplayCutoutHostImpl
 
     values_[rfh] = value;
 
-    // TODO(beccahughes): Add logic based on fullscreen and orientation to
-    // decide which frame's viewport fit value should be used.
-    for (auto& observer : web_contents_->observers_)
-      observer.ViewportFitChanged(value);
+    // If we are the current fullscreen frame then notify about the new value.
+    if (web_contents_impl()->current_fullscreen_frame_tree_node_id_ ==
+        rfh->GetFrameTreeNodeId())
+      NotifyObservers(value);
+  }
+
+  // WebContentsObserver override.
+  void DidAcquireFullscreen(RenderFrameHost* rfh) override {
+    NotifyObservers(GetValueOrDefault(rfh));
+  }
+
+  // WebContentsObserver override.
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen,
+                                     bool will_cause_resize) override {
+    if (!entered_fullscreen)
+      NotifyObservers(blink::mojom::ViewportFit::kAuto);
   }
 
   // Removes any state built up by a render frame.
-  void RenderFrameDeleted(RenderFrameHost* rfh) { values_.erase(rfh); }
+  void RenderFrameDeleted(RenderFrameHost* rfh) override { values_.erase(rfh); }
 
  private:
+  // Notify observers about a new viewport fit value.
+  void NotifyObservers(blink::mojom::ViewportFit value) {
+    for (auto& observer : web_contents_impl()->observers_)
+      observer.ViewportFitChanged(value);
+  }
+
   // Get the stored viewport fit value for a frame or kAuto if there is no
   // stored value.
   blink::mojom::ViewportFit GetValueOrDefault(RenderFrameHost* rfh) const {
@@ -431,10 +450,13 @@ class WebContentsImpl::DisplayCutoutHostImpl
     return blink::mojom::ViewportFit::kAuto;
   }
 
+  WebContentsImpl* web_contents_impl() {
+    return static_cast<WebContentsImpl*>(web_contents());
+  }
+
   // Stores a map of RenderFrameHosts and their current viewport fit values.
   std::map<RenderFrameHost*, blink::mojom::ViewportFit> values_;
 
-  WebContentsImpl* web_contents_;
   WebContentsFrameBindingSet<blink::mojom::DisplayCutoutHost> bindings_;
 };
 
@@ -1057,7 +1079,7 @@ WebContentsView* WebContentsImpl::GetView() const {
 
 void WebContentsImpl::OnScreenOrientationChange() {
   DCHECK(screen_orientation_provider_);
-  return screen_orientation_provider_->OnOrientationChange();
+  screen_orientation_provider_->OnOrientationChange();
 }
 
 SkColor WebContentsImpl::GetThemeColor() const {
@@ -2308,6 +2330,9 @@ void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
           render_widget_host->SynchronizeVisualProperties();
     }
   }
+
+  // Clear the current fullscreen frame ID.
+  current_fullscreen_frame_tree_node_id_ = RenderFrameHost::kNoFrameTreeNodeId;
 
   for (auto& observer : observers_) {
     observer.DidToggleFullscreenModeForTab(IsFullscreenForCurrentTab(),
@@ -4970,7 +4995,6 @@ void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   pepper_playback_observer_->RenderFrameDeleted(render_frame_host);
 #endif
-  display_cutout_host_impl_->RenderFrameDeleted(render_frame_host);
 
   // Remove any fullscreen state that the frame has stored.
   FullscreenStateChanged(render_frame_host, false /* is_fullscreen */);
