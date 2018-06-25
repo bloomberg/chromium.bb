@@ -101,6 +101,26 @@ ui::CallbackLayerAnimationObserver* BuildObserverToHideView(views::View* view) {
       view));
 }
 
+// Clears the password for the given |LoginPasswordView| instance and then
+// deletes itself.
+class ClearPasswordAnimationObserver : public ui::ImplicitAnimationObserver {
+ public:
+  explicit ClearPasswordAnimationObserver(LoginPasswordView* view)
+      : view_(view) {}
+  ~ClearPasswordAnimationObserver() override = default;
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    view_->Clear();
+    delete this;
+  }
+
+ private:
+  LoginPasswordView* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClearPasswordAnimationObserver);
+};
+
 // A view which has a round border and a fingerprint icon at the center.
 class FingerprintIconView : public views::View {
  public:
@@ -529,8 +549,8 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
           base::TimeDelta::FromMilliseconds(
               login_constants::kChangeUserAnimationDurationMs));
   transition->set_tween_type(gfx::Tween::Type::FAST_OUT_SLOW_IN);
-  auto* sequence = new ui::LayerAnimationSequence(std::move(transition));
-  layer()->GetAnimator()->StartAnimation(sequence);
+  layer()->GetAnimator()->StartAnimation(
+      new ui::LayerAnimationSequence(std::move(transition)));
 
   ////////
   // Fade the password view if it is being hidden or shown.
@@ -548,6 +568,10 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
       settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
           login_constants::kChangeUserAnimationDurationMs));
       settings.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
+      if (cached_animation_state_->had_password && !has_password) {
+        settings.AddObserver(
+            new ClearPasswordAnimationObserver(password_view_));
+      }
 
       password_view_->layer()->SetOpacity(opacity_end);
     }
@@ -577,7 +601,6 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
             login_constants::kChangeUserAnimationDurationMs),
         gfx::Tween::FAST_OUT_SLOW_IN);
     auto* sequence = new ui::LayerAnimationSequence(std::move(transition));
-    pin_view_->layer()->GetAnimator()->ScheduleAnimation(sequence);
 
     // Hide the PIN keyboard after animation if needed.
     if (!has_pin) {
@@ -585,6 +608,8 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
       sequence->AddObserver(observer);
       observer->SetActive();
     }
+
+    pin_view_->layer()->GetAnimator()->ScheduleAnimation(sequence);
   }
 
   cached_animation_state_.reset();
