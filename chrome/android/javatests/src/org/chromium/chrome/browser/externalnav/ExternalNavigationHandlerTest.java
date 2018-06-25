@@ -56,6 +56,8 @@ import java.util.regex.Pattern;
  * Instrumentation tests for {@link ExternalNavigationHandler}.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+        sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
 public class ExternalNavigationHandlerTest {
     @Rule
     public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
@@ -157,8 +159,6 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void
@@ -189,10 +189,7 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
-    public void
-    testRedirectFromFormSubmit() {
+    public void testRedirectFromFormSubmit() {
         mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
 
         // http://crbug.com/181186: We need to show the intent picker when we receive a redirect
@@ -328,11 +325,7 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
-    public void
-    testRedirectToMarketWithoutReferrer() {
+    public void testRedirectToMarketWithoutReferrer() {
         mDelegate.setCanResolveActivityForExternalSchemes(false);
 
         checkUrl(INTENT_APP_NOT_INSTALLED_DEFAULT_MARKET_REFERRER)
@@ -413,8 +406,6 @@ public class ExternalNavigationHandlerTest {
                         START_OTHER_ACTIVITY);
     }
 
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void testYouTubePairingCode() {
@@ -457,8 +448,6 @@ public class ExternalNavigationHandlerTest {
         }
     }
 
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void
@@ -506,8 +495,6 @@ public class ExternalNavigationHandlerTest {
                         START_OTHER_ACTIVITY);
     }
 
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void
@@ -542,8 +529,6 @@ public class ExternalNavigationHandlerTest {
                         START_OTHER_ACTIVITY);
     }
 
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void
@@ -622,8 +607,6 @@ public class ExternalNavigationHandlerTest {
                         START_OTHER_ACTIVITY);
     }
 
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void
@@ -651,10 +634,7 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
-    public void
-    testInstantAppsIntent_incomingIntentRedirect() throws Exception {
+    public void testInstantAppsIntent_incomingIntentRedirect() throws Exception {
         int transTypeLinkFromIntent = PageTransition.LINK
                 | PageTransition.FROM_API;
         TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
@@ -694,8 +674,6 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, IGNORE);
     }
 
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void
@@ -746,8 +724,6 @@ public class ExternalNavigationHandlerTest {
         }
     }
 
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void testFallbackUrl_IntentResolutionSucceeds() {
@@ -767,8 +743,6 @@ public class ExternalNavigationHandlerTest {
         Assert.assertNull(mDelegate.getReferrerUrlForClobbering());
     }
 
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void
@@ -838,8 +812,6 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
     }
 
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void testFallbackUrl_RedirectToIntentToMarket() {
@@ -921,8 +893,6 @@ public class ExternalNavigationHandlerTest {
         Assert.assertEquals(null, mDelegate.getReferrerUrlForClobbering());
     }
 
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void testFallback_UseFallbackUrlForRedirectionFromTypedInUrl() {
@@ -1033,8 +1003,6 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void
@@ -1088,10 +1056,7 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
-    public void
-    testPlusAppRefresh() {
+    public void testPlusAppRefresh() {
         mDelegate.add(new IntentActivity(PLUS_STREAM_URL, "plus"));
 
         checkUrl(PLUS_STREAM_URL)
@@ -1151,10 +1116,7 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
-    public void
-    testIntentWithMissingReferrer() {
+    public void testIntentWithMissingReferrer() {
         mDelegate.add(new IntentActivity("http://refertest.com", "refertest"));
         mDelegate.add(new IntentActivity("https://refertest.com", "refertest"));
 
@@ -1262,10 +1224,7 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
-    public void
-    testSms_DispatchIntentToDefaultSmsApp() {
+    public void testSms_DispatchIntentToDefaultSmsApp() {
         final String referer = "https://www.google.com/";
         mDelegate.add(new IntentActivity("sms", TEXT_APP_1_PACKAGE_NAME));
         mDelegate.add(new IntentActivity("sms", TEXT_APP_2_PACKAGE_NAME));
@@ -1282,10 +1241,7 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
-    public void
-    testSms_DefaultSmsAppDoesNotHandleIntent() {
+    public void testSms_DefaultSmsAppDoesNotHandleIntent() {
         final String referer = "https://www.google.com/";
         mDelegate.add(new IntentActivity("sms", TEXT_APP_1_PACKAGE_NAME));
         mDelegate.add(new IntentActivity("sms", TEXT_APP_2_PACKAGE_NAME));
@@ -1420,12 +1376,9 @@ public class ExternalNavigationHandlerTest {
      * Test that tapping a link which falls solely into the scope of a different WebAPK launches a
      * WebAPK without showing the intent picker.
      */
-    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
-    public void
-    testLaunchWebApk_BypassIntentPickerFromAnotherWebApk() {
+    public void testLaunchWebApk_BypassIntentPickerFromAnotherWebApk() {
         final String scope1 = "https://www.webapk.with.native.com";
         final String scope1WebApkPackageName = "org.chromium.webapk.with.native";
         final String scope1NativeAppPackageName = "com.webapk.with.native.android";
