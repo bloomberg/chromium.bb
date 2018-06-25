@@ -9,6 +9,7 @@ if (build_with_chromium) {
   visibility = [
     "//third_party/webrtc/*",
     "//third_party/abseil-cpp/*",
+    "//third_party/googletest:gtest",
   ]
 } else {
   visibility = [ "*" ]
