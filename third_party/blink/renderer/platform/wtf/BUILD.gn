@@ -318,7 +318,6 @@ jumbo_source_set("wtf_unittests_sources") {
     "hash_set_test.cc",
     "list_hash_set_test.cc",
     "math_extras_test.cc",
-    "ref_ptr_test.cc",
     "saturated_arithmetic_test.cc",
     "scoped_logger_test.cc",
     "string_hasher_test.cc",
