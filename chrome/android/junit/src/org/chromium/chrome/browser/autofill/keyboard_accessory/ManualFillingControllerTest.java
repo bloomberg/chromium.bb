@@ -245,6 +245,19 @@ public class ManualFillingControllerTest {
         assertThat(accessorySheetModel.getTabList().size(), is(0));
     }
 
+    @Test
+    public void testRecoversFromInvalidState() {
+        ManualFillingMediator mediator = mController.getMediatorForTesting();
+
+        // Open a tab but pretend that the states became inconsistent.
+        Tab tab = addTab(mediator, 1111, null);
+        mediator.getModelForTesting().get(tab).mPasswordAccessorySheet =
+                new PasswordAccessorySheetCoordinator(mMockActivity);
+
+        // Create a new tab with a passwords tab:
+        addTab(mediator, 1111, tab);
+    }
+
     // TODO(fhorschig): Test that updating tab1 works if tab2 is active.
     // TODO(fhorschig): Test that destroying a tab cleans the model.
     // TODO(fhorschig): Test that unregistering a provider affects only one tab.

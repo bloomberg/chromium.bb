@@ -135,6 +135,10 @@ public class KeyboardAccessoryCoordinator {
         mMediator.removeTab(tab);
     }
 
+    void setTabs(KeyboardAccessoryData.Tab[] tabs) {
+        mMediator.setTabs(tabs);
+    }
+
     /**
      * Allows any {@link KeyboardAccessoryData.Provider} to communicate with the
      * {@link KeyboardAccessoryMediator} of this component.

@@ -73,6 +73,10 @@ class KeyboardAccessoryMediator
         mModel.removeTab(tab);
     }
 
+    void setTabs(KeyboardAccessoryData.Tab[] tabs) {
+        mModel.getTabList().set(tabs);
+    }
+
     void setSuggestions(AutofillKeyboardSuggestions suggestions) {
         mModel.setAutofillSuggestions(suggestions);
     }

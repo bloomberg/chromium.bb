@@ -190,13 +190,13 @@ class ManualFillingMediator
     private void resetAccessory(Tab browserTab) {
         AccessoryState state = getOrCreateAccessoryState(browserTab);
         if (state.mPasswordAccessorySheet != null) {
-            removeTab(state.mPasswordAccessorySheet.getTab());
+            setTabs(new KeyboardAccessoryData.Tab[0]);
         }
     }
 
-    private void removeTab(KeyboardAccessoryData.Tab tab) {
-        mKeyboardAccessory.removeTab(tab);
-        mAccessorySheet.removeTab(tab);
+    private void setTabs(KeyboardAccessoryData.Tab[] tabs) {
+        mKeyboardAccessory.setTabs(tabs);
+        mAccessorySheet.setTabs(tabs);
     }
 
     @VisibleForTesting

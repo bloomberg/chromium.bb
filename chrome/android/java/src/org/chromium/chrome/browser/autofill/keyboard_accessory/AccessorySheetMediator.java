@@ -58,6 +58,11 @@ class AccessorySheetMediator {
         if (mModel.getActiveTabIndex() == NO_ACTIVE_TAB) hide();
     }
 
+    void setTabs(KeyboardAccessoryData.Tab[] tabs) {
+        mModel.getTabList().set(tabs);
+        mModel.setActiveTabIndex(mModel.getTabList().size() - 1);
+    }
+
     void setActiveTab(int position) {
         assert position < mModel.getTabList().size()
                 || position >= 0 : position + " is not a valid tab index!";
