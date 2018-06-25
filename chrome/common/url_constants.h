@@ -32,6 +32,9 @@ extern const char kAutomaticSettingsResetLearnMoreURL[];
 // The URL for providing help when the Bluetooth adapter is off.
 extern const char kBluetoothAdapterOffHelpURL[];
 
+// "Learn more" URL shown in the dialog to enable cloud services for Cast.
+extern const char kCastCloudServicesHelpURL[];
+
 // The URL for the help center article to show when no Cast destination has been
 // found.
 extern const char kCastNoDestinationFoundURL[];

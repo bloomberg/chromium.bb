@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -166,6 +167,8 @@ TEST_F(MediaRouterContextualMenuUnitTest, EnableAndDisableReportIssue) {
 
 // Tests whether the cloud services item is correctly toggled. This menu item
 // is only availble on official Chrome builds.
+// TODO(takumif): Add a test case that checks that the cloud services dialog is
+// shown when the services are enabled for the first time.
 TEST_F(MediaRouterContextualMenuUnitTest, ToggleCloudServicesItem) {
   // The Media Router Action has a getter for the model, but not the delegate.
   // Create the MediaRouterContextualMenu ui::SimpleMenuModel::Delegate here.
@@ -174,6 +177,11 @@ TEST_F(MediaRouterContextualMenuUnitTest, ToggleCloudServicesItem) {
   // Set up an authenticated account such that the cloud services menu item is
   // surfaced. Whether or not it is surfaced is tested in the "Basic" test.
   signin_manager_->SetAuthenticatedAccountInfo("foo@bar.com", "password");
+
+  // Set this preference so that the cloud services can be enabled without
+  // showing the opt-in dialog.
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kMediaRouterCloudServicesPrefSet, true);
 
   // By default, the command is not checked.
   EXPECT_FALSE(menu.IsCommandIdChecked(

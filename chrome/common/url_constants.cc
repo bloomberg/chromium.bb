@@ -18,6 +18,11 @@ const char kBluetoothAdapterOffHelpURL[] =
 
 // TODO(https://crbug.com/852139): Replace this numbered link with a P-link once
 // we have one.
+const char kCastCloudServicesHelpURL[] =
+    "https://support.google.com/chromecast/answer/6320939";
+
+// TODO(https://crbug.com/852139): Replace this numbered link with a P-link once
+// we have one.
 const char kCastNoDestinationFoundURL[] =
     "https://support.google.com/chromecast/answer/3249268";
 
