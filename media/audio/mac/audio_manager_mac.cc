@@ -504,15 +504,15 @@ AudioManagerMac::AudioManagerMac(std::unique_ptr<AudioThread> audio_thread,
     : AudioManagerBase(std::move(audio_thread), audio_log_factory),
       current_sample_rate_(0),
       current_output_device_(kAudioDeviceUnknown),
-      in_shutdown_(false) {
+      in_shutdown_(false),
+      weak_ptr_factory_(this) {
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
 
-  // Task must be posted last to avoid races from handing out "this" to the
-  // audio thread.  Always PostTask even if we're on the right thread since
-  // AudioManager creation is on the startup path and this may be slow.
+  // PostTask since AudioManager creation may be on the startup path and this
+  // may be slow.
   GetTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&AudioManagerMac::InitializeOnAudioThread,
-                            base::Unretained(this)));
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 AudioManagerMac::~AudioManagerMac() = default;
