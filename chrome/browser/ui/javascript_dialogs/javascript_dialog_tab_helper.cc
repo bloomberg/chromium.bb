@@ -88,7 +88,7 @@ enum class DialogOriginRelationship {
 DialogOriginRelationship GetDialogOriginRelationship(
     content::WebContents* web_contents,
     content::RenderFrameHost* alerting_frame) {
-  GURL main_frame_url = web_contents->GetURL();
+  GURL main_frame_url = web_contents->GetLastCommittedURL();
 
   if (!main_frame_url.SchemeIsHTTPOrHTTPS())
     return DialogOriginRelationship::NON_HTTP_MAIN_FRAME;
