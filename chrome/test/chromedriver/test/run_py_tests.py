@@ -980,9 +980,9 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     handle = self._driver.GetCurrentWindowHandle()
     target = handle[len(handle_prefix):]
     self._driver.SetWindowPosition(100, 200)
-    self._driver.SetWindowSize(500, 300)
+    self._driver.SetWindowSize(600, 400)
     rect = self._driver.MinimizeWindow()
-    expected_rect = {u'y': 200, u'width': 500, u'height': 300, u'x': 100}
+    expected_rect = {u'y': 200, u'width': 600, u'height': 400, u'x': 100}
 
     #check it returned the correct rect
     for key in expected_rect.keys():
