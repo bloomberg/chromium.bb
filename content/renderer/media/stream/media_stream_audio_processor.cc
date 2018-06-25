@@ -412,8 +412,9 @@ void MediaStreamAudioProcessor::OnAecDumpFile(
     // webrtc::AudioProcessing instance is destroyed.
     StartEchoCancellationDump(audio_processing_.get(), std::move(file),
                               worker_queue_.get());
-  } else
+  } else {
     file.Close();
+  }
 }
 
 void MediaStreamAudioProcessor::OnDisableAecDump() {

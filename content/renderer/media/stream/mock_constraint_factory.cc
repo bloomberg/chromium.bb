@@ -39,7 +39,6 @@ void MockConstraintFactory::DisableDefaultAudioConstraints() {
   basic_.goog_highpass_filter.SetExact(false);
   basic_.goog_typing_noise_detection.SetExact(false);
   basic_.goog_experimental_noise_suppression.SetExact(false);
-  basic_.goog_beamforming.SetExact(false);
 }
 
 void MockConstraintFactory::DisableAecAudioConstraints() {

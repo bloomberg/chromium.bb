@@ -106,7 +106,7 @@ class FeatureCounter {
   WTF_MAKE_NONCOPYABLE(FeatureCounter);
 
  public:
-  FeatureCounter(ExecutionContext* context)
+  explicit FeatureCounter(ExecutionContext* context)
       : context_(context), is_unconstrained_(true) {}
   void Count(WebFeature feature) {
     UseCounter::Count(context_, feature);
@@ -205,14 +205,6 @@ void CountAudioConstraintUses(ExecutionContext* context,
           &WebMediaTrackConstraintSet::goog_experimental_noise_suppression)) {
     counter.Count(
         WebFeature::kMediaStreamConstraintsGoogExperimentalNoiseSuppression);
-  }
-  if (RequestUsesDiscreteConstraint(
-          constraints, &WebMediaTrackConstraintSet::goog_beamforming)) {
-    counter.Count(WebFeature::kMediaStreamConstraintsGoogBeamforming);
-  }
-  if (RequestUsesDiscreteConstraint(
-          constraints, &WebMediaTrackConstraintSet::goog_array_geometry)) {
-    counter.Count(WebFeature::kMediaStreamConstraintsGoogArrayGeometry);
   }
   if (RequestUsesDiscreteConstraint(
           constraints, &WebMediaTrackConstraintSet::goog_audio_mirroring)) {

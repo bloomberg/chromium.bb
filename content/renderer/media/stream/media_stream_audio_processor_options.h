@@ -38,9 +38,6 @@ struct CONTENT_EXPORT AudioProcessingProperties {
   AudioProcessingProperties();
   AudioProcessingProperties(const AudioProcessingProperties& other);
   AudioProcessingProperties& operator=(const AudioProcessingProperties& other);
-  AudioProcessingProperties(AudioProcessingProperties&& other);
-  AudioProcessingProperties& operator=(AudioProcessingProperties&& other);
-  ~AudioProcessingProperties();
 
   // Disables properties that are enabled by default.
   void DisableDefaultProperties();
@@ -60,10 +57,8 @@ struct CONTENT_EXPORT AudioProcessingProperties {
   bool goog_typing_noise_detection = true;
   bool goog_noise_suppression = true;
   bool goog_experimental_noise_suppression = true;
-  bool goog_beamforming = true;
   bool goog_highpass_filter = true;
   bool goog_experimental_auto_gain_control = true;
-  std::vector<media::Point> goog_array_geometry;
 };
 
 // A helper class to log echo information in general and Echo Cancellation

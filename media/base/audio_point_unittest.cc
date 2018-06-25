@@ -19,23 +19,5 @@ TEST(PointTest, PointsToString) {
   EXPECT_EQ("", PointsToString(std::vector<Point>()));
 }
 
-TEST(PointTest, ParsePointString) {
-  const std::vector<Point> expected_empty;
-  EXPECT_EQ(expected_empty, ParsePointsFromString(""));
-  EXPECT_EQ(expected_empty, ParsePointsFromString("0 0 a"));
-  EXPECT_EQ(expected_empty, ParsePointsFromString("1 2"));
-  EXPECT_EQ(expected_empty, ParsePointsFromString("1 2 3 4"));
-
-  {
-    std::vector<Point> expected(1, Point(-0.02f, 0, 0));
-    expected.push_back(Point(0.02f, 0, 0));
-    EXPECT_EQ(expected, ParsePointsFromString("-0.02 0 0 0.02 0 0"));
-  }
-  {
-    std::vector<Point> expected(1, Point(1, 2, 3));
-    EXPECT_EQ(expected, ParsePointsFromString("1 2 3"));
-  }
-}
-
 }  // namespace
 }  // namespace media

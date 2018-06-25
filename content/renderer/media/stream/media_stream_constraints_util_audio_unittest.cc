@@ -81,17 +81,8 @@ class MediaStreamConstraintsUtilAudioTest
       capabilities_.emplace_back("hw_echo_canceller_device", "fake_group2",
                                  hw_echo_canceller_parameters);
 
-      media::AudioParameters geometry_parameters(
-          media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-          media::CHANNEL_LAYOUT_STEREO,
-          media::AudioParameters::kAudioCDSampleRate, 1000);
-      geometry_parameters.set_mic_positions(kMicPositions);
-      capabilities_.emplace_back("geometry device", "fake_group4",
-                                 geometry_parameters);
-
       default_device_ = &capabilities_[0];
       hw_echo_canceller_device_ = &capabilities_[1];
-      geometry_device_ = &capabilities_[2];
     } else {
       // For content capture, use a single capability that admits all possible
       // settings.
@@ -254,10 +245,6 @@ class MediaStreamConstraintsUtilAudioTest
       EXPECT_TRUE(properties.goog_experimental_noise_suppression);
     }
     if (!Contains(exclude_audio_properties,
-                  &AudioProcessingProperties::goog_beamforming)) {
-      EXPECT_TRUE(properties.goog_beamforming);
-    }
-    if (!Contains(exclude_audio_properties,
                   &AudioProcessingProperties::goog_highpass_filter)) {
       EXPECT_TRUE(properties.goog_highpass_filter);
     }
@@ -327,10 +314,6 @@ class MediaStreamConstraintsUtilAudioTest
       EXPECT_FALSE(properties.goog_experimental_noise_suppression);
     }
     if (!Contains(exclude_audio_properties,
-                  &AudioProcessingProperties::goog_beamforming)) {
-      EXPECT_FALSE(properties.goog_beamforming);
-    }
-    if (!Contains(exclude_audio_properties,
                   &AudioProcessingProperties::goog_highpass_filter)) {
       EXPECT_FALSE(properties.goog_highpass_filter);
     }
@@ -372,18 +355,12 @@ class MediaStreamConstraintsUtilAudioTest
       EXPECT_TRUE(result.device_id().empty());
   }
 
-  void CheckGeometryDefaults(const AudioCaptureSettings& result) {
-    EXPECT_TRUE(
-        result.audio_processing_properties().goog_array_geometry.empty());
-  }
-
   void CheckAllDefaults(
       const AudioSettingsBoolMembers& exclude_main_settings,
       const AudioPropertiesBoolMembers& exclude_audio_properties,
       const AudioCaptureSettings& result) {
     CheckBoolDefaults(exclude_main_settings, exclude_audio_properties, result);
     CheckDeviceDefaults(result);
-    CheckGeometryDefaults(result);
   }
 
   // Assumes that echoCancellation is set to true as a basic, exact constraint.
@@ -420,7 +397,6 @@ class MediaStreamConstraintsUtilAudioTest
     EXPECT_EQ(enable_sw_audio_processing, properties.goog_noise_suppression);
     EXPECT_EQ(enable_sw_audio_processing,
               properties.goog_experimental_noise_suppression);
-    EXPECT_EQ(enable_sw_audio_processing, properties.goog_beamforming);
     EXPECT_EQ(enable_sw_audio_processing, properties.goog_highpass_filter);
     EXPECT_EQ(enable_sw_audio_processing,
               properties.goog_experimental_auto_gain_control);
@@ -453,7 +429,6 @@ class MediaStreamConstraintsUtilAudioTest
     EXPECT_TRUE(properties.goog_typing_noise_detection);
     EXPECT_TRUE(properties.goog_noise_suppression);
     EXPECT_TRUE(properties.goog_experimental_noise_suppression);
-    EXPECT_TRUE(properties.goog_beamforming);
     EXPECT_TRUE(properties.goog_highpass_filter);
     EXPECT_TRUE(properties.goog_experimental_auto_gain_control);
 
@@ -470,7 +445,6 @@ class MediaStreamConstraintsUtilAudioTest
   AudioDeviceCaptureCapabilities capabilities_;
   const AudioDeviceCaptureCapability* default_device_ = nullptr;
   const AudioDeviceCaptureCapability* hw_echo_canceller_device_ = nullptr;
-  const AudioDeviceCaptureCapability* geometry_device_ = nullptr;
   const std::vector<media::Point> kMicPositions = {{8, 8, 8}, {4, 4, 4}};
   const std::vector<blink::WebString> kEchoCancellationTypeValues = {
       blink::WebString::FromASCII("browser"),
@@ -542,7 +516,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SingleBoolConstraint) {
       &AudioProcessingProperties::goog_typing_noise_detection,
       &AudioProcessingProperties::goog_noise_suppression,
       &AudioProcessingProperties::goog_experimental_noise_suppression,
-      &AudioProcessingProperties::goog_beamforming,
       &AudioProcessingProperties::goog_highpass_filter,
       &AudioProcessingProperties::goog_experimental_auto_gain_control};
 
@@ -557,7 +530,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SingleBoolConstraint) {
           &blink::WebMediaTrackConstraintSet::goog_noise_suppression,
           &blink::WebMediaTrackConstraintSet::
               goog_experimental_noise_suppression,
-          &blink::WebMediaTrackConstraintSet::goog_beamforming,
           &blink::WebMediaTrackConstraintSet::goog_highpass_filter,
           &blink::WebMediaTrackConstraintSet::
               goog_experimental_auto_gain_control,
@@ -609,7 +581,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ExactArbitraryDeviceID) {
     EXPECT_EQ(kArbitraryDeviceID, result.device_id());
     CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
                       result);
-    CheckGeometryDefaults(result);
   }
 }
 
@@ -629,7 +600,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, IdealArbitraryDeviceID) {
     EXPECT_EQ(kArbitraryDeviceID, result.device_id());
   CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
                     result);
-  CheckGeometryDefaults(result);
 }
 
 TEST_P(MediaStreamConstraintsUtilAudioTest, ExactValidDeviceID) {
@@ -651,12 +621,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ExactValidDeviceID) {
     EXPECT_NE(
         IsDeviceCapture() && has_hw_echo_cancellation,
         result.audio_processing_properties().disable_hw_echo_cancellation);
-    if (&device == geometry_device_) {
-      EXPECT_EQ(kMicPositions,
-                result.audio_processing_properties().goog_array_geometry);
-    } else {
-      CheckGeometryDefaults(result);
-    }
   }
 }
 
@@ -679,12 +643,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ExactGroupID) {
     EXPECT_NE(
         IsDeviceCapture() && has_hw_echo_cancellation,
         result.audio_processing_properties().disable_hw_echo_cancellation);
-    if (&device == geometry_device_) {
-      EXPECT_EQ(kMicPositions,
-                result.audio_processing_properties().goog_array_geometry);
-    } else {
-      CheckGeometryDefaults(result);
-    }
   }
 }
 
@@ -726,7 +684,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, EchoCancellationWithSw) {
                   properties.goog_noise_suppression);
         EXPECT_EQ(enable_sw_audio_processing,
                   properties.goog_experimental_noise_suppression);
-        EXPECT_EQ(enable_sw_audio_processing, properties.goog_beamforming);
         EXPECT_EQ(enable_sw_audio_processing, properties.goog_highpass_filter);
         EXPECT_EQ(enable_sw_audio_processing,
                   properties.goog_experimental_auto_gain_control);
@@ -785,7 +742,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, EchoCancellationWithHw) {
         EXPECT_EQ(value, properties.goog_typing_noise_detection);
         EXPECT_EQ(value, properties.goog_noise_suppression);
         EXPECT_EQ(value, properties.goog_experimental_noise_suppression);
-        EXPECT_EQ(value, properties.goog_beamforming);
         EXPECT_EQ(value, properties.goog_highpass_filter);
         EXPECT_EQ(value, properties.goog_experimental_auto_gain_control);
 
@@ -1052,7 +1008,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
           EXPECT_EQ(ec_value, properties.goog_typing_noise_detection);
           EXPECT_EQ(ec_value, properties.goog_noise_suppression);
           EXPECT_EQ(ec_value, properties.goog_experimental_noise_suppression);
-          EXPECT_EQ(ec_value, properties.goog_beamforming);
           EXPECT_EQ(ec_value, properties.goog_highpass_filter);
           EXPECT_EQ(ec_value, properties.goog_experimental_auto_gain_control);
 
@@ -1112,7 +1067,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
       &AudioProcessingProperties::goog_typing_noise_detection,
       &AudioProcessingProperties::goog_noise_suppression,
       &AudioProcessingProperties::goog_experimental_noise_suppression,
-      &AudioProcessingProperties::goog_beamforming,
       &AudioProcessingProperties::goog_highpass_filter,
       &AudioProcessingProperties::goog_experimental_auto_gain_control};
 
@@ -1127,7 +1081,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
           &blink::WebMediaTrackConstraintSet::goog_noise_suppression,
           &blink::WebMediaTrackConstraintSet::
               goog_experimental_noise_suppression,
-          &blink::WebMediaTrackConstraintSet::goog_beamforming,
           &blink::WebMediaTrackConstraintSet::goog_highpass_filter,
           &blink::WebMediaTrackConstraintSet::
               goog_experimental_auto_gain_control,
@@ -1181,7 +1134,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, AdvancedCompatibleConstraints) {
       &AudioCaptureSettings::render_to_associated_sink;
   CheckBoolDefaults({render_to_associated_sink},
                     {&AudioProcessingProperties::goog_audio_mirroring}, result);
-  CheckGeometryDefaults(result);
   EXPECT_TRUE(result.render_to_associated_sink());
   EXPECT_TRUE(result.audio_processing_properties().goog_audio_mirroring);
 }
@@ -1206,7 +1158,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
                     {&AudioProcessingProperties::goog_audio_mirroring,
                      &AudioProcessingProperties::goog_highpass_filter},
                     result);
-  CheckGeometryDefaults(result);
   EXPECT_FALSE(result.hotword_enabled());
   EXPECT_TRUE(result.audio_processing_properties().goog_audio_mirroring);
   EXPECT_TRUE(result.audio_processing_properties().goog_highpass_filter);
@@ -1228,127 +1179,10 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, AdvancedConflictingLastConstraint) {
                     {&AudioProcessingProperties::goog_audio_mirroring,
                      &AudioProcessingProperties::goog_highpass_filter},
                     result);
-  CheckGeometryDefaults(result);
   // The fourth advanced set is ignored because it contradicts the second set.
   EXPECT_TRUE(result.hotword_enabled());
   EXPECT_TRUE(result.audio_processing_properties().goog_audio_mirroring);
   EXPECT_TRUE(result.audio_processing_properties().goog_highpass_filter);
-}
-
-// Test that a valid geometry is interpreted correctly in all the ways it can
-// be set.
-TEST_P(MediaStreamConstraintsUtilAudioTest, ValidGeometry) {
-  const blink::WebString kGeometry =
-      blink::WebString::FromASCII("-0.02 0 0 0.02 0 1.01");
-
-  for (auto set_function : kStringSetFunctions) {
-    for (auto accessor : kFactoryAccessors) {
-      // Ideal advanced is ignored by the SelectSettings algorithm.
-      // Using array elements instead of pointer values due to the comparison
-      // failing on some build configurations.
-      if (set_function == kStringSetFunctions[1] &&
-          accessor == kFactoryAccessors[1]) {
-        continue;
-      }
-      ResetFactory();
-      ((constraint_factory_.*accessor)().goog_array_geometry.*
-       set_function)(kGeometry);
-      auto result = SelectSettings();
-      EXPECT_TRUE(result.HasValue());
-      CheckDeviceDefaults(result);
-      CheckBoolDefaults(AudioSettingsBoolMembers(),
-                        AudioPropertiesBoolMembers(), result);
-      const std::vector<media::Point>& geometry =
-          result.audio_processing_properties().goog_array_geometry;
-      EXPECT_EQ(2u, geometry.size());
-      EXPECT_EQ(media::Point(-0.02, 0, 0), geometry[0]);
-      EXPECT_EQ(media::Point(0.02, 0, 1.01), geometry[1]);
-    }
-  }
-}
-
-// Test that an invalid geometry is interpreted as empty in all the ways it can
-// be set.
-TEST_P(MediaStreamConstraintsUtilAudioTest, InvalidGeometry) {
-  const blink::WebString kGeometry =
-      blink::WebString::FromASCII("1 1 1 invalid");
-
-  for (auto set_function : kStringSetFunctions) {
-    for (auto accessor : kFactoryAccessors) {
-      // Ideal advanced is ignored by the SelectSettings algorithm.
-      // Using array elements instead of pointer values due to the comparison
-      // failing on some build configurations.
-      if (set_function == kStringSetFunctions[1] &&
-          accessor == kFactoryAccessors[1]) {
-        continue;
-      }
-      ResetFactory();
-      ((constraint_factory_.*accessor)().goog_array_geometry.*
-       set_function)(kGeometry);
-      auto result = SelectSettings();
-      EXPECT_TRUE(result.HasValue());
-      CheckDeviceDefaults(result);
-      CheckBoolDefaults(AudioSettingsBoolMembers(),
-                        AudioPropertiesBoolMembers(), result);
-      const std::vector<media::Point>& geometry =
-          result.audio_processing_properties().goog_array_geometry;
-      EXPECT_EQ(0u, geometry.size());
-    }
-  }
-}
-
-// Test that an invalid geometry is interpreted as empty in all the ways it can
-// be set.
-TEST_P(MediaStreamConstraintsUtilAudioTest, DeviceGeometry) {
-  if (!IsDeviceCapture())
-    return;
-
-  constraint_factory_.basic().device_id.SetExact(
-      blink::WebString::FromASCII(geometry_device_->DeviceID()));
-
-  {
-    const blink::WebString kValidGeometry =
-        blink::WebString::FromASCII("-0.02 0 0  0.02 0 1.01");
-    constraint_factory_.basic().goog_array_geometry.SetExact(kValidGeometry);
-    auto result = SelectSettings();
-    EXPECT_TRUE(result.HasValue());
-    CheckDevice(*geometry_device_, result);
-    CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                      result);
-    // Constraints geometry should be preferred over device geometry.
-    const std::vector<media::Point>& geometry =
-        result.audio_processing_properties().goog_array_geometry;
-    EXPECT_EQ(2u, geometry.size());
-    EXPECT_EQ(media::Point(-0.02, 0, 0), geometry[0]);
-    EXPECT_EQ(media::Point(0.02, 0, 1.01), geometry[1]);
-  }
-
-  {
-    constraint_factory_.basic().goog_array_geometry.SetExact(
-        blink::WebString());
-    auto result = SelectSettings();
-    EXPECT_TRUE(result.HasValue());
-    CheckDevice(*geometry_device_, result);
-    CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                      result);
-    // Empty geometry is valid and should be preferred over device geometry.
-    EXPECT_TRUE(
-        result.audio_processing_properties().goog_array_geometry.empty());
-  }
-
-  {
-    const blink::WebString kInvalidGeometry =
-        blink::WebString::FromASCII("1 1 1 invalid");
-    constraint_factory_.basic().goog_array_geometry.SetExact(kInvalidGeometry);
-    auto result = SelectSettings();
-    EXPECT_TRUE(result.HasValue());
-    CheckDevice(*geometry_device_, result);
-    CheckBoolDefaults(AudioSettingsBoolMembers(), AudioPropertiesBoolMembers(),
-                      result);
-    // Device geometry should be preferred over invalid constraints geometry.
-    EXPECT_EQ(kMicPositions,
-              result.audio_processing_properties().goog_array_geometry);
-  }
 }
 
 // NoDevices tests verify that the case with no devices is handled correctly.
@@ -1478,11 +1312,9 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
       properties.goog_noise_suppression = !properties.goog_noise_suppression;
       properties.goog_experimental_noise_suppression =
           !properties.goog_experimental_noise_suppression;
-      properties.goog_beamforming = !properties.goog_beamforming;
       properties.goog_highpass_filter = !properties.goog_highpass_filter;
       properties.goog_experimental_auto_gain_control =
           !properties.goog_experimental_auto_gain_control;
-      properties.goog_array_geometry = {{1, 1, 1}, {2, 2, 2}};
     }
 
     std::unique_ptr<ProcessedLocalAudioSource> source =
@@ -1502,7 +1334,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
             &blink::WebMediaTrackConstraintSet::goog_noise_suppression,
             &blink::WebMediaTrackConstraintSet::
                 goog_experimental_noise_suppression,
-            &blink::WebMediaTrackConstraintSet::goog_beamforming,
             &blink::WebMediaTrackConstraintSet::goog_highpass_filter,
             &blink::WebMediaTrackConstraintSet::
                 goog_experimental_auto_gain_control,
@@ -1515,7 +1346,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
         &AudioProcessingProperties::goog_typing_noise_detection,
         &AudioProcessingProperties::goog_noise_suppression,
         &AudioProcessingProperties::goog_experimental_noise_suppression,
-        &AudioProcessingProperties::goog_beamforming,
         &AudioProcessingProperties::goog_highpass_filter,
         &AudioProcessingProperties::goog_experimental_auto_gain_control};
 
@@ -1548,25 +1378,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
       constraint_factory_.Reset();
       (constraint_factory_.basic().*kAudioProcessingConstraints[i])
           .SetIdeal(false);
-      result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
-      EXPECT_TRUE(result.HasValue());
-    }
-
-    {
-      constraint_factory_.Reset();
-      // TODO(guidou): Support any semantically equivalent strings for the
-      // goog_array_geometry constrainable property. http://crbug.com/796955
-      constraint_factory_.basic().goog_array_geometry.SetExact(
-          blink::WebString("1 1 1  2 2 2"));
-      auto result = SelectSettingsAudioCapture(
-          source.get(), constraint_factory_.CreateWebMediaConstraints());
-      EXPECT_EQ(result.HasValue(), !use_defaults);
-
-      // Setting ideal should succeed.
-      constraint_factory_.Reset();
-      constraint_factory_.basic().goog_array_geometry.SetIdeal(
-          blink::WebString("4 4 4  5 5 5"));
       result = SelectSettingsAudioCapture(
           source.get(), constraint_factory_.CreateWebMediaConstraints());
       EXPECT_TRUE(result.HasValue());
