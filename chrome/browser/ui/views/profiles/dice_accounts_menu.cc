@@ -17,7 +17,7 @@
 
 namespace {
 
-constexpr int kAvatarIconSize = 16;
+constexpr int kProfilesAvatarIconSize = 16;
 
 // Used to identify the "Use another account" button.
 constexpr int kUseAnotherAccountCmdId = std::numeric_limits<int>::max();
@@ -30,7 +30,8 @@ constexpr int kHorizontalIconSpacing = 16;
 
 gfx::ImageSkia SizeAndCircleIcon(const gfx::Image& icon) {
   gfx::Image circled_icon = profiles::GetSizedAvatarIcon(
-      icon, true, kAvatarIconSize, kAvatarIconSize, profiles::SHAPE_CIRCLE);
+      icon, true, kProfilesAvatarIconSize, kProfilesAvatarIconSize,
+      profiles::SHAPE_CIRCLE);
   return *circled_icon.ToImageSkia();
 }
 

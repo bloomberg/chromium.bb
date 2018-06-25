@@ -95,7 +95,7 @@ const char kJsApiUserManagerRemoveUserWarningLoadStats[] =
     "removeUserWarningLoadStats";
 const char kJsApiUserManagerAreAllProfilesLocked[] =
     "areAllProfilesLocked";
-const size_t kAvatarIconSize = 180;
+const size_t kSigninAvatarIconSize = 180;
 const int kMaxOAuthRetries = 3;
 
 std::string GetAvatarImage(const ProfileAttributesEntry* entry) {
@@ -112,7 +112,8 @@ std::string GetAvatarImage(const ProfileAttributesEntry* entry) {
         profiles::GetPlaceholderAvatarIconResourceID());
   }
   gfx::Image resized_image = profiles::GetSizedAvatarIcon(
-      avatar_image, is_gaia_picture, kAvatarIconSize, kAvatarIconSize);
+      avatar_image, is_gaia_picture, kSigninAvatarIconSize,
+      kSigninAvatarIconSize);
   return webui::GetBitmapDataUrl(resized_image.AsBitmap());
 }
 
