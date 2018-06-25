@@ -25,7 +25,7 @@ HitTestResult HitTestResultInFrame(
   if (!frame || !frame->ContentLayoutObject())
     return result;
   if (frame->View()) {
-    IntRect rect = frame->View()->VisibleContentRect(kIncludeScrollbars);
+    IntRect rect(IntPoint(), frame->View()->Size());
     if (!rect.Contains(RoundedIntPoint(point)))
       return result;
   }

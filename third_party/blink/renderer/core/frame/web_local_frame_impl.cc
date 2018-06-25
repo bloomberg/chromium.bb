@@ -617,7 +617,7 @@ bool WebLocalFrameImpl::HasVisibleContent() const {
   }
 
   if (LocalFrameView* view = GetFrameView())
-    return view->VisibleWidth() > 0 && view->VisibleHeight() > 0;
+    return view->Width() > 0 && view->Height() > 0;
   return false;
 }
 

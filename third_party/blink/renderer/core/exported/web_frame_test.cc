@@ -2689,18 +2689,17 @@ TEST_F(WebFrameTest, pageScaleFactorDoesntShrinkFrameView) {
 
   web_view_helper.GetWebView()->SetPageScaleFactor(2);
 
-  IntSize unscaled_size = view->VisibleContentSize(kIncludeScrollbars);
+  IntSize unscaled_size = view->Size();
   EXPECT_EQ(viewport_width, unscaled_size.Width());
   EXPECT_EQ(viewport_height, unscaled_size.Height());
 
-  IntSize unscaled_size_minus_scrollbar =
-      view->VisibleContentSize(kExcludeScrollbars);
+  IntSize unscaled_size_minus_scrollbar = view->Size();
   EXPECT_EQ(viewport_width_minus_scrollbar,
             unscaled_size_minus_scrollbar.Width());
   EXPECT_EQ(viewport_height_minus_scrollbar,
             unscaled_size_minus_scrollbar.Height());
 
-  IntSize frame_view_size = view->VisibleContentRect().Size();
+  IntSize frame_view_size = view->Size();
   EXPECT_EQ(viewport_width_minus_scrollbar, frame_view_size.Width());
   EXPECT_EQ(viewport_height_minus_scrollbar, frame_view_size.Height());
 }
@@ -3336,20 +3335,16 @@ TEST_F(WebFrameTest, pageScaleFactorUpdatesScrollbars) {
   LocalFrameView* view = web_view_helper.LocalMainFrame()->GetFrameView();
   ScrollableArea* scrollable_area = view->LayoutViewport();
   EXPECT_EQ(scrollable_area->ScrollSize(kHorizontalScrollbar),
-            scrollable_area->ContentsSize().Width() -
-                view->VisibleContentRect().Width());
+            scrollable_area->ContentsSize().Width() - view->Width());
   EXPECT_EQ(scrollable_area->ScrollSize(kVerticalScrollbar),
-            scrollable_area->ContentsSize().Height() -
-                view->VisibleContentRect().Height());
+            scrollable_area->ContentsSize().Height() - view->Height());
 
   web_view_helper.GetWebView()->SetPageScaleFactor(10);
 
   EXPECT_EQ(scrollable_area->ScrollSize(kHorizontalScrollbar),
-            scrollable_area->ContentsSize().Width() -
-                view->VisibleContentRect().Width());
+            scrollable_area->ContentsSize().Width() - view->Width());
   EXPECT_EQ(scrollable_area->ScrollSize(kVerticalScrollbar),
-            scrollable_area->ContentsSize().Height() -
-                view->VisibleContentRect().Height());
+            scrollable_area->ContentsSize().Height() - view->Height());
 }
 
 TEST_F(WebFrameTest, CanOverrideScaleLimits) {
@@ -12045,8 +12040,9 @@ TEST_F(WebFrameSimTest, ScrollFocusedIntoViewClipped) {
                      input->getBoundingClientRect()->width(),
                      input->getBoundingClientRect()->height());
 
-  EXPECT_TRUE(frame_view->VisibleContentRect().Contains(input_rect))
-      << "Layout viewport [" << frame_view->VisibleContentRect().ToString()
+  IntRect visible_content_rect(IntPoint(), frame_view->Size());
+  EXPECT_TRUE(visible_content_rect.Contains(input_rect))
+      << "Layout viewport [" << visible_content_rect.ToString()
       << "] does not contain input rect [" << input_rect.ToString()
       << "] after scroll into view.";
 

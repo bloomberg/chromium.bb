@@ -189,8 +189,8 @@ TEST_F(SVGImageTest, SetSizeOnVisualViewport) {
   PumpFrame();
   LocalFrame* local_frame =
       ToLocalFrame(GetImage().GetPageForTesting()->MainFrame());
-  ASSERT_FALSE(local_frame->View()->VisibleContentRect().IsEmpty());
-  EXPECT_EQ(local_frame->View()->VisibleContentRect().Size(),
+  ASSERT_FALSE(local_frame->View()->Size().IsEmpty());
+  EXPECT_EQ(local_frame->View()->Size(),
             GetImage().GetPageForTesting()->GetVisualViewport().Size());
 }
 

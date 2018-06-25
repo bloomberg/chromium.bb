@@ -609,7 +609,7 @@ LayoutRect LayoutView::ViewRect() const {
   if (ShouldUsePrintingLayout())
     return LayoutRect(LayoutPoint(), Size());
   if (frame_view_)
-    return LayoutRect(frame_view_->VisibleContentRect());
+    return LayoutRect(LayoutPoint(), LayoutSize(frame_view_->Size()));
   return LayoutRect();
 }
 

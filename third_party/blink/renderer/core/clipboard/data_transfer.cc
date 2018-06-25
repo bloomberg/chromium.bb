@@ -106,12 +106,12 @@ class DraggedNodeImageBuilder {
         dragged_layout_object->AbsoluteBoundingBoxRectIncludingDescendants();
     // TODO(chrishtr): consider using the root frame's visible rect instead
     // of the local frame, to avoid over-clipping.
-    FloatRect visible_rect =
-        layer->GetLayoutObject().GetFrameView()->VisibleContentRect();
+    IntRect visible_rect(IntPoint(),
+                         layer->GetLayoutObject().GetFrameView()->Size());
     // If the absolute bounding box is large enough to be possibly a memory
     // or IPC payload issue, clip it to the visible content rect.
     if (absolute_bounding_box.Size().Area() > visible_rect.Size().Area()) {
-      absolute_bounding_box.Intersect(EnclosingIntRect(visible_rect));
+      absolute_bounding_box.Intersect(visible_rect);
     }
 
     FloatRect bounding_box =

@@ -667,14 +667,12 @@ void InspectorOverlayAgent::RebuildOverlayPage() {
   if (!view || !frame)
     return;
 
-  IntRect visible_rect_in_document =
-      view->GetScrollableArea()->VisibleContentRect();
   IntSize viewport_size = frame->GetPage()->GetVisualViewport().Size();
   OverlayMainFrame()->View()->Resize(viewport_size);
   OverlayPage()->GetVisualViewport().SetSize(viewport_size);
   OverlayMainFrame()->SetPageZoomFactor(WindowToViewportScale());
 
-  Reset(viewport_size, visible_rect_in_document.Location());
+  Reset(viewport_size);
 
   DrawNodeHighlight();
   DrawQuadHighlight();
@@ -859,8 +857,7 @@ LocalFrame* InspectorOverlayAgent::OverlayMainFrame() {
   return ToLocalFrame(OverlayPage()->MainFrame());
 }
 
-void InspectorOverlayAgent::Reset(const IntSize& viewport_size,
-                                  const IntPoint& document_scroll_offset) {
+void InspectorOverlayAgent::Reset(const IntSize& viewport_size) {
   std::unique_ptr<protocol::DictionaryValue> reset_data =
       protocol::DictionaryValue::create();
   reset_data->setDouble(
@@ -882,8 +879,12 @@ void InspectorOverlayAgent::Reset(const IntSize& viewport_size,
       "pageZoomFactor",
       frame_impl_->GetFrame()->PageZoomFactor() / WindowToViewportScale());
 
-  reset_data->setInteger("scrollX", document_scroll_offset.X());
-  reset_data->setInteger("scrollY", document_scroll_offset.Y());
+  // TODO(szager): These values have been zero since root layer scrolling
+  // landed. Probably they should be derived from
+  // LocalFrameView::LayoutViewport(); but I have no idea who the consumers
+  // of these values are, so I'm leaving them zero pending investigation.
+  reset_data->setInteger("scrollX", 0);
+  reset_data->setInteger("scrollY", 0);
   EvaluateInOverlay("reset", std::move(reset_data));
 }
 

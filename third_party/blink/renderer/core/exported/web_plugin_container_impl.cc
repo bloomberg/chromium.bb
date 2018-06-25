@@ -1088,7 +1088,7 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
   LayoutRect layout_clipped_local_rect = unclipped_absolute_rect;
   LayoutRect unclipped_layout_local_rect = layout_clipped_local_rect;
   layout_clipped_local_rect.Intersect(
-      LayoutRect(root_view->GetFrameView()->VisibleContentRect()));
+      LayoutRect(LayoutPoint(), LayoutSize(root_view->GetFrameView()->Size())));
 
   unclipped_int_local_rect =
       box->AbsoluteToLocalQuad(FloatRect(unclipped_layout_local_rect),

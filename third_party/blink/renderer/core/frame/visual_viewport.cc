@@ -757,7 +757,7 @@ IntSize VisualViewport::ContentsSize() const {
   if (!frame || !frame->View())
     return IntSize();
 
-  return frame->View()->VisibleContentRect(kIncludeScrollbars).Size();
+  return frame->View()->Size();
 }
 
 IntRect VisualViewport::VisibleContentRect(

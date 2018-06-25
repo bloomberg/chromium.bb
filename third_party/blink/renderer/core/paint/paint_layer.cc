@@ -1754,7 +1754,7 @@ static inline LayoutRect FrameVisibleRect(LayoutObject& layout_object) {
   if (!frame_view)
     return LayoutRect();
 
-  return LayoutRect(frame_view->VisibleContentRect());
+  return LayoutRect(LayoutPoint(), LayoutSize(frame_view->Size()));
 }
 
 PaintLayer::HitTestRecursionData::HitTestRecursionData(
@@ -2598,7 +2598,7 @@ LayoutRect PaintLayer::BoundingBoxForCompositingInternal(
     // and the document's layout overflow rect.
     IntRect result = IntRect();
     if (LocalFrameView* frame_view = GetLayoutObject().GetFrameView())
-      result = IntRect(IntPoint(), frame_view->VisibleContentSize());
+      result = IntRect(IntPoint(), frame_view->Size());
     return LayoutRect(result);
   }
 
