@@ -7,7 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_cell.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item_accessibility_delegate.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_accessibility_delegate.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"

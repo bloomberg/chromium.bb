@@ -11,7 +11,7 @@
 
 class GURL;
 @class FaviconAttributes;
-@protocol ReadingListCollectionViewItemAccessibilityDelegate;
+@protocol ReadingListListViewItemAccessibilityDelegate;
 
 // Collection view item for representing a ReadingListEntry.
 @interface ReadingListCollectionViewItem : CollectionViewItem
@@ -31,9 +31,8 @@ class GURL;
 // Timestamp of the distillation in microseconds since Jan 1st 1970.
 @property(nonatomic, assign) int64_t distillationDate;
 // Delegate for the accessibility actions.
-@property(nonatomic, weak)
-    id<ReadingListCollectionViewItemAccessibilityDelegate>
-        accessibilityDelegate;
+@property(nonatomic, weak) id<ReadingListListViewItemAccessibilityDelegate>
+    accessibilityDelegate;
 // Attributes for favicon.
 @property(nonatomic, strong) FaviconAttributes* attributes;
 
