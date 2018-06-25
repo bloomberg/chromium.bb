@@ -4,6 +4,8 @@
 
 static_library("content") {
   sources = [
+    "app_source_url_recorder.cc",
+    "app_source_url_recorder.h",
     "source_url_recorder.cc",
     "source_url_recorder.h",
   ]
@@ -20,6 +22,7 @@ static_library("content") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "app_source_url_recorder_test.cc",
     "source_url_recorder_test.cc",
   ]
   deps = [

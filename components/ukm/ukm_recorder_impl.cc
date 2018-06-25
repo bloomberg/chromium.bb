@@ -48,7 +48,8 @@ std::string GetWhitelistEntries() {
 }
 
 bool IsWhitelistedSourceId(SourceId source_id) {
-  return GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID;
+  return GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID ||
+         GetSourceIdType(source_id) == SourceIdType::APP_ID;
 }
 
 // Gets the maximum number of Sources we'll keep in memory before discarding any
@@ -397,6 +398,14 @@ void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
     return;
   }
   sources_.emplace(source_id, std::make_unique<UkmSource>(source_id, url));
+}
+
+void UkmRecorderImpl::UpdateAppURL(SourceId source_id, const GURL& url) {
+  if (!extensions_enabled_) {
+    RecordDroppedSource(DroppedDataReason::EXTENSION_URLS_DISABLED);
+    return;
+  }
+  UpdateSourceURL(source_id, url);
 }
 
 void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {

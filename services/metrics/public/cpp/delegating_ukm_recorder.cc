@@ -38,8 +38,10 @@ void DelegatingUkmRecorder::RemoveDelegate(UkmRecorder* delegate) {
 
 void DelegatingUkmRecorder::UpdateSourceURL(SourceId source_id,
                                             const GURL& url) {
-  if (GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID) {
-    DLOG(FATAL) << "UpdateSourceURL invoked for NAVIGATION_ID SourceId";
+  if (GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID ||
+      GetSourceIdType(source_id) == SourceIdType::APP_ID) {
+    DLOG(FATAL)
+        << "UpdateSourceURL invoked for NAVIGATION_ID or APP_ID SourceId";
     return;
   }
   UpdateSourceURLImpl(source_id, url);
@@ -52,6 +54,16 @@ void DelegatingUkmRecorder::UpdateNavigationURL(SourceId source_id,
     return;
   }
   UpdateSourceURLImpl(source_id, url);
+}
+
+void DelegatingUkmRecorder::UpdateAppURL(SourceId source_id, const GURL& url) {
+  if (GetSourceIdType(source_id) != SourceIdType::APP_ID) {
+    DLOG(FATAL) << "UpdateAppURL invoked for non-APP_ID SourceId";
+    return;
+  }
+  base::AutoLock auto_lock(lock_);
+  for (auto& iterator : delegates_)
+    iterator.second.UpdateAppURL(source_id, url);
 }
 
 void DelegatingUkmRecorder::UpdateSourceURLImpl(SourceId source_id,
@@ -92,6 +104,16 @@ void DelegatingUkmRecorder::Delegate::UpdateSourceURL(ukm::SourceId source_id,
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&UkmRecorder::UpdateSourceURL, ptr_, source_id, url));
+}
+
+void DelegatingUkmRecorder::Delegate::UpdateAppURL(ukm::SourceId source_id,
+                                                   const GURL& url) {
+  if (task_runner_->RunsTasksInCurrentSequence()) {
+    ptr_->UpdateAppURL(source_id, url);
+    return;
+  }
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(&UkmRecorder::UpdateAppURL,
+                                                   ptr_, source_id, url));
 }
 
 void DelegatingUkmRecorder::Delegate::AddEntry(mojom::UkmEntryPtr entry) {
