@@ -17,6 +17,10 @@
         width: 100%;
       }
 
+      :host-context([dir='rtl']) select {
+        background-position: center left;
+      }
+
       select:enabled:hover {
         background-image: url(chrome://resources/images/select.png),
             linear-gradient(#f0f0f0, #f0f0f0 38%, #e0e0e0);
