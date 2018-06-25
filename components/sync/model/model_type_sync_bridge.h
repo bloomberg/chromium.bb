@@ -19,6 +19,7 @@ namespace syncer {
 
 class ConflictResolution;
 class DataBatch;
+struct DataTypeActivationRequest;
 struct EntityData;
 class MetadataChangeList;
 class ModelError;
@@ -49,7 +50,7 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
 
   // Called by the processor as a notification that sync has been started by the
   // ModelTypeController.
-  virtual void OnSyncStarting();
+  virtual void OnSyncStarting(const DataTypeActivationRequest& request);
 
   // Creates an object used to communicate changes in the sync metadata to the
   // model type store.

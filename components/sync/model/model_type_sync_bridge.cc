@@ -21,7 +21,8 @@ ModelTypeSyncBridge::ModelTypeSyncBridge(
 
 ModelTypeSyncBridge::~ModelTypeSyncBridge() {}
 
-void ModelTypeSyncBridge::OnSyncStarting() {}
+void ModelTypeSyncBridge::OnSyncStarting(
+    const DataTypeActivationRequest& request) {}
 
 bool ModelTypeSyncBridge::SupportsGetStorageKey() const {
   return true;

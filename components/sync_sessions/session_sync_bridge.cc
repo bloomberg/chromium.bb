@@ -337,7 +337,8 @@ void SessionSyncBridge::OnFaviconVisited(const GURL& page_url,
   favicon_cache_.OnFaviconVisited(page_url, favicon_url);
 }
 
-void SessionSyncBridge::OnSyncStarting() {
+void SessionSyncBridge::OnSyncStarting(
+    const syncer::DataTypeActivationRequest& request) {
   DCHECK(!syncing_);
 
   session_store_factory_.Run(base::BindOnce(

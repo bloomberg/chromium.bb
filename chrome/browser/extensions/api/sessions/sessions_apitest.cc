@@ -32,7 +32,7 @@
 #include "components/sync/base/hash_util.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
-#include "components/sync/engine/data_type_activation_request.h"
+#include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/test/engine/mock_model_type_worker.h"
 #include "components/sync_sessions/session_store.h"
 #include "extensions/browser/api_test_utils.h"

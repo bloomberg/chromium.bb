@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
+#include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mutable_data_batch.h"
@@ -64,12 +65,8 @@ std::unique_ptr<EntityData> CopyToEntityData(
 
 ConsentSyncBridgeImpl::ConsentSyncBridgeImpl(
     OnceModelTypeStoreFactory store_factory,
-    std::unique_ptr<ModelTypeChangeProcessor> change_processor,
-    base::RepeatingCallback<std::string()> authenticated_account_id_callback)
-    : ModelTypeSyncBridge(std::move(change_processor)),
-      authenticated_account_id_callback_(authenticated_account_id_callback),
-      is_sync_starting_or_started_(false) {
-  DCHECK(authenticated_account_id_callback_);
+    std::unique_ptr<ModelTypeChangeProcessor> change_processor)
+    : ModelTypeSyncBridge(std::move(change_processor)) {
   std::move(store_factory)
       .Run(USER_CONSENTS, base::BindOnce(&ConsentSyncBridgeImpl::OnStoreCreated,
                                          base::AsWeakPtr(this)));
@@ -130,13 +127,13 @@ std::string ConsentSyncBridgeImpl::GetStorageKey(
   return GetStorageKeyFromSpecifics(entity_data.specifics.user_consent());
 }
 
-void ConsentSyncBridgeImpl::OnSyncStarting() {
-#if !defined(OS_IOS)  // https://crbug.com/834042
-  DCHECK(!authenticated_account_id_callback_.Run().empty());
-#endif  // !defined(OS_IOS)
-  DCHECK(!is_sync_starting_or_started_);
+void ConsentSyncBridgeImpl::OnSyncStarting(
+    const DataTypeActivationRequest& request) {
+  DCHECK(!request.authenticated_account_id.empty());
+  DCHECK(syncing_account_id_.empty());
 
-  is_sync_starting_or_started_ = true;
+  syncing_account_id_ = request.authenticated_account_id;
+
   if (store_ && change_processor()->IsTrackingMetadata()) {
     ReadAllDataAndResubmit();
   }
@@ -148,7 +145,7 @@ ConsentSyncBridgeImpl::ApplyStopSyncChanges(
   // Sync can only be stopped after initialization.
   DCHECK(deferred_consents_while_initializing_.empty());
 
-  is_sync_starting_or_started_ = false;
+  syncing_account_id_.clear();
 
   if (delete_metadata_change_list) {
     // Preserve all consents in the store, but delete their metadata, because it
@@ -169,7 +166,7 @@ ConsentSyncBridgeImpl::ApplyStopSyncChanges(
 }
 
 void ConsentSyncBridgeImpl::ReadAllDataAndResubmit() {
-  DCHECK(is_sync_starting_or_started_);
+  DCHECK(!syncing_account_id_.empty());
   DCHECK(change_processor()->IsTrackingMetadata());
   DCHECK(store_);
   store_->ReadAllData(base::BindOnce(
@@ -179,7 +176,7 @@ void ConsentSyncBridgeImpl::ReadAllDataAndResubmit() {
 void ConsentSyncBridgeImpl::OnReadAllDataToResubmit(
     const base::Optional<ModelError>& error,
     std::unique_ptr<RecordList> data_records) {
-  if (!is_sync_starting_or_started_) {
+  if (syncing_account_id_.empty()) {
     // Meanwhile the sync has been disabled. We will try next time.
     return;
   }
@@ -193,7 +190,7 @@ void ConsentSyncBridgeImpl::OnReadAllDataToResubmit(
   for (const Record& r : *data_records) {
     auto specifics = std::make_unique<UserConsentSpecifics>();
     if (specifics->ParseFromString(r.value) &&
-        specifics->account_id() == authenticated_account_id_callback_.Run()) {
+        specifics->account_id() == syncing_account_id_) {
       RecordConsentImpl(std::move(specifics));
     }
   }
@@ -201,6 +198,8 @@ void ConsentSyncBridgeImpl::OnReadAllDataToResubmit(
 
 void ConsentSyncBridgeImpl::RecordConsent(
     std::unique_ptr<UserConsentSpecifics> specifics) {
+  // TODO(vitaliii): Sanity-check specifics->account_id() against
+  // syncing_account_id_, maybe DCHECK.
   DCHECK(!specifics->account_id().empty());
   if (change_processor()->IsTrackingMetadata()) {
     RecordConsentImpl(std::move(specifics));
@@ -262,7 +261,7 @@ void ConsentSyncBridgeImpl::OnReadAllMetadata(
   } else {
     change_processor()->ModelReadyToSync(std::move(metadata_batch));
     DCHECK(change_processor()->IsTrackingMetadata());
-    if (is_sync_starting_or_started_) {
+    if (!syncing_account_id_.empty()) {
       ReadAllDataAndResubmit();
     }
     ProcessQueuedEvents();

@@ -7,7 +7,6 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -44,10 +43,6 @@ ConsentAuditorFactory::ConsentAuditorFactory()
           "ConsentAuditor",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(browser_sync::UserEventServiceFactory::GetInstance());
-  // TODO(crbug.com/850428): This is missing
-  // DependsOn(ProfileSyncServiceFactory::GetInstance()), which we can't
-  // simply add because ProfileSyncServiceFactory itself depends on this
-  // factory.
 }
 
 ConsentAuditorFactory::~ConsentAuditorFactory() {}
@@ -66,16 +61,8 @@ KeyedService* ConsentAuditorFactory::BuildServiceInstanceFor(
             syncer::USER_CONSENTS,
             base::BindRepeating(&syncer::ReportUnrecoverableError,
                                 chrome::GetChannel()));
-    syncer::SyncService* sync_service =
-        ProfileSyncServiceFactory::GetForProfile(profile);
     bridge = std::make_unique<syncer::ConsentSyncBridgeImpl>(
-        std::move(store_factory), std::move(change_processor),
-        /*authenticated_account_id_callback=*/
-        base::BindRepeating(
-            [](syncer::SyncService* sync_service) {
-              return sync_service->GetAuthenticatedAccountInfo().account_id;
-            },
-            base::Unretained(sync_service)));
+        std::move(store_factory), std::move(change_processor));
   }
   // TODO(vitaliii): Don't create UserEventService when it won't be used.
   return new consent_auditor::ConsentAuditor(
