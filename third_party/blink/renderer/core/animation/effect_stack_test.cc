@@ -35,10 +35,9 @@ class AnimationEffectStackTest : public PageTestBase {
     return animation;
   }
 
-  void UpdateTimeline(double time) {
+  void UpdateTimeline(TimeDelta time) {
     GetDocument().GetAnimationClock().UpdateTime(
-        base::TimeTicks() + base::TimeDelta::FromSecondsD(
-                                GetDocument().Timeline().ZeroTime() + time));
+        GetDocument().Timeline().ZeroTime() + time);
     timeline->ServiceAnimations(kTimingUpdateForAnimationFrame);
   }
 
@@ -175,7 +174,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
       base::Optional<CompositorElementIdSet>());
   ActiveInterpolationsMap interpolations;
 
-  UpdateTimeline(11);
+  UpdateTimeline(TimeDelta::FromSeconds(11));
   ThreadState::Current()->CollectAllGarbage();
   interpolations = EffectStack::ActiveInterpolations(
       &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
@@ -184,7 +183,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   EXPECT_EQ(GetFontSizeValue(interpolations), 3);
   EXPECT_EQ(3u, SampledEffectCount());
 
-  UpdateTimeline(13);
+  UpdateTimeline(TimeDelta::FromSeconds(13));
   ThreadState::Current()->CollectAllGarbage();
   interpolations = EffectStack::ActiveInterpolations(
       &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
@@ -193,7 +192,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   EXPECT_EQ(GetFontSizeValue(interpolations), 3);
   EXPECT_EQ(3u, SampledEffectCount());
 
-  UpdateTimeline(15);
+  UpdateTimeline(TimeDelta::FromSeconds(15));
   ThreadState::Current()->CollectAllGarbage();
   interpolations = EffectStack::ActiveInterpolations(
       &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
@@ -202,7 +201,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   EXPECT_EQ(GetFontSizeValue(interpolations), 3);
   EXPECT_EQ(2u, SampledEffectCount());
 
-  UpdateTimeline(17);
+  UpdateTimeline(TimeDelta::FromSeconds(17));
   ThreadState::Current()->CollectAllGarbage();
   interpolations = EffectStack::ActiveInterpolations(
       &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,

@@ -162,7 +162,7 @@ void PendingAnimations::NotifyCompositorAnimationStarted(
     }
     animation->NotifyCompositorStartTime(
         monotonic_animation_start_time -
-        animation->TimelineInternal()->ZeroTime());
+        TimeTicksInSeconds(animation->TimelineInternal()->ZeroTime()));
   }
 }
 

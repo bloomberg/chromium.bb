@@ -554,8 +554,9 @@ double InspectorAnimationAgent::NormalizedStartTime(
   }
   return animation.startTime().value_or(NullValue()) +
          (animation.TimelineInternal()->ZeroTime() -
-          ReferenceTimeline().ZeroTime()) *
-             1000 * ReferenceTimeline().PlaybackRate();
+          ReferenceTimeline().ZeroTime())
+                 .InMillisecondsF() *
+             ReferenceTimeline().PlaybackRate();
 }
 
 void InspectorAnimationAgent::Trace(blink::Visitor* visitor) {
