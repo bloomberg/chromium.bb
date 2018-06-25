@@ -145,21 +145,6 @@ void AssistantController::DownloadImage(
   assistant_image_downloader_->Download(account_id, url, std::move(callback));
 }
 
-// TODO(dmblack): Update DialogPlate to accept multiple listeners and then
-// remove this code from AssistantController. Use observer pattern.
-void AssistantController::OnDialogPlateButtonPressed(DialogPlateButtonId id) {
-  assistant_interaction_controller_->OnDialogPlateButtonPressed(id);
-  assistant_ui_controller_->OnDialogPlateButtonPressed(id);
-}
-
-// TODO(dmblack): Update DialogPlate to accept multiple listeners and then
-// remove this code from AssistantController. Use observer pattern.
-void AssistantController::OnDialogPlateContentsCommitted(
-    const std::string& text) {
-  assistant_interaction_controller_->OnDialogPlateContentsCommitted(text);
-  assistant_ui_controller_->OnDialogPlateContentsCommitted(text);
-}
-
 void AssistantController::OnHighlighterSelectionRecognized(
     const gfx::Rect& rect) {
   // TODO(muyuanli): Request screen context for |rect|.

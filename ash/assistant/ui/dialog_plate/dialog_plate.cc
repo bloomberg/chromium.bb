@@ -66,6 +66,14 @@ DialogPlate::~DialogPlate() {
   assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
+void DialogPlate::AddObserver(DialogPlateObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DialogPlate::RemoveObserver(DialogPlateObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 gfx::Size DialogPlate::CalculatePreferredSize() const {
   return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
 }
@@ -198,8 +206,8 @@ void DialogPlate::ButtonPressed(views::Button* sender, const ui::Event& event) {
 }
 
 void DialogPlate::OnButtonPressed(DialogPlateButtonId id) {
-  if (delegate_)
-    delegate_->OnDialogPlateButtonPressed(id);
+  for (DialogPlateObserver& observer : observers_)
+    observer.OnDialogPlateButtonPressed(id);
 
   textfield_->SetText(base::string16());
 }
@@ -238,20 +246,15 @@ bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
   if (key_event.type() != ui::EventType::ET_KEY_PRESSED)
     return false;
 
-  const base::string16& text = textfield_->text();
-
-  // We filter out committing an empty string here but do allow committing a
-  // whitespace only string. If the user commits a whitespace only string, we
-  // want to be able to show a helpful message. This is taken care of in
-  // AssistantController's handling of the commit event.
-  if (text.empty())
-    return false;
-
   const base::StringPiece16& trimmed_text =
-      base::TrimWhitespace(text, base::TrimPositions::TRIM_ALL);
+      base::TrimWhitespace(textfield_->text(), base::TrimPositions::TRIM_ALL);
 
-  if (delegate_)
-    delegate_->OnDialogPlateContentsCommitted(base::UTF16ToUTF8(trimmed_text));
+  // Only non-empty trimmed text is consider a valid contents commit. Anything
+  // else will simply result in the DialogPlate being cleared.
+  if (!trimmed_text.empty()) {
+    for (DialogPlateObserver& observer : observers_)
+      observer.OnDialogPlateContentsCommitted(base::UTF16ToUTF8(trimmed_text));
+  }
 
   textfield_->SetText(base::string16());
 

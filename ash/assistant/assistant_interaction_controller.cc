@@ -238,11 +238,7 @@ void AssistantInteractionController::OnDialogPlateButtonPressed(
 
 void AssistantInteractionController::OnDialogPlateContentsCommitted(
     const std::string& text) {
-  // TODO(dmblack): This case no longer makes sense now that the DialogPlate has
-  // been rebuilt. Remove the ability to commit empty DialogPlate contents.
-  if (text.empty())
-    return;
-
+  DCHECK(!text.empty());
   StartTextInteraction(text);
 }
 

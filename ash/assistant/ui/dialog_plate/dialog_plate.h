@@ -11,6 +11,7 @@
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/dialog_plate/action_view.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
@@ -31,9 +32,9 @@ enum class DialogPlateButtonId {
   kSettings,
 };
 
-// DialogPlateDelegate ---------------------------------------------------------
+// DialogPlateObserver ---------------------------------------------------------
 
-class DialogPlateDelegate {
+class DialogPlateObserver {
  public:
   // Invoked when the dialog plate button identified by |id| is pressed.
   virtual void OnDialogPlateButtonPressed(DialogPlateButtonId id) {}
@@ -42,7 +43,7 @@ class DialogPlateDelegate {
   virtual void OnDialogPlateContentsCommitted(const std::string& text) {}
 
  protected:
-  virtual ~DialogPlateDelegate() = default;
+  virtual ~DialogPlateObserver() = default;
 };
 
 // DialogPlate -----------------------------------------------------------------
@@ -61,6 +62,10 @@ class DialogPlate : public views::View,
  public:
   explicit DialogPlate(AssistantController* assistant_controller);
   ~DialogPlate() override;
+
+  // Adds/removes the specified |observer|.
+  void AddObserver(DialogPlateObserver* observer);
+  void RemoveObserver(DialogPlateObserver* observer);
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -85,8 +90,6 @@ class DialogPlate : public views::View,
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
 
-  void set_delegate(DialogPlateDelegate* delegate) { delegate_ = delegate; }
-
  private:
   void InitLayout();
   void InitKeyboardLayoutContainer();
@@ -102,7 +105,7 @@ class DialogPlate : public views::View,
   views::ImageButton* voice_input_toggle_;           // Owned by view hierarchy.
   views::View* voice_layout_container_;              // Owned by view hierarchy.
 
-  DialogPlateDelegate* delegate_ = nullptr;
+  base::ObserverList<DialogPlateObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogPlate);
 };

@@ -40,7 +40,7 @@ class ASH_EXPORT AssistantUiController
     : public views::WidgetObserver,
       public AssistantInteractionModelObserver,
       public CaptionBarDelegate,
-      public DialogPlateDelegate,
+      public DialogPlateObserver,
       public HighlighterController::Observer {
  public:
   explicit AssistantUiController(AssistantController* assistant_controller);
@@ -77,7 +77,7 @@ class ASH_EXPORT AssistantUiController
   // CaptionBarDelegate:
   bool OnCaptionButtonPressed(CaptionButtonId id) override;
 
-  // DialogPlateDelegate:
+  // DialogPlateObserver:
   void OnDialogPlateButtonPressed(DialogPlateButtonId id) override;
 
   // HighlighterController::Observer:
