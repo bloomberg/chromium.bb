@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutNGBlockFlow {HTML} at (0,0) size 800x600
     LayoutNGBlockFlow {BODY} at (0,0) size 800x600
-      LayoutInline {A} at (0,0) size 300x300
+      LayoutInline {A} at (0,0) size 300x19
         LayoutImage {IMG} at (0,0) size 300x300
       LayoutText {#text} at (300,285) size 4x19
         text run at (300,285) width 4: " "

@@ -17,25 +17,25 @@ layer at (0,0) size 800x675 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutTableRow {TR} at (0,2) size 166x34
             LayoutNGTableCell {TD} at (2,2) size 58x34 [r=0 c=0 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 56x32 [border: (2px solid #0000FF)]
-                LayoutInline {FONT} at (0,0) size 52x22
+                LayoutInline {FONT} at (0,0) size 52x27
                   LayoutButton {INPUT} at (2,7) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                     LayoutBlockFlow (anonymous) at (8,3) size 36x16
                       LayoutText {#text} at (0,0) size 36x16
                         text run at (0,0) width 36: "button"
             LayoutNGTableCell {TD} at (62,2) size 60x34 [r=0 c=1 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 58x32 [border: (2px solid #0000FF)]
-                LayoutInline {FONT} at (0,0) size 54x20
+                LayoutInline {FONT} at (0,0) size 54x27
                   LayoutMenuList {SELECT} at (2,8) size 54x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
                     LayoutBlockFlow (anonymous) at (1,1) size 52x18
                       LayoutText (anonymous) at (4,1) size 32x16
                         text run at (4,1) width 32: "menu"
             LayoutNGTableCell {TD} at (124,2) size 19x34 [r=0 c=2 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 17x32 [border: (2px solid #0000FF)]
-                LayoutInline {FONT} at (0,0) size 13x13
+                LayoutInline {FONT} at (0,0) size 13x27
                   LayoutBlockFlow {INPUT} at (2,10) size 13x13
             LayoutNGTableCell {TD} at (145,2) size 19x34 [r=0 c=3 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 17x32 [border: (2px solid #0000FF)]
-                LayoutInline {FONT} at (0,0) size 13x13
+                LayoutInline {FONT} at (0,0) size 13x27
                   LayoutBlockFlow {INPUT} at (2,10) size 13x13
       LayoutTable {TABLE} at (0,183.25) size 166x32
         LayoutTableSection {TBODY} at (0,0) size 166x32
@@ -63,25 +63,25 @@ layer at (0,0) size 800x675 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutTableRow {TR} at (0,2) size 166x28
             LayoutNGTableCell {TD} at (2,2) size 58x28 [r=0 c=0 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 56x26 [border: (2px solid #0000FF)]
-                LayoutInline {FONT} at (0,0) size 52x22
+                LayoutInline {FONT} at (0,0) size 52x12
                   LayoutButton {INPUT} at (2,2) size 52x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                     LayoutBlockFlow (anonymous) at (8,3) size 36x16
                       LayoutText {#text} at (0,0) size 36x16
                         text run at (0,0) width 36: "button"
             LayoutNGTableCell {TD} at (62,3) size 60x26 [r=0 c=1 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 58x24 [border: (2px solid #0000FF)]
-                LayoutInline {FONT} at (0,0) size 54x20
+                LayoutInline {FONT} at (0,0) size 54x12
                   LayoutMenuList {SELECT} at (2,2) size 54x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
                     LayoutBlockFlow (anonymous) at (1,1) size 52x18
                       LayoutText (anonymous) at (4,1) size 32x16
                         text run at (4,1) width 32: "menu"
             LayoutNGTableCell {TD} at (124,3) size 19x26 [r=0 c=2 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 17x24 [border: (2px solid #0000FF)]
-                LayoutInline {FONT} at (0,0) size 13x13
+                LayoutInline {FONT} at (0,0) size 13x12
                   LayoutBlockFlow {INPUT} at (2,4) size 13x13
             LayoutNGTableCell {TD} at (145,3) size 19x26 [r=0 c=3 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 17x24 [border: (2px solid #0000FF)]
-                LayoutInline {FONT} at (0,0) size 13x13
+                LayoutInline {FONT} at (0,0) size 13x12
                   LayoutBlockFlow {INPUT} at (2,4) size 13x13
       LayoutTable {TABLE} at (0,247.25) size 592x81
         LayoutTableSection {TBODY} at (0,0) size 592x81
@@ -221,7 +221,7 @@ layer at (0,0) size 800x675 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               text run at (4,1) width 56: "xxxxxxxx"
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {DIV} at (0,625.88) size 784x20
-        LayoutInline {FONT} at (0,0) size 131x20
+        LayoutInline {FONT} at (0,0) size 131x12
           LayoutText {#text} at (0,0) size 0x0
           LayoutMenuList {SELECT} at (0,0) size 22x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutBlockFlow (anonymous) at (1,1) size 20x18
