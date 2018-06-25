@@ -792,9 +792,8 @@ static AOM_FORCE_INLINE int warehouse_efficients_txb(
 }
 
 int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
-                        const int plane, const int blk_row, const int blk_col,
-                        const int block, const TX_SIZE tx_size,
-                        const TXB_CTX *const txb_ctx) {
+                        const int plane, const int block, const TX_SIZE tx_size,
+                        const TX_TYPE tx_type, const TXB_CTX *const txb_ctx) {
   const struct macroblock_plane *p = &x->plane[plane];
   const int eob = p->eobs[block];
   const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
@@ -806,8 +805,6 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
   }
 
   const MACROBLOCKD *const xd = &x->e_mbd;
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
-                                          tx_size, cm->reduced_tx_set_used);
   const TX_CLASS tx_class = tx_type_to_class[tx_type];
 
 #define WAREHOUSE_EFFICIENTS_TXB_CASE(tx_class_literal)                        \

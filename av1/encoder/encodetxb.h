@@ -50,9 +50,8 @@ typedef struct TxbInfo {
 void av1_alloc_txb_buf(AV1_COMP *cpi);
 void av1_free_txb_buf(AV1_COMP *cpi);
 int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
-                        const int plane, const int blk_row, const int blk_col,
-                        const int block, const TX_SIZE tx_size,
-                        const TXB_CTX *const txb_ctx);
+                        const int plane, const int block, const TX_SIZE tx_size,
+                        const TX_TYPE tx_type, const TXB_CTX *const txb_ctx);
 void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                           aom_writer *w, int blk_row, int blk_col, int plane,
                           TX_SIZE tx_size, const tran_low_t *tcoeff,
