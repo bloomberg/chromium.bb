@@ -73,15 +73,19 @@ void LoginScreenController::BindRequest(mojom::LoginScreenRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
+bool LoginScreenController::IsAuthenticating() const {
+  return authentication_stage_ != AuthenticationStage::kIdle;
+}
+
 void LoginScreenController::AuthenticateUser(const AccountId& account_id,
                                              const std::string& password,
                                              bool authenticated_by_pin,
                                              OnAuthenticateCallback callback) {
   // It is an error to call this function while an authentication is in
   // progress.
-  LOG_IF(ERROR, authentication_stage_ != AuthenticationStage::kIdle)
+  LOG_IF(ERROR, !IsAuthenticating())
       << "Authentication stage is " << static_cast<int>(authentication_stage_);
-  CHECK_EQ(authentication_stage_, AuthenticationStage::kIdle);
+  CHECK(!IsAuthenticating());
 
   if (!login_screen_client_) {
     std::move(callback).Run(base::nullopt);
@@ -97,6 +101,9 @@ void LoginScreenController::AuthenticateUser(const AccountId& account_id,
       OnAuthenticateComplete(std::move(callback), false /*success*/);
       return;
     case ForceFailAuth::kDelayed:
+      // Set a dummy authentication stage so that |IsAuthenticating| returns
+      // true.
+      authentication_stage_ = AuthenticationStage::kDoAuthenticate;
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
@@ -355,8 +362,7 @@ void LoginScreenController::SetDevChannelInfo(
 
 void LoginScreenController::IsReadyForPassword(
     IsReadyForPasswordCallback callback) {
-  std::move(callback).Run(LockScreen::HasInstance() &&
-                          authentication_stage_ == AuthenticationStage::kIdle);
+  std::move(callback).Run(LockScreen::HasInstance() && !IsAuthenticating());
 }
 
 void LoginScreenController::SetPublicSessionDisplayName(
