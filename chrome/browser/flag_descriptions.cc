@@ -2806,6 +2806,10 @@ const char kArcBootCompleted[] = "Load Android apps automatically";
 const char kArcBootCompletedDescription[] =
     "Allow Android apps to start automatically after signing in.";
 
+const char kArcCupsApiName[] = "ARC CUPS API";
+const char kArcCupsApiDescription[] =
+    "Enables support of libcups APIs from ARC";
+
 const char kArcNativeBridgeExperimentName[] =
     "Enable native bridge experiment for ARC";
 const char kArcNativeBridgeExperimentDescription[] =

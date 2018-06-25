@@ -577,6 +577,10 @@ const base::Feature kVoiceSearchOnLocalNtp{"VoiceSearchOnLocalNtp",
 #endif
 
 #if defined(OS_CHROMEOS)
+// Enables support of libcups APIs from ARC
+const base::Feature kArcCupsApi{"ArcCupsApi",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the opt-in IME menu in the language settings page.
 const base::Feature kOptInImeMenu{"OptInImeMenu",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
@@ -621,7 +625,6 @@ const base::Feature kTPMFirmwareUpdate{"TPMFirmwareUpdate",
 // userInfo Gaia message.
 const base::Feature kCrOSEnableUSMUserService{"CrOSEnableUSMUserService",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
-
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)

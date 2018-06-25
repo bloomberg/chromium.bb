@@ -318,6 +318,8 @@ extern const base::Feature kVoiceSearchOnLocalNtp;
 #endif
 
 #if defined(OS_CHROMEOS)
+extern const base::Feature kArcCupsApi;
+
 extern const base::Feature kOptInImeMenu;
 
 extern const base::Feature kQuickUnlockPin;
