@@ -188,22 +188,33 @@ struct VRDisplayFrameTransportOptions {
   bool wait_for_gpu_fence;
 };
 
-// The data needed for each frame for a magic window experience
-// that uses a background image / projection matrix instead of
-// just a VRPose - ex: non-exclusive AR needs a camera image and
-// to get a projection matrix directly from the backend rather than
-// FOV values to support features like focus.
-//
-// The pose may be null if the device lost tracking. It can still
-// send a camera image in that case.
-struct VRMagicWindowFrameData {
+// The data needed for each animation frame of an XRSession.
+struct XRFrameData {
+  // General XRSession value
+
+  // The pose may be null if the device lost tracking. The XRFrameData can still
+  // have other data, such as pass through camera image.
   VRPose? pose;
-  gpu.mojom.MailboxHolder buffer_holder;
-  gfx.mojom.Size buffer_size;
   // TODO(https://crbug.com/838515): Is this delta since the last
   // frame? OR an unspecified origin? Something else?
   mojo_base.mojom.TimeDelta time_delta;
-  array<float, 16> projection_matrix;
+  // The buffer_holder is used for sending data imagery back and forth across
+  // the process boundary. For application with pass through camera, it holds
+  // the camera image to be passed to the renderer. For immersive sessions, it
+  // is the place for the renderer to draw into to pass imagery to the device
+  // for rendering.
+  gpu.mojom.MailboxHolder? buffer_holder;
+
+  // Exclusive session values
+
+  // The frame_id maps frame data to a frame arriving from the compositor. IDs
+  // will be reused after the frame arrives from the compositor. Negative IDs
+  // imply no mapping.
+  int16 frame_id;
+
+  // Pass through camera values
+  gfx.mojom.Size? buffer_size;
+  array<float, 16>? projection_matrix;
 };
 
 enum VRDisplayEventReason {
@@ -289,15 +300,16 @@ interface VRDisplayHost {
 // TODO(836478): rename VRMagicWindowProvider to NonExclusiveWindowProvider or
 // similar.
 interface VRMagicWindowProvider {
-  GetPose() => (VRPose? pose);
+  // frame_data is optional and will not be set if and only if the call fails
+  // for some reason, such as device disconnection.
+  GetFrameData() => (XRFrameData? frame_data);
 
   // Different devices can have different native orientations - 0
   // is the native orientation, and then increments of 90 degrees
   // from there.
-  // TODO(https://crbug.com/837944): frame_data should not be optional.
-  GetFrameData(gfx.mojom.Size frame_size,
-      display.mojom.Rotation display_rotation) =>
-      (VRMagicWindowFrameData? frame_data);
+  UpdateSessionGeometry(
+      gfx.mojom.Size frame_size,
+      display.mojom.Rotation display_rotation);
 
   // Performs a raycast into the magic window scene and returns a list of
   // XRHitResults sorted from closest to furthest hit from the ray. Each
@@ -316,19 +328,15 @@ interface VRMagicWindowProvider {
 // This interface is hosted in the Browser process, but will move to a sandboxed
 // utility process on Windows.  The render process communicates with it.
 interface VRPresentationProvider {
-  enum VSyncStatus { SUCCESS, CLOSING };
-
-  // The frameId maps a VSync to a frame arriving from the compositor. IDs will
-  // be reused after the frame arrives from the compositor. Negative IDs imply
-  // no mapping.
-  GetVSync() => (VRPose? pose, mojo_base.mojom.TimeDelta time, int16 frame_id,
-                 VSyncStatus status, gpu.mojom.MailboxHolder? buffer_holder);
+  // frame_data is optional and will not be set if and only if the call fails
+  // for some reason, such as device disconnection.
+  GetFrameData() => (XRFrameData? frame_data);
 
   UpdateLayerBounds(int16 frame_id, gfx.mojom.RectF left_bounds,
                     gfx.mojom.RectF right_bounds, gfx.mojom.Size source_size);
 
   // Call this if the animation loop exited without submitting a frame to
-  // ensure that every GetVSync has a matching Submit call. This happens for
+  // ensure that every GetFrameData has a matching Submit call. This happens for
   // WebXR if there were no drawing operations to the opaque framebuffer, and
   // for WebVR 1.1 if the application didn't call SubmitFrame. Usable with any
   // VRDisplayFrameTransportMethod. This path does *not* call the

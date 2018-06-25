@@ -134,11 +134,11 @@ class VROrientationDeviceTest : public testing::Test {
 
     base::RunLoop loop;
 
-    device_->OnMagicWindowPoseRequest(base::BindOnce(
+    device_->OnMagicWindowFrameDataRequest(base::BindOnce(
         [](base::OnceClosure quit_closure,
            base::OnceCallback<void(mojom::VRPosePtr)> callback,
-           mojom::VRPosePtr ptr) {
-          std::move(callback).Run(std::move(ptr));
+           mojom::XRFrameDataPtr ptr) {
+          std::move(callback).Run(std::move(ptr->pose));
           std::move(quit_closure).Run();
         },
         loop.QuitClosure(), std::move(callback)));
@@ -233,7 +233,7 @@ TEST_F(VROrientationDeviceTest, SensorIsAvailableTest) {
 }
 
 TEST_F(VROrientationDeviceTest, GetOrientationTest) {
-  // Tests that OnMagicWindowPoseRequest returns a pose ptr without mishap.
+  // Tests that OnMagicWindowFrameDataRequest returns a pose ptr without mishap.
 
   InitializeDevice(FakeInitParams());
 

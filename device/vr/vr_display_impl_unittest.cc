@@ -75,18 +75,18 @@ TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
 
   bool was_called = false;
   auto callback = [](bool expect_null, bool* was_called,
-                     mojom::VRPosePtr pose) {
+                     mojom::XRFrameDataPtr data) {
     *was_called = true;
-    EXPECT_EQ(expect_null, !pose);
+    EXPECT_EQ(expect_null, !data);
   };
 
   static_cast<mojom::VRMagicWindowProvider*>(display_1.get())
-      ->GetPose(base::BindOnce(callback, false, &was_called));
+      ->GetFrameData(base::BindOnce(callback, false, &was_called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
   was_called = false;
   static_cast<mojom::VRMagicWindowProvider*>(display_2.get())
-      ->GetPose(base::BindOnce(callback, false, &was_called));
+      ->GetFrameData(base::BindOnce(callback, false, &was_called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
   was_called = false;
@@ -99,12 +99,12 @@ TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
 
   // While a device is presenting, noone should have access to magic window.
   static_cast<mojom::VRMagicWindowProvider*>(display_1.get())
-      ->GetPose(base::BindOnce(callback, true, &was_called));
+      ->GetFrameData(base::BindOnce(callback, true, &was_called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
   was_called = false;
   static_cast<mojom::VRMagicWindowProvider*>(display_2.get())
-      ->GetPose(base::BindOnce(callback, true, &was_called));
+      ->GetFrameData(base::BindOnce(callback, true, &was_called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
   was_called = false;
@@ -117,12 +117,12 @@ TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
   // Once presentation had ended both services should be able to access the
   // device.
   static_cast<mojom::VRMagicWindowProvider*>(display_1.get())
-      ->GetPose(base::BindOnce(callback, false, &was_called));
+      ->GetFrameData(base::BindOnce(callback, false, &was_called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
   was_called = false;
   static_cast<mojom::VRMagicWindowProvider*>(display_2.get())
-      ->GetPose(base::BindOnce(callback, false, &was_called));
+      ->GetFrameData(base::BindOnce(callback, false, &was_called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(was_called);
   was_called = false;

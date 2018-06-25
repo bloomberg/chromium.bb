@@ -201,8 +201,8 @@ void XRFrameProvider::ScheduleExclusiveFrame() {
 
   pending_exclusive_vsync_ = true;
 
-  presentation_provider_->GetVSync(
-      WTF::Bind(&XRFrameProvider::OnExclusiveVSync, WrapWeakPersistent(this)));
+  presentation_provider_->GetFrameData(WTF::Bind(
+      &XRFrameProvider::OnExclusiveFrameData, WrapWeakPersistent(this)));
 }
 
 // TODO(lincolnfrog): add a ScheduleNonExclusiveARFrame, if we want camera RAF
@@ -219,6 +219,8 @@ void XRFrameProvider::ScheduleNonExclusiveFrame() {
   if (!frame)
     return;
 
+  // TODO(https://crbug.com/856224) Review the lifetime of this object and
+  // ensure that doc can never be null and remove this check.
   Document* doc = frame->GetDocument();
   if (!doc)
     return;
@@ -240,37 +242,36 @@ void XRFrameProvider::ScheduleNonExclusiveFrame() {
     // using multiple sessions. Currently, we take the max size of all the
     // active session's requested sizes and pass that to the browser as-is.
     // Unsupported sizes such as zero or excessively large ones may be rejected
-    // by the device, resulting in null MagicWindowFrameData responses.
+    // by the device, resulting in null XRFrameData responses.
     // Requests for frames of 0 size are making it to this point - we should
     // ensure that frames are not scheduled until the frame context is ready.
     // In the future, we should signal an error back to the client.
 
-    device_->xrMagicWindowProviderPtr()->GetFrameData(
+    // TODO(http://crbug.com/856259): Only call if there was a change, this may
+    // be an expensive operation. If there was no change, the previous values
+    // should remain valid.
+    device_->xrMagicWindowProviderPtr()->UpdateSessionGeometry(
         ar_requested_transfer_size_,
-        display::Display::DegreesToRotation(ar_requested_transfer_angle_),
-        WTF::Bind(&XRFrameProvider::OnNonExclusiveFrameData,
-                  WrapWeakPersistent(this)));
-  } else {
-    device_->xrMagicWindowProviderPtr()->GetPose(WTF::Bind(
-        &XRFrameProvider::OnNonExclusivePose, WrapWeakPersistent(this)));
+        display::Display::DegreesToRotation(ar_requested_transfer_angle_));
+  }
+
+  device_->xrMagicWindowProviderPtr()->GetFrameData(WTF::Bind(
+      &XRFrameProvider::OnNonExclusiveFrameData, WrapWeakPersistent(this)));
+
+  // TODO(http://crbug.com/856257) Remove the special casing for AR and non-AR.
+  if (!device_->xrDisplayInfoPtr()
+           ->capabilities->can_provide_pass_through_images) {
     doc->RequestAnimationFrame(new XRFrameProviderRequestCallback(this));
   }
 }
 
-void XRFrameProvider::OnExclusiveVSync(
-    device::mojom::blink::VRPosePtr pose,
-    WTF::TimeDelta time_delta,
-    int16_t frame_id,
-    device::mojom::blink::VRPresentationProvider::VSyncStatus status,
-    const base::Optional<gpu::MailboxHolder>& buffer_holder) {
+void XRFrameProvider::OnExclusiveFrameData(
+    device::mojom::blink::XRFrameDataPtr data) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DVLOG(2) << __FUNCTION__;
   vsync_connection_failed_ = false;
-  switch (status) {
-    case device::mojom::blink::VRPresentationProvider::VSyncStatus::SUCCESS:
-      break;
-    case device::mojom::blink::VRPresentationProvider::VSyncStatus::CLOSING:
-      return;
+  if (!data) {
+    return;
   }
 
   // We may have lost the exclusive session since the last VSync request.
@@ -280,9 +281,9 @@ void XRFrameProvider::OnExclusiveVSync(
     return;
   }
 
-  frame_pose_ = std::move(pose);
-  frame_id_ = frame_id;
-  buffer_mailbox_holder_ = buffer_holder;
+  frame_pose_ = std::move(data->pose);
+  frame_id_ = data->frame_id;
+  buffer_mailbox_holder_ = data->buffer_holder;
 
   pending_exclusive_vsync_ = false;
 
@@ -292,9 +293,9 @@ void XRFrameProvider::OnExclusiveVSync(
   // execution context caused extreme input delay due to processing
   // multiple frames without yielding, see crbug.com/701444.
   Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-      FROM_HERE,
-      WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
-                WrapWeakPersistent(this), nullptr, time_delta.InSecondsF()));
+      FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
+                           WrapWeakPersistent(this), nullptr,
+                           data->time_delta.InSecondsF()));
 }
 
 void XRFrameProvider::OnNonExclusiveVSync(double timestamp) {
@@ -312,30 +313,26 @@ void XRFrameProvider::OnNonExclusiveVSync(double timestamp) {
                            WrapWeakPersistent(this), nullptr, timestamp));
 }
 
-void XRFrameProvider::OnNonExclusivePose(device::mojom::blink::VRPosePtr pose) {
-  frame_pose_ = std::move(pose);
-}
-
 void XRFrameProvider::OnNonExclusiveFrameData(
-    device::mojom::blink::VRMagicWindowFrameDataPtr frame_data) {
+    device::mojom::blink::XRFrameDataPtr frame_data) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DVLOG(2) << __FUNCTION__;
 
   // TODO(https://crbug.com/837834): add unit tests for this code path.
 
   pending_non_exclusive_vsync_ = false;
+  LocalFrame* frame = device_->xr()->GetFrame();
+  if (!frame)
+    return;
+  Document* doc = frame->GetDocument();
+  if (!doc)
+    return;
 
   if (!frame_data) {
     // Unexpectedly didn't get frame data, and we don't have a timestamp.
     // Try to request a regular animation frame to avoid getting stuck.
     DVLOG(1) << __FUNCTION__ << ": NO FRAME DATA!";
     frame_pose_ = nullptr;
-    LocalFrame* frame = device_->xr()->GetFrame();
-    if (!frame)
-      return;
-    Document* doc = frame->GetDocument();
-    if (!doc)
-      return;
     doc->RequestAnimationFrame(new XRFrameProviderRequestCallback(this));
     return;
   }
@@ -344,14 +341,17 @@ void XRFrameProvider::OnNonExclusiveFrameData(
 
   double timestamp = frame_data->time_delta.InSecondsF();
 
-  Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-      FROM_HERE,
-      WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
-                WrapWeakPersistent(this), std::move(frame_data), timestamp));
+  if (device_->xrDisplayInfoPtr()
+          ->capabilities->can_provide_pass_through_images) {
+    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
+        FROM_HERE,
+        WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
+                  WrapWeakPersistent(this), std::move(frame_data), timestamp));
+  }
 }
 
 void XRFrameProvider::ProcessScheduledFrame(
-    device::mojom::blink::VRMagicWindowFrameDataPtr frame_data,
+    device::mojom::blink::XRFrameDataPtr frame_data,
     double timestamp) {
   DVLOG(2) << __FUNCTION__;
 
@@ -414,8 +414,9 @@ void XRFrameProvider::ProcessScheduledFrame(
                                     frame_pose_->input_state.value());
       }
 
-      if (frame_data) {
-        session->SetNonExclusiveProjectionMatrix(frame_data->projection_matrix);
+      if (frame_data && frame_data->projection_matrix.has_value()) {
+        session->SetNonExclusiveProjectionMatrix(
+            frame_data->projection_matrix.value());
       }
 
       if (frame_pose_ && frame_pose_->pose_reset) {
@@ -427,12 +428,8 @@ void XRFrameProvider::ProcessScheduledFrame(
       // TODO(https://crbug.com/837883): only render background for
       // sessions that are using AR.
       if (frame_data) {
-        // buffer_holder and buffer_size are non-optional members of
-        // the mojo frame_data struct. We pass them to OnFrame as
-        // optional arguments.
         session->OnFrame(std::move(pose_matrix), base::nullopt,
-                         frame_data->buffer_holder,
-                         IntSize(frame_data->buffer_size));
+                         frame_data->buffer_holder, frame_data->buffer_size);
       } else {
         session->OnFrame(std::move(pose_matrix), base::nullopt, base::nullopt,
                          base::nullopt);

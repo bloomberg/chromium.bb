@@ -147,11 +147,13 @@ void OculusDevice::StopSession() {
   OnExitPresent();
 }
 
-void OculusDevice::OnMagicWindowPoseRequest(
-    mojom::VRMagicWindowProvider::GetPoseCallback callback) {
+void OculusDevice::OnMagicWindowFrameDataRequest(
+    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
   ovrTrackingState state = ovr_GetTrackingState(session_, 0, false);
-  std::move(callback).Run(
-      mojo::ConvertTo<mojom::VRPosePtr>(state.HeadPose.ThePose));
+
+  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
+  frame_data->pose = mojo::ConvertTo<mojom::VRPosePtr>(state.HeadPose.ThePose);
+  std::move(callback).Run(std::move(frame_data));
 }
 
 }  // namespace device

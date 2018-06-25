@@ -85,12 +85,12 @@ struct WebVrBounds {
 // The stages can overlap, but we enforce that there isn't more than one
 // frame in a given non-Idle state at any one time.
 //
-//       <- GetVSync
+//       <- GetFrameData
 //   Idle
 //       SendVSync
 //   Animating
 //       <- UpdateLayerBounds (optional)
-//       <- GetVSync
+//       <- GetFrameData
 //       <- SubmitFrame
 //       ProcessWebVrFrame
 //   Processing
@@ -112,12 +112,12 @@ struct WebVrBounds {
 // The renderer may call SubmitFrameMissing instead of SubmitFrame. In that
 // case, the frame transitions from Animating back to Idle.
 //
-//       <- GetVSync
+//       <- GetFrameData
 //   Idle
 //       SendVSync
 //   Animating
 //       <- UpdateLayerBounds (optional)
-//       <- GetVSync
+//       <- GetFrameData
 //       <- SubmitFrameMissing
 //   Idle
 
@@ -379,7 +379,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   bool IsSubmitFrameExpected(int16_t frame_index);
 
   // VRPresentationProvider
-  void GetVSync(GetVSyncCallback callback) override;
+  void GetFrameData(device::mojom::VRPresentationProvider::GetFrameDataCallback
+                        callback) override;
   void SubmitFrameMissing(int16_t frame_index, const gpu::SyncToken&) override;
   void SubmitFrame(int16_t frame_index,
                    const gpu::MailboxHolder& mailbox,
@@ -400,7 +401,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   void ForceExitVr();
 
-  // Sends a GetVSync response to the presentation client.
+  // Sends a GetFrameData response to the presentation client.
   void SendVSync();
 
   // Heuristics to avoid excessive backlogged frames.
@@ -532,8 +533,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Attributes tracking WebVR rAF/VSync animation loop state. Blink schedules
-  // a callback using the GetVSync mojo call which is stored in
-  // get_vsync_callback_. The callback is executed by SendVSync once
+  // a callback using the GetFrameData mojo call which is stored in
+  // get_frame_data_callback_. The callback is executed by SendVSync once
   // WebVrCanAnimateFrame returns true.
   //
   // pending_vsync_ is set to true in OnVSync and false in SendVSync. It
@@ -541,7 +542,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   // updated in OnVSync and used as the rAF animation timer in SendVSync.
   base::TimeTicks pending_time_;
   bool pending_vsync_ = false;
-  GetVSyncCallback get_vsync_callback_;
+  device::mojom::VRPresentationProvider::GetFrameDataCallback
+      get_frame_data_callback_;
 
   mojo::Binding<device::mojom::VRPresentationProvider> binding_;
   device::mojom::VRSubmitFrameClientPtr submit_client_;

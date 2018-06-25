@@ -31,14 +31,13 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
   void SetVRDeviceEventListener(VRDeviceEventListener* listener) final;
   void SetListeningForActivate(bool is_listening) override;
 
-  void GetMagicWindowPose(
-      mojom::VRMagicWindowProvider::GetPoseCallback callback);
-  // TODO(https://crbug.com/836478): Rename this, and probably
-  // GetMagicWindowPose to GetNonExclusiveFrameData.
-  void GetMagicWindowFrameData(
+  void GetFrameData(
+      mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
+  void GetFrameData(
       const gfx::Size& frame_size,
       display::Display::Rotation display_rotation,
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
+
   virtual void RequestHitTest(
       mojom::XRRayPtr ray,
       mojom::VRMagicWindowProvider::RequestHitTestCallback callback);
@@ -64,11 +63,11 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
  private:
   // TODO(https://crbug.com/842227): Rename methods to HandleOnXXX
   virtual void OnListeningForActivate(bool listening);
-  virtual void OnMagicWindowPoseRequest(
-      mojom::VRMagicWindowProvider::GetPoseCallback callback);
+  virtual void OnMagicWindowFrameDataRequest(
+      mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
   virtual void OnMagicWindowFrameDataRequest(
       const gfx::Size& frame_size,
-      display::Display::Rotation display_rotation,
+      display::Display::Rotation rotation,
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
 
   VRDeviceEventListener* listener_ = nullptr;

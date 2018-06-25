@@ -41,10 +41,9 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider,
 
  private:
   // mojom::VRMagicWindowProvider
-  void GetPose(GetPoseCallback callback) override;
-  void GetFrameData(const gfx::Size& frame_size,
-                    display::Display::Rotation rotation,
-                    GetFrameDataCallback callback) override;
+  void GetFrameData(GetFrameDataCallback callback) override;
+  void UpdateSessionGeometry(const gfx::Size& frame_size,
+                             display::Display::Rotation rotation) override;
   void RequestHitTest(mojom::XRRayPtr ray,
                       RequestHitTestCallback callback) override;
 
@@ -52,6 +51,11 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider,
   device::VRDeviceBase* device_;
 
   bool restrict_frame_data_ = true;
+
+  // TODO(offenwanger) When device tracks it's own sessions, let it track this
+  // data.
+  gfx::Size session_frame_size_ = gfx::Size(0, 0);
+  display::Display::Rotation session_rotation_ = display::Display::ROTATE_0;
 };
 
 }  // namespace device

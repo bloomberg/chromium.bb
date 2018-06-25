@@ -237,14 +237,16 @@ void OpenVRDevice::StopSession() {
   OnExitPresent();
 }
 
-void OpenVRDevice::OnMagicWindowPoseRequest(
-    mojom::VRMagicWindowProvider::GetPoseCallback callback) {
+void OpenVRDevice::OnMagicWindowFrameDataRequest(
+    mojom::VRPresentationProvider::GetFrameDataCallback callback) {
   vr::TrackedDevicePose_t rendering_poses[vr::k_unMaxTrackedDeviceCount];
   vr_system_->GetDeviceToAbsoluteTrackingPose(vr::TrackingUniverseSeated, 0.03f,
                                               rendering_poses,
                                               vr::k_unMaxTrackedDeviceCount);
-  std::move(callback).Run(mojo::ConvertTo<mojom::VRPosePtr>(
-      rendering_poses[vr::k_unTrackedDeviceIndex_Hmd]));
+  mojom::XRFrameDataPtr data = mojom::XRFrameData::New();
+  data->pose = mojo::ConvertTo<mojom::VRPosePtr>(
+      rendering_poses[vr::k_unTrackedDeviceIndex_Hmd]);
+  std::move(callback).Run(std::move(data));
 }
 
 // Only deal with events that will cause displayInfo changes for now.

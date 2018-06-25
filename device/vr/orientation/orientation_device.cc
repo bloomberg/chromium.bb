@@ -147,8 +147,8 @@ void VROrientationDevice::RequestSession(
   std::move(callback).Run(nullptr, nullptr);
 }
 
-void VROrientationDevice::OnMagicWindowPoseRequest(
-    mojom::VRMagicWindowProvider::GetPoseCallback callback) {
+void VROrientationDevice::OnMagicWindowFrameDataRequest(
+    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
   mojom::VRPosePtr pose = mojom::VRPose::New();
   pose->orientation.emplace(4);
 
@@ -169,7 +169,10 @@ void VROrientationDevice::OnMagicWindowPoseRequest(
   pose->orientation.value()[2] = latest_pose_.z();
   pose->orientation.value()[3] = latest_pose_.w();
 
-  std::move(callback).Run(std::move(pose));
+  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
+  frame_data->pose = std::move(pose);
+
+  std::move(callback).Run(std::move(frame_data));
 }
 
 Quaternion VROrientationDevice::SensorSpaceToWorldSpace(Quaternion q) {

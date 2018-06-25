@@ -66,7 +66,7 @@ class ARCoreGl {
  private:
   // TODO(https://crbug/835948): remove frame_size.
   void ProcessFrame(
-      mojom::VRMagicWindowFrameDataPtr frame_data,
+      mojom::XRFrameDataPtr frame_data,
       const gfx::Size& frame_size,
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
 

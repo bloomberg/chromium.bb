@@ -340,12 +340,6 @@ class MockDevice {
     }
   }
 
-  getPose() {
-    return Promise.resolve({
-      pose: this.presentation_provider_.pose_,
-    });
-  }
-
   setStageTransform(value) {
     if (value) {
       if (!this.displayInfo_.stageParameters) {
@@ -364,14 +358,14 @@ class MockDevice {
     this.displayClient_.onChanged(this.displayInfo_);
   }
 
-  getFrameData(imageSize, orientationAngle) {
+  getFrameData() {
     return Promise.resolve({
-      frame_data: {
+      frameData: {
         pose: this.presentation_provider_.pose_,
-        buffer_holder: null,
-        buffer_size: {},
-        time_delta: [],
-        projection_matrix: [1, 0, 0, 0,
+        bufferHolder: null,
+        bufferSize: {},
+        timeDelta: [],
+        projectionMatrix: [1, 0, 0, 0,
                             0, 1, 0, 0,
                             0, 0, 1, 0,
                             0, 0, 0, 1]
@@ -481,7 +475,7 @@ class MockVRPresentationProvider {
     this.submitFrameClient_.onSubmitFrameRendered();
   }
 
-  getVSync() {
+  getFrameData() {
     if (this.pose_) {
       this.pose_.poseIndex++;
 
@@ -499,16 +493,19 @@ class MockVRPresentationProvider {
     now += diff;
     now *= 1000000;
 
-    let retval = Promise.resolve({
-      pose: this.pose_,
-      time: {
-        microseconds: now,
-      },
-      frameId: this.next_frame_id_++,
-      status: device.mojom.VRPresentationProvider.VSyncStatus.SUCCESS,
+    return Promise.resolve({
+      frameData: {
+        pose: this.pose_,
+        timeDelta: {
+          microseconds: now,
+        },
+        frameId: this.next_frame_id_++,
+        projectionMatrix : [1, 0, 0, 0,
+                            0, 1, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1]
+      }
     });
-
-    return retval;
   }
 
   initPose() {

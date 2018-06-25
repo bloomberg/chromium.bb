@@ -43,8 +43,8 @@ class OpenVRDevice : public VRDeviceBase, public XrSessionController {
 
  private:
   // VRDeviceBase
-  void OnMagicWindowPoseRequest(
-      mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
+  void OnMagicWindowFrameDataRequest(
+      mojom::VRMagicWindowProvider::GetFrameDataCallback callback) override;
 
   // XrSessionController
   void SetFrameDataRestricted(bool restricted) override;

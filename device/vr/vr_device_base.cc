@@ -49,21 +49,20 @@ void VRDeviceBase::SetVRDeviceEventListener(VRDeviceEventListener* listener) {
   listener_ = listener;
 }
 
-void VRDeviceBase::GetMagicWindowPose(
-    mojom::VRMagicWindowProvider::GetPoseCallback callback) {
+void VRDeviceBase::GetFrameData(
+    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
   if (!magic_window_enabled_) {
     std::move(callback).Run(nullptr);
     return;
   }
 
-  OnMagicWindowPoseRequest(std::move(callback));
+  OnMagicWindowFrameDataRequest(std::move(callback));
 }
 
-void VRDeviceBase::GetMagicWindowFrameData(
+void VRDeviceBase::GetFrameData(
     const gfx::Size& frame_size,
     display::Display::Rotation display_rotation,
     mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
-  // TODO(https://crbug.com/836565): rename this boolean.
   if (!magic_window_enabled_) {
     std::move(callback).Run(nullptr);
     return;
@@ -99,8 +98,8 @@ bool VRDeviceBase::ShouldPauseTrackingWhenFrameDataRestricted() {
 
 void VRDeviceBase::OnListeningForActivate(bool listening) {}
 
-void VRDeviceBase::OnMagicWindowPoseRequest(
-    mojom::VRMagicWindowProvider::GetPoseCallback callback) {
+void VRDeviceBase::OnMagicWindowFrameDataRequest(
+    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
   std::move(callback).Run(nullptr);
 }
 

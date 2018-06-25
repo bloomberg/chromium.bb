@@ -143,15 +143,10 @@ class VRDisplay final : public EventTargetWithInlineData,
                   OnActivateCallback on_handled) override;
   void OnDeactivate(device::mojom::blink::VRDisplayEventReason) override;
 
-  void OnPresentingVSync(
-      device::mojom::blink::VRPosePtr,
-      WTF::TimeDelta,
-      int16_t frame_id,
-      device::mojom::blink::VRPresentationProvider::VSyncStatus,
-      const base::Optional<gpu::MailboxHolder>& buffer_holder);
+  void OnPresentingVSync(device::mojom::blink::XRFrameDataPtr);
   void OnPresentationProviderConnectionError();
 
-  void OnMagicWindowPose(device::mojom::blink::VRPosePtr);
+  void OnMagicWindowFrameData(device::mojom::blink::XRFrameDataPtr);
 
   bool FocusedOrPresenting();
 

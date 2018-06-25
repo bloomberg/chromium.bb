@@ -231,27 +231,27 @@ base::WeakPtr<OpenVRRenderLoop> OpenVRRenderLoop::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void OpenVRRenderLoop::GetVSync(
-    mojom::VRPresentationProvider::GetVSyncCallback callback) {
+void OpenVRRenderLoop::GetFrameData(
+    mojom::VRPresentationProvider::GetFrameDataCallback callback) {
   DCHECK(is_presenting_);
-  int16_t frame = next_frame_id_;
+  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
+
+  frame_data->frame_id = next_frame_id_;
   next_frame_id_ += 1;
   if (next_frame_id_ < 0) {
     next_frame_id_ = 0;
   }
 
-  mojom::VRPosePtr pose = GetPose();
+  frame_data->pose = GetPose();
 
   vr::Compositor_FrameTiming timing;
   timing.m_nSize = sizeof(vr::Compositor_FrameTiming);
   bool valid_time = vr_compositor_->GetFrameTiming(&timing);
-  base::TimeDelta time =
+  frame_data->time_delta =
       valid_time ? base::TimeDelta::FromSecondsD(timing.m_flSystemTimeInSeconds)
                  : base::TimeDelta();
 
-  std::move(callback).Run(std::move(pose), time, frame,
-                          mojom::VRPresentationProvider::VSyncStatus::SUCCESS,
-                          base::nullopt);
+  std::move(callback).Run(std::move(frame_data));
 }
 
 std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(

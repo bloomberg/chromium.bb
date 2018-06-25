@@ -209,8 +209,7 @@ void ARCoreGl::ProduceFrame(
       ar_image_transport_->TransferFrame(transfer_size, uv_transform);
 
   // Create the frame data to return to the renderer.
-  mojom::VRMagicWindowFrameDataPtr frame_data =
-      mojom::VRMagicWindowFrameData::New();
+  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
   frame_data->pose = std::move(pose);
   frame_data->buffer_holder = buffer_holder;
   frame_data->buffer_size = transfer_size;
@@ -223,8 +222,9 @@ void ARCoreGl::ProduceFrame(
   gfx::Transform projection =
       arcore_->GetProjectionMatrix(depth_near, depth_far);
   // Convert the Transform's 4x4 matrix to 16 floats in column-major order.
-  frame_data->projection_matrix.resize(16);
-  projection.matrix().asColMajorf(&frame_data->projection_matrix[0]);
+
+  frame_data->projection_matrix.emplace(16);
+  projection.matrix().asColMajorf(frame_data->projection_matrix->data());
 
   fps_meter_.AddFrame(base::TimeTicks::Now());
   TRACE_COUNTER1("gpu", "WebXR FPS", fps_meter_.GetFPS());
@@ -253,7 +253,7 @@ void ARCoreGl::RequestHitTest(
 }
 
 void ARCoreGl::ProcessFrame(
-    mojom::VRMagicWindowFrameDataPtr frame_data,
+    mojom::XRFrameDataPtr frame_data,
     const gfx::Size& frame_size,
     mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
   DCHECK(IsOnGlThread());

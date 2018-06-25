@@ -232,8 +232,8 @@ void VRDisplay::RequestVSync() {
       return;
     magic_window_vsync_waiting_for_pose_.Reset();
     magic_window_pose_request_time_ = WTF::CurrentTimeTicks();
-    magic_window_provider_->GetPose(
-        WTF::Bind(&VRDisplay::OnMagicWindowPose, WrapWeakPersistent(this)));
+    magic_window_provider_->GetFrameData(WTF::Bind(
+        &VRDisplay::OnMagicWindowFrameData, WrapWeakPersistent(this)));
     pending_magic_window_vsync_ = true;
     pending_magic_window_vsync_id_ =
         doc->RequestAnimationFrame(new VRDisplayFrameRequestCallback(this));
@@ -248,7 +248,7 @@ void VRDisplay::RequestVSync() {
 
   pending_magic_window_vsync_ = false;
   pending_presenting_vsync_ = true;
-  vr_presentation_provider_->GetVSync(
+  vr_presentation_provider_->GetFrameData(
       WTF::Bind(&VRDisplay::OnPresentingVSync, WrapWeakPersistent(this)));
 
   DVLOG(2) << __FUNCTION__
@@ -586,7 +586,7 @@ void VRDisplay::BeginPresent() {
   }
   is_presenting_ = true;
   // Call RequestVSync to switch from the (internal) document rAF to the
-  // VrPresentationProvider VSync.
+  // VrPresentationProvider GetFrameData rate.
   RequestVSync();
   ReportPresentationResult(PresentationResult::kSuccess);
 
@@ -929,17 +929,10 @@ void VRDisplay::ProcessScheduledAnimations(TimeTicks timestamp) {
 }
 
 void VRDisplay::OnPresentingVSync(
-    device::mojom::blink::VRPosePtr pose,
-    WTF::TimeDelta time_delta,
-    int16_t frame_id,
-    device::mojom::blink::VRPresentationProvider::VSyncStatus status,
-    const base::Optional<gpu::MailboxHolder>& buffer_holder) {
+    device::mojom::blink::XRFrameDataPtr frame_data) {
   TRACE_EVENT0("gpu", __FUNCTION__);
-  switch (status) {
-    case device::mojom::blink::VRPresentationProvider::VSyncStatus::SUCCESS:
-      break;
-    case device::mojom::blink::VRPresentationProvider::VSyncStatus::CLOSING:
-      return;
+  if (!frame_data) {
+    return;
   }
 
   if (!context_gl_) {
@@ -952,8 +945,8 @@ void VRDisplay::OnPresentingVSync(
   // an early exit woud break animation.
   pending_presenting_vsync_ = false;
 
-  frame_pose_ = std::move(pose);
-  vr_frame_id_ = frame_id;
+  frame_pose_ = std::move(frame_data->pose);
+  vr_frame_id_ = frame_data->frame_id;
 
   if (frame_transport_ && frame_transport_->DrawingIntoSharedBuffer()) {
     NOTIMPLEMENTED();
@@ -969,7 +962,8 @@ void VRDisplay::OnPresentingVSync(
   // the interface being waited on.
   Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
-                           WrapWeakPersistent(this), TimeTicks() + time_delta));
+                           WrapWeakPersistent(this),
+                           TimeTicks() + frame_data->time_delta));
 }
 
 void VRDisplay::OnMagicWindowVSync(TimeTicks timestamp) {
@@ -997,12 +991,15 @@ void VRDisplay::OnMagicWindowVSync(TimeTicks timestamp) {
   }
 }
 
-void VRDisplay::OnMagicWindowPose(device::mojom::blink::VRPosePtr pose) {
+void VRDisplay::OnMagicWindowFrameData(
+    device::mojom::blink::XRFrameDataPtr data) {
   magic_window_pose_received_time_ = WTF::CurrentTimeTicks();
-  if (!in_animation_frame_) {
-    frame_pose_ = std::move(pose);
-  } else {
-    pending_pose_ = std::move(pose);
+  if (data) {
+    if (!in_animation_frame_) {
+      frame_pose_ = std::move(data->pose);
+    } else {
+      pending_pose_ = std::move(data->pose);
+    }
   }
   if (magic_window_vsync_waiting_for_pose_) {
     // We have a vsync waiting for a pose, run it now.
