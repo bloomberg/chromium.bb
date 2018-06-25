@@ -636,8 +636,10 @@ void InputMethodManagerImpl::StateImpl::GetInputMethodExtensions(
   std::map<std::string, InputMethodDescriptor>::iterator iter;
   for (iter = extra_input_methods.begin(); iter != extra_input_methods.end();
        ++iter) {
-    if (extension_ime_util::IsExtensionIME(iter->first))
+    if (extension_ime_util::IsExtensionIME(iter->first) ||
+        extension_ime_util::IsArcIME(iter->first)) {
       result->push_back(iter->second);
+    }
   }
 }
 
@@ -1022,7 +1024,8 @@ const InputMethodDescriptor* InputMethodManagerImpl::LookupInputMethod(
   }
 
   const InputMethodDescriptor* descriptor = NULL;
-  if (extension_ime_util::IsExtensionIME(input_method_id_to_switch)) {
+  if (extension_ime_util::IsExtensionIME(input_method_id_to_switch) ||
+      extension_ime_util::IsArcIME(input_method_id_to_switch)) {
     DCHECK(state->extra_input_methods.find(input_method_id_to_switch) !=
            state->extra_input_methods.end());
     descriptor = &(state->extra_input_methods[input_method_id_to_switch]);

@@ -1505,5 +1505,60 @@ TEST_F(InputMethodManagerImplTest, SetFeaturesDisabled) {
       InputMethodManager::FEATURE_HANDWRITING));
 }
 
+TEST_F(InputMethodManagerImplTest, TestAddRemoveArcInputMethods) {
+  InitComponentExtension();
+  manager_->SetUISessionState(InputMethodManager::STATE_BROWSER_SCREEN);
+
+  // There is one default IME
+  EXPECT_EQ(1u, manager_->GetActiveIMEState()->GetNumActiveInputMethods());
+
+  // Add an ARC IMEs.
+  std::vector<std::string> layouts({"us"});
+  std::vector<std::string> languages({"en-US"});
+
+  MockInputMethodEngine engine;
+
+  const std::string ime_id =
+      extension_ime_util::GetArcInputMethodID(kExtensionId1, "engine_id");
+  const InputMethodDescriptor descriptor(
+      ime_id, "arc ime", "AI", layouts, languages,
+      false /* is_login_keyboard */, GURL(), GURL());
+  InputMethodDescriptors descriptors({descriptor});
+  manager_->GetActiveIMEState()->AddInputMethodExtension(kExtensionId1,
+                                                         descriptors, &engine);
+
+  InputMethodDescriptors result;
+  manager_->GetActiveIMEState()->GetInputMethodExtensions(&result);
+  EXPECT_EQ(1u, result.size());
+  EXPECT_EQ(ime_id, result[0].id());
+  result.clear();
+
+  // The ARC IME is not enabled by default.
+  EXPECT_EQ(1u, manager_->GetActiveIMEState()->GetNumActiveInputMethods());
+
+  // Enable it.
+  std::vector<std::string> extension_ime_ids({ime_id});
+  manager_->GetActiveIMEState()->SetEnabledExtensionImes(&extension_ime_ids);
+  EXPECT_EQ(2u, manager_->GetActiveIMEState()->GetNumActiveInputMethods());
+  {
+    std::unique_ptr<InputMethodDescriptors> methods =
+        manager_->GetActiveIMEState()->GetActiveInputMethods();
+    EXPECT_EQ(2u, methods->size());
+    EXPECT_EQ(ime_id, methods->at(1).id());
+  }
+
+  // Change to it.
+  manager_->GetActiveIMEState()->ChangeInputMethod(ime_id,
+                                                   false /* show_message */);
+  InputMethodDescriptor current =
+      manager_->GetActiveIMEState()->GetCurrentInputMethod();
+  EXPECT_EQ(ime_id, current.id());
+
+  // Remove it.
+  manager_->GetActiveIMEState()->RemoveInputMethodExtension(kExtensionId1);
+  manager_->GetActiveIMEState()->GetInputMethodExtensions(&result);
+  EXPECT_TRUE(result.empty());
+}
+
 }  // namespace input_method
 }  // namespace chromeos
