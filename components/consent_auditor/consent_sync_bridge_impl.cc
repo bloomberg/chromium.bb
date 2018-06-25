@@ -70,10 +70,9 @@ ConsentSyncBridgeImpl::ConsentSyncBridgeImpl(
       authenticated_account_id_callback_(authenticated_account_id_callback),
       is_sync_starting_or_started_(false) {
   DCHECK(authenticated_account_id_callback_);
-  // TODO(vitaliii): Use USER_CONSENTS once the new type is added.
   std::move(store_factory)
-      .Run(USER_EVENTS, base::BindOnce(&ConsentSyncBridgeImpl::OnStoreCreated,
-                                       base::AsWeakPtr(this)));
+      .Run(USER_CONSENTS, base::BindOnce(&ConsentSyncBridgeImpl::OnStoreCreated,
+                                         base::AsWeakPtr(this)));
 }
 
 ConsentSyncBridgeImpl::~ConsentSyncBridgeImpl() {
