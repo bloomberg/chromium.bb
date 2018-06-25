@@ -60,6 +60,10 @@ bool RemoteDeviceRef::operator==(const RemoteDeviceRef& other) const {
   return *remote_device_ == *other.remote_device_;
 }
 
+bool RemoteDeviceRef::operator!=(const RemoteDeviceRef& other) const {
+  return !(*this == other);
+}
+
 bool RemoteDeviceRef::operator<(const RemoteDeviceRef& other) const {
   return *remote_device_ < *other.remote_device_;
 }
