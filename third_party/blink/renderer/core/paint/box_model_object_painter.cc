@@ -50,13 +50,11 @@ LayoutSize LogicalOffsetOnLine(const InlineFlowBox& flow_box) {
 
 BoxModelObjectPainter::BoxModelObjectPainter(const LayoutBoxModelObject& box,
                                              const InlineFlowBox* flow_box)
-    : BoxPainterBase(box,
-                     &box.GetDocument(),
+    : BoxPainterBase(&box.GetDocument(),
                      box.StyleRef(),
                      GeneratingNodeForObject(box),
                      box.BorderBoxOutsets(),
-                     box.PaddingOutsets(),
-                     box.Layer()),
+                     box.PaddingOutsets()),
       box_model_(box),
       flow_box_(flow_box) {}
 

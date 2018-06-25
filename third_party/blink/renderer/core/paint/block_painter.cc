@@ -38,14 +38,6 @@ void BlockPainter::Paint(const PaintInfo& paint_info,
 
   PaintPhase original_phase = local_paint_info.phase;
 
-  // There are some cases where not all clipped visual overflow is accounted
-  // for.
-  // FIXME: reduce the number of such cases.
-  ContentsClipBehavior contents_clip_behavior = kForceContentsClip;
-  if (layout_block_.ShouldClipOverflow() && !layout_block_.HasControlClip() &&
-      !layout_block_.ShouldPaintCarets())
-    contents_clip_behavior = kSkipContentsClipIfPossible;
-
   if (original_phase == PaintPhase::kOutline) {
     local_paint_info.phase = PaintPhase::kDescendantOutlinesOnly;
   } else if (ShouldPaintSelfBlockBackground(original_phase)) {
@@ -57,13 +49,7 @@ void BlockPainter::Paint(const PaintInfo& paint_info,
 
   if (original_phase != PaintPhase::kSelfBlockBackgroundOnly &&
       original_phase != PaintPhase::kSelfOutlineOnly) {
-    base::Optional<BoxClipper> clipper;
-    // We have already applied clip in SVGForeignObjectClipper.
-    if (!layout_block_.IsSVGForeignObject() ||
-        RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      clipper.emplace(layout_block_, local_paint_info, adjusted_paint_offset,
-                      contents_clip_behavior);
-    }
+    BoxClipper clipper(layout_block_, local_paint_info);
     layout_block_.PaintObject(local_paint_info, adjusted_paint_offset);
   }
 

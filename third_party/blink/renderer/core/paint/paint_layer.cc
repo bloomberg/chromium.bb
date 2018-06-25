@@ -110,10 +110,7 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
   LayoutUnit layout_units[4];
   IntSize size;
   Persistent<PaintLayerScrollableArea> scrollable_area;
-  struct {
-    IntSize size;
-    LayoutRect rect;
-  } previous_paint_status;
+  LayoutRect previous_dirty_rect;
 };
 
 static_assert(sizeof(PaintLayer) == sizeof(SameSizeAsPaintLayer),
@@ -2777,19 +2774,6 @@ void PaintLayer::SetGroupedMapping(CompositedLayerMapping* grouped_mapping,
     grouped_mapping->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
 }
 
-bool PaintLayer::MaskBlendingAppliedByCompositor(
-    const PaintInfo& paint_info) const {
-  DCHECK(layout_object_.HasMask());
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return true;
-
-  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
-    return false;
-
-  return rare_data_ && rare_data_->composited_layer_mapping &&
-         rare_data_->composited_layer_mapping->HasMaskLayer();
-}
-
 bool PaintLayer::NeedsCompositedScrolling() const {
   return scrollable_area_ && scrollable_area_->NeedsCompositedScrolling();
 }
@@ -3128,9 +3112,9 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   SetNeedsCompositingInputsUpdate();
   GetLayoutObject().SetNeedsPaintPropertyUpdate();
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() && !NeedsRepaint()) {
+  if (!NeedsRepaint()) {
     if (diff.ZIndexChanged()) {
-      // We don't need to invalidate paint of objects on SPv175 when paint order
+      // We don't need to invalidate paint of objects when paint order
       // changes. However, we do need to repaint the containing stacking
       // context, in order to generate new paint chunks in the correct order.
       // Raster invalidation will be issued if needed during paint.

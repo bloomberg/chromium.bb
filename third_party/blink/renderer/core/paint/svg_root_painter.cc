@@ -55,8 +55,7 @@ void SVGRootPainter::PaintReplaced(const PaintInfo& paint_info,
   base::Optional<BoxClipper> box_clipper;
   if (layout_svg_root_.ShouldApplyViewportClip()) {
     // TODO(pdr): Clip the paint info cull rect here.
-    box_clipper.emplace(layout_svg_root_, paint_info, paint_offset,
-                        kForceContentsClip);
+    box_clipper.emplace(layout_svg_root_, paint_info);
   }
 
   PaintInfo paint_info_before_filtering(paint_info);

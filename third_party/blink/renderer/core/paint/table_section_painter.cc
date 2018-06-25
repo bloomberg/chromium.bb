@@ -74,10 +74,8 @@ void TableSectionPainter::PaintSection(const PaintInfo& paint_info,
 
   if (local_paint_info.phase != PaintPhase::kSelfOutlineOnly) {
     base::Optional<BoxClipper> box_clipper;
-    if (local_paint_info.phase != PaintPhase::kSelfBlockBackgroundOnly) {
-      box_clipper.emplace(layout_table_section_, local_paint_info,
-                          adjusted_paint_offset, kForceContentsClip);
-    }
+    if (local_paint_info.phase != PaintPhase::kSelfBlockBackgroundOnly)
+      box_clipper.emplace(layout_table_section_, local_paint_info);
     PaintObject(local_paint_info, adjusted_paint_offset);
   }
 
@@ -125,8 +123,7 @@ void TableSectionPainter::PaintCollapsedSectionBorders(
                                     paint_offset);
   const auto& local_paint_info = adjustment.GetPaintInfo();
   auto adjusted_paint_offset = adjustment.AdjustedPaintOffset();
-  BoxClipper box_clipper(layout_table_section_, local_paint_info,
-                         adjusted_paint_offset, kForceContentsClip);
+  BoxClipper box_clipper(layout_table_section_, local_paint_info);
 
   LayoutRect local_visual_rect =
       LayoutRect(local_paint_info.GetCullRect().rect_);

@@ -4,24 +4,17 @@
 
 #include "third_party/blink/renderer/core/paint/rounded_inner_rect_clipper.h"
 
-#include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 namespace blink {
 
 RoundedInnerRectClipper::RoundedInnerRectClipper(
-    const DisplayItemClient& display_item,
-    const PaintInfo& paint_info,
+    GraphicsContext& context,
     const LayoutRect& rect,
-    const FloatRoundedRect& clip_rect,
-    RoundedInnerRectClipperBehavior behavior)
-    : display_item_(display_item),
-      paint_info_(paint_info),
-      use_paint_controller_(behavior == kApplyToDisplayList) {
-  if (use_paint_controller_)
-    return;
-
+    const FloatRoundedRect& clip_rect)
+    : context_(context) {
   Vector<FloatRoundedRect> rounded_rect_clips;
   if (clip_rect.IsRenderable()) {
     rounded_rect_clips.push_back(clip_rect);
@@ -67,16 +60,13 @@ RoundedInnerRectClipper::RoundedInnerRectClipper(
     }
   }
 
-  paint_info.context.Save();
+  context.Save();
   for (const auto& rrect : rounded_rect_clips)
-    paint_info.context.ClipRoundedRect(rrect);
+    context.ClipRoundedRect(rrect);
 }
 
 RoundedInnerRectClipper::~RoundedInnerRectClipper() {
-  if (use_paint_controller_)
-    return;
-
-  paint_info_.context.Restore();
+  context_.Restore();
 }
 
 }  // namespace blink

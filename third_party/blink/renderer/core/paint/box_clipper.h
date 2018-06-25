@@ -13,24 +13,15 @@ namespace blink {
 
 class LayoutBox;
 
-// TODO(wangxianzhu): Combine this tiny module with box_clipper_base.h, and
-// cleanup unused flags and parameters.
-
-enum ContentsClipBehavior { kForceContentsClip, kSkipContentsClipIfPossible };
-
 class BoxClipper : public BoxClipperBase {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  BoxClipper(const LayoutBox&,
-             const PaintInfo&,
-             const LayoutPoint& accumulated_offset,
-             ContentsClipBehavior);
+  BoxClipper(const LayoutBox&, const PaintInfo&);
 
  private:
   const LayoutBox& box_;
   const PaintInfo& paint_info_;
-  DisplayItem::Type clip_type_;
 };
 
 }  // namespace blink

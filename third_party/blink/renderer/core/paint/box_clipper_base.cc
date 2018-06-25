@@ -18,8 +18,6 @@ void BoxClipperBase::InitializeScopedClipProperty(
     const FragmentData* fragment,
     const DisplayItemClient& client,
     const PaintInfo& paint_info) {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-
   if (!fragment)
     return;
   const auto* properties = fragment->PaintProperties();

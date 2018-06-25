@@ -10,27 +10,20 @@
 namespace blink {
 
 class FloatRoundedRect;
+class GraphicsContext;
 class LayoutRect;
-class DisplayItemClient;
-struct PaintInfo;
-
-enum RoundedInnerRectClipperBehavior { kApplyToDisplayList, kApplyToContext };
 
 class RoundedInnerRectClipper {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  RoundedInnerRectClipper(const DisplayItemClient&,
-                          const PaintInfo&,
+  RoundedInnerRectClipper(GraphicsContext&,
                           const LayoutRect&,
-                          const FloatRoundedRect& clip_rect,
-                          RoundedInnerRectClipperBehavior);
+                          const FloatRoundedRect& clip_rect);
   ~RoundedInnerRectClipper();
 
  private:
-  const DisplayItemClient& display_item_;
-  const PaintInfo& paint_info_;
-  bool use_paint_controller_;
+  GraphicsContext& context_;
 };
 
 }  // namespace blink

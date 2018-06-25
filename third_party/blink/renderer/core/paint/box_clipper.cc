@@ -16,13 +16,8 @@
 namespace blink {
 
 DISABLE_CFI_PERF
-BoxClipper::BoxClipper(const LayoutBox& box,
-                       const PaintInfo& paint_info,
-                       const LayoutPoint& accumulated_offset,
-                       ContentsClipBehavior contents_clip_behavior)
-    : box_(box),
-      paint_info_(paint_info),
-      clip_type_(DisplayItem::kUninitializedType) {
+BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paint_info)
+    : box_(box), paint_info_(paint_info) {
   DCHECK(paint_info_.phase != PaintPhase::kSelfBlockBackgroundOnly &&
          paint_info_.phase != PaintPhase::kSelfOutlineOnly);
 

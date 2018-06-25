@@ -18,13 +18,11 @@ namespace blink {
 
 class BackgroundImageGeometry;
 class ComputedStyle;
-class DisplayItemClient;
 class Document;
 class FillLayer;
 class FloatRoundedRect;
 class ImageResourceObserver;
 class LayoutRect;
-class PaintLayer;
 struct PaintInfo;
 
 // Base class for box painting. Has no dependencies on the layout tree and thus
@@ -34,20 +32,16 @@ class BoxPainterBase {
   STACK_ALLOCATED();
 
  public:
-  BoxPainterBase(const DisplayItemClient& display_item,
-                 const Document* document,
+  BoxPainterBase(const Document* document,
                  const ComputedStyle& style,
                  Node* node,
                  LayoutRectOutsets border,
-                 LayoutRectOutsets padding,
-                 const PaintLayer* paint_layer)
-      : display_item_(display_item),
-        document_(document),
+                 LayoutRectOutsets padding)
+      : document_(document),
         style_(style),
         node_(node),
         border_(border),
-        padding_(padding),
-        paint_layer_(paint_layer) {}
+        padding_(padding) {}
 
   void PaintFillLayers(const PaintInfo&,
                        const Color&,
@@ -169,13 +163,11 @@ class BoxPainterBase {
                                   bool include_logical_right_edge = true);
 
  private:
-  const DisplayItemClient& display_item_;
   Member<const Document> document_;
   const ComputedStyle& style_;
   Member<Node> node_;
   const LayoutRectOutsets border_;
   const LayoutRectOutsets padding_;
-  const PaintLayer* paint_layer_;
 };
 
 }  // namespace blink
