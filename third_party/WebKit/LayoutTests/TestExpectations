@@ -2812,6 +2812,8 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/request/request-keepalive-quota.html?include=slow-2 [ Timeout ]
+crbug.com/626703 external/wpt/fetch/api/request/request-keepalive-quota.html?include=slow-2 [ Timeout ]
 crbug.com/626703 external/wpt/push-api/idlharness.https.any.serviceworker.html [ Skip ]
 crbug.com/626703 [ Win7 ] external/wpt/preload/link-header-preload.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/preload/onerror-event.html [ Timeout ]
