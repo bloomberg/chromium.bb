@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/script_fetch_options.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
@@ -26,16 +27,19 @@ class CORE_EXPORT ReferrerScriptInfo {
   ReferrerScriptInfo(const KURL& base_url,
                      network::mojom::FetchCredentialsMode credentials_mode,
                      const String& nonce,
-                     ParserDisposition parser_state)
+                     ParserDisposition parser_state,
+                     ReferrerPolicy referrer_policy)
       : base_url_(base_url),
         credentials_mode_(credentials_mode),
         nonce_(nonce),
-        parser_state_(parser_state) {}
+        parser_state_(parser_state),
+        referrer_policy_(referrer_policy) {}
   ReferrerScriptInfo(const KURL& base_url, const ScriptFetchOptions& options)
       : ReferrerScriptInfo(base_url,
                            options.CredentialsMode(),
                            options.Nonce(),
-                           options.ParserState()) {}
+                           options.ParserState(),
+                           options.GetReferrerPolicy()) {}
 
   static ReferrerScriptInfo FromV8HostDefinedOptions(
       v8::Local<v8::Context>,
@@ -48,6 +52,7 @@ class CORE_EXPORT ReferrerScriptInfo {
   }
   const String& Nonce() const { return nonce_; }
   ParserDisposition ParserState() const { return parser_state_; }
+  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
 
   bool IsDefaultValue() const {
     return base_url_.IsNull() &&
@@ -77,6 +82,11 @@ class CORE_EXPORT ReferrerScriptInfo {
   // The default value is "not-parser-inserted" per:
   // https://html.spec.whatwg.org/multipage/webappapis.html#default-classic-script-fetch-options
   const ParserDisposition parser_state_ = kNotParserInserted;
+
+  // Spec: "referencing script's referrer policy"
+  // The default value is "the empty string" per:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#default-classic-script-fetch-options
+  const ReferrerPolicy referrer_policy_ = kReferrerPolicyDefault;
 };
 
 }  // namespace blink

@@ -531,18 +531,23 @@ static void ModulePreloadIfNeeded(const LinkLoadParameters& params,
     SubresourceIntegrityHelper::DoReport(document, report_info);
   }
 
-  // Step 9. "Let options be a script fetch options whose cryptographic nonce is
-  // cryptographic nonce, integrity metadata is integrity metadata, parser
-  // metadata is "not-parser-inserted", and credentials mode is credentials
-  // mode." [spec text]
+  // Step 9. "Let referrer policy be the current state of the element's
+  // referrerpolicy attribute." [spec text]
+  // |referrer_policy| parameter is the value of the referrerpolicy attribute.
+
+  // Step 10. "Let options be a script fetch options whose cryptographic nonce
+  // is cryptographic nonce, integrity metadata is integrity metadata, parser
+  // metadata is "not-parser-inserted", credentials mode is credentials mode,
+  // and referrer policy is referrer policy." [spec text]
   ModuleScriptFetchRequest request(
       params.href, destination,
       ScriptFetchOptions(params.nonce, integrity_metadata, params.integrity,
-                         kNotParserInserted, credentials_mode),
+                         kNotParserInserted, credentials_mode,
+                         params.referrer_policy),
       Referrer(Referrer::NoReferrer(), params.referrer_policy),
       TextPosition::MinimumPosition());
 
-  // Step 10. "Fetch a single module script given url, settings object,
+  // Step 11. "Fetch a single module script given url, settings object,
   // destination, options, settings object, "client", and with the top-level
   // module fetch flag set. Wait until algorithm asynchronously completes with
   // result." [spec text]
