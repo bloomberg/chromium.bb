@@ -165,14 +165,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("audioNoRepeatModeMultipleFileDrive"),
                       TestCase("audioRepeatOneModeMultipleFileDrive")));
 
-// Fails on the MSAN bots, https://crbug.com/837551
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_OpenImageFiles DISABLED_OpenImageFiles
-#else
-#define MAYBE_OpenImageFiles OpenImageFiles
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_OpenImageFiles, /* open_image_files.js */
+    OpenImageFiles, /* open_image_files.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("imageOpenDownloads").InGuestMode(),
                       TestCase("imageOpenDownloads"),
