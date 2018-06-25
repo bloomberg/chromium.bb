@@ -15,7 +15,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/guest_view/web_view/web_ui/web_ui_url_fetcher.h"
 
 namespace {
@@ -91,22 +90,10 @@ void WebUIUserScriptLoader::LoadScripts(
     int render_process_id = iter->second.render_process_id;
     int render_frame_id = iter->second.render_frame_id;
 
-    content::RenderProcessHost* render_process_host =
-        content::RenderProcessHost::FromID(render_process_id);
-
-    // LoadScripts may not be synchronous with AddScripts. Hence the
-    // |render_process_host| may no longer be alive. This should fix
-    // crbug.com/720331. TODO(karandeepb): Investigate if there are any side
-    // effects of the render process host no longer being alive and add a test.
-    if (render_process_host) {
-      content::BrowserContext* browser_context =
-          render_process_host->GetBrowserContext();
-
-      CreateWebUIURLFetchers(script->js_scripts(), browser_context,
-                             render_process_id, render_frame_id);
-      CreateWebUIURLFetchers(script->css_scripts(), browser_context,
-                             render_process_id, render_frame_id);
-    }
+    CreateWebUIURLFetchers(script->js_scripts(), render_process_id,
+                           render_frame_id);
+    CreateWebUIURLFetchers(script->css_scripts(), render_process_id,
+                           render_frame_id);
 
     script_render_info_map_.erase(script->id());
   }
@@ -122,7 +109,6 @@ void WebUIUserScriptLoader::LoadScripts(
 
 void WebUIUserScriptLoader::CreateWebUIURLFetchers(
     const extensions::UserScript::FileList& script_files,
-    content::BrowserContext* browser_context,
     int render_process_id,
     int render_frame_id) {
   for (const std::unique_ptr<extensions::UserScript::File>& script_file :
@@ -135,8 +121,7 @@ void WebUIUserScriptLoader::CreateWebUIURLFetchers(
       // being loaded, so passing a raw pointer to |script_file| below to
       // WebUIUserScriptLoader is also safe.
       std::unique_ptr<WebUIURLFetcher> fetcher(new WebUIURLFetcher(
-          browser_context, render_process_id, render_frame_id,
-          script_file->url(),
+          render_process_id, render_frame_id, script_file->url(),
           base::Bind(&WebUIUserScriptLoader::OnSingleWebUIURLFetchComplete,
                      base::Unretained(this), script_file.get())));
       fetchers_.push_back(std::move(fetcher));

@@ -119,6 +119,7 @@ void ReadData(scoped_refptr<network::ResourceResponse> headers,
   network::URLLoaderCompletionStatus status(net::OK);
   status.encoded_data_length = output_size;
   status.encoded_body_length = output_size;
+  status.decoded_body_length = output_size;
   client->OnComplete(status);
 }
 

@@ -9,21 +9,16 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace content {
-class BrowserContext;
-}
-
-namespace net {
-class URLFetcher;
+namespace network {
+class SimpleURLLoader;
 }
 
 // WebUIURLFetcher downloads the content of a file by giving its |url| on WebUI.
 // Each WebUIURLFetcher is associated with a given |render_process_id,
 // render_view_id| pair.
-class WebUIURLFetcher : public net::URLFetcherDelegate {
+class WebUIURLFetcher {
  public:
   // Called when a file URL request is complete.
   // Parameters:
@@ -32,25 +27,22 @@ class WebUIURLFetcher : public net::URLFetcherDelegate {
   using WebUILoadFileCallback =
       base::OnceCallback<void(bool, std::unique_ptr<std::string>)>;
 
-  WebUIURLFetcher(content::BrowserContext* context,
-                  int render_process_id,
+  WebUIURLFetcher(int render_process_id,
                   int render_frame_id,
                   const GURL& url,
                   WebUILoadFileCallback callback);
-  ~WebUIURLFetcher() override;
+  ~WebUIURLFetcher();
 
   void Start();
 
  private:
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
-  content::BrowserContext* context_;
   int render_process_id_;
   int render_frame_id_;
   GURL url_;
   WebUILoadFileCallback callback_;
-  std::unique_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIURLFetcher);
 };
