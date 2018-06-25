@@ -50,14 +50,6 @@
 
 using content::WebContents;
 
-namespace {
-
-// In the window corners, the resize areas don't actually expand bigger, but the
-// 16 px at the end of each edge triggers diagonal resizing.
-const int kResizeAreaCornerSize = 16;
-
-}  // namespace
-
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, public:
 
@@ -249,6 +241,10 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     LOG(WARNING) << "delegate is null, returning safe default.";
     return HTCAPTION;
   }
+
+  // In the window corners, the resize areas don't actually expand bigger, but
+  // the 16 px at the end of each edge triggers diagonal resizing.
+  constexpr int kResizeAreaCornerSize = 16;
   int window_component = GetHTComponentForFrame(
       point, FrameTopBorderThickness(false), NonClientBorderThickness(),
       kResizeAreaCornerSize, kResizeAreaCornerSize, delegate->CanResize());
