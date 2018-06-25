@@ -123,8 +123,9 @@ class HardwareDisplayPlaneManager {
   // Request a callback to be called when the planes are ready to be displayed.
   // The callback will be invoked in the caller's execution context (same
   // sequence or thread).
-  virtual void RequestPlanesReadyCallback(const DrmOverlayPlaneList& planes,
-                                          base::OnceClosure callback) = 0;
+  virtual void RequestPlanesReadyCallback(
+      DrmOverlayPlaneList planes,
+      base::OnceCallback<void(DrmOverlayPlaneList planes)> callback) = 0;
 
   // Returns all formats which can be scanned out by this PlaneManager.
   const std::vector<uint32_t>& GetSupportedFormats() const;

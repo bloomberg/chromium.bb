@@ -24,7 +24,7 @@ class DrmWindowProxy {
 
   gfx::AcceleratedWidget widget() const { return widget_; }
 
-  void SchedulePageFlip(const std::vector<DrmOverlayPlane>& planes,
+  void SchedulePageFlip(std::vector<DrmOverlayPlane> planes,
                         SwapCompletionOnceCallback callback);
 
   void GetVSyncParameters(

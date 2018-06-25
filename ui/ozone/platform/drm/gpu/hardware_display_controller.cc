@@ -113,7 +113,7 @@ bool HardwareDisplayController::ActualSchedulePageFlip(
     return true;
   }
 
-  DrmOverlayPlaneList pending_planes = plane_list;
+  DrmOverlayPlaneList pending_planes = DrmOverlayPlane::Clone(plane_list);
   std::sort(pending_planes.begin(), pending_planes.end(),
             [](const DrmOverlayPlane& l, const DrmOverlayPlane& r) {
               return l.z_order < r.z_order;

@@ -544,13 +544,12 @@ class FakeFenceFD {
  public:
   FakeFenceFD();
 
-  gfx::GpuFence* GetGpuFence() const;
+  std::unique_ptr<gfx::GpuFence> GetGpuFence() const;
   void Signal() const;
 
  private:
   base::ScopedFD read_fd;
   base::ScopedFD write_fd;
-  std::unique_ptr<gfx::GpuFence> gpu_fence;
 };
 
 FakeFenceFD::FakeFenceFD() {
@@ -558,16 +557,14 @@ FakeFenceFD::FakeFenceFD() {
   base::CreateLocalNonBlockingPipe(fds);
   read_fd = base::ScopedFD(fds[0]);
   write_fd = base::ScopedFD(fds[1]);
+}
 
+std::unique_ptr<gfx::GpuFence> FakeFenceFD::GetGpuFence() const {
   gfx::GpuFenceHandle handle;
   handle.type = gfx::GpuFenceHandleType::kAndroidNativeFenceSync;
   handle.native_fd =
       base::FileDescriptor(HANDLE_EINTR(dup(read_fd.get())), true);
-  gpu_fence = std::make_unique<gfx::GpuFence>(handle);
-}
-
-gfx::GpuFence* FakeFenceFD::GetGpuFence() const {
-  return gpu_fence.get();
+  return std::make_unique<gfx::GpuFence>(handle);
 }
 
 void FakeFenceFD::Signal() const {
@@ -576,11 +573,29 @@ void FakeFenceFD::Signal() const {
 
 class HardwareDisplayPlaneManagerPlanesReadyTest : public testing::Test {
  protected:
-  HardwareDisplayPlaneManagerPlanesReadyTest() = default;
+  HardwareDisplayPlaneManagerPlanesReadyTest()
+      : planes_without_fences_(CreatePlanesWithoutFences()),
+        planes_with_fences_(CreatePlanesWithoutFences()) {}
 
   void UseLegacyManager();
   void UseAtomicManager();
-  void RequestPlanesReady(const ui::DrmOverlayPlaneList& planes);
+  void RequestPlanesReady(ui::DrmOverlayPlaneList planes);
+
+  ui::DrmOverlayPlaneList CreatePlanesWithoutFences() {
+    ui::DrmOverlayPlaneList planes;
+    planes.push_back(ui::DrmOverlayPlane(scanout_buffer, nullptr));
+    planes.push_back(ui::DrmOverlayPlane(scanout_buffer, nullptr));
+    return planes;
+  }
+
+  ui::DrmOverlayPlaneList CreatePlanesWithFences() {
+    ui::DrmOverlayPlaneList planes;
+    planes.push_back(
+        ui::DrmOverlayPlane(scanout_buffer, fake_fence_fd1.GetGpuFence()));
+    planes.push_back(
+        ui::DrmOverlayPlane(scanout_buffer, fake_fence_fd2.GetGpuFence()));
+    return planes;
+  }
 
   std::unique_ptr<ui::HardwareDisplayPlaneManager> plane_manager_;
   bool callback_called = false;
@@ -592,22 +607,18 @@ class HardwareDisplayPlaneManagerPlanesReadyTest : public testing::Test {
   const FakeFenceFD fake_fence_fd1;
   const FakeFenceFD fake_fence_fd2;
 
-  const ui::DrmOverlayPlaneList planes_without_fences_{
-      ui::DrmOverlayPlane(scanout_buffer, nullptr),
-      ui::DrmOverlayPlane(scanout_buffer, nullptr)};
-  const ui::DrmOverlayPlaneList planes_with_fences_{
-      ui::DrmOverlayPlane(scanout_buffer, fake_fence_fd1.GetGpuFence()),
-      ui::DrmOverlayPlane(scanout_buffer, fake_fence_fd2.GetGpuFence())};
+  const ui::DrmOverlayPlaneList planes_without_fences_;
+  const ui::DrmOverlayPlaneList planes_with_fences_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManagerPlanesReadyTest);
 };
 
 void HardwareDisplayPlaneManagerPlanesReadyTest::RequestPlanesReady(
-    const ui::DrmOverlayPlaneList& planes) {
-  auto set_true = [](bool* b) { *b = true; };
+    ui::DrmOverlayPlaneList planes) {
+  auto set_true = [](bool* b, ui::DrmOverlayPlaneList planes) { *b = true; };
   plane_manager_->RequestPlanesReadyCallback(
-      planes, base::BindOnce(set_true, &callback_called));
+      std::move(planes), base::BindOnce(set_true, &callback_called));
 }
 
 void HardwareDisplayPlaneManagerPlanesReadyTest::UseLegacyManager() {
@@ -621,7 +632,7 @@ void HardwareDisplayPlaneManagerPlanesReadyTest::UseAtomicManager() {
 TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
        LegacyWithoutFencesIsAsynchronousWithoutFenceWait) {
   UseLegacyManager();
-  RequestPlanesReady(planes_without_fences_);
+  RequestPlanesReady(ui::DrmOverlayPlane::Clone(planes_without_fences_));
 
   EXPECT_FALSE(callback_called);
 
@@ -633,7 +644,7 @@ TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
 TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
        LegacyWithFencesIsAsynchronousWithFenceWait) {
   UseLegacyManager();
-  RequestPlanesReady(planes_with_fences_);
+  RequestPlanesReady(ui::DrmOverlayPlane::Clone(planes_with_fences_));
 
   EXPECT_FALSE(callback_called);
 
@@ -650,7 +661,7 @@ TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
 TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
        AtomicWithoutFencesIsAsynchronousWithoutFenceWait) {
   UseAtomicManager();
-  RequestPlanesReady(planes_without_fences_);
+  RequestPlanesReady(ui::DrmOverlayPlane::Clone(planes_without_fences_));
 
   EXPECT_FALSE(callback_called);
 
@@ -662,7 +673,7 @@ TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
 TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
        AtomicWithFencesIsAsynchronousWithoutFenceWait) {
   UseAtomicManager();
-  RequestPlanesReady(planes_with_fences_);
+  RequestPlanesReady(ui::DrmOverlayPlane::Clone(planes_with_fences_));
 
   EXPECT_FALSE(callback_called);
 

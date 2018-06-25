@@ -29,8 +29,9 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
   bool ValidatePrimarySize(const DrmOverlayPlane& primary,
                            const drmModeModeInfo& mode) override;
 
-  void RequestPlanesReadyCallback(const DrmOverlayPlaneList& planes,
-                                  base::OnceClosure callback) override;
+  void RequestPlanesReadyCallback(
+      DrmOverlayPlaneList planes,
+      base::OnceCallback<void(DrmOverlayPlaneList planes)> callback) override;
   bool SetPlaneData(HardwareDisplayPlaneList* plane_list,
                     HardwareDisplayPlane* hw_plane,
                     const DrmOverlayPlane& overlay,

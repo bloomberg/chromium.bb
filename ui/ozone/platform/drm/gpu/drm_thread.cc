@@ -202,24 +202,24 @@ void DrmThread::GetScanoutFormats(
 }
 
 void DrmThread::SchedulePageFlip(gfx::AcceleratedWidget widget,
-                                 const std::vector<DrmOverlayPlane>& planes,
+                                 std::vector<DrmOverlayPlane> planes,
                                  SwapCompletionOnceCallback callback) {
   scoped_refptr<ui::DrmDevice> drm_device =
       device_manager_->GetDrmDevice(widget);
 
   drm_device->plane_manager()->RequestPlanesReadyCallback(
-      planes, base::BindOnce(&DrmThread::OnPlanesReadyForPageFlip,
-                             weak_ptr_factory_.GetWeakPtr(), widget, planes,
-                             std::move(callback)));
+      std::move(planes), base::BindOnce(&DrmThread::OnPlanesReadyForPageFlip,
+                                        weak_ptr_factory_.GetWeakPtr(), widget,
+                                        std::move(callback)));
 }
 
-void DrmThread::OnPlanesReadyForPageFlip(
-    gfx::AcceleratedWidget widget,
-    const std::vector<DrmOverlayPlane>& planes,
-    SwapCompletionOnceCallback callback) {
+void DrmThread::OnPlanesReadyForPageFlip(gfx::AcceleratedWidget widget,
+                                         SwapCompletionOnceCallback callback,
+                                         std::vector<DrmOverlayPlane> planes) {
   DrmWindow* window = screen_manager_->GetWindow(widget);
   if (window) {
-    bool result = window->SchedulePageFlip(planes, std::move(callback));
+    bool result =
+        window->SchedulePageFlip(std::move(planes), std::move(callback));
     CHECK(result) << "DrmThread::SchedulePageFlip failed.";
   } else {
     std::move(callback).Run(gfx::SwapResult::SWAP_ACK,

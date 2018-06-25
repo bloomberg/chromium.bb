@@ -1479,7 +1479,7 @@ bool NativeViewGLSurfaceEGL::CommitAndClearPendingOverlays() {
 
   bool success = true;
 #if defined(OS_ANDROID)
-  for (const auto& overlay : pending_overlays_)
+  for (auto& overlay : pending_overlays_)
     success &= overlay.ScheduleOverlayPlane(window_);
   pending_overlays_.clear();
 #else

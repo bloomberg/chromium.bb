@@ -8,6 +8,7 @@
 
 #include "base/files/platform_file.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
@@ -87,7 +88,7 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
     DrmOverlayPlane plane(buffer, params[i].plane_z_order, params[i].transform,
                           params[i].display_rect, params[i].crop_rect,
                           /* enable_blend */ true, /* gpu_fence */ nullptr);
-    test_list.push_back(plane);
+    test_list.push_back(std::move(plane));
 
     if (buffer && controller->TestPageFlip(test_list)) {
       returns[i].status = OVERLAY_STATUS_ABLE;

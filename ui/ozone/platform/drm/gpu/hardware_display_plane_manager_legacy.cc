@@ -24,11 +24,12 @@ namespace {
 // We currently wait for the fences serially, but it's possible
 // that merging the fences and waiting on the merged fence fd
 // is more efficient. We should revisit once we have more info.
-void WaitForPlaneFences(const ui::DrmOverlayPlaneList& planes) {
+ui::DrmOverlayPlaneList WaitForPlaneFences(ui::DrmOverlayPlaneList planes) {
   for (const auto& plane : planes) {
     if (plane.gpu_fence)
       plane.gpu_fence->Wait();
   }
+  return planes;
 }
 
 }  // namespace
@@ -148,12 +149,13 @@ bool HardwareDisplayPlaneManagerLegacy::ValidatePrimarySize(
 }
 
 void HardwareDisplayPlaneManagerLegacy::RequestPlanesReadyCallback(
-    const DrmOverlayPlaneList& planes,
-    base::OnceClosure callback) {
-  base::PostTaskWithTraitsAndReply(
+    DrmOverlayPlaneList planes,
+    base::OnceCallback<void(DrmOverlayPlaneList planes)> callback) {
+  base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&WaitForPlaneFences, planes), std::move(callback));
+      base::BindOnce(&WaitForPlaneFences, base::Passed(&planes)),
+      std::move(callback));
 }
 
 bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(

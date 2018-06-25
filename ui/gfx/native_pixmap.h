@@ -56,13 +56,14 @@ class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
   // apha, when scanned out.
   // |gpu_fence| specifies a gpu fence to wait on before the pixmap is ready
   // to be displayed.
-  virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                                    int plane_z_order,
-                                    gfx::OverlayTransform plane_transform,
-                                    const gfx::Rect& display_bounds,
-                                    const gfx::RectF& crop_rect,
-                                    bool enable_blend,
-                                    gfx::GpuFence* gpu_fence) = 0;
+  virtual bool ScheduleOverlayPlane(
+      gfx::AcceleratedWidget widget,
+      int plane_z_order,
+      gfx::OverlayTransform plane_transform,
+      const gfx::Rect& display_bounds,
+      const gfx::RectF& crop_rect,
+      bool enable_blend,
+      std::unique_ptr<gfx::GpuFence> gpu_fence) = 0;
 
   // Export the buffer for sharing across processes.
   // Any file descriptors in the exported handle are owned by the caller.

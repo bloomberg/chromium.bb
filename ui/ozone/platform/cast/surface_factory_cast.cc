@@ -67,7 +67,7 @@ class CastPixmap : public gfx::NativePixmap {
                             const gfx::Rect& display_bounds,
                             const gfx::RectF& crop_rect,
                             bool enable_blend,
-                            gfx::GpuFence* gpu_fence) override {
+                            std::unique_ptr<gfx::GpuFence> gpu_fence) override {
     parent_->OnOverlayScheduled(display_bounds);
     return true;
   }

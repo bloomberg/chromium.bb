@@ -18,6 +18,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/native_pixmap_handle.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
@@ -370,7 +371,7 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                      const gfx::Rect& display_bounds,
                                      const gfx::RectF& crop_rect,
                                      bool enable_blend,
-                                     gfx::GpuFence* gpu_fence) {
+                                     std::unique_ptr<gfx::GpuFence> gpu_fence) {
   DCHECK(buffer_->GetFlags() & GBM_BO_USE_SCANOUT);
   // |framebuffer_id| might be 0 if AddFramebuffer2 failed, in that case we
   // already logged the error in GbmBuffer ctor. We avoid logging the error
@@ -378,7 +379,7 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
   if (buffer_->GetFramebufferId()) {
     surface_manager_->GetSurface(widget)->QueueOverlayPlane(
         DrmOverlayPlane(buffer_, plane_z_order, plane_transform, display_bounds,
-                        crop_rect, enable_blend, gpu_fence));
+                        crop_rect, enable_blend, std::move(gpu_fence)));
   }
 
   return true;

@@ -84,7 +84,7 @@ class DrmThread : public base::Thread,
 
   // DrmWindowProxy (on GPU thread) is the client for these methods.
   void SchedulePageFlip(gfx::AcceleratedWidget widget,
-                        const std::vector<DrmOverlayPlane>& planes,
+                        std::vector<DrmOverlayPlane> planes,
                         SwapCompletionOnceCallback callback);
   void GetVSyncParameters(
       gfx::AcceleratedWidget widget,
@@ -143,8 +143,8 @@ class DrmThread : public base::Thread,
 
  private:
   void OnPlanesReadyForPageFlip(gfx::AcceleratedWidget widget,
-                                const std::vector<DrmOverlayPlane>& planes,
-                                SwapCompletionOnceCallback callback);
+                                SwapCompletionOnceCallback callback,
+                                std::vector<DrmOverlayPlane> planes);
 
   std::unique_ptr<DrmDeviceManager> device_manager_;
   std::unique_ptr<ScanoutBufferGenerator> buffer_generator_;

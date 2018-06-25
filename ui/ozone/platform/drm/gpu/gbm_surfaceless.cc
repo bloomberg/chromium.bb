@@ -44,9 +44,9 @@ GbmSurfaceless::GbmSurfaceless(GbmSurfaceFactory* surface_factory,
   unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());
 }
 
-void GbmSurfaceless::QueueOverlayPlane(const DrmOverlayPlane& plane) {
+void GbmSurfaceless::QueueOverlayPlane(DrmOverlayPlane plane) {
   is_on_external_drm_device_ = plane.buffer->RequiresGlFinish();
-  planes_.push_back(plane);
+  planes_.push_back(std::move(plane));
 }
 
 bool GbmSurfaceless::Initialize(gl::GLSurfaceFormat format) {
@@ -220,7 +220,7 @@ GbmSurfaceless::PendingFrame::~PendingFrame() {}
 
 bool GbmSurfaceless::PendingFrame::ScheduleOverlayPlanes(
     gfx::AcceleratedWidget widget) {
-  for (const auto& overlay : overlays)
+  for (auto& overlay : overlays)
     if (!overlay.ScheduleOverlayPlane(widget))
       return false;
   return true;
@@ -252,7 +252,7 @@ void GbmSurfaceless::SubmitFrame() {
       return;
     }
 
-    window_->SchedulePageFlip(planes_, std::move(callback));
+    window_->SchedulePageFlip(std::move(planes_), std::move(callback));
     planes_.clear();
   }
 }

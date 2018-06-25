@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GL_STREAM_TEXTURE_IMAGE_H_
 
 #include "gpu/gpu_gles2_export.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_image.h"
 
 namespace gpu {

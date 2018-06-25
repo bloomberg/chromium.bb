@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/gl_stream_texture_image_stub.h"
 
+#include "ui/gfx/gpu_fence.h"
+
 namespace gpu {
 namespace gles2 {
 
@@ -33,7 +35,7 @@ bool GLStreamTextureImageStub::ScheduleOverlayPlane(
     const gfx::Rect& bounds_rect,
     const gfx::RectF& crop_rect,
     bool enable_blend,
-    gfx::GpuFence* gpu_fence) {
+    std::unique_ptr<gfx::GpuFence> gpu_fence) {
   return false;
 }
 
