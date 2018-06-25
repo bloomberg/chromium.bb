@@ -573,6 +573,9 @@ void StyleEngine::DidDetach() {
   if (font_selector_)
     font_selector_->GetFontFaceCache()->ClearAll();
   font_selector_ = nullptr;
+  if (environment_variables_)
+    environment_variables_->DetachFromParent();
+  environment_variables_ = nullptr;
 }
 
 void StyleEngine::ClearFontCache() {

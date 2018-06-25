@@ -83,6 +83,17 @@ CSSVariableData* StyleEnvironmentVariables::ResolveVariable(
   return result->value.get();
 }
 
+void StyleEnvironmentVariables::DetachFromParent() {
+  DCHECK(parent_);
+
+  // Remove any reference the |parent| has to |this|.
+  auto it = parent_->children_.Find(this);
+  if (it != kNotFound)
+    parent_->children_.EraseAt(it);
+
+  parent_ = nullptr;
+}
+
 void StyleEnvironmentVariables::BindToParent(
     StyleEnvironmentVariables& parent) {
   DCHECK_EQ(nullptr, parent_);
