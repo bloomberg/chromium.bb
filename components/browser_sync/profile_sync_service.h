@@ -510,6 +510,9 @@ class ProfileSyncService : public syncer::SyncService,
   void AccountStateChanged();
   void CredentialsChanged();
 
+  // Callback for StartupController.
+  bool ShouldSyncStart(bool bypass_first_setup_check);
+
   // Destroys the |crypto_| object and creates a new one with fresh state.
   void ResetCryptoState();
 

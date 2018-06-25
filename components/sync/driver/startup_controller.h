@@ -12,8 +12,6 @@
 
 namespace syncer {
 
-class SyncPrefs;
-
 // This class is used by ProfileSyncService to manage all logic and state
 // pertaining to initialization of the SyncEngine.
 class StartupController {
@@ -30,16 +28,15 @@ class StartupController {
   };
 
   StartupController(
-      const SyncPrefs* sync_prefs,
       base::RepeatingCallback<ModelTypeSet()> get_preferred_data_types,
-      base::RepeatingCallback<bool()> can_start,
+      base::RepeatingCallback<bool(bool force_immediate)> should_start,
       base::RepeatingClosure start_engine);
   ~StartupController();
 
   // Starts up sync if it is requested by the user and preconditions are met.
   // If |force_immediate| is true, this will start sync immediately, bypassing
   // deferred startup and the "first setup complete" check (but *not* the
-  // |can_start_callback_| check!).
+  // |should_start_callback_| check!).
   void TryStart(bool force_immediate);
 
   // Called when a datatype (SyncableService) has a need for sync to start
@@ -66,14 +63,12 @@ class StartupController {
   // Records time spent in deferred state with UMA histograms.
   void RecordTimeDeferred();
 
-  const SyncPrefs* sync_prefs_;
-
   const base::RepeatingCallback<ModelTypeSet()>
       get_preferred_data_types_callback_;
 
-  // A function that can be invoked repeatedly to determine whether sync can be
-  // started. |start_engine_| should not be invoked unless this returns true.
-  const base::RepeatingCallback<bool()> can_start_callback_;
+  // A function that can be invoked repeatedly to determine whether sync should
+  // be started. |start_engine_| should not be invoked unless this returns true.
+  const base::RepeatingCallback<bool(bool)> should_start_callback_;
 
   // The callback we invoke when it's time to call expensive
   // startup routines for the sync engine.

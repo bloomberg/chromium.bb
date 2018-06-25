@@ -231,10 +231,9 @@ void ProfileSyncService::Initialize() {
   sync_client_->Initialize();
 
   startup_controller_ = std::make_unique<syncer::StartupController>(
-      &sync_prefs_,
       base::BindRepeating(&ProfileSyncService::GetPreferredDataTypes,
                           base::Unretained(this)),
-      base::BindRepeating(&ProfileSyncService::CanSyncStart,
+      base::BindRepeating(&ProfileSyncService::ShouldSyncStart,
                           base::Unretained(this)),
       base::BindRepeating(&ProfileSyncService::StartUpSlowEngineComponents,
                           base::Unretained(this)));
@@ -449,6 +448,13 @@ void ProfileSyncService::CredentialsChanged() {
   }
 
   NotifyObservers();
+}
+
+bool ProfileSyncService::ShouldSyncStart(bool bypass_first_setup_check) {
+  if (!CanSyncStart()) {
+    return false;
+  }
+  return bypass_first_setup_check || IsFirstSetupComplete();
 }
 
 void ProfileSyncService::ResetCryptoState() {

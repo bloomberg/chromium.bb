@@ -6,12 +6,11 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -19,19 +18,16 @@ namespace syncer {
 class StartupControllerTest : public testing::Test {
  public:
   StartupControllerTest()
-      : preferred_types_(UserTypes()), can_start_(false), started_(false) {}
+      : preferred_types_(UserTypes()), should_start_(false), started_(false) {}
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kSyncDeferredStartupTimeoutSeconds, "0");
 
-    SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
-    sync_prefs_ = std::make_unique<SyncPrefs>(&pref_service_);
     controller_ = std::make_unique<StartupController>(
-        sync_prefs_.get(),
         base::BindRepeating(&StartupControllerTest::GetPreferredDataTypes,
                             base::Unretained(this)),
-        base::BindRepeating(&StartupControllerTest::CanStart,
+        base::BindRepeating(&StartupControllerTest::ShouldStart,
                             base::Unretained(this)),
         base::BindRepeating(&StartupControllerTest::FakeStartBackend,
                             base::Unretained(this)));
@@ -42,7 +38,7 @@ class StartupControllerTest : public testing::Test {
     preferred_types_ = types;
   }
 
-  void SetCanStart(bool can_start) { can_start_ = can_start; }
+  void SetShouldStart(bool should_start) { should_start_ = should_start; }
 
   void ExpectStarted() {
     EXPECT_TRUE(started());
@@ -63,44 +59,38 @@ class StartupControllerTest : public testing::Test {
   bool started() const { return started_; }
   void clear_started() { started_ = false; }
   StartupController* controller() { return controller_.get(); }
-  SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
 
  private:
   ModelTypeSet GetPreferredDataTypes() { return preferred_types_; }
-  bool CanStart() { return can_start_; }
+  bool ShouldStart(bool force_immediate) { return should_start_; }
   void FakeStartBackend() { started_ = true; }
 
   ModelTypeSet preferred_types_;
-  bool can_start_;
+  bool should_start_;
   bool started_;
   base::MessageLoop message_loop_;
-  sync_preferences::TestingPrefServiceSyncable pref_service_;
-  std::unique_ptr<SyncPrefs> sync_prefs_;
   std::unique_ptr<StartupController> controller_;
 };
 
-// Test that sync doesn't start if setup is not in progress or complete.
-TEST_F(StartupControllerTest, NoSetupComplete) {
+// Test that sync doesn't start if the "should sync start" callback returns
+// false.
+TEST_F(StartupControllerTest, ShouldNotStart) {
   controller()->TryStart(/*force_immediate=*/false);
   ExpectNotStarted();
 
-  SetCanStart(true);
-  controller()->TryStart(/*force_immediate=*/false);
+  controller()->TryStart(/*force_immediate=*/true);
   ExpectNotStarted();
 }
 
-// Test that sync defers if first setup is complete.
-TEST_F(StartupControllerTest, DefersAfterFirstSetupComplete) {
-  sync_prefs()->SetFirstSetupComplete();
-  SetCanStart(true);
+TEST_F(StartupControllerTest, DefersByDefault) {
+  SetShouldStart(true);
   controller()->TryStart(/*force_immediate=*/false);
   ExpectStartDeferred();
 }
 
 // Test that a data type triggering startup starts sync immediately.
 TEST_F(StartupControllerTest, NoDeferralDataTypeTrigger) {
-  sync_prefs()->SetFirstSetupComplete();
-  SetCanStart(true);
+  SetShouldStart(true);
   controller()->OnDataTypeRequestsSyncStartup(SESSIONS);
   ExpectStarted();
 }
@@ -108,8 +98,7 @@ TEST_F(StartupControllerTest, NoDeferralDataTypeTrigger) {
 // Test that a data type trigger interrupts the deferral timer and starts
 // sync immediately.
 TEST_F(StartupControllerTest, DataTypeTriggerInterruptsDeferral) {
-  sync_prefs()->SetFirstSetupComplete();
-  SetCanStart(true);
+  SetShouldStart(true);
   controller()->TryStart(/*force_immediate=*/false);
   ExpectStartDeferred();
 
@@ -123,11 +112,10 @@ TEST_F(StartupControllerTest, DataTypeTriggerInterruptsDeferral) {
   EXPECT_FALSE(started());
 }
 
-// Test that the fallback timer starts sync in the event all
-// conditions are met and no data type requests sync.
+// Test that the fallback timer starts sync in the event all conditions are met
+// and no data type requests sync.
 TEST_F(StartupControllerTest, FallbackTimer) {
-  sync_prefs()->SetFirstSetupComplete();
-  SetCanStart(true);
+  SetShouldStart(true);
   controller()->TryStart(/*force_immediate=*/false);
   ExpectStartDeferred();
 
@@ -145,8 +133,7 @@ TEST_F(StartupControllerTest, NoDeferralWithoutSessionsSync) {
   types.Remove(SUPERVISED_USER_SETTINGS);
   SetPreferredDataTypes(types);
 
-  sync_prefs()->SetFirstSetupComplete();
-  SetCanStart(true);
+  SetShouldStart(true);
   controller()->TryStart(/*force_immediate=*/false);
   ExpectStarted();
 }
@@ -160,31 +147,21 @@ TEST_F(StartupControllerTest, FallbackTimerWaits) {
   ExpectNotStarted();
 }
 
-// Test that sync starts immediately when setup in progress is true.
-TEST_F(StartupControllerTest, NoDeferralSetupInProgressTrigger) {
-  sync_prefs()->SetFirstSetupComplete();
-  SetCanStart(true);
+// Test that sync starts immediately when told to do so.
+TEST_F(StartupControllerTest, NoDeferralIfForceImmediate) {
+  SetShouldStart(true);
+  ExpectNotStarted();
   controller()->TryStart(/*force_immediate=*/true);
   ExpectStarted();
 }
 
-// Test that setup in progress being set to true interrupts the deferral timer
-// and starts sync immediately.
-TEST_F(StartupControllerTest, SetupInProgressTriggerInterruptsDeferral) {
-  sync_prefs()->SetFirstSetupComplete();
-  SetCanStart(true);
+// Test that setting |force_immediate| interrupts the deferral timer and starts
+// sync immediately.
+TEST_F(StartupControllerTest, ForceImmediateInterruptsDeferral) {
+  SetShouldStart(true);
   controller()->TryStart(/*force_immediate=*/false);
   ExpectStartDeferred();
 
-  controller()->TryStart(/*force_immediate=*/true);
-  ExpectStarted();
-}
-
-// Test that deferred startup and the FirstSetupComplete check can be bypassed.
-TEST_F(StartupControllerTest, BypassDeferredStartupAndSetupCompleteCheck) {
-  SetCanStart(true);
-  ASSERT_FALSE(sync_prefs()->IsFirstSetupComplete());
-  ExpectNotStarted();
   controller()->TryStart(/*force_immediate=*/true);
   ExpectStarted();
 }
