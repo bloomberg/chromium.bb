@@ -20,6 +20,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/subresource_filter/core/browser/copying_file_stream.h"
@@ -136,6 +138,14 @@ void IndexedRulesetVersion::SaveToPrefs(PrefService* local_state) const {
                          content_version);
 }
 
+std::unique_ptr<base::trace_event::TracedValue>
+IndexedRulesetVersion::ToTracedValue() const {
+  auto value = std::make_unique<base::trace_event::TracedValue>();
+  value->SetString("content_version", content_version);
+  value->SetInteger("format_version", format_version);
+  return value;
+}
+
 // IndexedRulesetLocator ------------------------------------------------------
 
 // static
@@ -227,6 +237,9 @@ RulesetService::RulesetService(
 
   IndexedRulesetVersion most_recently_indexed_version;
   most_recently_indexed_version.ReadFromPrefs(local_state_);
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "RulesetService::RulesetService", "prefs_version",
+               most_recently_indexed_version.ToTracedValue());
   if (most_recently_indexed_version.IsValid() &&
       most_recently_indexed_version.IsCurrentFormatVersion()) {
     OpenAndPublishRuleset(most_recently_indexed_version);

@@ -26,6 +26,10 @@ class PrefRegistrySimple;
 
 namespace base {
 class SequencedTaskRunner;
+
+namespace trace_event {
+class TracedValue;
+}  // namespace trace_event
 }  // namespace base
 
 namespace subresource_filter {
@@ -78,6 +82,8 @@ struct IndexedRulesetVersion {
 
   void SaveToPrefs(PrefService* local_state) const;
   void ReadFromPrefs(PrefService* local_state);
+
+  std::unique_ptr<base::trace_event::TracedValue> ToTracedValue() const;
 
   std::string content_version;
   int format_version = 0;
