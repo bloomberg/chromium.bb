@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_image_downloader.mojom.h"
@@ -30,7 +29,6 @@ class AssistantInteractionController;
 class AssistantUiController;
 
 class AssistantController : public mojom::AssistantController,
-                            public DialogPlateDelegate,
                             public HighlighterController::Observer {
  public:
   AssistantController();
@@ -73,10 +71,6 @@ class AssistantController : public mojom::AssistantController,
       mojom::WebContentsManagerPtr web_contents_manager) override;
   void RequestScreenshot(const gfx::Rect& rect,
                          RequestScreenshotCallback callback) override;
-
-  // DialogPlateDelegate:
-  void OnDialogPlateButtonPressed(DialogPlateButtonId id) override;
-  void OnDialogPlateContentsCommitted(const std::string& text) override;
 
   // HighlighterController::Observer:
   void OnHighlighterSelectionRecognized(const gfx::Rect& rect) override;

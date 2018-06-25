@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
@@ -29,9 +30,10 @@ AssistantMainView::AssistantMainView(AssistantController* assistant_controller)
       min_height_dip_(kMinHeightDip) {
   InitLayout();
 
-  // Set delegates.
+  // Set delegate/observers.
   caption_bar_->set_delegate(assistant_controller_->ui_controller());
-  dialog_plate_->set_delegate(assistant_controller_);
+  dialog_plate_->AddObserver(assistant_controller_->interaction_controller());
+  dialog_plate_->AddObserver(assistant_controller_->ui_controller());
 
   // The AssistantController indirectly owns the view hierarchy to which
   // AssistantMainView belongs so is guaranteed to outlive it.
@@ -39,6 +41,10 @@ AssistantMainView::AssistantMainView(AssistantController* assistant_controller)
 }
 
 AssistantMainView::~AssistantMainView() {
+  dialog_plate_->RemoveObserver(assistant_controller_->ui_controller());
+  dialog_plate_->RemoveObserver(
+      assistant_controller_->interaction_controller());
+
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
 

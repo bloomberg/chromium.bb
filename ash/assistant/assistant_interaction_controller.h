@@ -29,7 +29,7 @@ class AssistantInteractionController
       public AssistantInteractionModelObserver,
       public AssistantUiModelObserver,
       public HighlighterController::Observer,
-      public DialogPlateDelegate,
+      public DialogPlateObserver,
       public mojom::ManagedWebContentsOpenUrlDelegate {
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
@@ -90,7 +90,7 @@ class AssistantInteractionController
   // mojom::ManagedWebContentsOpenUrlDelegate:
   void OnOpenUrlFromTab(const GURL& url) override;
 
-  // DialogPlateDelegate:
+  // DialogPlateObserver:
   void OnDialogPlateButtonPressed(DialogPlateButtonId id) override;
   void OnDialogPlateContentsCommitted(const std::string& text) override;
 
