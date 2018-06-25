@@ -5,6 +5,7 @@
 #include "ash/system/accessibility/dictation_button_tray.h"
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
@@ -44,6 +45,9 @@ DictationButtonTray::~DictationButtonTray() {
 }
 
 bool DictationButtonTray::PerformAction(const ui::Event& event) {
+  UserMetricsRecorder::RecordUserToggleDictation(
+      DictationToggleMethod::kToggleByButton);
+
   Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
       AcceleratorAction::TOGGLE_DICTATION);
   CheckDictationStatusAndUpdateIcon();

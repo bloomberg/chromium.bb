@@ -19,6 +19,15 @@ namespace ash {
 class DesktopTaskSwitchMetricRecorder;
 class PointerMetricsRecorder;
 
+// CrosDictationStartDictationMethod enum values.
+// These values are persisted to logs and should not be renumbered or re-used.
+// See tools/metrics/histograms/enums.xml.
+enum class DictationToggleMethod {
+  kToggleByKeyboard,
+  kToggleByButton,
+  kMaxValue = kToggleByButton
+};
+
 // User Metrics Recorder provides a repeating callback (RecordPeriodicMetrics)
 // on a timer to allow recording of state data over time to the UMA records.
 // Any additional states (in ash) that require monitoring can be added to
@@ -39,6 +48,9 @@ class ASH_EXPORT UserMetricsRecorder {
   // Record interesting user clicks on shelf buttons on lock and login screens.
   static void RecordUserClickOnShelfButton(
       LoginMetricsRecorder::ShelfButtonClickTarget target);
+
+  // Record the method used to activate dictation.
+  static void RecordUserToggleDictation(DictationToggleMethod method);
 
   // Records an Ash owned user action.
   void RecordUserMetricsAction(UserMetricsAction action);

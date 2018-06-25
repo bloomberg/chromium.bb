@@ -26,6 +26,7 @@
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/media_controller.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/new_window_controller.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
@@ -787,6 +788,8 @@ bool CanHandleToggleDictation() {
 
 void HandleToggleDictation() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Dictation"));
+  UserMetricsRecorder::RecordUserToggleDictation(
+      DictationToggleMethod::kToggleByKeyboard);
   Shell::Get()->accessibility_controller()->ToggleDictation();
 }
 

@@ -8228,6 +8228,11 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="COMPATIBILITY_CHECK_FAILED"/>
 </enum>
 
+<enum name="CrosDictationToggleDictationMethod">
+  <int value="0" label="Search+D"/>
+  <int value="1" label="Click onscreen button"/>
+</enum>
+
 <enum name="CrosDisksArchiveType">
   <int value="0" label="Unknown"/>
   <int value="1" label="ZIP"/>
