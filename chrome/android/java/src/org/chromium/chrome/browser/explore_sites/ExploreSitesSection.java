@@ -54,11 +54,17 @@ public class ExploreSitesSection {
     private void initializeTiles(List<ExploreSitesCategoryTile> tileList) {
         if (tileList == null) return;
 
+        // TODO(chili): Try to get this from view hierarchy. This gets called before the
+        // mExploreSection is measured when opening ntp via 3 dot menu -> new tab,
+        // causing a crash. Max width is set to tile grid max width.
         Point screenSize = new Point();
         ((WindowManager) mExploreSection.getContext().getSystemService(Context.WINDOW_SERVICE))
                 .getDefaultDisplay()
                 .getSize(screenSize);
-        int tileWidth = screenSize.x / MAX_TILES;
+        int tileWidth = Math.min(screenSize.x,
+                                mExploreSection.getResources().getDimensionPixelSize(
+                                        R.dimen.tile_grid_layout_max_width))
+                / MAX_TILES;
 
         int tileCount = 0;
         for (final ExploreSitesCategoryTile tile : tileList) {
