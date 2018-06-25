@@ -98,7 +98,7 @@ void DisplayConfigurationController::SetUnifiedDesktopLayoutMatrix(
   }
 }
 
-void DisplayConfigurationController::SetMirrorMode(bool mirror) {
+void DisplayConfigurationController::SetMirrorMode(bool mirror, bool throttle) {
   if (!display_manager_->is_multi_mirroring_enabled() &&
       display_manager_->num_connected_displays() > 2) {
     ShowDisplayErrorNotification(
@@ -107,7 +107,8 @@ void DisplayConfigurationController::SetMirrorMode(bool mirror) {
     return;
   }
   if (display_manager_->num_connected_displays() <= 1 ||
-      display_manager_->IsInMirrorMode() == mirror || IsLimited()) {
+      display_manager_->IsInMirrorMode() == mirror ||
+      (throttle && IsLimited())) {
     return;
   }
   SetThrottleTimeout(kCycleDisplayThrottleTimeoutMs);
@@ -149,8 +150,9 @@ display::Display::Rotation DisplayConfigurationController::GetTargetRotation(
   return display_manager_->GetDisplayInfo(display_id).GetActiveRotation();
 }
 
-void DisplayConfigurationController::SetPrimaryDisplayId(int64_t display_id) {
-  if (display_manager_->GetNumDisplays() <= 1 || IsLimited())
+void DisplayConfigurationController::SetPrimaryDisplayId(int64_t display_id,
+                                                         bool throttle) {
+  if (display_manager_->GetNumDisplays() <= 1 || (IsLimited() && throttle))
     return;
 
   SetThrottleTimeout(kSetPrimaryDisplayThrottleTimeoutMs);
