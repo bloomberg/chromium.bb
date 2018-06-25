@@ -14,10 +14,13 @@
 /**
  * The |value| is the corresponding value that the current slider tick is
  * assocated with. The string |label| is shown in the ui as the label for the
- * current slider value.
+ * current slider value. The |ariaValue| number is used for aria-valuemin,
+ * aria-valuemax, and aria-valuenow, and is optional. If missing, |value| will
+ * be used instead.
  * @typedef {{
- *   value: (number|string|boolean),
- *   label: string
+ *   value: !number,
+ *   label: !string,
+ *   ariaValue: (number|undefined),
  * }}
  */
 let SliderTick;
@@ -120,7 +123,8 @@ Polymer({
     newIndex = this.clampToRange_(newIndex, this.min, this.max);
     if (newIndex != this.index) {
       this._setIndex(newIndex);
-      this.setAttribute('aria-valuenow', this.ticks[this.index].value);
+      this.setAttribute(
+          'aria-valuenow', this.getAriaValueForIndex_(this.ticks, this.index));
       this.setAttribute(
           'aria-valuetext', this.getLabelForIndex_(this.ticks, this.index));
       if (this.dragging) {
@@ -208,7 +212,7 @@ Polymer({
   },
 
   /**
-   * Returns the current label for the selected slider value.
+   * Returns the current label for the selected slider index.
    * @param {SliderTicks} ticks Slider label and corresponding value for each
    *    tick.
    * @param {number} index Index of the slider tick with the desired label.
@@ -218,6 +222,25 @@ Polymer({
     if (!ticks || ticks.length == 0 || index >= ticks.length)
       return '';
     return ticks[index].label;
+  },
+
+  /**
+   * Returns the aria value for a selected slider index. aria-valuenow,
+   * aria-valuemin and aria-valuemax are expected to be a numbers, so sliders
+   * which use strings for labels should populate the ariaValue with a number
+   * as well.
+   * @param {SliderTicks} ticks Slider label and corresponding value for each
+   *    tick.
+   * @param {number} index Index of the slider tick with the desired label.
+   * @return {number|string} Returns the empty string if there is not tick at
+   *    the given index.
+   */
+  getAriaValueForIndex_: function(ticks, index) {
+    if (!ticks || ticks.length == 0 || index >= ticks.length)
+      return '';
+    // ariaValue factored out for closure compilation.
+    let ariaValue = ticks[index].ariaValue;
+    return ariaValue !== undefined ? ariaValue : ticks[index].value;
   },
 
   /** @private Safely increments the slider index value by 1 and updates pref */
@@ -439,7 +462,9 @@ Polymer({
     for (let i = 0; i < this.ticks.length; i++) {
       if (this.ticks[i].value == this.pref.value) {
         this._setIndex(i);
-        this.setAttribute('aria-valuenow', this.ticks[this.index].value);
+        this.setAttribute(
+            'aria-valuenow',
+            this.getAriaValueForIndex_(this.ticks, this.index));
         this.setAttribute(
             'aria-valuetext', this.getLabelForIndex_(this.ticks, this.index));
       }
@@ -485,9 +510,9 @@ Polymer({
     }
     this.max = this.ticks.length - 1;
     this.setAttribute(
-        'aria-valuemin', this.getLabelForIndex_(this.ticks, this.min));
+        'aria-valuemin', this.getAriaValueForIndex_(this.ticks, this.min));
     this.setAttribute(
-        'aria-valuemax', this.getLabelForIndex_(this.ticks, this.max));
+        'aria-valuemax', this.getAriaValueForIndex_(this.ticks, this.max));
     this.updateIndex_();
   },
 });

@@ -345,9 +345,9 @@ Polymer({
     for (let i = 0; i < selectedDisplay.availableDisplayZoomFactors.length;
          i++) {
       const value = selectedDisplay.availableDisplayZoomFactors[i];
-      const label =
-          this.i18n('displayZoomValue', Math.round(value * 100).toString());
-      zoomValues.push({value: value, label: label});
+      const ariaValue = Math.round(value * 100);
+      const label = this.i18n('displayZoomValue', ariaValue.toString());
+      zoomValues.push({value: value, label: label, ariaValue: ariaValue});
     }
     return zoomValues;
   },
