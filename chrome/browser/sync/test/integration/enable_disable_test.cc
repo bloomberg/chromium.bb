@@ -250,9 +250,8 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   }
 }
 
-// Disabled as per crbug.com/854446.
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
-                       DISABLED_FastEnableDisableEnableOneAtATime) {
+                       FastEnableDisableEnableOneAtATime) {
   // Setup sync with no enabled types.
   SetupTest(/*all_types_enabled=*/false);
 
@@ -296,9 +295,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableDisable) {
   }
 }
 
-// Disabled as per crbug.com/854446.
-IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
-                       DISABLED_FastEnableDisableEnable) {
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, FastEnableDisableEnable) {
   SetupTest(/*all_types_enabled=*/false);
 
   // Enable all, and then disable+reenable immediately afterwards, before
@@ -308,7 +305,11 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   GetClient(0)->DisableSyncForAllDatatypes();
   GetClient(0)->EnableSyncForAllDatatypes();
 
-  for (ModelTypeSet::Iterator si = selectable_types_.First(); si.Good();
+  // Proxy types don't really run.
+  const ModelTypeSet non_proxy_types =
+      Difference(selectable_types_, ProxyTypes());
+
+  for (ModelTypeSet::Iterator si = non_proxy_types.First(); si.Good();
        si.Inc()) {
     EXPECT_TRUE(ModelTypeExists(si.Get()))
         << " for " << ModelTypeToString(si.Get());
