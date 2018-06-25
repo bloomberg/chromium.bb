@@ -26,6 +26,7 @@
 #include <libxslt/security.h>
 #include <libxslt/variables.h>
 #include <libxslt/xsltutils.h>
+#include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/transform_source.h"
@@ -233,7 +234,7 @@ static const char** XsltParamArrayFromParameterMap(
   if (parameters.IsEmpty())
     return nullptr;
 
-  WTF::CheckedSizeT size = parameters.size();
+  base::CheckedNumeric<size_t> size = parameters.size();
   size *= 2;
   ++size;
   size *= sizeof(char*);

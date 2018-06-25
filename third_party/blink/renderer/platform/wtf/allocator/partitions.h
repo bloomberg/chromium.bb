@@ -167,8 +167,6 @@ using base::PartitionMemoryStats;
 using base::PartitionBucketMemoryStats;
 using base::PartitionAllocHooks;
 
-using CheckedSizeT = base::CheckedNumeric<size_t>;
-
 }  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALLOCATOR_PARTITIONS_H_
