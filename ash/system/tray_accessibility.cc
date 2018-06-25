@@ -232,7 +232,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
 
   dictation_enabled_ = controller->IsDictationEnabled();
   dictation_view_ = AddScrollListCheckableItem(
-      kDictationOffIcon,
+      kDictationMenuIcon,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION),
       dictation_enabled_);
 
