@@ -1803,28 +1803,6 @@
     'wayland_client_perftests': {},
   },
 
-  # The Chrome OS memory bots should run linux_chromeos_rel_specific_gtests,
-  # but currently they don't, and not all of the tests in
-  # linux_chromeos_rel_specific_gtests currently pass on asan and msan.
-  # This contains the tests that currently pass.
-  # TODO(thakis): Fix all failing tests, add them here, then remove this.
-  'linux_chromeos_rel_specific_gtests_asan_bringup': {
-    'chromevox_tests': {},
-    'exo_unittests': {},
-    'gl_unittests_ozone': {},
-    'ozone_gl_unittests': {
-      'args': [
-        '--ozone-platform=headless',
-      ],
-    },
-    #'ozone_unittests': {},  # https://crbug.com/855580, https://crbug.com/855588
-    'ozone_x11_unittests': {},
-    'select_to_speak_extension_tests': {},
-    #'views_mus_unittests': {},  # https://crbug.com/855584, https://crbug.com/855585
-    'views_mus_interactive_ui_tests': {},
-    #'wayland_client_perftests': {},  # https://crbug.com/855583
-  },
-
   'linux_chromeos_specific_gtests': {
     # Chrome OS only.
     'app_list_unittests': {},
@@ -2488,19 +2466,6 @@
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
     'non_linux_chromium_gtests',
-  ],
-
-  'chromium_memory_chromiumos_asan_gtests': [
-    'aura_gtests',
-    'chromium_gtests',
-    'chromium_gtests_for_devices_with_graphical_output',
-    'chromium_gtests_for_linux_and_chromeos_only',
-    'linux_chromeos_specific_gtests',
-    'linux_chromeos_rel_specific_gtests_asan_bringup',
-    'linux_flavor_specific_chromium_gtests',
-    'mash_chromium_gtests',
-    'non_android_chromium_gtests',
-    'non_mac_chromium_gtests',
   ],
 
   'chromium_win_gtests': [

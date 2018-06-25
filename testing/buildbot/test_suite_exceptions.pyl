@@ -1781,6 +1781,12 @@
       'Out of Process Profiling Windows',
     ],
   },
+  'ozone_unittests': {
+    'remove_from': [
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/855588
+    ],
+  },
   'printing_unittests': {
     'remove_from': [
       # chromium.chromiumos
@@ -2599,6 +2605,12 @@
       'Win10 Tests x64',
       'Win7 Tests (1)',
       'Win7 Tests (dbg)(1)',
+    ],
+  },
+  'wayland_client_perftests': {
+    'remove_from': [
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/855583
     ],
   },
   'webgl_conformance_d3d9_passthrough_tests': {
