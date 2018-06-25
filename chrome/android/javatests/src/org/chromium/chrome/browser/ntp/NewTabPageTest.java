@@ -12,7 +12,6 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
 import android.graphics.Canvas;
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
@@ -71,7 +70,6 @@ import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.browser.ChromeModernDesign;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
@@ -131,15 +129,6 @@ public class NewTabPageTest {
         }
     }
 
-    /** Parameter provider for enabling/disabling "Interest Feed Content Suggestions". */
-    public static class InterestFeedParams implements ParameterProvider {
-        @Override
-        public Iterable<ParameterSet> getParameters() {
-            return Arrays.asList(new ParameterSet().value(false).name("DisableInterestFeed"),
-                    new ParameterSet().value(true).name("EnableInterestFeed"));
-        }
-    }
-
     private static final String TEST_PAGE = "/chrome/test/data/android/navigate/simple.html";
 
     private Tab mTab;
@@ -160,20 +149,6 @@ public class NewTabPageTest {
     @ParameterAnnotations.UseMethodParameterAfter(ModernParams.class)
     public void teardownModernDesign(boolean enabled) {
         mChromeModernProcessor.clearTestState();
-    }
-
-    @ParameterAnnotations.UseMethodParameterBefore(InterestFeedParams.class)
-    public void setupInterestFeed(boolean interestFeedEnabled) {
-        // TODO(twellington): Re-enable interest Feed test on arm64 M. See https://crbug.com/854866.
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M
-                && Arrays.asList(Build.SUPPORTED_ABIS).contains("arm64-v8a")) {
-            interestFeedEnabled = false;
-        }
-        if (interestFeedEnabled) {
-            Features.getInstance().enable(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
-        } else {
-            Features.getInstance().disable(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
-        }
     }
 
     @Before
@@ -259,8 +234,7 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-    public void testSimplifiedNtp_BookmarksShortcuts(boolean interestFeedEnabled) {
+    public void testSimplifiedNtp_BookmarksShortcuts() {
         ActivityMonitor activityMonitor = InstrumentationRegistry.getInstrumentation().addMonitor(
                 BookmarkActivity.class.getName(),
                 new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
@@ -278,8 +252,7 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-    public void testSimplifiedNtp_DownloadsShortcuts(boolean interestFeedEnabled) {
+    public void testSimplifiedNtp_DownloadsShortcuts() {
         ActivityMonitor activityMonitor = InstrumentationRegistry.getInstrumentation().addMonitor(
                 DownloadActivity.class.getName(),
                 new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
@@ -297,9 +270,7 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-    public void testSimplifiedNtp_DefaultSearchEngineChange(boolean interestFeedEnabled)
-            throws Exception {
+    public void testSimplifiedNtp_DefaultSearchEngineChange() throws Exception {
         View logo = mNtp.getView().findViewById(R.id.search_provider_logo);
         View shortcuts = mNtp.getView().findViewById(R.id.shortcuts);
         Assert.assertEquals(View.VISIBLE, logo.getVisibility());
@@ -410,8 +381,7 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-    public void testClickMostVisitedItem(boolean interestFeedEnabled) throws InterruptedException {
+    public void testClickMostVisitedItem() throws InterruptedException {
         ChromeTabUtils.waitForTabPageLoaded(mTab, new Runnable() {
             @Override
             public void run() {
@@ -441,8 +411,7 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-    public void testOpenMostVisitedItemInIncognitoTab(boolean interestFeedEnabled)
+    public void testOpenMostVisitedItemInIncognitoTab()
             throws InterruptedException, ExecutionException {
         ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule,
                 mTileGridLayout.getChildAt(0), ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB, true,
@@ -455,8 +424,7 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-    public void testRemoveMostVisitedItem(boolean interestFeedEnabled) throws ExecutionException {
+    public void testRemoveMostVisitedItem() throws ExecutionException {
         SiteSuggestion testSite = mSiteSuggestions.get(0);
         View mostVisitedItem = mTileGridLayout.getChildAt(0);
         ArrayList<View> views = new ArrayList<>();
@@ -474,9 +442,7 @@ public class NewTabPageTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-    public void testUrlFocusAnimationsDisabledOnLoad(boolean interestFeedEnabled)
-            throws InterruptedException {
+    public void testUrlFocusAnimationsDisabledOnLoad() throws InterruptedException {
         Assert.assertFalse(getUrlFocusAnimationsDisabled());
         ChromeTabUtils.waitForTabPageLoaded(mTab, new Runnable() {
             @Override
@@ -568,8 +534,7 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-    public void testSetSearchProviderInfo(boolean interestFeedEnabled) throws Throwable {
+    public void testSetSearchProviderInfo() throws Throwable {
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -591,8 +556,7 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-    public void testPlaceholder(boolean interestFeedEnabled) {
+    public void testPlaceholder() {
         final NewTabPageLayout ntpLayout = mNtp.getNewTabPageLayout();
         final View logoView = ntpLayout.findViewById(R.id.search_provider_logo);
         final View searchBoxView = ntpLayout.findViewById(R.id.search_box);
