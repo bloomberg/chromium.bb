@@ -80,13 +80,9 @@ public class PasswordAccessorySheetCoordinator {
      */
     static RecyclerViewAdapter<ItemViewHolder, Void> createAdapter(
             SimpleListObservable<Item> model) {
-        SimpleRecyclerViewMcp<Item, ItemViewHolder, Void> processor =
-                new SimpleRecyclerViewMcp<>(model, Item::getType, ItemViewHolder::bind);
-        RecyclerViewAdapter<ItemViewHolder, Void> adapter =
-                new RecyclerViewAdapter<>(processor, ItemViewHolder::create);
-        model.addObserver(processor);
-        processor.addObserver(adapter);
-        return adapter;
+        return new RecyclerViewAdapter<>(
+                new SimpleRecyclerViewMcp<>(model, Item::getType, ItemViewHolder::bind),
+                ItemViewHolder::create);
     }
 
     // TODO(fhorschig): There is only one. Make this a ctor param and self-destruct with it.

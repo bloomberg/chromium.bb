@@ -4,7 +4,6 @@
 package org.chromium.chrome.browser.download.home.filter.chips;
 
 import android.content.res.ColorStateList;
-import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
@@ -12,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
 import org.chromium.chrome.browser.widget.TintedImageView;
 
 /** The {@link ViewHolder} responsible for reflecting a {@link Chip} to a {@link View}. */
@@ -54,11 +52,9 @@ public class ChipsViewHolder extends ViewHolder {
      * Used as a method reference for ViewBinder, to push the properties of {@code chip} to
      * {@link #itemView}.
      * @param chip The {@link Chip} to visually reflect in the stored {@link View}.
-     * @param payload Unused payload; must be null.
-     * @see SimpleRecyclerViewMcp
-     *         .ViewBinder#onBindViewHolder
+     * @see org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp.ViewBinder#onBindViewHolder
      */
-    public void bind(Chip chip, @Nullable Void payload) {
+    public void bind(Chip chip) {
         itemView.setEnabled(chip.enabled);
         mText.setEnabled(chip.enabled);
         mImage.setEnabled(chip.enabled);

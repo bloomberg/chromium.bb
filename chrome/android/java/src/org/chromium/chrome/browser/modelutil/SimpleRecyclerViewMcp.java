@@ -12,27 +12,22 @@ import android.support.v7.widget.RecyclerView;
  * It is intended primarily (but not exclusively) for use in a {@link RecyclerView}.
  * @param <T> The type of items in the list.
  * @param <VH> The view holder type that shows items.
- * @param <P> The payload type for partial updates, or {@link Void} if the object doesn't
- * support partial updates.
  */
-public class SimpleRecyclerViewMcp<T, VH, P>
-        extends ForwardingListObservable<P> implements RecyclerViewAdapter.Delegate<VH, P> {
+public class SimpleRecyclerViewMcp<T, VH>
+        extends ForwardingListObservable<Void> implements RecyclerViewAdapter.Delegate<VH, Void> {
     /**
      * A view binder used to bind items in the {@link ListObservable} model to view holders.
      *
      * @param <T> The item type in the {@link SimpleList} model.
      * @param <VH> The view holder type that shows items.
-     * @param <P> The payload type for partial updates, or {@link Void} if the object doesn't
-     * support partial updates.
      */
-    public interface ViewBinder<T, VH, P> {
+    public interface ViewBinder<T, VH> {
         /**
          * Called to display the specified {@code item} in the provided {@code holder}.
          * @param holder The view holder which should be updated to represent the {@code item}.
          * @param item The item in the list.
-         * @param payload The payload for partial updates.
          */
-        void onBindViewHolder(VH holder, T item, @Nullable P payload);
+        void onBindViewHolder(VH holder, T item);
     }
 
     /**
@@ -50,7 +45,7 @@ public class SimpleRecyclerViewMcp<T, VH, P>
 
     private final SimpleList<T> mModel;
     private final ItemViewTypeCallback<T> mItemViewTypeCallback;
-    private final ViewBinder<T, VH, P> mViewBinder;
+    private final ViewBinder<T, VH> mViewBinder;
 
     /**
      * @param model The {@link SimpleList} model used to retrieve items to display.
@@ -58,12 +53,12 @@ public class SimpleRecyclerViewMcp<T, VH, P>
      *         the default view type.
      * @param viewBinder The {@link ViewBinder} binding this adapter to the view holder.
      */
-    public SimpleRecyclerViewMcp(SimpleList<T> model,
-            @Nullable ItemViewTypeCallback<T> itemViewTypeCallback,
-            ViewBinder<T, VH, P> viewBinder) {
+    public SimpleRecyclerViewMcp(SimpleListObservable<T> model,
+            @Nullable ItemViewTypeCallback<T> itemViewTypeCallback, ViewBinder<T, VH> viewBinder) {
         mModel = model;
         mItemViewTypeCallback = itemViewTypeCallback;
         mViewBinder = viewBinder;
+        model.addObserver(this);
     }
 
     @Override
@@ -79,7 +74,8 @@ public class SimpleRecyclerViewMcp<T, VH, P>
     }
 
     @Override
-    public void onBindViewHolder(VH holder, int position, @Nullable P payload) {
-        mViewBinder.onBindViewHolder(holder, mModel.get(position), payload);
+    public void onBindViewHolder(VH holder, int position, @Nullable Void payload) {
+        assert payload == null;
+        mViewBinder.onBindViewHolder(holder, mModel.get(position));
     }
 }

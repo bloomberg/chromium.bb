@@ -9,7 +9,6 @@ import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.ActionViewHolder;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.TabViewBinder;
 import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
@@ -83,13 +82,9 @@ public class KeyboardAccessoryCoordinator {
      */
     static RecyclerViewAdapter<ActionViewHolder, Void> createActionsAdapter(
             KeyboardAccessoryModel model) {
-        SimpleRecyclerViewMcp<Action, ActionViewHolder, Void> processor =
-                new SimpleRecyclerViewMcp<>(model.getActionList(), null, ActionViewHolder::bind);
-        RecyclerViewAdapter<ActionViewHolder, Void> actionsAdapter =
-                new RecyclerViewAdapter<>(processor, ActionViewHolder::create);
-        processor.addObserver(actionsAdapter);
-        model.addActionListObserver(processor);
-        return actionsAdapter;
+        return new RecyclerViewAdapter<>(
+                new SimpleRecyclerViewMcp<>(model.getActionList(), null, ActionViewHolder::bind),
+                ActionViewHolder::create);
     }
 
     /**

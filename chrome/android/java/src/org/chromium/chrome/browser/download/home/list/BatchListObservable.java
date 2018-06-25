@@ -8,13 +8,13 @@ import android.support.annotation.Nullable;
 import android.support.v7.util.BatchingListUpdateCallback;
 import android.support.v7.util.ListUpdateCallback;
 
-import org.chromium.chrome.browser.modelutil.ListObservable;
+import org.chromium.chrome.browser.modelutil.ListObservableImpl;
 
 /**
  * Helper class to batch updates to ListObservable before notifying observers.
  * @see BatchingListUpdateCallback
  */
-public abstract class BatchListObservable extends ListObservable<Void> {
+public abstract class BatchListObservable extends ListObservableImpl<Void> {
     final BatchingListUpdateCallback mBatchingCallback;
 
     /** Creates a new BatchListObservable instance. */

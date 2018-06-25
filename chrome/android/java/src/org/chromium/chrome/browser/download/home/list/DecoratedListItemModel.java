@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
+import org.chromium.chrome.browser.modelutil.ListObservableImpl;
 import org.chromium.chrome.browser.modelutil.SimpleList;
 
 /**
@@ -16,7 +17,7 @@ import org.chromium.chrome.browser.modelutil.SimpleList;
  * TODO(bauerb): Replace this with InnerNode (once it has been migrated to the UI architecture)
  */
 class DecoratedListItemModel
-        extends ListObservable<Void> implements ListObserver<Void>, SimpleList<ListItem> {
+        extends ListObservableImpl<Void> implements ListObserver<Void>, SimpleList<ListItem> {
     private final ListItemModel mModel;
 
     private ViewListItem mHeaderItem;

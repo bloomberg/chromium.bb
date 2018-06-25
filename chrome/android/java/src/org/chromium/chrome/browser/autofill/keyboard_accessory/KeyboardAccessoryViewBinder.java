@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
-import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -37,7 +36,7 @@ class KeyboardAccessoryViewBinder
                             .inflate(R.layout.keyboard_accessory_action, parent, false));
         }
 
-        public void bind(Action action, @Nullable Void payload) {
+        public void bind(Action action) {
             getActionView().setText(action.getCaption());
             getActionView().setOnClickListener(view -> action.getCallback().onResult(action));
         }
