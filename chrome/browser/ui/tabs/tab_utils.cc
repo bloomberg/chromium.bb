@@ -376,12 +376,12 @@ bool CanToggleAudioMute(content::WebContents* contents) {
     case TabAlertState::NONE:
     case TabAlertState::AUDIO_PLAYING:
     case TabAlertState::AUDIO_MUTING:
+    case TabAlertState::PIP_PLAYING:
       return true;
     case TabAlertState::MEDIA_RECORDING:
     case TabAlertState::TAB_CAPTURING:
     case TabAlertState::BLUETOOTH_CONNECTED:
     case TabAlertState::USB_CONNECTED:
-    case TabAlertState::PIP_PLAYING:
       // The new Audio Service implements muting separately from the tab audio
       // capture infrastructure; so the mute state can be toggled independently
       // at all times.
