@@ -9,9 +9,17 @@
   await TestRunner.loadHTML(`
       <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
       <a style="display:none" href=" javascript:alert('foo') "></a>
+      <script>
+        (function(){
+          let iframe = document.createElement('iframe');
+          iframe.src = "resources/elements-panel-rewrite-href-iframe.html";
+          document.body.appendChild(iframe);
+          window.frameLoadedPromise = new Promise(f => iframe.onload = f);
+        })();
+      </script>
     `);
 
-  await TestRunner.addIframe('resources/elements-panel-rewrite-href-iframe.html');
+  await TestRunner.evaluateInPageAsync(`window.frameLoadedPromise`);
 
   ElementsTestRunner.expandElementsTree(step1);
 
