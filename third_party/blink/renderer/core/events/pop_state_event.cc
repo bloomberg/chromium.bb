@@ -83,6 +83,12 @@ PopStateEvent* PopStateEvent::Create(ScriptState* script_state,
   return new PopStateEvent(script_state, type, initializer);
 }
 
+void PopStateEvent::SetSerializedState(
+    scoped_refptr<SerializedScriptValue> state) {
+  DCHECK(!serialized_state_);
+  serialized_state_ = std::move(state);
+}
+
 const AtomicString& PopStateEvent::InterfaceName() const {
   return EventNames::PopStateEvent;
 }

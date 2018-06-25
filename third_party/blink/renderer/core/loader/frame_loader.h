@@ -62,6 +62,7 @@ namespace blink {
 
 class Document;
 class DocumentLoader;
+class ExecutionContext;
 class HTMLFormElement;
 class LocalFrame;
 class Frame;

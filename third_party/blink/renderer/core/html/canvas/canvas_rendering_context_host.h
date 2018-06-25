@@ -37,9 +37,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
 
   virtual void FinalizeFrame() = 0;
   virtual void PushFrame(scoped_refptr<StaticBitmapImage> image,
-                         const SkIRect& damage_rect) {
-    NOTIMPLEMENTED();
-  }
+                         const SkIRect& damage_rect);
   virtual bool OriginClean() const = 0;
   virtual void SetOriginTainted() = 0;
   virtual const IntSize& Size() const = 0;
@@ -65,9 +63,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   virtual bool IsNeutered() const { return false; }
 
   virtual void Commit(scoped_refptr<StaticBitmapImage> bitmap_image,
-                      const SkIRect& damage_rect) {
-    NOTIMPLEMENTED();
-  }
+                      const SkIRect& damage_rect);
 
   bool IsPaintable() const;
 
