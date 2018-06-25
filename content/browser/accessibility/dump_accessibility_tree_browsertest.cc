@@ -289,6 +289,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunCSSTest(FILE_PATH_LITERAL("table-incomplete.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCSSTransform) {
+  RunCSSTest(FILE_PATH_LITERAL("transform.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityA) {
   RunHtmlTest(FILE_PATH_LITERAL("a.html"));
 }

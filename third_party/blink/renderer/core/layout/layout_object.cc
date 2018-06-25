@@ -2126,6 +2126,11 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
         cache->ChildrenChanged(Parent());
     }
 
+    if (diff.TransformChanged()) {
+      if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+        cache->LocationChanged(this);
+    }
+
     // Keep layer hierarchy visibility bits up to date if visibility changes.
     if (visibility_changed) {
       // We might not have an enclosing layer yet because we might not be in the
