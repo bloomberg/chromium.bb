@@ -72,8 +72,8 @@
       }
 
       paper-ripple {
-        --paper-ripple-opacity: 0.125;
-        color: var(--cr-toggle-unchecked-ink-color, var(--primary-text-color));
+        --paper-ripple-opacity: 0.15;
+        color: var(--cr-toggle-unchecked-ink-color, var(--google-grey-600));
         height: 40px;
         left: -12px;
         pointer-events: none;
@@ -88,7 +88,8 @@
       }
 
       :host([checked]) paper-ripple {
-        color: var(--cr-toggle-checked-ink-color, var(--primary-color));
+        --paper-ripple-opacity: 0.2;
+        color: var(--cr-toggle-checked-ink-color, var(--google-blue-600));
       }
     </style>
     <!-- A <button> is used (instead of a plain <div>) to avoid a corner case
