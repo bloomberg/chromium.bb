@@ -89,8 +89,8 @@ List of customizable styles:
       }
 
       paper-ripple {
-        --paper-ripple-opacity: var(--cr-checkbox-ripple-opacity, 0.1);
-        color: var(--cr-checkbox-ripple-unchecked-color, var(--google-grey-900));
+        --paper-ripple-opacity: var(--cr-checkbox-ripple-opacity, 0.15);
+        color: var(--cr-checkbox-ripple-unchecked-color, var(--google-grey-600));
         height: var(--cr-checkbox-ripple-size);
         left: var(--cr-checkbox-ripple-offset);
         pointer-events: none;
@@ -100,6 +100,7 @@ List of customizable styles:
       }
 
       :host([checked]) paper-ripple {
+        --paper-ripple-opacity: var(--cr-checkbox-ripple-opacity, 0.2);
         color: var(--cr-checkbox-ripple-checked-color, var(--google-blue-600));
       }
 
