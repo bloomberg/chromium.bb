@@ -4295,9 +4295,6 @@ crbug.com/785179 [ Win7 Debug ] http/tests/devtools/console/console-viewport-sti
 # Sheriff failures 2017-11-16
 crbug.com/785980 [ Win ] http/tests/devtools/network/network-xhr-same-url-as-main-resource.js [ Failure Pass ]
 
-# Sheriff failures 2017-11-17
-crbug.com/786235 http/tests/misc/resource-timing-sizes-tags.html [ Failure Pass ]
-
 # Sheriff failures 2017-11-21
 crbug.com/786641 [ Win Linux Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing-in-worker.html [ Timeout Pass ]
 

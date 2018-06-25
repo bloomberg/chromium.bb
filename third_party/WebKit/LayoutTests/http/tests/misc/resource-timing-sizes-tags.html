@@ -26,16 +26,13 @@ const srcFieldExceptions = {
 
 const totalResourceCount = Object.keys(urls).length;
 const cacheBuster = '?cb=' + Math.random().toString().substr(2);
-var seenResourceCount = 0;
-var t = async_test('PerformanceResourceTiming sizes tags test');
-
-function isMediaTag(tag) {
-    return tag === 'video' || tag === 'audio';
-}
+const seen = {};
+let seenResourceCount = 0;
+let t = async_test('PerformanceResourceTiming sizes tags test');
 
 function addTag(url, tag) {
-    var element = document.createElement(tag);
-    var srcfield = srcFieldExceptions[tag];
+    const element = document.createElement(tag);
+    let srcfield = srcFieldExceptions[tag];
     if (!srcfield) {
         srcfield = 'src';
     }
@@ -44,33 +41,44 @@ function addTag(url, tag) {
     if (tag === 'link') {
         element.setAttribute('rel', 'stylesheet');
     }
-    var onloadevent = isMediaTag(tag) ? 'oncanplaythrough' : 'onload';
-    element[onloadevent] = t.step_func(() => {
-        // The entry is not guaranteed to be added synchronously by the spec,
-        // although the current implementation does.
-        setTimeout(t.step_func(loaded), 0);
-    });
     document.body.appendChild(element);
 }
 
 // Postpone checking until everything is loaded so that the checks will be done
 // in a deterministic order.
-function loaded() {
-    ++seenResourceCount;
-    if (seenResourceCount === totalResourceCount)
+function loaded(list) {
+    for (const entry of list.getEntries()) {
+        const url = new URL(entry.name);
+        if (urls[url.pathname]) {
+            seen[url.pathname] = {
+                expectedSize: urls[url.pathname][1],
+                entry
+            };
+            ++seenResourceCount;
+        }
+    }
+    if (seenResourceCount === totalResourceCount) {
         checkAllResources();
+    }
 }
 
 function checkAllResources() {
-    for (relativeUrl of Object.keys(urls).sort()) {
-        checkResourceSizes(relativeUrl + cacheBuster, urls[relativeUrl][1]);
+    for (const relativeUrl of Object.keys(urls).sort()) {
+        checkResourceSizes(relativeUrl);
     }
+    removeTags();
     t.done();
 }
 
-function checkResourceSizes(relativeUrl, expectedSize) {
-    var absoluteUrl = new URL(relativeUrl, location.href).href;
-    var entry = performance.getEntriesByName(absoluteUrl, 'resource')[0];
+function removeTags() {
+    let els = document.getElementsByClassName('invisible');
+    while (els.length) {
+        document.body.removeChild(els[0]);
+    }
+}
+
+function checkResourceSizes(relativeUrl) {
+    const { expectedSize, entry }  = seen[relativeUrl];
     decodedBodySize = entry.decodedBodySize;
     assert_equals(entry.decodedBodySize, expectedSize,
                   relativeUrl + ' decodedBodySize');
@@ -82,7 +90,9 @@ function checkResourceSizes(relativeUrl, expectedSize) {
 }
 
 function runTest() {
-    for (var url in urls) {
+    let observer = new PerformanceObserver(loaded);
+    observer.observe({entryTypes: ["resource"]});
+    for (const url in urls) {
         addTag(url, urls[url][0]);
     }
 }
