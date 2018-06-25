@@ -4333,6 +4333,9 @@
   <message name="IDS_AD_JOIN_CONFIG_NOT_PARSED" desc="Alert message to say unlocked configuration could not be parsed.">
     Oops!  Can't parse domain join configuration. Please contact your administrator.
   </message>
+  <message name="IDS_AD_AUTH_NOT_SUPPORTED_ENCRYPTION" desc="Alert message that user could not sign in due to not supported encryption types.">
+    Failed to login. The server does not support specified Kerberos encryption types. Please contact your administrator.
+  </message>
   <message name="IDS_AD_AUTH_UNKNOWN_ERROR" desc="Error message to show that occurs something a user could not fix.">
     Oops!  An unknown error occurred. Please try again later or contact your administrator if the issue persists.
   </message>
