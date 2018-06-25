@@ -57,6 +57,7 @@ bool EventQueue::EnqueueEvent(const base::Location& from_here, Event* event) {
   if (is_closed_)
     return false;
 
+  DCHECK(event->target());
   DCHECK(GetExecutionContext());
 
   probe::AsyncTaskScheduled(GetExecutionContext(), event->type(), event);
