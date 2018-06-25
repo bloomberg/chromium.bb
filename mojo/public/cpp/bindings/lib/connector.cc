@@ -22,6 +22,10 @@
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
 #include "mojo/public/cpp/system/wait.h"
 
+#if defined(ENABLE_IPC_FUZZER)
+#include "mojo/public/cpp/bindings/message_dumper.h"
+#endif
+
 namespace mojo {
 
 namespace {
@@ -148,6 +152,11 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
   if (config == MULTI_THREADED_SEND)
     lock_.emplace();
 
+#if defined(ENABLE_IPC_FUZZER)
+  if (!MessageDumper::GetMessageDumpDirectory().empty())
+    message_dumper_ = std::make_unique<MessageDumper>();
+#endif
+
   weak_self_ = weak_factory_.GetWeakPtr();
   // Even though we don't have an incoming receiver, we still want to monitor
   // the message pipe to know if is closed or encounters an error.
@@ -271,6 +280,13 @@ bool Connector::Accept(Message* message) {
 
   if (!message_pipe_.is_valid() || drop_writes_)
     return true;
+
+#if defined(ENABLE_IPC_FUZZER)
+  if (message_dumper_ && message->is_serialized()) {
+    bool dump_result = message_dumper_->Accept(message);
+    DCHECK(dump_result);
+  }
+#endif
 
   MojoResult rv =
       WriteMessageNew(message_pipe_.get(), message->TakeMojoMessage(),

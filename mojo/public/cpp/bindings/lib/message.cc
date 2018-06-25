@@ -185,6 +185,10 @@ Message::Message(Message&& other)
       serialized_(other.serialized_) {
   other.transferable_ = false;
   other.serialized_ = false;
+#if defined(ENABLE_IPC_FUZZER)
+  interface_name_ = other.interface_name_;
+  method_name_ = other.method_name_;
+#endif
 }
 
 Message::Message(std::unique_ptr<internal::UnserializedMessageContext> context)
@@ -262,6 +266,10 @@ Message& Message::operator=(Message&& other) {
   other.transferable_ = false;
   serialized_ = other.serialized_;
   other.serialized_ = false;
+#if defined(ENABLE_IPC_FUZZER)
+  interface_name_ = other.interface_name_;
+  method_name_ = other.method_name_;
+#endif
   return *this;
 }
 
