@@ -47,8 +47,6 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
       const std::string& devtools_agent_host_id) override;
   void Close() override;
   const std::string& Id() const override;
-  void AddObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
 
   void SetDevToolsFrameToken(int render_process_id,
                              int render_frame_routing_id,
@@ -109,18 +107,6 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
   const base::UnguessableToken* GetDevToolsFrameTokenForFrameTreeNodeId(
       int frame_tree_node_id) const;
 
-  void SetRemoveHeaders(bool should_remove_headers);
-  bool ShouldRemoveHeaders() const;
-
-  // This will be called on the IO thread.
-  void NotifyUrlRequestFailed(net::URLRequest* request,
-                              int net_error,
-                              DevToolsStatus devtools_status);
-
-  void NotifyMetadataForResource(const GURL& url,
-                                 net::IOBuffer* buf,
-                                 int buf_len);
-
   void SetNetworkConditions(HeadlessNetworkConditions conditions);
   HeadlessNetworkConditions GetNetworkConditions() override;
 
@@ -138,9 +124,6 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
   std::unique_ptr<HeadlessResourceContext> resource_context_;
   scoped_refptr<HeadlessURLRequestContextGetter> url_request_getter_;
   base::FilePath path_;
-  base::Lock observers_lock_;
-  base::ObserverList<Observer> observers_;
-  bool should_remove_headers_;
 
   std::unordered_map<std::string, std::unique_ptr<HeadlessWebContents>>
       web_contents_map_;

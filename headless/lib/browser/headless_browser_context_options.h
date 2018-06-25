@@ -51,9 +51,6 @@ class HeadlessBrowserContextOptions {
   // See HeadlessBrowser::Options::block_new_web_contents.
   bool block_new_web_contents() const;
 
-  // See HeadlessBrowser::Options::capture_resource_metadata.
-  bool capture_resource_metadata() const;
-
   bool allow_cookies() const;
 
   // See HeadlessBrowser::Options::font_render_hinting.
@@ -90,7 +87,6 @@ class HeadlessBrowserContextOptions {
   base::Optional<bool> allow_cookies_;
   base::Optional<base::RepeatingCallback<void(WebPreferences*)>>
       override_web_preferences_callback_;
-  base::Optional<bool> capture_resource_metadata_;
 
   ProtocolHandlerMap protocol_handlers_;
 
