@@ -681,6 +681,21 @@ bool V4L2JpegDecodeAccelerator::ConvertOutputImage(
   size_t dst_u_stride = dst_frame->stride(VideoFrame::kUPlane);
   size_t dst_v_stride = dst_frame->stride(VideoFrame::kVPlane);
 
+  // It is assumed that |dst_frame| is backed by enough memory that it is safe
+  // to store an I420 frame of |dst_width|x|dst_height| in it using the data
+  // pointers and strides from above.
+  int dst_width = dst_frame->coded_size().width();
+  int dst_height = dst_frame->coded_size().height();
+
+  // The video frame's coded dimensions should be even for the I420 format.
+  DCHECK_EQ(0, dst_width % 2);
+  DCHECK_EQ(0, dst_height % 2);
+
+  // The coded size of the hardware buffer should be at least as large as the
+  // video frame's coded size.
+  DCHECK_GE(output_buffer_coded_size_.width(), dst_width);
+  DCHECK_GE(output_buffer_coded_size_.height(), dst_height);
+
   if (output_buffer_num_planes_ == 1) {
     // Use ConvertToI420 to convert all splane buffers.
     // If the source format is I420, ConvertToI420 will simply copy the frame.
@@ -692,9 +707,8 @@ bool V4L2JpegDecodeAccelerator::ConvertOutputImage(
             static_cast<uint8_t*>(output_buffer.address[0]), src_size, dst_y,
             dst_y_stride, dst_u, dst_u_stride, dst_v, dst_v_stride, 0, 0,
             output_buffer_coded_size_.width(),
-            output_buffer_coded_size_.height(), dst_frame->coded_size().width(),
-            dst_frame->coded_size().height(), libyuv::kRotate0,
-            output_buffer_pixelformat_)) {
+            output_buffer_coded_size_.height(), dst_width, dst_height,
+            libyuv::kRotate0, output_buffer_pixelformat_)) {
       VLOGF(1) << "ConvertToI420 failed. Source format: "
                << output_buffer_pixelformat_;
       return false;
@@ -710,18 +724,16 @@ bool V4L2JpegDecodeAccelerator::ConvertOutputImage(
     if (output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV420M) {
       if (libyuv::I420Copy(src_y, src_y_stride, src_u, src_u_stride, src_v,
                            src_v_stride, dst_y, dst_y_stride, dst_u,
-                           dst_u_stride, dst_v, dst_v_stride,
-                           output_buffer_coded_size_.width(),
-                           output_buffer_coded_size_.height())) {
+                           dst_u_stride, dst_v, dst_v_stride, dst_width,
+                           dst_height)) {
         VLOGF(1) << "I420Copy failed";
         return false;
       }
     } else {  // output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV422M
       if (libyuv::I422ToI420(src_y, src_y_stride, src_u, src_u_stride, src_v,
                              src_v_stride, dst_y, dst_y_stride, dst_u,
-                             dst_u_stride, dst_v, dst_v_stride,
-                             output_buffer_coded_size_.width(),
-                             output_buffer_coded_size_.height())) {
+                             dst_u_stride, dst_v, dst_v_stride, dst_width,
+                             dst_height)) {
         VLOGF(1) << "I422ToI420 failed";
         return false;
       }
