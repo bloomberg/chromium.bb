@@ -33,6 +33,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -158,6 +159,7 @@ public class PasswordAccessoryIntegrationTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
+    @FlakyTest(message = "crbug.com/855617")
     public void testPasswordSheetTriggersCallback() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
         final AtomicReference<Item> clicked = new AtomicReference<>();
