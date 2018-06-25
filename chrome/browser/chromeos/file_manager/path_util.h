@@ -20,6 +20,9 @@ namespace util {
 // be used by tests.
 extern const base::FilePath::CharType kRemovableMediaPath[];
 
+// Absolute path for the folder containing Android files.
+extern const base::FilePath::CharType kAndroidFilesPath[];
+
 // Gets the absolute path for the 'Downloads' folder for the |profile|.
 base::FilePath GetDownloadsFolderForProfile(Profile* profile);
 
