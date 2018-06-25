@@ -3660,10 +3660,7 @@ crbug.com/655458 external/wpt/workers/constructors/Worker/same-origin.html [ Fai
 crbug.com/655458 external/wpt/workers/interfaces/WorkerGlobalScope/location/redirect.html [ Failure Timeout ]
 crbug.com/655458 external/wpt/workers/interfaces/WorkerGlobalScope/onerror/propagate-to-window-onerror.html [ Failure Timeout ]
 crbug.com/655458 external/wpt/workers/interfaces/WorkerUtils/importScripts/006.html [ Failure Timeout ]
-crbug.com/655458 external/wpt/workers/semantics/multiple-workers/003.html [ Failure Timeout ]
-crbug.com/655458 external/wpt/workers/semantics/multiple-workers/005.html [ Failure Timeout ]
-crbug.com/655458 external/wpt/workers/semantics/multiple-workers/006.html [ Failure Timeout ]
-crbug.com/655458 external/wpt/workers/semantics/multiple-workers/007.html [ Failure Timeout ]
+crbug.com/655458 external/wpt/workers/semantics/multiple-workers/007.html [ Timeout ]
 
 crbug.com/490511 external/wpt/html/semantics/embedded-content/media-elements/playing-the-media-resource/pause-remove-from-document-networkState.html [ Timeout ]
 
