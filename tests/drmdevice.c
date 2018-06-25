@@ -85,13 +85,13 @@ print_device_info(drmDevicePtr device, int i, bool print_revision)
             compatible++;
         }
     } else if (device->bustype == DRM_BUS_HOST1X) {
-        char **compatible = device->deviceinfo.platform->compatible;
+        char **compatible = device->deviceinfo.host1x->compatible;
 
         printf("|   +-> host1x\n");
         printf("|       +-> fullname\t%s\n", device->businfo.host1x->fullname);
 
         printf("+-> deviceinfo\n");
-        printf("    +-> platform\n");
+        printf("    +-> host1x\n");
         printf("        +-> compatible\n");
 
         while (*compatible) {
