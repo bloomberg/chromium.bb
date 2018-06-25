@@ -445,6 +445,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // Invoked when theme color is changed to |theme_color|.
   virtual void DidChangeThemeColor(SkColor theme_color) {}
 
+  virtual void DidChangeTextSelection(const base::string16& new_selected_text) {
+  }
+
   // Invoked when media is playing or paused.  |id| is unique per player and per
   // RenderFrameHost.  There may be multiple players within a RenderFrameHost
   // and subsequently within a WebContents.  MediaStartedPlaying() will always

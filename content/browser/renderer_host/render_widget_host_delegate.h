@@ -140,6 +140,11 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // currently focused frame.
   virtual void SelectRange(const gfx::Point& base, const gfx::Point& extent) {}
 
+#if defined(OS_MACOSX)
+  virtual void DidChangeTextSelection(const base::string16& new_selected_text) {
+  }
+#endif
+
   // Request the renderer to Move the caret to the new position.
   virtual void MoveCaret(const gfx::Point& extent) {}
 
