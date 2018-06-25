@@ -22,7 +22,6 @@ import android.view.View;
 import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -78,9 +77,6 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
      */
     private static final int BUTTON_ICON_COLOR_MATERIAL = 0xff757575;
 
-    /** For Log statements. */
-    private static final String TAG = "Custom Notification";
-
     private final Context mContext;
 
     public CustomNotificationBuilder(Context context) {
@@ -119,9 +115,6 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
-
-        // TODO(crbug.com/834959): remove after bug fixed.
-        Log.i(TAG, "Mark possible occurrence of crbug.com/834959");
 
         for (RemoteViews view : new RemoteViews[] {compactView, bigView}) {
             view.setTextViewText(R.id.time, formattedTime);

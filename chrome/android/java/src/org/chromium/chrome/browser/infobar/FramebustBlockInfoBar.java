@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
@@ -21,8 +20,6 @@ import org.chromium.components.url_formatter.UrlFormatter;
  * continue the redirection by tapping on a link.
  */
 public class FramebustBlockInfoBar extends InfoBar {
-    /** For Log statements. */
-    private static final String TAG = "Framebust Infobar";
 
     private final String mBlockedUrl;
 
@@ -46,9 +43,6 @@ public class FramebustBlockInfoBar extends InfoBar {
         layout.setMessage(getString(R.string.redirect_blocked_message));
         InfoBarControlLayout control = layout.addControlLayout();
 
-        // TODO(crbug.com/834959): remove after bug fixed.
-        Log.i(TAG, "Mark possible occurance of crbug.com/834959");
-
         ViewGroup ellipsizerView =
                 (ViewGroup) LayoutInflater.from(getContext())
                         .inflate(R.layout.infobar_control_url_ellipsizer, control, false);
@@ -63,7 +57,10 @@ public class FramebustBlockInfoBar extends InfoBar {
         schemeView.setText(scheme);
 
         TextView urlView = ellipsizerView.findViewById(R.id.url_minus_scheme);
-        urlView.setText(formattedUrl.substring(scheme.length()));
+        String textToEllipsize = formattedUrl.substring(scheme.length());
+        // Handle adjusting the text to workaround Android crashes when ellipsizing on old versions.
+        // TODO(donnd): remove this class when older versions of Android are no longer supported.
+        ((TextViewEllipsizerSafe) urlView).setTextSafely(textToEllipsize);
 
         ellipsizerView.setOnClickListener(view -> onLinkClicked());
 
