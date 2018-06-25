@@ -26,6 +26,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/wm/core/capture_controller.h"
 
 namespace ash {
 namespace {
@@ -71,6 +72,9 @@ LockScreen* LockScreen::Get() {
 // static
 void LockScreen::Show(ScreenType type) {
   CHECK(!instance_);
+  // Capture should be released when locked.
+  ::wm::CaptureController::Get()->SetCapture(nullptr);
+
   instance_ = new LockScreen(type);
 
   instance_->window_ = new LockWindow();
