@@ -151,7 +151,11 @@ void NGBoxFragmentPainter::PaintWithAdjustedOffset(
 
   if (original_phase != PaintPhase::kSelfBlockBackgroundOnly &&
       original_phase != PaintPhase::kSelfOutlineOnly) {
-    NGBoxClipper box_clipper(box_fragment_, info);
+    base::Optional<NGBoxClipper> box_clipper;
+    if (original_phase == PaintPhase::kForeground ||
+        original_phase == PaintPhase::kFloat ||
+        original_phase == PaintPhase::kDescendantOutlinesOnly)
+      box_clipper.emplace(box_fragment_, info);
     PaintObject(info, paint_offset);
   }
 
@@ -247,13 +251,14 @@ void NGBoxFragmentPainter::PaintObject(
     } else {
       PaintBlockChildren(contents_paint_info, paint_offset);
     }
+    if (ShouldPaintDescendantOutlines(paint_phase)) {
+      NGFragmentPainter(box_fragment_)
+          .PaintDescendantOutlines(paint_info, paint_offset);
+    }
   }
 
   if (ShouldPaintSelfOutline(paint_phase))
     NGFragmentPainter(box_fragment_).PaintOutline(paint_info, paint_offset);
-  if (ShouldPaintDescendantOutlines(paint_phase))
-    NGFragmentPainter(box_fragment_)
-        .PaintDescendantOutlines(paint_info, paint_offset);
   // TODO(layout-dev): Implement once we have selections in LayoutNG.
   // If the caret's node's layout object's containing block is this block, and
   // the paint action is PaintPhaseForeground, then paint the caret.
@@ -525,7 +530,8 @@ void NGBoxFragmentPainter::PaintInlineChildBoxUsingLegacyFallback(
 
 void NGBoxFragmentPainter::PaintAllPhasesAtomically(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) {
+    const LayoutPoint& paint_offset,
+    bool is_self_painting) {
   // Pass PaintPhaseSelection and PaintPhaseTextClip is handled by the regular
   // foreground paint implementation. We don't need complete painting for these
   // phases.
@@ -533,15 +539,19 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
   if (phase == PaintPhase::kSelection || phase == PaintPhase::kTextClip)
     return PaintObject(paint_info, paint_offset);
 
+  if (paint_info.phase == PaintPhase::kSelfBlockBackgroundOnly &&
+      is_self_painting)
+    return PaintObject(paint_info, paint_offset);
+
   if (phase != PaintPhase::kForeground)
     return;
 
   PaintInfo info(paint_info);
 
-
-  info.phase = PaintPhase::kBlockBackground;
-  PaintObject(info, paint_offset);
-
+  if (!is_self_painting) {
+    info.phase = PaintPhase::kBlockBackground;
+    PaintObject(info, paint_offset);
+  }
   info.phase = PaintPhase::kFloat;
   PaintObject(info, paint_offset);
   {
@@ -651,7 +661,7 @@ void NGBoxFragmentPainter::PaintAtomicInlineChild(
                                            legacy_paint_offset);
   } else {
     NGBoxFragmentPainter(child).PaintAllPhasesAtomically(
-        paint_info, paint_offset + fragment.Offset().ToLayoutPoint());
+        paint_info, paint_offset + fragment.Offset().ToLayoutPoint(), false);
   }
 }
 
@@ -699,17 +709,21 @@ void NGBoxFragmentPainter::PaintSymbol(const NGPaintFragment& fragment,
                                  rect);
 }
 
+// Follows BlockPainter::PaintInlineBox
 void NGBoxFragmentPainter::PaintAtomicInline(const PaintInfo& paint_info,
                                              const LayoutPoint& paint_offset) {
   if (paint_info.phase != PaintPhase::kForeground &&
-      paint_info.phase != PaintPhase::kSelection)
+      paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kSelfBlockBackgroundOnly)
     return;
 
   // Text clips are painted only for the direct inline children of the object
   // that has a text clip style on it, not block children.
   DCHECK(paint_info.phase != PaintPhase::kTextClip);
 
-  PaintAllPhasesAtomically(paint_info, paint_offset);
+  bool is_self_painting = PhysicalFragment().Layer() &&
+                          PhysicalFragment().Layer()->IsSelfPaintingLayer();
+  PaintAllPhasesAtomically(paint_info, paint_offset, is_self_painting);
 }
 
 bool NGBoxFragmentPainter::
