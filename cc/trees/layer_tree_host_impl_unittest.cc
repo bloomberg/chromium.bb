@@ -4527,6 +4527,44 @@ TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
   }
 }
 
+// Verify that updating the set of referenced surfaces for the active tree
+// causes a new CompositorFrame to be submitted, even if there is no other
+// damage.
+TEST_F(LayerTreeHostImplTest, SurfaceReferencesChangeCausesDamage) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  auto* fake_layer_tree_frame_sink =
+      static_cast<FakeLayerTreeFrameSink*>(host_impl_->layer_tree_frame_sink());
+
+  // Submit an initial CompositorFrame with an empty set of referenced surfaces.
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  host_impl_->active_tree()->SetSurfaceLayerIds({});
+  host_impl_->SetFullViewportDamage();
+  DrawFrame();
+
+  {
+    const viz::CompositorFrameMetadata& metadata =
+        fake_layer_tree_frame_sink->last_sent_frame()->metadata;
+    EXPECT_THAT(metadata.referenced_surfaces, testing::IsEmpty());
+  }
+
+  const viz::SurfaceId surface_id = MakeSurfaceId(viz::FrameSinkId(1, 1), 1);
+
+  // Update the set of referenced surfaces to contain |surface_id| but don't
+  // make any other changes that would cause damage. This mimics updating the
+  // SurfaceLayer for an offscreen tab.
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  host_impl_->active_tree()->SetSurfaceLayerIds({surface_id});
+  DrawFrame();
+
+  {
+    const viz::CompositorFrameMetadata& metadata =
+        fake_layer_tree_frame_sink->last_sent_frame()->metadata;
+    EXPECT_THAT(metadata.referenced_surfaces,
+                testing::UnorderedElementsAre(surface_id));
+  }
+}
+
 TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
