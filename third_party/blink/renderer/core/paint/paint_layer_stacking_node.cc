@@ -244,6 +244,8 @@ void PaintLayerStackingNode::StyleDidChange(const ComputedStyle* old_style) {
       is_stacked_ == should_be_stacked && old_z_index == ZIndex())
     return;
 
+  // Need to force requirements update, due to change of stacking order.
+  Layer()->SetNeedsCompositingRequirementsUpdate();
   DirtyStackingContextZOrderLists();
 
   if (is_stacking_context)

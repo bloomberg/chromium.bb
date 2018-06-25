@@ -1027,6 +1027,14 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     descendant_has_direct_or_scrolling_compositing_reason_ = value;
   }
 
+  void SetNeedsCompositingRequirementsUpdate();
+  void ClearNeedsCompositingRequirementsUpdate() {
+    descendant_may_need_compositing_requirements_update_ = false;
+  }
+  bool DescendantMayNeedCompositingRequirementsUpdate() const {
+    return descendant_may_need_compositing_requirements_update_;
+  }
+
   ClipRectsCache* GetClipRectsCache() const { return clip_rects_cache_.get(); }
   ClipRectsCache& EnsureClipRectsCache() const {
     if (!clip_rects_cache_)
@@ -1301,6 +1309,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   unsigned descendant_has_direct_or_scrolling_compositing_reason_ : 1;
   unsigned needs_compositing_reasons_update_ : 1;
+
+  unsigned descendant_may_need_compositing_requirements_update_ : 1;
 
   LayoutBoxModelObject& layout_object_;
 

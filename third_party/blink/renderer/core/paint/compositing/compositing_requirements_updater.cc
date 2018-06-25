@@ -414,12 +414,15 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   //  * may have their own reason for compositing,
   //  * have compositing already from the previous frame, or
   //  * may escape |layer|'s clip.
+  //  * may need compositing requirements update for another reason (
+  //    e.g. change of stacking order)
   bool skip_children =
       !layer->DescendantHasDirectOrScrollingCompositingReason() &&
       !needs_recursion_for_composited_scrolling_plus_fixed_or_sticky &&
       !needs_recursion_for_out_of_flow_descendant &&
       layer->GetLayoutObject().HasOverflowClip() &&
-      !layer->HasCompositingDescendant();
+      !layer->HasCompositingDescendant() &&
+      !layer->DescendantMayNeedCompositingRequirementsUpdate();
 
   if (!skip_children && layer->StackingNode()->IsStackingContext()) {
     PaintLayerStackingNodeIterator iterator(*layer->StackingNode(),
@@ -607,6 +610,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   // At this point we have finished collecting all reasons to composite this
   // layer.
   layer->SetCompositingReasons(reasons_to_composite);
+  layer->ClearNeedsCompositingRequirementsUpdate();
   if (reasons_to_composite & CompositingReason::kOverlap)
     compositing_reasons_stats.overlap_layers++;
   if (reasons_to_composite & CompositingReason::kComboActiveAnimation)

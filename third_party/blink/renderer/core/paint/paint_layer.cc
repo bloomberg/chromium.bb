@@ -105,9 +105,7 @@ static CompositingQueryMode g_compositing_query_mode =
 
 struct SameSizeAsPaintLayer : DisplayItemClient {
   int bit_fields;
-#if DCHECK_IS_ON()
   int bit_fields2;
-#endif
   void* pointers[11];
   LayoutUnit layout_units[4];
   IntSize size;
@@ -172,6 +170,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       is_under_svg_hidden_container_(false),
       descendant_has_direct_or_scrolling_compositing_reason_(false),
       needs_compositing_reasons_update_(true),
+      descendant_may_need_compositing_requirements_update_(false),
       layout_object_(layout_object),
       parent_(nullptr),
       previous_(nullptr),
@@ -1382,6 +1381,9 @@ void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
   MarkAncestorChainForDescendantDependentFlagsUpdate();
   DirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
+  // Need to force requirements update, due to change of stacking order.
+  SetNeedsCompositingRequirementsUpdate();
+
   child->SetNeedsRepaint();
 }
 
@@ -2324,6 +2326,14 @@ bool PaintLayer::IsReplacedNormalFlowStacking() {
   if (!GetLayoutObject().StyleRef().HasAutoZIndex())
     return false;
   return true;
+}
+
+void PaintLayer::SetNeedsCompositingRequirementsUpdate() {
+  for (PaintLayer* curr = Parent();
+       curr && !curr->DescendantMayNeedCompositingRequirementsUpdate();
+       curr = curr->Parent()) {
+    curr->descendant_may_need_compositing_requirements_update_ = true;
+  }
 }
 
 PaintLayer* PaintLayer::HitTestChildren(
