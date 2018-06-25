@@ -94,6 +94,14 @@ class PartialMagnificationControllerTest : public aura::test::AuraTestBase {
         std::make_unique<PartialMagnificationController>(root_window());
   }
 
+  void TearDown() override {
+    // PartialMagnificationController needs to be deleted before the root window
+    // is torn down by AuraTestBase.
+    controller_.reset();
+
+    aura::test::AuraTestBase::TearDown();
+  }
+
  protected:
   PartialMagnificationController* GetController() const {
     return controller_.get();
