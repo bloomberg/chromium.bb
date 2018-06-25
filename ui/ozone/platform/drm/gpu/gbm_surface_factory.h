@@ -23,6 +23,7 @@ namespace ui {
 
 class DrmThreadProxy;
 class GbmSurfaceless;
+class GbmOverlaySurface;
 
 class GbmSurfaceFactory : public SurfaceFactoryOzone {
  public:
@@ -42,6 +43,8 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
       override;
 #endif
 
+  std::unique_ptr<OverlaySurface> CreateOverlaySurface(
+      gfx::AcceleratedWidget window) override;
   std::vector<gfx::BufferFormat> GetScanoutFormats(
       gfx::AcceleratedWidget widget) override;
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
