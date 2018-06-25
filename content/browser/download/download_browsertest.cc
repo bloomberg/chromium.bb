@@ -2990,23 +2990,33 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeServerError) {
 // should result in a network error page.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeNetworkError) {
   SetupErrorInjectionDownloads();
+  WebContents* content = shell()->web_contents();
   GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
   GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
-  TestDownloadHttpResponse::Parameters parameters;
+  GURL document_url = embedded_test_server()->GetURL(
+      std::string("/download/download-attribute.html?target=") +
+      server_url.spec());
+
   // Simulate a network failure by injecting an error before the response
   // header.
+  TestDownloadHttpResponse::Parameters parameters;
   parameters.injected_errors.push(-1);
   parameters.inject_error_cb = inject_error_callback();
   TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  GURL document_url = embedded_test_server()->GetURL(
-      std::string("/download/download-attribute.html?target=") +
-      server_url.spec());
-  auto observer = std::make_unique<content::TestNavigationObserver>(
-      shell()->web_contents(), 2);
-  NavigateToURL(shell(), document_url);
-  observer->Wait();
-  EXPECT_FALSE(observer->last_navigation_succeeded());
+  content::TestNavigationManager navigation_document(content, document_url);
+  content::TestNavigationManager navigation_download(content, server_url);
+  shell()->LoadURL(document_url);
+  navigation_document.WaitForNavigationFinished();
+  navigation_download.WaitForNavigationFinished();
+
+  EXPECT_TRUE(navigation_document.was_successful());
+  EXPECT_FALSE(navigation_download.was_successful());
+
+  NavigationEntry* navigation_entry =
+      shell()->web_contents()->GetController().GetLastCommittedEntry();
+  EXPECT_EQ(PAGE_TYPE_ERROR, navigation_entry->GetPageType());
+  EXPECT_EQ(server_url, navigation_entry->GetURL());
 }
 
 // A request that fails due to it being rejected by policy should result in a
