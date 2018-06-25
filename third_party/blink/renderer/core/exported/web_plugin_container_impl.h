@@ -51,7 +51,6 @@ class Layer;
 namespace blink {
 
 class Event;
-class EventQueue;
 class GestureEvent;
 class HTMLFrameOwnerElement;
 class HTMLPlugInElement;
@@ -238,7 +237,6 @@ class CORE_EXPORT WebPluginContainerImpl final
   friend class WebPluginContainerTest;
 
   Member<HTMLPlugInElement> element_;
-  Member<EventQueue> event_queue_;
   WebPlugin* web_plugin_;
   cc::Layer* layer_;
   IntRect frame_rect_;

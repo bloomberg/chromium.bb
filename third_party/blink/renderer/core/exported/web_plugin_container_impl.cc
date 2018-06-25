@@ -58,7 +58,6 @@
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
-#include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/events/drag_event.h"
 #include "third_party/blink/renderer/core/events/gesture_event.h"
@@ -457,10 +456,9 @@ void WebPluginContainerImpl::DispatchProgressEvent(const WebString& type,
 
 void WebPluginContainerImpl::EnqueueMessageEvent(
     const WebDOMMessageEvent& event) {
-  static_cast<Event*>(event)->SetTarget(element_);
   if (!element_->GetExecutionContext())
     return;
-  event_queue_->EnqueueEvent(FROM_HERE, event);
+  element_->EnqueueAsyncEvent(event);
 }
 
 void WebPluginContainerImpl::Invalidate() {
@@ -737,9 +735,6 @@ WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement& element,
                                                WebPlugin* web_plugin)
     : ContextClient(element.GetDocument().GetFrame()),
       element_(element),
-      event_queue_(
-          EventQueue::Create(element.GetDocument().GetExecutionContext(),
-                             TaskType::kInternalDefault)),
       web_plugin_(web_plugin),
       layer_(nullptr),
       touch_event_request_type_(kTouchEventRequestTypeNone),
@@ -785,7 +780,6 @@ void WebPluginContainerImpl::Dispose() {
 
 void WebPluginContainerImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);
-  visitor->Trace(event_queue_);
   ContextClient::Trace(visitor);
 }
 
