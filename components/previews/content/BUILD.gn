@@ -16,6 +16,7 @@ static_library("content") {
 
   deps = [
     "//base",
+    "//components/blacklist/opt_out_blacklist",
     "//components/optimization_guide",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/previews/core",
@@ -38,6 +39,7 @@ source_set("unit_tests") {
   deps = [
     ":content",
     "//base",
+    "//components/blacklist/opt_out_blacklist",
     "//components/optimization_guide",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/previews/core",

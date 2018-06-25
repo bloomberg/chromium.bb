@@ -26,16 +26,16 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_delegate.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/previews/content/previews_ui_service.h"
-#include "components/previews/core/blacklist_data.h"
 #include "components/previews/core/previews_black_list.h"
-#include "components/previews/core/previews_black_list_delegate.h"
-#include "components/previews/core/previews_black_list_item.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_logger.h"
-#include "components/previews/core/previews_opt_out_store.h"
 #include "components/previews/core/previews_switches.h"
 #include "components/previews/core/previews_user_data.h"
 #include "components/variations/variations_associated_data.h"
@@ -86,7 +86,7 @@ bool IsPreviewFieldTrialEnabled(PreviewsType type) {
 class TestPreviewsBlackList : public PreviewsBlackList {
  public:
   TestPreviewsBlackList(PreviewsEligibilityReason status,
-                        PreviewsBlacklistDelegate* blacklist_delegate)
+                        blacklist::OptOutBlacklistDelegate* blacklist_delegate)
       : PreviewsBlackList(nullptr,
                           base::DefaultClock::GetInstance(),
                           blacklist_delegate,
@@ -156,11 +156,11 @@ class TestPreviewsUIService : public PreviewsUIService {
   TestPreviewsUIService(
       PreviewsIOData* previews_io_data,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+      std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       const PreviewsIsEnabledCallback& is_enabled_callback,
       std::unique_ptr<PreviewsLogger> logger,
-      BlacklistData::AllowedTypesAndVersions allowed_types)
+      blacklist::BlacklistData::AllowedTypesAndVersions allowed_types)
       : PreviewsUIService(previews_io_data,
                           io_task_runner,
                           std::move(previews_opt_out_store),
@@ -301,8 +301,9 @@ class TestPreviewsIOData : public PreviewsIOData {
  private:
   // Set |initialized_| to true and use base class functionality.
   void InitializeOnIOThread(
-      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
-      BlacklistData::AllowedTypesAndVersions allowed_previews) override {
+      std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
+      blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews)
+      override {
     initialized_ = true;
     PreviewsIOData::InitializeOnIOThread(std::move(previews_opt_out_store),
                                          std::move(allowed_previews));
@@ -312,25 +313,25 @@ class TestPreviewsIOData : public PreviewsIOData {
   bool initialized_;
 };
 
-void RunLoadCallback(LoadBlackListCallback callback,
-                     std::unique_ptr<BlacklistData> data) {
+void RunLoadCallback(blacklist::LoadBlackListCallback callback,
+                     std::unique_ptr<blacklist::BlacklistData> data) {
   std::move(callback).Run(std::move(data));
 }
 
-class TestPreviewsOptOutStore : public PreviewsOptOutStore {
+class TestOptOutStore : public blacklist::OptOutStore {
  public:
-  TestPreviewsOptOutStore() {}
-  ~TestPreviewsOptOutStore() override {}
+  TestOptOutStore() {}
+  ~TestOptOutStore() override {}
 
  private:
-  // PreviewsOptOutStore implementation:
+  // blacklist::OptOutStore implementation:
   void AddEntry(bool opt_out,
                 const std::string& host_name,
                 int type,
                 base::Time now) override {}
 
-  void LoadBlackList(std::unique_ptr<BlacklistData> data,
-                     LoadBlackListCallback callback) override {
+  void LoadBlackList(std::unique_ptr<blacklist::BlacklistData> data,
+                     blacklist::LoadBlackListCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&RunLoadCallback, std::move(callback), std::move(data)));
@@ -369,7 +370,7 @@ class PreviewsIODataTest : public testing::Test {
   }
 
   void InitializeUIServiceWithoutWaitingForBlackList() {
-    BlacklistData::AllowedTypesAndVersions allowed_types;
+    blacklist::BlacklistData::AllowedTypesAndVersions allowed_types;
     allowed_types[static_cast<int>(PreviewsType::OFFLINE)] = 0;
     allowed_types[static_cast<int>(PreviewsType::LOFI)] = 0;
     allowed_types[static_cast<int>(PreviewsType::LITE_PAGE)] = 0;
@@ -378,7 +379,7 @@ class PreviewsIODataTest : public testing::Test {
     allowed_types[static_cast<int>(PreviewsType::AMP_REDIRECTION)] = 0;
     ui_service_.reset(new TestPreviewsUIService(
         io_data_.get(), scoped_task_environment_.GetMainThreadTaskRunner(),
-        std::make_unique<TestPreviewsOptOutStore>(),
+        std::make_unique<TestOptOutStore>(),
         std::make_unique<TestPreviewsOptimizationGuide>(
             &optimization_guide_service_,
             scoped_task_environment_.GetMainThreadTaskRunner()),

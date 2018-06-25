@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/core/blacklist_data.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 
 #include "base/memory/ptr_util.h"
 
-namespace previews {
+namespace blacklist {
 
 BlacklistData::BlacklistData(std::unique_ptr<Policy> session_policy,
                              std::unique_ptr<Policy> persistent_policy,
@@ -39,7 +39,7 @@ void BlacklistData::AddEntry(const std::string& host_name,
   // Add to the session based rule if it is enabled.
   if (session_policy_ && !is_from_persistent_storage) {
     if (!session_black_list_item_) {
-      session_black_list_item_ = std::make_unique<PreviewsBlackListItem>(
+      session_black_list_item_ = std::make_unique<OptOutBlacklistItem>(
           session_policy_->history, session_policy_->threshold,
           session_policy_->duration);
     }
@@ -49,7 +49,7 @@ void BlacklistData::AddEntry(const std::string& host_name,
   // Add to the persistent rule if it is enabled.
   if (persistent_policy_) {
     if (!persistent_black_list_item_) {
-      persistent_black_list_item_ = std::make_unique<PreviewsBlackListItem>(
+      persistent_black_list_item_ = std::make_unique<OptOutBlacklistItem>(
           persistent_policy_->history, persistent_policy_->threshold,
           persistent_policy_->duration);
     }
@@ -173,4 +173,4 @@ bool BlacklistData::IsUserOptedOutInGeneral(base::Time time) const {
          persistent_black_list_item_->IsBlackListed(time);
 }
 
-}  // namespace previews
+}  // namespace blacklist

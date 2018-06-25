@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_PREVIEWS_OPT_OUT_STORE_SQL_H_
-#define COMPONENTS_PREVIEWS_PREVIEWS_OPT_OUT_STORE_SQL_H_
+#ifndef COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_SQL_OPT_OUT_STORE_SQL_H_
+#define COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_SQL_OPT_OUT_STORE_SQL_H_
 
 #include <stdint.h>
 
@@ -15,30 +15,30 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "components/previews/core/previews_opt_out_store.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 
 namespace base {
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
-}
+}  // namespace base
 
 namespace sql {
 class Connection;
 }
 
-namespace previews {
+namespace blacklist {
 
-// PreviewsOptOutStoreSQL is an instance of PreviewsOptOutStore
+// OptOutStoreSQL is an instance of OptOutStore
 // which is implemented using a SQLite database.
-class PreviewsOptOutStoreSQL : public PreviewsOptOutStore {
+class OptOutStoreSQL : public OptOutStore {
  public:
-  PreviewsOptOutStoreSQL(
+  OptOutStoreSQL(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const base::FilePath& database_dir);
-  ~PreviewsOptOutStoreSQL() override;
+  ~OptOutStoreSQL() override;
 
-  // PreviewsOptOutStore implementation:
+  // OptOutStore implementation:
   void AddEntry(bool opt_out,
                 const std::string& host_name,
                 int type,
@@ -60,9 +60,9 @@ class PreviewsOptOutStoreSQL : public PreviewsOptOutStore {
   // SQL connection to the SQLite database.
   std::unique_ptr<sql::Connection> db_;
 
-  DISALLOW_COPY_AND_ASSIGN(PreviewsOptOutStoreSQL);
+  DISALLOW_COPY_AND_ASSIGN(OptOutStoreSQL);
 };
 
-}  // namespace previews
+}  // namespace blacklist
 
-#endif  // COMPONENTS_PREVIEWS_PREVIEWS_OPT_OUT_STORE_SQL_H_
+#endif  // COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_SQL_OPT_OUT_STORE_SQL_H_

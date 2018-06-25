@@ -16,10 +16,10 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "components/previews/core/opt_out_blacklist.h"
-#include "components/previews/core/previews_black_list_delegate.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_delegate.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/previews_opt_out_store.h"
 
 class GURL;
 
@@ -75,12 +75,13 @@ enum class PreviewsEligibilityReason {
 // browsing history), domains are reported as black listed. The list stores no
 // more than previews::params::MaxInMemoryHostsInBlackList hosts in-memory,
 // which defaults to 100.
-class PreviewsBlackList : public OptOutBlacklist {
+class PreviewsBlackList : public blacklist::OptOutBlacklist {
  public:
-  PreviewsBlackList(std::unique_ptr<PreviewsOptOutStore> opt_out_store,
-                    base::Clock* clock,
-                    PreviewsBlacklistDelegate* blacklist_delegate,
-                    BlacklistData::AllowedTypesAndVersions allowed_types);
+  PreviewsBlackList(
+      std::unique_ptr<blacklist::OptOutStore> opt_out_store,
+      base::Clock* clock,
+      blacklist::OptOutBlacklistDelegate* blacklist_delegate,
+      blacklist::BlacklistData::AllowedTypesAndVersions allowed_types);
   ~PreviewsBlackList() override;
 
   // Asynchronously adds a new navigation to to the in-memory black list and
@@ -105,7 +106,7 @@ class PreviewsBlackList : public OptOutBlacklist {
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
  protected:
-  // OptOutBlacklist (virtual for testing):
+  // blacklist::OptOutBlacklist (virtual for testing):
   bool ShouldUseSessionPolicy(base::TimeDelta* duration,
                               size_t* history,
                               int* threshold) const override;
@@ -119,10 +120,11 @@ class PreviewsBlackList : public OptOutBlacklist {
   bool ShouldUseTypePolicy(base::TimeDelta* duration,
                            size_t* history,
                            int* threshold) const override;
-  BlacklistData::AllowedTypesAndVersions GetAllowedTypes() const override;
+  blacklist::BlacklistData::AllowedTypesAndVersions GetAllowedTypes()
+      const override;
 
  private:
-  const BlacklistData::AllowedTypesAndVersions allowed_types_;
+  const blacklist::BlacklistData::AllowedTypesAndVersions allowed_types_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsBlackList);
 };

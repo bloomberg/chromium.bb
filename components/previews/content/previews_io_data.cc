@@ -16,9 +16,9 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/default_clock.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/previews_opt_out_store.h"
 #include "components/previews/core/previews_switches.h"
 #include "components/previews/core/previews_user_data.h"
 #include "net/base/load_flags.h"
@@ -103,10 +103,10 @@ PreviewsIOData::~PreviewsIOData() {}
 
 void PreviewsIOData::Initialize(
     base::WeakPtr<PreviewsUIService> previews_ui_service,
-    std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+    std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
     std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
     const PreviewsIsEnabledCallback& is_enabled_callback,
-    BlacklistData::AllowedTypesAndVersions allowed_previews) {
+    blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   is_enabled_callback_ = is_enabled_callback;
   previews_ui_service_ = previews_ui_service;
@@ -143,8 +143,8 @@ void PreviewsIOData::OnBlacklistCleared(base::Time time) {
 }
 
 void PreviewsIOData::InitializeOnIOThread(
-    std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
-    BlacklistData::AllowedTypesAndVersions allowed_previews) {
+    std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
+    blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   previews_black_list_.reset(new PreviewsBlackList(
       std::move(previews_opt_out_store), base::DefaultClock::GetInstance(),

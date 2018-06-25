@@ -12,13 +12,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/previews/content/previews_io_data.h"
 #include "components/previews/content/previews_optimization_guide.h"
-#include "components/previews/core/blacklist_data.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_logger.h"
-#include "components/previews/core/previews_opt_out_store.h"
 
 class GURL;
 
@@ -36,11 +36,11 @@ class PreviewsUIService {
   PreviewsUIService(
       PreviewsIOData* previews_io_data,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+      std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       const PreviewsIsEnabledCallback& is_enabled_callback,
       std::unique_ptr<PreviewsLogger> logger,
-      BlacklistData::AllowedTypesAndVersions allowed_previews);
+      blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews);
   virtual ~PreviewsUIService();
 
   // Sets |io_data_| to |io_data| to allow calls from the UI thread to the IO

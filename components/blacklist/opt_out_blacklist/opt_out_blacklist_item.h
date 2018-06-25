@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CORE_PREVIEWS_BLACK_LIST_ITEM_H_
-#define COMPONENTS_PREVIEWS_CORE_PREVIEWS_BLACK_LIST_ITEM_H_
+#ifndef COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_BLACKLIST_ITEM_H_
+#define COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_BLACKLIST_ITEM_H_
 
 #include <stdint.h>
 
@@ -17,7 +17,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 
-namespace previews {
+namespace blacklist {
 
 // Stores the recent black list history for a single host. Stores
 // |stored_history_length| of the most recent actions. To determine action
@@ -25,13 +25,13 @@ namespace previews {
 // |stored_history_length| navigations must be opt outs. |black_list_duration|
 // is the amount of time that elapses until the host is no longer on the black
 // list.
-class PreviewsBlackListItem {
+class OptOutBlacklistItem {
  public:
-  PreviewsBlackListItem(size_t stored_history_length,
-                        int opt_out_black_list_threshold,
-                        base::TimeDelta black_list_duration);
+  OptOutBlacklistItem(size_t stored_history_length,
+                      int opt_out_black_list_threshold,
+                      base::TimeDelta black_list_duration);
 
-  ~PreviewsBlackListItem();
+  ~OptOutBlacklistItem();
 
   // Adds a new navigation at the specified |entry_time|.
   void AddEntry(bool opt_out, base::Time entry_time);
@@ -61,19 +61,19 @@ class PreviewsBlackListItem {
     // The time that the opt out state was determined.
     base::Time entry_time() const { return entry_time_; }
 
-    // Whether the user opted out of the preview.
+    // Whether the user opted out of the action.
     bool opt_out() const { return opt_out_; }
 
    private:
     // The time that the opt out state was determined.
     base::Time entry_time_;
-    // Whether the user opted out of the preview.
+    // Whether the user opted out of the action.
     bool opt_out_;
 
     DISALLOW_COPY_AND_ASSIGN(OptOutRecord);
   };
 
-  // The number of entries to store to determine preview eligibility.
+  // The number of entries to store to determine action eligibility.
   const size_t max_stored_history_length_;
   // The number opt outs in recent history that will trigger blacklisting.
   const int opt_out_black_list_threshold_;
@@ -91,9 +91,9 @@ class PreviewsBlackListItem {
   // The total number of opt outs currently in |opt_out_records_|.
   int total_opt_out_;
 
-  DISALLOW_COPY_AND_ASSIGN(PreviewsBlackListItem);
+  DISALLOW_COPY_AND_ASSIGN(OptOutBlacklistItem);
 };
 
-}  // namespace previews
+}  // namespace blacklist
 
-#endif  // COMPONENTS_PREVIEWS_CORE_PREVIEWS_BLACK_LIST_ITEM_H_
+#endif  // COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_BLACKLIST_ITEM_H_

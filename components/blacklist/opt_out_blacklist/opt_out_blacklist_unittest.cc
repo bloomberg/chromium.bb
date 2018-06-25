@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/core/opt_out_blacklist.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist.h"
 
 #include <algorithm>
 #include <map>
@@ -23,14 +23,13 @@
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/previews/core/previews_black_list_delegate.h"
-#include "components/previews/core/previews_black_list_item.h"
-#include "components/previews/core/previews_opt_out_store.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_delegate.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 
-namespace previews {
+namespace blacklist {
 
 namespace {
 
@@ -39,14 +38,14 @@ const char kTestHost2[] = "testhost2.com";
 
 // Mock class to test that OptOutBlacklist notifies the delegate with correct
 // events (e.g. New host blacklisted, user blacklisted, and blacklist cleared).
-class TestPreviewsBlacklistDelegate : public PreviewsBlacklistDelegate {
+class TestOptOutBlacklistDelegate : public OptOutBlacklistDelegate {
  public:
-  TestPreviewsBlacklistDelegate()
+  TestOptOutBlacklistDelegate()
       : user_blacklisted_(false),
         blacklist_cleared_(false),
         blacklist_cleared_time_(base::Time::Now()) {}
 
-  // PreviewsBlacklistDelegate:
+  // OptOutBlacklistDelegate:
   void OnNewBlacklistedHost(const std::string& host, base::Time time) override {
     blacklisted_hosts_[host] = time;
   }
@@ -86,10 +85,10 @@ class TestPreviewsBlacklistDelegate : public PreviewsBlacklistDelegate {
   std::unordered_map<std::string, base::Time> blacklisted_hosts_;
 };
 
-class TestPreviewsOptOutStore : public PreviewsOptOutStore {
+class TestOptOutStore : public OptOutStore {
  public:
-  TestPreviewsOptOutStore() : clear_blacklist_count_(0) {}
-  ~TestPreviewsOptOutStore() override {}
+  TestOptOutStore() : clear_blacklist_count_(0) {}
+  ~TestOptOutStore() override {}
 
   int clear_blacklist_count() { return clear_blacklist_count_; }
 
@@ -98,7 +97,7 @@ class TestPreviewsOptOutStore : public PreviewsOptOutStore {
   }
 
  private:
-  // PreviewsOptOutStore implementation:
+  // OptOutStore implementation:
   void AddEntry(bool opt_out,
                 const std::string& host_name,
                 int type,
@@ -123,9 +122,9 @@ class TestPreviewsOptOutStore : public PreviewsOptOutStore {
 
 class TestOptOutBlacklist : public OptOutBlacklist {
  public:
-  TestOptOutBlacklist(std::unique_ptr<PreviewsOptOutStore> opt_out_store,
+  TestOptOutBlacklist(std::unique_ptr<OptOutStore> opt_out_store,
                       base::Clock* clock,
-                      PreviewsBlacklistDelegate* blacklist_delegate)
+                      OptOutBlacklistDelegate* blacklist_delegate)
       : OptOutBlacklist(std::move(opt_out_store), clock, blacklist_delegate) {}
   ~TestOptOutBlacklist() override {}
 
@@ -222,9 +221,8 @@ class OptOutBlacklistTest : public testing::Test {
   ~OptOutBlacklistTest() override {}
 
   void StartTest(bool null_opt_out_store) {
-    std::unique_ptr<TestPreviewsOptOutStore> opt_out_store =
-        null_opt_out_store ? nullptr
-                           : std::make_unique<TestPreviewsOptOutStore>();
+    std::unique_ptr<TestOptOutStore> opt_out_store =
+        null_opt_out_store ? nullptr : std::make_unique<TestOptOutStore>();
     opt_out_store_ = opt_out_store.get();
 
     black_list_ = std::make_unique<TestOptOutBlacklist>(
@@ -276,10 +274,10 @@ class OptOutBlacklistTest : public testing::Test {
   base::MessageLoop loop_;
 
   // Observer to |black_list_|.
-  TestPreviewsBlacklistDelegate blacklist_delegate_;
+  TestOptOutBlacklistDelegate blacklist_delegate_;
 
   base::SimpleTestClock test_clock_;
-  TestPreviewsOptOutStore* opt_out_store_;
+  TestOptOutStore* opt_out_store_;
   base::Time start_;
 
   std::unique_ptr<TestOptOutBlacklist> black_list_;
@@ -749,7 +747,7 @@ TEST_F(OptOutBlacklistTest, MaxHosts) {
 }
 
 TEST_F(OptOutBlacklistTest, SingleOptOut) {
-  // Test that when a user opts out of a preview, previews won't be shown until
+  // Test that when a user opts out of an action, actions won't be allowed until
   // |single_opt_out_duration| has elapsed.
   int single_opt_out_duration = 5;
   const std::string test_host_3("host3.com");
@@ -946,8 +944,8 @@ TEST_F(OptOutBlacklistTest, ObserverIsNotifiedWhenLoadBlacklistDone) {
     data->AddEntry(kTestHost1, true, 0, test_clock.Now(), true);
   }
 
-  std::unique_ptr<TestPreviewsOptOutStore> opt_out_store =
-      std::make_unique<TestPreviewsOptOutStore>();
+  std::unique_ptr<TestOptOutStore> opt_out_store =
+      std::make_unique<TestOptOutStore>();
   opt_out_store->SetBlacklistData(std::move(data));
 
   EXPECT_FALSE(blacklist_delegate_.user_blacklisted());
@@ -1008,8 +1006,8 @@ TEST_F(OptOutBlacklistTest, ObserverIsNotifiedOfHistoricalBlacklistedHosts) {
   test_clock.Advance(base::TimeDelta::FromSeconds(1));
   data->AddEntry(kTestHost2, true, static_cast<int>(1), test_clock.Now(), true);
 
-  std::unique_ptr<TestPreviewsOptOutStore> opt_out_store =
-      std::make_unique<TestPreviewsOptOutStore>();
+  std::unique_ptr<TestOptOutStore> opt_out_store =
+      std::make_unique<TestOptOutStore>();
   opt_out_store->SetBlacklistData(std::move(data));
 
   allowed_types.clear();
@@ -1188,4 +1186,4 @@ TEST_F(OptOutBlacklistTest, PassedReasonsWhenAllowed) {
 
 }  // namespace
 
-}  // namespace previews
+}  // namespace blacklist

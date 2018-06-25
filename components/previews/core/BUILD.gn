@@ -4,16 +4,10 @@
 
 static_library("core") {
   sources = [
-    "blacklist_data.cc",
-    "blacklist_data.h",
-    "opt_out_blacklist.cc",
-    "opt_out_blacklist.h",
     "previews_amp_converter.cc",
     "previews_amp_converter.h",
     "previews_black_list.cc",
     "previews_black_list.h",
-    "previews_black_list_item.cc",
-    "previews_black_list_item.h",
     "previews_decider.h",
     "previews_experiments.cc",
     "previews_experiments.h",
@@ -22,9 +16,6 @@ static_library("core") {
     "previews_logger.cc",
     "previews_logger.h",
     "previews_logger_observer.h",
-    "previews_opt_out_store.h",
-    "previews_opt_out_store_sql.cc",
-    "previews_opt_out_store_sql.h",
     "previews_switches.cc",
     "previews_switches.h",
     "previews_user_data.cc",
@@ -35,9 +26,9 @@ static_library("core") {
 
   deps = [
     "//base",
+    "//components/blacklist/opt_out_blacklist",
     "//components/variations",
     "//net:net",
-    "//sql",
     "//third_party/re2",
     "//url:url",
   ]
@@ -46,13 +37,10 @@ static_library("core") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "opt_out_blacklist_unittest.cc",
     "previews_amp_converter_unittest.cc",
-    "previews_black_list_item_unittest.cc",
     "previews_black_list_unittest.cc",
     "previews_experiments_unittest.cc",
     "previews_logger_unittest.cc",
-    "previews_opt_out_store_sql_unittest.cc",
     "previews_user_data_unittest.cc",
   ]
 
@@ -60,11 +48,10 @@ source_set("unit_tests") {
     ":core",
     "//base",
     "//base/test:test_support",
+    "//components/blacklist/opt_out_blacklist",
     "//components/variations",
     "//net:net",
     "//net:test_support",
-    "//sql",
-    "//sql:test_support",
     "//testing/gtest",
     "//url:url",
   ]

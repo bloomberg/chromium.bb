@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CORE_PREVIEWS_BLACK_LIST_DELEGATE_H_
-#define COMPONENTS_PREVIEWS_CORE_PREVIEWS_BLACK_LIST_DELEGATE_H_
+#ifndef COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_BLACKLIST_DELEGATE_H_
+#define COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_BLACKLIST_DELEGATE_H_
 
 #include <string>
 
 #include "base/macros.h"
 #include "base/time/time.h"
 
-namespace previews {
+namespace blacklist {
 
-// An interface for PreviewsBlackList delegate. This interface is for responding
-// to events occur in PreviewsBlackList (e.g. New blacklisted host and user is
-// blacklisted).
-class PreviewsBlacklistDelegate {
+// An interface for a delegate to the opt out blacklist. This interface is for
+// responding to events occurring in the opt out blacklist (e.g. New blacklisted
+// host and user is blacklisted).
+class OptOutBlacklistDelegate {
  public:
-  PreviewsBlacklistDelegate() {}
-  virtual ~PreviewsBlacklistDelegate() {}
+  OptOutBlacklistDelegate() {}
+  virtual ~OptOutBlacklistDelegate() {}
 
   // Notifies |this| that |host| has been blacklisted at |time|. This method is
   // guaranteed to be called when a previously whitelisted host is now
@@ -34,6 +34,6 @@ class PreviewsBlacklistDelegate {
   virtual void OnBlacklistCleared(base::Time time) = 0;
 };
 
-}  // namespace previews
+}  // namespace blacklist
 
-#endif  // COMPONENTS_PREVIEWS_CORE_PREVIEWS_BLACK_LIST_DELEGATE_H_
+#endif  // COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_BLACKLIST_DELEGATE_H_
