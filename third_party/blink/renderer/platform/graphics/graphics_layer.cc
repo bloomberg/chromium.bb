@@ -137,12 +137,8 @@ GraphicsLayer::~GraphicsLayer() {
 
 LayoutRect GraphicsLayer::VisualRect() const {
   LayoutRect bounds = LayoutRect(LayoutPoint(), LayoutSize(Size()));
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    DCHECK(layer_state_);
-    bounds.MoveBy(layer_state_->offset);
-  } else {
-    bounds.Move(OffsetFromLayoutObjectWithSubpixelAccumulation());
-  }
+  DCHECK(layer_state_);
+  bounds.MoveBy(layer_state_->offset);
   return bounds;
 }
 
@@ -289,12 +285,10 @@ void GraphicsLayer::PaintRecursively() {
   Vector<GraphicsLayer*> repainted_layers;
   PaintRecursivelyInternal(repainted_layers);
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // Notify the controllers that the artifact has been pushed and some
-    // lifecycle state can be freed (such as raster invalidations).
-    for (auto* layer : repainted_layers)
-      layer->GetPaintController().FinishCycle();
-  }
+  // Notify the controllers that the artifact has been pushed and some
+  // lifecycle state can be freed (such as raster invalidations).
+  for (auto* layer : repainted_layers)
+    layer->GetPaintController().FinishCycle();
 
 #if DCHECK_IS_ON()
   if (VLOG_IS_ON(2)) {
@@ -332,7 +326,7 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
 #if !DCHECK_IS_ON()
   // TODO(crbug.com/853096): Investigate why we can ever reach here without
   // a valid layer state. Seems to only happen on Android builds.
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() && !layer_state_)
+  if (!layer_state_)
     return false;
 #endif
 
@@ -348,14 +342,12 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
   }
 #endif
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
-    // Generate raster invalidations for SPv175 (but not SPv2).
-    IntRect layer_bounds(layer_state_->offset, Size());
-    EnsureRasterInvalidator().Generate(GetPaintController().GetPaintArtifact(),
-                                       layer_bounds, layer_state_->state,
-                                       VisualRectSubpixelOffset(), this);
-  }
+  DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
+  // Generate raster invalidations for SPv1.
+  IntRect layer_bounds(layer_state_->offset, Size());
+  EnsureRasterInvalidator().Generate(GetPaintController().GetPaintArtifact(),
+                                     layer_bounds, layer_state_->state,
+                                     VisualRectSubpixelOffset(), this);
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
       DrawsContent()) {
@@ -400,11 +392,9 @@ bool GraphicsLayer::PaintWithoutCommit(
   }
 
   GraphicsContext context(GetPaintController(), disabled_mode, nullptr);
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
-    GetPaintController().UpdateCurrentPaintChunkProperties(base::nullopt,
-                                                           layer_state_->state);
-  }
+  DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
+  GetPaintController().UpdateCurrentPaintChunkProperties(base::nullopt,
+                                                         layer_state_->state);
 
   previous_interest_rect_ = *interest_rect;
   client_.PaintContents(this, context, painting_phase_, *interest_rect);
@@ -601,7 +591,7 @@ void GraphicsLayer::UpdateTrackingRasterInvalidations() {
   else if (raster_invalidator_)
     raster_invalidator_->SetTracksRasterInvalidations(false);
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() && paint_controller_)
+  if (paint_controller_)
     paint_controller_->SetTracksRasterInvalidations(should_track);
 }
 
@@ -1328,10 +1318,8 @@ PaintController& GraphicsLayer::GetPaintController() const {
   CHECK(DrawsContent());
   if (!paint_controller_) {
     paint_controller_ = PaintController::Create();
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      paint_controller_->SetTracksRasterInvalidations(
-          client_.IsTrackingRasterInvalidations());
-    }
+    paint_controller_->SetTracksRasterInvalidations(
+        client_.IsTrackingRasterInvalidations());
   }
   return *paint_controller_;
 }
@@ -1356,21 +1344,14 @@ sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
   FloatRect bounds(IntRect(IntPoint(), Size()));
   GraphicsContext graphics_context(GetPaintController());
   graphics_context.BeginRecording(bounds);
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
-    GetPaintController().GetPaintArtifact().Replay(
-        graphics_context, layer_state_->state, layer_state_->offset);
-  } else {
-    GetPaintController().GetPaintArtifact().Replay(graphics_context,
-                                                   PropertyTreeState::Root());
-  }
+  DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
+  GetPaintController().GetPaintArtifact().Replay(
+      graphics_context, layer_state_->state, layer_state_->offset);
   return graphics_context.EndRecording();
 }
 
 void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
                                   const IntPoint& layer_offset) {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-
   if (!layer_state_) {
     layer_state_ =
         std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
@@ -1416,19 +1397,12 @@ scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(
 
   auto display_list = base::MakeRefCounted<cc::DisplayItemList>();
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
-    PaintChunksToCcLayer::ConvertInto(
-        GetPaintController().PaintChunks(), layer_state_->state,
-        gfx::Vector2dF(layer_state_->offset.X(), layer_state_->offset.Y()),
-        VisualRectSubpixelOffset(),
-        paint_controller.GetPaintArtifact().GetDisplayItemList(),
-        *display_list);
-  } else {
-    paint_controller.GetPaintArtifact().AppendToDisplayItemList(
-        FloatSize(OffsetFromLayoutObjectWithSubpixelAccumulation()),
-        *display_list);
-  }
+  DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
+  PaintChunksToCcLayer::ConvertInto(
+      GetPaintController().PaintChunks(), layer_state_->state,
+      gfx::Vector2dF(layer_state_->offset.X(), layer_state_->offset.Y()),
+      VisualRectSubpixelOffset(),
+      paint_controller.GetPaintArtifact().GetDisplayItemList(), *display_list);
 
   paint_controller.SetDisplayItemConstructionIsDisabled(false);
   paint_controller.SetSubsequenceCachingIsDisabled(false);

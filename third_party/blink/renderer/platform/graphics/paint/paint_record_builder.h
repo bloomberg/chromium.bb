@@ -37,9 +37,8 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
   // If a PaintController is passed, it is used as the PaintController for
   // painting the picture (and hence we can use its cache). Otherwise, a new
   // PaintController is used for the duration of the picture building, which
-  // therefore has no caching.
-  // In SPv175+ mode, resets paint chunks to PropertyTreeState::Root()
-  // before beginning to record.
+  // therefore has no caching. It also resets paint chunk state to
+  // PropertyTreeState::Root() before beginning to record.
   PaintRecordBuilder(SkMetaData* = nullptr,
                      GraphicsContext* containing_context = nullptr,
                      PaintController* = nullptr);
@@ -47,13 +46,13 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
   GraphicsContext& Context() { return *context_; }
 
   // Returns a PaintRecord capturing all drawing performed on the builder's
-  // context since construction.
-  // In SPv175+ mode, replays into the ancestor state given by |replay_state|.
+  // context since construction, into the ancestor state given by
+  // |replay_state|.
   sk_sp<PaintRecord> EndRecording(
       const PropertyTreeState& replay_state = PropertyTreeState::Root());
 
-  // Replays the recording directly into the given canvas.
-  // In SPv175+ mode, replays into the ancestor state given by |replay_state|.
+  // Replays the recording directly into the given canvas, in the ancestor
+  // state given by |replay_state|.
   void EndRecording(
       PaintCanvas&,
       const PropertyTreeState& replay_state = PropertyTreeState::Root());

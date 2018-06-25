@@ -96,14 +96,13 @@ class CORE_EXPORT ObjectPaintProperties {
   // The hierarchy of the clip subtree created by a LayoutObject is as follows:
   // [ fragment clip ]
   // |    Clips to a fragment's bounds.
-  // |    This is only present for content under a fragmentation
-  // |    container.
-  // | NOTE: for composited SPv1/SPv175 clip path clips, we move clip path clip
-  // |       below mask.
+  // |    This is only present for content under a fragmentation container.
   // +-[ clip path clip ]
   //   |  Clip created by path-based CSS clip-path. Only exists if the
   //  /   clip-path is "simple" that can be applied geometrically. This and
   // /    the clip path effect node are mutually exclusive.
+  // | NOTE: for composited SPv1 clip path clips, we move clip path clip
+  // |       below mask.
   // +-[ mask clip ]
   //   |   Clip created by CSS mask or CSS clip-path. It serves two purposes:
   //   |   1. Cull painting of the masked subtree. Because anything outside of

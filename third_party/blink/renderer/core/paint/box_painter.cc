@@ -43,8 +43,7 @@ void BoxPainter::PaintChildren(const PaintInfo& paint_info,
   PaintInfo child_info(paint_info);
   for (LayoutObject* child = layout_box_.SlowFirstChild(); child;
        child = child->NextSibling()) {
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-        child->IsSVGForeignObject()) {
+    if (child->IsSVGForeignObject()) {
       SVGForeignObjectPainter(ToLayoutSVGForeignObject(*child))
           .PaintLayer(paint_info);
     } else {
@@ -65,13 +64,11 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
     // overflow rect.
     paint_rect = layout_box_.PhysicalLayoutOverflowRect();
 
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      if (const auto* fragment = paint_info.FragmentToPaint(layout_box_)) {
-        scoped_scroll_property.emplace(
-            paint_info.context.GetPaintController(),
-            fragment->ContentsProperties(), layout_box_,
-            DisplayItem::PaintPhaseToScrollType(paint_info.phase));
-      }
+    if (const auto* fragment = paint_info.FragmentToPaint(layout_box_)) {
+      scoped_scroll_property.emplace(
+          paint_info.context.GetPaintController(),
+          fragment->ContentsProperties(), layout_box_,
+          DisplayItem::PaintPhaseToScrollType(paint_info.phase));
     }
 
     // The background painting code assumes that the borders are part of the

@@ -108,25 +108,10 @@ bool LayoutTableCol::CanHaveChildren() const {
   return IsTableColumnGroup();
 }
 
-LayoutRect LayoutTableCol::LocalVisualRectIgnoringVisibility() const {
-  // On SPv175, raster invalidation is based on paint result. LayoutTableCol
-  // paints nothing (its background is painted by LayoutTableSection) so should
-  // not issue any raster invalidation.
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return LayoutRect();
-
-  // Entire table gets invalidated, instead of invalidating
-  // every cell in the column. This is simpler, but suboptimal.
-
-  LayoutTable* table = Table();
-  if (!table)
-    return LayoutRect();
-
-  // The correctness of this method depends on the fact that LayoutTableCol's
-  // location is always zero.
-  DCHECK(Location() == LayoutPoint());
-
-  return table->LocalVisualRectIgnoringVisibility();
+bool LayoutTableCol::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
+  // LayoutTableCol paints nothing by itself. Its background is painted by
+  // LayoutTableSection.
+  return true;
 }
 
 void LayoutTableCol::ClearPreferredLogicalWidthsDirtyBits() {

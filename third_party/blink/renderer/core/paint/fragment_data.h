@@ -24,13 +24,9 @@ class CORE_EXPORT FragmentData {
   void ClearNextFragment() { next_fragment_.reset(); }
 
   // Visual offset of this fragment's top-left position from the
-  // "paint offset root":
-  // - In SPv1 mode, this is the containing composited PaintLayer, or
-  //   PaintLayer with a transform, whichever is nearer along the containing
-  //   block chain.
-  // - In SPv2 mode, this is the containing root PaintLayer of the
-  //   root LocalFrameView, or PaintLayer with a transform, whichever is nearer
-  //   along the containing block chain.
+  // "paint offset root" which is the containing root PaintLayer of the root
+  // LocalFrameView, or PaintLayer with a transform, whichever is nearer along
+  // the containing block chain.
   LayoutPoint PaintOffset() const { return paint_offset_; }
   void SetPaintOffset(const LayoutPoint& paint_offset) {
     paint_offset_ = paint_offset;

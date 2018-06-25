@@ -1171,11 +1171,6 @@
       status: "experimental",
     },
     {
-      name: "SlimmingPaintV175",
-      status: "stable",
-      implied_by: ["BlinkGenPropertyTrees", "SlimmingPaintV2", "LayoutNG"],
-    },
-    {
       name: "SlimmingPaintV2",
     },
     {

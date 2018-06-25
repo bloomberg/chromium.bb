@@ -2403,14 +2403,6 @@ bool LayoutBox::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
   if (HasMask() || HasClipPath())
     return false;
 
-  // If the box has any kind of clip, we need issue paint invalidation to cover
-  // the changed part of children when the box got resized. In SPv175 this is
-  // handled by detecting paint property changes.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    if (HasClipRelatedProperty())
-      return false;
-  }
-
   // If the box paints into its own backing, we can assume that it's painting
   // may have some effect. For example, honoring the border-radius clip on
   // a composited child paints into a mask for an otherwise non-painting

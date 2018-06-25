@@ -1595,7 +1595,6 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternalFastPath(
     VisualRectFlags visual_rect_flags,
     bool& intersects) const {
   if (!(visual_rect_flags & kUseGeometryMapper) ||
-      !RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ||
       !FirstFragment().HasLocalBorderBoxProperties() || !ancestor ||
       !ancestor->FirstFragment().HasLocalBorderBoxProperties()) {
     intersects = true;
@@ -1821,50 +1820,6 @@ StyleDifference LayoutObject::AdjustStyleDifference(
     // affect sizes inside SVG.
     if (!IsSVGRoot())
       diff.SetNeedsFullLayout();
-  }
-
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // If transform changed, and the layer does not paint into its own separate
-    // backing, then we need to invalidate paints.
-    if (diff.TransformChanged()) {
-      // Text nodes share style with their parents but transforms don't apply to
-      // them, hence the !isText() check.
-      if (!IsText() &&
-          (!HasLayer() || !ToLayoutBoxModelObject(this)
-                               ->Layer()
-                               ->HasStyleDeterminedDirectCompositingReasons()))
-        diff.SetNeedsPaintInvalidationSubtree();
-    }
-
-    // If opacity or zIndex changed, and the layer does not paint into its own
-    // separate backing, then we need to invalidate paints (also
-    // ignoring text nodes).
-    if (diff.OpacityChanged() || diff.ZIndexChanged()) {
-      if (!IsText() &&
-          (!HasLayer() || !ToLayoutBoxModelObject(this)
-                               ->Layer()
-                               ->HasStyleDeterminedDirectCompositingReasons()))
-        diff.SetNeedsPaintInvalidationSubtree();
-    }
-
-    // If filter changed, and the layer does not paint into its own separate
-    // backing or it paints with filters, then we need to invalidate paints.
-    if (diff.FilterChanged() && HasLayer()) {
-      PaintLayer* layer = ToLayoutBoxModelObject(this)->Layer();
-      if (!layer->HasStyleDeterminedDirectCompositingReasons() ||
-          layer->PaintsWithFilters())
-        diff.SetNeedsPaintInvalidationSubtree();
-    }
-
-    // If backdrop filter changed, and the layer does not paint into its own
-    // separate backing or it paints with filters, then we need to invalidate
-    // paints.
-    if (diff.BackdropFilterChanged() && HasLayer()) {
-      PaintLayer* layer = ToLayoutBoxModelObject(this)->Layer();
-      if (!layer->HasStyleDeterminedDirectCompositingReasons() ||
-          layer->PaintsWithBackdropFilters())
-        diff.SetNeedsPaintInvalidationSubtree();
-    }
   }
 
   // TODO(wangxianzhu): We may avoid subtree paint invalidation on CSS clip
@@ -2103,10 +2058,9 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style) {
     SetMayNeedPaintInvalidation();
 
   // Text nodes share style with their parents but the paint properties don't
-  // apply to them, hence the !isText() check.
-  // In SPv175 mode, if property nodes are added or removed as a result of these
-  // style changes, PaintPropertyTreeBuilder will call SetNeedsRepaint
-  // to cause re-generation of PaintChunks.
+  // apply to them, hence the !isText() check. If property nodes are added or
+  // removed as a result of these style changes, PaintPropertyTreeBuilder will
+  // call SetNeedsRepaint to cause re-generation of PaintChunks.
   if (!IsText() && (diff.TransformChanged() || diff.OpacityChanged() ||
                     diff.ZIndexChanged() || diff.FilterChanged() ||
                     diff.BackdropFilterChanged() || diff.CssClipChanged()))

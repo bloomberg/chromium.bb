@@ -24,10 +24,6 @@ class SVGMaskPainter {
   void FinishEffect(const LayoutObject&, GraphicsContext&);
 
  private:
-  void DrawMaskForLayoutObject(GraphicsContext&,
-                               const LayoutObject&,
-                               const FloatRect& target_bounding_box);
-
   LayoutSVGResourceMasker& mask_;
 };
 

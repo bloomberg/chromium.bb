@@ -96,14 +96,14 @@ class PLATFORM_EXPORT PaintArtifact final {
   // shared with the embedder after copying to cc::DisplayItemList.
   size_t ApproximateUnsharedMemoryUsage() const;
 
-  // Draws the paint artifact to a GraphicsContext.
-  // In SPv175+ mode, replays into the ancestor state given by |replay_state|.
+  // Draws the paint artifact to a GraphicsContext, into the ancestor state
+  // given by |replay_state|.
   void Replay(GraphicsContext&,
               const PropertyTreeState& replay_state,
               const IntPoint& offset = IntPoint()) const;
 
   // Draws the paint artifact to a PaintCanvas, into the ancestor state given
-  // by |replay_state|. For SPv175+ only.
+  // by |replay_state|.
   void Replay(PaintCanvas&,
               const PropertyTreeState& replay_state,
               const IntPoint& offset = IntPoint()) const;

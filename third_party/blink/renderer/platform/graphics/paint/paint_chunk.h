@@ -23,8 +23,6 @@ namespace blink {
 //
 // This is expected to be owned by the paint artifact which also owns the
 // related drawings.
-//
-// This is a Slimming Paint v175+ class.
 struct PLATFORM_EXPORT PaintChunk {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 

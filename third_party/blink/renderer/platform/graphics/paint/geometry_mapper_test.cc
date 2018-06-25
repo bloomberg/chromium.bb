@@ -583,7 +583,7 @@ TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
   LocalToAncestorVisualRectInternal(transform1_state, transform2_and_clip_state,
                                     result, success);
   // Fails, because the clip of the destination state is not an ancestor of the
-  // clip of the source state. A known bug in SPv1* would make such query,
+  // clip of the source state. A known bug in SPv1 would make such query,
   // in such case, no clips are applied.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_FALSE(success);

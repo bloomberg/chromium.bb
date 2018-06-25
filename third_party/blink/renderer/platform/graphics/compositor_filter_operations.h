@@ -57,8 +57,6 @@ class PLATFORM_EXPORT CompositorFilterOperations {
     return !(*this == o);
   }
 
-  bool EqualsIgnoringReferenceFilters(const CompositorFilterOperations&) const;
-
   String ToString() const;
 
  private:

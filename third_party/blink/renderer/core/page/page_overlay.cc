@@ -89,10 +89,8 @@ void PageOverlay::Update() {
     cc_layer->AddMainThreadScrollingReasons(
         MainThreadScrollingReason::kPageOverlay);
 
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      layer_->SetLayerState(PropertyTreeState(PropertyTreeState::Root()),
-                            IntPoint());
-    }
+    layer_->SetLayerState(PropertyTreeState(PropertyTreeState::Root()),
+                          IntPoint());
   }
 
   IntSize size = frame->GetPage()->GetVisualViewport().Size();

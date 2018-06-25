@@ -918,7 +918,7 @@ void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
     return;
   }
 
-  if (is_document_element || is_in_top_layer ||
+  if (is_document_element || is_in_top_layer || is_svg_stacking ||
       StyleType() == kPseudoIdBackdrop || HasOpacity() ||
       HasTransformRelatedProperty() || HasMask() || ClipPath() ||
       BoxReflect() || HasFilterInducingProperty() || HasBackdropFilter() ||
@@ -928,9 +928,6 @@ void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
       ContainsPaint()) {
     SetIsStackingContext(true);
   }
-
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() && is_svg_stacking)
-    SetIsStackingContext(true);
 }
 
 void ComputedStyle::AddCallbackSelector(const String& selector) {

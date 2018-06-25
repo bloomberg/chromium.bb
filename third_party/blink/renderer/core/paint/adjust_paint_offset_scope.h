@@ -20,8 +20,7 @@ class AdjustPaintOffsetScope {
                          const PaintInfo& paint_info,
                          const LayoutPoint& paint_offset)
       : old_paint_info_(paint_info) {
-    if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ||
-        !AdjustPaintOffset(box))
+    if (!AdjustPaintOffset(box))
       adjusted_paint_offset_ = paint_offset + box.Location();
   }
 
@@ -31,8 +30,7 @@ class AdjustPaintOffsetScope {
       : old_paint_info_(paint_info) {
     DCHECK(fragment.GetLayoutObject());
     const LayoutBox& box = ToLayoutBox(*fragment.GetLayoutObject());
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-        AdjustPaintOffset(box))
+    if (AdjustPaintOffset(box))
       return;
     if (UNLIKELY(box.HasSelfPaintingLayer())) {
       //   There is no containing block here, we are painting from origin.

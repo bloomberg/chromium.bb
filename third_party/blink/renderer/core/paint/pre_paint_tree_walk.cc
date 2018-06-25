@@ -316,7 +316,6 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
     }
 
     if (property_changed &&
-        RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
         !context.tree_builder_context
              ->supports_composited_raster_invalidation) {
       paint_invalidator_context.subtree_flags |=
@@ -338,8 +337,7 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
     property_changed |= property_tree_builder->UpdateForChildren();
     InvalidatePaintLayerOptimizationsIfNeeded(object, context);
 
-    if (property_changed &&
-        RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    if (property_changed) {
       if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
         const auto* paint_invalidation_layer =
             paint_invalidator_context.paint_invalidation_container->Layer();

@@ -18,7 +18,6 @@ NGBoxClipper::NGBoxClipper(const NGPaintFragment& fragment,
   if (paint_info.phase == PaintPhase::kMask)
     return;
 
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
   DCHECK(fragment.GetLayoutObject());
   InitializeScopedClipProperty(
       paint_info.FragmentToPaint(*fragment.GetLayoutObject()), fragment,

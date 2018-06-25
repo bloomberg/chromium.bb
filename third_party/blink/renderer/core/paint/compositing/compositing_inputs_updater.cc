@@ -166,7 +166,7 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
             ? info.clip_chain_parent_for_fixed
             : nullptr;
     // Workaround crbug.com/817175
-    // We can't escape clip to a layer that paints after us, because in SPv1*
+    // We can't escape clip to a layer that paints after us, because in SPv1
     // cc needs to reverse engineer clip tree from the layer tree, and we
     // can't refer to a clip node that hasn't been built yet.
     // This will result in wrong clip in some rare cases, for example:

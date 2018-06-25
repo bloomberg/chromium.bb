@@ -196,9 +196,9 @@ def _ArePaintOrCompositingDirectoriesModified(change):  # pylint: disable=C0103
         os.path.join('third_party', 'blink', 'web_tests', 'flag-specific',
                      'enable-slimming-paint-v2'),
         os.path.join('third_party', 'blink', 'web_tests', 'FlagExpectations',
-                     'enable-slimming-paint-v175'),
+                     'enable-blink-gen-property-trees'),
         os.path.join('third_party', 'blink', 'web_tests', 'flag-specific',
-                     'enable-slimming-paint-v175'),
+                     'enable-blink-gen-property-trees'),
     ]
     for affected_file in change.AffectedFiles():
         file_path = affected_file.LocalPath()

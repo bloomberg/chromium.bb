@@ -52,10 +52,8 @@ PaintArtifact::PaintArtifact(DisplayItemList display_items,
                              PaintChunksAndRasterInvalidations data)
     : display_item_list_(std::move(display_items)),
       chunks_and_invalidations_(std::move(data)) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    ComputeChunkBoundsAndOpaqueness(display_item_list_,
-                                    chunks_and_invalidations_.chunks);
-  }
+  ComputeChunkBoundsAndOpaqueness(display_item_list_,
+                                  chunks_and_invalidations_.chunks);
 }
 
 PaintArtifact::PaintArtifact(PaintArtifact&& source)
@@ -91,21 +89,13 @@ size_t PaintArtifact::ApproximateUnsharedMemoryUsage() const {
 void PaintArtifact::Replay(GraphicsContext& graphics_context,
                            const PropertyTreeState& replay_state,
                            const IntPoint& offset) const {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    DCHECK(offset == IntPoint());
-    TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
-    for (const DisplayItem& display_item : display_item_list_)
-      display_item.Replay(graphics_context);
-  } else {
-    Replay(*graphics_context.Canvas(), replay_state, offset);
-  }
+  Replay(*graphics_context.Canvas(), replay_state, offset);
 }
 
 void PaintArtifact::Replay(PaintCanvas& canvas,
                            const PropertyTreeState& replay_state,
                            const IntPoint& offset) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
   scoped_refptr<cc::DisplayItemList> display_item_list =
       PaintChunksToCcLayer::Convert(
           PaintChunks(), replay_state, gfx::Vector2dF(offset.X(), offset.Y()),

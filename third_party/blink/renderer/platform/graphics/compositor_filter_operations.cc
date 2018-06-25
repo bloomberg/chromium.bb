@@ -113,25 +113,6 @@ bool CompositorFilterOperations::operator==(
          filter_operations_ == o.filter_operations_;
 }
 
-bool CompositorFilterOperations::EqualsIgnoringReferenceFilters(
-    const CompositorFilterOperations& o) const {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-  size_t size = filter_operations_.size();
-  if (size != o.filter_operations_.size() || reference_box_ != o.reference_box_)
-    return false;
-  for (size_t i = 0; i < size; ++i) {
-    const auto& operation = filter_operations_.at(i);
-    if (operation.type() == cc::FilterOperation::REFERENCE) {
-      if (o.filter_operations_.at(i).type() != cc::FilterOperation::REFERENCE)
-        return false;
-      continue;
-    }
-    if (operation != o.filter_operations_.at(i))
-      return false;
-  }
-  return true;
-}
-
 String CompositorFilterOperations::ToString() const {
   return filter_operations_.ToString().c_str();
 }
