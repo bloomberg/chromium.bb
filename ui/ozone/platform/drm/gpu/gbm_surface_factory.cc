@@ -27,6 +27,10 @@
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "ui/ozone/platform/drm/gpu/vulkan_implementation_gbm.h"
+#endif
+
 namespace ui {
 
 namespace {
@@ -124,6 +128,13 @@ GLOzone* GbmSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
       return nullptr;
   }
 }
+
+#if BUILDFLAG(ENABLE_VULKAN)
+std::unique_ptr<gpu::VulkanImplementation>
+GbmSurfaceFactory::CreateVulkanImplementation() {
+  return std::make_unique<ui::VulkanImplementationGbm>();
+}
+#endif
 
 std::unique_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
