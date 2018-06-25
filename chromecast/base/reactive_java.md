@@ -300,8 +300,10 @@ Here are some guarantees that `Controller`s provide:
 *   If in the activated state, `reset()` and `set(null)` enter the *deactivated*
     state.
 *   If already in the deactivated state, `reset()` and `set(null)` do nothing.
-*   If in the activated state, `set()` implicitly deactivates and reactivates
-    with the new data.
+*   If in the activated state with data `data1`, `set(data2)` no-ops if
+    `data1.equals(data2)`.
+*   If in the activated state, and the new data is not `equal()` to the current
+    data, `set()` implicitly deactivates and reactivates with the new data.
 
 As corollaries, any registered `ScopeFactory` objects will:
 
@@ -369,6 +371,10 @@ Since `Unit` means "no data," and there's only one way to get a `Unit` instance
 (through the `Unit.unit()` method), this maps correctly to the concept of a
 mutable boolean value.
 
+Note that because the instance of `Unit` equals itself, calling `set()` on a
+`Controller<Unit>` when it is already activated will no-op, making the behavior
+of `set(Unit.unit())` and `reset()` symmetric.
+
 Example:
 
 ```java
@@ -379,7 +385,9 @@ Example:
         return () -> Log.d(TAG, "off");
     });
     onOrOff.set(Unit.unit()); // Turns on.
+    onOrOff.set(Unit.unit()); // Does nothing because it's already on.
     onOrOff.reset(); // Turns off.
+    onOrOff.reset(); // Does nothing because it's already off.
 }
 ```
 

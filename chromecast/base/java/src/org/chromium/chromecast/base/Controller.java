@@ -57,8 +57,13 @@ public class Controller<T> extends Observable<T> {
             }
             // If this Controller was already set(), call reset() so observing Scopes can clean up.
             if (mData != null) {
+                // If this Controller was already set() with this data, no-op.
+                if (mData.equals(data)) {
+                    return;
+                }
                 resetInternal();
             }
+
             mData = data;
             for (ScopeFactory<? super T> observer : mEnterObservers) {
                 notifyEnter(observer);
