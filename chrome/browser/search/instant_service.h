@@ -85,7 +85,7 @@ class InstantService : public KeyedService,
   //
   // TODO(kmadhusu): Invoking this from InstantController shouldn't be
   // necessary. Investigate more and remove this from here.
-  void UpdateThemeInfo(bool force_update);
+  void UpdateThemeInfo();
 
   // Invoked by the InstantController to update most visited items details for
   // NTP.
@@ -125,6 +125,8 @@ class InstantService : public KeyedService,
   void NotifyAboutThemeInfo();
 
   void BuildThemeInfo();
+
+  void ApplyGoogleNtpThemeElements();
 
   Profile* const profile_;
 
