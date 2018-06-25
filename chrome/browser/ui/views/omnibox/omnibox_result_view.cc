@@ -183,7 +183,8 @@ OmniboxTint OmniboxResultView::GetTint() const {
 }
 
 void OmniboxResultView::OnMatchIconUpdated() {
-  // The new icon will be fetched during repaint.
+  // The new icon will be fetched during Invalidate().
+  Invalidate();
   SchedulePaint();
 }
 
