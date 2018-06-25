@@ -1128,3 +1128,58 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsHttpsIncognito) {
     CloseBrowserSynchronously(incognito);
   }
 }
+
+// Verify that client hints are sent in the incognito profiles, and server
+// client hint opt-ins are honored within the incognito profile.
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
+                       ClientHintsLifetimeFollowedByNoClientHintIncognito) {
+  base::HistogramTester histogram_tester;
+  Browser* incognito = CreateIncognitoBrowser();
+  ContentSettingsForOneType host_settings;
+
+  HostContentSettingsMapFactory::GetForProfile(incognito->profile())
+      ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
+                              &host_settings);
+  EXPECT_EQ(0u, host_settings.size());
+
+  // Fetching accept_ch_with_lifetime_url() should persist the request for
+  // client hints.
+  ui_test_utils::NavigateToURL(incognito, accept_ch_with_lifetime_url());
+
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
+
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize", 6, 1);
+  // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
+  // seconds.
+  histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
+                                      3600 * 1000, 1);
+  base::RunLoop().RunUntilIdle();
+
+  // Clients hints preferences for one origin should be persisted.
+  HostContentSettingsMapFactory::GetForProfile(incognito->profile())
+      ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
+                              &host_settings);
+  EXPECT_EQ(1u, host_settings.size());
+
+  SetClientHintExpectationsOnMainFrame(true);
+  SetClientHintExpectationsOnSubresources(true);
+  ui_test_utils::NavigateToURL(incognito,
+                               without_accept_ch_without_lifetime_url());
+
+  // Six client hints are attached to the image request, and six to the main
+  // frame request.
+  EXPECT_EQ(12u, count_client_hints_headers_seen());
+
+  // Navigate using regular profile. Client hints should not be send.
+  SetClientHintExpectationsOnMainFrame(false);
+  SetClientHintExpectationsOnSubresources(false);
+  ui_test_utils::NavigateToURL(browser(),
+                               without_accept_ch_without_lifetime_url());
+
+  // Six client hints are attached to the image request, and six to the main
+  // frame request.
+  EXPECT_EQ(12u, count_client_hints_headers_seen());
+}
