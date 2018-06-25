@@ -4729,3 +4729,4 @@ crbug.com/855055 [ Mac ] virtual/threaded/animations/interpolation/svg-stroke-da
 
 # Sheriff 2018-06-25
 crbug.com/855873 [ Mac Win7 ] fast/speech/scripted/start-multiple.html [ Pass Crash ]
+crbug.com/855860 [ Linux ] virtual/outofblink-cors/http/tests/fetch/serviceworker-proxied/thorough/redirect-password-base-https-other-https.html [ Pass Timeout ]
