@@ -119,17 +119,20 @@ int Center(int size, int item_size) {
   return extra_space / 2;
 }
 
-// Returns the width of the tab endcap in DIP.  More precisely, this is the
+// Returns the width of the tab endcap in DIP.  Pre-refresh, this is the
 // width of the curve making up either the outer or inner edge of the stroke.
-//
-// For non-material-refresh mode, these two curves are horizontally offset by
-// 1 px (regardless of scale), the total width of the endcap from tab outer
-// edge to the inside end of the stroke inner edge is
-// (GetUnscaledEndcapWidth() * scale) + 1.
-float GetTabEndcapWidth() {
-  // TODO(pkasting): This should become a member function and vary with
-  // GetCornerRadius().
-  return GetLayoutInsets(TAB).left() - (MD::IsRefreshUi() ? 0.0f : 0.5f);
+int GetTabEndcapWidth() {
+  constexpr int kEndcapWidth[] = {16, 18, 24, 16, 16};
+  return kEndcapWidth[MD::GetMode()];
+}
+
+// Pre-refresh, endcaps paint slightly differently than they layout.
+float GetTabEndcapWidthForPainting() {
+  DCHECK(!MD::IsRefreshUi());
+
+  // For painting the endcaps, the top corners are actually shifted outwards 0.5
+  // DIP from the grid.
+  return GetTabEndcapWidth() - 0.5f;
 }
 
 void DrawHighlight(gfx::Canvas* canvas,
@@ -188,15 +191,14 @@ gfx::Path OffsetAndIntersectPaths(gfx::Path& left_path,
 // The refresh-specific implementation of GetInteriorPath() (see below).
 gfx::Path GetRefreshInteriorPath(float scale,
                                  const gfx::Rect& bounds,
-                                 float endcap_width,
                                  float horizontal_inset) {
+  const float endcap_width = GetTabEndcapWidth();
   const float radius = (endcap_width / 2) * scale;
 
   const gfx::RectF aligned_bounds =
       ScaleAndAlignBounds(bounds, endcap_width, scale);
   const float left = aligned_bounds.x();
-  const float top =
-      aligned_bounds.y() + (TabStrip::ShouldDrawStrokes() ? 1 : 0);
+  const float top = aligned_bounds.y() + Tab::GetStrokeHeight();
   const float right = aligned_bounds.right();
   const float bottom = aligned_bounds.bottom();
 
@@ -257,17 +259,15 @@ gfx::Path GetRefreshInteriorPath(float scale,
 // inset from the edge.
 gfx::Path GetInteriorPath(float scale,
                           const gfx::Rect& bounds,
-                          float endcap_width,
                           float horizontal_inset = 0) {
-  if (MD::IsRefreshUi()) {
-    return GetRefreshInteriorPath(scale, bounds, endcap_width,
-                                  horizontal_inset);
-  }
+  if (MD::IsRefreshUi())
+    return GetRefreshInteriorPath(scale, bounds, horizontal_inset);
 
   const float right = bounds.width() * scale;
   // The bottom of the tab needs to be pixel-aligned or else when we call
   // ClipPath with anti-aliasing enabled it can cause artifacts.
   const float bottom = std::ceil(bounds.height() * scale);
+  const float endcap_width = GetTabEndcapWidthForPainting();
 
   // Construct the interior path by intersecting paths representing the left
   // and right halves of the tab.  Compared to computing the full path at once,
@@ -304,8 +304,8 @@ gfx::Path GetInteriorPath(float scale,
 gfx::Path GetRefreshBorderPath(const gfx::Rect& bounds,
                                bool extend_to_top,
                                float scale,
-                               float endcap_width,
                                float stroke_thickness) {
+  const float endcap_width = GetTabEndcapWidth();
   const float outer_radius = (endcap_width / 2) * scale - stroke_thickness;
   const float inner_radius = (endcap_width / 2) * scale + stroke_thickness;
 
@@ -366,26 +366,25 @@ gfx::Path GetRefreshBorderPath(const gfx::Rect& bounds,
 }
 
 // Returns a path corresponding to the tab's outer border for a given tab
-// |bounds|, |scale|, and |endcap_width|.  If |unscale_at_end| is true, this
-// path will be normalized to a 1x scale by scaling by 1/scale before returning.
-// If |extend_to_top| is true, the path is extended vertically to the top of the
+// |scale| and |bounds|.  If |unscale_at_end| is true, this path will be
+// normalized to a 1x scale by scaling by 1/scale before returning.  If
+// |extend_to_top| is true, the path is extended vertically to the top of the
 // tab bounds.  The caller uses this for Fitts' Law purposes in
 // maximized/fullscreen mode.
 gfx::Path GetBorderPath(float scale,
                         bool unscale_at_end,
                         bool extend_to_top,
-                        float endcap_width,
                         const gfx::Rect& bounds) {
-  const float stroke_thickness = TabStrip::ShouldDrawStrokes() ? 1 : 0;
+  const float stroke_thickness = Tab::GetStrokeHeight();
 
   gfx::Path path;
   if (MD::IsRefreshUi()) {
-    path = GetRefreshBorderPath(bounds, extend_to_top, scale, endcap_width,
-                                stroke_thickness);
+    path = GetRefreshBorderPath(bounds, extend_to_top, scale, stroke_thickness);
   } else {
     const float top = scale - stroke_thickness;
     const float right = bounds.width() * scale;
     const float bottom = bounds.height() * scale;
+    const float endcap_width = GetTabEndcapWidthForPainting();
 
     path.moveTo(0, bottom);
     path.rLineTo(0, -stroke_thickness);
@@ -459,7 +458,8 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
 
   // This will cause calls to GetContentsBounds to return only the rectangle
   // inside the tab shape, rather than to its extents.
-  SetBorder(views::CreateEmptyBorder(GetLayoutInsets(TAB)));
+  SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(GetStrokeHeight(), GetTabEndcapWidth())));
 
   title_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   title_->SetElideBehavior(gfx::FADE_TAIL);
@@ -558,10 +558,9 @@ bool Tab::GetHitTestMask(gfx::Path* mask) const {
   // shadow of the tab, such that the user can click anywhere along the top
   // edge of the screen to select a tab. Ditto for immersive fullscreen.
   const views::Widget* widget = GetWidget();
-  *mask =
-      GetBorderPath(GetWidget()->GetCompositor()->device_scale_factor(), true,
-                    widget && (widget->IsMaximized() || widget->IsFullscreen()),
-                    GetTabEndcapWidth(), bounds());
+  *mask = GetBorderPath(
+      GetWidget()->GetCompositor()->device_scale_factor(), true,
+      widget && (widget->IsMaximized() || widget->IsFullscreen()), bounds());
   return true;
 }
 
@@ -888,8 +887,8 @@ void Tab::PaintChildren(const views::PaintInfo& info) {
   // The paint recording scale for tabs is consistent along the x and y axis.
   const float paint_recording_scale = info.paint_recording_scale_x();
   constexpr int kFaviconPadding = 1;
-  clip_recorder.ClipPathWithAntiAliasing(GetInteriorPath(
-      paint_recording_scale, bounds(), GetTabEndcapWidth(), kFaviconPadding));
+  clip_recorder.ClipPathWithAntiAliasing(
+      GetInteriorPath(paint_recording_scale, bounds(), kFaviconPadding));
   View::PaintChildren(info);
 }
 
@@ -903,7 +902,7 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
   if (!controller_->ShouldPaintTab(
           this,
           base::BindRepeating(&GetBorderPath, canvas->image_scale(), true,
-                              false, GetTabEndcapWidth()),
+                              false),
           &clip))
     return;
 
@@ -1093,7 +1092,7 @@ void Tab::FrameColorsChanged() {
 
 // static
 int Tab::GetMinimumInactiveWidth() {
-  return GetLayoutInsets(TAB).width();
+  return GetTabEndcapWidth() * 2;
 }
 
 // static
@@ -1113,7 +1112,15 @@ int Tab::GetPinnedWidth() {
 }
 
 // static
+int Tab::GetStrokeHeight() {
+  return TabStrip::ShouldDrawStrokes() ? 1 : 0;
+}
+
+// static
 float Tab::GetInverseDiagonalSlope() {
+  // In refresh, tab sides do not have slopes, so no one should call this.
+  DCHECK(!MD::IsRefreshUi());
+
   // This is computed from the border path as follows:
   // * The endcap width is enough for the whole stroke outer curve, i.e. the
   //   side diagonal plus the curves on both its ends.
@@ -1124,13 +1131,14 @@ float Tab::GetInverseDiagonalSlope() {
   //   so the diagonal is ((height - 1.5 - 1.5) * scale - 1 - (scale - 1)) px
   //   high.  Simplifying this gives (height - 4) * scale px, or (height - 4)
   //   DIP.
-  return (GetTabEndcapWidth() - 4) / (GetLayoutConstant(TAB_HEIGHT) - 4);
+  return (GetTabEndcapWidthForPainting() - 4) /
+         (GetLayoutConstant(TAB_HEIGHT) - 4);
 }
 
 // static
 int Tab::GetOverlap() {
   // We want to overlap the endcap portions entirely.
-  return gfx::ToCeiledInt(GetTabEndcapWidth());
+  return GetTabEndcapWidth();
 }
 
 void Tab::RepaintSubsequentTab() {
@@ -1161,7 +1169,7 @@ void Tab::PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) {
   int active_tab_y_offset = 0;
   if (GetThemeProvider()->HasCustomImage(IDR_THEME_TOOLBAR)) {
     active_tab_fill_id = IDR_THEME_TOOLBAR;
-    active_tab_y_offset = -GetLayoutInsets(TAB).top();
+    active_tab_y_offset = -GetStrokeHeight();
   }
 
   if (IsActive()) {
@@ -1210,7 +1218,6 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
   // |y_offset| is only set when |fill_id| is being used.
   DCHECK(!y_offset || fill_id);
 
-  const float endcap_width = GetTabEndcapWidth();
   const SkColor active_color = controller_->GetTabBackgroundColor(TAB_ACTIVE);
   const SkColor inactive_color =
       controller_->GetTabBackgroundColor(TAB_INACTIVE);
@@ -1225,18 +1232,18 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
   // If |paint_hover_effect|, we don't try to cache since hover effects change
   // on every invalidation and we would need to invalidate the cache based on
   // the hover states.
+  //
   // Finally, in refresh, we don't cache for non-integral scale factors, since
   // tabs draw with slightly different offsets so as to pixel-align the layout
   // rect (see ScaleAndAlignBounds()).
   const float scale = canvas->image_scale();
   if (fill_id || paint_hover_effect ||
       (MD::IsRefreshUi() && (std::trunc(scale) != scale))) {
-    gfx::Path fill_path = GetInteriorPath(scale, bounds(), endcap_width);
+    gfx::Path fill_path = GetInteriorPath(scale, bounds());
     PaintTabBackgroundFill(canvas, fill_path, active, paint_hover_effect,
                            active_color, inactive_color, fill_id, y_offset);
     if (TabStrip::ShouldDrawStrokes()) {
-      gfx::Path stroke_path =
-          GetBorderPath(scale, false, false, endcap_width, bounds());
+      gfx::Path stroke_path = GetBorderPath(scale, false, false, bounds());
       gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
       if (clip)
         canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
@@ -1248,9 +1255,8 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
         active ? background_active_cache_ : background_inactive_cache_;
     if (!cache.CacheKeyMatches(scale, size(), active_color, inactive_color,
                                stroke_color)) {
-      gfx::Path fill_path = GetInteriorPath(scale, bounds(), endcap_width);
-      gfx::Path stroke_path =
-          GetBorderPath(scale, false, false, endcap_width, bounds());
+      gfx::Path fill_path = GetInteriorPath(scale, bounds());
+      gfx::Path stroke_path = GetBorderPath(scale, false, false, bounds());
       cc::PaintRecorder recorder;
 
       {

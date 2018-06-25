@@ -261,9 +261,8 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     gfx::Rect tabstrip_bounds(
         layout_manager_->GetBoundsForTabStrip(tabstrip_min_size, kWindowWidth));
     EXPECT_EQ(tabstrip_x, tabstrip_bounds.x());
-    int maximized_top_border_height = -GetLayoutInsets(TAB).top() + 1;
     if (maximized) {
-      EXPECT_EQ(maximized_top_border_height, tabstrip_bounds.y());
+      EXPECT_EQ(0, tabstrip_bounds.y());
     } else {
       int tabstrip_nonexcluded_y =
           OpaqueBrowserFrameViewLayout::kFrameBorderThickness +
@@ -318,8 +317,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
       restored_border_height +=
           OpaqueBrowserFrameViewLayout::kRefreshNonClientExtraTopThickness;
     }
-    int top_border_height =
-        maximized ? maximized_top_border_height : restored_border_height;
+    int top_border_height = maximized ? 0 : restored_border_height;
     int min_height = top_border_height + browser_view_min_size.height();
     EXPECT_EQ(min_height, min_size.height());
   }

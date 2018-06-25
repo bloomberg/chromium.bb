@@ -513,19 +513,16 @@ int GlassBrowserFrameView::TopAreaHeight(bool restored) const {
   if (frame()->IsFullscreen() && !restored)
     return 0;
 
-  const int top = FrameTopBorderThickness(restored);
-  // The tab top inset is equal to the height of any shadow region above the
-  // tabs, plus a 1 px top stroke.  In maximized mode, we want to push the
-  // shadow region off the top of the screen but leave the top stroke.
-  if (IsMaximized() && !restored)
-    return top - GetLayoutInsets(TAB).top() + 1;
-
-  // Besides the frame border, there's empty space atop the window in restored
-  // mode, to use to drag the window around.
-  constexpr int kNonClientRestoredExtraThickness = 11;
-  constexpr int kRefreshNonClientRestoredExtraThickness = 4;
-  return top + (MD::IsRefreshUi() ? kRefreshNonClientRestoredExtraThickness
-                                  : kNonClientRestoredExtraThickness);
+  int top = FrameTopBorderThickness(restored);
+  if (!IsMaximized() || restored) {
+    // Besides the frame border, there's empty space atop the window in restored
+    // mode, to use to drag the window around.
+    constexpr int kNonClientRestoredExtraThickness = 11;
+    constexpr int kRefreshNonClientRestoredExtraThickness = 4;
+    top += MD::IsRefreshUi() ? kRefreshNonClientRestoredExtraThickness
+                             : kNonClientRestoredExtraThickness;
+  }
+  return top;
 }
 
 int GlassBrowserFrameView::TitlebarMaximizedVisualHeight() const {

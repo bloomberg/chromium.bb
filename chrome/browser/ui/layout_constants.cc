@@ -110,13 +110,6 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
       return touch_optimized_material ? gfx::Insets(5) : gfx::Insets(4);
     }
 
-    case TAB: {
-      // TODO(pkasting): This should disappear; the horizontal portion should
-      // be computed in tab.cc, and the vertical portion become a standalone
-      // value (that should perhaps be 0 in Refresh).
-      constexpr int kTabHorizontalInset[] = {16, 18, 24, 16, 16};
-      return gfx::Insets(1, kTabHorizontalInset[mode]);
-    }
     case TOOLBAR_BUTTON:
       return gfx::Insets(touch_optimized_material ? 12 : 6);
 

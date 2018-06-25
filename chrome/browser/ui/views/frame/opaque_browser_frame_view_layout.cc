@@ -161,24 +161,17 @@ int OpaqueBrowserFrameViewLayout::NonClientBorderThickness() const {
 }
 
 int OpaqueBrowserFrameViewLayout::NonClientTopHeight(bool restored) const {
-  if (delegate_->ShouldShowWindowTitle()) {
-    // The + 2 here puts at least 1 px of space on top and bottom of the icon.
-    const int icon_height =
-        TitlebarTopThickness(restored) + delegate_->GetIconSize() + 2;
-    const int caption_button_height = DefaultCaptionButtonY(restored) +
-                                      kCaptionButtonHeight +
-                                      kCaptionButtonBottomPadding;
-    return std::max(icon_height, caption_button_height) +
-        kContentEdgeShadowThickness;
-  }
+  if (!delegate_->ShouldShowWindowTitle())
+    return FrameTopBorderThickness(restored);
 
-  int thickness = FrameTopBorderThickness(restored);
-  // The tab top inset is equal to the height of any shadow region above the
-  // tabs, plus a 1 px top stroke.  In maximized mode, we want to push the
-  // shadow region off the top of the screen but leave the top stroke.
-  if (!restored && delegate_->IsTabStripVisible() && IsTitleBarCondensed())
-    thickness -= GetLayoutInsets(TAB).top() - 1;
-  return thickness;
+  // The + 2 here puts at least 1 px of space on top and bottom of the icon.
+  const int icon_height =
+      TitlebarTopThickness(restored) + delegate_->GetIconSize() + 2;
+  const int caption_button_height = DefaultCaptionButtonY(restored) +
+                                    kCaptionButtonHeight +
+                                    kCaptionButtonBottomPadding;
+  return std::max(icon_height, caption_button_height) +
+         kContentEdgeShadowThickness;
 }
 
 int OpaqueBrowserFrameViewLayout::GetTabStripInsetsTop(bool restored) const {

@@ -107,9 +107,6 @@ enum LayoutInset {
   // (e.g. does not highlight on hover).
   LOCATION_BAR_ICON_INTERIOR_PADDING,
 
-  // The padding inside the tab bounds that defines the tab contents region.
-  TAB,
-
   // The padding inside the border of a toolbar button (around the image).
   TOOLBAR_BUTTON,
 
