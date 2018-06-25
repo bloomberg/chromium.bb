@@ -6,13 +6,13 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
 
 namespace syncer {
@@ -58,13 +58,11 @@ enum DeferredInitTrigger {
 }  // namespace
 
 StartupController::StartupController(
-    const SyncPrefs* sync_prefs,
     base::RepeatingCallback<ModelTypeSet()> get_preferred_data_types,
-    base::RepeatingCallback<bool()> can_start,
+    base::RepeatingCallback<bool(bool)> should_start,
     base::RepeatingClosure start_engine)
-    : sync_prefs_(sync_prefs),
-      get_preferred_data_types_callback_(std::move(get_preferred_data_types)),
-      can_start_callback_(std::move(can_start)),
+    : get_preferred_data_types_callback_(std::move(get_preferred_data_types)),
+      should_start_callback_(std::move(should_start)),
       start_engine_callback_(std::move(start_engine)),
       bypass_deferred_startup_(false),
       weak_factory_(this) {}
@@ -90,8 +88,8 @@ void StartupController::StartUp(StartUpDeferredOption deferred_option) {
     if (first_start) {
       base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&StartupController::OnFallbackStartupTimerExpired,
-                     weak_factory_.GetWeakPtr()),
+          base::BindOnce(&StartupController::OnFallbackStartupTimerExpired,
+                         weak_factory_.GetWeakPtr()),
           GetDeferredInitDelay());
     }
     return;
@@ -104,7 +102,7 @@ void StartupController::StartUp(StartUpDeferredOption deferred_option) {
 }
 
 void StartupController::TryStart(bool force_immediate) {
-  if (!can_start_callback_.Run()) {
+  if (!should_start_callback_.Run(force_immediate)) {
     return;
   }
 
@@ -115,11 +113,8 @@ void StartupController::TryStart(bool force_immediate) {
   //   and encryption information to the UI.
   // Do not start up the sync engine if setup has not completed and isn't
   // in progress, unless told to otherwise.
-  if (force_immediate) {
-    StartUp(STARTUP_IMMEDIATE);
-  } else if (sync_prefs_->IsFirstSetupComplete()) {
-    StartUp(bypass_deferred_startup_ ? STARTUP_IMMEDIATE : STARTUP_DEFERRED);
-  }
+  StartUp((force_immediate || bypass_deferred_startup_) ? STARTUP_IMMEDIATE
+                                                        : STARTUP_DEFERRED);
 }
 
 void StartupController::RecordTimeDeferred() {
