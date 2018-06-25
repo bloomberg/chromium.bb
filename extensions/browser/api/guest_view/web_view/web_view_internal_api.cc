@@ -462,7 +462,7 @@ bool WebViewInternalExecuteCodeFunction::LoadFileForWebUI(
   GURL file_url(owner_base_url.Resolve(file_src));
 
   url_fetcher_ = std::make_unique<WebUIURLFetcher>(
-      this->browser_context(), render_frame_host()->GetProcess()->GetID(),
+      render_frame_host()->GetProcess()->GetID(),
       render_frame_host()->GetRoutingID(), file_url, std::move(callback));
   url_fetcher_->Start();
   return true;
