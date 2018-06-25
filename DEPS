@@ -260,7 +260,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/toji/webvr.info.git' + '@' + 'c58ae99b9ff9e2aa4c524633519570bf33536248',
 
   'src/chrome/test/data/vr/webxr_samples':
-    Var('chromium_git') + '/external/github.com/immersive-web/webxr-samples.git' + '@' + '1848aed8fc333030c26787658db8fa4261a2b955',
+    Var('chromium_git') + '/external/github.com/immersive-web/webxr-samples.git' + '@' + '18652a69be2092f2c35a3f91213abc8b80dd3f25',
 
   'src/ios/third_party/earl_grey/src': {
       'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + '91c27bb8a15e723df974f620f7f576a30a6a7484',
