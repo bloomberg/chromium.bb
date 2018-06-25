@@ -42,6 +42,9 @@ class CORE_EXPORT StyleEnvironmentVariables
   // |StyleEnvironmentVariables|.
   virtual CSSVariableData* ResolveVariable(const AtomicString& name);
 
+  // Detach |this| from |parent|.
+  void DetachFromParent();
+
  protected:
   friend class StyleEnvironmentVariablesTest;
 

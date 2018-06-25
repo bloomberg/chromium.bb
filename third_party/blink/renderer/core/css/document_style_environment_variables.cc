@@ -31,6 +31,8 @@ CSSVariableData* DocumentStyleEnvironmentVariables::ResolveVariable(
 
 void DocumentStyleEnvironmentVariables::InvalidateVariable(
     const AtomicString& name) {
+  DCHECK(document_);
+
   // Invalidate the document if we have seen this variable on this document.
   if (seen_variables_.Contains(name))
     document_->GetStyleEngine().EnvironmentVariableChanged();
