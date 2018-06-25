@@ -40,7 +40,7 @@ network::mojom::blink::CookieManagerGetOptionsPtr ToBackendOptions(
 
   // TODO(crbug.com/729800): Handle the url option.
 
-  if (options.matchType() == "startsWith") {
+  if (options.matchType() == "starts-with") {
     backend_options->match_type =
         network::mojom::blink::CookieMatchType::STARTS_WITH;
   } else {
@@ -205,7 +205,7 @@ blink::mojom::blink::CookieChangeSubscriptionPtr ToBackendSubscription(
     backend_subscription->url = default_cookie_url;
   }
 
-  if (subscription.matchType() == "startsWith") {
+  if (subscription.matchType() == "starts-with") {
     backend_subscription->match_type =
         network::mojom::blink::CookieMatchType::STARTS_WITH;
   } else {
@@ -240,7 +240,7 @@ void ToCookieChangeSubscription(
 
   switch (backend_subscription.match_type) {
     case network::mojom::blink::CookieMatchType::STARTS_WITH:
-      subscription.setMatchType(WTF::String("startsWith"));
+      subscription.setMatchType(WTF::String("starts-with"));
       break;
     case network::mojom::blink::CookieMatchType::EQUALS:
       subscription.setMatchType(WTF::String("equals"));
@@ -308,20 +308,6 @@ ScriptPromise CookieStore::get(ScriptState* script_state,
                                ExceptionState& exception_state) {
   return DoRead(script_state, name, options,
                 &CookieStore::GetAllForUrlToGetResult, exception_state);
-}
-
-ScriptPromise CookieStore::has(ScriptState* script_state,
-                               const CookieStoreGetOptions& options,
-                               ExceptionState& exception_state) {
-  return has(script_state, WTF::String(), options, exception_state);
-}
-
-ScriptPromise CookieStore::has(ScriptState* script_state,
-                               const String& name,
-                               const CookieStoreGetOptions& options,
-                               ExceptionState& exception_state) {
-  return DoRead(script_state, name, options,
-                &CookieStore::GetAllForUrlToHasResult, exception_state);
 }
 
 ScriptPromise CookieStore::set(ScriptState* script_state,
@@ -548,17 +534,6 @@ void CookieStore::GetAllForUrlToGetResult(
   CookieChangeEvent::ToCookieListItem(backend_cookie, false /* is_deleted */,
                                       cookie);
   resolver->Resolve(cookie);
-}
-
-// static
-void CookieStore::GetAllForUrlToHasResult(
-    ScriptPromiseResolver* resolver,
-    const Vector<WebCanonicalCookie>& backend_cookies) {
-  ScriptState* script_state = resolver->GetScriptState();
-  if (!script_state->ContextIsValid())
-    return;
-
-  resolver->Resolve(!backend_cookies.IsEmpty());
 }
 
 ScriptPromise CookieStore::DoWrite(ScriptState* script_state,

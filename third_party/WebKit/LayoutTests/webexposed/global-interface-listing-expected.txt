@@ -1104,7 +1104,6 @@ interface CookieStore : EventTarget
     method delete
     method get
     method getAll
-    method has
     method set
     setter onchange
 interface CountQueuingStrategy

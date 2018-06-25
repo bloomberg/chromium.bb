@@ -6,7 +6,7 @@
 
 enum CookieMatchType {
   "equals",
-  "startsWith"
+  "starts-with"
 };
 
 dictionary CookieStoreGetOptions {

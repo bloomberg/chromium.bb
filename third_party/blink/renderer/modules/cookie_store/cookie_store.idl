@@ -17,10 +17,6 @@
       USVString name, optional CookieStoreGetOptions options);
   [CallWith=ScriptState, Measure, RaisesException] Promise<CookieListItem?> get(
       optional CookieStoreGetOptions options);
-  [CallWith=ScriptState, Measure, RaisesException] Promise<boolean> has(
-      USVString name, optional CookieStoreGetOptions options);
-  [CallWith=ScriptState, Measure, RaisesException] Promise<boolean> has(
-      optional CookieStoreGetOptions options);
 
   // https://github.com/WICG/async-cookies-api/blob/gh-pages/explainer.md#writing
   [CallWith=ScriptState, Measure, RaisesException] Promise<void> set(
