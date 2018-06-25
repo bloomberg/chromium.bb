@@ -64,38 +64,13 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
                        const std::string& username,
                        const std::string& password,
                        MountResponse callback) {
-  if (!temp_file_manager_) {
-    InitTempFileManagerAndMount(options, share_path, username, password,
-                                std::move(callback));
-    return;
-  }
+  DCHECK(temp_file_manager_);
 
   CallMount(options, share_path, username, password, std::move(callback));
 }
 
 void SmbService::GatherSharesInNetwork(GatherSharesResponse callback) {
   share_finder_->GatherSharesInNetwork(std::move(callback));
-}
-
-void SmbService::InitTempFileManagerAndMount(
-    const file_system_provider::MountOptions& options,
-    const base::FilePath& share_path,
-    const std::string& username,
-    const std::string& password,
-    MountResponse callback) {
-  // InitTempFileManager() has to be called on a separate thread since it
-  // contains a call that requires a blockable thread.
-  base::TaskTraits task_traits = {base::MayBlock(),
-                                  base::TaskPriority::USER_BLOCKING,
-                                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
-  base::OnceClosure task =
-      base::BindOnce(&SmbService::InitTempFileManager, base::Unretained(this));
-  base::OnceClosure reply =
-      base::BindOnce(&SmbService::CallMount, base::Unretained(this), options,
-                     share_path, username, password, base::Passed(&callback));
-
-  base::PostTaskWithTraitsAndReply(FROM_HERE, task_traits, std::move(task),
-                                   std::move(reply));
 }
 
 void SmbService::CallMount(const file_system_provider::MountOptions& options,
@@ -242,7 +217,22 @@ void SmbService::StartSetup() {
     return;
   }
 
-  CompleteSetup();
+  SetupTempFileManagerAndCompleteSetup();
+}
+
+void SmbService::SetupTempFileManagerAndCompleteSetup() {
+  // InitTempFileManager() has to be called on a separate thread since it
+  // contains a call that requires a blockable thread.
+  base::TaskTraits task_traits = {base::MayBlock(),
+                                  base::TaskPriority::USER_BLOCKING,
+                                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
+  base::OnceClosure task =
+      base::BindOnce(&SmbService::InitTempFileManager, base::Unretained(this));
+  base::OnceClosure reply =
+      base::BindOnce(&SmbService::CompleteSetup, base::Unretained(this));
+
+  base::PostTaskWithTraitsAndReply(FROM_HERE, task_traits, std::move(task),
+                                   std::move(reply));
 }
 
 void SmbService::OnSetupKerberosResponse(bool success) {
@@ -250,7 +240,7 @@ void SmbService::OnSetupKerberosResponse(bool success) {
     LOG(ERROR) << "SmbService: Kerberos setup failed.";
   }
 
-  CompleteSetup();
+  SetupTempFileManagerAndCompleteSetup();
 }
 
 void SmbService::CompleteSetup() {
