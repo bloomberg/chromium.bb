@@ -142,6 +142,15 @@ void CastDisplayConfigurator::SetColorMatrix(
   delegate_->SetColorMatrix(display_->display_id(), color_matrix);
 }
 
+void CastDisplayConfigurator::SetGammaCorrection(
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
+  if (!delegate_ || !display_)
+    return;
+
+  delegate_->SetGammaCorrection(display_->display_id(), degamma_lut, gamma_lut);
+}
+
 void CastDisplayConfigurator::ForceInitialConfigure() {
   if (!delegate_)
     return;
