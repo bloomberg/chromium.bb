@@ -4,14 +4,14 @@
 
 /** @fileoverview Suite of tests for settings-slider. */
 suite('SettingsSlider', function() {
-  /** @type {!CrSliderElement} */
+  /** @type {!SettingsSliderElement} */
   let slider;
 
   /**
    * paper-slider instance wrapped by settings-slider.
-   * @type {!PaperSliderElement}
+   * @type {!CrSliderElement}
    */
-  let paperSlider;
+  let crSlider;
 
   const tickValues = [2, 4, 8, 16, 32, 64, 128];
 
@@ -23,7 +23,7 @@ suite('SettingsSlider', function() {
       value: 16,
     };
     document.body.appendChild(slider);
-    paperSlider = slider.$$('paper-slider');
+    crSlider = slider.$$('cr-slider');
   });
 
   test('enforce value', function() {
@@ -45,43 +45,43 @@ suite('SettingsSlider', function() {
   test('set value', function() {
     slider.tickValues = tickValues;
     slider.set('pref.value', 16);
-    expectEquals(6, paperSlider.max);
-    expectEquals(3, paperSlider.value);
-    expectEquals(3, paperSlider.immediateValue);
+    expectEquals(6, crSlider.max);
+    expectEquals(3, crSlider.value);
+    expectEquals(3, crSlider.immediateValue);
 
     // settings-slider only supports snapping to a range of tick values.
     // Setting to an in-between value should snap to an indexed value.
     slider.set('pref.value', 70);
-    expectEquals(5, paperSlider.value);
-    expectEquals(5, paperSlider.immediateValue);
+    expectEquals(5, crSlider.value);
+    expectEquals(5, crSlider.immediateValue);
     expectEquals(64, slider.pref.value);
 
     // Setting the value out-of-range should clamp the slider.
     slider.set('pref.value', -100);
-    expectEquals(0, paperSlider.value);
-    expectEquals(0, paperSlider.immediateValue);
+    expectEquals(0, crSlider.value);
+    expectEquals(0, crSlider.immediateValue);
     expectEquals(2, slider.pref.value);
   });
 
   test('move slider', function() {
     slider.tickValues = tickValues;
     slider.set('pref.value', 30);
-    expectEquals(4, paperSlider.value);
+    expectEquals(4, crSlider.value);
 
-    MockInteractions.pressAndReleaseKeyOn(paperSlider, 39 /* right */);
-    expectEquals(5, paperSlider.value);
+    MockInteractions.pressAndReleaseKeyOn(crSlider.$.slider, 39 /* right */);
+    expectEquals(5, crSlider.value);
     expectEquals(64, slider.pref.value);
 
-    MockInteractions.pressAndReleaseKeyOn(paperSlider, 39 /* right */);
-    expectEquals(6, paperSlider.value);
+    MockInteractions.pressAndReleaseKeyOn(crSlider.$.slider, 39 /* right */);
+    expectEquals(6, crSlider.value);
     expectEquals(128, slider.pref.value);
 
-    MockInteractions.pressAndReleaseKeyOn(paperSlider, 39 /* right */);
-    expectEquals(6, paperSlider.value);
+    MockInteractions.pressAndReleaseKeyOn(crSlider.$.slider, 39 /* right */);
+    expectEquals(6, crSlider.value);
     expectEquals(128, slider.pref.value);
 
-    MockInteractions.pressAndReleaseKeyOn(paperSlider, 37 /* left */);
-    expectEquals(5, paperSlider.value);
+    MockInteractions.pressAndReleaseKeyOn(crSlider.$.slider, 37 /* left */);
+    expectEquals(5, crSlider.value);
     expectEquals(64, slider.pref.value);
   });
 
@@ -114,14 +114,14 @@ suite('SettingsSlider', function() {
   test('scaled slider', function() {
     slider.scale = 10;
     slider.set('pref.value', 2);
-    expectEquals(20, paperSlider.value);
+    expectEquals(20, crSlider.value);
 
-    MockInteractions.pressAndReleaseKeyOn(paperSlider, 39 /* right */);
-    expectEquals(21, paperSlider.value);
+    MockInteractions.pressAndReleaseKeyOn(crSlider.$.slider, 39 /* right */);
+    expectEquals(21, crSlider.value);
     expectEquals(2.1, slider.pref.value);
 
-    MockInteractions.pressAndReleaseKeyOn(paperSlider, 39 /* right */);
-    expectEquals(22, paperSlider.value);
+    MockInteractions.pressAndReleaseKeyOn(crSlider.$.slider, 39 /* right */);
+    expectEquals(22, crSlider.value);
     expectEquals(2.2, slider.pref.value);
   });
 });

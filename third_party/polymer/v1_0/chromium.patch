@@ -9,7 +9,7 @@ index 7a24999..4eefcba 100644
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
 +<link rel="stylesheet" href="chrome://resources/css/roboto.css">
-diff --git a/components-chromium/paper-input/paper-input-extracted.js b/third_party/polymer/v1_0/components-chromium/paper-input/paper-input-extracted.js
+diff --git a/components-chromium/paper-input/paper-input-extracted.js b/components-chromium/paper-input/paper-input-extracted.js
 index 754820fb5d0c..3f8e640ffa71 100644
 --- a/components-chromium/paper-input/paper-input-extracted.js
 +++ b/components-chromium/paper-input/paper-input-extracted.js
@@ -139,3 +139,44 @@ index 082b0c1e4af2..d985829702a2 100644
 \ No newline at end of file
 +</body></html>
 \ No newline at end of file
+diff --git a/components-chromium/paper-slider/paper-slider.html b/components-chromium/paper-slider/paper-slider.html
+index 646c22c2fb93..952818290c1e 100644
+--- a/components-chromium/paper-slider/paper-slider.html
++++ b/components-chromium/paper-slider/paper-slider.html
+@@ -279,6 +279,7 @@ Custom property | Description | Default
+ 
+       .pin.expand > .slider-knob > .slider-knob-inner::after {
+         transform: scale(1) translate(0, -17px);
++        @apply --paper-slider-pin-text;
+       }
+ 
+       /* paper-input */
+diff --git a/components-chromium/paper-slider/paper-slider-extracted.js b/components-chromium/paper-slider/paper-slider-extracted.js
+index 2e63d3731be1..217c7ff1414c 100644
+--- a/components-chromium/paper-slider/paper-slider-extracted.js
++++ b/components-chromium/paper-slider/paper-slider-extracted.js
+@@ -385,24 +385,6 @@ Polymer({
+         this._rippleContainer = this.$.sliderKnob;
+         return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
+       },
+-
+-      // Hide the ripple when user is not interacting with keyboard.
+-      // This behavior is different from other ripple-y controls, but is
+-      // according to spec: https://www.google.com/design/spec/components/sliders.html
+-      _focusedChanged: function(receivedFocusFromKeyboard) {
+-        if (receivedFocusFromKeyboard) {
+-          this.ensureRipple();
+-        }
+-        if (this.hasRipple()) {
+-          // note, ripple must be un-hidden prior to setting `holdDown`
+-          if (receivedFocusFromKeyboard) {
+-            this._ripple.style.display = '';
+-          } else {
+-            this._ripple.style.display = 'none';
+-          }
+-          this._ripple.holdDown = receivedFocusFromKeyboard;
+-        }
+-      }
+     });
+ 
+     /**

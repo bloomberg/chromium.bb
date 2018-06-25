@@ -530,7 +530,7 @@ cr.define('device_page_tests', function() {
         const slider = assert(pointersPage.$$('#mouse settings-slider'));
         expectEquals(4, slider.pref.value);
         MockInteractions.pressAndReleaseKeyOn(
-            slider.$$('#slider'), 37 /* left */);
+            slider.$$('cr-slider').$$('#slider'), 37 /* left */);
         expectEquals(3, devicePage.prefs.settings.mouse.sensitivity2.value);
 
         pointersPage.set('prefs.settings.mouse.sensitivity2.value', 5);
@@ -546,7 +546,7 @@ cr.define('device_page_tests', function() {
         const slider = assert(pointersPage.$$('#touchpad settings-slider'));
         expectEquals(3, slider.pref.value);
         MockInteractions.pressAndReleaseKeyOn(
-            slider.$$('#slider'), 39 /* right */);
+            slider.$$('cr-slider').$$('#slider'), 39 /* right */);
         expectEquals(4, devicePage.prefs.settings.touchpad.sensitivity2.value);
 
         pointersPage.set('prefs.settings.touchpad.sensitivity2.value', 2);
@@ -637,9 +637,12 @@ cr.define('device_page_tests', function() {
             // Test interaction with the settings-slider's underlying
             // paper-slider.
             MockInteractions.pressAndReleaseKeyOn(
-                keyboardPage.$$('#delaySlider').$$('#slider'), 37 /* left */);
+                keyboardPage.$$('#delaySlider').$$('cr-slider').$$('#slider'),
+                37 /* left */);
             MockInteractions.pressAndReleaseKeyOn(
-                keyboardPage.$$('#repeatRateSlider').$$('#slider'),
+                keyboardPage.$$('#repeatRateSlider')
+                    .$$('cr-slider')
+                    .$$('#slider'),
                 39 /* right */);
             const language = devicePage.prefs.settings.language;
             expectEquals(1000, language.xkb_auto_repeat_delay_r2.value);

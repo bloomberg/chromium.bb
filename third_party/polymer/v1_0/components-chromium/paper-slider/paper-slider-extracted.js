@@ -385,24 +385,6 @@ Polymer({
         this._rippleContainer = this.$.sliderKnob;
         return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
       },
-
-      // Hide the ripple when user is not interacting with keyboard.
-      // This behavior is different from other ripple-y controls, but is
-      // according to spec: https://www.google.com/design/spec/components/sliders.html
-      _focusedChanged: function(receivedFocusFromKeyboard) {
-        if (receivedFocusFromKeyboard) {
-          this.ensureRipple();
-        }
-        if (this.hasRipple()) {
-          // note, ripple must be un-hidden prior to setting `holdDown`
-          if (receivedFocusFromKeyboard) {
-            this._ripple.style.display = '';
-          } else {
-            this._ripple.style.display = 'none';
-          }
-          this._ripple.holdDown = receivedFocusFromKeyboard;
-        }
-      }
     });
 
     /**
