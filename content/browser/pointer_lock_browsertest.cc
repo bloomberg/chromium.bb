@@ -26,46 +26,6 @@
 
 namespace content {
 
-namespace {
-
-#ifdef USE_AURA
-class MockRenderWidgetHostView : public RenderWidgetHostViewAura {
- public:
-  MockRenderWidgetHostView(RenderWidgetHost* host, bool is_guest_view_hack)
-      : RenderWidgetHostViewAura(host,
-                                 is_guest_view_hack,
-                                 false /* is_mus_browser_plugin_guest */),
-        host_(RenderWidgetHostImpl::From(host)) {}
-  ~MockRenderWidgetHostView() override {
-    if (mouse_locked_)
-      UnlockMouse();
-  }
-
-  bool LockMouse() override {
-    mouse_locked_ = true;
-    return true;
-  }
-
-  void UnlockMouse() override {
-    host_->LostMouseLock();
-    mouse_locked_ = false;
-  }
-
-  bool IsMouseLocked() override { return mouse_locked_; }
-
-  bool HasFocus() const override { return true; }
-
-  void OnWindowFocused(aura::Window* gained_focus,
-                       aura::Window* lost_focus) override {
-    // Ignore window focus events.
-  }
-
-  RenderWidgetHostImpl* host_;
-};
-#endif  // USE_AURA
-
-}  // namespace
-
 class MockPointerLockWebContentsDelegate : public WebContentsDelegate {
  public:
   MockPointerLockWebContentsDelegate() {}
@@ -81,11 +41,47 @@ class MockPointerLockWebContentsDelegate : public WebContentsDelegate {
 };
 
 #ifdef USE_AURA
+class MockPointerLockRenderWidgetHostView : public RenderWidgetHostViewAura {
+ public:
+  MockPointerLockRenderWidgetHostView(RenderWidgetHost* host,
+                                      bool is_guest_view_hack)
+      : RenderWidgetHostViewAura(host,
+                                 is_guest_view_hack,
+                                 false /* is_mus_browser_plugin_guest */),
+        host_(RenderWidgetHostImpl::From(host)) {}
+  ~MockPointerLockRenderWidgetHostView() override {
+    if (IsMouseLocked())
+      UnlockMouse();
+  }
+
+  bool LockMouse() override {
+    event_handler()->mouse_locked_ = true;
+    return true;
+  }
+
+  void UnlockMouse() override {
+    host_->LostMouseLock();
+    event_handler()->mouse_locked_ = false;
+  }
+
+  bool IsMouseLocked() override { return event_handler()->mouse_locked(); }
+
+  bool HasFocus() const override { return true; }
+
+  void OnWindowFocused(aura::Window* gained_focus,
+                       aura::Window* lost_focus) override {
+    // Ignore window focus events.
+  }
+
+  RenderWidgetHostImpl* host_;
+};
+
 void InstallCreateHooksForPointerLockBrowserTests() {
   WebContentsViewAura::InstallCreateHookForTests(
       [](RenderWidgetHost* host,
          bool is_guest_view_hack) -> RenderWidgetHostViewAura* {
-        return new MockRenderWidgetHostView(host, is_guest_view_hack);
+        return new MockPointerLockRenderWidgetHostView(host,
+                                                       is_guest_view_hack);
       });
 }
 #endif  // USE_AURA

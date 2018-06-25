@@ -431,6 +431,10 @@ gfx::Rect RenderWidgetHostViewMac::GetViewBounds() const {
          window_frame_in_screen_dip_.OffsetFromOrigin();
 }
 
+bool RenderWidgetHostViewMac::IsMouseLocked() {
+  return mouse_locked_;
+}
+
 void RenderWidgetHostViewMac::UpdateCursor(const WebCursor& cursor) {
   GetCursorManager()->UpdateCursor(this, cursor);
 }

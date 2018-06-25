@@ -64,7 +64,7 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
 
 RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
   DCHECK(!keyboard_locked_);
-  DCHECK(!mouse_locked_);
+  DCHECK(!IsMouseLocked());
   // We call this here to guarantee that observers are notified before we go
   // away. However, some subclasses may wish to call this earlier in their
   // shutdown process, e.g. to force removal from
@@ -246,7 +246,7 @@ base::Optional<SkColor> RenderWidgetHostViewBase::GetBackgroundColor() const {
 }
 
 bool RenderWidgetHostViewBase::IsMouseLocked() {
-  return mouse_locked_;
+  return false;
 }
 
 bool RenderWidgetHostViewBase::LockKeyboard(

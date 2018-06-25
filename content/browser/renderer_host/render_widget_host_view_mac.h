@@ -106,6 +106,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void WasUnOccluded() override;
   void WasOccluded() override;
   gfx::Rect GetViewBounds() const override;
+  bool IsMouseLocked() override;
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override;
   void SpeakSelection() override;
@@ -427,6 +428,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
  private:
   friend class RenderWidgetHostViewMacTest;
+  friend class MockPointerLockRenderWidgetHostView;
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacTest, GetPageTextForSpeech);
 
   // Allocate a new FrameSinkId if this object is the platform view of a
@@ -562,6 +564,13 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Tracks whether keyboard lock is active.
   bool is_keyboard_locked_ = false;
+
+  // While the mouse is locked, the cursor is hidden from the user. Mouse events
+  // are still generated. However, the position they report is the last known
+  // mouse position just as mouse lock was entered; the movement they report
+  // indicates what the change in position of the mouse would be had it not been
+  // locked.
+  bool mouse_locked_ = false;
 
   // Latest capture sequence number which is incremented when the caller
   // requests surfaces be synchronized via

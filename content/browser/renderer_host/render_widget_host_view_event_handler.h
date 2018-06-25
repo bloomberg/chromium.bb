@@ -179,6 +179,8 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   FRIEND_TEST_ALL_PREFIXES(
       RenderWidgetHostViewAuraTest,
       KeyEventRoutingKeyboardLockAndChildPopupWithoutInputGrab);
+  friend class MockPointerLockRenderWidgetHostView;
+
   // Returns true if the |event| passed in can be forwarded to the renderer.
   bool CanRendererHandleEvent(const ui::MouseEvent* event,
                               bool mouse_locked,
