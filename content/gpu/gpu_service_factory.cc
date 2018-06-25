@@ -8,6 +8,7 @@
 
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "services/shape_detection/public/mojom/constants.mojom.h"
 #include "services/shape_detection/shape_detection_service.h"
 
@@ -54,9 +55,14 @@ void GpuServiceFactory::RegisterServices(ServiceMap* services) {
   // This service will host audio/video decoders, and if these decoding
   // operations are blocked, user may hear audio glitch or see video freezing,
   // hence "user blocking".
+#if defined(OS_WIN)
+  // Run everything on the gpu main thread, since that's where the CDM runs.
+  info.task_runner = task_runner_;
+#else
   // TODO(crbug.com/786169): Check whether this needs to be single threaded.
   info.task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
       {base::TaskPriority::USER_BLOCKING});
+#endif  // defined(OS_WIN)
   services->insert(std::make_pair("media", info));
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 

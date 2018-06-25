@@ -80,7 +80,10 @@ D3D11VideoDecoder::~D3D11VideoDecoder() {
   // Post destruction to the main thread.  When this executes, it will also
   // cancel pending callbacks into |impl_| via |impl_weak_|.  Callbacks out
   // from |impl_| will be cancelled by |weak_factory_| when we return.
-  impl_task_runner_->DeleteSoon(FROM_HERE, std::move(impl_));
+  if (impl_task_runner_->RunsTasksInCurrentSequence())
+    impl_.reset();
+  else
+    impl_task_runner_->DeleteSoon(FROM_HERE, std::move(impl_));
 }
 
 std::string D3D11VideoDecoder::GetDisplayName() const {
@@ -100,8 +103,14 @@ void D3D11VideoDecoder::Initialize(
     return;
   }
 
-  // Bind our own init / output cb that hop to this thread, so we don't call the
-  // originals on some other thread.
+  if (impl_task_runner_->RunsTasksInCurrentSequence()) {
+    impl_->Initialize(config, low_delay, cdm_context, init_cb, output_cb,
+                      waiting_for_decryption_key_cb);
+    return;
+  }
+
+  // Bind our own init / output cb that hop to this thread, so we don't call
+  // the originals on some other thread.
   // Important but subtle note: base::Bind will copy |config_| since it's a
   // const ref.
   // TODO(liberato): what's the lifetime of |cdm_context|?
@@ -117,6 +126,11 @@ void D3D11VideoDecoder::Initialize(
 
 void D3D11VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                const DecodeCB& decode_cb) {
+  if (impl_task_runner_->RunsTasksInCurrentSequence()) {
+    impl_->Decode(std::move(buffer), decode_cb);
+    return;
+  }
+
   impl_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -125,6 +139,11 @@ void D3D11VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 }
 
 void D3D11VideoDecoder::Reset(const base::Closure& closure) {
+  if (impl_task_runner_->RunsTasksInCurrentSequence()) {
+    impl_->Reset(closure);
+    return;
+  }
+
   impl_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VideoDecoder::Reset, impl_weak_,
                                 BindToCurrentThreadIfWeakPtr(
