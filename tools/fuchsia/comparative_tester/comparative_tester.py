@@ -7,6 +7,8 @@
 # Fuchsia devices and then compares their output to each other, extracting the
 # relevant performance data from the output of gtest.
 
+import argparse
+import logging
 import os
 import re
 import subprocess
@@ -76,10 +78,9 @@ class TestTarget(object):
 
   def ExecFuchsia(self, out_dir: str, run_locally: bool) -> str:
     runner_name = "{}/bin/run_{}".format(out_dir, self._name)
-    command = [runner_name, self._filter_flag, "--include-system-logs=False"]
+    command = [runner_name, self._filter_flag, "--exclude-system-logs"]
     if not run_locally:
       command.append("-d")
-    command.append(self._filter_flag)
     return RunCommand(command,
                       "Test {} failed on fuchsia!".format(self._target))
 
@@ -166,11 +167,14 @@ def RunTest(target: TestTarget, run_locally: bool = False) -> None:
   print("Wrote result files")
 
 
-def RunGnForDirectory(dir_name: str, target_os: str) -> None:
+def RunGnForDirectory(dir_name: str, target_os: str, is_debug: bool) -> None:
   if not os.path.exists(dir_name):
     os.makedirs(dir_name)
+
+  debug_str = str(is_debug).lower()
+
   with open("{}/{}".format(dir_name, "args.gn"), "w") as args_file:
-    args_file.write("is_debug = false\n")
+    args_file.write("is_debug = {}\n".format(debug_str))
     args_file.write("dcheck_always_on = false\n")
     args_file.write("is_component_build = false\n")
     args_file.write("use_goma = true\n")
@@ -179,7 +183,8 @@ def RunGnForDirectory(dir_name: str, target_os: str) -> None:
   subprocess.run(["gn", "gen", dir_name]).check_returncode()
 
 
-def GenerateTestData(runs: int):
+def GenerateTestData(do_config: bool, do_build: bool, num_reps: int,
+                     is_debug: bool):
   DIR_SOURCE_ROOT = os.path.abspath(
       os.path.join(os.path.dirname(__file__), *([os.pardir] * 3)))
   os.chdir(DIR_SOURCE_ROOT)
@@ -192,22 +197,27 @@ def GenerateTestData(runs: int):
   test_input = []  # type: List[TestTarget]
   for target in target_spec.test_targets:
     test_input.append(TestTarget(target))
-  print("Test targets collected:\n{}".format("\n".join(
+  print("Test targets collected:\n{}".format(",".join(
       [test._target for test in test_input])))
+  if do_config:
+    RunGnForDirectory(linux_dir, "linux", is_debug)
+    RunGnForDirectory(fuchsia_dir, "fuchsia", is_debug)
+    print("Ran GN")
+  elif is_debug:
+    logging.warning("The --is_debug flag is ignored unless --do_config is also \
+                     specified")
 
-  RunGnForDirectory(linux_dir, "linux")
-  RunGnForDirectory(fuchsia_dir, "fuchsia")
-
-  # Build test targets in both output directories.
-  for directory in [linux_dir, fuchsia_dir]:
-    build_command = ["autoninja", "-C", directory] \
-                  + [test._target for test in test_input]
-    RunCommand(build_command,
-               "autoninja failed in directory {}".format(directory))
-  print("Builds completed.")
+  if do_build:
+    # Build test targets in both output directories.
+    for directory in [linux_dir, fuchsia_dir]:
+      build_command = ["autoninja", "-C", directory] \
+                    + [test._target for test in test_input]
+      RunCommand(build_command,
+                 "autoninja failed in directory {}".format(directory))
+    print("Builds completed.")
 
   # Execute the tests, one at a time, per system, and collect their results.
-  for i in range(0, runs):
+  for i in range(0, num_reps):
     print("Running Test set {}".format(i))
     for test_target in test_input:
       print("Running Target {}".format(test_target._name))
@@ -218,7 +228,29 @@ def GenerateTestData(runs: int):
 
 
 def main() -> int:
-  GenerateTestData(1)
+  cmd_flags = argparse.ArgumentParser(
+      description="Execute tests repeatedly and collect performance data.")
+  cmd_flags.add_argument(
+      "--do-config",
+      action="store_true",
+      help="WARNING: This flag over-writes args.gn in the directories "
+           "configured. GN is executed before running the tests.")
+  cmd_flags.add_argument(
+      "--do-build",
+      action="store_true",
+      help="Build the tests before running them.")
+  cmd_flags.add_argument(
+      "--is-debug",
+      action="store_true",
+      help="This config-and-build cycle is a debug build")
+  cmd_flags.add_argument(
+      "--num-repetitions",
+      type=int,
+      default=1,
+      help="The number of times to execute each test target.")
+  cmd_flags.parse_args()
+  GenerateTestData(cmd_flags.do_config, cmd_flags.do_build,
+                   cmd_flags.num_repetitions, cmd_flags.is_debug)
   return 0
 
 
