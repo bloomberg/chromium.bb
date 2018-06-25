@@ -55,7 +55,8 @@ bool SimpleRendererFactory::Initialize() {
   if (command_line->HasSwitch(kEnableVulkan)) {
     vulkan_implementation_ = gpu::CreateVulkanImplementation();
     if (vulkan_implementation_ &&
-        vulkan_implementation_->InitializeVulkanInstance()) {
+        vulkan_implementation_->InitializeVulkanInstance() &&
+        gpu_helper_.Initialize(base::ThreadTaskRunnerHandle::Get())) {
       type_ = VULKAN;
       return true;
     } else {

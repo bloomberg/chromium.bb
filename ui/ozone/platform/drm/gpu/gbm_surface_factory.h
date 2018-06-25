@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "gpu/vulkan/buildflags.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
@@ -35,6 +36,11 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
   // SurfaceFactoryOzone:
   std::vector<gl::GLImplementation> GetAllowedGLImplementations() override;
   GLOzone* GetGLOzone(gl::GLImplementation implementation) override;
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  std::unique_ptr<gpu::VulkanImplementation> CreateVulkanImplementation()
+      override;
+#endif
 
   std::vector<gfx::BufferFormat> GetScanoutFormats(
       gfx::AcceleratedWidget widget) override;

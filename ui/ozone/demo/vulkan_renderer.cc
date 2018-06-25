@@ -42,6 +42,8 @@ bool VulkanRenderer::Initialize() {
   CHECK(device_queue_);
 
   surface_ = vulkan_implementation_->CreateViewSurface(widget_);
+  if (!surface_)
+    LOG(FATAL) << "Vulkan surface not supported by platform";
   CHECK(surface_->Initialize(device_queue_.get(),
                              gpu::VulkanSurface::DEFAULT_SURFACE_FORMAT));
 

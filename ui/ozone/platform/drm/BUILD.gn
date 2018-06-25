@@ -4,6 +4,7 @@
 
 import("//build/config/linux/pkg_config.gni")
 import("//ui/ozone/ozone.gni")
+import("//gpu/vulkan/features.gni")
 
 visibility = [ "//ui/ozone/*" ]
 
@@ -118,6 +119,7 @@ source_set("gbm") {
 
   deps = [
     "//base",
+    "//gpu/vulkan:buildflags",
     "//ipc",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
@@ -145,6 +147,14 @@ source_set("gbm") {
     "//ui/ozone/public/interfaces",
     "//ui/platform_window",
   ]
+
+  if (enable_vulkan) {
+    sources += [
+      "gpu/vulkan_implementation_gbm.cc",
+      "gpu/vulkan_implementation_gbm.h",
+    ]
+    deps += [ "//gpu/vulkan" ]
+  }
 
   public_configs = [ "//third_party/khronos:khronos_headers" ]
 
