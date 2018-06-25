@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "extensions/browser/extension_throttle_entry_interface.h"
 #include "net/base/backoff_entry.h"
-#include "net/log/net_log_with_source.h"
 
 namespace extensions {
 
@@ -155,7 +154,6 @@ class ExtensionThrottleEntry : public ExtensionThrottleEntryInterface {
   // Canonicalized URL string that this entry is for; used for logging only.
   std::string url_id_;
 
-  net::NetLogWithSource net_log_;
   bool ignore_user_gesture_load_flag_for_tests_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionThrottleEntry);

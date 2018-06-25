@@ -23,11 +23,6 @@ namespace content {
 class ResourceThrottle;
 }
 
-namespace net {
-class NetLog;
-class NetLogWithSource;
-}
-
 namespace extensions {
 
 // Class that registers URL request throttler entries for URLs being accessed
@@ -87,10 +82,6 @@ class ExtensionThrottleManager
   void set_enforce_throttling(bool enforce);
   bool enforce_throttling();
 
-  // Sets the net::NetLog instance to use.
-  void set_net_log(net::NetLog* net_log);
-  net::NetLog* net_log() const;
-
   // NetworkChangeObserver interface.
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
@@ -134,13 +125,6 @@ class ExtensionThrottleManager
 
   // Valid after construction.
   GURL::Replacements url_id_replacements_;
-
-  // Initially false, switches to true once we have logged because of back-off
-  // being disabled for localhost.
-  bool logged_for_localhost_disabled_;
-
-  // net::NetLog to use, if configured.
-  net::NetLogWithSource net_log_;
 
   // Valid once we've registered for network notifications.
   base::PlatformThreadId registered_from_thread_;
