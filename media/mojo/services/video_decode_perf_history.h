@@ -15,7 +15,6 @@
 #include "base/supports_user_data.h"
 #include "media/base/video_codecs.h"
 #include "media/capabilities/video_decode_stats_db.h"
-#include "media/capabilities/video_decode_stats_db_provider.h"
 #include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -46,8 +45,7 @@ namespace media {
 // sequence.
 class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
     : public mojom::VideoDecodePerfHistory,
-      public base::SupportsUserData::Data,
-      public VideoDecodeStatsDBProvider {
+      public base::SupportsUserData::Data {
  public:
   explicit VideoDecodePerfHistory(
       std::unique_ptr<VideoDecodeStatsDBFactory> db_factory);
@@ -74,10 +72,6 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   // Clear all history from the underlying database. Run |clear_done_cb| when
   // complete.
   void ClearHistory(base::OnceClosure clear_done_cb);
-
-  // From VideoDecodeStatsDBProvider. |cb| receives a pointer to the
-  // *initialized* VideoDecodeStatsDB, or null in case of error.
-  void GetVideoDecodeStatsDB(GetCB cb) override;
 
  private:
   friend class VideoDecodePerfHistoryTest;

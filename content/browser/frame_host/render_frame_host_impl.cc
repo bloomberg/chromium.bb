@@ -3347,7 +3347,12 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(base::BindRepeating(
       &media::MediaMetricsProvider::Create,
-      GetSiteInstance()->GetBrowserContext()->GetVideoDecodePerfHistory()));
+      // Only save decode stats when on-the-record.
+      GetSiteInstance()->GetBrowserContext()->IsOffTheRecord()
+          ? nullptr
+          : GetSiteInstance()
+                ->GetBrowserContext()
+                ->GetVideoDecodePerfHistory()));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           cc::switches::kEnableGpuBenchmarking)) {
