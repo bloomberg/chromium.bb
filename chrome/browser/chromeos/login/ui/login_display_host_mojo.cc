@@ -221,30 +221,36 @@ bool LoginDisplayHostMojo::IsVoiceInteractionOobe() {
   return false;
 }
 
-void LoginDisplayHostMojo::UpdateGaiaDialogVisibility(
-    bool visible,
+void LoginDisplayHostMojo::ShowGaiaDialog(
     bool can_close,
     const base::Optional<AccountId>& prefilled_account) {
   DCHECK(dialog_);
+  can_close_dialog_ = can_close;
 
-  bool is_signing_in = login_display_->IsSigninInProgress();
+  // Always disabling closing if there are no users, otherwise a blank screen
+  // will be displayed.
+  if (users_.empty())
+    can_close_dialog_ = false;
 
-  if (visible) {
-    // Show the dialog.
-
-    if (prefilled_account) {
-      // Make sure gaia displays |account| if requested.
-      if (!is_signing_in)
-        GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(prefilled_account);
-
-      LoadWallpaper(*prefilled_account);
-    } else {
-      LoadSigninWallpaper();
-    }
-
-    dialog_->Show(can_close /*closable_by_esc*/);
+  if (prefilled_account) {
+    bool is_signing_in = login_display_->IsSigninInProgress();
+    // Make sure gaia displays |account| if requested.
+    if (!is_signing_in)
+      GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(prefilled_account);
+    LoadWallpaper(*prefilled_account);
   } else {
-    // Hide the dialog.
+    LoadSigninWallpaper();
+  }
+
+  dialog_->Show(can_close /*closable_by_esc*/);
+  return;
+}
+
+void LoginDisplayHostMojo::HideGaiaDialog() {
+  DCHECK(dialog_);
+
+  if (GetOobeUI() && !can_close_dialog_) {
+    bool is_signing_in = login_display_->IsSigninInProgress();
 
     // The dialog can not be closed if there is no user on the login screen.
     // Refresh the dialog instead.
@@ -275,8 +281,7 @@ void LoginDisplayHostMojo::ShowFeedback() {
 
 void LoginDisplayHostMojo::CancelPasswordChangedFlow() {
   // Close the Oobe UI dialog.
-  UpdateGaiaDialogVisibility(false /*visible*/, true /*can_close*/,
-                             base::nullopt /*account*/);
+  HideGaiaDialog();
   LoginDisplayHostCommon::CancelPasswordChangedFlow();
 }
 
