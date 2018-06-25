@@ -35,6 +35,7 @@ class NativePixmap;
 namespace ui {
 
 class SurfaceOzoneCanvas;
+class OverlaySurface;
 
 // The Ozone interface allows external implementations to hook into Chromium to
 // provide a system specific implementation. The Ozone interface supports two
@@ -80,6 +81,10 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   virtual std::unique_ptr<gpu::VulkanImplementation>
   CreateVulkanImplementation();
 #endif
+
+  // Creates an overlay surface for a platform window.
+  virtual std::unique_ptr<OverlaySurface> CreateOverlaySurface(
+      gfx::AcceleratedWidget window);
 
   // Create SurfaceOzoneCanvas for the specified gfx::AcceleratedWidget.
   //

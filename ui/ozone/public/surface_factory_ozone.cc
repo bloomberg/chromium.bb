@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "gpu/vulkan/buildflags.h"
 #include "ui/gfx/native_pixmap.h"
+#include "ui/ozone/public/overlay_surface.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -36,6 +37,11 @@ SurfaceFactoryOzone::CreateVulkanImplementation() {
   return nullptr;
 }
 #endif
+
+std::unique_ptr<OverlaySurface> SurfaceFactoryOzone::CreateOverlaySurface(
+    gfx::AcceleratedWidget widget) {
+  return nullptr;
+}
 
 std::unique_ptr<SurfaceOzoneCanvas> SurfaceFactoryOzone::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
