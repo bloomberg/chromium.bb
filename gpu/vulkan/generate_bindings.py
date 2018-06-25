@@ -163,6 +163,11 @@ struct VulkanFunctionPointers {
   for func in command_buffer_functions:
     file.write('  PFN_' + func['name'] + ' ' + func['name'] + ' = nullptr;\n')
 
+  file.write("""\
+
+  // Swapchain functions
+""")
+
   for func in swapchain_functions:
     file.write('  PFN_' + func['name'] + ' ' + func['name'] + ' = nullptr;\n')
 

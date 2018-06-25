@@ -104,6 +104,8 @@ struct VulkanFunctionPointers {
   PFN_vkCmdPipelineBarrier vkCmdPipelineBarrier = nullptr;
   PFN_vkEndCommandBuffer vkEndCommandBuffer = nullptr;
   PFN_vkResetCommandBuffer vkResetCommandBuffer = nullptr;
+
+  // Swapchain functions
   PFN_vkAcquireNextImageKHR vkAcquireNextImageKHR = nullptr;
   PFN_vkCreateSwapchainKHR vkCreateSwapchainKHR = nullptr;
   PFN_vkDestroySwapchainKHR vkDestroySwapchainKHR = nullptr;
