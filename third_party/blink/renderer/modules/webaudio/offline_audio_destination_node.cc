@@ -135,12 +135,6 @@ void OfflineAudioDestinationHandler::StopRendering() {
   NOTREACHED();
 }
 
-size_t OfflineAudioDestinationHandler::CallbackBufferSize() const {
-  // The callback buffer size has no meaning for an offline context.
-  NOTREACHED();
-  return 0;
-}
-
 void OfflineAudioDestinationHandler::InitializeOfflineRenderThread(
     AudioBuffer* render_target) {
   DCHECK(IsMainThread());

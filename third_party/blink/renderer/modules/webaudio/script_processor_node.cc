@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_processing_event.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/default_audio_destination_node.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
@@ -373,7 +374,7 @@ static size_t ChooseBufferSize(size_t callback_buffer_size) {
   // Choose a buffer size based on the audio hardware buffer size. Arbitarily
   // make it a power of two that is 4 times greater than the hardware buffer
   // size.
-  // FIXME: What is the best way to choose this?
+  // TODO(crbug.com/855758): What is the best way to choose this?
   size_t buffer_size =
       1 << static_cast<unsigned>(log2(4 * callback_buffer_size) + 0.5);
 
@@ -397,29 +398,29 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
 
 ScriptProcessorNode* ScriptProcessorNode::Create(
     BaseAudioContext& context,
-    size_t buffer_size,
+    size_t requested_buffer_size,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
   // Default is 2 inputs and 2 outputs.
-  return Create(context, buffer_size, 2, 2, exception_state);
+  return Create(context, requested_buffer_size, 2, 2, exception_state);
 }
 
 ScriptProcessorNode* ScriptProcessorNode::Create(
     BaseAudioContext& context,
-    size_t buffer_size,
+    size_t requested_buffer_size,
     unsigned number_of_input_channels,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
   // Default is 2 outputs.
-  return Create(context, buffer_size, number_of_input_channels, 2,
+  return Create(context, requested_buffer_size, number_of_input_channels, 2,
                 exception_state);
 }
 
 ScriptProcessorNode* ScriptProcessorNode::Create(
     BaseAudioContext& context,
-    size_t buffer_size,
+    size_t requested_buffer_size,
     unsigned number_of_input_channels,
     unsigned number_of_output_channels,
     ExceptionState& exception_state) {
@@ -455,17 +456,27 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
     return nullptr;
   }
 
-  // Check for valid buffer size.
-  switch (buffer_size) {
+  // Sanitize user-supplied buffer size.
+  size_t buffer_size;
+  switch (requested_buffer_size) {
     case 0:
       // Choose an appropriate size.  For an AudioContext, we need to
       // choose an appropriate size based on the callback buffer size.
       // For OfflineAudioContext, there's no callback buffer size, so
       // just use the minimum valid buffer size.
-      buffer_size =
-          context.HasRealtimeConstraint()
-              ? ChooseBufferSize(context.destination()->CallbackBufferSize())
-              : 256;
+      if (context.HasRealtimeConstraint()) {
+        // TODO(crbug.com/854229): Due to the incompatible constructor between
+        // AudioDestinationNode and DefaultAudioDestinationNode, casting
+        // directly from |destination()| is impossible. This is a temporary
+        // workaround until the refactoring is completed.
+        DefaultAudioDestinationHandler& destination_handler =
+            static_cast<DefaultAudioDestinationHandler&>(
+                context.destination()->GetAudioDestinationHandler());
+        buffer_size =
+            ChooseBufferSize(destination_handler.GetCallbackBufferSize());
+      } else {
+        buffer_size = 256;
+      }
       break;
     case 256:
     case 512:
@@ -474,11 +485,12 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
     case 4096:
     case 8192:
     case 16384:
+      buffer_size = requested_buffer_size;
       break;
     default:
       exception_state.ThrowDOMException(
           DOMExceptionCode::kIndexSizeError,
-          "buffer size (" + String::Number(buffer_size) +
+          "buffer size (" + String::Number(requested_buffer_size) +
               ") must be 0 or a power of two between 256 and 16384.");
       return nullptr;
   }

@@ -132,7 +132,7 @@ unsigned long DefaultAudioDestinationHandler::MaxChannelCount() const {
   return AudioDestination::MaxChannelCount();
 }
 
-size_t DefaultAudioDestinationHandler::CallbackBufferSize() const {
+size_t DefaultAudioDestinationHandler::GetCallbackBufferSize() const {
   return destination_->CallbackBufferSize();
 }
 

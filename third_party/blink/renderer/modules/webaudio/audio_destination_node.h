@@ -68,8 +68,6 @@ class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
   // restart of the context.
   virtual void RestartRendering() = 0;
 
-  // Returns the rendering callback buffer size.
-  size_t CallbackBufferSize() const override = 0;
   virtual double SampleRate() const = 0;
 
  protected:
@@ -84,7 +82,6 @@ class AudioDestinationNode : public AudioNode {
   AudioDestinationHandler& GetAudioDestinationHandler() const;
 
   unsigned long maxChannelCount() const;
-  size_t CallbackBufferSize() const { return Handler().CallbackBufferSize(); }
 
  protected:
   AudioDestinationNode(BaseAudioContext&);
