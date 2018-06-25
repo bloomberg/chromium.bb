@@ -14,7 +14,6 @@ promise_test(async function() {
   let track = stream.getAudioTracks()[0];
   let sender = pc1.addTrack(track);
   let dtmf = pc1.createDTMFSender(track);
-  assert_true(dtmf.track == track);
   assert_false(dtmf.canInsertDTMF);
   let pc2 = new RTCPeerConnection();
   exchangeIceCandidates(pc1, pc2);
@@ -44,20 +43,6 @@ promise_test(async function() {
   });
   assert_true(dtmf.canInsertDTMF);
 }, 'DTMF sender for an audio track can be created.');
-
-// This test documents an expected side effect.
-// Since createDTMFSender should be deprecated, it's not worth
-// fixing.
-promise_test(async function() {
-  let pc1 = new RTCPeerConnection();
-  let streams = await createStreams({audio:true, video:false}, 1);
-  let stream = streams[0];
-  let track = stream.getAudioTracks()[0];
-  let sender = pc1.addTrack(track);
-  assert_equals(sender.dtmf.track, null);
-  let dtmf = pc1.createDTMFSender(track);
-  assert_equals(sender.dtmf.track, track);
-}, 'createDTMFSender adds track to dtmf attribute.');
 
 /**
  * Helper functions.

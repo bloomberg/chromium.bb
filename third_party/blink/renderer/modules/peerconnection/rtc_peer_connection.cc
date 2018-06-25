@@ -1632,7 +1632,6 @@ RTCDTMFSender* RTCPeerConnection::createDTMFSender(
                                       "Unable to create DTMF sender for track");
     return nullptr;
   }
-  dtmf_sender->SetTrack(track);
   return dtmf_sender;
 }
 

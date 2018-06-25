@@ -5358,11 +5358,8 @@ interface RTCCertificate
 interface RTCDTMFSender : EventTarget
     attribute @@toStringTag
     getter canInsertDTMF
-    getter duration
-    getter interToneGap
     getter ontonechange
     getter toneBuffer
-    getter track
     method constructor
     method insertDTMF
     setter ontonechange

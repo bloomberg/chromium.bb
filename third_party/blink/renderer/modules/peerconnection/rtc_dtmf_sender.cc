@@ -57,9 +57,6 @@ RTCDTMFSender* RTCDTMFSender::Create(
 RTCDTMFSender::RTCDTMFSender(ExecutionContext* context,
                              std::unique_ptr<WebRTCDTMFSenderHandler> handler)
     : ContextLifecycleObserver(context),
-      track_(nullptr),
-      duration_(kDefaultToneDurationMs),
-      inter_tone_gap_(kDefaultInterToneGapMs),
       handler_(std::move(handler)),
       stopped_(false),
       scheduled_event_timer_(context->GetTaskRunner(TaskType::kNetworking),
@@ -79,14 +76,6 @@ void RTCDTMFSender::Dispose() {
 
 bool RTCDTMFSender::canInsertDTMF() const {
   return handler_->CanInsertDTMF();
-}
-
-MediaStreamTrack* RTCDTMFSender::track() const {
-  return track_.Get();
-}
-
-void RTCDTMFSender::SetTrack(MediaStreamTrack* track) {
-  track_ = track;
 }
 
 String RTCDTMFSender::toneBuffer() const {
@@ -133,10 +122,8 @@ void RTCDTMFSender::insertDTMF(const String& tones,
   inter_tone_gap = std::max(inter_tone_gap, kMinInterToneGapMs);
   inter_tone_gap = std::min(inter_tone_gap, kMaxInterToneGapMs);
 
-  duration_ = duration;
-  inter_tone_gap_ = inter_tone_gap;
   // Spec: a-d should be represented in the tone buffer as A-D
-  if (!handler_->InsertDTMF(tones.UpperASCII(), duration_, inter_tone_gap_)) {
+  if (!handler_->InsertDTMF(tones.UpperASCII(), duration, inter_tone_gap)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
         "Could not send provided tones, '" + tones + "'.");
@@ -181,7 +168,6 @@ void RTCDTMFSender::ScheduledEventTimerFired(TimerBase*) {
 }
 
 void RTCDTMFSender::Trace(blink::Visitor* visitor) {
-  visitor->Trace(track_);
   visitor->Trace(scheduled_events_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
