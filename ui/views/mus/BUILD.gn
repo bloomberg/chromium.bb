@@ -24,6 +24,8 @@ jumbo_component("mus") {
     "mus_client_observer.h",
     "mus_export.h",
     "mus_property_mirror.h",
+    "mus_views_delegate.cc",
+    "mus_views_delegate.h",
     "pointer_watcher_event_router.cc",
     "pointer_watcher_event_router.h",
     "screen_mus.cc",

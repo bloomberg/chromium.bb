@@ -18,33 +18,10 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/views/layout/layout_provider.h"
 #include "ui/views/mus/mus_client.h"
-#include "ui/views/views_delegate.h"
+#include "ui/views/mus/mus_views_delegate.h"
 
 namespace views {
-
-namespace {
-
-class MusViewsDelegate : public ViewsDelegate {
- public:
-  MusViewsDelegate() {}
-  ~MusViewsDelegate() override {}
-
- private:
-#if defined(OS_WIN)
-  HICON GetSmallWindowIcon() const override { return nullptr; }
-#endif
-  void OnBeforeWidgetInit(
-      Widget::InitParams* params,
-      internal::NativeWidgetDelegate* delegate) override {}
-
-  LayoutProvider layout_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(MusViewsDelegate);
-};
-
-}  // namespace
 
 AuraInit::InitParams::InitParams() : resource_file("views_mus_resources.pak") {}
 
