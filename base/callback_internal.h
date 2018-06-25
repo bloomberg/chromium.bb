@@ -108,7 +108,7 @@ class BASE_EXPORT BindStateBase
 // CallbackBase<Copyable> uses CallbackBase<MoveOnly> for its implementation.
 class BASE_EXPORT CallbackBase {
  public:
-  CallbackBase(CallbackBase&& c) noexcept;
+  inline CallbackBase(CallbackBase&& c) noexcept;
   CallbackBase& operator=(CallbackBase&& c) noexcept;
 
   explicit CallbackBase(const CallbackBaseCopyable& c);
@@ -138,7 +138,7 @@ class BASE_EXPORT CallbackBase {
 
   // Allow initializing of |bind_state_| via the constructor to avoid default
   // initialization of the scoped_refptr.
-  explicit CallbackBase(BindStateBase* bind_state);
+  explicit inline CallbackBase(BindStateBase* bind_state);
 
   InvokeFuncStorage polymorphic_invoke() const {
     return bind_state_->polymorphic_invoke_;
@@ -153,12 +153,15 @@ class BASE_EXPORT CallbackBase {
 };
 
 constexpr CallbackBase::CallbackBase() = default;
+CallbackBase::CallbackBase(CallbackBase&&) noexcept = default;
+CallbackBase::CallbackBase(BindStateBase* bind_state)
+    : bind_state_(AdoptRef(bind_state)) {}
 
 // CallbackBase<Copyable> is a direct base class of Copyable Callbacks.
 class BASE_EXPORT CallbackBaseCopyable : public CallbackBase {
  public:
   CallbackBaseCopyable(const CallbackBaseCopyable& c);
-  CallbackBaseCopyable(CallbackBaseCopyable&& c) noexcept;
+  CallbackBaseCopyable(CallbackBaseCopyable&& c) noexcept = default;
   CallbackBaseCopyable& operator=(const CallbackBaseCopyable& c);
   CallbackBaseCopyable& operator=(CallbackBaseCopyable&& c) noexcept;
 
