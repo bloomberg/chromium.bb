@@ -25,8 +25,8 @@ namespace cmd {
 }  // namespace cmd
 
 // Pack & unpack Command cmd_flags
-#define CMD_FLAG_SET_TRACE_LEVEL(level)     ((level & 3) << 0)
-#define CMD_FLAG_GET_TRACE_LEVEL(cmd_flags) ((cmd_flags >> 0) & 3)
+#define CMD_FLAG_SET_TRACE_LEVEL(level)     (level & 3)
+#define CMD_FLAG_GET_TRACE_LEVEL(cmd_flags) (cmd_flags & 3)
 
 // Computes the number of command buffer entries needed for a certain size. In
 // other words it rounds up to a multiple of entries.
