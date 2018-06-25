@@ -63,7 +63,6 @@ class CrostiniUninstallerView : public views::DialogDelegateView {
   views::ProgressBar* progress_bar_ = nullptr;
 
   bool has_logged_result_ = false;
-  base::string16 app_name_;
   Profile* profile_;
 
   base::WeakPtrFactory<CrostiniUninstallerView> weak_ptr_factory_;

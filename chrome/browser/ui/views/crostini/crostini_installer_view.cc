@@ -97,19 +97,16 @@ base::string16 CrostiniInstallerView::GetDialogButtonLabel(
 base::string16 CrostiniInstallerView::GetWindowTitle() const {
   if (state_ == State::PROMPT) {
     const base::string16 device_type = ui::GetChromeOSDeviceName();
-    return l10n_util::GetStringFUTF16(IDS_CROSTINI_INSTALLER_TITLE, app_name_,
+    return l10n_util::GetStringFUTF16(IDS_CROSTINI_INSTALLER_TITLE,
                                       device_type);
   }
   if (state_ == State::ERROR) {
-    return l10n_util::GetStringFUTF16(IDS_CROSTINI_INSTALLER_ERROR_TITLE,
-                                      app_name_);
+    return l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_ERROR_TITLE);
   }
   if (state_ == State::INSTALL_END) {
-    return l10n_util::GetStringFUTF16(IDS_CROSTINI_INSTALLER_COMPLETE,
-                                      app_name_);
+    return l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_COMPLETE);
   }
-  return l10n_util::GetStringFUTF16(IDS_CROSTINI_INSTALLER_INSTALLING,
-                                    app_name_);
+  return l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_INSTALLING);
 }
 
 bool CrostiniInstallerView::ShouldShowCloseButton() const {
@@ -132,7 +129,7 @@ bool CrostiniInstallerView::Accept() {
   if (net::NetworkChangeNotifier::IsOffline()) {
     const base::string16 device_type = ui::GetChromeOSDeviceName();
     HandleError(l10n_util::GetStringFUTF16(IDS_CROSTINI_INSTALLER_OFFLINE_ERROR,
-                                           app_name_, device_type),
+                                           device_type),
                 SetupResult::kErrorOffline);
     return false;  // should not close the dialog.
   }
@@ -232,9 +229,7 @@ CrostiniInstallerView* CrostiniInstallerView::GetActiveViewForTesting() {
 }
 
 CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
-    : app_name_(base::ASCIIToUTF16(kCrostiniTerminalAppName)),
-      profile_(profile),
-      weak_ptr_factory_(this) {
+    : profile_(profile), weak_ptr_factory_(this) {
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
@@ -247,7 +242,7 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
   // the UI has been fleshed out more.
   const base::string16 device_type = ui::GetChromeOSDeviceName();
   const base::string16 message = l10n_util::GetStringFUTF16(
-      IDS_CROSTINI_INSTALLER_BODY, device_type, app_name_,
+      IDS_CROSTINI_INSTALLER_BODY,
       ui::FormatBytesWithUnits(kDownloadSizeInBytes, ui::DATA_UNITS_MEBIBYTE,
                                /*show_units=*/true));
   message_label_ = new views::Label(message);
