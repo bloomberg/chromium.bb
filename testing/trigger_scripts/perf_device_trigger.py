@@ -45,6 +45,7 @@ This script is normally called from the swarming recipe module in tools/build.
 """
 
 import argparse
+import copy
 import json
 import os
 import subprocess
@@ -124,20 +125,25 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
     # First make sure the number of shards doesn't exceed the
     # number of eligible bots.  This means there is a config error somewhere.
     if args.shards > len(self._eligible_bots_by_ids):
+      if verbose:
+        self._print_device_affinity_info({}, {},
+          self._eligible_bots_by_ids, args.shards)
       raise ValueError('Not enough available machines exist in in swarming'
                        'pool. Contact labs to rack in more hardware')
 
     shard_to_bot_assignment_map = {}
-    unallocated_bots_by_ids = self._eligible_bots_by_ids.copy()
+    unallocated_bots_by_ids = copy.deepcopy(self._eligible_bots_by_ids)
     for shard_index in xrange(args.shards):
       bot_id = self._query_swarming_for_last_shard_id(shard_index)
       if bot_id and bot_id in unallocated_bots_by_ids:
-        bot = self._eligible_bots_by_ids[bot_id]
+        bot = unallocated_bots_by_ids[bot_id]
         shard_to_bot_assignment_map[shard_index] = bot
         unallocated_bots_by_ids.pop(bot_id)
       else:
         shard_to_bot_assignment_map[shard_index] = None
 
+    # Maintain the current map for debugging purposes
+    existing_shard_bot_to_shard_map = copy.deepcopy(shard_to_bot_assignment_map)
     # Now create sets of remaining healthy and bad bots
     unallocated_healthy_bots = {
         b for b in unallocated_bots_by_ids.values() if b.is_alive()}
@@ -169,7 +175,37 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
     for shard_index in xrange(args.shards):
       selected_configs.append(self._find_bot_config_index(
           shard_to_bot_assignment_map[shard_index].id()))
+    if verbose:
+      self._print_device_affinity_info(
+        shard_to_bot_assignment_map,
+        existing_shard_bot_to_shard_map,
+        self._eligible_bots_by_ids, args.shards)
     return selected_configs
+
+
+  def _print_device_affinity_info(
+      self, new_map, existing_map, health_map, num_shards):
+    for shard_index in xrange(num_shards):
+      existing = existing_map.get(shard_index, None)
+      new = new_map.get(shard_index, None)
+      existing_id = ""
+      if existing:
+        existing_id = existing.id()
+      new_id = ""
+      if new:
+        new_id = new.id()
+      print "Shard %d\n\tprevious: %s\n\tnew: %s" % (
+          shard_index, existing_id, new_id)
+
+    healthy_bots = []
+    dead_bots = []
+    for _, b in health_map.iteritems():
+      if b.is_alive():
+        healthy_bots.append(b.id())
+      else:
+        dead_bots.append(b.id())
+    print "Healthy bots: %s" % healthy_bots
+    print "Dead Bots: %s" % dead_bots
 
 
   def _query_swarming_for_eligible_bot_configs(self, dimensions):
