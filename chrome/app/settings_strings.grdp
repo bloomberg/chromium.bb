@@ -4146,7 +4146,7 @@
       Better Together
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_SETUP_SUMMARY" desc="Description of the idea that the user can get a better experience on their Chromebook by connecting it to their phone.">
-      Your Chromebook works even better with your phone <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more.<ph name="LINK_END">&lt;/a&gt;</ph>
+      Your Chromebook works even better with your phone. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more.<ph name="LINK_END">&lt;/a&gt;</ph>
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_VERIFICATION_TEXT" desc="Text to tell user that their Chromebook needs to verify that it can connect with their phone.">
       Waiting for verification. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more.<ph name="LINK_END">&lt;/a&gt;</ph>
