@@ -241,26 +241,18 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (BOOL)isSelectedCellVisible {
   if (self.activePage != self.currentPage)
     return NO;
-  switch (self.activePage) {
-    case TabGridPageIncognitoTabs:
-      return self.incognitoTabsViewController.selectedCellVisible;
-    case TabGridPageRegularTabs:
-      return self.regularTabsViewController.selectedCellVisible;
-    case TabGridPageRemoteTabs:
-      return NO;
-  }
+  GridViewController* gridViewController =
+      [self gridViewControllerForPage:self.activePage];
+  return gridViewController == nil ? NO
+                                   : gridViewController.selectedCellVisible;
 }
 
 - (GridTransitionLayout*)layoutForTransitionContext:
     (id<UIViewControllerContextTransitioning>)context {
-  switch (self.currentPage) {
-    case TabGridPageIncognitoTabs:
-      return [self.incognitoTabsViewController transitionLayout];
-    case TabGridPageRegularTabs:
-      return [self.regularTabsViewController transitionLayout];
-    case TabGridPageRemoteTabs:
-      return nil;
-  }
+  GridViewController* gridViewController =
+      [self gridViewControllerForPage:self.activePage];
+  return gridViewController == nil ? nil
+                                   : [gridViewController transitionLayout];
 }
 
 - (UIView*)proxyContainerForTransitionContext:
@@ -308,6 +300,19 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 #pragma mark - Private
+
+// Returns the corresponding GridViewController for |page|. Returns |nil| if
+// page does not have a corresponding GridViewController.
+- (GridViewController*)gridViewControllerForPage:(TabGridPage)page {
+  switch (page) {
+    case TabGridPageIncognitoTabs:
+      return self.incognitoTabsViewController;
+    case TabGridPageRegularTabs:
+      return self.regularTabsViewController;
+    case TabGridPageRemoteTabs:
+      return nil;
+  }
+}
 
 - (void)setCurrentPage:(TabGridPage)currentPage {
   [self setCurrentPage:currentPage animated:NO];
@@ -638,18 +643,13 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)configureDoneButtonBasedOnPage:(TabGridPage)page {
-  switch (page) {
-    case TabGridPageIncognitoTabs:
-      self.doneButton.enabled = !self.incognitoTabsViewController.gridEmpty;
-      break;
-    case TabGridPageRegularTabs:
-      self.doneButton.enabled = !self.regularTabsViewController.gridEmpty;
-      break;
-    case TabGridPageRemoteTabs:
-      NOTREACHED() << "The done button should not be configured based on the "
-                      "contents of the recent tabs page.";
-      break;
+  GridViewController* gridViewController =
+      [self gridViewControllerForPage:page];
+  if (!gridViewController) {
+    NOTREACHED() << "The done button should not be configured based on the "
+                    "contents of the recent tabs page.";
   }
+  self.doneButton.enabled = !gridViewController.gridEmpty;
 }
 
 - (void)configureCloseAllButtonForCurrentPageAndUndoAvailability {
@@ -665,17 +665,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     return;
   }
   // Otherwise setup as a Close All button.
-  switch (self.currentPage) {
-    case TabGridPageIncognitoTabs:
-      self.closeAllButton.enabled = !self.incognitoTabsViewController.gridEmpty;
-      break;
-    case TabGridPageRegularTabs:
-      self.closeAllButton.enabled = !self.regularTabsViewController.gridEmpty;
-      break;
-    case TabGridPageRemoteTabs:
-      self.closeAllButton.enabled = NO;
-      break;
-  }
+  GridViewController* gridViewController =
+      [self gridViewControllerForPage:self.currentPage];
+  self.closeAllButton.enabled =
+      gridViewController == nil ? NO : !gridViewController.gridEmpty;
   [self.closeAllButton
       setTitle:l10n_util::GetNSString(IDS_IOS_TAB_GRID_CLOSE_ALL_BUTTON)
       forState:UIControlStateNormal];
@@ -814,7 +807,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     newActivePage = self.activePage;
   }
   self.activePage = newActivePage;
-  [self.tabPresentationDelegate showActiveTabInPage:newActivePage];
+  // Holding the done button down when it is enabled could result in done tap
+  // being triggered on release after tabs have been closed and the button
+  // disabled. Ensure that action is only taken on a valid state.
+  if (![[self gridViewControllerForPage:newActivePage] isGridEmpty]) {
+    [self.tabPresentationDelegate showActiveTabInPage:newActivePage];
+  }
 }
 
 - (void)closeAllButtonTapped:(id)sender {
