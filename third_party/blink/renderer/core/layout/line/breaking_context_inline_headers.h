@@ -900,8 +900,10 @@ ALWAYS_INLINE bool BreakingContext::Hyphenate(
   float max_prefix_width = width_.AvailableWidth() - width_.CurrentWidth() -
                            hyphen_width - last_space_word_spacing;
 
-  if (max_prefix_width <= Hyphenation::MinimumPrefixWidth(font))
+  if (max_prefix_width <=
+      font.GetFontDescription().MinimumPrefixWidthToHyphenate()) {
     return false;
+  }
 
   TextRun run = ConstructTextRun(font, text, start, len, style);
   run.SetTabSize(!collapse_white_space_, style.GetTabSize());

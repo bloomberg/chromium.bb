@@ -29,7 +29,6 @@ void FontGlobalContext::ClearMemory() {
 
 void FontGlobalContext::ClearForTesting() {
   FontGlobalContext* ctx = Get();
-  ctx->layout_locale_data_ = LayoutLocale::PerThreadData();
   ctx->font_cache_.Invalidate();
 }
 

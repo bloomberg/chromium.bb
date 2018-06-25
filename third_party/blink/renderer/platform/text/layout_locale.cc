@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/layout_locale.h"
+#include "third_party/blink/renderer/platform/text/layout_locale.h"
 
 #include "base/compiler_specific.h"
-#include "third_party/blink/renderer/platform/fonts/font_global_context.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/text/hyphenation.h"
 #include "third_party/blink/renderer/platform/text/icu_error.h"
@@ -13,11 +12,31 @@
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 
 #include <hb.h>
 #include <unicode/locid.h>
 
 namespace blink {
+
+namespace {
+
+struct PerThreadData {
+  HashMap<AtomicString, scoped_refptr<LayoutLocale>, CaseFoldingHash>
+      locale_map;
+  const LayoutLocale* default_locale = nullptr;
+  const LayoutLocale* system_locale = nullptr;
+  const LayoutLocale* default_locale_for_han = nullptr;
+  bool default_locale_for_han_computed = false;
+  String current_accept_languages;
+};
+
+PerThreadData& GetPerThreadData() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<PerThreadData>, data, ());
+  return *data;
+}
+
+}  // namespace
 
 static hb_language_t ToHarfbuzLanguage(const AtomicString& locale) {
   CString locale_as_latin1 = locale.Latin1();
@@ -84,7 +103,7 @@ const LayoutLocale* LayoutLocale::LocaleForHan(
   if (content_locale && content_locale->HasScriptForHan())
     return content_locale;
 
-  PerThreadData& data = FontGlobalContext::GetLayoutLocaleData();
+  PerThreadData& data = GetPerThreadData();
   if (UNLIKELY(!data.default_locale_for_han_computed)) {
     // Use the first acceptLanguages that can disambiguate.
     Vector<String> languages;
@@ -131,8 +150,7 @@ const LayoutLocale* LayoutLocale::Get(const AtomicString& locale) {
   if (locale.IsNull())
     return nullptr;
 
-  auto result = FontGlobalContext::GetLayoutLocaleData().locale_map.insert(
-      locale, nullptr);
+  auto result = GetPerThreadData().locale_map.insert(locale, nullptr);
   if (result.is_new_entry)
     result.stored_value->value = base::AdoptRef(new LayoutLocale(locale));
   return result.stored_value->value.get();
@@ -140,7 +158,7 @@ const LayoutLocale* LayoutLocale::Get(const AtomicString& locale) {
 
 // static
 const LayoutLocale& LayoutLocale::GetDefault() {
-  PerThreadData& data = FontGlobalContext::GetLayoutLocaleData();
+  PerThreadData& data = GetPerThreadData();
   if (UNLIKELY(!data.default_locale)) {
     AtomicString language = DefaultLanguage();
     data.default_locale =
@@ -151,7 +169,7 @@ const LayoutLocale& LayoutLocale::GetDefault() {
 
 // static
 const LayoutLocale& LayoutLocale::GetSystem() {
-  PerThreadData& data = FontGlobalContext::GetLayoutLocaleData();
+  PerThreadData& data = GetPerThreadData();
   if (UNLIKELY(!data.system_locale)) {
     // Platforms such as Windows can give more information than the default
     // locale, such as "en-JP" for English speakers in Japan.
@@ -241,13 +259,18 @@ AtomicString LayoutLocale::LocaleWithBreakKeyword(
 
 // static
 void LayoutLocale::AcceptLanguagesChanged(const String& accept_languages) {
-  PerThreadData& data = FontGlobalContext::GetLayoutLocaleData();
+  PerThreadData& data = GetPerThreadData();
   if (data.current_accept_languages == accept_languages)
     return;
 
   data.current_accept_languages = accept_languages;
   data.default_locale_for_han = nullptr;
   data.default_locale_for_han_computed = false;
+}
+
+// static
+void LayoutLocale::ClearForTesting() {
+  GetPerThreadData() = PerThreadData();
 }
 
 }  // namespace blink

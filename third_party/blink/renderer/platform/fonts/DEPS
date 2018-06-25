@@ -14,7 +14,6 @@ include_rules = [
     "+third_party/blink/renderer/platform/histogram.h",
     "+third_party/blink/renderer/platform/instrumentation",
     "+third_party/blink/renderer/platform/language.h",
-    "+third_party/blink/renderer/platform/layout_locale.h",
     "+third_party/blink/renderer/platform/layout_test_support.h",
     "+third_party/blink/renderer/platform/layout_unit.h",
     "+third_party/blink/renderer/platform/mac/version_util_mac.h",

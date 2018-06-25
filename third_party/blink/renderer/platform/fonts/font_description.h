@@ -40,7 +40,7 @@
 #include "third_party/blink/renderer/platform/fonts/opentype/font_settings.h"
 #include "third_party/blink/renderer/platform/fonts/text_rendering_mode.h"
 #include "third_party/blink/renderer/platform/fonts/typesetting_features.h"
-#include "third_party/blink/renderer/platform/layout_locale.h"
+#include "third_party/blink/renderer/platform/text/layout_locale.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
@@ -335,6 +335,8 @@ class PLATFORM_EXPORT FontDescription {
   }
 
   SkFontStyle SkiaFontStyle() const;
+
+  int MinimumPrefixWidthToHyphenate() const;
 
   String ToString() const;
 

@@ -7,8 +7,7 @@
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/fonts/font_global_context.h"
-#include "third_party/blink/renderer/platform/layout_locale.h"
+#include "third_party/blink/renderer/platform/text/layout_locale.h"
 
 using testing::ElementsAre;
 using testing::ElementsAreArray;
@@ -33,7 +32,7 @@ class NoHyphenation : public Hyphenation {
 
 class HyphenationTest : public testing::Test {
  protected:
-  void TearDown() override { FontGlobalContext::ClearForTesting(); }
+  void TearDown() override { LayoutLocale::ClearForTesting(); }
 
 #if defined(USE_MINIKIN_HYPHENATION) || defined(OS_MACOSX)
   // Get a |Hyphenation| instnace for the specified locale for testing.

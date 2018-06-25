@@ -369,6 +369,17 @@ SkFontStyle FontDescription::SkiaFontStyle() const {
   return SkFontStyle(skia_weight, skia_width, slant);
 }
 
+int FontDescription::MinimumPrefixWidthToHyphenate() const {
+  // If the maximum width available for the prefix before the hyphen is small,
+  // then it is very unlikely that an hyphenation opportunity exists, so do not
+  // bother to look for it.  These are heuristic numbers for performance added
+  // in http://wkb.ug/45606
+  const int kMinimumPrefixWidthNumerator = 5;
+  const int kMinimumPrefixWidthDenominator = 4;
+  return ComputedPixelSize() * kMinimumPrefixWidthNumerator /
+         kMinimumPrefixWidthDenominator;
+}
+
 String FontDescription::ToString(GenericFamilyType familyType) {
   switch (familyType) {
     case GenericFamilyType::kNoFamily:

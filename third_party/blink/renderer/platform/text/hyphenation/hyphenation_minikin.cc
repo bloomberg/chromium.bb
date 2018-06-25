@@ -16,9 +16,9 @@
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/hyphenation/hyphenation.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/platform/layout_locale.h"
 #include "third_party/blink/renderer/platform/text/character.h"
 #include "third_party/blink/renderer/platform/text/hyphenation/hyphenator_aosp.h"
+#include "third_party/blink/renderer/platform/text/layout_locale.h"
 
 namespace blink {
 

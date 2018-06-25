@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/text/hyphenation.h"
 
-#include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
@@ -32,17 +31,6 @@ Vector<size_t, 8> Hyphenation::HyphenLocations(const StringView& text) const {
     hyphen_locations.push_back(hyphen_location);
 
   return hyphen_locations;
-}
-
-int Hyphenation::MinimumPrefixWidth(const Font& font) {
-  // If the maximum width available for the prefix before the hyphen is small,
-  // then it is very unlikely that an hyphenation opportunity exists, so do not
-  // bother to look for it.  These are heuristic numbers for performance added
-  // in http://wkb.ug/45606
-  const int kMinimumPrefixWidthNumerator = 5;
-  const int kMinimumPrefixWidthDenominator = 4;
-  return font.GetFontDescription().ComputedPixelSize() *
-         kMinimumPrefixWidthNumerator / kMinimumPrefixWidthDenominator;
 }
 
 }  // namespace blink

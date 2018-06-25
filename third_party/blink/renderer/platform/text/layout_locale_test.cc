@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/layout_locale.h"
+#include "third_party/blink/renderer/platform/text/layout_locale.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/fonts/font_global_context.h"
 
 namespace blink {
 
 TEST(LayoutLocaleTest, Get) {
-  FontGlobalContext::ClearForTesting();
+  LayoutLocale::ClearForTesting();
 
   EXPECT_EQ(nullptr, LayoutLocale::Get(g_null_atom));
 
@@ -21,7 +20,7 @@ TEST(LayoutLocaleTest, Get) {
   EXPECT_STRCASEEQ("ja-jp",
                    LayoutLocale::Get("ja-jp")->LocaleString().Ascii().data());
 
-  FontGlobalContext::ClearForTesting();
+  LayoutLocale::ClearForTesting();
 }
 
 TEST(LayoutLocaleTest, GetCaseInsensitive) {

@@ -1034,7 +1034,7 @@ static float MaxWordFragmentWidth(LayoutText* layout_text,
     return 0;
 
   float minimum_fragment_width_to_consider =
-      Hyphenation::MinimumPrefixWidth(font);
+      font.GetFontDescription().MinimumPrefixWidthToHyphenate();
   float max_fragment_width = 0;
   TextRun run = ConstructTextRun(font, layout_text, word_offset, word_length,
                                  style, text_direction);

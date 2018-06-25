@@ -7,8 +7,8 @@
 
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_font_cache.h"
-#include "third_party/blink/renderer/platform/layout_locale.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/text/layout_locale.h"
 
 struct hb_font_funcs_t;
 
@@ -40,10 +40,6 @@ class PLATFORM_EXPORT FontGlobalContext {
     Get()->harfbuzz_font_funcs_ = funcs;
   }
 
-  static LayoutLocale::PerThreadData& GetLayoutLocaleData() {
-    return Get()->layout_locale_data_;
-  }
-
   // Called by MemoryCoordinator to clear memory.
   static void ClearMemory();
 
@@ -58,7 +54,6 @@ class PLATFORM_EXPORT FontGlobalContext {
   FontCache font_cache_;
   HarfBuzzFontCache harf_buzz_font_cache_;
   hb_font_funcs_t* harfbuzz_font_funcs_;
-  LayoutLocale::PerThreadData layout_locale_data_;
 };
 
 }  // namespace blink
