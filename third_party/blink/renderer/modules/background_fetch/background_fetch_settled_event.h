@@ -40,7 +40,7 @@ class MODULES_EXPORT BackgroundFetchSettledEvent : public BackgroundFetchEvent {
   // Web Exposed attribute defined in the IDL file.
   BackgroundFetchSettledFetches* fetches() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(blink::Visitor* visitor) override;
 
  protected:
   BackgroundFetchSettledEvent(

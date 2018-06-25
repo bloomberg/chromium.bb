@@ -39,7 +39,7 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
   // data, and passes the bitmap to the given callback.
   void Start(BackgroundFetchBridge* bridge,
              ExecutionContext* execution_context,
-             HeapVector<ManifestImageResource>,
+             HeapVector<ManifestImageResource> icons,
              IconCallback callback);
 
   // Cancels the pending load, if there is one. The |icon_callback_| will not
