@@ -114,6 +114,13 @@
 
 - (void)webStateDidChangeVisibleSecurityState:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
+  // Currently, because of https://crbug.com/448486 , interstitials are not
+  // commited navigations. This means that if a security interstitial (e.g. for
+  // broken HTTPS) is shown, didFinishNavigation: is not called, and
+  // didChangeVisibleSecurityState: is the only chance to update the URL.
+  // Otherwise it would be preferable to only update the icon here.
+  [self notifyConsumerOfChangedLocation];
+
   [self notifyConsumerOfChangedSecurityIcon];
 }
 
