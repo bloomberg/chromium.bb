@@ -242,14 +242,6 @@ void LayoutObjectChildList::InvalidatePaintOnRemoval(LayoutObject& old_child) {
     old_child.View()->SetShouldDoFullPaintInvalidation();
   ObjectPaintInvalidator paint_invalidator(old_child);
   paint_invalidator.SlowSetPaintingLayerNeedsRepaint();
-
-  // For SPv175 raster invalidation will be done in PaintController.
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
-  paint_invalidator.InvalidatePaintOfPreviousVisualRect(
-      old_child.ContainerForPaintInvalidation(),
-      PaintInvalidationReason::kDisappeared);
 }
 
 }  // namespace blink

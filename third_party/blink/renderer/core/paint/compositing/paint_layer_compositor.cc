@@ -659,9 +659,6 @@ void PaintLayerCompositor::PaintInvalidationOnCompositingChange(
   // to the previous frame's compositing state when changing the compositing
   // backing of the layer.
   DisableCompositingQueryAsserts disabler;
-  // We have to do immediate paint invalidation because compositing will change.
-  DisablePaintInvalidationStateAsserts paint_invalidation_assertisabler;
-
   ObjectPaintInvalidator(layer->GetLayoutObject())
       .InvalidatePaintIncludingNonCompositingDescendants();
 }

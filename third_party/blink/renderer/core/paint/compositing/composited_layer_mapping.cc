@@ -1112,9 +1112,6 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
         offset_from_squash_layer_origin + new_offset_from_layout_object;
     if (layers[i].offset_from_layout_object_set &&
         layers[i].offset_from_layout_object != new_offset_from_layout_object) {
-      // It is ok to issue paint invalidation here, because all of the geometry
-      // needed to correctly invalidate paint is computed by this point.
-      DisablePaintInvalidationStateAsserts disabler;
       ObjectPaintInvalidator(layers[i].paint_layer->GetLayoutObject())
           .InvalidatePaintIncludingNonCompositingDescendants();
 
@@ -3024,69 +3021,6 @@ void CompositedLayerMapping::SetContentsNeedDisplay() {
   // FIXME: need to split out paint invalidations for the background.
   ApplyToGraphicsLayers(this, SetContentsNeedsDisplayFunctor(),
                         kApplyToContentLayers);
-}
-
-struct SetContentsNeedsDisplayInRectFunctor {
-  void operator()(GraphicsLayer* layer) const {
-    if (layer->DrawsContent()) {
-      IntRect layer_dirty_rect = r;
-      layer_dirty_rect.Move(-layer->OffsetFromLayoutObject());
-      layer->SetNeedsDisplayInRect(layer_dirty_rect, invalidation_reason,
-                                   client);
-    }
-  }
-
-  IntRect r;
-  PaintInvalidationReason invalidation_reason;
-  const DisplayItemClient& client;
-};
-
-void CompositedLayerMapping::SetContentsNeedDisplayInRect(
-    const LayoutRect& r,
-    PaintInvalidationReason invalidation_reason,
-    const DisplayItemClient& client) {
-  DCHECK(!owning_layer_.GetLayoutObject().UsesCompositedScrolling());
-  // TODO(wangxianzhu): Enable the following assert after paint invalidation for
-  // spv2 is ready.
-  // DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
-
-  SetContentsNeedsDisplayInRectFunctor functor = {
-      EnclosingIntRect(LayoutRect(
-          r.Location() + owning_layer_.SubpixelAccumulation(), r.Size())),
-      invalidation_reason, client};
-  ApplyToGraphicsLayers(this, functor, kApplyToContentLayers);
-}
-
-void CompositedLayerMapping::SetNonScrollingContentsNeedDisplayInRect(
-    const LayoutRect& r,
-    PaintInvalidationReason invalidation_reason,
-    const DisplayItemClient& client) {
-  DCHECK(owning_layer_.GetLayoutObject().UsesCompositedScrolling());
-  // TODO(wangxianzhu): Enable the following assert after paint invalidation for
-  // spv2 is ready.
-  // DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
-
-  SetContentsNeedsDisplayInRectFunctor functor = {
-      EnclosingIntRect(LayoutRect(
-          r.Location() + owning_layer_.SubpixelAccumulation(), r.Size())),
-      invalidation_reason, client};
-  ApplyToGraphicsLayers(this, functor, kApplyToNonScrollingContentLayers);
-}
-
-void CompositedLayerMapping::SetScrollingContentsNeedDisplayInRect(
-    const LayoutRect& r,
-    PaintInvalidationReason invalidation_reason,
-    const DisplayItemClient& client) {
-  DCHECK(owning_layer_.GetLayoutObject().UsesCompositedScrolling());
-  // TODO(wangxianzhu): Enable the following assert after paint invalidation for
-  // spv2 is ready.
-  // DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
-
-  SetContentsNeedsDisplayInRectFunctor functor = {
-      EnclosingIntRect(LayoutRect(
-          r.Location() + owning_layer_.SubpixelAccumulation(), r.Size())),
-      invalidation_reason, client};
-  ApplyToGraphicsLayers(this, functor, kApplyToScrollingContentLayers);
 }
 
 void CompositedLayerMapping::SetNeedsCheckRasterInvalidation() {

@@ -26,18 +26,8 @@ void TableCellPaintInvalidator::InvalidateContainerForCellGeometryChange(
   // At this time we have already walked the container for paint invalidation,
   // so we should invalidate the container immediately here instead of setting
   // paint invalidation flags.
-  ObjectPaintInvalidator invalidator(container);
   container_context.painting_layer->SetNeedsRepaint();
   container.InvalidateDisplayItemClients(PaintInvalidationReason::kGeometry);
-
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      context_.paint_invalidation_container !=
-          container_context.paint_invalidation_container) {
-    ObjectPaintInvalidatorWithContext(container, container_context)
-        .InvalidatePaintRectangleWithContext(
-            container.FirstFragment().VisualRect(),
-            PaintInvalidationReason::kGeometry);
-  }
 }
 
 PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {

@@ -173,18 +173,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
   void SetSquashingContentsNeedDisplay();
   void SetContentsNeedDisplay();
-  // LayoutRect is in the coordinate space of the layer's layout object.
-  void SetContentsNeedDisplayInRect(const LayoutRect&,
-                                    PaintInvalidationReason,
-                                    const DisplayItemClient&);
-  // Invalidates just the non-scrolling content layers.
-  void SetNonScrollingContentsNeedDisplayInRect(const LayoutRect&,
-                                                PaintInvalidationReason,
-                                                const DisplayItemClient&);
-  // Invalidates just scrolling content layers.
-  void SetScrollingContentsNeedDisplayInRect(const LayoutRect&,
-                                             PaintInvalidationReason,
-                                             const DisplayItemClient&);
 
   // Let all DrawsContent GraphicsLayers check raster invalidations after
   // a no-change paint.

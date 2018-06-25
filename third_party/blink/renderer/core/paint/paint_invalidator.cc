@@ -144,84 +144,15 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRect(
     }
   }
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // In SPv175, visual rects are in the space of their local transform node.
-    // For SVG, the input rect is in local SVG coordinates in which paint
-    // offset doesn't apply.
-    if (!is_svg_child)
-      rect.MoveBy(Point(context.fragment_data->PaintOffset()));
-    ExcludeCompositedLayerSubpixelAccumulation<Rect, Point>(object, context,
-                                                            rect);
-    // Use EnclosingIntRect to ensure the final visual rect will cover the rect
-    // in source coordinates no matter if the painting will snap to pixels.
-    return LayoutRect(EnclosingIntRect(rect));
-  }
-
-  LayoutRect result;
-  if (context.subtree_flags & PaintInvalidatorContext::kSubtreeSlowPathRect) {
-    result = SlowMapToVisualRectInAncestorSpace(
-        object, *context.paint_invalidation_container, rect);
-  } else if (object == context.paint_invalidation_container) {
-    result = LayoutRect(rect);
-  } else {
-    // For non-root SVG, the input rect is in local SVG coordinates in which
-    // paint offset doesn't apply.
-    if (!is_svg_child)
-      rect.MoveBy(Point(context.fragment_data->PaintOffset()));
-
-    auto container_contents_properties =
-        context.paint_invalidation_container->FirstFragment()
-            .ContentsProperties();
-    DCHECK(
-        !context.paint_invalidation_container->FirstFragment().NextFragment());
-    if (context.tree_builder_context_->current.transform ==
-            container_contents_properties.Transform() &&
-        context.tree_builder_context_->current.clip ==
-            container_contents_properties.Clip() &&
-        context.tree_builder_context_->current_effect ==
-            container_contents_properties.Effect()) {
-      result = LayoutRect(rect);
-    } else {
-      // Use enclosingIntRect to ensure the final visual rect will cover the
-      // rect in source coordinates no matter if the painting will use pixel
-      // snapping, when transforms are applied. If there is no transform,
-      // enclosingIntRect is applied in the last step of paint invalidation
-      // (see CompositedLayerMapping::setContentsNeedDisplayInRect()).
-      if (!is_svg_child && context.tree_builder_context_->current.transform !=
-                               container_contents_properties.Transform())
-        rect = Rect(EnclosingIntRect(rect));
-
-      PropertyTreeState current_tree_state(
-          context.tree_builder_context_->current.transform,
-          context.tree_builder_context_->current.clip,
-          context.tree_builder_context_->current_effect);
-
-      FloatClipRect float_rect((FloatRect(rect)));
-
-      GeometryMapper::LocalToAncestorVisualRect(
-          current_tree_state, container_contents_properties, float_rect);
-      result = LayoutRect(float_rect.Rect());
-    }
-
-    // Convert the result to the paint invalidation container's contents space.
-    // If the paint invalidation container has a transform node associated
-    // with it (due to scroll or transform), then its PaintOffset
-    // must be zero or equal to its subpixel accumulation, since in all
-    // such cases we allocate a paint offset translation transform.
-    result.MoveBy(
-        -context.paint_invalidation_container->FirstFragment().PaintOffset());
-  }
-
-  if (!result.IsEmpty())
-    result.Inflate(object.VisualRectOutsetForRasterEffects());
-
-  PaintLayer::MapRectInPaintInvalidationContainerToBacking(
-      *context.paint_invalidation_container, result);
-
-  result.Move(object.ScrollAdjustmentForPaintInvalidation(
-      *context.paint_invalidation_container));
-
-  return result;
+  // Visual rects are in the space of their local transform node. For SVG, the
+  // input rect is in local SVG coordinates in which paint offset doesn't apply.
+  if (!is_svg_child)
+    rect.MoveBy(Point(context.fragment_data->PaintOffset()));
+  ExcludeCompositedLayerSubpixelAccumulation<Rect, Point>(object, context,
+                                                          rect);
+  // Use EnclosingIntRect to ensure the final visual rect will cover the rect
+  // in source coordinates no matter if the painting will snap to pixels.
+  return LayoutRect(EnclosingIntRect(rect));
 }
 
 void PaintInvalidatorContext::MapLocalRectToVisualRect(
@@ -609,11 +540,9 @@ void PaintInvalidator::InvalidatePaint(
 
   // The object is under a frame for WebViewPlugin, SVG images etc. Need to
   // inform the chrome client of the invalidation so that the client will
-  // initiate painting of the contents. For SPv1 this is done by
-  // ObjectPaintInvalidator::InvalidatePaintUsingContainer().
+  // initiate painting of the contents.
   // TODO(wangxianzhu): Do we need this for SPv2?
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
       !context.paint_invalidation_container->IsPaintInvalidationContainer() &&
       object.GetPaintInvalidationReason() != PaintInvalidationReason::kNone)
     InvalidateChromeClient(*context.paint_invalidation_container);
