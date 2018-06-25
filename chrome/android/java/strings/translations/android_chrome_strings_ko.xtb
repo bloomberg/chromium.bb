@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">다운로드 일시중지됨</translation>
 <translation id="1389974829397082527">이 폴더에는 북마크가 없습니다.</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" />에서 검색</translation>
+<translation id="1397854323885047133">동기화 및 맞춤설정</translation>
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" />에 포함됨</translation>
 <translation id="1406000523432664303">'추적 안함'</translation>
 <translation id="1407135791313364759">모두 열기</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">Google에서 추천한 맞춤설정 콘텐츠를 받으려면 Chrome에 로그인합니다.</translation>
 <translation id="2091887806945687916">소리</translation>
 <translation id="2095887075102408547">이 기능을 사용 설정하면 Chrome은 Google 서버를 이용해 방문한 페이지를 압축한 후 다운로드합니다. 비공개 연결(HTTPS)이나 시크릿 탭을 통해 액세스한 페이지는 Google에서 최적화하거나 볼 수 없습니다.</translation>
+<translation id="2096012225669085171">모든 기기 동기화 및 맞춤설정</translation>
 <translation id="2100273922101894616">자동 로그인</translation>
 <translation id="2111511281910874386">페이지로 이동</translation>
 <translation id="2122601567107267586">앱을 열 수 없음</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">URL 복사</translation>
 <translation id="2156074688469523661">남은 사이트(<ph name="NUMBER_OF_SITES" />개)</translation>
 <translation id="2184766556418880456">탭하여 현재 탭에서 새 탭 페이지로 이동하세요.</translation>
-<translation id="219985413780390209">위험한 사이트로부터 사용자와 기기 보호</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, 웹 앱. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" />(으)로 계속</translation>
 <translation id="2232379019872353004">일부 시스템 정보와 페이지 콘텐츠를 Google로 전송</translation>
+<translation id="2234876718134438132">동기화 및 Google 서비스</translation>
 <translation id="2259659629660284697">비밀번호 내보내기...</translation>
 <translation id="2268044343513325586">상세검색</translation>
 <translation id="2286841657746966508">결제주소</translation>
@@ -375,7 +377,7 @@
 <translation id="4278390842282768270">허용됨</translation>
 <translation id="4307992518367153382">기본설정</translation>
 <translation id="4351244548802238354">대화상자 닫기</translation>
-<translation id="4378154925671717803">휴대전화</translation>
+<translation id="4378154925671717803">전화기</translation>
 <translation id="4384468725000734951">검색할 때 Sogou 사용</translation>
 <translation id="4404568932422911380">북마크 없음</translation>
 <translation id="4409723563706114196">페이지 예측 사용</translation>
@@ -405,9 +407,10 @@
 <translation id="4581964774250883625">시크릿 모드로 전환됨</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{#분 전}other{#분 전}}</translation>
 <translation id="4587589328781138893">사이트</translation>
-<translation id="4594952190837476234">이 페이지는 <ph name="CREATION_TIME" />에 생성되었으며 온라인 버전과 다를 수 있습니다.</translation>
+<translation id="4594952190837476234">이 오프라인 페이지는 <ph name="CREATION_TIME" />에 생성되었으며 온라인 버전과 다를 수 있습니다.</translation>
 <translation id="4605958867780575332"><ph name="ITEM_TITLE" /> 삭제됨</translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> 열기</translation>
+<translation id="4634124774493850572">비밀번호 사용</translation>
 <translation id="4645575059429386691">부모님이 관리합니다.</translation>
 <translation id="4663756553811254707">북마크 <ph name="NUMBER_OF_BOOKMARKS" />개 삭제됨</translation>
 <translation id="4665282149850138822"><ph name="NAME" />이(가) 홈 화면에 추가됨</translation>
@@ -583,6 +586,7 @@
 <translation id="5958275228015807058">다운로드에서 파일 및 페이지를 찾아보세요.</translation>
 <translation id="5962718611393537961">탭하여 접기</translation>
 <translation id="6000066717592683814">계속 Google 사용</translation>
+<translation id="6005538289190791541">추천 비밀번호</translation>
 <translation id="6039379616847168523">다음 탭으로 이동</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="6042308850641462728">더보기</translation>
@@ -743,7 +747,7 @@
 <translation id="7359002509206457351">결제 수단 액세스</translation>
 <translation id="7366340029385295517"><ph name="SCREEN_NAME" />(으)로 전송 중</translation>
 <translation id="7375125077091615385">유형:</translation>
-<translation id="7396940094317457632"><ph name="FILE_NAME" />(이)가 다운로드되었습니다.</translation>
+<translation id="7396940094317457632">파일(<ph name="FILE_NAME" />)이 다운로드되었습니다.</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Chrome 첫 실행</translation>
 <translation id="741204030948306876">사용</translation>
@@ -811,6 +815,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" />이(가) 이전 버전입니다.</translation>
 <translation id="7947953824732555851">수락 및 로그인</translation>
 <translation id="7963646190083259054">공급업체:</translation>
+<translation id="79859296434321399">증강 현실 콘텐츠를 보려면 ARCore를 설치하세요.</translation>
 <translation id="7987073022710626672">Chrome 서비스 약관</translation>
 <translation id="7998918019931843664">닫은 탭 다시 열기</translation>
 <translation id="7999064672810608036">쿠키를 포함하여 이 웹사이트의 데이터를 모두 삭제하고 모든 권한을 재설정하시겠습니까?</translation>
@@ -873,6 +878,7 @@
 <translation id="851751545965956758">사이트에서 기기에 연결하지 못하도록 차단</translation>
 <translation id="8523928698583292556">저장된 암호 삭제</translation>
 <translation id="854522910157234410">페이지 열기</translation>
+<translation id="8558485628462305855">증강 현실 콘텐츠를 보려면 ARCore를 업데이트하세요.</translation>
 <translation id="8559990750235505898">다른 언어로 된 페이지의 번역 옵션 제공</translation>
 <translation id="8562452229998620586">저장한 비밀번호가 여기에 표시됩니다.</translation>
 <translation id="8569404424186215731"><ph name="DATE" />부터</translation>

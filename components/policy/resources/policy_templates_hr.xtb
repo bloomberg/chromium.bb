@@ -714,6 +714,7 @@
 <translation id="3034580675120919256">Omogućuje da postavite smiju li web-lokacije pokretati JavaScript. Pokretanje JavaScripta može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije. Ako ovo pravilo nije postavljeno, upotrebljavat će se pravilo "AllowJavaScript", a korisnik će to moći promijeniti.</translation>
 <translation id="3038323923255997294">Nastavi izvršavati ​​pozadinske aplikacije po zatvaranju usluge <ph name="PRODUCT_NAME" /></translation>
 <translation id="3046192273793919231">Šalji mrežne pakete poslužitelju za upravljanje radi praćenja online statusa</translation>
+<translation id="3047732214002457234">Odredi način na koji Chromeov alat za čišćenje šalje podatke Googleu</translation>
 <translation id="3048744057455266684">Ako je ovo pravilo postavljeno i ako URL pretraživanja predloženog u višenamjenskom okviru sadrži taj parametar u nizu upita ili identifikatoru fragmenta, prijedlog će prikazati pojmove za pretraživanje i pružatelja usluge pretraživanja umjesto neobrađenog URL-a pretraživanja.
 
           Pravilo nije obavezno. Ako nije postavljeno, neće se vršiti zamjena pojma za pretraživanje.
@@ -1031,6 +1032,7 @@
 
       Ako se to pravilo postavi na True, slat će se mrežni paketi za praćenje (takozvani <ph name="HEARTBEATS_TERM" />).
       Ako se postavi na False ili se ne postavi, paketi se neće slati.</translation>
+<translation id="3950239119790560549">Ograničenja vremena ažuriranja</translation>
 <translation id="3958586912393694012">Dopusti upotrebu Smart Locka</translation>
 <translation id="3963602271515417124">Ako je točno, daljinsko atestiranje dopušteno je za uređaj i certifikat će se automatski generirati i prenijeti na poslužitelj za upravljanje uređajem.
 
@@ -1280,6 +1282,10 @@
 
           Ako ne postavite ovo pravilo, <ph name="PRODUCT_NAME" /> neće dodijeliti vjerodajnice korisnika čak ni ako otkrije da je poslužitelj na intranetu.</translation>
 <translation id="4752880493649142945">Klijentski certifikat za povezivanje s pravilom RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Ako se pravilo postavi na True ili se ne postavi, <ph name="PRODUCT_NAME" /> predlagat će stranice koje su povezane s trenutačnom stranicom.
+      Ti se prijedlozi dohvaćaju daljinski s Googleovih poslužitelja.
+
+      Ako se pravilo postavi na False, prijedlozi se neće dohvaćati ni prikazivati.</translation>
 <translation id="4791031774429044540">Omogući značajku pristupačnosti velikog pokazivača.
 
           Ako se to pravilo postavi na točno, veliki će pokazivač uvijek biti omogućen.
@@ -2094,6 +2100,13 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
           Ako se to pravilo ne postavi, povećalo je onemogućeno pri prvom prikazivanju zaslona za prijavu. Korisnici mogu omogućiti ili onemogućiti povećalo u bilo kojem trenutku, a njegov status na zaslonu za prijavu zadržat će se i za sljedeće korisnike.</translation>
 <translation id="7249828445670652637">Omogući <ph name="PRODUCT_OS_NAME" /> CA certifikate za ARC aplikacije</translation>
+<translation id="725322441686394886">Ako pravilo nije postavljeno, a Chromeov alat za čišćenje otkrije neželjeni softver, Googleu se mogu prijaviti metapodaci o pretraživanju u skladu s pravilima postavljenim pravilom SafeBrowsingExtendedReportingEnabled. Chromeov alat za čišćenje korisniku će zatim postaviti upit želi li ukloniti neželjeni softver. Korisnik može podijeliti rezultate čišćenja s Googleom za pomoć pri budućem otkrivanju neželjenog softvera. Ti rezultati sadrže metapodatke datoteka, automatski instalirana proširenja i ključeve registra kao što je opisano u Dokumentu o privatnosti preglednika Google Chrome.
+
+      Ako se pravilo onemogući, a Chromeov alat za čišćenje otkrije neželjeni softver, Googleu se neće prijaviti metapodaci o pretraživanju, a bilo koje pravilo postavljeno pravilom SafeBrowsingExtendedReportingEnabled bit će nadjačano. Chromeov alat za čišćenje korisniku će postaviti upit želi li ukloniti neželjeni softver. Rezultati čišćenja neće se prijaviti Googleu niti će to korisnik moći učiniti.
+
+      Ako se pravilo omogući, a Chromeov alat za čišćenje otkrije neželjeni softver, Googleu se mogu prijaviti metapodaci o pretraživanju u skladu s pravilima postavljenim pravilom SafeBrowsingExtendedReportingEnabled. Chromeov alat za čišćenje korisniku će postaviti upit želi li ukloniti neželjeni softver. Rezultati čišćenja prijavit će se Googleu i korisnik to neće moći spriječiti.
+
+      To pravilo nije dostupno u instancama Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Omogući skrivanje hosta za daljinski pristup</translation>
 <translation id="7260277299188117560">Omogućeno je automatsko ažuriranje p2p</translation>
 <translation id="7261252191178797385">Slika pozadine uređaja</translation>
@@ -2157,6 +2170,11 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Ako se ta postavka onemogući ili ako se ne konfigurira, korisnici prema želji mogu nastaviti do označene web-lokacije nakon što im se prikazalo upozorenje.
 
       Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
+<translation id="7417728346887499628">Ako se pravilo onemogući, Chromeov alat za čišćenje neće pretraživati sustav radi pronalaženja i uklanjanja neželjenog softvera. Onemogućeno je i ručno aktiviranje Chromeovog alata za čišćenje putem stranice chrome://settings/cleanup.
+
+      Ako se pravilo omogući ili se ne postavi, Chromeov alat za čišćenje povremeno će tražiti neželjeni softver u sustavu i ako ga pronađe, korisniku će postaviti upit za uklanjanje. Omogućeno je i ručno aktiviranje Chromeovog alata za čišćenje putem stranice chrome://settings.
+
+      To pravilo nije dostupno u instancama Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Postotak za skaliranje odgode u stanju mirovanja u načinu prezentacije (obustavljeno)</translation>
 <translation id="7421483919690710988">Postavite veličinu predmemorije medijskog diska u bajtovima</translation>
 <translation id="7424751532654212117">Popis iznimki popisa onemogućenih dodataka</translation>
@@ -2540,6 +2558,7 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="8339420913453596618">Dvostruka autentifikacija onemogućena</translation>
 <translation id="8344454543174932833">Uvoz oznaka iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="8359734107661430198">Omogući ExampleDeprecatedFeature API do 2008/09/02</translation>
+<translation id="8367209241899435947">Omogući Chromeov alat za čišćenje u sustavu Windows</translation>
 <translation id="8369602308428138533">Odgoda isključivanja zaslona za vrijeme napajanja izmjeničnom strujom</translation>
 <translation id="8382184662529825177">Omogući upotrebu daljinske ovjere za zaštitu sadržaja za uređaj</translation>
 <translation id="838870586332499308">Omogući roaming podataka</translation>
@@ -2802,6 +2821,7 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="9150416707757015439">Ovo je pravilo zastarjelo. Umjesto njega upotrijebite "IncognitoModeAvailability". Omogućuje anonimni način u proizvodu <ph name="PRODUCT_NAME" />. Ako je ova postavka omogućena ili nije konfigurirana, korisnici mogu otvarati web-stranice u anonimnom načinu. Ako je postavka onemogućena, korisnici ne mogu otvarati stranice u anonimnom načinu. Ako ovo pravilo nije postavljeno, to će biti omogućeno i korisnik će moći upotrebljavati anonimni način.</translation>
 <translation id="915194831143859291">Ako se to pravilo postavi na "netočno" ili se ne konfigurira, <ph name="PRODUCT_OS_NAME" /> dopustit će korisniku isključivanje uređaja.
       Ako se pravilo postavi na "točno", <ph name="PRODUCT_OS_NAME" /> ponovo će pokrenuti uređaj kada ga korisnik isključi. <ph name="PRODUCT_OS_NAME" /> zamjenjuje sve gumbe za isključivanje na korisničkom sučelju gumbima za ponovno pokretanje. Ako korisnik isključi uređaj tipkom za uključivanje/isključivanje, uređaj se neće automatski ponovo pokrenuti, čak ni ako je to pravilo omogućeno.</translation>
+<translation id="9152473318295429890">Omogući kontekstualne prijedloge povezanih web-stranica</translation>
 <translation id="9158929520101169054">Omogući višestruku prijavu u pregledniku</translation>
 <translation id="9165792353046089850">Omogućuje vam da odredite smiju li web-lokacije dobivati pristup povezanim USB uređajima. Pristup se može potpuno blokirati ili se može tražiti dopuštenje korisnika svaki put kad neka web-lokacija želi pristupiti povezanom USB uređaju.
 
@@ -2837,4 +2857,9 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="944817693306670849">Postavi veličinu predmemorije diska</translation>
 <translation id="981346395360763138">Onemogućene su Googleove usluge lokacije</translation>
 <translation id="982497069985795632">Omogući provjeru pravopisa</translation>
+<translation id="988537626274109600">To pravilo određuje razdoblja tijekom kojih <ph name="PRODUCT_OS_NAME" /> uređaju nije dopušteno automatski tražiti ažuriranja.
+      Ako se pravilo postavi na popis intervala koji nije prazan:
+      Tijekom navedenih intervala uređaji neće moći automatski provjeravati postoje li ažuriranja. To pravilo neće utjecati na uređaje koji se moraju vratiti na stariju verziju ili čija je verzija starija od minimalne verzije <ph name="PRODUCT_OS_NAME" /> zbog potencijalnih sigurnosnih poteškoća. Isto tako, pravilo neće blokirati provjere ažuriranja koje zatraže korisnici ili administratori.
+      Ako se pravilo ne postavi ili ne sadrži nijedan interval:
+      Pravilo neće blokirati automatske provjere ažuriranja, ali one mogu biti blokirane drugim pravilima.</translation>
 </translationbundle>

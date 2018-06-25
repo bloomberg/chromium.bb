@@ -31,6 +31,7 @@
 <translation id="1921819250265091946">يوم</translation>
 <translation id="1930711995431081526">الحالة</translation>
 <translation id="1938124657309484470">يجب أن تكون القيمة <ph name="MAXIMUM_DATE_OR_TIME" /> أو قبل ذلك.</translation>
+<translation id="1946271899482435442">عرض منتقي التاريخ</translation>
 <translation id="1993104285338243655">تم التبديل إلى النسخ المطابق.</translation>
 <translation id="2060505056492490888">تم استخدام "<ph name="DOT" />" في موضع خاطئ في "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">اليوم</translation>
@@ -238,7 +239,6 @@
 <translation id="9138385573473225930">تنبيه</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />، ابتداء من <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">حاشية سُفلية</translation>
-<translation id="947831847158436616">خلية</translation>
 <translation id="954003015749068518">الدخول في وضع "نافذة ضمن نافذة"</translation>
 <translation id="966787709310836684">القائمة</translation>
 </translationbundle>

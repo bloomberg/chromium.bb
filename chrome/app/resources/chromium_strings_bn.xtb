@@ -115,7 +115,6 @@
 <translation id="5032989939245619637">Chromium এ বিবরণ সেভ করুন</translation>
 <translation id="5045248521775609809">Chromium কে সর্বত্র নিয়ে চলুন</translation>
 <translation id="5116586539350239523">Chromium আপনার ব্যক্তিগত বিবরণ সুরক্ষিত ভাবে সঞ্চয় করবে, তাই আপনার আর টাইপ করার প্রয়োজন হবে না।</translation>
-<translation id="5231355151045086930">Chromium থেকে প্রস্থান করুন</translation>
 <translation id="5358375970380395591">আপনি একটি পরিচালিত অ্যাকাউন্টের মাধ্যমে প্রবেশ করুন করছেন এবং এর প্রশাসককে আপনার Chromium প্রোফাইলের উপরে নিয়ন্ত্রণ দিচ্ছেন৷ আপনার Chromium ডেটা, যেমন অ্যাপ্লিকেশান, বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস <ph name="USER_NAME" /> এতে স্থায়ীভাবে সম্পৃক্ত হবে৷ আপনি Google অ্যাকাউন্টগুলির ড্যাশবোর্ডের মাধ্যমে এই ডেটাগুলি মুছতে সক্ষম হবেন, কিন্তু অন্য অ্যাকাউন্টের সাথে এই ডেটা সংশ্লিষ্ট করতে পারবেন না৷ <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium আপডেট হচ্ছে (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Chromium-এর একটি নতুন সংস্করণ উপলব্ধ আছে৷</translation>
@@ -148,6 +147,7 @@
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> বিপজ্জনক, তাই Chromium এটিকে অবরুদ্ধ করেছে।</translation>
 <translation id="6212496753309875659">এই কম্পিউটারে ইতিমধ্যে Chromium-এর আরও একটি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যার কাজ না করে, দয়া করে Chromium আনইনস্টল করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="6248213926982192922">Chromium-কে ডিফল্ট ব্রাউজার করুন</translation>
+<translation id="6268381023930128611">Chromium থেকে প্রস্থান করবেন?</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> বিপজ্জনক হতে পারে, তাই Chromium এটিকে অবরুদ্ধ করেছে।</translation>
 <translation id="6309712487085796862">Chromium আপনার ক্যামেরা ব্যবহার করছে৷</translation>
 <translation id="6333502561965082103">Chromium এ আরেকটি ক্রিয়াকলাপ প্রক্রিয়ায় আছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।</translation>

@@ -31,6 +31,7 @@
 <translation id="1921819250265091946">തീയതി</translation>
 <translation id="1930711995431081526">നില</translation>
 <translation id="1938124657309484470">മൂല്യം <ph name="MAXIMUM_DATE_OR_TIME" /> എന്നതോ അതിനുമുമ്പുള്ള തീയതിയോ ആയിരിക്കണം.</translation>
+<translation id="1946271899482435442">തീയതി തിരഞ്ഞെടുക്കൽ കാണിക്കുക</translation>
 <translation id="1993104285338243655">മിററിംഗിലേക്ക് മാറി</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />', '<ph name="INVALIDDOMAIN" />' എന്നതിൽ തെറ്റായ സ്ഥാനത്താണ് ഉപയോഗിച്ചിരിക്കുന്നത്.</translation>
 <translation id="2148716181193084225">ഇന്ന്</translation>
@@ -238,7 +239,6 @@
 <translation id="9138385573473225930">അലേർട്ട്</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" />-ന് ആരംഭിക്കുന്നു</translation>
 <translation id="9168329111483466115">അടിക്കുറിപ്പ്</translation>
-<translation id="947831847158436616">സെൽ</translation>
 <translation id="954003015749068518">ചിത്രത്തിനുള്ളിലെ ചിത്രത്തിലേക്ക് പ്രവേശിക്കുക</translation>
 <translation id="966787709310836684">മെനു</translation>
 </translationbundle>

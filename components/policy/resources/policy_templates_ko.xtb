@@ -736,6 +736,7 @@
           이 정책을 설정하지 않은 경우 'AllowJavaScript' 정책이 사용되며 사용자가 설정을 변경할 수 있습니다.</translation>
 <translation id="3038323923255997294"><ph name="PRODUCT_NAME" /> 종료 후에도 백그라운드 앱을 계속 실행</translation>
 <translation id="3046192273793919231">온라인 상태를 모니터링하기 위해 관리 서버에 네트워크 패킷을 전송합니다.</translation>
+<translation id="3047732214002457234">Chrome 정리도구가 Google에 데이터를 보고하는 방식 관리</translation>
 <translation id="3048744057455266684">이 정책이 설정되어 있고 검색주소창에서 제안된 검색 URL의 검색 문자열 또는 일부 식별자에 이 매개변수가 포함되어 있으면 추천 검색어가 원시 검색 URL 대신 검색어 및 검색 공급자를 표시합니다.
 
           이 정책은 선택사항입니다. 설정하지 않으면 검색어가 대체됩니다.
@@ -1062,6 +1063,7 @@
 
       이 정책이 'true'로 설정된 경우 모니터링 네트워크 패킷(소위 <ph name="HEARTBEATS_TERM" />)이 전송되며
       'false'로 설정되거나 설정되지 않으면 패킷이 전송되지 않습니다.</translation>
+<translation id="3950239119790560549">시간제한 업데이트</translation>
 <translation id="3958586912393694012">Smart Lock 사용 허용</translation>
 <translation id="3963602271515417124">True일 경우 기기에서 원격 인증이 허용되며 인증서가 자동으로 생성되어 기기 관리 서버로 업로드됩니다.
 
@@ -1321,6 +1323,10 @@
 
           이 정책이 설정되어 있지 않으면 서버가 인트라넷으로 감지된 경우에도 <ph name="PRODUCT_NAME" />이(가) 사용자 자격증명을 위임하지 않습니다.</translation>
 <translation id="4752880493649142945">RemoteAccessHostTokenValidationUrl에 연결하기 위한 클라이언트 인증서</translation>
+<translation id="4757671984625088193">이 정책을 True로 설정하거나 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 현재 페이지와 관련된 페이지를 추천합니다.
+      이러한 추천 페이지는 Google 서버에서 원격으로 가져옵니다.
+
+      이 설정을 False로 지정하면 추천 페이지를 가져오거나 표시하지 않습니다.</translation>
 <translation id="4791031774429044540">큰 커서 접근성 기능을 사용하도록 설정합니다.
 
           이 정책을 true로 설정하면 큰 커서를 항상 사용하도록 설정합니다.
@@ -2187,6 +2193,13 @@
 
           이 정책이 설정되지 않은 경우 로그인 화면이 처음 나타날 때 화면 돋보기가 사용 중지되어 있습니다. 사용자는 언제든지 화면 돋보기를 사용 설정 또는 사용 중지할 수 있으며 로그인 화면에서의 상태가 사용자별로 유지됩니다.</translation>
 <translation id="7249828445670652637">ARC 앱에서 <ph name="PRODUCT_OS_NAME" /> CA 인증서를 사용하도록 설정</translation>
+<translation id="725322441686394886">정책을 설정하지 않으면 Chrome 정리도구에서 원치 않는 소프트웨어를 감지했을 때 SafeBrowsingExtendedReportingEnabled에서 설정한 정책에 따라 Google에 검사 관련 메타데이터가 전송될 수 있습니다. 그러면 Chrome 정리도구가 사용자에게 원치 않는 소프트웨어를 정리할 것인지 묻습니다. 사용자는 향후 원치 않는 소프트웨어 감지에 도움이 되도록 Google에 정리 결과를 공유하도록 선택할 수 있습니다. 이러한 결과에는 Chrome 개인정보 보호 백서에 설명된 것과 같이 파일 메타데이터, 자동으로 설치된 확장 프로그램, 레지스트리 키가 포함됩니다.
+
+      정책을 사용 중지하면 Chrome 정리도구에서 원치 않는 소프트웨어를 감지했을 때 SafeBrowsingExtendedReportingEnabled에서 설정한 모든 정책을 재정의하고 Google에 검사 관련 메타데이터를 전송하지 않습니다. 또한 Chrome 정리도구가 사용자에게 원치 않는 소프트웨어를 정리할 것인지 묻습니다. 정리 결과는 Google에 보고되지 않으며, 사용자가 원하는 경우에도 결과를 보고할 수 없습니다.
+
+      정책을 사용 설정하면 Chrome 정리도구에서 원치 않는 소프트웨어를 감지했을 때 SafeBrowsingExtendedReportingEnabled에서 설정한 정책에 따라 Google에 검사 관련 메타데이터가 전송될 수 있습니다. 또한 Chrome 정리도구가 사용자에게 원치 않는 소프트웨어를 정리할 것인지 묻습니다. 정리 결과는 Google에 보고되며 사용자는 결과가 전송되지 않도록 할 수 없습니다.
+
+      이 정책은 <ph name="MS_AD_NAME" /> 도메인에 가입하지 않은 Windows 인스턴스에서는 사용할 수 없습니다.</translation>
 <translation id="7258823566580374486">원격 액세스 호스트 차단을 사용하도록 설정합니다.</translation>
 <translation id="7260277299188117560">p2p 자동 업데이트 사용</translation>
 <translation id="7261252191178797385">기기 배경화면 이미지</translation>
@@ -2252,6 +2265,11 @@
       이 설정을 사용 중지하거나 구성하지 않으면 사용자가 경고 페이지를 무시하고 신고된 사이트로 이동할 수 있습니다.
 
       세이프 브라우징에 관해 자세히 알아보려면 https://developers.google.com/safe-browsing 페이지를 참조하세요.</translation>
+<translation id="7417728346887499628">정책을 사용 중지하면 Chrome 정리도구가 시스템에 원치 않는 소프트웨어가 있는지 검사하여 정리를 실행하지 않습니다. chrome://settings/cleanup에서 Chrome 정리도구를 수동으로 실행할 수도 없게 됩니다.
+
+      정책을 사용 설정하거나 설정하지 않으면 Chrome 정리도구가 시스템에 원치 않는 소프트웨어가 있는지 정기적으로 검사하여 이러한 소프트웨어가 발견될 경우 사용자에게 삭제할 것인지 묻습니다. chrome://settings에서 Chrome 정리도구를 수동으로 실행할 수도 있습니다.
+
+      이 정책은 <ph name="MS_AD_NAME" /> 도메인에 가입하지 않은 Windows 인스턴스에서는 사용할 수 없습니다.</translation>
 <translation id="7417972229667085380">프레젠테이션 모드에서 유휴 지연 시간이 조정되는 비율(지원 중단됨)</translation>
 <translation id="7421483919690710988">미디어 디스크 캐시 크기 설정(바이트)</translation>
 <translation id="7424751532654212117">사용 중지된 플러그인 목록에 대한 예외 목록</translation>
@@ -2649,6 +2667,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8339420913453596618">2단계 인증 사용 안함</translation>
 <translation id="8344454543174932833">처음 실행 시 기본 브라우저에서 북마크 가져오기</translation>
 <translation id="8359734107661430198">ExampleDeprecatedFeature API를 2008년 9월 2일까지 사용하도록 설정</translation>
+<translation id="8367209241899435947">Windows에서 Chrome 정리도구 사용 설정</translation>
 <translation id="8369602308428138533">AC 전원으로 실행할 때 화면 꺼짐 지연</translation>
 <translation id="8382184662529825177">기기의 콘텐츠 보호에 원격 인증을 사용합니다.</translation>
 <translation id="838870586332499308">데이터 로밍 사용</translation>
@@ -2922,6 +2941,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       이 정책을 설정하지 않은 경우 시크릿 모드를 사용할 수 있도록 자동 설정되어 사용자는 시크릿 모드를 사용할 수 있습니다.</translation>
 <translation id="915194831143859291">이 정책을 false로 설정하거나 설정하지 않으면 <ph name="PRODUCT_OS_NAME" />에서 사용자가 기기를 종료할 수 있도록 허용합니다.
       이 정책을 true로 설정하면 사용자가 기기를 종료할 때 <ph name="PRODUCT_OS_NAME" />에서 재부팅을 시작하며 <ph name="PRODUCT_OS_NAME" />에서 UI의 종료 버튼을 모두 재부팅 버튼으로 바꿉니다. 정책을 사용하도록 설정해도 사용자가 전원 버튼을 사용하여 기기를 종료하면 자동으로 재부팅하지 않습니다.</translation>
+<translation id="9152473318295429890">상황에 따라 관련 웹페이지 추천</translation>
 <translation id="9158929520101169054">브라우저 내 멀티 로그인 허용</translation>
 <translation id="9165792353046089850">연결된 USB 기기에 관한 웹사이트의 액세스 허용 여부를 설정할 수 있습니다. 액세스를 완전히 차단하거나 웹사이트에서 연결된 USB 기기에 액세스하려고 할 때마다 사용자에게 확인을 요청할 수 있습니다.
 
@@ -2957,4 +2977,9 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="944817693306670849">디스크 캐시 크기 설정</translation>
 <translation id="981346395360763138">Google 위치 서비스가 사용 중지됨</translation>
 <translation id="982497069985795632">맞춤법 검사 사용 설정</translation>
+<translation id="988537626274109600">이 정책으로 <ph name="PRODUCT_OS_NAME" /> 기기가 업데이트를 자동으로 확인하도록 허용되지 않는 기간을 관리할 수 있습니다.
+      정책이 비어 있지 않은 기간 목록으로 설정된 경우:
+      기기에서 지정된 기간 동안 업데이트를 자동으로 확인할 수 없게 됩니다. 롤백이 필요하거나 최소 <ph name="PRODUCT_OS_NAME" /> 버전 미만을 실행하는 기기는 잠재적인 보안 문제로 인해 이 정책의 영향을 받지 않습니다. 또한 이 정책은 사용자 또는 관리자가 요청한 업데이트 확인을 차단하지 않습니다.
+      정책이 설정되지 않거나 기간이 포함되지 않은 경우:
+      이 정책으로 자동 업데이트 확인이 차단되지 않지만 다른 정책에 의해 차단될 수 있습니다.</translation>
 </translationbundle>

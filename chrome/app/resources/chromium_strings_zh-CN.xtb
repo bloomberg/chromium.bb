@@ -115,7 +115,6 @@
 <translation id="5032989939245619637">在 Chromium 中保存详细信息</translation>
 <translation id="5045248521775609809">随时随地使用 Chromium</translation>
 <translation id="5116586539350239523">Chromium 将妥善存储您的个人详细信息，这样您日后就不必重复输入了。</translation>
-<translation id="5231355151045086930">退出 Chromium</translation>
 <translation id="5358375970380395591">您目前登录的帐号是一个托管帐号，该帐号的管理员将能够控制您的 Chromium 个人资料。您的 Chromium 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME" /> 相关联。您可以通过 Google 帐号信息中心删除这些数据，但无法将这些数据与其他帐号相关联。<ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">正在更新 Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Chromium 现已推出新版本。</translation>
@@ -148,6 +147,7 @@
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> 存在危险，因此 Chromium 已将其拦截。</translation>
 <translation id="6212496753309875659">此计算机已安装了更高版本的 Chromium。如果软件无法正常运行，请卸载 Chromium 并重试。</translation>
 <translation id="6248213926982192922">将 Chromium 设置为默认浏览器</translation>
+<translation id="6268381023930128611">退出 Chromium？</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> 可能存在危险，因此 Chromium 已将其拦截。</translation>
 <translation id="6309712487085796862">Chromium 正在使用您的摄像头。</translation>
 <translation id="6333502561965082103">Chromium 正在执行另一项操作，请稍后重试。</translation>

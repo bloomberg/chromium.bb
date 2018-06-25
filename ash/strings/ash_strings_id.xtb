@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Sinyal lemah</translation>
 <translation id="1293264513303784526">Perangkat USB-C (port sebelah kiri)</translation>
 <translation id="1346748346194534595">Kanan</translation>
+<translation id="1351937230027495976">Ciutkan menu</translation>
 <translation id="1383876407941801731">Telusuri</translation>
 <translation id="1467432559032391204">Kiri</translation>
 <translation id="1479743070547893297">Gambar dengan stilus untuk memilih</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Keluaran</translation>
 <translation id="3019353588588144572">Waktu yang tersisa hingga baterai terisi penuh, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Luaskan menu</translation>
 <translation id="3087734570205094154">Bawah</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Mulai ulang untuk memperbarui</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Menghitung...</translation>
 <translation id="3995138139523574647">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="4017989525502048489">Penunjuk laser</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Nonaktif untuk sebuah aplikasi}other{Nonaktif untuk # aplikasi}}</translation>
 <translation id="4072264167173457037">Sinyal sedang</translation>
 <translation id="4200057768455216496">Anda menekan pintasan untuk kaca pembesar yang terpasang di dok. Ingin mengaktifkannya?</translation>
 <translation id="4217571870635786043">Dikte</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">Tombol Klik untuk Diucapkan</translation>
 <translation id="4628757576491864469">Perangkat</translation>
 <translation id="4659419629803378708">ChromeVox diaktifkan</translation>
+<translation id="4734965478015604180">Horizontal</translation>
 <translation id="4776917500594043016">Sandi untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Putuskan</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">Alt+Telusuri atau Shift</translation>
 <translation id="4890187583552566966">Asisten Google dinonaktifkan oleh administrator</translation>
 <translation id="4895488851634969361">Baterai penuh.</translation>
+<translation id="490375751687810070">Vertikal</translation>
 <translation id="4905614135390995787">Pintasan untuk beralih Mode Kontras Tinggi telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Kuat</translation>
 <translation id="4918086044614829423">Terima</translation>
@@ -349,6 +354,7 @@
 <translation id="8054466585765276473">Menghitung masa pakai baterai.</translation>
 <translation id="8061464966246066292">Kontras tinggi</translation>
 <translation id="8098591350844501178">Hentikan casting layar ke <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">Aktif, semua aplikasi</translation>
 <translation id="8132793192354020517">Tersambung ke <ph name="NAME" /></translation>
 <translation id="813913629614996137">Memulai...</translation>
 <translation id="8142699993796781067">Jaringan pribadi</translation>
@@ -369,6 +375,7 @@
 <translation id="847056008324733326">Setelan skala layar</translation>
 <translation id="8477270416194247200">Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Menyambungkan lagi...</translation>
+<translation id="8513108775083588393">Putar otomatis</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> Anda mungkin tidak diisi daya saat dinyalakan.</translation>
 <translation id="8639760480004882931">Sisa <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Klik untuk Diucapkan</translation>

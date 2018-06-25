@@ -30,6 +30,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">స్థితి</translation>
 <translation id="1938124657309484470">విలువ తప్పనిసరిగా <ph name="MAXIMUM_DATE_OR_TIME" /> లేదా అంతకంటే మునుపటిది అయి ఉండాలి.</translation>
+<translation id="1946271899482435442">తేదీ ఎంపికను చూపుతుంది</translation>
 <translation id="1993104285338243655">మిర్రరింగ్‌కు మార్చబడింది</translation>
 <translation id="2060505056492490888">'<ph name="INVALIDDOMAIN" />'లో '<ph name="DOT" />' తప్పు స్థానంలో ఉపయోగించబడింది.</translation>
 <translation id="2148716181193084225">ఈ రోజు</translation>
@@ -236,7 +237,6 @@
 <translation id="9138385573473225930">హెచ్చరిక</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> నుండి ప్రారంభమవుతుంది</translation>
 <translation id="9168329111483466115">ఫుట్‌నోట్</translation>
-<translation id="947831847158436616">గడి</translation>
 <translation id="954003015749068518">చిత్రంలో చిత్రం మోడ్‌లోకి ప్రవేశిస్తుంది</translation>
 <translation id="966787709310836684">మెను</translation>
 </translationbundle>

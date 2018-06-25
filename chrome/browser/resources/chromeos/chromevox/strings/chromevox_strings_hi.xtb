@@ -92,6 +92,7 @@
 <translation id="1787176709638001873">पासवर्ड संपादन लेख</translation>
 <translation id="1802710350767629429">अपडेट नोट दिखाएं</translation>
 <translation id="1810107444790159527">सूची बॉक्स</translation>
+<translation id="1812527064848182527">लैंडस्केप</translation>
 <translation id="1828385960365606039">मई</translation>
 <translation id="1834891354138622109">स्तंभ</translation>
 <translation id="1845944666972354496">चालू करने के लिए दो बार टैप करें</translation>
@@ -254,6 +255,7 @@
 <translation id="3232388865800379423">पॉप-अप बटन</translation>
 <translation id="3241052487511142956">पहले देखा गया लिंक</translation>
 <translation id="3241638166094654466">हर एक पंक्ति में सेल:</translation>
+<translation id="3286372614333682499">पोर्ट्रेट</translation>
 <translation id="3286390186030710347">स्लाइडर</translation>
 <translation id="3299925995433437805">बाद में देखा गया कोई लिंक नहीं.</translation>
 <translation id="3300348286427369683">रिच टेक्स्ट के साथ काम करता है. अब ChromeVox रिच टेक्स्ट वाली फ़ील्ड के साथ काम करता है जिसमें कहीं भी सीधे पहुंचाने के निर्देश, ब्रेल कर्सर की रूटिंग, चयन वगैरह शामिल हैं.</translation>
@@ -922,7 +924,7 @@
 <translation id="9043969572162476692"><ph name="NUM" />%</translation>
 <translation id="9061884144798498064">8 बिंदु वाली ब्रेल तालिका चुनें:</translation>
 <translation id="9065283790526219006">+popup</translation>
-<translation id="9066023754636984703">विवरण पर जाने के लिए Search+A, J दबाएं.</translation>
+<translation id="9066023754636984703">ज़्यादा जानकारी के लिए Search+A, J दबाएं.</translation>
 <translation id="9067522039955793016">नया पेज</translation>
 <translation id="9077213568694924680">चयन से निकाले गए</translation>
 <translation id="9082874451376019682">कोई पिछला स्लाइडर नहीं.</translation>

@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">खराब सिग्नल</translation>
 <translation id="1293264513303784526">USB-C डिव्‍हाइस (डावे पोर्ट)</translation>
 <translation id="1346748346194534595">उजवे</translation>
+<translation id="1351937230027495976">मेनू कोलॅप्स करा</translation>
 <translation id="1383876407941801731">शोधा</translation>
 <translation id="1467432559032391204">डावे</translation>
 <translation id="1479743070547893297">निवडण्यासाठी तुमच्या स्टायलसने काढा</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">आउटपुट</translation>
 <translation id="3019353588588144572">बॅटरी पूर्णपणे चार्ज होईपर्यंत उर्वरित वेळ, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">मेनूचा विस्तार करा</translation>
 <translation id="3087734570205094154">तळाकडील</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">अद्यतनासाठी पुनर्प्रारंभ करा</translation>
@@ -153,7 +155,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">लॉक करा</translation>
 <translation id="3798670284305777884">स्पीकर (अंतर्गत)</translation>
-<translation id="380165613292957338">हाय, मी तुम्हाला कशी मदत करू शकतो?</translation>
+<translation id="380165613292957338">हाय, मला तुमची कशी मदत करता येईल?</translation>
 <translation id="3846575436967432996">कोणतीही नेटवर्क माहिती उपलब्ध नाही</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="3891340733213178823">साइन आउट करण्यासाठी Ctrl+Shift+Q दोनदा दाबा.</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">गणना करत आहे...</translation>
 <translation id="3995138139523574647">USB-C डिव्‍हाइस (उजव्या बाजूचे मागील पोर्ट)</translation>
 <translation id="4017989525502048489">लेझर पॉइंट</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{एका अॅपसाठी बंद}one{# अॅपसाठी बंद}other{# अॅप्ससाठी बंद}}</translation>
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
 <translation id="4200057768455216496">तुम्ही डॉक मॅग्निफायरसाठीचा शॉर्टकट दाबला. तुम्हाला ते सुरू करायचे आहे का?</translation>
 <translation id="4217571870635786043">डिक्टेशन</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">बोलण्यासाठी निवडा बटण</translation>
 <translation id="4628757576491864469">डिव्हाइसेस</translation>
 <translation id="4659419629803378708">ChromeVox चालू केले</translation>
+<translation id="4734965478015604180">आडवा</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> साठी पासवर्ड</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">‍डिस्कनेक्ट</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">Alt+Search किंवा Shift</translation>
 <translation id="4890187583552566966">तुमच्या अ‍ॅडमिनिस्ट्रेटरने Google Assistant बंद केलेले आहे.</translation>
 <translation id="4895488851634969361">बॅटरी भरली आहे.</translation>
+<translation id="490375751687810070">उभा</translation>
 <translation id="4905614135390995787">उच्च तीव्रता मोड टॉगल करण्यासाठी शॉर्टकट बदलला आहे. कृपया <ph name="OLD_SHORTCUT" /> ऐवजी <ph name="NEW_SHORTCUT" /> वापरा.</translation>
 <translation id="4917385247580444890">मजबूत</translation>
 <translation id="4918086044614829423">स्वीकारा</translation>
@@ -349,6 +354,7 @@
 <translation id="8054466585765276473">बॅटरी वेळ गणना करत आहे.</translation>
 <translation id="8061464966246066292">उच्च रंगभेद</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> वर स्क्रीन कास्ट करणे थांबवा</translation>
+<translation id="8113423164597455979">सुरू, सर्व अॅप्स</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> शी कनेक्ट केलेले</translation>
 <translation id="813913629614996137">प्रारंभ करत आहे…</translation>
 <translation id="8142699993796781067">खाजगी नेटवर्क</translation>
@@ -369,6 +375,7 @@
 <translation id="847056008324733326">स्केल सेटिंग्‍ज दाखवा</translation>
 <translation id="8477270416194247200">रद्द करण्यासाठी Alt+Search किंवा Shift दाबा.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: पुन्हा कनेक्ट करीत आहे...</translation>
+<translation id="8513108775083588393">ऑटो-रोटेट</translation>
 <translation id="8517041960877371778">आपले <ph name="DEVICE_TYPE" /> चालू केले असताना कदाचित चार्ज होणार नाही.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> शिल्लक</translation>
 <translation id="8649101189709089199">बोलण्यासाठी निवडा</translation>

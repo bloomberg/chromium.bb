@@ -115,7 +115,6 @@
 <translation id="5032989939245619637">Chromium で詳細を保存する</translation>
 <translation id="5045248521775609809">どの端末でも同じ Chromium を使用できます</translation>
 <translation id="5116586539350239523">Chromium でユーザーの情報が安全に保存されるので、再度入力する必要がなくなります。</translation>
-<translation id="5231355151045086930">Chromium からのログアウト</translation>
 <translation id="5358375970380395591">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium を更新しています（<ph name="PROGRESS_PERCENT" />）</translation>
 <translation id="5398878173008909840">Chromium の最新バージョンをぜひお試しください。</translation>
@@ -148,6 +147,7 @@
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> は危険なファイルであるため、Chromium でブロックしました。</translation>
 <translation id="6212496753309875659">新しいバージョンの Chromium が既にインストールされています。ソフトウェアが動作しない場合は、Chromium をアンインストールしてからもう一度お試しください。</translation>
 <translation id="6248213926982192922">Chromium を既定のブラウザにする</translation>
+<translation id="6268381023930128611">Chromium からログアウトしますか？</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> は危険なファイルの可能性があるため、Chromium でブロックしました。</translation>
 <translation id="6309712487085796862">Chromium がカメラを使用しています。</translation>
 <translation id="6333502561965082103">Chromium で別の処理が行われています。しばらくしてからもう一度お試しください。</translation>

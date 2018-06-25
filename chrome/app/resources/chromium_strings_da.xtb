@@ -115,7 +115,6 @@
 <translation id="5032989939245619637">Gem oplysninger i Chromium</translation>
 <translation id="5045248521775609809">Tag Chromium med overalt</translation>
 <translation id="5116586539350239523">Chromium gemmer dine personlige oplysninger på sikker vis, så du ikke behøver at angive dem igen.</translation>
-<translation id="5231355151045086930">Log ud af Chromium</translation>
 <translation id="5358375970380395591">Du er ved at logge ind med en administreret konto og giver dens administrator kontrol over din profil i Chromium. Dine Chromium-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Opdaterer Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Der er en ny version af Chromium til rådighed.</translation>
@@ -148,6 +147,7 @@
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> er skadelig, så Chromium har blokeret den.</translation>
 <translation id="6212496753309875659">Computeren har allerede en nyere version af Chromium. Hvis softwaren ikke virker, skal du afinstallere Chromium og prøve igen.</translation>
 <translation id="6248213926982192922">Gør Chromium til din standardbrowser</translation>
+<translation id="6268381023930128611">Vil du logge ud af Chromium?</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> kan være skadelig, så Chromium har blokeret den.</translation>
 <translation id="6309712487085796862">Chromium bruger dit kamera.</translation>
 <translation id="6333502561965082103">En anden handling i Chromium er i gang. Prøv igen senere.</translation>

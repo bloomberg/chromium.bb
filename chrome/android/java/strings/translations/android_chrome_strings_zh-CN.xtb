@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">已暂停下载</translation>
 <translation id="1389974829397082527">该文件夹中没有书签</translation>
 <translation id="1397811292916898096">使用 <ph name="PRODUCT_NAME" /> 进行搜索</translation>
+<translation id="1397854323885047133">同步和个性化</translation>
 <translation id="1404122904123200417">嵌入位置：<ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“不跟踪”</translation>
 <translation id="1407135791313364759">全部打开</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">要获取 Google 推荐的个性化内容，请登录 Chrome。</translation>
 <translation id="2091887806945687916">声音</translation>
 <translation id="2095887075102408547">当此功能处于开启状态时，Chrome 会先使用 Google 服务器压缩您所访问的网页，然后再下载它们。Google 既不会优化也不会看到您通过私密连接 (HTTPS) 或在隐身标签页中访问的网页。</translation>
+<translation id="2096012225669085171">在所有设备上保持同步并进行个性化设置</translation>
 <translation id="2100273922101894616">自动登录</translation>
 <translation id="2111511281910874386">转至相关网页</translation>
 <translation id="2122601567107267586">无法打开此应用</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">复制网址</translation>
 <translation id="2156074688469523661">其余的网站（<ph name="NUMBER_OF_SITES" /> 个）</translation>
 <translation id="2184766556418880456">点按即可在当前标签中转到新标签页</translation>
-<translation id="219985413780390209">保护您和您的设备不受危险网站的侵害</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，网络应用。<ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">以“<ph name="USER_FULL_NAME" />”的身份继续</translation>
 <translation id="2232379019872353004">将一些系统信息和网页内容发送至 Google</translation>
+<translation id="2234876718134438132">同步功能和 Google 服务</translation>
 <translation id="2259659629660284697">导出密码…</translation>
 <translation id="2268044343513325586">优化</translation>
 <translation id="2286841657746966508">帐单邮寄地址</translation>
@@ -375,7 +377,7 @@
 <translation id="4278390842282768270">允许</translation>
 <translation id="4307992518367153382">基本设置</translation>
 <translation id="4351244548802238354">关闭对话框</translation>
-<translation id="4378154925671717803">电话</translation>
+<translation id="4378154925671717803">电话机</translation>
 <translation id="4384468725000734951">目前使用的搜索引擎是搜狗</translation>
 <translation id="4404568932422911380">没有书签</translation>
 <translation id="4409723563706114196">使用网页联想查询功能</translation>
@@ -408,6 +410,7 @@
 <translation id="4594952190837476234">此离线网页是在 <ph name="CREATION_TIME" />创建的，可能与在线版本有所不同。</translation>
 <translation id="4605958867780575332">以下项已移除：<ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">打开<ph name="WEBAPK_NAME" /></translation>
+<translation id="4634124774493850572">使用密码</translation>
 <translation id="4645575059429386691">由您父母管理</translation>
 <translation id="4663756553811254707">已删除 <ph name="NUMBER_OF_BOOKMARKS" /> 个书签</translation>
 <translation id="4665282149850138822"><ph name="NAME" />已添加到您的主屏幕</translation>
@@ -583,6 +586,7 @@
 <translation id="5958275228015807058">在“下载内容”中查找您的文件和网页</translation>
 <translation id="5962718611393537961">点按即可收起</translation>
 <translation id="6000066717592683814">继续使用 Google</translation>
+<translation id="6005538289190791541">建议的密码</translation>
 <translation id="6039379616847168523">跳转到下一个标签页</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="6042308850641462728">更多</translation>
@@ -811,6 +815,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> 不是最新版本。</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="7963646190083259054">供应商：</translation>
+<translation id="79859296434321399">要查看增强现实内容，请安装 ARCore</translation>
 <translation id="7987073022710626672">Chrome 服务条款</translation>
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
 <translation id="7999064672810608036">确定要清除该网站的所有本地数据（包括 Cookie）并重置该网站的所有权限吗？</translation>
@@ -873,6 +878,7 @@
 <translation id="851751545965956758">禁止网站连接到设备</translation>
 <translation id="8523928698583292556">删除存储的密码</translation>
 <translation id="854522910157234410">打开此网页</translation>
+<translation id="8558485628462305855">要查看增强现实内容，请更新 ARCore</translation>
 <translation id="8559990750235505898">显示翻译界面以翻译其他语言的网页</translation>
 <translation id="8562452229998620586">已保存的密码将显示在这里。</translation>
 <translation id="8569404424186215731">自 <ph name="DATE" />以来</translation>

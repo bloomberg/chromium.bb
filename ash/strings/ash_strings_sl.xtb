@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Šibek signal</translation>
 <translation id="1293264513303784526">Naprava USB-C (leva vrata)</translation>
 <translation id="1346748346194534595">V desno</translation>
+<translation id="1351937230027495976">Strni meni</translation>
 <translation id="1383876407941801731">Išči</translation>
 <translation id="1467432559032391204">V levo</translation>
 <translation id="1479743070547893297">Narišite s pisalom, če želite izbirati</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Izhod</translation>
 <translation id="3019353588588144572">Preostali čas do napolnitve akumulatorja, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Razširi meni</translation>
 <translation id="3087734570205094154">Na dno</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Znova zaženite za posodobitev</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Izračunavanje …</translation>
 <translation id="3995138139523574647">Naprava USB-C (vrata desno zadaj)</translation>
 <translation id="4017989525502048489">Laserski kazalnik</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Izklopljeno za eno aplikacijo}one{Izklopljeno za # aplikacijo}two{Izklopljeno za # aplikaciji}few{Izklopljeno za # aplikacije}other{Izklopljeno za # aplikacij}}</translation>
 <translation id="4072264167173457037">Srednje močan signal</translation>
 <translation id="4200057768455216496">Pritisnili ste bližnjico za zasidrano lupo. Ali jo želite vklopiti?</translation>
 <translation id="4217571870635786043">Narek</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">Gumb za »Izberite in poslušajte«</translation>
 <translation id="4628757576491864469">Naprave</translation>
 <translation id="4659419629803378708">Omogočen je ChromeVox</translation>
+<translation id="4734965478015604180">Vodoravno</translation>
 <translation id="4776917500594043016">Geslo za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Prekini povezavo</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">Alt + iskanje ali Shift</translation>
 <translation id="4890187583552566966">Skrbnik je onemogočil Pomočnika Google.</translation>
 <translation id="4895488851634969361">Akumulator je poln.</translation>
+<translation id="490375751687810070">Navpično</translation>
 <translation id="4905614135390995787">Bližnjica za preklop na visokokontrastni način se je spremenila. Uporabite <ph name="NEW_SHORTCUT" /> namesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Močan</translation>
 <translation id="4918086044614829423">Sprejmi</translation>
@@ -349,6 +354,7 @@
 <translation id="8054466585765276473">Izračunavanje časa trajanja akumulatorja.</translation>
 <translation id="8061464966246066292">Visok kontrast</translation>
 <translation id="8098591350844501178">Ustavi predvajanje zaslona v napravi <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">Vklopljeno, vse aplikacije</translation>
 <translation id="8132793192354020517">Povezava z <ph name="NAME" /> je vzpostavljena </translation>
 <translation id="813913629614996137">Inicializiranje ...</translation>
 <translation id="8142699993796781067">Zasebno omrežje</translation>
@@ -369,6 +375,7 @@
 <translation id="847056008324733326">Nastavitve zaslonskega razmerja</translation>
 <translation id="8477270416194247200">Za preklic pritisnite Alt in tipko za iskanje ali Shift.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Vnovično vzpostavljanje povezave ...</translation>
+<translation id="8513108775083588393">Samodejni zasuk</translation>
 <translation id="8517041960877371778">Akumulator naprave <ph name="DEVICE_TYPE" /> se morda ne bo polnil, medtem ko je naprava vklopljena.</translation>
 <translation id="8639760480004882931">Še <ph name="PERCENTAGE" /> %</translation>
 <translation id="8649101189709089199">Izberite in poslušajte</translation>

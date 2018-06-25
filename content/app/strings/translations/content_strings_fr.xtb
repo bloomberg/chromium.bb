@@ -31,6 +31,7 @@
 <translation id="1921819250265091946">jj</translation>
 <translation id="1930711995431081526">état</translation>
 <translation id="1938124657309484470">La date ou l'heure doit être égale ou antérieure à "<ph name="MAXIMUM_DATE_OR_TIME" />".</translation>
+<translation id="1946271899482435442">Afficher le sélecteur de date</translation>
 <translation id="1993104285338243655">Passage à la duplication d'écran</translation>
 <translation id="2060505056492490888">L'emplacement du caractère "<ph name="DOT" />" est incorrect dans "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Aujourd'hui</translation>
@@ -238,7 +239,6 @@
 <translation id="9138385573473225930">alerte</translation>
 <translation id="9155987714137265666"><ph name="WEEK" /> (premier jour de la semaine : <ph name="WEEK_START_DATE" />)</translation>
 <translation id="9168329111483466115">note de bas de page</translation>
-<translation id="947831847158436616">cellule</translation>
 <translation id="954003015749068518">utiliser le mode PIP</translation>
 <translation id="966787709310836684">menu</translation>
 </translationbundle>

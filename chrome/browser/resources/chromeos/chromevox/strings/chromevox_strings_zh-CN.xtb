@@ -92,6 +92,7 @@
 <translation id="1787176709638001873">密码编辑文本</translation>
 <translation id="1802710350767629429">显示更新备注</translation>
 <translation id="1810107444790159527">列表框</translation>
+<translation id="1812527064848182527">横向</translation>
 <translation id="1828385960365606039">5月</translation>
 <translation id="1834891354138622109">列</translation>
 <translation id="1845944666972354496">连续点按两次即可激活</translation>
@@ -253,6 +254,7 @@
 <translation id="3232388865800379423">弹出式按钮</translation>
 <translation id="3241052487511142956">上一个访问过的链接</translation>
 <translation id="3241638166094654466">每行中的单元格数：</translation>
+<translation id="3286372614333682499">纵向</translation>
 <translation id="3286390186030710347">滑块</translation>
 <translation id="3299925995433437805">不存在下一个访问过的链接。</translation>
 <translation id="3300348286427369683">支持富文本。ChromeVox 现在支持富文本字段，包括跳转命令、盲文光标路由、选择等等。</translation>

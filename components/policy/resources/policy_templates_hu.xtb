@@ -712,6 +712,7 @@
 <translation id="3034580675120919256">Meghatározhatja, hogy a webhelyek futtathatnak-e JavaScriptet. A JavaScript futtatását engedélyezheti vagy letilthatja minden webhely számára. Ha a házirend beállítatlanul marad, a rendszer az "AllowJavaScript" értéket használja, amelyet a felhasználó módosíthat.</translation>
 <translation id="3038323923255997294">A háttéralkalmazások továbbfuttatása a(z) <ph name="PRODUCT_NAME" /> alkalmazás bezárása esetén</translation>
 <translation id="3046192273793919231">Hálózati csomagok küldése a kezelőszerverre az online állapot ellenőrzésének céljából</translation>
+<translation id="3047732214002457234">Azt szabályozza, hogy a Chrome Szoftvereltávolító eszköz hogyan jelenti az adatokat a Google-nak</translation>
 <translation id="3048744057455266684">Ha ez a házirend be van állítva, és egy, a cím- és keresősávban javasolt keresési URL tartalmazza ezt a paramétert a lekérdezési karakterláncban vagy a töredékazonosítóban, akkor a javaslat a keresési kifejezéseket és a keresőszolgáltatót fogja mutatni a nyers keresési URL helyett.
 
           Ez a házirend opcionális. Ha nincs beállítva, a keresési kifejezéseket a rendszer nem cseréli le.
@@ -1027,6 +1028,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha az irányelvet igaz értékre állítja, a rendszer ellenőrző hálózati csomagokat (úgynevezett <ph name="HEARTBEATS_TERM" />) fog küldeni.
       Ha hamis értékre állítja vagy nem állít be értéket, akkor a rendszer nem küld csomagokat.</translation>
+<translation id="3950239119790560549">Frissítéssel kapcsolatos időbeli korlátozások</translation>
 <translation id="3958586912393694012">A Smart Lock használatának engedélyezése</translation>
 <translation id="3963602271515417124">Ha igaz, akkor az eszköz használhatja a távoli tanúsítást, és a rendszer automatikusan létrehoz és feltölt egy tanúsítványt az eszközkezelő szerverre.
 
@@ -1276,6 +1278,10 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Ha nem állítja be ezt a házirendet, a <ph name="PRODUCT_NAME" /> még akkor sem delegál felhasználói hitelesítési adatokat, ha a szervert az intraneten lévőnek érzékeli.</translation>
 <translation id="4752880493649142945">Klienstanúsítvány a RemoteAccessHostTokenValidationUrl címhez történő csatlakozáshoz</translation>
+<translation id="4757671984625088193">Ha értéke igaz, vagy ha nincs beállítva, a <ph name="PRODUCT_NAME" /> megjeleníti az aktuális oldalhoz kapcsolódó javasolt oldalakat.
+      Ezeket a javaslatokat a rendszer a Google szervereiről kéri le távolról.
+
+      Ha értéke hamis, a böngésző nem kér le és nem jelenít meg javaslatokat.</translation>
 <translation id="4791031774429044540">A nagy egérmutató kisegítő lehetőség engedélyezése.
 
           Ha a házirend értéke igaz, a nagy egérmutató mindig engedélyezve lesz.
@@ -2093,6 +2099,13 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Ha nem állítja be ezt a házirendet, akkor a nagyító le lesz tiltva a bejelentkezési képernyő első megjelenítésekor. A felhasználók bármikor engedélyezhetik vagy letilthatják a nagyítót, és annak állapota mindegyik felhasználó esetében megmarad a bejelentkezési képernyőn.</translation>
 <translation id="7249828445670652637">A(z) <ph name="PRODUCT_OS_NAME" /> által az ARC-alkalmazásoknak kiadott CA-tanúsítványok engedélyezése</translation>
+<translation id="725322441686394886">Ha nincs beállítva, akkor kéretlen szoftver észlelése esetén a Chrome-tisztogatás metaadatokat küldhet a Google-nak a vizsgálatról a SafeBrowsingExtendedReportingEnabled házirendnek megfelelően. A Chrome-tisztogatás ezután megkérdezi a felhasználót, hogy eltávolítsa-e az észlelt kéretlen szoftvert. A felhasználó dönthet úgy, hogy megosztja az eltávolítás eredményeit a Google-lal, hogy segíthesse a kéretlen szoftverek későbbi észlelését. Ezek az eredmények fájlmetaadatokat, automatikusan telepített bővítményeket és regisztrációs bejegyzéseket tartalmaznak – a Chrome adatvédelmi tanulmányában foglaltak szerint.
+
+      Ha le van tiltva, akkor kéretlen szoftver észlelése esetén a Chrome-tisztogatás nem küld metaadatokat a vizsgálatról a Google-nak, felülbírálva ezzel a SafeBrowsingExtendedReportingEnabled házirendjét. A Chrome-tisztogatás megkérdezi a felhasználót, hogy eltávolítsa-e az észlelt kéretlen szoftvert. Az eltávolítás eredményei nem lesznek megosztva a Google-lal, a felhasználó nem kap lehetőséget a megosztásra.
+
+      Ha engedélyezve van, akkor kéretlen szoftver észlelése esetén a Chrome-tisztogatás metaadatokat küldhet a Google-nak a vizsgálatról a SafeBrowsingExtendedReportingEnabled házirendnek megfelelően. A Chrome-tisztogatás megkérdezi a felhasználót, hogy eltávolítsa-e az észlelt kéretlen szoftvert. A Google megkapja az eltávolítás eredményeit, a felhasználó nem kap lehetőséget ennek megakadályozására.
+
+      Ez a házirend nem áll rendelkezésre olyan Windows-példányokon, melyek nem csatlakoznak <ph name="MS_AD_NAME" />-domainhez.</translation>
 <translation id="7258823566580374486">Távoli hozzáférésű gazdagépek lefüggönyözésének engedélyezése</translation>
 <translation id="7260277299188117560">Az egyenrangú kapcsolatok automatikus frissítésének engedélyezése</translation>
 <translation id="7261252191178797385">Eszköz háttérképe</translation>
@@ -2156,6 +2169,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a beállítás le van tiltva vagy nincs megadva, akkor a felhasználók dönthetik el, hogy a figyelmeztetés megtekintése után továbblépnek-e a megjelölt webhelyre.
 
       Ha további információt szeretne kapni a Biztonságos Böngészésről, látogasson el a https://developers.google.com/safe-browsing oldalra.</translation>
+<translation id="7417728346887499628">Ha le van tiltva, a Chrome-tisztogatás nem tudja ellenőrizni a rendszert kéretlen szoftverek keresése és megtisztítása céljából. A Chrome-tisztogatás kézi indítása a chrome://settings/cleanup oldalon le van tiltva.
+
+      Ha engedélyezve van, vagy ha nincs beállítva, a Chrome-tisztogatás rendszeresen ellenőrzi a rendszert kéretlen szoftvereket keresve, és ha talál ilyet, megkérdezi a felhasználót, hogy szeretné-e eltávolítani. A Chrome-tisztogatás kézi indítása a chrome://settings oldalon engedélyezve van.
+
+      Ez a házirend nem áll rendelkezésre olyan Windows-példányokon, amelyek nem csatlakoztak <ph name="MS_AD_NAME" />-domainhez.</translation>
 <translation id="7417972229667085380">Az a százalék, amelynek alapján a tétlenségi késleltetés skálázódik prezentációs módban (megszűnt)</translation>
 <translation id="7421483919690710988">A médialemez gyorsítótárméretének beállítása bájtban</translation>
 <translation id="7424751532654212117">A tiltott bővítmények listájának kivétellistája</translation>
@@ -2540,6 +2558,7 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="8339420913453596618">Kétlépcsős azonosítás letiltva</translation>
 <translation id="8344454543174932833">Könyvjelzők importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="8359734107661430198">Az ExampleDeprecatedFeature API engedélyezése 2008. 09. 02-ig</translation>
+<translation id="8367209241899435947">A Chrome-tisztogatás engedélyezése Windows rendszeren</translation>
 <translation id="8369602308428138533">Képernyő kikapcsolásának késleltetése hálózati áramról való működés során</translation>
 <translation id="8382184662529825177">Távoli hitelesítés engedélyezése az eszközön lévő tartalmak védelme érdekében</translation>
 <translation id="838870586332499308">Adatbarangolás engedélyezése</translation>
@@ -2798,6 +2817,7 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="9150416707757015439">Ez a házirend elavult. Kérjük, használja helyette az IncognitoModeAvailability házirendet. Engedélyezi az inkognitómódot a következőben: <ph name="PRODUCT_NAME" />. Ha ez a beállítás engedélyezve van, illetve nincs konfigurálva, akkor a felhasználók inkognitómódban is megnyithatják a weboldalakat. Ha a beállítás nincs engedélyezve, a felhasználók nem nyithatják meg inkognitómódban a weboldalakat. Ha a házirend beállítatlanul marad, akkor megtörténik az engedélyezése, a felhasználók pedig használni tudják az inkognitómódot.</translation>
 <translation id="915194831143859291">Ha a házirend értéke false (hamis), vagy ha nincs beállítva, a <ph name="PRODUCT_OS_NAME" /> engedélyezi a felhasználó számára az eszköz leállítását.
       Ha a házirend értéke true (igaz), a <ph name="PRODUCT_OS_NAME" /> újraindítást kezdeményez, amikor a felhasználó leállítja az eszközt. A <ph name="PRODUCT_OS_NAME" /> a felhasználói felület összes leállítógombját újraindítást kezdeményező gombokra cseréli ki. Ha a felhasználó a bekapcsológombbal állítja le az eszközt, az nem indul automatikusan újra automatikusan akkor sem, ha a házirend engedélyezve van.</translation>
+<translation id="9152473318295429890">Kontextus szerinti javaslatok engedélyezése kapcsolódó weboldalak formájában</translation>
 <translation id="9158929520101169054">Böngészőn belüli többfiókos bejelentkezés engedélyezése</translation>
 <translation id="9165792353046089850">Lehetővé teszi annak beállítását, hogy a webhelyek hozzáférhetnek-e a csatlakoztatott USB-eszközökhöz. A hozzáférés teljes mértékben letiltható, vagy a böngésző minden olyan alkalommal rákérdezhet a felhasználónál az engedélyezésre, amikor valamelyik webhely csatlakoztatott USB-eszközökhöz szeretne hozzáférni.
 
@@ -2833,4 +2853,9 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="944817693306670849">Lemezgyorsítótár méretének beállítása</translation>
 <translation id="981346395360763138">Google-helyszolgáltatások letiltva</translation>
 <translation id="982497069985795632">Helyesírás-ellenőrzés engedélyezése</translation>
+<translation id="988537626274109600">Ez a házirend szabályozza az időintervallumot, amely során a <ph name="PRODUCT_OS_NAME" />-eszköz nem kereshet automatikusan frissítéseket.
+      Ha a házirend időintervallumok nem üres listájára van állítva:
+      Az eszközök nem tudnak automatikusan frissítéseket keresni a megadott időintervallumokon belül. A korábbi állapot visszaállítását igénylő és a minimális <ph name="PRODUCT_OS_NAME" />-verzió alatti eszközökre nem érvényes ez a házirend a lehetséges biztonsági problémák elkerülése érdekében. Továbbá a házirend nem tiltja a felhasználók és adminisztrátorok által kérelmezett frissítéskereséseket.
+      Ha a házirend nincs beállítva, vagy nem tartalmaz időintervallumokat:
+      Ez a házirend nem tiltja az automatikus frissítéskereséseket, más házirendek azonban tilthatják őket.</translation>
 </translationbundle>

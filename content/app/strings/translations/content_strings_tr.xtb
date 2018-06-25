@@ -31,6 +31,7 @@
 <translation id="1921819250265091946">gg</translation>
 <translation id="1930711995431081526">durum</translation>
 <translation id="1938124657309484470">Değer <ph name="MAXIMUM_DATE_OR_TIME" /> veya daha geri olmalıdır.</translation>
+<translation id="1946271899482435442">Tarih seçiciyi göster</translation>
 <translation id="1993104285338243655">Yansıtmaya geçildi</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />", "<ph name="INVALIDDOMAIN" />" adı içinde yanlış bir konumda kullanılmış.</translation>
 <translation id="2148716181193084225">Bugün</translation>
@@ -238,7 +239,6 @@
 <translation id="9138385573473225930">uyarı</translation>
 <translation id="9155987714137265666"><ph name="WEEK_START_DATE" /> tarihinde başlayan <ph name="WEEK" /></translation>
 <translation id="9168329111483466115">dipnot</translation>
-<translation id="947831847158436616">hücre</translation>
 <translation id="954003015749068518">pencere içinde pencere moduna gir</translation>
 <translation id="966787709310836684">menü</translation>
 </translationbundle>

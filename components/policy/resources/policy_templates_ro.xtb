@@ -715,6 +715,7 @@
 <translation id="3034580675120919256">Vă permite să setați dacă site-urile web au permisiunea de a rula JavaScript. Rularea JavaScript poate fi permisă sau refuzată în bloc pentru toate site-urile web. Dacă această politică este lăsată nesetată, va fi utilizată politica „AllowJavaScript”, dar utilizatorul va putea să o schimbe.</translation>
 <translation id="3038323923255997294">Continuă executarea aplicațiilor de fundal atunci când <ph name="PRODUCT_NAME" /> este închis</translation>
 <translation id="3046192273793919231">Trimite pachete din rețea serverului de gestionare, pentru a monitoriza starea online</translation>
+<translation id="3047732214002457234">Stabilește modul în care Chrome Cleanup trimite rapoarte privind datele la Google</translation>
 <translation id="3048744057455266684">Dacă această politică este setată și o adresă URL de căutare sugerată din caseta polivalentă conține acest parametru în șirul interogării sau în identificatorul pentru fragment, atunci sugestia va afișa termenii de căutare și furnizorul serviciilor de căutare, în locul adresei URL efective de căutare.
 
           Această politică este opțională. Dacă nu este setată, nu se va efectua înlocuirea termenilor de căutare.
@@ -1041,6 +1042,7 @@
 
       Dacă această politică este activată, se vor trimite pachete de monitorizare din rețea (numite și <ph name="HEARTBEATS_TERM" />).
       Dacă politica este dezactivată sau nu este configurată, nu se vor trimite pachete.</translation>
+<translation id="3950239119790560549">Actualizează restricțiile de timp</translation>
 <translation id="3958586912393694012">Permite ca funcția Smart Lock să fie folosită</translation>
 <translation id="3963602271515417124">Dacă este activată, atestarea la distanță este permisă pentru dispozitiv. De asemenea, un certificat va fi generat și încărcat automat pe Serverul de gestionare a dispozitivelor.
 
@@ -1290,6 +1292,10 @@
 
           Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> nu va delega datele de conectare ale utilizatorului, chiar dacă detectează un server ca fiind în intranet.</translation>
 <translation id="4752880493649142945">Certificat de client pentru conectarea la RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Dacă politica este activată sau nu este configurată, <ph name="PRODUCT_NAME" /> va sugera pagini legate de cea actuală.
+      Aceste sugestii vor fi preluate de la distanță de pe serverele Google.
+
+      Dacă setarea este dezactivată, nu se vor prelua și nu se vor afișa sugestii.</translation>
 <translation id="4791031774429044540">Activați funcția de accesibilitate pentru cursorul mare.
 
           Dacă această politică este activată, cursorul mare va fi întotdeauna activat.
@@ -2109,6 +2115,12 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Dacă această politică nu este configurată, lupa pentru ecran este dezactivată la afișarea inițială a ecranului de conectare. Utilizatorii pot oricând să activeze sau să dezactiveze lupa pentru ecran, iar starea sa pe ecranul de conectare persistă de la un utilizator la altul.</translation>
 <translation id="7249828445670652637">Activează certificatele CA <ph name="PRODUCT_OS_NAME" /> pentru aplicațiile ARC</translation>
+<translation id="725322441686394886">Dacă nu este configurată, în cazul în care Chrome Cleanup detectează software nedorit, poate să trimită la Google rapoarte cu metadate privind scanarea, conform politicii setate de SafeBrowsingExtendedReportingEnabled. Chrome Cleanup va întreba apoi utilizatorul dacă dorește să elimine software-ul nedorit. Utilizatorul poate alege să trimită la Google rezultatele curățării pentru a contribui la detectarea software-ului nedorit în viitor. Aceste rezultate conțin metadate ale fișierului, extensii instalate automat și chei registry, așa cum este prevăzut în Documentația privind confidențialitatea Google Chrome.
+      Dacă este dezactivată, în cazul în care Chrome Cleanup detectează software nedorit, nu va trimite la Google rapoarte cu metadate privind scanarea, ignorând orice politică setată de SafeBrowsingExtendedReportingEnabled. Chrome Cleanup va întreba utilizatorul dacă dorește să elimine software-ul nedorit. Rezultatele curățării nu vor fi trimise la Google și utilizatorul nu va avea opțiunea de a le raporta.
+
+      Dacă este activată, în cazul în care Chrome Cleanup detectează software nedorit, poate să trimită la Google rapoarte cu metadate privind scanarea, conform politicii setate de SafeBrowsingExtendedReportingEnabled. Chrome Cleanup va întreba utilizatorul dacă dorește să elimine software-ul nedorit. Rezultatele curățării vor fi trimise la Google și utilizatorul nu va avea opțiunea de a împiedica această acțiune.
+
+      Această politică nu este disponibilă în instanțele Windows neasociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Permite protecția gazdelor de acces la distanță</translation>
 <translation id="7260277299188117560">Actualizare automată p2p este activată</translation>
 <translation id="7261252191178797385">Imaginea de fundal a dispozitivului</translation>
@@ -2172,6 +2184,11 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă setarea este dezactivată sau nu este configurată, utilizatorii pot alege să acceseze site-ul semnalat după ce li se afișează avertismentul.
 
       Consultă https://developers.google.com/safe-browsing pentru mai multe informații despre Navigarea sigură.</translation>
+<translation id="7417728346887499628">Dacă este dezactivată, împiedică Chrome Cleanup să scaneze sistemul pentru a detecta software nedorit și să îl elimine. Activarea manuală a funcției Chrome Cleanup din chrome://settings/cleanup este dezactivată.
+
+      Dacă este activată sau neconfigurată, Chrome Cleanup scanează periodic sistemul pentru a detecta software nedorit și, dacă detectează un astfel de software, va întreba utilizatorul dacă dorește să îl elimine. Activarea manuală a funcției Chrome Cleanup din chrome://settings este activată.
+
+      Această politică nu este disponibilă în instanțele Windows neasociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Procentul cu care se ajustează intervalul de inactivitate în modul de prezentare (politică învechită)</translation>
 <translation id="7421483919690710988">Setați dimensiunea în octeți a memoriei cache pe disc pentru conținut media</translation>
 <translation id="7424751532654212117">Lista de excepții de la lista cu pluginuri dezactivate</translation>
@@ -2554,6 +2571,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8339420913453596618">Al doilea factor este dezactivat</translation>
 <translation id="8344454543174932833">Importați marcaje din browserul prestabilit, la prima rulare</translation>
 <translation id="8359734107661430198">Activează API-ul ExampleDeprecatedFeature până pe 02.09.2008</translation>
+<translation id="8367209241899435947">Activează Chrome Cleanup în Windows</translation>
 <translation id="8369602308428138533">Interval până la oprirea ecranului la funcționarea pe c.a.</translation>
 <translation id="8382184662529825177">Permiteți utilizarea atestării la distanță pentru protejarea conținutului pe dispozitiv</translation>
 <translation id="838870586332499308">Activează roamingul de date</translation>
@@ -2814,6 +2832,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="9150416707757015439">Această politică este învechită. Puteți să utilizați IncognitoModeAvailability. Activați modul incognito în <ph name="PRODUCT_NAME" />. Dacă această setare este activată sau nu este configurată, utilizatorii pot deschide pagini web în modul incognito. Dacă această setare este dezactivată, utilizatorii nu pot deschide pagini web în modul incognito. Dacă această politică rămâne nesetată, setarea va fi activată, dar utilizatorul va putea folosi modul incognito.</translation>
 <translation id="915194831143859291">Dacă această politică este dezactivată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> îi va permite utilizatorului să oprească dispozitivul.
       Dacă această politică este activată, <ph name="PRODUCT_OS_NAME" /> va declanșa o repornire când utilizatorul închide dispozitivul. <ph name="PRODUCT_OS_NAME" /> înlocuiește toate aparițiile butoanelor de închidere din interfața de utilizare cu butoane de repornire. Dacă utilizatorul închide dispozitivul folosind butonul de pornire, acesta nu va reporni automat, chiar dacă politica este activată.</translation>
+<translation id="9152473318295429890">Activează sugestiile contextuale ale paginilor web asociate</translation>
 <translation id="9158929520101169054">Permite conectarea multiplă în browser</translation>
 <translation id="9165792353046089850">Îți permite să stabilești dacă site-urile primesc acces la dispozitivele USB conectate. Accesul poate fi blocat complet sau utilizatorul poate fi întrebat de fiecare dată când un site dorește să primească acces la dispozitivele USB conectate.
 
@@ -2849,4 +2868,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="944817693306670849">Setați dimensiunea pentru memorare în cache pe disc</translation>
 <translation id="981346395360763138">Serviciile de localizare Google sunt dezactivate</translation>
 <translation id="982497069985795632">Activează verificarea ortografică</translation>
+<translation id="988537626274109600">Această politică stabilește intervalele de timp în care dispozitivul <ph name="PRODUCT_OS_NAME" /> nu poate căuta automat actualizări.
+      Când politica este setată la o listă nevidă de intervale de timp, dispozitivele nu vor putea căuta automat actualizări în intervalele de timp specificate. Dispozitivele care necesită retragerea sau care sunt sub versiunea <ph name="PRODUCT_OS_NAME" /> minimă nu vor fi afectate de această politică, din cauza potențialelor probleme de securitate. În plus, politica nu blochează căutările de actualizări solicitate de utilizatori sau administratori.
+      Când politica este dezactivată sau nu conține intervale de timp, căutările automate de actualizări nu vor fi blocate de această politică, dar pot fi blocate de alte politici.</translation>
 </translationbundle>

@@ -703,6 +703,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="3034580675120919256">Us permet definir si els llocs web poden executar JavaScript. L'execució de JavaScript es pot autoritzar o denegar per a tots els llocs web. Si no es defineix aquesta política, s'utilitzarà el paràmetre "AllowJavaScript" i l'usuari podrà canviar-lo.</translation>
 <translation id="3038323923255997294">Continua executant les aplicacions en segon pla quan es tanqui <ph name="PRODUCT_NAME" /></translation>
 <translation id="3046192273793919231">Envia paquets de xarxa al servidor de gestió per supervisar l'estat en línia</translation>
+<translation id="3047732214002457234">Controla de quina manera Neteja de Chrome comunica dades a Google</translation>
 <translation id="3048744057455266684">Si es defineix aquesta política i un URL de cerca suggerit a l'omnibox conté aquest paràmetre a la cadena de consulta o a l'identificador de fragment, el suggeriment mostra els termes de cerca i el proveïdor de cerca en comptes de l'URL de cerca sense processar.
 
           Aquesta política és opcional. Si no es defineix, no es produirà cap substitució dels termes de cerca.
@@ -1019,6 +1020,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Si aquesta política s'estableix en "true", s'envien paquets de xarxa de supervisió (anomenats <ph name="HEARTBEATS_TERM" />).
       Si s'estableix en "false" o no s'estableix, no s'envien paquets.</translation>
+<translation id="3950239119790560549">Actualitza les restriccions de temps</translation>
 <translation id="3958586912393694012">Permet utilitzar Smart Lock</translation>
 <translation id="3963602271515417124">Si s'estableix en "true", es permetrà la confirmació remota per al dispositiu i es crearà i es penjarà automàticament un certificat al servidor de gestió de dispositius.
 
@@ -1269,6 +1271,10 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Si deixeu aquesta política sense definir, <ph name="PRODUCT_NAME" /> no delegarà les credencials de l'usuari, encara que es detecti una intranet com a servidor.</translation>
 <translation id="4752880493649142945">Certificat de client per connectar-se a RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Si s'estableix en "true" o no s'estableix, <ph name="PRODUCT_NAME" /> suggerirà pàgines relacionades amb la pàgina actual.
+      Aquests suggeriments s'obtenen dels servidors de Google de manera remota.
+
+      Si aquesta opció de configuració s'estableix en "false", no s'obtindran ni es mostraran suggeriments.</translation>
 <translation id="4791031774429044540">Activa la funció d'accessibilitat del cursor gran.
 
           Si el valor d'aquesta política s'estableix com a vertader, el cursor gran sempre estarà activat.
@@ -2073,6 +2079,13 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si no s'estableix aquesta política, la lupa es desactivarà la primera vegada que es mostri la pantalla d'inici de sessió. Els usuaris poden activar o desactivar la lupa en qualsevol moment i el seu estat a la pàgina d'inici de sessió es mantindrà entre els usuaris.</translation>
 <translation id="7249828445670652637">Activa l'ús de certificats de CA de <ph name="PRODUCT_OS_NAME" /> a les aplicacions ARC</translation>
+<translation id="725322441686394886">Si no s'estableix, en el cas que Neteja de Chrome detecti programari no desitjat, podrà comunicar les metadades de l'escaneig a Google de conformitat amb la política establerta per SafeBrowsingExtendedReportingEnabled. A continuació, Neteja de Chrome preguntarà a l'usuari si vol netejar el programari no desitjat. L'usuari podrà optar per compartir els resultats de la neteja amb Google per contribuir a la detecció de programari no desitjat. Aquests resultats contenen metadades de fitxers, extensions instal·lades automàticament i claus de registre, segons es descriu al llibre blanc de privadesa de Chrome.
+
+      Si es desactiva, en el cas que Neteja de Chrome detecti programari no desitjat, no comunicarà les metadades de l'escaneig a Google i substituirà qualsevol política establerta per SafeBrowsingExtendedReportingEnabled. Neteja de Chrome preguntarà a l'usuari si vol netejar el programari no desitjat. Els resultats de la neteja no es comunicaran a Google i l'usuari no podrà fer-ho.
+
+      Si s'activa, en el cas que Neteja de Chrome detecti programari no desitjat, podrà comunicar les metadades de l'escaneig a Google de conformitat amb la política establerta per SafeBrowsingExtendedReportingEnabled. Neteja de Chrome preguntarà a l'usuari si vol netejar el programari no desitjat. Els resultats de la neteja es comunicaran a Google i l'usuari no podrà impedir-ho.
+
+      Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Activa l'ocultació d'amfitrions d'accés remot</translation>
 <translation id="7260277299188117560">Actualització automàtica de P2P activada</translation>
 <translation id="7261252191178797385">Imatge de fons de pantalla del dispositiu</translation>
@@ -2136,6 +2149,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta opció de configuració es desactiva o no s'estableix, els usuaris poden decidir si volen accedir al lloc web marcat després de veure l'advertiment.
 
       Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
+<translation id="7417728346887499628">Si es desactiva, Neteja de Chrome no podrà escanejar el sistema per detectar-hi programari no desitjat ni per netejar-lo. L'opció per activar Neteja de Chrome manualment des de chrome://settings/cleanup estarà desactivada.
+
+      Si s'activa o es deixa sense establir, Neteja de Chrome escanejarà periòdicament el sistema per detectar-hi programari no desitjat i, si en troba, preguntarà a l'usuari si el vol suprimir. L'opció per activar Neteja de Chrome manualment des de chrome://settings estarà activada.
+
+      Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Percentatge que permet ajustar el retard d'inactivitat en mode de presentació (desactivat)</translation>
 <translation id="7421483919690710988">Defineix la mida de la memòria cau del disc multimèdia en bytes</translation>
 <translation id="7424751532654212117">Llista d'excepcions de la llista de connectors desactivats</translation>
@@ -2235,7 +2253,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           En el cas dels URL no inclosos als patrons que s'especifiquen, o de tots els URL si no es defineix aquesta política, s'utilitzarà el valor global predeterminat indicat a la política DefaultCookiesSetting (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.
 
-          Tingues en compte que, si <ph name="PRODUCT_NAME" /> s'executa en "mode de segon pla", pot ser que la sessió no es tanqui quan es tanqui l'última finestra del navegador, sinó que continuarà activa fins que es tanqui el navegador. Consulta la política BackgroundModeEnabled per obtenir més informació sobre com pots configurar aquest comportament.
+          Tingues en compte que, si <ph name="PRODUCT_NAME" /> s'executa en "mode de segon pla", pot ser que la sessió no es tanqui quan es tanqui l'última finestra del navegador, sinó que continuï activa fins que es tanqui el navegador. Consulta la política BackgroundModeEnabled per obtenir més informació sobre com pots configurar aquest comportament.
 
           Consulta també les polítiques CookiesAllowedForUrls i CookiesBlockedForUrls. Tingues en compte que no pot haver-hi conflictes entre els patrons d'URL d'aquestes tres polítiques. No s'ha especificat quina té prioritat.
 
@@ -2515,6 +2533,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="8339420913453596618">Segon factor desactivat</translation>
 <translation id="8344454543174932833">Importació de les adreces d'interès des del navegador predeterminat en la primera execució</translation>
 <translation id="8359734107661430198">Activa l'API de ExampleDeprecatedFeature fins al 02/09/2008</translation>
+<translation id="8367209241899435947">Activa Neteja de Chrome a Windows</translation>
 <translation id="8369602308428138533">Retard de la desactivació de pantalla quan s'utilitza alimentació</translation>
 <translation id="8382184662529825177">Activa l'ús del testimoni remot del contingut protegit al dispositiu.</translation>
 <translation id="838870586332499308">Activa la itinerància de dades</translation>
@@ -2774,6 +2793,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="9150416707757015439">Aquesta política està obsoleta. En lloc seu, utilitzeu IncognitoModeAvailability. Activa el mode d'incògnit a <ph name="PRODUCT_NAME" />. Si aquest paràmetre està activat o no està configurat, els usuaris podran obrir pàgines web en mode d'incògnit. Si està desactivat, els usuaris no podran obrir pàgines web en mode d'incògnit. Si no es defineix aquesta política, aquest paràmetre s'activarà i l'usuari podrà utilitzar el mode d'incògnit.</translation>
 <translation id="915194831143859291">Si aquesta política s'estableix en false o no es configura, <ph name="PRODUCT_OS_NAME" /> permetrà que l'usuari apagui el dispositiu.
       Si aquesta política s'estableix en true, <ph name="PRODUCT_OS_NAME" /> reiniciarà el dispositiu quan l'usuari l'apagui. És a dir, <ph name="PRODUCT_OS_NAME" /> substitueix tots els botons d'apagat de la interfície d'usuari per botons de reinici. Per tant, si l'usuari apaga el dispositiu amb el botó d'engegada, es reiniciarà de manera automàtica, encara que la política estigui activada.</translation>
+<translation id="9152473318295429890">Activa suggeriments contextuals de pàgines web relacionades</translation>
 <translation id="9158929520101169054">Permet l'inici de sessió múltiple al navegador</translation>
 <translation id="9165792353046089850">Permet definir si els llocs web poden obtenir accés a dispositius USB connectats. L'accés es pot bloquejar completament o es pot consultar a l'usuari cada cop que un lloc web vulgui obtenir accés a dispositius USB connectats.
 
@@ -2809,4 +2829,9 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="944817693306670849">Defineix la mida de la memòria cau del disc</translation>
 <translation id="981346395360763138">Serveis d'ubicació de Google desactivats</translation>
 <translation id="982497069985795632">Activa el corrector ortogràfic</translation>
+<translation id="988537626274109600">Aquesta política controla els intervals de temps en què no es permet que el dispositiu <ph name="PRODUCT_OS_NAME" /> cerqui actualitzacions automàticament.
+      Quan aquesta política s'estableix en una llista no buida d'intervals de temps:
+      Els dispositius no poden cercar actualitzacions automàticament durant els intervals de temps especificats. Aquesta política no afecta els dispositius que s'han de revertir a una versió anterior o que tenen una versió anterior a la mínima (<ph name="PRODUCT_OS_NAME" />), ja que podria provocar problemes de seguretat. A més, aquesta política no bloqueja les cerques d'actualitzacions sol·licitades per usuaris o administradors.
+      Si aquesta política no s'estableix o no conté cap interval de temps:
+      La política no bloqueja les cerques automàtiques d'actualitzacions, però pot ser que hi hagi altres polítiques que sí que les bloquegin.</translation>
 </translationbundle>

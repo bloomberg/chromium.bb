@@ -31,6 +31,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">stav</translation>
 <translation id="1938124657309484470">Hodnota musí byť <ph name="MAXIMUM_DATE_OR_TIME" /> alebo skôr.</translation>
+<translation id="1946271899482435442">Zobraziť výber dátumu</translation>
 <translation id="1993104285338243655">Prepnuté na zrkadlenie</translation>
 <translation id="2060505056492490888">Znak <ph name="DOT" /> je v doméne <ph name="INVALIDDOMAIN" /> použitý na nesprávnej pozícii.</translation>
 <translation id="2148716181193084225">Dnes</translation>
@@ -238,7 +239,6 @@
 <translation id="9138385573473225930">upozornenie</translation>
 <translation id="9155987714137265666"><ph name="WEEK" /> začínajúci <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">poznámka pod čiarou</translation>
-<translation id="947831847158436616">bunka</translation>
 <translation id="954003015749068518">zapnúť obraz v obraze</translation>
 <translation id="966787709310836684">ponuka</translation>
 </translationbundle>

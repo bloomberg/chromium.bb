@@ -114,7 +114,6 @@
 <translation id="5032989939245619637">‏ذخیره جزئیات در Chromium</translation>
 <translation id="5045248521775609809">‏Chrome را همه‌ جا ببرید</translation>
 <translation id="5116586539350239523">‏Chromium به‌طور امن جزئیات شخصی‌تان را ذخیره خواهد کرد تا نیازی نباشد آن‌ها را دوباره تایپ کنید.</translation>
-<translation id="5231355151045086930">‏خروج از سیستم Chromium</translation>
 <translation id="5358375970380395591">‏شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست آن اجازه کنترل بر نمایه Chromium خود را می‌دهید. داده‌های Chromium شما شامل برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات برای همیشه به <ph name="USER_NAME" /> مرتبط خواهد شد. می‌توانید این داده‌ها را از طریق داشبورد حساب‌های Google حذف کنید اما نمی‌توانید این داده‌ها را به حساب دیگری مرتبط سازید. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">‏درحال به‌روزرسانی Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">‏نسخه جدیدی از Chromium موجود است.</translation>
@@ -147,6 +146,7 @@
 <translation id="6129621093834146363">‏<ph name="FILE_NAME" /> خطرناک است، بنابراین Chromium آن را مسدود کرده است.</translation>
 <translation id="6212496753309875659">‏این رایانه در حال حاضر دارای یک نسخه جدیدتر از Chromium است. درصورتی‌که نرم‌افزار کار نمی‌کند، لطفاً Chromium را حذف نصب کنید و دوباره سعی کنید.</translation>
 <translation id="6248213926982192922">‏Chromium  مرورگر پیش‌فرض شود</translation>
+<translation id="6268381023930128611">‏از Chromium خارج می‌شوید؟</translation>
 <translation id="6295779123002464101">‏<ph name="FILE_NAME" /> ممکن است خطرناک باشد، بنابراین Chromium آن را مسدود کرده است.</translation>
 <translation id="6309712487085796862">‏Chromium درحال استفاده از دوربین شما است.</translation>
 <translation id="6333502561965082103">‏عملیات دیگری در Chromium درحال انجام است. لطفاً بعداً دوباره امتحان کنید.</translation>

@@ -15,7 +15,7 @@
 <translation id="1121094540300013208">تقارير الاستخدام والأعطال</translation>
 <translation id="11221688409173367">انقر على زر "الصفحة الرئيسية" لعرض المقالات المُختارة خصيصًا لك.</translation>
 <translation id="1129510026454351943">التفاصيل: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1141800923049248244">{FILE_COUNT,plural, =1{هناك تنزيل واحد مُعلَّق.}zero{هناك # تنزيل مُعلَّق.}two{هناك تنزيلان (#) مُعلَّقان.}few{هناك # تنزيلات مُعلَّقة.}many{هناك # تنزيلاً مُعلَّقًا.}other{هناك # تنزيل مُعلَّق.}}</translation>
+<translation id="1141800923049248244">{FILE_COUNT,plural, =1{هناك عملية تنزيل واحدة مُعلَّقة.}zero{هناك # عملية تنزيل مُعلَّقة.}two{هناك عمليتا تنزيل (#) مُعلَّقتان.}few{هناك # عمليات تنزيل مُعلَّقة.}many{هناك # عملية تنزيل مُعلَّقة.}other{هناك # عملية تنزيل مُعلَّقة.}}</translation>
 <translation id="1145536944570833626">يمكنك حذف البيانات الحالية.</translation>
 <translation id="1146678959555564648">‏إدخال VR</translation>
 <translation id="114721135501989771">‏الحصول على ميزات Google الذكية في Chrome</translation>
@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">توقف التنزيل مؤقتًا</translation>
 <translation id="1389974829397082527">ليست هناك إشارات مرجعية هنا</translation>
 <translation id="1397811292916898096">البحث باستخدام <ph name="PRODUCT_NAME" /></translation>
+<translation id="1397854323885047133">المزامنة والتخصيص</translation>
 <translation id="1404122904123200417">تم التضمين في <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"عدم التعقب"</translation>
 <translation id="1407135791313364759">فتح الكل</translation>
@@ -119,7 +120,7 @@
 <translation id="1966710179511230534">يُرجى تحديث تفاصيل تسجيل الدخول.</translation>
 <translation id="1974060860693918893">إعدادات متقدمة</translation>
 <translation id="1984937141057606926">مسموح باستثناء الجهات الخارجية</translation>
-<translation id="1987739130650180037">الزر <ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
+<translation id="1987739130650180037">زر <ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
 <translation id="1989112275319619282">تصفّح</translation>
 <translation id="1993768208584545658">يريد <ph name="SITE" /> الاقتران</translation>
 <translation id="1994173015038366702">‏عنوان URL للموقع</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">‏للحصول على محتوى مخصص اقترحته Google، سجِّلْ الدخول إلى Chrome.</translation>
 <translation id="2091887806945687916">الصوت</translation>
 <translation id="2095887075102408547">‏عند تشغيل هذه الميزة، سيستخدم Chrome خوادم Google لضغط الصفحات التي تزورها قبل تنزيلها. ولن يتم تحسين الصفحات التي يتم الوصول إليها باستخدام الاتصالات الخاصة (HTTPS) أو من خلال علامات تبويب التصفح المتخفي أو لن يكتشفها متصفح Google.</translation>
+<translation id="2096012225669085171">المزامنة والتخصيص على الأجهزة</translation>
 <translation id="2100273922101894616">تسجيل الدخول التلقائي</translation>
 <translation id="2111511281910874386">الانتقال إلى الصفحة</translation>
 <translation id="2122601567107267586">تعذر فتح التطبيق</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">‏نسخ عنوان URL</translation>
 <translation id="2156074688469523661">المواقع المتبقية (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">انقر للوصول إلى صفحة علامة التبويب الجديدة في علامة التبويب الحالية.</translation>
-<translation id="219985413780390209">حمايتك وحماية جهازك من المواقع الخطرة</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />، تطبيق ويب. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">متابعة باسم <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">‏يُرسِل بعض معلومات النظام ومحتوى الصفحة إلى Google.</translation>
+<translation id="2234876718134438132">‏خدمات Google والمزامنة</translation>
 <translation id="2259659629660284697">تصدير كلمات المرور...</translation>
 <translation id="2268044343513325586">تحسين</translation>
 <translation id="2286841657746966508">عنوان الفاتورة</translation>
@@ -375,7 +377,7 @@
 <translation id="4278390842282768270">مسموح بها</translation>
 <translation id="4307992518367153382">أساسيّات</translation>
 <translation id="4351244548802238354">إغلاق مربع الحوار</translation>
-<translation id="4378154925671717803">الهاتف</translation>
+<translation id="4378154925671717803">هاتف</translation>
 <translation id="4384468725000734951">‏استخدام محرك Sogou للبحث</translation>
 <translation id="4404568932422911380">ليست هناك إشارات مرجعية</translation>
 <translation id="4409723563706114196">استخدام توقعات الصفحة</translation>
@@ -406,9 +408,10 @@
 <translation id="4581964774250883625">لقد انتقلت إلى التصفح المتخفي.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{قبل دقيقة واحدة (#)}zero{قبل # دقيقة}two{قبل دقيقتين (#)}few{قبل # دقائق}many{قبل # دقيقة}other{قبل # دقيقة}}</translation>
 <translation id="4587589328781138893">المواقع</translation>
-<translation id="4594952190837476234">تم إنشاء هذه الصفحة المتوفّرة بلا اتصال بالإنترنت في <ph name="CREATION_TIME" />، وقد تختلف عن الإصدار المتوفِّر على الإنترنت.</translation>
+<translation id="4594952190837476234">تم إنشاء هذه الصفحة المتوفّرة بلا اتصال بالإنترنت في <ph name="CREATION_TIME" />، وقد تختلف عن النسخة المتوفِّرة على الإنترنت.</translation>
 <translation id="4605958867780575332">تمت إزالة العنصر: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">فتح <ph name="WEBAPK_NAME" /></translation>
+<translation id="4634124774493850572">استخدام كلمة المرور</translation>
 <translation id="4645575059429386691">يديره والداك</translation>
 <translation id="4663756553811254707">تم حذف <ph name="NUMBER_OF_BOOKMARKS" /> من الإشارات المرجعية</translation>
 <translation id="4665282149850138822">تمت إضافة <ph name="NAME" /> إلى صفحتك الرئيسية</translation>
@@ -427,7 +430,7 @@
 <translation id="4749960740855309258">فتح علامة تبويب جديدة</translation>
 <translation id="4751476147751820511">أجهزة استشعار الإضاءة أو الحركة</translation>
 <translation id="4759238208242260848">التنزيلات</translation>
-<translation id="4763829664323285145">{FILE_COUNT,plural, =1{اكتمل تنزيل واحد.}zero{اكتمل # تنزيل.}two{اكتمل تنزيلان (#).}few{اكتملت # تنزيلات.}many{اكتمل # تنزيلاً.}other{اكتمل # تنزيل.}}</translation>
+<translation id="4763829664323285145">{FILE_COUNT,plural, =1{اكتملت عملية تنزيل واحدة.}zero{اكتملت # عملية تنزيل.}two{اكتملت عمليتا تنزيل (#).}few{اكتملت # عمليات تنزيل.}many{اكتملت # عملية تنزيل.}other{اكتملت # عملية تنزيل.}}</translation>
 <translation id="4766369052440583386">تم تشغيل توفير البيانات</translation>
 <translation id="4797039098279997504">المس  للعودة إلى <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">الاسم كما على البطاقة</translation>
@@ -474,7 +477,7 @@
 <translation id="515227803646670480">محو البيانات المخزنة</translation>
 <translation id="5152843274749979095">ليس هناك أي تطبيق مثبّت متوافق</translation>
 <translation id="5161254044473106830">العنوان مطلوب</translation>
-<translation id="5162754098604580781">{FILE_COUNT,plural, =1{تعذَّر تنزيل واحد.}zero{تعذَّر # تنزيل.}two{تعذَّر تنزيلان (#).}few{تعذَّرت # تنزيلات.}many{تعذَّر # تنزيلاً.}other{تعذَّر # تنزيل.}}</translation>
+<translation id="5162754098604580781">{FILE_COUNT,plural, =1{تعذَّر إتمام عملية تنزيل واحدة.}zero{تعذَّر إتمام # عملية تنزيل.}two{تعذَّر إتمام عمليتي تنزيل (#).}few{تعذَّر إتمام # عمليات تنزيل.}many{تعذَّر إتمام # عملية تنزيل.}other{تعذَّر إتمام # عملية تنزيل.}}</translation>
 <translation id="5168917394043976756">فتح لائحة التنقل</translation>
 <translation id="5171365962177408781">انقر لتحميل صفحة علامة التبويب الجديدة وعرض المقالات المقترحة.</translation>
 <translation id="5184329579814168207">‏فتح في Chrome</translation>
@@ -584,6 +587,7 @@
 <translation id="5958275228015807058">العثور على الملفات والصفحات في التنزيلات</translation>
 <translation id="5962718611393537961">النقر للتصغير</translation>
 <translation id="6000066717592683814">‏الاستمرار في استخدام محرك Google</translation>
+<translation id="6005538289190791541">كلمة المرور المُقترحَة</translation>
 <translation id="6039379616847168523">الانتقال السريع إلى علامة التبويب التالية</translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="6042308850641462728">المزيد</translation>
@@ -744,7 +748,7 @@
 <translation id="7359002509206457351">الوصول إلى طرق الدفع</translation>
 <translation id="7366340029385295517">جارٍ الإرسال إلى <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">النوع:</translation>
-<translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
+<translation id="7396940094317457632"><ph name="FILE_NAME" /></translation>
 <translation id="7400418766976504921">‏عنوان URL</translation>
 <translation id="7403691278183511381">‏أول تجربة تشغيل لمتصفح Chrome</translation>
 <translation id="741204030948306876">نعم، موافق</translation>
@@ -812,6 +816,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قديم.</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="7963646190083259054">المورّد:</translation>
+<translation id="79859296434321399">‏لعرض محتوى الواقع المُعزَّز، يُرجى تثبيت ARCore</translation>
 <translation id="7987073022710626672">‏بنود خدمة Chrome</translation>
 <translation id="7998918019931843664">إعادة فتح علامة التبويب المغلقة</translation>
 <translation id="7999064672810608036">هل أنت متأكد أنك تريد مسح كل البيانات المحلية، بما في ذلك ملفات تعريف الارتباط، وإعادة ضبط كافة الأذونات لموقع الويب هذا؟</translation>
@@ -874,6 +879,7 @@
 <translation id="851751545965956758">حظر المواقع من الاتصال بأجهزة</translation>
 <translation id="8523928698583292556">حذف كلمة المرور المخزنة</translation>
 <translation id="854522910157234410">فتح هذه الصفحة</translation>
+<translation id="8558485628462305855">‏لعرض محتوى الواقع المُعزَّز، يُرجى تحديث ARCore</translation>
 <translation id="8559990750235505898">عرض ترجمة للصفحات بلغات أخرى</translation>
 <translation id="8562452229998620586">ستظهر هنا كلمات المرور المحفوظة.</translation>
 <translation id="8569404424186215731">منذ <ph name="DATE" /></translation>

@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">નબળું સિગ્નલ</translation>
 <translation id="1293264513303784526">USB-C ઉપકરણ (ડાબું પોર્ટ)</translation>
 <translation id="1346748346194534595">જમણે</translation>
+<translation id="1351937230027495976">મેનૂ સંકુચિત કરો</translation>
 <translation id="1383876407941801731">શોધો</translation>
 <translation id="1467432559032391204">ડાબું</translation>
 <translation id="1479743070547893297">પસંદ કરવા માટે તમારા સ્ટાઇલસ વડે દોરો</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">આઉટપુટ</translation>
 <translation id="3019353588588144572">બેટરી સંપૂર્ણપણે ચાર્જ થવામાં બાકી સમય, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">મેનૂ વિસ્તૃત કરો</translation>
 <translation id="3087734570205094154">તળિયું</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">અપડેટ કરવા માટે પુનઃપ્રારંભ કરો</translation>
@@ -165,8 +167,10 @@
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
 <translation id="3995138139523574647">USB-C ઉપકરણ (જમણી બાજુનું પાછળનું પોર્ટ)</translation>
 <translation id="4017989525502048489">લેઝર પૉઇન્ટર</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{એક ઍપ માટે બંધ છે}one{# ઍપ માટે બંધ છે}other{# ઍપ માટે બંધ છે}}</translation>
 <translation id="4072264167173457037">મધ્યમ સિગ્નલ</translation>
 <translation id="4200057768455216496">તમે ડૉક કરેલ મૅગ્નિફાયર માટેનો શૉર્ટકટ દબાવેલ છે. શું તમે તે ચાલુ કરવા માગો છો?</translation>
+<translation id="4217571870635786043">ડિક્ટેશન</translation>
 <translation id="4279490309300973883">પ્રતિબિંબત થઈ રહ્યું છે</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -185,8 +189,10 @@
 <translation id="453661520163887813">પૂર્ણપણે ચાર્જ થવામાં <ph name="TIME" /></translation>
 <translation id="4544944664594876241">સ્ક્રીનને લૉક કરવાનો શોર્ટકટ બદલાયો છે. કૃપા કરીને <ph name="OLD_SHORTCUT" /> ને બદલે <ph name="NEW_SHORTCUT" /> નો ઉપયોગ કરો.</translation>
 <translation id="4564869809620998694">ફૉન્ટ સેવા</translation>
+<translation id="4570957409596482333">સાંભળવા માટે પસંદ કરો બટન</translation>
 <translation id="4628757576491864469">ઉપકરણો</translation>
 <translation id="4659419629803378708">ChromeVox સક્ષમ કર્યું</translation>
+<translation id="4734965478015604180">આડી</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> માટેનો પાસવર્ડ </translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">ડિસ્કનેક્ટ કરો</translation>
@@ -194,6 +200,7 @@
 <translation id="4872237917498892622">Alt+Search અથવા Shift</translation>
 <translation id="4890187583552566966">તમારા વ્યવસ્થાપકે Google સહાયક બંધ કરેલું છે.</translation>
 <translation id="4895488851634969361">બેટરી સંપૂર્ણ છે.</translation>
+<translation id="490375751687810070">વર્ટિકલ</translation>
 <translation id="4905614135390995787">હાઇ કોન્ટ્રાસ્ટ મોડને ટૉગલ કરવાનો શૉર્ટકટ બદલાઇ ગયો છો. <ph name="OLD_SHORTCUT" />ને બદલે કૃપા કરીને <ph name="NEW_SHORTCUT" />નો ઉપયોગ કરો.</translation>
 <translation id="4917385247580444890">સશક્ત</translation>
 <translation id="4918086044614829423">સ્વીકારો</translation>
@@ -326,6 +333,7 @@
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (માલિક)</translation>
 <translation id="7647488630410863958">તમારી સૂચનાઓ જોવા માટે ઉપકરણને અનલૉક કરો</translation>
 <translation id="7649070708921625228">સહાય</translation>
+<translation id="7654687942625752712">બોલાયેલ પ્રતિસાદ બંધ કરવા પાંચ સેકન્ડ માટે બન્ને વૉલ્યૂમ કીને દબાવી રાખો.</translation>
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="7692480393933218409">કનેક્ટ કરેલા USB-C ઉપકરણોને ચાર્જ કરી રહ્યાં છે</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -346,6 +354,7 @@
 <translation id="8054466585765276473">બેટરી સમયની ગણના કરે છે.</translation>
 <translation id="8061464966246066292">ઉચ્ચ કોન્ટ્રાસ્ટ</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> પર સ્ક્રીન કાસ્ટ કરવાનું રોકો</translation>
+<translation id="8113423164597455979">ચાલુ, બધી ઍપ</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> થી કનેક્ટેડ છે</translation>
 <translation id="813913629614996137">પ્રારંભ કરી રહ્યું છે...</translation>
 <translation id="8142699993796781067">ખાનગી નેટવર્ક</translation>
@@ -366,6 +375,7 @@
 <translation id="847056008324733326">પ્રદર્શન સ્કેલની સેટિંગ્સ</translation>
 <translation id="8477270416194247200">રદ કરવા માટે Alt+શોધો અથવા Shift દબાવો.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: ફરીથી કનેક્ટ કરી રહ્યાં છે...</translation>
+<translation id="8513108775083588393">આપમેળે ફેરવો</translation>
 <translation id="8517041960877371778">તમારું <ph name="DEVICE_TYPE" /> ચાલુ હોય ત્યારે તે ચાર્જ ન થાય તેવું બની શકે.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> બાકી</translation>
 <translation id="8649101189709089199">બોલીને-પસંદ-કરો</translation>

@@ -712,6 +712,7 @@ Alerty dotyczące ochrony hasłem ostrzegają użytkowników, gdy chcą oni stos
 <translation id="3034580675120919256">Umożliwia określenie, czy w witrynach może być wykonywany kod JavaScript. Wykonanie kodu JavaScript może być dozwolone lub zabronione we wszystkich witrynach. W przypadku nieskonfigurowania tej zasady będzie używane ustawienie „AllowJavaScript”, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="3038323923255997294">Kontynuuj działanie aplikacji w tle po zamknięciu <ph name="PRODUCT_NAME" /></translation>
 <translation id="3046192273793919231">Wysyłaj pakiety sieciowe na serwer zarządzania w celu monitorowania stanu online</translation>
+<translation id="3047732214002457234">Określanie sposobu przesyłania do Google danych przez Czyszczenie Chrome</translation>
 <translation id="3048744057455266684">Jeśli ta zasada jest ustawiona, a URL wyszukiwania zaproponowany przez omnibox zawiera ten parametr w ciągu zapytania lub identyfikatorze fragmentu, wtedy sugestia zamiast nieprzetworzonego adresu URL wyszukiwania pokaże wyszukiwane hasła i dostawcę wyszukiwania.
 
           Ta zasada jest opcjonalna. Jeśli nie jest ustawiona, nie zachodzi zamiana wyszukiwanego hasła.
@@ -1024,6 +1025,7 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
 
       Jeśli ta zasada jest włączona, pakiety sieciowe monitorowania (<ph name="HEARTBEATS_TERM" />) będą wysyłane.
       Jeśli jest wyłączona lub nieskonfigurowana, pakiety nie będą wysyłane.</translation>
+<translation id="3950239119790560549">Aktualizowanie ograniczeń czasowych</translation>
 <translation id="3958586912393694012">Zezwalaj na używanie funkcji Smart Lock</translation>
 <translation id="3963602271515417124">Jeśli ustawiono wartość Prawda, zdalne poświadczanie na potrzeby urządzenia jest dozwolone, a certyfikat jest automatycznie generowany i przesyłany na serwer zarządzania urządzeniami.
 
@@ -1271,6 +1273,10 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli nie ustawisz tej zasady, <ph name="PRODUCT_NAME" /> nie przekazuje danych logowania użytkowników, nawet gdy serwer działa w intranecie.</translation>
 <translation id="4752880493649142945">Certyfikat klienta umożliwiający nawiązanie połączenia z RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Jeśli ta zasada ma wartość prawda lub jest nieskonfigurowana, <ph name="PRODUCT_NAME" /> będzie proponować strony powiązane z bieżącą stroną.
+      Takie propozycje są pobierane zdalnie z serwerów Google.
+
+      Jeśli to ustawienie ma wartość fałsz, propozycje nie będą pobierane ani wyświetlane.</translation>
 <translation id="4791031774429044540">Włącza funkcję ułatwień dostępu w postaci dużego kursora.
 
           Jeśli ta zasada ma wartość „prawda”, duży kursor jest zawsze włączony.
@@ -1453,7 +1459,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="538108065117008131">Zezwalaj wtyczce <ph name="PRODUCT_FRAME_NAME" /> na obsługę następujących typów treści</translation>
 <translation id="5391363090783552279">Jeśli ta zasada ma wartość true, <ph name="PRODUCT_NAME" /> będzie się łączyć z urządzeniami przesyłającymi pod wszystkimi adresami IP, a nie tylko pod adresami prywatnymi RFC1918/RFC4913.
 
-          Jeśli ta zasada nie ma wartość false, <ph name="PRODUCT_NAME" /> będzie się łączyć z urządzeniami przesyłającymi tylko pod adresami prywatnymi RFC1918/RFC4913.
+          Jeśli ta zasada ma wartość false, <ph name="PRODUCT_NAME" /> będzie się łączyć z urządzeniami przesyłającymi tylko pod adresami prywatnymi RFC1918/RFC4913.
 
           Jeśli ta zasada nie zostanie ustawiona, <ph name="PRODUCT_NAME" /> będzie się łączyć z urządzeniami przesyłającymi tylko pod prywatnymi adresami RFC1918/RFC4913, chyba że zostanie włączona funkcja CastAllowAllIPs.
 
@@ -2076,6 +2082,16 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli zasada pozostanie nieustawiona, po pierwszym wyświetleniu ekranu logowania lupa jest wyłączona. Użytkownicy mogą ją w każdej chwili włączyć lub wyłączyć i jej stan na ekranie logowania jest trwały dla wszystkich użytkowników.</translation>
 <translation id="7249828445670652637">Włącz korzystanie z certyfikatów CA <ph name="PRODUCT_OS_NAME" /> w aplikacjach ARC</translation>
+<translation id="725322441686394886">Gdy ta zasada jest nieskonfigurowana, Czyszczenie Chrome po wykryciu niechcianego oprogramowania może przesłać metadane skanowania do Google zgodnie z ustawieniem zasady SafeBrowsingExtendedReportingEnabled. Następnie Czyszczenie Chrome zapyta użytkownika, czy usunąć niechciane oprogramowanie. Użytkownik może zdecydować, czy przesłać do Google wyniki czyszczenia, by pomóc ulepszyć wykrywanie niechcianego oprogramowania. 
+Te wyniki zawierają metadane plików, informacje o automatycznie zainstalowanych rozszerzeniach i klucze rejestru zgodnie z opisem w Dokumencie na temat ochrony prywatności w Google Chrome.
+
+      Jeśli ta zasada jest wyłączona, Czyszczenie Chrome po wykryciu niechcianego oprogramowania nie prześle metadanych skanowania do Google, ignorując ustawienie zasady SafeBrowsingExtendedReportingEnabled. Następnie Czyszczenie Chrome zapyta użytkownika, czy usunąć niechciane oprogramowanie. 
+Wyniki czyszczenia nie będą przesyłane do Google, a użytkownik nie będzie pytany, czy chce to zrobić.
+
+      Gdy ta zasada jest włączona, Czyszczenie Chrome po wykryciu niechcianego oprogramowania może przesłać metadane skanowania do Google zgodnie z ustawieniem zasady SafeBrowsingExtendedReportingEnabled. Następnie Czyszczenie Chrome zapyta użytkownika, czy usunąć niechciane oprogramowanie. 
+Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytany, czy się na to zgadza.
+
+      Ta zasada jest niedostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Włącz separację hostów zdalnego dostępu</translation>
 <translation id="7260277299188117560">Sieć P2P aktualizacji automatycznych włączona</translation>
 <translation id="7261252191178797385">Tapeta na urządzeniu</translation>
@@ -2139,6 +2155,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli nie skonfigurujesz tego ustawienia lub je wyłączysz, użytkownicy będą mogli wybrać, czy chcą przejść ze strony ostrzeżenia na stronę oznaczoną jako szkodliwa.
 
       Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na https://developers.google.com/safe-browsing</translation>
+<translation id="7417728346887499628">Wyłączenie tej zasady powoduje, że Czyszczenie Chrome nie będzie skanować systemu w celu wykrycia i usunięcia niechcianego oprogramowania. Ręczne uruchamianie Czyszczenia Chrome na stronie chrome://settings/cleanup będzie wyłączone.
+
+      Jeśli zasada zostanie włączona lub nie będzie skonfigurowana, Czyszczenie Chrome będzie okresowo skanować system, a gdy wykryje niechciane oprogramowanie, zapyta użytkownika, czy je usunąć. Ręczne uruchamianie Czyszczenia Chrome na stronie chrome://settings będzie włączone.
+
+      Ta zasada jest niedostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Wartość procentowa skalowania opóźnienia bezczynności w trybie prezentacji (wycofana)</translation>
 <translation id="7421483919690710988">Ustaw rozmiar dyskowej pamięci podręcznej multimediów w bajtach</translation>
 <translation id="7424751532654212117">Lista wyjątków od listy wyłączonych wtyczek</translation>
@@ -2504,7 +2525,7 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
       z istniejącymi skryptami PAC.
 
       Planujemy usunąć ten problem w przyszłości.</translation>
-<translation id="8285435910062771358">Pełnoekranowa lupa włączona</translation>
+<translation id="8285435910062771358">Lupa pełnoekranowa włączona</translation>
 <translation id="8288199156259560552">Włącz usługę lokalizacyjną Google na Androida</translation>
 <translation id="8294750666104911727">Normalnie strony, które w tagu X-UA-Compatible mają wartość chrome=1, będą renderowane w <ph name="PRODUCT_FRAME_NAME" /> niezależnie od ustawienia zasady „ChromeFrameRendererSettings”.
 
@@ -2528,6 +2549,7 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
 <translation id="8339420913453596618">Uwierzytelnianie dwuskładnikowe wyłączone</translation>
 <translation id="8344454543174932833">Importuj zakładki z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="8359734107661430198">Włącz interfejs API ExampleDeprecatedFeature od 2 września 2008 r.</translation>
+<translation id="8367209241899435947">Włączanie Czyszczenia Chrome w Windows</translation>
 <translation id="8369602308428138533">Opóźnienie wyłączenia ekranu przy zasilaniu sieciowym</translation>
 <translation id="8382184662529825177">Włącz używanie zaświadczania zdalnego do ochrony treści na urządzeniu</translation>
 <translation id="838870586332499308">Włącz dane w roamingu</translation>
@@ -2779,6 +2801,7 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="9150416707757015439">Ta zasada została wycofana z użycia. Zamiast niej użyj IncognitoModeAvailability. Włącza ona tryb incognito w <ph name="PRODUCT_NAME" />. Jeśli ustawienie jest włączone lub nieskonfigurowane, użytkownicy mogą otwierać strony internetowe w trybie incognito. Wyłączenie ustawienia uniemożliwia użytkownikom otwieranie stron internetowych w tym trybie. W przypadku nieskonfigurowania tej zasady ustawienie zostanie włączone, a użytkownicy będą mogli używać trybu incognito.</translation>
 <translation id="915194831143859291">Jeśli wyłączysz tę zasadę lub jej nie skonfigurujesz, <ph name="PRODUCT_OS_NAME" /> pozwoli użytkownikowi wyłączyć urządzenie.
       Jeśli zasada będzie włączona, <ph name="PRODUCT_OS_NAME" /> wymusi ponowne uruchomienie urządzenia, gdy użytkownik spróbuje je wyłączyć. <ph name="PRODUCT_OS_NAME" /> zastąpi wszystkie wystąpienia przycisku wyłączania w interfejsie użytkownika przyciskami ponownego uruchomienia. Urządzenie nie uruchomi się ponownie niezależnie od ustawienia tej zasady, jeśli użytkownik wyłączy je za pomocą przycisku zasilania.</translation>
+<translation id="9152473318295429890">Włączanie kontekstowego proponowania powiązanych stron</translation>
 <translation id="9158929520101169054">Zezwól na wielokrotne logowanie w przeglądarce</translation>
 <translation id="9165792353046089850">Pozwala określić, czy witryny mogą uzyskać dostęp do podłączonych urządzeń USB. Dostęp może być całkowicie zablokowany lub użytkownik może być pytany za każdym razem, gdy strona chce użyć takiego urządzenia.
 
@@ -2814,4 +2837,9 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="944817693306670849">Ustaw rozmiar dyskowej pamięci podręcznej.</translation>
 <translation id="981346395360763138">Wyłączono usługi lokalizacyjne Google</translation>
 <translation id="982497069985795632">Włącz sprawdzanie pisowni</translation>
+<translation id="988537626274109600">Ta zasada określa przedziały czasu, w których urządzenie z systemem <ph name="PRODUCT_OS_NAME" /> nie może automatycznie sprawdzać dostępności aktualizacji.
+      Jeśli ta zasada korzysta z niepustej listy przedziałów czasu:
+      Urządzenia nie mogą automatycznie sprawdzać dostępności aktualizacji w określonych przedziałach czasu. Ze względów bezpieczeństwa ta zasada nie obowiązuje urządzeń wymagających przywrócenia wcześniejszej wersji systemu <ph name="PRODUCT_OS_NAME" /> lub gdy wersja systemu jest starsza od minimalnej. Zasada ta nie blokuje sprawdzania dostępności aktualizacji przez użytkowników bądź administratorów.
+      Gdy ta zasada jest nieokreślona lub nie zawiera przedziałów czasu:
+      Zasada z takim ustawieniem nie blokuje automatycznego sprawdzania dostępności aktualizacji, ale mogą to powodować inne zasady.</translation>
 </translationbundle>

@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">слабый сигнал</translation>
 <translation id="1293264513303784526">Устройство USB-C (порт слева)</translation>
 <translation id="1346748346194534595">Справа</translation>
+<translation id="1351937230027495976">Свернуть меню</translation>
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1467432559032391204">Слева</translation>
 <translation id="1479743070547893297">Выделите объекты на экране с помощью стилуса.</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Выход</translation>
 <translation id="3019353588588144572">Оставшееся время до полной зарядки батареи: <ph name="TIME_REMAINING" />.</translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Развернуть меню</translation>
 <translation id="3087734570205094154">Снизу</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Перезагрузите, чтобы обновить</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Вычисление…</translation>
 <translation id="3995138139523574647">Устройство USB-C (дальний порт справа)</translation>
 <translation id="4017989525502048489">Лазерная указка</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Отключить уведомления для 1 приложения}one{Отключить уведомления для # приложения}few{Отключить уведомления для # приложений}many{Отключить уведомления для # приложений}other{Отключить уведомления для # приложения}}</translation>
 <translation id="4072264167173457037">сигнал средней мощности</translation>
 <translation id="4200057768455216496">Вы нажали сочетание клавиш для закрепленной лупы. Включить ее?</translation>
 <translation id="4217571870635786043">Голосовой ввод</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">Кнопка "Озвучивание при нажатии"</translation>
 <translation id="4628757576491864469">Устройства</translation>
 <translation id="4659419629803378708">Функция ChromeVox включена</translation>
+<translation id="4734965478015604180">Горизонтальная ориентация</translation>
 <translation id="4776917500594043016">Пароль для адреса электронной почты <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">поиск</translation>
 <translation id="4804818685124855865">Отключиться</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">Alt + Search или Shift</translation>
 <translation id="4890187583552566966">Администратор отключил Google Ассистента</translation>
 <translation id="4895488851634969361">Батарея полностью заряжена.</translation>
+<translation id="490375751687810070">Вертикальная ориентация</translation>
 <translation id="4905614135390995787">Изменились быстрые клавиши для управления режимом высокой контрастности. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Сильный</translation>
 <translation id="4918086044614829423">Принять</translation>
@@ -349,6 +354,7 @@
 <translation id="8054466585765276473">Подсчет оставшегося времени работы от батареи…</translation>
 <translation id="8061464966246066292">Высокая контрастность</translation>
 <translation id="8098591350844501178">Остановить трансляцию содержимого экрана на устройство "<ph name="RECEIVER_NAME" />"</translation>
+<translation id="8113423164597455979">Уведомления включены для всех приложений</translation>
 <translation id="8132793192354020517">Подключено к сети <ph name="NAME" /></translation>
 <translation id="813913629614996137">Инициализация...</translation>
 <translation id="8142699993796781067">Частные сети</translation>
@@ -369,6 +375,7 @@
 <translation id="847056008324733326">Настройки масштаба экрана</translation>
 <translation id="8477270416194247200">Для отмены нажмите ALT + SEARCH или SHIFT.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: повторное подключение...</translation>
+<translation id="8513108775083588393">Автоповорот</translation>
 <translation id="8517041960877371778">Не удается зарядить устройство <ph name="DEVICE_TYPE" />, пока оно включено.</translation>
 <translation id="8639760480004882931">Батарея заряжена на <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Озвучивание при нажатии</translation>

@@ -26,10 +26,12 @@
 <translation id="1821985195704844674">ট্রি গ্রিড</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">রিমোট ডিভাইসে প্লে করুন</translation>
+<translation id="190587075670221089">মোছা হচ্ছে</translation>
 <translation id="1907737156431278478">উদাহরণ</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">স্থিতি</translation>
 <translation id="1938124657309484470">মানকে অবশ্যই <ph name="MAXIMUM_DATE_OR_TIME" /> বা আগের হতে হবে৷</translation>
+<translation id="1946271899482435442">তারিখ বেছে নেওয়ার বিকল্পটি দেখান</translation>
 <translation id="1993104285338243655">মিররিং এ পরিবর্তন করা হয়েছে</translation>
 <translation id="2060505056492490888">'<ph name="INVALIDDOMAIN" />' এ একটি ভুল অবস্থানে '<ph name="DOT" />' ব্যবহৃত হয়েছে৷</translation>
 <translation id="2148716181193084225">আজ</translation>
@@ -112,6 +114,7 @@
 <translation id="5117590920725113268">পরবর্তী মাস দেখান</translation>
 <translation id="512758898067543763">সারি শিরোলেখ</translation>
 <translation id="5143125788380636750">উপসংহার</translation>
+<translation id="5153163864850940242">এই ভিডিওটি ছবির-মধ্যে-ছবিতে চালানো হচ্ছে</translation>
 <translation id="5164977714490026579">মানটি অবশ্যই <ph name="MINIMUM" />এর চেয়ে বেশি বা সমান হবে৷</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' অনুসরণ করে একটি অংশ লিখুন৷ '<ph name="INVALIDADDRESS" />' অসম্পূর্ণ৷</translation>
@@ -166,6 +169,7 @@
 <translation id="689129560213475294">বইটির সম্পর্কে</translation>
 <translation id="6934078000481955284">ব্লক উদ্ধৃতি</translation>
 <translation id="6941933287844615239">মিডিয়া ডাউনলোড করুন</translation>
+<translation id="6981594929165378967">যোগ করা হচ্ছে</translation>
 <translation id="6989848892321993519">দয়া করে এই পাঠ্যকে ন্যূনতম <ph name="MIN_CHARACTERS" /> অক্ষরের বা তার বেশি দৈর্ঘ্যের করুন (আপনি বর্তমানে ১টি অক্ষর ব্যবহার করেছেন)।</translation>
 <translation id="709897737746224366">দয়া করে অনুরোধ হওয়া বিন্যাসটি মেলান৷</translation>
 <translation id="7139483182332611405">মুখবন্ধ</translation>
@@ -235,7 +239,6 @@
 <translation id="9138385573473225930">সতর্কতা</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> এ শুরু</translation>
 <translation id="9168329111483466115">ফুটনোট</translation>
-<translation id="947831847158436616">কক্ষ</translation>
 <translation id="954003015749068518">ছবির-মধ্যে-ছবি মোডে যান</translation>
 <translation id="966787709310836684">মেনু</translation>
 </translationbundle>

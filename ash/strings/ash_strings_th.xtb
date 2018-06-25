@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">สัญญาณไม่ดี</translation>
 <translation id="1293264513303784526">อุปกรณ์ USB-C (พอร์ตด้านซ้าย)</translation>
 <translation id="1346748346194534595">ขวา</translation>
+<translation id="1351937230027495976">ยุบเมนู</translation>
 <translation id="1383876407941801731">ค้นหา</translation>
 <translation id="1467432559032391204">ซ้าย</translation>
 <translation id="1479743070547893297">วาดด้วยสไตลัสเพื่อเลือก</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">เอาต์พุต</translation>
 <translation id="3019353588588144572">เวลาที่เหลือกว่าจะชาร์จแบตเตอรี่เต็ม, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">ขยายเมนู</translation>
 <translation id="3087734570205094154">ด้านล่าง</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (บลูทูธ)</translation>
 <translation id="3126069444801937830">รีสตาร์ทเพื่ออัปเดต</translation>
@@ -165,8 +167,9 @@
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="3995138139523574647">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
 <translation id="4017989525502048489">ตัวชี้เลเซอร์</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{ปิดไว้สำหรับ 1 แอป}other{ปิดไว้สำหรับ # แอป}}</translation>
 <translation id="4072264167173457037">สัญญาณแรงปานกลาง</translation>
-<translation id="4200057768455216496">คุณกดแป้นพิมพ์ลัดสำหรับแว่นขยายหน้าจอบางส่วน คุณจะเปิดแว่นขยายไหม</translation>
+<translation id="4200057768455216496">คุณกดแป้นพิมพ์ลัดสำหรับแว่นขยายหน้าจอบางส่วน จะเปิดแว่นขยายไหม</translation>
 <translation id="4217571870635786043">การพิมพ์ตามคำบอก</translation>
 <translation id="4279490309300973883">กำลังแสดงผล</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -190,6 +193,7 @@
 <translation id="4570957409596482333">ปุ่มเลือกเพื่อให้อ่าน</translation>
 <translation id="4628757576491864469">อุปกรณ์</translation>
 <translation id="4659419629803378708">เปิดใช้ ChromeVox แล้ว</translation>
+<translation id="4734965478015604180">แนวนอน</translation>
 <translation id="4776917500594043016">รหัสผ่านของ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">ค้นหา</translation>
 <translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
@@ -197,6 +201,7 @@
 <translation id="4872237917498892622">Alt+ค้นหา หรือ Shift</translation>
 <translation id="4890187583552566966">ผู้ดูแลระบบปิดใช้ Google Assistant</translation>
 <translation id="4895488851634969361">แบตเตอรี่เต็ม</translation>
+<translation id="490375751687810070">แนวตั้ง</translation>
 <translation id="4905614135390995787">มีการเปลี่ยนแปลงแป้นพิมพ์ลัดสำหรับสลับโหมดคอนทราสต์สูง โปรดใช้ <ph name="NEW_SHORTCUT" /> แทน <ph name="OLD_SHORTCUT" /></translation>
 <translation id="4917385247580444890">แรง</translation>
 <translation id="4918086044614829423">ยอมรับ</translation>
@@ -301,7 +306,7 @@
 <translation id="7015766095477679451">กลับมาเมื่อถึงเวลา <ph name="COME_BACK_TIME" /></translation>
 <translation id="7029814467594812963">ออกจากเซสชัน</translation>
 <translation id="7034339000180558234">กำลังแคสต์ <ph name="TAB_NAME" /> ไปยัง <ph name="RECEIVER_NAME" /></translation>
-<translation id="7037152028959403492">คุณกดแป้นพิมพ์ลัดสำหรับคอนทราสต์สูง คุณจะเปิดคอนทราสต์สูงไหม</translation>
+<translation id="7037152028959403492">คุณกดแป้นพิมพ์ลัดสำหรับคอนทราสต์สูง จะเปิดคอนทราสต์สูงไหม</translation>
 <translation id="7066646422045619941">ผู้ดูแลระบบปิดใช้เครือข่ายนี้</translation>
 <translation id="7067196344162293536">หมุนอัตโนมัติ</translation>
 <translation id="7076293881109082629">กำลังลงชื่อเข้าใช้</translation>
@@ -350,10 +355,11 @@
 <translation id="8054466585765276473">กำลังคำนวณเวลาใช้งานแบตเตอรี่</translation>
 <translation id="8061464966246066292">ความคมชัดสูง</translation>
 <translation id="8098591350844501178">หยุดแคสต์หน้าจอไปยัง <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">เปิดไว้ทุกแอป</translation>
 <translation id="8132793192354020517">เชื่อมต่อกับ <ph name="NAME" /></translation>
 <translation id="813913629614996137">กำลังเริ่มดำเนินการ...</translation>
 <translation id="8142699993796781067">เครือข่ายส่วนบุคคล</translation>
-<translation id="8152119955266188852">คุณกดแป้นพิมพ์ลัดสำหรับแว่นขยายทั้งหน้าจอ คุณจะเปิดแว่นขยายไหม</translation>
+<translation id="8152119955266188852">คุณกดแป้นพิมพ์ลัดสำหรับแว่นขยายทั้งหน้าจอ จะเปิดแว่นขยายไหม</translation>
 <translation id="8180896103888046100">หยุดแคสต์ไปยังเครื่องรับที่ไม่รู้จัก</translation>
 <translation id="8190698733819146287">กำหนดค่าภาษาและการป้อนข้อมูล... </translation>
 <translation id="8261506727792406068">ลบ</translation>
@@ -370,6 +376,7 @@
 <translation id="847056008324733326">การตั้งค่าระดับการแสดงผล</translation>
 <translation id="8477270416194247200">กด Alt + Search หรือ Shift เพื่อยกเลิก</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: กำลังเชื่อมต่อใหม่...</translation>
+<translation id="8513108775083588393">หมุนอัตโนมัติ</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ของคุณอาจไม่ชาร์จเมื่อเครื่องเปิดอยู่</translation>
 <translation id="8639760480004882931">เหลือ <ph name="PERCENTAGE" />%</translation>
 <translation id="8649101189709089199">เลือกเพื่อให้อ่าน</translation>

@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Heikko signaali</translation>
 <translation id="1293264513303784526">C-tyypin USB-laite (vasemman sivun portti)</translation>
 <translation id="1346748346194534595">Oikealle</translation>
+<translation id="1351937230027495976">Tiivistä valikko</translation>
 <translation id="1383876407941801731">Haku</translation>
 <translation id="1467432559032391204">Vasemmalle</translation>
 <translation id="1479743070547893297">Valitse piirtämällä näyttökynällä</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Äänentoisto</translation>
 <translation id="3019353588588144572">Akku on ladattu <ph name="TIME_REMAINING" /> kuluttua</translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Laajenna valikko</translation>
 <translation id="3087734570205094154">Alaosa</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Päivitä käynnistämällä uudelleen</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Lasketaan...</translation>
 <translation id="3995138139523574647">C-tyypin USB-laite (oikean sivun taaimmainen portti)</translation>
 <translation id="4017989525502048489">Laserosoitin</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Pois käytöstä sovelluksessa}other{Pois käytöstä # sovelluksessa}}</translation>
 <translation id="4072264167173457037">Keskitasoinen signaali</translation>
 <translation id="4200057768455216496">Painoit kiinnitetyn suurennuksen pikanäppäintä. Haluatko ottaa sen käyttöön?</translation>
 <translation id="4217571870635786043">Sanelu</translation>
@@ -190,6 +193,7 @@
 <translation id="4570957409596482333">Teksti puhuttuna ‑painike</translation>
 <translation id="4628757576491864469">Laitteet</translation>
 <translation id="4659419629803378708">ChromeVox käytössä</translation>
+<translation id="4734965478015604180">Vaakasuora</translation>
 <translation id="4776917500594043016">Osoitteen <ph name="USER_EMAIL_ADDRESS" /> salasana</translation>
 <translation id="479989351350248267">haku</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
@@ -197,6 +201,7 @@
 <translation id="4872237917498892622">Alt + haku tai Shift</translation>
 <translation id="4890187583552566966">Järjestelmänvalvoja on poistanut Google Assistantin käytöstä.</translation>
 <translation id="4895488851634969361">Akku on täynnä.</translation>
+<translation id="490375751687810070">Pystysuora</translation>
 <translation id="4905614135390995787">Suuren kontrastin tilan pikanäppäin on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
 <translation id="4917385247580444890">Vahva</translation>
 <translation id="4918086044614829423">Hyväksy</translation>
@@ -352,6 +357,7 @@
 <translation id="8054466585765276473">Lasketaan akun kesto.</translation>
 <translation id="8061464966246066292">Suuri kontrasti</translation>
 <translation id="8098591350844501178">Lopeta suoratoisto: <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">Käytössä kaikissa sovelluksissa</translation>
 <translation id="8132793192354020517">Yhteys muodostettu verkkoon <ph name="NAME" /></translation>
 <translation id="813913629614996137">Käynnistetään…</translation>
 <translation id="8142699993796781067">Yksityinen verkko</translation>
@@ -372,6 +378,7 @@
 <translation id="847056008324733326">Näytön skaalauksen asetukset</translation>
 <translation id="8477270416194247200">Peruuta painamalla Alt+haku tai vaihto.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Yhdistetään uudelleen…</translation>
+<translation id="8513108775083588393">Automaattinen kääntö</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ei välttämättä lataudu, kun se on käynnissä.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> jäljellä</translation>
 <translation id="8649101189709089199">Teksti puhuttuna</translation>

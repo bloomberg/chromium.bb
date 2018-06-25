@@ -31,6 +31,7 @@
 <translation id="1921819250265091946">ದಿದಿ</translation>
 <translation id="1930711995431081526">ಸ್ಥಿತಿ</translation>
 <translation id="1938124657309484470">ಮೌಲ್ಯವು <ph name="MAXIMUM_DATE_OR_TIME" /> ಅಥವಾ ಹಿಂದಿನದ್ದಾಗಿರಬೇಕು.</translation>
+<translation id="1946271899482435442">ದಿನಾಂಕದ ಆಯ್ಕೆಯನ್ನು ತೋರಿಸಿ</translation>
 <translation id="1993104285338243655">ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' ಅನ್ನು '<ph name="INVALIDDOMAIN" />' ನಲ್ಲಿ ತಪ್ಪಾದ ಸ್ಥಾನದಲ್ಲಿ ಬಳಸಲಾಗಿದೆ.</translation>
 <translation id="2148716181193084225">ಇಂದು</translation>
@@ -238,7 +239,6 @@
 <translation id="9138385573473225930">ಎಚ್ಚರಿಕೆ</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> ರಂದು ಪ್ರಾರಂಭವಾಗುತ್ತದೆ</translation>
 <translation id="9168329111483466115">ಅಡಿಟಿಪ್ಪಣಿ</translation>
-<translation id="947831847158436616">ಸೆಲ್</translation>
 <translation id="954003015749068518">ಚಿತ್ರದಲ್ಲಿನ ಚಿತ್ರವನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="966787709310836684">ಮೆನು</translation>
 </translationbundle>

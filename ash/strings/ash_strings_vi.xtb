@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Tín hiệu yếu</translation>
 <translation id="1293264513303784526">Thiết bị USB-C (cổng bên trái)</translation>
 <translation id="1346748346194534595">Phải</translation>
+<translation id="1351937230027495976">Thu gọn menu</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1467432559032391204">Trái</translation>
 <translation id="1479743070547893297">Chọn vẽ bằng bút cảm ứng</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Thiết bị ra</translation>
 <translation id="3019353588588144572">Thời gian còn lại cho đến khi pin được sạc đầy, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Mở rộng menu</translation>
 <translation id="3087734570205094154">Bên dưới</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Khởi động lại để cập nhật</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="3995138139523574647">Thiết bị USB-C (cổng phía sau, bên phải)</translation>
 <translation id="4017989525502048489">Con trỏ laser</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Tắt thông báo của một ứng dụng}other{Tắt thông báo của # ứng dụng}}</translation>
 <translation id="4072264167173457037">Tín hiệu trung bình</translation>
 <translation id="4200057768455216496">Bạn đã nhấn phím tắt của tính năng phóng to ở vị trí cố định. Bạn có muốn bật tính năng này không?</translation>
 <translation id="4217571870635786043">Nhập bằng giọng nói</translation>
@@ -190,6 +193,7 @@
 <translation id="4570957409596482333">Nút Chọn để nói</translation>
 <translation id="4628757576491864469">Thiết bị</translation>
 <translation id="4659419629803378708">Đã bật ChromeVox</translation>
+<translation id="4734965478015604180">Ngang</translation>
 <translation id="4776917500594043016">Mật khẩu cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Ngắt kết nối</translation>
@@ -197,6 +201,7 @@
 <translation id="4872237917498892622">Alt+Search hoặc Shift</translation>
 <translation id="4890187583552566966">Quản trị viên của bạn đã tắt Trợ lý Google.</translation>
 <translation id="4895488851634969361">Pin đầy.</translation>
+<translation id="490375751687810070">Dọc</translation>
 <translation id="4905614135390995787">Phím tắt để chuyển đổi Chế độ tương phản cao đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay vì <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Mạnh</translation>
 <translation id="4918086044614829423">Chấp nhận</translation>
@@ -350,6 +355,7 @@
 <translation id="8054466585765276473">Đang tính toán thời lượng pin.</translation>
 <translation id="8061464966246066292">Độ tương phản cao</translation>
 <translation id="8098591350844501178">Dừng truyền màn hình tới <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">Bật thông báo của tất cả ứng dụng</translation>
 <translation id="8132793192354020517">Đã kết nối với <ph name="NAME" /></translation>
 <translation id="813913629614996137">Đang khởi chạy...</translation>
 <translation id="8142699993796781067">Mạng riêng</translation>
@@ -370,6 +376,7 @@
 <translation id="847056008324733326">Cài đặt tỷ lệ hiển thị</translation>
 <translation id="8477270416194247200">Nhấn phím Alt+Search hoặc Shift để hủy.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Đang kết nối lại...</translation>
+<translation id="8513108775083588393">Tự động xoay</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> của bạn có thể không sạc khi được bật.</translation>
 <translation id="8639760480004882931">Còn <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Chọn để nói</translation>

@@ -738,6 +738,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Če ta pravilnik ni nastavljen, bo omogočen pravilnik »AllowJavaScript«, uporabnik pa ga bo lahko spremenil.</translation>
 <translation id="3038323923255997294">Nadaljuj izvajanje programov v ozadju, ko je <ph name="PRODUCT_NAME" /> zaprt</translation>
 <translation id="3046192273793919231">Pošiljanje omrežnih paketov v strežnik za upravljanje zaradi spremljanja stanja povezave</translation>
+<translation id="3047732214002457234">Nadzor, kako Chromovo čiščenje sporoča podatke Googlu</translation>
 <translation id="3048744057455266684">Če je pravilnik nastavljen in predlagani iskalni URL iz naslovne vrstice vsebuje ta parameter v poizvedbi ali identifikatorju delov, predlog prikaže iskalne izraze in ponudnika iskanja namesto neobdelanega iskalnega URL-ja.
 
           Pravilnik je izbiren. Če ga ne nastavite, iskalni izrazi ne bodo nadomeščeni.
@@ -1074,6 +1075,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če je pravilnik omogočen, se pošiljajo omrežni paketi za spremljanje (t.i. <ph name="HEARTBEATS_TERM" />).
       Če je onemogočen ali ni nastavljen, se paketi ne pošiljajo.</translation>
+<translation id="3950239119790560549">Posodobitev omejitev časa</translation>
 <translation id="3958586912393694012">Dovoli uporabo funkcije Smart Lock</translation>
 <translation id="3963602271515417124">Če je ta pravilnik omogočen, bo za to napravo dovoljeno potrjevanje na daljavo in samodejno bo ustvarjeno potrdilo, ki bo preneseno v strežnik za upravljanje naprav.
 
@@ -1333,6 +1335,10 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če tega pravilnika ne nastavite, <ph name="PRODUCT_NAME" /> ne bo delegiral uporabniških poverilnic, tudi če je strežnik zaznan kot intranet.</translation>
 <translation id="4752880493649142945">Potrdilo odjemalca za vzpostavljanje povezave s tem: RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Če je pravilnik omogočen ali ni nastavljen, bo <ph name="PRODUCT_NAME" /> predlagal strani, povezane s trenutno stranjo.
+      Ti predlogi se prenesejo oddaljeno iz Googlovih strežnikov.
+
+      Če je ta nastavitev onemogočena, se predlogi ne bodo prenesli ali prikazali.</translation>
 <translation id="4791031774429044540">Omogočanje funkcije velikega kazalca za ljudi s posebnimi potrebami.
 
           Če ta pravilnik vklopite, bo prikaz velikega kazalca vedno omogočen.
@@ -2202,6 +2208,13 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če pravilnik ni vklopljen, je lupa onemogočena, ko je prvič prikazan prijavni zaslon. Uporabniki lahko kadar koli omogočijo ali onemogočijo lupo, pri čemer se njegovo stanje na prijavnem zaslonu ohrani med uporabniki.</translation>
 <translation id="7249828445670652637">Omogočanje uporabe potrdil sistema <ph name="PRODUCT_OS_NAME" /> aplikacijam ARC</translation>
+<translation id="725322441686394886">Če pravilnik ni nastavljen in Chromovo čiščenje odkrije neželeno programsko opremo, bo Googlu morda poslalo metapodatke o pregledu v skladu s pravilnikom, nastavljenim z možnostjo SafeBrowsingExtendedReportingEnabled. Chromovo čiščenje bo uporabnika nato pozvalo, ali želi počistiti neželeno programsko opremo. Uporabnik se lahko odloči za pošiljanje rezultatov čiščenja Googlu in tako pripomore k odkrivanju neželene programske opreme v prihodnosti. Ti rezultati vsebujejo metapodatke o datotekah, samodejno nameščene razširitve in registrske ključe, kot je opisano v beli knjigi o zasebnosti za Chrome.
+
+      Če je pravilnik onemogočen in Chromovo čiščenje odkrije neželeno programsko opremo, Googlu ne bo poslalo metapodatkov o pregledu, pri čemer bo preglašen morebiten pravilnik, nastavljen z možnostjo SafeBrowsingExtendedReportingEnabled. Chromovo čiščenje bo uporabnika pozvalo, ali želi počistiti neželeno programsko opremo. Rezultati čiščenja ne bodo poslani Googlu in tudi uporabnik ne bo imel možnosti tega storiti.
+
+      Če je pravilnik omogočen in Chromovo čiščenje odkrije neželeno programsko opremo, bo Googlu morda sporočilo metapodatke o pregledu v skladu s pravilnikom, nastavljenim z možnostjo SafeBrowsingExtendedReportingEnabled. Chromovo čiščenje bo uporabnika pozvalo, ali želi počistiti neželeno programsko opremo. Rezultati čiščenja bodo poslani Googlu in uporabnik tega ne bo mogel preprečiti.
+
+      Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Omogočanje zakrivanja gostiteljev za oddaljeni dostop</translation>
 <translation id="7260277299188117560">Samodejno posodabljanje prek p2p omogočeno</translation>
 <translation id="7261252191178797385">Slika za ozadje naprave</translation>
@@ -2267,6 +2280,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je ta nastavitev onemogočena ali ni nastavljena, lahko uporabniki po prikazu opozorila nadaljujejo na označeno spletno mesto.
 
       Več informacij o Varnem brskanju je na voljo na https://developers.google.com/safe-browsing.</translation>
+<translation id="7417728346887499628">Če je pravilnik onemogočen, Chromovemu čiščenju prepreči pregledovanje, ali je v sistemu neželena programska oprema, in čiščenje. Ročna sprožitev Chromovega čiščenja v nastavitvah chrome://settings/cleanup je onemogočena.
+
+      Če je pravilnik omogočen ali ni nastavljen, Chromovo čiščenje redno pregleduje, ali je v sistemu neželena programska oprema, in če jo najde, uporabnik prejme poziv, ali jo želi odstraniti. Ročna sprožitev Chromovega čiščenja v nastavitvah chrome://settings je omogočena.
+
+      Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Odstotek prilagoditve časovnega zamika nedejavnosti v načinu predstavitve (zastarelo)</translation>
 <translation id="7421483919690710988">Nastavi velikost predpomnilnika medija v bajtih</translation>
 <translation id="7424751532654212117">Seznam izjem za seznam onemogočenih vtičnikov</translation>
@@ -2661,6 +2679,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="8339420913453596618">Dvojno preverjanje je onemogočeno</translation>
 <translation id="8344454543174932833">Uvoz zaznamkov privzetega brskalnika ob prvem zagonu</translation>
 <translation id="8359734107661430198">Omogočanje API-ja ExampleDeprecatedFeature API do vključno 2. 9. 2008</translation>
+<translation id="8367209241899435947">Omogočeno Chromovo čiščenje v sistemu Windows</translation>
 <translation id="8369602308428138533">Časovni zamik izklopa zaslona, če se napaja iz električnega omrežja</translation>
 <translation id="8382184662529825177">Omogoči uporabo oddaljenega potrjevanja za zaščito vsebine za napravo</translation>
 <translation id="838870586332499308">Omogoči podatkovno gostovanje</translation>
@@ -2936,6 +2955,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Če ta pravilnik ni nastavljen, bo to omogočeno in uporabnik bi lahko uporabljal način brez beleženja zgodovine.</translation>
 <translation id="915194831143859291">Če je ta pravilnik onemogočen ali ni nastavljen, bo <ph name="PRODUCT_OS_NAME" /> uporabniku dovolil zaustaviti napravo.
       Če je ta pravilnik omogočen, bo <ph name="PRODUCT_OS_NAME" /> sprožil vnovični zagon, ko uporabnik zaustavi napravo. <ph name="PRODUCT_OS_NAME" /> nadomesti vse gumbe za zaustavitev v uporabniškem vmesniku z gumbi za vnovični zagon. Če uporabnik zaustavi napravo z gumbom za vklop, se naprava ne bo samodejno zagnala znova, tudi če je pravilnik omogočen.</translation>
+<translation id="9152473318295429890">Omogočeni kontekstni predlogi sorodnih spletnih strani</translation>
 <translation id="9158929520101169054">Omogočanje prijave z več računi v brskalniku</translation>
 <translation id="9165792353046089850">Omogoča nastavitev, ali lahko spletna mesta dostopajo do povezanih naprav USB. Dostop je mogoče v celoti blokirati ali pa je uporabnik vprašan, ko želi spletno mesto dostopati do povezanih naprav USB.
 
@@ -2971,4 +2991,9 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="944817693306670849">Nastavitev velikosti predpomnilnika</translation>
 <translation id="981346395360763138">Googlove lokacijske storitve so onemogočene</translation>
 <translation id="982497069985795632">Omogočanje preverjanja črkovanja</translation>
+<translation id="988537626274109600">Ta pravilnik nadzira časovna obdobja, v katerih naprava <ph name="PRODUCT_OS_NAME" /> ne sme samodejno preverjati, ali so na voljo posodobitve.
+      Ko je ta pravilnik nastavljen na seznam časovnih intervalov, ki ni prazen:
+      V določenih časovnih intervalih naprave ne bodo mogle samodejno preverjati, ali so na voljo posodobitve. Zaradi morebitnih varnostnih težav ta pravilnik ne bo vplival na naprave, ki zahtevajo povrnitev na prejšnjo različico ali imajo različico nižjo od najmanjše različice sistema <ph name="PRODUCT_OS_NAME" />. Ta pravilnik prav tako ne bo blokiral preverjanj posodobitev, ki so jih zahtevali uporabniki ali skrbniki.
+      Ko ta pravilnik ni nastavljen ali ne vsebuje časovnih intervalov:
+      Ta pravilnik ne bo blokiral nobenih samodejnih preverjanj posodobitev, vendar jih bodo morda blokirali drugi pravilniki.</translation>
 </translationbundle>

@@ -115,7 +115,6 @@
 <translation id="5032989939245619637">在 Chromium 中儲存詳細資料</translation>
 <translation id="5045248521775609809">隨時隨地都能使用 Chromium</translation>
 <translation id="5116586539350239523">Chromium 會妥善保存您的個人詳細資料，讓您不必重複輸入相同的資料。</translation>
-<translation id="5231355151045086930">登出 Chromium</translation>
 <translation id="5358375970380395591">你已登入管理化環境下的帳戶，並將管理控制權授予你的 Chromium 設定檔。你的 Chromium 資料 (例如應用程式、書籤、記錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。你可以透過 Google 帳戶資訊主頁刪除這些資料，但你無法將這些資料與其他帳戶建立關聯。<ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">正在更新 Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">新版 Chromium 現已推出。</translation>
@@ -148,6 +147,7 @@
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> 並不安全，因此遭到 Chromium 封鎖。</translation>
 <translation id="6212496753309875659">這台電腦已安裝較新的 Chromium 版本。如果軟體無法順利運作，請解除安裝 Chromium，然後再試一次。</translation>
 <translation id="6248213926982192922">將 Chromium 設為預設瀏覽器</translation>
+<translation id="6268381023930128611">要登出 Chromium 嗎？</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> 可能不安全，因此遭到 Chromium 封鎖。</translation>
 <translation id="6309712487085796862">Chromium 正在使用你的攝影機。</translation>
 <translation id="6333502561965082103">Chromium 正在執行另一項作業，請稍後再試。</translation>

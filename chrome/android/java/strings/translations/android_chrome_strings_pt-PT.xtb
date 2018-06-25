@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">Transferência interrompida</translation>
 <translation id="1389974829397082527">Nenhum marcador aqui</translation>
 <translation id="1397811292916898096">Pesquisar com o <ph name="PRODUCT_NAME" /></translation>
+<translation id="1397854323885047133">Sincronização e personalização</translation>
 <translation id="1404122904123200417">Incorporado em <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Não Monitorizar"</translation>
 <translation id="1407135791313364759">Abrir tudo</translation>
@@ -147,7 +148,6 @@
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sites restantes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">Toque para aceder à página novo separador no seu separador atual.</translation>
-<translation id="219985413780390209">Proteja-se e ao seu dispositivo contra sites perigosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicação Web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Enviar algumas informações do sistema e conteúdo da página para a Google</translation>
@@ -375,7 +375,7 @@ Para ajustar o termo de pesquisa, mantenha-o premido para selecionar. Para refin
 <translation id="4278390842282768270">Permitidos:</translation>
 <translation id="4307992518367153382">Noções básicas</translation>
 <translation id="4351244548802238354">Fechar caixa de diálogo</translation>
-<translation id="4378154925671717803">Telefone</translation>
+<translation id="4378154925671717803">Telemóvel</translation>
 <translation id="4384468725000734951">A utilizar o Sogou para pesquisa</translation>
 <translation id="4404568932422911380">Sem marcadores</translation>
 <translation id="4409723563706114196">Utilizar previsões de páginas</translation>

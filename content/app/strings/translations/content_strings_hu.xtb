@@ -31,6 +31,7 @@
 <translation id="1921819250265091946">nn</translation>
 <translation id="1930711995431081526">állapot</translation>
 <translation id="1938124657309484470">Az érték <ph name="MAXIMUM_DATE_OR_TIME" /> vagy azt megelőző kell, hogy legyen.</translation>
+<translation id="1946271899482435442">Dátumválasztó megjelenítése</translation>
 <translation id="1993104285338243655">Átváltott tükrözésre</translation>
 <translation id="2060505056492490888">A „<ph name="DOT" />” rossz helyen van a(z) „<ph name="INVALIDDOMAIN" />” címben.</translation>
 <translation id="2148716181193084225">Ma</translation>
@@ -238,7 +239,6 @@
 <translation id="9138385573473225930">értesítés</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />. hét (<ph name="WEEK_START_DATE" />-i dátummal kezdődik)</translation>
 <translation id="9168329111483466115">lábjegyzet</translation>
-<translation id="947831847158436616">cella</translation>
 <translation id="954003015749068518">belépés a kép a képben funkcióba</translation>
 <translation id="966787709310836684">menü</translation>
 </translationbundle>

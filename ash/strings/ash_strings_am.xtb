@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">ደካማ ሲግናል</translation>
 <translation id="1293264513303784526">USB-C መሣሪያ (የግራ ወደብ)</translation>
 <translation id="1346748346194534595">ቀኝ</translation>
+<translation id="1351937230027495976">ምናሌ ሰብስብ</translation>
 <translation id="1383876407941801731">ፍለጋ </translation>
 <translation id="1467432559032391204">ግራ</translation>
 <translation id="1479743070547893297">ለመምረጥ በእርስዎ ስታይለስ ይሳሉ</translation>
@@ -55,7 +56,7 @@
 <translation id="1993072747612765854">ስለቅርብ ጊዜው የ<ph name="SYSTEM_APP_NAME" /> ዝማኔ የበለጠ ይረዱ</translation>
 <translation id="1995660704900986789">ኃይል አጥፋ</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
-<translation id="2016340657076538683">መልእክት ይተይቡ</translation>
+<translation id="2016340657076538683">መልዕክት ይተይቡ</translation>
 <translation id="2049639323467105390">ይህ መሣሪያ በ<ph name="DOMAIN" /> ነው የሚቀናበረው።</translation>
 <translation id="2050339315714019657">በቁመት</translation>
 <translation id="2067602449040652523">የቁልፍ ሰሌዳ ብሩህነት</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">ውጽዓት</translation>
 <translation id="3019353588588144572">ባትሪ ሙሉ ኃይል እስኪኖረው ድረስ የሚቀረው ጊዜ፣ <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">ምናሌ ዘርጋ</translation>
 <translation id="3087734570205094154">ግርጌ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ብሉቱዝ)</translation>
 <translation id="3126069444801937830">ለማዘመን ዳግም ያስጀምሩ</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">በማስላት ላይ...</translation>
 <translation id="3995138139523574647">የUSB-C መሣሪያ (የቀኝ ጎን የኋላ ወደብ)</translation>
 <translation id="4017989525502048489">የሌዘር ጨረር</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{ቅናሽ ለአንድ መተግበሪያ}one{ቅናሽ ለ# መተግበሪያዎች}other{ቅናሽ ለ# መተግበሪያዎች}}</translation>
 <translation id="4072264167173457037">መካከለኛ ሲግናል</translation>
 <translation id="4200057768455216496">የተተከለውን የማጉያ አቋራጭ ተጭነዋል። ሊያበሩት ይፈልጋሉ?</translation>
 <translation id="4217571870635786043">በቃል ማስጻፍ</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">ለመናገር-ይምረጡ አዝራር</translation>
 <translation id="4628757576491864469">መሣሪያዎች</translation>
 <translation id="4659419629803378708">ChromeVox ነቅቷል</translation>
+<translation id="4734965478015604180">አግድማዊ</translation>
 <translation id="4776917500594043016">የ<ph name="USER_EMAIL_ADDRESS" /> ይለፍ ቃል</translation>
 <translation id="479989351350248267">ፈልግ</translation>
 <translation id="4804818685124855865">ግንኙነት አቋርጥ</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">Alt+Search ወይም Shift</translation>
 <translation id="4890187583552566966">Google ረዳቱ በአስተዳዳሪዎ ተሰናክሏል።</translation>
 <translation id="4895488851634969361">ባትሪው ሙሉ ነው።</translation>
+<translation id="490375751687810070">አቀባዊ</translation>
 <translation id="4905614135390995787">ባለከፍተኛ ንፅፅር ሁነታ የሚቀይረው አቋራጭ ተለውጧል። እባክዎ በ<ph name="OLD_SHORTCUT" /> ምትክ <ph name="NEW_SHORTCUT" />ን ይጠቀሙ።</translation>
 <translation id="4917385247580444890">ጠንካራ</translation>
 <translation id="4918086044614829423">ይቀበሉ</translation>
@@ -349,6 +354,7 @@
 <translation id="8054466585765276473">የባትሪ ጊዜን በማስላት ላይ።</translation>
 <translation id="8061464966246066292">ከፍተኛ ንፅፅር</translation>
 <translation id="8098591350844501178">ማያ ገጹን ወደ <ph name="RECEIVER_NAME" /> Cast ማድረግ አስቁም</translation>
+<translation id="8113423164597455979">በርቷል፣ ሁሉም መተግበሪያዎች</translation>
 <translation id="8132793192354020517">ከ<ph name="NAME" /> ጋር ተገናኝቷል</translation>
 <translation id="813913629614996137">በማስጀመር ላይ…</translation>
 <translation id="8142699993796781067">የግል አውታረ መረብ</translation>
@@ -369,6 +375,7 @@
 <translation id="847056008324733326">የልኬት ቅንብሮችን አሳይ</translation>
 <translation id="8477270416194247200">ለመሰረዝ Alt+Search ወይም Shift ይጫኑ።</translation>
 <translation id="8484916590211895857"><ph name="NAME" />፦ ዳግም በማገናኘት ላይ...</translation>
+<translation id="8513108775083588393">በራስ ሰር አሽከርክር</translation>
 <translation id="8517041960877371778">የእርሰዎ <ph name="DEVICE_TYPE" /> እንደበራ ኃይል መሙላት አይችሉ ይሆናል።</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> ይቀራል</translation>
 <translation id="8649101189709089199">ለመናገር-ይምረጡ</translation>

@@ -712,6 +712,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3034580675120919256">Giver dig mulighed for at angive, om websites må køre JavaScript. Kørsel af JavaScript kan enten være tilladt for alle websites eller nægtet for alle websites. Hvis denne politik ikke angives, anvendes "AllowJavaScript", og brugeren vil kunne ændre det.</translation>
 <translation id="3038323923255997294">Fortsætter med at køre baggrundsapps, når <ph name="PRODUCT_NAME" /> er lukket</translation>
 <translation id="3046192273793919231">Send netværkspakker til administratorserveren for at overvåge onlinestatus</translation>
+<translation id="3047732214002457234">Styr, hvordan Chrome-oprydning rapporterer data til Google</translation>
 <translation id="3048744057455266684">Hvis denne politik er indstillet, og en søgewebadresse foreslået af omnifeltet indeholder denne parameter i forespørgselsstrengen eller i fragment-id'et, vil forslaget vise søgetermerkene og søgemaskinen i stedet for kun søgewebadressen.
 
           Denne politik er valgfri. Hvis den ikke indstilles, udføres der ingen erstatning af søgetermer.
@@ -1038,6 +1039,7 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
       Hvis denne politik er angivet til sand, sendes der netværkspakker til overvågning (også kaldet <ph name="HEARTBEATS_TERM" />).
       Hvis den angives til falsk eller ikke angives, sendes der ingen pakker.</translation>
+<translation id="3950239119790560549">Opdater tidsbegrænsninger</translation>
 <translation id="3958586912393694012">Tillad brug af Smart Lock</translation>
 <translation id="3963602271515417124">Hvis denne er angivet som sand, tillades fjernbekræftelse for enheden, og der genereres og uploades automatisk et certifikat til Device Management Server.
 
@@ -1287,6 +1289,10 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
           Hvis du ikke indstiller denne politik, vil <ph name="PRODUCT_NAME" /> ikke overdrage brugeroplysninger, heller ikke selvom en server registreres som intranet.</translation>
 <translation id="4752880493649142945">Klientcertifikat for etablering af forbindelse til RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Hvis indstillingen er angivet som Sand eller ikke er angivet, anbefaler <ph name="PRODUCT_NAME" /> sider, der er relateret til den aktuelle side.
+      Disse forslag hentes fra Googles servere.
+
+      Hvis denne indstilling er angivet som Falsk, hentes eller vises forslag ikke.</translation>
 <translation id="4791031774429044540">Aktivér hjælpefunktionen Stor markør.
 
           Hvis denne politik angives som sand, vil den store markør altid være aktiveret.
@@ -2095,6 +2101,13 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
           Hvis denne politik ikke indstilles, deaktiveres luppen, når loginskærmen vises første gang. Brugerne kan når som helst aktivere eller deaktivere luppen, og dens status på loginskærmen fastholdes hos brugerne.</translation>
 <translation id="7249828445670652637">Aktivér CA-certifikater i <ph name="PRODUCT_OS_NAME" /> til ARC-apps</translation>
+<translation id="725322441686394886">Hvis den ikke er angivet, kan Chrome-oprydning rapportere metadata om scanningen til Google i overensstemmelse med den politik, der er angivet af SafeBrowsingExtendedReportingEnabled, hvis scanningen finder uønsket software. Chrome-oprydning spørger derefter brugeren, om den uønskede software skal fjernes. Brugeren kan vælge at dele resultaterne af oprydningen med Google for at bidrage til registrering af uønsket software i fremtiden. Disse resultater indeholder filmetadata, automatisk installerede udvidelser og registreringsdatabasenøgler som beskrevet i Chromes hvidbog om beskyttelse af personlige oplysninger.
+
+      Hvis den ikke er aktiveret, rapporterer Chrome-oprydning ikke metadata om scanningen til Google og tilsidesætter alle politikker, der er angivet af SafeBrowsingExtendedReportingEnabled, hvis scanningen finder uønsket software. Chrome-oprydning spørger brugeren, om den uønskede software skal fjernes.  Resultaterne af oprydningen rapporteres ikke til Google, og brugeren kan ikke vælge at gøre det.
+
+      Hvis den er aktiveret, kan Chrome-oprydning rapportere metadata om scanningen til Google i overensstemmelse med den politik, der er angivet af SafeBrowsingExtendedReportingEnabled, hvis scanningen finder uønsket software. Chrome-oprydning spørger brugeren, om den uønskede software skal fjernes.  Resultaterne af oprydningen rapporteres til Google, og brugeren har ikke mulighed for at forhindre det.
+
+      Denne politik er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="7258823566580374486">Aktivér skærmning af eksterne adgangsværter</translation>
 <translation id="7260277299188117560">Automatisk opdatering af p2p er aktiveret</translation>
 <translation id="7261252191178797385">Baggrundsbillede på enheden</translation>
@@ -2160,6 +2173,11 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis denne indstilling er deaktiveret eller ikke er angivet, kan brugerne vælge at gå til det rapporterede website, efter advarslen er blevet vist.
 
       Få flere oplysninger om Beskyttet browsing på https://developers.google.com/safe-browsing.</translation>
+<translation id="7417728346887499628">Hvis den ikke er aktiveret, forhindres Chrome-oprydning i at scanne systemet for uønsket software og i at udføre oprydning. Manuel aktivering af Chrome-oprydning via chrome://settings/cleanup er deaktiveret.
+
+      Hvis den er aktiveret eller ikke er angivet, scanner Chrome-oprydning systemet med jævne mellemrum for uønsket software. Hvis der findes uønsket software, bliver brugeren spurgt, om den skal fjernes. Manuel aktivering af Chrome-oprydning via chrome://settings er aktiveret.
+
+      Denne politik er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="7417972229667085380">Den procentdel, som inaktivitetsforsinkelsen i præsentationstilstand skaleres efter (udfases)</translation>
 <translation id="7421483919690710988">Angiv størrelsen på mediediskcache i bytes</translation>
 <translation id="7424751532654212117">Liste over undtagelser for listen over ​​deaktiverede plugins</translation>
@@ -2539,6 +2557,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="8339420913453596618">Sekundær faktor er deaktiveret</translation>
 <translation id="8344454543174932833">Importer bogmærker fra standardbrowser ved første visning</translation>
 <translation id="8359734107661430198">Aktivér ExampleDeprecatedFeature API frem til 02/09/2008</translation>
+<translation id="8367209241899435947">Aktivér Chrome-oprydning i Windows</translation>
 <translation id="8369602308428138533">Skærmslukforsinkelse, når strømforsyning er tilsluttet</translation>
 <translation id="8382184662529825177">Aktivér brug af fjernattestering til indholdsbeskyttelse for enheden.</translation>
 <translation id="838870586332499308">Aktivér dataroaming</translation>
@@ -2797,6 +2816,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="9150416707757015439">Denne politik er udfaset. Brug i stedet IncognitoModeAvailability. Aktiverer inkognitotilstand i <ph name="PRODUCT_NAME" />. Hvis denne indstilling er aktiveret eller ikke er konfigureret, kan brugerne åbne websider i inkognitotilstand. Hvis denne indstilling er deaktiveret, kan brugerne ikke åbne websider i inkognitotilstand. Hvis denne politik ikke er angivet, vil dette blive aktiveret, så brugeren kan bruge inkognitotilstand.</translation>
 <translation id="915194831143859291">Hvis denne politik er angivet til Falsk eller ikke er konfigureret, tillader <ph name="PRODUCT_OS_NAME" />, at brugeren lukker enheden ned.
       Hvis denne politik er angivet til Sand, aktiverer <ph name="PRODUCT_OS_NAME" /> en genstart, når brugeren lukker enheden ned. <ph name="PRODUCT_OS_NAME" /> erstatter alle forekomster af Luk-knapper i grænsefladen med genstartsknapper. Hvis brugeren lukker enheden ved hjælp af afbryderknappen, genstartes den ikke automatisk, selvom politikken er aktiveret.</translation>
+<translation id="9152473318295429890">Aktivér indholdsbestemte forslag for relaterede websider</translation>
 <translation id="9158929520101169054">Tillad samlet login fra flere konti i browseren</translation>
 <translation id="9165792353046089850">Giver dig mulighed for at angive, om websites må få adgang til tilsluttede USB-enheder. Adgangen kan være fuldstændig blokeret, eller brugeren kan blive spurgt, hver gang et website vil have adgang til tilsluttede USB-enheder.
 
@@ -2832,4 +2852,9 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="944817693306670849">Angiv diskcachens størrelse</translation>
 <translation id="981346395360763138">Googles placeringstjenester er deaktiveret</translation>
 <translation id="982497069985795632">Aktivér stavekontrol</translation>
+<translation id="988537626274109600">Denne politik styrer de tidsrum, hvor <ph name="PRODUCT_OS_NAME" />-enheden ikke har tilladelse til automatisk at søge efter opdateringer.
+      Når denne politik er angivet med en liste over tidsintervaller, som ikke er tom:
+      Enhederne har ikke have mulighed for automatisk at søge efter opdateringer i de angivne tidsintervaller. Enheder, der kræver en tilbagetrækning eller er ældre end minimumsversionen for <ph name="PRODUCT_OS_NAME" />, berøres ikke af denne politik på grund af potentielle sikkerhedsproblemer. Derudover blokerer politikken ikke for søgning efter opdateringer, hvis brugere eller administratorer anmoder om dette.
+      Når denne politik ikke er angivet eller ikke indeholder tidsintervaller:
+      Automatiske søgninger efter opdateringer blokeres ikke af denne politik, men blokeres muligvis af andre politikker.</translation>
 </translationbundle>

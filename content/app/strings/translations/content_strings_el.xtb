@@ -31,6 +31,7 @@
 <translation id="1921819250265091946">ηη</translation>
 <translation id="1930711995431081526">κατάσταση</translation>
 <translation id="1938124657309484470">Η τιμή πρέπει να είναι <ph name="MAXIMUM_DATE_OR_TIME" /> ή προγενέστερη.</translation>
+<translation id="1946271899482435442">Εμφάνιση εργαλείου επιλογής ημερομηνίας</translation>
 <translation id="1993104285338243655">Εναλλαγή σε κατοπτρισμό</translation>
 <translation id="2060505056492490888">Το σύμβολο "<ph name="DOT" />" χρησιμοποιείται σε λάθος θέση στη διεύθυνση "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Σήμερα</translation>
@@ -238,7 +239,6 @@
 <translation id="9138385573473225930">ειδοποίηση</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, από τις <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">υποσημείωση</translation>
-<translation id="947831847158436616">κελί</translation>
 <translation id="954003015749068518">είσοδος στη λειτουργία picture-in-picture</translation>
 <translation id="966787709310836684">μενού</translation>
 </translationbundle>

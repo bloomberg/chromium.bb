@@ -31,6 +31,7 @@
 <translation id="1921819250265091946">日</translation>
 <translation id="1930711995431081526">ステータス</translation>
 <translation id="1938124657309484470"><ph name="MAXIMUM_DATE_OR_TIME" /> 以前の値を指定する必要があります。</translation>
+<translation id="1946271899482435442">日付選択ツールを表示</translation>
 <translation id="1993104285338243655">ミラーリングに切り替わりました</translation>
 <translation id="2060505056492490888">「<ph name="INVALIDDOMAIN" />」内の「<ph name="DOT" />」の位置が間違っています。</translation>
 <translation id="2148716181193084225">今日</translation>
@@ -238,7 +239,6 @@
 <translation id="9138385573473225930">アラート</translation>
 <translation id="9155987714137265666"><ph name="WEEK_START_DATE" /> から始まる <ph name="WEEK" /></translation>
 <translation id="9168329111483466115">脚注</translation>
-<translation id="947831847158436616">セル</translation>
 <translation id="954003015749068518">ピクチャー イン ピクチャーを開始します</translation>
 <translation id="966787709310836684">メニュー</translation>
 </translationbundle>

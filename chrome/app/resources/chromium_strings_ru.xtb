@@ -113,7 +113,6 @@
 <translation id="5032989939245619637">Сохранять данные в Chromium</translation>
 <translation id="5045248521775609809">Chromium всегда под рукой</translation>
 <translation id="5116586539350239523">Chromium будет хранить ваши данные в защищенном виде, поэтому их не придется вводить повторно.</translation>
-<translation id="5231355151045086930">Выйти из Chromium</translation>
 <translation id="5358375970380395591">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Chromium. Ваши данные Chromium (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME" />. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Обновление Chromium (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="5398878173008909840">Доступна новая версия Chromium.</translation>
@@ -146,6 +145,7 @@
 <translation id="6129621093834146363">Chromium заблокировал файл <ph name="FILE_NAME" /> как опасный.</translation>
 <translation id="6212496753309875659">На этом компьютере установлена актуальная версия Chromium. Если программа не работает, удалите Chromium и повторите попытку.</translation>
 <translation id="6248213926982192922">Назначить Chromium браузером по умолчанию</translation>
+<translation id="6268381023930128611">Выйти из Chromium?</translation>
 <translation id="6295779123002464101">Chromium заблокировал файл <ph name="FILE_NAME" /> как потенциально опасный.</translation>
 <translation id="6309712487085796862">Chromium использует камеру.</translation>
 <translation id="6333502561965082103">Chromium выполняет другую операцию. Повторите попытку позже.</translation>

@@ -113,7 +113,6 @@
 <translation id="5032989939245619637">Salvar detalhes no Chromium</translation>
 <translation id="5045248521775609809">Leve o Chromium para todos os lugares</translation>
 <translation id="5116586539350239523">O Chromium armazenará seus dados pessoais com segurança para que não seja necessário digitá-los novamente.</translation>
-<translation id="5231355151045086930">Sair do Chromium</translation>
 <translation id="5358375970380395591">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Chromium. Seus dados do Chromium, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Atualizando o Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Há uma nova versão do Chromium disponível.</translation>
@@ -146,6 +145,7 @@
 <translation id="6129621093834146363">O arquivo <ph name="FILE_NAME" /> é perigoso. Por isso ele foi bloqueado pelo Chromium.</translation>
 <translation id="6212496753309875659">Este computador já tem uma versão mais recente do Chromium. Se o software não estiver funcionando, desinstale o Chromium e tente novamente.</translation>
 <translation id="6248213926982192922">Tornar o Chromium o navegador padrão</translation>
+<translation id="6268381023930128611">Sair do Chromium?</translation>
 <translation id="6295779123002464101">O arquivo <ph name="FILE_NAME" /> pode ser perigoso. Por isso ele foi bloqueado pelo Chromium.</translation>
 <translation id="6309712487085796862">O Chromium está usando sua câmera.</translation>
 <translation id="6333502561965082103">Outra operação está em progresso no Chromium. Tente novamente mais tarde.</translation>

@@ -117,7 +117,6 @@
 <translation id="5032989939245619637">Chromium માં વિગતો સાચવો</translation>
 <translation id="5045248521775609809">Chromium ને સર્વત્ર લઈ જાઓ</translation>
 <translation id="5116586539350239523">Chromium તમારી વ્યક્તિગત માહિતીને સુરક્ષિત રીતે સંગ્રહિત કરશે જેથી તમારે તેમને ફરીથી ટાઇપ કરવાની જરૂર નથી.</translation>
-<translation id="5231355151045086930">Chromium માંથી સાઇન આઉટ કરો</translation>
 <translation id="5358375970380395591">તમે સંચાલિત કરેલ એકાઉન્ટ સાથે સાઇન ઇન કરી રહ્યાં છો અને તમારી Chromium પ્રોફાઇલ પર તેનું વ્યવસ્થાપક નિયંત્રણ આપી રહ્યાં છો. તમારો Chromium ડેટા, જેમ કે ઍપ્લિકેશનો, બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સ, કાયમ માટે <ph name="USER_NAME" /> થી બંધાયેલ રહેશે. તમે Google એકાઉન્ટ્સ ડેશબોર્ડથી આ ડેટાને કાઢી શકશો, પરંતુ તમે આ ડેટાને અન્ય એકાઉન્ટ સાથે સાંકળી શકશો નહીં. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium અપડેટ થઈ રહ્યું છે (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Chromium નું નવું સંસ્કરણ ઉપલબ્ધ છે.</translation>
@@ -150,6 +149,7 @@
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> જોખમી છે, તેથી Chromium એ તેને અવરોધિત કરેલ છે.</translation>
 <translation id="6212496753309875659">આ કમ્પ્યુટર પર પહેલાથી જ Chromium નું સૌથી તાજેતરનું સંસ્કરણ છે. જો સૉફ્ટવેર કાર્ય કરી રહ્યું નથી, તો કૃપા કરીને Chromium ને અનઇન્સ્ટોલ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="6248213926982192922">Chromium ને ડિફોલ્ટ બ્રાઉઝર બનાવો</translation>
+<translation id="6268381023930128611">Chromium માંથી સાઇન આઉટ કરીએ?</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> જોખમી હોઈ શકે છે, તેથી Chromium એ તેને અવરોધિત કરેલ છે.</translation>
 <translation id="6309712487085796862">Chromium તમારા કેમેરાનો ઉપયોગ કરી રહ્યું છે.</translation>
 <translation id="6333502561965082103">Chromium પર બીજી ક્રિયા ચાલુ છે. કૃપા કરીને પછીથી ફરી પ્રયાસ કરો.</translation>

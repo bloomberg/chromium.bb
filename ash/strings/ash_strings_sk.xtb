@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Slabý signál</translation>
 <translation id="1293264513303784526">Zariadenie USB-C (port vľavo)</translation>
 <translation id="1346748346194534595">Doprava</translation>
+<translation id="1351937230027495976">Zbaliť ponuku</translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
 <translation id="1467432559032391204">Doľava</translation>
 <translation id="1479743070547893297">Vyberte nakreslením dotykovým perom</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Výstup</translation>
 <translation id="3019353588588144572">Čas zostávajúci do úplného nabitia batérie: <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Rozbaliť ponuku</translation>
 <translation id="3087734570205094154">Spodok</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Reštartovaním vykonáte aktualizáciu</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Prebieha výpočet...</translation>
 <translation id="3995138139523574647">zariadenia USB-C (port vpravo vzadu)</translation>
 <translation id="4017989525502048489">Laserový ukazovateľ</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Vypnuté pre aplikáciu}few{Vypnuté pre # aplikácie}many{Off for # apps}other{Vypnuté pre # aplikácií}}</translation>
 <translation id="4072264167173457037">Stredne silný signál</translation>
 <translation id="4200057768455216496">Stlačili ste skratku ukotvenej lupy. Chcete ju zapnúť?</translation>
 <translation id="4217571870635786043">Diktovanie</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">Tlačidlo počúvania vybraného textu</translation>
 <translation id="4628757576491864469">Zariadenia</translation>
 <translation id="4659419629803378708">Funkcia ChromeVox je povolená</translation>
+<translation id="4734965478015604180">Na šírku</translation>
 <translation id="4776917500594043016">Heslo pre účet <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Odpojiť</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">Alt + Hľadať alebo Shift</translation>
 <translation id="4890187583552566966">Asistenta Google deaktivoval váš správca.</translation>
 <translation id="4895488851634969361">Batéria je úplne nabitá.</translation>
+<translation id="490375751687810070">Na výšku</translation>
 <translation id="4905614135390995787">Skratka na prepnutie režimu vysokého kontrastu sa zmenila. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Silné</translation>
 <translation id="4918086044614829423">Prijať</translation>
@@ -349,6 +354,7 @@
 <translation id="8054466585765276473">Výpočet času výdrže batérie.</translation>
 <translation id="8061464966246066292">Vysoký kontrast</translation>
 <translation id="8098591350844501178">Zastaviť prenos obrazovky do zariadenia <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">Zapnuté, všetky aplikácie</translation>
 <translation id="8132793192354020517">Pripojené k stránke <ph name="NAME" /></translation>
 <translation id="813913629614996137">Prebieha inicializácia...</translation>
 <translation id="8142699993796781067">Súkromná sieť</translation>
@@ -369,6 +375,7 @@
 <translation id="847056008324733326">Nastavenia hustoty zobrazenia</translation>
 <translation id="8477270416194247200">Ak to chcete zrušiť, stlačte klávesy Alt+Hľadať alebo Shift.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Opätovné pripájanie...</translation>
+<translation id="8513108775083588393">Automatické otáčanie</translation>
 <translation id="8517041960877371778">Vaše zariadenie <ph name="DEVICE_TYPE" /> sa nemusí nabíjať, keď je zapnuté.</translation>
 <translation id="8639760480004882931">Zostávajúca kapacita: <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Počúvanie vybraného textu</translation>

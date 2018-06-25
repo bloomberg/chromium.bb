@@ -92,6 +92,7 @@
 <translation id="1787176709638001873">પાસવર્ડ સંપાદન ટેક્સ્ટ</translation>
 <translation id="1802710350767629429">અપડેટ નોંધ બતાવો</translation>
 <translation id="1810107444790159527">સૂચિ બૉક્સ</translation>
+<translation id="1812527064848182527">લૅન્ડસ્કેપ</translation>
 <translation id="1828385960365606039">મે</translation>
 <translation id="1834891354138622109">કૉલમ</translation>
 <translation id="1845944666972354496">સક્રિય કરવા માટે બે વાર ટૅપ કરો</translation>
@@ -146,7 +147,7 @@
 <translation id="2416512023405990736">અનચેક કરેલ ચેકબોક્સ</translation>
 <translation id="2417569100218200841">સામગ્રી માહિતી</translation>
 <translation id="2417948780551741035">અંતિમ નોંધ</translation>
-<translation id="2421113964388408478">ડિલીટ</translation>
+<translation id="2421113964388408478">ડિલીટ કરો</translation>
 <translation id="2422937916923936891">મેનૂ આઇટમ ચેક બૉક્સ</translation>
 <translation id="2428534162001909979">આદેશ મેનૂઝ</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -254,6 +255,7 @@
 <translation id="3232388865800379423">પોપ અપ બટન</translation>
 <translation id="3241052487511142956">પહેલાંની મુલાકાત લીધેલી લિંક</translation>
 <translation id="3241638166094654466">દરેક લાઇનમાંનાં કોષોની સંખ્યા:</translation>
+<translation id="3286372614333682499">પોર્ટ્રેટ</translation>
 <translation id="3286390186030710347">સ્લાઇડર</translation>
 <translation id="3299925995433437805">કોઈ આગલી મુલાકાત લીધેલી લિંક નથી.</translation>
 <translation id="3300348286427369683">રિચ ટેક્સ્ટ સહાય. ChromeVox હવે રિચ ટેક્સ્ટ ફીલ્ડને સહાય કરે છે, જેમાં જમ્પ આદેશો, બ્રેઇલ કર્સરનું રૂટિંગ, પસંદગી અને ઘણા બધાનો સમાવેશ થાય છે.</translation>
@@ -427,7 +429,7 @@
 <translation id="4476183483923481720">નવી લાઇન</translation>
 <translation id="4482330759234983253">અગાઉનું કોષ્ટક</translation>
 <translation id="4491109536499578614">છબી</translation>
-<translation id="4505167975768625962">સમ્મિલન</translation>
+<translation id="4505167975768625962">ઉમેરો</translation>
 <translation id="4517854969512651305">મૂલ્ય વધારો</translation>
 <translation id="4529987814483543472">ક્લાસિક કીમૅપ</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{સ્લેશ}one{# સ્લેશ}other{# સ્લેશ}}</translation>

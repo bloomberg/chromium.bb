@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">אות חלש</translation>
 <translation id="1293264513303784526">‏מכשיר עם יציאת USB-C (יציאה שמאלית)</translation>
 <translation id="1346748346194534595">ימינה</translation>
+<translation id="1351937230027495976">כיווץ התפריט</translation>
 <translation id="1383876407941801731">חפש</translation>
 <translation id="1467432559032391204">שמאלה</translation>
 <translation id="1479743070547893297">כדי לבחור, צריך לצייר בעזרת הסטיילוס</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">פלט</translation>
 <translation id="3019353588588144572">הזמן שנותר עד לטעינה מלאה של הסוללה, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">הרחבת התפריט</translation>
 <translation id="3087734570205094154">תחתית</translation>
 <translation id="3105990244222795498">‏<ph name="DEVICE_NAME" />‏ (Bluetooth)</translation>
 <translation id="3126069444801937830">הפעל מחדש כדי לעדכן</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">מחשב...</translation>
 <translation id="3995138139523574647">‏מכשיר עם יציאת USB-C (יציאה ימנית-אחורית)</translation>
 <translation id="4017989525502048489">סמן לייזר</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{מושבת לאפליקציה אחת}two{מושבת ל-2 אפליקציות}many{מושבת ל-# אפליקציות}other{מושבת ל-# אפליקציות}}</translation>
 <translation id="4072264167173457037">אות בינוני</translation>
 <translation id="4200057768455216496">לחצת על מקש הקיצור של זכוכית מגדלת במצב עגינה. להפעיל אותה?</translation>
 <translation id="4217571870635786043">הכתבה</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">לחצן הקראה</translation>
 <translation id="4628757576491864469">מכשירים</translation>
 <translation id="4659419629803378708">‏ChromeVox הופעל</translation>
+<translation id="4734965478015604180">אופקי</translation>
 <translation id="4776917500594043016">סיסמה עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">Search</translation>
 <translation id="4804818685124855865">נתק</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">‏Alt + חיפוש או Shift</translation>
 <translation id="4890187583552566966">‏Google Assistant הושבת על-ידי מנהל המערכת.</translation>
 <translation id="4895488851634969361">הסוללה טעונה במלואה.</translation>
+<translation id="490375751687810070">אנכי</translation>
 <translation id="4905614135390995787">מקש הקיצור להפעלה או כיבוי של מצב ניגודיות גבוהה השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">חזק</translation>
 <translation id="4918086044614829423">אשר</translation>
@@ -351,6 +356,7 @@
 <translation id="8054466585765276473">מחשב זמן סוללה</translation>
 <translation id="8061464966246066292">ניגודיות גבוהה</translation>
 <translation id="8098591350844501178">הפסק להעביר את המסך אל <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">מופעל, כל האפליקציות</translation>
 <translation id="8132793192354020517">מחובר ל<ph name="NAME" /></translation>
 <translation id="813913629614996137">מאתחל...</translation>
 <translation id="8142699993796781067">רשת פרטית</translation>
@@ -371,6 +377,7 @@
 <translation id="847056008324733326">הגדרות קנה המידה של התצוגה</translation>
 <translation id="8477270416194247200">‏הקש על Alt+Search או על Shift כדי לבטל.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: מתחבר מחדש...</translation>
+<translation id="8513108775083588393">סיבוב אוטומטי</translation>
 <translation id="8517041960877371778">ייתכן שה-<ph name="DEVICE_TYPE" /> לא ייטען כשהוא פועל.</translation>
 <translation id="8639760480004882931">שיעור טעינה נותר - <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">הקראה</translation>

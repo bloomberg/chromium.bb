@@ -75,6 +75,7 @@
 <translation id="2267753748892043616">অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="2273327106802955778">‘আরও’ মেনু</translation>
 <translation id="2320166752086256636">কীবোর্ড লুকান</translation>
+<translation id="2339560363438331454">সিঙ্ক এবং Google পরিষেবাগুলি</translation>
 <translation id="2351097562818989364">আপনার অনুবাদ সেটিংস আবার সেট করা হয়েছে৷</translation>
 <translation id="2354750644801399986">'ট্র্যাক করবেন না'</translation>
 <translation id="2359808026110333948">অবিরত</translation>
@@ -113,6 +114,7 @@
 <translation id="2909437209446960244">সাম্প্রতিক ট্যাবগুলি</translation>
 <translation id="291754862089661335">এই ফ্রেমের মধ্যে QR কোড বা বারকোড স্থাপন করুন</translation>
 <translation id="2921219216347069551">পৃষ্ঠা শেয়ার করা যায়নি</translation>
+<translation id="2923448633003185837">পেস্ট করে শুরু করুন</translation>
 <translation id="292639812446257861">অপঠিত হিসেবে চিহ্নিত করুন</translation>
 <translation id="2933759065870693102">টর্চ</translation>
 <translation id="2969979262385602596">প্রবেশ করতে ব্যর্থ হয়েছে৷ দয়া করে পরে আবার চেষ্টা করুন৷</translation>
@@ -132,6 +134,7 @@
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="NUM_SUGGESTIONS" /> এর <ph name="INDEX" /></translation>
 <translation id="3268451620468152448">ওপেন ট্যাব</translation>
 <translation id="3277021493514034324">সাইটের ঠিকানা কপি করা হয়েছে</translation>
+<translation id="3290875554372353449">একটি অ্যাকাউন্ট বেছে নিন</translation>
 <translation id="3324193307694657476">ঠিকানা ২</translation>
 <translation id="3329904751041170572">সার্ভারের সাথে সংযোগ করা যাযনি৷</translation>
 <translation id="3335947283844343239">বন্ধ হওয়া ট্যাব আবার খুলুন</translation>
@@ -391,6 +394,7 @@
 <translation id="8073670137947914548">ডাউনলোড হয়ে গেছে</translation>
 <translation id="8076014560081431679">সংরক্ষিত সাইটের সেটিংস মোছা হবে না এবং আপনার ব্রাউজিং অভ্যাস প্রতিফলিত হতে পারে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">সমস্ত ট্যাব বন্ধ করুন</translation>
+<translation id="8114753159095730575">ফাইল ডাউনলোড করা যাবে। স্ক্রিনের নিচের দিকে বিকল্পগুলি উপলভ্য।</translation>
 <translation id="8205564605687841303">বাতিল করুন</translation>
 <translation id="8225985093977202398">সঞ্চিত ছবি এবং ফাইলগুলি</translation>
 <translation id="8261506727792406068">মুছুন</translation>

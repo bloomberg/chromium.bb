@@ -31,6 +31,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">estat</translation>
 <translation id="1938124657309484470">El valor ha de ser <ph name="MAXIMUM_DATE_OR_TIME" /> o anterior.</translation>
+<translation id="1946271899482435442">Mostra el selector de dates</translation>
 <translation id="1993104285338243655">S'ha canviat a projecció</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />" s'ha utilitzat en una posició incorrecta a "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Avui</translation>
@@ -238,7 +239,6 @@
 <translation id="9138385573473225930">alerta</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, a partir del dia <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">nota al peu</translation>
-<translation id="947831847158436616">cel·la</translation>
 <translation id="954003015749068518">ves al mode de pantalla en pantalla</translation>
 <translation id="966787709310836684">menú</translation>
 </translationbundle>

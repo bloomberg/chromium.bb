@@ -113,7 +113,6 @@
 <translation id="5032989939245619637">Подробностите да се запазват в Chromium</translation>
 <translation id="5045248521775609809">Използвайте Chromium навсякъде</translation>
 <translation id="5116586539350239523">Chromium ще съхранява надеждно личните ви данни, за да не се налага да ги въвеждате отново.</translation>
-<translation id="5231355151045086930">Изход от Chromium</translation>
 <translation id="5358375970380395591">Влизате с управляван профил и давате на администратора му контрол над потребителския си профил в Chromium. Данните ви там, като например приложения, отметки, история, пароли и други настройки, ще се свържат за постоянно с/ъс <ph name="USER_NAME" />. Ще можете да ги изтриете чрез таблото за управление на Google Профили, но не и да ги свържете с друг профил. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium се актуализира (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Налице е нова версия на Chromium.</translation>
@@ -146,6 +145,7 @@
 <translation id="6129621093834146363">Chromium блокира „<ph name="FILE_NAME" />“, тъй като файлът е опасен.</translation>
 <translation id="6212496753309875659">На този компютър вече има по-скорошна версия на Chromium. Ако софтуерът не работи, моля, деинсталирайте Chromium и опитайте отново.</translation>
 <translation id="6248213926982192922">Нека Chromium да е браузърът по подразбиране</translation>
+<translation id="6268381023930128611">Искате ли да излезете от Chromium?</translation>
 <translation id="6295779123002464101">Chromium блокира „<ph name="FILE_NAME" />“, тъй като файлът може да е опасен.</translation>
 <translation id="6309712487085796862">Chromium използва камерата ви.</translation>
 <translation id="6333502561965082103">Извършва се друго действие, свързано с Chromium. Моля, опитайте отново по-късно.</translation>

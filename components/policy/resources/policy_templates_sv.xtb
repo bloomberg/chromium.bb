@@ -737,6 +737,7 @@
           Om policyn inte anges används AllowJavaScript och användaren kan ändra inställningen.</translation>
 <translation id="3038323923255997294">Fortsätt köra bakgrundsappar när <ph name="PRODUCT_NAME" /> avslutas</translation>
 <translation id="3046192273793919231">Skicka nätverkspaket för övervakning av onlinestatusen till hanteringsservern</translation>
+<translation id="3047732214002457234">Styr hur Chrome Cleanup rapporterar data till Google</translation>
 <translation id="3048744057455266684">Om den här policyn ställs in och en sökadress som har föreslagits från adressfältet innehåller den här parametern i sökfrågan eller i fragmentidentifieraren kommer förslaget att visa sökorden och sökleverantören istället för själva sökadressen.
 
           Policyn är valfri. Om den inte ställs in byts inga sökord ut.
@@ -1069,6 +1070,7 @@
 
       Om principen är inställd på sant kommer nätverkspaket för övervakning (så kallade <ph name="HEARTBEATS_TERM" />) att skickas.
       Om principen är inställd på falskt eller inte har angetts skickas inga paket.</translation>
+<translation id="3950239119790560549">Uppdatera tidsgränser</translation>
 <translation id="3958586912393694012">Tillåt att Smart Lock används</translation>
 <translation id="3963602271515417124">Om detta är sant är attestering på distans tillåtet för enheten och ett certifikat genereras automatiskt. Det laddas upp till enhetshanteringsservern.
 
@@ -1328,6 +1330,10 @@
 
           Om du inte anger principen kommer <ph name="PRODUCT_NAME" /> inte att delegera användaruppgifter även om en server identifieras som ett intranät.</translation>
 <translation id="4752880493649142945">Klientcertifikat för att ansluta till RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Om principen är inställd på sant eller inte inställd alls får du förslag på sidor relaterade till den aktuella sidan från <ph name="PRODUCT_NAME" />.
+      Förslagen fjärrhämtas från Googles servrar.
+
+      Om principen är inställd på falskt kommer inte förslag att hämtas eller visas.</translation>
 <translation id="4791031774429044540">Aktivera hjälpmedelsfunktionen stor markör.
 
           Om den här principen är sann är den stora markören alltid aktiverad.
@@ -2198,6 +2204,13 @@
 
           Om principen inte anges är skärmförstoraren inaktiverad första gången som inloggningsskärmen visas. Användarna kan aktivera eller inaktivera skärmförstoraren när som helst och dess inställning på inloggningsskärmen sparas för olika användare.</translation>
 <translation id="7249828445670652637">Aktivera användning av CA-certifikat i <ph name="PRODUCT_OS_NAME" /> för ARC-appar</translation>
+<translation id="725322441686394886">Om principen inte anges och Chrome Cleanup upptäcker oönskad programvara kan metadata om genomsökningen rapporteras till Google i enlighet med principer som anges i SafeBrowsingExtendedReportingEnabled. Chrome Cleanup frågar sedan om användaren vill rensa den oönskade programvaran. Användaren kan välja att dela resultaten från rensningen med Google för att förbättra framtida genomsökning. Resultaten innehåller metadata från filer, automatiskt installerade tillägg och registernycklar i enlighet med dokumentationen om sekretess i Google Chrome.
+
+      Om principen är inställd på falskt och Chrome Cleanup upptäcker oönskad programvara rapporteras inte metadata om genomsökningen till Google, och principer som anges i SafeBrowsingExtendedReportingEnabled åsidosätts. Chrome Cleanup frågar om användaren vill rensa den oönskade programvaran. Resultaten från rensningen rapporteras inte till Google och användaren får inte alternativet att göra det.
+
+      Om principen är inställd på sant och Chrome Cleanup upptäcker oönskad programvara kan metadata om genomsökningen rapporteras till Google i enlighet med principer som anges i SafeBrowsingExtendedReportingEnabled. Chrome Cleanup frågar om användaren vill rensa den oönskade programvaran. Resultaten från rensningen rapporteras till Google och användaren får inte alternativet att förhindra det.
+
+      Principen är inte tillgänglig på Windows-instanser som inte är kopplade till en <ph name="MS_AD_NAME" /> domän.</translation>
 <translation id="7258823566580374486">Aktivera avskärmning av fjärråtkomstvärdar</translation>
 <translation id="7260277299188117560">Automatisk uppdatering av p2p har aktiverats</translation>
 <translation id="7261252191178797385">Enhetens bakgrundsbild</translation>
@@ -2263,6 +2276,11 @@
       Om inställningen inaktiveras eller inte konfigureras kan användare välja att fortsätta från den flaggade webbplatsen efter att varningen har visats.
 
       Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
+<translation id="7417728346887499628">Om principen är inaktiverad förhindras Chrome Cleanup från att genomsöka systemet efter oönskad programvara och genomföra rensning. Möjligheten att starta Chrome Cleanup manuellt via chrome://settings/cleanup inaktiveras.
+
+      Om den är aktiverad eller inte inställd alls genomsöker Chrome Cleanup systemet efter oönskad programvara regelbundet. Om något upptäcks blir användaren tillfrågad om de vill ta bort det. Möjligheten att starta Chrome Cleanup manuellt via chrome://settings aktiveras.
+
+      Denna princip är inte tillgänglig på Windows-instanser som inte är kopplade till en <ph name="MS_AD_NAME" /> domän.</translation>
 <translation id="7417972229667085380">Procentsatsen med vilken fördröjningen vid dödtid skalanpassas i presentationsläge (föråldrad)</translation>
 <translation id="7421483919690710988">Ange medieenhetens cachestorlek i byte</translation>
 <translation id="7424751532654212117">Lista med undantag till listan med inaktiverade plugin-program</translation>
@@ -2657,6 +2675,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="8339420913453596618">Tvåfaktorsautentisering har inaktiverats</translation>
 <translation id="8344454543174932833">Importera bokmärken från standardwebbläsaren första gången den körs</translation>
 <translation id="8359734107661430198">Aktivera API:et ExampleDeprecatedFeature sedan 2008-09-02.</translation>
+<translation id="8367209241899435947">Aktivera Chrome Cleanup i Windows</translation>
 <translation id="8369602308428138533">Skärmavstängningstid när enheten är ansluten till elnätet</translation>
 <translation id="8382184662529825177">Aktivera användning av fjärrattestering för innehållsskydd för enheten</translation>
 <translation id="838870586332499308">Aktivera dataroaming</translation>
@@ -2932,6 +2951,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Om policyn inte ställs in aktiveras inställningen och användaren kan använda inkognitoläge.</translation>
 <translation id="915194831143859291">Om policyn är inställd på falskt eller inte har konfigurerats tillåter <ph name="PRODUCT_OS_NAME" /> att användaren stänger av enheten.
       Om policyn är inställd på sant utlöser <ph name="PRODUCT_OS_NAME" /> en omstart när användaren stänger av enheten. <ph name="PRODUCT_OS_NAME" /> ersätter alla förekomster av avstängningsknappar i gränssnittet med omstartsknappar. Om användaren stänger av enheten med strömbrytaren startas den inte om automatiskt även om policyn är aktiverad.</translation>
+<translation id="9152473318295429890">Aktivera innehållsbaserade förslag för relaterade webbsidor</translation>
 <translation id="9158929520101169054">Aktivera multiinloggning i webbläsaren</translation>
 <translation id="9165792353046089850">Låter dig ange om webbplatser får åtkomst till anslutna USB-enheter. Åtkomsten kan blockeras helt eller så kan användaren bli tillfrågad varje gång en webbplats begär åtkomst till anslutna USB-enheter.
 
@@ -2967,4 +2987,9 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="944817693306670849">Ange storlek för diskcache</translation>
 <translation id="981346395360763138">Googles platstjänster har inaktiverats</translation>
 <translation id="982497069985795632">Aktivera stavningskontroll</translation>
+<translation id="988537626274109600">Den här principen styr inom vilka tidsperioder som <ph name="PRODUCT_OS_NAME" />-enheten inte får söka efter uppdateringar automatiskt.
+      Om principen är inställd på en lista över tidsintervaller som inte är tom
+      får inte enheter söka efter uppdateringar automatiskt inom de angivna tidsintervallen. Enheter som behöver återställas eller inte uppfyller de lägsta versionskraven för <ph name="PRODUCT_OS_NAME" /> påverkas inte av principen på grund av möjliga säkerhetsproblem. Dessutom kan principen inte blockera sökningar efter uppdateringar som har begärts av användare eller administratörer.
+      Om principen inte är inställd alls
+      blockeras inga automatiska sökningar efter uppdateringar av principen, men de kan blockeras av andra principer.</translation>
 </translationbundle>

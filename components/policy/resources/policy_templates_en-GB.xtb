@@ -738,6 +738,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this policy is left unset, 'AllowJavaScript' will be used and the user will be able to change it.</translation>
 <translation id="3038323923255997294">Continue running background apps when <ph name="PRODUCT_NAME" /> is closed</translation>
 <translation id="3046192273793919231">Send network packets to the management server to monitor online status</translation>
+<translation id="3047732214002457234">Control how Chrome Cleanup reports data to Google</translation>
 <translation id="3048744057455266684">If this policy is set and a search URL suggested from the omnibox contains this parameter in the query string or in the fragment identifier, then the suggestion will show the search terms and search provider instead of the raw search URL.
 
           This policy is optional. If not set, no search term replacement will be performed.
@@ -1070,6 +1071,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is set to true, monitoring network packets (so-called <ph name="HEARTBEATS_TERM" />) will be sent.
       If set to false or unset, no packets will be sent.</translation>
+<translation id="3950239119790560549">Update Time Restrictions</translation>
 <translation id="3958586912393694012">Allow Smart Lock to be used</translation>
 <translation id="3963602271515417124">If true, remote attestation is allowed for the device and a certificate will automatically be generated and uploaded to the Device Management Server.
 
@@ -1329,6 +1331,10 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If you leave this policy unset <ph name="PRODUCT_NAME" /> will not delegate user credentials even if a server is detected as Intranet.</translation>
 <translation id="4752880493649142945">Client certificate for connecting to RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">If this is set to true or unset, <ph name="PRODUCT_NAME" /> will suggest pages related to the current page.
+      These suggestions are fetched remotely from Google servers.
+
+      If this setting is set to false, suggestions will not be fetched or displayed.</translation>
 <translation id="4791031774429044540">Enable the large cursor accessibility feature.
 
           If this policy is set to true, the large cursor will always be enabled.
@@ -2196,6 +2202,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is left unset, the screen magnifier is disabled when the login screen is first shown. Users can enable or disable the screen magnifier at any time and its status on the login screen is persisted between users.</translation>
 <translation id="7249828445670652637">Enable <ph name="PRODUCT_OS_NAME" /> CA certificates to ARC-apps</translation>
+<translation id="725322441686394886">If unset, should Chrome Cleanup detect unwanted software, it may report metadata about the scan to Google in accordance with policy set by SafeBrowsingExtendedReportingEnabled. Chrome Cleanup will then ask the user if they wish to clean up the unwanted software. The user can choose to share results of the cleanup with Google to assist with future unwanted software detection. These results contain file metadata, automatically installed extensions and registry keys as described by the Chrome Privacy Whitepaper.
+
+      If disabled, should Chrome Cleanup detect unwanted software, it will not report metadata about the scan to Google, overriding any policy set by SafeBrowsingExtendedReportingEnabled. Chrome Cleanup will ask the user if they wish to clean up the unwanted software. Results of the cleanup will not be reported to Google and the user will not have the option to do so.
+
+      If enabled, should Chrome Cleanup detect unwanted software, it may report metadata about the scan to Google in accordance with policy set by SafeBrowsingExtendedReportingEnabled. Chrome Cleanup will ask the user if they wish to clean up the unwanted software. Results of the cleanup will be reported to Google and the user will not have the option to prevent it.
+
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="7258823566580374486">Enable curtaining of remote access hosts</translation>
 <translation id="7260277299188117560">Auto update p2p enabled</translation>
 <translation id="7261252191178797385">Device wallpaper image</translation>
@@ -2261,6 +2274,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.
 
       See https://developers.google.com/safe-browsing for more info on Safe Browsing.</translation>
+<translation id="7417728346887499628">If disabled, prevents Chrome Cleanup from scanning the system for unwanted software and performing cleanups. Manually triggering Chrome Cleanup from chrome://settings/cleanup is disabled.
+
+      If enabled or unset, Chrome Cleanup periodically scans the system for unwanted software and should any be found, will ask the user if they wish to remove it. Manually triggering Chrome Cleanup from chrome://settings is enabled.
+
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="7417972229667085380">Percentage by which to scale the idle delay in presentation mode (deprecated)</translation>
 <translation id="7421483919690710988">Set media disk cache size in bytes</translation>
 <translation id="7424751532654212117">List of exceptions to the list of disabled plugins</translation>
@@ -2656,6 +2674,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8339420913453596618">Second factor disabled</translation>
 <translation id="8344454543174932833">Import bookmarks from default browser on first run</translation>
 <translation id="8359734107661430198">Enable ExampleDeprecatedFeature API through 2008/09/02</translation>
+<translation id="8367209241899435947">Enable Chrome Cleanup on Windows</translation>
 <translation id="8369602308428138533">Screen off delay when running on AC power</translation>
 <translation id="8382184662529825177">Enable the use of remote attestation for content protection for the device</translation>
 <translation id="838870586332499308">Enable data roaming</translation>
@@ -2931,6 +2950,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If this policy is left unset, this will be enabled and the user will be able to use incognito mode.</translation>
 <translation id="915194831143859291">If this policy is set to false or not configured, <ph name="PRODUCT_OS_NAME" /> will allow the user to shut down the device.
       If this policy is set to true, <ph name="PRODUCT_OS_NAME" /> will trigger a reboot when the user shuts down the device. <ph name="PRODUCT_OS_NAME" /> replaces all occurrences of shutdown buttons in the UI by reboot buttons. If the user shuts down the device using the power button, it will not automatically reboot, even if the policy is enabled.</translation>
+<translation id="9152473318295429890">Enable contextual suggestions of related web pages</translation>
 <translation id="9158929520101169054">Allow Multiple Sign-in Within the Browser</translation>
 <translation id="9165792353046089850">Allows you to set whether websites are allowed to get access to connected USB devices. Access can be completely blocked, or the user can be asked every time a website wants to get access to connected USB devices.
 
@@ -2966,4 +2986,9 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="944817693306670849">Set disk cache size</translation>
 <translation id="981346395360763138">Google Location services disabled</translation>
 <translation id="982497069985795632">Enable spellcheck</translation>
+<translation id="988537626274109600">This policy controls the time frames during which the <ph name="PRODUCT_OS_NAME" /> device is not allowed to check for updates automatically.
+      When this policy is set to a non-empty list of time intervals:
+      Devices will not be able to check for updates automatically during the specified time intervals. Devices that require a rollback or are below the minimum <ph name="PRODUCT_OS_NAME" /> version will not be affected by this policy due to potential security issues. Furthermore, this policy will not block update checks requested by users or administrators.
+      When this policy is unset or contains no time intervals:
+      No automatic update checks will be blocked by this policy, but they may be blocked by other policies.</translation>
 </translationbundle>

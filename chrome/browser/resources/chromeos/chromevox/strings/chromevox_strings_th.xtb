@@ -32,7 +32,7 @@
 <translation id="1201402288615127009">ถัดไป</translation>
 <translation id="1206619573307042055">ตัวอักษรวิ่ง</translation>
 <translation id="1213216066620407844">ChromeVox - ทำให้ Chrome สามารถพูดได้</translation>
-<translation id="1225437811932752266">ยินดีด้วย คุณได้เรียนรู้สิ่งที่ควรทราบในการใช้ ChromeVox เรียบร้อยแล้ว โปรดทราบว่าคุณเปิดเมนูคำสั่ง ChromeVox ได้ทุกเมื่อโดยกด Search+จุด (.) หากต้องการเรียนรู้เพิ่มเติมเกี่ยวกับ ChromeVox และ Chrome OS ให้ดูบทความต่อไปนี้
+<translation id="1225437811932752266">ยินดีด้วย คุณได้เรียนรู้สิ่งที่ควรทราบในการใช้ ChromeVox เรียบร้อยแล้ว โปรดทราบว่าคุณเปิดเมนูคำสั่ง ChromeVox ได้ทุกเมื่อโดยกด Search+จุด (.) หากต้องการดูข้อมูลเพิ่มเติมเกี่ยวกับ ChromeVox และ Chrome OS ให้ดูบทความต่อไปนี้
 หากดูบทแนะนำเสร็จแล้ว ให้ใช้ ChromeVox เพื่อไปที่ปุ่ม "ปิด" แล้วคลิกปุ่มนั้น</translation>
 <translation id="1229276918471378188">การข้ามก่อนหน้า</translation>
 <translation id="1236794971743289975">อ้างอิงท้ายเรื่อง</translation>
@@ -92,6 +92,7 @@
 <translation id="1787176709638001873">ข้อความแก้ไขรหัสผ่าน</translation>
 <translation id="1802710350767629429">แสดงการอัปเดตบันทึก</translation>
 <translation id="1810107444790159527">ช่องรายการ</translation>
+<translation id="1812527064848182527">แนวนอน</translation>
 <translation id="1828385960365606039">พฤษภาคม</translation>
 <translation id="1834891354138622109">คอลัมน์</translation>
 <translation id="1845944666972354496">แตะสองครั้งเพื่อเปิดใช้งาน</translation>
@@ -253,6 +254,7 @@
 <translation id="3232388865800379423">ปุ่มป๊อปอัป</translation>
 <translation id="3241052487511142956">ลิงก์ที่เคยเข้าชมก่อนหน้า</translation>
 <translation id="3241638166094654466">จำนวนเซลล์ในแต่ละบรรทัด:</translation>
+<translation id="3286372614333682499">แนวตั้ง</translation>
 <translation id="3286390186030710347">แถบเลื่อน</translation>
 <translation id="3299925995433437805">ไม่มีลิงก์ที่เคยเข้าชมถัดไป</translation>
 <translation id="3300348286427369683">รองรับรูปแบบ Rich Text ขณะนี้ ChromeVox สนับสนุนช่องแบบ Rich Text ซึ่งรวมถึงคำสั่งข้าม การกำหนดเส้นทางเคอร์เซอร์เบรลล์ การเลือก และอื่นๆ</translation>
@@ -863,7 +865,7 @@
 <translation id="842922884199979200">ไม่มีส่วนหัวระดับ 3 ถัดไป</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">ไม่มีช่องทำเครื่องหมายก่อนหน้า</translation>
-<translation id="8446884382197647889">เรียนรู้เพิ่มเติม</translation>
+<translation id="8446884382197647889">ดูข้อมูลเพิ่มเติม</translation>
 <translation id="8455868257606149352">สูงสุด <ph name="X" /></translation>
 <translation id="84575901236241018">มีรหัสการเข้าถึง <ph name="KEY" /></translation>
 <translation id="847154984256717791">ไม่ว่าง</translation>

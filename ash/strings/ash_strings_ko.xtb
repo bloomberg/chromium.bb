@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">신호 약함</translation>
 <translation id="1293264513303784526">USB-C 기기(왼쪽 포트)</translation>
 <translation id="1346748346194534595">오른쪽</translation>
+<translation id="1351937230027495976">메뉴 접기</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="1467432559032391204">왼쪽</translation>
 <translation id="1479743070547893297">선택하려면 스타일러스로 그림을 그리세요.</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">출력</translation>
 <translation id="3019353588588144572">배터리 충전이 완료될 때까지 남은 시간은 <ph name="TIME_REMAINING" />입니다.</translation>
 <translation id="3077734595579995578">Shift</translation>
+<translation id="3081696990447829002">메뉴 펼치기</translation>
 <translation id="3087734570205094154">맨 아래</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" />(블루투스)</translation>
 <translation id="3126069444801937830">업데이트하려면 다시 시작</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">계산 중...</translation>
 <translation id="3995138139523574647">USB-C 기기(우측 후면 포트)</translation>
 <translation id="4017989525502048489">레이저 포인터</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{앱 1개에서 사용 중지됨}other{앱 #개에서 사용 중지됨}}</translation>
 <translation id="4072264167173457037">신호 보통</translation>
 <translation id="4200057768455216496">고정 돋보기 단축키를 누르셨습니다. 사용 설정할까요?</translation>
 <translation id="4217571870635786043">음성기록</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">텍스트 읽어주기 버튼</translation>
 <translation id="4628757576491864469">기기</translation>
 <translation id="4659419629803378708">ChromeVox가 사용 설정됨</translation>
+<translation id="4734965478015604180">가로</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />의 비밀번호</translation>
 <translation id="479989351350248267">검색</translation>
 <translation id="4804818685124855865">연결 해제</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">Alt+검색 또는 Shift 키</translation>
 <translation id="4890187583552566966">관리자가 Google 어시스턴트를 사용 중지했습니다.</translation>
 <translation id="4895488851634969361">배터리 충전이 완료되었습니다.</translation>
+<translation id="490375751687810070">세로</translation>
 <translation id="4905614135390995787">고대비 모드 전환 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
 <translation id="4917385247580444890">강력</translation>
 <translation id="4918086044614829423">수락</translation>
@@ -349,6 +354,7 @@
 <translation id="8054466585765276473">배터리 시간 계산 중</translation>
 <translation id="8061464966246066292">고대비</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" />에 화면 전송 중지</translation>
+<translation id="8113423164597455979">모든 앱에서 사용 중</translation>
 <translation id="8132793192354020517"><ph name="NAME" />에 연결됨</translation>
 <translation id="813913629614996137">초기화 중...</translation>
 <translation id="8142699993796781067">사설 네트워크</translation>
@@ -369,6 +375,7 @@
 <translation id="847056008324733326">배율 설정 표시</translation>
 <translation id="8477270416194247200">취소하려면 Alt+검색 또는 Shift 키를 누르세요.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: 다시 연결하는 중...</translation>
+<translation id="8513108775083588393">자동 회전</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" />이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> 남음</translation>
 <translation id="8649101189709089199">텍스트 읽어주기</translation>
