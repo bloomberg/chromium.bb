@@ -14,7 +14,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item_accessibility_delegate.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_accessibility_delegate.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,8 +78,8 @@ TEST_F(ReadingListMediatorTest, fillItems) {
   // Setup.
   NSMutableArray<CollectionViewItem*>* readArray = [NSMutableArray array];
   NSMutableArray<CollectionViewItem*>* unreadArray = [NSMutableArray array];
-  id mockDelegate = OCMProtocolMock(
-      @protocol(ReadingListCollectionViewItemAccessibilityDelegate));
+  id mockDelegate =
+      OCMProtocolMock(@protocol(ReadingListListViewItemAccessibilityDelegate));
 
   // Action.
   [mediator_ fillReadItems:readArray

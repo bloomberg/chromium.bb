@@ -16,8 +16,8 @@
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
 #import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item_accessibility_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_accessibility_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -123,7 +123,7 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
 - (void)fillReadItems:(NSMutableArray<CollectionViewItem*>*)readArray
           unreadItems:(NSMutableArray<CollectionViewItem*>*)unreadArray
          withDelegate:
-             (id<ReadingListCollectionViewItemAccessibilityDelegate>)delegate {
+             (id<ReadingListListViewItemAccessibilityDelegate>)delegate {
   std::vector<const ReadingListEntry*> readEntries;
   std::vector<const ReadingListEntry*> unreadEntries;
 
@@ -260,8 +260,7 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
 - (ReadingListCollectionViewItem*)
 cellItemForReadingListEntry:(const ReadingListEntry*)entry
                withDelegate:
-                   (id<ReadingListCollectionViewItemAccessibilityDelegate>)
-                       delegate {
+                   (id<ReadingListListViewItemAccessibilityDelegate>)delegate {
   const GURL& url = entry->URL();
   ReadingListCollectionViewItem* item = [[ReadingListCollectionViewItem alloc]
            initWithType:0

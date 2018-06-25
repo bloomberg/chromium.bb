@@ -9,7 +9,7 @@
 
 @class CollectionViewItem;
 @protocol ReadingListDataSink;
-@protocol ReadingListCollectionViewItemAccessibilityDelegate;
+@protocol ReadingListListViewItemAccessibilityDelegate;
 
 // Data Source for the Reading List UI, providing the data sink with the data to
 // be displayed. Handle the interactions with the model.
@@ -40,7 +40,7 @@
 - (void)fillReadItems:(nullable NSMutableArray<CollectionViewItem*>*)readArray
           unreadItems:(nullable NSMutableArray<CollectionViewItem*>*)unreadArray
          withDelegate:
-             (nullable id<ReadingListCollectionViewItemAccessibilityDelegate>)
+             (nullable id<ReadingListListViewItemAccessibilityDelegate>)
                  delegate;
 
 // Fetches the |faviconURL| of this |item|, notifies the data sink when

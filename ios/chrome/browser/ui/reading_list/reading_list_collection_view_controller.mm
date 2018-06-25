@@ -13,10 +13,10 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item_accessibility_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_source.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_empty_collection_background.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_accessibility_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
@@ -45,7 +45,7 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 }
 
 @interface ReadingListCollectionViewController ()<
-    ReadingListCollectionViewItemAccessibilityDelegate,
+    ReadingListListViewItemAccessibilityDelegate,
     ReadingListDataSink,
     UIGestureRecognizerDelegate> {
   // Toolbar with the actions.
@@ -327,7 +327,7 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   [_actionSheet stop];
 }
 
-#pragma mark - ReadingListCollectionViewItemAccessibilityDelegate
+#pragma mark - ReadingListListViewItemAccessibilityDelegate
 
 - (BOOL)isEntryRead:(CollectionViewItem*)entry {
   return [self.dataSource isEntryRead:entry];
