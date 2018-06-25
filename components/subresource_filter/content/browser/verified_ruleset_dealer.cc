@@ -30,6 +30,9 @@ base::File VerifiedRulesetDealer::OpenAndSetRulesetFile(
   // there are handles to it still open.
   base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ |
                                  base::File::FLAG_SHARE_DELETE);
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "VerifiedRulesetDealer::OpenAndSetRulesetFile", "file_valid",
+               file.IsValid());
   if (file.IsValid())
     SetRulesetFile(file.Duplicate());
   return file;
