@@ -37,10 +37,6 @@ FrameTree* RenderViewHostDelegate::GetFrameTree() {
   return nullptr;
 }
 
-double RenderViewHostDelegate::GetPendingPageZoomLevel() {
-  return 0.0;
-}
-
 bool RenderViewHostDelegate::IsNeverVisible() {
   return false;
 }

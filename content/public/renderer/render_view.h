@@ -70,7 +70,7 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Returns the device scale factor of the display the render view is in.
   virtual float GetDeviceScaleFactor() const = 0;
 
-  // Returns the device scale factor of the display the render view is in.
+  // Returns the page's zoom level for the render view.
   virtual float GetZoomLevel() const = 0;
 
   // Gets WebKit related preferences associated with this view.

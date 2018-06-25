@@ -81,6 +81,8 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   void ScreenInfoChanged(const ScreenInfo& screen_info);
 
+  void OnZoomLevelChanged(bool uses_temporary_zoom, double zoom_level);
+
   void UpdateCaptureSequenceNumber(uint32_t capture_sequence_number);
 
   // Indicates whether the guest should be focused.

@@ -1243,6 +1243,31 @@ gfx::Size RenderWidget::GetSizeForWebWidget() const {
   return size_;
 }
 
+void RenderWidget::UpdateZoom(bool uses_temporary_zoom, double zoom_level) {
+  blink::WebFrameWidget* frame_widget = GetFrameWidget();
+  if (!frame_widget)
+    return;
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
+
+  // Return early if either we are in temporary zoom mode and thus cannot modify
+  // zoom levels or no zoom property has changed in this message.
+  if (render_frame->UsesTemporaryZoom() && uses_temporary_zoom)
+    return;
+  if (render_frame->GetZoomLevel() == zoom_level &&
+      render_frame->UsesTemporaryZoom() == uses_temporary_zoom) {
+    return;
+  }
+
+  render_frame->SetZoomLevel(uses_temporary_zoom, zoom_level);
+
+  for (auto& observer : render_frame_proxies_)
+    observer.OnZoomLevelChanged(uses_temporary_zoom, zoom_level);
+
+  for (auto& plugin : browser_plugins_)
+    plugin.OnZoomLevelChanged(uses_temporary_zoom, zoom_level);
+}
+
 void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
   // Inform the rendering thread of the color space indicate the presence of HDR
   // capabilities.
@@ -1270,6 +1295,8 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
     compositor_->SetRasterColorSpace(
         screen_info_.color_space.GetRasterColorSpace());
   }
+
+  UpdateZoom(params.uses_temporary_zoom, params.zoom_level);
 
   if (params.auto_resize_enabled)
     return;

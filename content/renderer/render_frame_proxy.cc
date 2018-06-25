@@ -285,6 +285,13 @@ void RenderFrameProxy::OnScreenInfoChanged(const ScreenInfo& screen_info) {
   SynchronizeVisualProperties();
 }
 
+void RenderFrameProxy::OnZoomLevelChanged(bool uses_temporary_zoom,
+                                          double zoom_level) {
+  pending_visual_properties_.zoom_level = zoom_level;
+  pending_visual_properties_.uses_temporary_zoom = uses_temporary_zoom;
+  SynchronizeVisualProperties();
+}
+
 void RenderFrameProxy::UpdateCaptureSequenceNumber(
     uint32_t capture_sequence_number) {
   pending_visual_properties_.capture_sequence_number = capture_sequence_number;
@@ -635,6 +642,10 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
           pending_visual_properties_.screen_space_rect.size() ||
       sent_visual_properties_->screen_info !=
           pending_visual_properties_.screen_info ||
+      sent_visual_properties_->zoom_level !=
+          pending_visual_properties_.zoom_level ||
+      sent_visual_properties_->uses_temporary_zoom !=
+          pending_visual_properties_.uses_temporary_zoom ||
       capture_sequence_number_changed;
 
   if (synchronized_props_changed)

@@ -135,6 +135,10 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // ScreenInfo has changed.
   void OnScreenInfoChanged(const ScreenInfo& screen_info);
 
+  // Out-of-process child frames receive a signal from RenderWidget when the
+  // zoom level has changed.
+  void OnZoomLevelChanged(bool uses_temporary_zoom, double zoom_level);
+
   // Invoked by RenderWidget when a new capture sequence number was set,
   // indicating that surfaces should be synchronized.
   void UpdateCaptureSequenceNumber(uint32_t capture_sequence_number);

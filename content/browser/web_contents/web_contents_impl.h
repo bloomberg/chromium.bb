@@ -235,20 +235,15 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void AddAccessibilityMode(ui::AXMode mode);
 
 #if !defined(OS_ANDROID)
-  // Set a temporary zoom level for the frames associated with this WebContents.
-  // If |is_temporary| is true, we are setting a new temporary zoom level,
-  // otherwise we are clearing a previously set temporary zoom level.
-  void SetTemporaryZoomLevel(double level, bool temporary_zoom_enabled);
-
   // Sets the zoom level for frames associated with this WebContents.
-  void UpdateZoom(double level);
+  void UpdateZoom();
 
   // Sets the zoom level for frames associated with this WebContents if it
   // matches |host| and (if non-empty) |scheme|. Matching is done on the
   // last committed entry.
   void UpdateZoomIfNecessary(const std::string& scheme,
-                             const std::string& host,
-                             double level);
+                             const std::string& host);
+
 #endif  // !defined(OS_ANDROID)
 
   // Adds a new binding set to the WebContents. Returns a closure which may be
@@ -636,9 +631,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   SessionStorageNamespace* GetSessionStorageNamespace(
       SiteInstance* instance) override;
   SessionStorageNamespaceMap GetSessionStorageNamespaceMap() override;
-#if !defined(OS_ANDROID)
-  double GetPendingPageZoomLevel() override;
-#endif  // !defined(OS_ANDROID)
   FrameTree* GetFrameTree() override;
   bool IsOverridingUserAgent() override;
   bool IsJavaScriptDialogShowing() const override;
@@ -696,6 +688,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                              const gfx::Size& new_size) override;
   gfx::Size GetAutoResizeSize() override;
   void ResetAutoResizeSize() override;
+
+#if !defined(OS_ANDROID)
+  double GetPendingPageZoomLevel() const override;
+  bool UsesTemporaryZoomLevel() const override;
+#endif  // !defined(OS_ANDROID)
+
   KeyboardEventProcessingResult PreHandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) override;
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;

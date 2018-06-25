@@ -480,6 +480,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetSelectedText(const base::string16& selection_text,
                        size_t offset,
                        const gfx::Range& range) override;
+  void SetZoomLevel(bool uses_temporary_zoom, double zoom_level) override;
+  double GetZoomLevel() const override;
+  bool UsesTemporaryZoom() const override;
   void AddMessageToConsole(ConsoleMessageLevel level,
                            const std::string& message) override;
   void SetPreviewsState(PreviewsState previews_state) override;
