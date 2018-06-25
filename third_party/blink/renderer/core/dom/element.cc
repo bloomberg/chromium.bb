@@ -2369,7 +2369,7 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     // layout tree siblings.
     WhitespaceAttacher local_attacher;
     WhitespaceAttacher* child_attacher;
-    if (GetLayoutObject()) {
+    if (GetLayoutObject() || !HasDisplayContentsStyle()) {
       whitespace_attacher.DidVisitElement(this);
       if (GetDocument().GetStyleEngine().NeedsWhitespaceReattachment(this))
         local_attacher.SetReattachAllWhitespaceNodes();
