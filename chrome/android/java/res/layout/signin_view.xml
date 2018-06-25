@@ -27,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
                 android:background="@color/signin_header_animation_background"
-                android:contentDescription="@null"
+                tools:ignore="ContentDescription"
                 android:scaleType="center"
                 app:srcCompat="@drawable/signin_header_animation"
                 tools:src="@drawable/signin_header_animation"/>
@@ -61,7 +61,7 @@
                     android:id="@+id/account_image"
                     android:layout_width="56dp"
                     android:layout_height="40dp"
-                    android:contentDescription="@null"
+                    tools:ignore="ContentDescription"
                     android:scaleType="fitStart"
                     tools:src="@drawable/logo_avatar_anonymous"/>
                 <LinearLayout
@@ -92,7 +92,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_marginStart="16dp"
-                    android:contentDescription="@null"
+                    tools:ignore="ContentDescription"
                     tools:src="@drawable/ic_expand_more_black_24dp"
                     tools:tint="@color/dark_mode_tint"/>
             </LinearLayout>
@@ -105,7 +105,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/signin_margin_start"
-                android:contentDescription="@null"
+                tools:ignore="ContentDescription"
                 app:srcCompat="@drawable/ic_sync_circle_green_16dp"/>
             <TextView
                 android:id="@+id/signin_sync_description"
@@ -128,7 +128,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/signin_margin_start"
-                android:contentDescription="@null"
+                tools:ignore="ContentDescription"
                 app:srcCompat="@drawable/ic_assistant_16dp"/>
             <TextView
                 android:id="@+id/signin_personalization_description"
@@ -151,7 +151,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/signin_margin_start"
-                android:contentDescription="@null"
+                tools:ignore="ContentDescription"
                 app:srcCompat="@drawable/ic_logo_googleg_16dp"/>
             <TextView
                 android:id="@+id/signin_google_services_description"
@@ -180,7 +180,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_marginStart="@dimen/signin_margin_start"
                 android:baseline="12dp"
-                android:contentDescription="@null"
+                tools:ignore="ContentDescription"
                 app:srcCompat="@drawable/ic_settings_grey_16dp"/>
             <TextView
                 android:id="@+id/signin_details_description"

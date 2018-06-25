@@ -95,7 +95,7 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:scaleType="centerCrop"
-        android:contentDescription="@null"
+        tools:ignore="ContentDescription"
         android:src="@null"
         app:chrometint="@color/dark_mode_tint" />
 </RelativeLayout>

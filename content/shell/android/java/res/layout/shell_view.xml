@@ -8,6 +8,7 @@
 
 <org.chromium.content_shell.Shell
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -22,7 +23,7 @@
             android:layout_height="38dp"
             android:src="@android:drawable/ic_menu_close_clear_cancel"
             android:scaleType="centerCrop"
-            android:contentDescription="@null" />
+            tools:ignore="ContentDescription" />
         <EditText android:id="@+id/url"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -39,13 +40,13 @@
             android:layout_height="38dp"
             android:src="@android:drawable/ic_media_previous"
             android:scaleType="center"
-            android:contentDescription="@null" />
+            tools:ignore="ContentDescription" />
         <ImageButton android:id="@+id/next"
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:src="@android:drawable/ic_media_next"
             android:scaleType="center"
-            android:contentDescription="@null" />
+            tools:ignore="ContentDescription" />
     </LinearLayout>
     <FrameLayout android:id="@+id/contentview_holder"
         android:layout_width="match_parent"

@@ -8,7 +8,8 @@
 -->
 <merge
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <ImageView android:id="@+id/incognito_badge"
         style="@style/LocationBarButton"
@@ -16,7 +17,7 @@
         android:layout_height="match_parent"
         android:scaleType="center"
         android:src="@drawable/ic_omnibox_incognito_badge"
-        android:contentDescription="@null"
+        tools:ignore="ContentDescription"
         android:visibility="gone" />
 
     <FrameLayout android:id="@+id/location_bar_icon"
