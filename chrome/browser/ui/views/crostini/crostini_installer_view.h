@@ -91,7 +91,6 @@ class CrostiniInstallerView
   State state_ = State::PROMPT;
   views::Label* message_label_ = nullptr;
   views::ProgressBar* progress_bar_ = nullptr;
-  base::string16 app_name_;
   Profile* profile_;
   crostini::CrostiniManager::RestartId restart_id_ =
       crostini::CrostiniManager::kUninitializedRestartId;

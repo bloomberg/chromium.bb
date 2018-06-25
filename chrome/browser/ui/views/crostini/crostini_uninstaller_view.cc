@@ -71,8 +71,7 @@ base::string16 CrostiniUninstallerView::GetDialogButtonLabel(
 
 base::string16 CrostiniUninstallerView::GetWindowTitle() const {
   const base::string16 device_type = ui::GetChromeOSDeviceName();
-  return l10n_util::GetStringFUTF16(IDS_CROSTINI_UNINSTALLER_TITLE, app_name_,
-                                    device_type);
+  return l10n_util::GetStringUTF16(IDS_CROSTINI_UNINSTALLER_TITLE);
 }
 
 bool CrostiniUninstallerView::ShouldShowCloseButton() const {
@@ -119,9 +118,7 @@ CrostiniUninstallerView* CrostiniUninstallerView::GetActiveViewForTesting() {
 }
 
 CrostiniUninstallerView::CrostiniUninstallerView(Profile* profile)
-    : app_name_(base::ASCIIToUTF16(kCrostiniTerminalAppName)),
-      profile_(profile),
-      weak_ptr_factory_(this) {
+    : profile_(profile), weak_ptr_factory_(this) {
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
@@ -131,8 +128,8 @@ CrostiniUninstallerView::CrostiniUninstallerView(Profile* profile)
       views::DialogContentType::TEXT, views::DialogContentType::TEXT));
 
   const base::string16 device_type = ui::GetChromeOSDeviceName();
-  const base::string16 message = l10n_util::GetStringFUTF16(
-      IDS_CROSTINI_UNINSTALLER_BODY, app_name_, device_type);
+  const base::string16 message =
+      l10n_util::GetStringFUTF16(IDS_CROSTINI_UNINSTALLER_BODY, device_type);
   message_label_ = new views::Label(message);
   message_label_->SetMultiLine(true);
   message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -159,8 +156,7 @@ void CrostiniUninstallerView::HandleError(const base::string16& error_message) {
 void CrostiniUninstallerView::UninstallCrostiniFinished(
     crostini::ConciergeClientResult result) {
   if (result != crostini::ConciergeClientResult::SUCCESS) {
-    HandleError(
-        l10n_util::GetStringFUTF16(IDS_CROSTINI_UNINSTALLER_ERROR, app_name_));
+    HandleError(l10n_util::GetStringUTF16(IDS_CROSTINI_UNINSTALLER_ERROR));
     return;
   } else {
     RecordUninstallResultHistogram(UninstallResult::kSuccess);
