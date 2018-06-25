@@ -642,7 +642,7 @@ class CastBenchmark {
                       SearchVector b,
                       SearchVector c,
                       double accuracy,
-                      std::vector<linked_ptr<base::Thread> >* threads) {
+                      std::vector<std::unique_ptr<base::Thread>>* threads) {
     static int thread_num = 0;
     if (x > max) return;
     if (skip > max) {
@@ -669,10 +669,10 @@ class CastBenchmark {
   void Run() {
     // Spanning search.
 
-    std::vector<linked_ptr<base::Thread> > threads;
+    std::vector<std::unique_ptr<base::Thread>> threads;
     for (int i = 0; i < 16; i++) {
-      threads.push_back(make_linked_ptr(new base::Thread(
-          base::StringPrintf("cast_bench_thread_%d", i))));
+      threads.push_back(std::make_unique<base::Thread>(
+          base::StringPrintf("cast_bench_thread_%d", i)));
       threads[i]->Start();
     }
 
