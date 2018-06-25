@@ -225,6 +225,10 @@ const TabSizeInfo& GetTabSizeInfo() {
   return *g_tab_size_info;
 }
 
+int GetStackableTabWidth() {
+  return Tab::GetOverlap() + (MD::IsTouchOptimizedUiEnabled() ? 136 : 102);
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1290,8 +1294,8 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
   if (touch_layout_ || adjust_layout_) {
     // For stacked tabs the minimum size is calculated as the size needed to
     // handle showing any number of tabs.
-    needed_tab_width = GetLayoutConstant(TAB_STACK_TAB_WIDTH) +
-                       (2 * kStackedPadding * kMaxStackedCount);
+    needed_tab_width =
+        GetStackableTabWidth() + (2 * kStackedPadding * kMaxStackedCount);
   } else {
     // Otherwise the minimum width is based on the actual number of tabs.
     const int pinned_tab_count = GetPinnedTabCount();
@@ -2304,12 +2308,10 @@ void TabStrip::SwapLayoutIfNecessary() {
     return;
 
   if (needs_touch) {
-    gfx::Size tab_size(GetLayoutConstant(TAB_STACK_TAB_WIDTH),
-                       GetLayoutConstant(TAB_HEIGHT));
-
     const int overlap = Tab::GetOverlap();
     touch_layout_.reset(new StackedTabStripLayout(
-        tab_size, overlap, kStackedPadding, kMaxStackedCount, &tabs_));
+        gfx::Size(GetStackableTabWidth(), GetLayoutConstant(TAB_HEIGHT)),
+        overlap, kStackedPadding, kMaxStackedCount, &tabs_));
     touch_layout_->SetWidth(GetTabAreaWidth());
     // This has to be after SetWidth() as SetWidth() is going to reset the
     // bounds of the pinned tabs (since StackedTabStripLayout doesn't yet know
@@ -2337,9 +2339,8 @@ bool TabStrip::NeedsTouchLayout() const {
   if (normal_count <= 1 || normal_count == pinned_tab_count)
     return false;
 
-  const int normal_width =
-      GetLayoutConstant(TAB_STACK_TAB_WIDTH) * normal_count -
-      Tab::GetOverlap() * (normal_count - 1);
+  const int normal_width = GetStackableTabWidth() * normal_count -
+                           Tab::GetOverlap() * (normal_count - 1);
   const int available_width = GetTabAreaWidth();
   const int pinned_width =
       pinned_tab_count ? (pinned_tab_count * Tab::GetPinnedWidth() -

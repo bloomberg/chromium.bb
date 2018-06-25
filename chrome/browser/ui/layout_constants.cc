@@ -77,10 +77,6 @@ int GetLayoutConstant(LayoutConstant constant) {
       return newer_material ? 8 : 6;
     case TAB_STACK_DISTANCE:
       return touch_optimized_material ? 4 : 6;
-    case TAB_STACK_TAB_WIDTH:
-      return touch_optimized_material ? 160 : 120;
-    case TAB_STANDARD_WIDTH:
-      return touch_optimized_material ? 245 : 193;
     case TOOLBAR_ELEMENT_PADDING: {
       constexpr int kPadding[] = {0, 8, 0, 4, 0};
       return kPadding[mode];

@@ -83,14 +83,6 @@ enum LayoutConstant {
   // subsequent tab when tabs are stacked.
   TAB_STACK_DISTANCE,
 
-  // The standard width of a tab when is stacked layout. This does not include
-  // the endcap width.
-  TAB_STACK_TAB_WIDTH,
-
-  // The standard tab width excluding the overlap (which is the endcap width on
-  // one side)
-  TAB_STANDARD_WIDTH,
-
   // Additional horizontal padding between the elements in the toolbar.
   TOOLBAR_ELEMENT_PADDING,
 
