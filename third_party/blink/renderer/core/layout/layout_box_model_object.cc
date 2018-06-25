@@ -225,10 +225,8 @@ void LayoutBoxModelObject::StyleWillChange(StyleDifference diff,
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
     } else {
-      // The following disablers are valid because we need to invalidate based
-      // on the current status.
+      // We need to invalidate based on the current compositing status.
       DisableCompositingQueryAsserts compositing_disabler;
-      DisablePaintInvalidationStateAsserts paint_disabler;
       ObjectPaintInvalidator(*this)
           .InvalidatePaintIncludingNonCompositingDescendants();
     }

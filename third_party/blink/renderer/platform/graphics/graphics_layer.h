@@ -198,11 +198,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetPaintingPhase(GraphicsLayerPaintingPhase);
 
   void SetNeedsDisplay();
-  // Mark the given rect (in layer coords) as needing display. Never goes deep.
-  void SetNeedsDisplayInRect(const IntRect&,
-                             PaintInvalidationReason,
-                             const DisplayItemClient&);
-
   void SetContentsNeedsDisplay();
 
   // Set that the position/size of the contents (image or video).
@@ -362,7 +357,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   class LayersAsJSONArray;
 
   RasterInvalidator& EnsureRasterInvalidator();
-  void SetNeedsDisplayInRectInternal(const IntRect&);
+  void SetNeedsDisplayInRect(const IntRect&);
 
   FloatSize VisualRectSubpixelOffset() const;
 
@@ -451,24 +446,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   FRIEND_TEST_ALL_PREFIXES(CompositingLayerPropertyUpdaterTest, MaskLayerState);
 
   DISALLOW_COPY_AND_ASSIGN(GraphicsLayer);
-};
-
-// ObjectPaintInvalidatorWithContext::InvalidatePaintRectangleWithContext uses
-// this to reduce differences between layout test results of SPv1 and SPv2.
-class PLATFORM_EXPORT ScopedSetNeedsDisplayInRectForTrackingOnly {
- public:
-  ScopedSetNeedsDisplayInRectForTrackingOnly() {
-    DCHECK(!s_enabled_);
-    s_enabled_ = true;
-  }
-  ~ScopedSetNeedsDisplayInRectForTrackingOnly() {
-    DCHECK(s_enabled_);
-    s_enabled_ = false;
-  }
-
- private:
-  friend class GraphicsLayer;
-  static bool s_enabled_;
 };
 
 }  // namespace blink

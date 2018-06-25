@@ -2626,14 +2626,6 @@ static LayoutRect ScrollControlVisualRect(
   // No need to apply any paint offset. Scroll controls paint in a different
   // transform space than their contained box (the scrollbarPaintOffset
   // transform node).
-  if (!visual_rect.IsEmpty() &&
-      !RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // PaintInvalidatorContext::mapLocalRectToPaintInvalidationBacking() treats
-    // the rect as in flipped block direction, but scrollbar controls don't
-    // flip for block direction, so flip here to undo the flip in the function.
-    box.FlipForWritingMode(visual_rect);
-    context.MapLocalRectToVisualRect(box, visual_rect);
-  }
   return visual_rect;
 }
 
@@ -2646,11 +2638,6 @@ static bool InvalidatePaintOfScrollControlIfNeeded(
     const LayoutBoxModelObject& paint_invalidation_container) {
   bool should_invalidate_new_rect = needs_paint_invalidation;
   if (new_visual_rect != previous_visual_rect) {
-    if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      ObjectPaintInvalidator(box).InvalidatePaintUsingContainer(
-          paint_invalidation_container, previous_visual_rect,
-          PaintInvalidationReason::kScrollControl);
-    }
     should_invalidate_new_rect = true;
   } else if (previous_visual_rect.IsEmpty()) {
     DCHECK(new_visual_rect.IsEmpty());
@@ -2658,15 +2645,7 @@ static bool InvalidatePaintOfScrollControlIfNeeded(
     should_invalidate_new_rect = false;
   }
 
-  if (should_invalidate_new_rect) {
-    if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      ObjectPaintInvalidator(box).InvalidatePaintUsingContainer(
-          paint_invalidation_container, new_visual_rect,
-          PaintInvalidationReason::kScrollControl);
-    }
-    return true;
-  }
-  return false;
+  return should_invalidate_new_rect;
 }
 
 static LayoutRect InvalidatePaintOfScrollbarIfNeeded(

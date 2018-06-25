@@ -202,14 +202,6 @@ void CaretDisplayItemClient::InvalidatePaintInPreviousLayoutBlock(
 
   ObjectPaintInvalidatorWithContext object_invalidator(*previous_layout_block_,
                                                        context);
-  // For SPv175 raster invalidation will be done in PaintController.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      !IsImmediateFullPaintInvalidationReason(
-          previous_layout_block_->FullPaintInvalidationReason())) {
-    object_invalidator.InvalidatePaintRectangleWithContext(
-        visual_rect_in_previous_layout_block_, PaintInvalidationReason::kCaret);
-  }
-
   context.painting_layer->SetNeedsRepaint();
   object_invalidator.InvalidateDisplayItemClient(
       *this, PaintInvalidationReason::kCaret);
@@ -250,13 +242,7 @@ void CaretDisplayItemClient::InvalidatePaintInCurrentLayoutBlock(
     // need to invalidate the display item client if the block is doing full
     // paint invalidation.
     if (IsImmediateFullPaintInvalidationReason(
-            layout_block_->FullPaintInvalidationReason()) ||
-        // For SPv1, kSubtreeInvalidationChecking may hint change of
-        // paint offset. See ObjectPaintInvalidatorWithContext::
-        // invalidatePaintIfNeededWithComputedReason().
-        (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-         (context.subtree_flags &
-          PaintInvalidatorContext::kSubtreeInvalidationChecking))) {
+            layout_block_->FullPaintInvalidationReason())) {
       object_invalidator.InvalidateDisplayItemClient(
           *this, PaintInvalidationReason::kCaret);
     }
@@ -264,13 +250,6 @@ void CaretDisplayItemClient::InvalidatePaintInCurrentLayoutBlock(
   }
 
   needs_paint_invalidation_ = false;
-
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      !IsImmediateFullPaintInvalidationReason(
-          layout_block_->FullPaintInvalidationReason())) {
-    object_invalidator.FullyInvalidatePaint(PaintInvalidationReason::kCaret,
-                                            visual_rect_, new_visual_rect);
-  }
 
   context.painting_layer->SetNeedsRepaint();
   object_invalidator.InvalidateDisplayItemClient(

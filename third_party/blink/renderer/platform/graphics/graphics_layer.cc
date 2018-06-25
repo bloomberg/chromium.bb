@@ -587,7 +587,7 @@ cc::Layer* GraphicsLayer::ContentsLayerIfRegistered() {
 RasterInvalidator& GraphicsLayer::EnsureRasterInvalidator() {
   if (!raster_invalidator_) {
     raster_invalidator_ = std::make_unique<RasterInvalidator>(
-        [this](const IntRect& r) { SetNeedsDisplayInRectInternal(r); });
+        [this](const IntRect& r) { SetNeedsDisplayInRect(r); });
     raster_invalidator_->SetTracksRasterInvalidations(
         client_.IsTrackingRasterInvalidations());
   }
@@ -1172,22 +1172,7 @@ void GraphicsLayer::SetNeedsDisplay() {
                           PaintInvalidationReason::kFullLayer);
 }
 
-DISABLE_CFI_PERF
-void GraphicsLayer::SetNeedsDisplayInRect(
-    const IntRect& rect,
-    PaintInvalidationReason invalidation_reason,
-    const DisplayItemClient& client) {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-  if (!DrawsContent())
-    return;
-
-  if (!ScopedSetNeedsDisplayInRectForTrackingOnly::s_enabled_)
-    SetNeedsDisplayInRectInternal(rect);
-
-  TrackRasterInvalidation(client, rect, invalidation_reason);
-}
-
-void GraphicsLayer::SetNeedsDisplayInRectInternal(const IntRect& rect) {
+void GraphicsLayer::SetNeedsDisplayInRect(const IntRect& rect) {
   DCHECK(DrawsContent());
 
   layer_->SetNeedsDisplayRect(rect);
@@ -1468,8 +1453,6 @@ FloatSize GraphicsLayer::VisualRectSubpixelOffset() const {
     return FloatSize(client_.SubpixelAccumulation());
   return FloatSize();
 }
-
-bool ScopedSetNeedsDisplayInRectForTrackingOnly::s_enabled_ = false;
 
 }  // namespace blink
 

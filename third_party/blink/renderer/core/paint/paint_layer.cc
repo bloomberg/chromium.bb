@@ -1460,7 +1460,6 @@ void PaintLayer::RemoveOnlyThisLayerAfterStyleChange() {
       // Our children will be reparented and contained by a new paint
       // invalidation container, so need paint invalidation. CompositingUpdate
       // can't see this layer (which has been removed) so won't do this for us.
-      DisablePaintInvalidationStateAsserts disabler;
       ObjectPaintInvalidator(GetLayoutObject())
           .InvalidatePaintIncludingNonCompositingDescendants();
       GetLayoutObject()
@@ -1524,8 +1523,7 @@ void PaintLayer::InsertOnlyThisLayerAfterStyleChange() {
         GetLayoutObject().Parent()->ContainerForPaintInvalidation();
     if (!previous_paint_invalidation_container.StyleRef().IsStackingContext()) {
       ObjectPaintInvalidator(GetLayoutObject())
-          .InvalidatePaintIncludingNonSelfPaintingLayerDescendants(
-              previous_paint_invalidation_container);
+          .InvalidatePaintIncludingNonSelfPaintingLayerDescendants();
       // Set needsRepaint along the original compositingContainer chain.
       GetLayoutObject().Parent()->EnclosingLayer()->SetNeedsRepaint();
       did_set_paint_invalidation = true;
