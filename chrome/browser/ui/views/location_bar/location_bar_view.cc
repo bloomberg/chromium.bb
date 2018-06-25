@@ -811,6 +811,8 @@ void LocationBarView::RefreshBackground() {
   // correctly enable subpixel AA.
   omnibox_view_->SetBackgroundColor(background_color);
   omnibox_view_->EmphasizeURLComponents();
+
+  SchedulePaint();
 }
 
 void LocationBarView::RefreshLocationIcon() {
@@ -1265,7 +1267,6 @@ void LocationBarView::OnOmniboxBlurred() {
 
 void LocationBarView::OnOmniboxHoverChanged() {
   RefreshBackground();
-  SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
