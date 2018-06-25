@@ -495,17 +495,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
           kIgnorePlatformOverlayScrollbarSize, respect_overflow_clip,
           &offset_from_root, local_painting_info.sub_pixel_accumulation);
       layer_fragments[0].fragment_data = fragment->fragment_data;
-    } else if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-               paint_layer_.GetLayoutObject()
-                   .IsFixedPositionObjectInPagedMedia()) {
-      PaintLayerFragments single_fragment;
-      paint_layer_for_fragments->AppendSingleFragmentIgnoringPagination(
-          single_fragment, local_painting_info.root_layer,
-          &local_painting_info.paint_dirty_rect,
-          kIgnorePlatformOverlayScrollbarSize, respect_overflow_clip,
-          &offset_from_root, local_painting_info.sub_pixel_accumulation);
-      RepeatFixedPositionObjectInPages(single_fragment[0], painting_info,
-                                       layer_fragments);
     } else {
       paint_layer_for_fragments->CollectFragments(
           layer_fragments, local_painting_info.root_layer,
@@ -725,35 +714,6 @@ bool PaintLayerPainter::AtLeastOneFragmentIntersectsDamageRect(
   return false;
 }
 
-void PaintLayerPainter::RepeatFixedPositionObjectInPages(
-    const PaintLayerFragment& single_fragment_ignored_pagination,
-    const PaintLayerPaintingInfo& painting_info,
-    PaintLayerFragments& layer_fragments) {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-  DCHECK(paint_layer_.GetLayoutObject().IsFixedPositionObjectInPagedMedia());
-
-  LayoutView* view = paint_layer_.GetLayoutObject().View();
-  unsigned pages =
-      ceilf(view->DocumentRect().Height() / view->PageLogicalHeight());
-
-  // The fixed position object is offset from the top of the page, so remove
-  // any scroll offset.
-  LayoutPoint offset_from_root;
-  paint_layer_.ConvertToLayerCoords(painting_info.root_layer, offset_from_root);
-  LayoutSize offset_adjustment = paint_layer_.Location() - offset_from_root;
-  layer_fragments.push_back(single_fragment_ignored_pagination);
-  layer_fragments[0].pagination_offset += offset_adjustment;
-  layer_fragments[0].layer_bounds.Move(offset_adjustment);
-
-  LayoutPoint page_offset(LayoutUnit(), view->PageLogicalHeight());
-  for (unsigned i = 1; i < pages; i++) {
-    PaintLayerFragment fragment = layer_fragments[i - 1];
-    fragment.pagination_offset += page_offset;
-    fragment.layer_bounds.MoveBy(page_offset);
-    layer_fragments.push_back(fragment);
-  }
-}
-
 template <typename Function>
 static void ForAllFragments(GraphicsContext& context,
                             const PaintLayerFragments& fragments,
@@ -783,9 +743,6 @@ PaintResult PaintLayerPainter::PaintLayerWithAdjustedRoot(
 
   PaintResult result = kFullyPainted;
   PaintLayerFragments layer_fragments;
-  bool is_fixed_position_object_in_paged_media =
-      !RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      paint_layer_.GetLayoutObject().IsFixedPositionObjectInPagedMedia();
 
   // This works around a bug in squashed-layer painting.
   // Squashed layers paint into a backing in its compositing container's
@@ -796,7 +753,7 @@ PaintResult PaintLayerPainter::PaintLayerWithAdjustedRoot(
   // appropriate ancestor clip for us, so we can simply skip it.
   bool is_squashed_layer = painting_info.root_layer == &paint_layer_;
 
-  if (is_squashed_layer || is_fixed_position_object_in_paged_media) {
+  if (is_squashed_layer) {
     // We don't need to collect any fragments in the regular way here. We have
     // already calculated a clip rectangle for the ancestry if it was needed,
     // and clipping this layer is something that can be done further down the
@@ -804,12 +761,7 @@ PaintResult PaintLayerPainter::PaintLayerWithAdjustedRoot(
     PaintLayerFragment fragment;
     fragment.background_rect = painting_info.paint_dirty_rect;
     fragment.fragment_data = &paint_layer_.GetLayoutObject().FirstFragment();
-    if (is_fixed_position_object_in_paged_media) {
-      RepeatFixedPositionObjectInPages(fragment, painting_info,
-                                       layer_fragments);
-    } else {
-      layer_fragments.push_back(fragment);
-    }
+    layer_fragments.push_back(fragment);
   } else if (parent_layer) {
     ShouldRespectOverflowClipType respect_overflow_clip =
         ShouldRespectOverflowClip(paint_flags, paint_layer_.GetLayoutObject());

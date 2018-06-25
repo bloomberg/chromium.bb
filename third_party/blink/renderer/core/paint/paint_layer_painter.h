@@ -65,16 +65,6 @@ class CORE_EXPORT PaintLayerPainter {
   bool ShouldAdjustPaintingRoot(const PaintLayerPaintingInfo& painting_info,
                                 PaintLayerFlags paint_flags);
 
-  // "For paged media, boxes with fixed positions are repeated on every page."
-  // https://www.w3.org/TR/2011/REC-CSS2-20110607/visuren.html#fixed-positioning
-  // Repeats singleFragmentIgnoredPagination of the fixed-position object in
-  // each page, with paginationOffset and layerBounds adjusted for each page.
-  // TODO(wangxianzhu): Fold this into PaintLayer::collectFragments().
-  void RepeatFixedPositionObjectInPages(
-      const PaintLayerFragment& single_fragment_ignored_pagination,
-      const PaintLayerPaintingInfo&,
-      PaintLayerFragments&);
-
   PaintResult PaintLayerContentsCompositingAllPhases(
       GraphicsContext&,
       const PaintLayerPaintingInfo&,

@@ -23,192 +23,34 @@
 
 namespace blink {
 
-void TableSectionPainter::PaintRepeatingHeaderGroup(
-    const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset,
-    ItemToPaint item_to_paint) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
-  if (!layout_table_section_.IsRepeatingHeaderGroup())
-    return;
-
-  LayoutTable* table = layout_table_section_.Table();
-  // TODO(crbug.com/757947): This shouldn't be possible but happens to
-  // column-spanners in nested multi-col contexts.
-  if (!table->IsPageLogicalHeightKnown())
-    return;
-
-  // We may paint the header multiple times so can't uniquely identify each
-  // display item.
-  DisplayItemCacheSkipper cache_skipper(paint_info.context);
-
-  LayoutPoint pagination_offset = paint_offset;
-  LayoutUnit page_height = table->PageLogicalHeightForOffset(LayoutUnit());
-
-  LayoutUnit header_group_offset = table->BlockOffsetToFirstRepeatableHeader();
-  // The header may have a pagination strut before it so we need to account for
-  // that when establishing its position.
-  LayoutUnit strut_on_first_row;
-  if (LayoutTableRow* row = layout_table_section_.FirstRow())
-    strut_on_first_row = row->PaginationStrut();
-  header_group_offset += strut_on_first_row;
-  LayoutUnit offset_to_next_page =
-      page_height - IntMod(header_group_offset, page_height);
-  // Move pagination_offset to the top of the next page.
-  pagination_offset.Move(LayoutUnit(), offset_to_next_page);
-  // Now move pagination_offset to the top of the page the cull rect starts on.
-  if (paint_info.GetCullRect().rect_.Y() > pagination_offset.Y()) {
-    pagination_offset.Move(LayoutUnit(),
-                           page_height * ((paint_info.GetCullRect().rect_.Y() -
-                                           pagination_offset.Y()) /
-                                          page_height)
-                                             .ToInt());
-  }
-
-  // We only want to consider pages where we going to paint a row, so exclude
-  // captions and border spacing from the table.
-  LayoutRect sections_rect(LayoutPoint(), table->Size());
-  table->SubtractCaptionRect(sections_rect);
-  LayoutUnit total_height_of_rows =
-      sections_rect.Height() - table->VBorderSpacing();
-  LayoutUnit bottom_bound =
-      std::min(LayoutUnit(paint_info.GetCullRect().rect_.MaxY()),
-               paint_offset.Y() + total_height_of_rows);
-
-  while (pagination_offset.Y() < bottom_bound) {
-    LayoutPoint nested_offset = pagination_offset;
-    LayoutUnit height_of_previous_headers =
-        table->RowOffsetFromRepeatingHeader() -
-        layout_table_section_.LogicalHeight() + strut_on_first_row;
-    nested_offset.Move(LayoutUnit(), height_of_previous_headers);
-    if (item_to_paint == kPaintCollapsedBorders) {
-      PaintCollapsedSectionBorders(paint_info, nested_offset);
-    } else {
-      PaintSection(paint_info, nested_offset);
-    }
-    pagination_offset.Move(0, page_height.ToInt());
-  }
-}
-
-void TableSectionPainter::PaintRepeatingFooterGroup(
-    const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset,
-    ItemToPaint item_to_paint) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
-  if (!layout_table_section_.IsRepeatingFooterGroup())
-    return;
-
-  // Work out the top position of the table so we can decide
-  // which page to paint the first footer on.
-  LayoutTable* table = layout_table_section_.Table();
-  // TODO(crbug.com/757947): This shouldn't be possible but happens to
-  // column-spanners in nested multi-col contexts.
-  if (!table->IsPageLogicalHeightKnown())
-    return;
-
-  // We may paint the footer multiple times so can't uniquely identify each
-  // display item.
-  DisplayItemCacheSkipper cache_skipper(paint_info.context);
-
-  LayoutRect sections_rect(LayoutPoint(), table->Size());
-  table->SubtractCaptionRect(sections_rect);
-  LayoutUnit page_height = table->PageLogicalHeightForOffset(LayoutUnit());
-  LayoutUnit height_of_previous_footers = table->RowOffsetFromRepeatingFooter();
-  LayoutUnit offset_for_footer = page_height - height_of_previous_footers;
-  // TODO: Accounting for the border-spacing here is wrong.
-  LayoutUnit header_group_offset =
-      table->BlockOffsetToFirstRepeatableHeader() + table->VBorderSpacing();
-  // The first row in the table may have a pagination strut before it so we need
-  // to account for that when establishing its position.
-  LayoutUnit strut_on_first_row;
-  LayoutTableSection* top_section = table->TopSection();
-  if (top_section) {
-    if (LayoutTableRow* row = top_section->FirstRow())
-      strut_on_first_row = row->PaginationStrut();
-  }
-  header_group_offset += strut_on_first_row;
-  LayoutUnit total_height_of_rows =
-      sections_rect.Height() + IntMod(header_group_offset, page_height);
-  LayoutUnit first_row_strut =
-      layout_table_section_.FirstRow()
-          ? layout_table_section_.FirstRow()->PaginationStrut()
-          : LayoutUnit();
-  total_height_of_rows -=
-      layout_table_section_.LogicalHeight() - first_row_strut;
-
-  // Move the offset to the top of the page the table starts on.
-  LayoutPoint pagination_offset = paint_offset;
-  pagination_offset.Move(LayoutUnit(), -total_height_of_rows);
-
-  // Paint up to the last page that needs painting.
-  LayoutUnit bottom_bound =
-      std::min(LayoutUnit(paint_info.GetCullRect().rect_.MaxY()),
-               pagination_offset.Y() + total_height_of_rows - page_height);
-
-  // If the first row in the table would overlap with the footer on the first
-  // page then don't repeat the footer there.
-  if (top_section && top_section->FirstRow() &&
-      IntMod(header_group_offset, page_height) +
-              top_section->FirstRow()->LogicalHeight() >
-          offset_for_footer) {
-    pagination_offset.Move(LayoutUnit(), page_height);
-  }
-
-  // Paint a footer on each page from first to next-to-last.
-  while (pagination_offset.Y() < bottom_bound) {
-    LayoutPoint nested_offset = pagination_offset;
-    nested_offset.Move(LayoutUnit(), offset_for_footer);
-    if (item_to_paint == kPaintCollapsedBorders) {
-      PaintCollapsedSectionBorders(paint_info, nested_offset);
-    } else {
-      PaintSection(paint_info, nested_offset);
-    }
-    pagination_offset.Move(0, page_height.ToInt());
-  }
-}
-
 void TableSectionPainter::Paint(const PaintInfo& paint_info,
                                 const LayoutPoint& paint_offset) {
   // TODO(crbug.com/805514): Paint mask for table section.
   if (paint_info.phase == PaintPhase::kMask)
     return;
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // If the section has multiple fragments, it should repeatedly paint the
-    // fragments by itself if:
-    // - It's not a self-painting layer (otherwise PaintLayerPainter should
-    //   initiate painting of the multiple fragments);
-    // - the table doesn't have multiple fragments (otherwise the table's
-    //   containing painting layer should initiate painting of the fragments).
-    bool should_paint_fragments_by_itself =
-        layout_table_section_.FirstFragment().NextFragment() &&
-        !layout_table_section_.HasSelfPaintingLayer() &&
-        !layout_table_section_.Table()->FirstFragment().NextFragment();
+  // If the section has multiple fragments, it should repeatedly paint the
+  // fragments by itself if:
+  // - It's not a self-painting layer (otherwise PaintLayerPainter should
+  //   initiate painting of the multiple fragments);
+  // - the table doesn't have multiple fragments (otherwise the table's
+  //   containing painting layer should initiate painting of the fragments).
+  bool should_paint_fragments_by_itself =
+      layout_table_section_.FirstFragment().NextFragment() &&
+      !layout_table_section_.HasSelfPaintingLayer() &&
+      !layout_table_section_.Table()->FirstFragment().NextFragment();
 
-    if (!should_paint_fragments_by_itself) {
-      PaintSection(paint_info, paint_offset);
-      return;
-    }
-
-    for (const auto* fragment = &layout_table_section_.FirstFragment();
-         fragment; fragment = fragment->NextFragment()) {
-      PaintInfo fragment_paint_info = paint_info;
-      fragment_paint_info.SetFragmentLogicalTopInFlowThread(
-          fragment->LogicalTopInFlowThread());
-      PaintSection(fragment_paint_info, paint_offset);
-    }
+  if (!should_paint_fragments_by_itself) {
+    PaintSection(paint_info, paint_offset);
     return;
   }
 
-  PaintSection(paint_info, paint_offset);
-  LayoutTable* table = layout_table_section_.Table();
-  if (table->Header() == layout_table_section_) {
-    PaintRepeatingHeaderGroup(paint_info, paint_offset, kPaintSection);
-  } else if (table->Footer() == layout_table_section_) {
-    PaintRepeatingFooterGroup(paint_info, paint_offset, kPaintSection);
+  for (const auto* fragment = &layout_table_section_.FirstFragment(); fragment;
+       fragment = fragment->NextFragment()) {
+    PaintInfo fragment_paint_info = paint_info;
+    fragment_paint_info.SetFragmentLogicalTopInFlowThread(
+        fragment->LogicalTopInFlowThread());
+    PaintSection(fragment_paint_info, paint_offset);
   }
 }
 
@@ -248,38 +90,27 @@ void TableSectionPainter::PaintSection(const PaintInfo& paint_info,
 void TableSectionPainter::PaintCollapsedBorders(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // If the section has multiple fragments, it should repeatedly paint the
-    // fragments for collapsed borders by itself if the table doesn't have
-    // multiple fragments (otherwise the table's containing painting layer
-    // should initiate painting of the fragments). The condition here is
-    // different from that in Paint() because the table always initiate painting
-    // of collapsed borders regardless of self-painting status of the section.
-    bool should_paint_fragments_by_itself =
-        layout_table_section_.FirstFragment().NextFragment() &&
-        !layout_table_section_.Table()->FirstFragment().NextFragment();
+  // If the section has multiple fragments, it should repeatedly paint the
+  // fragments for collapsed borders by itself if the table doesn't have
+  // multiple fragments (otherwise the table's containing painting layer
+  // should initiate painting of the fragments). The condition here is
+  // different from that in Paint() because the table always initiate painting
+  // of collapsed borders regardless of self-painting status of the section.
+  bool should_paint_fragments_by_itself =
+      layout_table_section_.FirstFragment().NextFragment() &&
+      !layout_table_section_.Table()->FirstFragment().NextFragment();
 
-    if (!should_paint_fragments_by_itself) {
-      PaintCollapsedSectionBorders(paint_info, paint_offset);
-      return;
-    }
-
-    for (const auto* fragment = &layout_table_section_.FirstFragment();
-         fragment; fragment = fragment->NextFragment()) {
-      PaintInfo fragment_paint_info = paint_info;
-      fragment_paint_info.SetFragmentLogicalTopInFlowThread(
-          fragment->LogicalTopInFlowThread());
-      PaintCollapsedSectionBorders(fragment_paint_info, paint_offset);
-    }
+  if (!should_paint_fragments_by_itself) {
+    PaintCollapsedSectionBorders(paint_info, paint_offset);
     return;
   }
 
-  PaintCollapsedSectionBorders(paint_info, paint_offset);
-  LayoutTable* table = layout_table_section_.Table();
-  if (table->Header() == layout_table_section_) {
-    PaintRepeatingHeaderGroup(paint_info, paint_offset, kPaintCollapsedBorders);
-  } else if (table->Footer() == layout_table_section_) {
-    PaintRepeatingFooterGroup(paint_info, paint_offset, kPaintCollapsedBorders);
+  for (const auto* fragment = &layout_table_section_.FirstFragment(); fragment;
+       fragment = fragment->NextFragment()) {
+    PaintInfo fragment_paint_info = paint_info;
+    fragment_paint_info.SetFragmentLogicalTopInFlowThread(
+        fragment->LogicalTopInFlowThread());
+    PaintCollapsedSectionBorders(fragment_paint_info, paint_offset);
   }
 }
 
