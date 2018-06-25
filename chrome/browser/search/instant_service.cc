@@ -146,11 +146,14 @@ void InstantService::UndoAllMostVisitedDeletions() {
   }
 }
 
-void InstantService::UpdateThemeInfo(bool force_update) {
+void InstantService::UpdateThemeInfo() {
   // Initialize |theme_info_| if necessary.
-  if (!theme_info_ || force_update) {
+  if (!theme_info_) {
     BuildThemeInfo();
   }
+
+  ApplyGoogleNtpThemeElements();
+
   NotifyAboutThemeInfo();
 }
 
@@ -175,7 +178,7 @@ void InstantService::SetCustomBackgroundURL(const GURL& url) {
     pref_service_->SetString(prefs::kNTPCustomBackgroundURL, url.spec());
   }
 
-  UpdateThemeInfo(true);
+  UpdateThemeInfo();
 }
 
 void InstantService::Shutdown() {
@@ -359,12 +362,17 @@ void InstantService::BuildThemeInfo() {
     theme_info_->has_attribution =
         theme_provider.HasCustomImage(IDR_THEME_NTP_ATTRIBUTION);
   }
+}
 
+void InstantService::ApplyGoogleNtpThemeElements() {
   // User has set a custom background image.
   GURL custom_background_url(
       profile_->GetPrefs()->GetString(prefs::kNTPCustomBackgroundURL));
-  if (custom_background_url.is_valid()) {
+  if (custom_background_url.is_valid() &&
+      search::DefaultSearchProviderIsGoogle(profile_)) {
     theme_info_->custom_background_url = custom_background_url;
+  } else {
+    theme_info_->custom_background_url = GURL::EmptyGURL();
   }
 }
 
