@@ -5253,6 +5253,12 @@ void Document::setDomain(const String& raw_domain,
                          ExceptionState& exception_state) {
   UseCounter::Count(*this, WebFeature::kDocumentSetDomain);
 
+  if (!frame_) {
+    exception_state.ThrowSecurityError(
+        "A browsing context is required to set a domain.");
+    return;
+  }
+
   if (IsSandboxed(kSandboxDocumentDomain)) {
     exception_state.ThrowSecurityError(
         "Assignment is forbidden for sandboxed iframes.");
