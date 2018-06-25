@@ -11,7 +11,7 @@ function processMessage(event) {
     if (event.data == "opened") {
         w.close();
     } else if (event.data == "closed") {
-        shouldBe("w.navigator.getGamepads().length", "expectedLength");
+        shouldBeEqualToNumber("w.navigator.getGamepads().length", expectedLength);
         finishJSTest();
     }
 }

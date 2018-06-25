@@ -4,6 +4,15 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/gamepad-helpers.js"></script>
 <script>
+// We will convert all |buttons| and |axes| to string to avoid reused buffer
+// problem. https://crbug.com/855760
+function buttonsToStr(buttons) {
+  return buttons.map(button => "[" + button.pressed + "," + button.touched + "," + button.value + "]")
+         .join();
+}
+function axesToStr(axes) {
+  return axes.toString();
+}
 
 promise_test(async () => {
     // Start all disconnected
@@ -47,30 +56,35 @@ promise_test(async () => {
     // same objects until their values change.
     assert_equals(navigator.getGamepads()[0].axes, navigator.getGamepads()[0].axes, 'navigator.getGamepads()[0].axes');
     assert_equals(navigator.getGamepads()[0].buttons, navigator.getGamepads()[0].buttons, 'navigator.getGamepads()[0].buttons');
-    let oldAxes = navigator.getGamepads()[0].axes;
-    let oldButtons = navigator.getGamepads()[0].buttons;
+    let oldAxesStr = axesToStr(navigator.getGamepads()[0].axes);
+    let oldButtonsStr = buttonsToStr(navigator.getGamepads()[0].buttons);
+
     // Updates with the same values are skipped.
     gamepadController.setAxisCount(0, 2);
     gamepadController.setButtonCount(0, 2);
-    assert_equals(navigator.getGamepads()[0].axes, oldAxes, 'navigator.getGamepads()[0].axes');
-    assert_equals(navigator.getGamepads()[0].buttons, oldButtons, 'navigator.getGamepads()[0].buttons');
+    assert_equals(axesToStr(navigator.getGamepads()[0].axes), oldAxesStr, 'navigator.getGamepads()[0].axes');
+    assert_equals(buttonsToStr(navigator.getGamepads()[0].buttons), oldButtonsStr, 'navigator.getGamepads()[0].buttons');
     gamepadController.setAxisData(0, 0, .5);
     gamepadController.setButtonData(0, 1, 0);
-    assert_equals(navigator.getGamepads()[0].axes, oldAxes, 'navigator.getGamepads()[0].axes');
-    assert_equals(navigator.getGamepads()[0].buttons, oldButtons, 'navigator.getGamepads()[0].buttons');
+    assert_equals(axesToStr(navigator.getGamepads()[0].axes), oldAxesStr, 'navigator.getGamepads()[0].axes');
+    assert_equals(buttonsToStr(navigator.getGamepads()[0].buttons), oldButtonsStr, 'navigator.getGamepads()[0].buttons');
+
     // Updates with different values are not skipped.
-    gamepadController.setAxisCount(0, 1);
-    gamepadController.setButtonCount(0, 1);
-    assert_not_equals(navigator.getGamepads()[0].axes, oldAxes, 'navigator.getGamepads()[0].axes');
-    assert_not_equals(navigator.getGamepads()[0].buttons, oldButtons, 'navigator.getGamepads()[0].buttons');
-    oldAxes = navigator.getGamepads()[0].axes;
-    oldButtons = navigator.getGamepads()[0].buttons;
-    assert_equals(navigator.getGamepads()[0].axes, oldAxes, 'navigator.getGamepads()[0].axes');
-    assert_equals(navigator.getGamepads()[0].buttons, oldButtons, 'navigator.getGamepads()[0].buttons');
+    gamepadController.setAxisData(0, 0, .6);
+    assert_not_equals(axesToStr(navigator.getGamepads()[0].axes), oldAxesStr, 'navigator.getGamepads()[0].axes');
+    assert_equals(buttonsToStr(navigator.getGamepads()[0].buttons), oldButtonsStr, 'navigator.getGamepads()[0].buttons');
+    oldAxesStr = axesToStr(navigator.getGamepads()[0].axes);
+
+    gamepadController.setButtonData(0, 0, .2);
+    assert_equals(axesToStr(navigator.getGamepads()[0].axes), oldAxesStr, 'navigator.getGamepads()[0].axes');
+    assert_not_equals(buttonsToStr(navigator.getGamepads()[0].buttons), oldButtonsStr, 'navigator.getGamepads()[0].buttons');
+    oldButtonsStr = buttonsToStr(navigator.getGamepads()[0].buttons);
+
     gamepadController.setAxisData(0, 0, .9);
     gamepadController.setButtonData(0, 0, .3);
-    assert_not_equals(navigator.getGamepads()[0].axes, oldAxes, 'navigator.getGamepads()[0].axes');
-    assert_not_equals(navigator.getGamepads()[0].buttons, oldButtons, 'navigator.getGamepads()[0].buttons');
+    assert_not_equals(axesToStr(navigator.getGamepads()[0].axes), oldAxesStr, 'navigator.getGamepads()[0].axes');
+    assert_not_equals(buttonsToStr(navigator.getGamepads()[0].buttons), oldButtonsStr, 'navigator.getGamepads()[0].buttons');
+
 }, "Typical polling access to gamepads contents.");
 
 </script>
