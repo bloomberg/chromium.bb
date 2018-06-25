@@ -79,5 +79,5 @@ layer at (0,0) size 800x100
               text run at (155,0) width 9: "L"
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {DIV} at (0,56) size 784x20
-        LayoutText {#text} at (0,0) size 164x19
-          text run at (0,0) width 164: "A B C D E F G H I J K L"
+        LayoutText {#text} at (0,0) size 165x19
+          text run at (0,0) width 165: "A B C D E F G H I J K L"
