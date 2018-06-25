@@ -67,6 +67,7 @@ class CORE_EXPORT AXObjectCache
   virtual void ListboxOptionStateChanged(HTMLOptionElement*) = 0;
   virtual void ListboxSelectedChildrenChanged(HTMLSelectElement*) = 0;
   virtual void ListboxActiveIndexChanged(HTMLSelectElement*) = 0;
+  virtual void LocationChanged(LayoutObject*) = 0;
   virtual void RadiobuttonRemovedFromGroup(HTMLInputElement*) = 0;
 
   virtual void Remove(AccessibleNode*) = 0;

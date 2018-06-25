@@ -822,6 +822,10 @@ void AXObjectCacheImpl::ListboxActiveIndexChanged(HTMLSelectElement* select) {
   ToAXListBox(obj)->ActiveIndexChanged();
 }
 
+void AXObjectCacheImpl::LocationChanged(LayoutObject* layout_object) {
+  PostNotification(layout_object, kAXLocationChanged);
+}
+
 void AXObjectCacheImpl::RadiobuttonRemovedFromGroup(
     HTMLInputElement* group_member) {
   AXObject* obj = Get(group_member);
