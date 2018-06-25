@@ -4751,6 +4751,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "views_mus_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "views_unittests"
       },
       {
@@ -5198,6 +5204,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "ozone_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "ozone_x11_unittests"
       },
       {
@@ -5318,6 +5330,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "views_mus_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "views_unittests"
       },
       {
@@ -5325,6 +5343,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "viz_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "wayland_client_perftests"
       },
       {
         "swarming": {

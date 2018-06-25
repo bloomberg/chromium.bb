@@ -2994,12 +2994,12 @@
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
         'test_suites': {
-          'gtest_tests': 'chromium_memory_chromiumos_asan_gtests',
+          'gtest_tests': 'linux_chromeos_rel_gtests',
         },
       },
       'Linux ChromiumOS MSan Tests': {
         'test_suites': {
-          'gtest_tests': 'chromium_memory_chromiumos_asan_gtests',
+          'gtest_tests': 'linux_chromeos_rel_gtests',
         },
       },
       'Linux MSan Tests': {
