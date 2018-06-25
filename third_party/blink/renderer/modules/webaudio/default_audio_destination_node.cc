@@ -25,11 +25,17 @@
 
 #include "third_party/blink/renderer/modules/webaudio/default_audio_destination_node.h"
 
+#include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_messaging_proxy.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/audio/denormal_disabler.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/atomics.h"
 
 namespace blink {
 
@@ -173,6 +179,73 @@ double DefaultAudioDestinationHandler::SampleRate() const {
 
 int DefaultAudioDestinationHandler::GetFramesPerBuffer() const {
   return destination_ ? destination_->FramesPerBuffer() : 0;
+}
+
+void DefaultAudioDestinationHandler::Render(
+    AudioBus* destination_bus,
+    size_t number_of_frames,
+    const AudioIOPosition& output_position) {
+  TRACE_EVENT0("webaudio", "DefaultAudioDestinationHandler::Render");
+
+  // We don't want denormals slowing down any of the audio processing
+  // since they can very seriously hurt performance.  This will take care of all
+  // AudioNodes because they all process within this scope.
+  DenormalDisabler denormal_disabler;
+
+  // Need to check if the context actually alive. Otherwise the subsequent
+  // steps will fail. If the context is not alive somehow, return immediately
+  // and do nothing.
+  //
+  // TODO(hongchan): because the context can go away while rendering, so this
+  // check cannot guarantee the safe execution of the following steps.
+  DCHECK(Context());
+  if (!Context())
+    return;
+
+  Context()->GetDeferredTaskHandler().SetAudioThreadToCurrentThread();
+
+  // If the destination node is not initialized, pass the silence to the final
+  // audio destination (one step before the FIFO). This check is for the case
+  // where the destination is in the middle of tearing down process.
+  if (!IsInitialized()) {
+    destination_bus->Zero();
+    return;
+  }
+
+  // Let the context take care of any business at the start of each render
+  // quantum.
+  Context()->HandlePreRenderTasks(output_position);
+
+  DCHECK_GE(NumberOfInputs(), 1u);
+  if (NumberOfInputs() < 1) {
+    destination_bus->Zero();
+    return;
+  }
+  // This will cause the node(s) connected to us to process, which in turn will
+  // pull on their input(s), all the way backwards through the rendering graph.
+  AudioBus* rendered_bus = Input(0).Pull(destination_bus, number_of_frames);
+
+  if (!rendered_bus) {
+    destination_bus->Zero();
+  } else if (rendered_bus != destination_bus) {
+    // in-place processing was not possible - so copy
+    destination_bus->CopyFrom(*rendered_bus);
+  }
+
+  // Process nodes which need a little extra help because they are not connected
+  // to anything, but still need to process.
+  Context()->GetDeferredTaskHandler().ProcessAutomaticPullNodes(
+      number_of_frames);
+
+  // Let the context take care of any business at the end of each render
+  // quantum.
+  Context()->HandlePostRenderTasks();
+
+  // Advance current sample-frame.
+  size_t new_sample_frame = current_sample_frame_ + number_of_frames;
+  ReleaseStore(&current_sample_frame_, new_sample_frame);
+
+  Context()->UpdateWorkletGlobalScopeOnRenderingThread();
 }
 
 // ----------------------------------------------------------------

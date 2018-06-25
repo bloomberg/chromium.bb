@@ -26,17 +26,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_DESTINATION_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_DESTINATION_NODE_H_
 
-#include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
-#include "third_party/blink/renderer/platform/audio/audio_bus.h"
-#include "third_party/blink/renderer/platform/audio/audio_io_callback.h"
+#include "third_party/blink/renderer/platform/wtf/atomics.h"
 
 namespace blink {
 
-class AudioBus;
-class BaseAudioContext;
-
-class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
+class AudioDestinationHandler : public AudioHandler {
  public:
   AudioDestinationHandler(AudioNode&);
   ~AudioDestinationHandler() override;
@@ -44,12 +39,6 @@ class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
   // AudioHandler
   void Process(size_t) final {
   }  // we're pulled by hardware so this is never called
-
-  // Invoked by the AudioDestination to get the next render quantum into
-  // |destination_bus|.
-  void Render(AudioBus* destination_bus,
-              size_t number_of_frames,
-              const AudioIOPosition& output_position) final;
 
   size_t CurrentSampleFrame() const {
     return AcquireLoad(&current_sample_frame_);
