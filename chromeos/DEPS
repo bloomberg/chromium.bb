@@ -23,5 +23,9 @@ include_rules = [
 specific_include_rules = {
   ".*run_all_unittests.cc": [
     "+mojo/edk/embedder",
-  ]
+  ],
+
+  ".*test\.cc": [
+    "+services/network/test/test_url_loader_factory.h",
+  ],
 }
