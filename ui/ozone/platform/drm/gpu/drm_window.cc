@@ -117,7 +117,7 @@ void DrmWindow::MoveCursor(const gfx::Point& location) {
 bool DrmWindow::SchedulePageFlip(std::vector<DrmOverlayPlane> planes,
                                  SwapCompletionOnceCallback callback) {
   if (controller_) {
-    const DrmDevice* drm = controller_->GetAllocationDrmDevice().get();
+    const DrmDevice* drm = controller_->GetDrmDevice().get();
     for (const auto& plane : planes) {
       if (plane.buffer &&
           plane.buffer->GetGbmDeviceLinux() != drm->AsGbmDeviceLinux()) {
@@ -211,7 +211,7 @@ void DrmWindow::SetController(HardwareDisplayController* controller) {
 
   controller_ = controller;
   device_manager_->UpdateDrmDevice(
-      widget_, controller ? controller->GetAllocationDrmDevice() : nullptr);
+      widget_, controller ? controller->GetDrmDevice() : nullptr);
 
   UpdateCursorBuffers();
   // We changed displays, so we want to update the cursor as well.
@@ -225,7 +225,7 @@ void DrmWindow::UpdateCursorBuffers() {
       cursor_buffers_[i] = nullptr;
     }
   } else {
-    scoped_refptr<DrmDevice> drm = controller_->GetAllocationDrmDevice();
+    scoped_refptr<DrmDevice> drm = controller_->GetDrmDevice();
     gfx::Size max_cursor_size = GetMaximumCursorSize(drm->get_fd());
     SkImageInfo info = SkImageInfo::MakeN32Premul(max_cursor_size.width(),
                                                   max_cursor_size.height());

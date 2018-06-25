@@ -69,7 +69,7 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
 
   DrmOverlayPlaneList test_list;
   std::vector<scoped_refptr<ScanoutBuffer>> reusable_buffers;
-  scoped_refptr<DrmDevice> drm = controller->GetAllocationDrmDevice();
+  scoped_refptr<DrmDevice> drm = controller->GetDrmDevice();
 
   for (const auto& plane : last_used_planes)
     reusable_buffers.push_back(plane.buffer);

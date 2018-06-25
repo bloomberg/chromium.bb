@@ -102,6 +102,12 @@ class ScreenManager {
   HardwareDisplayControllers::iterator FindActiveDisplayControllerByLocation(
       const gfx::Rect& bounds);
 
+  // Returns an iterator into |controllers_| for the controller located at
+  // |origin| with matching DRM device.
+  HardwareDisplayControllers::iterator FindActiveDisplayControllerByLocation(
+      const scoped_refptr<DrmDevice>& drm,
+      const gfx::Rect& bounds);
+
   // Tries to set the controller identified by (|crtc|, |connector|) to mirror
   // those in |mirror|. |original| is an iterator to the HDC where the
   // controller is currently present.

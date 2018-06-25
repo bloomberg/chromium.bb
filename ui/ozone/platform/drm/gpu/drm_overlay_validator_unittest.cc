@@ -187,8 +187,7 @@ void DrmOverlayValidatorTest::InitializeDrmState(
 }
 
 void DrmOverlayValidatorTest::AddPlane(const ui::OverlayCheck_Params& params) {
-  scoped_refptr<ui::DrmDevice> drm =
-      window_->GetController()->GetAllocationDrmDevice();
+  scoped_refptr<ui::DrmDevice> drm = window_->GetController()->GetDrmDevice();
   scoped_refptr<ui::ScanoutBuffer> scanout_buffer = buffer_generator_->Create(
       drm, ui::GetFourCCFormatFromBufferFormat(params.format), {},
       params.buffer_size);

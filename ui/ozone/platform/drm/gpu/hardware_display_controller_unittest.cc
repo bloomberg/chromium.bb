@@ -321,6 +321,9 @@ TEST_F(HardwareDisplayControllerTest, PageflipMirroredControllers) {
 }
 
 TEST_F(HardwareDisplayControllerTest, PlaneStateAfterRemoveCrtc) {
+  controller_->AddCrtc(std::unique_ptr<ui::CrtcController>(
+      new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
+
   ui::DrmOverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                                  new ui::MockScanoutBuffer(kDefaultModeSize)),
                              nullptr);
@@ -332,28 +335,38 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterRemoveCrtc) {
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
   EXPECT_EQ(1, page_flips_);
 
-  const ui::HardwareDisplayPlane* owned_plane = nullptr;
+  const ui::HardwareDisplayPlane* primary_crtc_plane = nullptr;
+  const ui::HardwareDisplayPlane* secondary_crtc_plane = nullptr;
   for (const auto& plane : drm_->plane_manager()->planes()) {
-    if (plane->in_use())
-      owned_plane = plane.get();
+    if (plane->in_use() && plane->owning_crtc() == kPrimaryCrtc)
+      primary_crtc_plane = plane.get();
+    if (plane->in_use() && plane->owning_crtc() == kSecondaryCrtc)
+      secondary_crtc_plane = plane.get();
   }
 
-  ASSERT_TRUE(owned_plane != nullptr);
-  EXPECT_EQ(kPrimaryCrtc, owned_plane->owning_crtc());
+  ASSERT_NE(nullptr, primary_crtc_plane);
+  ASSERT_NE(nullptr, secondary_crtc_plane);
+  EXPECT_EQ(kPrimaryCrtc, primary_crtc_plane->owning_crtc());
+  EXPECT_EQ(kSecondaryCrtc, secondary_crtc_plane->owning_crtc());
 
   // Removing the crtc should not free the plane or change ownership.
   std::unique_ptr<ui::CrtcController> crtc =
       controller_->RemoveCrtc(drm_, kPrimaryCrtc);
-  EXPECT_TRUE(owned_plane->in_use());
-  EXPECT_EQ(kPrimaryCrtc, owned_plane->owning_crtc());
+  EXPECT_TRUE(primary_crtc_plane->in_use());
+  EXPECT_EQ(kPrimaryCrtc, primary_crtc_plane->owning_crtc());
+  EXPECT_TRUE(secondary_crtc_plane->in_use());
+  EXPECT_EQ(kSecondaryCrtc, secondary_crtc_plane->owning_crtc());
+
   // Check that controller doesn't affect the state of removed plane in
   // subsequent page flip.
   SchedulePageFlip(ui::DrmOverlayPlane::Clone(planes));
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
-  EXPECT_EQ(1, page_flips_);
-  EXPECT_TRUE(owned_plane->in_use());
-  EXPECT_EQ(kPrimaryCrtc, owned_plane->owning_crtc());
+  EXPECT_EQ(2, page_flips_);
+  EXPECT_TRUE(primary_crtc_plane->in_use());
+  EXPECT_EQ(kPrimaryCrtc, primary_crtc_plane->owning_crtc());
+  EXPECT_TRUE(secondary_crtc_plane->in_use());
+  EXPECT_EQ(kSecondaryCrtc, secondary_crtc_plane->owning_crtc());
 }
 
 TEST_F(HardwareDisplayControllerTest, PlaneStateAfterDestroyingCrtc) {
