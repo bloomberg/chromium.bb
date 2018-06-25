@@ -60,9 +60,11 @@ void FakeVRDevice::StopSession() {
   OnExitPresent();
 }
 
-void FakeVRDevice::OnMagicWindowPoseRequest(
-    mojom::VRMagicWindowProvider::GetPoseCallback callback) {
-  std::move(callback).Run(pose_.Clone());
+void FakeVRDevice::OnMagicWindowFrameDataRequest(
+    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
+  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
+  frame_data->pose = pose_.Clone();
+  std::move(callback).Run(std::move(frame_data));
 }
 
 }  // namespace device

@@ -47,22 +47,15 @@ class XRFrameProvider final
   virtual void Trace(blink::Visitor*);
 
  private:
-  void OnExclusiveVSync(
-      device::mojom::blink::VRPosePtr,
-      WTF::TimeDelta,
-      int16_t frame_id,
-      device::mojom::blink::VRPresentationProvider::VSyncStatus,
-      const base::Optional<gpu::MailboxHolder>& buffer_holder);
-  void OnNonExclusiveFrameData(device::mojom::blink::VRMagicWindowFrameDataPtr);
-  void OnNonExclusivePose(device::mojom::blink::VRPosePtr);
+  void OnExclusiveFrameData(device::mojom::blink::XRFrameDataPtr data);
+  void OnNonExclusiveFrameData(device::mojom::blink::XRFrameDataPtr data);
 
   void ScheduleExclusiveFrame();
   void ScheduleNonExclusiveFrame();
 
   void OnPresentationProviderConnectionError();
-  void ProcessScheduledFrame(
-      device::mojom::blink::VRMagicWindowFrameDataPtr frame_data,
-      double timestamp);
+  void ProcessScheduledFrame(device::mojom::blink::XRFrameDataPtr frame_data,
+                             double timestamp);
 
   const Member<XRDevice> device_;
   Member<XRSession> exclusive_session_;

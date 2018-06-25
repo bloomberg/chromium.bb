@@ -30,40 +30,43 @@ VRDisplayImpl::VRDisplayImpl(VRDevice* device,
 
 VRDisplayImpl::~VRDisplayImpl() = default;
 
-// Gets a pose for magic window sessions.
-void VRDisplayImpl::GetPose(GetPoseCallback callback) {
+// Gets frame data for sessions.
+void VRDisplayImpl::GetFrameData(
+    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
   if (device_->HasExclusiveSession() || restrict_frame_data_) {
     std::move(callback).Run(nullptr);
     return;
   }
-  device_->GetMagicWindowPose(std::move(callback));
+
+  // If a valid frame_size has been set, use the GetFrameData with session
+  // geometry.
+  if (!session_frame_size_.IsEmpty()) {
+    device_->GetFrameData(session_frame_size_, session_rotation_,
+                          std::move(callback));
+  } else {
+    device_->GetFrameData(std::move(callback));
+  }
 }
 
-// Gets frame image data for AR magic window sessions.
-void VRDisplayImpl::GetFrameData(const gfx::Size& frame_size,
-                                 display::Display::Rotation rotation,
-                                 GetFrameDataCallback callback) {
-  if (device_->HasExclusiveSession() || restrict_frame_data_) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
-
+void VRDisplayImpl::UpdateSessionGeometry(const gfx::Size& frame_size,
+                                          display::Display::Rotation rotation) {
   // Check for a valid frame size.
   // While Mojo should handle negative values, we also do not want to allow 0.
   // TODO(https://crbug.com/841062): Reconsider how we check the sizes.
   if (frame_size.width() <= 0 || frame_size.height() <= 0 ||
       frame_size.width() > kMaxImageHeightOrWidth ||
       frame_size.height() > kMaxImageHeightOrWidth) {
-    DLOG(ERROR) << "Invalid frame size passed to GetFrameData().";
-    std::move(callback).Run(nullptr);
+    DLOG(ERROR) << "Invalid frame size passed to UpdateSessionGeometry.";
     return;
   }
 
-  device_->GetMagicWindowFrameData(frame_size, rotation, std::move(callback));
+  session_frame_size_ = frame_size;
+  session_rotation_ = rotation;
 }
 
-void VRDisplayImpl::RequestHitTest(mojom::XRRayPtr ray,
-                                   RequestHitTestCallback callback) {
+void VRDisplayImpl::RequestHitTest(
+    mojom::XRRayPtr ray,
+    mojom::VRMagicWindowProvider::RequestHitTestCallback callback) {
   if (restrict_frame_data_) {
     std::move(callback).Run(base::nullopt);
     return;

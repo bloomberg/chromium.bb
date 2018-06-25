@@ -237,10 +237,13 @@ base::WeakPtr<OculusRenderLoop> OculusRenderLoop::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void OculusRenderLoop::GetVSync(
-    mojom::VRPresentationProvider::GetVSyncCallback callback) {
+void OculusRenderLoop::GetFrameData(
+    mojom::VRPresentationProvider::GetFrameDataCallback callback) {
   DCHECK(is_presenting_);
-  int16_t frame = next_frame_id_;
+
+  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
+
+  frame_data->frame_id = next_frame_id_;
   next_frame_id_ += 1;
   if (next_frame_id_ < 0) {
     next_frame_id_ = 0;
@@ -250,18 +253,17 @@ void OculusRenderLoop::GetVSync(
       ovr_GetPredictedDisplayTime(session_, ovr_frame_index_ + 1);
   ovrTrackingState state = ovr_GetTrackingState(session_, predicted_time, true);
   sensor_time_ = ovr_GetTimeInSeconds();
+  frame_data->time_delta = base::TimeDelta::FromSecondsD(predicted_time);
+
   mojom::VRPosePtr pose =
       mojo::ConvertTo<mojom::VRPosePtr>(state.HeadPose.ThePose);
   last_render_pose_ = state.HeadPose.ThePose;
 
   DCHECK(pose);
   pose->input_state = GetInputState(state);
+  frame_data->pose = std::move(pose);
 
-  base::TimeDelta time = base::TimeDelta::FromSecondsD(predicted_time);
-
-  std::move(callback).Run(std::move(pose), time, frame,
-                          mojom::VRPresentationProvider::VSyncStatus::SUCCESS,
-                          base::nullopt);
+  std::move(callback).Run(std::move(frame_data));
 }
 
 std::vector<mojom::XRInputSourceStatePtr> OculusRenderLoop::GetInputState(

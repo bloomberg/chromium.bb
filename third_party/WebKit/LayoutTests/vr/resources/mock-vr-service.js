@@ -39,9 +39,26 @@ class MockVRDisplay {
     }
   }
 
-  getPose() {
+  getFrameData() {
+    // Convert current document time to monotonic time.
+    var now = window.performance.now() / 1000.0;
+    var diff =
+        now - internals.monotonicTimeToZeroBasedDocumentTime(now);
+    now += diff;
+    now *= 1000000;
+
     return Promise.resolve({
-      pose: this.presentation_provider_.pose_,
+      frameData: {
+        pose: this.presentation_provider_.pose_,
+        timeDelta: {
+          microseconds: now,
+        },
+        frameId: 0,
+        projectionMatrix : [1, 0, 0, 0,
+                            0, 1, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1]
+      }
     });
   }
 
@@ -115,7 +132,7 @@ class MockVRPresentationProvider {
     this.submitFrameClient_.onSubmitFrameRendered();
   }
 
-  getVSync() {
+  getFrameData() {
     if (this.pose_) {
       this.pose_.poseIndex++;
     }
@@ -127,16 +144,19 @@ class MockVRPresentationProvider {
     now += diff;
     now *= 1000000;
 
-    let retval = Promise.resolve({
-      pose: this.pose_,
-      time: {
-        microseconds: now,
-      },
-      frameId: 0,
-      status: device.mojom.VRPresentationProvider.VSyncStatus.SUCCESS,
+    return Promise.resolve({
+      frameData: {
+        pose: this.pose_,
+        timeDelta: {
+          microseconds: now,
+        },
+        frameId: 0,
+        projectionMatrix : [1, 0, 0, 0,
+                            0, 1, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1]
+      }
     });
-
-    return retval;
   }
 
   initPose() {

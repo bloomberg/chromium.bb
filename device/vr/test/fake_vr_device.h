@@ -30,8 +30,8 @@ class DEVICE_VR_EXPORT FakeVRDevice : public VRDeviceBase,
   using VRDeviceBase::IsPresenting;  // Make it public for tests.
 
  private:
-  void OnMagicWindowPoseRequest(
-      mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
+  void OnMagicWindowFrameDataRequest(
+      mojom::VRMagicWindowProvider::GetFrameDataCallback callback) override;
 
   mojom::VRDisplayInfoPtr InitBasicDevice();
   mojom::VREyeParametersPtr InitEye(float fov, float offset, uint32_t size);

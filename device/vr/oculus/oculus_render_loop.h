@@ -53,7 +53,8 @@ class OculusRenderLoop : public base::Thread, mojom::VRPresentationProvider {
                          const gfx::RectF& left_bounds,
                          const gfx::RectF& right_bounds,
                          const gfx::Size& source_size) override;
-  void GetVSync(GetVSyncCallback callback) override;
+  void GetFrameData(
+      mojom::VRPresentationProvider::GetFrameDataCallback callback) override;
 
  private:
   // base::Thread overrides:

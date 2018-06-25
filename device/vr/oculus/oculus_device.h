@@ -26,8 +26,8 @@ class OculusDevice : public VRDeviceBase, public XrSessionController {
   // VRDeviceBase
   void RequestSession(const XRDeviceRuntimeSessionOptions& options,
                       VRDeviceRequestSessionCallback callback) override;
-  void OnMagicWindowPoseRequest(
-      mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
+  void OnMagicWindowFrameDataRequest(
+      mojom::VRMagicWindowProvider::GetFrameDataCallback callback) override;
   void OnRequestSessionResult(
       VRDeviceRequestSessionCallback callback,
       bool result,

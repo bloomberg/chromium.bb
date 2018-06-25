@@ -2150,8 +2150,8 @@ bool VrShellGl::WebVrCanAnimateFrame(bool is_from_onvsync) {
     return false;
   }
 
-  if (get_vsync_callback_.is_null()) {
-    DVLOG(2) << __FUNCTION__ << ": waiting for get_vsync_callback_";
+  if (get_frame_data_callback_.is_null()) {
+    DVLOG(2) << __FUNCTION__ << ": waiting for get_frame_data_callback_";
     return false;
   }
 
@@ -2275,17 +2275,18 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
   }
 }
 
-void VrShellGl::GetVSync(GetVSyncCallback callback) {
+void VrShellGl::GetFrameData(
+    device::mojom::VRPresentationProvider::GetFrameDataCallback callback) {
   TRACE_EVENT0("gpu", __FUNCTION__);
-  if (!get_vsync_callback_.is_null()) {
-    DLOG(WARNING) << ": previous get_vsync_callback_ was not used yet";
+  if (!get_frame_data_callback_.is_null()) {
+    DLOG(WARNING) << ": previous get_frame_data_callback_ was not used yet";
     mojo::ReportBadMessage(
         "Requested VSync before waiting for response to previous request.");
     ClosePresentationBindings();
     return;
   }
 
-  get_vsync_callback_ = std::move(callback);
+  get_frame_data_callback_ = std::move(callback);
   WebVrTryStartAnimatingFrame(false);
 }
 
@@ -2418,23 +2419,23 @@ bool VrShellGl::WebVrHasOverstuffedBuffers() {
 }
 
 void VrShellGl::SendVSync() {
-  DCHECK(!get_vsync_callback_.is_null());
+  DCHECK(!get_frame_data_callback_.is_null());
   DCHECK(pending_vsync_);
 
   // Mark the VSync as consumed.
   pending_vsync_ = false;
 
+  device::mojom::XRFrameDataPtr frame_data = device::mojom::XRFrameData::New();
+
   // The internal frame index is an uint8_t that generates a wrapping 0.255
   // frame number. We store it in an int16_t to match mojo APIs, and to avoid
   // it appearing as a char in debug logs.
-  int16_t frame_index = webxr_->StartFrameAnimating();
-  DVLOG(2) << __FUNCTION__ << " frame=" << frame_index;
+  frame_data->frame_id = webxr_->StartFrameAnimating();
+  DVLOG(2) << __FUNCTION__ << " frame=" << frame_data->frame_id;
 
   if (webxr_use_shared_buffer_draw_) {
     WebVrPrepareSharedBuffer(webvr_surface_size_);
   }
-
-  base::Optional<gpu::MailboxHolder> opt_holder = base::nullopt;
 
   if (webxr_use_shared_buffer_draw_) {
     CHECK(mailbox_bridge_ready_);
@@ -2442,7 +2443,7 @@ void VrShellGl::SendVSync() {
     WebXrSharedBuffer* buffer =
         webxr_->GetAnimatingFrame()->shared_buffer.get();
     DCHECK(buffer);
-    opt_holder = *buffer->mailbox_holder;
+    frame_data->buffer_holder = *buffer->mailbox_holder;
   }
 
   int64_t prediction_nanos = GetPredictedFrameTime().InMicroseconds() * 1000;
@@ -2469,28 +2470,26 @@ void VrShellGl::SendVSync() {
     pose->input_state = std::move(input_states_);
   }
 
+  frame_data->pose = std::move(pose);
+
   WebXrFrame* frame = webxr_->GetAnimatingFrame();
   frame->head_pose = head_mat;
   frame->time_pose = base::TimeTicks::Now();
 
+  frame_data->time_delta = pending_time_ - base::TimeTicks();
+
   TRACE_EVENT0("gpu", "VrShellGl::RunCallback");
-  base::ResetAndReturn(&get_vsync_callback_)
-      .Run(std::move(pose), pending_time_ - base::TimeTicks(), frame_index,
-           device::mojom::VRPresentationProvider::VSyncStatus::SUCCESS,
-           opt_holder);
+  base::ResetAndReturn(&get_frame_data_callback_).Run(std::move(frame_data));
 }
 
 void VrShellGl::ClosePresentationBindings() {
   webvr_frame_timeout_.Cancel();
   submit_client_.reset();
-  if (!get_vsync_callback_.is_null()) {
+  if (!get_frame_data_callback_.is_null()) {
     // When this Presentation provider is going away we have to respond to
     // pending callbacks, so instead of providing a VSync, tell the requester
     // the connection is closing.
-    base::ResetAndReturn(&get_vsync_callback_)
-        .Run(nullptr, base::TimeDelta(), -1,
-             device::mojom::VRPresentationProvider::VSyncStatus::CLOSING,
-             base::nullopt);
+    base::ResetAndReturn(&get_frame_data_callback_).Run(nullptr);
   }
   binding_.Close();
 }
