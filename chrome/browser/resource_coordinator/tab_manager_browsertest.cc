@@ -931,12 +931,18 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabFreezeAndMakeVisible) {
   }
 }
 
+// Flaky on Mac and ChromeOS. https://crbug.com/855874
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define MAYBE_TabFreezeAndUnfreeze DISABLED_TabFreezeAndUnfreeze
+#else
+#define MAYBE_TabFreezeAndUnfreeze TabFreezeAndUnfreeze
+#endif
 // Verifies the following state transitions for a tab:
 // - Initial state: ACTIVE
 // - Freeze(): ACTIVE->PENDING_FREEZE
 // - Freeze happens in renderer: PENDING_FREEZE->FROZEN
 // - Unfreeze(): FROZEN->ACTIVE
-IN_PROC_BROWSER_TEST_F(TabManagerTest, TabFreezeAndUnfreeze) {
+IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabFreezeAndUnfreeze) {
   TestTransitionFromActiveToFrozen();
 
   // Unfreeze the tab. It should transition to the ACTIVE state.
