@@ -105,9 +105,6 @@ class CORE_EXPORT NGLineInfo {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  NGLineInfo() = default;
-  explicit NGLineInfo(size_t capacity) : results_(capacity) {}
-
   const NGInlineItemsData& ItemsData() const {
     DCHECK(items_data_);
     return *items_data_;
@@ -152,6 +149,7 @@ class CORE_EXPORT NGLineInfo {
   NGBfcOffset LineBfcOffset() const { return line_bfc_offset_; }
   LayoutUnit AvailableWidth() const { return available_width_; }
   LayoutUnit Width() const { return width_; }
+  LayoutUnit ComputeWidth() const;
   void SetLineBfcOffset(NGBfcOffset line_bfc_offset,
                         LayoutUnit available_width,
                         LayoutUnit width);

@@ -61,6 +61,20 @@ void NGInlineItemResult::CheckConsistency(bool during_line_break) const {
 }
 #endif
 
+LayoutUnit NGLineInfo::ComputeWidth() const {
+  LayoutUnit inline_size = TextIndent();
+  for (const NGInlineItemResult& item_result : Results())
+    inline_size += item_result.inline_size;
+
+  if (UNLIKELY(line_end_fragment_)) {
+    inline_size += line_end_fragment_->Size()
+                       .ConvertToLogical(LineStyle().GetWritingMode())
+                       .inline_size;
+  }
+
+  return inline_size;
+}
+
 void NGLineInfo::SetLineBfcOffset(NGBfcOffset line_bfc_offset,
                                   LayoutUnit available_width,
                                   LayoutUnit width) {
