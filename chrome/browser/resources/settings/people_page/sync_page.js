@@ -290,7 +290,8 @@ Polymer({
       listenOnce(document, 'show-container', () => {
         const input = /** @type {!CrInputElement} */ (
             this.$$('#existingPassphraseInput'));
-        input.focus();
+        if (!input.matches(':focus-within'))
+          input.focus();
       });
     }
   },

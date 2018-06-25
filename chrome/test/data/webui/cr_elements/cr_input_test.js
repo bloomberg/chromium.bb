@@ -42,15 +42,87 @@ suite('cr-input', function() {
   });
 
   test('togglingDisableModifiesTabIndexCorrectly', function() {
-    crInput.tabindex = 14;
+    // Do innerHTML instead of createElement to make sure it's correct right
+    // after being attached, and not messed up by disabledChanged_.
+    PolymerTest.clearBody();
+    document.body.innerHTML = `
+      <cr-input tabindex="14"></cr-input>
+    `;
+    crInput = document.querySelector('cr-input');
+    input = crInput.$.input;
+    Polymer.dom.flush();
+
     assertEquals('14', crInput.getAttribute('tabindex'));
     assertEquals(14, input.tabIndex);
     crInput.disabled = true;
-    assertEquals('-1', crInput.getAttribute('tabindex'));
-    assertEquals(-1, input.tabIndex);
+    assertEquals(null, crInput.getAttribute('tabindex'));
+    assertEquals(true, input.disabled);
     crInput.disabled = false;
     assertEquals('14', crInput.getAttribute('tabindex'));
     assertEquals(14, input.tabIndex);
+  });
+
+  test('startingWithDisableSetsTabIndexCorrectly', function() {
+    // Makes sure tabindex is recorded even if cr-input starts as disabled
+    PolymerTest.clearBody();
+    document.body.innerHTML = `
+      <cr-input tabindex="14" disabled></cr-input>
+    `;
+    crInput = document.querySelector('cr-input');
+    input = crInput.$.input;
+    Polymer.dom.flush();
+
+    assertEquals(null, crInput.getAttribute('tabindex'));
+    assertEquals(true, input.disabled);
+    crInput.disabled = false;
+    assertEquals('14', crInput.getAttribute('tabindex'));
+    assertEquals(14, input.tabIndex);
+  });
+
+  test('pointerDownAndTabIndex', function() {
+    crInput.fire('pointerdown');
+    assertEquals(null, crInput.getAttribute('tabindex'));
+    return test_util.whenAttributeIs(crInput, 'tabindex', '0').then(() => {
+      assertEquals(0, input.tabIndex);
+    });
+  });
+
+  test('pointerdownWhileDisabled', function(done) {
+    // pointerdown while disabled doesn't mess with tabindex.
+    crInput.tabindex = 14;
+    crInput.disabled = true;
+    assertEquals(null, crInput.getAttribute('tabindex'));
+    assertEquals(true, input.disabled);
+    crInput.fire('pointerdown');
+    assertEquals(null, crInput.getAttribute('tabindex'));
+
+    // Wait one cycle to make sure tabindex is still unchanged afterwards.
+    setTimeout(() => {
+      assertEquals(null, crInput.getAttribute('tabindex'));
+      // Makes sure tabindex is correctly restored after reverting disabled.
+      crInput.disabled = false;
+      assertEquals('14', crInput.getAttribute('tabindex'));
+      assertEquals(14, input.tabIndex);
+      done();
+    });
+  });
+
+  test('pointerdownThenDisabledInSameCycle', function(done) {
+    crInput.tabindex = 14;
+    // Edge case: pointerdown and disabled are changed in the same cycle.
+    crInput.fire('pointerdown');
+    crInput.disabled = true;
+    assertEquals(null, crInput.getAttribute('tabindex'));
+
+    // Wait one cycle to make sure tabindex is still unchanged afterwards.
+    setTimeout(() => {
+      assertEquals(null, crInput.getAttribute('tabindex'));
+      // Makes sure tabindex is correctly restored after reverting disabled.
+      crInput.disabled = false;
+      assertEquals('14', crInput.getAttribute('tabindex'));
+      assertEquals(14, input.tabIndex);
+      done();
+    });
   });
 
   test('placeholderCorrectlyBound', function() {
