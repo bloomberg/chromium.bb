@@ -89,8 +89,6 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
     UNKNOWN_STEP,
     LOCAL_SAVE_ONLY_STEP,
     UPLOAD_SAVE_ONLY_STEP,
-    UPLOAD_SAVE_CVC_FIX_FLOW_STEP_1_OFFER_UPLOAD,
-    UPLOAD_SAVE_CVC_FIX_FLOW_STEP_2_REQUEST_CVC,
   };
 
   ~SaveCardBubbleViews() override;
