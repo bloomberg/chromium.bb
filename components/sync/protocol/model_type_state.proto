@@ -30,4 +30,11 @@ message ModelTypeState {
   // ModelTypeProcessor should not attempt to commit any items until this
   // flag is set.
   optional bool initial_sync_done = 4;
+
+  // A GUID that identifies the committing sync client. It's persisted within
+  // the sync metadata and should be used to check the integrity of the
+  // metadata. Mismatches with the guid of the running client indicates invalid
+  // persisted sync metadata, because cache_guid is reset when sync is disabled,
+  // and disabling sync is supposed to clear sync metadata.
+  optional string cache_guid = 5;
 }

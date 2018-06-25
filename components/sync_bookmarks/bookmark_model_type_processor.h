@@ -166,6 +166,10 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   // called during startup, as part of the bookmark-loading process.
   std::unique_ptr<SyncedBookmarkTracker> bookmark_tracker_;
 
+  // GUID string that identifies the sync client and is received from the sync
+  // engine.
+  std::string cache_guid_;
+
   std::unique_ptr<BookmarkModelObserverImpl> bookmark_model_observer_;
 
   base::WeakPtrFactory<BookmarkModelTypeProcessor> weak_ptr_factory_;

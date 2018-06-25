@@ -14,6 +14,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
+#include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/protocol/bookmark_model_metadata.pb.h"
 #include "components/sync_bookmarks/bookmark_model_observer_impl.h"
 #include "components/undo/bookmark_undo_utils.h"
@@ -195,11 +196,11 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
 
   if (!bookmark_tracker_) {
     // TODO(crbug.com/516866): Implement the merge logic.
-    auto model_type_state = std::make_unique<sync_pb::ModelTypeState>();
-    model_type_state->set_initial_sync_done(true);
+    auto state = std::make_unique<sync_pb::ModelTypeState>(model_type_state);
+    state->set_cache_guid(cache_guid_);
     std::vector<NodeMetadataPair> nodes_metadata;
     bookmark_tracker_ = std::make_unique<SyncedBookmarkTracker>(
-        std::move(nodes_metadata), std::move(model_type_state));
+        std::move(nodes_metadata), std::move(state));
   }
   // TODO(crbug.com/516866): Set the model type state.
 
@@ -540,7 +541,9 @@ void BookmarkModelTypeProcessor::OnSyncStarting(
   DCHECK(start_callback);
   DVLOG(1) << "Sync is starting for Bookmarks";
 
+  cache_guid_ = request.cache_guid;
   start_callback_ = std::move(start_callback);
+  DCHECK(!cache_guid_.empty());
   ConnectIfReady();
 }
 
@@ -554,14 +557,29 @@ void BookmarkModelTypeProcessor::ConnectIfReady() {
     return;
   }
 
+  DCHECK(!cache_guid_.empty());
+
+  if (bookmark_tracker_ &&
+      bookmark_tracker_->model_type_state().cache_guid() != cache_guid_) {
+    // TODO(crbug.com/820049): Properly handle a mismatch between the loaded
+    // cache guid stored in |bookmark_tracker_.model_type_state_| at
+    // DecodeSyncMetadata() and the one received from sync at OnSyncStarting()
+    // stored in |cache_guid_|.
+    return;
+  }
+
   auto activation_context =
       std::make_unique<syncer::DataTypeActivationResponse>();
-  // TODO(crbug.com/516866): Read the model type state from persisted sync
-  // metadata instead of feeding an empty one.
-  sync_pb::ModelTypeState model_type_state;
-  model_type_state.mutable_progress_marker()->set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(syncer::BOOKMARKS));
-  activation_context->model_type_state = model_type_state;
+  if (bookmark_tracker_) {
+    activation_context->model_type_state =
+        bookmark_tracker_->model_type_state();
+  } else {
+    sync_pb::ModelTypeState model_type_state;
+    model_type_state.mutable_progress_marker()->set_data_type_id(
+        GetSpecificsFieldNumberFromModelType(syncer::BOOKMARKS));
+    model_type_state.set_cache_guid(cache_guid_);
+    activation_context->model_type_state = model_type_state;
+  }
   activation_context->type_processor =
       std::make_unique<syncer::ModelTypeProcessorProxy>(
           weak_ptr_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get());
@@ -571,6 +589,7 @@ void BookmarkModelTypeProcessor::ConnectIfReady() {
 void BookmarkModelTypeProcessor::OnSyncStopping(
     syncer::SyncStopMetadataFate metadata_fate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  cache_guid_.clear();
   NOTIMPLEMENTED();
 }
 

@@ -70,6 +70,7 @@ class SyncedBookmarkTracker {
     DISALLOW_COPY_AND_ASSIGN(Entity);
   };
 
+  // |model_type_state| must not be null.
   SyncedBookmarkTracker(
       std::vector<NodeMetadataPair> nodes_metadata,
       std::unique_ptr<sync_pb::ModelTypeState> model_type_state);
@@ -106,6 +107,10 @@ class SyncedBookmarkTracker {
 
   // Returns true if there are any local entities to be committed.
   bool HasLocalChanges() const;
+
+  const sync_pb::ModelTypeState& model_type_state() const {
+    return *model_type_state_;
+  }
 
   // Returns number of tracked entities. Used only in test.
   std::size_t TrackedEntitiesCountForTest() const;
