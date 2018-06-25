@@ -446,6 +446,22 @@ java_cpp_template("resource_id_javagen") {
   ]
 }
 
+android_library("chrome_junit_test_support") {
+  # Skip platform checks since Robolectric depends on requires_android targets.
+  bypass_platform_checks = true
+  testonly = true
+  java_files = [
+    "junit/src/org/chromium/chrome/test/support/DisableHistogramsRule.java",
+  ]
+
+  deps = [
+    "//base:base_java",
+    "//third_party/junit",
+    "//third_party/mockito:mockito_java",
+    "//third_party/robolectric:robolectric_all_java",
+  ]
+}
+
 junit_binary("chrome_junit_tests") {
   # From java_sources.gni.
   java_files = chrome_junit_test_java_sources
@@ -454,6 +470,7 @@ junit_binary("chrome_junit_tests") {
     ":app_hooks_java",
     ":chrome_java",
     ":chrome_java_resources",
+    ":chrome_junit_test_support",
     ":class_register_java",
     ":partner_location_descriptor_proto_java",
     "$google_play_services_package:google_play_services_base_java",

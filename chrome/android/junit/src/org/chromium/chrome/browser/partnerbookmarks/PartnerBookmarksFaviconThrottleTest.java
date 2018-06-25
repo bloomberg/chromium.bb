@@ -14,7 +14,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.DisableHistogramsRule;
+import org.chromium.chrome.test.support.DisableHistogramsRule;
 
 /**
  * Unit tests for {@link PartnerBookmarksFaviconThrottle}.
