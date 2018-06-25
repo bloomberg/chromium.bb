@@ -93,7 +93,7 @@ js_library("settings_radio_group") {
 
 js_library("settings_slider") {
   deps = [
-    "//third_party/polymer/v1_0/components-chromium/paper-slider:paper-slider-extracted",
+    "//ui/webui/resources/cr_elements/cr_slider:cr_slider",
     "//ui/webui/resources/cr_elements/policy:cr_policy_pref_behavior",
     "//ui/webui/resources/js:assert",
   ]

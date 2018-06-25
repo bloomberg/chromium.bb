@@ -110,6 +110,14 @@
              file="cr_elements/cr_radio_button/cr_radio_button_style_css.html"
              type="chrome_html"
              compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_SLIDER_HTML"
+             file="cr_elements/cr_slider/cr_slider.html"
+             type="chrome_html"
+             compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_SLIDER_JS"
+             file="cr_elements/cr_slider/cr_slider.js"
+             type="chrome_html"
+             compress="gzip" />
   <if expr="chromeos">
     <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_CR_CAMERA_HTML"
                file="cr_elements/chromeos/cr_picture/cr_camera.html"
