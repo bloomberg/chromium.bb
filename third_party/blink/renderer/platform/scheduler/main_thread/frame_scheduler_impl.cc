@@ -747,7 +747,7 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
     // Low priority feature enabled for sub-frame throttleable task queues.
     if (main_thread_scheduler_->scheduling_settings()
             .low_priority_subframe_throttleable &&
-        is_subframe && is_throttleable_task_queue)
+        is_throttleable_task_queue)
       return TaskQueue::QueuePriority::kLowPriority;
 
     // Low priority feature enabled for throttleable task queues.
