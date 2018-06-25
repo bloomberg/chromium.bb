@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "url/gurl.h"
 
@@ -21,6 +22,8 @@ namespace {
 const CGFloat kFaviconWidth = 16;
 // The width and height of the favicon container view.
 const CGFloat kFaviconContainerWidth = 28;
+// The text color of the URL and metadata labels.
+const CGFloat kSecondaryLabelLightGrayTextColor = 0x8E8E93;
 }
 
 @implementation TableViewURLItem
@@ -99,9 +102,11 @@ const CGFloat kFaviconContainerWidth = 28;
     _titleLabel.adjustsFontForContentSizeCategory = YES;
     _URLLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _URLLabel.adjustsFontForContentSizeCategory = YES;
-    _URLLabel.textColor = [UIColor lightGrayColor];
+    _URLLabel.textColor = UIColorFromRGB(kSecondaryLabelLightGrayTextColor);
     _metadataLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+    _metadataLabel.textColor =
+        UIColorFromRGB(kSecondaryLabelLightGrayTextColor);
     _metadataLabel.adjustsFontForContentSizeCategory = YES;
 
     // Use stack views to layout the subviews except for the favicon.
