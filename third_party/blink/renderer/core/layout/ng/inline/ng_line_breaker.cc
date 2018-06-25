@@ -460,6 +460,49 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   }
 }
 
+// Re-shape the specified range of |NGInlineItem|.
+scoped_refptr<ShapeResult> NGLineBreaker::ShapeText(const NGInlineItem& item,
+                                                    unsigned start,
+                                                    unsigned end) {
+  RunSegmenter::RunSegmenterRange segment_range =
+      item.CreateRunSegmenterRange();
+  scoped_refptr<ShapeResult> result = shaper_.Shape(
+      &item.Style()->GetFont(), item.TextShapeResult()->Direction(), start, end,
+      &segment_range);
+  if (UNLIKELY(spacing_.HasSpacing()))
+    result->ApplySpacing(spacing_);
+  return result;
+}
+
+// Truncate the end of |ShapeResult|. The |ShapeResult| is supposed to be at the
+// end of the line, and thus this function makes sure the end is safe-to-break.
+void NGLineBreaker::TruncateTextEnd(NGInlineItemResult* item_result) {
+  DCHECK(item_result);
+  DCHECK(item_result->item);
+  DCHECK(item_result->shape_result);
+  const ShapeResult& source_result = *item_result->shape_result;
+  const unsigned start_offset = item_result->start_offset;
+  const unsigned end_offset = item_result->end_offset;
+
+  scoped_refptr<ShapeResult> new_result;
+  unsigned last_safe = source_result.PreviousSafeToBreakOffset(end_offset);
+  DCHECK_LE(last_safe, end_offset);
+  if (last_safe > start_offset)
+    new_result = source_result.SubRange(start_offset, last_safe);
+  if (last_safe < end_offset) {
+    scoped_refptr<ShapeResult> end_result = ShapeText(
+        *item_result->item, std::max(last_safe, start_offset), end_offset);
+    if (new_result)
+      end_result->CopyRange(0, end_offset, new_result.get());
+    else
+      new_result = std::move(end_result);
+  }
+
+  DCHECK(new_result);
+  item_result->shape_result = std::move(new_result);
+  item_result->inline_size = item_result->shape_result->SnappedWidth();
+}
+
 NGLineBreaker::LineBreakState NGLineBreaker::HandleTrailingSpaces(
     const NGInlineItem& item,
     NGLineInfo* line_info) {
@@ -492,9 +535,8 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleTrailingSpaces(
 
     NGInlineItemResult* item_result = AddItem(item, end, item_results);
     item_result->has_only_trailing_spaces = true;
-    // TODO(kojii): Should reshape if it's not safe to break.
-    item_result->shape_result = item.TextShapeResult()->SubRange(offset_, end);
-    item_result->inline_size = item_result->shape_result->SnappedWidth();
+    item_result->shape_result = item.TextShapeResult();
+    TruncateTextEnd(item_result);
     line_.position += item_result->inline_size;
     item_result->can_break_after =
         end < text.length() && !IsBreakableSpace(text[end]);
@@ -538,10 +580,7 @@ void NGLineBreaker::RemoveTrailingCollapsibleSpace(NGLineInfo* line_info) {
       unsigned index = std::distance(item_results->begin(), &item_result);
       item_results->EraseAt(index);
     } else {
-      // TODO(kojii): Should reshape if it's not safe to break.
-      item_result.shape_result = item_result.shape_result->SubRange(
-          item_result.start_offset, item_result.end_offset);
-      item_result.inline_size = item_result.shape_result->SnappedWidth();
+      TruncateTextEnd(&item_result);
       line_.position += item_result.inline_size;
     }
     return;

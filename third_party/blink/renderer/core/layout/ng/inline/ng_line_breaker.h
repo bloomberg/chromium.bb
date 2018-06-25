@@ -138,6 +138,10 @@ class CORE_EXPORT NGLineBreaker {
                  const NGInlineItem&,
                  LayoutUnit available_width,
                  NGLineInfo*);
+  void TruncateTextEnd(NGInlineItemResult*);
+  scoped_refptr<ShapeResult> ShapeText(const NGInlineItem& item,
+                                       unsigned start,
+                                       unsigned end);
   LineBreakState HandleTrailingSpaces(const NGInlineItem&, NGLineInfo*);
   void RemoveTrailingCollapsibleSpace(NGLineInfo*);
   void AppendHyphen(const NGInlineItem& item, NGLineInfo*);

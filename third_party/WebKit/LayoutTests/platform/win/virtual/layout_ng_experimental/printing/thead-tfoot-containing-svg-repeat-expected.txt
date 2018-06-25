@@ -147,7 +147,7 @@ layer at (0,0) size 1046x2264 backgroundClip at (0,0) size 800x600 clip at (0,0)
         LayoutTableSection {TFOOT} at (0,2094) size 136x54
           LayoutTableRow {TR} at (0,0) size 136x52
             LayoutNGTableCell {TH} at (2,0) size 132x52 [r=0 c=0 rs=1 cs=1]
-              LayoutSVGRoot {svg} at (5.50,6) size 30x30
+              LayoutSVGRoot {svg} at (5,6) size 30x30
                 LayoutSVGEllipse {circle} at (0,0) size 30x30 [fill={[type=SOLID] [color=#FF0000]}] [cx=15.00] [cy=15.00] [r=15.00]
               LayoutText {#text} at (35,8) size 92x35
                 text run at (35,8) width 92: " Footer"
