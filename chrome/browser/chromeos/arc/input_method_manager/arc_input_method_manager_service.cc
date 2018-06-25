@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_service.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge_impl.h"
@@ -106,7 +108,8 @@ void ArcInputMethodManagerService::OnActiveImeChanged(
 
 void ArcInputMethodManagerService::OnImeInfoChanged(
     std::vector<mojom::ImeInfoPtr> ime_info_array) {
-  using namespace chromeos::input_method;
+  using chromeos::input_method::InputMethodDescriptors;
+  using chromeos::input_method::InputMethodManager;
 
   if (!base::FeatureList::IsEnabled(kEnableInputMethodFeature))
     return;
@@ -188,10 +191,10 @@ void ArcInputMethodManagerService::EnableIme(const std::string& ime_id,
 }
 
 void ArcInputMethodManagerService::SwitchImeTo(const std::string& ime_id) {
-  using namespace chromeos::extension_ime_util;
+  namespace ceiu = chromeos::extension_ime_util;
 
-  std::string component_id = GetComponentIDByInputMethodID(ime_id);
-  if (!IsArcIME(ime_id))
+  std::string component_id = ceiu::GetComponentIDByInputMethodID(ime_id);
+  if (!ceiu::IsArcIME(ime_id))
     component_id = kChromeOSIMEIdInArcContainer;
   imm_bridge_->SendSwitchImeTo(
       component_id, base::BindOnce(

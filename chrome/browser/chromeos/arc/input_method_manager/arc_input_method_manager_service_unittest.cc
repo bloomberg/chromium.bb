@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -187,7 +188,7 @@ TEST_F(ArcInputMethodManagerServiceTest, ConstructAndDestruct) {
 }
 
 TEST_F(ArcInputMethodManagerServiceTest, EnableIme) {
-  using namespace chromeos::extension_ime_util;
+  namespace ceiu = chromeos::extension_ime_util;
   using crx_file::id_util::GenerateId;
 
   base::test::ScopedFeatureList feature;
@@ -196,11 +197,12 @@ TEST_F(ArcInputMethodManagerServiceTest, EnableIme) {
   ASSERT_EQ(0u, bridge()->enable_ime_calls_.size());
 
   const std::string extension_ime_id =
-      GetInputMethodID(GenerateId("test.extension.ime"), "us");
-  const std::string component_extension_ime_id = GetComponentInputMethodID(
-      GenerateId("test.component.extension.ime"), "us");
+      ceiu::GetInputMethodID(GenerateId("test.extension.ime"), "us");
+  const std::string component_extension_ime_id =
+      ceiu::GetComponentInputMethodID(
+          GenerateId("test.component.extension.ime"), "us");
   const std::string arc_ime_id =
-      GetArcInputMethodID(GenerateId("test.arc.ime"), "us");
+      ceiu::GetArcInputMethodID(GenerateId("test.arc.ime"), "us");
 
   // EnableIme is called only when ARC IME is enable or disabled.
   imm()->state()->AddActiveInputMethodId(extension_ime_id);
@@ -215,7 +217,7 @@ TEST_F(ArcInputMethodManagerServiceTest, EnableIme) {
   imm()->state()->AddActiveInputMethodId(arc_ime_id);
   service()->ImeMenuListChanged();
   ASSERT_EQ(1u, bridge()->enable_ime_calls_.size());
-  EXPECT_EQ(GetComponentIDByInputMethodID(arc_ime_id),
+  EXPECT_EQ(ceiu::GetComponentIDByInputMethodID(arc_ime_id),
             std::get<std::string>(bridge()->enable_ime_calls_[0]));
   EXPECT_TRUE(std::get<bool>(bridge()->enable_ime_calls_[0]));
 
@@ -223,7 +225,7 @@ TEST_F(ArcInputMethodManagerServiceTest, EnableIme) {
   imm()->state()->RemoveActiveInputMethodId(arc_ime_id);
   service()->ImeMenuListChanged();
   ASSERT_EQ(2u, bridge()->enable_ime_calls_.size());
-  EXPECT_EQ(GetComponentIDByInputMethodID(arc_ime_id),
+  EXPECT_EQ(ceiu::GetComponentIDByInputMethodID(arc_ime_id),
             std::get<std::string>(bridge()->enable_ime_calls_[1]));
   EXPECT_FALSE(std::get<bool>(bridge()->enable_ime_calls_[1]));
 
@@ -234,7 +236,7 @@ TEST_F(ArcInputMethodManagerServiceTest, EnableIme) {
 }
 
 TEST_F(ArcInputMethodManagerServiceTest, SwitchImeTo) {
-  using namespace chromeos::extension_ime_util;
+  namespace ceiu = chromeos::extension_ime_util;
   using crx_file::id_util::GenerateId;
 
   const std::string arc_ime_service_id =
@@ -246,11 +248,12 @@ TEST_F(ArcInputMethodManagerServiceTest, SwitchImeTo) {
   ASSERT_EQ(0u, bridge()->switch_ime_to_calls_.size());
 
   const std::string extension_ime_id =
-      GetInputMethodID(GenerateId("test.extension.ime"), "us");
-  const std::string component_extension_ime_id = GetComponentInputMethodID(
-      GenerateId("test.component.extension.ime"), "us");
-  const std::string arc_ime_id = GetArcInputMethodID(GenerateId("test.arc.ime"),
-                                                     "ime.id.in.arc.container");
+      ceiu::GetInputMethodID(GenerateId("test.extension.ime"), "us");
+  const std::string component_extension_ime_id =
+      ceiu::GetComponentInputMethodID(
+          GenerateId("test.component.extension.ime"), "us");
+  const std::string arc_ime_id = ceiu::GetArcInputMethodID(
+      GenerateId("test.arc.ime"), "ime.id.in.arc.container");
 
   // Set active input method to the extension ime.
   imm()->state()->SetActiveInputMethod(extension_ime_id);
@@ -274,7 +277,7 @@ TEST_F(ArcInputMethodManagerServiceTest, SwitchImeTo) {
 }
 
 TEST_F(ArcInputMethodManagerServiceTest, OnImeInfoChanged) {
-  using namespace chromeos::extension_ime_util;
+  namespace ceiu = chromeos::extension_ime_util;
 
   base::test::ScopedFeatureList feature;
   feature.InitAndEnableFeature(kEnableInputMethodFeature);
@@ -317,7 +320,7 @@ TEST_F(ArcInputMethodManagerServiceTest, OnImeInfoChanged) {
     service()->OnImeInfoChanged(std::move(info_array));
     ASSERT_EQ(1u, added_extensions.size());
     ASSERT_EQ(1u, std::get<1>(added_extensions[0]).size());
-    EXPECT_EQ(android_ime_id1, GetComponentIDByInputMethodID(
+    EXPECT_EQ(android_ime_id1, ceiu::GetComponentIDByInputMethodID(
                                    std::get<1>(added_extensions[0])[0].id()));
     EXPECT_EQ(display_name1, std::get<1>(added_extensions[0])[0].name());
     ASSERT_EQ(1u, std::get<1>(added_extensions[0])[0].language_codes().size());
@@ -350,10 +353,10 @@ TEST_F(ArcInputMethodManagerServiceTest, OnImeInfoChanged) {
     // The ARC IMEs should be registered as two IMEs in one extension.
     ASSERT_EQ(1u, added_extensions.size());
     ASSERT_EQ(2u, std::get<1>(added_extensions[0]).size());
-    EXPECT_EQ(android_ime_id1, GetComponentIDByInputMethodID(
+    EXPECT_EQ(android_ime_id1, ceiu::GetComponentIDByInputMethodID(
                                    std::get<1>(added_extensions[0])[0].id()));
     EXPECT_EQ(display_name1, std::get<1>(added_extensions[0])[0].name());
-    EXPECT_EQ(android_ime_id2, GetComponentIDByInputMethodID(
+    EXPECT_EQ(android_ime_id2, ceiu::GetComponentIDByInputMethodID(
                                    std::get<1>(added_extensions[0])[1].id()));
     EXPECT_EQ(display_name2, std::get<1>(added_extensions[0])[1].name());
     added_extensions.clear();
