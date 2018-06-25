@@ -1,0 +1,4 @@
+Test that function objects have source links in heap snapshot view.
+
+Function source: my-test-script.js:14
+
