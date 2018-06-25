@@ -145,6 +145,7 @@ class MODULES_EXPORT AXPosition final {
   // For access to our constructor for use when creating empty AX selections.
   // There is no sense in creating empty positions in other circomstances so we
   // disallow it.
+  friend class AXRange;
   friend class AXSelection;
 };
 
