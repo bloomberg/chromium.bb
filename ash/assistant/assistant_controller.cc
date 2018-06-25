@@ -25,9 +25,14 @@ AssistantController::AssistantController()
       assistant_ui_controller_.get());
   assistant_ui_controller_->SetAssistantInteractionController(
       assistant_interaction_controller_.get());
+
+  // Observe HighlighterController for region selections.
+  Shell::Get()->highlighter_controller()->AddObserver(this);
 }
 
 AssistantController::~AssistantController() {
+  Shell::Get()->highlighter_controller()->RemoveObserver(this);
+
   // Explicitly clean up the circular dependency in the sub-controllers.
   assistant_interaction_controller_->SetAssistantUiController(nullptr);
   assistant_ui_controller_->SetAssistantInteractionController(nullptr);
@@ -153,6 +158,12 @@ void AssistantController::OnDialogPlateContentsCommitted(
     const std::string& text) {
   assistant_interaction_controller_->OnDialogPlateContentsCommitted(text);
   assistant_ui_controller_->OnDialogPlateContentsCommitted(text);
+}
+
+void AssistantController::OnHighlighterSelectionRecognized(
+    const gfx::Rect& rect) {
+  // TODO(muyuanli): Request screen context for |rect|.
+  NOTIMPLEMENTED();
 }
 
 }  // namespace ash
