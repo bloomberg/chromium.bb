@@ -28,6 +28,10 @@ class ProximityAuthLocalStatePrefManager;
 
 namespace chromeos {
 
+namespace secure_channel {
+class SecureChannelClient;
+}  // namespace secure_channel
+
 class EasyUnlockChallengeWrapper;
 
 // EasyUnlockService instance that should be used for signin profile.
@@ -36,7 +40,9 @@ class EasyUnlockServiceSignin
       public proximity_auth::ScreenlockBridge::Observer,
       public LoginState::Observer {
  public:
-  explicit EasyUnlockServiceSignin(Profile* profile);
+  EasyUnlockServiceSignin(
+      Profile* profile,
+      secure_channel::SecureChannelClient* secure_channel_client);
   ~EasyUnlockServiceSignin() override;
 
   // Wraps the challenge for the remote device identified by |account_id| and

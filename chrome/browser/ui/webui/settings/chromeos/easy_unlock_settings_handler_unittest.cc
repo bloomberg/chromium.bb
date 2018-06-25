@@ -22,7 +22,7 @@ namespace {
 class FakeEasyUnlockService : public EasyUnlockService {
  public:
   explicit FakeEasyUnlockService(Profile* profile)
-      : EasyUnlockService(profile),
+      : EasyUnlockService(profile, nullptr /* secure_channel_client */),
         turn_off_status_(IDLE),
         is_allowed_(true),
         is_enabled_(false) {}

@@ -107,17 +107,20 @@ void LogSmartLockEnabledState(SmartLockEnabledState state) {
 
 EasyUnlockServiceRegular::EasyUnlockServiceRegular(
     Profile* profile,
+    secure_channel::SecureChannelClient* secure_channel_client,
     device_sync::DeviceSyncClient* device_sync_client)
     : EasyUnlockServiceRegular(
           profile,
+          secure_channel_client,
           std::make_unique<EasyUnlockNotificationController>(profile),
           device_sync_client) {}
 
 EasyUnlockServiceRegular::EasyUnlockServiceRegular(
     Profile* profile,
+    secure_channel::SecureChannelClient* secure_channel_client,
     std::unique_ptr<EasyUnlockNotificationController> notification_controller,
     device_sync::DeviceSyncClient* device_sync_client)
-    : EasyUnlockService(profile),
+    : EasyUnlockService(profile, secure_channel_client),
       turn_off_flow_status_(EasyUnlockService::IDLE),
       scoped_crypt_auth_device_manager_observer_(this),
       will_unlock_using_easy_unlock_(false),

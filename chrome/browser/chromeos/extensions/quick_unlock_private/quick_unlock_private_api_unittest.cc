@@ -64,7 +64,9 @@ constexpr char kInvalidPassword[] = "invalid";
 class FakeEasyUnlockService : public EasyUnlockServiceRegular {
  public:
   explicit FakeEasyUnlockService(Profile* profile)
-      : EasyUnlockServiceRegular(profile, nullptr /* device_sync_client */),
+      : EasyUnlockServiceRegular(profile,
+                                 nullptr /* secure_channel_client */,
+                                 nullptr /* device_sync_client */),
         reauth_count_(0) {}
   ~FakeEasyUnlockService() override {}
 
