@@ -211,4 +211,20 @@ suite('cr-toggle', function() {
     triggerPointerDownMoveUpTapSequence(0 /* no pointermove */);
     assertChecked();
   });
+
+  // Test that the control works as expected when the click() method is called.
+  test('ToggleWhenWithClick', function() {
+    assertNotDisabled();
+    assertNotChecked();
+
+    // State should change because control is enabled.
+    toggle.click();
+    assertChecked();
+
+    // State should *not* change because control is disabled.
+    toggle.disabled = true;
+    assertDisabled();
+    toggle.click();
+    assertChecked();
+  });
 });
