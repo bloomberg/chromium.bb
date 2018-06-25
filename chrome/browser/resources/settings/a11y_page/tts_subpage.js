@@ -75,7 +75,7 @@ Polymer({
   /**
    * Ticks for the Speech Rate slider. Non-linear as we expect people
    * to want more control near 1.0.
-   * @return Array<{value: number, label: string}>
+   * @return Array<SliderTick>
    * @private
    */
   speechRateTicks_: function() {
@@ -91,7 +91,7 @@ Polymer({
   /**
    * Ticks for the Speech Pitch slider. Valid pitches are between 0 and 2,
    * exclusive of 0.
-   * @return Array<{value: number, label: string}>
+   * @return Array<SliderTick>
    * @private
    */
   speechPitchTicks_: function() {
@@ -104,7 +104,7 @@ Polymer({
    * Ticks for the Speech Volume slider. Valid volumes are between 0 and
    * 1 (100%), but volumes lower than .2 are excluded as being too quiet.
    * The values are linear between .2 and 1.0.
-   * @return Array<{value: number, label: string}>
+   * @return Array<SliderTick>
    * @private
    */
   speechVolumeTicks_: function() {
@@ -116,14 +116,15 @@ Polymer({
   /**
    * Initializes i18n labels for ticks arrays.
    * @param {number} tick The value to make a tick for.
-   * @return {{value: number, label: string}}
+   * @return {SliderTick}
    * @private
    */
   initTick_: function(tick) {
-    let value = (100 * tick).toFixed(0);
-    let label = value === '100' ? this.i18n('defaultPercentage', value) :
-                                  this.i18n('percentage', value);
-    return {label: label, value: tick};
+    let value = Math.round(100 * tick);
+    let strValue = value.toFixed(0);
+    let label = strValue === '100' ? this.i18n('defaultPercentage', strValue) :
+                                     this.i18n('percentage', strValue);
+    return {label: label, value: tick, ariaValue: value};
   },
 
   /**
