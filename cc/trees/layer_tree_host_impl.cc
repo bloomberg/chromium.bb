@@ -929,6 +929,18 @@ bool LayerTreeHostImpl::HasDamage() const {
   if (!viewport_damage_rect_.IsEmpty())
     return true;
 
+  // If the set of referenced surfaces has changed then we must submit a new
+  // CompositorFrame to update surface references.
+  if (last_draw_referenced_surfaces_ != active_tree()->SurfaceLayerIds())
+    return true;
+
+  // If we have a new LocalSurfaceId, we must always submit a CompositorFrame
+  // because the parent is blocking on us.
+  if (last_draw_local_surface_id_ !=
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceId()) {
+    return true;
+  }
+
   const LayerTreeImpl* active_tree = active_tree_.get();
 
   // If the root render surface has no visible damage, then don't generate a
@@ -941,15 +953,9 @@ bool LayerTreeHostImpl::HasDamage() const {
   bool must_always_swap =
       layer_tree_frame_sink_->capabilities().must_always_swap;
 
-  // If we have a new LocalSurfaceId, we must always submit a CompositorFrame
-  // because the parent is blocking on us.
-  bool local_surface_id_changed =
-      last_draw_local_surface_id_ !=
-      child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
-
   return root_surface_has_visible_damage ||
          active_tree_->property_trees()->effect_tree.HasCopyRequests() ||
-         must_always_swap || hud_wants_to_draw_ || local_surface_id_changed;
+         must_always_swap || hud_wants_to_draw_;
 }
 
 DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
@@ -1912,8 +1918,13 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
         IsActivelyScrolling() || mutator_host_->NeedsTickAnimations();
   }
 
-  for (auto& surface_id : active_tree_->SurfaceLayerIds())
+  const base::flat_set<viz::SurfaceId>& referenced_surfaces =
+      active_tree_->SurfaceLayerIds();
+  for (auto& surface_id : referenced_surfaces)
     metadata.referenced_surfaces.push_back(surface_id);
+
+  if (last_draw_referenced_surfaces_ != referenced_surfaces)
+    last_draw_referenced_surfaces_ = referenced_surfaces;
 
   const auto* inner_viewport_scroll_node = InnerViewportScrollNode();
   if (!inner_viewport_scroll_node)
