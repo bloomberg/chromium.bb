@@ -192,6 +192,7 @@ AutomationPredicate.leaf = function(node) {
        !hasActionableDescendant(node)) ||
       (!!node.descriptionFor && node.descriptionFor.length > 0 &&
        !hasActionableDescendant(node)) ||
+      (node.activeDescendantFor && node.activeDescendantFor.length > 0) ||
       (node.role == Role.MENU_ITEM && !hasActionableDescendant(node)) ||
       node.state[State.INVISIBLE] || node.children.every(function(n) {
         return n.state[State.INVISIBLE];

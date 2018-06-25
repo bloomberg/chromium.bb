@@ -652,6 +652,13 @@ chrome.automation.AutomationNode.prototype.labelledBy;
 chrome.automation.AutomationNode.prototype.activeDescendant;
 
 /**
+ * Reverse relationship for active descendant.
+ * @type {(!Array<!chrome.automation.AutomationNode>|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-activeDescendantFor
+ */
+chrome.automation.AutomationNode.prototype.activeDescendantFor;
+
+/**
  * The target of an in-page link.
  * @type {(!chrome.automation.AutomationNode|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-inPageLinkTarget
