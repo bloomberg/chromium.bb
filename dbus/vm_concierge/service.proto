@@ -347,4 +347,7 @@ message ContainerSshKeysResponse {
   // is equivalent to the contents in the ssh-keygen generated file. This will
   // be the same for all VMs/containers.
   string host_private_key = 2;
+
+  // The hostname of the container.
+  string hostname = 3;
 }
