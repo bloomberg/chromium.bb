@@ -309,6 +309,7 @@ base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
     return base::nullopt;
   }
 
+  // TODO(https://crbug.com/850475): Support multiple signatures.
   ret.signature_ = (*signatures)[0];
 
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-trust
