@@ -12,16 +12,16 @@
 namespace blink {
 
 class ComputedStyle;
-struct NGLogicalOffset;
+struct NGPhysicalOffset;
 
 // Implements relative positioning spec:
 // https://www.w3.org/TR/css-position-3/#rel-pos
 // Return relative position offset as defined by style.
-CORE_EXPORT NGLogicalOffset
+CORE_EXPORT NGPhysicalOffset
 ComputeRelativeOffset(const ComputedStyle& child_style,
                       WritingMode container_writing_mode,
                       TextDirection container_direction,
-                      NGLogicalSize container_size);
+                      NGPhysicalSize container_size);
 
 }  // namespace blink
 

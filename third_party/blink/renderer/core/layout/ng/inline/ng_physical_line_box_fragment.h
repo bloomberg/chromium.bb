@@ -21,7 +21,6 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
                             NGPhysicalSize size,
                             Vector<scoped_refptr<NGPhysicalFragment>>& children,
                             const NGPhysicalOffsetRect& contents_ink_overflow,
-                            const NGPhysicalOffsetRect& scrollable_overflow,
                             const NGLineHeightMetrics&,
                             TextDirection base_direction,
                             scoped_refptr<NGBreakToken> break_token = nullptr);
@@ -42,9 +41,12 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   NGPhysicalOffsetRect InkOverflow() const;
 
   // Scrollable overflow. including contents, in the local coordinate.
-  NGPhysicalOffsetRect ScrollableOverflow() const {
-    return scrollable_overflow_;
-  }
+  // ScrollableOverflow is not precomputed/cached because it cannot be computed
+  // when LineBox is generated because it needs container dimensions to
+  // resolve relative position of its children.
+  NGPhysicalOffsetRect ScrollableOverflow(
+      const ComputedStyle* container_style,
+      NGPhysicalSize container_physical_size) const;
 
   // Returns the first/last leaf fragment in the line in logical order. Returns
   // nullptr if the line box is empty.
@@ -58,11 +60,10 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
     Vector<scoped_refptr<NGPhysicalFragment>> children_copy(children_);
     return base::AdoptRef(new NGPhysicalLineBoxFragment(
         Style(), StyleVariant(), size_, children_copy, contents_ink_overflow_,
-        scrollable_overflow_, metrics_, BaseDirection(), break_token_));
+        metrics_, BaseDirection(), break_token_));
   }
 
  private:
-  NGPhysicalOffsetRect scrollable_overflow_;
   NGLineHeightMetrics metrics_;
 };
 
