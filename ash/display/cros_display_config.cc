@@ -646,8 +646,10 @@ void CrosDisplayConfig::SetDisplayProperties(
   const display::Display& primary =
       display::Screen::GetScreen()->GetPrimaryDisplay();
 
-  if (properties->set_primary && display.id() != primary.id())
-    display_configuration_controller->SetPrimaryDisplayId(display.id());
+  if (properties->set_primary && display.id() != primary.id()) {
+    display_configuration_controller->SetPrimaryDisplayId(
+        display.id(), false /* don't throttle */);
+  }
 
   if (properties->overscan)
     display_manager->SetOverscanInsets(display.id(), *properties->overscan);

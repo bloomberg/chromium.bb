@@ -17,7 +17,7 @@
 namespace display {
 class DisplayLayout;
 class DisplayManager;
-}
+}  // namespace display
 
 namespace ash {
 
@@ -57,8 +57,9 @@ class ASH_EXPORT DisplayConfigurationController
       const display::UnifiedDesktopLayoutMatrix& matrix);
 
   // Sets the mirror mode with a fade-in/fade-out animation. Affects all
-  // displays.
-  void SetMirrorMode(bool mirror);
+  // displays. If |throttle| is true, this will fail if called within the
+  // throttle time.
+  void SetMirrorMode(bool mirror, bool throttle);
 
   // Sets the display's rotation with animation if available.
   void SetDisplayRotation(int64_t display_id,
@@ -70,8 +71,9 @@ class ASH_EXPORT DisplayConfigurationController
   // the target rotation when the display is being rotated.
   display::Display::Rotation GetTargetRotation(int64_t display_id);
 
-  // Sets the primary display id.
-  void SetPrimaryDisplayId(int64_t display_id);
+  // Sets the primary display id. If |throttle| is true, this will fail if
+  // called within the throttle time.
+  void SetPrimaryDisplayId(int64_t display_id, bool throttle);
 
   // WindowTreeHostManager::Observer
   void OnDisplayConfigurationChanged() override;

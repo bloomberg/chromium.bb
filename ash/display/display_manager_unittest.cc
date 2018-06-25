@@ -1031,7 +1031,8 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplaysWithDetachedDisplays) {
 // TODO(weidongg/774795) Remove test when multi mirroring is enabled by default.
 TEST_F(DisplayManagerTestDisableMultiMirroring, NoMirrorInThreeDisplays) {
   UpdateDisplay("640x480,320x200,400x300");
-  ash::Shell::Get()->display_configuration_controller()->SetMirrorMode(true);
+  ash::Shell::Get()->display_configuration_controller()->SetMirrorMode(true,
+                                                                       false);
   EXPECT_FALSE(display_manager()->IsInMirrorMode());
   EXPECT_EQ(3u, display_manager()->GetNumDisplays());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED),

@@ -268,7 +268,8 @@ void HandleMediaPrevTrack() {
 void HandleToggleMirrorMode() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Mirror_Mode"));
   bool mirror = !Shell::Get()->display_manager()->IsInMirrorMode();
-  Shell::Get()->display_configuration_controller()->SetMirrorMode(mirror);
+  Shell::Get()->display_configuration_controller()->SetMirrorMode(
+      mirror, true /* throttle */);
 }
 
 bool CanHandleNewIncognitoWindow() {
@@ -471,7 +472,8 @@ void HandleSwapPrimaryDisplay() {
   // two screens. Behave the same as mirroring: fail and notify if there are
   // three or more screens.
   Shell::Get()->display_configuration_controller()->SetPrimaryDisplayId(
-      Shell::Get()->display_manager()->GetSecondaryDisplay().id());
+      Shell::Get()->display_manager()->GetSecondaryDisplay().id(),
+      true /* throttle */);
 }
 
 bool CanHandleSwitchIme(const ui::Accelerator& accelerator) {
