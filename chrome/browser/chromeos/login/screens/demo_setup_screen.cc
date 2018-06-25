@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,14 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
+#include "chrome/browser/chromeos/login/screens/demo_setup_screen_view.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 
 namespace {
 
-constexpr const char kUserActionOnlineSetup[] = "online-setup";
-constexpr const char kUserActionOfflineSetup[] = "offline-setup";
-constexpr const char kUserActionClose[] = "close-setup";
+constexpr char kUserActionOnlineSetup[] = "online-setup";
+constexpr char kUserActionOfflineSetup[] = "offline-setup";
+constexpr char kUserActionClose[] = "close-setup";
 
 // The policy blob data for offline demo-mode is embedded into the filesystem.
 // TODO(mukai, agawronska): fix this when switching to dm-verity image.
