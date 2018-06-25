@@ -658,6 +658,11 @@ void AccessibilityManager::OnCursorHighlightChanged() {
   NotifyAccessibilityStatusChanged(details);
 }
 
+bool AccessibilityManager::IsDictationEnabled() const {
+  return profile_ && profile_->GetPrefs()->GetBoolean(
+                         ash::prefs::kAccessibilityDictationEnabled);
+}
+
 void AccessibilityManager::SetFocusHighlightEnabled(bool enabled) {
   if (!profile_)
     return;
@@ -1069,6 +1074,7 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
                         IsCaretHighlightEnabled());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosCursorHighlight",
                         IsCursorHighlightEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosDictation", IsDictationEnabled());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosFocusHighlight",
                         IsFocusHighlightEnabled());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSelectToSpeak",

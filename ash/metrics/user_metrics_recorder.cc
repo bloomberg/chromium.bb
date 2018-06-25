@@ -200,6 +200,13 @@ void UserMetricsRecorder::RecordUserClickOnShelfButton(
   recorder->RecordUserShelfButtonClick(target);
 }
 
+// static
+void UserMetricsRecorder::RecordUserToggleDictation(
+    DictationToggleMethod method) {
+  UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosDictation.ToggleDictationMethod",
+                            method);
+}
+
 void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
   using base::RecordAction;
   using base::UserMetricsAction;
