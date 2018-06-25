@@ -53,6 +53,8 @@ extern const char kRequestUserEventsVisibility[];
 extern const char kSetIncludeSpecifics[];
 extern const char kUserEventsVisibilityCallback[];
 extern const char kWriteUserEvent[];
+extern const char kRequestStart[];
+extern const char kRequestStop[];
 extern const char kTriggerRefresh[];
 
 // Other strings.

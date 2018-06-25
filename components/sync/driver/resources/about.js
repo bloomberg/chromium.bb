@@ -214,6 +214,13 @@ cr.define('chrome.sync.about_tab', function() {
         'onCountersUpdated',
         onAboutInfoCountersUpdated);
 
+    $('request-start').addEventListener('click', function(event) {
+      chrome.sync.requestStart();
+    });
+    $('request-stop').addEventListener('click', function(event) {
+      chrome.sync.requestStop();
+    });
+
     // Register to receive a stream of event notifications.
     chrome.sync.registerForEvents();
 

@@ -105,6 +105,20 @@ cr.define('chrome.sync', function() {
   };
 
   /**
+   * Triggers a RequestStart call on the SyncService.
+   */
+  var requestStart = function() {
+    chrome.send('requestStart');
+  };
+
+  /**
+   * Triggers a RequestStop call on the SyncService.
+   */
+  var requestStop = function() {
+    chrome.send('requestStop');
+  };
+
+  /**
    * Triggers a GetUpdates call for all enabled datatypes.
    */
   var triggerRefresh = function() {
@@ -160,6 +174,8 @@ cr.define('chrome.sync', function() {
     requestUserEventsVisibility: requestUserEventsVisibility,
     setIncludeSpecifics: setIncludeSpecifics,
     writeUserEvent: writeUserEvent,
+    requestStart: requestStart,
+    requestStop: requestStop,
     triggerRefresh: triggerRefresh,
   };
 });

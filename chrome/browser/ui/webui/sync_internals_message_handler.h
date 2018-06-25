@@ -68,6 +68,12 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
   // Handler for writeUserEvent message.
   void HandleWriteUserEvent(const base::ListValue* args);
 
+  // Handler for requestStart message.
+  void HandleRequestStart(const base::ListValue* args);
+
+  // Handler for requestStop message.
+  void HandleRequestStop(const base::ListValue* args);
+
   // Handler for triggerRefresh message.
   void HandleTriggerRefresh(const base::ListValue* args);
 
