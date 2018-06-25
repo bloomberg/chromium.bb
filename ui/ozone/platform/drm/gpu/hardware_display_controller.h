@@ -161,15 +161,14 @@ class HardwareDisplayController {
     return crtc_controllers_;
   }
 
-  scoped_refptr<DrmDevice> GetAllocationDrmDevice() const;
+  scoped_refptr<DrmDevice> GetDrmDevice() const;
 
  private:
   bool ActualSchedulePageFlip(const DrmOverlayPlaneList& plane_list,
                               bool test_only,
                               SwapCompletionOnceCallback callback);
 
-  std::unordered_map<DrmDevice*, std::unique_ptr<HardwareDisplayPlaneList>>
-      owned_hardware_planes_;
+  HardwareDisplayPlaneList owned_hardware_planes_;
 
   // Stores the CRTC configuration. This is used to identify monitors and
   // configure them.

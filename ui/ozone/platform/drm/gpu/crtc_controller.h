@@ -86,7 +86,7 @@ class CrtcController : public base::SupportsWeakPtr<CrtcController> {
  private:
   bool ResetCursor();
 
-  scoped_refptr<DrmDevice> drm_;
+  const scoped_refptr<DrmDevice> drm_;
 
   // Buffers need to be declared first so that they are destroyed last. Needed
   // since the controllers may reference the buffers.

@@ -169,7 +169,7 @@ bool ScreenManager::ActualConfigureDisplayController(
       origin == controller->origin()) {
     if (controller->IsDisabled()) {
       HardwareDisplayControllers::iterator mirror =
-          FindActiveDisplayControllerByLocation(modeset_bounds);
+          FindActiveDisplayControllerByLocation(drm, modeset_bounds);
       // If there is an active controller at the same location then start mirror
       // mode.
       if (mirror != controllers_.end())
@@ -192,7 +192,7 @@ bool ScreenManager::ActualConfigureDisplayController(
   }
 
   HardwareDisplayControllers::iterator mirror =
-      FindActiveDisplayControllerByLocation(modeset_bounds);
+      FindActiveDisplayControllerByLocation(drm, modeset_bounds);
   // Handle mirror mode.
   if (mirror != controllers_.end() && it != mirror)
     return HandleMirrorMode(it, mirror, drm, crtc, connector, mode);
@@ -278,6 +278,20 @@ ScreenManager::FindActiveDisplayControllerByLocation(const gfx::Rect& bounds) {
   return controllers_.end();
 }
 
+ScreenManager::HardwareDisplayControllers::iterator
+ScreenManager::FindActiveDisplayControllerByLocation(
+    const scoped_refptr<DrmDevice>& drm,
+    const gfx::Rect& bounds) {
+  for (auto it = controllers_.begin(); it != controllers_.end(); ++it) {
+    gfx::Rect controller_bounds((*it)->origin(), (*it)->GetModeSize());
+    if ((*it)->GetDrmDevice() == drm && controller_bounds == bounds &&
+        !(*it)->IsDisabled())
+      return it;
+  }
+
+  return controllers_.end();
+}
+
 bool ScreenManager::HandleMirrorMode(
     HardwareDisplayControllers::iterator original,
     HardwareDisplayControllers::iterator mirror,
@@ -357,7 +371,7 @@ DrmOverlayPlane ScreenManager::GetModesetBuffer(
       controller->GetFormatModifiersForModesetting(fourcc_format);
   if (window) {
     const DrmOverlayPlane* primary = window->GetLastModesetBuffer();
-    const DrmDevice* drm = controller->GetAllocationDrmDevice().get();
+    const DrmDevice* drm = controller->GetDrmDevice().get();
     if (primary && primary->buffer->GetSize() == bounds.size() &&
         primary->buffer->GetGbmDeviceLinux() == drm->AsGbmDeviceLinux()) {
       // If the controller doesn't advertise modifiers, wont have a
@@ -373,7 +387,7 @@ DrmOverlayPlane ScreenManager::GetModesetBuffer(
     }
   }
 
-  scoped_refptr<DrmDevice> drm = controller->GetAllocationDrmDevice();
+  scoped_refptr<DrmDevice> drm = controller->GetDrmDevice();
   scoped_refptr<ScanoutBuffer> buffer =
       buffer_generator_->Create(drm, fourcc_format, modifiers, bounds.size());
   if (!buffer) {
