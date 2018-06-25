@@ -71,7 +71,7 @@ vars = {
   'checkout_telemetry_dependencies': False,
 
   # libaom provides support for AV1 but the bitstream is not frozen.
-  'checkout_libaom': True,
+  'checkout_libaom': False,
 
   # By default do not check out the Oculus SDK. Only available for Googlers.
   'checkout_oculus_sdk' : 'checkout_src_internal and checkout_win',
