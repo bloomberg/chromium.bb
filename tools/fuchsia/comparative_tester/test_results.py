@@ -10,8 +10,10 @@ from typing import Any, Dict, List, Tuple, Optional
 
 
 def UnitStringIsValid(unit: str) -> bool:
-  return (unit == "us/hop" or unit == "us/task" or unit == "ns/sample" or
-          unit == "ms" or unit == "s" or unit == "count")
+  accepted_units = [
+      "us/hop", "us/task", "ns/sample", "ms", "s", "count", "KB", "MB/s", "us"
+  ]
+  return unit in accepted_units
 
 
 class ResultLine(object):
@@ -32,6 +34,10 @@ class ResultLine(object):
     }
 
 
+def ReadResultLineFromJson(dct: Dict[str, Any]):
+  return ResultLine(dct["description"], float(dct["measurement"]), dct["unit"])
+
+
 def ResultLineFromStdout(line: str) -> Optional[ResultLine]:
   if "pkgsvr" in line:
     return None
@@ -40,12 +46,12 @@ def ResultLineFromStdout(line: str) -> Optional[ResultLine]:
   # for the line description, so at least 3 total
   if len(chunks) < 3:
     logging.warning("The line {} contains too few space-separated pieces to be "
-        "parsed as a ResultLine".format(line))
+                    "parsed as a ResultLine".format(line))
     return None
   unit = chunks[-1]
   if not UnitStringIsValid(unit):
     logging.warning("The unit string parsed from {} was {}, which was not "
-        "expected".format(line, unit))
+                    "expected".format(line, unit))
     return None
   try:
     measure = float(chunks[-2])
@@ -53,7 +59,7 @@ def ResultLineFromStdout(line: str) -> Optional[ResultLine]:
     return ResultLine(desc, measure, unit)
   except ValueError as e:
     logging.warning("The chunk {} could not be parsed as a valid measurement "
-        "because of {}".format(chunks[-2], str(e)))
+                    "because of {}".format(chunks[-2], str(e)))
     return None
 
 
@@ -75,27 +81,33 @@ class TestResult(object):
     }
 
 
-def ExtractCaseInfo(line: str) -> Tuple[str, float, str]:
+def ReadTestFromJson(obj_dict: Dict[str, Any]) -> TestResult:
+  name = obj_dict["name"]
+  time = obj_dict["time_in_ms"]
+  lines = [ReadResultLineFromJson(line) for line in obj_dict["lines"]]
+  return TestResult(name, time, lines)
+
+
+def ExtractTestInfo(line: str) -> Tuple[str, float]:
   # Trim off the [       OK ] part of the line
   trimmed = line.lstrip("[       OK ]").strip()
   try:
     test_name, rest = trimmed.split("(")  # Isolate the measurement
   except Exception as e:
     err_text = "Could not extract the case name from {} because of error {}"\
-               .format(
-        rest, str(e))
+               .format(trimmed, str(e))
     raise Exception(err_text)
   try:
-    measure, units = rest.split(")")[0].split()
+    measure, _ = rest.split(")", 1)[0].split()
   except Exception as e:
     err_text = "Could not extract measure and units from {}\
                 because of error {}".format(rest, str(e))
     raise Exception(err_text)
-  return test_name.strip(), float(measure), units.strip()
+  return test_name.strip(), float(measure)
 
 
 def TaggedTestFromLines(lines: List[str]) -> TestResult:
-  test_name, time, units = ExtractCaseInfo(lines[-1])
+  test_name, time = ExtractTestInfo(lines[-1])
   res_lines = []
   for line in lines[:-1]:
     res_line = ResultLineFromStdout(line)
@@ -113,21 +125,26 @@ class TargetResult(object):
   run.
   """
 
-  def __init__(self, name: str, time: float, tests: List[TestResult]) -> None:
+  def __init__(self, name: str, tests: List[TestResult]) -> None:
     self.name = name
-    self.time = time
     self.tests = tests
 
   def ToJsonDict(self) -> Dict[str, Any]:
     return {
         "name": self.name,
-        "time_in_ms": self.time,
         "tests": [test.ToJsonDict() for test in self.tests]
     }
 
   def WriteToJson(self, path: str) -> None:
     with open(path, "w") as outfile:
       json.dump(self.ToJsonDict(), outfile, indent=2)
+
+
+def ReadTargetFromJson(path: str):
+  with open(path, "r") as json_file:
+    dct = json.load(json_file)
+    return TargetResult(
+        dct["name"], [ReadTestFromJson(test_dct) for test_dct in dct["tests"]])
 
 
 def TargetResultFromStdout(lines: List[str], name: str) -> TargetResult:
@@ -166,7 +183,4 @@ def TargetResultFromStdout(lines: List[str], name: str) -> TargetResult:
   test_cases = [
       TaggedTestFromLines(test_lines) for test_lines in test_line_lists
   ]
-  target_time = 0  # type: float
-  for test in test_cases:
-    target_time += test.time
-  return TargetResult(name, target_time, test_cases)
+  return TargetResult(name, test_cases)

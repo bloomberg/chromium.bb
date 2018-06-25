@@ -42,7 +42,9 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--ssh-config', '-F',
                            help='The path to the SSH configuration used for '
                                 'connecting to the target device.')
-  common_args.add_argument('--include-system-logs', default=True, type=bool,
+  common_args.add_argument('--exclude-system-logs',
+                           action='store_false',
+                           dest='include_system_logs',
                            help='Do not show system log data.')
   common_args.add_argument('--verbose', '-v', default=False,
                            action='store_true',
