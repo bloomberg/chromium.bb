@@ -43,6 +43,7 @@
 <translation id="1227633850867390598">Érték elrejtése</translation>
 <translation id="1228893227497259893">Helytelen entitásazonosító</translation>
 <translation id="1232569758102978740">Névtelen</translation>
+<translation id="1250759482327835220">A következő alkalommal gyorsabban fizethet, ha elmenti kártyáját, nevét és számlázási címét a Google-fiókjába.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (szinkronizálva)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ha nem nyílik meg a felkeresni kívánt webhely, először próbálja meg kijavítani a hibát a következő problémamegoldó lépések végrehajtásával:&lt;/p&gt;
     &lt;ol&gt;
@@ -123,6 +124,7 @@
 <translation id="1734864079702812349">American Express</translation>
 <translation id="1734878702283171397">Próbálja felvenni a kapcsolatot a rendszergazdával.</translation>
 <translation id="1740951997222943430">Érvényes lejárati hónapot kell megadnia</translation>
+<translation id="1743520634839655729">A következő alkalommal gyorsabban fizethet, ha kártyáját, nevét és számlázási címét elmenti Google-fiókjába és az eszközre.</translation>
 <translation id="17513872634828108">Megnyitott lapok</translation>
 <translation id="1753706481035618306">Oldalszám</translation>
 <translation id="1763864636252898013">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa az Ön eszközének operációs rendszere szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
@@ -486,7 +488,6 @@
 <translation id="425582637250725228">Előfordulhat, hogy módosításait nem menti a rendszer.</translation>
 <translation id="4258748452823770588">Rossz aláírás</translation>
 <translation id="4265872034478892965">A rendszergazda engedélyezte</translation>
-<translation id="4269787794583293679">(Nincs felhasználónév)</translation>
 <translation id="4275830172053184480">Indítsa újra az eszközt</translation>
 <translation id="4277028893293644418">Jelszó visszaállítása</translation>
 <translation id="4280429058323657511">, lejár: <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -509,6 +510,7 @@
 <translation id="4434045419905280838">Előugró ablakok és átirányítások</translation>
 <translation id="443673843213245140">A proxy használata le van tiltva, de kifejezett proxykonfiguráció van megadva.</translation>
 <translation id="445100540951337728">Elfogadott bankkártyák</translation>
+<translation id="4472575034687746823">Kezdő lépések</translation>
 <translation id="4506176782989081258">Érvényesítési hiba: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Kapcsolatfelvétel a rendszergazdával</translation>
 <translation id="450710068430902550">Megosztás a rendszergazdával</translation>
@@ -624,6 +626,7 @@
 <translation id="5332219387342487447">Szállítási mód</translation>
 <translation id="5355557959165512791">Pillanatnyilag nem tudja felkeresni a(z) <ph name="SITE" /> webhelyet, mert a webhely tanúsítványát visszavonták. A hálózati hibák és támadások rendszerint átmenetiek, ezért az említett oldal működése később valószínűleg helyreáll.</translation>
 <translation id="536296301121032821">Az irányelv-beállítások tárolása sikertelen</translation>
+<translation id="5371425731340848620">Kártya frissítése</translation>
 <translation id="5377026284221673050">„Az óra késik”, „Az óra siet” vagy „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
 <translation id="5386426401304769735">A webhely tanúsítványlánca SHA-1 titkosítással aláírt tanúsítványt tartalmaz.</translation>
 <translation id="5402410679244714488">Lejárati dátum: <ph name="EXPIRATION_DATE_ABBR" />, utolsó használat több mint egy éve</translation>
@@ -883,7 +886,6 @@
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />További információk megtekintése<ph name="END_LINK" /> a problémával kapcsolatban.</translation>
 <translation id="7455133967321480974">Globális alapértelmezés használata (Tiltás)</translation>
 <translation id="7460163899615895653">A többi eszközön legutoljára megtekintett lapok láthatók itt</translation>
-<translation id="7469372306589899959">Kártya igazolása…</translation>
 <translation id="7473891865547856676">Nem, köszönöm</translation>
 <translation id="7481312909269577407">Előre</translation>
 <translation id="7485870689360869515">Nem található adat.</translation>
@@ -1050,6 +1052,7 @@
 <translation id="8663226718884576429">Rendelés-összefoglaló, <ph name="TOTAL_LABEL" />, További részletek</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />. A válasz: <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">A kapcsolat (<ph name="DOMAIN" />) nem titkosított.</translation>
+<translation id="8713137585425162364">Ez a kártya jelenleg nem ellenőrizhető.</translation>
 <translation id="8718314106902482036">A fizetés nem fejeződött be</translation>
 <translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="8728672262656704056">Ön inkognitómódra váltott</translation>

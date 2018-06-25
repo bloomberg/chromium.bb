@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">Η λήψη διακόπηκε προσωρινά.</translation>
 <translation id="1389974829397082527">Δεν υπάρχουν σελιδοδείκτες εδώ</translation>
 <translation id="1397811292916898096">Αναζήτηση με <ph name="PRODUCT_NAME" /></translation>
+<translation id="1397854323885047133">Συγχρονισμός και εξατομίκευση</translation>
 <translation id="1404122904123200417">Ενσωματωμένο σε <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Να μην γίνεται εντοπισμός"</translation>
 <translation id="1407135791313364759">Άνοιγμα όλων</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">Για να λάβετε εξατομικευμένο περιεχόμενο που προτείνεται από την Google, συνδεθείτε στο Chrome.</translation>
 <translation id="2091887806945687916">Ήχος</translation>
 <translation id="2095887075102408547">Όταν είναι ενεργοποιημένη αυτή η λειτουργία, το Chrome θα χρησιμοποιεί τους διακομιστές της Google για τη συμπίεση των σελίδων που επισκέπτεστε πριν από τη λήψη τους. Οι σελίδες τις οποίες επισκεφτήκατε μέσω ασφαλών συνδέσεων (HTTPS) ή σε καρτέλες ανώνυμης περιήγησης δεν θα βελτιστοποιηθούν ή δεν θα είναι ορατές από την Google.</translation>
+<translation id="2096012225669085171">Συγχρονισμός και εξατομίκευση σε όλες τις συσκευές</translation>
 <translation id="2100273922101894616">Αυτόματη σύνδεση</translation>
 <translation id="2111511281910874386">Μετάβαση στη σελίδα</translation>
 <translation id="2122601567107267586">Δεν ήταν δυνατό το άνοιγμα της εφαρμογής</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">Αντιγραφή διεύθυνσης URL</translation>
 <translation id="2156074688469523661">Ιστότοποι που απομένουν (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">Πατήστε για να μεταβείτε στη σελίδα σε νέα καρτέλα στην τρέχουσα καρτέλα</translation>
-<translation id="219985413780390209">Προστατεύει εσάς και τη συσκευή σας από επικίνδυνους ιστότοπους</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, εφαρμογή ιστού. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Συνέχεια ως <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Αποστέλλει ορισμένες πληροφορίες συστήματος και περιεχόμενο σελίδων στην Google</translation>
+<translation id="2234876718134438132">Συγχρονισμός και υπηρ. Google</translation>
 <translation id="2259659629660284697">Εξαγωγή κωδικών πρόσβασης…</translation>
 <translation id="2268044343513325586">Περιορισμός</translation>
 <translation id="2286841657746966508">Διεύθυνση τιμολόγησης</translation>
@@ -408,6 +410,7 @@
 <translation id="4594952190837476234">Αυτή η σελίδα εκτός σύνδεσης δημιουργήθηκε στις <ph name="CREATION_TIME" /> και μπορεί να διαφέρει από την έκδοση στο διαδίκτυο.</translation>
 <translation id="4605958867780575332">Το στοιχείο καταργήθηκε <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Ανοίξτε <ph name="WEBAPK_NAME" /></translation>
+<translation id="4634124774493850572">Χρήση κωδικού πρόσβασης</translation>
 <translation id="4645575059429386691">Διαχειρίζεται από τους γονείς σου</translation>
 <translation id="4663756553811254707">Διαγράφηκαν <ph name="NUMBER_OF_BOOKMARKS" /> σελιδοδείκτες</translation>
 <translation id="4665282149850138822">Ο ιστότοπος <ph name="NAME" /> προστέθηκε στην αρχική οθόνη σας</translation>
@@ -583,6 +586,7 @@
 <translation id="5958275228015807058">Βρείτε τα αρχεία και τις σελίδες σας στις Λήψεις</translation>
 <translation id="5962718611393537961">Πατήστε για σύμπτυξη</translation>
 <translation id="6000066717592683814">Διατήρηση του Google</translation>
+<translation id="6005538289190791541">Προτεινόμενος κωδικός πρόσβασης</translation>
 <translation id="6039379616847168523">Μετάβαση στην επόμενη καρτέλα</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="6042308850641462728">Περισσότερα</translation>
@@ -811,6 +815,7 @@
 <translation id="7942131818088350342">Το <ph name="PRODUCT_NAME" /> δεν είναι ενημερωμένο.</translation>
 <translation id="7947953824732555851">Αποδοχή και σύνδεση</translation>
 <translation id="7963646190083259054">Προμηθευτής:</translation>
+<translation id="79859296434321399">Για να δείτε περιεχόμενο επαυξημένης πραγματικότητας, εγκαταστήστε το ARCore</translation>
 <translation id="7987073022710626672">Όροι Παροχής Υπηρεσιών Chrome</translation>
 <translation id="7998918019931843664">Εκ νέου άνοιγμα κλειστής καρτέλας</translation>
 <translation id="7999064672810608036">Είστε βέβαιοι ότι θέλετε να διαγράψετε όλα τα δεδομένα γι' αυτόν τον ιστότοπο, όπως τα cookie, και να επαναφέρετε όλα τα δικαιώματά του;</translation>
@@ -873,6 +878,7 @@
 <translation id="851751545965956758">Αποκλεισμός ιστοτόπων από τη σύνδεση σε συσκευές</translation>
 <translation id="8523928698583292556">Διαγραφή αποθηκευμένου κωδικού πρόσβασης</translation>
 <translation id="854522910157234410">Άνοιγμα αυτής της σελίδας</translation>
+<translation id="8558485628462305855">Για να δείτε περιεχόμενο επαυξημένης πραγματικότητας, ενημερώστε το ARCore</translation>
 <translation id="8559990750235505898">Προσφορά για μετάφραση σελίδων που είναι σε άλλη γλώσσα</translation>
 <translation id="8562452229998620586">Οι αποθηκευμένοι κωδικοί πρόσβασής σας θα εμφανιστούν εδώ.</translation>
 <translation id="8569404424186215731">από <ph name="DATE" /></translation>

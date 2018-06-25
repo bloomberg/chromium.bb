@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">słaby sygnał</translation>
 <translation id="1293264513303784526">Urządzenie USB-C (lewy port)</translation>
 <translation id="1346748346194534595">W prawo</translation>
+<translation id="1351937230027495976">Zwiń menu</translation>
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1467432559032391204">W lewo</translation>
 <translation id="1479743070547893297">Zaznacz rysikiem</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Urządzenie wyjściowe</translation>
 <translation id="3019353588588144572">Czas pozostały do pełnego naładowania baterii: <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Rozwiń menu</translation>
 <translation id="3087734570205094154">Na dół</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Uruchom ponownie i zaktualizuj</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Obliczanie...</translation>
 <translation id="3995138139523574647">Urządzenie USB-C (tylny port na prawym boku)</translation>
 <translation id="4017989525502048489">Wskaźnik laserowy</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Wyłączone w przypadku jednej aplikacji}few{Wyłączone w przypadku # aplikacji}many{Wyłączone w przypadku # aplikacji}other{Wyłączone w przypadku # aplikacji}}</translation>
 <translation id="4072264167173457037">średni sygnał</translation>
 <translation id="4200057768455216496">Naciśnięto skrót lupy zadokowanej. Czy chcesz ją włączyć?</translation>
 <translation id="4217571870635786043">Dyktowanie</translation>
@@ -190,6 +193,7 @@
 <translation id="4570957409596482333">Przycisk Przeczytaj na głos</translation>
 <translation id="4628757576491864469">Urządzenia</translation>
 <translation id="4659419629803378708">Włączono ChromeVox</translation>
+<translation id="4734965478015604180">Orientacja pozioma</translation>
 <translation id="4776917500594043016">Hasło dla <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Rozłącz</translation>
@@ -197,6 +201,7 @@
 <translation id="4872237917498892622">Alt+Szukaj lub Shift</translation>
 <translation id="4890187583552566966">Asystenta Google wyłączył administrator.</translation>
 <translation id="4895488851634969361">Bateria jest pełna.</translation>
+<translation id="490375751687810070">Orientacja pionowa</translation>
 <translation id="4905614135390995787">Zmieniliśmy skrót, który włącza i wyłącza tryb wysokiego kontrastu. Użyj <ph name="NEW_SHORTCUT" /> zamiast <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Silny</translation>
 <translation id="4918086044614829423">Akceptuj</translation>
@@ -350,6 +355,7 @@
 <translation id="8054466585765276473">Obliczanie czasu pracy na baterii.</translation>
 <translation id="8061464966246066292">Wysoki kontrast</translation>
 <translation id="8098591350844501178">Zakończ przesyłanie ekranu do: <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">Włączone w przypadku wszystkich aplikacji</translation>
 <translation id="8132793192354020517">Połączono z <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicjuję…</translation>
 <translation id="8142699993796781067">Sieć prywatna</translation>
@@ -370,6 +376,7 @@
 <translation id="847056008324733326">Ustawienia skali wyświetlania</translation>
 <translation id="8477270416194247200">Aby anulować, naciśnij Alt + Szukaj lub Shift.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: ponownie łączę...</translation>
+<translation id="8513108775083588393">Autoobracanie</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> nie może się ładować, gdy jest włączony.</translation>
 <translation id="8639760480004882931">Pozostało <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Przeczytaj na głos</translation>

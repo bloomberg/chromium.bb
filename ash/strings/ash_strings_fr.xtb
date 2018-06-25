@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Signal de faible intensité</translation>
 <translation id="1293264513303784526">Appareil USB de type C (port situé sur la gauche de l'appareil)</translation>
 <translation id="1346748346194534595">Vers la droite</translation>
+<translation id="1351937230027495976">Réduire le menu</translation>
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="1467432559032391204">Vers la gauche</translation>
 <translation id="1479743070547893297">Dessinez avec votre stylet pour effectuer une sélection</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Sortie</translation>
 <translation id="3019353588588144572">Temps restant avant chargement complet de la batterie : <ph name="TIME_REMAINING" />.</translation>
 <translation id="3077734595579995578">maj</translation>
+<translation id="3081696990447829002">Développer le menu</translation>
 <translation id="3087734570205094154">Bas</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Redémarrer pour mettre à jour</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Calcul en cours…</translation>
 <translation id="3995138139523574647">Appareil USB de type C (port situé sur la droite de l'appareil, à l'arrière)</translation>
 <translation id="4017989525502048489">Pointeur laser</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Notifications désactivées pour une application}one{Notifications désactivées pour # application}other{Notifications désactivées pour # applications}}</translation>
 <translation id="4072264167173457037">Signal de moyenne intensité</translation>
 <translation id="4200057768455216496">Vous avez utilisé le raccourci de la loupe ancrée. Voulez-vous l'activer ?</translation>
 <translation id="4217571870635786043">Dictée</translation>
@@ -190,6 +193,7 @@
 <translation id="4570957409596482333">Bouton "Sélectionner pour prononcer"</translation>
 <translation id="4628757576491864469">Appareils</translation>
 <translation id="4659419629803378708">ChromeVox activé</translation>
+<translation id="4734965478015604180">Horizontal</translation>
 <translation id="4776917500594043016">Mot de passe de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">rechercher</translation>
 <translation id="4804818685124855865">Se déconnecter</translation>
@@ -197,6 +201,7 @@
 <translation id="4872237917498892622">Alt + Recherche ou Maj</translation>
 <translation id="4890187583552566966">L'administrateur a désactivé l'Assistant Google.</translation>
 <translation id="4895488851634969361">La batterie est pleine.</translation>
+<translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">Le raccourci permettant d'activer ou de désactiver le mode Contraste élevé a été modifié. Veuillez utiliser "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
 <translation id="4917385247580444890">Très bon</translation>
 <translation id="4918086044614829423">Accepter</translation>
@@ -350,6 +355,7 @@
 <translation id="8054466585765276473">Calcul de l'autonomie de la batterie en cours…</translation>
 <translation id="8061464966246066292">Contraste élevé</translation>
 <translation id="8098591350844501178">Arrêter de diffuser l'écran sur "<ph name="RECEIVER_NAME" />"</translation>
+<translation id="8113423164597455979">Notifications activées pour toutes les applications</translation>
 <translation id="8132793192354020517">Connecté à <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialisation…</translation>
 <translation id="8142699993796781067">Réseau privé</translation>
@@ -370,6 +376,7 @@
 <translation id="847056008324733326">Paramètres de l'échelle d'affichage</translation>
 <translation id="8477270416194247200">Appuyez sur Alt+Rechercher ou Maj pour annuler.</translation>
 <translation id="8484916590211895857"><ph name="NAME" /> : reconnexion…</translation>
+<translation id="8513108775083588393">Rotation automatique</translation>
 <translation id="8517041960877371778">Il est possible que votre appareil <ph name="DEVICE_TYPE" /> ne se recharge pas lorsqu'il est allumé.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restant(s)</translation>
 <translation id="8649101189709089199">Sélectionner pour prononcer</translation>

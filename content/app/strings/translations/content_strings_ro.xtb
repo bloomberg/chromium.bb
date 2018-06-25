@@ -31,6 +31,7 @@
 <translation id="1921819250265091946">zz</translation>
 <translation id="1930711995431081526">stare</translation>
 <translation id="1938124657309484470">Valoarea pentru dată/oră trebuie să fie <ph name="MAXIMUM_DATE_OR_TIME" /> sau una anterioară.</translation>
+<translation id="1946271899482435442">Afișează selectorul de date</translation>
 <translation id="1993104285338243655">S-a comutat la oglindire</translation>
 <translation id="2060505056492490888">Semnul „<ph name="DOT" />” apare poziționat greșit în „<ph name="INVALIDDOMAIN" />”.</translation>
 <translation id="2148716181193084225">Astăzi</translation>
@@ -238,7 +239,6 @@
 <translation id="9138385573473225930">alertă</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, începând de pe <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">notă de subsol</translation>
-<translation id="947831847158436616">celulă</translation>
 <translation id="954003015749068518">intră în modul picture-in-picture</translation>
 <translation id="966787709310836684">meniu</translation>
 </translationbundle>

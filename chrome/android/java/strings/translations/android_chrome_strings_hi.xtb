@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">डाउनलोड रोका गया</translation>
 <translation id="1389974829397082527">यहां कोई बुकमार्क नहीं है</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> के ज़रिए खोजें</translation>
+<translation id="1397854323885047133">सिंक करना और मनमुताबिक बनाना</translation>
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" /> में एम्बेड किया गया है</translation>
 <translation id="1406000523432664303">“नज़र न रखें”</translation>
 <translation id="1407135791313364759">सभी बुकमार्क खोलें</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">Google द्वारा सुझाई गई वैयक्तिकृत सामग्री प्राप्त करने के लिए, Chrome में प्रवेश करें.</translation>
 <translation id="2091887806945687916">ध्वनि</translation>
 <translation id="2095887075102408547">इस सुविधा के चालू होने पर, Chrome उन पेजों को छोटा करने के लिए Google सर्वर का उपयोग करेगा, जिन्हें आप डाउनलोड करने से पहले देखते हैं. निजी कनेक्शन (HTTPS) या गुप्त टैब का उपयोग करके एक्सेस किए गए पेजों को Google न तो ऑप्‍टिमाइज़ करेगा और न ही देखेगा.</translation>
+<translation id="2096012225669085171">सभी डिवाइस में सिंक करना और मनमुताबिक बनाना</translation>
 <translation id="2100273922101894616">स्वतः प्रवेश करें</translation>
 <translation id="2111511281910874386">पेज पर जाएं</translation>
 <translation id="2122601567107267586">ऐप नहीं खोला जा सका</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">URL की कॉपी बनाएं</translation>
 <translation id="2156074688469523661">बाकी साइटें (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">अपने मौजूदा टैब में नए टैब पेज पर जाने के लिए टैप करें</translation>
-<translation id="219985413780390209">खतरनाक साइटों से आपकी और आपके डिवाइस की सुरक्षा करता है</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, वेब ऐप. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> के रूप में जारी रखें</translation>
 <translation id="2232379019872353004">कुछ सिस्टम जानकारी और पेज सामग्री Google को भेजती है</translation>
+<translation id="2234876718134438132">सिंक और Google सेवाएं</translation>
 <translation id="2259659629660284697">पासवर्ड निर्यात करें…</translation>
 <translation id="2268044343513325586">परिशोधित करें</translation>
 <translation id="2286841657746966508">बिलिंग पता</translation>
@@ -408,6 +410,7 @@
 <translation id="4594952190837476234">यह पेज <ph name="CREATION_TIME" /> का है और यह ऑनलाइन वर्शन से अलग हो सकता है.</translation>
 <translation id="4605958867780575332">आइटम निकाला गया: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> को खोलें</translation>
+<translation id="4634124774493850572">पासवर्ड का इस्तेमाल करें</translation>
 <translation id="4645575059429386691">आपके अभिभावक द्वारा प्रबंधित</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> बुकमार्क का पता लगा</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> को आपकी होम स्क्रीन में जोड़ा गया था</translation>
@@ -568,7 +571,7 @@
 <translation id="5854790677617711513">30 दिनों से ज़्यादा पुराना</translation>
 <translation id="5858741533101922242">Chrome, ब्लूटूथ एडाप्टर को चालू नहीं कर सका</translation>
 <translation id="5860033963881614850">बंद</translation>
-<translation id="5864174910718532887">जानकारी: साइट नाम के अनुसार क्रम से लगाया गया</translation>
+<translation id="5864174910718532887">जानकारी: 'साइट नाम' के अनुसार क्रम से लगाया गया</translation>
 <translation id="5864419784173784555">दूसरे डाउनलोड का इंतज़ार किया जा रहा है…</translation>
 <translation id="5869522115854928033">सहेजे गए पासवर्ड</translation>
 <translation id="5878455346526065919">ऐसी साइटों के विज्ञापन ब्लॉक करें जो तंग करने वाले विज्ञापन दिखाने के लिए जानी जाती हैं</translation>
@@ -583,6 +586,7 @@
 <translation id="5958275228015807058">डाउनलोड में जाकर अपनी फ़ाइलें और पेज पाएं</translation>
 <translation id="5962718611393537961">संक्षिप्त करने के लिए टैप करें</translation>
 <translation id="6000066717592683814">Google को डिफ़ॉल्ट बनाए रखें</translation>
+<translation id="6005538289190791541">सुझाया गया पासवर्ड</translation>
 <translation id="6039379616847168523">सीधे अगले टैब पर जाएं</translation>
 <translation id="6040143037577758943">बंद करें</translation>
 <translation id="6042308850641462728">अधिक</translation>
@@ -811,6 +815,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> पुराना है.</translation>
 <translation id="7947953824732555851">स्वीकार करें और प्रवेश करें</translation>
 <translation id="7963646190083259054">विक्रेता:</translation>
+<translation id="79859296434321399">बढ़ी हुई वास्तविकता की सामग्री देखने के लिए, ARCore इंस्टॉल करें</translation>
 <translation id="7987073022710626672">Chrome सेवा की शर्तें</translation>
 <translation id="7998918019931843664">बंद टैब फिर से खोलें</translation>
 <translation id="7999064672810608036">क्‍या आप वाकई कुकी सहित इस वेबसाइट का सभी स्‍थानीय डेटा साफ़ करना और इसकी सभी अनुमतियों को रीसेट करना चाहते हैं?</translation>
@@ -873,6 +878,7 @@
 <translation id="851751545965956758">साइटों को डिवाइसों से कनेक्ट करने से ब्लॉक करें</translation>
 <translation id="8523928698583292556">संग्रहित पासवर्ड हटाएं</translation>
 <translation id="854522910157234410">यह पेज खोलें</translation>
+<translation id="8558485628462305855">बढ़ी हुई वास्तविकता की सामग्री देखने के लिए, ARCore अपडेट करें</translation>
 <translation id="8559990750235505898">अन्य भाषाओं में पेज का अनुवाद करना ऑफ़र करें</translation>
 <translation id="8562452229998620586">सहेजे गए पासवर्ड यहां दिखाई देंगे.</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> से</translation>

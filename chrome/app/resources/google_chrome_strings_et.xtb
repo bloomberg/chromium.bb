@@ -121,6 +121,7 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="4143243756087420366">Chrome'i nimi ja pilt</translation>
 <translation id="4147555960264124640">Logite sisse hallatud kontoga ja annate selle administraatorile üle Google Chrome'i profiili juhtimise. Teie Chrome'i andmed, nagu rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME" />. Saate need andmed Google'i kontode juhtpaneeli kaudu kustutada, kuid te ei saa neid seostada teise kontoga. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Installijal ei õnnestunud arhiivi lahti pakkida. Palun laadige Google Chrome uuesti alla.</translation>
+<translation id="424864128008805179">Kas logida Chrome'ist välja?</translation>
 <translation id="4251615635259297716">Kas soovite linkida Chrome'i andmed selle kontoga?</translation>
 <translation id="4251625577313994583">hankige oma iPhone'ile Chrome</translation>
 <translation id="4293420128516039005">Logige sisse, et Chrome kõigis oma seadmetes sünkroonida ja isikupärastada</translation>
@@ -216,7 +217,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="7398801000654795464">Olite Chrome'i sisse logitud kasutajana <ph name="USER_EMAIL_ADDRESS" />. Kasutage uuesti sisselogimiseks sama kontot.</translation>
 <translation id="7408085963519505752">Chrome OS-i tingimused</translation>
 <translation id="7419046106786626209">Google OS ei saanud teie andmeid sünkroonida, sest sünkroonimine pole teie domeenil saadaval.</translation>
-<translation id="7437998757836447326">Chrome'ist väljalogimine</translation>
 <translation id="7459554271817304652">Seadistage sünkroonimine, et salvestada brauseri isikupärastatud funktsioonid veebi, misjuhul pääsete Google Chrome'i kaudu igast arvutist nende juurde.</translation>
 <translation id="7473136999113284234">Chrome teeb värskendused automaatselt, nii et kasutate alati uusimat versiooni.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>

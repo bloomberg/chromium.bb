@@ -92,6 +92,7 @@
 <translation id="1787176709638001873">పాస్‌వర్డ్ సవరణ వచనం</translation>
 <translation id="1802710350767629429">నవీకరణ గమనికలను చూపు</translation>
 <translation id="1810107444790159527">జాబితా పెట్టె</translation>
+<translation id="1812527064848182527">ల్యాండ్‌స్కేప్‌లో ఉంది</translation>
 <translation id="1828385960365606039">మే</translation>
 <translation id="1834891354138622109">నిలువు వరుస</translation>
 <translation id="1845944666972354496">యాక్టివేట్ చేయడానికి రెండుసార్లు నొక్కండి</translation>
@@ -251,6 +252,7 @@
 <translation id="3232388865800379423">పాప్ అప్ బటన్</translation>
 <translation id="3241052487511142956">మునుపు సందర్శించిన లింక్</translation>
 <translation id="3241638166094654466">ప్రతి పంక్తిలో గడులు:</translation>
+<translation id="3286372614333682499">పోర్ట్రెయిట్‌లో ఉంది</translation>
 <translation id="3286390186030710347">స్లయిడర్</translation>
 <translation id="3299925995433437805">తదుపరి సందర్శించిన లింక్ లేదు.</translation>
 <translation id="3300348286427369683">రిచ్ టెక్స్ట్ మద్దతు. ChromeVox ఇప్పుడు దాటవేత ఆదేశాలు, బ్రెయిలీ కర్సర్ రూటింగ్, ఎంపిక మరియు మరిన్నింటితో సహా రిచ్ టెక్స్ట్ ఫీల్డ్‌లకు మద్దతిస్తుంది.</translation>
@@ -916,7 +918,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="9043969572162476692"><ph name="NUM" />%</translation>
 <translation id="9061884144798498064">8 చుక్కలు ఉన్న బ్రెయిలీ పట్టికను ఎంచుకోండి:</translation>
 <translation id="9065283790526219006">+పాప్అప్</translation>
-<translation id="9066023754636984703">వివరాలలోకి వెళ్లడం కోసం Search+A నొక్కండి.</translation>
+<translation id="9066023754636984703">వివరాలలోకి వెళ్లడం కోసం Search+A, J నొక్కండి.</translation>
 <translation id="9067522039955793016">పేజీ విభజన</translation>
 <translation id="9077213568694924680">ఎంపిక నుండి తీసివేయబడింది</translation>
 <translation id="9082874451376019682">మునుపటి స్లయిడర్ లేదు.</translation>

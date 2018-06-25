@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Isyarat lemah</translation>
 <translation id="1293264513303784526">Peranti USB-C (port kiri)</translation>
 <translation id="1346748346194534595">Kanan</translation>
+<translation id="1351937230027495976">Runtuhkan menu</translation>
 <translation id="1383876407941801731">Carian</translation>
 <translation id="1467432559032391204">Kiri</translation>
 <translation id="1479743070547893297">Lukis menggunakan stilus anda untuk memilih</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Output</translation>
 <translation id="3019353588588144572">Masa yang tinggal sehingga bateri dicas sepenuhnya, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Kembangkan menu</translation>
 <translation id="3087734570205094154">Bawah</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Mulakan semula untuk mengemas kini</translation>
@@ -166,6 +168,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="397105322502079400">Mengira...</translation>
 <translation id="3995138139523574647">Peranti USB-C (port belakang sebelah kanan)</translation>
 <translation id="4017989525502048489">Penuding laser</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Matikan untuk satu apl}other{Matikan untuk # apl}}</translation>
 <translation id="4072264167173457037">Isyarat sederhana</translation>
 <translation id="4200057768455216496">Anda menekan pintasan untuk penggadang yang didok. Adakah anda ingin menghidupkannya?</translation>
 <translation id="4217571870635786043">Pengimlakan</translation>
@@ -190,6 +193,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4570957409596482333">Butang Pilih untuk Bercakap</translation>
 <translation id="4628757576491864469">Peranti</translation>
 <translation id="4659419629803378708">ChromeVox didayakan</translation>
+<translation id="4734965478015604180">Mendatar</translation>
 <translation id="4776917500594043016">Kata laluan untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Putuskan sambungan</translation>
@@ -197,6 +201,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4872237917498892622">Alt+Search atau Shift</translation>
 <translation id="4890187583552566966">Google Assistant dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="4895488851634969361">Bateri penuh.</translation>
+<translation id="490375751687810070">Menegak</translation>
 <translation id="4905614135390995787">Pintasan untuk menogol Mod Kontras Tinggi telah ditukar. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Kuat</translation>
 <translation id="4918086044614829423">Terima</translation>
@@ -350,6 +355,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8054466585765276473">Mengira tempoh bateri.</translation>
 <translation id="8061464966246066292">Kontras tinggi</translation>
 <translation id="8098591350844501178">Berhenti menghantar skrin ke <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">Dihidupkan, semua apl</translation>
 <translation id="8132793192354020517">Disambungkan ke <ph name="NAME" /></translation>
 <translation id="813913629614996137">Memulakan...</translation>
 <translation id="8142699993796781067">Rangkaian persendirian</translation>
@@ -370,6 +376,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="847056008324733326">Tetapan skala paparan</translation>
 <translation id="8477270416194247200">Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Menyambung semula...</translation>
+<translation id="8513108775083588393">Autoputar</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> anda mungkin tidak akan dicas semasa dihidupkan.</translation>
 <translation id="8639760480004882931">Berbaki <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Pilih untuk Bercakap</translation>

@@ -20,6 +20,7 @@
 <translation id="1110994991967754504"><ph name="PERMISSION_NAME" /> માટે પરવાનગી પસંદ કરો</translation>
 <translation id="1111153019813902504">હાલનાં બુકમાર્ક્સ</translation>
 <translation id="1113869188872983271">&amp;પુનઃક્રમાંકિત કરવું પૂર્વવત્ કરો</translation>
+<translation id="1125573121925420732">વેબસાઇટ તેમની સુરક્ષા અપડેટ કરી રહ્યાં હોય ત્યારે ચેતવણીઓ દેખાવી સામાન્ય બાબત છે. ટૂંક સમયમાં જ આમાં સુધારો કરવામાં આવશે.</translation>
 <translation id="1126551341858583091">સ્થાનિક સ્ટોરેજ પરનું કદ <ph name="CRASH_SIZE" /> છે.</translation>
 <translation id="112840717907525620">નીતિ કેશ ઓકે</translation>
 <translation id="1150979032973867961">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર તમારા કમ્પ્યુટરની ઑપરેટિંગ સિસ્ટમ દ્વારા વિશ્વસનીય નથી. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
@@ -42,6 +43,7 @@
 <translation id="1227633850867390598">મૂલ્ય છુપાવો</translation>
 <translation id="1228893227497259893">ખોટો અસ્તિત્વ ઓળખકર્તા</translation>
 <translation id="1232569758102978740">શીર્ષક વિનાનું</translation>
+<translation id="1250759482327835220">આગલી વખતે વધુ ઝડપથી ચુકવણી કરવા માટે, તમારા કાર્ડ, નામ અને બિલિંગ સરનામાને તમારા Google એકાઉન્ટમાં સાચવો.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (સમન્વયિત)</translation>
 <translation id="1256368399071562588">&lt;p&gt;જો તમે કોઈ વેબસાઇટની મુલાકાત લેવાનો પ્રયાસ કરો અને તે ન ખુલે, તો પહેલા સમસ્યા નિવારણના આ પગલાં લઈને સમસ્યા ઉકેલવાનો પ્રયાસ કરો:&lt;/p&gt;
     &lt;ol&gt;
@@ -121,6 +123,7 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">સિસ્ટમ વ્યવસ્થાપકનો સંપર્ક કરવાનો પ્રયાસ કરો.</translation>
 <translation id="1740951997222943430">એક માન્ય સમાપ્તિ મહિનો દાખલ કરો</translation>
+<translation id="1743520634839655729">આગલી વખતે વધુ ઝડપથી ચુકવણી કરવા માટે, તમારા કાર્ડ, નામ અને બિલિંગ સરનામાને તમારા Google એકાઉન્ટ અને આ ઉપકરણ પર સાચવો.</translation>
 <translation id="17513872634828108">ટેબ્સ ખોલો</translation>
 <translation id="1753706481035618306">પૃષ્ઠ નંબર</translation>
 <translation id="1763864636252898013">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર તમારા ઉપકરણની ઑપરેટિંગ સિસ્ટમ દ્વારા વિશ્વસનીય નથી. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
@@ -257,6 +260,7 @@
 <translation id="2742870351467570537">પસંદ કરેલી આઇટમ્સને દૂર કરો</translation>
 <translation id="277133753123645258">વિતરણ પદ્ધતિ</translation>
 <translation id="277499241957683684">ઉપકરણ રેકોર્ડ ખૂટે છે</translation>
+<translation id="2781030394888168909">MacOSના ફૉર્મેટમાં નિકાસ કરો</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">કનેક્શન ફરીથી સેટ થયું.</translation>
 <translation id="2788784517760473862">સ્વીકૃત ક્રેડિટ કાર્ડ</translation>
@@ -483,7 +487,6 @@
 <translation id="425582637250725228">તમે કરેલા ફેરફારો સાચવવામાં આવ્યાં ન હોઇ શકે.</translation>
 <translation id="4258748452823770588">ખરાબ હસ્તાક્ષર</translation>
 <translation id="4265872034478892965">તમારા વ્યવસ્થાપક દ્વારા મંજૂર</translation>
-<translation id="4269787794583293679">(કોઇ વપરાશકર્તાનામ નથી)</translation>
 <translation id="4275830172053184480">તમારું ઉપકરણ પુનઃપ્રારંભ કરો</translation>
 <translation id="4277028893293644418">પાસવર્ડ રીસેટ કરો</translation>
 <translation id="4280429058323657511">, સમાપ્તિ તારીખ <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -502,8 +505,10 @@
 <translation id="4415426530740016218">પિકઅપ માટેનું સરનામું</translation>
 <translation id="4424024547088906515">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર Chrome દ્વારા વિશ્વસનીય નથી. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> એ તમારું લોગિન પ્રમાણપત્ર સ્વીકાર્યું ન હતું અથવા કદાચ કોઈ એક પ્રદાન કરવામાં આવ્યું નથી.</translation>
+<translation id="4434045419905280838">પૉપ-અપ અને રીડાયરેક્ટ</translation>
 <translation id="443673843213245140">પ્રોક્સીનો ઉપયોગ અક્ષમ કરેલો છે પણ એક સ્પષ્ટ પ્રોક્સી ગોઠવણી ઉલ્લેખિત છે.</translation>
 <translation id="445100540951337728">સ્વીકૃત ડેબિટ કાર્ડ</translation>
+<translation id="4472575034687746823">પ્રારંભ કરો</translation>
 <translation id="4506176782989081258">માન્યતા ભૂલ: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">સિસ્ટમ વ્યવસ્થાપકનો સંપર્ક કરીને</translation>
 <translation id="450710068430902550">વ્યવસ્થાપક સાથે શેર કરવું</translation>
@@ -618,6 +623,7 @@
 <translation id="5332219387342487447">શિપિંગ પદ્ધતિ</translation>
 <translation id="5355557959165512791">તમે અત્યારે <ph name="SITE" />ની મુલાકાત લઈ શકતાં નથી કારણ કે તેનું પ્રમાણપત્ર રદબાતલ કરવામાં આવ્યું છે. નેટવર્કમાં ભૂલ આવવી અને હુમલા થવા સામાન્ય રીતે અસ્થાયી હોય છે, તેથી આ પેજ સંભવિત રૂપે થોડા સમય પછી કાર્ય કરશે.</translation>
 <translation id="536296301121032821">નીતિ સેટિંગ્સ સ્ટોર કરવામાં નિષ્ફળ થયાં</translation>
+<translation id="5371425731340848620">કાર્ડને અપડેટ કરો</translation>
 <translation id="5377026284221673050">"તમારી ઘડિયાળ પાછળ છે" અથવા "તમારી ઘડિયાળ આગળ છે" અથવા "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">આ સાઇટ માટેની પ્રમાણપત્ર શ્રૃંખલા SHA-1 નો ઉપયોગ કરીને સહી કરેલ પ્રમાણપત્ર ધરાવે છે.</translation>
 <translation id="5402410679244714488">સમાપ્તિ: <ph name="EXPIRATION_DATE_ABBR" />, છેલ્લે એક વર્ષ પહેલાં ઉપયોગ કરેલ</translation>
@@ -871,7 +877,6 @@
 <translation id="7451311239929941790">આ સમસ્યા વિશે <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" />.</translation>
 <translation id="7455133967321480974">વૈશ્વિક ડિફોલ્ટનો ઉપયોગ કરો (અવરોધિત કરો)</translation>
 <translation id="7460163899615895653">અન્ય ઉપકરણોમાંના તમારા તાજેતરના ટૅબ્સ અહીં દેખાય છે</translation>
-<translation id="7469372306589899959">કાર્ડની પુષ્ટિ કરી રહ્યાં છે</translation>
 <translation id="7473891865547856676">નહીં આભાર</translation>
 <translation id="7481312909269577407">ફોર્વર્ડ કરો</translation>
 <translation id="7485870689360869515">કોઈ ડેટા મળ્યો નથી.</translation>
@@ -1037,6 +1042,7 @@
 <translation id="8663226718884576429">ઑર્ડરનો સારાંશ, <ph name="TOTAL_LABEL" />, વધુ વિગતો</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, જવાબ, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> સાથેનું તમારું કનેક્શન એન્ક્રિપ્ટેડ નથી.</translation>
+<translation id="8713137585425162364">હાલમાં આ કાર્ડની ચકાસણી કરી શકાતી નથી.</translation>
 <translation id="8718314106902482036">ચુકવણી પૂર્ણ થઈ નથી</translation>
 <translation id="8725066075913043281">ફરી પ્રયાસ કરો</translation>
 <translation id="8728672262656704056">તમે છુપા મોડમાં ગયા છો</translation>

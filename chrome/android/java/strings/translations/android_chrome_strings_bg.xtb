@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">Изтеглянето е на пауза</translation>
 <translation id="1389974829397082527">Тук няма отметки</translation>
 <translation id="1397811292916898096">Търсене чрез <ph name="PRODUCT_NAME" /></translation>
+<translation id="1397854323885047133">Синхронизиране и персонализиране</translation>
 <translation id="1404122904123200417">Вградено в/ъв <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Заявка „Do Not Track“</translation>
 <translation id="1407135791313364759">Отваряне на всички</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">За да получавате персонализирано съдържание, предлагано от Google, влезте в Chrome.</translation>
 <translation id="2091887806945687916">Звук</translation>
 <translation id="2095887075102408547">Когато тази функция е включена, Chrome ще използва сървърите на Google, за да компресира посещаваните от вас страници преди изтеглянето им. Няма да оптимизираме, нито ще виждаме страниците, отваряни през частни връзки (HTTPS) или в раздели в режим „инкогнито“.</translation>
+<translation id="2096012225669085171">Синхронизиране и персонализиране на всички устройства</translation>
 <translation id="2100273922101894616">Автоматичен вход</translation>
 <translation id="2111511281910874386">Към страницата</translation>
 <translation id="2122601567107267586">Приложението не можа да бъде отворено</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">Копиране на URL адреса</translation>
 <translation id="2156074688469523661">Останали сайтове (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">Докоснете, за да отворите нов раздел в текущия</translation>
-<translation id="219985413780390209">Защита от опасни сайтове за вас и устройството ви</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, уеб приложение. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Продължаване като <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Изпраща до Google системна информация и част от съдържанието на страниците</translation>
+<translation id="2234876718134438132">Синхрониз. и услуги на Google</translation>
 <translation id="2259659629660284697">Експортиране на паролите…</translation>
 <translation id="2268044343513325586">Прецизиране</translation>
 <translation id="2286841657746966508">Адрес за фактуриране</translation>
@@ -408,6 +410,7 @@
 <translation id="4594952190837476234">Тази офлайн страница е от <ph name="CREATION_TIME" /> и може да се различава от онлайн версията.</translation>
 <translation id="4605958867780575332">Елементът бе премахнат: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Отваряне на <ph name="WEBAPK_NAME" /></translation>
+<translation id="4634124774493850572">Използване на паролата</translation>
 <translation id="4645575059429386691">Управлява се от ваш родител</translation>
 <translation id="4663756553811254707">Изтрихте <ph name="NUMBER_OF_BOOKMARKS" /> отметки</translation>
 <translation id="4665282149850138822">Добавихте <ph name="NAME" /> към началния екран</translation>
@@ -584,6 +587,7 @@
 <translation id="5958275228015807058">Намерете файловете и страниците си в „Изтегляния“</translation>
 <translation id="5962718611393537961">Докоснете за свиване</translation>
 <translation id="6000066717592683814">Запазване на Google</translation>
+<translation id="6005538289190791541">Предложена парола</translation>
 <translation id="6039379616847168523">Преминаване към следващия раздел</translation>
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="6042308850641462728">Още</translation>
@@ -812,6 +816,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> не е актуален.</translation>
 <translation id="7947953824732555851">Приемам и влизам</translation>
 <translation id="7963646190083259054">Доставчик:</translation>
+<translation id="79859296434321399">За да гледате съдържание с обогатена реалност, инсталирайте ARCore</translation>
 <translation id="7987073022710626672">Общи условия на Chrome</translation>
 <translation id="7998918019931843664">Повторно отваряне на затворения раздел</translation>
 <translation id="7999064672810608036">Наистина ли искате да изчистите всички локални данни, включително „бисквитките“, и да нулирате всички разрешения за този уебсайт?</translation>
@@ -874,6 +879,7 @@
 <translation id="851751545965956758">Блокиране на сайтовете, така че да не се свързват с устройства</translation>
 <translation id="8523928698583292556">Изтриване на съхранената парола</translation>
 <translation id="854522910157234410">Отваряне на тази страница</translation>
+<translation id="8558485628462305855">За да гледате съдържание с обогатена реалност, актуализирайте ARCore</translation>
 <translation id="8559990750235505898">Извеждане на предложения за превод на страниците, написани на други езици</translation>
 <translation id="8562452229998620586">Запазените пароли ще се покажат тук.</translation>
 <translation id="8569404424186215731">от <ph name="DATE" /></translation>

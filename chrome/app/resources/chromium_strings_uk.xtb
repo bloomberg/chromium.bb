@@ -115,7 +115,6 @@
 <translation id="5032989939245619637">Зберігати дані в Chromium</translation>
 <translation id="5045248521775609809">Використовуйте Chromium на всіх пристроях</translation>
 <translation id="5116586539350239523">Chromium надійно зберігатиме ваші особисті дані, тож вам не потрібно буде вводити їх знову.</translation>
-<translation id="5231355151045086930">Вийти з Chromium</translation>
 <translation id="5358375970380395591">Ви входите, використовуючи дані облікового запису, яким керує адміністратор. Адміністратор може контролювати ваш профіль Chromium. Ваші дані Chromium, як-от програми, закладки, історія, паролі й інші налаштування, буде назавжди пов’язано з обліковим записом <ph name="USER_NAME" />. Ці дані можна видалити на інформаційній панелі Облікових записів Google, але ви не зможете пов’язати їх з іншим обліковим записом. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium оновлюється (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Доступна нова версія Chromium.</translation>
@@ -148,6 +147,7 @@
 <translation id="6129621093834146363">Файл <ph name="FILE_NAME" /> небезпечний, тому Chromium заблокував його.</translation>
 <translation id="6212496753309875659">На цьому комп’ютері вже встановлено новішу версію Chromium. Якщо програмне забезпечення не працює, видаліть Chromium і повторіть спробу.</translation>
 <translation id="6248213926982192922">Зробити Chromium переглядачем за умовчанням</translation>
+<translation id="6268381023930128611">Вийти з Chromium?</translation>
 <translation id="6295779123002464101">Файл <ph name="FILE_NAME" /> може бути небезпечним, тому Chromium заблокував його.</translation>
 <translation id="6309712487085796862">Chromium використовує вашу камеру.</translation>
 <translation id="6333502561965082103">У Chromium виконується інша операція. Спробуйте пізніше.</translation>

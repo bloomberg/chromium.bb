@@ -705,6 +705,7 @@ Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, j
          Pokud zásadu nenastavíte, použije se zásada AllowJavaScript a uživatelé ji budou moci změnit.</translation>
 <translation id="3038323923255997294">Po ukončení prohlížeče <ph name="PRODUCT_NAME" /> nechat aplikace na pozadí spuštěné</translation>
 <translation id="3046192273793919231">Odesílat na server správy síťové pakety ke sledování stavu online</translation>
+<translation id="3047732214002457234">Určuje, jak nástroj Chrome Cleanup hlásí data do Googlu</translation>
 <translation id="3048744057455266684">Pokud je tato zásada nastavena a adresa URL pro vyhledávání navržená v omniboxu obsahuje tento parametr v řetězci dotazu nebo v identifikátoru fragmentu, jako návrh budou namísto samotné adresy URL zobrazeny vyhledávací dotazy a poskytovatel vyhledávání.
 
           Tato zásada je volitelná. Pokud není nastavena, nebudou prováděna žádná nahrazení vyhledávacích dotazů.
@@ -1028,6 +1029,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 
       Je-li tato zásada nastavena na hodnotu True, budou se odesílat sledovací síťové pakety (tzv. <ph name="HEARTBEATS_TERM" />).
       Pokud je nastavena na hodnotu False nebo není nastavena, pakety se odesílat nebudou.</translation>
+<translation id="3950239119790560549">Časová omezení aktualizací</translation>
 <translation id="3958586912393694012">Povolit používání funkce Smart Lock</translation>
 <translation id="3963602271515417124">Pokud je tato zásada nastavena na hodnotu true, bude pro zařízení povolena vzdálená atestace a bude automaticky vygenerován certifikát, který se nahraje na server správy zařízení.
 
@@ -1286,6 +1288,10 @@ Chcete-li zadat několik názvů serverů, oddělte je čárkami. Zástupné zna
 
 Pokud zásadu nenastavíte, <ph name="PRODUCT_NAME" /> nebude delegovat přihlašovací údaje uživatelů ani v případě, že server bude zjištěn jako intranet.</translation>
 <translation id="4752880493649142945">Klientský certifikát pro připojení k RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Pokud je tato zásada nastavená na hodnotu true nebo není nastavená, bude prohlížeč <ph name="PRODUCT_NAME" /> navrhovat stránky související s aktuální stránkou.
+      Tyto návrhy se načítají vzdáleně ze serverů Google.
+
+      Pokud je tato zásada nastavená na hodnotu false, návrhy se načítat ani zobrazovat nebudou.</translation>
 <translation id="4791031774429044540">Aktivuje funkci usnadnění přístupu pomocí velkého kurzoru.
 
 Pokud je tato zásada nastavena na hodnotu true, velký kurzor bude vždy aktivní.
@@ -2139,6 +2145,13 @@ Pokud tuto zásadu nastavíte, uživatelé ji budou moci dočasně přepsat akti
 
 Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací obrazovky lupa deaktivována. Uživatelé budou moci lupu kdykoli aktivovat nebo deaktivovat a zvolený stav na přihlašovací obrazovce přetrvá i u jiných uživatelů.</translation>
 <translation id="7249828445670652637">Povolit aplikacím ARC používání certifikátů CA systému <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="725322441686394886">Pokud tato zásada není nastavena a Chrome Cleanup nalezne nežádoucí software, může metadata o kontrole poskytnout Googlu v souladu s nastavením zásady SafeBrowsingExtendedReportingEnabled. Chrome Cleanup poté uživatele požádá, zda chce nežádoucí software odstranit. Uživatel může výsledky čištění sdílet s Googlem a pomoci tak se zjišťováním nežádoucího softwaru do budoucna. Výsledky obsahují metadata souborů, automaticky nainstalovaná rozšíření a klíče registru, jak je popsáno v dokumentu Informace o ochraně soukromí v prohlížeči Google Chrome.
+
+Pokud je tato zásada deaktivovaná a Chrome Cleanup nalezne nežádoucí software, metadata o kontrole do Googlu nenahlásí (bez ohledu na nastavení zásady SafeBrowsingExtendedReportingEnabled). Chrome Cleanup se uživatele zeptá, zda chce nežádoucí software odstranit. Výsledky čištění nebudou nahlášeny Googlu a nebude je moci nahlásit ani uživatel.
+
+Pokud je tato zásada aktivovaná a Chrome Cleanup nalezne nežádoucí software, může metadata o kontrole nahlásit do Googlu v souladu s nastavením zásady SafeBrowsingExtendedReportingEnabled. Chrome Cleanup se uživatele zeptá, zda chce nežádoucí software odstranit. Výsledky čištění budou nahlášeny Googlu a uživatel tomu nebude moci zabránit.
+
+V instancích systému Windows, které nejsou zařazeny do domény <ph name="MS_AD_NAME" />, tato zásada není k dispozici.</translation>
 <translation id="7258823566580374486">Povolit blokování uživatelského rozhraní hostitelů vzdáleného přístupu</translation>
 <translation id="7260277299188117560">Automatické aktualizace pomocí sítě p2p aktivovány</translation>
 <translation id="7261252191178797385">Obrázek tapety zařízení</translation>
@@ -2204,6 +2217,11 @@ Pokud nezadáte žádné nastavení, ověření protokolu <ph name="HTTP_NEGOTIA
       Pokud je toto nastavení deaktivováno nebo není nakonfigurováno, uživatelé mohou po zobrazení upozornění pokračovat na nahlášený web.
 
       Další informace o Bezpečném prohlížení najdete na stránce https://developers.google.com/safe-browsing.</translation>
+<translation id="7417728346887499628">Pokud je tato zásada deaktivovaná, zakazuje nástroji Chrome Cleanup vyhledávat v systému nežádoucí software a čistit jej. Ruční spuštění nástroje Chrome Cleanup ze stránky chrome://settings/cleanup je zakázáno.
+
+      Pokud je tato zásada aktivovaná nebo není nastavena, bude Chrome Cleanup v systému pravidelně vyhledávat nežádoucí software, a pokud nějaký najde, zeptá se uživatele, zda jej chce odstranit. Ruční spuštění nástroje Chrome Cleanup ze stránky chrome://settings je povoleno.
+
+      V instancích systému Windows, které nejsou zařazeny do domény <ph name="MS_AD_NAME" />, tato zásada není k dispozici.</translation>
 <translation id="7417972229667085380">Procento prodloužení prodlevy režimu nečinnosti v režimu prezentace (podpora ukončena)</translation>
 <translation id="7421483919690710988">Nastavit velikost diskové mezipaměti médií v bajtech</translation>
 <translation id="7424751532654212117">Seznam výjimek ze seznamu deaktivovaných pluginů</translation>
@@ -2583,6 +2601,7 @@ Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji
 <translation id="8339420913453596618">Druhý faktor je vypnut</translation>
 <translation id="8344454543174932833">Importování záložek z výchozího prohlížeče při prvním spuštění</translation>
 <translation id="8359734107661430198">Aktivovat API PříkladZastaraléFunkce do 2. 9. 2008</translation>
+<translation id="8367209241899435947">Povolit v systému Windows nástroj Chrome Cleanup</translation>
 <translation id="8369602308428138533">Prodleva vypnutí obrazovky při napájení ze sítě</translation>
 <translation id="8382184662529825177">Povolit použití vzdáleného ověření identity k ochraně obsahu v zařízení</translation>
 <translation id="838870586332499308">Povolit datový roaming</translation>
@@ -2854,6 +2873,7 @@ Pokud je zásada nastavena na hodnotu true, systémové protokoly budou odesíl�
      Pokud zásadu nenastavíte, toto nastavení se aktivuje a uživatelé budou moci používat anonymní režim.</translation>
 <translation id="915194831143859291">Pokud je tato zásada nastavena na hodnotu false nebo není nastavena, systém <ph name="PRODUCT_OS_NAME" /> umožní uživateli vypnout zařízení.
 Pokud je tato zásada nastavena na hodnotu true a uživatel vypne zařízení, spustí systém <ph name="PRODUCT_OS_NAME" /> restart. Systém <ph name="PRODUCT_OS_NAME" /> nahradí všechna tlačítka pro vypnutí v uživatelském rozhraní tlačítky pro restart. Pokud uživatel zařízení vypne pomocí vypínače, zařízení se automaticky restartovat nebude, a to ani v případě, že je tato zásada aktivována.</translation>
+<translation id="9152473318295429890">Povolit kontextové návrhy souvisejících webových stránek</translation>
 <translation id="9158929520101169054">Povolit v prohlížeči vícenásobné přihlášení</translation>
 <translation id="9165792353046089850">Umožňuje nastavit, zda weby mají povoleno získat přístup k připojeným zařízením USB. Přístup lze zcela zablokovat, nebo je možné uživatele požádat pokaždé, když chce web k připojeným zařízením USB získat přístup.
 
@@ -2889,4 +2909,9 @@ Pokud je tato zásada nastavena na hodnotu true a uživatel vypne zařízení, s
 <translation id="944817693306670849">Nastavení velikosti mezipaměti na disku</translation>
 <translation id="981346395360763138">Služby určování polohy Google jsou vypnuty</translation>
 <translation id="982497069985795632">Zapnout kontrolu pravopisu</translation>
+<translation id="988537626274109600">Tato zásada určuje časové rámce, v nichž zařízení se systémem <ph name="PRODUCT_OS_NAME" /> nemá povoleno automaticky kontrolovat dostupnost aktualizací.
+      Když je tato zásada nastavená na neprázdný seznam časových intervalů:
+      Zařízení během zadaných časových intervalů nebudou moci automaticky kontrolovat dostupnost aktualizací. Tato zásada vzhledem k možným bezpečnostním problémům nebude mít vliv na zařízení, která vyžadují vrácení na starší verzi nebo v nichž je nižší než minimální verze systému <ph name="PRODUCT_OS_NAME" />. Nebude také blokovat kontroly dostupnosti aktualizací, o které požádají uživatelé nebo administrátoři.
+      Když tato zásada není nastavená nebo neobsahuje žádné časové intervaly:
+      Tato zásada nebude blokovat automatické kontroly dostupnosti aktualizací, mohou je však blokovat jiné zásady.</translation>
 </translationbundle>

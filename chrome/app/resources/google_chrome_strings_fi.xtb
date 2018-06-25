@@ -119,6 +119,7 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="4143243756087420366">Chromen nimi ja kuva</translation>
 <translation id="4147555960264124640">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Google Chrome -profiiliasi. Chrome-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME" />. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Asennusohjelma ei pystynyt purkamaan arkistotiedostoa. Lataa Google Chrome uudelleen.</translation>
+<translation id="424864128008805179">Kirjaudutaanko ulos Chromesta?</translation>
 <translation id="4251615635259297716">Linkitetäänkö Chrome-tiedot tähän tiliin?</translation>
 <translation id="4251625577313994583">lataa Chrome iPhoneen</translation>
 <translation id="4293420128516039005">Kirjaudu sisään, niin voit synkronoida Chromen ja tehdä siitä yksilöllisemmän kaikilla laitteilla.</translation>
@@ -213,7 +214,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="7398801000654795464">Chromeen kirjautunut käyttäjä: <ph name="USER_EMAIL_ADDRESS" />. Kirjaudu uudelleen sisään samalla tilillä.</translation>
 <translation id="7408085963519505752">Chrome-käyttöjärjestelmän käyttöehdot</translation>
 <translation id="7419046106786626209">Chrome-käyttöjärjestelmä ei voinut synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
-<translation id="7437998757836447326">Uloskirjautuminen Chromesta</translation>
 <translation id="7459554271817304652">Määrittämällä synkronoinnin voit tallentaa selaimesi tiedot verkkoon ja käyttää niitä minkä tahansa tietokoneen Google Chromella.</translation>
 <translation id="7473136999113284234">Chrome päivitetään automaattisesti, joten käytössäsi on aina uusin versio</translation>
 <translation id="7535429826459677826">Google Chromen kehittäjäversio</translation>

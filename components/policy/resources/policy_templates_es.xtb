@@ -736,6 +736,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Si no se establece esta política, se usará la política AllowJavaScript y el usuario podrá modificarla.</translation>
 <translation id="3038323923255997294">Continuar ejecutando aplicaciones en segundo plano cuando <ph name="PRODUCT_NAME" /> esté cerrado</translation>
 <translation id="3046192273793919231">Enviar paquetes de red al servidor de gestión para supervisar el estado online</translation>
+<translation id="3047732214002457234">Controlar cómo envía el Limpiador de Chrome datos a Google</translation>
 <translation id="3048744057455266684">En caso de que se establezca esta política y de que una URL de búsqueda sugerida del omnibox incluya este parámetro en la cadena de consulta o en el identificador de fragmentos, la sugerencia mostrará los términos de búsqueda y el proveedor de búsqueda en lugar de la URL de búsqueda sin procesar.
 
           Esta política es opcional. Si no se establece, no se realizará ninguna sustitución de los términos de búsqueda.
@@ -916,7 +917,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3577251398714997599">Configuración de anuncios de sitios web con anuncios invasivos</translation>
 <translation id="3591584750136265240">Configurar el comportamiento de la autenticación de inicio de sesión</translation>
 <translation id="3627678165642179114">Habilitar o inhabilitar el servicio web de corrección ortográfica</translation>
-<translation id="3646859102161347133">Establecer el tipo de aumento de pantalla</translation>
+<translation id="3646859102161347133">Establecer el tipo de lupa</translation>
 <translation id="3653237928288822292">Icono del proveedor de búsquedas predeterminadas</translation>
 <translation id="3660562134618097814">Transferir las cookies del proveedor de identidad SAML durante el inicio de sesión</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (el campo de una línea está obsoleto y desaparecerá en el futuro; a partir de ahora, debes utilizar el campo de varias líneas que aparece más abajo).</translation>
@@ -1067,6 +1068,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
       Si se asigna el valor true a esta política, se enviarán paquetes de red de supervisión (denominados <ph name="HEARTBEATS_TERM" />).
       Si se asigna el valor false o si esta política no se configura, no se enviarán paquetes.</translation>
+<translation id="3950239119790560549">Actualizar restricciones de tiempo</translation>
 <translation id="3958586912393694012">Permitir el uso de Smart Lock</translation>
 <translation id="3963602271515417124">Si se asigna el valor True, se habilitará la confirmación remota para el dispositivo y se generará automáticamente un certificado que se subirá al servidor de administración de dispositivos.
 
@@ -1328,6 +1330,10 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Si no se establece esta política, <ph name="PRODUCT_NAME" /> no delegará las credenciales de usuarios, aunque se detecte una intranet como servidor.</translation>
 <translation id="4752880493649142945">Certificado del cliente para establecer conexión con RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Si se le asigna el valor "True" o no se le asigna ninguno, <ph name="PRODUCT_NAME" /> recomendará páginas que estén relacionadas con la actual.
+      Estas sugerencias se obtienen de forma remota de los servidores de Google.
+
+      Si se le asigna el valor "False", no se obtendrán ni mostrarán sugerencias.</translation>
 <translation id="4791031774429044540">Habilita la función de accesibilidad del cursor grande.
 
           Si el valor de esta política se establece en True, siempre se habilitará el cursor grande.
@@ -1410,7 +1416,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se inhabilita, no se importará el historial de navegación.
 
       Si no se establece, es posible que se le pida al usuario que haga la importación o que el historial de navegación se importe automáticamente.</translation>
-<translation id="5056708224511062314">Aumento de pantalla inhabilitado</translation>
+<translation id="5056708224511062314">Lupa inhabilitada</translation>
 <translation id="5058573563327660283">Seleccionar la estrategia utilizada para liberar espacio en disco durante la limpieza automática (obsoleta)</translation>
 <translation id="5067143124345820993">Lista de admisión de usuarios con permiso para iniciar sesión</translation>
 <translation id="5068140065960598044">La política de la nube de <ph name="PRODUCT_NAME" /> anula la política del equipo.</translation>
@@ -1428,7 +1434,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5105313908130842249">Retraso de bloqueo de pantalla cuando el dispositivo funciona con la batería</translation>
 <translation id="5108031557082757679">Impresoras de dispositivos de empresa inhabilitadas</translation>
 <translation id="5130288486815037971">Indicar si se han habilitado los conjuntos de cifrado de RC4 en TLS</translation>
-<translation id="5141670636904227950">Establecer el tipo de aumento de pantalla predeterminado habilitado en la pantalla de inicio de sesión</translation>
+<translation id="5141670636904227950">Establecer el tipo de lupa predeterminada habilitada en la pantalla de inicio de sesión</translation>
 <translation id="5142301680741828703">Mostrar siempre los patrones de URL indicados a continuación en <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5147665094011258322">Determina el nombre de host del dispositivo que se utiliza en las solicitudes DHCP.
 
@@ -2190,14 +2196,21 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
           Si no se asigna ningún valor a esta política, el usuario puede cambiar esta configuración manualmente.</translation>
 <translation id="723103540848640830">Configurar la longitud mínima del PIN para la pantalla de bloqueo</translation>
 <translation id="7234280155140786597">Nombres de hosts de mensajes nativos no permitidos (o * para todos)</translation>
-<translation id="7236775576470542603">Establece el tipo predeterminado de aumento de pantalla que se ha habilitado en la pantalla de inicio de sesión.
+<translation id="7236775576470542603">Establece el tipo predeterminado de lupa que se ha habilitado en la pantalla de inicio de sesión.
 
-          Si se establece esta política, controla el tipo de aumento de pantalla que se habilita cuando se muestra la pantalla de inicio de sesión. Si la política se establece como ninguna, se inhabilitará el aumento de pantalla.
+          Si se establece esta política, controla el tipo de lupa que se habilita cuando se muestra la pantalla de inicio de sesión. Si la política se establece como ninguna, se inhabilitará la lupa.
 
-          Si estableces esta política, los usuarios podrán anularla temporalmente habilitando o inhabilitando el aumento de pantalla. No obstante, la selección del usuario no es permanente, y se restablecerá la opción predeterminada cuando se vuelva a mostrar la pantalla de inicio de sesión o el usuario permanezca inactivo en la pantalla de inicio de sesión durante un minuto.
+          Si estableces esta política, los usuarios podrán anularla temporalmente habilitando o inhabilitando la lupa. No obstante, la selección del usuario no es permanente, y se restablecerá la opción predeterminada cuando se vuelva a mostrar la pantalla de inicio de sesión o el usuario permanezca inactivo en la pantalla de inicio de sesión durante un minuto.
 
-          Si no se establece esta política, se inhabilitará el aumento de pantalla la primera vez que se muestre la pantalla de inicio de sesión. Los usuarios pueden habilitar o inhabilitar el aumento de pantalla en cualquier momento, y su estado en la pantalla de inicio de sesión permanecerá entre usuarios.</translation>
+          Si no se establece esta política, se inhabilitará la lupa la primera vez que se muestre la pantalla de inicio de sesión. Los usuarios pueden habilitar o inhabilitar la lupa en cualquier momento, y su estado en la pantalla de inicio de sesión permanecerá entre usuarios.</translation>
 <translation id="7249828445670652637">Habilitar los certificados de CA de <ph name="PRODUCT_OS_NAME" /> a las aplicaciones ARC</translation>
+<translation id="725322441686394886">Si no se le asigna ningún valor a esta política, cuando el Limpiador de Chrome detecte software no deseado, podrá enviar metadatos sobre el análisis a Google, según la política establecida por SafeBrowsingExtendedReportingEnabled. El Limpiador de Chrome preguntará al usuario si quiere eliminar el software no deseado. El usuario tendrá la opción de compartir los resultados de la limpieza con Google para ayudar a detectar software no deseado en el futuro. Estos resultados contienen metadatos de archivos, extensiones instaladas de forma automática y claves de registro, tal como se describe en la página de información sobre privacidad de Google Chrome.
+
+      Si se inhabilita, cuando el Limpiador de Chrome detecte software no deseado, no enviará metadatos sobre el análisis a Google, anulando cualquier política establecida por SafeBrowsingExtendedReportingEnabled. El Limpiador de Chrome preguntará al usuario si quiere eliminar el software no deseado. Los resultados de la limpieza no se enviarán a Google y el usuario no tendrá la opción de hacerlo.
+
+      Si se habilita, cuando el Limpiador de Chrome detecte software no deseado, podrá enviar metadatos sobre el análisis de acuerdo con la política establecida por SafeBrowsingExtendedReportingEnabled. El Limpiador de Chrome preguntará al usuario si quiere eliminar el software no deseado. Los resultados de la limpieza se enviarán a Google y el usuario no tendrá la opción de impedirlo.
+
+      Esta política no está disponible en las instancias de Windows que no están vinculadas a un dominio de <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Activar modo de cortina en hosts de acceso remoto</translation>
 <translation id="7260277299188117560">Conexión P2P para actualizaciones automáticas habilitada</translation>
 <translation id="7261252191178797385">Imagen de fondo de pantalla del dispositivo</translation>
@@ -2263,6 +2276,11 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
       Si se inhabilita esta opción o no se configura, los usuarios pueden elegir si quieren acceder al sitio web marcado después de ver la advertencia.
 
       Consulta la página https://developers.google.com/safe-browsing para obtener más información sobre la función Navegación Segura.</translation>
+<translation id="7417728346887499628">Si se inhabilita, el Limpiador de Chrome no podrá analizar el sistema para detectar software no deseado y realizar limpiezas. La opción para activar el Limpiador de Chrome desde chrome://settings/cleanup estará inhabilitada.
+
+      Si se habilita o no se le asigna ningún valor, el Limpiador de Chrome analizará el sistema periódicamente para detectar software no deseado y, si encontrara alguno, preguntará al usuario si desea eliminarlo. La opción para activar el Limpiador de Chrome desde chrome://settings/cleanup estará inhabilitada.
+
+      Esta política no está disponible en instancias de Windows que no estén unidas a un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Porcentaje que permite ajustar el retraso de inactividad en el modo de presentación (política obsoleta)</translation>
 <translation id="7421483919690710988">Establecer tamaño de caché de disco de medios en bytes</translation>
 <translation id="7424751532654212117">Lista de excepciones de la lista de complementos inhabilitados</translation>
@@ -2640,7 +2658,7 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
       False es que produzca un problema de compatibilidad relacionado con las secuencias de comandos de PAC.
 
       Lo ideal es eliminar esta anulación en el futuro.</translation>
-<translation id="8285435910062771358">Aumento de pantalla completa habilitado</translation>
+<translation id="8285435910062771358">Lupa de pantalla completa habilitada</translation>
 <translation id="8288199156259560552">Habilitar los servicios de ubicación de Google para aplicaciones Android</translation>
 <translation id="8294750666104911727">Normalmente, las páginas con X-UA-Compatible establecido en chrome=1 se mostrarán en <ph name="PRODUCT_FRAME_NAME" />, independientemente de la política ChromeFrameRendererSettings.
 
@@ -2664,6 +2682,7 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="8339420913453596618">Segundo factor inhabilitado</translation>
 <translation id="8344454543174932833">Importa los marcadores desde el navegador predeterminado en la primera ejecución.</translation>
 <translation id="8359734107661430198">Habilitar el API ExampleDeprecatedFeature hasta el 02/09/2008</translation>
+<translation id="8367209241899435947">Habilitar el Limpiador de Chrome en Windows</translation>
 <translation id="8369602308428138533">Retraso de desconexión de la pantalla cuando el dispositivo está conectado a la red</translation>
 <translation id="8382184662529825177">Habilitar el uso de la confirmación remota para la protección del contenido del dispositivo</translation>
 <translation id="838870586332499308">Habilitar la itinerancia de datos</translation>
@@ -2936,6 +2955,7 @@ Los controladores de protocolos registrados por la política se combinan con los
       Si no se establece esta política, la opción estará habilitada y los usuarios podrán usar el modo de incógnito.</translation>
 <translation id="915194831143859291">Si se asigna el valor false a esta política o si esta no se configura, <ph name="PRODUCT_OS_NAME" /> permitirá al usuario apagar el dispositivo.
       Si se asigna el valor true, <ph name="PRODUCT_OS_NAME" /> reiniciará el dispositivo cuando el usuario lo apague. Cada vez que aparece un botón de apagado en la interfaz de usuario, <ph name="PRODUCT_OS_NAME" /> lo sustituye por un botón de reinicio. Sin embargo, si el usuario apaga el dispositivo con el botón de encendido, este no se reiniciará automáticamente, incluso si se ha habilitado la política.</translation>
+<translation id="9152473318295429890">Habilitar las sugerencias contextuales de páginas web relacionadas</translation>
 <translation id="9158929520101169054">Permitir inicio de sesión múltiple en el navegador</translation>
 <translation id="9165792353046089850">Permite establecer si los sitios web pueden acceder a los dispositivos USB conectados. El acceso se puede bloquear por completo, o se le puede preguntar al usuario cada vez que un sitio web quiera acceder a los dispositivos USB conectados.
 
@@ -2971,4 +2991,9 @@ Los controladores de protocolos registrados por la política se combinan con los
 <translation id="944817693306670849">Establecer tamaño de caché de disco</translation>
 <translation id="981346395360763138">Los servicios de ubicación de Google están inhabilitados</translation>
 <translation id="982497069985795632">Habilitar corrector ortográfico</translation>
+<translation id="988537626274109600">Esta política controla los intervalos de tiempo durante el cual el dispositivo <ph name="PRODUCT_OS_NAME" /> no puede comprobar automáticamente si hay actualizaciones.
+      Cuando se le asigna una lista de intervalos de tiempo que no esté vacía a esta política:
+      Los dispositivos no podrán comprobar si hay actualizaciones de forma automática durante los periodos de tiempo especificados. Por motivos de seguridad, esta política no se aplica a los dispositivos que requieran restauración o tengan una versión anterior a <ph name="PRODUCT_OS_NAME" />. Además, esta política no bloqueará las comprobaciones de actualizaciones que solicitan los usuarios o administradores.
+      Cuando no se le asigna ningún valor a esta política o no contiene intervalos de tiempo:
+      Esta política no bloqueará las comprobaciones de actualizaciones automáticas, pero es posible que otras políticas las bloqueen.</translation>
 </translationbundle>

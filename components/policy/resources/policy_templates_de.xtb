@@ -706,6 +706,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="3034580675120919256">Ermöglicht Ihnen festzulegen, ob Websites JavaScript ausführen dürfen. Das Ausführen von JavaScript kann entweder allen Websites gestattet oder für alle unterbunden werden. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AllowJavaScript" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
 <translation id="3038323923255997294">Apps weiter im Hintergrund ausführen, wenn <ph name="PRODUCT_NAME" /> geschlossen ist</translation>
 <translation id="3046192273793919231">Netzwerkpakete zur Überwachung des Onlinestatus an den Verwaltungsserver senden</translation>
+<translation id="3047732214002457234">Festlegen, wie Daten vom Chrome Cleanup Tool an Google gesendet werden</translation>
 <translation id="3048744057455266684">Falls diese Richtlinie festgelegt ist und eine Such-URL-Vervollständigung aus der Omnibox diesen Parameter im Suchanfragen-String oder der Fragment-ID enthält, werden die Suchbegriffe und Suchanbieter anstelle der Such-URL angezeigt.
 
           Diese Richtlinie ist optional. Wenn sie nicht konfiguriert wird, erfolgt keine Ersetzung der Suchbegriffe.
@@ -1021,6 +1022,7 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
       sogenannte "<ph name="HEARTBEATS_TERM" />", gesendet.
       Wird "false" festgelegt oder die Richtlinie nicht konfiguriert, werden keine
       Pakete gesendet.</translation>
+<translation id="3950239119790560549">Zeitbeschränkungen aktualisieren</translation>
 <translation id="3958586912393694012">Verwendung von Smart Lock erlauben</translation>
 <translation id="3963602271515417124">Bei Festlegung auf "true" ist die Remote-Bestätigung für das Gerät erlaubt. Ein Zertifikat wird automatisch erstellt und auf den Device Management Server hochgeladen.
 
@@ -1270,6 +1272,10 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 
           Wenn Sie diese Richtlinie nicht konfigurieren, leitet <ph name="PRODUCT_NAME" /> keine Anmeldedaten von Nutzern weiter, auch nicht an Server innerhalb des Intranets.</translation>
 <translation id="4752880493649142945">Clientzertifikat zur Herstellung einer Verbindung zu RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, schlägt <ph name="PRODUCT_NAME" /> Seiten vor, die der aktuellen ähnlich sind.
+      Diese Vorschläge werden remote von den Google-Servern abgerufen.
+
+      Falls diese Einstellung auf "false" gesetzt ist, werden keine Vorschläge abgerufen oder angezeigt.</translation>
 <translation id="4791031774429044540">Hiermit wird die Bedienungshilfefunktion für den großen Cursor aktiviert.
 
           Ist diese Richtlinie auf "true" gesetzt, ist der große Cursor immer aktiviert.
@@ -2089,6 +2095,13 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 
           Falls diese Richtlinie nicht konfiguriert wird, ist die Lupe deaktiviert, wenn die Anmeldeseite das erste Mal angezeigt wird. Die Nutzer können die Lupe jederzeit aktivieren oder deaktivieren und dieser Status bleibt auf der Anmeldeseite erhalten.</translation>
 <translation id="7249828445670652637"><ph name="PRODUCT_OS_NAME" />-CA-Zertifikate für ARC-Apps aktivieren</translation>
+<translation id="725322441686394886">Wenn die Richtlinie nicht konfiguriert ist und das Chrome Cleanup Tool unerwünschte Software findet, kann es Metadaten zum Scan an Google senden. Dies geschieht in Übereinstimmung mit der über "SafeBrowsingExtendedReportingEnabled" festgelegten Richtlinie. Der Nutzer wird dann vom Chrome Cleanup Tool gefragt, ob die unerwünschte Software gelöscht werden soll. Er kann die Ergebnisse der Bereinigung mit Google teilen, damit unerwünschte Software zukünftig besser erkannt wird. Diese Ergebnisse enthalten Dateimetadaten, automatisch installierte Erweiterungen und Registrierungsschlüssel, wie es im Whitepaper zum Datenschutz bei Chrome beschrieben ist.
+
+      Falls die Richtlinie deaktiviert ist und das Chrome Cleanup Tool unerwünschte Software findet, werden keine Metadaten zum Scan an Google gesendet. Über "SafeBrowsingExtendedReportingEnabled" festgelegte Richtlinien werden überschrieben. Der Nutzer wird dann vom Chrome Cleanup Tool gefragt, ob die unerwünschte Software gelöscht werden soll. Ergebnisse der Bereinigung werden nicht an Google gesendet und der Nutzer hat auch keine Möglichkeit dazu.
+
+      Falls die Richtlinie aktiviert ist und das Chrome Cleanup Tool unerwünschte Software findet, können Metadaten zum Scan an Google gesendet werden. Dies geschieht in Übereinstimmung mit der über "SafeBrowsingExtendedReportingEnabled" festgelegten Richtlinie. Der Nutzer wird dann vom Chrome Cleanup Tool gefragt, ob die unerwünschte Software gelöscht werden soll. Ergebnisse der Bereinigung werden an Google gesendet und der Nutzer hat keine Möglichkeit, dies zu verhindern.
+
+      Diese Richtlinie ist nur für Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind.</translation>
 <translation id="7258823566580374486">Zugangsbeschränkung für Remotezugriff-Hosts aktivieren</translation>
 <translation id="7260277299188117560">P2P für automatische Updates aktivieren</translation>
 <translation id="7261252191178797385">Gerätehintergrundbild</translation>
@@ -2152,6 +2165,11 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Ist die Einstellung deaktiviert oder nicht konfiguriert, können Nutzer zu der gekennzeichneten Website gehen, nachdem sie den Warnhinweis gesehen haben.
 
       Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.</translation>
+<translation id="7417728346887499628">Wenn diese Richtlinie deaktiviert ist, kann das Chrome Cleanup Tool das System nicht auf unerwünschte Software scannen und keine Bereinigungen durchführen. Das Chrome Cleanup Tool kann auch nicht manuell über chrome://settings/cleanup gestartet werden.
+
+      Falls die Richtlinie deaktiviert oder nicht konfiguriert ist, scannt das Chrome Cleanup Tool das System regelmäßig nach unerwünschter Software. Wird welche gefunden, wird der Nutzer gefragt, ob sie entfernt werden soll. Das Chrome Cleanup Tool kann auch nicht manuell über chrome://settings/cleanup gestartet werden.
+
+      Diese Richtlinie ist nur für Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind.</translation>
 <translation id="7417972229667085380">Prozentsatz für die Skalierung der Inaktivitätsspanne im Präsentationsmodus (veraltet)</translation>
 <translation id="7421483919690710988">Cache-Größe für Mediendatenträger in Byte festlegen</translation>
 <translation id="7424751532654212117">Liste der Ausnahmen von der Liste der deaktivierten Plug-ins</translation>
@@ -2526,6 +2544,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="8339420913453596618">Zweiter Authentifizierungsfaktor deaktiviert</translation>
 <translation id="8344454543174932833">Lesezeichen bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="8359734107661430198">ExampleDeprecatedFeature API bis zum 02.09.2008 aktivieren</translation>
+<translation id="8367209241899435947">Chrome Cleanup Tool unter Windows aktivieren</translation>
 <translation id="8369602308428138533">Verzögerung für die Bildschirmabschaltung im Netzbetrieb</translation>
 <translation id="8382184662529825177">Verwendung von Remote-Bescheinigung (Remote Attestation) zum Schutz von Inhalten für das Gerät aktivieren</translation>
 <translation id="838870586332499308">Daten-Roaming aktivieren</translation>
@@ -2785,6 +2804,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="9150416707757015439">Diese Richtlinie ist veraltet. Bitte verwenden Sie stattdessen "IncognitoModeAvailability". Aktiviert den Inkognitomodus in <ph name="PRODUCT_NAME" />. Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, können Nutzer Webseiten im Inkognitomodus öffnen. Sollte die Einstellung deaktiviert sein, können Nutzer Webseiten nicht im Inkognitomodus öffnen. Ist die Richtlinie nicht konfiguriert, so ist die Funktion aktiviert, sodass Nutzer den Inkognitomodus verwenden können.</translation>
 <translation id="915194831143859291">Wenn diese Richtlinie auf "false" gesetzt oder nicht konfiguriert ist, erlaubt <ph name="PRODUCT_OS_NAME" /> dem Nutzer, das Gerät herunterzufahren.
       Ist diese Richtlinie auf "true" gesetzt, löst <ph name="PRODUCT_OS_NAME" /> einen Neustart aus, wenn der Nutzer das Gerät herunterfährt. <ph name="PRODUCT_OS_NAME" /> ersetzt alle Schaltflächen zum Herunterfahren auf der Benutzeroberfläche durch Schaltflächen zum Neustarten. Wenn der Nutzer das Gerät über die Ein-/Aus-Taste herunterfährt, wird es nicht automatisch neu gestartet, auch wenn die Richtlinie aktiviert ist.</translation>
+<translation id="9152473318295429890">Kontextbezogene Vorschläge ähnlicher Webseiten aktivieren</translation>
 <translation id="9158929520101169054">Mehrfachanmeldung im Browser zulassen</translation>
 <translation id="9165792353046089850">Mit dieser Richtlinie können Sie festlegen, ob Websites Zugriff auf angeschlossene USB-Geräte erhalten. Der Zugriff kann vollständig blockiert werden oder der Nutzer wird jedes Mal gefragt, wenn eine Website auf angeschlossene USB-Geräte zugreifen möchte.
 
@@ -2820,4 +2840,9 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="944817693306670849">Datenträger-Cache-Größe festlegen</translation>
 <translation id="981346395360763138">Standortdienste von Google deaktiviert</translation>
 <translation id="982497069985795632">Rechtschreibprüfung aktivieren</translation>
+<translation id="988537626274109600">Über diese Richtlinie wird der Zeitraum festgelegt, in dem das <ph name="PRODUCT_OS_NAME" />-Gerät nicht automatisch nach Updates suchen darf.
+      Folgendes passiert, wenn diese Richtlinie auf eine nicht leere Liste von Zeiträumen gesetzt festgelegt wird:
+      Geräte können während der festgelegten Zeiträume nicht automatisch nach Updates suchen. Auf Geräte, für die ein Rollback erforderlich ist oder die eine Version von <ph name="PRODUCT_OS_NAME" /> ausführen, die unter der Mindestversion liegt, hat diese Richtlinie aufgrund potenzieller Sicherheitsprobleme keine Auswirkungen. Außerdem blockiert diese Richtlinie keine Prüfungen auf Updates, die von Nutzern oder Administratoren angefordert werden.
+      Wenn diese Richtlinie nicht konfiguriert ist oder keine Zeiträume enthält, passiert Folgendes:
+      Automatische Prüfungen auf Updates werden zwar durch diese nicht Richtlinie blockiert, können jedoch durch andere Richtlinien blockiert werden.</translation>
 </translationbundle>

@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">సిగ్నల్ బలహీనంగా ఉంది</translation>
 <translation id="1293264513303784526">USB-C పరికరం (ఎడమ పోర్ట్)</translation>
 <translation id="1346748346194534595">కుడి</translation>
+<translation id="1351937230027495976">మెనూను కుదించు</translation>
 <translation id="1383876407941801731">శోధించు</translation>
 <translation id="1467432559032391204">ఎడమ</translation>
 <translation id="1479743070547893297">ఎంచుకోవడానికి మీ స్టైలస్‌తో గీయండి</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">అవుట్‌పుట్</translation>
 <translation id="3019353588588144572">బ్యాటరీ నిండటానికి పట్టే సమయం, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">మెనూని విస్తరించు</translation>
 <translation id="3087734570205094154">దిగువ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (బ్లూటూత్)</translation>
 <translation id="3126069444801937830">నవీకరించడానికి పునఃప్రారంభించండి</translation>
@@ -165,8 +167,9 @@
 <translation id="397105322502079400">గణిస్తోంది...</translation>
 <translation id="3995138139523574647">USB-C పరికరం (కుడివైపు వెనుక పోర్ట్)</translation>
 <translation id="4017989525502048489">లేజర్ పాయింటర్</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{ఒక యాప్‌కు ఆఫ్‌లో ఉంది}other{# యాప్‌లకు ఆఫ్‌లో ఉంది}}</translation>
 <translation id="4072264167173457037">సిగ్నల్ ఓ మోస్తరుగా ఉంది</translation>
-<translation id="4200057768455216496">డాక్ చేసిన మాగ్నిఫైయర్ కోసం మీరు సత్వరమార్గాన్ని నొక్కారు. మీరు దీనిని ఆన్ చేయాలనుకుంటున్నారా?</translation>
+<translation id="4200057768455216496">డాక్ చేసిన మాగ్నిఫైయర్‌కు సంబంధించిన షార్ట్‌కట్‌ను మీరు నొక్కారు. మీరు దీనిని ఆన్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="4217571870635786043">డిక్టేషన్</translation>
 <translation id="4279490309300973883">ప్రతిబింబిస్తుంది</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -188,6 +191,7 @@
 <translation id="4570957409596482333">వినడానికి ఎంచుకోండి బటన్</translation>
 <translation id="4628757576491864469">పరికరాలు</translation>
 <translation id="4659419629803378708">ChromeVox ప్రారంభించబడింది</translation>
+<translation id="4734965478015604180">అడ్డంగా ఉంది</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> కోసం పాస్‌వర్డ్</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">డిస్‌కనెక్ట్ చెయ్యి</translation>
@@ -195,6 +199,7 @@
 <translation id="4872237917498892622">Alt+Search లేదా Shift</translation>
 <translation id="4890187583552566966">మీ నిర్వాహకునిచే Google సహాయకం నిలిపివేయబడింది.</translation>
 <translation id="4895488851634969361">బ్యాటరీ నిండింది.</translation>
+<translation id="490375751687810070">నిలువుగా ఉంది</translation>
 <translation id="4905614135390995787">అధిక కాంట్రాస్ట్ మోడ్‌ను టోగుల్ చేయడానికి ఉన్న సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కు బదులుగా <ph name="NEW_SHORTCUT" /> ఉపయోగించండి.</translation>
 <translation id="4917385247580444890">బలమైన</translation>
 <translation id="4918086044614829423">ఆమోదించు</translation>
@@ -294,7 +299,7 @@
 <translation id="7015766095477679451">తిరిగి <ph name="COME_BACK_TIME" />కి రండి.</translation>
 <translation id="7029814467594812963">సెషన్‌ని నిష్క్రమించు</translation>
 <translation id="7034339000180558234"><ph name="RECEIVER_NAME" />కి <ph name="TAB_NAME" />ని ప్రసారం చేస్తున్నాము</translation>
-<translation id="7037152028959403492">అధిక కాంట్రాస్ట్ కోసం మీరు సత్వరమార్గాన్ని నొక్కారు. మీరు దీనిని ఆన్ చేయాలనుకుంటున్నారా?</translation>
+<translation id="7037152028959403492">అధిక కాంట్రాస్ట్‌కు సంబంధించిన షార్ట్‌కట్‌ను మీరు నొక్కారు. మీరు దీనిని ఆన్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="7066646422045619941">ఈ నెట్‌వర్క్‌ను మీ నిర్వాహకులు నిలిపివేసారు.</translation>
 <translation id="7067196344162293536">స్వయంచాలకంగా తిప్పు</translation>
 <translation id="7076293881109082629">సైన్ ఇన్ చేస్తోంది</translation>
@@ -343,10 +348,11 @@
 <translation id="8054466585765276473">బ్యాటరీ సమయాన్ని లెక్కిస్తోంది.</translation>
 <translation id="8061464966246066292">అధిక కాంట్రాస్ట్</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" />కి స్క్రీన్‌ను ప్రసారం చేయడాన్ని ఆపివేయి</translation>
+<translation id="8113423164597455979">ఆన్, అన్ని యాప్‌లు</translation>
 <translation id="8132793192354020517"><ph name="NAME" />కు కనెక్ట్ చేయబడింది</translation>
 <translation id="813913629614996137">ప్రారంభిస్తోంది...</translation>
 <translation id="8142699993796781067">ప్రైవేట్ నెట్‌వర్క్</translation>
-<translation id="8152119955266188852">పూర్తి స్క్రీన్‌ మాగ్నిఫైయర్ కోసం మీరు సత్వరమార్గాన్ని నొక్కారు. మీరు దీనిని ఆన్ చేయాలనుకుంటున్నారా?</translation>
+<translation id="8152119955266188852">పూర్తి స్క్రీన్‌ మాగ్నిఫైయర్‌కు సంబంధించిన షార్ట్‌కట్‌ను మీరు నొక్కారు. మీరు దీనిని ఆన్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="8180896103888046100">తెలియని రిసీవర్‌కు ప్రసారం చేయడాన్ని ఆపివేయి</translation>
 <translation id="8190698733819146287">భాషలను అనుకూలీకరించి, ఇన్‌పుట్ చెయ్యి...</translation>
 <translation id="8261506727792406068">తొలగించు</translation>
@@ -362,6 +368,7 @@
 <translation id="847056008324733326">స్కేల్ సెట్టింగ్‌లను ప్రదర్శించండి</translation>
 <translation id="8477270416194247200">రద్దు చేయడానికి Alt+Search లేదా Shiftని నొక్కండి.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: మళ్లీ కనెక్ట్ చేస్తోంది...</translation>
+<translation id="8513108775083588393">ఆటో-రొటేట్‌లో ఉంది</translation>
 <translation id="8517041960877371778">మీ <ph name="DEVICE_TYPE" /> ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> మిగిలి ఉంది</translation>
 <translation id="8649101189709089199">వినడానికి ఎంచుకోండి</translation>

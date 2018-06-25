@@ -117,7 +117,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5032989939245619637">Save details in Chromium</translation>
 <translation id="5045248521775609809">Take Chromium everywhere</translation>
 <translation id="5116586539350239523">Chromium will securely store your personal details so that you don't need to type them in again.</translation>
-<translation id="5231355151045086930">Sign out of Chromium</translation>
 <translation id="5358375970380395591">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Updating Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">There is a new version of Chromium available.</translation>
@@ -150,6 +149,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> is dangerous, so Chromium has blocked it.</translation>
 <translation id="6212496753309875659">This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and try again.</translation>
 <translation id="6248213926982192922">Make Chromium the default browser</translation>
+<translation id="6268381023930128611">Sign out of Chromium?</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> may be dangerous, so Chromium has blocked it.</translation>
 <translation id="6309712487085796862">Chromium is using your camera.</translation>
 <translation id="6333502561965082103">Another operation on Chromium is in progress. Please try again later.</translation>

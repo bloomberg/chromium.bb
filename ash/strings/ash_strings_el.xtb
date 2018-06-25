@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Ασθενές σήμα</translation>
 <translation id="1293264513303784526">Συσκευή USB-C (αριστερή θύρα)</translation>
 <translation id="1346748346194534595">Δεξιά</translation>
+<translation id="1351937230027495976">Σύμπτυξη μενού</translation>
 <translation id="1383876407941801731">Αναζήτηση</translation>
 <translation id="1467432559032391204">Αριστερά</translation>
 <translation id="1479743070547893297">Σχεδιάστε με τη γραφίδα σας για να επιλέξετε στοιχεία</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Έξοδος</translation>
 <translation id="3019353588588144572">Χρόνος που απομένει μέχρι να φορτιστεί πλήρως η μπαταρία, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Ανάπτυξη μενού</translation>
 <translation id="3087734570205094154">Κάτω</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Επανεκκίνηση για ενημέρωση</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Υπολογισμός…</translation>
 <translation id="3995138139523574647">Συσκευή USB-C (πίσω δεξιά θύρα)</translation>
 <translation id="4017989525502048489">Δείκτης λέιζερ</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Απενεργοποιημένες για κάποια εφαρμογή}other{Απενεργοποιημένες για # εφαρμογές}}</translation>
 <translation id="4072264167173457037">Μεσαίο σήμα</translation>
 <translation id="4200057768455216496">Πατήσατε τη συντόμευση για τον μεγεθυντικό φακό σε παράθυρο. Θέλετε να τον ενεργοποιήσετε;</translation>
 <translation id="4217571870635786043">Υπαγόρευση</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">Κουμπί "Επιλέξτε για αυτόματη ανάγνωση"</translation>
 <translation id="4628757576491864469">Συσκευές</translation>
 <translation id="4659419629803378708">Το ChromeVox ενεργοποιήθηκε</translation>
+<translation id="4734965478015604180">Οριζόντια περιστροφή</translation>
 <translation id="4776917500594043016">Κωδικός πρόσβασης για <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Αποσύνδεση</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">Alt+Search ή Shift</translation>
 <translation id="4890187583552566966">Ο Βοηθός Google είναι απενεργοποιημένος από τον διαχειριστή σας.</translation>
 <translation id="4895488851634969361">Η μπαταρία είναι πλήρης.</translation>
+<translation id="490375751687810070">Κατακόρυφη περιστροφή</translation>
 <translation id="4905614135390995787">Η συντόμευση για την εναλλαγή της Λειτουργίας υψηλής αντίθεσης άλλαξε. Χρησιμοποιήστε τη συντόμευση <ph name="NEW_SHORTCUT" /> αντί για τη συντόμευση <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Ισχυρό</translation>
 <translation id="4918086044614829423">Αποδοχή</translation>
@@ -349,6 +354,7 @@
 <translation id="8054466585765276473">Υπολογισμός χρόνου μπαταρίας που απομένει.</translation>
 <translation id="8061464966246066292">Υψηλή αντίθεση</translation>
 <translation id="8098591350844501178">Διακοπή μετάδοσης οθόνης σε <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">Ενεργές, όλες οι εφαρμογές</translation>
 <translation id="8132793192354020517">Έγινε σύνδεση με το δίκτυο <ph name="NAME" /></translation>
 <translation id="813913629614996137">Εκκίνηση…</translation>
 <translation id="8142699993796781067">Ιδιωτικό δίκτυο</translation>
@@ -369,6 +375,7 @@
 <translation id="847056008324733326">Εμφάνιση ρυθμίσεων κλίμακας</translation>
 <translation id="8477270416194247200">Πατήστε Alt+Search ή Shift για ακύρωση.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Επανασύνδεση…</translation>
+<translation id="8513108775083588393">Αυτόματη περιστροφή</translation>
 <translation id="8517041960877371778">Δεν είναι δυνατή η φόρτιση της συσκευής <ph name="DEVICE_TYPE" /> ενώ είναι ενεργοποιημένη.</translation>
 <translation id="8639760480004882931">Απομένει <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Επιλέξτε για αυτόματη ανάγνωση</translation>

@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">İndirme işlemi duraklatıldı</translation>
 <translation id="1389974829397082527">Burada yer işareti yok</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> ile ara</translation>
+<translation id="1397854323885047133">Senkronizasyon ve kişiselleştirme</translation>
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" /> sitesinde yerleşik</translation>
 <translation id="1406000523432664303">“Do Not Track”</translation>
 <translation id="1407135791313364759">Tümünü aç</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">Google tarafından önerilen kişiselleştirilmiş içeriği almak için Chrome'da oturum açın.</translation>
 <translation id="2091887806945687916">Ses</translation>
 <translation id="2095887075102408547">Bu özellik açık olduğunda, Chrome, ziyaret ettiğiniz sayfaları indirmeden önce sıkıştırmak için Google sunucularını kullanır. Gizli bağlantılar (HTTPS) veya Gizli sekmeler kullanarak erişilen sayfalar Google tarafından optimize edilmez veya görülmez.</translation>
+<translation id="2096012225669085171">Cihazlar arasında senkronizasyon ve kişiselleştirme</translation>
 <translation id="2100273922101894616">Otomatik Oturum Aç</translation>
 <translation id="2111511281910874386">Sayfaya gidin</translation>
 <translation id="2122601567107267586">Uygulama açılamadı</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">URL'yi Kopyala</translation>
 <translation id="2156074688469523661">Kalan site sayısı (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">Geçerli sekmenizde yeni sekme sayfasına gitmek için dokunun</translation>
-<translation id="219985413780390209">Kendinizi ve cihazınızı tehlikeli sitelerden koruyun</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web uygulaması. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> olarak devam edin</translation>
 <translation id="2232379019872353004">Bazı sistem bilgilerini ve sayfa içeriğini Google'a gönderir</translation>
+<translation id="2234876718134438132">Senkronizasyon ve Google hizmetleri</translation>
 <translation id="2259659629660284697">Şifreleri dışa aktar…</translation>
 <translation id="2268044343513325586">Hassaslaştır</translation>
 <translation id="2286841657746966508">Fatura adresi</translation>
@@ -408,6 +410,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4594952190837476234">Bu çevrimdışı sayfa <ph name="CREATION_TIME" /> tarihli olup web'deki sürümden farklı olabilir.</translation>
 <translation id="4605958867780575332">Öğe kaldırıldı: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> APK'sını aç</translation>
+<translation id="4634124774493850572">Şifre kullan</translation>
 <translation id="4645575059429386691">Ebeveyniniz tarafından yönetiliyor</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> yer işareti silindi</translation>
 <translation id="4665282149850138822"><ph name="NAME" />, Ana ekranınıza eklendi</translation>
@@ -583,6 +586,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="5958275228015807058">Dosyalarınızı ve sayfalarınızı İndirilenler bölümünde bulabilirsiniz</translation>
 <translation id="5962718611393537961">Daraltmak için dokunun</translation>
 <translation id="6000066717592683814">Google kalsın</translation>
+<translation id="6005538289190791541">Önerilen şifre</translation>
 <translation id="6039379616847168523">Sonraki sekmeye gider</translation>
 <translation id="6040143037577758943">Kapat</translation>
 <translation id="6042308850641462728">Daha fazla</translation>
@@ -811,6 +815,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> güncel değil.</translation>
 <translation id="7947953824732555851">Kabul et ve oturum aç</translation>
 <translation id="7963646190083259054">Firma:</translation>
+<translation id="79859296434321399">Artırılmış gerçeklik içeriğini görüntülemek için ARCore'u yükleyin</translation>
 <translation id="7987073022710626672">Chrome Hizmet Şartları</translation>
 <translation id="7998918019931843664">Kapatılan sekmeyi yeniden aç</translation>
 <translation id="7999064672810608036">Bu web sitesine ilişkin çerezler dahil tüm yerel verileri temizlemek ve bu sitenin tüm izinlerini sıfırlamak istediğinizden emin misiniz?</translation>
@@ -873,6 +878,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="851751545965956758">Sitelerin cihazlara bağlanmasını engelle</translation>
 <translation id="8523928698583292556">Kayıtlı şifreyi sil</translation>
 <translation id="854522910157234410">Şu sayfayı aç:</translation>
+<translation id="8558485628462305855">Artırılmış gerçeklik içeriğini görüntülemek için ARCore'u güncelleyin</translation>
 <translation id="8559990750235505898">Diğer dillerdeki sayfaları çevirmeyi öner</translation>
 <translation id="8562452229998620586">Kayıtlı şifreleriniz burada görünür.</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> tarihinden bu yana</translation>

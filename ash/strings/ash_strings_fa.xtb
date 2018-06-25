@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">سیگنال ضعیف</translation>
 <translation id="1293264513303784526">‏دستگاه USB-C (درگاه سمت چپ)</translation>
 <translation id="1346748346194534595">راست</translation>
+<translation id="1351937230027495976">کوچک کردن منو</translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1467432559032391204">چپ</translation>
 <translation id="1479743070547893297">برای انتخاب کردن، با قلم طرحی بکشید</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">خروجی</translation>
 <translation id="3019353588588144572">زمان باقی مانده تا شارژ کامل باتری، <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">تبدیل</translation>
+<translation id="3081696990447829002">بزرگ کردن منو</translation>
 <translation id="3087734570205094154">پایین</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (بلوتوث)</translation>
 <translation id="3126069444801937830">راه‌اندازی مجدد برای به‌روزرسانی</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">در حال محاسبه…</translation>
 <translation id="3995138139523574647">‏دستگاه USB-C (درگاه عقب سمت راست)</translation>
 <translation id="4017989525502048489">اشاره‌گر لیزری</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{خاموش برای یک برنامه}one{خاموش برای # برنامه}other{خاموش برای # برنامه}}</translation>
 <translation id="4072264167173457037">سیگنال متوسط</translation>
 <translation id="4200057768455216496">میان‌بر مربوط به ذره‌بین متصل را فشار دادید. می‌خواهید آن را روشن کنید؟</translation>
 <translation id="4217571870635786043">املا</translation>
@@ -190,6 +193,7 @@
 <translation id="4570957409596482333">دکمه «انتخاب کنید تا بتوانید صحبت کنید»</translation>
 <translation id="4628757576491864469">دستگاه‌ها</translation>
 <translation id="4659419629803378708">‏ChromeVox فعال شد</translation>
+<translation id="4734965478015604180">افقی</translation>
 <translation id="4776917500594043016">گذرواژه <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">جستجو</translation>
 <translation id="4804818685124855865">قطع اتصال</translation>
@@ -197,6 +201,7 @@
 <translation id="4872237917498892622">‏Alt+جستجو یا Shift</translation>
 <translation id="4890187583552566966">‏سرپرستتان «دستیار Google» را غیرفعال کرده است.</translation>
 <translation id="4895488851634969361">باتری پر است.</translation>
+<translation id="490375751687810070">عمودی</translation>
 <translation id="4905614135390995787">میان‌بر روشن/خاموش کردن «حالت تضاد بالا» تغییر کرده است. لطفاً به‌جای <ph name="OLD_SHORTCUT" /> از <ph name="NEW_SHORTCUT" /> استفاده کنید.</translation>
 <translation id="4917385247580444890">قوی</translation>
 <translation id="4918086044614829423">می‌پذیرم</translation>
@@ -350,6 +355,7 @@
 <translation id="8054466585765276473">درحال محاسبه زمان شارژ باتری.</translation>
 <translation id="8061464966246066292">کنتراست بالا</translation>
 <translation id="8098591350844501178">توقف ارسال محتوای صفحه به <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">روشن، همه برنامه‌ها</translation>
 <translation id="8132793192354020517">متصل به <ph name="NAME" /></translation>
 <translation id="813913629614996137">درحال مقداردهی اولیه…</translation>
 <translation id="8142699993796781067">شبکه‌های خصوصی</translation>
@@ -370,6 +376,7 @@
 <translation id="847056008324733326">تنظیمات مقیاس نمایش</translation>
 <translation id="8477270416194247200">‏برای لغو کردن Alt+Search یا Shift را فشار دهید.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: درحال اتصال مجدد...</translation>
+<translation id="8513108775083588393">چرخش خودکار</translation>
 <translation id="8517041960877371778">ممکن است وقتی <ph name="DEVICE_TYPE" /> شما خاموش است، شارژ نشود.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> باقی‌مانده</translation>
 <translation id="8649101189709089199">انتخاب کنید تا بتوانید صحبت کنید</translation>

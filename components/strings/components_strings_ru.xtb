@@ -43,6 +43,7 @@
 <translation id="1227633850867390598">Скрыть значение</translation>
 <translation id="1228893227497259893">Неверный идентификатор объекта</translation>
 <translation id="1232569758102978740">Без имени</translation>
+<translation id="1250759482327835220">Чтобы ускорить процесс оплаты в будущем, сохраните карту, свое имя и платежный адрес в аккаунте Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (данные синхронизируются)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Если сайт не открывается, выполните следующие действия:&lt;/p&gt;
     &lt;ol&gt;
@@ -123,6 +124,7 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Обратитесь за помощью к системному администратору.</translation>
 <translation id="1740951997222943430">Недопустимый формат месяца.</translation>
+<translation id="1743520634839655729">Чтобы ускорить процесс оплаты в будущем, сохраните карту, свое имя, а также платежный адрес в аккаунте Google и на этом устройстве.</translation>
 <translation id="17513872634828108">Открытые вкладки</translation>
 <translation id="1753706481035618306">Номер страницы</translation>
 <translation id="1763864636252898013">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Операционная система устройства не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
@@ -487,7 +489,6 @@
 <translation id="425582637250725228">Возможно, внесенные изменения не сохранятся.</translation>
 <translation id="4258748452823770588">Подпись недействительна</translation>
 <translation id="4265872034478892965">Разрешено администратором</translation>
-<translation id="4269787794583293679">(Не указано)</translation>
 <translation id="4275830172053184480">Перезапуск устройства</translation>
 <translation id="4277028893293644418">Сбросить пароль</translation>
 <translation id="4280429058323657511">, действует до <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -510,6 +511,7 @@
 <translation id="4434045419905280838">Всплывающие окна и переадресация</translation>
 <translation id="443673843213245140">Прокси-сервер отключен, но при этом его конфигурация задана явным образом.</translation>
 <translation id="445100540951337728">Дебетовые карты, которые принимаются к оплате</translation>
+<translation id="4472575034687746823">Начало работы</translation>
 <translation id="4506176782989081258">Ошибка проверки: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Обратитесь за помощью к системному администратору.</translation>
 <translation id="450710068430902550">Доступ администратора</translation>
@@ -625,6 +627,7 @@
 <translation id="5332219387342487447">Способ доставки</translation>
 <translation id="5355557959165512791">Сертификат веб-сайта <ph name="SITE" /> отозван. Открыть сайт в настоящее время нельзя. Сбой мог быть вызван сетевой ошибкой или действиями злоумышленников. Скорее всего, сайт заработает через некоторое время.</translation>
 <translation id="536296301121032821">Не удалось сохранить настройки политики</translation>
+<translation id="5371425731340848620">Изменить информацию о карте</translation>
 <translation id="5377026284221673050">"Часы отстают", "Часы спешат" или &lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;</translation>
 <translation id="5386426401304769735">В цепочке сертификатов этого сайта есть сертификат, подписанный с помощью алгоритма SHA-1.</translation>
 <translation id="5402410679244714488">Срок действия: <ph name="EXPIRATION_DATE_ABBR" />, использовалась более года назад</translation>
@@ -884,7 +887,6 @@
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Узнайте больше<ph name="END_LINK" /> об этой проблеме.</translation>
 <translation id="7455133967321480974">Использовать глобальный параметр по умолчанию (блокировать)</translation>
 <translation id="7460163899615895653">Здесь появятся недавние вкладки с других устройств</translation>
-<translation id="7469372306589899959">Подтверждение карты…</translation>
 <translation id="7473891865547856676">Пропустить</translation>
 <translation id="7481312909269577407">Вперед</translation>
 <translation id="7485870689360869515">Данные не найдены.</translation>
@@ -1050,6 +1052,7 @@
 <translation id="8663226718884576429">Информация о заказе, <ph name="TOTAL_LABEL" />, дополнительные сведения</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, ответ, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Соединение с <ph name="DOMAIN" /> не зашифровано.</translation>
+<translation id="8713137585425162364">Невозможно подтвердить карту.</translation>
 <translation id="8718314106902482036">Не удалось обработать платеж</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8728672262656704056">Вы перешли в режим инкогнито</translation>

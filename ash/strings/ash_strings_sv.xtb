@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">svag signal</translation>
 <translation id="1293264513303784526">USB-C-enhet (vänster port)</translation>
 <translation id="1346748346194534595">Höger</translation>
+<translation id="1351937230027495976">Komprimera menyn</translation>
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1467432559032391204">Vänster</translation>
 <translation id="1479743070547893297">Välj genom att rita med e-pennan</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Utgång</translation>
 <translation id="3019353588588144572">Tid som återstår tills batteriet är fulladdat: <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">skift</translation>
+<translation id="3081696990447829002">Utöka menyn</translation>
 <translation id="3087734570205094154">Nederst</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Starta om för att uppdatera</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Beräknar ...</translation>
 <translation id="3995138139523574647">USB-C-enhet (bakre porten på högra sidan)</translation>
 <translation id="4017989525502048489">Laserpekare</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Av för en app}other{Av för # appar}}</translation>
 <translation id="4072264167173457037">medelstark signal</translation>
 <translation id="4200057768455216496">Du tryckte på kortkommandot för dockad skärmförstoring. Vill du aktivera funktionen?</translation>
 <translation id="4217571870635786043">Diktering</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">Knappen Textuppläsning</translation>
 <translation id="4628757576491864469">Enheter</translation>
 <translation id="4659419629803378708">ChromeVox har aktiverats</translation>
+<translation id="4734965478015604180">Horisontell</translation>
 <translation id="4776917500594043016">Lösenord för <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">sök</translation>
 <translation id="4804818685124855865">Koppla från</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">Alt + Sök eller Skift</translation>
 <translation id="4890187583552566966">Administratören har inaktiverat Google Assistent.</translation>
 <translation id="4895488851634969361">Batteriet är fullt.</translation>
+<translation id="490375751687810070">Vertikal</translation>
 <translation id="4905614135390995787">Kortkommandot för att aktivera och inaktivera högkontrastläget har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Stark</translation>
 <translation id="4918086044614829423">Acceptera</translation>
@@ -349,6 +354,7 @@
 <translation id="8054466585765276473">Batteritiden beräknas.</translation>
 <translation id="8061464966246066292">Hög kontrast</translation>
 <translation id="8098591350844501178">Sluta casta skärmen till <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">På för alla appar</translation>
 <translation id="8132793192354020517">Ansluten till <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initierar …</translation>
 <translation id="8142699993796781067">Privat nätverk</translation>
@@ -369,6 +375,7 @@
 <translation id="847056008324733326">Inställningar för skala på skärmen</translation>
 <translation id="8477270416194247200">Avbryt genom att trycka på Alt + söktangenten eller Skift.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: återansluter …</translation>
+<translation id="8513108775083588393">Rotera automatiskt</translation>
 <translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> laddas eventuellt inte så länge den är på.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> återstår</translation>
 <translation id="8649101189709089199">Textuppläsning</translation>

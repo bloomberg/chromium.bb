@@ -736,6 +736,7 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
           Kui jätate selle reegli määramata, siis kasutatakse reeglit „AllowJavaScript” ja kasutaja saab seda muuta.</translation>
 <translation id="3038323923255997294">Jätka taustarakenduste käitamist pärast rakenduse <ph name="PRODUCT_NAME" /> sulgemist</translation>
 <translation id="3046192273793919231">Veebioleku jälgimiseks võrgupakettide haldusserverisse saatmine</translation>
+<translation id="3047732214002457234">Määrab, kuidas Chrome Cleanup edastab andmeid Google'ile</translation>
 <translation id="3048744057455266684">Kui see reegel määratakse ja omnikastikeses olev otsingu URL sisaldab seda parameetrit päringustringis või fragmendi identifikaatoris, siis kuvatakse soovituses otsinguterminid ja otsingupakkuja, mitte ainult otsingu URL.
 
           See reegel on valikuline. Kui seda ei määrata, siis otsinguterminit ei asendata.
@@ -1059,6 +1060,7 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
       Kui selle reegli väärtuseks on määratud Tõene, saadetakse jälgitavad võrgupaketid (nn <ph name="HEARTBEATS_TERM" />).
       Kui väärtuseks on määratud Väär või reeglit ei määrata, siis pakette ei saadeta.</translation>
+<translation id="3950239119790560549">Ajapiirangute värskendamine</translation>
 <translation id="3958586912393694012">Smart Locki kasutamise lubamine</translation>
 <translation id="3963602271515417124">Kui selle väärtuseks on määratud Tõene, on seadme kaugatesteerimine lubatud ning sertifikaat luuakse ja laaditakse seadmehaldusserverisse üles automaatselt.
 
@@ -1318,6 +1320,10 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
           Kui jätate selle reegli määramata, ei delegeeri <ph name="PRODUCT_NAME" /> kasutaja mandaate isegi siis, kui server tuvastatakse intranetis olevana.</translation>
 <translation id="4752880493649142945">Kliendi sertifikaat ühendamiseks reegliga RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Kui reegel on määramata või seatud väärtusele Tõene, soovitab teenus <ph name="PRODUCT_NAME" /> praeguse lehega seotud lehti.
+      Need soovitused tuuakse kaugühenduse kaudu Google'i serveritest.
+
+      Kui reegel on seatud väärtusele Väär, siis soovitusi ei tooda ega kuvata.</translation>
 <translation id="4791031774429044540">Suure kursori hõlbustusfunktsiooni lubamine.
 
           Kui reegel on seatud väärtusele Tõene, on suur kursor alati lubatud.
@@ -2188,6 +2194,13 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
           Kui jätate reegli määramata, on ekraaniluup sisselogimisekraani esmakuvamisel keelatud. Kasutajad võivad ekraaniluubi igal ajal lubada või keelata ja selle olek on sisselogimisekraanil kasutajati püsiv.</translation>
 <translation id="7249828445670652637">Luba ARC-rakenduste jaoks operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> CA-sertifikaatide kasutamine</translation>
+<translation id="725322441686394886">Kui reegel on määramata ja Chrome Cleanup tuvastab soovimatu tarkvara, võib teenus edastada skanni metaandmed Google'ile, järgides atribuudiga SafeBrowsingExtendedReportingEnabled määratud reeglit. Chrome Cleanup küsib seejärel kasutajalt, kas ta soovib tuvastatud tarkvara eemaldada. Seejärel võib kasutaja jagada puhastuse tulemusi Google'iga, et täiustada soovimatu tarkvara tuvastamise funktsiooni. Tulemused sisaldavad faili metaandmeid, automaatselt installitud laiendusi ja registrivõtmeid, mida kirjeldatakse Chrome'i privaatsuse juhendis.
+
+      Kui reegel on keelatud ja Chrome Cleanup tuvastab soovimatu tarkvara, ei edasta teenus skanni metaandmeid Google'ile, alistades atribuudiga SafeBrowsingExtendedReportingEnabled määratud reegli. Chrome Cleanup küsib kasutajalt, kas ta soovib tuvastatud tarkvara eemaldada. Puhastuse tulemusi ei edastata Google'ile ja kasutajale ei esitata sellekohast valikut.
+
+      Kui reegel on lubatud ja Chrome Cleanup tuvastab soovimatu tarkvara, võib teenus edastada skanni metaandmed Google'ile, järgides atribuudiga SafeBrowsingExtendedReportingEnabled määratud reeglit. Chrome Cleanup küsib kasutajalt, kas ta soovib tuvastatud tarkvara eemaldada. Puhastuse tulemused edastatakse Google'ile ja kasutaja ei saa seda takistada.
+
+      Reegel ei ole saadaval Windowsi eksemplarides, mis ei ole liidetud teenuse <ph name="MS_AD_NAME" /> domeeniga.</translation>
 <translation id="7258823566580374486">Kaugjuurdepääsu hostide varjamise lubamine</translation>
 <translation id="7260277299188117560">Lubatud p2p automaatne värskendamine</translation>
 <translation id="7261252191178797385">Seadme taustapildi kujutis</translation>
@@ -2253,6 +2266,11 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Kui seade on keelatud või seadistamata, saavad kasutajad pärast hoiatuse kuvamist teha valiku edasiminekuks märgistatud saidile.
 
       Vaadake lisateavet ohutu sirvimise kohta aadressilt https://developers.google.com/safe-browsing.</translation>
+<translation id="7417728346887499628">Kui reegel on keelatud, on Chrome Cleanupil keelatud süsteemi soovimatu tarkvara suhtes skannida ja puhastada. Chrome Cleanupi käsitsi käivitamine aadressil chrome://settings/cleanup on keelatud.
+
+      Kui reegel on lubatud määramata, skannib Chrome Cleanup regulaarselt süsteemi soovimatu tarkvara suhtes. Soovimatu tarkvara leidmisel küsitakse kasutajalt, kas ta soovib selle eemaldada. Chrome Cleanupi käsitsi käivitamine aadressil chrome://settings on lubatud.
+
+      Reegel ei ole saadaval Windowsi eksemplarides, mis ei ole liidetud teenuse <ph name="MS_AD_NAME" /> domeeniga.</translation>
 <translation id="7417972229667085380">Esitlusrežiimis tegevusetu oleku viivituse skaleerimise määr protsentides (tugi on katkestatud)</translation>
 <translation id="7421483919690710988">Määrake meediumiketta vahemälu suurus baitides</translation>
 <translation id="7424751532654212117">Keelatud pistikprogrammide loendi erandite loend</translation>
@@ -2651,6 +2669,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="8339420913453596618">Teine tegur on keelatud</translation>
 <translation id="8344454543174932833">Impordi järjehoidjad vaikebrauserist esmakordsel käitamisel</translation>
 <translation id="8359734107661430198">Luba ExampleDeprecatedFeature API kuni 02.09.2008</translation>
+<translation id="8367209241899435947">Chrome Cleanupi lubamine Windowsis</translation>
 <translation id="8369602308428138533">Ekraani väljalülitamise viiteaeg võrgutoite kasutamisel</translation>
 <translation id="8382184662529825177">Kaugatesteerimise lubamine seadme sisu kaitsmiseks</translation>
 <translation id="838870586332499308">Luba andmeside rändlusteenus</translation>
@@ -2924,6 +2943,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui reeglit ei määrata, siis need lubatakse ja inkognito režiimi on võimalik kasutada.</translation>
 <translation id="915194831143859291">Kui reegel on määramata või seatud väärtusele Väär, lubab <ph name="PRODUCT_OS_NAME" /> kasutajal seadme välja lülitada.
       Kui reegel on seatud väärtusele Tõene ja kasutaja lülitab seadme välja, taaskäivitab <ph name="PRODUCT_OS_NAME" /> seadme. <ph name="PRODUCT_OS_NAME" /> asendab kasutajaliidese kõik väljalülitamisnupud taaskäivitusnuppudega. Kui kasutaja lülitab seadme toitenupuga välja, ei taaskäivitata seda automaatselt, isegi kui reegel on lubatud.</translation>
+<translation id="9152473318295429890">Seotud veebilehtede kontekstipõhiste soovituste lubamine</translation>
 <translation id="9158929520101169054">Brauseris mitmele kontole sisselogimise lubamine</translation>
 <translation id="9165792353046089850">Võimaldab määrata, kas veebisaitidel on juurdepääs ühendatud USB-seadmetele. Juurdepääsu saab täielikult blokeerida või küsida kasutaja käest iga kord luba, kui veebisait soovib juurdepääsu ühendatud USB-seadmetele.
 
@@ -2959,4 +2979,9 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="944817693306670849">Ketta vahemälu mahu määramine</translation>
 <translation id="981346395360763138">Google'i asukohateenused on keelatud</translation>
 <translation id="982497069985795632">Õigekirjakontrolli lubamine</translation>
+<translation id="988537626274109600">See reegel juhib ajaperioode, mille jooksul ei tohi operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seade automaatselt värskendusi kontrollida.
+      Kui selle reegli väärtuseks on määratud mis tahes ajavahemikud, toimub järgmine.
+      Seadmed ei saa nendel konkreetsetel ajavahemikel automaatselt värskendusi kontrollida. Seadmeid, mis tuleb viia vanemale versioonile või mis kasutavad vanemat kui minimaalset nõutavat versiooni <ph name="PRODUCT_OS_NAME" />, see reegel võimalike turvaohtude tõttu ei mõjuta. Lisaks ei blokeeri see reegel kasutajate või administraatorite taotletud värskenduste kontrolle.
+      Kui see reegel on määramata või ei sisalda ajavahemikke, toimub järgmine.
+      See reegel automaatseid värskenduste kontrolle ei blokeeri, kuid muud reeglid võivad seda teha.</translation>
 </translationbundle>

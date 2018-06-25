@@ -43,6 +43,7 @@
 <translation id="1227633850867390598">Skryť hodnotu</translation>
 <translation id="1228893227497259893">Nesprávny identifikátor entity</translation>
 <translation id="1232569758102978740">Bez názvu</translation>
+<translation id="1250759482327835220">Ak chcete nabudúce zaplatiť rýchlejšie, uložte si kartu, meno a fakturačnú adresu do účtu Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (synchronizované)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ak chcete navštíviť určitý web, ale neotvorí sa, najprv skúste opraviť chybu pomocou týchto krokov na riešenie problémov:&lt;/p&gt;
     &lt;ol&gt;
@@ -123,6 +124,7 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Skúste kontaktovať správcu systému.</translation>
 <translation id="1740951997222943430">Zadajte platný mesiac vypršania platnosti</translation>
+<translation id="1743520634839655729">Ak chcete nabudúce zaplatiť rýchlejšie, uložte si kartu, meno a fakturačnú adresu do účtu Google a tohto zariadenia.</translation>
 <translation id="17513872634828108">Otvorené karty</translation>
 <translation id="1753706481035618306">Číslo stránky</translation>
 <translation id="1763864636252898013">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, operačný systém vášho zariadenia nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
@@ -484,7 +486,6 @@
 <translation id="425582637250725228">Zmeny, ktoré ste vykonali, sa nemusia uložiť.</translation>
 <translation id="4258748452823770588">Chybný podpis</translation>
 <translation id="4265872034478892965">Povolené správcom</translation>
-<translation id="4269787794583293679">(Žiadne používateľské meno)</translation>
 <translation id="4275830172053184480">Reštart zariadenia</translation>
 <translation id="4277028893293644418">Obnoviť heslo</translation>
 <translation id="4280429058323657511">, dátum vypršania platnosti: <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -507,6 +508,7 @@
 <translation id="4434045419905280838">Kontextové okná a presmerovania</translation>
 <translation id="443673843213245140">Použitie servera proxy je zakázané, ale je určená explicitná konfigurácia servera proxy.</translation>
 <translation id="445100540951337728">Akceptované debetné karty</translation>
+<translation id="4472575034687746823">Začíname</translation>
 <translation id="4506176782989081258">Chyba overenia: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Kontaktovať správcu systému</translation>
 <translation id="450710068430902550">Zdieľanie so správcom</translation>
@@ -622,6 +624,7 @@
 <translation id="5332219387342487447">Spôsob dodania</translation>
 <translation id="5355557959165512791">Web <ph name="SITE" /> momentálne nemôžete navštíviť, pretože tento certifikát bol odvolaný. Chyby siete a útoky sú zvyčajne dočasné, takže by táto stránka mala neskôr pravdepodobne fungovať.</translation>
 <translation id="536296301121032821">Nastavenia pravidla sa nepodarilo uložiť</translation>
+<translation id="5371425731340848620">Aktualizujte si kartu</translation>
 <translation id="5377026284221673050">„Vaše hodiny meškajú“, „Vaše hodiny idú dopredu“ alebo „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;“</translation>
 <translation id="5386426401304769735">Reťazec certifikátu pre tento web obsahuje certifikát podpísaný pomocou funkcie SHA-1.</translation>
 <translation id="5402410679244714488">Platnosť do: <ph name="EXPIRATION_DATE_ABBR" />. Naposledy použitá pred viac ako rokom.</translation>
@@ -880,7 +883,6 @@
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Ďalšie informácie o tomto probléme<ph name="END_LINK" /></translation>
 <translation id="7455133967321480974">Použiť predvolené všeobecné nastavenie (Blokovať)</translation>
 <translation id="7460163899615895653">Vaše nedávne karty z iných zariadení sa zobrazia na tomto mieste</translation>
-<translation id="7469372306589899959">Overovanie karty</translation>
 <translation id="7473891865547856676">Nie, ďakujem</translation>
 <translation id="7481312909269577407">Dopredu</translation>
 <translation id="7485870689360869515">Nenašli sa žiadne údaje.</translation>
@@ -1047,6 +1049,7 @@
 <translation id="8663226718884576429">Súhrn objednávky, <ph name="TOTAL_LABEL" />, ďalšie podrobnosti</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, odpoveď, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Vaše pripojenie k doméne <ph name="DOMAIN" /> sa nešifruje.</translation>
+<translation id="8713137585425162364">Táto karta sa momentálne nedá overiť.</translation>
 <translation id="8718314106902482036">Platba nebola dokončená</translation>
 <translation id="8725066075913043281">Skúsiť znova</translation>
 <translation id="8728672262656704056">Ste v režime inkognito</translation>

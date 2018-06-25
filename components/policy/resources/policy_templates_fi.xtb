@@ -711,6 +711,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="3034580675120919256">Voit määrittää, saavatko sivustot suorittaa JavaScriptiä. JavaScriptin suorittaminen voidaan joko sallia kaikille sivustoille tai kieltää kaikilta sivustoilta. Jos tätä käytäntöä ei ole asetettu, käytetään AllowJavaScript-määritystä, ja käyttäjä voi muuttaa sitä.</translation>
 <translation id="3038323923255997294">Jätä taustasovellukset käyntiin, kun <ph name="PRODUCT_NAME" /> suljetaan</translation>
 <translation id="3046192273793919231">Lähetä hallintapalvelimelle verkkopaketteja verkkotilan valvontaa varten</translation>
+<translation id="3047732214002457234">Määrittää, miten Chrome Cleanup Tool raportoi dataa Googlelle</translation>
 <translation id="3048744057455266684">Jos tämä käytäntö on määritetty ja jos omniboxin kautta ehdotettu hakuosoite sisältää tämän parametrin kyselymerkkijonossa tai osatunnisteessa, ehdotus näyttää hakutermit ja hakupalvelun tarjoajan eikä raakamuotoista hakuosoitetta.
 
           Tämä on valinnainen käytäntö. Jos sitä ei määritetä, hakutermejä ei korvata.
@@ -1031,6 +1032,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
       Jos tämän käytännön arvo on tosi, verkon valvontapakettien (”<ph name="HEARTBEATS_TERM" />”) lähettäminen on käytössä.
       Jos käytännön arvo on epätosi tai sitä ei ole määritetty, paketteja ei lähetetä.</translation>
+<translation id="3950239119790560549">Päivitysajan rajoitukset</translation>
 <translation id="3958586912393694012">Salli Smart Lockin käyttö</translation>
 <translation id="3963602271515417124">Jos tämän käytännön arvo on tosi, etätodennuksen käyttö sallitaan laitteelle ja varmenne luodaan ja ladataan laitehallintapalvelimelle automaattisesti.
 
@@ -1281,6 +1283,9 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
           Jos et määritä käytäntöä, <ph name="PRODUCT_NAME" /> ei siirrä käyttöoikeustietoja, vaikka palvelin sijaitsisi sisäverkossa.</translation>
 <translation id="4752880493649142945">Asiakasvarmenne yhteyden muodostamiseksi osoitteeseen RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Jos käytännön arvoksi on asetettu Tosi tai sille ei aseteta mitään arvoa, <ph name="PRODUCT_NAME" /> ehdottaa nykyiseen sivuun liittyviä sivuja.
+      Ehdotukset haetaan Googlen palvelimilta.
+      Jos sen arvo on Epätosi, ehdotuksia ei haeta tai näytetä.</translation>
 <translation id="4791031774429044540">Ota käyttöön suuren osoittimen käytettävyysominaisuus.
 
           Jos tämän käytännön arvoksi on määritetty tosi, suuri osoitin on aina käytössä.
@@ -2094,6 +2099,13 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Jos tätä käytäntöä ei määritetä, näytön suurentaja ei ole käytössä kirjautumisnäytön ensimmäisellä näyttökerralla. Käyttäjät voivat ottaa näytön suurentajan käyttöön tai pois käytöstä milloin tahansa, ja sen tila kirjautumisnäytössä pysyy samana, vaikka käyttäjä vaihtuisi.</translation>
 <translation id="7249828445670652637">Salli <ph name="PRODUCT_OS_NAME" /> -CA-varmenteiden käyttö ARC-sovelluksille</translation>
+<translation id="725322441686394886">Jos arvoa ei ole määritetty, Chrome Cleanup voi ei-toivottuja ohjelmistoja havaitessaan raportoida skannauksen sisällönkuvausdataa Googlelle SafeBrowsingExtendedReportingEnabled-käytännön mukaisesti. Chrome Cleanup kysyy sitten käyttäjältä, poistetaanko ei-toivottu ohjelmisto. Käyttäjä voi halutessaan jakaa poiston tulokset Googlen kanssa parantaakseen ei-toivottujen ohjelmistojen havaitsemista jatkossa. Tulokset sisältävät Chromen tietosuojailmoituksen mukaista tiedostojen sisällönkuvausdataa ja rekisteriavaimia.
+
+      Jos tämä ei ole käytössä, Chrome Cleanup ei raportoi Googlelle skannauksen sisällönkuvausdataa havaitessaan ei-toivottuja ohjelmistoja ja ohittaa näin mahdolliset SafeBrowsingExtendedReportingEnabled-käytännöt. Chrome Cleanup kysyy käyttäjältä, poistetaanko ei-toivottu ohjelmisto. Poiston tuloksia ei raportoida Googlelle, mutta käyttäjä voi halutessaan tehdä niin.
+
+      Jos tämä on käytössä, Chrome Cleanup voi ei-toivottuja ohjelmistoja havaitessaan raportoida skannauksen sisällönkuvausdataa Googlelle SafeBrowsingExtendedReportingEnabled-käytännön mukaisesti. Chrome Cleanup kysyy käyttäjältä, poistetaanko ei-toivottu ohjelmisto. Poiston tulokset raportoidaan Googlelle, mitä käyttäjä ei voi estää.
+
+      Tämä käytäntö ei ole saatavilla Windowsin esiintymissä, jotka eivät liity <ph name="MS_AD_NAME" /> ‑verkkotunnukseen.</translation>
 <translation id="7258823566580374486">Ota etäisäntien verhoaminen käyttöön</translation>
 <translation id="7260277299188117560">Automaattinen p2p-päivitys käytössä</translation>
 <translation id="7261252191178797385">Laitteen taustakuva</translation>
@@ -2157,6 +2169,11 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, käyttäjä voi siirtyä varoitussivulta merkitylle sivustolle.
 
       Saat lisätietoja Selaussuojasta osoitteesta https://developers.google.com/safe-browsing.</translation>
+<translation id="7417728346887499628">Jos tämä ei ole käytössä, Chrome Cleanup ei voi etsiä järjestelmästä ei-toivottuja ohjelmistoja ja poistaa niitä. Chrome Cleanupin manuaalinen käyttöönotto osoitteessa chrome://settings/cleanup on estetty.
+
+      Jos tämä on käytössä tai arvoa ei ole määritetty, Chrome Cleanup skannaa järjestelmän ajoittain ei-toivottujen ohjelmistojen varalta ja sellaisen löytyessä kysyy käyttäjältä, poistetaanko se. Chrome Cleanupin manuaalinen käyttöönotto osoitteessa chrome://settings/cleanup on sallittu.
+
+      Tämä käytäntö ei ole saatavilla Windowsin esiintymissä, jotka eivät liity <ph name="MS_AD_NAME" /> ‑verkkotunnukseen.</translation>
 <translation id="7417972229667085380">Prosenttiosuus, jolla käyttämättömyyden viive skaalataan esitystilassa (ei enää käytössä)</translation>
 <translation id="7421483919690710988">Aseta levyn mediavälimuistin koko tavuina</translation>
 <translation id="7424751532654212117">Käytöstä poistettujen laajennuksien poikkeukset</translation>
@@ -2541,6 +2558,7 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="8339420913453596618">Monitasoinen todennus ei käytössä</translation>
 <translation id="8344454543174932833">Tuo kirjanmerkit oletusselaimesta ensimmäisellä käyttökerralla</translation>
 <translation id="8359734107661430198">Ota käyttöön ExampleDeprecatedFeature-sovellusliittymä 2.9.2008 saakka</translation>
+<translation id="8367209241899435947">Salli Chrome Cleanup Windowsissa</translation>
 <translation id="8369602308428138533">Ruudun sammutuksen viive käytettäessä laitetta verkkovirralla</translation>
 <translation id="8382184662529825177">Poista käytöstä etävahvistuksen käyttö laitteen sisällön suojauksen vuoksi</translation>
 <translation id="838870586332499308">Ota mobiilitiedonsiirto käyttöön roaming-tilassa</translation>
@@ -2799,6 +2817,7 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="9150416707757015439">Tämä käytäntö on vanhentunut. Käytä sen sijaan IncognitoModeAvailability-käytäntöä. Ottaa käyttöön incognito-tilan tuotteessa <ph name="PRODUCT_NAME" />. Jos tämä asetus on käytössä tai sitä ei ole määritetty, käyttäjät voivat avata verkkosivuja incognito-tilassa. Jos tämä asetus ei ole käytössä, käyttäjät eivät voi avata verkkosivuja incognito-tilassa. Jos käytäntöä ei ole asetettu, se otetaan käyttöön ja käyttäjät voivat käyttää incognito-tilaa.</translation>
 <translation id="915194831143859291">Jos tämän käytännön arvo on Epätosi tai jos sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> sallii käyttäjän sammuttaa laitteen.
       Jos tämän käytännön arvo on Tosi, <ph name="PRODUCT_OS_NAME" /> käynnistää laitteen uudelleen, jos käyttäjä sammuttaa sen. <ph name="PRODUCT_OS_NAME" /> korvaa käyttöliittymän kaikki sammutuspainikkeet uudelleenkäynnistyspainikkeilla. Jos käyttäjä käyttää sammuttamiseen laitteen virtapainiketta, laite ei käynnisty automaattisesti uudelleen, vaikka tämä käytäntö olisikin käytössä.</translation>
+<translation id="9152473318295429890">Salli vastaavien verkkosivujen ehdottaminen kontekstin perusteella</translation>
 <translation id="9158929520101169054">Salli kirjautuminen usealle tilille selaimessa</translation>
 <translation id="9165792353046089850">Antaa sinun määrittää, sallitaanko sivustojen käyttää yhdistettyjä USB-laitteita. Käyttö on mahdollista estää kokonaan, tai käyttäjältä voidaan pyytää vahvistusta aina, kun verkkosivusto haluaa käyttää yhdistettyä USB-laitetta.
 
@@ -2834,4 +2853,9 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="944817693306670849">Aseta levyn välimuistin koko</translation>
 <translation id="981346395360763138">Googlen sijaintipalvelut poistettu käytöstä</translation>
 <translation id="982497069985795632">Ota oikeinkirjoituksen tarkistus käyttöön</translation>
+<translation id="988537626274109600">Tämä käytäntö määrittää aikavälit, joiden aikana <ph name="PRODUCT_OS_NAME" /> ‑laite ei saa tarkastaa päivityksiä automaattisesti.
+      Kun tämän käytännön arvo on aikavälien luettelo, joka ei ole tyhjä:
+      Laitteet eivät voi tarkastaa päivityksiä automaattisesti määritettyinä aikoina. Jos laite on palautettava edelliseen versioon tai siinä on <ph name="PRODUCT_OS_NAME" /> ‑vähimmäisversiota vanhempi versio, tällä käytännöllä ei tietoturvasyistä ole vaikutusta. Tämä käytäntö ei myöskään estä käyttäjän tai järjestelmänvalvojan pyytämää päivitysten tarkastusta.
+      Jos tällä käytännöllä ei ole arvoa tai arvossa ei ole aikavälejä:
+      Tämä käytäntö ei estä automaattisia päivitysten tarkastuksia, mutta muut käytännöt voivat estää ne.</translation>
 </translationbundle>

@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Gyenge jel</translation>
 <translation id="1293264513303784526">C típusú USB-vel kompatibilis eszköz (bal oldali port)</translation>
 <translation id="1346748346194534595">Jobbra</translation>
+<translation id="1351937230027495976">Menü összecsukása</translation>
 <translation id="1383876407941801731">Keresés</translation>
 <translation id="1467432559032391204">Balra</translation>
 <translation id="1479743070547893297">A kijelöléshez rajzoljon az érintőceruzával</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Kimenet</translation>
 <translation id="3019353588588144572">Akkumulátor teljes feltöltéséig hátralévő idő: <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Menü kibontása</translation>
 <translation id="3087734570205094154">Alja</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Indítsa újra a frissítéshez</translation>
@@ -166,6 +168,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="397105322502079400">Számítás…</translation>
 <translation id="3995138139523574647">C típusú USB-vel kompatibilis eszköz (jobb hátsó port)</translation>
 <translation id="4017989525502048489">Lézermutató</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Kikapcsolva 1 alkalmazás számára}other{Kikapcsolva # alkalmazás számára}}</translation>
 <translation id="4072264167173457037">Közepes jel</translation>
 <translation id="4200057768455216496">Lenyomta a dokkolt nagyító billentyűparancsát. Bekapcsolja a funkciót?</translation>
 <translation id="4217571870635786043">Diktálás</translation>
@@ -190,6 +193,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4570957409596482333">Felolvasás gomb</translation>
 <translation id="4628757576491864469">Eszközök</translation>
 <translation id="4659419629803378708">ChromeVox bekapcsolva</translation>
+<translation id="4734965478015604180">Vízszintes</translation>
 <translation id="4776917500594043016">A(z) <ph name="USER_EMAIL_ADDRESS" /> fiókhoz tartozó jelszó</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Kapcsolat bontása</translation>
@@ -197,6 +201,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4872237917498892622">Alt + Keresés vagy Shift</translation>
 <translation id="4890187583552566966">A rendszergazda letiltotta a Google Segédet.</translation>
 <translation id="4895488851634969361">Az akkumulátor feltöltve.</translation>
+<translation id="490375751687810070">Függőleges</translation>
 <translation id="4905614135390995787">Módosult a nagy kontrasztú mód billentyűparancsa. Használja a(z) <ph name="NEW_SHORTCUT" /> billentyűparancsot a(z) <ph name="OLD_SHORTCUT" /> helyett.</translation>
 <translation id="4917385247580444890">Erős</translation>
 <translation id="4918086044614829423">Elfogadás</translation>
@@ -350,6 +355,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8054466585765276473">Akkumulátor-időtartam kiszámítása.</translation>
 <translation id="8061464966246066292">Kontrasztos megjelenítés</translation>
 <translation id="8098591350844501178">A képernyő „<ph name="RECEIVER_NAME" />” eszközre történő átküldésének leállítása</translation>
+<translation id="8113423164597455979">Bekapcsolva az összes alkalmazásnál</translation>
 <translation id="8132793192354020517">Csatlakozás a következőhöz megtörtént: <ph name="NAME" /></translation>
 <translation id="813913629614996137">Indítás…</translation>
 <translation id="8142699993796781067">Privát hálózat</translation>
@@ -370,6 +376,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="847056008324733326">A megjelenítési méret beállításai</translation>
 <translation id="8477270416194247200">A kikapcsoláshoz nyomja meg az Alt+Keresés billentyűkombinációt vagy a Shift billentyűt.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Újracsatlakozás…</translation>
+<translation id="8513108775083588393">Automatikus forgatás</translation>
 <translation id="8517041960877371778">Előfordulhat, hogy a(z) <ph name="DEVICE_TYPE" /> nem töltődik, amíg be van kapcsolva.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> maradt</translation>
 <translation id="8649101189709089199">Felolvasás</translation>

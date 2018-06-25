@@ -117,7 +117,6 @@
 <translation id="5032989939245619637">Сачувај детаље у Chromium-у</translation>
 <translation id="5045248521775609809">Нека Chromium буде увек са вама</translation>
 <translation id="5116586539350239523">Chromium ће безбедно складиштити личне податке да не бисте морали да их поново уносите.</translation>
-<translation id="5231355151045086930">Одјавите се из Chromium-а</translation>
 <translation id="5358375970380395591">Пријављујете се помоћу налога којим се управља и дајете његовом администратору контролу над Chromium профилом. Chromium подаци, као што су апликације, обележивачи, историја, лозинке и друга подешавања, биће трајно повезани са налогом <ph name="USER_NAME" />. Моћи ћете да избришете те податке преко Контролне табле Google налога, али нећете моћи да их повежете са неким другим налогом. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Ажурирање Chromium-а (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Доступна је нова верзија Chromium-а.</translation>
@@ -150,6 +149,7 @@
 <translation id="6129621093834146363">Датотека <ph name="FILE_NAME" /> је опасна, па ју је Chromium блокирао.</translation>
 <translation id="6212496753309875659">Овај рачунар већ има новију верзију Chromium-а. Ако софтвер не функционише, деинсталирајте Chromium и покушајте поново.</translation>
 <translation id="6248213926982192922">Подеси Chromium за подразумевани прегледач</translation>
+<translation id="6268381023930128611">Желите ли да се одјавите из Chromium-а?</translation>
 <translation id="6295779123002464101">Датотека <ph name="FILE_NAME" /> је можда опасна, па ју је Chromium блокирао.</translation>
 <translation id="6309712487085796862">Chromium користи камеру.</translation>
 <translation id="6333502561965082103">Друга радња у Chromium-у је у току. Пробајте поново касније.</translation>

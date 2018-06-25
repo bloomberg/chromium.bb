@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">Đã tạm dừng quá trình tải xuống</translation>
 <translation id="1389974829397082527">Không có dấu trang ở đây</translation>
 <translation id="1397811292916898096">Tìm kiếm bằng <ph name="PRODUCT_NAME" /></translation>
+<translation id="1397854323885047133">Đồng bộ hóa và cá nhân hóa</translation>
 <translation id="1404122904123200417">Được nhúng trong <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Không theo dõi”</translation>
 <translation id="1407135791313364759">Mở tất cả</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">Để nhận nội dung được cá nhân hóa do Google đề xuất, hãy đăng nhập vào Chrome.</translation>
 <translation id="2091887806945687916">Âm thanh</translation>
 <translation id="2095887075102408547">Khi bạn bật tính năng này, Chrome sẽ sử dụng máy chủ Google để nén các trang mà bạn truy cập trước khi tải trang xuống. Google sẽ không tối ưu hóa hoặc thấy các trang được truy cập bằng kết nối riêng tư (HTTPS) hoặc trong tab ẩn danh.</translation>
+<translation id="2096012225669085171">Đồng bộ hóa và cá nhân hóa trên các thiết bị</translation>
 <translation id="2100273922101894616">Tự động đăng nhập</translation>
 <translation id="2111511281910874386">Chuyển đến trang</translation>
 <translation id="2122601567107267586">Không thể mở ứng dụng</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">Sao chép URL</translation>
 <translation id="2156074688469523661">Số trang web còn lại (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">Chạm để truy cập vào trang tab mới trong tab hiện tại của bạn</translation>
-<translation id="219985413780390209">Bảo vệ bạn và thiết bị của bạn khỏi các trang web nguy hiểm</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, ứng dụng web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Tiếp tục bằng <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Gửi một số thông tin hệ thống và nội dung trang cho Google</translation>
+<translation id="2234876718134438132">Đồng bộ hóa và dịch vụ của Google</translation>
 <translation id="2259659629660284697">Xuất mật khẩu...</translation>
 <translation id="2268044343513325586">Tinh chỉnh</translation>
 <translation id="2286841657746966508">Địa chỉ thanh toán</translation>
@@ -375,7 +377,7 @@
 <translation id="4278390842282768270">Được cho phép</translation>
 <translation id="4307992518367153382">Cơ bản</translation>
 <translation id="4351244548802238354">Đóng hộp thoại</translation>
-<translation id="4378154925671717803">Điện thoại</translation>
+<translation id="4378154925671717803">Điện thoại</translation>
 <translation id="4384468725000734951">Sử dụng Sogou để tìm kiếm</translation>
 <translation id="4404568932422911380">Không có dấu trang nào</translation>
 <translation id="4409723563706114196">Sử dụng truy vấn dự đoán trang</translation>
@@ -408,6 +410,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4594952190837476234">Trang ngoại tuyến này được tạo từ lúc <ph name="CREATION_TIME" /> và có thể khác với phiên bản trực tuyến.</translation>
 <translation id="4605958867780575332">Đã xóa mục: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Mở <ph name="WEBAPK_NAME" /></translation>
+<translation id="4634124774493850572">Sử dụng mật khẩu</translation>
 <translation id="4645575059429386691">Do cha mẹ của bạn quản lý</translation>
 <translation id="4663756553811254707">Đã xóa <ph name="NUMBER_OF_BOOKMARKS" /> dấu trang</translation>
 <translation id="4665282149850138822">Đã thêm <ph name="NAME" /> vào Màn hình chính của bạn</translation>
@@ -583,6 +586,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5958275228015807058">Tìm tệp và trang của bạn trong Tài nguyên đã tải xuống</translation>
 <translation id="5962718611393537961">Nhấn để thu gọn</translation>
 <translation id="6000066717592683814">Giữ Google làm công cụ tìm kiếm mặc định</translation>
+<translation id="6005538289190791541">Mật khẩu được đề xuất</translation>
 <translation id="6039379616847168523">Chuyển sang tab tiếp theo</translation>
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="6042308850641462728">Thêm</translation>
@@ -811,6 +815,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> đã lỗi thời.</translation>
 <translation id="7947953824732555851">Chấp nhận &amp; đăng nhập</translation>
 <translation id="7963646190083259054">Nhà cung cấp:</translation>
+<translation id="79859296434321399">Để xem nội dung thực tế tăng cường, hãy cài đặt ứng dụng ARCore</translation>
 <translation id="7987073022710626672">Điều khoản dịch vụ của Chrome</translation>
 <translation id="7998918019931843664">Mở lại tab đã đóng</translation>
 <translation id="7999064672810608036">Bạn có chắc chắn muốn xóa tất cả dữ liệu cục bộ, bao gồm cookie và đặt lại tất cả các quyền cho trang web này không?</translation>
@@ -873,6 +878,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="851751545965956758">Chặn các trang web kết nối với thiết bị</translation>
 <translation id="8523928698583292556">Xóa mật khẩu đã lưu trữ</translation>
 <translation id="854522910157234410">Mở trang này</translation>
+<translation id="8558485628462305855">Để xem nội dung thực tế tăng cường, hãy cập nhật ứng dụng ARCore</translation>
 <translation id="8559990750235505898">Đề xuất dịch trang bằng các ngôn ngữ khác</translation>
 <translation id="8562452229998620586">Mật khẩu đã lưu của bạn sẽ xuất hiện tại đây.</translation>
 <translation id="8569404424186215731">kể từ <ph name="DATE" /></translation>

@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Senyal feble</translation>
 <translation id="1293264513303784526">Dispositiu USB-C (port esquerre)</translation>
 <translation id="1346748346194534595">A la dreta</translation>
+<translation id="1351937230027495976">Replega el menú</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1467432559032391204">A l'esquerra</translation>
 <translation id="1479743070547893297">Dibuixa amb el llapis òptic per seleccionar elements</translation>
@@ -52,7 +53,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Estableix el teu idioma</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1993072747612765854">Obtén més informació sobre l'última actualització de l'aplicació <ph name="SYSTEM_APP_NAME" /></translation>
+<translation id="1993072747612765854">Obtén més informació sobre l'última actualització de: <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Apaga</translation>
 <translation id="2012624427112548395">Ctrl+Cerca+H</translation>
 <translation id="2016340657076538683">Escriu un missatge</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Sortida</translation>
 <translation id="3019353588588144572">Temps restant fins que la bateria no estigui totalment carregada: <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">maj</translation>
+<translation id="3081696990447829002">Desplega el menú</translation>
 <translation id="3087734570205094154">Part inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Reinicia per actualitzar</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">S’està calculant...</translation>
 <translation id="3995138139523574647">Dispositiu USB-C (port posterior dret)</translation>
 <translation id="4017989525502048489">Punter làser</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{S'han desactivat en una aplicació}other{S'han desactivat en # aplicacions}}</translation>
 <translation id="4072264167173457037">Senyal mitjà</translation>
 <translation id="4200057768455216496">Has premut la drecera de la lupa acoblada. Vols activar-la?</translation>
 <translation id="4217571870635786043">Dictat</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">Botó Escolta la selecció</translation>
 <translation id="4628757576491864469">Dispositius</translation>
 <translation id="4659419629803378708">S'ha activat ChromeVox</translation>
+<translation id="4734965478015604180">Horitzontal</translation>
 <translation id="4776917500594043016">Contrasenya per a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">cerca</translation>
 <translation id="4804818685124855865">Desconnecta</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">Alt+Cerca o Maj</translation>
 <translation id="4890187583552566966">L'administrador ha desactivat l'Assistent de Google.</translation>
 <translation id="4895488851634969361">La bateria està carregada.</translation>
+<translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">La drecera per activar/desactivar el mode d'alt contrast ha canviat. A partir d'ara, utilitza <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Forta</translation>
 <translation id="4918086044614829423">Accepta</translation>
@@ -293,7 +298,7 @@
 <translation id="6820676911989879663">Fes una pausa</translation>
 <translation id="683971173229319003">Cerca + L</translation>
 <translation id="6857811139397017780">Activa <ph name="NETWORKSERVICE" /></translation>
-<translation id="6910714959251846841">Aquesta actualització requereix executar la funció Powerwash al dispositiu. Obtén més informació sobre l'última actualització de l'aplicació <ph name="SYSTEM_APP_NAME" />.</translation>
+<translation id="6910714959251846841">Aquesta actualització requereix executar la funció Powerwash al dispositiu. Obtén més informació sobre l'última actualització de: <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Connecta't a una altra xarxa...</translation>
 <translation id="6981982820502123353">Accessibilitat</translation>
 <translation id="698231206551913481">Tots els fitxers i les dades locals associats amb aquest usuari se suprimiran definitivament quan aquest usuari se suprimeixi.</translation>
@@ -349,6 +354,7 @@
 <translation id="8054466585765276473">S'està calculant el temps de la bateria.</translation>
 <translation id="8061464966246066292">Contrast alt</translation>
 <translation id="8098591350844501178">Deixa d'emetre la pantalla a <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">S'han activat en totes les aplicacions</translation>
 <translation id="8132793192354020517">Connectat a <ph name="NAME" /></translation>
 <translation id="813913629614996137">S'està inicialitzant…</translation>
 <translation id="8142699993796781067">Xarxa privada</translation>
@@ -369,6 +375,7 @@
 <translation id="847056008324733326">Configuració de l'escala de visualització</translation>
 <translation id="8477270416194247200">Prem Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: s'està tornant a connectar…</translation>
+<translation id="8513108775083588393">Gira automàticament</translation>
 <translation id="8517041960877371778">És possible que el dispositiu <ph name="DEVICE_TYPE" /> no es carregui mentre està encès.</translation>
 <translation id="8639760480004882931">Queda un <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Escolta la selecció</translation>

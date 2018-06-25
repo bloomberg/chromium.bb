@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Nõrk signaal</translation>
 <translation id="1293264513303784526">C-tüüpi USB-seade (vasakpoolne port)</translation>
 <translation id="1346748346194534595">Paremale</translation>
+<translation id="1351937230027495976">Ahenda menüü</translation>
 <translation id="1383876407941801731">Otsi</translation>
 <translation id="1467432559032391204">Vasakule</translation>
 <translation id="1479743070547893297">Valimiseks joonistage elektronpliiatsiga</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Väljund</translation>
 <translation id="3019353588588144572">Aku täitumiseni on aega <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">tõstuklahv</translation>
+<translation id="3081696990447829002">Laienda menüü</translation>
 <translation id="3087734570205094154">Alaserv</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Taaskäivitage värskendamiseks</translation>
@@ -166,6 +168,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="397105322502079400">Arvutamine ...</translation>
 <translation id="3995138139523574647">C-tüüpi USB-seade (tagumine parempoolne port)</translation>
 <translation id="4017989525502048489">Laserkursor</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Rakenduse puhul välja lülitatud}other{# rakenduse puhul välja lülitatud}}</translation>
 <translation id="4072264167173457037">Keskmine signaal</translation>
 <translation id="4200057768455216496">Vajutasite dokitud luubi otseteed. Kas soovite luubi sisse lülitada?</translation>
 <translation id="4217571870635786043">Dikteerimine</translation>
@@ -190,6 +193,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4570957409596482333">Nupp Vali ja kuula</translation>
 <translation id="4628757576491864469">Seadmed</translation>
 <translation id="4659419629803378708">ChromeVox on lubatud</translation>
+<translation id="4734965478015604180">Horisontaalne</translation>
 <translation id="4776917500594043016">Kasutaja <ph name="USER_EMAIL_ADDRESS" /> parool</translation>
 <translation id="479989351350248267">otsing</translation>
 <translation id="4804818685124855865">Katkesta ühendus</translation>
@@ -197,6 +201,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4872237917498892622">Alt + otsinguklahv või tõstuklahv</translation>
 <translation id="4890187583552566966">Administraator on Google'i assistendi keelanud.</translation>
 <translation id="4895488851634969361">Aku on täis.</translation>
+<translation id="490375751687810070">Vertikaalne</translation>
 <translation id="4905614135390995787">Suure kontrastsusega režiimi aktiveerimise otsetee on muutunud. Kasutage edaspidi otseteed <ph name="NEW_SHORTCUT" />, mitte <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Tugev</translation>
 <translation id="4918086044614829423">Nõustu</translation>
@@ -350,6 +355,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8054466585765276473">Aku tööaja arvutamine.</translation>
 <translation id="8061464966246066292">Kõrge kontrast</translation>
 <translation id="8098591350844501178">Peata ekraani ülekandmine vastuvõtjasse <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">Sisse lülitatud, kõik rakendused</translation>
 <translation id="8132793192354020517">Ühendus <ph name="NAME" />iga</translation>
 <translation id="813913629614996137">Lähtestamine …</translation>
 <translation id="8142699993796781067">Privaatvõrk</translation>
@@ -370,6 +376,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="847056008324733326">Ekraani skaala seaded</translation>
 <translation id="8477270416194247200">Tühistamiseks vajutage klahvikombinatsiooni Alt + Otsing või tõstuklahvi.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: uuesti ühendamine …</translation>
+<translation id="8513108775083588393">Automaatne pööramine</translation>
 <translation id="8517041960877371778">Kui seade <ph name="DEVICE_TYPE" /> on sisse lülitatud, ei pruugita seda laadida.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> on jäänud</translation>
 <translation id="8649101189709089199">Vali ja kuula</translation>

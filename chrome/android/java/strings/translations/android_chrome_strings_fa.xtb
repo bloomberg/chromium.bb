@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">بارگیری موقتاً متوقف شد</translation>
 <translation id="1389974829397082527">نشانکی در اینجا وجود ندارد</translation>
 <translation id="1397811292916898096">جستجو با <ph name="PRODUCT_NAME" /></translation>
+<translation id="1397854323885047133">همگام‌سازی و شخصی‌سازی</translation>
 <translation id="1404122904123200417">جاسازی شده در <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">«ردیابی نشود»</translation>
 <translation id="1407135791313364759">باز کردن همه</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">‏برای دریافت محتوای شخصی‌سازی‌شده پیشنهادی Google، به Chrome وارد شوید.</translation>
 <translation id="2091887806945687916">صدا</translation>
 <translation id="2095887075102408547">‏وقتی این قابلیت روشن است، Chrome از سرورهای Google استفاده می‌کند تا صفحاتی را که بازدید می‌کنید قبل از بارگیری آن‌ها فشرده کند. Google صفحه‌هایی را که از طریق اتصالات خصوصی (HTTPS) یا برگه‌های حالت ناشناس به آن‌ها می‌روید بهینه‌سازی یا مشاهده نمی‌کند.</translation>
+<translation id="2096012225669085171">همگام‌سازی و شخصی‌سازی در همه دستگاه‌ها</translation>
 <translation id="2100273922101894616">ورود به سیستم خودکار</translation>
 <translation id="2111511281910874386">رفتن به صفحه</translation>
 <translation id="2122601567107267586">باز کردن برنامه امکان‌پذیر نیست</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">کپی نشانی وب</translation>
 <translation id="2156074688469523661">سایت‌های باقی‌مانده (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">برای رفتن به صفحه برگه جدید در برگه کنونی، ضربه بزنید</translation>
-<translation id="219985413780390209">محافظت از شما و دستگاهتان دربرابر سایت‌های خطرناک</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />، برنامه وب. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">ادامه دادن به‌عنوان <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">‏برخی از اطلاعات سیستم و محتوای صفحه را به Google ارسال می‌کند</translation>
+<translation id="2234876718134438132">‏همگام‌سازی و سرویس‌های Google</translation>
 <translation id="2259659629660284697">درحال صادر کردن گذرواژه‌ها…</translation>
 <translation id="2268044343513325586">فیلتر</translation>
 <translation id="2286841657746966508">آدرس ارسال صورتحساب</translation>
@@ -408,6 +410,7 @@
 <translation id="4594952190837476234">این صفحه آفلاین مربوط به تاریخ <ph name="CREATION_TIME" /> است و ممکن است با نسخه آنلاین متفاوت باشد.</translation>
 <translation id="4605958867780575332">مورد حذف شد: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">باز کردن <ph name="WEBAPK_NAME" /></translation>
+<translation id="4634124774493850572">استفاده از گذرواژه</translation>
 <translation id="4645575059429386691">مدیریت شده توسط والدین شما</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> نشانک حذف شد</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> به صفحه اصلی شما اضافه شد</translation>
@@ -582,6 +585,7 @@
 <translation id="5958275228015807058">فایل‌ها و صفحه‌هایتان را در «بارگیری‌ها» پیدا کنید</translation>
 <translation id="5962718611393537961">برای کوچک کردن ضربه بزنید</translation>
 <translation id="6000066717592683814">‏حفظ Google</translation>
+<translation id="6005538289190791541">گذرواژه پیشنهادی</translation>
 <translation id="6039379616847168523">رفتن به برگه بعدی</translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6042308850641462728">بیشتر</translation>
@@ -810,6 +814,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قدیمی است.</translation>
 <translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>
 <translation id="7963646190083259054">ارائه‌دهنده:</translation>
+<translation id="79859296434321399">‏برای مشاهده محتوای واقعیت افزوده، ARCore را نصب کنید</translation>
 <translation id="7987073022710626672">‏شرایط خدمات Chrome</translation>
 <translation id="7998918019931843664">بازکردن مجدد برگه‌های بسته شده</translation>
 <translation id="7999064672810608036">مطمئنید که می‌خواهید تمام داده‌های محلی، شامل کوکی‌ها را حذف کرده و تمام مجوزهای این وب‌سایت را بازنشانی کنید؟</translation>
@@ -872,6 +877,7 @@
 <translation id="851751545965956758">مسدود کردن سایت‌ها برای اتصال به دستگاه‌ها</translation>
 <translation id="8523928698583292556">حذف گذرواژه ذخیره‌شده</translation>
 <translation id="854522910157234410">باز کردن این صفحه</translation>
+<translation id="8558485628462305855">‏برای مشاهده محتوای واقعیت افزوده، ARCore را به‌روزرسانی کنید</translation>
 <translation id="8559990750235505898">پیشنهاد ترجمه صفحات نوشته‌شده به زبان‌های دیگر</translation>
 <translation id="8562452229998620586">گذرواژه‌های ذخیره شده در اینجا ظاهر می‌شود.</translation>
 <translation id="8569404424186215731">از <ph name="DATE" /></translation>

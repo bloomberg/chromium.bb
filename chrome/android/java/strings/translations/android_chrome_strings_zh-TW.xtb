@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">已暫停下載</translation>
 <translation id="1389974829397082527">這裡沒有任何書籤</translation>
 <translation id="1397811292916898096">使用 <ph name="PRODUCT_NAME" /> 搜尋</translation>
+<translation id="1397854323885047133">同步處理和個人化</translation>
 <translation id="1404122904123200417">內嵌位置：<ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">「不追蹤」</translation>
 <translation id="1407135791313364759">全部開啟</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">如要取得個人化的 Google 推薦內容，請登入 Chrome。</translation>
 <translation id="2091887806945687916">音訊</translation>
 <translation id="2095887075102408547">啟用這項功能後，Chrome 會先使用 Google 伺服器壓縮您要造訪的網頁資料，然後再下載這些網頁。使用私人連線 (HTTPS) 或無痕式分頁存取網頁時，Google 不會對這些網頁進行最佳化處理，也不會偵測到這些網頁。</translation>
+<translation id="2096012225669085171">讓多部裝置保持同步，並提供人化體驗</translation>
 <translation id="2100273922101894616">自動登入</translation>
 <translation id="2111511281910874386">前往指定頁面</translation>
 <translation id="2122601567107267586">無法開啟應用程式</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">複製網址</translation>
 <translation id="2156074688469523661">其餘網站 (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">輕觸即可在目前的分頁中前往新分頁頁面</translation>
-<translation id="219985413780390209">保護您和您的裝置不受危險網站攻擊</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，網路應用程式。<ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">以<ph name="USER_FULL_NAME" />的身分繼續使用</translation>
 <translation id="2232379019872353004">將部分系統資訊和網頁內容傳送給 Google</translation>
+<translation id="2234876718134438132">同步處理和 Google 服務</translation>
 <translation id="2259659629660284697">匯出密碼…</translation>
 <translation id="2268044343513325586">修正搜尋</translation>
 <translation id="2286841657746966508">帳單地址</translation>
@@ -408,6 +410,7 @@
 <translation id="4594952190837476234">這個離線版網頁是於 <ph name="CREATION_TIME" />建立，可能會和線上版本有所不同。</translation>
 <translation id="4605958867780575332">已移除項目：<ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">開啟 <ph name="WEBAPK_NAME" /></translation>
+<translation id="4634124774493850572">使用密碼</translation>
 <translation id="4645575059429386691">你的家長已停用這項功能</translation>
 <translation id="4663756553811254707">已刪除 <ph name="NUMBER_OF_BOOKMARKS" /> 個書籤</translation>
 <translation id="4665282149850138822">「<ph name="NAME" />」已加入您的主畫面</translation>
@@ -583,6 +586,7 @@
 <translation id="5958275228015807058">前往「下載」主畫面尋找你的檔案和網頁</translation>
 <translation id="5962718611393537961">輕觸即可收合</translation>
 <translation id="6000066717592683814">繼續使用 Google</translation>
+<translation id="6005538289190791541">建議的密碼</translation>
 <translation id="6039379616847168523">跳至下一個分頁</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6042308850641462728">更多</translation>
@@ -811,6 +815,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> 版本過舊。</translation>
 <translation id="7947953824732555851">接受並登入</translation>
 <translation id="7963646190083259054">供應商：</translation>
+<translation id="79859296434321399">如要查看擴增實境內容，請安裝 ARCore</translation>
 <translation id="7987073022710626672">Chrome 服務條款</translation>
 <translation id="7998918019931843664">重新開啟先前關閉的分頁</translation>
 <translation id="7999064672810608036">您確定要刪除這個網站儲存的所有本機資料 (包括 Cookie 在內)，並重設這個網站的所有權限嗎？</translation>
@@ -873,6 +878,7 @@
 <translation id="851751545965956758">禁止網站連線至裝置</translation>
 <translation id="8523928698583292556">刪除已儲存的密碼</translation>
 <translation id="854522910157234410">開啟以下網頁</translation>
+<translation id="8558485628462305855">如要查看擴增實境內容，請更新 ARCore</translation>
 <translation id="8559990750235505898">詢問是否將網頁內容翻譯成其他語言</translation>
 <translation id="8562452229998620586">已儲存的密碼會顯示在這裡。</translation>
 <translation id="8569404424186215731">(<ph name="DATE" />起)</translation>

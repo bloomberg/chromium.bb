@@ -91,6 +91,7 @@
 <translation id="1787176709638001873">Maandishi ya kubadilisha nenosiri</translation>
 <translation id="1802710350767629429">Onyesha ukurasa wa sasisho</translation>
 <translation id="1810107444790159527">Kikasha orodha</translation>
+<translation id="1812527064848182527">mlalo</translation>
 <translation id="1828385960365606039">Mei</translation>
 <translation id="1834891354138622109">Safu wima</translation>
 <translation id="1845944666972354496">Gusa mara mbili ili uwashe</translation>
@@ -253,6 +254,7 @@
 <translation id="3232388865800379423">Kitufe ibukizi</translation>
 <translation id="3241052487511142956">Kiungo kilichotembelewa kilichotangulia</translation>
 <translation id="3241638166094654466">Visanduku katika kila mstari:</translation>
+<translation id="3286372614333682499">wima</translation>
 <translation id="3286390186030710347">Kitelezi</translation>
 <translation id="3299925995433437805">Hakuna kiungo kilichotembelewa kinachofuata.</translation>
 <translation id="3300348286427369683">Inatumia maandishi anuai. ChromeVox sasa inatumia sehemu za maandishi anuai ikiwa ni pamoja na amri za kuruka, kiashiria cha kuelekeza nukta nundu, uteuzi na mengineyo.</translation>
@@ -458,7 +460,7 @@
 <translation id="4755857887974653209">Zima ChromeVox</translation>
 <translation id="4763296182459741068">Imefungwa hadi mwisho</translation>
 <translation id="4763480195061959176">video</translation>
-<translation id="4764692524839457597">chaguo msingi</translation>
+<translation id="4764692524839457597">chaguomsingi</translation>
 <translation id="479989351350248267">tafuta</translation>
 <translation id="481165870889056555">Tangaza kichwa cha ukurasa wa sasa</translation>
 <translation id="4826415162591436065">Nenda mbele</translation>
@@ -567,7 +569,7 @@
 <translation id="5597170376237141345">Kisanduku cha kuteua kinachofuata</translation>
 <translation id="5597933780944041114">Hakuna kichwa kinachofuata.</translation>
 <translation id="5598905979683743333">Kitufe cha mviringo cha <ph name="NAME" /> hakijachaguliwa</translation>
-<translation id="5601172225407283979">Tekeleza kitendo chaguo msingi</translation>
+<translation id="5601172225407283979">Tekeleza kitendo chaguomsingi</translation>
 <translation id="5608798115546226984">Inayojijaza kiotomatiki kulingana na maandishi</translation>
 <translation id="561939826962581046">wakati</translation>
 <translation id="5623778242535476823">rbtn</translation>
@@ -805,7 +807,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="7773125101284285285">Mwisho wa maandishi yaliyopigiwa mstari chini</translation>
 <translation id="7776293189010177726">Fungua menyu za ChromeVox</translation>
 <translation id="7800558923657349506">Hitimisho</translation>
-<translation id="7805247615045262757">kudurusu chaguo msingi</translation>
+<translation id="7805247615045262757">kudurusu chaguomsingi</translation>
 <translation id="7805768142964895445">Hali</translation>
 <translation id="7810781339813764006">Kikundi Kinachofuata</translation>
 <translation id="7819187121850078213">dirisha la kichupo cha <ph name="TITLE" /></translation>

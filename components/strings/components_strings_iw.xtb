@@ -43,6 +43,7 @@
 <translation id="1227633850867390598">הסתר ערך</translation>
 <translation id="1228893227497259893">מזהה יישות שגוי</translation>
 <translation id="1232569758102978740">ללא שם</translation>
+<translation id="1250759482327835220">‏כדי לשלם מהר יותר בפעם הבאה, אפשר לשמור בחשבון Google את פרטי הכרטיס, השם והכתובת לחיוב.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (מסונכרנים)</translation>
 <translation id="1256368399071562588">‏&lt;p&gt;אם אתם מנסים להיכנס לאתר והוא לא נפתח, קודם נסו לפתור את הבעיה בעזרת השלבים הבאים:&lt;/p&gt;
     &lt;ol&gt;
@@ -123,6 +124,7 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">נסה לפנות אל מנהל המערכת.</translation>
 <translation id="1740951997222943430">עליך להזין חודש תפוגה חוקי</translation>
+<translation id="1743520634839655729">‏כדי לשלם מהר יותר בפעם הבאה, אפשר לשמור בחשבון Google ובמכשיר הזה את פרטי הכרטיס, השם והכתובת לחיוב.</translation>
 <translation id="17513872634828108">כרטיסיות פתוחות</translation>
 <translation id="1753706481035618306">מספר דף</translation>
 <translation id="1763864636252898013">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי מערכת ההפעלה של המכשיר. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
@@ -488,7 +490,6 @@
 <translation id="425582637250725228">ייתכן שהשינויים שביצעת לא יישמרו.</translation>
 <translation id="4258748452823770588">חתימה שגויה</translation>
 <translation id="4265872034478892965">אושרה על-ידי מנהל המערכת</translation>
-<translation id="4269787794583293679">(אין שם משתמש)</translation>
 <translation id="4275830172053184480">הפעלת המכשיר מחדש</translation>
 <translation id="4277028893293644418">איפוס סיסמה</translation>
 <translation id="4280429058323657511">, בתוקף עד <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -511,6 +512,7 @@
 <translation id="4434045419905280838">חלונות קופצים והפניות אוטומטיות</translation>
 <translation id="443673843213245140">‏השימוש בשרת Proxy הושבת, אך צויינה תצורת שרת Proxy מפורשת.</translation>
 <translation id="445100540951337728">כרטיסי חיוב שהסוחר מקבל</translation>
+<translation id="4472575034687746823">תחילת העבודה</translation>
 <translation id="4506176782989081258">שגיאת אימות: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">לפנות אל מנהל המערכת</translation>
 <translation id="450710068430902550">שיתוף עם מנהל מערכת</translation>
@@ -630,6 +632,7 @@ Del</translation>
 <translation id="5332219387342487447">שיטת משלוח</translation>
 <translation id="5355557959165512791">נכון לעכשיו אי אפשר לבקר באתר <ph name="SITE" /> מאחר שהאישור שלו בוטל. שגיאות רשת ומתקפות הן בדרך כלל זמניות, כך שהדף הזה יחזור כנראה לפעול מאוחר יותר.</translation>
 <translation id="536296301121032821">אחסון הגדרות המדיניות נכשל</translation>
+<translation id="5371425731340848620">עדכון כרטיס</translation>
 <translation id="5377026284221673050">‏"השעון מאחר", "השעון מקדים" או "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">‏שרשרת האישורים של האתר הזה כוללת אישור שנחתם באמצעות SHA-1.</translation>
 <translation id="5402410679244714488">תאריך תפוגה: <ph name="EXPIRATION_DATE_ABBR" />, שימוש אחרון היה לפני שנה</translation>
@@ -815,7 +818,7 @@ Del</translation>
 <translation id="6891596781022320156">רמת המדיניות אינה נתמכת.</translation>
 <translation id="6895330447102777224">הכרטיס שלך מאושר</translation>
 <translation id="6897140037006041989">User agent</translation>
-<translation id="6903319715792422884">‏על-ידי שליחה של חלק מ<ph name="BEGIN_WHITEPAPER_LINK" />פרטי המערכת ותוכן הדפים<ph name="END_WHITEPAPER_LINK" /> אל Google אפשר לעזור בשיפור של 'גלישה בטוחה'. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="6903319715792422884">‏על-ידי שליחה של חלק מ<ph name="BEGIN_WHITEPAPER_LINK" />פרטי המערכת ותוכן הדפים<ph name="END_WHITEPAPER_LINK" /> אל Google, אפשר לעזור בשיפור של 'גלישה בטוחה'. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">משתמש:</translation>
 <translation id="6945221475159498467">בחר</translation>
 <translation id="6948701128805548767">עליך לבחור כתובת כדי לראות שיטות איסוף ודרישות</translation>
@@ -890,7 +893,6 @@ Del</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /> על בעיה זו.</translation>
 <translation id="7455133967321480974">השתמש בברירת המחדל הכללית (חסום)</translation>
 <translation id="7460163899615895653">הכרטיסיות האחרונות שפתחת במכשירים אחרים מוצגות כאן</translation>
-<translation id="7469372306589899959">מאשר את הכרטיס</translation>
 <translation id="7473891865547856676">לא, תודה</translation>
 <translation id="7481312909269577407">קדימה</translation>
 <translation id="7485870689360869515">לא נמצאו נתונים.</translation>
@@ -1057,6 +1059,7 @@ Del</translation>
 <translation id="8663226718884576429">סיכום הזמנה, <ph name="TOTAL_LABEL" />, פרטים נוספים</translation>
 <translation id="8680536109547170164"><ph name="QUERY" /> , תשובה, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">ההתחברות שלך אל <ph name="DOMAIN" /> אינה מוצפנת.</translation>
+<translation id="8713137585425162364">אי אפשר לאמת כרגע את הכרטיס.</translation>
 <translation id="8718314106902482036">התשלום לא הושלם</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8728672262656704056">עברת למצב גלישה בסתר</translation>
@@ -1120,7 +1123,7 @@ Del</translation>
 <translation id="9148507642005240123">&amp;ביטול עריכה</translation>
 <translation id="9154194610265714752">עודכן</translation>
 <translation id="9157595877708044936">מגדיר...</translation>
-<translation id="9168814207360376865">מתן הרשאה לאתרים כדי לבדוק אם שמרת אמצעי תשלום</translation>
+<translation id="9168814207360376865">מתן הרשאה לאתרים לבדוק אם שמרת אמצעי תשלום</translation>
 <translation id="9169664750068251925">חסום תמיד באתר זה</translation>
 <translation id="9170848237812810038">&amp;ביטול</translation>
 <translation id="9171296965991013597">לצאת מהאפליקציה?</translation>

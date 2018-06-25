@@ -119,6 +119,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="4143243756087420366">Nazwa i zdjęcie w Chrome</translation>
 <translation id="4147555960264124640">Logujesz się na zarządzane konto i przekazujesz jego administratorowi kontrolę nad swoim profilem Google Chrome. Twoje dane Chrome, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME" />. Będzie można je usunąć w Panelu kont Google, ale nie będzie można ich powiązać z innym kontem. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Instalator nie może prawidłowo rozpakować archiwum. Pobierz Google Chrome ponownie.</translation>
+<translation id="424864128008805179">Wylogować z Chrome?</translation>
 <translation id="4251615635259297716">Połączyć Twoje dane Chrome z tym kontem?</translation>
 <translation id="4251625577313994583">pobierz Chrome na iPhone'a</translation>
 <translation id="4293420128516039005">Zaloguj się, by synchronizować dane Chrome i korzystać z własnych ustawień przeglądarki na wielu urządzeniach</translation>
@@ -213,7 +214,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="7398801000654795464">Byłeś zalogowany w Chrome jako <ph name="USER_EMAIL_ADDRESS" />. Zaloguj się ponownie, korzystając z tego samego konta.</translation>
 <translation id="7408085963519505752">Warunki korzystania z Chrome OS</translation>
 <translation id="7419046106786626209">System operacyjny Chrome nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
-<translation id="7437998757836447326">Wyloguj się z Chrome</translation>
 <translation id="7459554271817304652">Skonfiguruj synchronizację, by zapisać w internecie własne funkcje przeglądarki i mieć do nich dostęp w Google Chrome na każdym komputerze.</translation>
 <translation id="7473136999113284234">Chrome aktualizuje się automatycznie, więc zawsze masz najnowszą wersję.</translation>
 <translation id="7535429826459677826">Wersja deweloperska Google Chrome</translation>

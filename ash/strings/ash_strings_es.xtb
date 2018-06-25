@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Señal débil</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (puerto izquierdo)</translation>
 <translation id="1346748346194534595">Derecha</translation>
+<translation id="1351937230027495976">Ocultar menú</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1467432559032391204">Izquierda</translation>
 <translation id="1479743070547893297">Dibuja con el lápiz óptico para seleccionar contenido</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Salida</translation>
 <translation id="3019353588588144572">Tiempo restante hasta que se cargue la batería por completo: <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">mayús</translation>
+<translation id="3081696990447829002">Mostrar menú</translation>
 <translation id="3087734570205094154">Inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Reinicia el sistema para actualizarlo.</translation>
@@ -166,6 +168,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3995138139523574647">Dispositivo USB tipo C (puerto trasero derecho)</translation>
 <translation id="4017989525502048489">Puntero láser</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Desactivadas para una aplicación}other{Desactivadas para # aplicaciones}}</translation>
 <translation id="4072264167173457037">Señal media</translation>
 <translation id="4200057768455216496">Has pulsado la combinación de teclas de la lupa fijada. ¿Quieres activarla?</translation>
 <translation id="4217571870635786043">Dictado</translation>
@@ -190,6 +193,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4570957409596482333">Botón Enunciar Selección</translation>
 <translation id="4628757576491864469">Dispositivos</translation>
 <translation id="4659419629803378708">ChromeVox habilitado</translation>
+<translation id="4734965478015604180">Horizontal</translation>
 <translation id="4776917500594043016">Contraseña de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">buscar</translation>
 <translation id="4804818685124855865">Desvincular</translation>
@@ -197,6 +201,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4872237917498892622">Alt+tecla de búsqueda o Mayús</translation>
 <translation id="4890187583552566966">Tu administrador ha inhabilitado el Asistente de Google.</translation>
 <translation id="4895488851634969361">La batería está llena.</translation>
+<translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">La combinación de teclas para activar el modo de contraste alto ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Buena</translation>
 <translation id="4918086044614829423">Aceptar</translation>
@@ -269,7 +274,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6452181791372256707">Rechazar</translation>
 <translation id="6453179446719226835">Se ha cambiado el idioma</translation>
 <translation id="6459472438155181876">Ampliando pantalla para <ph name="DISPLAY_NAME" /></translation>
-<translation id="6482559668224714696">Aumento de pantalla completa</translation>
+<translation id="6482559668224714696">Lupa de pantalla completa</translation>
 <translation id="6490471652906364588">Dispositivo USB-C (puerto derecho)</translation>
 <translation id="6501401484702599040">Enviando la pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Escritura a mano</translation>
@@ -350,10 +355,11 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
 <translation id="8061464966246066292">Contraste alto</translation>
 <translation id="8098591350844501178">Dejar de enviar la pantalla a <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">Activadas para todas las aplicaciones</translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>
 <translation id="8142699993796781067">Red privada</translation>
-<translation id="8152119955266188852">Has pulsado la combinación de teclas del aumento de pantalla completa. ¿Quieres activarla?</translation>
+<translation id="8152119955266188852">Has pulsado la combinación de teclas de la lupa de pantalla completa. ¿Quieres activarla?</translation>
 <translation id="8180896103888046100">Dejar de enviar contenido a un receptor desconocido</translation>
 <translation id="8190698733819146287">Personalizar idiomas...</translation>
 <translation id="8261506727792406068">Eliminar</translation>
@@ -370,6 +376,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="847056008324733326">Configuración de escala de pantalla</translation>
 <translation id="8477270416194247200">Pulsa Alt + tecla de búsqueda o Mayús para cancelarlo.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: volviendo a conectar...</translation>
+<translation id="8513108775083588393">Girar automáticamente</translation>
 <translation id="8517041960877371778">Es posible que tu <ph name="DEVICE_TYPE" /> no se cargue mientras esté encendido.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>
 <translation id="8649101189709089199">Enunciar Selección</translation>

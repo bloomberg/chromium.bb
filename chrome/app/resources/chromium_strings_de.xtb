@@ -115,7 +115,6 @@
 <translation id="5032989939245619637">Details in Chromium speichern</translation>
 <translation id="5045248521775609809">Chromium überall mitnehmen</translation>
 <translation id="5116586539350239523">Ihre personenbezogenen Daten werden von Chromium sicher gespeichert. Dadurch brauchen Sie sie nicht noch einmal einzugeben.</translation>
-<translation id="5231355151045086930">Von Chromium abmelden</translation>
 <translation id="5358375970380395591">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Chromium-Profil. Ihre Chromium-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME" /> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium wird aktualisiert (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Eine neue Version von Chromium ist verfügbar.</translation>
@@ -148,6 +147,7 @@
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> ist schädlich und wurde daher von Chromium blockiert.</translation>
 <translation id="6212496753309875659">Auf diesem Computer befindet sich bereits eine neuere Version von Chromium. Falls die Software nicht funktioniert, deinstallieren Sie Chromium bitte und versuchen Sie es erneut.</translation>
 <translation id="6248213926982192922">Chromium als Standardbrowser verwenden</translation>
+<translation id="6268381023930128611">Von Chromium abmelden?</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> ist möglicherweise schädlich und wurde daher von Chromium blockiert.</translation>
 <translation id="6309712487085796862">Chromium verwendet Ihre Kamera.</translation>
 <translation id="6333502561965082103">In Chromium wird eine andere Aktion durchgeführt. Bitte versuchen Sie es später noch einmal.</translation>

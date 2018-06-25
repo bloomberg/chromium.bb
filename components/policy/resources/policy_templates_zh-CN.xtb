@@ -681,6 +681,7 @@
 <translation id="3034580675120919256">可让您设置是否允许网站运行 JavaScript。可以针对所有网站允许或拒绝运行 JavaScript。如果未设置此政策，系统将使用“AllowJavaScript”并允许用户更改此设置。</translation>
 <translation id="3038323923255997294">在<ph name="PRODUCT_NAME" />关闭后继续运行后台应用</translation>
 <translation id="3046192273793919231">将网络数据包发送到管理服务器以监控联网状态</translation>
+<translation id="3047732214002457234">控制 Chrome 清理功能向 Google 报告数据的方式</translation>
 <translation id="3048744057455266684">如果设置了此政策，且多功能框建议的搜索网址在查询字符串或片段标识符中包含此参数，则该建议将显示搜索字词和搜索服务提供商，而不是原始的搜索网址。
 
           此为可选政策。如果未设置此政策，系统将不会替换搜索字词。
@@ -990,6 +991,7 @@
 
       如果此政策设为 true，系统将发送监控网络数据包（所谓的“<ph name="HEARTBEATS_TERM" />”）。
       如果此政策设为 false 或未设置，系统将不会发送任何网络数据包。</translation>
+<translation id="3950239119790560549">更新时间限制</translation>
 <translation id="3958586912393694012">允许使用 Smart Lock</translation>
 <translation id="3963602271515417124">如果此政策的值为 True，则系统将允许此设备进行远程认证，然后自动生成证书并将其上传到设备管理服务器。
 
@@ -1239,6 +1241,10 @@
 
           如果此政策未设置，那么即使检测到某个服务器在内网上，<ph name="PRODUCT_NAME" /> 也不会委托用户凭据。</translation>
 <translation id="4752880493649142945">连接到 RemoteAccessHostTokenValidationUrl 时使用的客户端证书</translation>
+<translation id="4757671984625088193">如果此政策设为 true 或未设置，<ph name="PRODUCT_NAME" /> 将会建议与当前网页相关的网页。
+      这些建议是从 Google 服务器远程提取的。
+
+      如果此政策设为 false，将不会提取或显示此类建议。</translation>
 <translation id="4791031774429044540">启用大号光标辅助功能。
 
           如果此政策的值设为 True，则系统将会始终启用大号光标。
@@ -2040,6 +2046,13 @@
 
           如果未设置此政策，则登录屏幕初次显示时会停用放大镜。用户可以随时启用或停用放大镜，并且其在登录屏幕上的启用或停用状态对各用户均有效。</translation>
 <translation id="7249828445670652637">允许 ARC 应用使用 <ph name="PRODUCT_OS_NAME" /> CA 证书</translation>
+<translation id="725322441686394886">如果此政策未设置，当 Chrome 清理功能检测到垃圾软件时，可能会按照 SafeBrowsingExtendedReportingEnabled 设置的政策向 Google 报告与此项扫描相关的元数据。然后，Chrome 清理功能会询问用户是否要清理垃圾软件。用户可以选择与 Google 分享清理结果，以协助 Google 日后更好地检测垃圾软件。这些结果包含文件元数据、自动安装的扩展程序以及注册表键（有关说明，请参见《Chrome 隐私权白皮书》）。
+
+      如果此政策处于停用状态，当 Chrome 清理功能检测到垃圾软件时，则不会向 Google 报告与此项扫描相关的元数据，并且会覆盖 SafeBrowsingExtendedReportingEnabled 设置的任何政策。Chrome 清理功能会询问用户是否要清理垃圾软件，但不会向 Google 报告清理结果，也不会为用户提供用于向 Google 报告清理结果的选项。
+
+      如果此政策处于启用状态，当 Chrome 清理功能检测到垃圾软件时，可能会按照 SafeBrowsingExtendedReportingEnabled 设置的政策向 Google 报告与此项扫描相关的元数据。Chrome 清理功能会询问用户是否要清理垃圾软件，并会向 Google 报告清理结果，而且不会为用户提供用于禁止向 Google 报告清理结果的选项。
+
+      此政策不适用于未加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例。</translation>
 <translation id="7258823566580374486">启用远程访问主机的屏蔽设置</translation>
 <translation id="7260277299188117560">自动更新 p2p 已启用</translation>
 <translation id="7261252191178797385">设备壁纸图片</translation>
@@ -2103,6 +2116,11 @@
       如果此设置处于停用状态或未配置，用户在看到警告后可以继续访问被标记为可能存在恶意内容的网站。
 
       要详细了解安全浏览功能，请访问 https://developers.google.com/safe-browsing。</translation>
+<translation id="7417728346887499628">如果此政策处于停用状态，Chrome 清理功能将无法扫描系统以检测是否存在垃圾软件，也无法执行清理操作。此外，系统将禁止通过 chrome://settings/cleanup 手动触发 Chrome 清理功能。
+
+      如果此政策处于启用状态或未设置，Chrome 清理功能将会定期扫描系统以检测是否存在垃圾软件，并会在发现任何垃圾软件时询问用户是否要将其移除。此外，系统将允许通过 chrome://settings 手动触发 Chrome 清理功能。
+
+      此政策不适用于未加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例。</translation>
 <translation id="7417972229667085380">演示模式下待机延迟时间的调整幅度（百分比）（已弃用）</translation>
 <translation id="7421483919690710988">设置媒体磁盘缓存大小（字节）</translation>
 <translation id="7424751532654212117">已停用插件列表的例外情况</translation>
@@ -2474,6 +2492,7 @@
 <translation id="8339420913453596618">已停用第二重因素</translation>
 <translation id="8344454543174932833">首次运行时，从默认浏览器导入书签</translation>
 <translation id="8359734107661430198">从 2008 年 9 月 2 日开始启用 ExampleDeprecatedFeature API</translation>
+<translation id="8367209241899435947">在 Windows 系统上启用 Chrome 清理功能</translation>
 <translation id="8369602308428138533">使用交流电源供电时的屏幕关闭延迟时间</translation>
 <translation id="8382184662529825177">允许为设备使用远程认证来保护内容</translation>
 <translation id="838870586332499308">启用数据漫游</translation>
@@ -2728,6 +2747,7 @@
 <translation id="9150416707757015439">此政策已弃用，请改用 IncognitoModeAvailability。在 <ph name="PRODUCT_NAME" />中启用隐身模式。如果已启用或未配置此设置，用户就可以在隐身模式下打开网页。如果停用此设置，用户就无法在隐身模式下打开网页。如果未设置此政策，将会启用此设置，用户便能使用隐身模式。</translation>
 <translation id="915194831143859291">如果此政策设为 false 或未配置，<ph name="PRODUCT_OS_NAME" />将允许用户关闭设备。
       如果此政策设为 true，<ph name="PRODUCT_OS_NAME" />会在用户关闭设备时触发重新启动操作。<ph name="PRODUCT_OS_NAME" />会将界面中的所有关机按钮替换为重新启动按钮。如果用户通过电源按钮关闭设备，设备将不会自动重新启动，即使启用了此政策也是如此。</translation>
+<translation id="9152473318295429890">允许根据上下文建议相关的网页</translation>
 <translation id="9158929520101169054">允许在同一浏览器中登录多个帐号</translation>
 <translation id="9165792353046089850">让您能够设置是否允许网站访问所连接的 USB 设备。您可以完全禁止所有网站访问此类设备，也可以要求所有网站必须征得用户同意才能访问此类设备。
 
@@ -2763,4 +2783,9 @@
 <translation id="944817693306670849">设置磁盘缓存大小</translation>
 <translation id="981346395360763138">已停用 Google 位置信息服务</translation>
 <translation id="982497069985795632">启用拼写检查</translation>
+<translation id="988537626274109600">此政策用于控制不允许 <ph name="PRODUCT_OS_NAME" />设备自动检查是否有更新的时间范围。
+      当此政策设为非空的时间范围列表时：
+      设备将无法在指定的时间范围内自动检查是否有更新。由于潜在的安全问题，需要回滚或低于最低 <ph name="PRODUCT_OS_NAME" />版本的设备将不受此政策的影响。此外，此政策将不会阻止用户或管理员请求的更新检查。
+      当此政策未设置或不含任何时间范围时：
+      此政策将不会阻止任何自动更新检查，但其他政策可能会阻止此类检查。</translation>
 </translationbundle>

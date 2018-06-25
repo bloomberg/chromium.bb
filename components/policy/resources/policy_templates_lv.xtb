@@ -739,6 +739,7 @@
           Ja šī politika nav iestatīta, tiks lietota politika AllowJavaScript un lietotājs to varēs mainīt.</translation>
 <translation id="3038323923255997294">Turpināt lietotņu izpildi fonā, kad produkts <ph name="PRODUCT_NAME" /> ir aizvērts</translation>
 <translation id="3046192273793919231">Tīkla pakešu sūtīšana uz pārvaldības serveri, lai pārraudzītu tiešsaistes statusu</translation>
+<translation id="3047732214002457234">Kontrolējiet, kā Chrome tīrīšanas rīks nosūta datus Google serveriem</translation>
 <translation id="3048744057455266684">Ja šī politika ir iestatīta un universālajā lodziņā ieteiktā URL vaicājuma virkne vai fragmenta identifikators satur šo parametru, kā ieteikums tiks rādīti meklēšanas vienumi un meklētājprogramma, nevis neapstrādāts meklēšanas URL.
 
           Šī politika nav jāiestata obligāti. Ja tā nebūs iestatīta, meklēšanas vienumu aizstāšana nenotiks.
@@ -1065,6 +1066,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja politikai ir iestatīta vērtība “Patiesa”, pārraudzības tīkla paketes (tā saucamie <ph name="HEARTBEATS_TERM" />) tiek sūtītas.
       Ja ir iestatīta vērtība “Nepatiesa” vai nav iestatīta nekāda vērtība, tīkla paketes netiek sūtītas.</translation>
+<translation id="3950239119790560549">Laika ierobežojumu atjaunināšana</translation>
 <translation id="3958586912393694012">Smart Lock izmantošanas atļauja</translation>
 <translation id="3963602271515417124">Ja politika ir iestatīta uz “true”, ierīcei ir atļauta attālā apstiprināšana un tiks automātiski izveidots sertifikāts, kas tiks augšupielādēts ierīču pārvaldības serverī.
 
@@ -1324,6 +1326,10 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Ja šī politika netiks iestatīta, pārlūks <ph name="PRODUCT_NAME" /> neuzticēs lietotāja akreditācijas datus, pat ja serveris tiks atzīts par iekštīklu.</translation>
 <translation id="4752880493649142945">Klienta sertifikāts savienojuma izveidei ar “RemoteAccessHostTokenValidationUrl”</translation>
+<translation id="4757671984625088193">Ja šīs politikas iestatījums ir “True” vai tā nav iestatīta, <ph name="PRODUCT_NAME" /> ieteiks lapas, kas ir saistītas ar pašreizējo lapu.
+      Šie ieteikumi tiek izgūti attāli no Google serveriem.
+
+      Ja šīs politikas iestatījums ir “False”, ieteikumi netiks izgūti vai parādīti.</translation>
 <translation id="4791031774429044540">Iespējojiet liela kursora pieejamības funkciju.
 
           Ja šī politika ir iestatīta uz “true”, lielais kursors vienmēr būs iespējots.
@@ -2192,6 +2198,13 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
           Ja šī politika nav iestatīta, ekrāna lupa tiek atspējota, kad pirmo reizi tiek parādīts pieteikšanās ekrāns. Lietotāji var jebkurā laikā iespējot vai atspējot ekrāna lupu, un tās statuss pieteikšanās ekrānā tiek saglabāts visiem lietotājiem.</translation>
 <translation id="7249828445670652637">Iespējot <ph name="PRODUCT_OS_NAME" /> CA sertifikātus ARC lietotnēm</translation>
+<translation id="725322441686394886">Ja šī politika nav iestatīta un Chrome tīrīšanas rīks atrod nevēlamu programmatūru, saskaņā ar politiku “SafeBrowsingExtendedReportingEnabled” meklēšanas metadatus var nosūtīt Google serveriem. Pēc tam Chrome tīrīšanas rīkā lietotājam tiks vaicāts, vai noņemt nevēlamo programmatūru. Lietotājs var izvēlēties, vai tīrīšanas rezultātus kopīgot ar Google serveriem, lai uzlabotu turpmāku nevēlamās programmatūras atrašanu. Kā norādīts Chrome konfidencialitātes tehniskajā dokumentā, šie rezultāti ietver failu metadatus, automātiski instalētus paplašinājumus un reģistra atslēgas.
+
+      Ja politika ir atspējota un Chrome tīrīšanas rīks atrod nevēlamu programmatūru, meklēšanas metadati netiks sūtīti Google serveriem un tiks ignorēti politikas “SafeBrowsingExtendedReportingEnabled” iestatījumi. Chrome tīrīšanas rīkā lietotājam tiks vaicāts, vai noņemt nevēlamo programmatūru. Tīrīšanas rezultāti netiks nosūtīti Google serveriem, un lietotājam nebūs pieejama nosūtīšanas iespēja.
+
+      Ja politika ir iespējota un Chrome tīrīšanas rīks atrod nevēlamu programmatūru, saskaņā ar politiku “SafeBrowsingExtendedReportingEnabled” meklēšanas metadatus var nosūtīt Google serveriem. Chrome tīrīšanas rīkā lietotājam tiks vaicāts, vai noņemt nevēlamo programmatūru. Tīrīšanas rezultāti tiks nosūtīti Google serveriem, un lietotājam nebūs pieejama iespēja liegt nosūtīšanu.
+
+      Šī politika nav pieejama Windows instancēs, kas nav pievienotas <ph name="MS_AD_NAME" /> domēnam.</translation>
 <translation id="7258823566580374486">Aizsegšanas režīma iespējošana attālās piekļuves saimniekdatoriem</translation>
 <translation id="7260277299188117560">Ir iespējota P2P automātiska atjaunināšana</translation>
 <translation id="7261252191178797385">Ierīces fona attēls</translation>
@@ -2257,6 +2270,11 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šis iestatījums ir atspējots vai nav konfigurēts, lietotāji pēc brīdinājuma saņemšanas var pāriet uz vietni, kas atzīmēta kā nevēlama.
 
       Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.</translation>
+<translation id="7417728346887499628">Ja politika ir atspējota, Chrome tīrīšanas rīkam tiek liegta sistēmas pārmeklēšana, kas ir nepieciešama nevēlamu programmatūru noteikšanai un tīrīšanai. Manuāla Chrome tīrīšanas rīka aktivizēšana sadaļā chrome://settings/cleanup ir atspējota.
+
+      Ja politika ir iespējota vai nav iestatīta, Chrome tīrīšanas rīks sistēmā periodiski meklē nevēlamu programmatūru un, ja šāda programmatūra tiek atrasta, lietotājam tiks parādīta ziņojums ar jautājumu, vai šo programmatūru noņemt. Manuāla Chrome tīrīšanas rīka aktivizēšana sadaļā chrome://settings ir iespējota.
+
+      Šī politika nav pieejama Windows instancēs, kas nav pievienotas <ph name="MS_AD_NAME" /> domēnam.</translation>
 <translation id="7417972229667085380">Aizkaves līdz dīkstāvei norādīšana procentos (prezentācijas režīmā; pārtraukta)</translation>
 <translation id="7421483919690710988">Iestatīt datu nesēja kešatmiņas lielumu baitos</translation>
 <translation id="7424751532654212117">Atspējoto spraudņu saraksta izņēmumu saraksts</translation>
@@ -2651,6 +2669,7 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8339420913453596618">Otrais faktors atspējots</translation>
 <translation id="8344454543174932833">Grāmatzīmju importēšana no noklusējuma pārlūka pirmajā palaišanas reizē</translation>
 <translation id="8359734107661430198">Iespējot ExampleDeprecatedFeature API, kas bija derīgs līdz 02.09.2008.</translation>
+<translation id="8367209241899435947">Iespējojiet Chrome tīrīšanas rīku Windows datorā</translation>
 <translation id="8369602308428138533">Aizkave līdz ekrāna izslēgšanai, ja ierīce darbojas ar maiņstrāvu</translation>
 <translation id="8382184662529825177">Iespējot attālās apstiprināšanas lietošanu ierīces satura aizsardzībai</translation>
 <translation id="838870586332499308">Iespējot datu viesabonēšanu</translation>
@@ -2925,6 +2944,7 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Ja šī politika nav iestatīta, tā tiks iespējota un lietotājs varēs lietot inkognito režīmu.</translation>
 <translation id="915194831143859291">Ja šai politikai ir iestatīta vērtība Nepatiesa vai ja politika nav konfigurēta, lietotājs var izslēgt <ph name="PRODUCT_OS_NAME" /> ierīci.
       Ja šai politikai ir iestatīta vērtība Patiesa, lietotājam izslēdzot ierīci, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiek aktivizēta atkārtotā palaišana. <ph name="PRODUCT_OS_NAME" /> aizstāj visas lietotāja saskarnē esošās izslēgšanas pogas ar atkārtotas palaišanas pogām. Ja lietotājs izslēdz ierīci, izmantojot barošanas pogu, ierīce tiek automātiski atkārtoti palaista, pat ja ir iespējota politika.</translation>
+<translation id="9152473318295429890">Iespējojiet saistīto tīmekļa lapu kontekstuālos ieteikumus</translation>
 <translation id="9158929520101169054">Atļauj pārlūkā vairākkārtēju pierakstīšanos</translation>
 <translation id="9165792353046089850">Ļauj iestatīt, vai vietnēm atļauts iegūt piekļuvi pievienotajām USB ierīcēm. Piekļuvi var pilnībā bloķēt, vai lietotājam var tikt parādīta uzvedne ar jautājumu katru reizi, kad vietne vēlas iegūt piekļuvi pievienotajām USB ierīcēm.
 
@@ -2960,4 +2980,9 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="944817693306670849">Iestatīt diska kešatmiņas lielumu</translation>
 <translation id="981346395360763138">Google atrašanās vietas pakalpojumi ir atspējoti</translation>
 <translation id="982497069985795632">Iespējo pareizrakstības pārbaudi</translation>
+<translation id="988537626274109600">Šī politika kontrolē laika periodus, kuros <ph name="PRODUCT_OS_NAME" /> ierīce nedrīkst automātiski pārbaudīt atjauninājumu pieejamību.
+      Ja šīs politikas iestatījums ir laika intervālu saraksts, kas nav tukšs:
+      ierīces nevarēs automātiski pārbaudīt atjauninājumu pieejamību noteiktos laika intervālos. Iespējamo drošības problēmu dēļ šī politika neietekmēs ierīces, kas pieprasa atriti vai kurās darbojas versija, kas ir vecāka par minimālo <ph name="PRODUCT_OS_NAME" /> versiju. Turklāt šī politika nebloķēs lietotāju vai administratoru pieprasītas atjauninājumu pieejamības pārbaudes.
+      Ja šī politika nav iestatīta vai tajā nav laika intervālu:
+      šī politika nebloķēs automātiskas atjauninājumu pieejamības pārbaudes, taču tās var bloķēt citas politikas.</translation>
 </translationbundle>

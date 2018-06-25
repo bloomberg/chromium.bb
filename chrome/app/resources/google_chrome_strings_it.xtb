@@ -120,6 +120,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="4143243756087420366">Nome e immagine di Chrome</translation>
 <translation id="4147555960264124640">Stai per accedere con un account gestito e per dare al relativo amministratore il controllo del tuo profilo Google Chrome. I tuoi dati di Chrome, come app, Preferiti, cronologia, password e altre impostazioni, verranno collegati definitivamente a <ph name="USER_NAME" />. Potrai eliminare questi dati tramite la Dashboard di Google Account, ma non potrai associare questi dati a un altro account. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Il programma di installazione non è riuscito a decomprimere il file. Scarica nuovamente Google Chrome.</translation>
+<translation id="424864128008805179">Uscire da Chrome?</translation>
 <translation id="4251615635259297716">Collegare i tuoi dati Chrome a questo account?</translation>
 <translation id="4251625577313994583">Scarica Chrome sull'iPhone</translation>
 <translation id="4293420128516039005">Accedi per sincronizzare e personalizzare Chrome sui tuoi dispositivi</translation>
@@ -213,7 +214,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="7398801000654795464">Hai eseguito l'accesso a Chrome come <ph name="USER_EMAIL_ADDRESS" />. Utilizza lo stesso account per eseguire di nuovo l'accesso.</translation>
 <translation id="7408085963519505752">Termini di Chrome OS</translation>
 <translation id="7419046106786626209">Impossibile sincronizzare i dati in Chrome OS perché la sincronizzazione non è disponibile per il tuo dominio.</translation>
-<translation id="7437998757836447326">Esci da Chrome</translation>
 <translation id="7459554271817304652">Configura la sincronizzazione per salvare le funzioni personalizzate del browser sul Web e accedervi da Google Chrome su qualsiasi computer.</translation>
 <translation id="7473136999113284234">Chrome si aggiorna automaticamente per consentirti di avere sempre la versione più recente.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>

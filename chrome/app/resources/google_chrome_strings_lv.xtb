@@ -121,6 +121,7 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="4143243756087420366">Chrome profila vārds un attēls</translation>
 <translation id="4147555960264124640">Jūs pierakstāties ar pārvaldītu kontu un nodrošināt, ka tā administrators var pārvaldīt jūsu Google Chrome profilu. Jūsu Chrome dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi tiks neatgriezeniski saistīti ar lietotāju <ph name="USER_NAME" />. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet saistīt šos datus ar citu kontu. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Instalētājam neizdevās atarhivēt arhīvu. Lūdzu, vēlreiz lejupielādējiet Google Chrome.</translation>
+<translation id="424864128008805179">Vai izrakstīties no pārlūka Chrome?</translation>
 <translation id="4251615635259297716">Vai saistīt Chrome datus ar šo kontu?</translation>
 <translation id="4251625577313994583">Iegūt Chrome savā iPhone tālrunī</translation>
 <translation id="4293420128516039005">Pierakstieties, lai sinhronizētu un personalizētu Chrome visās savās ierīcēs.</translation>
@@ -216,7 +217,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="7398801000654795464">Pārlūkā Chrome iepriekš pierakstījāties kā lietotājs <ph name="USER_EMAIL_ADDRESS" />. Lai pierakstītos vēlreiz, lūdzu, izmantojiet to pašu kontu.</translation>
 <translation id="7408085963519505752">Chrome OS noteikumi</translation>
 <translation id="7419046106786626209">Chrome OS nevarēja sinhronizēt jūsu datus, jo sinhronizācija jūsu domēnā nav pieejama.</translation>
-<translation id="7437998757836447326">Izrakstīšanās no pārlūka Chrome</translation>
 <translation id="7459554271817304652">Iestatiet sinhronizāciju, lai saglabātu savas personalizētās pārlūka funkcijas tīmeklī un piekļūtu tām no pārlūka Google Chrome jebkurā datorā.</translation>
 <translation id="7473136999113284234">Pārlūks Chrome tiek atjaunināts automātiski, tādēļ jums vienmēr būs pieejama visjaunākā versija.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>

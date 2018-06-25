@@ -736,6 +736,7 @@
           Jika dasar ini dibiarkan tanpa ditetapkan, 'AllowJavaScript' akan digunakan dan pengguna akan boleh mengubahnya.</translation>
 <translation id="3038323923255997294">Terus jalankan apl latar belakang apabila <ph name="PRODUCT_NAME" /> ditutup</translation>
 <translation id="3046192273793919231">Hantar bingkisan rangkaian ke pelayan pengurusan untuk memantau status dalam talian</translation>
+<translation id="3047732214002457234">Kawal cara Pembersih Chrome melaporkan data kepada Google</translation>
 <translation id="3048744057455266684">Jika dasar ini ditetapkan dan URL carian yang dicadangkan dari kotak omni mengandungi parameter ini dalam rentetan pertanyaan atau dalam pengecam serpihan, maka cadangan akan memaparkan istilah carian dan penyedia carian, bukannya URL carian mentah.
 
           Dasar ini tidak wajib. Jika tidak ditetapkan, tiada penggantian istilah carian akan dilaksanakan.
@@ -1067,6 +1068,7 @@
 
       Jika dasar ditetapkan kepada benar, pemantauan bingkisan rangkaian (yang dipanggil <ph name="HEARTBEATS_TERM" />) akan dihantar.
       Jika ditetapkan kepada palsu atau tidak ditetapkan, bingkisan tidak akan dihantar.</translation>
+<translation id="3950239119790560549">Kemas Kini Sekatan Masa</translation>
 <translation id="3958586912393694012">Benarkan penggunaan Smart Lock</translation>
 <translation id="3963602271515417124">Jika benar, pembuktian jauh dibenarkan untuk peranti dan sijil akan dihasilkan secara automatik serta dimuat naik ke Pelayan Pengurusan Peranti.
 
@@ -1326,6 +1328,10 @@
 
           Jika anda membiarkan dasar ini tanpa ditetapkan, <ph name="PRODUCT_NAME" /> tidak akan mewakilkan bukti kelayakan pengguna walaupun pelayan dikesan sebagai Intranet.</translation>
 <translation id="4752880493649142945">Sijil pelanggan untuk menyambung kepada RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Jika tetapan ini ditetapkan kepada benar atau tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan mengesyorkan halaman yang berkaitan dengan halaman semasa.
+      Cadangan ini diambil secara jauh daripada pelayan Google.
+
+      Sekiranya tetapan ini ditetapkan kepada palsu, cadangan tidak akan diambil atau dipaparkan.</translation>
 <translation id="4791031774429044540">Dayakan ciri kebolehcapaian kursor besar.
 
           Jika dasar ini ditetapkan kepada benar, kursor besar akan sentiasa didayakan.
@@ -2192,6 +2198,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Jika dasar ini dibiarkan tanpa ditetapkan, penggadang skrin dilumpuhkan apabila skrin log masuk mula-mula dipaparkan. Pengguna boleh mendayakan atau melumpuhkan penggadang skrin pada bila-bila masa dan statusnya pada skrin log masuk yang berterusan antara pengguna.</translation>
 <translation id="7249828445670652637">Dayakan sijil CA <ph name="PRODUCT_OS_NAME" /> pada apl ARC</translation>
+<translation id="725322441686394886">Jika tidak ditetapkan, sekiranya Pembersih Chrome mengesan perisian yang tidak dikehendaki, Pembersih Chrome boleh melaporkan metadata tentang imbasan itu kepada Google menurut dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Pembersih Chrome kemudiannya akan menanyakan pengguna jika mereka ingin membersihkan perisian yang tidak dikehendaki itu. Pengguna boleh memilih untuk berkongsi keputusan pembersihan dengan Google untuk membantu pengesanan perisian yang tidak dikehendaki pada masa akan datang. Keputusan ini mengandungi metadata fail, sambungan yang dipasang secara automatik dan kunci daftaran seperti yang diterangkan oleh Kertas Putih Privasi Chrome.
+
+      Jika dilumpuhkan, sekiranya Pembersih Chrome mengesan perisian yang tidak dikehendaki, Pembersih Chrome tidak akan melaporkan metadata tentang imbasan itu kepada Google, mengatasi sebarang dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Pembersih Chrome akan menanyakan pengguna jika mereka ingin membersihkan perisian yang tidak dikehendaki itu.  Keputusan pembersihan tidak akan dilaporkan kepada Google dan pengguna tidak akan mempunyai pilihan untuk melakukannya.
+
+      Jika didayakan, sekiranya Pembersih Chrome mengesan perisian yang tidak dikehendaki, Pembersih Chrome boleh melaporkan metadata tentang imbasan itu kepada Google menurut dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Pembersih Chrome akan menanyakan pengguna jika mereka ingin membersihkan perisian yang tidak dikehendaki itu.  Keputusan pembersihan akan dilaporkan kepada Google dan pengguna tidak mempunyai pilihan untuk menghalangnya.
+
+      Dasar ini tidak tersedia pada tika Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Dayakan pengadangan hos akses jauh</translation>
 <translation id="7260277299188117560">Auto kemas kini p2p didayakan</translation>
 <translation id="7261252191178797385">Imej kertas dinding peranti</translation>
@@ -2257,6 +2270,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, maka pengguna boleh memilih untuk meneruskan ke tapak yang dibenderakan selepas amaran dipaparkan.
 
       Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat lanjut tentang Penyemakan Imbas Selamat.</translation>
+<translation id="7417728346887499628">Jika dilumpuhkan, akan menghalang Pembersih Chrome daripada mengimbas sistem untuk mengesan perisian yang tidak dikehendaki dan melakukan pembersihan. Tindakan memulakan Pembersih Chrome secara manual daripada chrome://settings/cleanup dilumpuhkan.
+
+      Jika didayakan atau tidak ditetapkan, Pembersih Chrome akan mengimbas sistem secara berkala untuk mengesan perisian yang tidak dikehendaki dan sekiranya menemui perisian tersebut, Pembersih Chrome akan bertanya kepada pengguna sama ada hendak mengalih keluar perisian tersebut. Tindakan memulakan Pembersih Chrome secara manual daripada chrome://settings didayakan.
+
+      Dasar ini tidak tersedia pada tika Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Peratusan yang digunakan untuk skala kelewatan melahu dalam mod penyampaian (tidak akan digunakan lagi)</translation>
 <translation id="7421483919690710988">Tetapkan saiz cache cakera media dalam bait</translation>
 <translation id="7424751532654212117">Senarai pengecualian kepada senarai pemalam dilumpuhkan</translation>
@@ -2653,6 +2671,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="8339420913453596618">Faktor kedua dilumpuhkan</translation>
 <translation id="8344454543174932833">Import penanda halaman daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
 <translation id="8359734107661430198">Dayakan API ExampleDeprecatedFeature sehingga 2008/09/02</translation>
+<translation id="8367209241899435947">Dayakan Pembersih Chrome pada Windows</translation>
 <translation id="8369602308428138533">Kelewatan pemadaman skrin apabila dijalankan dengan kuasa AC</translation>
 <translation id="8382184662529825177">Dayakan penggunaan pembuktian jauh untuk perlindungan kandungan bagi peranti</translation>
 <translation id="838870586332499308">Dayakan perayauan data</translation>
@@ -2929,6 +2948,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Jika dasar ini dibiarkan tanpa ditetapkan, tetapan ini akan didayakan dan pengguna akan dapat menggunakan mod inkognito.</translation>
 <translation id="915194831143859291">Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasikan, <ph name="PRODUCT_OS_NAME" /> akan membenarkan pengguna mematikan peranti.
       Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan mencetus but semula apabila pengguna mematikan peranti. <ph name="PRODUCT_OS_NAME" /> menggantikan semua kejadian bagi butang matikan dalam UI oleh butang but semula. Jika pengguna mematikan peranti menggunakan butang kuasa, peranti tidak akan but semula secara automatik, walaupun dasar didayakan.</translation>
+<translation id="9152473318295429890">Dayakan cadangan kontekstual halaman web yang berkaitan</translation>
 <translation id="9158929520101169054">Benarkan Berbilang Log Masuk Dalam Penyemak Imbas</translation>
 <translation id="9165792353046089850">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk mendapatkan akses kepada peranti USB yang disambungkan. Akses boleh disekat sepenuhnya atau pengguna boleh ditanya setiap kali tapak web ingin mendapatkan akses kepada peranti USB yang disambungkan.
 
@@ -2964,4 +2984,9 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="944817693306670849">Tetapkan saiz cache cakera</translation>
 <translation id="981346395360763138">Perkhidmatan lokasi Google dilumpuhkan</translation>
 <translation id="982497069985795632">Dayakan semakan ejaan</translation>
+<translation id="988537626274109600">Dasar ini mengawal rangka masa yang peranti <ph name="PRODUCT_OS_NAME" /> tidak dibenarkan menyemak kemas kini secara automatik.
+      Apabila dasar ini ditetapkan kepada senarai selang masa bukan kosong:
+      Peranti tidak dapat menyemak kemas kini secara automatik sepanjang selang masa yang dinyatakan. Peranti yang memerlukan pengunduran atau tidak mencapai versi <ph name="PRODUCT_OS_NAME" /> minimum tidak akan terjejas oleh dasar ini disebabkan oleh isu keselamatan yang berkemungkinan. Di samping itu, dasar ini tidak akan menyekat semakan kemas kini yang diminta oleh pengguna atau pentadbir.
+      Apabilla dasar ini tidak ditetapkan atau tidak mengandungi selang masa:
+      Semakan kemas kini automatik tidak akan disekat oleh dasar ini, tetapi semakan mungkin disekat oleh dasar lain.</translation>
 </translationbundle>

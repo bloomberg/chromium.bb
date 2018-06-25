@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">Download pausado</translation>
 <translation id="1389974829397082527">Não há favoritos aqui</translation>
 <translation id="1397811292916898096">Pesquisar com o <ph name="PRODUCT_NAME" /></translation>
+<translation id="1397854323885047133">Sincronização e personalização</translation>
 <translation id="1404122904123200417">Incorporado em <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Não rastrear"</translation>
 <translation id="1407135791313364759">Abrir todas</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">Para receber conteúdo personalizado sugerido pelo Google, faça login no Chrome.</translation>
 <translation id="2091887806945687916">Som</translation>
 <translation id="2095887075102408547">Este recurso funciona assim: usamos os servidores do Google para compactar as páginas que você visita antes de fazer o download delas. O Google então lê e otimiza esses dados. (não funciona em páginas HTTPS e nem em guias anônimas)</translation>
+<translation id="2096012225669085171">Sincronizar e personalizar entre dispositivos</translation>
 <translation id="2100273922101894616">Login automático</translation>
 <translation id="2111511281910874386">Ir para a página</translation>
 <translation id="2122601567107267586">Não foi possível abrir o aplicativo</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sites restantes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">Toque para acessar a página nova guia na sua guia atual</translation>
-<translation id="219985413780390209">Proteger você e seu dispositivo de sites perigosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicativo da Web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Envia algumas informações do sistema e conteúdo da página para o Google</translation>
+<translation id="2234876718134438132">Serviços do Google e de sincronização</translation>
 <translation id="2259659629660284697">Exportar senhas…</translation>
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2286841657746966508">Endereço de faturamento</translation>
@@ -409,6 +411,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4594952190837476234">Esta página off-line é de <ph name="CREATION_TIME" /> e pode ser diferente da versão on-line.</translation>
 <translation id="4605958867780575332">Item removido: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Abrir <ph name="WEBAPK_NAME" /></translation>
+<translation id="4634124774493850572">Usar senha</translation>
 <translation id="4645575059429386691">Gerenciado pelos seus pais</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoritos excluídos</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> foi adicionado à sua tela inicial</translation>
@@ -583,6 +586,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="5958275228015807058">Procure seus arquivos e páginas em Downloads</translation>
 <translation id="5962718611393537961">Toque para recolher</translation>
 <translation id="6000066717592683814">Continuar usando o Google</translation>
+<translation id="6005538289190791541">Senha sugerida</translation>
 <translation id="6039379616847168523">Ir para a próxima guia</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6042308850641462728">Mais</translation>
@@ -811,6 +815,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> está desatualizado.</translation>
 <translation id="7947953824732555851">Aceitar/fazer login</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
+<translation id="79859296434321399">Para ver conteúdo de realidade aumentada, instale o ARCore</translation>
 <translation id="7987073022710626672">Termos de Serviço do Chrome</translation>
 <translation id="7998918019931843664">Reabrir guia fechada</translation>
 <translation id="7999064672810608036">Tem certeza que quer apagar todos os dados locais, inclusive os cookies, e redefinir todas as permissões para este website?</translation>
@@ -873,6 +878,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="851751545965956758">Impedir a conexão de sites a dispositivos</translation>
 <translation id="8523928698583292556">Excluir senha armazenada</translation>
 <translation id="854522910157234410">Abrir esta página</translation>
+<translation id="8558485628462305855">Para ver conteúdo de realidade aumentada, atualize o ARCore</translation>
 <translation id="8559990750235505898">Oferecer para traduzir páginas em outros idiomas</translation>
 <translation id="8562452229998620586">As senhas salvas aparecerão aqui.</translation>
 <translation id="8569404424186215731">desde <ph name="DATE" /></translation>

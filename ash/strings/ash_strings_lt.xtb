@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Silpnas signalas</translation>
 <translation id="1293264513303784526">USB-C įrenginys (prievadas kairėje)</translation>
 <translation id="1346748346194534595">Dešinė</translation>
+<translation id="1351937230027495976">Sutraukti meniu</translation>
 <translation id="1383876407941801731">Ieškoti</translation>
 <translation id="1467432559032391204">Kairė</translation>
 <translation id="1479743070547893297">Pieškite rašikliu, kad pasirinktumėte</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Išvestis</translation>
 <translation id="3019353588588144572">Laikas, likęs iki akumuliatoriaus įkrovimo: <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Išskleisti meniu</translation>
 <translation id="3087734570205094154">Apačia</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> („Bluetooth“)</translation>
 <translation id="3126069444801937830">Paleisti iš naujo, kad būtų atnaujinta</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Skaičiuojama...</translation>
 <translation id="3995138139523574647">USB-C įrenginys (prievadas dešinėje, užpakalinėje dalyje)</translation>
 <translation id="4017989525502048489">Lazerinis žymeklis</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Programos pranešimai išjungti}one{# programos pranešimai išjungti}few{# programų pranešimai išjungti}many{# programos pranešimai išjungti}other{# programų pranešimai išjungti}}</translation>
 <translation id="4072264167173457037">Vidutinio stiprumo signalas</translation>
 <translation id="4200057768455216496">Paspaudėte prie doko prijungto didintuvo spartųjį klavišą. Ar norite jį įjungti?</translation>
 <translation id="4217571870635786043">Diktavimas</translation>
@@ -190,6 +193,7 @@
 <translation id="4570957409596482333">Funkcijos „Teksto ištarimas“ mygtukas</translation>
 <translation id="4628757576491864469">Įrenginiai</translation>
 <translation id="4659419629803378708">„ChromeVox“ įgalinta</translation>
+<translation id="4734965478015604180">Horizontaliai</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> slaptažodis</translation>
 <translation id="479989351350248267">ieškoti</translation>
 <translation id="4804818685124855865">Atsijungti</translation>
@@ -197,6 +201,7 @@
 <translation id="4872237917498892622">„Alt“ + paieškos arba antrojo lygio klavišas</translation>
 <translation id="4890187583552566966">„Google“ padėjėją išjungė administratorius.</translation>
 <translation id="4895488851634969361">Akumuliatorius visiškai įkrautas.</translation>
+<translation id="490375751687810070">Vertikaliai</translation>
 <translation id="4905614135390995787">Spartusis klavišas, kurį naudojant perjungiamas didelio kontrasto režimas, pakeistas. Naudokite <ph name="NEW_SHORTCUT" /> vietoj <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Stiprus</translation>
 <translation id="4918086044614829423">Priimti</translation>
@@ -350,6 +355,7 @@
 <translation id="8054466585765276473">Apskaičiuojamas laikas, likęs iki akumuliatoriaus išsikrovimo.</translation>
 <translation id="8061464966246066292">Didelis kontrastas</translation>
 <translation id="8098591350844501178">Sustabdyti ekrano perdavimą į: <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">Visų programų pranešimai įjungti</translation>
 <translation id="8132793192354020517">Prisijungta prie „<ph name="NAME" />“</translation>
 <translation id="813913629614996137">Inicijuojama...</translation>
 <translation id="8142699993796781067">Privatus tinklas</translation>
@@ -370,6 +376,7 @@
 <translation id="847056008324733326">Ekrano mastelio nustatymai</translation>
 <translation id="8477270416194247200">Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišą arba „Alt“ + „Shift“.</translation>
 <translation id="8484916590211895857">„<ph name="NAME" />“: prisijungiama iš naujo...</translation>
+<translation id="8513108775083588393">Automatiškai pasukti</translation>
 <translation id="8517041960877371778">„<ph name="DEVICE_TYPE" />“ gali nebūti kraunamas, kai yra įjungtas.</translation>
 <translation id="8639760480004882931">Liko <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Teksto ištarimas</translation>

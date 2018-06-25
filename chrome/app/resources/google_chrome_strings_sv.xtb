@@ -123,6 +123,7 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="4143243756087420366">Namn och bild i Chrome</translation>
 <translation id="4147555960264124640">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Google Chrome-profil. Dina Chrome-uppgifter, t.ex. dina appar, bokmärken, din historik, dina lösenord och andra inställningar, knyts permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dessa uppgifter till ett annat konto. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Det gick inte att packa upp arkivet med installationsfilen. Ladda ned Google Chrome igen.</translation>
+<translation id="424864128008805179">Vill du logga ut från Chrome?</translation>
 <translation id="4251615635259297716">Koppla dina uppgifter i Chrome till det här kontot</translation>
 <translation id="4251625577313994583">Ladda ned Chrome på iPhone</translation>
 <translation id="4293420128516039005">Genom att logga in kan du synkronisera och anpassa Chrome på alla enheter du använder</translation>
@@ -220,7 +221,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7398801000654795464">Du var inloggad i Chrome som <ph name="USER_EMAIL_ADDRESS" />. Använd samma konto när du loggar in igen.</translation>
 <translation id="7408085963519505752">Villkor för Chrome OS</translation>
 <translation id="7419046106786626209">Det gick inte att synkronisera data med Chrome OS eftersom synkronisering inte är tillgängligt för din domän.</translation>
-<translation id="7437998757836447326">Logga ut från Chrome</translation>
 <translation id="7459554271817304652">Ställ in synkronisering och spara dina anpassade webbläsarfunktioner på Internet så att du kan använda dem i Google Chrome på vilken dator som helst.</translation>
 <translation id="7473136999113284234">Chrome uppdateras automatiskt så att du alltid har den senaste versionen.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>

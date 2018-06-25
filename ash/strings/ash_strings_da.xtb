@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Svagt signal</translation>
 <translation id="1293264513303784526">USB-C-enhed (venstre port)</translation>
 <translation id="1346748346194534595">Højre</translation>
+<translation id="1351937230027495976">Skjul menu</translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1479743070547893297">Vælg ved at tegne med din styluspen</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Output</translation>
 <translation id="3019353588588144572">Resterende tid, indtil batteriet er fuldt opladet, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Udvid menu</translation>
 <translation id="3087734570205094154">Bund</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Genstart for at opdatere</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Beregner...</translation>
 <translation id="3995138139523574647">USB-C-enhed (porten bagpå i højre side)</translation>
 <translation id="4017989525502048489">Laserpegepind</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Deaktiveret for én app}one{Deaktiveret for # app}other{Deaktiveret for # apps}}</translation>
 <translation id="4072264167173457037">Middel signal</translation>
 <translation id="4200057768455216496">Du trykkede på genvejen for det fastgjorte lupvindue. Vil du aktivere indstillingen?</translation>
 <translation id="4217571870635786043">Diktering</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">Knap for Tekstoplæsning</translation>
 <translation id="4628757576491864469">Enheder</translation>
 <translation id="4659419629803378708">ChromeVox er aktiveret</translation>
+<translation id="4734965478015604180">Vandret</translation>
 <translation id="4776917500594043016">Adgangskode for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">søg</translation>
 <translation id="4804818685124855865">Afbryd</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">Alt+Søg eller Shift</translation>
 <translation id="4890187583552566966">Google Assistent er deaktiveret af din administrator.</translation>
 <translation id="4895488851634969361">Batteriet er helt opladet.</translation>
+<translation id="490375751687810070">Lodret</translation>
 <translation id="4905614135390995787">Genvejen til at aktivere eller deaktivere tilstanden Høj kontrast er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Stærk</translation>
 <translation id="4918086044614829423">Accepter</translation>
@@ -350,6 +355,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8061464966246066292">Høj kontrast</translation>
 <translation id="8098591350844501178">Stop med at caste skærmen til <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">Aktiveret, alle apps</translation>
 <translation id="8132793192354020517">Forbundet til <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialiserer...</translation>
 <translation id="8142699993796781067">Privat netværk</translation>
@@ -370,6 +376,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="847056008324733326">Indstillinger for visningsskala</translation>
 <translation id="8477270416194247200">Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Genopretter forbindelsen...</translation>
+<translation id="8513108775083588393">Roter automatisk</translation>
 <translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> kan muligvis ikke oplades, mens den er tændt.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> tilbage</translation>
 <translation id="8649101189709089199">Tekstoplæsning</translation>

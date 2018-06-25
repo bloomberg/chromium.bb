@@ -43,6 +43,7 @@
 <translation id="1227633850867390598">값 숨기기</translation>
 <translation id="1228893227497259893">잘못된 개체 식별자</translation>
 <translation id="1232569758102978740">제목 없음</translation>
+<translation id="1250759482327835220">다음번에 더 빠르게 결제할 수 있도록 Google 계정에 카드, 이름, 청구서 수신 주소를 저장하세요.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" />(동기화됨)</translation>
 <translation id="1256368399071562588">&lt;p&gt;웹사이트를 방문하려고 하는데 열리지 않으면 우선 이 문제해결 단계에 따라 오류를 해결해 보세요.&lt;/p&gt;
     &lt;ol&gt;
@@ -123,6 +124,7 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">시스템 관리자에게 문의하세요.</translation>
 <translation id="1740951997222943430">올바른 만료 월을 입력하세요.</translation>
+<translation id="1743520634839655729">다음번에 더 빠르게 결제할 수 있도록 Google 계정과 기기에 카드, 이름, 청구서 수신 주소를 저장하세요.</translation>
 <translation id="17513872634828108">열린 탭</translation>
 <translation id="1753706481035618306">페이지 번호</translation>
 <translation id="1763864636252898013">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 기기의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
@@ -488,7 +490,6 @@
 <translation id="425582637250725228">변경사항이 저장되지 않을 수 있습니다.</translation>
 <translation id="4258748452823770588">잘못된 서명</translation>
 <translation id="4265872034478892965">관리자가 허용함</translation>
-<translation id="4269787794583293679">(사용자 이름 없음)</translation>
 <translation id="4275830172053184480">기기 다시 시작</translation>
 <translation id="4277028893293644418">비밀번호 재설정</translation>
 <translation id="4280429058323657511">, 만료일 <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -511,6 +512,7 @@
 <translation id="4434045419905280838">팝업 및 리디렉션</translation>
 <translation id="443673843213245140">프록시 사용은 중지되었지만 명시적 프록시 설정이 지정되어 있습니다.</translation>
 <translation id="445100540951337728">사용 가능한 직불카드</translation>
+<translation id="4472575034687746823">시작하기</translation>
 <translation id="4506176782989081258">유효성 검사 오류 <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">시스템 관리자에게 문의</translation>
 <translation id="450710068430902550">관리자와 공유</translation>
@@ -626,6 +628,7 @@
 <translation id="5332219387342487447">배송 방법</translation>
 <translation id="5355557959165512791">인증서가 취소되었기 때문에 현재 <ph name="SITE" />에 방문할 수 없습니다. 네트워크 오류와 공격은 대부분 일시적이므로 나중에 이 페이지가 정상적으로 작동할 수 있습니다.</translation>
 <translation id="536296301121032821">정책 설정 저장 실패</translation>
+<translation id="5371425731340848620">카드 업데이트</translation>
 <translation id="5377026284221673050">'시간이 너무 먼 과거로 설정되어 있습니다.', '시간이 너무 먼 미래로 설정되어 있습니다.', 또는  '&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;'</translation>
 <translation id="5386426401304769735">이 사이트의 인증서 체인은 SHA-1을 사용하여 서명된 인증서를 포함합니다.</translation>
 <translation id="5402410679244714488">만료: <ph name="EXPIRATION_DATE_ABBR" />, 최소 1년 전에 마지막으로 사용됨</translation>
@@ -884,7 +887,6 @@
 <translation id="7451311239929941790">이 문제를 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7455133967321480974">전체 기본값 사용(차단)</translation>
 <translation id="7460163899615895653">다른 기기에서 최근에 사용한 탭이 여기에 표시됩니다.</translation>
-<translation id="7469372306589899959">카드 확인 중</translation>
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="7481312909269577407">앞으로</translation>
 <translation id="7485870689360869515">데이터 없음</translation>
@@ -1050,6 +1052,7 @@
 <translation id="8663226718884576429">주문 요약, <ph name="TOTAL_LABEL" />, 세부정보 더보기</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, 답변, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" />로의 연결은 암호화되지 않습니다.</translation>
+<translation id="8713137585425162364">지금은 이 카드를 인증할 수 없습니다.</translation>
 <translation id="8718314106902482036">결제가 완료되지 않음</translation>
 <translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8728672262656704056">시크릿 모드로 전환됨</translation>
@@ -1113,7 +1116,7 @@
 <translation id="9148507642005240123">수정 실행 취소(&amp;U)</translation>
 <translation id="9154194610265714752">업데이트됨</translation>
 <translation id="9157595877708044936">설정 중...</translation>
-<translation id="9168814207360376865">결제 수단이 저장되어 있는지 확인하는 사이트 허용</translation>
+<translation id="9168814207360376865">사이트에서 저장된 결제 수단이 있는지 확인하도록 허용</translation>
 <translation id="9169664750068251925">이 사이트에서 항상 차단</translation>
 <translation id="9170848237812810038">실행 취소(&amp;U)</translation>
 <translation id="9171296965991013597">앱을 종료하시겠습니까?</translation>

@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">слабкий сигнал</translation>
 <translation id="1293264513303784526">Пристрій із портом USB типу C (ліворуч)</translation>
 <translation id="1346748346194534595">Праворуч</translation>
+<translation id="1351937230027495976">Згорнути меню</translation>
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1467432559032391204">Ліворуч</translation>
 <translation id="1479743070547893297">Малюйте стилусом, щоб вибрати</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Вихід</translation>
 <translation id="3019353588588144572">До повного зарядження акумулятора залишилося <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Розгорнути меню</translation>
 <translation id="3087734570205094154">Низ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Перезапустіть, щоб оновити</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Обчислення...</translation>
 <translation id="3995138139523574647">пристрій, під’єднаний до порту USB-C (праворуч на задній панелі)</translation>
 <translation id="4017989525502048489">Лазерний вказівник</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Вимкнено для додатка}one{Вимкнено для # додатка}few{Вимкнено для # додатків}many{Вимкнено для # додатків}other{Вимкнено для # додатка}}</translation>
 <translation id="4072264167173457037">середній сигнал</translation>
 <translation id="4200057768455216496">Ви натиснули комбінацію клавіш для закріпленої лупи. Увімкнути?</translation>
 <translation id="4217571870635786043">Диктування</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">Кнопка "Читання з екрана"</translation>
 <translation id="4628757576491864469">Пристрої</translation>
 <translation id="4659419629803378708">ChromeVox увімкнено</translation>
+<translation id="4734965478015604180">Горизонтально</translation>
 <translation id="4776917500594043016">Пароль користувача  <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">пошук</translation>
 <translation id="4804818685124855865">Від'єднатися</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">Alt+клавіша пошуку або Shift</translation>
 <translation id="4890187583552566966">Ваш адміністратор вимкнув Google Асистент.</translation>
 <translation id="4895488851634969361">Акумулятор заряджений.</translation>
+<translation id="490375751687810070">Вертикально</translation>
 <translation id="4905614135390995787">Комбінація клавіш для керування режимом високого контрасту змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Потужний</translation>
 <translation id="4918086044614829423">Прийняти</translation>
@@ -349,6 +354,7 @@
 <translation id="8054466585765276473">Обчислення часу роботи акумулятора.</translation>
 <translation id="8061464966246066292">Високий контраст</translation>
 <translation id="8098591350844501178">Зупинити трансляцію екрана на пристрій "<ph name="RECEIVER_NAME" />"</translation>
+<translation id="8113423164597455979">Увімкнено, усі додатки</translation>
 <translation id="8132793192354020517">З'єднано з <ph name="NAME" /></translation>
 <translation id="813913629614996137">Ініціалізація...</translation>
 <translation id="8142699993796781067">Приватна мережа</translation>
@@ -369,6 +375,7 @@
 <translation id="847056008324733326">Налаштування масштабу дисплея</translation>
 <translation id="8477270416194247200">Щоб скасувати, натисніть Alt+Search або Shift.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: під’єднання…</translation>
+<translation id="8513108775083588393">Автообертання</translation>
 <translation id="8517041960877371778">Пристрій <ph name="DEVICE_TYPE" /> може не заряджатися, коли він увімкнений.</translation>
 <translation id="8639760480004882931">Залишилося <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Читання з екрана</translation>

@@ -43,6 +43,7 @@
 <translation id="1227633850867390598">मान छिपाएं</translation>
 <translation id="1228893227497259893">गलत इकाई पहचानकर्ता</translation>
 <translation id="1232569758102978740">शीर्षक रहित</translation>
+<translation id="1250759482327835220">अगली बार तेज़ी से भुगतान करने के लिए, अपने कार्ड, नाम और बिलिंग पते को अपने 'Google खाते' में सेव करें.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (सिंक किए गए)</translation>
 <translation id="1256368399071562588">&lt;p&gt;अगर आप किसी वेबसाइट पर जाने की कोशिश करते हैं और वह नहीं खुलती है तो, कृपया गड़बड़ी ठीक करने संबंधी इन कदमों के ज़रिए समस्या का हल करने की कोशिश करें:&lt;/p&gt;
     &lt;ol&gt;
@@ -123,6 +124,7 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">सिस्टम व्यवस्थापक से संपर्क करने का प्रयास करें.</translation>
 <translation id="1740951997222943430">खत्म होने का मान्य महीना डालें</translation>
+<translation id="1743520634839655729">अगली बार तेज़ी से भुगतान करने के लिए, अपने कार्ड, नाम और बिलिंग पते को अपने 'Google खाते' में और इस डिवाइस में सेव करें.</translation>
 <translation id="17513872634828108">टैब खोलें</translation>
 <translation id="1753706481035618306">पृष्‍ठ संख्‍या</translation>
 <translation id="1763864636252898013">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र आपके डिवाइस के ऑपरेटिंग सिस्टम द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
@@ -488,7 +490,6 @@
 <translation id="425582637250725228">हो सकता है कि आपके द्वारा किए गए बदलाव सहेजे ना जाएं.</translation>
 <translation id="4258748452823770588">खराब हस्ताक्षर</translation>
 <translation id="4265872034478892965">आपके व्यवस्थापक ने अनुमति दी है</translation>
-<translation id="4269787794583293679">(कोई उपयोगकर्ता नाम नहीं)</translation>
 <translation id="4275830172053184480">अपना डिवाइस पुन: प्रारंभ करें</translation>
 <translation id="4277028893293644418">पासवर्ड रीसेट करें</translation>
 <translation id="4280429058323657511">, समाप्ति दिनांक <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -511,6 +512,7 @@
 <translation id="4434045419905280838">पॉप-अप और रीडायरेक्ट</translation>
 <translation id="443673843213245140">प्रॉक्‍सी का उपयोग अक्षम है लेकिन कोई स्‍पष्ट प्रॉक्‍सी कॉन्फ़िगरेशन निर्दिष्ट किया गया है.</translation>
 <translation id="445100540951337728">स्वीकृत डेबिट कार्ड</translation>
+<translation id="4472575034687746823">आरंभ करें</translation>
 <translation id="4506176782989081258">सत्‍यापन गड़बड़ी: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">सिस्टम व्यवस्थापक से संपर्क करें</translation>
 <translation id="450710068430902550">व्यवस्थापक के साथ शेयर करना</translation>
@@ -626,6 +628,7 @@
 <translation id="5332219387342487447">शिपिंग का तरीका</translation>
 <translation id="5355557959165512791">आप इस समय <ph name="SITE" /> पर नहीं जा सकते हैं क्योंकि उसका प्रमाणपत्र रद्द कर दिया गया है. नेटवर्क की गड़बड़ी और हमले आमतौर पर कुछ देर के लिए होते हैं, इसलिए मुमकिन है कि यह पेज बाद में काम करे.</translation>
 <translation id="536296301121032821">नीति सेटिंग संग्रहित करने में विफल</translation>
+<translation id="5371425731340848620">'कार्ड अपडेट करें'</translation>
 <translation id="5377026284221673050">"आपकी घड़ी पीछे चल रही है" या "आपकी घड़ी आगे चल रही है" या "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">इस साइट की प्रमाणपत्र श्रृंखला में, SHA-1 का उपयोग करके हस्ताक्षर किया गया प्रमाणपत्र शामिल है.</translation>
 <translation id="5402410679244714488">समाप्ति दिनांक: <ph name="EXPIRATION_DATE_ABBR" />, पिछली बार एक वर्ष से पहले उपयोग किया गया</translation>
@@ -810,7 +813,7 @@
 <translation id="6891596781022320156">नीति स्तर समर्थित नहीं है.</translation>
 <translation id="6895330447102777224">आपके कार्ड की पुष्टि हो गई है</translation>
 <translation id="6897140037006041989">उपयोगकर्ता एजेंट</translation>
-<translation id="6903319715792422884">Google को कुछ <ph name="BEGIN_WHITEPAPER_LINK" />सिस्टम जानकारी और पेज सामग्री<ph name="END_WHITEPAPER_LINK" /> भेजकर सुरक्षित ब्राउज़िंग को बेहतर बनाने में मदद करें. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="6903319715792422884">'सुरक्षित ब्राउज़िंग' को बेहतर बनाने में मदद करने के लिए Google को कुछ <ph name="BEGIN_WHITEPAPER_LINK" />'सिस्टम जानकारी' और 'पेज सामग्री'<ph name="END_WHITEPAPER_LINK" /> भेजें. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">उपयोगकर्ता:</translation>
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6948701128805548767">पिकअप के तरीके और ज़रूरतें देखने के लिए, कोई पता चुनें</translation>
@@ -885,7 +888,6 @@
 <translation id="7451311239929941790">इस समस्या के बारे में <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" />.</translation>
 <translation id="7455133967321480974">वैश्विक डिफ़ॉल्ट का उपयोग करें (अवरोधित करें)</translation>
 <translation id="7460163899615895653">आपके अन्य डिवाइस के हाल ही के टैब यहां दिखाई देंगे</translation>
-<translation id="7469372306589899959">कार्ड की पुष्टि की जा रही है</translation>
 <translation id="7473891865547856676">जी रहने दें</translation>
 <translation id="7481312909269577407">आगे जाएं</translation>
 <translation id="7485870689360869515">कोई डेटा नहीं मिला</translation>
@@ -1052,6 +1054,7 @@
 <translation id="8663226718884576429">ऑर्डर की खास बातें, <ph name="TOTAL_LABEL" />, ज़्यादा जानकारी</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, उत्तर, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> से आपके कनेक्शन को एन्क्रिप्ट नहीं किया गया है.</translation>
+<translation id="8713137585425162364">इस कार्ड की पुष्टि अभी नहीं की जा सकती.</translation>
 <translation id="8718314106902482036">भुगतान पूरा नहीं हुआ</translation>
 <translation id="8725066075913043281">पुन: प्रयास करें</translation>
 <translation id="8728672262656704056">आप गुप्त मोड में चले गए हैं</translation>
@@ -1115,7 +1118,7 @@
 <translation id="9148507642005240123">&amp;संपादन वापस लाएं</translation>
 <translation id="9154194610265714752">अपडेट किया गया</translation>
 <translation id="9157595877708044936">सेट अप कर रहा है...</translation>
-<translation id="9168814207360376865">साइट को यह देखने दें कि आपके भुगतान के तरीके सेव किए गए हैं या नहीं</translation>
+<translation id="9168814207360376865">साइट को यह देखने दें कि आपके 'भुगतान के तरीके' सेव किए गए हैं या नहीं</translation>
 <translation id="9169664750068251925">इस साइट पर हमेशा अवरोधित करें</translation>
 <translation id="9170848237812810038">&amp;पूर्ववत् करें</translation>
 <translation id="9171296965991013597">ऐप्लिकेशन छोड़ें?</translation>

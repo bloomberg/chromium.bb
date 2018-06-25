@@ -117,7 +117,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5032989939245619637">Uložiť podrobnosti v prehliadači Chromium</translation>
 <translation id="5045248521775609809">Vezmite si Chromium všade</translation>
 <translation id="5116586539350239523">Chromium vaše osobné údaje bezpečne uloží, aby ste ich už nemuseli znova zadávať.</translation>
-<translation id="5231355151045086930">Odhlásenie sa z prehliadača Chromium</translation>
 <translation id="5358375970380395591">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom Chromium. Vaše údaje prehliadača Chromium, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME" />. Tieto údaje budete môcť odstrániť len pomocou panela Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Aktualizuje sa Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">K dispozícii je nová verzia prehliadača Chromium.</translation>
@@ -150,6 +149,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="6129621093834146363">Súbor <ph name="FILE_NAME" /> je nebezpečný, a preto ho prehliadač Chromium zablokoval.</translation>
 <translation id="6212496753309875659">Tento počítač už obsahuje novšiu verziu prehliadača Chromium. Ak softvér nefunguje, odinštalujte prehliadač Chromium a skúste to znova.</translation>
 <translation id="6248213926982192922">Nastavte Chromium ako svoj predvolený prehliadač</translation>
+<translation id="6268381023930128611">Odhlásiť sa z prehliadača Chromium?</translation>
 <translation id="6295779123002464101">Súbor <ph name="FILE_NAME" /> môže byť nebezpečný, a preto ho prehliadač Chromium zablokoval.</translation>
 <translation id="6309712487085796862">Chromium používa vašu kameru.</translation>
 <translation id="6333502561965082103">V prehliadači Chromium práve prebieha iná operácia. Skúste to znova neskôr.</translation>

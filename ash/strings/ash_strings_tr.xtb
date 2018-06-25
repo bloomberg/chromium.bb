@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Zayıf sinyal</translation>
 <translation id="1293264513303784526">USB-C cihaz (sol bağlantı noktası)</translation>
 <translation id="1346748346194534595">Sağa</translation>
+<translation id="1351937230027495976">Menüyü daralt</translation>
 <translation id="1383876407941801731">Ara</translation>
 <translation id="1467432559032391204">Sola</translation>
 <translation id="1479743070547893297">Seçmek için ekran kaleminizle çizin</translation>
@@ -79,7 +80,7 @@
 <translation id="2359808026110333948">Devam Et</translation>
 <translation id="2365393535144473978">Mobil veri etkinleştirildiğinde Bluetooth açılır.</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="2412593942846481727">Uygulama güncellendi</translation>
+<translation id="2412593942846481727">Güncelleme var</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor. Kabul etmeden önce şu cihazda gösterilen bu parolanın gösterildiğini onaylayın: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Bildirimler</translation>
 <translation id="2484513351006226581">Klavye düzenini değiştirmek için <ph name="KEYBOARD_SHORTCUT" /> tuşlarına basın.</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Çıkış</translation>
 <translation id="3019353588588144572">Pilin tam olarak şarj olması için kalan süre, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">üstkrktr</translation>
+<translation id="3081696990447829002">Menüyü genişlet</translation>
 <translation id="3087734570205094154">Alt</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Güncellemek için yeniden başlat</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Hesaplanııyor...</translation>
 <translation id="3995138139523574647">USB-C cihaz (sağ arka bağlantı noktası)</translation>
 <translation id="4017989525502048489">Lazer işaretçi</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Bir uygulama için kapalı}other{# uygulama için kapalı}}</translation>
 <translation id="4072264167173457037">Orta düzeyde sinyal</translation>
 <translation id="4200057768455216496">Yerleştirilmiş büyüteç kısayoluna bastınız. Bu özelliği açmak istiyor musunuz?</translation>
 <translation id="4217571870635786043">Dikte</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">Seç ve Dinle düğmesi</translation>
 <translation id="4628757576491864469">Cihazlar</translation>
 <translation id="4659419629803378708">ChromeVox etkinleştirildi</translation>
+<translation id="4734965478015604180">Yatay</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> için şifre</translation>
 <translation id="479989351350248267">ara</translation>
 <translation id="4804818685124855865">Bağlantıyı kes</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">Alt+Arama veya Üst Karakter</translation>
 <translation id="4890187583552566966">Google Asistan, yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="4895488851634969361">Pil dolu.</translation>
+<translation id="490375751687810070">Dikey</translation>
 <translation id="4905614135390995787">Yüksek Kontrast Modunu açma/kapatma kısayolu değişti. Lütfen <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> tuşlarını kullanın.</translation>
 <translation id="4917385247580444890">Güçlü</translation>
 <translation id="4918086044614829423">Kabul et</translation>
@@ -350,6 +355,7 @@
 <translation id="8054466585765276473">Pilin süresi hesaplanıyor.</translation>
 <translation id="8061464966246066292">Yüksek kontrast</translation>
 <translation id="8098591350844501178">Ekranın <ph name="RECEIVER_NAME" /> cihazına yayınını durdur</translation>
+<translation id="8113423164597455979">Açık, tüm uygulamalar</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> ağına bağlanıldı</translation>
 <translation id="813913629614996137">İlk kullanıma hazırlanıyor...</translation>
 <translation id="8142699993796781067">Özel ağ</translation>
@@ -370,6 +376,7 @@
 <translation id="847056008324733326">Ekran ölçeği ayarları</translation>
 <translation id="8477270416194247200">İptal etmek için Alt+Ara veya Üst Karakter tuşuna basın.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Yeniden bağlanılıyor...</translation>
+<translation id="8513108775083588393">Otomatik döndür</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> cihazınız açıkken şarj olmayabilir.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> kaldı</translation>
 <translation id="8649101189709089199">Seç ve Dinle</translation>

@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">信号较弱</translation>
 <translation id="1293264513303784526">USB-C 设备（左侧端口）</translation>
 <translation id="1346748346194534595">向右</translation>
+<translation id="1351937230027495976">收起菜单</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1467432559032391204">向左</translation>
 <translation id="1479743070547893297">使用触控笔绘图即可进行选择</translation>
@@ -87,7 +88,7 @@
 <translation id="2509468283778169019">CAPS LOCK 已打开</translation>
 <translation id="2532589005999780174">高反差模式</translation>
 <translation id="2575685495496069081">多帐号登录已被停用</translation>
-<translation id="2582112259361606227">重启即可更新</translation>
+<translation id="2582112259361606227">重启以进行更新</translation>
 <translation id="2597972630681408282">夜间模式：<ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM 卡已被锁定</translation>
 <translation id="2653659639078652383">提交</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">输出</translation>
 <translation id="3019353588588144572">电池电量将在 <ph name="TIME_REMAINING" />后充满</translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">展开菜单</translation>
 <translation id="3087734570205094154">底部</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" />（蓝牙）</translation>
 <translation id="3126069444801937830">重新启动以进行更新</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">正在计算...</translation>
 <translation id="3995138139523574647">USB-C 设备（右侧后端端口）</translation>
 <translation id="4017989525502048489">激光笔</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{针对 1 个应用关闭}other{针对 # 个应用关闭}}</translation>
 <translation id="4072264167173457037">信号中等</translation>
 <translation id="4200057768455216496">您按下了停靠放大镜的快捷键。要开启这项功能吗？</translation>
 <translation id="4217571870635786043">语音输入</translation>
@@ -190,6 +193,7 @@
 <translation id="4570957409596482333">随选朗读按钮</translation>
 <translation id="4628757576491864469">设备</translation>
 <translation id="4659419629803378708">已启用 ChromeVox</translation>
+<translation id="4734965478015604180">横向</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密码</translation>
 <translation id="479989351350248267">搜索</translation>
 <translation id="4804818685124855865">断开连接</translation>
@@ -197,6 +201,7 @@
 <translation id="4872237917498892622">Alt + 搜索键或 Shift</translation>
 <translation id="4890187583552566966">Google 智能助理已被您的管理员停用。</translation>
 <translation id="4895488851634969361">电池电量已满。</translation>
+<translation id="490375751687810070">纵向</translation>
 <translation id="4905614135390995787">用于切换高反差模式的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
 <translation id="4917385247580444890">强</translation>
 <translation id="4918086044614829423">接受</translation>
@@ -350,6 +355,7 @@
 <translation id="8054466585765276473">正在计算续航时间。</translation>
 <translation id="8061464966246066292">高对比度</translation>
 <translation id="8098591350844501178">停止将屏幕投射到“<ph name="RECEIVER_NAME" />”</translation>
+<translation id="8113423164597455979">开启，所有应用</translation>
 <translation id="8132793192354020517">已连接到 <ph name="NAME" /></translation>
 <translation id="813913629614996137">正在初始化…</translation>
 <translation id="8142699993796781067">专用网络</translation>
@@ -370,6 +376,7 @@
 <translation id="847056008324733326">显示比例设置</translation>
 <translation id="8477270416194247200">按 Alt+搜索键或按 Shift 键可取消。</translation>
 <translation id="8484916590211895857"><ph name="NAME" />：正在重新连接…</translation>
+<translation id="8513108775083588393">自动旋转屏幕</translation>
 <translation id="8517041960877371778">您的 <ph name="DEVICE_TYPE" /> 在开启时可能无法充电。</translation>
 <translation id="8639760480004882931">剩余电量：<ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">随选朗读</translation>

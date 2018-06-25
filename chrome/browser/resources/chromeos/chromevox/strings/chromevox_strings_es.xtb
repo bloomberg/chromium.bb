@@ -92,6 +92,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="1787176709638001873">Texto de edición de contraseña</translation>
 <translation id="1802710350767629429">Muestra las notas de actualización</translation>
 <translation id="1810107444790159527">Cuadro de lista</translation>
+<translation id="1812527064848182527">horizontal</translation>
 <translation id="1828385960365606039">Mayo</translation>
 <translation id="1834891354138622109">Columna</translation>
 <translation id="1845944666972354496">Toca dos veces para activar</translation>
@@ -254,6 +255,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="3232388865800379423">Un botón emergente</translation>
 <translation id="3241052487511142956">Anterior enlace visitado</translation>
 <translation id="3241638166094654466">Celdas en cada línea:</translation>
+<translation id="3286372614333682499">vertical</translation>
 <translation id="3286390186030710347">Control deslizante</translation>
 <translation id="3299925995433437805">No hay ningún enlace siguiente visitado.</translation>
 <translation id="3300348286427369683">Compatible con el texto enriquecido. ChromeVox admite campos de texto enriquecido como, por ejemplo, comandos de salto, movimientos del cursor en dispositivos braille y selección de elementos.</translation>
@@ -922,7 +924,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="9043969572162476692"><ph name="NUM" />%</translation>
 <translation id="9061884144798498064">Selecciona una tabla braille de 8 puntos:</translation>
 <translation id="9065283790526219006">más componente emergente</translation>
-<translation id="9066023754636984703">Pulsa la tecla de búsqueda + A + J para desplazarte a los detalles.</translation>
+<translation id="9066023754636984703">Pulsa la tecla de búsqueda + A, J para desplazarte a los detalles.</translation>
 <translation id="9067522039955793016">Salto de página</translation>
 <translation id="9077213568694924680">eliminado de la selección</translation>
 <translation id="9082874451376019682">No hay ningún control deslizante anterior.</translation>

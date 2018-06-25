@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">Prenos je zaustavljen</translation>
 <translation id="1389974829397082527">Tu ni nobenega zaznamka</translation>
 <translation id="1397811292916898096">Iskanje z iskalnikom <ph name="PRODUCT_NAME" /></translation>
+<translation id="1397854323885047133">Sinhronizacija in prilagajanje</translation>
 <translation id="1404122904123200417">Vdelano v URL <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">»Ne sledi«</translation>
 <translation id="1407135791313364759">Odpri vse</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">Če želite prejemati prilagojeno vsebino, ki jo predlaga Google, se prijavite v Chrome.</translation>
 <translation id="2091887806945687916">Zvok</translation>
 <translation id="2095887075102408547">Ko je ta funkcija vklopljena, Chrome strani, ki jih obiščete, pred prenosom stisne z uporabo Googlovih strežnikov. Strani, do katerih dostopate prek zasebnih povezav (HTTPS) ali jih odprete na zavihkih brez beleženja zgodovina, Google ne vidi in jih ne optimizira.</translation>
+<translation id="2096012225669085171">Sinhronizacija in prilagajanje med napravami</translation>
 <translation id="2100273922101894616">Samodejna prijava</translation>
 <translation id="2111511281910874386">Pojdi na stran</translation>
 <translation id="2122601567107267586">Aplikacije ni bilo mogoče odpreti</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">Kopiraj URL</translation>
 <translation id="2156074688469523661">Preostala spletna mesta (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">Dotaknite se, če želite na trenutnem zavihku odpreti nov zavihek s povezavami</translation>
-<translation id="219985413780390209">Zaščitite sebe in napravo pred nevarnimi spletnimi mesti</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, spletna aplikacija. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Nadaljujte kot <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Pošilja nekatere informacije o sistemu in vsebino strani Googlu</translation>
+<translation id="2234876718134438132">Sinhroniz. in Googlove storitve</translation>
 <translation id="2259659629660284697">Izvozi gesla …</translation>
 <translation id="2268044343513325586">Izboljšaj iskanje</translation>
 <translation id="2286841657746966508">Naslov za obračun storitev</translation>
@@ -408,6 +410,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4594952190837476234">Ta stran brez povezave je bila ustvarjena <ph name="CREATION_TIME" /> in se morda razlikuje od spletne različice.</translation>
 <translation id="4605958867780575332">Odstranjen element: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Odpri <ph name="WEBAPK_NAME" /></translation>
+<translation id="4634124774493850572">Uporabi geslo</translation>
 <translation id="4645575059429386691">Upravlja starš</translation>
 <translation id="4663756553811254707">Št. izbrisanih zaznamkov: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Spletno mesto <ph name="NAME" /> je bilo dodano na začetni zaslon</translation>
@@ -426,7 +429,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4749960740855309258">Odpiranje novega zavihka</translation>
 <translation id="4751476147751820511">Tipala za gibanje in svetlobo</translation>
 <translation id="4759238208242260848">Prenosi</translation>
-<translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 prenos končan.}one{# prenos končan.}two{# prenosa končana.}few{# prenosi končani.}other{# prenosov končanih.}}</translation>
+<translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 prenos je končan.}one{# prenos je končan.}two{# prenosa sta končana.}few{# prenosi so končani.}other{# prenosov je končanih.}}</translation>
 <translation id="4766369052440583386">Varčevanje s podatki je vklopljeno</translation>
 <translation id="4797039098279997504">Dotaknite se, če se želite vrniti na <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Ime na kartici</translation>
@@ -583,6 +586,7 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="5958275228015807058">Iskanje datotek in strani v prenosih</translation>
 <translation id="5962718611393537961">Dotik za strnitev</translation>
 <translation id="6000066717592683814">Ohrani Google</translation>
+<translation id="6005538289190791541">Predlagano geslo</translation>
 <translation id="6039379616847168523">Premik na naslednji zavihek</translation>
 <translation id="6040143037577758943">Zapri</translation>
 <translation id="6042308850641462728">Več</translation>
@@ -811,6 +815,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7942131818088350342">Izdelek <ph name="PRODUCT_NAME" /> je zastarel.</translation>
 <translation id="7947953824732555851">Sprejem in prijava</translation>
 <translation id="7963646190083259054">Ponudnik:</translation>
+<translation id="79859296434321399">Če si želite ogledati vsebino v razširjeni resničnosti, namestite ARCore</translation>
 <translation id="7987073022710626672">Pogoji storitve za Chrome</translation>
 <translation id="7998918019931843664">Vnovično odpiranje zaprtega zavihka</translation>
 <translation id="7999064672810608036">Ali želite res izbrisati vse lokalne podatke, vključno s piškotki, in ponastaviti vsa dovoljenja za to spletno mesto?</translation>
@@ -873,6 +878,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="851751545965956758">Spletnim mestom prepreči povezovanje z napravami</translation>
 <translation id="8523928698583292556">Izbris shranjenega gesla</translation>
 <translation id="854522910157234410">Odpri to stran</translation>
+<translation id="8558485628462305855">Če si želite ogledati vsebino v razširjeni resničnosti, posodobite ARCore</translation>
 <translation id="8559990750235505898">Ponudi prevajanje strani v drugih jezikih</translation>
 <translation id="8562452229998620586">Shranjena gesla bodo prikazana tukaj.</translation>
 <translation id="8569404424186215731">od <ph name="DATE" /></translation>

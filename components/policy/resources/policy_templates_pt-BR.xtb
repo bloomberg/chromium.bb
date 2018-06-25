@@ -706,6 +706,7 @@
 <translation id="3034580675120919256">Permite que você defina se os websites estão autorizados a executar JavaScript. O JavaScript em execução pode ser permitido ou negado para todos os websites. Se esta política for deixada sem definição, a política "AllowJavaScript" será utilizada, podendo ser modificada pelo usuário.</translation>
 <translation id="3038323923255997294">Continua executando os aplicativos em segundo plano quando o <ph name="PRODUCT_NAME" /> é fechado</translation>
 <translation id="3046192273793919231">Enviar pacotes de rede ao servidor de gerenciamento para monitorar o status on-line</translation>
+<translation id="3047732214002457234">Controla a maneira como o recurso "Varredura do Chrome" envia dados ao Google</translation>
 <translation id="3048744057455266684">Se esta política estiver definida e um URL de pesquisa sugerido pela omnibox tiver esse parâmetro na string de consulta ou no identificador do fragmento, a sugestão mostrará os termos de pesquisa e o provedor de pesquisa no lugar do URL bruto da pesquisa.
 
           Esta política é opcional. Se não for definida, não ocorrerá substituição do termo de pesquisa.
@@ -1024,6 +1025,7 @@
 
       Se esta política for definida como true, pacotes de monitoramento de rede (os chamados <ph name="HEARTBEATS_TERM" />) serão enviados.
       Se definida como false ou não configurada, nenhum pacote será enviado.</translation>
+<translation id="3950239119790560549">Atualiza restrições de tempo</translation>
 <translation id="3958586912393694012">Permitir que o Smart Lock seja usado</translation>
 <translation id="3963602271515417124">Se for definida como verdadeira, a declaração remota será permitida para o dispositivo e um certificado será gerado automaticamente e enviado ao Servidor de gerenciamento de dispositivos.
 
@@ -1273,6 +1275,10 @@
 
           Se esta política não é definida, o <ph name="PRODUCT_NAME" /> não delega credenciais do usuário mesmo que um servidor seja detectado como Intranet.</translation>
 <translation id="4752880493649142945">Certificado de cliente para conexão a RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Se esta política for definida como verdadeira ou não for definida, o <ph name="PRODUCT_NAME" /> sugerirá páginas relacionadas à página atual.
+      Essas sugestões são buscadas remotamente nos servidores do Google.
+
+      Se esta configuração for definida como falsa, as sugestões não serão buscadas nem exibidas.</translation>
 <translation id="4791031774429044540">Ativar o recurso de acessibilidade do cursor grande.
 
           Se esta política for definida como "verdadeira", o cursor grande estará sempre ativado.
@@ -2083,6 +2089,13 @@
 
           Se esta política não for definida, a lupa será desativada quando a tela de login for exibida pela primeira vez. Os usuários podem ativar ou desativar a lupa a qualquer momento e seu status na tela de login continuará entre os usuários.</translation>
 <translation id="7249828445670652637">Ativar certificados de CA (Autoridade de certificação) do <ph name="PRODUCT_OS_NAME" /> para apps ARC</translation>
+<translation id="725322441686394886">Se esta política não for definida e o recurso “Varredura do Chrome” detectar um software indesejado, a política poderá reportar metadados sobre a verificação ao Google, de acordo com a política definida por SafeBrowsingExtendedReportingEnabled. Depois, o “Varredura do Chrome” perguntará ao usuário se ele quer limpar o software indesejado. O usuário poderá optar por compartilhar resultados da limpeza com o Google para ajudar na detecção de softwares indesejados no futuro. Esses resultados contêm metadados de arquivos, extensões instaladas automaticamente e chaves de registro, conforme descrito pelo Relatório de Privacidade do Google Chrome.
+
+      Se estiver desativada e o recurso “Varredura do Chrome” detectar um software indesejado, a política poderá reportar metadados sobre a verificação ao Google, substituindo qualquer política definida por SafeBrowsingExtendedReportingEnabled. Depois, o “Varredura do Chrome” perguntará ao usuário se ele quer limpar o software indesejado. Os resultados da limpeza não serão reportados ao Google, e o usuário não terá a opção de fazer isso.
+
+      Se estiver ativada e o recurso “Varredura do Chrome” detectar um software indesejado, a política poderá reportar metadados sobre a verificação ao Google, de acordo com a política definida por SafeBrowsingExtendedReportingEnabled. O “Varredura do Chrome” perguntará ao usuário se ele quer limpar o software indesejado. Os resultados da limpeza serão reportados ao Google, e o usuário não terá a opção de evitar isso.
+
+      Esta política não está disponível em instâncias do Windows não vinculadas a um domínio do <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Ativar cortinas de hosts de acesso remoto</translation>
 <translation id="7260277299188117560">Atualização automática de p2p ativada</translation>
 <translation id="7261252191178797385">Imagem de plano de fundo do dispositivo</translation>
@@ -2146,6 +2159,11 @@
       Se esta configuração for desativada ou não for configurada, os usuários poderão optar por prosseguir para o site sinalizado após o aviso ser exibido.
 
       Consulte https://developers.google.com/safe-browsing para ver mais informações sobre o recurso Navegação segura.</translation>
+<translation id="7417728346887499628">Se esta política for desativada, ela impedirá que o recurso "Varredura do Chrome" verifique o sistema para ver se há software indesejado e que execute limpezas. O acionamento manual do "Varredura do Chrome" em chrome://settings/cleanup ficará desativado.
+
+      Se ela for ativada ou se não for definida, o recurso "Varredura do Chrome" verificará o sistema periodicamente para ver se há software indesejado. Se encontrar algum, ele perguntará ao usuário se ele quer removê-lo. O acionamento manual do "Varredura do Chrome" em chrome://settings ficará ativado.
+
+      Esta política não está disponível em instâncias do Windows não vinculadas a um domínio do <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Percentual pelo qual calcular o intervalo de inatividade no modo de apresentação (uso suspenso)</translation>
 <translation id="7421483919690710988">Define o tamanho do cache de disco de mídia em bytes</translation>
 <translation id="7424751532654212117">Lista de exceções à lista de plug-ins desativados</translation>
@@ -2526,6 +2544,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8339420913453596618">Segundo fator desativado</translation>
 <translation id="8344454543174932833">Importar favoritos do navegador padrão na primeira execução</translation>
 <translation id="8359734107661430198">Ativar a API ExampleDeprecatedFeature até 02/09/2008</translation>
+<translation id="8367209241899435947">Ativa o recurso "Varredura do Chrome" no Windows</translation>
 <translation id="8369602308428138533">Intervalo de desligamento da tela no funcionamento com alimentação CA</translation>
 <translation id="8382184662529825177">Permitir o uso de declaração remota para proteção de conteúdo no dispositivo</translation>
 <translation id="838870586332499308">Ativa roaming de dados</translation>
@@ -2784,6 +2803,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="9150416707757015439">Esta política é obsoleta. Utilize IncognitoModeAvailability em seu lugar, que ativa o modo de navegação anônima em <ph name="PRODUCT_NAME" />. Caso esta configuração seja ativada ou não configurada, os usuários podem abrir páginas da Web no modo de navegação anônima. Se essa configuração for desativada, os usuários não podem abrir páginas da Web usando o modo de navegação anônima. Se esta política for deixada sem definição, esta opção será ativada e o usuário será capaz de usar o modo de navegação anônima.</translation>
 <translation id="915194831143859291">Se esta política é definida como "false" ou se não é configurada, o <ph name="PRODUCT_OS_NAME" /> permite que o usuário desligue o dispositivo.
       Se esta política é definida como "true", o <ph name="PRODUCT_OS_NAME" /> aciona uma reinicialização quando o usuário desliga o dispositivo. O <ph name="PRODUCT_OS_NAME" /> substitui todas as ocorrências de botões de desligamento da interface de usuário por botões de reinicialização. Se o usuário desliga o dispositivo no botão liga/desliga, ele não é reinicializado automaticamente, mesmo que a política esteja ativa.</translation>
+<translation id="9152473318295429890">Ativa sugestões contextuais de páginas da Web relacionadas</translation>
 <translation id="9158929520101169054">Permitir login múltiplo no navegador</translation>
 <translation id="9165792353046089850">Permite definir se os sites podem ter acesso aos dispositivos USB conectados. O acesso pode ser completamente bloqueado, ou uma pergunta será feita ao usuário toda vez que um site solicitar acesso a dispositivos USB conectados.
 
@@ -2819,4 +2839,9 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="944817693306670849">Definir o tamanho do disco de cache</translation>
 <translation id="981346395360763138">Serviços de localização do Google desativados</translation>
 <translation id="982497069985795632">Ativar verificação ortográfica</translation>
+<translation id="988537626274109600">Esta política controla os períodos durante os quais o dispositivo <ph name="PRODUCT_OS_NAME" /> não tem permissão para procurar atualizações automaticamente.
+      Quando esta política for definida para uma lista não vazia de intervalos de tempo:
+      Os dispositivos não poderão procurar atualizações automaticamente durante os intervalos de tempo especificados. Dispositivos que exijam um rollback ou que sejam anteriores à versão mínima do <ph name="PRODUCT_OS_NAME" /> não serão afetados por esta política, devido a possíveis problemas de segurança. Além disso, esta política não bloqueará verificações de atualização solicitadas por usuários ou administradores.
+      Quando esta política não for definida ou se não contiver nenhum intervalo de tempo:
+      Nenhuma verificação automática de atualização será bloqueada por ela, mas as verificações poderão ser bloqueadas por outras políticas.</translation>
 </translationbundle>

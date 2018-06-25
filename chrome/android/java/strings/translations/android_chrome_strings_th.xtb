@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">หยุดดาวน์โหลดไว้ชั่วคราว</translation>
 <translation id="1389974829397082527">ไม่มีบุ๊กมาร์กที่นี่</translation>
 <translation id="1397811292916898096">ค้นหาด้วย <ph name="PRODUCT_NAME" /></translation>
+<translation id="1397854323885047133">การซิงค์และการปรับเปลี่ยนในแบบของคุณ</translation>
 <translation id="1404122904123200417">ฝังอยู่ใน <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“ไม่ติดตาม”</translation>
 <translation id="1407135791313364759">เปิดทั้งหมด</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">หากต้องการรับคำแนะนำเนื้อหาที่เหมาะสำหรับคุณจาก Google ให้ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="2091887806945687916">เสียง</translation>
 <translation id="2095887075102408547">เมื่อเปิดฟีเจอร์นี้ Chrome จะใช้เซิร์ฟเวอร์ของ Google ในการบีบอัดหน้าเว็บที่คุณเข้าชมก่อนที่จะดาวน์โหลดหน้าเหล่านั้น Google จะมองไม่เห็นและไม่เพิ่มประสิทธิภาพหน้าที่เข้าถึงโดยใช้การเชื่อมต่อส่วนตัว (HTTPS) หรือแท็บไม่ระบุตัวตน</translation>
+<translation id="2096012225669085171">ซิงค์และปรับแต่งในอุปกรณ์ทุกเครื่อง</translation>
 <translation id="2100273922101894616">ลงชื่อเข้าใช้อัตโนมัติ</translation>
 <translation id="2111511281910874386">ไปที่หน้า</translation>
 <translation id="2122601567107267586">เปิดแอปไม่ได้</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">คัดลอก URL</translation>
 <translation id="2156074688469523661">เว็บไซต์ที่เหลือ (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">แตะเพื่อไปที่หน้าแท็บใหม่ในแท็บปัจจุบัน</translation>
-<translation id="219985413780390209">ปกป้องคุณและอุปกรณ์ของคุณจากเว็บไซต์อันตราย</translation>
 <translation id="2206488550163399966">เว็บแอป <ph name="APP_NAME" />, <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">ดำเนินการต่อในชื่อ <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">ส่งข้อมูลบางอย่างของระบบและเนื้อหาของหน้าเว็บให้กับ Google</translation>
+<translation id="2234876718134438132">การซิงค์และบริการของ Google</translation>
 <translation id="2259659629660284697">ส่งออกรหัสผ่าน…</translation>
 <translation id="2268044343513325586">ปรับแต่ง</translation>
 <translation id="2286841657746966508">ที่อยู่สำหรับเรียกเก็บเงิน</translation>
@@ -283,7 +285,7 @@
 <translation id="3485359633434254965">{FILES,plural, =1{ดาวน์โหลดแล้ว %1$d ไฟล์}other{ดาวน์โหลดแล้ว %1$d ไฟล์}}</translation>
 <translation id="3487093336331957349">คำแนะนำการค้นหาและเว็บไซต์</translation>
 <translation id="3492207499832628349">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
-<translation id="3493531032208478708"><ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" />เกี่ยวกับเนื้อหาที่แนะนำ</translation>
+<translation id="3493531032208478708"><ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" />เกี่ยวกับเนื้อหาที่แนะนำ</translation>
 <translation id="3518985090088779359">ยอมรับและทำต่อ</translation>
 <translation id="3522247891732774234">มีการอัปเดตให้บริการ ตัวเลือกเพิ่มเติม</translation>
 <translation id="3527085408025491307">โฟลเดอร์</translation>
@@ -389,7 +391,7 @@
 <translation id="4468959413250150279">ปิดเสียงไซต์ที่ต้องการ</translation>
 <translation id="4479647676395637221">ถามก่อน ก่อนที่จะอนุญาตให้เว็บไซต์ใช้กล้องถ่ายรูปของคุณ (แนะนำ)</translation>
 <translation id="4487967297491345095">ระบบจะลบข้อมูลแอปทั้งหมดของ Chrome อย่างถาวร ซึ่งรวมถึงไฟล์ทั้งหมด การตั้งค่า บัญชี ฐานข้อมูล และอื่นๆ</translation>
-<translation id="4508440807153586353">เฉพาะผู้ที่มีรหัสผ่านของคุณเท่านั้นจึงจะสามารถอ่านข้อมูลที่เข้ารหัสของคุณได้ Google จะไม่ส่งหรือจัดเก็บรหัสผ่านนี้ หากคุณลืมรหัสผ่านหรือต้องการเปลี่ยนการตั้งค่านี้ คุณจะต้องรีเซ็ตการซิงค์ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
+<translation id="4508440807153586353">เฉพาะผู้ที่มีรหัสผ่านของคุณเท่านั้นจึงจะสามารถอ่านข้อมูลที่เข้ารหัสของคุณได้ Google จะไม่ส่งหรือจัดเก็บรหัสผ่านนี้ หากคุณลืมรหัสผ่านหรือต้องการเปลี่ยนการตั้งค่านี้ คุณจะต้องรีเซ็ตการซิงค์ <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# วันที่ผ่านมา}other{# วันที่ผ่านมา}}</translation>
 <translation id="451872707440238414">ค้นหาบุ๊กมาร์ก</translation>
 <translation id="4521489764227272523">ระบบได้นำข้อมูลที่เลือกออกจาก Chrome และอุปกรณ์ที่ซิงค์แล้ว
@@ -408,6 +410,7 @@
 <translation id="4594952190837476234">หน้าเว็บออฟไลน์นี้สร้างเมื่อวันที่ <ph name="CREATION_TIME" /> และอาจแตกต่างไปจากเวอร์ชันออนไลน์</translation>
 <translation id="4605958867780575332">รายการที่นำออก: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">เปิด <ph name="WEBAPK_NAME" /></translation>
+<translation id="4634124774493850572">ใช้รหัสผ่าน</translation>
 <translation id="4645575059429386691">มีการจัดการโดยผู้ปกครอง</translation>
 <translation id="4663756553811254707">ลบบุ๊กมาร์ก <ph name="NUMBER_OF_BOOKMARKS" /> รายการแล้ว</translation>
 <translation id="4665282149850138822">เพิ่ม <ph name="NAME" /> ลงในหน้าแรกแล้ว</translation>
@@ -583,6 +586,7 @@
 <translation id="5958275228015807058">หาไฟล์และหน้าในโฟลเดอร์ดาวน์โหลด</translation>
 <translation id="5962718611393537961">แตะเพื่อยุบ</translation>
 <translation id="6000066717592683814">ใช้ Google ต่อ</translation>
+<translation id="6005538289190791541">รหัสผ่านที่แนะนำ</translation>
 <translation id="6039379616847168523">ข้ามไปยังแท็บถัดไป</translation>
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="6042308850641462728">เพิ่มเติม</translation>
@@ -811,6 +815,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ล้าสมัย</translation>
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
 <translation id="7963646190083259054">ผู้ขาย:</translation>
+<translation id="79859296434321399">ติดตั้ง ARCore เพื่อดูเนื้อหา Augmented Reality</translation>
 <translation id="7987073022710626672">ข้อกำหนดในการให้บริการของ Chrome</translation>
 <translation id="7998918019931843664">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
 <translation id="7999064672810608036">คุณแน่ใจไหมว่าต้องการล้างข้อมูลในเครื่องทั้งหมด รวมถึงคุกกี้ และรีเซ็ตสิทธิ์ทั้งหมดสำหรับเว็บไซต์นี้</translation>
@@ -873,6 +878,7 @@
 <translation id="851751545965956758">บล็อกเว็บไซต์ไม่ให้เชื่อมต่อกับอุปกรณ์</translation>
 <translation id="8523928698583292556">ลบรหัสผ่านที่เก็บไว้</translation>
 <translation id="854522910157234410">เปิดหน้านี้</translation>
+<translation id="8558485628462305855">อัปเดต ARCore เพื่อดูเนื้อหา Augmented Reality</translation>
 <translation id="8559990750235505898">เสนอที่จะแปลหน้าในภาษาอื่นๆ</translation>
 <translation id="8562452229998620586">รหัสผ่านที่บันทึกไว้จะแสดงที่นี่</translation>
 <translation id="8569404424186215731">ตั้งแต่วันที่ <ph name="DATE" /></translation>

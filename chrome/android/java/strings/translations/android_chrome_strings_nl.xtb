@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">Download onderbroken</translation>
 <translation id="1389974829397082527">Geen bladwijzers</translation>
 <translation id="1397811292916898096">Zoeken met <ph name="PRODUCT_NAME" /></translation>
+<translation id="1397854323885047133">Synchronisatie en personalisatie</translation>
 <translation id="1404122904123200417">Ingesloten in <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Niet bijhouden</translation>
 <translation id="1407135791313364759">Alles openen</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">Log in bij Chrome om suggesties met gepersonaliseerde content van Google te ontvangen.</translation>
 <translation id="2091887806945687916">Geluid</translation>
 <translation id="2095887075102408547">Als deze functie is ingeschakeld, gebruikt Chrome Google-servers om pagina's die je bezoekt, te comprimeren voordat ze worden gedownload. Pagina's die worden geopend via privéverbindingen (HTTPS) of op incognitotabbladen, worden niet geoptimaliseerd of gezien door Google.</translation>
+<translation id="2096012225669085171">Synchronisatie en personalisatie op meerdere apparaten</translation>
 <translation id="2100273922101894616">Automatisch inloggen</translation>
 <translation id="2111511281910874386">Ga naar pagina</translation>
 <translation id="2122601567107267586">Kan app niet openen</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">URL kopiëren</translation>
 <translation id="2156074688469523661">Resterende sites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">Tik om op je huidige tabblad naar de nieuwe tabbladpagina te gaan</translation>
-<translation id="219985413780390209">Jou en je apparaat beschermen tegen gevaar</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Doorgaan als <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Hiermee verzend je bepaalde systeeminformatie en paginacontent naar Google</translation>
+<translation id="2234876718134438132">Synchronisatie &amp; Google-services</translation>
 <translation id="2259659629660284697">Wachtwoorden exporteren…</translation>
 <translation id="2268044343513325586">Verfijnen</translation>
 <translation id="2286841657746966508">Factuuradres</translation>
@@ -408,6 +410,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4594952190837476234">Deze offline pagina is van <ph name="CREATION_TIME" /> en kan afwijken van de online versie.</translation>
 <translation id="4605958867780575332">Item verwijderd: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> openen</translation>
+<translation id="4634124774493850572">Wachtwoord gebruiken</translation>
 <translation id="4645575059429386691">Beheerd door je ouder</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bladwijzers verwijderd</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> is toegevoegd aan je startscherm</translation>
@@ -583,6 +586,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="5958275228015807058">Vind je bestanden en pagina's in Downloads</translation>
 <translation id="5962718611393537961">Tik om samen te vouwen</translation>
 <translation id="6000066717592683814">Google blijven gebruiken</translation>
+<translation id="6005538289190791541">Voorgesteld wachtwoord</translation>
 <translation id="6039379616847168523">Naar het volgende tabblad gaan</translation>
 <translation id="6040143037577758943">Sluiten</translation>
 <translation id="6042308850641462728">Meer</translation>
@@ -811,6 +815,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> is verouderd.</translation>
 <translation id="7947953824732555851">Accepteren en inloggen</translation>
 <translation id="7963646190083259054">Leverancier:</translation>
+<translation id="79859296434321399">Installeer ARCore om augmented reality-content te bekijken</translation>
 <translation id="7987073022710626672">Servicevoorwaarden van Chrome</translation>
 <translation id="7998918019931843664">Gesloten tabblad opnieuw openen</translation>
 <translation id="7999064672810608036">Weet je zeker dat je alle gegevens, inclusief cookies, voor deze website wilt wissen en alle rechten opnieuw wilt instellen?</translation>
@@ -873,6 +878,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="851751545965956758">Voorkomen dat sites verbinding maken met apparaten</translation>
 <translation id="8523928698583292556">Opgeslagen wachtwoord verwijderen</translation>
 <translation id="854522910157234410">Deze pagina openen</translation>
+<translation id="8558485628462305855">Update ARCore om augmented reality-content te bekijken</translation>
 <translation id="8559990750235505898">Aanbieden pagina's in andere talen te vertalen</translation>
 <translation id="8562452229998620586">Opgeslagen wachtwoorden worden hier weergegeven.</translation>
 <translation id="8569404424186215731">sinds <ph name="DATE" /></translation>

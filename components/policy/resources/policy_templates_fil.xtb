@@ -734,6 +734,7 @@
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AllowJavaScript' at magagawa ng user na baguhin ito.</translation>
 <translation id="3038323923255997294">Magpatuloy sa pagpapatakbo ng apps sa background kapag nakasara ang <ph name="PRODUCT_NAME" /></translation>
 <translation id="3046192273793919231">Magpadala ng mga network packet sa server sa pamamahala upang masubaybayan ang online status</translation>
+<translation id="3047732214002457234">Kinokontrol kung paano nag-uulat ng data sa Google ang Chrome Cleanup</translation>
 <translation id="3048744057455266684">Kung nakatakda ang patakarang ito at may URL sa paghahanap na iminungkahi mula sa omnibox na naglalaman ng parameter na ito sa string ng query o sa tagatukoy ng fragment, ipapakita ng suhestiyon ang mga termino para sa paghahanap at search provider sa halip na ang mismong URL sa paghahanap.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, hindi magpapalit ng termino para sa paghahanap.
@@ -1059,6 +1060,7 @@
 
       Kung nakatakda ang patakarang ito sa true, ipapadala ang mga sinusubaybayang network packet (na tinatawag na <ph name="HEARTBEATS_TERM" />).
       Kung nakatakda sa false o hindi nakatakda, walang ipapadalang mga packet.</translation>
+<translation id="3950239119790560549">Mga Paghihigpit sa Oras ng Pag-update</translation>
 <translation id="3958586912393694012">Payagang gamitin ang Smart Lock</translation>
 <translation id="3963602271515417124">Kung true, pinapahintulutan ang remote na pagpapatotoo para sa device at awtomatikong mabubuo at maa-upload ang isang certificate sa Server ng Pamamahala sa Device.
 
@@ -1318,6 +1320,10 @@
 
           Kung iiwanan mong hindi nakatakda ang patakarang ito, hindi maglalaan ang <ph name="PRODUCT_NAME" /> ng mga kredensyal ng user kahit na na-detect ang isang server bilang Intranet.</translation>
 <translation id="4752880493649142945">Certificate ng client para sa pagkonekta sa RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Kung nakatakda ito sa true o hindi ito naitakda, magmumungkahi ang <ph name="PRODUCT_NAME" /> ng mga page na nauugnay sa kasalukuyang page.
+      Malayuang kinuha ang mga suhestyong ito sa mga server ng Google.
+
+      Kung nakatakda sa false ang setting na ito, hindi makkukuha o maipapakita ang mga suhestyon.</translation>
 <translation id="4791031774429044540">I-enable ang tampok sa pagiging naa-access ng malaking cursor.
 
           Kung nakatakda sa true ang patakarang ito, palaging naka-enable ang malaking cursor.
@@ -2185,6 +2191,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung iiwanang hindi nakatakda ang patakarang ito, madi-disable ang magnifier ng screen kapag unang ipinakita ang screen sa pag-login. Maaaring i-enable o i-disable ng mga user ang magnifier ng screen anumang oras at mananatili ang katayuan nito sa screen sa pag-login sa pagitan ng mga user.</translation>
 <translation id="7249828445670652637">I-enable ang mga CA certificate ng <ph name="PRODUCT_OS_NAME" /> sa mga ARC app</translation>
+<translation id="725322441686394886">Kung hindi nakatakda at kung makakatukoy ang Chrome Cleanup ng hindi kanais-nais na software, maaari itong mag-ulat sa Google ng metadata tungkol sa pag-scan alinsunod sa patakarang itinakda ng SafeBrowsingExtendedReportingEnabled. Pagkatapos, itatanong ng Chrome Cleanup sa user kung gusto niyang alisin ang hindi kanais-nais na software. Mapipili ng user na ibahagi ang mga resulta ng pag-alis sa Google para makatulong sa pagtukoy ng hindi kanais-nais na software sa hinaharap. Makikita sa mga resultang ito ang metadata ng file, mga awtomatikong na-install na extension, at registry key gaya ng isinaad ng Whitepaper ng Privacy ng Chrome.
+
+      Kung naka-disable at makakatukoy ang Chrome Cleanup ng hindi kanais-nais na software, hindi ito mag-uulat sa Google ng metadata tungkol sa pag-scan, na mag-o-override sa anumang patakarang itinakda ng SafeBrowsingExtendedReportingEnabled. Itatanong ng Chrome Cleanup sa user kung gusto niyang alisin ang hindi kanais-nais na software.  Hindi iuulat sa Google ang mga resulta ng pag-alis at hindi magiging opsyon ng user na gawin ito.
+
+      Kung naka-enable at kung makakatukoy ang Chrome Cleanup ng hindi kanais-nais na software, maaari itong mag-ulat sa Google ng metadata tungkol sa pag-scan alinsunod sa patakarang itinakda ng SafeBrowsingExtendedReportingEnabled. Itatanong ng Chrome Cleanup sa user kung gusto niyang alisin ang hindi kanais-nais na software.  Iuulat sa Google ang mga resulta ng pag-alis at hindi magiging opsyon ng user na pigilan ito.
+
+      Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="7258823566580374486">Paganahin ang paghadlang sa mga host ng malayuang pag-access</translation>
 <translation id="7260277299188117560">Naka-enable ang auto update p2p</translation>
 <translation id="7261252191178797385">Larawan ng wallpaper sa device</translation>
@@ -2250,6 +2263,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung naka-disable o hindi naka-configure ang setting na ito, maaaring piliin ng mga user na tumuloy sa naka-flag na site pagkatapos mabigyan ng babala.
 
       Tingnan sa https://developers.google.com/safe-browsing para sa higit pang impormasyon tungkol sa Ligtas na Pag-browse.</translation>
+<translation id="7417728346887499628">Kung naka-disable, pipigilan ang Chrome Cleanup na i-scan ang system para sa hindi kanais-nais na software at magsasagawa ng mga pagtatanggal. Madi-disable ang manual na pag-trigger sa Chrome Cleanup mula sa chrome://settings/cleanup.
+
+      Kung naka-enable o hindi naitakda, pana-panahong isa-scan ng Chrome Cleanup ang system para sa hindi kanais-nais na software at kung may anumang makita, tatanungin nito ang user kung gusto niya itong alisin. Mae-enable ang manual na pag-trigger sa Chrome Cleanup mula sa chrome://settings.
+
+      Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasama sa isang <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="7417972229667085380">Porsyento ng pag-scale ng idle delay kapag nasa presentation mode (hindi na ginagamit)</translation>
 <translation id="7421483919690710988">Itakda ang laki ng cache ng disk ng media sa bytes</translation>
 <translation id="7424751532654212117">Listahan ng mga pagbubukod sa listahan ng hindi pinaganang mga plugin</translation>
@@ -2646,6 +2664,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="8339420913453596618">Naka-disable ang pangalawang factor</translation>
 <translation id="8344454543174932833">Mag-import ng mga bookmark mula sa default na browser sa unang pagtakbo</translation>
 <translation id="8359734107661430198">I-enable ang ExampleDeprecatedFeature API sa 2008/09/02</translation>
+<translation id="8367209241899435947">Ine-enable ang Chrome Cleanup sa Windows</translation>
 <translation id="8369602308428138533">Delay ng pag-off ng screen kapag tumatakbo habang nakasaksak sa kuryente</translation>
 <translation id="8382184662529825177">I-enable ang paggamit ng malayuang pagpapatotoo para sa pagprotekta sa nilalaman para sa device</translation>
 <translation id="838870586332499308">Payagan ang roaming ng data</translation>
@@ -2919,6 +2938,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung hinayaang hindi nakatakda ang patakarang ito, papaganahin ito at magagamit ng user ang mode na incognito.</translation>
 <translation id="915194831143859291">Kung nakatakda sa false o hindi naka-configure ang patakarang ito, papayagan ng <ph name="PRODUCT_OS_NAME" /> ang user na i-shut down ang device.
       Kung nakatakda sa true ang patakarang ito, magti-trigger ang <ph name="PRODUCT_OS_NAME" /> ng reboot kapag i-shut down ng user ang device. Papalitan ng <ph name="PRODUCT_OS_NAME" /> ang lahat ng button ng pag-shutdown sa UI ng mga button sa pag-reboot. Kung i-shut down ng user ang device gamit ang button ng power, hindi ito awtomatikong magre-reboot, kahit na naka-enable ang patakaran.</translation>
+<translation id="9152473318295429890">Ine-enable ang mga kontekstwal na suhestyon ng mga nauugnay na web page</translation>
 <translation id="9158929520101169054">Payagan ang Maraming Pag-sign Sa Browser</translation>
 <translation id="9165792353046089850">Binibigyang-daan kang itakda kung pinapayagan ang mga website na magkaroon ng access sa mga nakakonektang USB device. Maaaring ganap na i-block ang access, o maaaring tanungin ang user sa tuwing gusto ng website na magkaroon ng access sa mga nakakonektang USB device.
 
@@ -2954,4 +2974,9 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="944817693306670849">Itakda ang laki ng cache ng disk</translation>
 <translation id="981346395360763138">Na-disable ang mga serbisyo ng lokasyon ng Google</translation>
 <translation id="982497069985795632">Ine-enable ang spellcheck</translation>
+<translation id="988537626274109600">Kinokontrol ng patakaran ang mga time frame kung kailan hindi pinapayagan ang <ph name="PRODUCT_OS_NAME" /> device na awtomatikong tumingin ng mga update.
+      Kung nakatakda ang patakaran sa isang non-empty na listahan ng mga interval ng oras:
+      Hindi awtomatikong makakatingin ng mga update ang mga device sa mga nasabing interval ng oras. Ang mga device na nangangailangan ng rollback o mababa sa minimum na bersyon ng <ph name="PRODUCT_OS_NAME" /> ay hindi maaapektuhan ng patakarang ito dahil sa mga posibleng isyu. Bukod pa rito, hindi magba-block ang patakarang ito ng mga pagtingin ng update na hiniling ng mga user o administrator.
+      Kapag hindi nakatakda ang patakarang ito o wala itong interval ng oras:
+      Walang awtomatikong pagtingin ng update ang maba-block ng patakarang ito, ngunit maaaring ma-block ng iba pang patakaran ang mga ito.</translation>
 </translationbundle>

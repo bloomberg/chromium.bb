@@ -79,6 +79,7 @@
 <translation id="4730374152663651037">ঘন ঘন ব্যবহার করা হয়</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{১ মাস বাকি}one{# মাস বাকি}other{# মাস বাকি}}</translation>
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="4841881773802181781">যোগ করা হচ্ছে</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{১ সেকেন্ড}one{# সেকেন্ড}other{# সেকেন্ড}}</translation>
 <translation id="4971687151119236543">মিডিয়া পূর্ববর্তী ট্র্যাক</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
@@ -121,6 +122,7 @@
 <translation id="6612467943526193239">ক্রমাঙ্কন থেকে বেরিয়ে যেতে Esc টিপুন।</translation>
 <translation id="6620110761915583480">ফাইল সেভ করুন</translation>
 <translation id="6699343763173986273">মিডিয়া পরবর্তী ট্র্যাক</translation>
+<translation id="673773751041746814">মোছা হচ্ছে</translation>
 <translation id="6786750046913594791">ফোল্ডার বন্ধ করুন</translation>
 <translation id="6808150112686056157">মিডিয়া থামান</translation>
 <translation id="6845383723252244143">ফোল্ডার বেছে নিন</translation>

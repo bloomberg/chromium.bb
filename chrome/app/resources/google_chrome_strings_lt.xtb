@@ -123,6 +123,7 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="4143243756087420366">„Chrome“ pavadinimas ir paveikslėlis</translation>
 <translation id="4147555960264124640">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Google Chrome“ profilį. „Chrome“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME" />. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Diegimo programai nepavyko išpakuoti archyvo. Atsisiųskite „Google Chrome“ dar kartą.</translation>
+<translation id="424864128008805179">Atsijungti nuo „Chrome“?</translation>
 <translation id="4251615635259297716">Susisieti „Chrome“ duomenis su šia paskyra?</translation>
 <translation id="4251625577313994583">gauti „Chrome“ „iPhone“ įrenginyje</translation>
 <translation id="4293420128516039005">Prisijunkite, kad galėtumėte sinchronizuoti ir suasmeninti „Chrome“ skirtinguose įrenginiuose</translation>
@@ -221,7 +222,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7398801000654795464">Buvote prisijungę prie „Chrome“ kaip <ph name="USER_EMAIL_ADDRESS" />. Prisijungdami vėl naudokite tą pačią paskyrą.</translation>
 <translation id="7408085963519505752">„Chrome“ OS sąlygos</translation>
 <translation id="7419046106786626209">„Chrome“ OS negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>
-<translation id="7437998757836447326">Atsijungimas nuo „Chrome“</translation>
 <translation id="7459554271817304652">Nustatykite sinchronizavimą, kad žiniatinklyje išsaugotumėte suasmenintas naršyklės funkcijas ir pasiektumėte jas iš „Google Chrome“ bet kuriuo kompiuteriu.</translation>
 <translation id="7473136999113284234">„Chrome“ atnaujinama automatiškai, todėl visada naudojatės naujausia versija.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>

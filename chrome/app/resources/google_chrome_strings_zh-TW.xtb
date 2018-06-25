@@ -119,6 +119,7 @@
 <translation id="4143243756087420366">Chrome 名稱和相片</translation>
 <translation id="4147555960264124640">你已登入管理化環境下的帳戶，並將管理控制權授予你的 Chrome 設定檔。你的 Chrome 資料 (例如應用程式、書籤、記錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。你可以透過 Google 帳戶資訊主頁刪除這些資料，但你無法將這些資料與其他帳戶建立關聯。<ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">安裝程式無法解壓縮封存檔案，請再次下載 Google Chrome。</translation>
+<translation id="424864128008805179">要登出 Chrome 嗎？</translation>
 <translation id="4251615635259297716">要將你的 Chrome 資料連結至這個帳戶嗎？</translation>
 <translation id="4251625577313994583">在 iPhone 上使用 Chrome</translation>
 <translation id="4293420128516039005">登入即可進行同步處理，讓你在所有裝置上享有個人化的 Chrome 體驗</translation>
@@ -214,7 +215,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7398801000654795464">你使用了 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入 Chrome，請使用相同帳戶重新登入。</translation>
 <translation id="7408085963519505752">Chrome 作業系統條款</translation>
 <translation id="7419046106786626209">你的網域無法使用「同步功能」，因此 Chrome 作業系統無法同步處理你的資料。</translation>
-<translation id="7437998757836447326">登出 Chrome</translation>
 <translation id="7459554271817304652">設定同步處理功能，即可在網路上儲存你的個人化瀏覽器功能，並且透過任何電腦從 Google Chrome 使用這些功能。</translation>
 <translation id="7473136999113284234">Chrome 會自動更新，隨時讓你使用最新版本。</translation>
 <translation id="7535429826459677826">Google Chrome 開發人員版</translation>

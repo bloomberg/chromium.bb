@@ -31,6 +31,7 @@
 <translation id="1921819250265091946">дд</translation>
 <translation id="1930711995431081526">статус</translation>
 <translation id="1938124657309484470">Максимальное значение должно быть <ph name="MAXIMUM_DATE_OR_TIME" />.</translation>
+<translation id="1946271899482435442">Показать окно выбора даты</translation>
 <translation id="1993104285338243655">Включено дублирование экрана</translation>
 <translation id="2060505056492490888">Недопустимое положение символа "<ph name="DOT" />" в адресе "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Сегодня</translation>
@@ -238,7 +239,6 @@
 <translation id="9138385573473225930">оповещение</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, начинается <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">сноска</translation>
-<translation id="947831847158436616">ячейка</translation>
 <translation id="954003015749068518">включить режим "Картинка в картинке"</translation>
 <translation id="966787709310836684">меню</translation>
 </translationbundle>

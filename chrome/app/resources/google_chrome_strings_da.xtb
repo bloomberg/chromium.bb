@@ -119,6 +119,7 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="4143243756087420366">Chrome-navn og -billede</translation>
 <translation id="4147555960264124640">Du er ved at logge ind med en administreret konto og give dens administrator kontrol over din profil i Google Chrome. Dine Chrome-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Installationsprogrammet kunne ikke pakke arkivet ud. Download Google Chrome igen.</translation>
+<translation id="424864128008805179">Vil du logge ud af Chrome?</translation>
 <translation id="4251615635259297716">Vil du linke dine Chrome-data til denne konto?</translation>
 <translation id="4251625577313994583">få Chrome på din iPhone</translation>
 <translation id="4293420128516039005">Log ind for at synkronisere og tilpasse Chrome på alle dine enheder</translation>
@@ -212,7 +213,6 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="7398801000654795464">Du loggede ind i Chrome som <ph name="USER_EMAIL_ADDRESS" />. Brug den samme konto til at logge ind igen.</translation>
 <translation id="7408085963519505752">Vilkår for Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS kunne ikke synkronisere dine data, fordi synkronisering ikke er tilgængelig for dit domæne.</translation>
-<translation id="7437998757836447326">Log ud af Chrome</translation>
 <translation id="7459554271817304652">Konfigurer synkroniseringen til at gemme dine personlige browserfunktioner på nettet, og få adgang til dem i Google Chrome på en hvilken som helst computer.</translation>
 <translation id="7473136999113284234">Chrome opdateres automatisk, så du altid har den nyeste version.</translation>
 <translation id="7535429826459677826">Udviklerversionen af Chrome</translation>

@@ -738,6 +738,7 @@
           Nenustačius šios politikos, bus naudojama „Leisti „JavaScript“ ir naudotojas (-a) galės tai pakeisti.</translation>
 <translation id="3038323923255997294">Uždarius „<ph name="PRODUCT_NAME" />“ toliau leisti fonines programas</translation>
 <translation id="3046192273793919231">Tinklo paketų siuntimas į valdymo serverį, siekiant stebėti prisijungimo būseną</translation>
+<translation id="3047732214002457234">„Chrome“ valymo įrankio duomenų ataskaitų teikimo „Google“ valdymas</translation>
 <translation id="3048744057455266684">Jei ši politika yra nustatyta ir paieškos URL, pasiūlyto „Omnibox“, užklausos eilutėje ar fragmento identifikatoriuje yra šis parametras, pasiūlyme bus rodomi paieškos terminai ir paieškos teikėjas, o ne tiesiog paieškos URL.
 
           Ši politika yra pasirenkama. Jei ji nebus nustatyta, paieškos terminas nebus pakeistas.
@@ -1070,6 +1071,7 @@
 
       Jei ši politika nustatyta į „true“, bus siunčiami stebėjimo tinklo paketai (<ph name="HEARTBEATS_TERM" />).
       Jei ji nustatyta į „false“ arba yra nenustatyta, paketai siunčiami nebus.</translation>
+<translation id="3950239119790560549">Laiko apribojimų atnaujinimas</translation>
 <translation id="3958586912393694012">Leisti naudoti „Smart Lock“</translation>
 <translation id="3963602271515417124">Jei ši politika galioja, leidžiama nuotoliniu būdu patvirtinti įrenginį, o sertifikatas bus automatiškai sugeneruotas ir įkeltas į įrenginių tvarkymo serverį.
 
@@ -1329,6 +1331,10 @@
 
           Jei nenustatysite šios politikos, „<ph name="PRODUCT_NAME" />“ neperduos naudotojo prisijungimo duomenų, net jei aptinkama, kad serveris yra intranete.</translation>
 <translation id="4752880493649142945">Kliento sertifikatas, skirtas prisijungti prie „RemoteAccessHostTokenValidationUrl“</translation>
+<translation id="4757671984625088193">Jei šis nustatymas nustatytas kaip „true“ arba nenustatytas, „<ph name="PRODUCT_NAME" />“ siūlys puslapius, susijusius su dabartiniu.
+      Šie siūlymai gaunami nuotoliniu būdu iš „Google“ serveriu.
+
+      Jei šis nustatymas nustatytas kaip „false“, siūlymai nebus gaunami ar pateikiami.</translation>
 <translation id="4791031774429044540">Įgalinti didelio žymeklio pasiekiamumo funkciją.
 
           Jei ši politika galioja, didelis žymeklis bus visada įgalintas.
@@ -2197,6 +2203,13 @@
 
           Jei ši politika nenustatyta, ekrano didinimas išjungiamas, kai pirmą kartą rodomas prisijungimo ekranas. Naudotojai gali bet kada įjungti arba išjungti ekrano didinimą ir jo būsena skirtingiems naudotojams prisijungimo ekrane bus vienoda.</translation>
 <translation id="7249828445670652637">Įgalinti „<ph name="PRODUCT_OS_NAME" />“ CA sertifikatus ARC programose</translation>
+<translation id="725322441686394886">Jei nustatymas nenustatytas, „Chrome“ valymo įrankiui aptikus nepageidaujamos programinės įrangos, „Google“ gali būti pateikta nuskaitymo metaduomenų ataskaita, vadovaujantis „SafeBrowsingExtendedReportingEnabled“ nustatyta politika. Tada naudojant „Chrome“ valymo įrankį naudotojo bus klausiama, ar jis nori išvalyti nepageidaujamą programinę įrangą. Naudotojas gali pasirinkti bendrinti valymo rezultatus su „Google“, kad padėtų vėliau aptikti nepageidaujamą programinę įrangą. Šie rezultatai apima failų metaduomenis, automatiškai įdiegtus plėtinius ir registro raktus, kaip aprašyta „Chrome“ privatumo baltojoje knygoje.
+
+      Jei nustatymas išjungtas, „Chrome“ valymo įrankiui aptikus nepageidaujamos programinės įrangos, nuskaitymo metaduomenų ataskaita „Google“ nebus teikiama, nepaisant bet kokios „SafeBrowsingExtendedReportingEnabled“ nustatytos politikos. Naudojant „Chrome“ valymo įrankį naudotojo bus klausiama, ar jis nori išvalyti nepageidaujamą programinę įrangą. „Google“ nebus teikiama valymo rezultatų ataskaita ir naudotojui nebus suteikta parinktis tai atlikti.
+
+      Jei nustatymas įgalintas, „Chrome“ valymo įrankiui aptikus nepageidaujamos programinės įrangos, „Google“ gali būti pateikta nuskaitymo metaduomenų ataskaita, vadovaujantis „SafeBrowsingExtendedReportingEnabled“ nustatyta politika. Naudojant „Chrome“ valymo įrankį naudotojo bus klausiama, ar jis nori išvalyti nepageidaujamą programinę įrangą. Valymo rezultatų ataskaita bus pateikta „Google“ ir naudotojas negalės jos neteikti.
+
+      Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="7258823566580374486">Įgalinti nuotolinės prieigos prieglobų slėpimą</translation>
 <translation id="7260277299188117560">Įgalintas automatinis P2P naujinys</translation>
 <translation id="7261252191178797385">Įrenginio ekrano fono vaizdas</translation>
@@ -2262,6 +2275,11 @@
       Jei šis nustatymas išjungtas arba nesukonfigūruotas, naudotojai gali pasirinkti tęsti veiksmus pažymėtoje svetainėje, kai parodomas įspėjimas.
 
       Daugiau informacijos apie Saugų naršymą pateikiama adresu https://developers.google.com/safe-browsing.</translation>
+<translation id="7417728346887499628">Jei šis nustatymas išjungtas, „Chrome“ valymo įrankiui neleidžiama nuskaityti sistemos ieškant nepageidaujamos programinės įrangos ir atlikti valymo veiksmų. Neautomatinis „Chrome“ valymo įrankio suaktyvinimas apsilankius adresu chrome://settings/cleanup išjungtas.
+
+      Jei šis nustatymas įgalintas arba nenustatytas, „Chrome“ valymo įrankis periodiškai nuskaitys sistemą ieškodamas nepageidaujamos programinės įrangos, o radus tokios įrangos naudotojo bus klausiama, ar jis nori ją pašalinti. Neautomatinis „Chrome“ valymo įrankio suaktyvinimas apsilankius adresu chrome://settings įgalintas.
+
+      Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="7417972229667085380">Procentas, pagal kurį bus keičiamas neveikos delsos mastelis dirbant pristatymo režimu (nebenaudojama)</translation>
 <translation id="7421483919690710988">Nustatyti medijos disko talpyklos dydį baitais</translation>
 <translation id="7424751532654212117">Neleidžiamų papildinių sąrašo išimčių sąrašas</translation>
@@ -2657,6 +2675,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="8339420913453596618">Antras veiksnys išjungtas</translation>
 <translation id="8344454543174932833">Importuoti žymes iš numatytosios naršyklės paleidžiant pirmą kartą</translation>
 <translation id="8359734107661430198">Įgalinkite „ExampleDeprecatedFeature“ API iki 2008-09-02</translation>
+<translation id="8367209241899435947">„Chrome“ valymo įrankio įgalinimas sistemoje „Windows“</translation>
 <translation id="8369602308428138533">Ekrano išjungimo delsa, kai naudojama kintamosios srovės energija</translation>
 <translation id="8382184662529825177">Įgalinti nuotolinio patvirtinimo naudojimą siekiant apsaugoti įrenginio turinį</translation>
 <translation id="838870586332499308">Įgalinti duomenų tarptinklinį ryšį</translation>
@@ -2932,6 +2951,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Nenustačius šios politikos, tai bus įgalinta ir naudotojas (-a) galės naudoti inkognito režimą.</translation>
 <translation id="915194831143859291">Jei ši politika nustatyta į „false“ arba nesukonfigūruota, „<ph name="PRODUCT_OS_NAME" />“ leidžia naudotojui išjungti įrenginį.
       Jei ši politika nustatyta į „true“, „<ph name="PRODUCT_OS_NAME" />“ suaktyvina paleidimą iš naujo, kai naudotojas išjungia įrenginį. Visus išjungimo mygtukų atvejus NS „<ph name="PRODUCT_OS_NAME" />“ pakeičia paleidimo iš naujo mygtukais. Jei naudotojas išjungia įrenginį naudodamas maitinimo mygtuką, įrenginys nėra automatiškai paleidžiamas iš naujo, net jei politika įgalinta.</translation>
+<translation id="9152473318295429890">Kontekstinių susijusių tinklalapių siūlymų įgalinimas</translation>
 <translation id="9158929520101169054">Leidimas naršyklėje prisijungti prie kelių paskyrų</translation>
 <translation id="9165792353046089850">Galite nustatyti, ar svetainėms leidžiama pasiekti prijungtus USB įrenginius. Pasiekiamumą galima užblokuoti visiškai arba naudotojo gali būti klausiama kiekvieną kartą, kai svetainė nori pasiekti prijungtus USB įrenginius.
 
@@ -2967,4 +2987,9 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="944817693306670849">Nustatyti disko talpyklos dydį</translation>
 <translation id="981346395360763138">„Google“ vietovės paslaugos išjungtos</translation>
 <translation id="982497069985795632">Rašybos tikrinimo įgalinimas</translation>
+<translation id="988537626274109600">Pagal šią politiką valdomi laikotarpiai, per kuriuos „<ph name="PRODUCT_OS_NAME" />“ įrenginiui neleidžiama automatiškai tikrinti, ar yra naujinių.
+      Kai ši politika nustatyta kaip ne tuščias laikotarpių sąrašas:
+      įrenginiai negalės automatiškai tikrinti, ar yra naujinių, nurodytais laikotarpiais. Įrenginiams, kuriuose reikia grąžinti ankstesnę „<ph name="PRODUCT_OS_NAME" />“ versiją ar kurių versija yra senesnė nei minimali reikalaujama, ši politika neturės jokios įtakos dėl potencialių saugos problemų. Be to, ši politika neblokuos naujinių patikrinimų, kurių užklausas bus pateikę naudotojai ar administratoriai.
+      Kai ši politika nenustatyta ar joje nėra jokių laikotarpių:
+      jokie automatiniai naujinių patikrinimai pagal šią politiką nebus blokuojami, tačiau jie gali būti blokuojami pagal kitą politiką.</translation>
 </translationbundle>

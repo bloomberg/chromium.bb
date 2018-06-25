@@ -31,6 +31,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">स्थिति</translation>
 <translation id="1938124657309484470">मान <ph name="MAXIMUM_DATE_OR_TIME" /> या पहले का होना चाहिए.</translation>
+<translation id="1946271899482435442">तारीख पिकर दिखाएं</translation>
 <translation id="1993104285338243655">स्क्रीन शेयर करने पर स्विच किया गया</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' का '<ph name="INVALIDDOMAIN" />' में गलत स्थान पर उपयोग किया गया है.</translation>
 <translation id="2148716181193084225">आज</translation>
@@ -238,7 +239,6 @@
 <translation id="9138385573473225930">सूचना</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> से प्रारंभ हो रहा है</translation>
 <translation id="9168329111483466115">फ़ुटनोट</translation>
-<translation id="947831847158436616">सेल</translation>
 <translation id="954003015749068518">पिक्चर में पिक्चर चालू करें</translation>
 <translation id="966787709310836684">मेनू</translation>
 </translationbundle>

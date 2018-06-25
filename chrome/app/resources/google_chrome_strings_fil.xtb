@@ -123,6 +123,7 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="4143243756087420366">Pangalan at larawan sa Chrome</translation>
 <translation id="4147555960264124640">Nagsa-sign in ka gamit ang isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Google Chrome. Permanenteng mauugnay ang iyong data sa Chrome, gaya ng iyong apps, mga bookmark, kasaysayan, password, at iba pang setting sa <ph name="USER_NAME" />. Matatanggal mo ang data na ito sa Google Accounts Dashboard, ngunit hindi mo maiuugnay ang data na ito sa isa pang account. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Nabigo ang installer sa pag-uncompress ng archive. Paki-download muli ang Google Chrome.</translation>
+<translation id="424864128008805179">Mag-sign out sa Chrome?</translation>
 <translation id="4251615635259297716">I-link ang iyong data sa Chrome sa account na ito</translation>
 <translation id="4251625577313994583">kunin ang Chrome sa iyong iPhone</translation>
 <translation id="4293420128516039005">Mag-sign in para i-sync at i-personalize ang Chrome sa lahat ng iyong device</translation>
@@ -220,7 +221,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7398801000654795464">Naka-sign in ka sa Chrome bilang <ph name="USER_EMAIL_ADDRESS" />. Pakigamit ang parehong account upang mag-sign in muli.</translation>
 <translation id="7408085963519505752">Mga tuntunin ng Chrome OS</translation>
 <translation id="7419046106786626209">Hindi ma-sync ng Chrome OS ang iyong data dahil hindi available ang Pag-sync para sa iyong domain.</translation>
-<translation id="7437998757836447326">Mag-sign out sa Chrome</translation>
 <translation id="7459554271817304652">I-set up ang Pag-sync upang i-save ang iyong personalized na mga tampok sa browser sa web at i-access ang mga iyon mula sa Google Chrome sa anumang computer.</translation>
 <translation id="7473136999113284234">Awtomatikong nag-a-update ang Chrome upang palagi kang may pinakabagong bersyon.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>

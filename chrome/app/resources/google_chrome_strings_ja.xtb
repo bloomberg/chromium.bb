@@ -119,6 +119,7 @@
 <translation id="4143243756087420366">Chrome の名前と画像</translation>
 <translation id="4147555960264124640">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">インストーラー アーカイブを解凍できませんでした。Google Chrome をダウンロードし直してください。</translation>
+<translation id="424864128008805179">Chrome からログアウトしますか？</translation>
 <translation id="4251615635259297716">Chrome データをこのアカウントにリンクしますか？</translation>
 <translation id="4251625577313994583">iPhone に Chrome をインストール</translation>
 <translation id="4293420128516039005">ログインすると、同期してカスタマイズした Chrome をどの端末でも使用できます</translation>
@@ -212,7 +213,6 @@
 <translation id="7398801000654795464">Chrome に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
 <translation id="7408085963519505752">Chrome OS 利用規約</translation>
 <translation id="7419046106786626209">お使いのドメインでは同期を利用できないため、Chrome OS はデータを同期できませんでした。</translation>
-<translation id="7437998757836447326">Chromeからログアウト</translation>
 <translation id="7459554271817304652">同期を設定すると、パーソナライズされたブラウザ機能をウェブ上に保存して、どのパソコンの Google Chrome からでも使用できるようになります。</translation>
 <translation id="7473136999113284234">Chrome は自動的に更新されるため、常に最新版をご利用になれます。</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>

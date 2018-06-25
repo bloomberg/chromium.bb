@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">Nedladdningen har pausats</translation>
 <translation id="1389974829397082527">Det finns inga bokmärken i den här mappen</translation>
 <translation id="1397811292916898096">Sök med <ph name="PRODUCT_NAME" /></translation>
+<translation id="1397854323885047133">Synkronisering och anpassning</translation>
 <translation id="1404122904123200417">Inbäddad i <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Do Not Track</translation>
 <translation id="1407135791313364759">Öppna alla</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">Logga in i Chrome om du vill få förslag på anpassat innehåll från Google.</translation>
 <translation id="2091887806945687916">Ljud</translation>
 <translation id="2095887075102408547">När den här funktionen är aktiverad komprimerar Chrome sidor som du besöker med hjälp av Googles servrar innan de laddas ned. Sidor som öppnas via privata anslutningar (HTTPS) eller i inkognitoflikar varken optimeras eller visas av Google.</translation>
+<translation id="2096012225669085171">Synkronisera och anpassa på alla enheter</translation>
 <translation id="2100273922101894616">Automatisk inloggning</translation>
 <translation id="2111511281910874386">Öppna sida</translation>
 <translation id="2122601567107267586">Det gick inte att öppna appen</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">Kopiera webbadress</translation>
 <translation id="2156074688469523661">Återstående webbplatser (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">Tryck här om du vill öppna sidan Ny flik på den aktuella fliken</translation>
-<translation id="219985413780390209">Skydda dig själv och enheten från farliga webbplatser</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webbapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Fortsätt som <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Skickar viss information om systemet och sidors innehåll till Google</translation>
+<translation id="2234876718134438132">Synk och Googles tjänster</translation>
 <translation id="2259659629660284697">Exportera lösenord …</translation>
 <translation id="2268044343513325586">Finjustera</translation>
 <translation id="2286841657746966508">Faktureringsadress</translation>
@@ -375,7 +377,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4278390842282768270">Tillåtet</translation>
 <translation id="4307992518367153382">Grunderna</translation>
 <translation id="4351244548802238354">Stäng dialogrutan</translation>
-<translation id="4378154925671717803">Telefon</translation>
+<translation id="4378154925671717803">Mobil</translation>
 <translation id="4384468725000734951">Du söker med Sogou</translation>
 <translation id="4404568932422911380">Inga bokmärken</translation>
 <translation id="4409723563706114196">Använd sidförslag</translation>
@@ -408,6 +410,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4594952190837476234">Den här offlinesidan sparades <ph name="CREATION_TIME" /> och kan skilja sig från onlineversionen.</translation>
 <translation id="4605958867780575332">Borttaget objekt: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Öppna <ph name="WEBAPK_NAME" /></translation>
+<translation id="4634124774493850572">Använd lösenordet</translation>
 <translation id="4645575059429386691">Hanteras av din förälder</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bokmärken har raderats</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> har lagts till på startskärmen.</translation>
@@ -583,6 +586,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5958275228015807058">Du hittar filerna och sidorna i Nedladdningar</translation>
 <translation id="5962718611393537961">Tryck här om du vill komprimera</translation>
 <translation id="6000066717592683814">Behåll Google</translation>
+<translation id="6005538289190791541">Föreslaget lösenord</translation>
 <translation id="6039379616847168523">Hoppa till nästa flik</translation>
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="6042308850641462728">Mer</translation>
@@ -811,6 +815,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> är inaktuell.</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
 <translation id="7963646190083259054">Leverantör:</translation>
+<translation id="79859296434321399">Installera ARCore om du vill visa innehåll med förstärkt verklighet</translation>
 <translation id="7987073022710626672">Chromes användarvillkor</translation>
 <translation id="7998918019931843664">Öppna en stängd flik på nytt</translation>
 <translation id="7999064672810608036">Vill du ta bort all lokal data för webbplatsen, inklusive cookies, och återställa alla behörigheter för den?</translation>
@@ -873,6 +878,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="851751545965956758">Förhindra att webbplatser ansluter till enheter</translation>
 <translation id="8523928698583292556">Radera sparat lösenord</translation>
 <translation id="854522910157234410">Öppna sidan</translation>
+<translation id="8558485628462305855">Uppdatera ARCore om du vill visa innehåll med förstärkt verklighet</translation>
 <translation id="8559990750235505898">Erbjud översättning av sidor till andra språk</translation>
 <translation id="8562452229998620586">Sparade lösenord visas här.</translation>
 <translation id="8569404424186215731">sedan <ph name="DATE" /></translation>

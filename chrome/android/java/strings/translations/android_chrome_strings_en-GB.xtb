@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">Download paused</translation>
 <translation id="1389974829397082527">No bookmarks here</translation>
 <translation id="1397811292916898096">Search with <ph name="PRODUCT_NAME" /></translation>
+<translation id="1397854323885047133">Sync and personalisation</translation>
 <translation id="1404122904123200417">Embedded in <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Do Not Track”</translation>
 <translation id="1407135791313364759">Open all</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">To get personalised content suggested by Google, sign in to Chrome.</translation>
 <translation id="2091887806945687916">Sound</translation>
 <translation id="2095887075102408547">When this feature is turned on, Chrome will use Google servers to compress pages that you visit before downloading them. Pages accessed using private connections (HTTPS) or in Incognito tabs will not be optimised or seen by Google.</translation>
+<translation id="2096012225669085171">Sync and personalise across devices</translation>
 <translation id="2100273922101894616">Auto Sign-in</translation>
 <translation id="2111511281910874386">Go to page</translation>
 <translation id="2122601567107267586">Could not open app</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">Copy URL</translation>
 <translation id="2156074688469523661">Remaining sites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">Tap to get to the new tab page in your current tab</translation>
-<translation id="219985413780390209">Protect you and your device from dangerous sites</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continue as <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Sends some system information and page content to Google</translation>
+<translation id="2234876718134438132">Sync and Google services</translation>
 <translation id="2259659629660284697">Export passwords…</translation>
 <translation id="2268044343513325586">Refine</translation>
 <translation id="2286841657746966508">Billing address</translation>
@@ -408,6 +410,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4594952190837476234">This offline page is from <ph name="CREATION_TIME" /> and may differ from the online version.</translation>
 <translation id="4605958867780575332">Item removed: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Open <ph name="WEBAPK_NAME" /></translation>
+<translation id="4634124774493850572">Use password</translation>
 <translation id="4645575059429386691">Managed by your parent</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bookmarks deleted</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> was added to your Home screen</translation>
@@ -583,6 +586,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="5958275228015807058">Find your files and pages in Downloads</translation>
 <translation id="5962718611393537961">Tap to collapse</translation>
 <translation id="6000066717592683814">Keep Google</translation>
+<translation id="6005538289190791541">Suggested password</translation>
 <translation id="6039379616847168523">Jump to the next tab</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="6042308850641462728">More</translation>
@@ -811,6 +815,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> is out of date.</translation>
 <translation id="7947953824732555851">Accept and sign in</translation>
 <translation id="7963646190083259054">Vendor:</translation>
+<translation id="79859296434321399">To view augmented reality content, install ARCore</translation>
 <translation id="7987073022710626672">Chrome Terms of Service</translation>
 <translation id="7998918019931843664">Re-open closed tab</translation>
 <translation id="7999064672810608036">Are you sure that you want to clear all local data, including cookies, and reset all permissions for this website?</translation>
@@ -873,6 +878,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="851751545965956758">Block sites from connecting to devices</translation>
 <translation id="8523928698583292556">Delete stored password</translation>
 <translation id="854522910157234410">Open this page:</translation>
+<translation id="8558485628462305855">To view augmented reality content, update ARCore</translation>
 <translation id="8559990750235505898">Offer to translate pages in other languages</translation>
 <translation id="8562452229998620586">Your saved passwords will appear here.</translation>
 <translation id="8569404424186215731">since <ph name="DATE" /></translation>

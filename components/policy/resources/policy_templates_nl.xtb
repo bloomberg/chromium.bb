@@ -723,6 +723,7 @@
           Als dit beleid niet wordt ingesteld, wordt 'AllowJavaScript' gebruikt en kan de gebruiker dit aanpassen.</translation>
 <translation id="3038323923255997294">Doorgaan met uitvoeren van achtergrondapps als <ph name="PRODUCT_NAME" /> is gesloten</translation>
 <translation id="3046192273793919231">Netwerkpakketten verzenden naar de beheerserver om de online status bij te houden</translation>
+<translation id="3047732214002457234">Bepalen hoe Chrome Cleanup gegevens doorgeeft aan Google</translation>
 <translation id="3048744057455266684">Als dit beleid is ingesteld en een zoek-URL die is voorgesteld vanuit de omnibox, deze parameter in de zoekreeks of in de fragment-ID bevat, geeft de suggestie de zoektermen en zoekprovider weer en niet de onbewerkte zoek-URL.
 
           Dit beleid is optioneel. Als het niet wordt ingesteld, wordt er geen vervanging van zoektermen uitgevoerd.
@@ -1054,6 +1055,7 @@
 
       Als dit beleid is ingesteld op 'waar', worden netwerkpakketten voor bijhouden (zogenaamde <ph name="HEARTBEATS_TERM" />) verzonden.
       Als dit beleid is ingesteld op 'onwaar' of niet is ingesteld, worden er geen pakketten verzonden.</translation>
+<translation id="3950239119790560549">Tijdbeperkingen voor updates</translation>
 <translation id="3958586912393694012">Toestaan dat Smart Lock wordt gebruikt</translation>
 <translation id="3963602271515417124">Als dit beleid is ingesteld op 'waar', wordt bevestiging op afstand toegestaan voor het apparaat en wordt er automatisch een certificaat gegenereerd en naar de Device Management Server geüpload.
 
@@ -1313,6 +1315,10 @@
 
           Als je dit beleid niet instelt, delegeert <ph name="PRODUCT_NAME" /> geen gebruikersreferenties, zelfs niet als een server wordt gedetecteerd als intranet.</translation>
 <translation id="4752880493649142945">Clientcertificaat voor verbinding maken met RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Als dit beleid is ingesteld op 'true' (waar) of niet is ingesteld, stelt <ph name="PRODUCT_NAME" /> pagina's voor die aan de huidige pagina zijn gerelateerd.
+      Deze suggesties worden extern via Google-servers opgehaald.
+
+      Als dit is ingesteld op 'false' (onwaar), kunnen er geen suggesties worden opgehaald of weergegeven.</translation>
 <translation id="4791031774429044540">De toegankelijkheidsfunctie 'Grote muisaanwijzer' inschakelen.
 
           Als dit beleid op 'waar' is ingesteld, is de grote muisaanwijzer altijd ingeschakeld.
@@ -2169,6 +2175,13 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als je dit beleid niet instelt, is het vergrootglas uitgeschakeld wanneer het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen het vergrootglas op elk moment in- of uitschakelen en de status op het inlogscherm is van toepassing op alle gebruikers.</translation>
 <translation id="7249828445670652637">CA-certificaten van <ph name="PRODUCT_OS_NAME" /> voor ARC-apps inschakelen</translation>
+<translation id="725322441686394886">Als dit niet is ingesteld en Chrome Cleanup ongewenste software detecteert, kan Chrome Cleanup metadata over de scan doorgeven aan Google in overeenstemming met het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled. Chrome Cleanup vraagt de gebruiker of de ongewenste software moet worden verwijderd. De gebruiker kan ervoor kiezen de resultaten van de opschoning met Google te delen, zodat Google de detectie van ongewenste software kan verbeteren. Deze resultaten bevatten metadata van bestanden, automatisch geïnstalleerde extensies en registersleutels, zoals wordt beschreven in de whitepaper over Chrome en privacy.
+
+      Als dit is uitgeschakeld en Chrome Cleanup ongewenste software detecteert, worden er geen metadata van de scan met Google gedeeld. Het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled wordt genegeerd. Chrome Cleanup vraagt de gebruiker of de ongewenste software moet worden verwijderd. De resultaten van de opschoning worden niet met Google gedeeld, en de gebruiker krijgt niet de keuze om dit te doen.
+
+      Als dit is ingeschakeld en Chrome Cleanup ongewenste software detecteert, kan Chrome Cleanup metadata over de scan doorgeven aan Google in overeenstemming met het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled. Chrome Cleanup vraagt de gebruiker of de ongewenste software moet worden verwijderd. De resultaten van de opschoning worden met Google gedeeld, en de gebruiker krijgt niet de keuze om dit te voorkomen.
+
+      Dit beleid is niet beschikbaar voor Windows-instanties die niet aan een <ph name="MS_AD_NAME" />-domein zijn gekoppeld.</translation>
 <translation id="7258823566580374486">Afschermen van hosts voor externe toegang inschakelen</translation>
 <translation id="7260277299188117560">Automatisch updaten van p2p ingeschakeld</translation>
 <translation id="7261252191178797385">Achtergrondafbeelding voor apparaat</translation>
@@ -2234,6 +2247,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen gebruikers ervoor kiezen door te gaan naar de gemarkeerde site nadat de waarschuwing is weergegeven.
 
       Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.</translation>
+<translation id="7417728346887499628">Als dit beleid is uitgeschakeld, scant Chrome Cleanup het systeem niet op ongewenste software en kan de tool niets opschonen. Het is in dit geval ook niet meer mogelijk Chrome Cleanup handmatig te starten via chrome://settings/cleanup.
+
+      Als de waarde is ingeschakeld of niet is ingesteld, scant Chrome Cleanup het systeem periodiek op ongewenste software. Als er ongewenste software wordt aangetroffen, wordt de gebruiker gevraagd of deze software moet worden verwijderd. Het is in dit geval mogelijk Chrome Cleanup te starten via chrome://settings.
+
+      Dit beleid is niet beschikbaar voor Windows-instanties die niet aan een <ph name="MS_AD_NAME" />-domein zijn gekoppeld.</translation>
 <translation id="7417972229667085380">Het percentage waarmee je de inactieve vertraging in presentatiemodus kunt schalen (verouderd)</translation>
 <translation id="7421483919690710988">Grootte van mediaschijfcache in bytes instellen</translation>
 <translation id="7424751532654212117">Lijst van uitzonderingen op de lijst met uitgeschakelde plug-ins</translation>
@@ -2625,6 +2643,7 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 <translation id="8339420913453596618">Tweede factor uitgeschakeld</translation>
 <translation id="8344454543174932833">Bladwijzers importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="8359734107661430198">API voor ExampleDeprecatedFeature tot en met 02-09-2008 inschakelen</translation>
+<translation id="8367209241899435947">Chrome Cleanup inschakelen op Windows</translation>
 <translation id="8369602308428138533">Vertraging van scherm uitschakelen wanneer op netstroom wordt gewerkt</translation>
 <translation id="8382184662529825177">Het gebruik van externe verificatie inschakelen voor het beveiligen van content voor het apparaat</translation>
 <translation id="838870586332499308">Dataroaming inschakelen</translation>
@@ -2899,6 +2918,7 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Als dit beleid niet is ingesteld, wordt dit ingeschakeld en kan de gebruiker de incognitomodus gebruiken.</translation>
 <translation id="915194831143859291">Als dit beleid wordt ingesteld op 'onwaar' of niet wordt geconfigureerd, staat <ph name="PRODUCT_OS_NAME" /> de gebruiker toe het apparaat af te sluiten.
       Als dit beleid wordt ingesteld op 'waar', activeert <ph name="PRODUCT_OS_NAME" /> een herstart wanneer de gebruiker het apparaat afsluit. <ph name="PRODUCT_OS_NAME" /> vervangt alle instanties van afsluitknoppen in de gebruikersinterface door herstartknoppen. Als de gebruiker het apparaat afsluit met de aan/uit-knop, wordt het apparaat niet automatisch opnieuw opgestart, ook niet wanneer het beleid is ingeschakeld.</translation>
+<translation id="9152473318295429890">Contextuele suggesties van gerelateerde webpagina's inschakelen</translation>
 <translation id="9158929520101169054">Toegang tot meerdere accounts toestaan in de browser</translation>
 <translation id="9165792353046089850">Hiermee kun je instellen of websites toegang mogen krijgen tot aangesloten USB-apparaten. De toegang kan volledig worden geblokkeerd of de gebruiker kan elke keer om toestemming worden gevraagd wanneer een website toegang wil hebben tot aangesloten USB-apparaten.
 
@@ -2934,4 +2954,9 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="944817693306670849">Grootte voor schijfcache instellen</translation>
 <translation id="981346395360763138">Locatieservices van Google uitgeschakeld</translation>
 <translation id="982497069985795632">Spellingcontrole inschakelen</translation>
+<translation id="988537626274109600">Via dit beleid worden de perioden beheerd waarin het <ph name="PRODUCT_OS_NAME" />-apparaat niet automatisch op updates mag controleren.
+      Als dit beleid is ingesteld op een ingevulde lijst met perioden, is het volgende van toepassing:
+      Apparaten kunnen tijdens de opgegeven perioden niet automatisch op updates controleren. Dit beleid is vanwege mogelijke beveiligingsproblemen niet van toepassing op apparaten waarvoor een rollback is vereist of die een lagere versie gebruiken dan de minimaal vereiste <ph name="PRODUCT_OS_NAME" />-versie. Bovendien blokkeert dit beleid geen updatecontroles die door gebruikers of beheerders worden aangevraagd.
+      Als dit beleid niet is ingesteld of geen perioden bevat, is het volgende van toepassing:
+      Er worden geen automatische controles op updates geblokkeerd door dit beleid, maar deze controles kunnen mogelijk wel worden geblokkeerd door andere beleidsregels.</translation>
 </translationbundle>

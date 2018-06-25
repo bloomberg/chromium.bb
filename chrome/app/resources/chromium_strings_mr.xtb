@@ -116,7 +116,6 @@
 <translation id="5032989939245619637">Chromium मध्ये तपशील सेव्ह करा</translation>
 <translation id="5045248521775609809">Chromium ला सर्वत्र न्या</translation>
 <translation id="5116586539350239523">Chromium आपले वैयक्तिक तपशील सुरक्षितपणे संचयित करेल जेणेकरून आपल्याला ते पुन्हा टाइप करण्याची आवश्यकता नसेल.</translation>
-<translation id="5231355151045086930">Chromium मधून साइन आउट करा</translation>
 <translation id="5358375970380395591">आपण एका व्यवस्थापित खात्यासह साइन इन करत आहात आणि आपल्या Chromium प्रोफाईलवर त्याच्या प्रशासकास नियंत्रण देत आहात. आपला Chromium डेटा, जसे की आपले अॅप्स, बुकमार्क, इतिहास, पासवर्ड आणि अन्य सेटिंग्ज <ph name="USER_NAME" /> वर कायमच्या बद्ध होतील. आपण Google खाती डॅशबोर्डद्वारे हा डेटा हटविण्यात सक्षम व्हाल, परंतु आपण दुसर्‍या खात्यासह हा डेटा संबद्ध करण्यात सक्षम होणार नाही. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium अपडेट करीत आहे (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Chromium ची नवीन आवृत्ती उपलब्ध आहे.</translation>
@@ -149,6 +148,7 @@
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> धोकादायक आहे, त्यामुळे Chromium ने ते अवरोधित केले आहे.</translation>
 <translation id="6212496753309875659">या संगणकावर आधीपासून Chromium ची अगदी अलीकडील आवृत्ती आहे. सॉफ्‍टवेअर कार्य करत नसल्‍यास, कृपया Chromium विस्‍थापित करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
 <translation id="6248213926982192922">Chromium ला डीफॉल्‍ट ब्राउझर बनवा</translation>
+<translation id="6268381023930128611">Chromium मधून साइन आउट करायचे?</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> धोकादायक असू शकते, त्यामुळे Chromium ने ते अवरोधित केले आहे.</translation>
 <translation id="6309712487085796862">Chromium आपला कॅमेरा वापरत आहे.</translation>
 <translation id="6333502561965082103">Chromium वर दुसरे ऑपरेशन प्रगतीपथावर आहे. कृपया नंतर पुन्हा प्रयत्न करा.</translation>

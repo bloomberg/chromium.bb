@@ -706,6 +706,7 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
 <translation id="3034580675120919256">Memungkinkan Anda menyetel apakah situs web diizinkan menjalankan JavaScript. Menjalankan JavaScript dapat diizinkan atau ditolak untuk semua situs web. Jika kebijakan ini tidak disetel, 'AllowJavaScript' akan digunakan dan pengguna dapat mengubahnya.</translation>
 <translation id="3038323923255997294">Terus jalankan aplikasi latar belakang saat <ph name="PRODUCT_NAME" /> ditutup</translation>
 <translation id="3046192273793919231">Kirim paket jaringan ke server pengelolaan untuk memantau status online</translation>
+<translation id="3047732214002457234">Mengontrol cara Pembersih Chrome melaporkan data ke Google</translation>
 <translation id="3048744057455266684">Jika kebijakan ini disetel dan URL penelusuran yang disarankan dari omnibox berisi parameter ini dalam string kueri atau dalam pengenal fragmen, maka saran akan menampilkan istilah penelusuran dan penyedia penelusuran dan bukan URL penelusuran mentah.
 
           Kebijakan ini adalah opsional. Jika tidak disetel, penggantian istilah penelusuran tidak akan dilakukan.
@@ -1027,6 +1028,7 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
 
       Jika kebijakan ini disetel ke true, paket jaringan pemantauan (yang disebut <ph name="HEARTBEATS_TERM" />) akan dikirimkan.
       Jika disetel ke false atau tidak disetel, tidak ada paket yang akan dikirim.</translation>
+<translation id="3950239119790560549">Memperbarui Batasan Waktu</translation>
 <translation id="3958586912393694012">Izinkan Smart Lock digunakan</translation>
 <translation id="3963602271515417124">Jika disetel ke true, pengesahan jarak jauh diizinkan untuk perangkat dan sertifikat akan otomatis dibuat serta diupload ke Server Pengelolaan Perangkat.
 
@@ -1276,6 +1278,10 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
           Jika Anda membiarkan kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> tidak akan mendelegasikan kredensial pengguna meskipun server terdeteksi sebagai Intranet.</translation>
 <translation id="4752880493649142945">Sertifikat klien untuk menyambung ke RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Jika disetel ke true atau tidak disetel, <ph name="PRODUCT_NAME" /> akan menyarankan halaman yang terkait dengan halaman saat ini.
+      Saran ini diambil dari jarak jauh dari server Google.
+
+      Jika setelan ini disetel ke false, saran tidak akan diambil atau ditampilkan.</translation>
 <translation id="4791031774429044540">Mengaktifkan fitur aksesibilitas kursor besar.
 
           Jika kebijakan ini disetel ke true, kursor besar akan selalu diaktifkan.
@@ -2092,6 +2098,13 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 
           Jika kebijakan ini tidak disetel, lup dinonaktifkan saat layar masuk ditampilkan untuk pertama kali. Pengguna dapat mengaktifkan atau menonaktifkan lup kapan saja dan statusnya di layar masuk bersifat permanen antar pengguna.</translation>
 <translation id="7249828445670652637">Mengaktifkan sertifikat CA <ph name="PRODUCT_OS_NAME" /> untuk aplikasi ARC</translation>
+<translation id="725322441686394886">Jika tidak disetel, apabila mendeteksi software yang tidak diinginkan, Pembersih Chrome dapat melaporkan metadata tentang pemindaian ke Google sesuai dengan kebijakan yang disetel oleh SafeBrowsingExtendedReportingEnabled. Selanjutnya, Pembersih Chrome akan menanyakan kepada pengguna apakah ia ingin menghapus software yang tidak diinginkan tersebut atau tidak. Pengguna dapat membagikan hasil pembersihan kepada Google untuk membantu mendeteksi software yang tidak diinginkan di masa mendatang. Hasil ini memuat metadata file, ekstensi dan kunci registri yang diinstal otomatis seperti dijelaskan dalam Panduan Layanan Privasi Chrome.
+
+      Jika dinonaktifkan, apabila mendeteksi software yang tidak diinginkan, Pembersih Chrome tidak akan melaporkan metadata tentang pemindaian ke Google, yang berarti menggantikan kebijakan apa pun yang disetel oleh SafeBrowsingExtendedReportingEnabled. Pembersih Chrome akan menanyakan kepada pengguna apakah ia ingin menghapus software yang tidak diinginkan tersebut atau tidak.  Hasil pembersihan tidak akan dilaporkan ke Google dan pengguna tidak akan memiliki opsi untuk melaporkannya.
+
+      Jika diaktifkan, apabila mendeteksi software yang tidak diinginkan, Pembersih Chrome dapat melaporkan metadata tentang pemindaian ke Google sesuai dengan kebijakan yang disetel oleh SafeBrowsingExtendedReportingEnabled. Pembersih Chrome akan menanyakan kepada pengguna apakah ia ingin menghapus software yang tidak diinginkan tersebut atau tidak.  Hasil pembersihan akan dilaporkan ke Google dan pengguna tidak akan memiliki opsi untuk mencegahnya.
+
+      Kebijakan ini tidak tersedia pada instance Windows yang tidak digabungkan dengan domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Mengaktifkan pemberian tirai hosting akses jarak jauh</translation>
 <translation id="7260277299188117560">Pembaruan p2p otomatis diaktifkan</translation>
 <translation id="7261252191178797385">Gambar wallpaper perangkat</translation>
@@ -2155,6 +2168,11 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
       Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, pengguna dapat memilih untuk melanjutkan ke situs yang ditandai setelah peringatan ditampilkan.
 
       Lihat https://developers.google.com/safe-browsing untuk informasi selengkapnya terkait Safe Browsing.</translation>
+<translation id="7417728346887499628">Jika dinonaktifkan, Pembersih Chrome tidak akan memindai sistem untuk menemukan software yang tidak diinginkan dan menjalankan pembersihan. Pembersih Chrome tidak dapat dipicu secara manual dari chrome://settings/cleanup.
+
+      Jika diaktifkan atau tidak disetel, Pembersih Chrome akan memindai sistem secara berkala untuk menemukan software yang tidak diinginkan, dan jika ditemukan, akan menanyakan kepada pengguna apakah ia ingin menghapusnya atau tidak. Pembersih Chrome dapat dipicu secara manual dari chrome://setting.
+
+      Kebijakan ini tidak tersedia pada instance Windows yang tidak digabungkan dengan domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Persentase yang digunakan untuk menskalakan penundaan status menganggur dalam mode presentasi (tidak digunakan lagi)</translation>
 <translation id="7421483919690710988">Setel ukuran cache disk media dalam bita</translation>
 <translation id="7424751532654212117">Daftar pengecualian untuk daftar plugin yang dinonaktifkan</translation>
@@ -2539,6 +2557,7 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 <translation id="8339420913453596618">Faktor kedua dinonaktifkan</translation>
 <translation id="8344454543174932833">Impor bookmark dari browser default saat pertama kali dijalankan</translation>
 <translation id="8359734107661430198">Aktifkan API ExampleDeprecatedFeature hingga 02/09/2008</translation>
+<translation id="8367209241899435947">Aktifkan Pembersih Chrome di Windows</translation>
 <translation id="8369602308428138533">Penundaan mematikan layar saat menggunakan daya AC</translation>
 <translation id="8382184662529825177">Mengaktifkan penggunaan pengesahan jarak jauh untuk perlindungan konten bagi perangkat</translation>
 <translation id="838870586332499308">Aktifkan roaming data</translation>
@@ -2791,6 +2810,7 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 <translation id="9150416707757015439">Kebijakan ini sudah tidak digunakan lagi. Gunakan IncognitoModeAvailability sebagai gantinya. Aktifkan mode Penyamaran di <ph name="PRODUCT_NAME" />. Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat membuka halaman web dalam mode penyamaran. Jika setelan ini dinonaktifkan, pengguna tidak dapat membuka halaman web dalam mode penyamaran. Jika kebijakan ini dibiarkan tanpa disetel, kebijakan ini akan diaktifkan dan pengguna akan dapat menggunakan mode penyamaran.</translation>
 <translation id="915194831143859291">Jika kebijakan ini disetel ke False atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan memungkinkan pengguna menonaktifkan perangkat.
       Jika kebijakan ini disetel ke True, <ph name="PRODUCT_OS_NAME" /> akan memicu boot ulang ketika pengguna mematikan perangkat. <ph name="PRODUCT_OS_NAME" /> menggantikan semua kemunculan tombol matikan di antarmuka pengguna dengan tombol boot ulang. Jika pengguna mematikan perangkat menggunakan tombol daya, perangkat tidak otomatis melakukan boot ulang, meskipun kebijakan ini diaktifkan.</translation>
+<translation id="9152473318295429890">Aktifkan saran kontekstual halaman terkait</translation>
 <translation id="9158929520101169054">Izinkan Login Multipel Dalam Browser</translation>
 <translation id="9165792353046089850">Memungkinkan Anda menyetel apakah situs diizinkan untuk mengakses perangkat USB yang terhubung. Akses dapat diblokir sepenuhnya, atau pengguna dapat dimintai izin setiap kali situs ingin mengakses perangkat USB yang terhubung.
 
@@ -2826,4 +2846,9 @@ Kebijakan ini hanya memengaruhi pengguna yang melakukan autentikasi menggunakan 
 <translation id="944817693306670849">Setel ukuran cache disk</translation>
 <translation id="981346395360763138">Layanan lokasi Google dinonaktifkan</translation>
 <translation id="982497069985795632">Aktifkan fitur pemeriksa ejaan</translation>
+<translation id="988537626274109600">Kebijakan ini mengontrol periode waktu perangkat <ph name="PRODUCT_OS_NAME" /> tidak diizinkan untuk memeriksa update secara otomatis.
+      Jika kebijakan ini disetel ke daftar interval waktu yang tidak kosong:
+      Perangkat tidak dapat memeriksa update secara otomatis selama interval waktu yang ditentukan. Perangkat yang memerlukan rollback atau di bawah versi mininum <ph name="PRODUCT_OS_NAME" /> tidak akan terpengaruh oleh kebijakan ini karena potensi masalah keamanan. Selain itu, kebijakan ini tidak akan memblokir pemeriksaan update yang diminta oleh pengguna atau administrator.
+      Jika kebijakan ini tidak disetel atau tidak berisi interval waktu:
+      Pemeriksaan update otomatis tidak akan diblokir oleh kebijakan ini, namun dapat diblokir oleh kebijakan lain.</translation>
 </translationbundle>

@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">слаб сигнал</translation>
 <translation id="1293264513303784526">USB-C устройство (левият порт)</translation>
 <translation id="1346748346194534595">Надясно</translation>
+<translation id="1351937230027495976">Свиване на менюто</translation>
 <translation id="1383876407941801731">Търсене</translation>
 <translation id="1467432559032391204">Наляво</translation>
 <translation id="1479743070547893297">Изберете, като използвате писалката</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Изход</translation>
 <translation id="3019353588588144572">Оставащо време до пълното зареждане на батерията: <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Разгъване на менюто</translation>
 <translation id="3087734570205094154">Най-долу</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Рестартирайте, за да актуализирате</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Изчислява се...</translation>
 <translation id="3995138139523574647">устройство с USB-C (задният десен порт)</translation>
 <translation id="4017989525502048489">Лазерна показалка</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Изключено за едно приложение}other{Изключено за # приложения}}</translation>
 <translation id="4072264167173457037">умерен сигнал</translation>
 <translation id="4200057768455216496">Използвахте клавишната комбинация за лупата в прикрепен режим. Искате ли да включите функцията?</translation>
 <translation id="4217571870635786043">Диктуване</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">Бутон за функцията Прочитане на глас</translation>
 <translation id="4628757576491864469">Устройства</translation>
 <translation id="4659419629803378708">Активирахте ChromeVox</translation>
+<translation id="4734965478015604180">Хоризонтална ориентация</translation>
 <translation id="4776917500594043016">Парола за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Изключване</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">„Alt + търсене“ или „Shift“</translation>
 <translation id="4890187583552566966">Администраторът ви е деактивирал Google Асистент.</translation>
 <translation id="4895488851634969361">Батерията е пълна.</translation>
+<translation id="490375751687810070">Вертикална ориентация</translation>
 <translation id="4905614135390995787">Клавишната комбинация за превключване на режима на висок контраст е променена. Моля, използвайте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Силен</translation>
 <translation id="4918086044614829423">Приемам</translation>
@@ -349,6 +354,7 @@
 <translation id="8054466585765276473">Издръжливостта на батерията се изчислява.</translation>
 <translation id="8061464966246066292">Висок контраст</translation>
 <translation id="8098591350844501178">Спиране на предаването на екрана към „<ph name="RECEIVER_NAME" />“</translation>
+<translation id="8113423164597455979">Включено за всички приложения</translation>
 <translation id="8132793192354020517">Установена е връзка с/ъс <ph name="NAME" /></translation>
 <translation id="813913629614996137">Подготвя се за работа...</translation>
 <translation id="8142699993796781067">Частна мрежа</translation>
@@ -369,6 +375,7 @@
 <translation id="847056008324733326">Настройки за мащаба на показване</translation>
 <translation id="8477270416194247200">Натиснете Alt + клавиша „търсене“ или само Shift, за да анулирате.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Установява се повторна връзка...</translation>
+<translation id="8513108775083588393">Автоматична ориентация</translation>
 <translation id="8517041960877371778">Възможно е вашият <ph name="DEVICE_TYPE" /> да не се зарежда, докато е включен.</translation>
 <translation id="8639760480004882931">Батерия: <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Прочитане на глас</translation>

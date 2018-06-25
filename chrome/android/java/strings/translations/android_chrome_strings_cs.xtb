@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">Stahování pozastaveno</translation>
 <translation id="1389974829397082527">Nejsou zde žádné záložky</translation>
 <translation id="1397811292916898096">Hledat pomocí vyhledávače <ph name="PRODUCT_NAME" /></translation>
+<translation id="1397854323885047133">Synchronizace a personalizace</translation>
 <translation id="1404122904123200417">Vloženo do <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Do Not Track (Nesledovat)</translation>
 <translation id="1407135791313364759">Otevřít vše</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">Chcete-li od Googlu získat personalizované návrhy obsahu, přihlaste se do Chromu.</translation>
 <translation id="2091887806945687916">Zvuk</translation>
 <translation id="2095887075102408547">Je-li tato funkce zapnutá, Chrome navštívené stránky před stažením zkomprimuje pomocí serverů Google. Stránky zobrazené prostřednictvím soukromého připojení (HTTPS) nebo v anonymním režimu nebudou pro Google viditelné a nebudou optimalizovány.</translation>
+<translation id="2096012225669085171">Synchronizovat a přizpůsobit na různých zařízeních</translation>
 <translation id="2100273922101894616">Přihlásit se automaticky</translation>
 <translation id="2111511281910874386">Přejít na stránku</translation>
 <translation id="2122601567107267586">Aplikaci nelze otevřít</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">Kopírovat adresu URL</translation>
 <translation id="2156074688469523661">Zbývající weby (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">Klepnutím v aktuální kartě otevřete stránku Nová karta</translation>
-<translation id="219985413780390209">Chránit mě i mé zařízení před nebezpečnými weby</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webová aplikace <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Pokračovat jako uživatel <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Odesílá část informací o systému a obsahu stránek do Googlu</translation>
+<translation id="2234876718134438132">Synchronizace a služby Google</translation>
 <translation id="2259659629660284697">Exportovat hesla…</translation>
 <translation id="2268044343513325586">Upřesnit</translation>
 <translation id="2286841657746966508">Fakturační adresa</translation>
@@ -408,6 +410,7 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="4594952190837476234">Tato offline stránka je z <ph name="CREATION_TIME" /> a může se od online verze lišit.</translation>
 <translation id="4605958867780575332">Tato položka byla odstraněna: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Do aplikace <ph name="WEBAPK_NAME" /></translation>
+<translation id="4634124774493850572">Použít heslo</translation>
 <translation id="4645575059429386691">Spravováno vaším rodičem</translation>
 <translation id="4663756553811254707">Smazané záložky: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Na plochu byl přidán web <ph name="NAME" /></translation>
@@ -583,6 +586,7 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="5958275228015807058">Najděte stažené soubory a stránky</translation>
 <translation id="5962718611393537961">Klepnutím sbalíte</translation>
 <translation id="6000066717592683814">Ponechat Google</translation>
+<translation id="6005538289190791541">Navrhované heslo</translation>
 <translation id="6039379616847168523">Přejít na další kartu</translation>
 <translation id="6040143037577758943">Zavřít</translation>
 <translation id="6042308850641462728">Více</translation>
@@ -811,6 +815,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7942131818088350342">Aplikace <ph name="PRODUCT_NAME" /> je zastaralá.</translation>
 <translation id="7947953824732555851">Přijmout a přihlásit</translation>
 <translation id="7963646190083259054">Dodavatel:</translation>
+<translation id="79859296434321399">Chcete-li zobrazit obsah pro rozšířenou realitu, nainstalujte ARCore</translation>
 <translation id="7987073022710626672">Smluvní podmínky Chrome</translation>
 <translation id="7998918019931843664">Znovu otevřít zavřenou kartu</translation>
 <translation id="7999064672810608036">Opravdu chcete vymazat všechna místní data tohoto webu, včetně souborů cookie, a resetovat všechna jeho oprávnění?</translation>
@@ -873,6 +878,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="851751545965956758">Bránit webům v připojení k zařízením</translation>
 <translation id="8523928698583292556">Vymazat uložené heslo</translation>
 <translation id="854522910157234410">Otevřít tuto stránku</translation>
+<translation id="8558485628462305855">Chcete-li zobrazit obsah pro rozšířenou realitu, aktualizujte ARCore</translation>
 <translation id="8559990750235505898">Nabízet překlad stránek v jiných jazycích</translation>
 <translation id="8562452229998620586">Zde se zobrazí uložená hesla.</translation>
 <translation id="8569404424186215731">od <ph name="DATE" /></translation>

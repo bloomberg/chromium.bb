@@ -119,6 +119,7 @@
 <translation id="4143243756087420366">‏שם ותמונה ב-Chrome</translation>
 <translation id="4147555960264124640">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Chrome. הנתונים שלך ב-Chrome, כגון יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. תוכל למחוק את הנתונים האלה באמצעות לוח הבקרה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">‏המתקין נכשל בביצוע דחיסה לארכיון. הורד שוב את Google Chrome.</translation>
+<translation id="424864128008805179">‏האם לצאת מ-Chrome?</translation>
 <translation id="4251615635259297716">‏האם לקשר את הנתונים שלך ב-Chrome לחשבון זה?</translation>
 <translation id="4251625577313994583">‏להורדת Chrome ל-iPhone</translation>
 <translation id="4293420128516039005">‏כניסה לחשבון תסנכרן ותתאים אישית את Chrome בכל המכשירים שברשותך</translation>
@@ -212,7 +213,6 @@
 <translation id="7398801000654795464">‏היית מחובר ל-Chrome כ-<ph name="USER_EMAIL_ADDRESS" />. השתמש באותו חשבון כדי להיכנס שוב.</translation>
 <translation id="7408085963519505752">‏תנאים עבור מערכת ההפעלה של Chrome</translation>
 <translation id="7419046106786626209">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך מפני שהסנכרון אינו זמין עבור הדומיין שלך.</translation>
-<translation id="7437998757836447326">‏יציאה מ-Chrome</translation>
 <translation id="7459554271817304652">‏הגדר סנכרון כדי לשמור את תכונות הדפדפן המותאמות אישית שלך באינטרנט ולגשת אליהן מ-Google Chrome בכל מחשב.</translation>
 <translation id="7473136999113284234">‏Chrome מתעדכן באופן אוטומטי, כך שתמיד נמצאת ברשותך הגרסה העדכנית ביותר.</translation>
 <translation id="7535429826459677826">‏גרסת הפיתוח של Google Chrome</translation>

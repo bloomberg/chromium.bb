@@ -119,6 +119,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="4143243756087420366">Chrome-Name und -Bild</translation>
 <translation id="4147555960264124640">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Google Chrome-Profil. Ihre Chrome-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME" /> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Das Installationsprogramm konnte das Archiv nicht dekomprimieren. Laden Sie Google Chrome erneut herunter.</translation>
+<translation id="424864128008805179">Von Chrome abmelden?</translation>
 <translation id="4251615635259297716">Ihre Chrome-Daten mit diesem Konto verknüpfen?</translation>
 <translation id="4251625577313994583">Chrome auf das iPhone herunterladen</translation>
 <translation id="4293420128516039005">Wenn Sie sich anmelden, wird Chrome auf allen Ihren Geräten synchronisiert und personalisiert</translation>
@@ -212,7 +213,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7398801000654795464">Sie waren in Chrome als <ph name="USER_EMAIL_ADDRESS" /> angemeldet. Melden Sie sich bitte wieder mit demselben Konto an.</translation>
 <translation id="7408085963519505752">Chrome OS-Nutzungsbedingungen</translation>
 <translation id="7419046106786626209">Chrome OS konnte Ihre Daten nicht synchronisieren, da die Synchronisierung für Ihre Domain nicht verfügbar ist.</translation>
-<translation id="7437998757836447326">Von Chrome abmelden</translation>
 <translation id="7459554271817304652">Richten Sie die Synchronisierung ein, um Ihre personalisierten Browserfunktionen online zu speichern und über Google Chrome auf jedem Computer darauf zuzugreifen.</translation>
 <translation id="7473136999113284234">Chrome wird automatisch aktualisiert, sodass Sie immer über die neueste Version verfügen.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>

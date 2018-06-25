@@ -718,6 +718,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Ak toto pravidlo ponecháte nenastavené, použije sa pravidlo „AllowJavaScript“ a používateľ to bude môcť zmeniť.</translation>
 <translation id="3038323923255997294">Po zatvorení prehliadača <ph name="PRODUCT_NAME" /> nechať aplikácie na pozadí spustené</translation>
 <translation id="3046192273793919231">Odosielať sieťové pakety na správcovský server s cieľom sledovania online stavu</translation>
+<translation id="3047732214002457234">Určuje, ako nástroj Chrome Cleanup hlási dáta do Googlu</translation>
 <translation id="3048744057455266684">Ak je toto pravidlo nastavené a webová adresa vyhľadávania navrhnutá vo všeobecnom poli obsahuje tento parameter v reťazci dopytu alebo v identifikátore fragmentu, potom odporúčanie zobrazí hľadané výrazy a poskytovateľa vyhľadávania namiesto nespracovanej webovej adresy vyhľadávania.
 
           Toto pravidlo je voliteľné. Ak nie je nastavené, nedôjde k žiadnej výmene hľadaných výrazov.
@@ -1043,6 +1044,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak je toto pravidlo nastavené na hodnotu True, budú sa odosielať sledovacie sieťové pakety (tzv. <ph name="HEARTBEATS_TERM" />).
       Ak je nastavené na hodnotu False alebo nie je nastavené, pakety sa odosielať nebudú.</translation>
+<translation id="3950239119790560549">Časové obmedzenia aktualizácií</translation>
 <translation id="3958586912393694012">Povoliť použitie funkcie Smart Lock</translation>
 <translation id="3963602271515417124">Ak je toto pravidlo nastavené na hodnotu True, pre zariadenia sa povolí vzdialené overenie a certifikát sa automaticky vygeneruje a nahrá na server na správu zariadení.
 
@@ -1302,6 +1304,10 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Ak pravidlo nenastavíte, prehliadač <ph name="PRODUCT_NAME" /> nebude delegovať poverenia používateľov ani v prípade, ak je server v sieti intranet.</translation>
 <translation id="4752880493649142945">Certifikát klienta na pripojenie k adrese RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Ak toto pravidlo nastavíte na hodnotu true alebo ho nenastavíte, prehliadač <ph name="PRODUCT_NAME" /> bude navrhovať stránky súvisiace s aktuálnou stránkou.
+      Tieto návrhy sa načítajú vzdialene zo serverov Googlu.
+
+      Ak toto pravidlo nastavíte na hodnotu false, návrhy sa nenačítajú ani zobrazia.</translation>
 <translation id="4791031774429044540">Povolí veľký kurzor (funkcia na uľahčenie prístupu).
 
       Ak toto pravidlo povolíte, bude veľký kurzor vždy zapnutý.
@@ -2170,6 +2176,13 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
           Ak toto pravidlo ponecháte nenastavené, bude lupa obrazovky pri prvom zobrazení prihlasovacej obrazovky zakázaná. Používatelia budú môcť lupu obrazovky kedykoľvek povoliť alebo zakázať a jej stav na prihlasovacej obrazovke sa zachová aj po zmene používateľov.</translation>
 <translation id="7249828445670652637">Povoliť certifikáty CA systému <ph name="PRODUCT_OS_NAME" /> v aplikáciách ARC</translation>
+<translation id="725322441686394886">Ak ho nenastavíte a Chrome Cleanup má rozpoznať nechcený softvér, môže Googlu nahlásiť metadáta o vyhľadávaní v súlade s pravidlami určenými parametrom SafeBrowsingExtendedReportingEnabled. Chrome Cleanup sa potom používateľa spýta, či chce vymazať nechcený softvér. Používateľ sa môže rozhodnúť zdieľať výsledky vymazania s Googlom, čím mu pomôže s rozpoznávaním nechcených softvérov v budúcnosti. Tieto výsledky obsahujú metadáta súboru, automaticky nainštalované rozšírenia a kľúče databázy tak, ako je uvedené v informáciách o ochrane súkromia v Chrome.
+
+      Ak ho zakážete a Chrome Cleanup má rozpoznať nechcený softvér, nebude Googlu nahlasovať metadáta vyhľadávania a pravidlá určené parametrom SafeBrowsingExtendedReportingEnabled budú prepísané. Chrome Cleanup sa používateľa spýta, či chce nechcený softvér vymazať. Výsledky vymazania nebudú nahlásené Googlu a používateľ nebude mať k dispozícii možnosť ich nahlásiť.
+
+      Ak ho povolíte a Chrome Cleanup má rozpoznať nechcený softvér, môže Googlu nahlasovať metadáta o vyhľadávaní v súlade s pravidlami určenými parametrom SafeBrowsingExtendedReportingEnabled. Chrome Cleanup sa používateľa spýta, či chce nechcený softvér vymazať. Výsledky vymazania budú nahlásené Googlu a používateľ nebude mať k dispozícii možnosť tomu zabrániť.
+
+      Toto pravidlo nie je k dispozícii v inštanciách systému Windows, ktoré sa nepridali k doméne <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Povoliť blokovanie hostiteľov so vzdialeným prístupom</translation>
 <translation id="7260277299188117560">Protokol p2p na automatické aktualizácie je povolený</translation>
 <translation id="7261252191178797385">Obrázok tapety zariadenia</translation>
@@ -2235,6 +2248,11 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Ak je toto nastavenie zakázané alebo ak nie je nakonfigurované, používatelia môžu pokračovať na nahlásený web aj po zobrazení upozornenia.
 
       Ďalšie informácie o Bezpečnom prehliadaní získate na adrese https://developers.google.com/safe-browsing.</translation>
+<translation id="7417728346887499628">Ak toto pravidlo zakážete, zabráni nástroju Chrome Cleanup hľadať v systéme nechcený softvér a vykonávať čistenia. Ručné spúšťanie nástroja Chrome Cleanup z adresy chrome://settings/cleanup je zakázané.
+
+      Ak ho povolíte alebo ponecháte nenastavené, Chrome Cleanup bude pravidelne hľadať v systéme nechcený softvér a v prípade jeho nájdenia sa používateľa opýta, či ho chce odstrániť. Ručné spúšťanie nástroja Chrome Cleanup z adresy chrome://settings je povolené.
+
+      Toto pravidlo nie je k dispozícii v reláciách systému Windows, ktoré nie sú pripojené k doméne <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Percento predĺženia oneskorenia režimu nečinnosti v režime prezentácie (podpora je ukončená)</translation>
 <translation id="7421483919690710988">Nastaviť veľkosť vyrovnávacej pamäte média v bajtoch</translation>
 <translation id="7424751532654212117">Zoznam výnimiek zo zoznamu zakázaných doplnkov</translation>
@@ -2627,6 +2645,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="8339420913453596618">Druhý faktor je zakázaný</translation>
 <translation id="8344454543174932833">Importovanie záložiek z predvoleného prehliadača pri prvom spustení</translation>
 <translation id="8359734107661430198">Povoliť rozhranie ExampleDeprecatedFeature API platné do 2. 9. 2008</translation>
+<translation id="8367209241899435947">Povoliť nástroj Chrome Cleanup v systéme Windows</translation>
 <translation id="8369602308428138533">Oneskorenie vypnutia obrazovky pri používaní napájacieho zdroja</translation>
 <translation id="8382184662529825177">Povoliť použitie vzdialeného overenia na ochranu obsahu pre zariadenie</translation>
 <translation id="838870586332499308">Povoliť roaming pre dátové prenosy</translation>
@@ -2899,6 +2918,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
       Ak toto pravidlo ponecháte nenastavené, povolí sa a používateľ bude môcť režim Inkognito použiť.</translation>
 <translation id="915194831143859291">Ak toto pravidlo nastavíte na možnosť False alebo ho nenakonfigurujete, systém <ph name="PRODUCT_OS_NAME" /> umožní používateľovi vypnúť zariadenie.
       Ak toto pravidlo nastavíte na možnosť True, systém <ph name="PRODUCT_OS_NAME" /> spustí reštart, keď používateľ vypne zariadenie. <ph name="PRODUCT_OS_NAME" /> nahradí v používateľskom rozhraní všetky výskyty tlačidiel na vypnutie tlačidlami na reštartovanie. Ak teda používateľ vypne zariadenie pomocou vypínača, automaticky sa nereštartuje, a to ani vtedy, keď je toto pravidlo povolené.</translation>
+<translation id="9152473318295429890">Povoliť kontextové návrhy súvisiacich webových stránok</translation>
 <translation id="9158929520101169054">Povoliť viacnásobné prihlásenie v rámci prehliadača</translation>
 <translation id="9165792353046089850">Umožňuje nastaviť, či môžu weby získať prístup k pripojeným zariadeniam USB. Prístup môže byť úplne zablokovaný alebo je možné používateľa požiadať, keď chce web získať prístup k pripojeným zariadeniam USB.
 
@@ -2934,4 +2954,9 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="944817693306670849">Nastaviť veľkosť vyrovnávacej pamäte disku</translation>
 <translation id="981346395360763138">Služby určovania polohy od Googlu sú zakázané</translation>
 <translation id="982497069985795632">Povoliť kontrolu pravopisu</translation>
+<translation id="988537626274109600">Toto pravidlo určuje časové rámce, v ktorých zariadenie so systémom <ph name="PRODUCT_OS_NAME" /> nemá povolené automaticky kontrolovať dostupnosť aktualizácií.
+      Keď je toto pravidlo nastavené na neprázdny zoznam časových intervalov:
+      Zariadenia počas zadaných časových intervalov nebudú môcť automaticky kontrolovať dostupnosť aktualizácií. Z dôvodu možných bezpečnostných problémov toto pravidlo neovplyvní zariadenia, ktoré vyžadujú vrátenie na staršiu verziu alebo v ktorých je nižšia než minimálna verzia systému <ph name="PRODUCT_OS_NAME" />. Nebude tiež blokovať kontroly dostupnosti aktualizácií, o ktoré požiadajú používatelia alebo správcovia.
+      Keď toto pravidlo nie je nastavené alebo neobsahuje žiadne časové intervaly:
+      Toto pravidlo nebude blokovať automatické kontroly dostupnosti aktualizácií, môžu ich však blokovať iné pravidlá.</translation>
 </translationbundle>

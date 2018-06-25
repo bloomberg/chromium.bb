@@ -43,6 +43,7 @@
 <translation id="1227633850867390598">Ẩn giá trị</translation>
 <translation id="1228893227497259893">Số nhận dạng tổ chức không đúng</translation>
 <translation id="1232569758102978740">Không tên</translation>
+<translation id="1250759482327835220">Để thanh toán nhanh hơn vào lần tới, hãy lưu địa chỉ thanh toán, tên và thẻ vào Tài khoản Google của bạn.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (được đồng bộ hóa)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Nếu bạn cố truy cập vào một trang web nhưng vẫn không mở được, trước tiên, hãy tìm cách khắc phục lỗi này bằng các bước khắc phục sự cố dưới đây:&lt;/p&gt;
     &lt;ol&gt;
@@ -123,6 +124,7 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Thử liên hệ với quản trị viên hệ thống.</translation>
 <translation id="1740951997222943430">Nhập tháng hết hạn hợp lệ</translation>
+<translation id="1743520634839655729">Để thanh toán nhanh hơn vào lần tới, hãy lưu địa chỉ thanh toán, tên và thẻ vào thiết bị này và Tài khoản Google của bạn.</translation>
 <translation id="17513872634828108">Tab đang mở</translation>
 <translation id="1753706481035618306">Số trang</translation>
 <translation id="1763864636252898013">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành thiết bị của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
@@ -488,7 +490,6 @@
 <translation id="425582637250725228">Các thay đổi bạn đã thực hiện có thể không được lưu.</translation>
 <translation id="4258748452823770588">Chữ ký không hợp lệ</translation>
 <translation id="4265872034478892965">Được quản trị viên cho phép</translation>
-<translation id="4269787794583293679">(Không có tên người dùng)</translation>
 <translation id="4275830172053184480">Khởi động lại thiết bị của bạn</translation>
 <translation id="4277028893293644418">Đặt lại mật khẩu</translation>
 <translation id="4280429058323657511">, hết hạn <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -511,6 +512,7 @@
 <translation id="4434045419905280838">Cửa sổ bật lên và liên kết chuyển hướng</translation>
 <translation id="443673843213245140">Đã tắt sử dụng proxy nhưng cấu hình proxy rõ ràng được chỉ định.</translation>
 <translation id="445100540951337728">Thẻ ghi nợ được chấp nhận</translation>
+<translation id="4472575034687746823">Bắt đầu</translation>
 <translation id="4506176782989081258">Lỗi xác thực: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4506599922270137252">Liên hệ với quản trị viên hệ thống</translation>
 <translation id="450710068430902550">Chia sẻ với quản trị viên</translation>
@@ -626,6 +628,7 @@
 <translation id="5332219387342487447">Phương thức giao hàng</translation>
 <translation id="5355557959165512791">Bạn không thể truy cập vào <ph name="SITE" /> ngay bây giờ vì chứng chỉ của trang này đã bị thu hồi. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời nên trang này có thể sẽ hoạt động lại sau.</translation>
 <translation id="536296301121032821">Không thể lưu trữ cài đặt chính sách</translation>
+<translation id="5371425731340848620">Cập nhật thẻ</translation>
 <translation id="5377026284221673050">"Đồng hồ của bạn chạy chậm" hoặc "Đồng hồ của bạn chạy nhanh" hay "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">Chuỗi chứng chỉ cho trang web này có chứa một chứng chỉ đã ký bằng SHA-1.</translation>
 <translation id="5402410679244714488">Hết hạn: <ph name="EXPIRATION_DATE_ABBR" />, sử dụng lần cuối hơn một năm trước</translation>
@@ -885,7 +888,6 @@
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /> về sự cố này.</translation>
 <translation id="7455133967321480974">Sử dụng cài đặt mặc định chung (Chặn)</translation>
 <translation id="7460163899615895653">Các tab gần đây của bạn từ các thiết bị khác xuất hiện ở đây</translation>
-<translation id="7469372306589899959">Đang xác nhận thẻ</translation>
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
 <translation id="7485870689360869515">Không tìm thấy dữ liệu.</translation>
@@ -1052,6 +1054,7 @@
 <translation id="8663226718884576429">Tóm tắt đơn hàng, <ph name="TOTAL_LABEL" />, chi tiết khác</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, câu trả lời, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Kết nối của bạn đến <ph name="DOMAIN" /> không được mã hóa.</translation>
+<translation id="8713137585425162364">Hiện không thể xác minh thẻ này.</translation>
 <translation id="8718314106902482036">Thanh toán chưa hoàn tất</translation>
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8728672262656704056">Bạn đã chuyển sang chế độ ẩn danh</translation>

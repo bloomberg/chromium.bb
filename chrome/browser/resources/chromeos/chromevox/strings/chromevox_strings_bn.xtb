@@ -92,6 +92,7 @@
 <translation id="1787176709638001873">পাসওয়ার্ড সম্পাদনা পাঠ্য</translation>
 <translation id="1802710350767629429">আপডেটের নোটগুলি দেখান</translation>
 <translation id="1810107444790159527">তালিকা  বাক্স</translation>
+<translation id="1812527064848182527">ল্যান্ডস্কেপ</translation>
 <translation id="1828385960365606039">মে</translation>
 <translation id="1834891354138622109">কলাম</translation>
 <translation id="1845944666972354496">চালু করতে ডবল ট্যাপ করুন</translation>
@@ -146,6 +147,7 @@
 <translation id="2416512023405990736">একটি টিকচিহ্ন উঠানো চেকবাক্স</translation>
 <translation id="2417569100218200841">সামগ্রীর তথ্য</translation>
 <translation id="2417948780551741035">এন্ডনোট</translation>
+<translation id="2421113964388408478">মোছা হচ্ছে</translation>
 <translation id="2422937916923936891">মেনু আইটেম চেক বাক্স</translation>
 <translation id="2428534162001909979">কমান্ড মেনুগুলি</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -179,6 +181,7 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">অডিও</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">সুপারস্ক্রিপ্ট শেষ</translation>
 <translation id="2749275490991666823">চেক করা</translation>
 <translation id="27527859628328957">পরবর্তী ফোকাসযোগ্য আইটেমে জাম্প করুন</translation>
 <translation id="276402504937943375">বিষয় সূচি</translation>
@@ -203,6 +206,7 @@
 <translation id="288178314850623291">নির্দিষ্ট ধরনের উপাদানে যাওয়ার জন্য জাম্প কমান্ডগুলি ব্যবহার করুন। শিরোনামের মধ্যে জাম্প করে অগ্রবর্তী হতে সার্চ + H, পিছনে জাম্প করতে সার্চ + Shift + H টিপুন।</translation>
 <translation id="2894654529758326923">তথ্য</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{বাঁ দ্বিতীয় বন্ধনী}one{#টি বাঁ দ্বিতীয় বন্ধনী}other{#টি বাঁ দ্বিতীয় বন্ধনী}}</translation>
+<translation id="2909478709401302630">সুপারস্ক্রিপ্ট শুরু</translation>
 <translation id="2911433807131383493">ChromeVox টিউটোরিয়াল খুলুন</translation>
 <translation id="2932083475399492303">গঠনগত বা লেআউট রেখার প্রকারের মধ্যে টগল করুন</translation>
 <translation id="2944762337049891859">পৃষ্ঠা লোড হওয়ার পর সেটি স্বয়ংক্রিয়ভাবে পড়ুন</translation>
@@ -251,6 +255,7 @@
 <translation id="3232388865800379423">একটি পপ আপ বোতাম</translation>
 <translation id="3241052487511142956">পূর্ববর্তী ঘুরে দেখা লিঙ্ক</translation>
 <translation id="3241638166094654466">প্রতিটি লাইনে কক্ষের সংখ্যা:</translation>
+<translation id="3286372614333682499">পোর্ট্রেট</translation>
 <translation id="3286390186030710347">স্লাইডার</translation>
 <translation id="3299925995433437805">কোনো পরবর্তী ঘুরে দেখা লিঙ্ক নেই</translation>
 <translation id="3300348286427369683">রিচ টেক্সট ব্যবহার করা যাবে। ChromeVox এ এখন রিচ টেক্সট ফিল্ড ব্যবহার করা যাবে, যাতে জাম্প কমান্ড, ব্রেল কারসর রুটিং, বেছে নেওয়া এবং আরও অনেক কিছু রয়েছে।</translation>
@@ -384,6 +389,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{ডান দ্বিতীয় বন্ধনী}one{#টি ডান দ্বিতীয় বন্ধনী}other{#টি ডান দ্বিতীয় বন্ধনী}}</translation>
 <translation id="4158704014418536539">কেস সংবেদনশীল।</translation>
 <translation id="4161663686871496107">ChromeVox কথ্য প্রতিক্রিয়া প্রস্তুত</translation>
+<translation id="4166192625054637755">সাবস্ক্রিপ্ট শেষ</translation>
 <translation id="4173994908659439270">কোনো পরবর্তী সম্পাদনযোগ্য পাঠ্য ক্ষেত্র নেই৷</translation>
 <translation id="4176463684765177261">অক্ষম</translation>
 <translation id="4188530942454211480">পূর্ববর্তী বাক্য</translation>
@@ -423,6 +429,7 @@
 <translation id="4476183483923481720">নতুন লাইন</translation>
 <translation id="4482330759234983253">পূর্ববর্তী সারণী</translation>
 <translation id="4491109536499578614">ছবি</translation>
+<translation id="4505167975768625962">যোগ করা হচ্ছে</translation>
 <translation id="4517854969512651305">বাড়ান</translation>
 <translation id="4529987814483543472">ক্লাসিক কীম্যাপ</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{স্ল্যাশ}one{#টি স্ল্যাশ}other{#টি স্ল্যাশ}}</translation>
@@ -527,6 +534,7 @@
 <translation id="5330443287809544590"><ph name="NAME" />, লিঙ্ক</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">ফিরে যাওয়ার লিঙ্ক</translation>
+<translation id="5350654862897073517">সাবস্ক্রিপ্ট শুরু</translation>
 <translation id="536031132345979795">একটানা পড়ার সময় ছেড়ে পিছনে যান</translation>
 <translation id="5368000168321181111">Earcons বন্ধ আছে</translation>
 <translation id="5374320867641260420">কোনো পরবর্তী বোতাম নেই৷</translation>

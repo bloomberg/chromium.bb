@@ -117,7 +117,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5032989939245619637">Spara information i Chromium</translation>
 <translation id="5045248521775609809">Ta med dig Chromium överallt</translation>
 <translation id="5116586539350239523">Chromium sparar dina personliga uppgifter på ett säkert sätt så att du inte behöver ange dem på nytt.</translation>
-<translation id="5231355151045086930">Logga ut från Chromium</translation>
 <translation id="5358375970380395591">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Chromium-profil. Dina uppgifter i Chromium, t.ex. dina appar, bokmärken, din historik, ditt lösenord och andra inställningar, kopplas då permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dem till något annat konto. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium uppdateras (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Det finns en ny version av Chromium.</translation>
@@ -150,6 +149,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> är skadlig och har blockerats av Chromium.</translation>
 <translation id="6212496753309875659">Det finns redan en nyare version av Chromium på den här datorn. Avinstallera Chromium och försök igen om programvaran inte fungerar.</translation>
 <translation id="6248213926982192922">Använd Chromium som standardwebbläsare</translation>
+<translation id="6268381023930128611">Vill du logga ut från Chromium?</translation>
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> kan vara skadlig och har blockerats av Chromium.</translation>
 <translation id="6309712487085796862">Chromium använder din kamera.</translation>
 <translation id="6333502561965082103">En annan process i Chromium pågår. Försök igen senare.</translation>

@@ -49,6 +49,7 @@
 <translation id="1384959399684842514">Lejupielāde pārtraukta</translation>
 <translation id="1389974829397082527">Šeit nav nevienas grāmatzīmes.</translation>
 <translation id="1397811292916898096">Meklēt, izmantojot meklētājprogramu <ph name="PRODUCT_NAME" /></translation>
+<translation id="1397854323885047133">Sinhronizēšana un personalizācija</translation>
 <translation id="1404122904123200417">Iegults vietnē <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Nesekot”</translation>
 <translation id="1407135791313364759">Atvērt visas</translation>
@@ -134,6 +135,7 @@
 <translation id="2086652334978798447">Lai saņemtu Google ieteikto personalizēto saturu, pierakstieties pārlūkā Chrome.</translation>
 <translation id="2091887806945687916">Signāls</translation>
 <translation id="2095887075102408547">Ja šī funkcija ir ieslēgta, Chrome izmanto Google serverus, lai saspiestu jūsu apmeklētās lapas pirms to lejupielādes. Ja lapu atvēršanai tiek izmantots privāts savienojums (HTTPS) vai inkognito režīms, tās netiek optimizētas un Google tās nevar skatīt.</translation>
+<translation id="2096012225669085171">Sinhronizējiet un personalizējiet vairākās ierīcēs</translation>
 <translation id="2100273922101894616">Automātiski pierakstīties</translation>
 <translation id="2111511281910874386">Doties uz lapu</translation>
 <translation id="2122601567107267586">Nevarēja atvērt lietotni</translation>
@@ -147,10 +149,10 @@
 <translation id="2154710561487035718">Kopēt URL</translation>
 <translation id="2156074688469523661">Pārējās vietnes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2184766556418880456">Pieskarieties, lai pašreizējā cilnē pārietu uz jaunas cilnes lapu.</translation>
-<translation id="219985413780390209">Aizsargāt jūs un ierīci pret bīstamām vietnēm</translation>
 <translation id="2206488550163399966">Tīmekļa lietotne <ph name="APP_NAME" />. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Turpināt kā: <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Pārsūta noteiktu sistēmas informāciju un lapas saturu Google serveriem</translation>
+<translation id="2234876718134438132">Sinhronizēšana un Google pakalp.</translation>
 <translation id="2259659629660284697">Paroļu eksportēšana…</translation>
 <translation id="2268044343513325586">Uzlabot</translation>
 <translation id="2286841657746966508">Norēķinu adrese</translation>
@@ -408,6 +410,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="4594952190837476234">Šī lapas bezsaistes versija (izveidota: <ph name="CREATION_TIME" />) var atšķirties no tiešsaistes versijas.</translation>
 <translation id="4605958867780575332">Vienums noņemts: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Atvērt <ph name="WEBAPK_NAME" /></translation>
+<translation id="4634124774493850572">Izmantot paroli</translation>
 <translation id="4645575059429386691">Pārvalda viens no jūsu vecākiem</translation>
 <translation id="4663756553811254707">Dzēstas <ph name="NUMBER_OF_BOOKMARKS" /> grāmatzīmes</translation>
 <translation id="4665282149850138822">Vietne <ph name="NAME" /> tika pievienota sākuma ekrānam.</translation>
@@ -583,6 +586,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="5958275228015807058">Atrodiet savus failus un lapas sadaļā Lejupielādes</translation>
 <translation id="5962718611393537961">Pieskarties, lai sakļautu</translation>
 <translation id="6000066717592683814">Arī turpmāk izmantot Google</translation>
+<translation id="6005538289190791541">Ieteiktā parole</translation>
 <translation id="6039379616847168523">Pāriet uz nākamo cilni</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="6042308850641462728">Vairāk</translation>
@@ -811,6 +815,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7942131818088350342">Spraudnis <ph name="PRODUCT_NAME" /> ir novecojis.</translation>
 <translation id="7947953824732555851">Pieņemt un pierakst.</translation>
 <translation id="7963646190083259054">Nodrošina:</translation>
+<translation id="79859296434321399">Lai skatītu papildinātās realitātes saturu, instalējiet ARCore</translation>
 <translation id="7987073022710626672">Lietošanas noteikumi</translation>
 <translation id="7998918019931843664">Vēlreiz atvērt aizvērto cilni</translation>
 <translation id="7999064672810608036">Vai tiešām vēlaties notīrīt visus ar šo vietni saistītos lokālos datus, tostarp sīkfailus, un atiestatīt visas atļaujas?</translation>
@@ -873,6 +878,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="851751545965956758">Neļaut vietnēm izveidot savienojumu ar ierīci</translation>
 <translation id="8523928698583292556">Dzēst saglabāto paroli</translation>
 <translation id="854522910157234410">Atvērt šo lapu</translation>
+<translation id="8558485628462305855">Lai skatītu papildinātās realitātes saturu, atjauniniet ARCore</translation>
 <translation id="8559990750235505898">Piedāvāt tulkot lapas citās valodās</translation>
 <translation id="8562452229998620586">Šeit tiks parādītas saglabātās paroles.</translation>
 <translation id="8569404424186215731">kopš šāda datuma: <ph name="DATE" /></translation>

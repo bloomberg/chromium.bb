@@ -123,6 +123,7 @@
 <translation id="4143243756087420366">Chrome 이름 및 사진</translation>
 <translation id="4147555960264124640">관리 계정으로 로그인하여 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME" /> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">설치 프로그램이 보관 파일 압축 풀기에 실패했습니다. Chrome을 다시 다운로드하세요.</translation>
+<translation id="424864128008805179">Chrome에서 로그아웃하시겠습니까?</translation>
 <translation id="4251615635259297716">Chrome 데이터를 이 계정에 연결하시겠습니까?</translation>
 <translation id="4251625577313994583">iPhone에 Chrome 다운로드하기</translation>
 <translation id="4293420128516039005">로그인하여 모든 기기에서 Chrome을 동기화하고 맞춤설정하세요.</translation>
@@ -220,7 +221,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS" />(으)로 Chrome에 로그인되어 있습니다. 같은 계정으로 다시 로그인해 주세요.</translation>
 <translation id="7408085963519505752">Chrome OS 이용약관</translation>
 <translation id="7419046106786626209">내 도메인에서 동기화를 사용할 수 없으므로 Chrome OS에서 데이터를 동기화하지 못했습니다.</translation>
-<translation id="7437998757836447326">Chrome에서 로그아웃</translation>
 <translation id="7459554271817304652">맞춤설정한 브라우저 기능을 웹에 저장하고 모든 컴퓨터의 Chrome에서 액세스할 수 있도록 동기화를 설정합니다.</translation>
 <translation id="7473136999113284234">Chrome은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다.</translation>
 <translation id="7535429826459677826">Chrome 개발자</translation>

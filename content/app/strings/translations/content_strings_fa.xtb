@@ -31,6 +31,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">وضعیت</translation>
 <translation id="1938124657309484470">مقدار باید <ph name="MAXIMUM_DATE_OR_TIME" /> یا قبل از آن باشد.</translation>
+<translation id="1946271899482435442">نمایش انتخابگر تاریخ</translation>
 <translation id="1993104285338243655">به نمایش صفحه‌نمایش روی دستگاه دیگر تغییر یافت</translation>
 <translation id="2060505056492490888">«<ph name="DOT" />» در «<ph name="INVALIDDOMAIN" />» در محل اشتباهی قرار دارد.</translation>
 <translation id="2148716181193084225">امروز</translation>
@@ -238,7 +239,6 @@
 <translation id="9138385573473225930">هشدار</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />، شروع از <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">پانویس</translation>
-<translation id="947831847158436616">سلول</translation>
 <translation id="954003015749068518">ورود به تصویر در تصویر</translation>
 <translation id="966787709310836684">منو</translation>
 </translationbundle>

@@ -43,6 +43,7 @@
 <translation id="1227633850867390598">मूल्य लपवा</translation>
 <translation id="1228893227497259893">चुकीचा अस्तित्व ओळखकर्ता</translation>
 <translation id="1232569758102978740">अशीर्षकांकित</translation>
+<translation id="1250759482327835220">पुढील वेळेस जलद पेमेंट करण्यासाठी, तुमच्या Google खात्यावर तुमचे कार्ड आणि बिलिंग पत्ता सेव्ह करा.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (सिंक केलेले)</translation>
 <translation id="1256368399071562588">&lt;p&gt;जर तुम्ही एखाद्या वेबसाइटला भेट देण्याचा प्रयत्न केला आणि ती उघडली नाही, तर सगळ्यात आधी ट्रबलशूटिंग पायऱ्यांद्वारे या एररवर उपाय काढण्याचा प्रयत्न करा:&lt;/p&gt;
     &lt;ol&gt;
@@ -123,6 +124,7 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">सिस्टम प्रशासकाशी संपर्क साधण्याचा प्रयत्न करा.</translation>
 <translation id="1740951997222943430">वैध समाप्ती महिना एंटर करा</translation>
+<translation id="1743520634839655729">पुढील वेळेस जलद पेमेंट करण्यासाठी, तुमच्या Google खात्यावर आणि या डिव्हाइसवर तुमचे कार्ड आणि बिलिंग पत्ता सेव्ह करा.</translation>
 <translation id="17513872634828108">खुले टॅब</translation>
 <translation id="1753706481035618306">पृष्ठ क्रमांक</translation>
 <translation id="1763864636252898013">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता प्रमाणपत्र आपल्या डिव्हाइसच्या ऑपरेटिंग प्रणालीद्वारे विश्वसनीय नाही. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते.</translation>
@@ -488,7 +490,6 @@
 <translation id="425582637250725228">आपण केलेले बदल कदाचित सेव्ह केले जाणार नाहीत.</translation>
 <translation id="4258748452823770588">खराब स्वाक्षरी</translation>
 <translation id="4265872034478892965">तुमच्या प्रशासकाकडून अनुमती असलेले</translation>
-<translation id="4269787794583293679">(वापरकर्तानाव नाही)</translation>
 <translation id="4275830172053184480">आपला डिव्हाइस रीस्टार्ट करा</translation>
 <translation id="4277028893293644418">पासवर्ड रीसेट करा</translation>
 <translation id="4280429058323657511">, कालबाह्यता <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -511,6 +512,7 @@
 <translation id="4434045419905280838">पॉप-अप आणि रीडिरेक्ट</translation>
 <translation id="443673843213245140">प्रॉक्सीचा वापर अक्षम करण्‍यात आला आहे पण एक सुस्पष्‍ट प्रॉक्सी कॉन्‍फिगरेशन निर्दिष्‍ट करण्‍यात आले आहे.</translation>
 <translation id="445100540951337728">डेबिट कार्डे स्वीकारली जातात</translation>
+<translation id="4472575034687746823">प्रारंभ करा</translation>
 <translation id="4506176782989081258">प्रमाणीकरण एरर: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">सिस्टम प्रशासकाशी संपर्क साधणे</translation>
 <translation id="450710068430902550">प्रशासकासह सामायिक करीत आहे</translation>
@@ -626,6 +628,7 @@
 <translation id="5332219387342487447">पाठविण्‍याची पद्धत</translation>
 <translation id="5355557959165512791">तुम्ही आत्ता <ph name="SITE" /> ला भेट देऊ शकत नाही कारण तिचे प्रमाणपत्र निरस्त केले गेले आहे. नेटवर्क एरर आणि आक्रमणे शक्यतो तात्पुरती असतात, त्यामुळे हे पेज नंतर पाहता येईल.</translation>
 <translation id="536296301121032821">धोरण सेटिंग्ज संचयित करण्यात अयशस्वी</translation>
+<translation id="5371425731340848620">कार्ड अपडेट करा</translation>
 <translation id="5377026284221673050">"तुमचे क्लॉक मागे पडले आहे" किंवा "तुमचे क्लॉक वेळेपेक्षा पुढे आहे" किंवा "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">या साइटसाठी असलेल्या प्रमाणपत्र श्रृंखलेत SHA-1 वापरून स्वाक्षरी केलेले प्रमाणपत्र असते.</translation>
 <translation id="5402410679244714488">कालबाह्यता: <ph name="EXPIRATION_DATE_ABBR" />, एका वर्षापूर्वी अखेरचे वापरले</translation>
@@ -886,7 +889,6 @@
 <translation id="7451311239929941790">या समस्येविषयी <ph name="BEGIN_LINK" />अधिक जाणून घेणे<ph name="END_LINK" />.</translation>
 <translation id="7455133967321480974">सार्वत्रिक डीफॉल्‍ट वापरा (अवरोधित करा)</translation>
 <translation id="7460163899615895653">अन्य डिव्हाइस वरील आपले अलीकडील टॅब येथे दिसतात</translation>
-<translation id="7469372306589899959">कार्डची पुष्टी करीत आहे</translation>
 <translation id="7473891865547856676">नाही, नको</translation>
 <translation id="7481312909269577407">पुढील</translation>
 <translation id="7485870689360869515">डेटा आढळला नाही.</translation>
@@ -1052,6 +1054,7 @@
 <translation id="8663226718884576429">ऑर्डर सारांश, <ph name="TOTAL_LABEL" />, आणखी तपशील</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, उत्तर, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> चे आपले कनेक्शन कूटबद्ध केलेले नाही.</translation>
+<translation id="8713137585425162364">हे कार्ड आता पडताळू शकत नाही.</translation>
 <translation id="8718314106902482036">पेमेंट पूर्ण झाले नाही</translation>
 <translation id="8725066075913043281">पुन्हा प्रयत्न करा</translation>
 <translation id="8728672262656704056">आपण गुप्त मोडमध्ये आहात</translation>

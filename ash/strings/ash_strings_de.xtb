@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Schwaches Signal</translation>
 <translation id="1293264513303784526">USB-C-Gerät (Port links)</translation>
 <translation id="1346748346194534595">Rechts</translation>
+<translation id="1351937230027495976">Menü minimieren</translation>
 <translation id="1383876407941801731">Suchen</translation>
 <translation id="1467432559032391204">Links</translation>
 <translation id="1479743070547893297">Zum Auswählen mit dem Eingabestift zeichnen</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Ausgang</translation>
 <translation id="3019353588588144572">Verbleibende Zeit, bis der Akku vollständig geladen ist: <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">Umschalttaste</translation>
+<translation id="3081696990447829002">Menü maximieren</translation>
 <translation id="3087734570205094154">Unten</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Zum Aktualisieren neu starten</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="3995138139523574647">USB-C-Gerät (Port hinten rechts)</translation>
 <translation id="4017989525502048489">Laserpointer</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Für eine App deaktiviert}other{Für # Apps deaktiviert}}</translation>
 <translation id="4072264167173457037">Durchschnittliches Signal</translation>
 <translation id="4200057768455216496">Sie haben die Tastenkombination für die angedockte Lupe gedrückt. Möchten Sie sie aktivieren?</translation>
 <translation id="4217571870635786043">Spracheingabe</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">Vorlese-Schaltfläche</translation>
 <translation id="4628757576491864469">Geräte</translation>
 <translation id="4659419629803378708">ChromeVox aktiviert</translation>
+<translation id="4734965478015604180">Horizontal</translation>
 <translation id="4776917500594043016">Passwort für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">Suchen</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">Alt+Suchen oder Umschalttaste</translation>
 <translation id="4890187583552566966">Google Assistant wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="4895488851634969361">Akku ist vollständig geladen.</translation>
+<translation id="490375751687810070">Vertikal</translation>
 <translation id="4905614135390995787">Die Tastenkombination zum Deaktivieren des Modus mit hohem Kontrast hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Stark</translation>
 <translation id="4918086044614829423">Annehmen</translation>
@@ -349,6 +354,7 @@
 <translation id="8054466585765276473">Akku-Laufzeit wird berechnet.</translation>
 <translation id="8061464966246066292">Hoher Kontrast</translation>
 <translation id="8098591350844501178">Streamen von Bildschirm an <ph name="RECEIVER_NAME" /> beenden</translation>
+<translation id="8113423164597455979">Für alle Apps aktiviert</translation>
 <translation id="8132793192354020517">Verbunden mit <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialisierung…</translation>
 <translation id="8142699993796781067">Privates Netzwerk</translation>
@@ -369,6 +375,7 @@
 <translation id="847056008324733326">Einstellungen für Displaymaßstab</translation>
 <translation id="8477270416194247200">Drücken Sie Alt + Such-Taste oder Umschalttaste, um die Aktivierung aufzuheben.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Verbindung wird wiederhergestellt...</translation>
+<translation id="8513108775083588393">Automatisch drehen</translation>
 <translation id="8517041960877371778">Ihr <ph name="DEVICE_TYPE" /> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> verbleibend</translation>
 <translation id="8649101189709089199">Vorlesen</translation>

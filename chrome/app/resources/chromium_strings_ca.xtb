@@ -115,7 +115,6 @@
 <translation id="5032989939245619637">Desa els detalls a Chromium</translation>
 <translation id="5045248521775609809">Emporta't Chromium on vagis</translation>
 <translation id="5116586539350239523">Chromium emmagatzemarà de manera segura les vostres dades personals perquè no les hàgiu de tornar a escriure</translation>
-<translation id="5231355151045086930">Tanca la sessió de Chromium</translation>
 <translation id="5358375970380395591">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Chromium a l'administrador corresponent. Les dades de Chromium, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Podreu suprimir aquestes dades mitjançant el Tauler de Comptes de Google, però no les podreu associar amb un altre compte. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">S'està actualitzant Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Hi ha disponible una versió nova de Chromium.</translation>
@@ -148,6 +147,7 @@
 <translation id="6129621093834146363">Chromium ha bloquejat <ph name="FILE_NAME" /> perquè és perillós.</translation>
 <translation id="6212496753309875659">Aquest equip ja té una versió més recent de Chromium. Si el programari no funciona, desinstal·leu Chromium i torneu-ho a provar.</translation>
 <translation id="6248213926982192922">Estableix Chromium com a navegador predeterminat</translation>
+<translation id="6268381023930128611">Voleu tancar la sessió de Chromium?</translation>
 <translation id="6295779123002464101">Chromium ha bloquejat <ph name="FILE_NAME" /> perquè pot ser perillós.</translation>
 <translation id="6309712487085796862">Chromium està utilitzant la càmera.</translation>
 <translation id="6333502561965082103">Hi ha una altra operació en curs a Chromium. Torna-ho a provar més tard.</translation>

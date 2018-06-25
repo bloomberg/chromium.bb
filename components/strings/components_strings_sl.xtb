@@ -43,6 +43,7 @@
 <translation id="1227633850867390598">Skrij vrednost</translation>
 <translation id="1228893227497259893">Napačni identifikator subjekta</translation>
 <translation id="1232569758102978740">Brez naslova</translation>
+<translation id="1250759482327835220">Če želite naslednjič hitreje plačati, shranite kartico, ime in naslov za izstavitev računa v Google Računu.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sinhronizirano)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Če poskušate obiskati spletno mesto in se ne odpre, napako najprej poskusite odpraviti s tem postopkom za odpravljanje težav:&lt;/p&gt;
     &lt;ol&gt;
@@ -123,6 +124,7 @@
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Poskusite se obrniti na skrbnika sistema.</translation>
 <translation id="1740951997222943430">Vnesite veljaven mesec poteka veljavnosti</translation>
+<translation id="1743520634839655729">Če želite naslednjič hitreje plačati, shranite kartico, ime in naslov za izstavitev računa v Google Računu in v tej napravi.</translation>
 <translation id="17513872634828108">Odpri zavihke</translation>
 <translation id="1753706481035618306">Številka strani</translation>
 <translation id="1763864636252898013">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; operacijski sistem vaše naprave ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
@@ -488,7 +490,6 @@
 <translation id="425582637250725228">Spremembe, ki ste jih naredili, morda niso shranjene.</translation>
 <translation id="4258748452823770588">Napačen podpis</translation>
 <translation id="4265872034478892965">Omogočil skrbnik</translation>
-<translation id="4269787794583293679">(Ni uporabniškega imena)</translation>
 <translation id="4275830172053184480">Znova zaženite napravo.</translation>
 <translation id="4277028893293644418">Ponastavi geslo</translation>
 <translation id="4280429058323657511">, datum poteka veljavnosti: <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -511,6 +512,7 @@
 <translation id="4434045419905280838">Pojavna okna in preusmeritve</translation>
 <translation id="443673843213245140">Uporaba strežnika proxy je onemogočena, vendar je njegova konfiguracija izrecno določena.</translation>
 <translation id="445100540951337728">Sprejete debetne kartice</translation>
+<translation id="4472575034687746823">Kako začeti</translation>
 <translation id="4506176782989081258">Napaka pri preverjanju veljavnosti: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">se obrniti na skrbnika sistema</translation>
 <translation id="450710068430902550">Deljenje s skrbnikom</translation>
@@ -626,6 +628,7 @@
 <translation id="5332219387342487447">Način pošiljanja</translation>
 <translation id="5355557959165512791">Spletnega mesta <ph name="SITE" /> trenutno ni mogoče obiskati, saj je to potrdilo preklicano. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
 <translation id="536296301121032821">Nastavitev pravilnika ni bilo mogoče shraniti</translation>
+<translation id="5371425731340848620">Posodobite kartico</translation>
 <translation id="5377026284221673050">Ura zaostaja« ali »Ura prehiteva« ali »&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;«</translation>
 <translation id="5386426401304769735">Veriga potrdil za to spletno mesto vsebuje potrdilo, podpisano z algoritmom SHA-1.</translation>
 <translation id="5402410679244714488">Datum poteka: <ph name="EXPIRATION_DATE_ABBR" />, zadnja uporaba pred več kot enim letom</translation>
@@ -885,7 +888,6 @@
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Preberite več<ph name="END_LINK" /> o tej težavi.</translation>
 <translation id="7455133967321480974">Uporabi globalno privzeto (Blokiraj)</translation>
 <translation id="7460163899615895653">Tu so prikazani nedavni zavihki iz drugih naprav</translation>
-<translation id="7469372306589899959">Potrjevanje kartice</translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7481312909269577407">Naprej</translation>
 <translation id="7485870689360869515">Ni podatkov.</translation>
@@ -1051,6 +1053,7 @@
 <translation id="8663226718884576429">Povzetek naročila, <ph name="TOTAL_LABEL" />, več podrobnosti</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, odgovor, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Vaša povezava z <ph name="DOMAIN" /> ni kodirana.</translation>
+<translation id="8713137585425162364">Te kartice trenutno ni mogoče preveriti.</translation>
 <translation id="8718314106902482036">Plačilo ni končano</translation>
 <translation id="8725066075913043281">Poskusite znova</translation>
 <translation id="8728672262656704056">Uporabljate način brez beleženja zgodovine</translation>

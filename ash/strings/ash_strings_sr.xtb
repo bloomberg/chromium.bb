@@ -19,6 +19,7 @@
 <translation id="1290331692326790741">Слаб сигнал</translation>
 <translation id="1293264513303784526">Уређај са USB прикључком типа C (леви порт)</translation>
 <translation id="1346748346194534595">Удесно</translation>
+<translation id="1351937230027495976">Скупи мени</translation>
 <translation id="1383876407941801731">Претражи</translation>
 <translation id="1467432559032391204">Улево</translation>
 <translation id="1479743070547893297">Цртајте писаљком да бисте изабрали</translation>
@@ -116,6 +117,7 @@
 <translation id="3009178788565917040">Излаз</translation>
 <translation id="3019353588588144572">Време које је преостало док се батерија у потпуности не напуни, <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Прошири мени</translation>
 <translation id="3087734570205094154">Дно</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Покрените поново да бисте ажурирали</translation>
@@ -165,6 +167,7 @@
 <translation id="397105322502079400">Израчунавање...</translation>
 <translation id="3995138139523574647">Уређај са USB прикључком типа C (десни задњи порт)</translation>
 <translation id="4017989525502048489">Ласерски показивач</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Искључено за апликацију}one{Искључено за # апликацију}few{Искључено за # апликације}other{Искључено за # апликација}}</translation>
 <translation id="4072264167173457037">Сигнал средње јачине</translation>
 <translation id="4200057768455216496">Притиснули сте пречицу за монтирану лупу екрана. Желите ли да је укључите?</translation>
 <translation id="4217571870635786043">Диктирање</translation>
@@ -189,6 +192,7 @@
 <translation id="4570957409596482333">Дугме Изаберите за говор</translation>
 <translation id="4628757576491864469">Уређаји</translation>
 <translation id="4659419629803378708">ChromeVox је омогућен</translation>
+<translation id="4734965478015604180">Хоризонтално</translation>
 <translation id="4776917500594043016">Лозинка за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Прекини везу</translation>
@@ -196,6 +200,7 @@
 <translation id="4872237917498892622">Alt + тастер за претрагу или Shift</translation>
 <translation id="4890187583552566966">Администратор је онемогућио Google помоћник.</translation>
 <translation id="4895488851634969361">Батерија је пуна.</translation>
+<translation id="490375751687810070">Вертикално</translation>
 <translation id="4905614135390995787">Пречица за укључивање и искључивање режима високог контраста је промењена. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Јак</translation>
 <translation id="4918086044614829423">Прихвати</translation>
@@ -349,6 +354,7 @@
 <translation id="8054466585765276473">Израчунавање времена трајања батерије.</translation>
 <translation id="8061464966246066292">Високи контраст</translation>
 <translation id="8098591350844501178">Заустави пребацивање екрана на <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">Укључено, све апликације</translation>
 <translation id="8132793192354020517">Успостављена је веза са <ph name="NAME" /></translation>
 <translation id="813913629614996137">Покреће се…</translation>
 <translation id="8142699993796781067">Приватна мрежа</translation>
@@ -369,6 +375,7 @@
 <translation id="847056008324733326">Подешавања размере приказа</translation>
 <translation id="8477270416194247200">Притисните Alt + тастер за претрагу или Shift да бисте отказали.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Поново се повезујете...</translation>
+<translation id="8513108775083588393">Аутоматско ротирање</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> се можда неће пунити док је укључен.</translation>
 <translation id="8639760480004882931">Преостало је <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Изаберите за говор</translation>
