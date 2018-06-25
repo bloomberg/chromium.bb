@@ -361,11 +361,11 @@ void PasswordStore::CheckReuse(const base::string16& input,
 #endif
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-void PasswordStore::PrepareSyncPasswordHashData(
-    const std::string& sync_username) {
+void PasswordStore::PreparePasswordHashData(const std::string& sync_username) {
   // TODO(crbug.com/841438): Delete migration code when most users complete
   // the migration.
-  hash_password_manager_.MaybeMigrateExistingSyncPasswordHash(sync_username);
+  if (!sync_username.empty())
+    hash_password_manager_.MaybeMigrateExistingSyncPasswordHash(sync_username);
   SchedulePasswordHashUpdate(/*should_log_metrics=*/true);
   ScheduleEnterprisePasswordURLUpdate();
 }
@@ -560,8 +560,11 @@ void PasswordStore::SaveProtectedPasswordHashImpl(
     else
       enterprise_password_hash_list.push_back(std::move(password_hash));
   }
-  metrics_util::LogProtectedPasswordHashCounts(
-      gaia_password_hash_list.size(), enterprise_password_hash_list.size());
+
+  if (should_log_metrics) {
+    metrics_util::LogProtectedPasswordHashCounts(
+        gaia_password_hash_list.size(), enterprise_password_hash_list.size());
+  }
   reuse_detector_->UseGaiaPasswordHash(std::move(gaia_password_hash_list));
   reuse_detector_->UseNonGaiaEnterprisePasswordHash(
       std::move(enterprise_password_hash_list));

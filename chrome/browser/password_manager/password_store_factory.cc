@@ -271,10 +271,8 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   }
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  // Prepare sync password hash data for reuse detection.
-  std::string sync_username = GetSyncUsername(profile);
-  if (!sync_username.empty())
-    ps->PrepareSyncPasswordHashData(sync_username);
+  // Prepare password hash data for reuse detection.
+  ps->PreparePasswordHashData(GetSyncUsername(profile));
 #endif
 
   // TODO(https://crbug.com/817754): remove the code once majority of the users
