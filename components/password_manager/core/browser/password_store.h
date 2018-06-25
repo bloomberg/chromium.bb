@@ -256,9 +256,9 @@ class PasswordStore : protected PasswordStoreSync,
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  // Immediately called after |Init()| to retrieve sync password hash data for
+  // Immediately called after |Init()| to retrieve password hash data for
   // reuse detection.
-  void PrepareSyncPasswordHashData(const std::string& sync_username);
+  void PreparePasswordHashData(const std::string& sync_username);
 
   // Checks that some suffix of |input| equals to a password saved on another
   // registry controlled domain than |domain|.
