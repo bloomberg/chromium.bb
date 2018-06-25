@@ -117,7 +117,7 @@ class CORE_EXPORT NGLineBreaker {
 
   void PrepareNextLine(const NGLineLayoutOpportunity&, NGLineInfo*);
 
-  void UpdatePosition(const NGInlineItemResults&);
+  void UpdatePosition(const NGLineInfo&);
   void ComputeLineLocation(NGLineInfo*) const;
 
   enum class LineBreakState {

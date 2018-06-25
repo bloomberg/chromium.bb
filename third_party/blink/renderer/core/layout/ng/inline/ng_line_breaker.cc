@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_breaker.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
@@ -161,8 +162,10 @@ void NGLineBreaker::ComputeBaseDirection(const NGLineInfo& line_info) {
 void NGLineBreaker::PrepareNextLine(
     const NGLineLayoutOpportunity& line_opportunity,
     NGLineInfo* line_info) {
-  NGInlineItemResults* item_results = &line_info->Results();
-  item_results->clear();
+  // NGLineInfo is not supposed to be re-used becase it's not much gain and to
+  // avoid rare code path.
+  DCHECK(line_info->Results().IsEmpty());
+
   line_info->SetStartOffset(offset_);
   line_info->SetLineStyle(
       node_, items_data_, constraint_space_, line_.is_first_formatted_line,
@@ -291,19 +294,20 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
   }
 }
 
-// Re-compute the current position from NGInlineItemResults.
+// Re-compute the current position from NGLineInfo.
 // The current position is usually updated as NGLineBreaker builds
 // NGInlineItemResults. This function re-computes it when it was lost.
-void NGLineBreaker::UpdatePosition(const NGInlineItemResults& results) {
-  LayoutUnit position;
-  for (const NGInlineItemResult& item_result : results)
-    position += item_result.inline_size;
-  line_.position = position;
+void NGLineBreaker::UpdatePosition(const NGLineInfo& line_info) {
+  line_.position = line_info.ComputeWidth();
 }
 
 void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
   LayoutUnit bfc_line_offset = line_.line_opportunity.line_left_offset;
   LayoutUnit available_width = line_.AvailableWidth();
+// TODO(kojii): IsBeforeAfterNonCollapsedLineWrapSpace fails only on Mac
+#if !defined(OS_MACOSX)
+  DCHECK_EQ(line_.position, line_info->ComputeWidth());
+#endif
 
   // Negative margins can make the position negative, but the inline size is
   // always positive or 0.
@@ -971,11 +975,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleOverflow(
               available_width + next_width_to_rewind + item_result->inline_size;
           if (line_info->LineEndFragment())
             SetLineEndFragment(nullptr, line_info);
-#if DCHECK_IS_ON()
-          LayoutUnit position_fast = line_.position;
-          UpdatePosition(line_info->Results());
-          DCHECK_EQ(line_.position, position_fast);
-#endif
+          DCHECK_EQ(line_.position, line_info->ComputeWidth());
           item_index_ = item_result->item_index;
           offset_ = item_result->end_offset;
           items_data_.AssertOffset(item_index_, offset_);
@@ -1030,7 +1030,7 @@ void NGLineBreaker::Rewind(NGLineInfo* line_info, unsigned new_end) {
   item_results->Shrink(new_end);
 
   SetLineEndFragment(nullptr, line_info);
-  UpdatePosition(line_info->Results());
+  UpdatePosition(*line_info);
 }
 
 // Returns the LayoutObject at the current index/offset.

@@ -48,12 +48,12 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
     Vector<NGInlineItemResults> lines;
     NGExclusionSpace exclusion_space;
     NGLineLayoutOpportunity line_opportunity(available_width);
-    NGLineInfo line_info;
     while (!break_token || !break_token->IsFinished()) {
       NGLineBreaker line_breaker(node, NGLineBreakerMode::kContent, *space,
                                  &positioned_floats, &unpositioned_floats,
                                  /* container_builder */ nullptr,
                                  &exclusion_space, 0u, break_token.get());
+      NGLineInfo line_info;
       if (!line_breaker.NextLine(line_opportunity, &line_info))
         break;
 

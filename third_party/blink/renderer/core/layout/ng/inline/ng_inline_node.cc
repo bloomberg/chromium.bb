@@ -670,7 +670,6 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
   Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats;
 
   scoped_refptr<NGInlineBreakToken> break_token;
-  NGLineInfo line_info;
   NGExclusionSpace empty_exclusion_space;
   NGLineLayoutOpportunity line_opportunity(available_inline_size);
   LayoutUnit result;
@@ -683,13 +682,13 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
                                &unpositioned_floats,
                                nullptr /* container_builder */,
                                &empty_exclusion_space, 0u, break_token.get());
+    NGLineInfo line_info;
     if (!line_breaker.NextLine(line_opportunity, &line_info))
       break;
 
     break_token = line_breaker.CreateBreakToken(line_info, nullptr);
-    LayoutUnit inline_size = line_info.TextIndent();
-    for (const NGInlineItemResult& item_result : line_info.Results())
-      inline_size += item_result.inline_size;
+    LayoutUnit inline_size = line_info.Width();
+    DCHECK_EQ(inline_size, line_info.ComputeWidth().ClampNegativeToZero());
 
     // There should be no positioned floats while determining the min/max sizes.
     DCHECK_EQ(positioned_floats.size(), 0u);
