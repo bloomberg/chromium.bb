@@ -10397,6 +10397,7 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="CANCEL"/>
   <int value="6" label="OUT_OF_RETRIES"/>
   <int value="7" label="OUT_OF_RESUMPTIONS"/>
+  <int value="8" label="UPLOAD_TIMEOUT"/>
 </enum>
 
 <enum name="Download.Service.EntryEvent">
