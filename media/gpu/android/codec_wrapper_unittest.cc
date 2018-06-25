@@ -286,4 +286,26 @@ TEST_F(CodecWrapperTest, SurfaceBundleIsTaken) {
   ASSERT_EQ(wrapper_->SurfaceBundle(), nullptr);
 }
 
+TEST_F(CodecWrapperTest, EOSWhileFlushedOrDrainedIsElided) {
+  // Nothing should call QueueEOS.
+  EXPECT_CALL(*codec_, QueueEOS(_)).Times(0);
+
+  // Codec starts in the flushed state.
+  auto eos = DecoderBuffer::CreateEOSBuffer();
+  wrapper_->QueueInputBuffer(*eos, EncryptionScheme());
+  std::unique_ptr<CodecOutputBuffer> codec_buffer;
+  bool is_eos = false;
+  wrapper_->DequeueOutputBuffer(nullptr, &is_eos, &codec_buffer);
+  ASSERT_TRUE(is_eos);
+
+  // Since we also just got the codec into the drained state, make sure that
+  // it is elided here too.
+  ASSERT_TRUE(wrapper_->IsDrained());
+  eos = DecoderBuffer::CreateEOSBuffer();
+  wrapper_->QueueInputBuffer(*eos, EncryptionScheme());
+  is_eos = false;
+  wrapper_->DequeueOutputBuffer(nullptr, &is_eos, &codec_buffer);
+  ASSERT_TRUE(is_eos);
+}
+
 }  // namespace media
