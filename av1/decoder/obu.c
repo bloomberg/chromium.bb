@@ -710,7 +710,6 @@ aom_codec_err_t aom_read_obu_header_and_size(const uint8_t *data,
   return AOM_CODEC_OK;
 }
 
-#define EXT_TILE_DEBUG 0
 // On success, returns a boolean that indicates whether the decoding of the
 // current frame is finished. On failure, sets cm->error.error_code and
 // returns -1.
@@ -816,7 +815,8 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           pbi->seen_frame_header = 1;
           frame_header_size = read_frame_header_obu(
               pbi, &rb, data, p_data_end, obu_header.type != OBU_FRAME);
-          if (cm->large_scale_tile) pbi->camera_frame_header_ready = 1;
+          if (!pbi->ext_tile_debug && cm->large_scale_tile)
+            pbi->camera_frame_header_ready = 1;
         }
         decoded_payload_size = frame_header_size;
         pbi->frame_header_size = (size_t)frame_header_size;
@@ -827,7 +827,6 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           break;
         }
 
-#if !EXT_TILE_DEBUG
         // In large scale tile coding, decode the common camera frame header
         // before any tile list OBU.
         if (!pbi->ext_tile_debug && pbi->camera_frame_header_ready) {
@@ -838,7 +837,6 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           *p_data_end = data_end;
           break;
         }
-#endif  // EXT_TILE_DEBUG
 
         if (obu_header.type != OBU_FRAME) break;
         obu_payload_offset = frame_header_size;
@@ -904,4 +902,3 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
 
   return frame_decoding_finished;
 }
-#undef EXT_TILE_DEBUG
