@@ -201,27 +201,33 @@ void DrmThread::GetScanoutFormats(
   display_manager_->GetScanoutFormats(widget, scanout_formats);
 }
 
-void DrmThread::SchedulePageFlip(gfx::AcceleratedWidget widget,
-                                 std::vector<DrmOverlayPlane> planes,
-                                 SwapCompletionOnceCallback callback) {
+void DrmThread::SchedulePageFlip(
+    gfx::AcceleratedWidget widget,
+    std::vector<DrmOverlayPlane> planes,
+    SwapCompletionOnceCallback submission_callback,
+    PresentationOnceCallback presentation_callback) {
   scoped_refptr<ui::DrmDevice> drm_device =
       device_manager_->GetDrmDevice(widget);
 
   drm_device->plane_manager()->RequestPlanesReadyCallback(
       std::move(planes), base::BindOnce(&DrmThread::OnPlanesReadyForPageFlip,
                                         weak_ptr_factory_.GetWeakPtr(), widget,
-                                        std::move(callback)));
+                                        std::move(submission_callback),
+                                        std::move(presentation_callback)));
 }
 
-void DrmThread::OnPlanesReadyForPageFlip(gfx::AcceleratedWidget widget,
-                                         SwapCompletionOnceCallback callback,
-                                         std::vector<DrmOverlayPlane> planes) {
+void DrmThread::OnPlanesReadyForPageFlip(
+    gfx::AcceleratedWidget widget,
+    SwapCompletionOnceCallback submission_callback,
+    PresentationOnceCallback presentation_callback,
+    std::vector<DrmOverlayPlane> planes) {
   DrmWindow* window = screen_manager_->GetWindow(widget);
   if (window) {
-    window->SchedulePageFlip(std::move(planes), std::move(callback));
+    window->SchedulePageFlip(std::move(planes), std::move(submission_callback),
+                             std::move(presentation_callback));
   } else {
-    std::move(callback).Run(gfx::SwapResult::SWAP_ACK,
-                            gfx::PresentationFeedback::Failure());
+    std::move(submission_callback).Run(gfx::SwapResult::SWAP_ACK);
+    std::move(presentation_callback).Run(gfx::PresentationFeedback::Failure());
   }
 }
 

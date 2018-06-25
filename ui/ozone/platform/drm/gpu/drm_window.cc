@@ -114,8 +114,10 @@ void DrmWindow::MoveCursor(const gfx::Point& location) {
     controller_->MoveCursor(location);
 }
 
-void DrmWindow::SchedulePageFlip(std::vector<DrmOverlayPlane> planes,
-                                 SwapCompletionOnceCallback callback) {
+void DrmWindow::SchedulePageFlip(
+    std::vector<DrmOverlayPlane> planes,
+    SwapCompletionOnceCallback submission_callback,
+    PresentationOnceCallback presentation_callback) {
   if (controller_) {
     const DrmDevice* drm = controller_->GetDrmDevice().get();
     for (const auto& plane : planes) {
@@ -131,20 +133,23 @@ void DrmWindow::SchedulePageFlip(std::vector<DrmOverlayPlane> planes,
 
   if (force_buffer_reallocation_) {
     force_buffer_reallocation_ = false;
-    std::move(callback).Run(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS,
-                            gfx::PresentationFeedback::Failure());
+    std::move(submission_callback)
+        .Run(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS);
+    std::move(presentation_callback).Run(gfx::PresentationFeedback::Failure());
     return;
   }
 
   last_submitted_planes_ = DrmOverlayPlane::Clone(planes);
 
   if (!controller_) {
-    std::move(callback).Run(gfx::SwapResult::SWAP_ACK,
-                            gfx::PresentationFeedback::Failure());
+    std::move(submission_callback).Run(gfx::SwapResult::SWAP_ACK);
+    std::move(presentation_callback).Run(gfx::PresentationFeedback::Failure());
     return;
   }
 
-  controller_->SchedulePageFlip(std::move(planes), std::move(callback));
+  controller_->SchedulePageFlip(std::move(planes),
+                                std::move(submission_callback),
+                                std::move(presentation_callback));
 }
 
 std::vector<OverlayCheckReturn_Params> DrmWindow::TestPageFlip(

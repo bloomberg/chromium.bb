@@ -15,7 +15,7 @@ PageFlipRequest::PageFlipRequest(const base::TimeDelta& refresh_interval)
 PageFlipRequest::~PageFlipRequest() {
 }
 
-void PageFlipRequest::TakeCallback(SwapCompletionOnceCallback callback) {
+void PageFlipRequest::TakeCallback(PresentationOnceCallback callback) {
   DCHECK(!callback_);
   callback_ = std::move(callback);
 }
@@ -36,7 +36,7 @@ void PageFlipRequest::Signal(unsigned int frame, base::TimeTicks timestamp) {
                           gfx::PresentationFeedback::Flags::kHWClock |
                           gfx::PresentationFeedback::Flags::kHWCompletion;
   gfx::PresentationFeedback feedback(timestamp, refresh_interval_, kFlags);
-  std::move(callback_).Run(gfx::SwapResult::SWAP_ACK, feedback);
+  std::move(callback_).Run(feedback);
 }
 
 }  // namespace ui

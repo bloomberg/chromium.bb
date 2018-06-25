@@ -30,15 +30,14 @@ namespace {
 
 void CompletePageFlip(
     base::WeakPtr<HardwareDisplayController> hardware_display_controller_,
-    SwapCompletionOnceCallback callback,
+    PresentationOnceCallback callback,
     DrmOverlayPlaneList plane_list,
-    gfx::SwapResult swap_result,
     const gfx::PresentationFeedback& presentation_feedback) {
   if (hardware_display_controller_) {
     hardware_display_controller_->OnPageFlipComplete(std::move(plane_list),
                                                      presentation_feedback);
   }
-  std::move(callback).Run(swap_result, presentation_feedback);
+  std::move(callback).Run(presentation_feedback);
 }
 
 }  // namespace
@@ -96,7 +95,8 @@ void HardwareDisplayController::Disable() {
 
 void HardwareDisplayController::SchedulePageFlip(
     DrmOverlayPlaneList plane_list,
-    SwapCompletionOnceCallback callback) {
+    SwapCompletionOnceCallback submission_callback,
+    PresentationOnceCallback presentation_callback) {
   DCHECK(!page_flip_request_);
   scoped_refptr<PageFlipRequest> page_flip_request =
       base::MakeRefCounted<PageFlipRequest>(GetRefreshInterval());
@@ -109,15 +109,17 @@ void HardwareDisplayController::SchedulePageFlip(
     // able to happen but both CrtcController::AssignOverlayPlanes and
     // HardwareDisplayPlaneManagerLegacy::Commit appear to have cases
     // where we ACK without actually scheduling a page flip.
-    std::move(callback).Run(gfx::SwapResult::SWAP_ACK,
-                            gfx::PresentationFeedback::Failure());
+    std::move(submission_callback).Run(gfx::SwapResult::SWAP_ACK);
+    std::move(presentation_callback).Run(gfx::PresentationFeedback::Failure());
     return;
   }
 
+  std::move(submission_callback).Run(gfx::SwapResult::SWAP_ACK);
+
   // Everything was submitted successfully, wait for asynchronous completion.
-  page_flip_request->TakeCallback(
-      base::BindOnce(&CompletePageFlip, weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(&callback), base::Passed(&plane_list)));
+  page_flip_request->TakeCallback(base::BindOnce(
+      &CompletePageFlip, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(&presentation_callback), base::Passed(&plane_list)));
   page_flip_request_ = std::move(page_flip_request);
 }
 

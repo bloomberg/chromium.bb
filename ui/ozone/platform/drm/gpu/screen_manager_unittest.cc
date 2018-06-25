@@ -509,7 +509,8 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
       drm_, DRM_FORMAT_XRGB8888, {}, GetPrimaryBounds().size());
   ui::DrmOverlayPlaneList planes;
   planes.push_back(ui::DrmOverlayPlane(buffer, nullptr));
-  window->SchedulePageFlip(std::move(planes), base::DoNothing());
+  window->SchedulePageFlip(std::move(planes), base::DoNothing(),
+                           base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
@@ -535,7 +536,8 @@ TEST_F(ScreenManagerTest, RejectBufferWithIncompatibleModifiers) {
 
   ui::DrmOverlayPlaneList planes;
   planes.push_back(ui::DrmOverlayPlane(buffer, nullptr));
-  window->SchedulePageFlip(std::move(planes), base::DoNothing());
+  window->SchedulePageFlip(std::move(planes), base::DoNothing(),
+                           base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);

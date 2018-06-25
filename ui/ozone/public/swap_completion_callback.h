@@ -14,8 +14,10 @@ struct PresentationFeedback;
 
 namespace ui {
 
-using SwapCompletionOnceCallback =
-    base::OnceCallback<void(gfx::SwapResult, const gfx::PresentationFeedback&)>;
+using SwapCompletionOnceCallback = base::OnceCallback<void(gfx::SwapResult)>;
+
+using PresentationOnceCallback =
+    base::OnceCallback<void(const gfx::PresentationFeedback&)>;
 
 }  // namespace ui
 
