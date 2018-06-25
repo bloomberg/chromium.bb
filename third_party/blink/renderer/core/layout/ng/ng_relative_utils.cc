@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/length_functions.h"
@@ -13,13 +13,13 @@
 namespace blink {
 
 // Returns the child's relative position wrt the containing fragment.
-NGLogicalOffset ComputeRelativeOffset(const ComputedStyle& child_style,
-                                      WritingMode container_writing_mode,
-                                      TextDirection container_direction,
-                                      NGLogicalSize container_logical_size) {
-  NGLogicalOffset offset;
-  NGPhysicalSize container_size =
-      container_logical_size.ConvertToPhysical(container_writing_mode);
+NGPhysicalOffset ComputeRelativeOffset(const ComputedStyle& child_style,
+                                       WritingMode container_writing_mode,
+                                       TextDirection container_direction,
+                                       NGPhysicalSize container_size) {
+  NGPhysicalOffset offset;
+  if (child_style.GetPosition() != EPosition::kRelative)
+    return offset;
 
   base::Optional<LayoutUnit> left, right, top, bottom;
 
@@ -31,6 +31,10 @@ NGLogicalOffset ComputeRelativeOffset(const ComputedStyle& child_style,
     top = ValueForLength(child_style.Top(), container_size.height);
   if (!child_style.Bottom().IsAuto())
     bottom = ValueForLength(child_style.Bottom(), container_size.height);
+
+  // Common case optimization
+  if (!left && !right && !top && !bottom)
+    return offset;
 
   // Implements confict resolution rules from spec:
   // https://www.w3.org/TR/css-position-3/#rel-pos
@@ -51,26 +55,18 @@ NGLogicalOffset ComputeRelativeOffset(const ComputedStyle& child_style,
   if (!bottom)
     bottom = -top.value();
 
-  bool is_ltr = container_direction == TextDirection::kLtr;
-
-  switch (container_writing_mode) {
-    case WritingMode::kHorizontalTb:
-      offset.inline_offset = is_ltr ? left.value() : right.value();
-      offset.block_offset = top.value();
-      break;
-    case WritingMode::kVerticalRl:
-    case WritingMode::kSidewaysRl:
-      offset.inline_offset = is_ltr ? top.value() : bottom.value();
-      offset.block_offset = right.value();
-      break;
-    case WritingMode::kVerticalLr:
-      offset.inline_offset = is_ltr ? top.value() : bottom.value();
-      offset.block_offset = left.value();
-      break;
-    case WritingMode::kSidewaysLr:
-      offset.inline_offset = is_ltr ? bottom.value() : top.value();
-      offset.block_offset = left.value();
-      break;
+  if (IsHorizontalWritingMode(container_writing_mode)) {
+    if (IsLtr(container_direction))
+      offset.left = left.value();
+    else
+      offset.left = -right.value();
+    offset.top = top.value();
+  } else {
+    if (IsLtr(container_direction))
+      offset.top = top.value();
+    else
+      offset.top = -bottom.value();
+    offset.left = left.value();
   }
   return offset;
 }

@@ -337,7 +337,9 @@ NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflow() const {
     case NGPhysicalFragment::kFragmentText:
       return {{}, Size()};
     case NGPhysicalFragment::kFragmentLineBox:
-      return ToNGPhysicalLineBoxFragment(*this).ScrollableOverflow();
+      NOTREACHED()
+          << "You must call NGLineBoxFragment::ScrollableOverflow explicitly.";
+      break;
   }
   NOTREACHED();
   return {{}, Size()};
