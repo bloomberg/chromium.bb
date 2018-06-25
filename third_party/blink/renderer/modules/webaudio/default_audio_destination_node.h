@@ -30,6 +30,7 @@
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_destination_node.h"
 #include "third_party/blink/renderer/platform/audio/audio_destination.h"
+#include "third_party/blink/renderer/platform/audio/audio_io_callback.h"
 
 namespace blink {
 
@@ -37,7 +38,8 @@ class BaseAudioContext;
 class ExceptionState;
 class WebAudioLatencyHint;
 
-class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
+class DefaultAudioDestinationHandler final : public AudioDestinationHandler,
+                                             public AudioIOCallback {
  public:
   static scoped_refptr<DefaultAudioDestinationHandler> Create(
       AudioNode&,
@@ -56,6 +58,12 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
   void RestartRendering() override;
   unsigned long MaxChannelCount() const override;
   double SampleRate() const override;
+
+  // Implements AudioIOCallback: invoked by Platform AudioDestination to get
+  // the next render quantum into |destination_bus|.
+  void Render(AudioBus* destination_bus,
+              size_t number_of_frames,
+              const AudioIOPosition& output_position) final;
 
   // Returns a hadrware callback buffer size from audio infra.
   size_t GetCallbackBufferSize() const;

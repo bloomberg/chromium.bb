@@ -5,6 +5,7 @@
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/convolver_node.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_context.h"
 
