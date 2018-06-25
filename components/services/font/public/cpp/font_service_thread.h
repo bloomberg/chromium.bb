@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "components/services/font/public/interfaces/font_service.mojom.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -44,6 +45,27 @@ class FontServiceThread : public base::Thread,
                        SkFontStyle* out_style);
   scoped_refptr<MappedFontFile> OpenStream(
       const SkFontConfigInterface::FontIdentity& identity);
+
+  bool FallbackFontForCharacter(
+      uint32_t character,
+      std::string locale,
+      font_service::mojom::FontIdentityPtr* out_font_identity,
+      std::string* out_family_name,
+      bool* out_is_bold,
+      bool* out_is_italic);
+  bool FontRenderStyleForStrike(
+      std::string family,
+      uint32_t size,
+      bool is_italic,
+      bool is_bold,
+      float device_scale_factor,
+      font_service::mojom::FontRenderStylePtr* out_font_render_style);
+  void MatchFontWithFallback(std::string family,
+                             bool is_bold,
+                             bool is_italic,
+                             uint32_t charset,
+                             uint32_t fallbackFamilyType,
+                             base::File* out_font_file_handle);
 
  private:
   friend class base::RefCountedThreadSafe<FontServiceThread>;
@@ -82,6 +104,53 @@ class FontServiceThread : public base::Thread,
                             base::File* output_file,
                             base::File file);
 
+  void FallbackFontForCharacterImpl(
+      base::WaitableEvent* done_event,
+      uint32_t character,
+      std::string locale,
+      bool* out_is_valid,
+      font_service::mojom::FontIdentityPtr* out_font_identity,
+      std::string* out_family_name,
+      bool* out_is_bold,
+      bool* out_is_italic);
+  void OnFallbackFontForCharacterComplete(
+      base::WaitableEvent* done_event,
+      bool* out_valid,
+      font_service::mojom::FontIdentityPtr* out_font_identity,
+      std::string* out_family_name,
+      bool* out_is_bold,
+      bool* out_is_italic,
+      mojom::FontIdentityPtr font_identity,
+      const std::string& family_name,
+      bool is_bold,
+      bool is_italic);
+
+  void FontRenderStyleForStrikeImpl(
+      base::WaitableEvent* done_event,
+      std::string family,
+      uint32_t size,
+      bool is_italic,
+      bool is_bold,
+      float device_scale_factor,
+      bool* out_valid,
+      mojom::FontRenderStylePtr* out_font_render_style);
+  void OnFontRenderStyleForStrikeComplete(
+      base::WaitableEvent* done_event,
+      bool* out_valid,
+      mojom::FontRenderStylePtr* out_font_render_style,
+      mojom::FontRenderStylePtr font_render_style);
+
+  void MatchFontWithFallbackImpl(base::WaitableEvent* done_event,
+                                 std::string family,
+                                 bool is_bold,
+                                 bool is_italic,
+                                 uint32_t charset,
+                                 uint32_t fallbackFamilyType,
+                                 base::File* out_font_file_handle);
+  void OnMatchFontWithFallbackComplete(base::WaitableEvent* done_event,
+                                       base::File* out_font_file_handle,
+                                       base::File file);
+
   // Connection to |font_service_| has gone away. Called on the background
   // thread.
   void OnFontServiceConnectionError();
@@ -98,13 +167,16 @@ class FontServiceThread : public base::Thread,
   // non-thread bound, and binds it to the newly created thread.
   mojo::InterfacePtr<mojom::FontService> font_service_;
 
-  // All WaitableEvents supplied to OpenStreamImpl() are added here while
-  // waiting on the response from the |font_service_| (FontService::OpenStream()
-  // was called, but the callback has not been processed yet). If
-  // |font_service_| gets an error during this time all events in
-  // |pending_waitable_events_| are signaled. This is necessary as when the
-  // pipe is closed the callbacks are never received.
+  // All WaitableEvents supplied to OpenStreamImpl() and the other *Impl()
+  // functions are added here while waiting on the response from the
+  // |font_service_| (FontService::OpenStream() or other such functions were
+  // called, but the callbacks have not been processed yet). If |font_service_|
+  // gets an error during this time all events in |pending_waitable_events_| are
+  // signaled. This is necessary as when the pipe is closed the callbacks are
+  // never received.
   std::set<base::WaitableEvent*> pending_waitable_events_;
+
+  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<FontServiceThread> weak_factory_;
 

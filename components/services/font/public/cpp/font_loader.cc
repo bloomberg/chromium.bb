@@ -9,13 +9,14 @@
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "components/services/font/public/cpp/font_service_thread.h"
+#include "components/services/font/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace font_service {
 
 FontLoader::FontLoader(service_manager::Connector* connector) {
   mojom::FontServicePtr font_service;
-  connector->BindInterface("font_service", &font_service);
+  connector->BindInterface(font_service::mojom::kServiceName, &font_service);
   thread_ = new internal::FontServiceThread(std::move(font_service));
 }
 
@@ -64,6 +65,41 @@ SkStreamAsset* FontLoader::openStream(const FontIdentity& identity) {
             .first;
     return mapped_font_files_it->second->CreateMemoryStream();
   }
+}
+
+// Additional cross-thread accessible methods.
+bool FontLoader::FallbackFontForCharacter(
+    uint32_t character,
+    std::string locale,
+    mojom::FontIdentityPtr* out_font_identity,
+    std::string* out_family_name,
+    bool* out_is_bold,
+    bool* out_is_italic) {
+  return thread_->FallbackFontForCharacter(character, std::move(locale),
+                                           out_font_identity, out_family_name,
+                                           out_is_bold, out_is_italic);
+}
+
+bool FontLoader::FontRenderStyleForStrike(
+    std::string family,
+    uint32_t size,
+    bool is_italic,
+    bool is_bold,
+    float device_scale_factor,
+    mojom::FontRenderStylePtr* out_font_render_style) {
+  return thread_->FontRenderStyleForStrike(std::move(family), size, is_italic,
+                                           is_bold, device_scale_factor,
+                                           out_font_render_style);
+}
+
+void FontLoader::MatchFontWithFallback(std::string family,
+                                       bool is_bold,
+                                       bool is_italic,
+                                       uint32_t charset,
+                                       uint32_t fallback_family_type,
+                                       base::File* out_font_file_handle) {
+  thread_->MatchFontWithFallback(std::move(family), is_bold, is_italic, charset,
+                                 fallback_family_type, out_font_file_handle);
 }
 
 void FontLoader::OnMappedFontFileDestroyed(internal::MappedFontFile* f) {

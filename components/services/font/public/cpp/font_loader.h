@@ -49,6 +49,35 @@ class FontLoader : public SkFontConfigInterface,
                        SkFontStyle* out_style) override;
   SkStreamAsset* openStream(const FontIdentity& identity) override;
 
+  // Additional cross-thread accessible methods below.
+
+  // Out parameters are only guaranteed to be initialized when method returns
+  // true.
+  bool FallbackFontForCharacter(uint32_t character,
+                                std::string locale,
+                                mojom::FontIdentityPtr* out_identity,
+                                std::string* out_family_name,
+                                bool* out_is_bold,
+                                bool* out_is_italic);
+  // Out parameters are only guaranteed to be initialized when method returns
+  // true.
+  bool FontRenderStyleForStrike(
+      std::string family,
+      uint32_t size,
+      bool is_italic,
+      bool is_bold,
+      float device_scale_factor,
+      mojom::FontRenderStylePtr* out_font_render_style);
+  // Out parameter out_font_file_handle should always be an opened file handle
+  // to a matched or default font file. out_font_file_handle is a default
+  // initialized base::File on error.
+  void MatchFontWithFallback(std::string family,
+                             bool is_bold,
+                             bool is_italic,
+                             uint32_t charset,
+                             uint32_t fallbackFamilyType,
+                             base::File* out_font_file_handle);
+
  private:
   // internal::MappedFontFile::Observer:
   void OnMappedFontFileDestroyed(internal::MappedFontFile* f) override;
