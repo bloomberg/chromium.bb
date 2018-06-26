@@ -73,6 +73,7 @@ AudioBus::AudioBus(int channels, int frames)
       size, AudioBus::kChannelAlignment)));
 
   BuildChannelData(channels, aligned_frames, data_.get());
+  Zero();
 }
 
 AudioBus::AudioBus(int channels, int frames, float* data)
