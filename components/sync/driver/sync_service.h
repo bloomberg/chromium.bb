@@ -75,6 +75,32 @@ class SyncSetupInProgressHandle {
 
 class SyncService : public DataTypeEncryptionHandler, public KeyedService {
  public:
+  // The set of reasons due to which Sync can be disabled. Meant to be used as a
+  // bitmask.
+  enum DisableReason {
+    DISABLE_REASON_NONE = 0,
+    // Sync is disabled via command-line flag or platform-level override (e.g.
+    // Android's "MasterSync" toggle).
+    DISABLE_REASON_PLATFORM_OVERRIDE = 1 << 0,
+    // Sync is disabled by enterprise policy, either browser policy (through
+    // prefs) or account policy received from the Sync server.
+    DISABLE_REASON_ENTERPRISE_POLICY = 1 << 1,
+    // Sync can't start because there is no authenticated user.
+    DISABLE_REASON_NOT_SIGNED_IN = 1 << 2,
+    // Sync is suppressed by user choice, either via platform-level toggle (e.g.
+    // Android's "ChromeSync" toggle), a “Reset Sync” operation from the
+    // dashboard on desktop/ChromeOS.
+    // NOTE: Other code paths that go through RequestStop also set this reason
+    // (e.g. disabling due to sign-out or policy), so it's only really
+    // meaningful when it's the *only* disable reason.
+    // TODO(crbug.com/839834): Only set this reason when it's meaningful.
+    DISABLE_REASON_USER_CHOICE = 1 << 3,
+    // Sync has encountered an unrecoverable error. It won't attempt to start
+    // again until either the browser is restarted, or the user fully signs out
+    // and back in again.
+    DISABLE_REASON_UNRECOVERABLE_ERROR = 1 << 4
+  };
+
   // Used to specify the kind of passphrase with which sync data is encrypted.
   enum PassphraseType {
     IMPLICIT,  // The user did not provide a custom passphrase for encryption.
@@ -93,6 +119,10 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
 
   ~SyncService() override {}
 
+  // Returns the set of reasons that are keeping Sync disabled, as a bitmask of
+  // DisableReason enum entries.
+  virtual int GetDisableReasons() const = 0;
+
   // Whether sync is enabled by user or not. This does not necessarily mean
   // that sync is currently running (due to delayed startup, unrecoverable
   // errors, or shutdown). See IsSyncActive below for checking whether sync
@@ -102,6 +132,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // Whether sync is allowed to start. Command line flags, platform-level
   // overrides, and account-level overrides are examples of reasons this
   // might be false.
+  // DEPRECATED! Use GetDisableReasons instead.
   virtual bool IsSyncAllowed() const = 0;
 
   // Returns true if sync is fully initialized and active. This implies that
@@ -206,6 +237,8 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   virtual bool ConfigurationDone() const = 0;
 
   virtual const GoogleServiceAuthError& GetAuthError() const = 0;
+
+  // DEPRECATED! Use GetDisableReasons instead.
   virtual bool HasUnrecoverableError() const = 0;
 
   // Returns true if the SyncEngine has told us it's ready to accept changes.

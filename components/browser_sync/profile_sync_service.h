@@ -233,6 +233,7 @@ class ProfileSyncService : public syncer::SyncService,
   void Initialize();
 
   // syncer::SyncService implementation
+  int GetDisableReasons() const override;
   bool IsFirstSetupComplete() const override;
   bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;
@@ -387,6 +388,7 @@ class ProfileSyncService : public syncer::SyncService,
   // IsSyncAllowed() is false then sync won't start, and if the user
   // doesn't confirm their settings (IsFirstSetupComplete), sync will
   // never become active. Use IsSyncActive to see if sync is running.
+  // DEPRECATED! Use GetDisableReasons instead.
   virtual bool IsSyncRequested() const;
 
   // Record stats on various events.
@@ -408,6 +410,7 @@ class ProfileSyncService : public syncer::SyncService,
   // management. If so, the user is not allowed to configure sync.
   // TODO(crbug.com/839834): This is misnamed, it means "is force-disabled by
   // policy".
+  // DEPRECATED! Use GetDisableReasons instead.
   bool IsManaged() const;
 
   // syncer::UnrecoverableErrorHandler implementation.

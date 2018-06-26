@@ -174,14 +174,17 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // Confirmation isn't needed before sign in occurs.
   EXPECT_FALSE(sync_service()->IsSyncConfirmationNeeded());
   EXPECT_FALSE(sync_service()->IsSyncActive());
+  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN,
+            sync_service()->GetDisableReasons());
 
   // This tells the ProfileSyncService that setup is now in progress, which
   // causes it to try starting up the engine. We're not signed in yet though, so
   // that won't work.
   auto sync_blocker = sync_service()->GetSetupInProgressHandle();
   EXPECT_FALSE(sync_service()->IsSyncActive());
-
   EXPECT_FALSE(sync_service()->IsEngineInitialized());
+  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN,
+            sync_service()->GetDisableReasons());
 
   // Confirmation isn't needed before sign in occurs, or when setup is already
   // in progress.
@@ -193,6 +196,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 
   // Now we're signed in, so the engine can start.
   EXPECT_TRUE(sync_service()->IsEngineInitialized());
+  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
+            sync_service()->GetDisableReasons());
 
   // Sync itself still isn't active though while setup is in progress.
   EXPECT_FALSE(sync_service()->IsSyncActive());
@@ -262,6 +267,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartInvalidCredentials) {
   // state. It'll take either a browser restart or a full sign-out+sign-in to
   // get out of this.
   EXPECT_TRUE(sync_service()->HasUnrecoverableError());
+  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR,
+            sync_service()->GetDisableReasons());
 }
 
 TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
@@ -401,7 +408,13 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   CreateSyncService(ProfileSyncService::MANUAL_START);
 
   // Disable sync through policy.
+  ASSERT_FALSE(sync_service()->IsManaged());
+  ASSERT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
+            sync_service()->GetDisableReasons());
   pref_service()->SetBoolean(syncer::prefs::kSyncManaged, true);
+  ASSERT_TRUE(sync_service()->IsManaged());
+  ASSERT_EQ(syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY,
+            sync_service()->GetDisableReasons());
   EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _, _)).Times(0);
   EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
       .Times(0);
@@ -422,6 +435,8 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   sync_service()->Initialize();
   EXPECT_TRUE(sync_service()->IsEngineInitialized());
   EXPECT_TRUE(sync_service()->IsSyncActive());
+  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
+            sync_service()->GetDisableReasons());
 
   // The service should stop when switching to managed mode.
   Mock::VerifyAndClearExpectations(data_type_manager);
@@ -429,16 +444,23 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
       .WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop(syncer::DISABLE_SYNC));
   pref_service()->SetBoolean(syncer::prefs::kSyncManaged, true);
+  ASSERT_TRUE(sync_service()->IsManaged());
+  ASSERT_EQ(syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY,
+            sync_service()->GetDisableReasons());
   EXPECT_FALSE(sync_service()->IsEngineInitialized());
   // Note that PSS no longer references |data_type_manager| after stopping.
 
   // When switching back to unmanaged, the state should change but sync should
-  // not start automatically because IsFirstSetupComplete() will be false.
+  // not start automatically because IsFirstSetupComplete() will be false and
+  // no setup is in progress.
   // A new DataTypeManager should not be created.
   Mock::VerifyAndClearExpectations(data_type_manager);
   EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
       .Times(0);
   pref_service()->ClearPref(syncer::prefs::kSyncManaged);
+  ASSERT_FALSE(sync_service()->IsManaged());
+  ASSERT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
+            sync_service()->GetDisableReasons());
   EXPECT_FALSE(sync_service()->IsEngineInitialized());
   EXPECT_FALSE(sync_service()->IsSyncActive());
 }
@@ -461,6 +483,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
   sync_service()->Initialize();
   EXPECT_TRUE(sync_service()->HasUnrecoverableError());
+  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR,
+            sync_service()->GetDisableReasons());
 }
 
 TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
