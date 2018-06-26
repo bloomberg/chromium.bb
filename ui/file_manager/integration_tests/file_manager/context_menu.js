@@ -285,6 +285,74 @@ testcase.checkPasteIntoFolderDisabledForReadOnlyFolder = function() {
   });
 };
 
+/**
+ * Tests that text selection context menus are disabled in tablet mode.
+ */
+testcase.checkContextMenusForInputElements = function() {
+  let appId;
+  StepsRunner.run([
+    // Start FilesApp.
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS).then(this.next);
+    },
+    // Query all input elements.
+    function(results) {
+      appId = results.windowId;
+      remoteCall.callRemoteTestUtil(
+          'queryAllElements', appId,
+          ['input[type=text], input[type=search], textarea'], this.next);
+    },
+    // Focus the search box.
+    function(elements) {
+      chrome.test.assertEq(2, elements.length);
+      for (let element of elements) {
+        chrome.test.assertEq(
+            '#text-context-menu', element.attributes.contextmenu);
+      }
+
+      remoteCall.callRemoteTestUtil(
+          'fakeEvent', appId, ['#search-box input', 'focus'], this.next);
+    },
+    // Input a text.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.callRemoteTestUtil(
+          'inputText', appId, ['#search-box input', 'test.pdf'], this.next);
+    },
+    // Notify the element of the input.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeEvent', appId, ['#search-box input', 'input'], this.next);
+    },
+    // Do the touch.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.callRemoteTestUtil(
+          'fakeTouchClick', appId, ['#search-box input'], this.next);
+    },
+    // Context menu must be hidden if touch induced.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, '#text-context-menu[hidden]')
+          .then(this.next);
+    },
+    // Do the right click.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseRightClick', appId, ['#search-box input'], this.next);
+    },
+    // Context menu must be visible if mouse induced.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, '#text-context-menu:not([hidden])')
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
+
 /** TODO(sashab): Add tests for copying to/from the directory tree on the LHS.
  */
 /** TODO(sashab): Add tests for pasting into the current directory. */

@@ -705,27 +705,52 @@ FileManager.prototype = /** @struct */ {
     for (var j = 0; j < commandButtons.length; j++)
       CommandButton.decorate(commandButtons[j]);
 
-    var inputs = this.dialogDom_.querySelectorAll(
-        'input[type=text], input[type=search], textarea');
-    for (var i = 0; i < inputs.length; i++) {
-      cr.ui.contextMenuHandler.setContextMenu(
-          inputs[i], this.ui_.textContextMenu);
-      this.registerInputCommands_(inputs[i]);
-    }
+    var inputs = this.getDomInputs_();
 
-    cr.ui.contextMenuHandler.setContextMenu(this.ui_.listContainer.renameInput,
-                                            this.ui_.textContextMenu);
-    this.registerInputCommands_(this.ui_.listContainer.renameInput);
+    for (let input of inputs)
+      this.setContextMenuForInput_(input);
 
-    cr.ui.contextMenuHandler.setContextMenu(
-        this.directoryTreeNamingController_.getInputElement(),
-        this.ui_.textContextMenu);
-    this.registerInputCommands_(
+    this.setContextMenuForInput_(this.ui_.listContainer.renameInput);
+    this.setContextMenuForInput_(
         this.directoryTreeNamingController_.getInputElement());
 
     this.document_.addEventListener(
         'command',
         this.ui_.listContainer.clearHover.bind(this.ui_.listContainer));
+  };
+
+  /**
+   * Get input elements from root DOM element of this app.
+   * @private
+   */
+  FileManager.prototype.getDomInputs_ = function() {
+    return this.dialogDom_.querySelectorAll(
+        'input[type=text], input[type=search], textarea');
+  };
+
+  /**
+   * Set context menu and handlers for an input element.
+   * @private
+   */
+  FileManager.prototype.setContextMenuForInput_ = function(input) {
+    var touchInduced = false;
+
+    // stop contextmenu propagation for touch-induced events.
+    input.addEventListener('touchstart', (e) => {
+      touchInduced = true;
+    });
+    input.addEventListener('contextmenu', (e) => {
+      if (touchInduced) {
+        e.stopImmediatePropagation();
+      }
+      touchInduced = false;
+    });
+    input.addEventListener('click', (e) => {
+      touchInduced = false;
+    });
+
+    cr.ui.contextMenuHandler.setContextMenu(input, this.ui_.textContextMenu);
+    this.registerInputCommands_(input);
   };
 
   /**

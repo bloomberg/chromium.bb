@@ -419,6 +419,35 @@ test.util.sync.fakeMouseRightClick = function(contentWindow, targetQuery) {
 };
 
 /**
+ * Simulates a fake touch event (touch start, touch end) on the element
+ * specified by |targetQuery|.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} targetQuery Query to specify the element.
+ * @return {boolean} True if the event is sent to the target, false
+ *     otherwise.
+ */
+test.util.sync.fakeTouchClick = function(contentWindow, targetQuery) {
+  var touchStartEvent = new TouchEvent('touchstart');
+  if (!test.util.sync.sendEvent(contentWindow, targetQuery, touchStartEvent)) {
+    return false;
+  }
+
+  var mouseDownEvent = new MouseEvent('mousedown', {bubbles: true, button: 2});
+  if (!test.util.sync.sendEvent(contentWindow, targetQuery, mouseDownEvent)) {
+    return false;
+  }
+
+  var touchEndEvent = new TouchEvent('touchend');
+  if (!test.util.sync.sendEvent(contentWindow, targetQuery, touchEndEvent)) {
+    return false;
+  }
+
+  var contextMenuEvent = new MouseEvent('contextmenu', {bubbles: true});
+  return test.util.sync.sendEvent(contentWindow, targetQuery, contextMenuEvent);
+};
+
+/**
  * Simulates a fake double click event (left button) to the element specified by
  * |targetQuery|.
  *
