@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_BLINK_PERF_TEST_SUITE_H_
 
 #include "base/test/test_suite.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 namespace blink {
 
@@ -15,6 +16,9 @@ class BlinkPerfTestSuite : public base::TestSuite {
 
   void Initialize() override;
   void Shutdown() override;
+
+ private:
+  ScopedUnittestsEnvironmentSetup env;
 };
 
 }  // namespace blink
