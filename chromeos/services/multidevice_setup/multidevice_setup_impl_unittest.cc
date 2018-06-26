@@ -8,8 +8,10 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
+#include "chromeos/services/multidevice_setup/eligible_host_devices_provider_impl.h"
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate_notifier.h"
+#include "chromeos/services/multidevice_setup/fake_eligible_host_devices_provider.h"
 #include "chromeos/services/multidevice_setup/fake_host_backend_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_host_verifier.h"
 #include "chromeos/services/multidevice_setup/fake_setup_flow_completion_recorder.h"
@@ -28,13 +30,47 @@ namespace multidevice_setup {
 
 namespace {
 
+class FakeEligibleHostDevicesProviderFactory
+    : public EligibleHostDevicesProviderImpl::Factory {
+ public:
+  FakeEligibleHostDevicesProviderFactory(
+      device_sync::FakeDeviceSyncClient* expected_device_sync_client)
+      : expected_device_sync_client_(expected_device_sync_client) {}
+
+  ~FakeEligibleHostDevicesProviderFactory() override = default;
+
+  FakeEligibleHostDevicesProvider* instance() { return instance_; }
+
+ private:
+  // EligibleHostDevicesProviderImpl::Factory:
+  std::unique_ptr<EligibleHostDevicesProvider> BuildInstance(
+      device_sync::DeviceSyncClient* device_sync_client) override {
+    EXPECT_FALSE(instance_);
+    EXPECT_EQ(expected_device_sync_client_, device_sync_client);
+
+    auto instance = std::make_unique<FakeEligibleHostDevicesProvider>();
+    instance_ = instance.get();
+    return instance;
+  }
+
+  device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
+
+  FakeEligibleHostDevicesProvider* instance_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeEligibleHostDevicesProviderFactory);
+};
+
 class FakeHostBackendDelegateFactory : public HostBackendDelegateImpl::Factory {
  public:
   FakeHostBackendDelegateFactory(
+      FakeEligibleHostDevicesProviderFactory*
+          fake_eligible_host_devices_provider_factory,
       sync_preferences::TestingPrefServiceSyncable*
           expected_testing_pref_service,
       device_sync::FakeDeviceSyncClient* expected_device_sync_client)
-      : expected_testing_pref_service_(expected_testing_pref_service),
+      : fake_eligible_host_devices_provider_factory_(
+            fake_eligible_host_devices_provider_factory),
+        expected_testing_pref_service_(expected_testing_pref_service),
         expected_device_sync_client_(expected_device_sync_client) {}
 
   ~FakeHostBackendDelegateFactory() override = default;
@@ -44,10 +80,13 @@ class FakeHostBackendDelegateFactory : public HostBackendDelegateImpl::Factory {
  private:
   // HostBackendDelegateImpl::Factory:
   std::unique_ptr<HostBackendDelegate> BuildInstance(
+      EligibleHostDevicesProvider* eligible_host_devices_provider,
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
       std::unique_ptr<base::OneShotTimer> timer) override {
     EXPECT_FALSE(instance_);
+    EXPECT_EQ(fake_eligible_host_devices_provider_factory_->instance(),
+              eligible_host_devices_provider);
     EXPECT_EQ(expected_testing_pref_service_, pref_service);
     EXPECT_EQ(expected_device_sync_client_, device_sync_client);
 
@@ -56,6 +95,8 @@ class FakeHostBackendDelegateFactory : public HostBackendDelegateImpl::Factory {
     return instance;
   }
 
+  FakeEligibleHostDevicesProviderFactory*
+      fake_eligible_host_devices_provider_factory_;
   sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
   device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
 
@@ -197,8 +238,15 @@ class MultiDeviceSetupImplTest : public testing::Test {
     fake_secure_channel_client_ =
         std::make_unique<secure_channel::FakeSecureChannelClient>();
 
+    fake_eligible_host_devices_provider_factory_ =
+        std::make_unique<FakeEligibleHostDevicesProviderFactory>(
+            fake_device_sync_client_.get());
+    EligibleHostDevicesProviderImpl::Factory::SetFactoryForTesting(
+        fake_eligible_host_devices_provider_factory_.get());
+
     fake_host_backend_delegate_factory_ =
         std::make_unique<FakeHostBackendDelegateFactory>(
+            fake_eligible_host_devices_provider_factory_.get(),
             test_pref_service_.get(), fake_device_sync_client_.get());
     HostBackendDelegateImpl::Factory::SetFactoryForTesting(
         fake_host_backend_delegate_factory_.get());
@@ -228,6 +276,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
   }
 
   void TearDown() override {
+    EligibleHostDevicesProviderImpl::Factory::SetFactoryForTesting(nullptr);
     HostBackendDelegateImpl::Factory::SetFactoryForTesting(nullptr);
     HostVerifierImpl::Factory::SetFactoryForTesting(nullptr);
     SetupFlowCompletionRecorderImpl::Factory::SetFactoryForTesting(nullptr);
@@ -289,6 +338,8 @@ class MultiDeviceSetupImplTest : public testing::Test {
   std::unique_ptr<secure_channel::FakeSecureChannelClient>
       fake_secure_channel_client_;
 
+  std::unique_ptr<FakeEligibleHostDevicesProviderFactory>
+      fake_eligible_host_devices_provider_factory_;
   std::unique_ptr<FakeHostBackendDelegateFactory>
       fake_host_backend_delegate_factory_;
   std::unique_ptr<FakeHostVerifierFactory> fake_host_verifier_factory_;

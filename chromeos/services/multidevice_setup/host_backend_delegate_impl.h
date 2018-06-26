@@ -21,6 +21,8 @@ namespace chromeos {
 
 namespace multidevice_setup {
 
+class EligibleHostDevicesProvider;
+
 // Concrete HostBackendDelegate implementation, which utilizes
 // DeviceSyncClient to communicate with the back-end.
 class HostBackendDelegateImpl : public HostBackendDelegate,
@@ -32,6 +34,7 @@ class HostBackendDelegateImpl : public HostBackendDelegate,
     static void SetFactoryForTesting(Factory* test_factory);
     virtual ~Factory();
     virtual std::unique_ptr<HostBackendDelegate> BuildInstance(
+        EligibleHostDevicesProvider* eligible_host_devices_provider,
         PrefService* pref_service,
         device_sync::DeviceSyncClient* device_sync_client,
         std::unique_ptr<base::OneShotTimer> timer =
@@ -46,9 +49,11 @@ class HostBackendDelegateImpl : public HostBackendDelegate,
   ~HostBackendDelegateImpl() override;
 
  private:
-  HostBackendDelegateImpl(PrefService* pref_service,
-                          device_sync::DeviceSyncClient* device_sync_client,
-                          std::unique_ptr<base::OneShotTimer> timer);
+  HostBackendDelegateImpl(
+      EligibleHostDevicesProvider* eligible_host_devices_provider,
+      PrefService* pref_service,
+      device_sync::DeviceSyncClient* device_sync_client,
+      std::unique_ptr<base::OneShotTimer> timer);
 
   // HostBackendDelegate:
   void AttemptToSetMultiDeviceHostOnBackend(
@@ -62,6 +67,8 @@ class HostBackendDelegateImpl : public HostBackendDelegate,
   // DeviceSyncClient::Observer:
   void OnNewDevicesSynced() override;
 
+  bool IsHostEligible(const cryptauth::RemoteDeviceRef& provided_host);
+
   // Sets the pending host request. To signal that the request is to remove the
   // current host, pass kPendingRemovalOfCurrentHost. To signal that there is no
   // pending request, pass kNoPendingRequest.
@@ -74,6 +81,7 @@ class HostBackendDelegateImpl : public HostBackendDelegate,
       bool attempted_to_enable,
       const base::Optional<std::string>& error_code);
 
+  EligibleHostDevicesProvider* eligible_host_devices_provider_;
   PrefService* pref_service_;
   device_sync::DeviceSyncClient* device_sync_client_;
   std::unique_ptr<base::OneShotTimer> timer_;

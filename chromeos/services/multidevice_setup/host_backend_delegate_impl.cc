@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/services/multidevice_setup/eligible_host_devices_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -61,11 +63,13 @@ HostBackendDelegateImpl::Factory::~Factory() = default;
 
 std::unique_ptr<HostBackendDelegate>
 HostBackendDelegateImpl::Factory::BuildInstance(
+    EligibleHostDevicesProvider* eligible_host_devices_provider,
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
     std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(new HostBackendDelegateImpl(
-      pref_service, device_sync_client, std::move(timer)));
+  return base::WrapUnique(
+      new HostBackendDelegateImpl(eligible_host_devices_provider, pref_service,
+                                  device_sync_client, std::move(timer)));
 }
 
 // static
@@ -75,10 +79,12 @@ void HostBackendDelegateImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 HostBackendDelegateImpl::HostBackendDelegateImpl(
+    EligibleHostDevicesProvider* eligible_host_devices_provider,
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
     std::unique_ptr<base::OneShotTimer> timer)
     : HostBackendDelegate(),
+      eligible_host_devices_provider_(eligible_host_devices_provider),
       pref_service_(pref_service),
       device_sync_client_(device_sync_client),
       timer_(std::move(timer)),
@@ -97,6 +103,15 @@ HostBackendDelegateImpl::~HostBackendDelegateImpl() {
 
 void HostBackendDelegateImpl::AttemptToSetMultiDeviceHostOnBackend(
     const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {
+  if (host_device && !IsHostEligible(*host_device)) {
+    PA_LOG(WARNING) << "HostBackendDelegateImpl::"
+                    << "AttemptToSetMultiDeviceHostOnBackend(): Tried to set a "
+                    << "device as host, but that device is not an eligible "
+                    << "host. Device ID: "
+                    << host_device->GetTruncatedDeviceIdForLogs();
+    return;
+  }
+
   // If the device on the back-end is already |host_device|, there no longer
   // needs to be a pending request.
   if (host_from_last_sync_ == host_device) {
@@ -175,6 +190,12 @@ HostBackendDelegateImpl::GetPendingHostRequest() const {
 base::Optional<cryptauth::RemoteDeviceRef>
 HostBackendDelegateImpl::GetMultiDeviceHostFromBackend() const {
   return host_from_last_sync_;
+}
+
+bool HostBackendDelegateImpl::IsHostEligible(
+    const cryptauth::RemoteDeviceRef& provided_host) {
+  return base::ContainsValue(
+      eligible_host_devices_provider_->GetEligibleHostDevices(), provided_host);
 }
 
 void HostBackendDelegateImpl::SetPendingHostRequest(
