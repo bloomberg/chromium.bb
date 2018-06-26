@@ -21,7 +21,7 @@
 <link rel="import" href="../crostini_page/crostini_page.html">
 <link rel="import" href="../device_page/device_page.html">
 <link rel="import" href="../internet_page/internet_page.html">
-<link rel="import" href="../multidevice_page/multidevice_section_container.html">
+<link rel="import" href="../multidevice_page/multidevice_page_container.html">
 </if>
 
 <if expr="not chromeos">
@@ -111,10 +111,16 @@
           </settings-section>
         </template>
         <template is="dom-if"
-            if="[[shouldShowMultidevice_(showMultidevice, pageVisibility,
-                hasExpandedSection_, currentRoute_)]]" restamp>
-          <settings-multidevice-section-container prefs="{{prefs}}">
-          </settings-multidevice-section-container>
+            if="[[canShowMultideviceSection_(showMultidevice, pageVisibility)]]"
+            restamp>
+          <settings-section page-title="$i18n{multidevicePageTitle}"
+              section="multidevice"
+              hidden$="[[!doesAccountSupportMultiDeviceSection_]]">
+            <settings-multidevice-page-container prefs="{{prefs}}"
+                does-potential-connected-phone-exist=
+                    "{{doesAccountSupportMultiDeviceSection_}}">
+            </settings-multidevice-page-container>
+          </settings-section>
         </template>
         <template is="dom-if" if="[[showPage_(pageVisibility.bluetooth)]]"
             restamp>

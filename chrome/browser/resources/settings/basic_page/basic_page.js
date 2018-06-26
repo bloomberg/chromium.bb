@@ -85,6 +85,16 @@ Polymer({
       type: Boolean,
       computed: 'computeShowSecondaryUserBanner_(hasExpandedSection_)',
     },
+
+    /**
+     * Whether the account supports the features controlled in the multidevice
+     * section.
+     * @private {boolean}
+     */
+    doesAccountSupportMultiDeviceSection_: {
+      type: Boolean,
+      value: false,
+    },
     // </if>
 
     /** @private {!settings.Route|undefined} */
@@ -233,15 +243,14 @@ Polymer({
   },
 
   /**
-   * @return {boolean} Whether to show the multidevice settings page.
+   * @return {boolean} Whether the account supports the features managed in
+   * this section.
    * @private
    */
-  shouldShowMultidevice_: function() {
+  canShowMultideviceSection_: function() {
     const visibility = /** @type {boolean|undefined} */ (
         this.get('pageVisibility.multidevice'));
-    return this.showMultidevice && this.showPage_(visibility) &&
-        (settings.routes.MULTIDEVICE.contains(this.currentRoute_) ||
-         !this.hasExpandedSection_);
+    return this.showMultidevice && this.showPage_(visibility);
   },
 
   /**
