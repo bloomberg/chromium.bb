@@ -48,6 +48,11 @@ const CGFloat kClearButtonRightMarginIphone = 7;
 
 const CGFloat kVoiceSearchButtonWidth = 36.0;
 
+// When rendering the same string in a UITextField and a UILabel with the same
+// frame and the same font, the text is slightly offset.
+const CGFloat kUILabelUITextfieldBaselineDeltaInPoints = 1.0;
+const CGFloat kUILabelUITextfieldBaselineDeltaIpadIOS10InPixels = 1.0;
+
 // The default omnibox text color (used while editing).
 UIColor* TextColor() {
   return [UIColor colorWithWhite:(51 / 255.0) alpha:1.0];
@@ -516,8 +521,21 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     newBounds = LayoutRectGetRect(editingRectLayout);
   }
 
+  // The goal is to visually align the _selection label and the |self| textfield
+  // to avoid text jumping when inline autocomplete is shown or hidden.
+  CGFloat baselineDifference = kUILabelUITextfieldBaselineDeltaInPoints;
+  if (IsIPadIdiom() && !base::ios::IsRunningOnIOS11OrLater()) {
+    // On iOS 10, there is a difference between iPad and iPhone rendering.
+    baselineDifference = kUILabelUITextfieldBaselineDeltaIpadIOS10InPixels /
+                         UIScreen.mainScreen.scale;
+  }
+
+  newBounds.origin.y -= baselineDifference;
+
   // Position the selection view appropriately.
   [_selection setFrame:newBounds];
+
+  newBounds.origin.y += baselineDifference;
 
   return newBounds;
 }
