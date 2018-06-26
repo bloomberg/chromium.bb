@@ -15,107 +15,107 @@
 namespace internal {
 
 const char kHistogramServiceWorkerPageTransition[] =
-    "PageLoad.Clients.ServiceWorker.PageTransition";
+    "PageLoad.Clients.ServiceWorker2.PageTransition";
 
 const char kHistogramServiceWorkerParseStart[] =
-    "PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart";
+    "PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart";
 const char kHistogramServiceWorkerParseStartForwardBack[] =
-    "PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart."
+    "PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart."
     "LoadType.ForwardBackNavigation";
 const char kHistogramServiceWorkerParseStartForwardBackNoStore[] =
-    "PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart."
+    "PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart."
     "LoadType.ForwardBackNavigation.NoStore";
 const char kBackgroundHistogramServiceWorkerParseStart[] =
-    "PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart."
+    "PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart."
     "Background";
 const char kHistogramServiceWorkerFirstPaint[] =
-    "PageLoad.Clients.ServiceWorker.PaintTiming.NavigationToFirstPaint";
+    "PageLoad.Clients.ServiceWorker2.PaintTiming.NavigationToFirstPaint";
 const char kHistogramServiceWorkerFirstContentfulPaint[] =
-    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "PageLoad.Clients.ServiceWorker2.PaintTiming."
     "NavigationToFirstContentfulPaint";
 const char kHistogramServiceWorkerFirstContentfulPaintForwardBack[] =
-    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "PageLoad.Clients.ServiceWorker2.PaintTiming."
     "NavigationToFirstContentfulPaint.LoadType.ForwardBackNavigation";
 const char kHistogramServiceWorkerFirstContentfulPaintForwardBackNoStore[] =
-    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "PageLoad.Clients.ServiceWorker2.PaintTiming."
     "NavigationToFirstContentfulPaint.LoadType.ForwardBackNavigation.NoStore";
 const char kBackgroundHistogramServiceWorkerFirstContentfulPaint[] =
-    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "PageLoad.Clients.ServiceWorker2.PaintTiming."
     "NavigationToFirstContentfulPaint.Background";
 const char kHistogramServiceWorkerParseStartToFirstContentfulPaint[] =
-    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "PageLoad.Clients.ServiceWorker2.PaintTiming."
     "ParseStartToFirstContentfulPaint";
 const char kHistogramServiceWorkerFirstMeaningfulPaint[] =
-    "PageLoad.Clients.ServiceWorker.Experimental.PaintTiming."
+    "PageLoad.Clients.ServiceWorker2.Experimental.PaintTiming."
     "NavigationToFirstMeaningfulPaint";
 const char kHistogramServiceWorkerParseStartToFirstMeaningfulPaint[] =
-    "PageLoad.Clients.ServiceWorker.Experimental.PaintTiming."
+    "PageLoad.Clients.ServiceWorker2.Experimental.PaintTiming."
     "ParseStartToFirstMeaningfulPaint";
 const char kHistogramServiceWorkerDomContentLoaded[] =
-    "PageLoad.Clients.ServiceWorker.DocumentTiming."
+    "PageLoad.Clients.ServiceWorker2.DocumentTiming."
     "NavigationToDOMContentLoadedEventFired";
 const char kHistogramServiceWorkerLoad[] =
-    "PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToLoadEventFired";
+    "PageLoad.Clients.ServiceWorker2.DocumentTiming.NavigationToLoadEventFired";
 
 const char kHistogramServiceWorkerParseStartInbox[] =
-    "PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart.inbox";
+    "PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart.inbox";
 const char kHistogramServiceWorkerFirstContentfulPaintInbox[] =
-    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "PageLoad.Clients.ServiceWorker2.PaintTiming."
     "NavigationToFirstContentfulPaint.inbox";
 const char kHistogramServiceWorkerParseStartToFirstContentfulPaintInbox[] =
-    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "PageLoad.Clients.ServiceWorker2.PaintTiming."
     "ParseStartToFirstContentfulPaint.inbox";
 const char kHistogramServiceWorkerFirstMeaningfulPaintInbox[] =
-    "PageLoad.Clients.ServiceWorker.Experimental.PaintTiming."
+    "PageLoad.Clients.ServiceWorker2.Experimental.PaintTiming."
     "NavigationToFirstMeaningfulPaint.inbox";
 const char kHistogramServiceWorkerParseStartToFirstMeaningfulPaintInbox[] =
-    "PageLoad.Clients.ServiceWorker.Experimental.PaintTiming."
+    "PageLoad.Clients.ServiceWorker2.Experimental.PaintTiming."
     "ParseStartToFirstMeaningfulPaint.inbox";
 const char kHistogramServiceWorkerDomContentLoadedInbox[] =
-    "PageLoad.Clients.ServiceWorker.DocumentTiming."
+    "PageLoad.Clients.ServiceWorker2.DocumentTiming."
     "NavigationToDOMContentLoadedEventFired.inbox";
 const char kHistogramServiceWorkerLoadInbox[] =
-    "PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToLoadEventFired."
+    "PageLoad.Clients.ServiceWorker2.DocumentTiming.NavigationToLoadEventFired."
     "inbox";
 
 const char kHistogramServiceWorkerParseStartSearch[] =
-    "PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart.search";
+    "PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart.search";
 const char kHistogramServiceWorkerFirstContentfulPaintSearch[] =
-    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "PageLoad.Clients.ServiceWorker2.PaintTiming."
     "NavigationToFirstContentfulPaint.search";
 const char kHistogramServiceWorkerParseStartToFirstContentfulPaintSearch[] =
-    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "PageLoad.Clients.ServiceWorker2.PaintTiming."
     "ParseStartToFirstContentfulPaint.search";
 const char kHistogramServiceWorkerFirstMeaningfulPaintSearch[] =
-    "PageLoad.Clients.ServiceWorker.Experimental.PaintTiming."
+    "PageLoad.Clients.ServiceWorker2.Experimental.PaintTiming."
     "NavigationToFirstMeaningfulPaint.search";
 const char kHistogramServiceWorkerParseStartToFirstMeaningfulPaintSearch[] =
-    "PageLoad.Clients.ServiceWorker.Experimental.PaintTiming."
+    "PageLoad.Clients.ServiceWorker2.Experimental.PaintTiming."
     "ParseStartToFirstMeaningfulPaint.search";
 const char kHistogramServiceWorkerDomContentLoadedSearch[] =
-    "PageLoad.Clients.ServiceWorker.DocumentTiming."
+    "PageLoad.Clients.ServiceWorker2.DocumentTiming."
     "NavigationToDOMContentLoadedEventFired.search";
 const char kHistogramServiceWorkerLoadSearch[] =
-    "PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToLoadEventFired."
+    "PageLoad.Clients.ServiceWorker2.DocumentTiming.NavigationToLoadEventFired."
     "search";
 
 const char kHistogramNoServiceWorkerFirstContentfulPaintSearch[] =
-    "PageLoad.Clients.NoServiceWorker.PaintTiming."
+    "PageLoad.Clients.NoServiceWorker2.PaintTiming."
     "NavigationToFirstContentfulPaint.search";
 const char kHistogramNoServiceWorkerParseStartToFirstContentfulPaintSearch[] =
-    "PageLoad.Clients.NoServiceWorker.PaintTiming."
+    "PageLoad.Clients.NoServiceWorker2.PaintTiming."
     "ParseStartToFirstContentfulPaint.search";
 const char kHistogramNoServiceWorkerFirstMeaningfulPaintSearch[] =
-    "PageLoad.Clients.NoServiceWorker.Experimental.PaintTiming."
+    "PageLoad.Clients.NoServiceWorker2.Experimental.PaintTiming."
     "NavigationToFirstMeaningfulPaint.search";
 const char kHistogramNoServiceWorkerParseStartToFirstMeaningfulPaintSearch[] =
-    "PageLoad.Clients.NoServiceWorker.Experimental.PaintTiming."
+    "PageLoad.Clients.NoServiceWorker2.Experimental.PaintTiming."
     "ParseStartToFirstMeaningfulPaint.search";
 const char kHistogramNoServiceWorkerDomContentLoadedSearch[] =
-    "PageLoad.Clients.NoServiceWorker.DocumentTiming."
+    "PageLoad.Clients.NoServiceWorker2.DocumentTiming."
     "NavigationToDOMContentLoadedEventFired.search";
 const char kHistogramNoServiceWorkerLoadSearch[] =
-    "PageLoad.Clients.NoServiceWorker.DocumentTiming."
+    "PageLoad.Clients.NoServiceWorker2.DocumentTiming."
     "NavigationToLoadEventFired.search";
 
 }  // namespace internal
