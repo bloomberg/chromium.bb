@@ -6,8 +6,6 @@
 
 #include <memory>
 
-#include <media/audio.h>
-
 #include "media/audio/fuchsia/audio_output_stream_fuchsia.h"
 
 namespace media {
