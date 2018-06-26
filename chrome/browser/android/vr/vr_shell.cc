@@ -12,6 +12,7 @@
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -78,7 +79,6 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/gl/android/surface_texture.h"
 #include "url/gurl.h"
 
@@ -157,16 +157,23 @@ VrShell::VrShell(JNIEnv* env,
       display_size_meters_(display_width_meters, display_height_meters),
       display_size_pixels_(display_width_pixels, display_height_pixels),
       waiting_for_assets_component_timer_(false, false),
+      gl_surface_created_event_(
+          base::WaitableEvent::ResetPolicy::MANUAL,
+          base::WaitableEvent::InitialState::NOT_SIGNALED),
       weak_ptr_factory_(this) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   DCHECK(g_vr_shell_instance == nullptr);
   g_vr_shell_instance = this;
   j_vr_shell_.Reset(env, obj);
 
+  base::OnceCallback<gfx::AcceleratedWidget()> surface_callback =
+      base::BindOnce(&VrShell::GetRenderSurface, base::Unretained(this));
+
   gl_thread_ = std::make_unique<VrGLThread>(
-      weak_ptr_factory_.GetWeakPtr(), main_thread_task_runner_, gvr_api,
-      ui_initial_state, reprojected_rendering_, HasDaydreamSupport(env),
-      pause_content, low_density);
+      weak_ptr_factory_.GetWeakPtr(), main_thread_task_runner_,
+      &gl_surface_created_event_, gvr_api, ui_initial_state,
+      reprojected_rendering_, HasDaydreamSupport(env), pause_content,
+      low_density, std::move(surface_callback));
   ui_ = gl_thread_.get();
   toolbar_ = std::make_unique<ToolbarHelper>(ui_, this);
   autocomplete_controller_ =
@@ -533,9 +540,8 @@ void VrShell::SetSurface(JNIEnv* env,
     return;
   gfx::AcceleratedWidget window =
       ANativeWindow_fromSurface(base::android::AttachCurrentThread(), surface);
-  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::InitializeGl,
-                                           gl_thread_->GetVrShellGl(),
-                                           base::Unretained(window)));
+  surface_window_ = window;
+  gl_surface_created_event_.Signal();
 }
 
 void VrShell::SetWebVrMode(JNIEnv* env,
@@ -1316,6 +1322,10 @@ std::unique_ptr<PageInfo> VrShell::CreatePageInfo() {
       this, ProfileManager::GetActiveUserProfile(),
       TabSpecificContentSettings::FromWebContents(web_contents_), web_contents_,
       entry->GetVirtualURL(), security_info);
+}
+
+gfx::AcceleratedWidget VrShell::GetRenderSurface() {
+  return surface_window_;
 }
 
 // ----------------------------------------------------------------------------

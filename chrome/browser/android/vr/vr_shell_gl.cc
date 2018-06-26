@@ -17,6 +17,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -353,11 +354,14 @@ VrShellGl::~VrShellGl() {
     webxr_->EndPresentation();
 }
 
-void VrShellGl::Initialize() {
+void VrShellGl::Initialize(
+    base::WaitableEvent* gl_surface_created_event,
+    base::OnceCallback<gfx::AcceleratedWidget()> callback) {
   if (surfaceless_rendering_) {
-    // If we're rendering surfaceless, we'll never get a java surface to render
-    // into, so we can initialize GL right away.
     InitializeGl(nullptr);
+  } else {
+    gl_surface_created_event->Wait();
+    InitializeGl(std::move(callback).Run());
   }
 }
 
