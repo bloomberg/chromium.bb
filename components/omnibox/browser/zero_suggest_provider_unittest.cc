@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
@@ -176,6 +177,7 @@ class ZeroSuggestProviderTest : public testing::Test,
 
   void CreatePersonalizedFieldTrial();
   void CreateMostVisitedFieldTrial();
+  void CreateContextualSuggestFieldTrial();
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
@@ -240,6 +242,16 @@ void ZeroSuggestProviderTest::CreateMostVisitedFieldTrial() {
   std::map<std::string, std::string> params;
   params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
       "MostVisitedWithoutSERP";
+  variations::AssociateVariationParams(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params);
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+}
+
+void ZeroSuggestProviderTest::CreateContextualSuggestFieldTrial() {
+  std::map<std::string, std::string> params;
+  params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
+      "ContextualSuggestions";
   variations::AssociateVariationParams(
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params);
   base::FieldTrialList::CreateFieldTrial(
@@ -504,4 +516,32 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   // Expect the new results have been stored.
   EXPECT_EQ(empty_response,
             prefs->GetString(omnibox::kZeroSuggestCachedResults));
+}
+
+TEST_F(ZeroSuggestProviderTest, RedirectToChrome) {
+  // Coverage for the URL-specific page. (Regression test for a DCHECK).
+  // This is exercising ContextualSuggestionsService::CreateExperimentalRequest,
+  // and to do that, ZeroSuggestProvider needs to be looking for
+  // DEFAULT_SERP_FOR_URL results (which needs various personalization
+  // experiments off, IsTabUploadToGoogleActive true), and the
+  // redirect to chrome mode on.
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(omnibox::kZeroSuggestRedirectToChrome);
+  CreateContextualSuggestFieldTrial();
+
+  EXPECT_CALL(*client_, IsAuthenticated())
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*client_, IsTabUploadToGoogleActive())
+      .WillRepeatedly(testing::Return(true));
+
+  std::string url("http://www.cnn.com/");
+  AutocompleteInput input(base::ASCIIToUTF16(url),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  input.set_current_url(GURL(url));
+  input.set_from_omnibox_focus(true);
+  provider_->Start(input, false);
+  EXPECT_TRUE(test_loader_factory()->IsPending(
+      "https://cuscochromeextension-pa.googleapis.com/v1/omniboxsuggestions"));
+  base::RunLoop().RunUntilIdle();
 }
