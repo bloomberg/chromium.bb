@@ -2851,9 +2851,6 @@ if __name__ == '__main__':
       '', '--isolated-script-test-output',
       help='JSON output file used by swarming')
   parser.add_option(
-      '', '--isolated-script-test-perf-output',
-      help='JSON perf output file used by swarming, ignored')
-  parser.add_option(
       '', '--test-type',
       help='Select type of tests to run. Possible value: integration')
 

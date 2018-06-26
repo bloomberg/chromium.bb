@@ -332,6 +332,7 @@
     "type": "script",
     "script": "//testing/xvfb.py",
     "args": [
+      "../../testing/scripts/run_chromedriver_tests.py",
       "../../chrome/test/chromedriver/test/run_py_tests.py",
       "--chromedriver=chromedriver",
       "--log-path=${ISOLATED_OUTDIR}/chromedriver.log",
