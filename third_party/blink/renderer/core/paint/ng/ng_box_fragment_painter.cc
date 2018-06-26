@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
@@ -78,6 +79,54 @@ bool FragmentVisibleToHitTestRequest(const NGPaintFragment& fragment,
          (request.IgnorePointerEventsNone() ||
           fragment.Style().PointerEvents() != EPointerEvents::kNone) &&
          !(fragment.GetNode() && fragment.GetNode()->IsInert());
+}
+
+bool HitTestCulledInlineAncestors(HitTestResult& result,
+                                  const NGPaintFragment& fragment,
+                                  const NGPaintFragment* previous_sibling,
+                                  const HitTestLocation& location_in_container,
+                                  const LayoutPoint& accumulated_offset) {
+  DCHECK(fragment.Parent());
+  DCHECK(fragment.PhysicalFragment().IsInline());
+  const NGPaintFragment& parent = *fragment.Parent();
+  const LayoutPoint fallback_accumulated_offset =
+      FallbackAccumulatedOffset(fragment, accumulated_offset);
+  const LayoutObject* limit_layout_object =
+      parent.PhysicalFragment().IsLineBox() ? parent.Parent()->GetLayoutObject()
+                                            : parent.GetLayoutObject();
+
+  LayoutObject* current_layout_object = fragment.GetLayoutObject();
+  for (LayoutObject* culled_parent = current_layout_object->Parent();
+       culled_parent && culled_parent != limit_layout_object;
+       culled_parent = culled_parent->Parent()) {
+    // |culled_parent| is a culled inline element to be hit tested, since it's
+    // "between" |fragment| and |fragment->Parent()| but doesn't have its own
+    // box fragment.
+    // To ensure the correct hit test ordering, |culled_parent| must be hit
+    // tested only once after all of its descendants are hit tested:
+    // - Shortcut: when |current_layout_object| is the only child (of
+    // |culled_parent|), since it's just hit tested, we can safely hit test its
+    // parent;
+    // - General case: we hit test |culled_parent| only when it is not an
+    // ancestor of |previous_sibling|; otherwise, |previous_sibling| has to be
+    // hit tested first.
+    // TODO(crbug.com/849331): It's wrong for bidi inline fragmentation. Fix it.
+    const bool has_sibling = current_layout_object->PreviousSibling() ||
+                             current_layout_object->NextSibling();
+    if (has_sibling && previous_sibling &&
+        previous_sibling->GetLayoutObject()->IsDescendantOf(culled_parent))
+      break;
+
+    if (culled_parent->IsLayoutInline() &&
+        ToLayoutInline(culled_parent)
+            ->HitTestCulledInline(result, location_in_container,
+                                  fallback_accumulated_offset, &parent))
+      return true;
+
+    current_layout_object = culled_parent;
+  }
+
+  return false;
 }
 
 }  // anonymous namespace
@@ -1057,6 +1106,16 @@ bool NGBoxFragmentPainter::HitTestChildren(
           result, *child, location_in_container, accumulated_offset);
     }
     if (stop_hit_testing)
+      return true;
+
+    if (!fragment.IsInline())
+      continue;
+
+    // Hit test culled inline boxes between |fragment| and its parent fragment.
+    const NGPaintFragment* previous_sibling =
+        std::next(iter) == children.rend() ? nullptr : std::next(iter)->get();
+    if (HitTestCulledInlineAncestors(result, *child, previous_sibling,
+                                     location_in_container, accumulated_offset))
       return true;
   }
 
