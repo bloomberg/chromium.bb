@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/bit_vector.h"
@@ -114,6 +115,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       network::mojom::FetchCredentialsMode,
+      ModuleScriptCustomFetchType,
       ModuleTreeClient*);
 
  private:

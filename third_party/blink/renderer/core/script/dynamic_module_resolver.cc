@@ -222,7 +222,7 @@ void DynamicModuleResolver::ResolveDynamically(
   FetchClientSettingsObjectSnapshot settings_object(*execution_context);
   modulator_->FetchTree(url, settings_object,
                         WebURLRequest::kRequestContextScript, options,
-                        tree_client);
+                        ModuleScriptCustomFetchType::kNone, tree_client);
 
   // Steps 2.[5-8] are implemented at
   // DynamicImportTreeClient::NotifyModuleLoadFinished.

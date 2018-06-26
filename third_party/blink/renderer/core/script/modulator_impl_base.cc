@@ -53,6 +53,7 @@ void ModulatorImplBase::FetchTree(
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     const ScriptFetchOptions& options,
+    ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeClient* client) {
   // <spec label="fetch-a-module-script-tree" step="2">Perform the internal
   // module script graph fetching procedure given url, settings object,
@@ -68,7 +69,8 @@ void ModulatorImplBase::FetchTree(
   // along as well.</spec>
 
   ModuleTreeLinker::Fetch(url, fetch_client_settings_object, destination,
-                          options, this, tree_linker_registry_, client);
+                          options, this, custom_fetch_type,
+                          tree_linker_registry_, client);
 
   // <spec label="fetch-a-module-script-tree" step="3">When the internal module
   // script graph fetching procedure asynchronously completes with result,
@@ -88,16 +90,17 @@ void ModulatorImplBase::FetchDescendantsForInlineScript(
     ModuleTreeClient* client) {
   ModuleTreeLinker::FetchDescendantsForInlineScript(
       module_script, fetch_client_settings_object, destination, this,
-      tree_linker_registry_, client);
+      ModuleScriptCustomFetchType::kNone, tree_linker_registry_, client);
 }
 
 void ModulatorImplBase::FetchSingle(
     const ModuleScriptFetchRequest& request,
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     ModuleGraphLevel level,
+    ModuleScriptCustomFetchType custom_fetch_type,
     SingleModuleClient* client) {
   map_->FetchSingleModuleScript(request, fetch_client_settings_object, level,
-                                client);
+                                custom_fetch_type, client);
 }
 
 ModuleScript* ModulatorImplBase::GetFetchedModuleScript(const KURL& url) {

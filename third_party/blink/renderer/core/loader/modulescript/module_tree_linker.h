@@ -43,6 +43,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
       WebURLRequest::RequestContext destination,
       const ScriptFetchOptions&,
       Modulator*,
+      ModuleScriptCustomFetchType,
       ModuleTreeLinkerRegistry*,
       ModuleTreeClient*);
 
@@ -52,6 +53,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       Modulator*,
+      ModuleScriptCustomFetchType,
       ModuleTreeLinkerRegistry*,
       ModuleTreeClient*);
 
@@ -68,6 +70,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       Modulator*,
+      ModuleScriptCustomFetchType,
       ModuleTreeLinkerRegistry*,
       ModuleTreeClient*);
 
@@ -112,6 +115,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   const FetchClientSettingsObjectSnapshot fetch_client_settings_object_;
   const WebURLRequest::RequestContext destination_;
   const Member<Modulator> modulator_;
+  const ModuleScriptCustomFetchType custom_fetch_type_;
   HashSet<KURL> visited_set_;
   const Member<ModuleTreeLinkerRegistry> registry_;
   const Member<ModuleTreeClient> client_;

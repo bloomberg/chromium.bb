@@ -66,6 +66,7 @@ void DummyModulator::FetchTree(const KURL&,
                                const FetchClientSettingsObjectSnapshot&,
                                WebURLRequest::RequestContext,
                                const ScriptFetchOptions&,
+                               ModuleScriptCustomFetchType,
                                ModuleTreeClient*) {
   NOTREACHED();
 }
@@ -73,6 +74,7 @@ void DummyModulator::FetchTree(const KURL&,
 void DummyModulator::FetchSingle(const ModuleScriptFetchRequest&,
                                  const FetchClientSettingsObjectSnapshot&,
                                  ModuleGraphLevel,
+                                 ModuleScriptCustomFetchType,
                                  SingleModuleClient*) {
   NOTREACHED();
 }
@@ -131,7 +133,8 @@ ScriptValue DummyModulator::ExecuteModule(const ModuleScript*,
   return ScriptValue();
 }
 
-ModuleScriptFetcher* DummyModulator::CreateModuleScriptFetcher() {
+ModuleScriptFetcher* DummyModulator::CreateModuleScriptFetcher(
+    ModuleScriptCustomFetchType) {
   NOTREACHED();
   return nullptr;
 }

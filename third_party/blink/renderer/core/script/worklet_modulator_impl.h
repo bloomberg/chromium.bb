@@ -22,7 +22,8 @@ class WorkletModulatorImpl final : public ModulatorImplBase {
   static ModulatorImplBase* Create(scoped_refptr<ScriptState>);
 
   // Implements ModulatorImplBase.
-  ModuleScriptFetcher* CreateModuleScriptFetcher() override;
+  ModuleScriptFetcher* CreateModuleScriptFetcher(
+      ModuleScriptCustomFetchType) override;
 
  private:
   explicit WorkletModulatorImpl(scoped_refptr<ScriptState>);

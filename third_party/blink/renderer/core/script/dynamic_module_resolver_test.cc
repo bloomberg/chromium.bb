@@ -73,8 +73,13 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
                  const FetchClientSettingsObjectSnapshot&,
                  WebURLRequest::RequestContext,
                  const ScriptFetchOptions&,
+                 ModuleScriptCustomFetchType custom_fetch_type,
                  ModuleTreeClient* client) final {
     EXPECT_EQ(expected_fetch_tree_url_, url);
+
+    // Currently there are no usage of custom fetch hooks for dynamic import in
+    // web specifications.
+    EXPECT_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);
 
     pending_client_ = client;
     fetch_tree_was_called_ = true;

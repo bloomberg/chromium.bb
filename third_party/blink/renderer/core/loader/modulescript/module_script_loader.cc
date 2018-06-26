@@ -82,19 +82,22 @@ void ModuleScriptLoader::Fetch(
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     ModuleGraphLevel level,
     Modulator* module_map_settings_object,
+    ModuleScriptCustomFetchType custom_fetch_type,
     ModuleScriptLoaderRegistry* registry,
     ModuleScriptLoaderClient* client) {
   ModuleScriptLoader* loader = new ModuleScriptLoader(
       module_map_settings_object, module_request.Options(), registry, client);
   registry->AddLoader(loader);
-  loader->FetchInternal(module_request, fetch_client_settings_object, level);
+  loader->FetchInternal(module_request, fetch_client_settings_object, level,
+                        custom_fetch_type);
 }
 
 // https://html.spec.whatwg.org/#fetch-a-single-module-script
 void ModuleScriptLoader::FetchInternal(
     const ModuleScriptFetchRequest& module_request,
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
-    ModuleGraphLevel level) {
+    ModuleGraphLevel level,
+    ModuleScriptCustomFetchType custom_fetch_type) {
   // Step 4. "Set moduleMap[url] to "fetching"." [spec text]
   AdvanceState(State::kFetching);
 
@@ -182,7 +185,7 @@ void ModuleScriptLoader::FetchInternal(
   // Otherwise, fetch request. Return from this algorithm, and run the remaining
   // steps as part of the fetch's process response for the response response."
   // [spec text]
-  module_fetcher_ = modulator_->CreateModuleScriptFetcher();
+  module_fetcher_ = modulator_->CreateModuleScriptFetcher(custom_fetch_type);
   module_fetcher_->Fetch(fetch_params, level, this);
 }
 

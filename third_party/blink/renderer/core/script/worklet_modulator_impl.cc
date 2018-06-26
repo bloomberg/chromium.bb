@@ -18,7 +18,9 @@ WorkletModulatorImpl::WorkletModulatorImpl(
     scoped_refptr<ScriptState> script_state)
     : ModulatorImplBase(std::move(script_state)) {}
 
-ModuleScriptFetcher* WorkletModulatorImpl::CreateModuleScriptFetcher() {
+ModuleScriptFetcher* WorkletModulatorImpl::CreateModuleScriptFetcher(
+    ModuleScriptCustomFetchType custom_fetch_type) {
+  DCHECK_EQ(ModuleScriptCustomFetchType::kWorkletAddModule, custom_fetch_type);
   WorkletGlobalScope* global_scope =
       ToWorkletGlobalScope(GetExecutionContext());
   return new WorkletModuleScriptFetcher(global_scope->EnsureFetcher(),

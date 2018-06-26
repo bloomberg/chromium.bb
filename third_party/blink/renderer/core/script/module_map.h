@@ -23,6 +23,7 @@ class ModuleScriptFetchRequest;
 class ModuleScriptLoaderRegistry;
 class SingleModuleClient;
 enum class ModuleGraphLevel;
+enum class ModuleScriptCustomFetchType;
 
 // A ModuleMap implements "module map" spec.
 // https://html.spec.whatwg.org/multipage/webappapis.html#module-map
@@ -42,6 +43,7 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
       const ModuleScriptFetchRequest&,
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       ModuleGraphLevel,
+      ModuleScriptCustomFetchType,
       SingleModuleClient*);
 
   // Synchronously get the ModuleScript for a given URL.

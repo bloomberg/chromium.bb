@@ -52,6 +52,7 @@ class CORE_EXPORT ModuleScriptLoader final
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       ModuleGraphLevel,
       Modulator* module_map_settings_object,
+      ModuleScriptCustomFetchType,
       ModuleScriptLoaderRegistry*,
       ModuleScriptLoaderClient*);
 
@@ -74,7 +75,8 @@ class CORE_EXPORT ModuleScriptLoader final
   void FetchInternal(
       const ModuleScriptFetchRequest&,
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
-      ModuleGraphLevel);
+      ModuleGraphLevel,
+      ModuleScriptCustomFetchType);
 
   void AdvanceState(State new_state);
 #if DCHECK_IS_ON()

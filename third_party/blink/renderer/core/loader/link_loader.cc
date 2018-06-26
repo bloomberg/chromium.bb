@@ -552,7 +552,8 @@ static void ModulePreloadIfNeeded(const LinkLoadParameters& params,
   // module fetch flag set. Wait until algorithm asynchronously completes with
   // result." [spec text]
   modulator->FetchSingle(request, settings_object,
-                         ModuleGraphLevel::kDependentModuleFetch, link_loader);
+                         ModuleGraphLevel::kDependentModuleFetch,
+                         ModuleScriptCustomFetchType::kNone, link_loader);
 
   Settings* settings = document.GetSettings();
   if (settings && settings->GetLogPreload()) {

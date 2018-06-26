@@ -39,11 +39,13 @@ class DummyModulator : public Modulator {
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       const ScriptFetchOptions&,
+      ModuleScriptCustomFetchType,
       ModuleTreeClient*) override;
   void FetchSingle(
       const ModuleScriptFetchRequest&,
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       ModuleGraphLevel,
+      ModuleScriptCustomFetchType,
       SingleModuleClient*) override;
   void FetchDescendantsForInlineScript(
       ModuleScript*,
@@ -61,7 +63,8 @@ class DummyModulator : public Modulator {
   ScriptValue InstantiateModule(ScriptModule) override;
   Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override;
   ScriptValue ExecuteModule(const ModuleScript*, CaptureEvalErrorFlag) override;
-  ModuleScriptFetcher* CreateModuleScriptFetcher() override;
+  ModuleScriptFetcher* CreateModuleScriptFetcher(
+      ModuleScriptCustomFetchType) override;
 
   Member<ScriptModuleResolver> resolver_;
 };

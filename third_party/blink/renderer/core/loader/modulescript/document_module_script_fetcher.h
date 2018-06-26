@@ -12,6 +12,9 @@ namespace blink {
 
 // DocumentModuleScriptFetcher is an implmenetation of ModuleScriptFetcher
 // interface used for <script type='module'> on Document.
+// TODO(nhiroki): This class is also used for non-custom module script fetch on
+// workers. We should rename this to something like ModuleScriptFetcherImpl that
+// doesn't relate to Document.
 class CORE_EXPORT DocumentModuleScriptFetcher final
     : public GarbageCollectedFinalized<DocumentModuleScriptFetcher>,
       public ModuleScriptFetcher {

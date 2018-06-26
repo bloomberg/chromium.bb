@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
@@ -207,6 +206,7 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     network::mojom::FetchCredentialsMode credentials_mode,
+    ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeClient* client) {
   // Step 2: "Let options be a script fetch options whose cryptographic nonce is
   // the empty string,
@@ -224,7 +224,7 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
   // Step 3. "Perform the internal module script graph fetching procedure ..."
   modulator->FetchTree(module_url_record, fetch_client_settings_object,
-                       destination, options, client);
+                       destination, options, custom_fetch_type, client);
 }
 
 void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {

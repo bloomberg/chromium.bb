@@ -20,7 +20,8 @@ class WorkerModulatorImpl final : public ModulatorImplBase {
   static ModulatorImplBase* Create(scoped_refptr<ScriptState>);
 
   // Implements ModulatorImplBase.
-  ModuleScriptFetcher* CreateModuleScriptFetcher() override;
+  ModuleScriptFetcher* CreateModuleScriptFetcher(
+      ModuleScriptCustomFetchType) override;
 
  private:
   explicit WorkerModulatorImpl(scoped_refptr<ScriptState>);
