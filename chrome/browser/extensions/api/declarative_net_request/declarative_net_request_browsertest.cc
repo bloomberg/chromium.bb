@@ -43,6 +43,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
@@ -1578,6 +1579,83 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, ImageCollapsed) {
   // Now the image request should be blocked and the corresponding DOM element
   // should be collapsed.
   EXPECT_TRUE(is_image_collapsed());
+}
+
+// Ensures that any <iframe> elements whose document load is blocked by the API,
+// are collapsed.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, IFrameCollapsed) {
+  // Verifies whether the frame with name |frame_name| is collapsed.
+  auto test_frame_collapse = [this](const std::string& frame_name,
+                                    bool expect_collapsed) {
+    SCOPED_TRACE(base::StringPrintf("Testing frame %s", frame_name.c_str()));
+    content::RenderFrameHost* frame = GetFrameByName(frame_name);
+    ASSERT_TRUE(frame);
+
+    EXPECT_EQ(!expect_collapsed, WasFrameWithScriptLoaded(frame));
+
+    constexpr char kScript[] = R"(
+        var iframe = document.getElementsByName('%s')[0];
+        var collapsed = iframe.clientWidth === 0 && iframe.clientHeight === 0;
+        domAutomationController.send(collapsed);
+    )";
+    bool collapsed = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        GetMainFrame(), base::StringPrintf(kScript, frame_name.c_str()),
+        &collapsed));
+    EXPECT_EQ(expect_collapsed, collapsed);
+  };
+
+  // Navigates frame with name |frame_name| to |url|.
+  auto navigate_frame = [this](const std::string& frame_name, const GURL& url) {
+    content::TestNavigationObserver navigation_observer(
+        web_contents(), 1 /*number_of_navigations*/);
+    ASSERT_TRUE(content::ExecuteScript(
+        GetMainFrame(),
+        base::StringPrintf("document.getElementsByName('%s')[0].src = '%s';",
+                           frame_name.c_str(), url.spec().c_str())));
+    navigation_observer.Wait();
+  };
+
+  const std::string kFrameName1 = "frame1";
+  const std::string kFrameName2 = "frame2";
+  const GURL page_url = embedded_test_server()->GetURL(
+      "google.com", "/page_with_two_frames.html");
+
+  // Load a page with two iframes (|kFrameName1| and |kFrameName2|). Initially
+  // both the frames should be loaded successfully.
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+  {
+    SCOPED_TRACE("No extension loaded");
+    test_frame_collapse(kFrameName1, false);
+    test_frame_collapse(kFrameName2, false);
+  }
+
+  // Now load an extension which blocks all requests with "frame=1" in its url.
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("frame=1");
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
+
+  // Reloading the page should cause |kFrameName1| to be collapsed.
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+  {
+    SCOPED_TRACE("Extension loaded initial");
+    test_frame_collapse(kFrameName1, true);
+    test_frame_collapse(kFrameName2, false);
+  }
+
+  // Now interchange the "src" of the two frames. This should cause
+  // |kFrameName2| to be collapsed and |kFrameName1| to be un-collapsed.
+  GURL frame_url_1 = GetFrameByName(kFrameName1)->GetLastCommittedURL();
+  GURL frame_url_2 = GetFrameByName(kFrameName2)->GetLastCommittedURL();
+  navigate_frame(kFrameName1, frame_url_2);
+  navigate_frame(kFrameName2, frame_url_1);
+  {
+    SCOPED_TRACE("Extension loaded src swapped");
+    test_frame_collapse(kFrameName1, false);
+    test_frame_collapse(kFrameName2, true);
+  }
 }
 
 // Test fixture to verify that host permissions for the request url and the

@@ -243,13 +243,17 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       const network::URLLoaderCompletionStatus& status) override;
   void OnRequestStarted(base::TimeTicks timestamp) override;
 
-  // A version of OnRequestFailed() that allows skipping throttles, to be used
-  // when a request failed due to a throttle result itself. |error_page_content|
-  // is only used when |skip_throttles| is true.
+  // To be called whenever a navigation request fails. If |skip_throttles| is
+  // true, the registered NavigationThrottle(s) won't get a chance to intercept
+  // NavigationThrottle::WillFailRequest. It should be used when a request
+  // failed due to a throttle result itself. |error_page_content| is only used
+  // when |skip_throttles| is true. If |collapse_frame| is true, the associated
+  // frame tree node is collapsed.
   void OnRequestFailedInternal(
       const network::URLLoaderCompletionStatus& status,
       bool skip_throttles,
-      const base::Optional<std::string>& error_page_content);
+      const base::Optional<std::string>& error_page_content,
+      bool collapse_frame);
 
   // Helper to determine whether an error page for the provided error code
   // should stay in the current process.
