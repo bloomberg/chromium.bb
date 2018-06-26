@@ -261,7 +261,7 @@ std::unique_ptr<NavigationRequestInfo> CreateNavigationRequestInfoForRedirect(
       previous_request_info.common_params;
   new_common_params.url = updated_resource_request.url;
   new_common_params.referrer =
-      Referrer(updated_resource_request.url,
+      Referrer(updated_resource_request.referrer,
                Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
                    updated_resource_request.referrer_policy));
   new_common_params.method = updated_resource_request.method;
