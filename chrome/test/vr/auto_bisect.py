@@ -359,10 +359,10 @@ def RunTestOnSwarming(args, unknown_args, output_dir):
     '${platform}:git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c',
 
     '.swarming_module:infra/tools/luci/vpython-native/'
-    '${platform}:git_revision:ad60019cb66a75b59991d43b95a43f68e3fff81b',
+    '${platform}:git_revision:aacec5af4d569cee51437a89425db0b3c3d39a0a',
 
     '.swarming_module:infra/tools/luci/vpython/'
-    '${platform}:git_revision:ad60019cb66a75b59991d43b95a43f68e3fff81b',
+    '${platform}:git_revision:aacec5af4d569cee51437a89425db0b3c3d39a0a',
   ]
   for package in cipd_packages:
     swarming_args.extend(['--cipd-package', package])
