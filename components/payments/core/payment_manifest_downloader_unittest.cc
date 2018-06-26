@@ -55,10 +55,11 @@ class PaymentMethodManifestDownloaderTest : public testing::Test {
     net::RedirectInfo redirect_info;
     redirect_info.status_code = redirect_code;
     redirect_info.new_url = new_url;
+    std::vector<std::string> to_be_removed_headers;
 
-    downloader_.OnURLLoaderRedirect(downloader_.GetLoaderForTesting(),
-                                    redirect_info,
-                                    network::ResourceResponseHead());
+    downloader_.OnURLLoaderRedirect(
+        downloader_.GetLoaderForTesting(), redirect_info,
+        network::ResourceResponseHead(), &to_be_removed_headers);
   }
 
   GURL GetOriginalURL() { return downloader_.GetLoaderOriginalURLForTesting(); }

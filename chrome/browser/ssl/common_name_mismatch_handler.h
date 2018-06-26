@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_SSL_COMMON_NAME_MISMATCH_HANDLER_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -81,7 +83,8 @@ class CommonNameMismatchHandler {
                              const network::ResourceResponseHead* head);
   void OnSimpleLoaderRedirect(
       const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head);
+      const network::ResourceResponseHead& response_head,
+      std::vector<std::string>* to_be_removed_headers);
   void OnSimpleLoaderResponseStarted(
       const GURL& final_url,
       const network::ResourceResponseHead& response_head);

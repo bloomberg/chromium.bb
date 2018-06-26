@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -62,7 +63,8 @@ class DetachedResourceRequest {
   static void Start(std::unique_ptr<DetachedResourceRequest> request,
                     content::BrowserContext* browser_context);
   void OnRedirectCallback(const net::RedirectInfo& redirect_info,
-                          const network::ResourceResponseHead& response_head);
+                          const network::ResourceResponseHead& response_head,
+                          std::vector<std::string>* to_be_removed_headers);
   void OnResponseCallback(std::unique_ptr<std::string> response_body);
 
   const GURL url_;

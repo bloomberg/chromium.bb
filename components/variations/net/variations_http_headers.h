@@ -5,13 +5,20 @@
 #ifndef COMPONENTS_VARIATIONS_NET_VARIATIONS_HTTP_HEADERS_H_
 #define COMPONENTS_VARIATIONS_NET_VARIATIONS_HTTP_HEADERS_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 namespace net {
 class HttpRequestHeaders;
+struct NetworkTrafficAnnotationTag;
 class URLRequest;
 }
+
+namespace network {
+struct ResourceRequest;
+class SimpleURLLoader;
+}  // namespace network
 
 class GURL;
 
@@ -28,7 +35,8 @@ enum class SignedIn { kNo, kYes };
 // GOOGLE_WEB_PROPERTIES_SIGNED_IN, which is not the case for any ids that come
 // from the variations server. These headers are never transmitted to non-Google
 // web sites, which is checked based on the destination |url|.
-void AppendVariationHeaders(const GURL& url,
+// Returns true if custom headers are added. Returns false otherwise.
+bool AppendVariationHeaders(const GURL& url,
                             InIncognito incognito,
                             SignedIn signed_in,
                             net::HttpRequestHeaders* headers);
@@ -41,6 +49,16 @@ std::set<std::string> GetVariationHeaderNames();
 // Components calling AppendVariationsHeaders() don't need to take care of this.
 void StripVariationHeaderIfNeeded(const GURL& new_location,
                                   net::URLRequest* request);
+
+// Creates a SimpleURLLoader that will include variations headers for requests
+// to Google and ensures they're removed if a redirect to a non-Google URL
+// occurs.
+std::unique_ptr<network::SimpleURLLoader>
+CreateSimpleURLLoaderWithVariationsHeaders(
+    std::unique_ptr<network::ResourceRequest> request,
+    InIncognito incognito,
+    SignedIn signed_in,
+    const net::NetworkTrafficAnnotationTag& annotation_tag);
 
 namespace internal {
 

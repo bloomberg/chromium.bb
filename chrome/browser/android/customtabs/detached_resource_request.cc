@@ -122,7 +122,8 @@ void DetachedResourceRequest::Start(
 
 void DetachedResourceRequest::OnRedirectCallback(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head,
+    std::vector<std::string>* to_be_removed_headers) {
   redirects_++;
 }
 

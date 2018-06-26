@@ -6,13 +6,20 @@
 
 #include <stddef.h>
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "net/http/http_request_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace variations {
@@ -86,9 +93,21 @@ void LogUrlValidationHistogram(URLValidationResult result) {
                             URL_VALIDATION_RESULT_SIZE);
 }
 
+// Removes variations headers for requests when a redirect to a non-Google URL
+// occurs. This function is used as the callback parameter for
+// SimpleURLLoader::SetOnRedirectCallback() when
+// CreateSimpleURLLoaderWithVariationsHeaders() creates a SimpleURLLoader
+// object.
+void RemoveVariationsHeader(const net::RedirectInfo& redirect_info,
+                            const network::ResourceResponseHead& response_head,
+                            std::vector<std::string>* to_be_removed_headers) {
+  if (!internal::ShouldAppendVariationHeaders(redirect_info.new_url))
+    to_be_removed_headers->push_back(kClientData);
+}
+
 }  // namespace
 
-void AppendVariationHeaders(const GURL& url,
+bool AppendVariationHeaders(const GURL& url,
                             InIncognito incognito,
                             SignedIn signed_in,
                             net::HttpRequestHeaders* headers) {
@@ -101,8 +120,9 @@ void AppendVariationHeaders(const GURL& url,
   // 2. Only transmit for non-Incognito profiles.
   // 3. For the X-Client-Data header, only include non-empty variation IDs.
   if ((incognito == InIncognito::kYes) ||
-      !internal::ShouldAppendVariationHeaders(url))
-    return;
+      !internal::ShouldAppendVariationHeaders(url)) {
+    return false;
+  }
 
   const std::string variation_ids_header =
       VariationsHttpHeaderProvider::GetInstance()->GetClientDataHeader(
@@ -110,7 +130,9 @@ void AppendVariationHeaders(const GURL& url,
   if (!variation_ids_header.empty()) {
     // Note that prior to M33 this header was named X-Chrome-Variations.
     headers->SetHeaderIfMissing(kClientData, variation_ids_header);
+    return true;
   }
+  return false;
 }
 
 std::set<std::string> GetVariationHeaderNames() {
@@ -125,6 +147,23 @@ void StripVariationHeaderIfNeeded(const GURL& new_location,
     for (const std::string& header : GetVariationHeaderNames())
       request->RemoveRequestHeaderByName(header);
   }
+}
+
+std::unique_ptr<network::SimpleURLLoader>
+CreateSimpleURLLoaderWithVariationsHeaders(
+    std::unique_ptr<network::ResourceRequest> request,
+    InIncognito incognito,
+    SignedIn signed_in,
+    const net::NetworkTrafficAnnotationTag& annotation_tag) {
+  bool variation_headers_added = AppendVariationHeaders(
+      request->url, incognito, signed_in, &request->headers);
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
+      network::SimpleURLLoader::Create(std::move(request), annotation_tag);
+  if (variation_headers_added) {
+    simple_url_loader->SetOnRedirectCallback(
+        base::BindRepeating(&RemoveVariationsHeader));
+  }
+  return simple_url_loader;
 }
 
 namespace internal {

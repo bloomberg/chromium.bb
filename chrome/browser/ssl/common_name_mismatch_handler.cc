@@ -149,7 +149,8 @@ void CommonNameMismatchHandler::OnSimpleLoaderHandler(
 
 void CommonNameMismatchHandler::OnSimpleLoaderRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head,
+    std::vector<std::string>* to_be_removed_headers) {
   OnSimpleLoaderHandler(redirect_info.new_url, &response_head);
 }
 

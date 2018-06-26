@@ -142,7 +142,8 @@ PaymentManifestDownloader::Download::~Download() {}
 void PaymentManifestDownloader::OnURLLoaderRedirect(
     network::SimpleURLLoader* url_loader,
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head,
+    std::vector<std::string>* to_be_removed_headers) {
   auto download_it = downloads_.find(url_loader);
   DCHECK(download_it != downloads_.end());
 

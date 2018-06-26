@@ -148,7 +148,8 @@ void DialURLFetcher::ReportError(int response_code,
 
 void DialURLFetcher::ReportRedirectError(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head,
+    std::vector<std::string>* to_be_removed_headers) {
   // Cancel the request.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   loader_.reset();
