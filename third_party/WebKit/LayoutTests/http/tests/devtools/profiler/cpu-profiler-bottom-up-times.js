@@ -15,49 +15,55 @@
       'nodes': [
         {
           'id': 0,
-          'callFrame': {'functionName': '(root)', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 0},
+          'callFrame': {'functionName': '(root)', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 0, 'columnNumber': 0},
           'hitCount': 350
         },
         {
           'id': 1,
-          'callFrame': {'functionName': '(idle)', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 1},
+          'callFrame': {'functionName': '(idle)', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 1, 'columnNumber': 0},
           'hitCount': 1000,
           'parent': 0
         },
         {
           'id': 2,
-          'callFrame': {'functionName': 'A', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 4642},
+          'callFrame': {'functionName': 'A', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 4642, 'columnNumber': 0},
           'hitCount': 250,
           'parent': 0
         },
         {
           'id': 3,
-          'callFrame': {'functionName': 'C', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 525},
+          'callFrame': {'functionName': 'C', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 525, 'columnNumber': 0},
           'hitCount': 100,
           'parent': 2
         },
         {
           'id': 4,
-          'callFrame': {'functionName': 'D', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 425},
+          'callFrame': {'functionName': 'D', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 425, 'columnNumber': 0},
           'hitCount': 20,
           'parent': 3
         },
         {
           'id': 5,
-          'callFrame': {'functionName': 'B', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 4662},
+          'callFrame': {'functionName': 'B', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 4662, 'columnNumber': 0},
           'hitCount': 150,
           'parent': 0
         },
         {
           'id': 6,
-          'callFrame': {'functionName': 'C', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 525},
+          'callFrame': {'functionName': 'C', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 525, 'columnNumber': 0},
           'hitCount': 100,
           'parent': 5
         },
         {
           'id': 7,
-          'callFrame': {'functionName': 'D', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 425},
-          'hitCount': 30,
+          'callFrame': {'functionName': 'D', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 425, 'columnNumber': 0},
+          'hitCount': 20,
+          'parent': 6
+        },
+        {
+          'id': 8,
+          'callFrame': {'functionName': 'D', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 425, 'columnNumber': 222},
+          'hitCount': 10,
           'parent': 6
         }
       ],
