@@ -2365,6 +2365,9 @@ crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/pointerevents
 crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html [ Skip ]
+# In addition to having no support on Mac, the following test times out
+# regularly on Windows.
+crbug.com/613672 [ Mac Win ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 
 crbug.com/802067 [ Mac ] external/wpt/pointerlock/movementX_Y_basic-manual.html [ Failure ]
 crbug.com/802067 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy-manual.html [ Failure ]
@@ -4712,8 +4715,7 @@ crbug.com/853360 [ Mac ] fast/forms/calendar-picker/month-picker-appearance.html
 crbug.com/853360 [ Mac ] fast/forms/select/menulist-appearance-rtl.html [ Failure ]
 
 # Sheriff 2018-06-18
-# The test is not supported on Mac due to https://crbug.com/613672 and regularly times out on Win and Linux.
-crbug.com/853852 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-wheel-block-manual.tentative.html [ Skip ]
+crbug.com/853852 [ Linux ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-wheel-block-manual.tentative.html [ Pass Timeout ]
 
 crbug.com/854538 [ Win7 ] http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored-with-redirect.html [ Skip ]
 
