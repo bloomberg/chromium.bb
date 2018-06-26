@@ -407,10 +407,6 @@ void FrameLoader::FinishedParsing() {
   }
 
   if (frame_->View()) {
-    // Check if the scrollbars are really needed for the content. If not, remove
-    // them, relayout, and repaint.
-    frame_->View()->RestoreScrollbar();
-
     ProcessFragment(frame_->GetDocument()->Url(), document_loader_->LoadType(),
                     kNavigationToDifferentDocument);
   }

@@ -120,8 +120,6 @@ enum EffectiveConnectionType {
     void setTextMatchMarkersActive(Node node, unsigned long startOffset, unsigned long endOffset, boolean active);
     void setMarkedTextMatchesAreHighlighted(Document document, boolean highlight);
 
-    [RaisesException] void setFrameViewPosition(Document document, long x, long y);
-
     [RaisesException] DOMString viewportAsText(Document document,
                                                float devicePixelRatio,
                                                long availableWidth,
