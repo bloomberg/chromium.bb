@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from . import bigquery
 from . import ts_mon  # Must be imported first so httplib2_utils can import it.
 
 from infra_libs.httplib2_utils import AuthError
@@ -13,10 +12,3 @@ from infra_libs.httplib2_utils import SERVICE_ACCOUNTS_CREDS_ROOT
 from infra_libs.utils import read_json_as_utf8
 from infra_libs.utils import rmtree
 from infra_libs.utils import temporary_directory
-
-import sys
-
-if sys.platform == 'linux2':  # pragma: no cover
-  from . import _command_line_linux as command_line
-else:  # pragma: no cover
-  from . import _command_line_stub as command_line
