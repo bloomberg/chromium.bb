@@ -278,7 +278,6 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         idle_connection_timeout_seconds_, reduced_ping_timeout_seconds_,
         max_time_before_crypto_handshake_seconds_,
         max_idle_time_before_crypto_handshake_seconds_,
-        /*migrate_sessions_on_network_change*/ false,
         migrate_sessions_on_network_change_v2_, migrate_sessions_early_v2_,
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,

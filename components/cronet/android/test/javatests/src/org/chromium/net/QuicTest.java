@@ -66,7 +66,7 @@ public class QuicTest {
                                         .put("connection_options", "PACE,IW10,FOO,DEADBEEF")
                                         .put("max_server_configs_stored_in_properties", 2)
                                         .put("idle_connection_timeout_seconds", 300)
-                                        .put("migrate_sessions_on_network_change", false)
+                                        .put("migrate_sessions_on_network_change_v2", false)
                                         .put("migrate_sessions_early_v2", false)
                                         .put("race_cert_verification", true);
         JSONObject hostResolverParams = CronetTestUtil.generateHostResolverRules();

@@ -5263,7 +5263,7 @@ TEST_P(QuicNetworkTransactionTest, QuicUploadWriteError) {
 
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
-  session_params_.quic_migrate_sessions_on_network_change = true;
+  session_params_.quic_migrate_sessions_on_network_change_v2 = true;
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);

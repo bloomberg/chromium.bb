@@ -1811,6 +1811,7 @@ bool QuicChromiumClientSession::OnSendConnectivityProbingPacket(
 void QuicChromiumClientSession::OnNetworkConnected(
     NetworkChangeNotifier::NetworkHandle network,
     const NetLogWithSource& net_log) {
+  DCHECK(migrate_session_on_network_change_v2_);
   net_log_.AddEvent(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_CONNECTED,
       NetLog::Int64Callback("connected_network", network));
@@ -1848,21 +1849,10 @@ void QuicChromiumClientSession::OnNetworkConnected(
           /*close_session_on_error=*/true, net_log);
 }
 
-void QuicChromiumClientSession::OnNetworkDisconnected(
-    NetworkChangeNotifier::NetworkHandle alternate_network,
-    const NetLogWithSource& migration_net_log) {
-  LogMetricsOnNetworkDisconnected();
-  if (!migrate_session_on_network_change_)
-    return;
-
-  current_connection_migration_cause_ = ON_NETWORK_DISCONNECTED;
-  MaybeMigrateOrCloseSession(
-      alternate_network, /*close_if_cannot_migrate*/ true, migration_net_log);
-}
-
 void QuicChromiumClientSession::OnNetworkDisconnectedV2(
     NetworkChangeNotifier::NetworkHandle disconnected_network,
     const NetLogWithSource& migration_net_log) {
+  DCHECK(migrate_session_on_network_change_v2_);
   net_log_.AddEvent(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_DISCONNECTED,
       NetLog::Int64Callback("disconnected_network", disconnected_network));
@@ -1904,6 +1894,7 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
 void QuicChromiumClientSession::OnNetworkMadeDefault(
     NetworkChangeNotifier::NetworkHandle new_network,
     const NetLogWithSource& migration_net_log) {
+  DCHECK(migrate_session_on_network_change_v2_);
   net_log_.AddEvent(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_MADE_DEFAULT,
       NetLog::Int64Callback("new_default_network", new_network));

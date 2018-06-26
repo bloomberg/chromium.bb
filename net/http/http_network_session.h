@@ -171,9 +171,6 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     int quic_max_time_before_crypto_handshake_seconds;
     // Maximum idle time before the crypto handshake has completed.
     int quic_max_idle_time_before_crypto_handshake_seconds;
-    // If true, active QUIC sessions may be migrated onto a new network when
-    // the platform indicates that the default network is changing.
-    bool quic_migrate_sessions_on_network_change;
     // If true, connection migration v2 will be used to migrate existing
     // sessions to network when the platform indicates that the default network
     // is changing.
