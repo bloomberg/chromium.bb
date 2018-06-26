@@ -66,5 +66,13 @@
   function secondPictureInPicture() {
     secondVideo.requestPictureInPicture();
   }
+
+  function enterFullscreen() {
+    video.webkitRequestFullscreen();
+
+    video.addEventListener('webkitfullscreenchange', () => {
+      document.title = 'fullscreen';
+    }, { once: true });
+  }
 </script>
 </html>

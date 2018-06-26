@@ -709,3 +709,54 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(first_controller->GetWindowForTesting()->IsVisible());
   EXPECT_TRUE(second_controller->GetWindowForTesting()->IsVisible());
 }
+
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       EnterPictureInPictureThenFullscreen) {
+  LoadTabAndEnterPictureInPicture(browser());
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "enterFullscreen()"));
+
+  base::string16 expected_title = base::ASCIIToUTF16("fullscreen");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  EXPECT_TRUE(active_web_contents->IsFullscreenForCurrentTab());
+  EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
+}
+
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       EnterFullscreenThenPictureInPicture) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents != nullptr);
+
+  SetUpWindowController(active_web_contents);
+
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "enterFullscreen()"));
+
+  base::string16 expected_title = base::ASCIIToUTF16("fullscreen");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  ASSERT_TRUE(
+      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
+
+  // Wait for resize event from the page.
+  expected_title = base::ASCIIToUTF16("1");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  EXPECT_FALSE(active_web_contents->IsFullscreenForCurrentTab());
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+}
