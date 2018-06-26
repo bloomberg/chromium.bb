@@ -7,6 +7,7 @@ import("//build/config/locales.gni")
 import("//build/config/mac/base_rules.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
+import("//ios/build/config.gni")
 import("//tools/grit/repack.gni")
 import("//ios/chrome/tools/strings/generate_localizable_strings.gni")
 
@@ -30,6 +31,8 @@ ios_appex_bundle("search_widget_extension") {
     "resources:quick_action_search",
     "resources:quick_action_voice_search",
   ]
+
+  assert_no_deps = ios_extension_assert_no_deps
 
   extra_substitutions = [
     "CHROME_CHANNEL_SCHEME=$url_channel_scheme",

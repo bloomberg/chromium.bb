@@ -7,6 +7,7 @@ import("//build/config/locales.gni")
 import("//build/config/mac/base_rules.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
+import("//ios/build/config.gni")
 import("//ios/chrome/extension_repack.gni")
 import("//ios/chrome/tools/strings/generate_localizable_strings.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
@@ -54,7 +55,7 @@ ios_appex_bundle("share_extension") {
   ]
   bundle_deps_filter = [ "//third_party/icu:icudata" ]
 
-  assert_no_deps = [ "//ios/chrome/browser" ]
+  assert_no_deps = ios_extension_assert_no_deps
 
   libs = [
     "Foundation.framework",
