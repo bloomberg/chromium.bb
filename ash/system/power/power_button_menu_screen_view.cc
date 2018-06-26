@@ -108,9 +108,7 @@ PowerButtonMenuScreenView::PowerButtonMenuScreenView(
     double power_button_offset_percentage,
     base::RepeatingClosure show_animation_done)
     : power_button_position_(power_button_position),
-      power_button_offset_percentage_(power_button_offset_percentage),
-      arrow_key_traversal_initially_enabled_(
-          views::FocusManager::arrow_key_traversal_enabled()) {
+      power_button_offset_percentage_(power_button_offset_percentage) {
   power_button_screen_background_shield_ =
       new PowerButtonMenuBackgroundView(show_animation_done);
   AddChildView(power_button_screen_background_shield_);
@@ -122,16 +120,11 @@ PowerButtonMenuScreenView::PowerButtonMenuScreenView(
   if (power_button_position_ != PowerButtonPosition::NONE)
     InitializeMenuBoundsOrigins();
 
-  // Enable arrow key in FocusManager. Arrow left/right and up/down triggers
-  // the same focus movement as tab/shift+tab.
-  views::FocusManager::set_arrow_key_traversal_enabled(true);
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
 PowerButtonMenuScreenView::~PowerButtonMenuScreenView() {
   display::Screen::GetScreen()->RemoveObserver(this);
-  views::FocusManager::set_arrow_key_traversal_enabled(
-      arrow_key_traversal_initially_enabled_);
 }
 
 void PowerButtonMenuScreenView::ScheduleShowHideAnimation(bool show) {

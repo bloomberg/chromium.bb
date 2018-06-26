@@ -145,7 +145,9 @@ class PowerButtonController::ActiveWindowWidgetController
 
 PowerButtonController::PowerButtonController(
     BacklightsForcedOffSetter* backlights_forced_off_setter)
-    : backlights_forced_off_setter_(backlights_forced_off_setter),
+    : arrow_key_traversal_initially_enabled_(
+          views::FocusManager::arrow_key_traversal_enabled()),
+      backlights_forced_off_setter_(backlights_forced_off_setter),
       lock_state_controller_(Shell::Get()->lock_state_controller()),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       backlights_forced_off_observer_(this),
@@ -348,6 +350,8 @@ void PowerButtonController::DismissMenu() {
 
   show_menu_animation_done_ = false;
   active_window_widget_controller_.reset();
+  views::FocusManager::set_arrow_key_traversal_enabled(
+      arrow_key_traversal_initially_enabled_);
 }
 
 void PowerButtonController::OnDisplayModeChanged(
@@ -511,6 +515,9 @@ void PowerButtonController::LockScreenIfRequired() {
 
 void PowerButtonController::SetShowMenuAnimationDone() {
   show_menu_animation_done_ = true;
+  // Enable arrow key in FocusManager. Arrow right/left and down/up triggers
+  // the same focus movement as tab/shift+tab.
+  views::FocusManager::set_arrow_key_traversal_enabled(true);
   pre_shutdown_timer_.Start(FROM_HERE, kStartShutdownAnimationTimeout, this,
                             &PowerButtonController::OnPreShutdownTimeout);
 }

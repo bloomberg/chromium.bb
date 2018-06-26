@@ -80,9 +80,6 @@ class ASH_EXPORT PowerButtonMenuScreenView : public views::View,
   // The origin of the menu bounds in different screen orientations.
   std::unordered_map<OrientationLockType, gfx::Point> menu_bounds_origins_;
 
-  // Whether FocusManager can handle arrow key before this class is constructed.
-  const bool arrow_key_traversal_initially_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(PowerButtonMenuScreenView);
 };
 
