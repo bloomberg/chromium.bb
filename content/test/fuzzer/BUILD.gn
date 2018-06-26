@@ -40,15 +40,16 @@ fuzzer_test("origin_trial_token_fuzzer") {
   seed_corpus = "//content/test/data/fuzzer_corpus/origin_trial_token_data/"
 }
 
-fuzzer_test("origin_manifest_parser_fuzzer") {
+fuzzer_test("origin_policy_parser_fuzzer") {
   sources = [
-    "origin_manifest_parser_fuzzer.cc",
+    "origin_policy_parser_fuzzer.cc",
   ]
   deps = [
     "//content/test:test_support",
   ]
-  dict = "//content/test/data/fuzzer_dictionaries/origin_manifest_parser_fuzzer.dict"
-  seed_corpus = "//content/test/data/fuzzer_corpus/origin_manifest_parser_data/"
+  dict =
+      "//content/test/data/fuzzer_dictionaries/origin_policy_parser_fuzzer.dict"
+  seed_corpus = "//content/test/data/fuzzer_corpus/origin_policy_parser_data/"
 }
 
 fuzzer_test("renderer_fuzzer") {
