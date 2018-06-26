@@ -119,9 +119,8 @@ def CbuildbotArgs(options):
     raise Exception('Unknown options.where: %s', options.where)
 
   if options.buildroot:
-    git_cache_dir = os.path.join(options.buildroot, '.git_cache')
     args.extend(('--buildroot', options.buildroot,
-                 '--git-cache-dir', git_cache_dir))
+                 '--git-cache-dir', options.git_cache_dir))
 
   if options.branch:
     args.extend(('-b', options.branch))
@@ -336,6 +335,7 @@ def RunRemote(site_config, options, patch_pool):
     for r in results:
       print('  %s' % r.url)
 
+
 def AdjustOptions(options):
   """Set defaults that require some logic.
 
@@ -343,16 +343,17 @@ def AdjustOptions(options):
     options: Parsed cros tryjob tryjob arguments.
     site_config: config_lib.SiteConfig containing all config info.
   """
-  if options.buildroot:
-    return
-
   if options.where == CBUILDBOT:
-    options.buildroot = os.path.join(
+    options.buildroot = options.buildroot or os.path.join(
         os.path.dirname(constants.SOURCE_ROOT), 'cbuild')
 
   if options.where == LOCAL:
-    options.buildroot = os.path.join(
+    options.buildroot = options.buildroot or os.path.join(
         os.path.dirname(constants.SOURCE_ROOT), 'tryjob')
+
+  if options.buildroot:
+    options.git_cache_dir = options.git_cache_dir or os.path.join(
+        options.buildroot, '.git_cache')
 
 
 def VerifyOptions(options, site_config):
@@ -425,6 +426,9 @@ def VerifyOptions(options, site_config):
 
   if options.where == REMOTE and options.buildroot:
     cros_build_lib.Die('--buildroot is not used for remote tryjobs.')
+
+  if options.where == REMOTE and options.git_cache_dir:
+    cros_build_lib.Die('--git-cache-dir is not used for remote tryjobs.')
 
   if options.where != REMOTE and options.json:
     cros_build_lib.Die('--json can only be used for remote tryjobs.')
@@ -505,9 +509,12 @@ List Examples:
         '--cbuildbot', dest='where', action='store_const', const=CBUILDBOT,
         help='Run special local build from current checkout in buildroot.')
     where_group.add_argument(
-        '-r', '--buildroot', type='path', dest='buildroot',
+        '-r', '--buildroot', type='path',
         help='Root directory to use for the local tryjob. '
              'NOT the current checkout.')
+    where_group.add_argument(
+        '--git-cache-dir', type='path',
+        help='Git cache directory to use for local tryjobs.')
 
     # What patches do we include in the build?
     what_group = parser.add_argument_group(

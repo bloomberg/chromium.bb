@@ -180,7 +180,9 @@ class TryjobTestParsing(TryjobTest):
         '--yes',
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
-        '--local', '--buildroot', '/buildroot',
+        '--local',
+        '--buildroot', '/buildroot',
+        '--git-cache-dir', '/git-cache',
         '--timeout', '5', '--sanity-check-build',
         '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
         '--local-patches', 'chromiumos/chromite:tryjob', '-p', 'other:other',
@@ -195,6 +197,7 @@ class TryjobTestParsing(TryjobTest):
     self.expected.update({
         'where': cros_tryjob.LOCAL,
         'buildroot': '/buildroot',
+        'git_cache_dir': '/git-cache',
         'branch': 'master',
         'yes': True,
         'list': True,
@@ -219,7 +222,9 @@ class TryjobTestParsing(TryjobTest):
         '--yes',
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
-        '--cbuildbot', '--buildroot', '/buildroot',
+        '--cbuildbot',
+        '--buildroot', '/buildroot',
+        '--git-cache-dir', '/git-cache',
         '--timeout', '5', '--sanity-check-build',
         '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
         '--local-patches', 'chromiumos/chromite:tryjob', '-p', 'other:other',
@@ -233,6 +238,7 @@ class TryjobTestParsing(TryjobTest):
     self.expected.update({
         'where': cros_tryjob.CBUILDBOT,
         'buildroot': '/buildroot',
+        'git_cache_dir': '/git-cache',
         'branch': 'master',
         'yes': True,
         'list': True,
@@ -276,6 +282,7 @@ class TryjobTestAdjustOptions(TryjobTest):
     cros_tryjob.AdjustOptions(options)
 
     self.assertIsNone(options.buildroot)
+    self.assertIsNone(options.git_cache_dir)
 
   def testLocalDefault(self):
     """Test default local buildroot."""
@@ -285,15 +292,20 @@ class TryjobTestAdjustOptions(TryjobTest):
     cros_tryjob.AdjustOptions(options)
 
     self.assertTrue(options.buildroot.endswith('/tryjob'))
+    self.assertTrue(options.git_cache_dir.endswith('/tryjob/.git_cache'))
 
   def testLocalExplicit(self):
     """Test explicit local buildroot."""
-    self.SetupCommandMock(['--local', '--buildroot', '/buildroot', 'config'])
+    self.SetupCommandMock(['--local',
+                           '--buildroot', '/buildroot',
+                           '--git-cache-dir', '/git-cache',
+                           'config'])
     options = self.cmd_mock.inst.options
 
     cros_tryjob.AdjustOptions(options)
 
     self.assertEqual(options.buildroot, '/buildroot')
+    self.assertEqual(options.git_cache_dir, '/git-cache')
 
   def testCbuildbotDefault(self):
     """Test default cbuildbot buildroot."""
@@ -303,17 +315,20 @@ class TryjobTestAdjustOptions(TryjobTest):
     cros_tryjob.AdjustOptions(options)
 
     self.assertTrue(options.buildroot.endswith('/cbuild'))
+    self.assertTrue(options.git_cache_dir.endswith('/cbuild/.git_cache'))
 
   def testCbuildbotExplicit(self):
     """Test explicit cbuildbot buildroot."""
     self.SetupCommandMock(['--cbuildbot',
                            '--buildroot', '/buildroot',
+                           '--git-cache-dir', '/git-cache',
                            'config'])
     options = self.cmd_mock.inst.options
 
     cros_tryjob.AdjustOptions(options)
 
     self.assertEqual(options.buildroot, '/buildroot')
+    self.assertEqual(options.git_cache_dir, '/git-cache')
 
 
 class TryjobTestVerifyOptions(TryjobTest):
