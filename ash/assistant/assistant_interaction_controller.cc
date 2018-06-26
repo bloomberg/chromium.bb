@@ -9,14 +9,15 @@
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/model/assistant_ui_element.h"
-#include "ash/new_window_controller.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace ash {
 
-AssistantInteractionController::AssistantInteractionController()
-    : assistant_event_subscriber_binding_(this) {
+AssistantInteractionController::AssistantInteractionController(
+    AssistantController* assistant_controller)
+    : assistant_controller_(assistant_controller),
+      assistant_event_subscriber_binding_(this) {
   AddModelObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
 }
@@ -144,7 +145,7 @@ void AssistantInteractionController::OnSuggestionChipPressed(int id) {
   // If the suggestion contains a non-empty action url, we will handle the
   // suggestion chip pressed event by launching the action url in the browser.
   if (!suggestion->action_url.is_empty()) {
-    OpenUrl(suggestion->action_url);
+    assistant_controller_->OpenUrl(suggestion->action_url);
     return;
   }
 
@@ -208,12 +209,7 @@ void AssistantInteractionController::OnOpenUrlResponse(const GURL& url) {
       InteractionState::kActive) {
     return;
   }
-
-  OpenUrl(url);
-}
-
-void AssistantInteractionController::OnOpenUrlFromTab(const GURL& url) {
-  OpenUrl(url);
+  assistant_controller_->OpenUrl(url);
 }
 
 void AssistantInteractionController::OnDialogPlateButtonPressed(
@@ -270,15 +266,6 @@ void AssistantInteractionController::StopActiveInteraction() {
   assistant_interaction_model_.SetInteractionState(InteractionState::kInactive);
   assistant_interaction_model_.ClearPendingQuery();
   assistant_->StopActiveInteraction();
-}
-
-// TODO(dmblack): Move OpenUrl logic into AssistantController. The interaction
-// sub-controller shouldn't need to talk to the UI controller directly.
-void AssistantInteractionController::OpenUrl(const GURL& url) {
-  Shell::Get()->new_window_controller()->NewTabWithUrl(url);
-
-  if (assistant_ui_controller_)
-    assistant_ui_controller_->HideUi(AssistantSource::kUnspecified);
 }
 
 }  // namespace ash

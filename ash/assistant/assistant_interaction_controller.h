@@ -14,13 +14,13 @@
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/highlighter/highlighter_controller.h"
-#include "ash/public/interfaces/web_contents_manager.mojom.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
 
+class AssistantController;
 class AssistantInteractionModelObserver;
 class AssistantUiController;
 
@@ -29,8 +29,7 @@ class AssistantInteractionController
       public AssistantInteractionModelObserver,
       public AssistantUiModelObserver,
       public HighlighterController::Observer,
-      public DialogPlateObserver,
-      public mojom::ManagedWebContentsOpenUrlDelegate {
+      public DialogPlateObserver {
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
   using AssistantSuggestionPtr =
@@ -38,7 +37,8 @@ class AssistantInteractionController
   using AssistantInteractionResolution =
       chromeos::assistant::mojom::AssistantInteractionResolution;
 
-  AssistantInteractionController();
+  explicit AssistantInteractionController(
+      AssistantController* assistant_controller);
   ~AssistantInteractionController() override;
 
   // Provides a pointer to the |assistant| owned by AssistantController.
@@ -87,9 +87,6 @@ class AssistantInteractionController
   void OnSpeechRecognitionFinalResult(const std::string& final_result) override;
   void OnSpeechLevelUpdated(float speech_level) override;
 
-  // mojom::ManagedWebContentsOpenUrlDelegate:
-  void OnOpenUrlFromTab(const GURL& url) override;
-
   // DialogPlateObserver:
   void OnDialogPlateButtonPressed(DialogPlateButtonId id) override;
   void OnDialogPlateContentsCommitted(const std::string& text) override;
@@ -100,6 +97,8 @@ class AssistantInteractionController
   void StopActiveInteraction();
 
   void OpenUrl(const GURL& url);
+
+  AssistantController* const assistant_controller_;  // Owned by Shell.
 
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;

@@ -29,7 +29,8 @@ class AssistantInteractionController;
 class AssistantUiController;
 
 class AssistantController : public mojom::AssistantController,
-                            public HighlighterController::Observer {
+                            public HighlighterController::Observer,
+                            public mojom::ManagedWebContentsOpenUrlDelegate {
  public:
   AssistantController();
   ~AssistantController() override;
@@ -74,6 +75,13 @@ class AssistantController : public mojom::AssistantController,
 
   // HighlighterController::Observer:
   void OnHighlighterSelectionRecognized(const gfx::Rect& rect) override;
+
+  // mojom::ManagedWebContentsOpenUrlDelegate:
+  void OnOpenUrlFromTab(const GURL& url) override;
+
+  // Opens the specified |url| in a new browser tab.
+  // TODO(dmblack): Support opening specific URLs in the Assistant container.
+  void OpenUrl(const GURL& url);
 
   AssistantInteractionController* interaction_controller() {
     DCHECK(assistant_interaction_controller_);
