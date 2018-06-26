@@ -42,7 +42,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
       net::CookieStore* cookie_store,
       scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store,
       scoped_refptr<SessionCleanupChannelIDStore>
-          session_cleanup_channel_id_store);
+          session_cleanup_channel_id_store,
+      mojom::CookieManagerParamsPtr params);
 
   ~CookieManager() override;
 

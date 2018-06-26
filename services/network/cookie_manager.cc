@@ -62,11 +62,18 @@ CookieManager::CookieManager(
     net::CookieStore* cookie_store,
     scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store,
     scoped_refptr<SessionCleanupChannelIDStore>
-        session_cleanup_channel_id_store)
+        session_cleanup_channel_id_store,
+    mojom::CookieManagerParamsPtr params)
     : cookie_store_(cookie_store),
       session_cleanup_cookie_store_(std::move(session_cleanup_cookie_store)),
       session_cleanup_channel_id_store_(
-          std::move(session_cleanup_channel_id_store)) {}
+          std::move(session_cleanup_channel_id_store)) {
+  if (params) {
+    cookie_settings_.set_block_third_party_cookies(
+        params->block_third_party_cookies);
+    cookie_settings_.set_content_settings(params->settings);
+  }
+}
 
 CookieManager::~CookieManager() {
   if (session_cleanup_cookie_store_) {

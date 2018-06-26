@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_member.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -19,7 +20,8 @@ class PrefRegistrySyncable;
 
 // KeyedService that initializes and provides access to the NetworkContexts for
 // a Profile. This will eventually replace ProfileIOData.
-class ProfileNetworkContextService : public KeyedService {
+class ProfileNetworkContextService : public KeyedService,
+                                     public content_settings::Observer {
  public:
   explicit ProfileNetworkContextService(Profile* profile);
   ~ProfileNetworkContextService() override;
@@ -71,6 +73,9 @@ class ProfileNetworkContextService : public KeyedService {
   // formatting them as appropriate.
   void UpdateAcceptLanguage();
 
+  // Forwards changes to |block_third_party_cookies_| to the NetworkContext.
+  void UpdateBlockThirdPartyCookies();
+
   // Computes appropriate value of Accept-Language header based on
   // |pref_accept_language_|
   std::string ComputeAcceptLanguage() const;
@@ -88,6 +93,12 @@ class ProfileNetworkContextService : public KeyedService {
       bool in_memory,
       const base::FilePath& relative_partition_path);
 
+  // content_settings::Observer:
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               const std::string& resource_identifier) override;
+
   Profile* const profile_;
 
   ProxyConfigMonitor proxy_config_monitor_;
@@ -104,6 +115,7 @@ class ProfileNetworkContextService : public KeyedService {
 
   BooleanPrefMember quic_allowed_;
   StringPrefMember pref_accept_language_;
+  BooleanPrefMember block_third_party_cookies_;
 
   BooleanPrefMember enable_referrers_;
 

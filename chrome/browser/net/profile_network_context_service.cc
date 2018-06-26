@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/net/chrome_accept_language_settings.h"
 #include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -20,6 +21,8 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/pref_names.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -46,7 +49,15 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
       prefs::kEnableReferrers, profile_prefs,
       base::BindRepeating(&ProfileNetworkContextService::UpdateReferrersEnabled,
                           base::Unretained(this)));
+  block_third_party_cookies_.Init(
+      prefs::kBlockThirdPartyCookies, profile_prefs,
+      base::BindRepeating(
+          &ProfileNetworkContextService::UpdateBlockThirdPartyCookies,
+          base::Unretained(this)));
   DisableQuicIfNotAllowed();
+
+  // Observe content settings so they can be synced to the network service.
+  HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
 }
 
 ProfileNetworkContextService::~ProfileNetworkContextService() {}
@@ -128,6 +139,12 @@ void ProfileNetworkContextService::UpdateAcceptLanguage() {
       ->SetAcceptLanguage(ComputeAcceptLanguage());
 }
 
+void ProfileNetworkContextService::UpdateBlockThirdPartyCookies() {
+  content::BrowserContext::GetDefaultStoragePartition(profile_)
+      ->GetCookieManagerForBrowserProcess()
+      ->BlockThirdPartyCookies(block_third_party_cookies_.GetValue());
+}
+
 std::string ProfileNetworkContextService::ComputeAcceptLanguage() const {
   return chrome_accept_language_settings::ComputeAcceptLanguageFromPref(
       pref_accept_language_.GetValue());
@@ -163,6 +180,15 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 
   // Always enable the HTTP cache.
   network_context_params->http_cache_enabled = true;
+
+  network_context_params->cookie_manager_params =
+      network::mojom::CookieManagerParams::New();
+  network_context_params->cookie_manager_params->block_third_party_cookies =
+      block_third_party_cookies_.GetValue();
+  ContentSettingsForOneType settings;
+  HostContentSettingsMapFactory::GetForProfile(profile_)->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
+  network_context_params->cookie_manager_params->settings = std::move(settings);
 
   base::FilePath path = profile_->GetPath();
   if (!relative_partition_path.empty())
@@ -231,4 +257,22 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   network_context_params->enable_expect_ct_reporting = true;
 
   return network_context_params;
+}
+
+void ProfileNetworkContextService::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier) {
+  if (content_type != CONTENT_SETTINGS_TYPE_COOKIES &&
+      content_type != CONTENT_SETTINGS_TYPE_DEFAULT) {
+    return;
+  }
+
+  ContentSettingsForOneType settings;
+  HostContentSettingsMapFactory::GetForProfile(profile_)->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
+  content::BrowserContext::GetDefaultStoragePartition(profile_)
+      ->GetCookieManagerForBrowserProcess()
+      ->SetContentSettings(std::move(settings));
 }

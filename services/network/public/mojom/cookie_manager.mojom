@@ -8,6 +8,15 @@ import "components/content_settings/core/common/content_settings.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "url/mojom/url.mojom";
 
+// Parameters for constructing a cookie manager.
+struct CookieManagerParams {
+  // Whether or not third party cookies should be blocked.
+  bool block_third_party_cookies = false;
+
+  // Content settings for cookies.
+  array<content_settings.mojom.ContentSettingPatternSource> settings;
+};
+
 enum CookiePriority {
   LOW,
   MEDIUM,

@@ -324,7 +324,8 @@ NetworkContext::NetworkContext(
 
   cookie_manager_ = std::make_unique<CookieManager>(
       url_request_context_->cookie_store(), session_cleanup_cookie_store,
-      session_cleanup_channel_id_store);
+      session_cleanup_channel_id_store,
+      std::move(params_->cookie_manager_params));
   socket_factory_ = std::make_unique<SocketFactory>(network_service_->net_log(),
                                                     url_request_context_);
   resource_scheduler_ =
@@ -347,7 +348,8 @@ NetworkContext::NetworkContext(
 
   network_service_->RegisterNetworkContext(this);
   cookie_manager_ = std::make_unique<CookieManager>(
-      url_request_context_->cookie_store(), nullptr, nullptr);
+      url_request_context_->cookie_store(), nullptr, nullptr,
+      std::move(params_->cookie_manager_params));
   socket_factory_ = std::make_unique<SocketFactory>(network_service_->net_log(),
                                                     url_request_context_);
   resource_scheduler_ =
@@ -362,6 +364,7 @@ NetworkContext::NetworkContext(NetworkService* network_service,
       binding_(this, std::move(request)),
       cookie_manager_(
           std::make_unique<CookieManager>(url_request_context->cookie_store(),
+                                          nullptr,
                                           nullptr,
                                           nullptr)),
       socket_factory_(std::make_unique<SocketFactory>(
