@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -33,7 +34,8 @@ static const int kMaxEventsPerProto = 16;
 // further events for that frame will be dropped.
 static const int kMaxProtosPerFrame = 10;
 
-using FrameEventList = std::vector<linked_ptr<proto::AggregatedFrameEvent>>;
+using FrameEventList =
+    std::vector<std::unique_ptr<proto::AggregatedFrameEvent>>;
 using PacketEventList = std::vector<linked_ptr<proto::AggregatedPacketEvent>>;
 
 // A RawEventSubscriber implementation that subscribes to events,
@@ -72,7 +74,7 @@ class EncodingEventSubscriber : public RawEventSubscriber {
 
  private:
   using FrameEventMap =
-      std::map<RtpTimeDelta, linked_ptr<proto::AggregatedFrameEvent>>;
+      std::map<RtpTimeDelta, std::unique_ptr<proto::AggregatedFrameEvent>>;
   using PacketEventMap =
       std::map<RtpTimeDelta, linked_ptr<proto::AggregatedPacketEvent>>;
 
@@ -84,7 +86,7 @@ class EncodingEventSubscriber : public RawEventSubscriber {
   void TransferPacketEvents(size_t max_num_entries);
 
   void AddFrameEventToStorage(
-      const linked_ptr<proto::AggregatedFrameEvent>& frame_event_proto);
+      std::unique_ptr<proto::AggregatedFrameEvent> frame_event_proto);
   void AddPacketEventToStorage(
       const linked_ptr<proto::AggregatedPacketEvent>& packet_event_proto);
 
