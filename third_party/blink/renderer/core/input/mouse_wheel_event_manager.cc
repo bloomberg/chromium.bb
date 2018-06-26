@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 
 namespace blink {
 MouseWheelEventManager::MouseWheelEventManager(LocalFrame& frame)
@@ -107,10 +106,7 @@ WebInputEventResult MouseWheelEventManager::HandleWheelEvent(
         wheel_target_->DispatchEvent(dom_event);
     if (dom_event_result != DispatchEventResult::kNotCanceled) {
       bool should_enforce_vertical_scroll =
-          dom_event_result == DispatchEventResult::kCanceledByEventHandler &&
-          RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-          !wheel_target_->GetDocument().GetFrame()->IsFeatureEnabled(
-              mojom::FeaturePolicyFeature::kVerticalScroll);
+          wheel_target_->GetDocument().IsVerticalScrollEnforced();
       // TODO(ekaramad): This does not seem correct. The behavior of shift +
       // scrolling seems different on Mac vs Linux/Windows. We need this done
       // properly and perhaps even tag WebMouseWheelEvent with a scrolling

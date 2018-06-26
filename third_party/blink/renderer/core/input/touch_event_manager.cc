@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -575,9 +574,7 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
       TouchActionUtil::ComputeEffectiveTouchAction(*touch_node);
 
   should_enforce_vertical_scroll_ =
-      RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      !touch_sequence_document_->GetFrame()->IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kVerticalScroll);
+      touch_sequence_document_->IsVerticalScrollEnforced();
   if (should_enforce_vertical_scroll_ &&
       HasEventHandlerInAncestorPath(
           touch_node, EventHandlerRegistry::kTouchStartOrMoveEventBlocking)) {
