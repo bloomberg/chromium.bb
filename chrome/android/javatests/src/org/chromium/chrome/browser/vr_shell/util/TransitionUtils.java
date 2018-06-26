@@ -11,6 +11,7 @@ import android.net.Uri;
 
 import org.junit.Assert;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -96,9 +97,18 @@ public class TransitionUtils {
      * to errors, e.g. if there's dialog in the center of the screen blocking the canvas.
      *
      * Only meant to be used alongside the test framework from VrTestFramework.
-     * @param cvc The ContentViewCore for the tab the canvas is in.
+     * @param webContents The WebContents for the tab the canvas is in.
      */
     public static void enterPresentation(WebContents webContents) {
+        // TODO(https://crbug.com/762724): Remove this workaround when the issue with being resumed
+        // before receiving the VR broadcast is fixed on VrCore's end.
+        // However, we don't want to enable the workaround if the DON flow is enabled, as that
+        // causes issues. Since we don't have a way of actually checking whether the DON flow is
+        // enabled, check for the presence of the flag that's passed to tests when the DON flow is
+        // enabled.
+        if (!CommandLine.getInstance().hasSwitch("don-enabled")) {
+            VrShellDelegateUtils.getDelegateInstance().setExpectingBroadcast();
+        }
         try {
             DOMUtils.clickNode(webContents, "webgl-canvas", false /* goThroughRootAndroidView */);
         } catch (InterruptedException | TimeoutException e) {
@@ -207,6 +217,10 @@ public class TransitionUtils {
             intent.putExtra(VrIntentUtils.AUTOPRESENT_WEVBVR_EXTRA, true);
         }
         if (avoidRelaunch) intent.putExtra(VrIntentUtils.AVOID_RELAUNCH_EXTRA, true);
+
+        // TODO(https://crbug.com/854327): Remove this workaround once the issue with launchInVr
+        // sometimes launching the given intent before entering VR is fixed.
+        intent.putExtra(VrIntentUtils.ENABLE_TEST_RELAUNCH_WORKAROUND_EXTRA, true);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
