@@ -359,7 +359,7 @@ class _BuildArchive(object):
     self._slow_options = slow_options
     self._save_unstripped = save_unstripped
 
-  def ArchiveBuildResults(self, supersize_path, tool_prefix):
+  def ArchiveBuildResults(self, supersize_path, tool_prefix=None):
     """Save build artifacts necessary for diffing."""
     logging.info('Saving build results to: %s', self.dir)
     _EnsureDirsExist(self.dir)
