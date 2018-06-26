@@ -40,6 +40,13 @@ class RenderFrameMetadataObserverImpl
   void ReportAllFrameSubmissionsForTesting(bool enabled) override;
 
  private:
+  // Certain fields should always have their changes reported. This will return
+  // true when there is a difference between |rfm1| and |rfm2| for those fields.
+  // These fields have a low frequency rate of change.
+  static bool ShouldSendRenderFrameMetadata(
+      const cc::RenderFrameMetadata& rfm1,
+      const cc::RenderFrameMetadata& rfm2);
+
   // When true this will notifiy |render_frame_metadata_observer_client_| of all
   // frame submissions.
   bool report_all_frame_submissions_for_testing_enabled_ = false;
