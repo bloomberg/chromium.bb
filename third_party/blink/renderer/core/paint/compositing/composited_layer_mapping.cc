@@ -3635,6 +3635,7 @@ void CompositedLayerMapping::FinishAccumulatingSquashingLayers(
       if (InvalidateLayerIfNoPrecedingEntry(i)) {
         squashed_layers_[i].paint_layer->SetGroupedMapping(
             nullptr, PaintLayer::kDoNotInvalidateLayerAndRemoveFromMapping);
+        squashed_layers_[i].paint_layer->SetLostGroupedMapping(true);
       }
       layers_needing_paint_invalidation.push_back(
           squashed_layers_[i].paint_layer);

@@ -607,6 +607,11 @@ void CompositingRequirementsUpdater::UpdateRecursive(
         any_descendant_has3d_transform || layer->Has3DTransform();
   }
 
+  // Layer assignment is needed for allocating or removing composited
+  // layers related to this PaintLayer; hence the below conditions.
+  if (reasons_to_composite || layer->GetCompositingState() != kNotComposited)
+    layer->SetNeedsCompositingLayerAssignment();
+
   // At this point we have finished collecting all reasons to composite this
   // layer.
   layer->SetCompositingReasons(reasons_to_composite);
