@@ -84,7 +84,7 @@ class InputStream final : public media::mojom::AudioInputStream,
 
   base::CancelableSyncSocket foreign_socket_;
   const std::unique_ptr<InputSyncWriter> writer_;
-  scoped_refptr<InputController> controller_;
+  std::unique_ptr<InputController> controller_;
   const std::unique_ptr<UserInputMonitor> user_input_monitor_;
 
   SEQUENCE_CHECKER(owning_sequence_);

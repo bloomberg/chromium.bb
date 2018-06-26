@@ -355,8 +355,6 @@ static_library("test_support") {
     "mock_audio_manager.h",
     "mock_audio_source_callback.cc",
     "mock_audio_source_callback.h",
-    "test_audio_input_controller_factory.cc",
-    "test_audio_input_controller_factory.h",
     "test_audio_thread.cc",
     "test_audio_thread.h",
   ]

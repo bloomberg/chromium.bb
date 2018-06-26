@@ -18,6 +18,9 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
 
+// Deprecated! https://crbug.com/854612. You may be looking for
+// services/audio/public/cpp/device_factory.h.
+
 // An AudioInputController controls an AudioInputStream and records data
 // from this input stream. The two main methods are Record() and Close() and
 // they are both executed on the audio thread which is injected by the two
@@ -83,7 +86,9 @@ class AudioBus;
 
 class UserInputMonitor;
 
-class MEDIA_EXPORT AudioInputController
+// Deprecated! https://crbug.com/854612. You may be looking for
+// services/audio/public/cpp/device_factory.h.
+class MEDIA_EXPORT AudioInputController final
     : public base::RefCountedThreadSafe<AudioInputController> {
  public:
   // Error codes to make native logging more clear. These error codes are added

@@ -118,7 +118,7 @@ InputStream::~InputStream() {
 
   // TODO(https://crbug.com/803102): remove InputController::Close() after
   // content/ streams are removed, destructor should suffice.
-  controller_->Close(base::OnceClosure());
+  controller_->Close();
 
   TRACE_EVENT_NESTABLE_ASYNC_END0("audio", "InputStream", this);
   TRACE_EVENT_NESTABLE_ASYNC_END0("audio", "audio::InputStream", this);
