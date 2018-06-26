@@ -26,6 +26,8 @@ def AddCommonArgs(arg_parser):
                            help='Path to the Fuchsia package manifest file.')
   common_args.add_argument('--package-dep', action='append', default=[],
                            help='Path to an additional package to install.')
+  common_args.add_argument('--install-only', action='store_true', default=False,
+                           help='Install the packages but do not run them.')
   common_args.add_argument('--output-directory',
                            type=os.path.realpath, required=True,
                            help=('Path to the directory in which build files '

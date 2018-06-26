@@ -84,7 +84,7 @@ def DrainStreamToStdout(stream, quit_event):
 
 
 def RunPackage(output_dir, target, package_path, package_name, package_deps,
-               run_args, system_logging, symbolizer_config=None):
+               run_args, system_logging, install_only, symbolizer_config=None):
   """Copies the Fuchsia package at |package_path| to the target,
   executes it with |run_args|, and symbolizes its output.
 
@@ -93,7 +93,8 @@ def RunPackage(output_dir, target, package_path, package_name, package_deps,
   package_path: The path to the .far package file.
   package_name: The name of app specified by package metadata.
   run_args: The arguments which will be passed to the Fuchsia process.
-  system_logging: If true, connects a system log reader to the target.
+  system_logging: If set, connects a system log reader to the target.
+  install_only: If set, skips the package execution step.
   symbolizer_config: A newline delimited list of source files contained
                      in the package. Omitting this parameter will disable
                      symbolization.
@@ -136,6 +137,10 @@ def RunPackage(output_dir, target, package_path, package_name, package_deps,
     if system_logger:
       log_output_quit_event.set()
       log_output_thread.join(timeout=_JOIN_TIMEOUT_SECS)
+
+    if install_only:
+      logging.info('Installation complete.')
+      return
 
     logging.info('Running application.')
     command = ['run', package_name] + run_args

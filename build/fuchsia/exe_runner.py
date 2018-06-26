@@ -28,7 +28,7 @@ def main():
     return RunPackage(
         args.output_directory, target, args.package, args.package_name,
         args.package_dep, args.child_args, args.include_system_logs,
-        args.package_manifest)
+        args.install_only, args.package_manifest)
 
 
 if __name__ == '__main__':
