@@ -24,7 +24,7 @@ class OriginPolicyThrottleTest : public RenderViewHostTestHarness,
     // they test the feature functionality when enabled and feature
     // non-funcionality (that is, that the feature is inert) when disabled.
     // Hence, we run this test in both variants.
-    features_.InitWithFeatureState(features::kOriginManifest, GetParam());
+    features_.InitWithFeatureState(features::kOriginPolicy, GetParam());
 
     RenderViewHostTestHarness::SetUp();
     OriginPolicyThrottle::GetKnownVersionsForTesting().clear();
@@ -35,7 +35,7 @@ class OriginPolicyThrottleTest : public RenderViewHostTestHarness,
     RenderViewHostTestHarness::TearDown();
   }
   bool enabled() {
-    return base::FeatureList::IsEnabled(features::kOriginManifest);
+    return base::FeatureList::IsEnabled(features::kOriginPolicy);
   }
 
   void CreateHandleFor(const GURL& url) {

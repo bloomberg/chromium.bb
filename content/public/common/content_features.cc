@@ -257,9 +257,9 @@ const base::Feature kNotificationContentImage{"NotificationContentImage",
 const base::Feature kOffMainThreadWebSocket{"OffMainThreadWebSocket",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Origin Manifest. See crbug.com/751996
-const base::Feature kOriginManifest{"OriginManifest",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+// Origin Policy. See https://crbug.com/751996
+const base::Feature kOriginPolicy{"OriginPolicy",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Origin Trials for controlling access to feature/API experiments.
 const base::Feature kOriginTrials{"OriginTrials",
