@@ -246,7 +246,7 @@
   self.toolsMenuButton = [self.buttonFactory toolsMenuButton];
 
   self.trailingStackViewButtons = @[
-    self.shareButton, self.bookmarkButton, self.tabGridButton,
+    self.bookmarkButton, self.shareButton, self.tabGridButton,
     self.toolsMenuButton
   ];
   self.trailingStackView = [[UIStackView alloc]
