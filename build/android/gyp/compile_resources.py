@@ -27,10 +27,8 @@ from xml.etree import ElementTree
 from util import build_utils
 from util import resource_utils
 
-_SOURCE_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
-    __file__))))
 # Import jinja2 from third_party/jinja2
-sys.path.insert(1, os.path.join(_SOURCE_ROOT, 'third_party'))
+sys.path.insert(1, os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party'))
 from jinja2 import Template # pylint: disable=F0401
 
 # Pngs that we shouldn't convert to webp. Please add rationale when updating.
@@ -212,12 +210,18 @@ def _SortZip(original_path, sorted_path):
       sorted_zip.writestr(info, original_zip.read(info))
 
 
+def _IterFiles(root_dir):
+  for root, _, files in os.walk(root_dir):
+    for f in files:
+      yield os.path.join(root, f)
+
+
 def _DuplicateZhResources(resource_dirs):
   """Duplicate Taiwanese resources into Hong-Kong specific directory."""
   renamed_paths = dict()
   for resource_dir in resource_dirs:
     # We use zh-TW resources for zh-HK (if we have zh-TW resources).
-    for path in build_utils.IterFiles(resource_dir):
+    for path in _IterFiles(resource_dir):
       if 'zh-rTW' in path:
         hk_path = path.replace('zh-rTW', 'zh-rHK')
         build_utils.MakeDirectory(os.path.dirname(hk_path))
@@ -423,7 +427,7 @@ def _CreateKeepPredicate(resource_dirs, exclude_xxxhdpi, xxxhdpi_whitelist):
   # xxxhdpi drawable that does not exist in other densities.
   non_xxxhdpi_drawables = set()
   for resource_dir in resource_dirs:
-    for path in build_utils.IterFiles(resource_dir):
+    for path in _IterFiles(resource_dir):
       if re.search(r'[/-]drawable[/-]', path) and naive_predicate(path):
         non_xxxhdpi_drawables.add(_ResourceNameFromPath(path))
 
@@ -516,7 +520,7 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
       dep_subdirs, options.exclude_xxxhdpi, options.xxxhdpi_whitelist)
   png_paths = []
   for directory in dep_subdirs:
-    for f in build_utils.IterFiles(directory):
+    for f in _IterFiles(directory):
       if not keep_predicate(f):
         os.remove(f)
       elif f.endswith('.png'):

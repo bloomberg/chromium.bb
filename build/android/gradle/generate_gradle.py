@@ -223,7 +223,8 @@ class _ProjectEntry(object):
     """Reads and returns the project's .build_config JSON."""
     if not self._build_config:
       path = os.path.join('gen', self.GradleSubdir() + '.build_config')
-      self._build_config = build_utils.ReadJson(_RebasePath(path))
+      with open(_RebasePath(path)) as jsonfile:
+        self._build_config = json.load(jsonfile)
     return self._build_config
 
   def DepsInfo(self):

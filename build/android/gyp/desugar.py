@@ -11,10 +11,9 @@ import sys
 from util import build_utils
 
 
-_SRC_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                         '..', '..', '..'))
-_DESUGAR_JAR_PATH = os.path.normpath(os.path.join(
-    _SRC_ROOT, 'third_party', 'bazel', 'desugar', 'Desugar.jar'))
+_DESUGAR_JAR_PATH = os.path.normpath(
+    os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party', 'bazel', 'desugar',
+                 'Desugar.jar'))
 
 
 def _OnStaleMd5(input_jar, output_jar, classpath, bootclasspath):

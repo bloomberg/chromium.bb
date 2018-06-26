@@ -682,7 +682,8 @@ def _ConfigOutDirAndToolsPrefix(out_dir):
     except EnvironmentError:
       pass
   if out_dir:
-    build_vars = build_utils.ReadBuildVars()
+    build_vars = build_utils.ReadBuildVars(
+        os.path.join(out_dir, "build_vars.txt"))
     tool_prefix = os.path.join(out_dir, build_vars['android_tool_prefix'])
   else:
     tool_prefix = ''

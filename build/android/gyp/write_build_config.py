@@ -501,6 +501,7 @@ invoking `javac`.
 """
 
 import itertools
+import json
 import optparse
 import os
 import sys
@@ -567,7 +568,8 @@ class AndroidManifest(object):
 dep_config_cache = {}
 def GetDepConfig(path):
   if not path in dep_config_cache:
-    dep_config_cache[path] = build_utils.ReadJson(path)['deps_info']
+    with open(path) as jsonfile:
+      dep_config_cache[path] = json.load(jsonfile)['deps_info']
   return dep_config_cache[path]
 
 
