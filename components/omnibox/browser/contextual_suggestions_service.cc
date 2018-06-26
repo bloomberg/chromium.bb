@@ -235,8 +235,8 @@ void ContextualSuggestionsService::CreateDefaultRequest(
   // TODO(https://crbug.com/808498) re-add data use measurement once
   // SimpleURLLoader supports it.
   // data_use_measurement::DataUseUserData::OMNIBOX
-  StartDownloadAndTransferLoader(std::move(request), traffic_annotation,
-                                 std::move(start_callback),
+  StartDownloadAndTransferLoader(std::move(request), std::string(),
+                                 traffic_annotation, std::move(start_callback),
                                  std::move(completion_callback));
 }
 
@@ -286,10 +286,6 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
   request->method = "POST";
   std::string request_body =
       FormatRequestBodyExperimentalService(current_url, visit_time);
-  request->request_body = network::ResourceRequestBody::CreateFromBytes(
-      request_body.data(), request_body.length());
-  request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
-                             "application/json");
   AddVariationHeaders(request.get());
   request->load_flags =
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
@@ -301,9 +297,9 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
   // waiting for an oauth2 token, run the contextual service without access
   // tokens.
   if ((identity_manager_ == nullptr) || (token_fetcher_ != nullptr)) {
-    StartDownloadAndTransferLoader(std::move(request), traffic_annotation,
-                                   std::move(start_callback),
-                                   std::move(completion_callback));
+    StartDownloadAndTransferLoader(
+        std::move(request), std::move(request_body), traffic_annotation,
+        std::move(start_callback), std::move(completion_callback));
     return;
   }
 
@@ -314,13 +310,14 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
       "contextual_suggestions_service", scopes,
       base::BindOnce(&ContextualSuggestionsService::AccessTokenAvailable,
                      base::Unretained(this), std::move(request),
-                     traffic_annotation, std::move(start_callback),
-                     std::move(completion_callback)),
+                     std::move(request_body), traffic_annotation,
+                     std::move(start_callback), std::move(completion_callback)),
       identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void ContextualSuggestionsService::AccessTokenAvailable(
     std::unique_ptr<network::ResourceRequest> request,
+    std::string request_body,
     net::NetworkTrafficAnnotationTag traffic_annotation,
     StartCallback start_callback,
     CompletionCallback completion_callback,
@@ -337,18 +334,22 @@ void ContextualSuggestionsService::AccessTokenAvailable(
         "Authorization", base::StringPrintf("Bearer %s", access_token.c_str()));
   }
 
-  StartDownloadAndTransferLoader(std::move(request), traffic_annotation,
-                                 std::move(start_callback),
+  StartDownloadAndTransferLoader(std::move(request), std::move(request_body),
+                                 traffic_annotation, std::move(start_callback),
                                  std::move(completion_callback));
 }
 
 void ContextualSuggestionsService::StartDownloadAndTransferLoader(
     std::unique_ptr<network::ResourceRequest> request,
+    std::string request_body,
     net::NetworkTrafficAnnotationTag traffic_annotation,
     StartCallback start_callback,
     CompletionCallback completion_callback) {
   std::unique_ptr<network::SimpleURLLoader> loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
+  if (!request_body.empty()) {
+    loader->AttachStringForUpload(request_body, "application/json");
+  }
   loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(std::move(completion_callback), loader.get()));

@@ -139,7 +139,10 @@ class ContextualSuggestionsService : public KeyedService {
   // Tries to load the suggestions from network, using the token when available.
   //
   // |request| is expected to be the request for suggestions filled in with
-  // everything but maybe the authentication token.
+  // everything but maybe the authentication token and the request body.
+  //
+  // |request_body|, if not empty, will be attached as the upload body to
+  // the request.
   //
   // |traffic_annotation| is the appropriate annotations for making the network
   // request to load the suggestions.
@@ -149,6 +152,7 @@ class ContextualSuggestionsService : public KeyedService {
   //
   // |error| and |access_token| are the results of token request.
   void AccessTokenAvailable(std::unique_ptr<network::ResourceRequest> request,
+                            std::string request_body,
                             net::NetworkTrafficAnnotationTag traffic_annotation,
                             StartCallback start_callback,
                             CompletionCallback completion_callback,
@@ -156,9 +160,11 @@ class ContextualSuggestionsService : public KeyedService {
                             std::string access_token);
 
   // Activates a loader for |request|, wiring it up to |completion_callback|,
-  // and calls |start_callback|.
+  // and calls |start_callback|.  If |request_body| isn't empty, it will be
+  // attached as upload bytes.
   void StartDownloadAndTransferLoader(
       std::unique_ptr<network::ResourceRequest> request,
+      std::string request_body,
       net::NetworkTrafficAnnotationTag traffic_annotation,
       StartCallback start_callback,
       CompletionCallback completion_callback);
