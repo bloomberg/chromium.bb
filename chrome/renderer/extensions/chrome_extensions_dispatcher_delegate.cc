@@ -66,8 +66,8 @@ ChromeExtensionsDispatcherDelegate::ChromeExtensionsDispatcherDelegate() {
 ChromeExtensionsDispatcherDelegate::~ChromeExtensionsDispatcherDelegate() {
 }
 
-void ChromeExtensionsDispatcherDelegate::InitOriginPermissions(
-    const extensions::Extension* extension,
+void ChromeExtensionsDispatcherDelegate::AddOriginAccessPermissions(
+    const extensions::Extension& extension,
     bool is_extension_active) {
   // Allow component extensions to access chrome://theme/.
   //
@@ -76,21 +76,20 @@ void ChromeExtensionsDispatcherDelegate::InitOriginPermissions(
   // component extension somehow starts as inactive and becomes active later,
   // we'll re-init the origin permissions, so there's no danger in being
   // conservative.
-  if (extensions::Manifest::IsComponentLocation(extension->location()) &&
+  if (extensions::Manifest::IsComponentLocation(extension.location()) &&
       is_extension_active) {
     blink::WebSecurityPolicy::AddOriginAccessWhitelistEntry(
-        extension->url(), blink::WebString::FromUTF8(content::kChromeUIScheme),
+        extension.url(), blink::WebString::FromUTF8(content::kChromeUIScheme),
         blink::WebString::FromUTF8(chrome::kChromeUIThemeHost), false);
   }
 
   // TODO(jstritar): We should try to remove this special case. Also, these
   // whitelist entries need to be updated when the kManagement permission
   // changes.
-  if (is_extension_active &&
-      extension->permissions_data()->HasAPIPermission(
-          extensions::APIPermission::kManagement)) {
+  if (is_extension_active && extension.permissions_data()->HasAPIPermission(
+                                 extensions::APIPermission::kManagement)) {
     blink::WebSecurityPolicy::AddOriginAccessWhitelistEntry(
-        extension->url(), blink::WebString::FromUTF8(content::kChromeUIScheme),
+        extension.url(), blink::WebString::FromUTF8(content::kChromeUIScheme),
         blink::WebString::FromUTF8(chrome::kChromeUIExtensionIconHost), false);
   }
 }

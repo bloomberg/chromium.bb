@@ -1151,13 +1151,10 @@ void Dispatcher::OnUpdatePermissions(
   std::unique_ptr<const PermissionSet> withheld =
       params.withheld_permissions.ToPermissionSet();
 
-  UpdateOriginPermissions(
-      extension->url(),
-      extension->permissions_data()->GetEffectiveHostPermissions(),
-      active->effective_hosts());
-
   extension->permissions_data()->SetPermissions(std::move(active),
                                                 std::move(withheld));
+  UpdateOriginPermissions(*extension);
+
   if (params.uses_default_policy_host_restrictions) {
     extension->permissions_data()->SetUsesDefaultHostRestrictions();
   } else {
@@ -1179,19 +1176,13 @@ void Dispatcher::OnUpdateTabSpecificPermissions(const GURL& visible_url,
   if (!extension)
     return;
 
-  URLPatternSet old_effective =
-      extension->permissions_data()->GetEffectiveHostPermissions();
   extension->permissions_data()->UpdateTabSpecificPermissions(
       tab_id, extensions::PermissionSet(extensions::APIPermissionSet(),
                                         extensions::ManifestPermissionSet(),
                                         new_hosts, new_hosts));
 
-  if (update_origin_whitelist) {
-    UpdateOriginPermissions(
-        extension->url(),
-        old_effective,
-        extension->permissions_data()->GetEffectiveHostPermissions());
-  }
+  if (update_origin_whitelist)
+    UpdateOriginPermissions(*extension);
 }
 
 void Dispatcher::OnClearTabSpecificPermissions(
@@ -1201,15 +1192,9 @@ void Dispatcher::OnClearTabSpecificPermissions(
   for (const std::string& id : extension_ids) {
     const Extension* extension = RendererExtensionRegistry::Get()->GetByID(id);
     if (extension) {
-      URLPatternSet old_effective =
-          extension->permissions_data()->GetEffectiveHostPermissions();
       extension->permissions_data()->ClearTabSpecificPermissions(tab_id);
-      if (update_origin_whitelist) {
-        UpdateOriginPermissions(
-            extension->url(),
-            old_effective,
-            extension->permissions_data()->GetEffectiveHostPermissions());
-      }
+      if (update_origin_whitelist)
+        UpdateOriginPermissions(*extension);
     }
   }
 }
@@ -1235,9 +1220,6 @@ void Dispatcher::UpdateActiveExtensions() {
 }
 
 void Dispatcher::InitOriginPermissions(const Extension* extension) {
-  delegate_->InitOriginPermissions(extension,
-                                   IsExtensionActive(extension->id()));
-
   const GURL webstore_launch_url = extension_urls::GetWebstoreLaunchURL();
   WebSecurityPolicy::AddOriginAccessBlacklistEntry(
       extension->url(), WebString::FromUTF8(webstore_launch_url.scheme()),
@@ -1246,15 +1228,10 @@ void Dispatcher::InitOriginPermissions(const Extension* extension) {
   // TODO(devlin): Should we also block the webstore update URL here? See
   // https://crbug.com/826946 for a related instance.
 
-  UpdateOriginPermissions(
-      extension->url(),
-      URLPatternSet(),  // No old permissions.
-      extension->permissions_data()->GetEffectiveHostPermissions());
+  UpdateOriginPermissions(*extension);
 }
 
-void Dispatcher::UpdateOriginPermissions(const GURL& extension_url,
-                                         const URLPatternSet& old_patterns,
-                                         const URLPatternSet& new_patterns) {
+void Dispatcher::UpdateOriginPermissions(const Extension& extension) {
   static const char* kSchemes[] = {
     url::kHttpScheme,
     url::kHttpsScheme,
@@ -1267,24 +1244,23 @@ void Dispatcher::UpdateOriginPermissions(const GURL& extension_url,
     extensions::kExtensionScheme,
   };
 
+  // Remove all old patterns associated with this extension.
+  WebSecurityPolicy::RemoveAllOriginAccessWhitelistEntriesForOrigin(
+      extension.url());
+
+  delegate_->AddOriginAccessPermissions(extension,
+                                        IsExtensionActive(extension.id()));
+
+  URLPatternSet patterns =
+      extension.permissions_data()->GetEffectiveHostPermissions();
+
   for (size_t i = 0; i < arraysize(kSchemes); ++i) {
     const char* scheme = kSchemes[i];
-    // Remove all old patterns...
-    for (URLPatternSet::const_iterator pattern = old_patterns.begin();
-         pattern != old_patterns.end(); ++pattern) {
-      if (pattern->MatchesScheme(scheme)) {
-        WebSecurityPolicy::RemoveOriginAccessWhitelistEntry(
-            extension_url, WebString::FromUTF8(scheme),
-            WebString::FromUTF8(pattern->host()), pattern->match_subdomains());
-      }
-    }
-    // ...And add the new ones.
-    for (URLPatternSet::const_iterator pattern = new_patterns.begin();
-         pattern != new_patterns.end(); ++pattern) {
-      if (pattern->MatchesScheme(scheme)) {
+    for (const auto& pattern : patterns) {
+      if (pattern.MatchesScheme(scheme)) {
         WebSecurityPolicy::AddOriginAccessWhitelistEntry(
-            extension_url, WebString::FromUTF8(scheme),
-            WebString::FromUTF8(pattern->host()), pattern->match_subdomains());
+            extension.url(), WebString::FromUTF8(scheme),
+            WebString::FromUTF8(pattern.host()), pattern.match_subdomains());
       }
     }
   }

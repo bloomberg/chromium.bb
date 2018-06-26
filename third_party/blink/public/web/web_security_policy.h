@@ -75,6 +75,8 @@ class WebSecurityPolicy {
       const WebString& destination_protocol,
       const WebString& destination_host,
       bool allow_destination_subdomains);
+  BLINK_EXPORT static void RemoveAllOriginAccessWhitelistEntriesForOrigin(
+      const WebURL& source_origin);
   BLINK_EXPORT static void ResetOriginAccessWhitelists();
 
   // Support for restricting the whitelists, in order to allow for broad
