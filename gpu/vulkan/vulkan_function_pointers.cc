@@ -116,6 +116,11 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkDestroyFence)
     return false;
 
+  vkDestroyImage = reinterpret_cast<PFN_vkDestroyImage>(
+      vkGetDeviceProcAddr(vk_device, "vkDestroyImage"));
+  if (!vkDestroyImage)
+    return false;
+
   vkDestroyImageView = reinterpret_cast<PFN_vkDestroyImageView>(
       vkGetDeviceProcAddr(vk_device, "vkDestroyImageView"));
   if (!vkDestroyImageView)
@@ -149,6 +154,11 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   vkFreeDescriptorSets = reinterpret_cast<PFN_vkFreeDescriptorSets>(
       vkGetDeviceProcAddr(vk_device, "vkFreeDescriptorSets"));
   if (!vkFreeDescriptorSets)
+    return false;
+
+  vkFreeMemory = reinterpret_cast<PFN_vkFreeMemory>(
+      vkGetDeviceProcAddr(vk_device, "vkFreeMemory"));
+  if (!vkFreeMemory)
     return false;
 
   vkGetDeviceQueue = reinterpret_cast<PFN_vkGetDeviceQueue>(

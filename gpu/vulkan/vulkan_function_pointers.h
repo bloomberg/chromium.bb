@@ -78,6 +78,7 @@ struct VulkanFunctionPointers {
   PFN_vkDestroyDevice vkDestroyDevice = nullptr;
   PFN_vkDestroyFramebuffer vkDestroyFramebuffer = nullptr;
   PFN_vkDestroyFence vkDestroyFence = nullptr;
+  PFN_vkDestroyImage vkDestroyImage = nullptr;
   PFN_vkDestroyImageView vkDestroyImageView = nullptr;
   PFN_vkDestroyRenderPass vkDestroyRenderPass = nullptr;
   PFN_vkDestroySampler vkDestroySampler = nullptr;
@@ -85,6 +86,7 @@ struct VulkanFunctionPointers {
   PFN_vkDestroyShaderModule vkDestroyShaderModule = nullptr;
   PFN_vkFreeCommandBuffers vkFreeCommandBuffers = nullptr;
   PFN_vkFreeDescriptorSets vkFreeDescriptorSets = nullptr;
+  PFN_vkFreeMemory vkFreeMemory = nullptr;
   PFN_vkGetDeviceQueue vkGetDeviceQueue = nullptr;
   PFN_vkGetFenceStatus vkGetFenceStatus = nullptr;
   PFN_vkResetFences vkResetFences = nullptr;
