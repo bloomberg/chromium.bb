@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -101,11 +102,14 @@ void SetExpectedPolicy(base::DictionaryValue* expected,
                        const std::string& level,
                        const std::string& scope,
                        const std::string& source,
+                       const std::string& error,
                        const base::Value& value) {
   const char prefix[] = "chromePolicies";
   expected->SetPath({prefix, name.c_str(), "level"}, base::Value(level));
   expected->SetPath({prefix, name.c_str(), "scope"}, base::Value(scope));
   expected->SetPath({prefix, name.c_str(), "source"}, base::Value(source));
+  if (!error.empty())
+    expected->SetPath({prefix, name.c_str(), "error"}, base::Value(error));
   expected->SetPath({prefix, name.c_str(), "value"}, value.Clone());
 }
 
@@ -303,14 +307,15 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
              popups_blocked_for_urls.CreateDeepCopy(), nullptr);
   SetExpectedPolicy(&expected_values, policy::key::kPopupsBlockedForUrls,
-                    "mandatory", "machine", "sourcePlatform",
+                    "mandatory", "machine", "sourcePlatform", std::string(),
                     popups_blocked_for_urls);
 
   values.Set(policy::key::kDefaultImagesSetting, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
              std::make_unique<base::Value>(2), nullptr);
   SetExpectedPolicy(&expected_values, policy::key::kDefaultImagesSetting,
-                    "mandatory", "machine", "sourceCloud", base::Value(2));
+                    "mandatory", "machine", "sourceCloud", std::string(),
+                    base::Value(2));
 
   // This also checks that we save complex policies correctly.
   base::DictionaryValue unknown_policy;
@@ -324,7 +329,8 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
              unknown_policy.CreateDeepCopy(), nullptr);
   SetExpectedPolicy(&expected_values, kUnknownPolicy, "recommended", "user",
-                    "sourceCloud", unknown_policy);
+                    "sourceCloud", l10n_util::GetStringUTF8(IDS_POLICY_UNKNOWN),
+                    unknown_policy);
 
   // Set the extension policies to an empty dictionary as we haven't added any
   // such policies.
@@ -343,22 +349,24 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
           std::string(policy::key::kDefaultImagesSetting),
       nullptr);
 
+#if !defined(OS_CHROMEOS)
   // This also checks that we bypass the policy that blocks file selection
-  // dialogs.
+  // dialogs. This is a desktop only policy.
   values.Set(policy::key::kAllowFileSelectionDialogs,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
              policy::POLICY_SOURCE_PLATFORM,
              std::make_unique<base::Value>(false), nullptr);
   SetExpectedPolicy(&expected_values, policy::key::kAllowFileSelectionDialogs,
-                    "mandatory", "machine", "sourcePlatform",
+                    "mandatory", "machine", "sourcePlatform", std::string(),
                     base::Value(false));
+#endif
 
   popups_blocked_for_urls.AppendString("ddd");
   values.Set(policy::key::kPopupsBlockedForUrls, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
              popups_blocked_for_urls.CreateDeepCopy(), nullptr);
   SetExpectedPolicy(&expected_values, policy::key::kPopupsBlockedForUrls,
-                    "mandatory", "machine", "sourcePlatform",
+                    "mandatory", "machine", "sourcePlatform", std::string(),
                     popups_blocked_for_urls);
 
   UpdateProviderPolicy(values);
