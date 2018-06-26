@@ -27,7 +27,7 @@ class LayoutTextTest : public RenderingTest {
 
   void SetAhemBody(const char* message, const unsigned width) {
     SetBodyInnerHTML(String::Format(
-        "<div id='target' style='font: Ahem; width: %uem'>%s</div>", width,
+        "<div id='target' style='font: 10px Ahem; width: %uem'>%s</div>", width,
         message));
   }
 
