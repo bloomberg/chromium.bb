@@ -2652,6 +2652,9 @@ void HTMLMediaElement::setMuted(bool muted) {
 
 void HTMLMediaElement::enterPictureInPicture(
     WebMediaPlayer::PipWindowOpenedCallback callback) {
+  if (DisplayType() == WebMediaPlayer::DisplayType::kFullscreen)
+    Fullscreen::ExitFullscreen(GetDocument());
+
   if (GetWebMediaPlayer())
     GetWebMediaPlayer()->EnterPictureInPicture(std::move(callback));
 }
@@ -3644,6 +3647,9 @@ bool HTMLMediaElement::IsFullscreen() const {
 
 void HTMLMediaElement::DidEnterFullscreen() {
   UpdateControlsVisibility();
+
+  if (DisplayType() == WebMediaPlayer::DisplayType::kPictureInPicture)
+    exitPictureInPicture(base::DoNothing());
 
   if (web_media_player_) {
     // FIXME: There is no embedder-side handling in layout test mode.
