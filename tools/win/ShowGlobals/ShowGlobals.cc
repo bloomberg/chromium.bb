@@ -105,6 +105,17 @@ bool DumpInterestingGlobals(IDiaSymbol* global, const wchar_t* filename) {
   for (ULONG celt = 0;
        SUCCEEDED(enum_symbols->Next(1, &symbol, &celt)) && (celt == 1);
        symbol.Release()) {
+    DWORD location_type = 0;
+    // If we can't get the location type then we assume the variable is not of
+    // interest.
+    if (FAILED(symbol->get_locationType(&location_type))) {
+      continue;
+    }
+    // Ignore location types that don't actually correspond to statics and
+    // globals.
+    if (location_type != LocIsStatic)
+      continue;
+
     // If we call get_length on symbol it works for functions but not for
     // data. For some reason for data we have to call get_type() to get
     // another IDiaSymbol object which we can query for length.
