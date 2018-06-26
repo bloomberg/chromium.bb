@@ -349,13 +349,6 @@ const char
         "If enabled, shows the Google Pay logo and a shorter header message "
         "when credit card upload to Google Payments is offered on Android.";
 
-const char kEnableAutofillCreditCardUploadSendDetectedValuesName[] =
-    "Always send metadata on detected form values for Autofill credit card "
-    "upload";
-const char kEnableAutofillCreditCardUploadSendDetectedValuesDescription[] =
-    "If enabled, always checks with Google Payments when deciding whether to "
-    "offer credit card upload, even if some data is missing.";
-
 const char kEnableAutofillCreditCardUploadSendPanFirstSixName[] =
     "Send first six digits of PAN when deciding whether to offer Autofill "
     "credit card upload";

@@ -38,7 +38,6 @@ class SaveCardBubbleViewsBrowserTestBase
   enum DialogEvent : int {
     OFFERED_LOCAL_SAVE,
     REQUESTED_UPLOAD_SAVE,
-    DID_NOT_REQUEST_UPLOAD_SAVE,
     RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
     SENT_UPLOAD_CARD_REQUEST,
   };
@@ -57,7 +56,6 @@ class SaveCardBubbleViewsBrowserTestBase
   // CreditCardSaveManager::ObserverForTest:
   void OnOfferLocalSave() override;
   void OnDecideToRequestUploadSave() override;
-  void OnDecideToNotRequestUploadSave() override;
   void OnReceivedGetUploadDetailsResponse() override;
   void OnSentUploadCardRequest() override;
 

@@ -485,15 +485,10 @@ IN_PROC_BROWSER_TEST_F(
 //              create an Upload_ClickingTosLinkClosesBubble test.
 
 // Tests the upload save logic. Ensures that Chrome delegates the offer-to-save
-// call to Payments when the detected values experiment is on, and offers to
-// upload save the card if Payments allows it.
+// call to Payments, and offers to upload save the card if Payments allows it.
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
-    Logic_DetectedValuesOn_CanOfferToSaveEvenIfNothingFoundIfPaymentsAccepts) {
-  // Enable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
+    Logic_CanOfferToSaveEvenIfNothingFoundIfPaymentsAccepts) {
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -512,15 +507,11 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Tests the upload save logic. Ensures that Chrome delegates the offer-to-save
-// call to Payments when the detected values experiment is on, and still does
-// not surface the offer to upload save dialog if Payments declines it.
+// call to Payments, and still does not surface the offer to upload save dialog
+// if Payments declines it.
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
-    Logic_DetectedValuesOn_ShouldNotOfferToSaveIfNothingFoundAndPaymentsDeclines) {
-  // Enable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
+    Logic_ShouldNotOfferToSaveIfNothingFoundAndPaymentsDeclines) {
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
 
@@ -536,68 +527,10 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(GetSaveCardBubbleViews());
 }
 
-// Tests the upload save logic. Ensures that credit card upload is offered if
-// name, address, and CVC are detected.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
-    Logic_DetectedValuesOff_ShouldAttemptToOfferToSaveIfEverythingFound) {
-  // Disable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndDisableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
-  // Submitting the form should start the flow of asking Payments if Chrome
-  // should offer to save the card to Google.
-  ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
-  FillAndSubmitForm();
-  WaitForObservedEvent();
-}
-
-// Tests the upload save logic. Ensures that credit card upload is offered even
-// if street addresses conflict, as long as their postal codes are the same.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormWithShippingBrowserTest,
-    Logic_DetectedValuesOff_ShouldAttemptToOfferToSaveIfStreetAddressesConflict) {
-  // Disable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndDisableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
-  // Submit first shipping address form with a conflicting street address.
-  FillAndSubmitFormWithConflictingStreetAddress();
-
-  // Submitting the second form should start the flow of asking Payments if
-  // Chrome should offer to save the Google, because conflicting street
-  // addresses with the same postal code are allowable.
-  ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
-  FillAndSubmitForm();
-  WaitForObservedEvent();
-}
-
-// Tests the upload save logic. Ensures that credit card upload is not offered
-// if CVC is not detected.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
-    Logic_DetectedValuesOff_ShouldNotOfferToSaveIfCvcNotFound) {
-  // Disable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndDisableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
-  // Submitting the form should not show the upload save bubble because CVC is
-  // missing.
-  ResetEventWaiterForSequence({DialogEvent::DID_NOT_REQUEST_UPLOAD_SAVE});
-  FillAndSubmitFormWithoutCvc();
-  WaitForObservedEvent();
-}
-
 // Tests the upload save logic. Ensures that Chrome lets Payments decide whether
-// upload save should be offered if the detected values experiment is on, even
-// if CVC is not detected.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
-    Logic_DetectedValuesOn_ShouldAttemptToOfferToSaveIfCvcNotFound) {
-  // Enable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
+// upload save should be offered, even if CVC is not detected.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Logic_ShouldAttemptToOfferToSaveIfCvcNotFound) {
   // Submitting the form should still start the flow of asking Payments if
   // Chrome should offer to save the card to Google, even though CVC is missing.
   ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
@@ -605,32 +538,10 @@ IN_PROC_BROWSER_TEST_F(
   WaitForObservedEvent();
 }
 
-// Tests the upload save logic. Ensures that credit card upload is not offered
-// if an invalid CVC is detected.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
-    Logic_DetectedValuesOff_ShouldNotOfferToSaveIfInvalidCvcFound) {
-  // Disable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndDisableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
-  // Submitting the form should not show the upload save bubble because CVC is
-  // invalid.
-  ResetEventWaiterForSequence({DialogEvent::DID_NOT_REQUEST_UPLOAD_SAVE});
-  FillAndSubmitFormWithInvalidCvc();
-  WaitForObservedEvent();
-}
-
 // Tests the upload save logic. Ensures that Chrome lets Payments decide whether
-// upload save should be offered if the detected values experiment is on, even
-// if the detected CVC is invalid.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
-    Logic_DetectedValuesOn_ShouldAttemptToOfferToSaveIfInvalidCvcFound) {
-  // Enable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
+// upload save should be offered, even if the detected CVC is invalid.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Logic_ShouldAttemptToOfferToSaveIfInvalidCvcFound) {
   // Submitting the form should still start the flow of asking Payments if
   // Chrome should offer to save the card to Google, even though the provided
   // CVC is invalid.
@@ -639,32 +550,11 @@ IN_PROC_BROWSER_TEST_F(
   WaitForObservedEvent();
 }
 
-// Tests the upload save logic. Ensures that credit card upload is not offered
-// if address/cardholder name is not detected.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
-    Logic_DetectedValuesOff_ShouldNotOfferToSaveIfNameNotFound) {
-  // Disable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndDisableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
-  // Submitting the form should not show the upload save bubble because name is
-  // missing.
-  ResetEventWaiterForSequence({DialogEvent::DID_NOT_REQUEST_UPLOAD_SAVE});
-  FillAndSubmitFormWithoutName();
-  WaitForObservedEvent();
-}
-
 // Tests the upload save logic. Ensures that Chrome lets Payments decide whether
-// upload save should be offered if the detected values experiment is on, even
-// if address/cardholder name is not detected.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
-    Logic_DetectedValuesOn_ShouldAttemptToOfferToSaveIfNameNotFound) {
-  // Enable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
+// upload save should be offered, even if address/cardholder name is not
+// detected.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Logic_ShouldAttemptToOfferToSaveIfNameNotFound) {
   // Submitting the form should still start the flow of asking Payments if
   // Chrome should offer to save the card to Google, even though name is
   // missing.
@@ -673,35 +563,11 @@ IN_PROC_BROWSER_TEST_F(
   WaitForObservedEvent();
 }
 
-// Tests the upload save logic. Ensures that credit card upload is not offered
-// if multiple conflicting names are detected.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormWithShippingBrowserTest,
-    Logic_DetectedValuesOff_ShouldNotOfferToSaveIfNamesConflict) {
-  // Disable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndDisableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
-  // Submit first shipping address form with a conflicting name.
-  FillAndSubmitFormWithConflictingName();
-
-  // Submitting the second form should not show the upload save bubble because
-  // the name conflicts with the previous form.
-  ResetEventWaiterForSequence({DialogEvent::DID_NOT_REQUEST_UPLOAD_SAVE});
-  FillAndSubmitForm();
-  WaitForObservedEvent();
-}
-
 // Tests the upload save logic. Ensures that Chrome lets Payments decide whether
-// upload save should be offered if the detected values experiment is on, even
-// if multiple conflicting names are detected.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormWithShippingBrowserTest,
-    Logic_DetectedValuesOn_ShouldAttemptToOfferToSaveIfNamesConflict) {
-  // Enable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
+// upload save should be offered, even if multiple conflicting names are
+// detected.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormWithShippingBrowserTest,
+                       Logic_ShouldAttemptToOfferToSaveIfNamesConflict) {
   // Submit first shipping address form with a conflicting name.
   FillAndSubmitFormWithConflictingName();
 
@@ -713,32 +579,10 @@ IN_PROC_BROWSER_TEST_F(
   WaitForObservedEvent();
 }
 
-// Tests the upload save logic. Ensures that credit card upload is not offered
-// if billing address is not detected.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
-    Logic_DetectedValuesOff_ShouldNotOfferToSaveIfAddressNotFound) {
-  // Disable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndDisableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
-  // Submitting the form should not show the upload save bubble because address
-  // is missing.
-  ResetEventWaiterForSequence({DialogEvent::DID_NOT_REQUEST_UPLOAD_SAVE});
-  FillAndSubmitFormWithoutAddress();
-  WaitForObservedEvent();
-}
-
 // Tests the upload save logic. Ensures that Chrome lets Payments decide whether
-// upload save should be offered if the detected values experiment is on, even
-// if billing address is not detected.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
-    Logic_DetectedValuesOn_ShouldAttemptToOfferToSaveIfAddressNotFound) {
-  // Enable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
+// upload save should be offered, even if billing address is not detected.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Logic_ShouldAttemptToOfferToSaveIfAddressNotFound) {
   // Submitting the form should still start the flow of asking Payments if
   // Chrome should offer to save the card to Google, even though billing address
   // is missing.
@@ -747,35 +591,11 @@ IN_PROC_BROWSER_TEST_F(
   WaitForObservedEvent();
 }
 
-// Tests the upload save logic. Ensures that credit card upload is not offered
-// if multiple conflicting billing address postal codes are detected.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormWithShippingBrowserTest,
-    Logic_DetectedValuesOff_ShouldNotOfferToSaveIfPostalCodesConflict) {
-  // Disable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndDisableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
-  // Submit first shipping address form with a conflicting postal code.
-  FillAndSubmitFormWithConflictingPostalCode();
-
-  // Submitting the second form should not show the upload save bubble because
-  // the postal code conflicts with the previous form.
-  ResetEventWaiterForSequence({DialogEvent::DID_NOT_REQUEST_UPLOAD_SAVE});
-  FillAndSubmitForm();
-  WaitForObservedEvent();
-}
-
 // Tests the upload save logic. Ensures that Chrome lets Payments decide whether
-// upload save should be offered if the detected values experiment is on, even
-// if multiple conflicting billing address postal codes are detected.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormWithShippingBrowserTest,
-    Logic_DetectedValuesOn_ShouldAttemptToOfferToSaveIfPostalCodesConflict) {
-  // Enable the SendDetectedValues experiment.
-  scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamSendDetectedValues);
-
+// upload save should be offered, even if multiple conflicting billing address
+// postal codes are detected.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormWithShippingBrowserTest,
+                       Logic_ShouldAttemptToOfferToSaveIfPostalCodesConflict) {
   // Submit first shipping address form with a conflicting postal code.
   FillAndSubmitFormWithConflictingPostalCode();
 

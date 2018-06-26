@@ -104,21 +104,17 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   upload_request_.card = card;
   uploading_local_card_ = uploading_local_card;
 
-  // Ideally, in order to upload a card, we must have both:
-  //  1) Card with CVC
-  //  2) 1+ recently-used or modified addresses that meet the client-side
-  //     validation rules
-  // We perform all checks before returning or logging in order to know where we
-  // stand with regards to card upload information. If the "send detected
-  // values" experiment is disabled and any problems were found, we do not offer
-  // to save the card. We could fall back to a local save, but we believe that
-  // sometimes offering upload and sometimes offering local save is a confusing
-  // user experience.
-
-  // Alternatively, if the "send detected values" experiment is enabled, always
-  // ping Google Payments regardless and ask if save is allowed. Include what
-  // data was found as part of the request, and let Payments decide whether
-  // upload save should be offered.
+  // In an ideal scenario, when uploading a card, we would have:
+  //  1) Card number and expiration
+  //  2) CVC
+  //  3) 1+ recently-used or modified addresses that meet validation rules
+  //  4) Cardholder name or names on the address profiles
+  // At a minimum, only #1 (card number and expiration) is absolutely required
+  // in order to save a card to Google Payments. We perform all checks before
+  // returning or logging in order to know where we stand with regards to card
+  // upload information. Then, we ping Google Payments and ask if upload save
+  // should be offered with the given amount of information, letting Payments
+  // make the final offer-to-save decision.
   found_cvc_field_ = false;
   found_value_in_cvc_field_ = false;
   found_cvc_value_in_non_cvc_field_ = false;
@@ -153,25 +149,7 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
     upload_decision_metrics_ |= GetCVCCardUploadDecisionMetric();
   }
 
-  // If any problems were found across CVC/name/address,
-  // |upload_decision_metrics_| will be non-zero. If the "send detected values"
-  // experiment is on, continue anyway and just let Payments know that not
-  // everything was found, as Payments may still allow the card to be saved.
-  // If the experiment is off, follow the legacy logic of aborting upload save.
-  if (upload_decision_metrics_ &&
-      !IsAutofillUpstreamSendDetectedValuesExperimentEnabled()) {
-    LogCardUploadDecisions(upload_decision_metrics_);
-    pending_upload_request_origin_ = url::Origin();
-    if (observer_for_testing_)
-      observer_for_testing_->OnDecideToNotRequestUploadSave();
-    return;
-  }
-
   // Add active experiments to the request payload.
-  if (IsAutofillUpstreamSendDetectedValuesExperimentEnabled()) {
-    upload_request_.active_experiments.push_back(
-        kAutofillUpstreamSendDetectedValues.name);
-  }
   if (IsAutofillUpstreamSendPanFirstSixExperimentEnabled()) {
     upload_request_.active_experiments.push_back(
         kAutofillUpstreamSendPanFirstSix.name);
@@ -261,48 +239,26 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
           /*is_local=*/false);
     }
   } else {
-    // If the upload details request failed, fall back to a local save. The
-    // reasoning here is as follows:
-    // - This will sometimes fail intermittently, in which case it might be
-    // better to not fall back, because sometimes offering upload and sometimes
-    // offering local save is a poor user experience.
-    // - However, in some cases, our local configuration limiting the feature to
-    // countries that Payments is known to support will not match Payments' own
-    // determination of what country the user is located in. In these cases,
-    // the upload details request will consistently fail and if we don't fall
-    // back to a local save then the user will never be offered any kind of
-    // credit card save.
-
-    // Additional note: If the "send detected values" experiment is enabled,
-    // only offer to save locally if CVC + name + address were all found, as
-    // this signifies a legacy decision of "Payments doesn't want this card".
-    // We can revisit this decision in the future, but the reasoning here is as
-    // follows:
-    // - If any of them were not found, surfacing local save would begin to
-    // create a scenario where different card types or different checkout forms
-    // could reasonably surface different save dialogs to the user, and that
-    // would cause unnecessary confusion.
-    // - We already don't offer to save at all in these cases today, so this
-    // decision doesn't disable any upload chances, it just enables *less*
-    // upload chances.
+    // If the upload details request failed and we *know* we have all possible
+    // information (card number, expiration, cvc, name, and address), fall back
+    // to a local save. It indicates that "Payments doesn't want this card" or
+    // "Payments doesn't currently support this country", in which case the
+    // upload details request will consistently fail and if we don't fall back
+    // to a local save, the user will never be offered *any* kind of credit card
+    // save. (Note that this could intermittently backfire if there's a network
+    // breakdown or Payments outage, resulting in sometimes showing upload and
+    // sometimes offering local save, but such cases should be rare.)
     int detected_values = GetDetectedValues();
     bool found_name_and_postal_code_and_cvc =
         (detected_values & DetectedValue::CARDHOLDER_NAME ||
          detected_values & DetectedValue::ADDRESS_NAME) &&
         detected_values & DetectedValue::POSTAL_CODE &&
         detected_values & DetectedValue::CVC;
-    if (!IsAutofillUpstreamSendDetectedValuesExperimentEnabled() ||
-        found_name_and_postal_code_and_cvc) {
+    if (found_name_and_postal_code_and_cvc)
       OfferCardLocalSave(upload_request_.card);
-    }
     upload_decision_metrics_ |=
         AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED;
   }
-
-  // Assert that we've either detected the CVC or the "send detected values"
-  // experiment is enabled.
-  DCHECK(IsAutofillUpstreamSendDetectedValuesExperimentEnabled() ||
-         (found_cvc_field_ && found_value_in_cvc_field_));
 
   LogCardUploadDecisions(upload_decision_metrics_);
   pending_upload_request_origin_ = url::Origin();
@@ -411,18 +367,14 @@ void CreditCardSaveManager::SetProfilesForCreditCardUpload(
   if (verified_zip.empty() && !candidate_profiles.empty())
     upload_decision_metrics_ |= AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE;
 
-  // Only set |upload_request->profiles| if upload is allowed (either all
-  // required data was found, or "send detected values" experiment is enabled).
-  if (!upload_decision_metrics_ ||
-      IsAutofillUpstreamSendDetectedValuesExperimentEnabled()) {
-    upload_request->profiles.assign(candidate_profiles.begin(),
-                                    candidate_profiles.end());
-    if (!has_modified_profile)
-      for (const AutofillProfile& profile : candidate_profiles)
-        UMA_HISTOGRAM_COUNTS_1000(
-            "Autofill.DaysSincePreviousUseAtSubmission.Profile",
-            (profile.use_date() - profile.previous_use_date()).InDays());
-  }
+  // Set up |upload_request->profiles|.
+  upload_request->profiles.assign(candidate_profiles.begin(),
+                                  candidate_profiles.end());
+  if (!has_modified_profile)
+    for (const AutofillProfile& profile : candidate_profiles)
+      UMA_HISTOGRAM_COUNTS_1000(
+          "Autofill.DaysSincePreviousUseAtSubmission.Profile",
+          (profile.use_date() - profile.previous_use_date()).InDays());
 }
 
 int CreditCardSaveManager::GetDetectedValues() const {

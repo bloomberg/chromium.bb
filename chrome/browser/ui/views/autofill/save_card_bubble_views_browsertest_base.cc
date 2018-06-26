@@ -103,11 +103,6 @@ void SaveCardBubbleViewsBrowserTestBase::OnDecideToRequestUploadSave() {
     event_waiter_->OnEvent(DialogEvent::REQUESTED_UPLOAD_SAVE);
 }
 
-void SaveCardBubbleViewsBrowserTestBase::OnDecideToNotRequestUploadSave() {
-  if (event_waiter_)
-    event_waiter_->OnEvent(DialogEvent::DID_NOT_REQUEST_UPLOAD_SAVE);
-}
-
 void SaveCardBubbleViewsBrowserTestBase::OnReceivedGetUploadDetailsResponse() {
   if (event_waiter_)
     event_waiter_->OnEvent(DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE);

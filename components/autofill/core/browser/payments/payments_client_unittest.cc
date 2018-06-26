@@ -72,16 +72,6 @@ class PaymentsClientTest : public testing::Test,
 
   void TearDown() override { client_.reset(); }
 
-  void DisableAutofillUpstreamSendDetectedValuesExperiment() {
-    scoped_feature_list_.InitAndDisableFeature(
-        kAutofillUpstreamSendDetectedValues);
-  }
-
-  void EnableAutofillUpstreamSendDetectedValuesExperiment() {
-    scoped_feature_list_.InitAndEnableFeature(
-        kAutofillUpstreamSendDetectedValues);
-  }
-
   void EnableAutofillUpstreamSendPanFirstSixExperiment() {
     scoped_feature_list_.InitAndEnableFeature(kAutofillUpstreamSendPanFirstSix);
   }
@@ -295,29 +285,13 @@ TEST_F(PaymentsClientTest, GetDetailsRemovesNonLocationData) {
   EXPECT_TRUE(GetUploadData().find("0090") == std::string::npos);
 }
 
-TEST_F(PaymentsClientTest,
-       GetDetailsIncludesDetectedValuesInRequestIfExperimentOn) {
-  EnableAutofillUpstreamSendDetectedValuesExperiment();
-
+TEST_F(PaymentsClientTest, GetDetailsIncludesDetectedValuesInRequest) {
   StartGettingUploadDetails();
 
   // Verify that the detected values were included in the request.
   std::string detected_values_string =
       "\"detected_values\":" + std::to_string(kAllDetectableValues);
   EXPECT_TRUE(GetUploadData().find(detected_values_string) !=
-              std::string::npos);
-}
-
-TEST_F(PaymentsClientTest,
-       GetDetailsDoesNotIncludeDetectedValuesInRequestIfExperimentOff) {
-  DisableAutofillUpstreamSendDetectedValuesExperiment();
-
-  StartGettingUploadDetails();
-
-  // Verify that the detected values were left out of the request.
-  std::string detected_values_string =
-      "\"detected_values\":" + std::to_string(kAllDetectableValues);
-  EXPECT_TRUE(GetUploadData().find(detected_values_string) ==
               std::string::npos);
 }
 

@@ -41,7 +41,6 @@ extern const base::Feature kAutofillUpstream;
 extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;
 extern const base::Feature kAutofillUpstreamAlwaysRequestCardholderName;
 extern const base::Feature kAutofillUpstreamEditableCardholderName;
-extern const base::Feature kAutofillUpstreamSendDetectedValues;
 extern const base::Feature kAutofillUpstreamSendPanFirstSix;
 extern const base::Feature kAutofillUpstreamUpdatePromptExplanation;
 extern const base::Feature kAutofillVoteUsingInvalidProfileData;
@@ -100,12 +99,6 @@ bool IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled();
 // was not detected or was conflicting during the checkout flow and the user is
 // NOT a Google Payments customer.
 bool IsAutofillUpstreamEditableCardholderNameExperimentEnabled();
-
-// Returns whether the experiment is enabled where Chrome Upstream always checks
-// to see if it can offer to save (even though some data like name, address, and
-// CVC might be missing) by sending metadata on what form values were detected
-// along with whether the user is a Google Payments customer.
-bool IsAutofillUpstreamSendDetectedValuesExperimentEnabled();
 
 // Returns whether the experiment is enabled where Chrome Upstream sends the
 // first six digits of the card PAN to Google Payments to help determine whether

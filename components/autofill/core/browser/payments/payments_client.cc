@@ -292,19 +292,18 @@ class GetUploadDetailsRequest : public PaymentsRequest {
       // These addresses are used by Payments to (1) accurately determine the
       // user's country in order to show the correct legal documents and (2) to
       // verify that the addresses are valid for their purposes so that we don't
-      // offer save in a case where it would definitely fail (e.g. P.O. boxes).
-      // The final parameter directs BuildAddressDictionary to omit names and
-      // phone numbers, which aren't useful for these purposes.
+      // offer save in a case where it would definitely fail (e.g. P.O. boxes if
+      // min address is not possible). The final parameter directs
+      // BuildAddressDictionary to omit names and phone numbers, which aren't
+      // useful for these purposes.
       addresses->Append(BuildAddressDictionary(profile, app_locale_, false));
     }
     request_dict.Set("address", std::move(addresses));
 
-    // If the "send detected values" experiment is enabled, it's possible we may
-    // not have found name/address/CVC. The detected_values_ bitmask tells
-    // Payments what was found, and Payments will decide if the provided data is
-    // enough to offer upload save.
-    if (IsAutofillUpstreamSendDetectedValuesExperimentEnabled())
-      request_dict.SetInteger("detected_values", detected_values_);
+    // It's possible we may not have found name/address/CVC in the checkout
+    // flow. The detected_values_ bitmask tells Payments what *was* found, and
+    // Payments will decide if the provided data is enough to offer upload save.
+    request_dict.SetInteger("detected_values", detected_values_);
 
     if (IsAutofillUpstreamSendPanFirstSixExperimentEnabled() &&
         !pan_first_six_.empty())
