@@ -155,7 +155,6 @@ CONTENT_EXPORT extern const char kWebXrRenderPathParamValueSharedBuffer[];
 CONTENT_EXPORT extern const base::Feature kDeviceMonitorMac;
 CONTENT_EXPORT extern const base::Feature kIOSurfaceCapturer;
 CONTENT_EXPORT extern const base::Feature kMacV2Sandbox;
-CONTENT_EXPORT extern const base::Feature kWebAuthTouchId;
 #endif  // defined(OS_MACOSX)
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in

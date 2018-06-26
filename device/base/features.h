@@ -22,6 +22,10 @@ DEVICE_BASE_EXPORT extern const base::Feature kNewblueDaemon;
 
 DEVICE_BASE_EXPORT extern const base::Feature kNewCtap2Device;
 
+#if defined(OS_MACOSX)
+DEVICE_BASE_EXPORT extern const base::Feature kWebAuthTouchId;
+#endif  // defined(OS_MACOSX)
+
 }  // namespace device
 
 #endif  // DEVICE_BASE_FEATURES_H_
