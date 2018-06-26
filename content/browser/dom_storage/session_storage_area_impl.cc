@@ -5,6 +5,8 @@
 #include "content/browser/dom_storage/session_storage_area_impl.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/common/dom_storage/dom_storage_types.h"
@@ -44,14 +46,20 @@ std::unique_ptr<SessionStorageAreaImpl> SessionStorageAreaImpl::Clone(
       namespace_entry, origin_, shared_data_map_, register_new_map_callback_));
 }
 
+void SessionStorageAreaImpl::NotifyObserversAllDeleted() {
+  observers_.ForAllPtrs([](blink::mojom::StorageAreaObserver* observer) {
+    // Renderer process expects |source| to always be two newline separated
+    // strings.
+    observer->AllDeleted("\n");
+  });
+}
+
 // blink::mojom::StorageArea:
 void SessionStorageAreaImpl::AddObserver(
     blink::mojom::StorageAreaObserverAssociatedPtrInfo observer) {
   blink::mojom::StorageAreaObserverAssociatedPtr observer_ptr;
   observer_ptr.Bind(std::move(observer));
-  mojo::InterfacePtrSetElementId ptr_id =
-      shared_data_map_->storage_area()->AddObserver(std::move(observer_ptr));
-  observer_ptrs_.push_back(ptr_id);
+  observers_.AddPtr(std::move(observer_ptr));
 }
 
 void SessionStorageAreaImpl::Put(
@@ -122,13 +130,6 @@ void SessionStorageAreaImpl::OnConnectionError() {
 void SessionStorageAreaImpl::CreateNewMap(
     NewMapType map_type,
     const base::Optional<std::string>& delete_all_source) {
-  std::vector<blink::mojom::StorageAreaObserverAssociatedPtr> ptrs_to_move;
-  for (const mojo::InterfacePtrSetElementId& ptr_id : observer_ptrs_) {
-    DCHECK(shared_data_map_->storage_area()->HasObserver(ptr_id));
-    ptrs_to_move.push_back(
-        shared_data_map_->storage_area()->RemoveObserver(ptr_id));
-  }
-  observer_ptrs_.clear();
   shared_data_map_->RemoveBindingReference();
   switch (map_type) {
     case NewMapType::FORKED:
@@ -145,18 +146,10 @@ void SessionStorageAreaImpl::CreateNewMap(
           shared_data_map_->listener(),
           register_new_map_callback_.Run(namespace_entry_, origin_),
           shared_data_map_->storage_area()->database());
-      for (auto& ptr : ptrs_to_move) {
-        ptr->AllDeleted(delete_all_source.value_or("\n"));
-      }
       break;
     }
   }
   shared_data_map_->AddBindingReference();
-
-  for (auto& observer_ptr : ptrs_to_move) {
-    observer_ptrs_.push_back(
-        shared_data_map_->storage_area()->AddObserver(std::move(observer_ptr)));
-  }
 }
 
 }  // namespace content

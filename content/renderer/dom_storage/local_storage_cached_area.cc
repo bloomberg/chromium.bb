@@ -93,6 +93,7 @@ LocalStorageCachedArea::LocalStorageCachedArea(
   blink::mojom::StorageAreaObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info),
                 main_thread_scheduler->IPCTaskRunner());
+  leveldb_->AddObserver(std::move(ptr_info));
 }
 
 LocalStorageCachedArea::LocalStorageCachedArea(
@@ -436,7 +437,6 @@ void LocalStorageCachedArea::KeyDeleted(const std::vector<uint8_t>& key,
 }
 
 void LocalStorageCachedArea::AllDeleted(const std::string& source) {
-  DCHECK(!IsSessionStorage());
   GURL page_url;
   std::string storage_area_id;
   UnpackSource(source, &page_url, &storage_area_id);
@@ -460,9 +460,18 @@ void LocalStorageCachedArea::AllDeleted(const std::string& source) {
     }
   }
 
-  blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
-      blink::WebString(), blink::WebString(), blink::WebString(),
-      origin_.GetURL(), page_url, originating_area);
+  if (IsSessionStorage()) {
+    SessionWebStorageNamespaceImpl session_namespace_for_event_dispatch(
+        namespace_id_, nullptr);
+    blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
+        blink::WebString(), blink::WebString(), blink::WebString(),
+        origin_.GetURL(), page_url, session_namespace_for_event_dispatch,
+        originating_area);
+  } else {
+    blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
+        blink::WebString(), blink::WebString(), blink::WebString(),
+        origin_.GetURL(), page_url, originating_area);
+  }
 }
 
 void LocalStorageCachedArea::ShouldSendOldValueOnMutations(bool value) {

@@ -224,7 +224,7 @@ TEST_F(SessionStorageAreaImplTest, Cloning) {
   ss_leveldb_impl2 = nullptr;
 }
 
-TEST_F(SessionStorageAreaImplTest, ObserverTransfer) {
+TEST_F(SessionStorageAreaImplTest, NotifyAllDeleted) {
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("0"), testing::_))
       .Times(1);
@@ -238,69 +238,26 @@ TEST_F(SessionStorageAreaImplTest, ObserverTransfer) {
           leveldb_database_.get()),
       GetRegisterNewAreaMapCallback());
 
-  // Create the mojo binding.
   blink::mojom::StorageAreaAssociatedPtr ss_leveldb1;
   ss_leveldb_impl1->Bind(
       mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb1));
 
-  // Create the observer, and attach it to the mojo bound implementation.
   testing::StrictMock<test::MockLevelDBObserver> mock_observer;
   mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> observer_binding(
       &mock_observer);
   blink::mojom::StorageAreaObserverAssociatedPtrInfo observer_ptr_info;
   observer_binding.Bind(mojo::MakeRequest(&observer_ptr_info));
   ss_leveldb1->AddObserver(std::move(observer_ptr_info));
+  ss_leveldb1.FlushForTesting();
 
-  // Perform a shallow clone.
-  std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
-  metadata_.RegisterShallowClonedNamespace(
-      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_),
-      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_),
-      &save_operations);
-  leveldb_database_->Write(std::move(save_operations), base::DoNothing());
-  auto ss_leveldb_impl2 = ss_leveldb_impl1->Clone(
-      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_));
-  blink::mojom::StorageAreaAssociatedPtr ss_leveldb2;
-  ss_leveldb_impl2->Bind(
-      mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb2));
-
-  // Wait for our future commits to finish.
-  base::RunLoop commit_waiters;
-  auto barrier = base::BarrierClosure(3, commit_waiters.QuitClosure());
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK))
-      .Times(3)
-      .WillRepeatedly(base::test::RunClosure(barrier));
-
-  // Do a change on the new interface. There should be no observation.
-  EXPECT_CALL(listener_,
-              OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
-      .Times(1);
-  EXPECT_TRUE(test::PutSync(ss_leveldb2.get(), StdStringToUint8Vector("key2"),
-                            StdStringToUint8Vector("data2"), base::nullopt,
-                            ""));
-  ss_leveldb_impl2->data_map()->storage_area()->ScheduleImmediateCommit();
-
-  // Do a change on the old interface.
-  EXPECT_CALL(mock_observer,
-              KeyChanged(StdStringToUint8Vector("key1"),
-                         StdStringToUint8Vector("data2"),
-                         StdStringToUint8Vector("data1"), "ss_leveldb1"))
-      .Times(1);
-  EXPECT_TRUE(test::PutSync(ss_leveldb1.get(), StdStringToUint8Vector("key1"),
-                            StdStringToUint8Vector("data2"),
-                            StdStringToUint8Vector("data1"), "ss_leveldb1"));
-  ss_leveldb_impl1->data_map()->storage_area()->ScheduleImmediateCommit();
-
-  // Wait for the commits.
-  commit_waiters.Run();
+  base::RunLoop loop;
+  EXPECT_CALL(mock_observer, AllDeleted("\n"))
+      .WillOnce(base::test::RunClosure(loop.QuitClosure()));
+  ss_leveldb_impl1->NotifyObserversAllDeleted();
+  loop.Run();
 
   EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
       .Times(1);
-  EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("1")))
-      .Times(1);
-
-  ss_leveldb_impl1 = nullptr;
-  ss_leveldb_impl2 = nullptr;
 }
 
 TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
@@ -337,7 +294,9 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
   // Same maps are used.
   EXPECT_EQ(ss_leveldb_impl1->data_map(), ss_leveldb_impl2->data_map());
 
-  // Create the observer, attach to the first namespace.
+  // Create the observer, attach to the first namespace, and verify we don't see
+  // any changes (see SessionStorageAreaImpl class comment about when observers
+  // are called).
   testing::StrictMock<test::MockLevelDBObserver> mock_observer;
   mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> observer_binding(
       &mock_observer);
@@ -353,7 +312,6 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
   // There should be no commits, as we don't actually have to change any data.
   // |ss_leveldb_impl1| should just switch to a new, empty map.
   EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(0);
-  EXPECT_CALL(mock_observer, AllDeleted("source")).Times(1);
   EXPECT_TRUE(test::DeleteAllSync(ss_leveldb1.get(), "source"));
 
   // The maps were forked on the above call.

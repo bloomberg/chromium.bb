@@ -29,6 +29,10 @@ class SessionStorageDataMap;
 // cloning (copy-on-write). This should be done through the |Clone()| method and
 // not manually.
 //
+// Unlike regular observers, adding an observer to this class only notifies when
+// the whole area is deleted manually (not by using DeleteAll on this binding).
+// This can happen when clearing browser data.
+//
 // During forking, this class is responsible for dealing with moving its
 // observers from the SessionStorageDataMap's StorageArea to the new forked
 // SessionStorageDataMap's StorageArea.
@@ -60,6 +64,9 @@ class CONTENT_EXPORT SessionStorageAreaImpl : public blink::mojom::StorageArea {
   bool IsBound() const { return binding_.is_bound(); }
 
   SessionStorageDataMap* data_map() { return shared_data_map_.get(); }
+
+  // Notifies all observers that this area was deleted.
+  void NotifyObserversAllDeleted();
 
   // blink::mojom::StorageArea:
   void AddObserver(
@@ -93,7 +100,7 @@ class CONTENT_EXPORT SessionStorageAreaImpl : public blink::mojom::StorageArea {
   scoped_refptr<SessionStorageDataMap> shared_data_map_;
   RegisterNewAreaMap register_new_map_callback_;
 
-  std::vector<mojo::InterfacePtrSetElementId> observer_ptrs_;
+  mojo::AssociatedInterfacePtrSet<blink::mojom::StorageAreaObserver> observers_;
   mojo::AssociatedBinding<blink::mojom::StorageArea> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStorageAreaImpl);

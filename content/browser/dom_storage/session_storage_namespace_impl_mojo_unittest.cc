@@ -14,6 +14,7 @@
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_leveldb_database.h"
+#include "content/test/gmock_util.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -378,12 +379,28 @@ TEST_F(SessionStorageNamespaceImplMojoTest, RemoveOriginData) {
   ss_namespace->OpenArea(test_origin1_, mojo::MakeRequest(&leveldb_1));
   ss_namespace.FlushForTesting();
 
+  // Create an observer to make sure the deletion is observed.
+  testing::StrictMock<test::MockLevelDBObserver> mock_observer;
+  mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> observer_binding(
+      &mock_observer);
+  blink::mojom::StorageAreaObserverAssociatedPtrInfo observer_ptr_info;
+  observer_binding.Bind(mojo::MakeRequest(&observer_ptr_info));
+  leveldb_1->AddObserver(std::move(observer_ptr_info));
+  leveldb_1.FlushForTesting();
+
+  base::RunLoop loop;
+  EXPECT_CALL(mock_observer, AllDeleted("\n"))
+      .WillOnce(base::test::RunClosure(loop.QuitClosure()));
+
   EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(1);
   namespace_impl->RemoveOriginData(test_origin1_);
 
   std::vector<blink::mojom::KeyValuePtr> data;
   EXPECT_TRUE(test::GetAllSync(leveldb_1.get(), &data));
   EXPECT_EQ(0ul, data.size());
+
+  // Check that the observer was notified.
+  loop.Run();
 
   EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
       .Times(1);

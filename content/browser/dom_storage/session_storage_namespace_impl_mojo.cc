@@ -128,6 +128,7 @@ void SessionStorageNamespaceImplMojo::RemoveOriginData(
   // Renderer process expects |source| to always be two newline separated
   // strings.
   it->second->DeleteAll("\n", base::DoNothing());
+  it->second->NotifyObserversAllDeleted();
   it->second->data_map()->storage_area()->ScheduleImmediateCommit();
 }
 

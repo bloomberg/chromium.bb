@@ -31,11 +31,13 @@ WebStorageArea* SessionWebStorageNamespaceImpl::CreateStorageArea(
                                                          origin));
 }
 
+blink::WebString SessionWebStorageNamespaceImpl::GetNamespaceId() const {
+  return blink::WebString::FromASCII(namespace_id_);
+}
+
 bool SessionWebStorageNamespaceImpl::IsSameNamespace(
     const WebStorageNamespace& other) const {
-  const SessionWebStorageNamespaceImpl* other_impl =
-      static_cast<const SessionWebStorageNamespaceImpl*>(&other);
-  return namespace_id_ == other_impl->namespace_id_;
+  return GetNamespaceId() == other.GetNamespaceId();
 }
 
 }  // namespace content
