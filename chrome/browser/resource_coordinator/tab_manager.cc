@@ -166,7 +166,10 @@ class TabManager::TabManagerSessionRestoreObserver final
 constexpr base::TimeDelta TabManager::kDefaultMinTimeToPurge;
 
 TabManager::TabManager()
-    : browser_tab_strip_tracker_(this, nullptr, nullptr),
+    : state_transitions_callback_(
+          base::BindRepeating(&TabManager::PerformStateTransitions,
+                              base::Unretained(this))),
+      browser_tab_strip_tracker_(this, nullptr, nullptr),
       is_session_restore_loading_tabs_(false),
       restored_tab_count_(0u),
       background_tab_loading_mode_(BackgroundTabLoadingMode::kStaggered),
@@ -609,7 +612,7 @@ void TabManager::OnLoadingStateChange(content::WebContents* web_contents,
     }
 
     // Once a tab is loaded, it might be eligible for freezing.
-    PerformStateTransitions();
+    SchedulePerformStateTransitions(base::TimeDelta());
   }
 }
 
@@ -927,6 +930,16 @@ base::TimeDelta TabManager::GetTimeInBackgroundBeforeProactiveDiscard() const {
   return proactive_freeze_discard_params_.low_occluded_timeout;
 }
 
+void TabManager::SchedulePerformStateTransitions(base::TimeDelta delay) {
+  if (!state_transitions_timer_) {
+    state_transitions_timer_ =
+        std::make_unique<base::OneShotTimer>(GetTickClock());
+  }
+
+  state_transitions_timer_->Start(FROM_HERE, delay,
+                                  state_transitions_callback_);
+}
+
 void TabManager::PerformStateTransitions() {
   if (!base::FeatureList::IsEnabled(features::kProactiveTabFreezeAndDiscard))
     return;
@@ -1010,19 +1023,10 @@ void TabManager::PerformStateTransitions() {
   }
 
   // Schedule the next call to PerformStateTransitions().
-  if (!state_transitions_timer_) {
-    state_transitions_timer_ =
-        std::make_unique<base::OneShotTimer>(GetTickClock());
-  } else {
+  if (next_state_transition_time.is_max() && state_transitions_timer_)
     state_transitions_timer_->Stop();
-  }
-
-  if (!next_state_transition_time.is_max()) {
-    state_transitions_timer_->Start(
-        FROM_HERE, next_state_transition_time - now,
-        base::BindRepeating(&TabManager::PerformStateTransitions,
-                            base::Unretained(this)));
-  }
+  else
+    SchedulePerformStateTransitions(next_state_transition_time - now);
 }
 
 void TabManager::OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit,
@@ -1038,17 +1042,10 @@ void TabManager::OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit,
   } else if (was_discarded && !is_discarded) {
     num_loaded_lifecycle_units_++;
     // Incrementing the number of loaded tabs might change the return value of
-    // GetTimeInBackgroundBeforeProactiveDiscard(). Call
+    // GetTimeInBackgroundBeforeProactiveDiscard(). Schedule a call to
     // PerformStateTransitions() to determine if a tab should be discarded in
     // response to that change.
-    //
-    // Note: PerformStateTransitions() is not called when a tab is frozen or
-    // discarded, because this is unnecessary and could cause recursive calls:
-    //   TabManager::PerformStateTransitions()
-    //     LifecycleUnit::Freeze()
-    //       TabManager::OnLifecycleUnitStateChanged()
-    //         TabManager::PerformStateTransitions()
-    PerformStateTransitions();
+    SchedulePerformStateTransitions(base::TimeDelta());
   }
 
   DCHECK_EQ(num_loaded_lifecycle_units_,
@@ -1058,7 +1055,7 @@ void TabManager::OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit,
 void TabManager::OnLifecycleUnitVisibilityChanged(
     LifecycleUnit* lifecycle_unit,
     content::Visibility visibility) {
-  PerformStateTransitions();
+  SchedulePerformStateTransitions(base::TimeDelta());
 }
 
 void TabManager::OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) {
@@ -1071,7 +1068,7 @@ void TabManager::OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) {
   DCHECK_EQ(num_loaded_lifecycle_units_,
             GetNumLoadedLifecycleUnits(lifecycle_units_));
 
-  PerformStateTransitions();
+  SchedulePerformStateTransitions(base::TimeDelta());
 }
 
 void TabManager::OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) {
@@ -1085,7 +1082,7 @@ void TabManager::OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) {
   DCHECK_EQ(num_loaded_lifecycle_units_,
             GetNumLoadedLifecycleUnits(lifecycle_units_));
 
-  PerformStateTransitions();
+  SchedulePerformStateTransitions(base::TimeDelta());
 }
 
 }  // namespace resource_coordinator

@@ -1126,24 +1126,16 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
 
   // Verify that 1 second before the Low threshold timeout, nothing has been
   // discarded.
-  EXPECT_FALSE(
-      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
-          ->IsDiscarded());
-  EXPECT_FALSE(
-      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(1))
-          ->IsDiscarded());
+  EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(1)));
 
   // Fast forward time until past the low threshold timeout
   task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   // Verify that once the Low threshold timeout has passed, the hidden tab was
   // discarded.
-  EXPECT_TRUE(
-      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
-          ->IsDiscarded());
-  EXPECT_FALSE(
-      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(1))
-          ->IsDiscarded());
+  EXPECT_TRUE(IsTabDiscarded(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(1)));
 
   tab_strip->CloseAllTabs();
 }
@@ -1170,24 +1162,16 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
       kModerateOccludedTimeout - base::TimeDelta::FromSeconds(1);
   task_runner_->FastForwardBy(less_than_moderate_timeout);
 
-  for (int tab = 0; tab < kLowLoadedTabCount; tab++) {
-    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
-                     tab_strip->GetWebContentsAt(tab))
-                     ->IsDiscarded());
-  }
+  for (int tab = 0; tab < kLowLoadedTabCount; tab++)
+    EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(tab)));
 
   // Fast forward time until past the moderate threshold timeout.
   task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   // The hidden tab (at index 0) should be the only discarded tab.
-  EXPECT_TRUE(
-      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
-          ->IsDiscarded());
-  for (int tab = 1; tab < kLowLoadedTabCount; tab++) {
-    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
-                     tab_strip->GetWebContentsAt(tab))
-                     ->IsDiscarded());
-  }
+  EXPECT_TRUE(IsTabDiscarded(tab_strip->GetWebContentsAt(0)));
+  for (int tab = 1; tab < kLowLoadedTabCount; tab++)
+    EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(tab)));
 
   tab_strip->CloseAllTabs();
 }
@@ -1214,24 +1198,16 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
       kHighOccludedTimeout - base::TimeDelta::FromSeconds(1);
   task_runner_->FastForwardBy(less_than_high_timeout);
 
-  for (int tab = 0; tab < kModerateLoadedTabCount; tab++) {
-    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
-                     tab_strip->GetWebContentsAt(tab))
-                     ->IsDiscarded());
-  }
+  for (int tab = 0; tab < kModerateLoadedTabCount; tab++)
+    EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(tab)));
 
   // Fast forward time until past the high threshold timeout.
   task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   // The hidden tab (at index 0) should be the only discarded tab.
-  EXPECT_TRUE(
-      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
-          ->IsDiscarded());
-  for (int tab = 1; tab < kModerateLoadedTabCount; tab++) {
-    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
-                     tab_strip->GetWebContentsAt(tab))
-                     ->IsDiscarded());
-  }
+  EXPECT_TRUE(IsTabDiscarded(tab_strip->GetWebContentsAt(0)));
+  for (int tab = 1; tab < kModerateLoadedTabCount; tab++)
+    EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(tab)));
 
   tab_strip->CloseAllTabs();
 }
@@ -1251,17 +1227,14 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
     tab_strip->GetWebContentsAt(tabs)->WasShown();
   }
 
+  // Hide a tab and run tasks to let state transitions happen.
   tab_strip->GetWebContentsAt(0)->WasHidden();
+  task_runner_->RunUntilIdle();
 
   // The hidden tab (at index 0) should be the only discarded tab.
-  EXPECT_TRUE(
-      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
-          ->IsDiscarded());
-  for (int tab = 1; tab < kHighLoadedTabCount; tab++) {
-    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
-                     tab_strip->GetWebContentsAt(tab))
-                     ->IsDiscarded());
-  }
+  EXPECT_TRUE(IsTabDiscarded(tab_strip->GetWebContentsAt(0)));
+  for (int tab = 1; tab < kHighLoadedTabCount; tab++)
+    EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(tab)));
 
   tab_strip->CloseAllTabs();
 }
@@ -1281,12 +1254,12 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
     tab_strip->GetWebContentsAt(tabs)->WasShown();
   }
 
+  // Run tasks to let state transitions happen.
+  task_runner_->RunUntilIdle();
+
   // Nothing should be discarded initially.
-  for (int tab = 0; tab < kModerateLoadedTabCount; tab++) {
-    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
-                     tab_strip->GetWebContentsAt(tab))
-                     ->IsDiscarded());
-  }
+  for (int tab = 0; tab < kModerateLoadedTabCount; tab++)
+    EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(tab)));
 
   // Hide the first two tabs, waiting once second between to enforce that the
   // first tab is discarded first.
@@ -1299,16 +1272,11 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
 
   // Verify that the first tab is discarded. TabManager is now in the moderate
   // state as a result of the discard.
-  EXPECT_TRUE(
-      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
-          ->IsDiscarded());
+  EXPECT_TRUE(IsTabDiscarded(tab_strip->GetWebContentsAt(0)));
 
   // Verify the rest of the tabs are not discarded.
-  for (int tab = 1; tab < kModerateLoadedTabCount; tab++) {
-    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
-                     tab_strip->GetWebContentsAt(tab))
-                     ->IsDiscarded());
-  }
+  for (int tab = 1; tab < kModerateLoadedTabCount; tab++)
+    EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(tab)));
 
   // Fast forward the difference between the moderate and the high threshold
   // timeouts so the second tab was hidden the moderate threshold amount of
@@ -1316,18 +1284,12 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
   task_runner_->FastForwardBy(kModerateOccludedTimeout - kHighOccludedTimeout);
 
   // Verify that the first 2 tabs are now discarded.
-  for (int tab = 0; tab < 2; tab++) {
-    EXPECT_TRUE(TabLifecycleUnitExternal::FromWebContents(
-                    tab_strip->GetWebContentsAt(tab))
-                    ->IsDiscarded());
-  }
+  for (int tab = 0; tab < 2; tab++)
+    EXPECT_TRUE(IsTabDiscarded(tab_strip->GetWebContentsAt(tab)));
 
   // Verify the rest of the tabs are not discarded.
-  for (int tab = 2; tab < kModerateLoadedTabCount; tab++) {
-    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
-                     tab_strip->GetWebContentsAt(tab))
-                     ->IsDiscarded());
-  }
+  for (int tab = 2; tab < kModerateLoadedTabCount; tab++)
+    EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(tab)));
 
   // Hide the next 4 tabs. Once these are discarded, TabManager will be in the
   // low state.
@@ -1340,18 +1302,12 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
   task_runner_->FastForwardBy(kModerateOccludedTimeout);
 
   // Verify that the first 6 tabs are now discarded. Now in the low state.
-  for (int tab = 0; tab < 6; tab++) {
-    EXPECT_TRUE(TabLifecycleUnitExternal::FromWebContents(
-                    tab_strip->GetWebContentsAt(tab))
-                    ->IsDiscarded());
-  }
+  for (int tab = 0; tab < 6; tab++)
+    EXPECT_TRUE(IsTabDiscarded(tab_strip->GetWebContentsAt(tab)));
 
   // Verify the rest of the tabs are not discarded.
-  for (int tab = 6; tab < kModerateLoadedTabCount; tab++) {
-    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
-                     tab_strip->GetWebContentsAt(tab))
-                     ->IsDiscarded());
-  }
+  for (int tab = 6; tab < kModerateLoadedTabCount; tab++)
+    EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(tab)));
 
   // Hide the seventh tab.
   tab_strip->GetWebContentsAt(6)->WasHidden();
@@ -1361,18 +1317,12 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
   task_runner_->FastForwardBy(kModerateOccludedTimeout);
 
   // Verify that the first 6 tabs are now discarded.
-  for (int tab = 0; tab < 6; tab++) {
-    EXPECT_TRUE(TabLifecycleUnitExternal::FromWebContents(
-                    tab_strip->GetWebContentsAt(tab))
-                    ->IsDiscarded());
-  }
+  for (int tab = 0; tab < 6; tab++)
+    EXPECT_TRUE(IsTabDiscarded(tab_strip->GetWebContentsAt(tab)));
 
   // Verify the rest of the tabs are not discarded.
-  for (int tab = 6; tab < kModerateLoadedTabCount; tab++) {
-    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
-                     tab_strip->GetWebContentsAt(tab))
-                     ->IsDiscarded());
-  }
+  for (int tab = 6; tab < kModerateLoadedTabCount; tab++)
+    EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(tab)));
 
   // Fast forward the difference between the low and the moderate threshold
   // timeouts so the seventh tab was hidden the moderate threshold amount of
@@ -1380,18 +1330,13 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
   task_runner_->FastForwardBy(kLowOccludedTimeout - kModerateOccludedTimeout);
 
   // Verify that the first 7 tabs are now discarded.
-  for (int tab = 0; tab < 7; tab++) {
-    EXPECT_TRUE(TabLifecycleUnitExternal::FromWebContents(
-                    tab_strip->GetWebContentsAt(tab))
-                    ->IsDiscarded());
-  }
+  for (int tab = 0; tab < 7; tab++)
+    EXPECT_TRUE(IsTabDiscarded(tab_strip->GetWebContentsAt(tab)));
 
   // Verify the rest of the tabs are not discarded.
-  for (int tab = 7; tab < kModerateLoadedTabCount; tab++) {
-    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
-                     tab_strip->GetWebContentsAt(tab))
-                     ->IsDiscarded());
-  }
+  for (int tab = 7; tab < kModerateLoadedTabCount; tab++)
+    EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(tab)));
+
   tab_strip->CloseAllTabs();
 }
 
@@ -1445,6 +1390,9 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
   TabLoadTracker::Get()->TransitionStateForTesting(
       tab_strip->GetWebContentsAt(2), TabLoadTracker::LoadingState::LOADED);
 
+  // Run tasks to let state transitions happen.
+  task_runner_->RunUntilIdle();
+
   // No tab should be frozen initially.
   EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
   EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
@@ -1497,6 +1445,7 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest, FreezeOnceLoaded) {
   // Once loaded, the tab should be frozen.
   TabLoadTracker::Get()->TransitionStateForTesting(
       web_contents, TabLoadTracker::LoadingState::LOADED);
+  task_runner_->RunUntilIdle();
   EXPECT_TRUE(IsTabFrozen(web_contents));
 
   tab_strip->CloseAllTabs();

@@ -405,7 +405,16 @@ class TabManager : public LifecycleUnitObserver,
   // parameters.
   base::TimeDelta GetTimeInBackgroundBeforeProactiveDiscard() const;
 
+  // Schedules a call to PerformStateTransitions() in |delay|. This overrides
+  // any previously scheduled call.
+  void SchedulePerformStateTransitions(base::TimeDelta delay);
+
   // Performs LifecycleUnit state transitions.
+  //
+  // To avoid reentrancy, this is never called synchronously. When a state
+  // transition should happen in response to an event, an asynchronous call to
+  // this is scheduled via SchedulePerformStateTransitions(base::TimeDelta()).
+  // https://crbug.com/855053
   void PerformStateTransitions();
 
   // LifecycleUnitObserver:
@@ -435,6 +444,10 @@ class TabManager : public LifecycleUnitObserver,
   // Timer to update the state of LifecycleUnits. This is an std::unique_ptr to
   // allow initialization after mock time is setup in unit tests.
   std::unique_ptr<base::OneShotTimer> state_transitions_timer_;
+
+  // Callback for |state_transitions_timer_|. Stored in a member to avoid
+  // repetitive binds.
+  const base::RepeatingClosure state_transitions_callback_;
 
   // A listener to global memory pressure events.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
