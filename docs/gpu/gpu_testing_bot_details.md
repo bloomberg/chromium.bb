@@ -483,34 +483,14 @@ trybot for the Win7 NVIDIA GPUs in Release mode. We will call the new bot
         appear to be necessary any more, but it's something to watch out for if
         your CL fails presubmit for some reason.
 
-1.  Now we need to add the new trybot to the Gerrit UI. This is most easily done
-    using the Gerrit UI itself. (If on any CL you select "Choose Tryjobs", it
-    says "Don't see the bots you want? Edit this repo's buildbucket.config to
-    add them". That's the file we are going to edit.) Here's an [example
-    CL](https://chromium-review.googlesource.com/1044866).
-    1.  Go to the [`chromium/src`][chromium/src] repo in the Gerrit UI.
-    1.  Click "Repo settings" in the upper-left corner.
-    1.  Click "Commands".
-    1.  Click the "Edit repo config" button.
-    1.  This opens the project config by default. You don't want this, so close
-        it using the "CLOSE" link at the upper right.
-    1.  Now you're in a CL titled "Edit Repo Config". Click the "OPEN" link.
-    1.  It will prompt you to open a file. Begin typing `buildbucket.config` and
-        it will auto-complete. Click "Open".
-    1.  Add the new trybot, in this case `gpu_manual_try_win7_nvidia_rel`, to
-        the `luci.chromium.try` bucket. *BE CAREFUL* to include the leading tab;
-        it is semantically important. (Note that this matches the "pool"
-        dimension specified in bots.cfg in the infradata/config workspace.)
-    1.  Click "Save", and then "Close" (once "Save" is grayed out).
-    1.  You're now back at the CL. Click "PUBLISH EDIT" near the top right.
-    1.  Now you're in normal CL mode again. You can now click the "Edit" button
-        to edit the CL description; please do this.
-    1.  Send this out to one of the Git admins; they're listed in the gitadmin
-        column in [`go/chromecals`][go/chromecals]. The Git admin has to both +1
-        AND land the CL.
+At this point the new trybot should automatically show up in the
+"Choose tryjobs" pop-up in the Gerrit UI, under the
+`luci.chromium.try` heading, because it was deployed via LUCI. It
+should be possible to send a CL to it.
 
-At this point the new trybot should show up in the Gerrit UI and it should be
-possible to send a CL to it.
+(It should not be necessary to modify buildbucket.config as is
+mentioned at the bottom of the "Choose tryjobs" pop-up. Contact the
+chrome-infra team if this doesn't work as expected.)
 
 [chromium/src]:  https://chromium-review.googlesource.com/q/project:chromium%252Fsrc+status:open
 [go/chromecals]: http://go/chromecals
