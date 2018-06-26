@@ -1336,11 +1336,6 @@ instrumentation_test_apk("chrome_public_test_apk") {
     "//net/android:net_test_support_apk",
   ]
   proguard_enabled = !is_java_debug
-  if (proguard_enabled && !enable_proguard_obfuscation) {
-    proguard_configs = [ "//base/android/proguard/enable_obfuscation.flags" ]
-    proguard_config_exclusions =
-        [ "//base/android/proguard/disable_chromium_obfuscation.flags" ]
-  }
 
   # The test APK contains code from both the APK under test and the
   # test APK when proguard is enabled. That causes this APK to exceed
@@ -1361,11 +1356,6 @@ if (enable_vr) {
     deps += android_extra_test_deps
     additional_apks = [ "//net/android:net_test_support_apk" ]
     proguard_enabled = !is_java_debug
-    if (proguard_enabled && !enable_proguard_obfuscation) {
-      proguard_configs = [ "//base/android/proguard/enable_obfuscation.flags" ]
-      proguard_config_exclusions =
-          [ "//base/android/proguard/disable_chromium_obfuscation.flags" ]
-    }
 
     # The test APK contains code from both the APK under test and the
     # test APK when proguard is enabled. That causes this APK to exceed
@@ -1434,11 +1424,6 @@ instrumentation_test_apk("chrome_sync_shell_test_apk") {
   ]
   deps += android_extra_test_deps
   proguard_enabled = !is_java_debug
-  if (proguard_enabled && !enable_proguard_obfuscation) {
-    proguard_configs = [ "//base/android/proguard/enable_obfuscation.flags" ]
-    proguard_config_exclusions =
-        [ "//base/android/proguard/disable_chromium_obfuscation.flags" ]
-  }
 
   # The test APK contains code from both the APK under test and the
   # test APK when proguard is enabled. That causes this APK to exceed
