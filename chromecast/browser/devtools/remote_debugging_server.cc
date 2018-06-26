@@ -11,9 +11,11 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "chromecast/base/cast_paths.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/cast_devtools_manager_delegate.h"
 #include "chromecast/common/cast_content_client.h"
@@ -183,9 +185,21 @@ void RemoteDebuggingServer::StartIfNeeded() {
   if (is_started_)
     return;
 
+  base::FilePath output_dir;
+  if (!port_) {
+    // Providing a defined output_dir causes DevTools to write the port
+    // number chosen to a file named DevToolsActivePort. This file is
+    // used by test automation tools like ChromeDriver. ChromeDriver passes
+    // in --remote-debugging-port=0 so that cast_shell picks its own port to
+    // binds to so that there is no race condition.
+    bool result =
+        base::PathService::Get(chromecast::DIR_CAST_HOME, &output_dir);
+    DCHECK(result);
+  }
+
   content::DevToolsAgentHost::StartRemoteDebuggingServer(
-      CreateSocketFactory(port_), base::FilePath(), base::FilePath());
-  LOG(INFO) << "Devtools started: port=" << port_;
+      CreateSocketFactory(port_), output_dir, base::FilePath());
+  LOG(INFO) << "Devtools started";
   is_started_ = true;
 }
 
