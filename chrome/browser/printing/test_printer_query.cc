@@ -62,7 +62,7 @@ void TestPrinterQuery::SetSettings(
           : PrintingContext::FAILED;
 
   float device_microns_per_device_unit =
-      (kHundrethsMMPerInch * 10.0f) / settings.device_units_per_inch();
+      static_cast<float>(kMicronsPerInch) / settings.device_units_per_inch();
   gfx::Size paper_size =
       gfx::Size(settings.requested_media().size_microns.width() /
                     device_microns_per_device_unit,

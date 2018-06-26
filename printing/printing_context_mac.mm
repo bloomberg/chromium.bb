@@ -290,7 +290,8 @@ bool PrintingContextMac::UpdatePageFormatWithPaperInfo() {
     PMPaperGetMargins(default_paper, &margins);
     paper_name.reset(tmp_paper_name, base::scoped_policy::RETAIN);
   } else {
-    const double kMutiplier = kPointsPerInch / (10.0f * kHundrethsMMPerInch);
+    const double kMutiplier =
+        kPointsPerInch / static_cast<float>(kMicronsPerInch);
     page_width = media.size_microns.width() * kMutiplier;
     page_height = media.size_microns.height() * kMutiplier;
     paper_name.reset(base::SysUTF8ToCFStringRef(media.vendor_id));

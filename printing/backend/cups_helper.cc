@@ -52,8 +52,6 @@ constexpr char kBrotherPrintQuality[] = "BRPrintQuality";
 constexpr char kSamsungColorTrue[] = "True";
 constexpr char kSamsungColorFalse[] = "False";
 
-const double kMicronsPerPoint = 10.0f * kHundrethsMMPerInch / kPointsPerInch;
-
 void ParseLpOptions(const base::FilePath& filepath,
                     base::StringPiece printer_name,
                     int* num_options,
@@ -474,8 +472,8 @@ bool ParsePpdCapabilities(base::StringPiece printer_name,
     ppd_option_t* paper_option = ppdFindOption(ppd, kPageSize);
     for (int i = 0; i < ppd->num_sizes; ++i) {
       gfx::Size paper_size_microns(
-          static_cast<int>(ppd->sizes[i].width * kMicronsPerPoint + 0.5),
-          static_cast<int>(ppd->sizes[i].length * kMicronsPerPoint + 0.5));
+          ConvertUnit(ppd->sizes[i].width, kPointsPerInch, kMicronsPerInch),
+          ConvertUnit(ppd->sizes[i].length, kPointsPerInch, kMicronsPerInch));
       if (paper_size_microns.width() > 0 && paper_size_microns.height() > 0) {
         PrinterSemanticCapsAndDefaults::Paper paper;
         paper.size_um = paper_size_microns;

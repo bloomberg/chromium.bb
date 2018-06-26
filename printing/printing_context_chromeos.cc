@@ -133,11 +133,11 @@ void SetPrintableArea(PrintSettings* settings,
                       const PrintSettings::RequestedMedia& media,
                       bool flip) {
   if (!media.size_microns.IsEmpty()) {
-    float deviceMicronsPerDeviceUnit =
-        (kHundrethsMMPerInch * 10.0f) / settings->device_units_per_inch();
+    float device_microns_per_device_unit =
+        static_cast<float>(kMicronsPerInch) / settings->device_units_per_inch();
     gfx::Size paper_size =
-        gfx::Size(media.size_microns.width() / deviceMicronsPerDeviceUnit,
-                  media.size_microns.height() / deviceMicronsPerDeviceUnit);
+        gfx::Size(media.size_microns.width() / device_microns_per_device_unit,
+                  media.size_microns.height() / device_microns_per_device_unit);
 
     gfx::Rect paper_rect(0, 0, paper_size.width(), paper_size.height());
     settings->SetPrinterPrintableArea(paper_size, paper_rect, flip);
@@ -221,8 +221,7 @@ gfx::Size PrintingContextChromeos::GetPdfPaperSizeDeviceUnits() {
   } else {
     // ulocdata_getPaperSize returns the width and height in mm.
     // Convert this to pixels based on the dpi.
-    float multiplier = 100 * settings_.device_units_per_inch();
-    multiplier /= kHundrethsMMPerInch;
+    float multiplier = settings_.device_units_per_inch() / kMicronsPerMil;
     width *= multiplier;
     height *= multiplier;
   }
