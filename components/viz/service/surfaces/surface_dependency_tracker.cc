@@ -100,6 +100,12 @@ void SurfaceDependencyTracker::OnSurfaceDiscarded(Surface* surface) {
   // unblock dependencies because we now know the surface will never activate.
   NotifySurfaceIdAvailable(surface->surface_id());
 }
+void SurfaceDependencyTracker::OnFrameSinkInvalidated(
+    const FrameSinkId& frame_sink_id) {
+  // We now know the frame sink will never generated any more frames,
+  // thus unblock all dependencies to any future surfaces.
+  NotifySurfaceIdAvailable(SurfaceId::MaxSequenceId(frame_sink_id));
+}
 
 void SurfaceDependencyTracker::ActivateLateSurfaceSubtree(Surface* surface) {
   DCHECK(surface->HasPendingFrame());
