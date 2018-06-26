@@ -871,6 +871,10 @@ void Browser::WindowFullscreenStateChanged() {
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN);
 }
 
+void Browser::FullscreenTopUIStateChanged() {
+  UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TOOLBAR_OPTION_CHANGE);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Assorted browser commands:
 
@@ -2482,6 +2486,10 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
 
   unsigned int features = FEATURE_INFOBAR | FEATURE_DOWNLOADSHELF;
 
+  // Bookmark bar could be present even if the top UI is hidden in fullscreen
+  // mode, such as when it is in 'detached' mode on NTP. Therefore we
+  // support this feature regardless of |hide_ui_for_fullscreen| and manage
+  // its visibility based on its own state.
   if (is_type_tabbed())
     features |= FEATURE_BOOKMARKBAR;
 
