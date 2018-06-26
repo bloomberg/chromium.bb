@@ -975,11 +975,11 @@ void DocumentLoader::DidCommitNavigation(
       ->GetContentSecurityPolicy()
       ->ReportAccumulatedHeaders(&GetLocalFrameClient());
 
-  // didObserveLoadingBehavior() must be called after dispatchDidCommitLoad() is
+  // DidObserveLoadingBehavior() must be called after DispatchDidCommitLoad() is
   // called for the metrics tracking logic to handle it properly.
   if (service_worker_network_provider_ &&
-      service_worker_network_provider_->IsControlledByServiceWorker() !=
-          blink::mojom::ControllerServiceWorkerMode::kNoController) {
+      service_worker_network_provider_->IsControlledByServiceWorker() ==
+          blink::mojom::ControllerServiceWorkerMode::kControlled) {
     GetLocalFrameClient().DidObserveLoadingBehavior(
         kWebLoadingBehaviorServiceWorkerControlled);
   }
