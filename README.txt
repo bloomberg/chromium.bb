@@ -6,9 +6,6 @@ The repository is separate so that the shared build tools can be shared between
 the various Chromium-related projects without each one needing to maintain
 their own versionining of each binary.
 
-To update the GN binary, run (from the Chromium repo) tools/gn/bin/roll_gn.py
-which will automatically upload the binaries and roll build tools.
-
 ________________________________________
 UPDATING AND ROLLING BUILDTOOLS MANUALLY
 
@@ -47,10 +44,7 @@ To initialize gsutil's credentials:
 
   python ~/depot_tools/third_party/gsutil/gsutil config
 
-  That will give a URL which you should log into with your web browser. For
-  rolling GN, the username should be the one that is on the ACL for the
-  "chromium-gn" bucket (probably your @google.com address). Contact the build
-  team for help getting access if necessary.
+  That will give a URL which you should log into with your web browser.
 
   Copy the code back to the command line util. Ignore the project ID (it's OK
   to just leave blank when prompted).
