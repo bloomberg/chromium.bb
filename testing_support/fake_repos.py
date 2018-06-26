@@ -412,6 +412,10 @@ deps = {
 deps = {
   'src/repo2': '%(git_base)srepo_2@%(hash)s',
   'src/repo2/repo_renamed': '/repo_3',
+  'src/should_not_process': {
+    'url': '/repo_4',
+    'condition': 'False',
+  }
 }
 # I think this is wrong to have the hooks run from the base of the gclient
 # checkout. It's maybe a bit too late to change that behavior.

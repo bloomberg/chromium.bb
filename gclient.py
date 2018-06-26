@@ -527,7 +527,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
               self.name)
     if not self.should_process:
       # Return early, no need to set requirements.
-      return True
+      return not any(d.name == self.name for d in self.root.subtree(True))
 
     # This require a full tree traversal with locks.
     siblings = [d for d in self.root.subtree(False) if d.name == self.name]
@@ -601,10 +601,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       if dep_type == 'cipd':
         cipd_root = self.GetCipdRoot()
         for package in dep_value.get('packages', []):
-          if 'version' in package:
-            # Matches version to vars value.
-            version = package['version']
-            package['version'] = version
           deps_to_add.append(
               CipdDependency(
                   parent=self,
@@ -2565,14 +2561,11 @@ def CMDsync(parser, args):
     slns = {}
     for d in client.subtree(True):
       normed = d.name.replace('\\', '/').rstrip('/') + '/'
-      if normed in slns and not d.should_process:
-        # If an unprocessed dependency would override an existing dependency,
-        # ignore it.
-        continue
       slns[normed] = {
           'revision': d.got_revision,
           'scm': d.used_scm.name if d.used_scm else None,
           'url': str(d.url) if d.url else None,
+          'was_processed': d.should_process,
       }
     with open(options.output_json, 'wb') as f:
       json.dump({'solutions': slns}, f)

@@ -369,23 +369,33 @@ class GClientSmokeGIT(GClientSmokeBase):
     with open(output_json) as f:
       output_json = json.load(f)
 
+    self.maxDiff = None
     out = {
         'solutions': {
             'src/': {
                 'scm': 'git',
                 'url': self.git_base + 'repo_1',
                 'revision': self.githash('repo_1', 2),
+                'was_processed': True,
             },
             'src/repo2/': {
                 'scm': 'git',
                 'url':
                     self.git_base + 'repo_2@' + self.githash('repo_2', 1)[:7],
                 'revision': self.githash('repo_2', 1),
+                'was_processed': True,
             },
             'src/repo2/repo_renamed/': {
                 'scm': 'git',
                 'url': self.git_base + 'repo_3',
                 'revision': self.githash('repo_3', 2),
+                'was_processed': True,
+            },
+            'src/should_not_process/': {
+                'scm': None,
+                'url': self.git_base + 'repo_4',
+                'revision': None,
+                'was_processed': False,
             },
         },
     }
@@ -839,6 +849,7 @@ class GClientSmokeGIT(GClientSmokeBase):
                 self.git_base, self.githash('repo_2', 1)),
             'src/repo2/repo_renamed': '%srepo_3@%s' % (
                 self.git_base, self.githash('repo_3', 2)),
+            'src/should_not_process': None,
         },
     }]
     self.assertEqual(out, output_json)
