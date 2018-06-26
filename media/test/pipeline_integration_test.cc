@@ -2009,6 +2009,28 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_ADTS) {
   EXPECT_HASH_EQ("1.80,1.66,2.31,3.26,4.46,3.36,", GetAudioHash());
 }
 
+TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_M4A) {
+  ASSERT_EQ(PIPELINE_OK,
+            Start("440hz-10ms.m4a", kHashed | kUnreliableDuration));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+
+  // Verify preroll is stripped. This file uses a preroll of 2112 frames, which
+  // spans all three packets in the file. Postroll is not correctly stripped at
+  // present; see the note below.
+  EXPECT_HASH_EQ("3.84,4.25,4.33,3.58,3.27,3.16,", GetAudioHash());
+
+  // Note the above hash is incorrect since the <audio> path doesn't properly
+  // trim trailing silence at end of stream for AAC decodes. This isn't a huge
+  // deal since plain src= tags can't splice streams and MSE requires an
+  // explicit append window for correctness.
+  //
+  // The WebAudio path via AudioFileReader computes this correctly, so the hash
+  // below is taken from that test.
+  //
+  // EXPECT_HASH_EQ("3.77,4.53,4.75,3.48,3.67,3.76,", GetAudioHash());
+}
+
 TEST_F(PipelineIntegrationTest, BasicPlaybackHi10P) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x180-hi10p.mp4"));
 
