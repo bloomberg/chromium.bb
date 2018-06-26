@@ -33,11 +33,23 @@ class LeScanManager {
   virtual void AddObserver(Observer* o) = 0;
   virtual void RemoveObserver(Observer* o) = 0;
 
-  // Enable or disable BLE scnaning. Can be called on any thread. |cb| is
-  // called on the thread that calls this method. |success| is false iff the
-  // operation failed.
-  using SetScanEnableCallback = base::OnceCallback<void(bool success)>;
-  virtual void SetScanEnable(bool enable, SetScanEnableCallback cb) = 0;
+  class ScanHandle {
+   public:
+    virtual ~ScanHandle() = default;
+
+   protected:
+    ScanHandle() = default;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ScanHandle);
+  };
+
+  // Request a handle to enable BLE scanning. Can be called on any thread. |cb|
+  // returns a handle. As long is there is at least one handle in existence, BLE
+  // scanning will be enabled. Returns nullptr if failed to enable scanning.
+  using RequestScanCallback =
+      base::OnceCallback<void(std::unique_ptr<ScanHandle> handle)>;
+  virtual void RequestScan(RequestScanCallback cb) = 0;
 
   // Asynchronously get the most recent scan results. Can be called on any
   // thread. |cb| is called on the calling thread with the results. If
