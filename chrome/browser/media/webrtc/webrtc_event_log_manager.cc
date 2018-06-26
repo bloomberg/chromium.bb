@@ -4,11 +4,10 @@
 
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 
-#include "base/command_line.h"
-#include "base/optional.h"
 #include "base/task_scheduler/post_task.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -370,33 +369,18 @@ void WebRtcEventLogManager::SetRemoteLogsObserver(
 }
 
 bool WebRtcEventLogManager::IsRemoteLoggingEnabled() const {
-  base::Optional<bool> enabled;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebRtcRemoteEventLog)) {
-    const std::string switch_value =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kWebRtcRemoteEventLog);
-    if (switch_value == "disable" || switch_value == "disabled") {
-      enabled = false;
-    } else if (switch_value == "enable" || switch_value == "enabled") {
-      enabled = true;
-    } else {
-      LOG(WARNING) << "Unrecognized value given for "
-                   << switches::kWebRtcRemoteEventLog
-                   << "; ignoring. (Use enabled/disabled.)";
-    }
-  }
-
-  if (!enabled.has_value()) {
-    // TODO(crbug.com/775415): Enable for non-mobile builds where the users
-    // have given appropriate consent.
-    enabled = false;
-  }
+#if defined(OS_ANDROID)
+  bool enabled = false;
+#else
+  // TODO(crbug.com/775415): Even when the feature is generally enabled, it
+  // should only be active for sessions where the appropriate policy is set.
+  bool enabled = base::FeatureList::IsEnabled(features::kWebRtcRemoteEventLog);
+#endif
 
   VLOG(1) << "WebRTC remote-bound event logging "
-          << (enabled.value() ? "enabled" : "disabled") << ".";
+          << (enabled ? "enabled" : "disabled") << ".";
 
-  return enabled.value();
+  return enabled;
 }
 
 void WebRtcEventLogManager::RenderProcessExited(

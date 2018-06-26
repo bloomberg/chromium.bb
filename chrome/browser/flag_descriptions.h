@@ -1179,6 +1179,9 @@ extern const char kWebrtcHwVP8EncodingDescription[];
 extern const char kWebrtcNewEncodeCpuLoadEstimatorName[];
 extern const char kWebrtcNewEncodeCpuLoadEstimatorDescription[];
 
+extern const char kWebRtcRemoteEventLogName[];
+extern const char kWebRtcRemoteEventLogDescription[];
+
 extern const char kWebrtcSrtpAesGcmName[];
 extern const char kWebrtcSrtpAesGcmDescription[];
 

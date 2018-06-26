@@ -1939,6 +1939,12 @@ const char kWebrtcNewEncodeCpuLoadEstimatorDescription[] =
     "Enable new estimator for the encoder cpu load, for evaluation and "
     "testing. Intended to improve accuracy when screen casting.";
 
+const char kWebRtcRemoteEventLogName[] = "WebRTC remote-bound event logging";
+const char kWebRtcRemoteEventLogDescription[] =
+    "Allow collecting WebRTC event logs and uploading them to Crash. "
+    "Please note that, even if enabled, this will still require "
+    "a policy to be set, for it to have an effect.";
+
 const char kWebrtcSrtpAesGcmName[] =
     "Negotiation with GCM cipher suites for SRTP in WebRTC";
 const char kWebrtcSrtpAesGcmDescription[] =

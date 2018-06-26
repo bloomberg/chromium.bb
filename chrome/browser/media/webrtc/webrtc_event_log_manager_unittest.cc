@@ -29,10 +29,12 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -65,8 +67,7 @@ using RenderProcessHost = content::RenderProcessHost;
 
 namespace {
 
-// Common default/arbitrary values.
-static constexpr int kLid = 478;
+#if !defined(OS_ANDROID)
 
 auto SaveFilePathTo(base::Optional<base::FilePath>* output) {
   return [output](PeerConnectionKey ignored_key, base::FilePath file_path) {
@@ -88,12 +89,6 @@ const int kMaxActiveRemoteLogFiles =
 const int kMaxPendingRemoteLogFiles =
     static_cast<int>(kMaxPendingRemoteBoundWebRtcEventLogs);
 
-PeerConnectionKey GetPeerConnectionKey(const RenderProcessHost* rph, int lid) {
-  const BrowserContext* browser_context = rph->GetBrowserContext();
-  const auto browser_context_id = GetBrowserContextId(browser_context);
-  return PeerConnectionKey(rph->GetID(), lid, browser_context_id);
-}
-
 base::Time GetLastModificationTime(const base::FilePath& file_path) {
   base::File::Info file_info;
   if (!base::GetFileInfo(file_path, &file_info)) {
@@ -101,6 +96,17 @@ base::Time GetLastModificationTime(const base::FilePath& file_path) {
     return base::Time();
   }
   return file_info.last_modified;
+}
+
+#endif
+
+// Common default/arbitrary values.
+static constexpr int kLid = 478;
+
+PeerConnectionKey GetPeerConnectionKey(const RenderProcessHost* rph, int lid) {
+  const BrowserContext* browser_context = rph->GetBrowserContext();
+  const auto browser_context_id = GetBrowserContextId(browser_context);
+  return PeerConnectionKey(rph->GetID(), lid, browser_context_id);
 }
 
 // This implementation does not upload files, nor pretends to have finished an
@@ -577,6 +583,7 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
   }
 
   // Testing utilities.
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedCommandLine scoped_command_line_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   base::SimpleTestClock frozen_clock_;
@@ -650,11 +657,12 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(WebRtcEventLogManagerTestBase);
 };
 
+#if !defined(OS_ANDROID)
+
 class WebRtcEventLogManagerTest : public WebRtcEventLogManagerTestBase {
  public:
   WebRtcEventLogManagerTest() {
-    auto* cl = scoped_command_line_.GetProcessCommandLine();
-    cl->AppendSwitchASCII(::switches::kWebRtcRemoteEventLog, "enabled");
+    scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
     event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
   }
 
@@ -752,24 +760,26 @@ class WebRtcEventLogManagerTestUploadSuppressionDisablingFlag
     : public WebRtcEventLogManagerTestBase {
  public:
   WebRtcEventLogManagerTestUploadSuppressionDisablingFlag() {
-    auto* cl = scoped_command_line_.GetProcessCommandLine();
-    cl->AppendSwitchASCII(::switches::kWebRtcRemoteEventLog, "enabled");
-    cl->AppendSwitch(::switches::kWebRtcRemoteEventLogUploadNoSuppression);
+    scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
+    scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
+        ::switches::kWebRtcRemoteEventLogUploadNoSuppression);
     event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
   }
 };
 
-#if defined(OS_ANDROID)
-class WebRtcEventLogManagerTestOnMobileDevices
+class WebRtcEventLogManagerWhenRemoteLoggingDisabledOrNotEnabled
     : public WebRtcEventLogManagerTestBase {
  public:
-  WebRtcEventLogManagerTestOnMobileDevices() {
-    // ::switches::kWebRtcRemoteEventLog is NOT added. The default behavior
-    // on mobile should be to disable the feature.
+  WebRtcEventLogManagerWhenRemoteLoggingDisabledOrNotEnabled() {
+    // Show that the feature is not active if not explicitly ENABLED.
+    const bool disable = GetParam();
+    if (disable) {  // Otherwise, left to default value.
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kWebRtcRemoteEventLog);
+    }
     event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
   }
 };
-#endif
 
 namespace {
 
@@ -2891,7 +2901,7 @@ TEST_F(WebRtcEventLogManagerTest,
 
 INSTANTIATE_TEST_CASE_P(UploadCompleteResult,
                         WebRtcEventLogManagerTest,
-                        ::testing::Values(false, true));
+                        ::testing::Bool());
 
 TEST_F(WebRtcEventLogManagerTestCacheClearing,
        ClearCacheForBrowserContextRemovesPendingFilesInRange) {
@@ -3248,10 +3258,41 @@ TEST_F(WebRtcEventLogManagerTestUploadSuppressionDisablingFlag,
   WaitForPendingTasks(&run_loop);
 }
 
-#if defined(OS_ANDROID)
+TEST_P(WebRtcEventLogManagerWhenRemoteLoggingDisabledOrNotEnabled,
+       RemoteBoundLoggingDisabled) {
+  const auto key = GetPeerConnectionKey(rph_.get(), kLid);
+  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
+  EXPECT_FALSE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
+}
+
+// Sanity
+TEST_P(WebRtcEventLogManagerWhenRemoteLoggingDisabledOrNotEnabled,
+       LocalLoggingStillAllowed) {
+  ASSERT_TRUE(EnableLocalLogging());
+}
+
+INSTANTIATE_TEST_CASE_P(
+    ExplicitlyDisable,
+    WebRtcEventLogManagerWhenRemoteLoggingDisabledOrNotEnabled,
+    ::testing::Bool());
+
+#else  // defined(OS_ANDROID)
+
+class WebRtcEventLogManagerTestOnMobileDevices
+    : public WebRtcEventLogManagerTestBase {
+ public:
+  WebRtcEventLogManagerTestOnMobileDevices() {
+    // features::kWebRtcRemoteEventLog not defined on mobile, and can therefore
+    // not be forced on. This test is here to make sure that when the feature
+    // is changed to be on by default, it will still be off for mobile devices.
+    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
+  }
+};
+
 TEST_F(WebRtcEventLogManagerTestOnMobileDevices, RemoteBoundLoggingDisabled) {
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
   ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
   EXPECT_FALSE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
 }
+
 #endif

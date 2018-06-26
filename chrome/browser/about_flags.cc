@@ -1219,6 +1219,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebrtcHwVP8EncodingName,
      flag_descriptions::kWebrtcHwVP8EncodingDescription, kOsAndroid | kOsCrOS,
      FEATURE_VALUE_TYPE(features::kWebRtcHWVP8Encoding)},
+#if !defined(OS_ANDROID)
+    {"enable-webrtc-remote-event-log",
+     flag_descriptions::kWebRtcRemoteEventLogName,
+     flag_descriptions::kWebRtcRemoteEventLogDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kWebRtcRemoteEventLog)},
+#endif
     {"enable-webrtc-srtp-aes-gcm", flag_descriptions::kWebrtcSrtpAesGcmName,
      flag_descriptions::kWebrtcSrtpAesGcmDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebRtcSrtpAesGcm)},

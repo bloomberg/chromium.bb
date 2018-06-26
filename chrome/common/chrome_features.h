@@ -343,6 +343,10 @@ extern const base::Feature kTPMFirmwareUpdate;
 extern const base::Feature kCrOSEnableUSMUserService;
 #endif  // defined(OS_CHROMEOS)
 
+#if !defined(OS_ANDROID)
+extern const base::Feature kWebRtcRemoteEventLog;
+#endif
+
 #if defined(OS_WIN)
 extern const base::Feature kWin10AcceleratedDefaultBrowserFlow;
 #endif  // defined(OS_WIN)

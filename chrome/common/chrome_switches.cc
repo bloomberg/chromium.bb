@@ -712,14 +712,6 @@ const char kVersion[]                       = "version";
 // requests.
 const char kWebAuthenticationUI[] = "enable-web-authentication-ui";
 
-// Allows privileged JS applications to trigger event logging for peer
-// connections, and to later upload those logs to a remote server.
-// * If "disable" or "disabled", remote-logging will be disabled.
-// * If "enable" or "enabled", remote-logging will be enabled.
-// * If unset (or set to any other value), the platform-specific behavior
-//   will be used. (This behavior may depend on additional factors.)
-const char kWebRtcRemoteEventLog[] = "webrtc-remote-event-log";
-
 // Sets the delay (in seconds) between proactive prunings of remote-bound
 // WebRTC event logs which are pending upload.
 // All positive values are legal.
