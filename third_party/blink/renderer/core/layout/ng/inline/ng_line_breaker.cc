@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_breaker.h"
 
-#include "build/build_config.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
@@ -304,10 +303,7 @@ void NGLineBreaker::UpdatePosition(const NGLineInfo& line_info) {
 void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
   LayoutUnit bfc_line_offset = line_.line_opportunity.line_left_offset;
   LayoutUnit available_width = line_.AvailableWidth();
-// TODO(kojii): IsBeforeAfterNonCollapsedLineWrapSpace fails only on Mac
-#if !defined(OS_MACOSX)
   DCHECK_EQ(line_.position, line_info->ComputeWidth());
-#endif
 
   // Negative margins can make the position negative, but the inline size is
   // always positive or 0.
