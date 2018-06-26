@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
+import("//build/config/nacl/config.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 declare_args() {
@@ -167,7 +168,7 @@ component("bindings") {
     "unique_ptr_impl_ref_traits.h",
   ]
 
-  if (enable_ipc_fuzzer && current_toolchain == host_toolchain) {
+  if (enable_ipc_fuzzer && !is_nacl_nonsfi) {
     sources += [
       "lib/message_dumper.cc",
       "message_dumper.h",
