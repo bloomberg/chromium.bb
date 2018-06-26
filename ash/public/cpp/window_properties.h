@@ -41,6 +41,14 @@ enum class BackdropWindowMode {
   kAuto,  // The window manager decides if the window should have a backdrop.
 };
 
+enum class FrameBackButtonState {
+  kNone,      // Window frame shouldn't have a back button.
+  kEnabled,   // Window frame should have a back button, and it should be
+              // enabled.
+  kDisabled,  // Window frame should have a back button, but it should be
+              // disabled.
+};
+
 // Registers Ash's properties with the given PropertyConverter. This allows Ash
 // and other services (eg. Chrome) to exchange Ash window property values.
 ASH_PUBLIC_EXPORT void RegisterWindowProperties(
@@ -58,6 +66,9 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<BackdropWindowMode>* const
 // If true, will send system keys to the window for dispatch.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kCanConsumeSystemKeysKey;
+
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<FrameBackButtonState>* const
+    kFrameBackButtonStateKey;
 
 // The frame header's images. Only set on themed windows. The type is a token
 // which can be redeemed with the ClientImageRegistry to get a gfx::ImageSkia.

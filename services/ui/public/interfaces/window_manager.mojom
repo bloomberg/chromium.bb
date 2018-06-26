@@ -102,6 +102,10 @@ interface WindowManager {
   // used list of windows. Maps to aura::client::kExcludeFromMruKey. Type: bool.
   const string kExcludeFromMru_Property = "prop:exclude_from_mru";
 
+  // Used to control the appearance and enabled state of the frame back button.
+  // Type: ash::kFrameBackButtonState.
+  const string kFrameBackButtonState_Property = "prop:frame-back-button-state";
+
   // Used to control the color of the window frame. Type: SkColor.
   const string kFrameActiveColor_Property = "prop:frame-active-color";
   const string kFrameInactiveColor_Property = "prop:frame-inactive-color";

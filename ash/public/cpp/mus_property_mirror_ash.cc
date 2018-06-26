@@ -63,6 +63,9 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
     MirrorOwnedProperty(window, root_window, aura::client::kTitleKey);
   } else if (key == aura::client::kWindowIconKey) {
     MirrorOwnedProperty(window, root_window, aura::client::kWindowIconKey);
+  } else if (key == kFrameBackButtonStateKey) {
+    root_window->SetProperty(kFrameBackButtonStateKey,
+                             window->GetProperty(kFrameBackButtonStateKey));
   } else if (key == kFrameActiveColorKey) {
     root_window->SetProperty(kFrameActiveColorKey,
                              window->GetProperty(kFrameActiveColorKey));

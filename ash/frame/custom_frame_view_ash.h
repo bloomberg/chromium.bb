@@ -30,12 +30,6 @@ class HeaderView;
 class ImmersiveFullscreenController;
 class ImmersiveFullscreenControllerDelegate;
 
-enum class FrameBackButtonState {
-  kInvisible,
-  kVisibleEnabled,
-  kVisibleDisabled,
-};
-
 // A NonClientFrameView used for packaged apps, dialogs and other non-browser
 // windows. It supports immersive fullscreen. When in immersive fullscreen, the
 // client view takes up the entire widget and the window header is an overlay.
