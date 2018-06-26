@@ -288,7 +288,15 @@ void DisplayResourceProvider::ReceiveFromChild(
     int child_id,
     const std::vector<TransferableResource>& resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  Child& child_info = children_.find(child_id)->second;
+
+  // TODO(crbug.com/855785): Fishing for misuse of DisplayResourceProvider
+  // causing crashes.
+  CHECK(child_id);
+  auto child_it = children_.find(child_id);
+  // TODO(crbug.com/855785): Fishing for misuse of DisplayResourceProvider
+  // causing crashes.
+  CHECK(child_it != children_.end());
+  Child& child_info = child_it->second;
   DCHECK(!child_info.marked_for_deletion);
   for (std::vector<TransferableResource>::const_iterator it = resources.begin();
        it != resources.end(); ++it) {
@@ -326,8 +334,13 @@ void DisplayResourceProvider::DeclareUsedResourcesFromChild(
     const ResourceIdSet& resources_from_child) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  // TODO(crbug.com/855785): Fishing for misuse of DisplayResourceProvider
+  // causing crashes.
+  CHECK(child);
   auto child_it = children_.find(child);
-  DCHECK(child_it != children_.end());
+  // TODO(crbug.com/855785): Fishing for misuse of DisplayResourceProvider
+  // causing crashes.
+  CHECK(child_it != children_.end());
   Child& child_info = child_it->second;
   DCHECK(!child_info.marked_for_deletion);
 
@@ -551,22 +564,13 @@ void DisplayResourceProvider::TryReleaseResource(ResourceMap::iterator it) {
   ChildResource* resource = &it->second;
   if (resource->marked_for_deletion && !resource->lock_for_read_count &&
       !resource->locked_for_external_use) {
-    if (!resource->child_id) {
-// The resource belongs to this instance, so it can be destroyed.
-// TODO(danakj): Is this dead code?
-#if defined(OS_ANDROID)
-      DeletePromotionHint(it, NORMAL);
-#endif
-      DeleteResourceInternal(it, NORMAL);
+    if (batch_return_resources_) {
+      batched_returning_resources_[resource->child_id].push_back(id);
     } else {
-      if (batch_return_resources_) {
-        batched_returning_resources_[resource->child_id].push_back(id);
-      } else {
-        auto child_it = children_.find(resource->child_id);
-        std::vector<ResourceId> unused;
-        unused.push_back(id);
-        DeleteAndReturnUnusedResourcesToChild(child_it, NORMAL, unused);
-      }
+      auto child_it = children_.find(resource->child_id);
+      std::vector<ResourceId> unused;
+      unused.push_back(id);
+      DeleteAndReturnUnusedResourcesToChild(child_it, NORMAL, unused);
     }
   }
 }
