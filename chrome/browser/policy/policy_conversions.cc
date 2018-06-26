@@ -4,21 +4,28 @@
 
 #include "chrome/browser/policy/policy_conversions.h"
 
+#include <unordered_set>
+
 #include "base/json/json_writer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/policy/schema_registry_service.h"
+#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/core/common/schema.h"
+#include "components/policy/core/common/schema_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/strings/grit/components_strings.h"
 #include "extensions/buildflags/buildflags.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry.h"
@@ -93,12 +100,15 @@ PolicyService* GetPolicyService(content::BrowserContext* context) {
 // Inserts a description of each policy in |policy_map| into |values|, using
 // the optional errors in |errors| to determine the status of each policy. If
 // |convert_values| is true, converts the values to show them in javascript.
-
-void GetPolicyValues(const policy::PolicyMap& map,
-                     policy::PolicyErrorMap* errors,
-                     base::DictionaryValue* values,
-                     bool with_user_policies,
-                     bool convert_values) {
+// |policy_names| contains all valid policies in the same policy namespace of
+// |policy_map|. A policy in |map| but not|policy_names| is an unknown policy.
+void GetPolicyValues(
+    const policy::PolicyMap& map,
+    policy::PolicyErrorMap* errors,
+    base::DictionaryValue* values,
+    bool with_user_policies,
+    bool convert_values,
+    std::unique_ptr<std::unordered_set<std::string>> policy_names) {
   for (const auto& entry : map) {
     if (entry.second.scope == policy::POLICY_SCOPE_USER && !with_user_policies)
       continue;
@@ -114,11 +124,34 @@ void GetPolicyValues(const policy::PolicyMap& map,
     else
       value->SetString("level", "mandatory");
     value->SetString("source", kPolicySources[entry.second.source].key);
-    base::string16 error = errors->GetErrors(entry.first);
+    base::string16 error;
+    if (policy_names &&
+        policy_names->find(entry.first) == policy_names->end()) {
+      error = l10n_util::GetStringUTF16(IDS_POLICY_UNKNOWN);
+    } else {
+      error = errors->GetErrors(entry.first);
+    }
     if (!error.empty())
       value->SetString("error", error);
     values->SetWithoutPathExpansion(entry.first, std::move(value));
   }
+}
+
+std::unique_ptr<std::unordered_set<std::string>> GetPolicyNameSet(
+    const scoped_refptr<policy::SchemaMap> schema_map,
+    const PolicyNamespace& policy_namespace) {
+  const Schema* schema = schema_map->GetSchema(policy_namespace);
+  // There is no policy name verification without valid schema.
+  if (!schema || !schema->valid())
+    return nullptr;
+
+  auto policy_names = std::make_unique<std::unordered_set<std::string>>();
+
+  for (policy::Schema::Iterator it = schema->GetPropertiesIterator();
+       !it.IsAtEnd(); it.Advance()) {
+    policy_names->insert(it.key());
+  }
+  return policy_names;
 }
 
 void GetChromePolicyValues(content::BrowserContext* context,
@@ -127,11 +160,16 @@ void GetChromePolicyValues(content::BrowserContext* context,
                            bool convert_values) {
   policy::PolicyService* policy_service = GetPolicyService(context);
   policy::PolicyMap map;
+  const scoped_refptr<policy::SchemaMap> schema_map =
+      SchemaRegistryServiceFactory::GetForContext(context)
+          ->registry()
+          ->schema_map();
+  PolicyNamespace policy_namespace =
+      PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
 
   // Make a copy that can be modified, since some policy values are modified
   // before being displayed.
-  map.CopyFrom(policy_service->GetPolicies(
-      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string())));
+  map.CopyFrom(policy_service->GetPolicies(policy_namespace));
 
   // Get a list of all the errors in the policy values.
   const policy::ConfigurationPolicyHandlerList* handler_list =
@@ -142,7 +180,8 @@ void GetChromePolicyValues(content::BrowserContext* context,
   // Convert dictionary values to strings for display.
   handler_list->PrepareForDisplaying(&map);
 
-  GetPolicyValues(map, &errors, values, keep_user_policies, convert_values);
+  GetPolicyValues(map, &errors, values, keep_user_policies, convert_values,
+                  GetPolicyNameSet(schema_map, policy_namespace));
 }
 
 }  // namespace
@@ -166,7 +205,10 @@ std::unique_ptr<base::DictionaryValue> GetAllPolicyValuesAsDictionary(
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(Profile::FromBrowserContext(context));
   auto extension_values = std::make_unique<base::DictionaryValue>();
-
+  const scoped_refptr<policy::SchemaMap> schema_map =
+      SchemaRegistryServiceFactory::GetForContext(context)
+          ->registry()
+          ->schema_map();
   for (const scoped_refptr<const extensions::Extension>& extension :
        registry->enabled_extensions()) {
     // Skip this extension if it's not an enterprise extension.
@@ -179,7 +221,8 @@ std::unique_ptr<base::DictionaryValue> GetAllPolicyValuesAsDictionary(
     policy::PolicyErrorMap empty_error_map;
     GetPolicyValues(GetPolicyService(context)->GetPolicies(policy_namespace),
                     &empty_error_map, extension_policies.get(),
-                    with_user_policies, convert_values);
+                    with_user_policies, convert_values,
+                    GetPolicyNameSet(schema_map, policy_namespace));
     extension_values->Set(extension->id(), std::move(extension_policies));
   }
   all_policies.Set("extensionPolicies", std::move(extension_values));
