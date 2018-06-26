@@ -91,8 +91,8 @@ int CloudServicesDialogView::GetDialogButtons() const {
 
 bool CloudServicesDialogView::Accept() {
   PrefService* pref_service = browser_->profile()->GetPrefs();
-  pref_service->SetBoolean(prefs::kMediaRouterEnableCloudServices, true);
-  pref_service->SetBoolean(prefs::kMediaRouterCloudServicesPrefSet, true);
+  pref_service->SetBoolean(::prefs::kMediaRouterEnableCloudServices, true);
+  pref_service->SetBoolean(::prefs::kMediaRouterCloudServicesPrefSet, true);
   return true;  // Close the dialog.
 }
 
