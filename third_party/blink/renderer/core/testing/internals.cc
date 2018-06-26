@@ -1208,25 +1208,6 @@ void Internals::setMarkedTextMatchesAreHighlighted(Document* document,
       highlight);
 }
 
-void Internals::setFrameViewPosition(Document* document,
-                                     long x,
-                                     long y,
-                                     ExceptionState& exception_state) {
-  DCHECK(document);
-  if (!document->View()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
-                                      "The document provided is invalid.");
-    return;
-  }
-
-  LocalFrameView* frame_view = document->View();
-  bool scrollbars_suppressed_old_value = frame_view->ScrollbarsSuppressed();
-
-  frame_view->SetScrollbarsSuppressed(false);
-  frame_view->UpdateScrollOffsetFromInternals(IntSize(x, y));
-  frame_view->SetScrollbarsSuppressed(scrollbars_suppressed_old_value);
-}
-
 String Internals::viewportAsText(Document* document,
                                  float,
                                  int available_width,

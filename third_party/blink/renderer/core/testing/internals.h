@@ -220,7 +220,6 @@ class Internals final : public ScriptWrappable {
                                  bool);
   void setMarkedTextMatchesAreHighlighted(Document*, bool);
 
-  void setFrameViewPosition(Document*, long x, long y, ExceptionState&);
   String viewportAsText(Document*,
                         float device_pixel_ratio,
                         int available_width,

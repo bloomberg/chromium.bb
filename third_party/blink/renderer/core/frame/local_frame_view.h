@@ -269,8 +269,6 @@ class CORE_EXPORT LocalFrameView final
 
   void DidAttachDocument();
 
-  void RestoreScrollbar();
-
   void PostLayoutTimerFired(TimerBase*);
 
   bool SafeToPropagateScrollToParent() const {
@@ -542,13 +540,6 @@ class CORE_EXPORT LocalFrameView final
       const override;  // The minimum offset we can be scrolled to.
   int ScrollX() const { return ScrollOffsetInt().Width(); }
   int ScrollY() const { return ScrollOffsetInt().Height(); }
-
-  // This gives us a means of blocking updating our scrollbars until the first
-  // layout has occurred.
-  void SetScrollbarsSuppressed(bool suppressed) {
-    scrollbars_suppressed_ = suppressed;
-  }
-  bool ScrollbarsSuppressed() const { return scrollbars_suppressed_; }
 
   // Indicates the root layer's scroll offset changed since the last frame
   void SetRootLayerDidScroll() { root_layer_did_scroll_ = true; }
@@ -995,7 +986,6 @@ class CORE_EXPORT LocalFrameView final
   // crbug.com/417782.
   IntSize layout_overflow_size_;
 
-  bool scrollbars_suppressed_;
   bool root_layer_did_scroll_;
 
   std::unique_ptr<LayoutAnalyzer> analyzer_;

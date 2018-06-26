@@ -228,7 +228,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       needs_update_geometries_(false),
       horizontal_scrollbar_mode_(kScrollbarAuto),
       vertical_scrollbar_mode_(kScrollbarAuto),
-      scrollbars_suppressed_(false),
       root_layer_did_scroll_(false),
       frame_timing_requests_dirty_(true),
       hidden_for_throttling_(false),
@@ -1039,8 +1038,6 @@ void LocalFrameView::UpdateLayout() {
         ScrollbarMode current_v_mode = EffectiveVerticalScrollbarMode();
 
         if (first_layout_) {
-          SetScrollbarsSuppressed(true);
-
           first_layout_ = false;
           last_viewport_size_ = GetLayoutSize(kIncludeScrollbars);
           last_zoom_factor_ = GetLayoutView()->Style()->Zoom();
@@ -1060,7 +1057,6 @@ void LocalFrameView::UpdateLayout() {
           }
 
           SetScrollbarModes(h_mode, v_mode);
-          SetScrollbarsSuppressed(false);
         } else if (h_mode != current_h_mode || v_mode != current_v_mode) {
           SetScrollbarModes(h_mode, v_mode);
         }
@@ -1593,10 +1589,6 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
       fast_path_allowed = false;
   }
   return fast_path_allowed;
-}
-
-void LocalFrameView::RestoreScrollbar() {
-  SetScrollbarsSuppressed(false);
 }
 
 bool LocalFrameView::RestoreScrollAnchor(
