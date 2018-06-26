@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/trace_event/trace_event.h"
@@ -63,6 +64,12 @@ Histogram* HistogramFactoryGetEnumeration(
   return reinterpret_cast<Histogram*>(
       base::LinearHistogram::FactoryGet(name, 1, boundary, boundary + 1,
           base::HistogramBase::kUmaTargetedHistogramFlag));
+}
+
+Histogram* SparseHistogramFactoryGetEnumeration(const std::string& name,
+                                                int boundary) {
+  return reinterpret_cast<Histogram*>(base::SparseHistogram::FactoryGet(
+      name, base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
 const char* GetHistogramName(Histogram* histogram_pointer) {
