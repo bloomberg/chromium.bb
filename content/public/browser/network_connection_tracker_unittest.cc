@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/network_connection_tracker.h"
+#include "content/public/browser/network_connection_tracker.h"
 
 #include "base/macros.h"
 #include "base/run_loop.h"

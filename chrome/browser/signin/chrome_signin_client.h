@@ -19,7 +19,7 @@
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 
 #if !defined(OS_CHROMEOS)
-#include "content/public/common/network_connection_tracker.h"
+#include "content/public/browser/network_connection_tracker.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
