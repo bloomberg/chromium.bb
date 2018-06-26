@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -97,26 +96,20 @@ public class OpenTabsTest {
         mSessionTagCounter = 0;
     }
 
-    /*
     // Test syncing an open tab from client to server.
+    @Test
     @LargeTest
     @Feature({"Sync"})
-    */
-    @Test
-    @FlakyTest(message = "https://crbug.com/592437")
     public void testUploadOpenTab() throws Exception {
         mSyncTestRule.loadUrl(URL);
         waitForLocalTabsForClient(mClientName, URL);
         waitForServerTabs(URL);
     }
 
-    /*
     // Test syncing multiple open tabs from client to server.
+    @Test
     @LargeTest
     @Feature({"Sync"})
-    */
-    @Test
-    @FlakyTest(message = "https://crbug.com/592437")
     public void testUploadMultipleOpenTabs() throws Exception {
         mSyncTestRule.loadUrl(URL);
         mSyncTestRule.loadUrlInNewTab(URL2);
@@ -125,13 +118,10 @@ public class OpenTabsTest {
         waitForServerTabs(URL, URL2, URL3);
     }
 
-    /*
     // Test syncing an open tab from client to server.
+    @Test
     @LargeTest
     @Feature({"Sync"})
-    */
-    @Test
-    @FlakyTest(message = "https://crbug.com/592437")
     public void testUploadAndCloseOpenTab() throws Exception {
         mSyncTestRule.loadUrl(URL);
         // Can't have zero tabs, so we have to open two to test closing one.
