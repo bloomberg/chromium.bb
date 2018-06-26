@@ -327,6 +327,7 @@ double AudioContext::baseLatency() const {
 }
 
 void AudioContext::NotifySourceNodeStart() {
+  source_node_started_ = true;
   if (!user_gesture_required_)
     return;
 
@@ -430,6 +431,7 @@ void AudioContext::RecordAutoplayMetrics() {
       .SetUnlockType(autoplay_unlock_type_
                          ? static_cast<int>(autoplay_unlock_type_.value())
                          : -1)
+      .SetSourceNodeStarted(source_node_started_)
       .Record(ukm_recorder);
 
   // Record autoplay_status_ value.

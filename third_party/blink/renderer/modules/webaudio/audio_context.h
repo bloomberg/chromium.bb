@@ -117,6 +117,9 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   // Will only be set if there is an autoplay policy in place.
   // Will never be set for OfflineAudioContext.
   base::Optional<AutoplayUnlockType> autoplay_unlock_type_;
+
+  // Records if start() was ever called for any source node in this context.
+  bool source_node_started_ = false;
 };
 
 }  // namespace blink
