@@ -105,6 +105,20 @@ void RunCallbacks(std::vector<base::OnceClosure> callbacks) {
 PassthroughResources::PassthroughResources() : texture_object_map(nullptr) {}
 PassthroughResources::~PassthroughResources() = default;
 
+void PassthroughResources::DestroyPendingTextures(bool has_context) {
+  if (!has_context) {
+    for (scoped_refptr<TexturePassthrough> iter :
+         textures_pending_destruction) {
+      iter->MarkContextLost();
+    }
+  }
+  textures_pending_destruction.clear();
+}
+
+bool PassthroughResources::HasTexturesPendingDestruction() const {
+  return !textures_pending_destruction.empty();
+}
+
 void PassthroughResources::Destroy(gl::GLApi* api) {
   bool have_context = !!api;
   // Only delete textures that are not referenced by a TexturePassthrough
@@ -148,6 +162,7 @@ void PassthroughResources::Destroy(gl::GLApi* api) {
         });
   }
   texture_object_map.Clear();
+  DestroyPendingTextures(have_context);
 }
 
 ScopedFramebufferBindingReset::ScopedFramebufferBindingReset(gl::GLApi* api)
@@ -896,6 +911,15 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
     }
   }
 
+  for (PassthroughAbstractTextureImpl* iter : abstract_textures_) {
+    resources_->textures_pending_destruction.insert(
+        iter->OnDecoderWillDestroy());
+  }
+  abstract_textures_.clear();
+  if (have_context) {
+    resources_->DestroyPendingTextures(/*has_context=*/true);
+  }
+
   DeleteServiceObjects(&framebuffer_id_map_, have_context,
                        [this](GLuint client_id, GLuint framebuffer) {
                          api()->glDeleteFramebuffersEXTFn(1, &framebuffer);
@@ -1134,6 +1158,8 @@ bool GLES2DecoderPassthroughImpl::MakeCurrent() {
   ProcessReadPixels(false);
   ProcessQueries(false);
 
+  resources_->DestroyPendingTextures(/*has_context=*/true);
+
   return true;
 }
 
@@ -1351,7 +1377,8 @@ void GLES2DecoderPassthroughImpl::ProcessPendingQueries(bool did_finish) {
 }
 
 bool GLES2DecoderPassthroughImpl::HasMoreIdleWork() const {
-  return gpu_tracer_->HasTracesToProcess() || !pending_read_pixels_.empty();
+  return gpu_tracer_->HasTracesToProcess() || !pending_read_pixels_.empty() ||
+         resources_->HasTexturesPendingDestruction();
 }
 
 void GLES2DecoderPassthroughImpl::PerformIdleWork() {
@@ -1433,7 +1460,31 @@ GLES2DecoderPassthroughImpl::CreateAbstractTexture(GLenum target,
                                                    GLint border,
                                                    GLenum format,
                                                    GLenum type) {
-  return nullptr;
+  // We can't support cube maps because the abstract texture does not allow it.
+  DCHECK(target != GL_TEXTURE_CUBE_MAP);
+  GLuint service_id = 0;
+  api()->glGenTexturesFn(1, &service_id);
+  scoped_refptr<TexturePassthrough> texture(
+      new TexturePassthrough(service_id, target));
+
+  // Unretained is safe, because of the destruction cb.
+  std::unique_ptr<PassthroughAbstractTextureImpl> abstract_texture =
+      std::make_unique<PassthroughAbstractTextureImpl>(texture, this);
+
+  abstract_textures_.insert(abstract_texture.get());
+  return abstract_texture;
+}
+
+void GLES2DecoderPassthroughImpl::OnAbstractTextureDestroyed(
+    PassthroughAbstractTextureImpl* abstract_texture,
+    scoped_refptr<TexturePassthrough> texture) {
+  DCHECK(texture);
+  abstract_textures_.erase(abstract_texture);
+  if (context_->IsCurrent(nullptr)) {
+    resources_->DestroyPendingTextures(true);
+  } else {
+    resources_->textures_pending_destruction.insert(std::move(texture));
+  }
 }
 
 bool GLES2DecoderPassthroughImpl::WasContextLost() const {
