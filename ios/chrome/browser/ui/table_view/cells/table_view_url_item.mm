@@ -6,10 +6,10 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "url/gurl.h"
 

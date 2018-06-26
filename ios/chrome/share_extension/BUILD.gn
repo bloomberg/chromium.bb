@@ -54,6 +54,8 @@ ios_appex_bundle("share_extension") {
   ]
   bundle_deps_filter = [ "//third_party/icu:icudata" ]
 
+  assert_no_deps = [ "//ios/chrome/browser" ]
+
   libs = [
     "Foundation.framework",
     "Social.framework",

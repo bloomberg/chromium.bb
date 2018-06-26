@@ -49,10 +49,10 @@ source_set("content_widget") {
 
   deps = [
     "//base",
-    "//ios/chrome/browser/ui/favicon:favicon_ui",
     "//ios/chrome/browser/ui/ntp:ntp_tile",
     "//ios/chrome/common:common_extension",
     "//ios/chrome/common/app_group",
+    "//ios/chrome/common/favicon",
     "//ios/chrome/common/ui_util",
   ]
 
@@ -61,6 +61,8 @@ source_set("content_widget") {
     "NotificationCenter.framework",
     "UIKit.framework",
   ]
+
+  assert_no_deps = [ "//ios/chrome/browser" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

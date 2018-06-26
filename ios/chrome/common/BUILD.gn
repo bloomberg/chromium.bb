@@ -29,6 +29,11 @@ source_set("common") {
     ":timing",
   ]
 
+  assert_no_deps = [
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/*",
+  ]
+
   libs = [ "QuartzCore.framework" ]
 }
 
@@ -44,6 +49,11 @@ source_set("common_extension") {
     ":timing",
   ]
 
+  assert_no_deps = [
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/*",
+  ]
+
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -54,6 +64,11 @@ source_set("timing") {
   ]
 
   libs = [ "QuartzCore.framework" ]
+
+  assert_no_deps = [
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/*",
+  ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

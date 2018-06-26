@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_FAVICON_FAVICON_VIEW_H_
-#define IOS_CHROME_BROWSER_UI_FAVICON_FAVICON_VIEW_H_
+#ifndef IOS_CHROME_COMMON_FAVICON_FAVICON_VIEW_H_
+#define IOS_CHROME_COMMON_FAVICON_FAVICON_VIEW_H_
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
+#import "ios/chrome/common/favicon/favicon_attributes.h"
 
 namespace {
 // Minimum width and height of favicon.
@@ -25,4 +25,4 @@ const CGFloat kFaviconPreferredSize = 24.0f;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_FAVICON_FAVICON_VIEW_H_
+#endif  // IOS_CHROME_COMMON_FAVICON_FAVICON_VIEW_H_

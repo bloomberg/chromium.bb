@@ -129,13 +129,13 @@ source_set("history_ui") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/context_menu",
-    "//ios/chrome/browser/ui/favicon:favicon_ui",
     "//ios/chrome/browser/ui/list_model",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view:presentation",
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/favicon",
     "//ui/base",
   ]
 }
