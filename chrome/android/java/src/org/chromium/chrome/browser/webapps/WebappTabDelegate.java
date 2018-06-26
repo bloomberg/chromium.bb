@@ -45,11 +45,10 @@ public class WebappTabDelegate extends TabDelegate {
     }
 
     @Override
-    public void createNewTab(AsyncTabCreationParams asyncParams, TabLaunchType type, int parentId) {
+    public void createNewTab(
+            AsyncTabCreationParams asyncParams, @TabLaunchType int type, int parentId) {
         String url = asyncParams.getLoadUrlParams().getUrl();
-        if (maybeStartExternalActivity(url)) {
-            return;
-        }
+        if (maybeStartExternalActivity(url)) return;
 
         int assignedTabId = TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID);
         AsyncTabParamsManager.add(assignedTabId, asyncParams);

@@ -256,7 +256,7 @@ public class Tab
      * standard tab however should be kept open and the entire activity should
      * be moved to the background.
      */
-    private final TabLaunchType mLaunchType;
+    private final @Nullable @TabLaunchType Integer mLaunchType;
 
     /**
      * Navigation state of the WebContents as returned by nativeGetContentsStateAsByteBuffer(),
@@ -588,8 +588,9 @@ public class Tab
      * @param frozenState State containing information about this Tab, if it was persisted.
      */
     @SuppressLint("HandlerLeak")
-    public Tab(int id, int parentId, boolean incognito, WindowAndroid window, TabLaunchType type,
-            TabCreationState creationState, TabState frozenState) {
+    public Tab(int id, int parentId, boolean incognito, WindowAndroid window,
+            @Nullable @TabLaunchType Integer type,
+            @Nullable @TabCreationState Integer creationState, TabState frozenState) {
         mId = TabIdManager.getInstance().generateValidId(id);
         mParentId = parentId;
         mIncognito = incognito;
@@ -1240,7 +1241,7 @@ public class Tab
      * reloads the tab if its renderer has crashed.
      * @param type Specifies how the tab was selected.
      */
-    public final void show(TabSelectionType type) {
+    public final void show(@TabSelectionType int type) {
         try {
             TraceEvent.begin("Tab.show");
             if (!isHidden()) return;
@@ -2735,7 +2736,7 @@ public class Tab
     /**
      * @return The reason the Tab was launched.
      */
-    public TabLaunchType getLaunchType() {
+    public @TabLaunchType int getLaunchType() {
         return mLaunchType;
     }
 
@@ -2993,7 +2994,8 @@ public class Tab
         if (isClosing()) return;
 
         boolean incognito = isIncognito();
-        TabLaunchType tabLaunchType = TabLaunchType.FROM_LONGPRESS_FOREGROUND;
+        @TabLaunchType
+        int tabLaunchType = TabLaunchType.FROM_LONGPRESS_FOREGROUND;
         Tab parentTab = hasParent ? this : null;
 
         switch (disposition) {
@@ -3178,7 +3180,7 @@ public class Tab
      * complete the second level initialization.
      */
     public static Tab createTabForLazyLoad(boolean incognito, WindowAndroid nativeWindow,
-            TabLaunchType type, int parentId, LoadUrlParams loadUrlParams) {
+            @TabLaunchType int type, int parentId, LoadUrlParams loadUrlParams) {
         Tab tab = new Tab(INVALID_TAB_ID, parentId, incognito, nativeWindow, type,
                 TabCreationState.FROZEN_FOR_LAZY_LOAD, null);
         tab.setPendingLoadParams(loadUrlParams);
@@ -3191,7 +3193,7 @@ public class Tab
      * @param initiallyHidden true iff the tab being created is initially in background
      */
     public static Tab createLiveTab(int id, boolean incognito, WindowAndroid nativeWindow,
-            TabLaunchType type, int parentId, boolean initiallyHidden) {
+            @TabLaunchType int type, int parentId, boolean initiallyHidden) {
         return new Tab(id, parentId, incognito, nativeWindow, type,
                 initiallyHidden ? TabCreationState.LIVE_IN_BACKGROUND
                                 : TabCreationState.LIVE_IN_FOREGROUND,
@@ -3259,7 +3261,7 @@ public class Tab
         Context context = ContextUtils.getApplicationContext();
         Intent intent = new Intent(context, ChromeLauncherActivity.class);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
-        intent.putExtra(TabOpenType.BRING_TAB_TO_FRONT.name(), tabId);
+        intent.putExtra(TabOpenType.BRING_TAB_TO_FRONT_STRING, tabId);
         return intent;
     }
 

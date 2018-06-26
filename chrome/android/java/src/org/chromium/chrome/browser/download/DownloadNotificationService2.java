@@ -19,6 +19,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.shapes.OvalShape;
+import android.support.annotation.IntDef;
 import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -38,6 +39,8 @@ import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.PendingState;
 import org.chromium.content_public.browser.BrowserStartupController;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +51,16 @@ import java.util.List;
  *  - Update DownloadForegroundServiceManager about downloads, allowing it to start/stop service.
  */
 public class DownloadNotificationService2 {
-    public enum DownloadStatus { IN_PROGRESS, PAUSED, COMPLETED, CANCELLED, FAILED }
+    @IntDef({DownloadStatus.IN_PROGRESS, DownloadStatus.PAUSED, DownloadStatus.COMPLETED,
+            DownloadStatus.CANCELLED, DownloadStatus.FAILED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DownloadStatus {
+        int IN_PROGRESS = 0;
+        int PAUSED = 1;
+        int COMPLETED = 2;
+        int CANCELLED = 3;
+        int FAILED = 4;
+    }
 
     static final String EXTRA_DOWNLOAD_CONTENTID_ID =
             "org.chromium.chrome.browser.download.DownloadContentId_Id";

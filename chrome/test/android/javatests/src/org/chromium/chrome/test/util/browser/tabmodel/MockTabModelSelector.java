@@ -49,8 +49,8 @@ public class MockTabModelSelector extends TabModelSelectorBase {
     }
 
     @Override
-    public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
-            boolean incognito) {
+    public Tab openNewTab(
+            LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent, boolean incognito) {
         throw new UnsupportedOperationException();
     }
 

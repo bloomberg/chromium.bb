@@ -14,6 +14,8 @@ import org.chromium.content_public.browser.WebContents;
 public class PolicyAuditor {
     /**
      * Events that a policy administrator may want to track.
+     * Changing it to IntDef can need extra work outside this code, see
+     * https://chromium-review.googlesource.com/c/chromium/src/+/1114858
      */
     public enum AuditEvent {
         OPEN_URL_SUCCESS,
@@ -22,7 +24,6 @@ public class PolicyAuditor {
         OPEN_POPUP_URL_SUCCESS,
         AUTOFILL_SELECTED
     }
-
 
     /**
      * Make it non-obvious to accidentally instantiate this outside of ChromeApplication.

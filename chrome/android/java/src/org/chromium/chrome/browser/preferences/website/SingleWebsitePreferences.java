@@ -198,7 +198,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 merged.setContentSettingPermission(ContentSettingException.Type.ADS,
                         other.getContentSettingPermission(ContentSettingException.Type.ADS));
             }
-            for (@PermissionInfo.Type int type = 0; type < PermissionInfo.Type.NUM_PERMISSIONS;
+            for (@PermissionInfo.Type int type = 0; type < PermissionInfo.Type.NUM_ENTRIES;
                     type++) {
                 if (merged.getPermissionInfo(type) == null && other.getPermissionInfo(type) != null
                         && permissionInfoIsForTopLevelOrigin(
@@ -225,7 +225,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
             }
             if (host.equals(other.getAddress().getHost())) {
                 for (@ContentSettingException.Type int type = 0;
-                        type < ContentSettingException.Type.NUM_EXCEPTIONS; type++) {
+                        type < ContentSettingException.Type.NUM_ENTRIES; type++) {
                     if (type == ContentSettingException.Type.ADS
                             || type == ContentSettingException.Type.COOKIE) {
                         continue;
@@ -855,11 +855,10 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
         // Clear the permissions.
         for (@ContentSettingException.Type int type = 0;
-                type < ContentSettingException.Type.NUM_EXCEPTIONS; type++) {
+                type < ContentSettingException.Type.NUM_ENTRIES; type++) {
             mSite.setContentSettingPermission(type, ContentSetting.DEFAULT);
         }
-        for (@PermissionInfo.Type int type = 0; type < PermissionInfo.Type.NUM_PERMISSIONS;
-                type++) {
+        for (@PermissionInfo.Type int type = 0; type < PermissionInfo.Type.NUM_ENTRIES; type++) {
             mSite.setPermission(type, ContentSetting.DEFAULT);
         }
 

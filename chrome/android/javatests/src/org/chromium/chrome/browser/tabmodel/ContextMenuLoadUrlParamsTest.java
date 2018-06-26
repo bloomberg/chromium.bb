@@ -57,7 +57,7 @@ public class ContextMenuLoadUrlParamsTest {
     // TabModelSelectorImpl.
     class RecordingTabModelSelector extends TabModelSelectorImpl {
         @Override
-        public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
+        public Tab openNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,
                 boolean incognito) {
             mOpenNewTabLoadUrlParams = loadUrlParams;
             return super.openNewTab(loadUrlParams, type, parent, incognito);

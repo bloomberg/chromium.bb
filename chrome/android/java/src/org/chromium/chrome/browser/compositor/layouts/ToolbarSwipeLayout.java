@@ -94,7 +94,7 @@ public class ToolbarSwipeLayout extends Layout {
     }
 
     @Override
-    public ViewportMode getViewportMode() {
+    public @ViewportMode int getViewportMode() {
         // This seems counter-intuitive, but if the toolbar moves the android view is not showing.
         // That means the compositor has to draw it and therefore needs the fullscreen viewport.
         // Likewise, when the android view is showing, the compositor controls do not draw and the
@@ -127,7 +127,7 @@ public class ToolbarSwipeLayout extends Layout {
     }
 
     @Override
-    public void swipeStarted(long time, ScrollDirection direction, float x, float y) {
+    public void swipeStarted(long time, @ScrollDirection int direction, float x, float y) {
         if (mTabModelSelector == null || mToTab != null || direction == ScrollDirection.DOWN) {
             return;
         }

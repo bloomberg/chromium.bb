@@ -68,7 +68,7 @@ public class PageViewTimer {
 
         mTabModelObserver = new TabModelSelectorTabModelObserver(tabModelSelector) {
             @Override
-            public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
+            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
                 assert tab != null;
                 if (tab == mCurrentTab) return;
 

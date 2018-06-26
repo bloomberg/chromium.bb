@@ -279,7 +279,8 @@ public class BottomSheetControllerTest {
         mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().addObserver(
                 new EmptyTabModelObserver() {
                     @Override
-                    public void didSelectTab(Tab tab, TabModel.TabSelectionType type, int lastId) {
+                    public void didSelectTab(
+                            Tab tab, @TabModel.TabSelectionType int type, int lastId) {
                         tabSelectedHelper.notifyCalled();
                     }
                 });

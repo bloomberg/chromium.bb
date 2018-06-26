@@ -46,11 +46,7 @@ class CustomTabObserver extends EmptyTabObserver {
 
     public CustomTabObserver(
             Application application, CustomTabsSessionToken session, boolean openedByChrome) {
-        if (openedByChrome) {
-            mCustomTabsConnection = null;
-        } else {
-            mCustomTabsConnection = CustomTabsConnection.getInstance();
-        }
+        mCustomTabsConnection = openedByChrome ? null : CustomTabsConnection.getInstance();
         mSession = session;
         if (!openedByChrome && mCustomTabsConnection.shouldSendNavigationInfoForSession(mSession)) {
             float desiredWidth = application.getResources().getDimensionPixelSize(

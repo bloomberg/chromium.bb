@@ -61,7 +61,7 @@ public class ContextualSearchTapEventTest {
         }
 
         @Override
-        public void peekPanel(StateChangeReason reason) {
+        public void peekPanel(@StateChangeReason int reason) {
             setHeightForTesting(1);
             super.peekPanel(reason);
         }

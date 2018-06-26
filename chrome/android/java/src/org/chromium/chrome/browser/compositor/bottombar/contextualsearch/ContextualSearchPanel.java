@@ -199,7 +199,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     // ============================================================================================
 
     @Override
-    public void setPanelState(PanelState toState, StateChangeReason reason) {
+    public void setPanelState(PanelState toState, @StateChangeReason int reason) {
         PanelState fromState = getPanelState();
 
         mPanelMetrics.onPanelStateChanged(
@@ -262,7 +262,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     // ============================================================================================
 
     @Override
-    protected void onClosed(StateChangeReason reason) {
+    protected void onClosed(@StateChangeReason int reason) {
         // Must be called before destroying Content because unseen visits should be removed from
         // history, and if the Content gets destroyed there won't be a ContentViewCore to do that.
         mManagementDelegate.onCloseContextualSearch(reason);
@@ -364,7 +364,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     @Override
-    public PanelPriority getPriority() {
+    public @PanelPriority int getPriority() {
         return PanelPriority.HIGH;
     }
 
@@ -492,7 +492,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      * Maximizes the Contextual Search Panel, then promotes it to a regular Tab.
      * @param reason The {@code StateChangeReason} behind the maximization and promotion to tab.
      */
-    public void maximizePanelThenPromoteToTab(StateChangeReason reason) {
+    public void maximizePanelThenPromoteToTab(@StateChangeReason int reason) {
         mShouldPromoteToTabAfterMaximizing = true;
         maximizePanel(reason);
     }
@@ -502,13 +502,13 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @param reason The {@code StateChangeReason} behind the maximization and promotion to tab.
      * @param duration The animation duration in milliseconds.
      */
-    public void maximizePanelThenPromoteToTab(StateChangeReason reason, long duration) {
+    public void maximizePanelThenPromoteToTab(@StateChangeReason int reason, long duration) {
         mShouldPromoteToTabAfterMaximizing = true;
         animatePanelToState(PanelState.MAXIMIZED, reason, duration);
     }
 
     @Override
-    public void peekPanel(StateChangeReason reason) {
+    public void peekPanel(@StateChangeReason int reason) {
         super.peekPanel(reason);
 
         if (getPanelState() == PanelState.CLOSED || getPanelState() == PanelState.PEEKED) {
@@ -522,7 +522,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     @Override
-    public void closePanel(StateChangeReason reason, boolean animate) {
+    public void closePanel(@StateChangeReason int reason, boolean animate) {
         super.closePanel(reason, animate);
         mHasContentBeenTouched = false;
     }
@@ -534,7 +534,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     @Override
-    public void requestPanelShow(StateChangeReason reason) {
+    public void requestPanelShow(@StateChangeReason int reason) {
         // If a re-tap is causing the panel to show when already shown, the superclass may ignore
         // that, but we want to be sure to capture search metrics for each tap.
         if (isShowing() && getPanelState() == PanelState.PEEKED) {

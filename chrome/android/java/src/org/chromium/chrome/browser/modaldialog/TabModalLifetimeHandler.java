@@ -53,7 +53,7 @@ public class TabModalLifetimeHandler {
         TabModelSelector tabModelSelector = activity.getTabModelSelector();
         mTabModelObserver = new TabModelSelectorTabModelObserver(tabModelSelector) {
             @Override
-            public void didSelectTab(Tab tab, TabModel.TabSelectionType type, int lastId) {
+            public void didSelectTab(Tab tab, @TabModel.TabSelectionType int type, int lastId) {
                 // Do not use lastId here since it can be the selected tab's ID if model is switched
                 // inside tab switcher.
                 if (tab != mActiveTab) {

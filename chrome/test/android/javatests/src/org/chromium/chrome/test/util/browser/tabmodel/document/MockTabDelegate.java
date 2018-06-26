@@ -20,7 +20,7 @@ public class MockTabDelegate extends TabDelegate {
     }
 
     @Override
-    public Tab createNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent) {
+    public Tab createNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent) {
         return null;
     }
 
@@ -30,11 +30,11 @@ public class MockTabDelegate extends TabDelegate {
     }
 
     @Override
-    public Tab launchUrl(String url, TabLaunchType type) {
+    public Tab launchUrl(String url, @TabLaunchType int type) {
         return null;
     }
 
     @Override
-    public void createNewTab(AsyncTabCreationParams params, TabLaunchType type, int parentId) {
+    public void createNewTab(AsyncTabCreationParams params, @TabLaunchType int type, int parentId) {
     }
 }

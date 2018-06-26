@@ -9,6 +9,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.annotation.IntDef;
 import android.text.TextUtils;
 
 import org.chromium.base.ActivityState;
@@ -42,6 +43,8 @@ import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
 import java.io.File;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -190,20 +193,28 @@ public class OfflinePageUtils {
      * Contains values from the histogram enum OfflinePagesTabRestoreType used for reporting the
      * OfflinePages.TabRestore metric.
      */
-    private static class TabRestoreType {
-        public static final int WHILE_ONLINE = 0;
-        public static final int WHILE_ONLINE_CANT_SAVE_FOR_OFFLINE_USAGE = 1;
-        public static final int WHILE_ONLINE_TO_OFFLINE_PAGE = 2;
-        public static final int WHILE_ONLINE_TO_OFFLINE_PAGE_FROM_LAST_N = 3;
-        public static final int WHILE_OFFLINE = 4;
-        public static final int WHILE_OFFLINE_CANT_SAVE_FOR_OFFLINE_USAGE = 5;
-        public static final int WHILE_OFFLINE_TO_OFFLINE_PAGE = 6;
-        public static final int WHILE_OFFLINE_TO_OFFLINE_PAGE_FROM_LAST_N = 7;
-        public static final int FAILED = 8;
-        public static final int CRASHED = 9;
+    @IntDef({TabRestoreType.WHILE_ONLINE, TabRestoreType.WHILE_ONLINE_CANT_SAVE_FOR_OFFLINE_USAGE,
+            TabRestoreType.WHILE_ONLINE_TO_OFFLINE_PAGE,
+            TabRestoreType.WHILE_ONLINE_TO_OFFLINE_PAGE_FROM_LAST_N, TabRestoreType.WHILE_OFFLINE,
+            TabRestoreType.WHILE_OFFLINE_CANT_SAVE_FOR_OFFLINE_USAGE,
+            TabRestoreType.WHILE_OFFLINE_TO_OFFLINE_PAGE,
+            TabRestoreType.WHILE_OFFLINE_TO_OFFLINE_PAGE_FROM_LAST_N, TabRestoreType.FAILED,
+            TabRestoreType.CRASHED})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface TabRestoreType {
+        int WHILE_ONLINE = 0;
+        int WHILE_ONLINE_CANT_SAVE_FOR_OFFLINE_USAGE = 1;
+        int WHILE_ONLINE_TO_OFFLINE_PAGE = 2;
+        int WHILE_ONLINE_TO_OFFLINE_PAGE_FROM_LAST_N = 3;
+        int WHILE_OFFLINE = 4;
+        int WHILE_OFFLINE_CANT_SAVE_FOR_OFFLINE_USAGE = 5;
+        int WHILE_OFFLINE_TO_OFFLINE_PAGE = 6;
+        int WHILE_OFFLINE_TO_OFFLINE_PAGE_FROM_LAST_N = 7;
+        int FAILED = 8;
+        int CRASHED = 9;
         // NOTE: always keep this entry at the end. Add new result types only immediately above this
         // line. Make sure to update the corresponding histogram enum accordingly.
-        public static final int COUNT = 10;
+        int NUM_ENTRIES = 10;
     }
 
     private static Internal getInstance() {
@@ -677,7 +688,7 @@ public class OfflinePageUtils {
         }
 
         @Override
-        public void didAddTab(Tab tab, TabModel.TabLaunchType type) {
+        public void didAddTab(Tab tab, @TabModel.TabLaunchType int type) {
             tab.addObserver(sTabRestoreTracker);
         }
 
@@ -816,7 +827,7 @@ public class OfflinePageUtils {
     private static void recordTabRestoreHistogram(int tabRestoreType, String url) {
         Log.d(TAG, "Concluded tab restore: type=" + tabRestoreType + ", url=" + url);
         RecordHistogram.recordEnumeratedHistogram(
-                "OfflinePages.TabRestore", tabRestoreType, TabRestoreType.COUNT);
+                "OfflinePages.TabRestore", tabRestoreType, TabRestoreType.NUM_ENTRIES);
     }
 
     @VisibleForTesting

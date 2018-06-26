@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -170,13 +171,13 @@ abstract class OverlayPanelBase {
      * @param reason The reason for the change of panel state.
      * @param animate If the panel should animate closed.
      */
-    protected abstract void closePanel(StateChangeReason reason, boolean animate);
+    protected abstract void closePanel(@StateChangeReason int reason, boolean animate);
 
     /**
      * Event notification that the Panel did get closed.
      * @param reason The reason the panel is closing.
      */
-    protected abstract void onClosed(StateChangeReason reason);
+    protected abstract void onClosed(@StateChangeReason int reason);
 
     /**
      * TODO(mdjones): This method should be removed from this class.
@@ -587,7 +588,7 @@ abstract class OverlayPanelBase {
      * @param state The panel state to transition to.
      * @param reason The reason for a change in the panel's state.
      */
-    protected void setPanelState(PanelState state, StateChangeReason reason) {
+    protected void setPanelState(PanelState state, @StateChangeReason int reason) {
         if (state == PanelState.CLOSED) {
             mHeight = 0;
             onClosed(reason);
@@ -657,7 +658,7 @@ abstract class OverlayPanelBase {
      * @param state The state whose height will be calculated.
      * @return The height of the Overlay Panel in dps for a given |state|.
      */
-    public float getPanelHeightFromState(PanelState state) {
+    public float getPanelHeightFromState(@Nullable PanelState state) {
         if (state == PanelState.PEEKED) {
             return getPeekedHeight();
         } else if (state == PanelState.EXPANDED) {
