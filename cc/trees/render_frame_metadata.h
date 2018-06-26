@@ -25,12 +25,6 @@ class CC_EXPORT RenderFrameMetadata {
   RenderFrameMetadata(RenderFrameMetadata&& other);
   ~RenderFrameMetadata();
 
-  // Certain fields should always have their changes reported. This will return
-  // true when there is a difference between |rfm1| and |rfm2| for those fields.
-  // These fields have a low frequency rate of change.
-  static bool HasAlwaysUpdateMetadataChanged(const RenderFrameMetadata& rfm1,
-                                             const RenderFrameMetadata& rfm2);
-
   RenderFrameMetadata& operator=(const RenderFrameMetadata&);
   RenderFrameMetadata& operator=(RenderFrameMetadata&& other);
   bool operator==(const RenderFrameMetadata& other) const;
