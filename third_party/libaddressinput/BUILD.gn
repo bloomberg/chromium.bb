@@ -132,6 +132,7 @@ static_library("libaddressinput") {
     "//base:i18n",
     "//components/prefs",
     "//net",
+    "//services/network/public/cpp",
     "//third_party/icu",
     "//third_party/re2",
   ]
@@ -243,7 +244,9 @@ test("libaddressinput_unittests") {
     ":test_support",
     "//base/test:run_all_unittests",
     "//components/prefs",
+    "//mojo/edk",
     "//net:test_support",
+    "//services/network:test_support",
     "//testing/gtest",
   ]
 }
