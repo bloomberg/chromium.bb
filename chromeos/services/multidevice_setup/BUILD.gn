@@ -14,6 +14,9 @@ static_library("multidevice_setup") {
     "account_status_change_delegate_notifier.h",
     "account_status_change_delegate_notifier_impl.cc",
     "account_status_change_delegate_notifier_impl.h",
+    "eligible_host_devices_provider.h",
+    "eligible_host_devices_provider_impl.cc",
+    "eligible_host_devices_provider_impl.h",
     "host_backend_delegate.cc",
     "host_backend_delegate.h",
     "host_backend_delegate_impl.cc",
@@ -62,6 +65,8 @@ static_library("test_support") {
     "fake_account_status_change_delegate.cc",
     "fake_account_status_change_delegate.h",
     "fake_account_status_change_delegate_notifier.h",
+    "fake_eligible_host_devices_provider.cc",
+    "fake_eligible_host_devices_provider.h",
     "fake_host_backend_delegate.cc",
     "fake_host_backend_delegate.h",
     "fake_host_verifier.cc",
@@ -87,6 +92,7 @@ source_set("unit_tests") {
 
   sources = [
     "account_status_change_delegate_notifier_impl_unittest.cc",
+    "eligible_host_devices_provider_impl_unittest.cc",
     "host_backend_delegate_impl_unittest.cc",
     "host_verifier_impl_unittest.cc",
     "multidevice_setup_impl_unittest.cc",

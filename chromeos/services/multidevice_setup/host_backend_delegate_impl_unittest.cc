@@ -12,6 +12,7 @@
 #include "base/timer/mock_timer.h"
 #include "base/unguessable_token.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
+#include "chromeos/services/multidevice_setup/fake_eligible_host_devices_provider.h"
 #include "chromeos/services/multidevice_setup/fake_host_backend_delegate.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -41,6 +42,11 @@ class MultiDeviceSetupHostBackendDelegateImplTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
+    fake_eligible_host_devices_provider_ =
+        std::make_unique<FakeEligibleHostDevicesProvider>();
+    fake_eligible_host_devices_provider_->set_eligible_host_devices(
+        test_devices_);
+
     test_pref_service_ =
         std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
     HostBackendDelegateImpl::RegisterPrefs(test_pref_service_->registry());
@@ -63,8 +69,8 @@ class MultiDeviceSetupHostBackendDelegateImplTest : public testing::Test {
     mock_timer_ = mock_timer.get();
 
     delegate_ = HostBackendDelegateImpl::Factory::Get()->BuildInstance(
-        test_pref_service_.get(), fake_device_sync_client_.get(),
-        std::move(mock_timer));
+        fake_eligible_host_devices_provider_.get(), test_pref_service_.get(),
+        fake_device_sync_client_.get(), std::move(mock_timer));
     EXPECT_EQ(initial_host, delegate_->GetMultiDeviceHostFromBackend());
 
     observer_ = std::make_unique<FakeHostBackendDelegateObserver>();
@@ -177,6 +183,10 @@ class MultiDeviceSetupHostBackendDelegateImplTest : public testing::Test {
     }
   }
 
+  FakeEligibleHostDevicesProvider* fake_eligible_host_devices_provider() {
+    return fake_eligible_host_devices_provider_.get();
+  }
+
   device_sync::FakeDeviceSyncClient* fake_device_sync_client() {
     return fake_device_sync_client_.get();
   }
@@ -194,6 +204,8 @@ class MultiDeviceSetupHostBackendDelegateImplTest : public testing::Test {
  private:
   cryptauth::RemoteDeviceRefList test_devices_;
 
+  std::unique_ptr<FakeEligibleHostDevicesProvider>
+      fake_eligible_host_devices_provider_;
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
       test_pref_service_;
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
@@ -447,6 +459,17 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
   // An initial pending host request exists to remove the current host, but
   // there actually is no current host. Thus, the request should be canceled.
   EXPECT_FALSE(delegate()->HasPendingHostRequest());
+}
+
+TEST_F(MultiDeviceSetupHostBackendDelegateImplTest, TryToSetNonEligibleHost) {
+  // Make all test devices ineligible.
+  fake_eligible_host_devices_provider()->set_eligible_host_devices(
+      cryptauth::RemoteDeviceRefList());
+
+  CreateDelegate(base::nullopt /* initial_host */);
+
+  delegate()->AttemptToSetMultiDeviceHostOnBackend(test_devices()[0]);
+  EXPECT_EQ(0u, observer()->num_pending_host_request_changes());
 }
 
 }  // namespace multidevice_setup

@@ -9,6 +9,7 @@
 #include "base/time/default_clock.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
+#include "chromeos/services/multidevice_setup/eligible_host_devices_provider_impl.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 #include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
@@ -51,8 +52,12 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client)
-    : host_backend_delegate_(
+    : eligible_host_devices_provider_(
+          EligibleHostDevicesProviderImpl::Factory::Get()->BuildInstance(
+              device_sync_client)),
+      host_backend_delegate_(
           HostBackendDelegateImpl::Factory::Get()->BuildInstance(
+              eligible_host_devices_provider_.get(),
               pref_service,
               device_sync_client)),
       host_verifier_(HostVerifierImpl::Factory::Get()->BuildInstance(
