@@ -310,7 +310,6 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
   // TODO(crbug.com/829419): Return success/failure of the executed function.
   void StartEventLogging(const std::string& peerConnectionId,
                          int maxLogSizeBytes,
-                         const std::string& metadata,
                          bool expect_success,
                          const std::string& expected_error = std::string()) {
     DCHECK_EQ(expect_success, expected_error.empty());
@@ -319,7 +318,6 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
     AppendTabIdAndUrl(&params);
     params.AppendString(peerConnectionId);
     params.AppendInteger(maxLogSizeBytes);
-    params.AppendString(metadata);
 
     if (expect_success) {
       const bool result_returned =
@@ -634,10 +632,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
   const std::string peer_connection_id = "id";
   SetUpPeerConnection(peer_connection_id);
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
-  const std::string metadata = "metadata";
   constexpr bool expect_success = true;
-  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
-                    expect_success);
+  StartEventLogging(peer_connection_id, max_size_bytes, expect_success);
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
@@ -645,12 +641,11 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
   const std::string peer_connection_id = "id";
   SetUpPeerConnection(peer_connection_id);
   const int max_size_bytes = kWebRtcEventLogManagerUnlimitedFileSize;
-  const std::string metadata = "metadata";
   constexpr bool expect_success = false;
   const std::string error_message =
       kStartRemoteLoggingFailureUnlimitedSizeDisallowed;
-  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
-                    expect_success, error_message);
+  StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
+                    error_message);
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
@@ -658,36 +653,10 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
   const std::string peer_connection_id = "id";
   SetUpPeerConnection(peer_connection_id);
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes + 1;
-  const std::string metadata = "metadata";
   constexpr bool expect_success = false;
   const std::string error_message = kStartRemoteLoggingFailureMaxSizeTooLarge;
-  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
-                    expect_success, error_message);
-}
-
-IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
-                       StartEventLoggingWithExcessivelyLongMetadataFails) {
-  const std::string peer_connection_id = "id";
-  SetUpPeerConnection(peer_connection_id);
-  const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
-  const std::string metadata(kMaxRemoteLogFileMetadataSizeBytes + 1, 'X');
-  constexpr bool expect_success = false;
-  const std::string error_message = kStartRemoteLoggingFailureMetadaTooLong;
-  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
-                    expect_success, error_message);
-}
-
-IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
-                       StartEventLoggingWithMaxSizeTooSmallFails) {
-  const std::string peer_connection_id = "id";
-  SetUpPeerConnection(peer_connection_id);
-  const std::string metadata = "metadata";
-  const size_t max_size_bytes =
-      kRemoteBoundLogFileHeaderSizeBytes + metadata.length();
-  constexpr bool expect_success = false;
-  const std::string error_message = kStartRemoteLoggingFailureMaxSizeTooSmall;
-  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
-                    expect_success, error_message);
+  StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
+                    error_message);
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
@@ -695,12 +664,11 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
   // Note that manager->PeerConnectionAdded() is not called.
   const std::string peer_connection_id = "id";
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
-  const std::string metadata = "metadata";
   constexpr bool expect_success = false;
   const std::string error_message =
       kStartRemoteLoggingFailureUnknownOrInactivePeerConnection;
-  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
-                    expect_success, error_message);
+  StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
+                    error_message);
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
@@ -710,12 +678,11 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
 
   SetUpPeerConnection(peer_connection_id_1);
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
-  const std::string metadata = "metadata";
   constexpr bool expect_success = false;
   const std::string error_message =
       kStartRemoteLoggingFailureUnknownOrInactivePeerConnection;
-  StartEventLogging(peer_connection_id_2, max_size_bytes, metadata,
-                    expect_success, error_message);
+  StartEventLogging(peer_connection_id_2, max_size_bytes, expect_success,
+                    error_message);
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
@@ -724,21 +691,19 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
   SetUpPeerConnection(peer_connection_id);
 
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
-  const std::string metadata = "metadata";
 
   // First call succeeds.
   {
     constexpr bool expect_success = true;
-    StartEventLogging(peer_connection_id, max_size_bytes, metadata,
-                      expect_success);
+    StartEventLogging(peer_connection_id, max_size_bytes, expect_success);
   }
 
   // Second call fails.
   {
     constexpr bool expect_success = false;
     const std::string error_message = kStartRemoteLoggingFailureAlreadyLogging;
-    StartEventLogging(peer_connection_id, max_size_bytes, metadata,
-                      expect_success, error_message);
+    StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
+                      error_message);
   }
 }
 
@@ -747,11 +712,10 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTestDisabledRemoteLogging,
   const std::string peer_connection_id = "id";
   SetUpPeerConnection(peer_connection_id);
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
-  const std::string metadata = "metadata";
   constexpr bool expect_success = false;
   const std::string error_message = kStartRemoteLoggingFailureFeatureDisabled;
-  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
-                    expect_success, error_message);
+  StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
+                    error_message);
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTestInIncognitoMode,
@@ -759,9 +723,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTestInIncognitoMode,
   const std::string peer_connection_id = "id";
   SetUpPeerConnection(peer_connection_id);
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
-  const std::string metadata = "metadata";
   constexpr bool expect_success = false;
   const std::string error_message = kStartRemoteLoggingFailureFeatureDisabled;
-  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
-                    expect_success, error_message);
+  StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
+                    error_message);
 }

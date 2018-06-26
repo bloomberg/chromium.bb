@@ -88,7 +88,6 @@ class WebRtcRemoteEventLogManager final
                           const std::string& peer_connection_id,
                           const base::FilePath& browser_context_dir,
                           size_t max_file_size_bytes,
-                          const std::string& metadata,
                           std::string* error_message);
 
   // If an active remote-bound log exists for the given peer connection, this
@@ -158,7 +157,6 @@ class WebRtcRemoteEventLogManager final
   bool StartWritingLog(const PeerConnectionKey& key,
                        const base::FilePath& browser_context_dir,
                        size_t max_file_size_bytes,
-                       const std::string& metadata,
                        std::string* error_message);
 
   // Checks if the referenced peer connection has an associated active

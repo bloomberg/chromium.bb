@@ -29,7 +29,6 @@ extern const size_t kWebRtcEventLogManagerUnlimitedFileSize;
 extern const size_t kDefaultMaxLocalLogFileSizeBytes;
 extern const size_t kMaxNumberLocalWebRtcEventLogFiles;
 
-extern const size_t kMaxRemoteLogFileMetadataSizeBytes;
 extern const size_t kMaxRemoteLogFileSizeBytes;
 
 // Limit over the number of concurrently active (currently being written to
@@ -49,17 +48,6 @@ extern const size_t kMaxPendingRemoteBoundWebRtcEventLogs;
 // kept on local disk.
 extern const base::FilePath::CharType kRemoteBoundLogExtension[];
 
-// Version of the remote-bound log. Refers to the version of the event logs'
-// encoding, method for separation of metadata from the WebRTC event log, etc.
-extern const uint8_t kRemoteBoundWebRtcEventLogFileVersion;
-
-// Remote-bound log headers are composed of:
-// * One byte for the version (for the encoding, metadata format, etc.)
-// * Three bytes encoding the length of the metadata, in bytes.
-// The metadata, which immediately follows the header, is not counted as part
-// of the header size.
-extern const size_t kRemoteBoundLogFileHeaderSizeBytes;
-
 // Remote-bound event logs will not be uploaded if the time since their last
 // modification (meaning the time when they were completed) exceeds this value.
 // Such expired files will be purged from disk when examined.
@@ -74,7 +62,6 @@ extern const base::TimeDelta kRemoteBoundWebRtcEventLogsMaxRetention;
 extern const char kStartRemoteLoggingFailureFeatureDisabled[];
 extern const char kStartRemoteLoggingFailureUnlimitedSizeDisallowed[];
 extern const char kStartRemoteLoggingFailureMaxSizeTooLarge[];
-extern const char kStartRemoteLoggingFailureMetadaTooLong[];
 extern const char kStartRemoteLoggingFailureMaxSizeTooSmall[];
 extern const char kStartRemoteLoggingFailureUnknownOrInactivePeerConnection[];
 extern const char kStartRemoteLoggingFailureAlreadyLogging[];

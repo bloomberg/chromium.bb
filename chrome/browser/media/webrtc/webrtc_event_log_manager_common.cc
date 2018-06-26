@@ -20,8 +20,6 @@ const char kStartRemoteLoggingFailureUnlimitedSizeDisallowed[] =
     "Unlimited size disallowed.";
 const char kStartRemoteLoggingFailureMaxSizeTooLarge[] =
     "Excessively large max log size.";
-const char kStartRemoteLoggingFailureMetadaTooLong[] =
-    "Excessively long metadata.";
 const char kStartRemoteLoggingFailureMaxSizeTooSmall[] = "Max size too small.";
 const char kStartRemoteLoggingFailureUnknownOrInactivePeerConnection[] =
     "Unknown or inactive peer connection.";
