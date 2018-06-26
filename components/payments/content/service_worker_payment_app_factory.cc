@@ -266,7 +266,7 @@ void ServiceWorkerPaymentAppFactory::GetAllPaymentApps(
           ? std::make_unique<payments::PaymentManifestDownloader>(
                 content::BrowserContext::GetDefaultStoragePartition(
                     web_contents->GetBrowserContext())
-                    ->GetURLRequestContext())
+                    ->GetURLLoaderFactoryForBrowserProcess())
           : std::move(test_downloader_),
       cache, requested_method_data, may_crawl_for_installable_payment_apps,
       std::move(callback),

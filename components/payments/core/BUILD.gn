@@ -75,6 +75,7 @@ static_library("core") {
   ]
 
   public_deps = [
+    "//services/network/public/cpp",
     "//third_party/icu",
     "//third_party/libaddressinput",
   ]
@@ -140,6 +141,7 @@ source_set("unit_tests") {
     "//components/ukm:test_support",
     "//net:test_support",
     "//services/metrics/public/cpp:ukm_builders",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/libaddressinput:test_support",

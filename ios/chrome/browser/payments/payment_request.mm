@@ -99,7 +99,6 @@ PaymentRequest::PaymentRequest(
       journey_logger_(IsIncognito(), GetLastCommittedURL(), GetUkmRecorder()),
       payment_instruments_ready_(false),
       ios_instrument_finder_(
-          GetApplicationContext()->GetSystemURLRequestContext(),
           GetApplicationContext()->GetSharedURLLoaderFactory(),
           payment_request_ui_delegate_) {
   PopulateAvailableShippingOptions();

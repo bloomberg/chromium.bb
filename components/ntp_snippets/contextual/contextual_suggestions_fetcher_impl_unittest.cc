@@ -20,8 +20,8 @@
 #include "components/ntp_snippets/contextual/proto/get_pivots_request.pb.h"
 #include "components/ntp_snippets/contextual/proto/get_pivots_response.pb.h"
 #include "net/http/http_status_code.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,41 +50,6 @@ using network::TestURLLoaderFactory;
 using testing::ElementsAre;
 
 namespace {
-
-// TODO(pnoland): de-dupe this and the identical class in
-// feed_networking_host_unittest.cc
-class TestSharedURLLoaderFactory : public SharedURLLoaderFactory {
- public:
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& url_request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
-    test_factory_.CreateLoaderAndStart(std::move(request), routing_id,
-                                       request_id, options, url_request,
-                                       std::move(client), traffic_annotation);
-  }
-
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    NOTREACHED();
-  }
-
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  TestURLLoaderFactory* test_factory() { return &test_factory_; }
-
- protected:
-  ~TestSharedURLLoaderFactory() override = default;
-
- private:
-  TestURLLoaderFactory test_factory_;
-};
 
 Cluster DefaultCluster() {
   return ClusterBuilder("Articles")
@@ -185,9 +150,11 @@ std::string SerializedResponseProto(const std::string& peek_text,
 class ContextualSuggestionsFetcherTest : public testing::Test {
  public:
   ContextualSuggestionsFetcherTest() {
-    loader_factory_ = base::MakeRefCounted<TestSharedURLLoaderFactory>();
+    shared_url_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_factory_);
     fetcher_ = std::make_unique<ContextualSuggestionsFetcherImpl>(
-        loader_factory_, "en");
+        shared_url_loader_factory_, "en");
   }
 
   ~ContextualSuggestionsFetcherTest() override {}
@@ -204,8 +171,7 @@ class ContextualSuggestionsFetcherTest : public testing::Test {
       status.decoded_body_length = response_data.length();
     }
 
-    loader_factory_->test_factory()->AddResponse(fetch_url, head, response_data,
-                                                 status);
+    test_factory_.AddResponse(fetch_url, head, response_data, status);
   }
 
   void SendAndAwaitResponse(
@@ -224,13 +190,12 @@ class ContextualSuggestionsFetcherTest : public testing::Test {
 
   ContextualSuggestionsFetcher& fetcher() { return *fetcher_; }
 
-  TestURLLoaderFactory* test_factory() {
-    return loader_factory_->test_factory();
-  }
+  TestURLLoaderFactory* test_factory() { return &test_factory_; }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  scoped_refptr<TestSharedURLLoaderFactory> loader_factory_;
+  network::TestURLLoaderFactory test_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   std::unique_ptr<ContextualSuggestionsFetcherImpl> fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSuggestionsFetcherTest);

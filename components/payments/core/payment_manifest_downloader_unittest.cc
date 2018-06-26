@@ -4,25 +4,28 @@
 
 #include "components/payments/core/payment_manifest_downloader.h"
 
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
-namespace {
 
 class PaymentMethodManifestDownloaderTest : public testing::Test {
  public:
   PaymentMethodManifestDownloaderTest()
-      : context_(new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get())),
-        downloader_(context_) {
+      : test_url_("https://bobpay.com"),
+        shared_url_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_factory_)),
+        downloader_(shared_url_loader_factory_) {
     downloader_.DownloadPaymentMethodManifest(
-        GURL("https://bobpay.com"),
+        test_url_,
         base::BindOnce(&PaymentMethodManifestDownloaderTest::OnManifestDownload,
                        base::Unretained(this)));
   }
@@ -31,340 +34,246 @@ class PaymentMethodManifestDownloaderTest : public testing::Test {
 
   MOCK_METHOD1(OnManifestDownload, void(const std::string& content));
 
-  net::TestURLFetcher* fetcher() { return factory_.GetFetcherByID(0); }
+  void CallComplete(int response_code = 200,
+                    const std::string& link_header = std::string(),
+                    const std::string& response_body = std::string(),
+                    bool send_headers = true) {
+    scoped_refptr<net::HttpResponseHeaders> headers;
+    if (send_headers) {
+      headers = base::MakeRefCounted<net::HttpResponseHeaders>(std::string());
+      headers->ReplaceStatusLine(base::StringPrintf("%d", response_code));
+    }
+
+    if (!link_header.empty())
+      headers->AddHeader(link_header);
+    downloader_.OnURLLoaderCompleteInternal(downloader_.GetLoaderForTesting(),
+                                            test_url_, response_body, headers,
+                                            net::OK);
+  }
+
+  void CallRedirect(int redirect_code, const GURL& new_url) {
+    net::RedirectInfo redirect_info;
+    redirect_info.status_code = redirect_code;
+    redirect_info.new_url = new_url;
+
+    downloader_.OnURLLoaderRedirect(downloader_.GetLoaderForTesting(),
+                                    redirect_info,
+                                    network::ResourceResponseHead());
+  }
+
+  GURL GetOriginalURL() { return downloader_.GetLoaderOriginalURLForTesting(); }
 
  private:
+  GURL test_url_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  net::TestURLFetcherFactory factory_;
-  scoped_refptr<net::TestURLRequestContextGetter> context_;
+  network::TestURLLoaderFactory test_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   PaymentManifestDownloader downloader_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentMethodManifestDownloaderTest);
 };
 
 TEST_F(PaymentMethodManifestDownloaderTest, HttpHeadResponse404IsFailure) {
-  fetcher()->set_response_code(404);
-
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(404);
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, NoHttpHeadersIsFailure) {
-  fetcher()->set_response_code(200);
-
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200, std::string(), std::string(), false);
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, EmptyHttpHeaderIsFailure) {
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
-  fetcher()->set_response_headers(headers);
-  fetcher()->set_response_code(200);
-
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200);
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, EmptyHttpLinkHeaderIsFailure) {
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(std::string()));
-  headers->AddHeader("Link:");
-  fetcher()->set_response_headers(headers);
-  fetcher()->set_response_code(200);
-
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200, "Link:");
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, NoRelInHttpLinkHeaderIsFailure) {
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
-  headers->AddHeader("Link: <manifest.json>");
-  fetcher()->set_response_headers(headers);
-  fetcher()->set_response_code(200);
-
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200, "Link: <manifest.json>");
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, NoUrlInHttpLinkHeaderIsFailure) {
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
-  headers->AddHeader("Link: rel=payment-method-manifest");
-  fetcher()->set_response_headers(headers);
-  fetcher()->set_response_code(200);
-
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200, "Link: rel=payment-method-manifest");
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest,
        NoManifestRellInHttpLinkHeaderIsFailure) {
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
-  headers->AddHeader("Link: <manifest.json>; rel=web-app-manifest");
-  fetcher()->set_response_headers(headers);
-  fetcher()->set_response_code(200);
-
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200, "Link: <manifest.json>; rel=web-app-manifest");
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, HttpGetResponse404IsFailure) {
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(std::string()));
-  headers->AddHeader("Link: <manifest.json>; rel=payment-method-manifest");
-  fetcher()->set_response_headers(headers);
-  fetcher()->set_response_code(200);
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
-  fetcher()->set_response_code(404);
+  CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(404);
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, EmptyHttpGetResponseIsFailure) {
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
-  headers->AddHeader("Link: <manifest.json>; rel=payment-method-manifest");
-  fetcher()->set_response_headers(headers);
-  fetcher()->set_response_code(200);
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
-  fetcher()->set_response_code(200);
+  CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200, std::string(), std::string(), false);
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, NonEmptyHttpGetResponseIsSuccess) {
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
-  headers->AddHeader("Link: <manifest.json>; rel=payment-method-manifest");
-  fetcher()->set_response_headers(headers);
-  fetcher()->set_response_code(200);
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
-  fetcher()->SetResponseString("manifest content");
-  fetcher()->set_response_code(200);
+  CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
   EXPECT_CALL(*this, OnManifestDownload("manifest content"));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200, std::string(), "manifest content");
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, HeaderResponseCode204IsSuccess) {
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
-  headers->AddHeader("Link: <manifest.json>; rel=payment-method-manifest");
-  fetcher()->set_response_headers(headers);
-  // HTTP code 204 means "no content", which is not a problem for an HTTP HEAD
-  // request.
-  fetcher()->set_response_code(204);
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
-  fetcher()->SetResponseString("manifest content");
-  fetcher()->set_response_code(200);
+  CallComplete(204, "Link: <manifest.json>; rel=payment-method-manifest");
 
   EXPECT_CALL(*this, OnManifestDownload("manifest content"));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200, std::string(), "manifest content");
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, RelativeHttpHeaderLinkUrl) {
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
-  headers->AddHeader("Link: <manifest.json>; rel=payment-method-manifest");
-  fetcher()->set_response_headers(headers);
-  fetcher()->set_response_code(200);
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
-  EXPECT_EQ("https://bobpay.com/manifest.json",
-            fetcher()->GetOriginalURL().spec());
+  EXPECT_EQ("https://bobpay.com/manifest.json", GetOriginalURL());
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, AbsoluteHttpsHeaderLinkUrl) {
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
-  headers->AddHeader(
-      "Link: <https://alicepay.com/manifest.json>; "
-      "rel=payment-method-manifest");
-  fetcher()->set_response_headers(headers);
-  fetcher()->set_response_code(200);
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200,
+               "Link: <https://alicepay.com/manifest.json>; "
+               "rel=payment-method-manifest");
 
-  EXPECT_EQ("https://alicepay.com/manifest.json",
-            fetcher()->GetOriginalURL().spec());
+  EXPECT_EQ("https://alicepay.com/manifest.json", GetOriginalURL());
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, AbsoluteHttpHeaderLinkUrl) {
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
-  headers->AddHeader(
-      "Link: <http://alicepay.com/manifest.json>; "
-      "rel=payment-method-manifest");
-  fetcher()->set_response_headers(headers);
-  fetcher()->set_response_code(200);
-
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200,
+               "Link: <http://alicepay.com/manifest.json>; "
+               "rel=payment-method-manifest");
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, 300IsUnsupportedRedirect) {
-  fetcher()->set_response_code(300);
-  fetcher()->set_url(GURL("https://alicepay.com"));
-
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallRedirect(300, GURL("https://alicepay.com"));
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, 301And302AreSupportedRedirects) {
-  fetcher()->set_response_code(301);
-  fetcher()->set_url(GURL("https://alicepay.com"));
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallRedirect(301, GURL("https://alicepay.com"));
 
-  EXPECT_EQ(fetcher()->GetOriginalURL(), GURL("https://alicepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://alicepay.com"));
 
-  fetcher()->set_response_code(302);
-  fetcher()->set_url(GURL("https://charliepay.com"));
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallRedirect(302, GURL("https://charliepay.com"));
 
-  EXPECT_EQ(fetcher()->GetOriginalURL(), GURL("https://charliepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://charliepay.com"));
 
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
-  headers->AddHeader("Link: <manifest.json>; rel=payment-method-manifest");
-  fetcher()->set_response_headers(headers);
-  fetcher()->set_response_code(200);
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
-  fetcher()->SetResponseString("manifest content");
-  fetcher()->set_response_code(200);
+  CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
   EXPECT_CALL(*this, OnManifestDownload("manifest content"));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200, std::string(), "manifest content");
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, 302And303AreSupportedRedirects) {
-  fetcher()->set_response_code(302);
-  fetcher()->set_url(GURL("https://alicepay.com"));
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallRedirect(302, GURL("https://alicepay.com"));
 
-  EXPECT_EQ(fetcher()->GetOriginalURL(), GURL("https://alicepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://alicepay.com"));
 
-  fetcher()->set_response_code(303);
-  fetcher()->set_url(GURL("https://charliepay.com"));
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallRedirect(303, GURL("https://charliepay.com"));
 
-  EXPECT_EQ(fetcher()->GetOriginalURL(), GURL("https://charliepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://charliepay.com"));
 
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
-  headers->AddHeader("Link: <manifest.json>; rel=payment-method-manifest");
-  fetcher()->set_response_headers(headers);
-  fetcher()->set_response_code(200);
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
-  fetcher()->SetResponseString("manifest content");
-  fetcher()->set_response_code(200);
+  CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
   EXPECT_CALL(*this, OnManifestDownload("manifest content"));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200, std::string(), "manifest content");
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, 304IsUnsupportedRedirect) {
-  fetcher()->set_response_code(304);
-  fetcher()->set_url(GURL("https://alicepay.com"));
-
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallRedirect(304, GURL("https://alicepay.com"));
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, 305IsUnsupportedRedirect) {
-  fetcher()->set_response_code(305);
-  fetcher()->set_url(GURL("https://alicepay.com"));
-
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallRedirect(305, GURL("https://alicepay.com"));
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, 307And308AreSupportedRedirects) {
-  fetcher()->set_response_code(307);
-  fetcher()->set_url(GURL("https://alicepay.com"));
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallRedirect(307, GURL("https://alicepay.com"));
 
-  EXPECT_EQ(fetcher()->GetOriginalURL(), GURL("https://alicepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://alicepay.com"));
 
-  fetcher()->set_response_code(308);
-  fetcher()->set_url(GURL("https://charliepay.com"));
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallRedirect(308, GURL("https://charliepay.com"));
 
-  EXPECT_EQ(fetcher()->GetOriginalURL(), GURL("https://charliepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://charliepay.com"));
 
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
-  headers->AddHeader("Link: <manifest.json>; rel=payment-method-manifest");
-  fetcher()->set_response_headers(headers);
-  fetcher()->set_response_code(200);
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
-  fetcher()->SetResponseString("manifest content");
-  fetcher()->set_response_code(200);
+  CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
   EXPECT_CALL(*this, OnManifestDownload("manifest content"));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200, std::string(), "manifest content");
 }
 
-TEST_F(PaymentMethodManifestDownloaderTest, NoMoreThanThreeRediects) {
-  fetcher()->set_response_code(301);
-  fetcher()->set_url(GURL("https://alicepay.com"));
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+TEST_F(PaymentMethodManifestDownloaderTest, NoMoreThanThreeRedirects) {
+  CallRedirect(301, GURL("https://alicepay.com"));
 
-  EXPECT_EQ(fetcher()->GetOriginalURL(), GURL("https://alicepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://alicepay.com"));
 
-  fetcher()->set_response_code(302);
-  fetcher()->set_url(GURL("https://charliepay.com"));
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallRedirect(302, GURL("https://charliepay.com"));
 
-  EXPECT_EQ(fetcher()->GetOriginalURL(), GURL("https://charliepay.com"));
+  EXPECT_EQ(GetOriginalURL(), GURL("https://charliepay.com"));
 
-  fetcher()->set_response_code(308);
-  fetcher()->set_url(GURL("https://davepay.com"));
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallRedirect(308, GURL("https://davepay.com"));
+
+  EXPECT_EQ(GetOriginalURL(), GURL("https://davepay.com"));
 
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallRedirect(308, GURL("https://davepay.com"));
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, InvalidRedirectUrlIsFailure) {
-  fetcher()->set_response_code(308);
-  fetcher()->set_url(GURL("alicepay.com"));
-
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallRedirect(308, GURL("alicepay.com"));
 }
 
 class WebAppManifestDownloaderTest : public testing::Test {
  public:
   WebAppManifestDownloaderTest()
-      : context_(new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get())),
-        downloader_(context_) {
+      : test_url_("https://bobpay.com"),
+        shared_url_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_factory_)),
+        downloader_(shared_url_loader_factory_) {
     downloader_.DownloadWebAppManifest(
-        GURL("https://bobpay.com"),
+        test_url_,
         base::BindOnce(&WebAppManifestDownloaderTest::OnManifestDownload,
                        base::Unretained(this)));
   }
@@ -373,41 +282,42 @@ class WebAppManifestDownloaderTest : public testing::Test {
 
   MOCK_METHOD1(OnManifestDownload, void(const std::string& content));
 
-  net::TestURLFetcher* fetcher() { return factory_.GetFetcherByID(0); }
+  void CallComplete(int response_code,
+                    const std::string& response_body = std::string()) {
+    scoped_refptr<net::HttpResponseHeaders> headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(std::string());
+    headers->ReplaceStatusLine(base::StringPrintf("%d", response_code));
+    downloader_.OnURLLoaderCompleteInternal(downloader_.GetLoaderForTesting(),
+                                            test_url_, response_body, headers,
+                                            net::OK);
+  }
 
  private:
+  GURL test_url_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  net::TestURLFetcherFactory factory_;
-  scoped_refptr<net::TestURLRequestContextGetter> context_;
+  network::TestURLLoaderFactory test_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   PaymentManifestDownloader downloader_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppManifestDownloaderTest);
 };
 
 TEST_F(WebAppManifestDownloaderTest, HttpGetResponse404IsFailure) {
-  fetcher()->set_response_code(404);
-
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(404);
 }
 
 TEST_F(WebAppManifestDownloaderTest, EmptyHttpGetResponseIsFailure) {
-  fetcher()->set_response_code(200);
-
   EXPECT_CALL(*this, OnManifestDownload(std::string()));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200);
 }
 
 TEST_F(WebAppManifestDownloaderTest, NonEmptyHttpGetResponseIsSuccess) {
-  fetcher()->SetResponseString("manifest content");
-  fetcher()->set_response_code(200);
-
   EXPECT_CALL(*this, OnManifestDownload("manifest content"));
 
-  fetcher()->delegate()->OnURLFetchComplete(fetcher());
+  CallComplete(200, "manifest content");
 }
 
-}  // namespace
 }  // namespace payments
