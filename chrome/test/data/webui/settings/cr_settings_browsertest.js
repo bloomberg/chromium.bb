@@ -1796,26 +1796,26 @@ TEST_F('CrSettingsSmbPageTest', 'All', function() {
 });
 
 /**
- * Test fixture for the multidevice settings section container.
+ * Test fixture for the multidevice settings page container.
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
-function CrSettingsMultideviceSectionContainerTest() {}
+function CrSettingsMultidevicePageContainerTest() {}
 
-CrSettingsMultideviceSectionContainerTest.prototype = {
+CrSettingsMultidevicePageContainerTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
   browsePreload:
-      'chrome://settings/multidevice_page/multidevice_section_container.html',
+      'chrome://settings/multidevice_page/multidevice_page_container.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'multidevice_section_container_tests.js',
+    'multidevice_page_container_tests.js',
   ]),
 };
 
-TEST_F('CrSettingsMultideviceSectionContainerTest', 'All', function() {
+TEST_F('CrSettingsMultidevicePageContainerTest', 'All', function() {
   mocha.run();
 });
 
