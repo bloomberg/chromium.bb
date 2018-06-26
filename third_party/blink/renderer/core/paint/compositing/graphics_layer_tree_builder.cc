@@ -66,8 +66,6 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
   // the descendant layers have been processed. computeCompositingRequirements()
   // will already have done the paint invalidation if necessary.
 
-  layer.StackingNode()->UpdateLayerListsIfNeeded();
-
   const bool has_composited_layer_mapping = layer.HasCompositedLayerMapping();
   CompositedLayerMapping* current_composited_layer_mapping =
       layer.GetCompositedLayerMapping();
@@ -85,14 +83,16 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
                                    : &pending_reparents;
 
 #if DCHECK_IS_ON()
-  LayerListMutationDetector mutation_checker(layer.StackingNode());
+  base::Optional<LayerListMutationDetector> mutation_checker;
+  if (layer.StackingNode())
+    mutation_checker.emplace(layer.StackingNode());
 #endif
 
-  if (layer.StackingNode()->IsStackingContext()) {
+  if (layer.GetLayoutObject().StyleRef().IsStackingContext()) {
     PaintLayerStackingNodeIterator iterator(*layer.StackingNode(),
                                             kNegativeZOrderChildren);
-    while (PaintLayerStackingNode* cur_node = iterator.Next()) {
-      RebuildRecursive(*cur_node->Layer(), *layer_vector_for_children,
+    while (PaintLayer* child_layer = iterator.Next()) {
+      RebuildRecursive(*child_layer, *layer_vector_for_children,
                        *pending_reparents_for_children);
     }
 
@@ -105,11 +105,13 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
     }
   }
 
-  PaintLayerStackingNodeIterator iterator(
-      *layer.StackingNode(), kNormalFlowChildren | kPositiveZOrderChildren);
-  while (PaintLayerStackingNode* cur_node = iterator.Next()) {
-    RebuildRecursive(*cur_node->Layer(), *layer_vector_for_children,
-                     *pending_reparents_for_children);
+  if (layer.StackingNode()) {
+    PaintLayerStackingNodeIterator iterator(
+        *layer.StackingNode(), kNormalFlowChildren | kPositiveZOrderChildren);
+    while (PaintLayer* child_layer = iterator.Next()) {
+      RebuildRecursive(*child_layer, *layer_vector_for_children,
+                       *pending_reparents_for_children);
+    }
   }
 
   if (has_composited_layer_mapping) {

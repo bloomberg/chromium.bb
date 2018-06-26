@@ -50,14 +50,14 @@ class GraphicsLayerUpdater::UpdateContext {
     if (compositing_state != kNotComposited &&
         compositing_state != kPaintsIntoGroupedBacking) {
       compositing_ancestor_ = &layer;
-      if (layer.StackingNode()->IsStackingContext())
+      if (layer.GetLayoutObject().StyleRef().IsStackingContext())
         compositing_stacking_context_ = &layer;
     }
   }
 
   const PaintLayer* CompositingContainer(const PaintLayer& layer) const {
     const PaintLayer* compositing_container;
-    if (layer.StackingNode()->IsStacked()) {
+    if (layer.GetLayoutObject().StyleRef().IsStacked()) {
       compositing_container = compositing_stacking_context_;
     } else if ((layer.Parent() &&
                 !layer.Parent()->GetLayoutObject().IsLayoutBlock()) ||

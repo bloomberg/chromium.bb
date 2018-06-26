@@ -29,7 +29,7 @@ static void CheckIsClippingStackingContextAndContainer(
   DCHECK(obj.Layer());
   PaintLayer* layer = obj.Layer();
   EXPECT_TRUE(layer->StackingNode() &&
-              layer->StackingNode()->IsStackingContext());
+              layer->GetLayoutObject().StyleRef().IsStackingContext());
 }
 
 TEST_F(PaintContainmentTest, BlockPaintContainment) {

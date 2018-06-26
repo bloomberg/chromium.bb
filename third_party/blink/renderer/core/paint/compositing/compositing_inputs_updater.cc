@@ -333,7 +333,7 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   properties.clip_parent = info.escape_clip_to;
 
   properties.ancestor_scrolling_layer = info.scrolling_ancestor;
-  if (info.needs_reparent_scroll && layer->StackingNode()->IsStacked())
+  if (info.needs_reparent_scroll && layout_object.StyleRef().IsStacked())
     properties.scroll_parent = info.scrolling_ancestor;
 
   if (properties.scroll_parent &&

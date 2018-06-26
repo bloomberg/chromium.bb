@@ -60,7 +60,7 @@ class PaintLayerStackingNodeIterator {
   PaintLayerStackingNodeIterator(const PaintLayerStackingNode& root,
                                  unsigned which_children);
 
-  PaintLayerStackingNode* Next();
+  PaintLayer* Next();
 
  private:
   const PaintLayerStackingNode& root_;
@@ -82,7 +82,7 @@ class PaintLayerStackingNodeReverseIterator {
     SetIndexToLastItem();
   }
 
-  PaintLayerStackingNode* Next();
+  PaintLayer* Next();
 
  private:
   void SetIndexToLastItem();

@@ -638,10 +638,11 @@ void InspectorDOMSnapshotAgent::VisitPaintLayer(PaintLayer* layer) {
   DCHECK(!embedded_document || !layer->FirstChild());
 
   if (!embedded_document) {
-    PaintLayerStackingNode* node = layer->StackingNode();
-    PaintLayerStackingNodeIterator iterator(*node, kAllChildren);
-    while (PaintLayerStackingNode* child_node = iterator.Next()) {
-      VisitPaintLayer(child_node->Layer());
+    if (PaintLayerStackingNode* node = layer->StackingNode()) {
+      PaintLayerStackingNodeIterator iterator(*node, kAllChildren);
+      while (PaintLayer* child_layer = iterator.Next()) {
+        VisitPaintLayer(child_layer);
+      }
     }
   }
 }
