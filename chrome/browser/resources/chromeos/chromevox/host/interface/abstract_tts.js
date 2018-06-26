@@ -215,8 +215,11 @@ cvox.AbstractTts.prototype.mergeProperties = function(properties) {
  */
 cvox.AbstractTts.prototype.preprocess = function(text, properties) {
   if (text.length == 1 && text >= 'A' && text <= 'Z') {
-    for (var prop in cvox.AbstractTts.PERSONALITY_CAPITAL)
-      properties[prop] = cvox.AbstractTts.PERSONALITY_CAPITAL[prop];
+    for (var prop in cvox.AbstractTts.PERSONALITY_CAPITAL) {
+      if (properties[prop] === undefined) {
+        properties[prop] = cvox.AbstractTts.PERSONALITY_CAPITAL[prop];
+      }
+    }
   }
 
   // Substitute all symbols in the substitution dictionary. This is pretty
@@ -327,7 +330,7 @@ cvox.AbstractTts.PERSONALITY_ASIDE = {
  * @type {Object}
  */
 cvox.AbstractTts.PERSONALITY_CAPITAL = {
-  'relativePitch': 0.6
+  'relativePitch': 0.2
 };
 
 

@@ -12,6 +12,7 @@ goog.provide('cvox.KbExplorer');
 goog.require('BrailleCommandData');
 goog.require('GestureCommandData');
 goog.require('Spannable');
+goog.require('cvox.AbstractTts');
 goog.require('cvox.BrailleKeyCommand');
 goog.require('cvox.ChromeVoxKbHandler');
 goog.require('cvox.CommandStore');
@@ -83,7 +84,8 @@ cvox.KbExplorer.init = function() {
  */
 cvox.KbExplorer.onKeyDown = function(evt) {
   chrome.extension.getBackgroundPage()['speak'](
-      cvox.KeyUtil.getReadableNameForKeyCode(evt.keyCode), false, {pitch: 0});
+      cvox.KeyUtil.getReadableNameForKeyCode(evt.keyCode), false,
+      cvox.AbstractTts.PERSONALITY_ANNOTATION);
 
   // Allow Ctrl+W to be handled.
   if (evt.keyCode == 87 && evt.ctrlKey) {
