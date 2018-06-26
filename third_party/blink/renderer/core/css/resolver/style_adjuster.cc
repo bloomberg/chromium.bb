@@ -56,7 +56,6 @@
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/transforms/transform_operations.h"
@@ -482,13 +481,8 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
       AdjustTouchActionForElement(inherited_action, style, element);
 
   TouchAction enforced_by_policy = TouchAction::kTouchActionNone;
-  if (element &&
-      RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      element->GetDocument().GetFrame() &&
-      !element->GetDocument().GetFrame()->IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kVerticalScroll)) {
+  if (element->GetDocument().IsVerticalScrollEnforced())
     enforced_by_policy = TouchAction::kTouchActionPanY;
-  }
 
   // Apply the adjusted parent effective touch actions.
   style.SetEffectiveTouchAction((element_touch_action & inherited_action) |

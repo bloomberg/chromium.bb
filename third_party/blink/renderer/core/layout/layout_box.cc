@@ -5983,11 +5983,7 @@ bool LayoutBox::AllowedToPropagateRecursiveScrollToParentFrame(
   if (params.GetScrollType() != kProgrammaticScroll)
     return true;
 
-  if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled())
-    return true;
-
-  return GetFrame()->IsFeatureEnabled(
-      mojom::FeaturePolicyFeature::kVerticalScroll);
+  return !GetDocument().IsVerticalScrollEnforced();
 }
 
 SnapAreaSet* LayoutBox::SnapAreas() const {

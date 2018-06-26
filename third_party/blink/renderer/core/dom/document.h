@@ -1428,6 +1428,8 @@ class CORE_EXPORT Document : public ContainerNode,
     return viewport_fit_;
   }
 
+  bool IsVerticalScrollEnforced() const { return is_vertical_scroll_enforced_; }
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 
@@ -1850,6 +1852,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // Stores the current value viewport-fit value.
   mojom::ViewportFit viewport_fit_ = blink::mojom::ViewportFit::kAuto;
   bool force_expand_display_cutout_ = false;
+
+  // This is set through feature policy 'vertical-scroll'.
+  bool is_vertical_scroll_enforced_ = false;
 
   mojom::blink::DisplayCutoutHostAssociatedPtr display_cutout_host_;
 };

@@ -6112,6 +6112,11 @@ void Document::ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy) {
 
   InitializeFeaturePolicy(declared_policy, container_policy,
                           parent_feature_policy);
+
+  is_vertical_scroll_enforced_ =
+      RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
+      !GetFeaturePolicy()->IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kVerticalScroll);
 }
 
 bool Document::AllowedToUseDynamicMarkUpInsertion(
