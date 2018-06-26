@@ -324,4 +324,27 @@ TEST(ViewAndroidTest, Observer) {
   EXPECT_FALSE(bottom_observer.attached_);
 }
 
+TEST(ViewAndroidTest, WindowAndroidDestructionDetachesAllViewAndroid) {
+  std::unique_ptr<WindowAndroid> window(WindowAndroid::CreateForTesting());
+  ViewAndroid top;
+  ViewAndroid bottom;
+
+  Observer top_observer;
+  Observer bottom_observer;
+
+  top.AddObserver(&top_observer);
+  bottom.AddObserver(&bottom_observer);
+
+  window->AddChild(&top);
+  top.AddChild(&bottom);
+
+  EXPECT_TRUE(top_observer.attached_);
+  EXPECT_TRUE(bottom_observer.attached_);
+
+  window.reset();
+
+  EXPECT_FALSE(top_observer.attached_);
+  EXPECT_FALSE(bottom_observer.attached_);
+}
+
 }  // namespace ui
