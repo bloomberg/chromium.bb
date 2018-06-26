@@ -27,7 +27,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
-#import "content/browser/renderer_host/render_widget_host_ns_view_bridge.h"
+#import "content/browser/renderer_host/render_widget_host_ns_view_bridge_local.h"
 #import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
 #import "content/browser/renderer_host/ui_events_helper.h"
@@ -146,7 +146,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
                         this),
       weak_factory_(this) {
   // The NSView is on the other side of |ns_view_bridge_|.
-  ns_view_bridge_ = RenderWidgetHostNSViewBridge::Create(this);
+  ns_view_bridge_ = std::make_unique<RenderWidgetHostNSViewBridgeLocal>(this);
 
   // Guess that the initial screen we will be on is the screen of the current
   // window (since that's the best guess that we have, and is usually right).
