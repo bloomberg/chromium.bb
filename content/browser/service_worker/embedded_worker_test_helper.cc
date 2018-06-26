@@ -229,7 +229,7 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
   }
 
   void DispatchFetchEvent(
-      mojom::DispatchFetchEventParamsPtr params,
+      blink::mojom::DispatchFetchEventParamsPtr params,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override {
     if (!helper_)
@@ -594,7 +594,7 @@ void EmbeddedWorkerTestHelper::OnInstallEvent(
 void EmbeddedWorkerTestHelper::OnFetchEvent(
     int /* embedded_worker_id */,
     const network::ResourceRequest& /* request */,
-    mojom::FetchEventPreloadHandlePtr /* preload_handle */,
+    blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
         finish_callback) {
@@ -907,7 +907,7 @@ void EmbeddedWorkerTestHelper::OnInstallEventStub(
 void EmbeddedWorkerTestHelper::OnFetchEventStub(
     int embedded_worker_id,
     const network::ResourceRequest& request,
-    mojom::FetchEventPreloadHandlePtr preload_handle,
+    blink::mojom::FetchEventPreloadHandlePtr preload_handle,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
         finish_callback) {

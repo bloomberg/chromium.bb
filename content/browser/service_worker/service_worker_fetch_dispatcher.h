@@ -141,7 +141,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   // |preload_handle_| holds the URLLoader and URLLoaderClient for the service
   // worker to receive the navigation preload response. It's passed to the
   // service worker along with the fetch event.
-  mojom::FetchEventPreloadHandlePtr preload_handle_;
+  blink::mojom::FetchEventPreloadHandlePtr preload_handle_;
 
   base::WeakPtrFactory<ServiceWorkerFetchDispatcher> weak_factory_;
 

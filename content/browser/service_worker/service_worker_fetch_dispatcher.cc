@@ -607,7 +607,7 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   }
 
   // Dispatch the fetch event.
-  auto params = mojom::DispatchFetchEventParams::New();
+  auto params = blink::mojom::DispatchFetchEventParams::New();
   params->request = *request_;
   params->request_body_blob_uuid = request_body_blob_uuid_;
   params->request_body_blob_size = request_body_blob_size_;
@@ -736,7 +736,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   const int request_id = ResourceDispatcherHostImpl::Get()->MakeRequestID();
   DCHECK_LT(request_id, -1);
 
-  preload_handle_ = mojom::FetchEventPreloadHandle::New();
+  preload_handle_ = blink::mojom::FetchEventPreloadHandle::New();
   network::mojom::URLLoaderClientPtr url_loader_client_ptr;
   preload_handle_->url_loader_client_request =
       mojo::MakeRequest(&url_loader_client_ptr);
@@ -796,7 +796,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
       "Service-Worker-Navigation-Preload",
       version_->navigation_preload_state().header);
 
-  preload_handle_ = mojom::FetchEventPreloadHandle::New();
+  preload_handle_ = blink::mojom::FetchEventPreloadHandle::New();
 
   // Create the DelegatingURLLoaderClient, which becomes the
   // URLLoaderClient for the navigation preload network request.

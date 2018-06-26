@@ -205,7 +205,7 @@ class EmbeddedWorkerTestHelper {
   virtual void OnFetchEvent(
       int embedded_worker_id,
       const network::ResourceRequest& request,
-      mojom::FetchEventPreloadHandlePtr preload_handle,
+      blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
           finish_callback);
@@ -311,7 +311,7 @@ class EmbeddedWorkerTestHelper {
   void OnFetchEventStub(
       int embedded_worker_id,
       const network::ResourceRequest& request,
-      mojom::FetchEventPreloadHandlePtr preload_handle,
+      blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
           finish_callback);

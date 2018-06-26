@@ -229,7 +229,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
 
   // mojom::ControllerServiceWorker:
   void DispatchFetchEvent(
-      mojom::DispatchFetchEventParamsPtr params,
+      blink::mojom::DispatchFetchEventParamsPtr params,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override {
     fetch_event_count_++;

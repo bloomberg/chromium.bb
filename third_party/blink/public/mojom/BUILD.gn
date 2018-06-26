@@ -36,6 +36,7 @@ mojom("mojom_platform") {
     "plugins/plugin_registry.mojom",
     "quota/quota_dispatcher_host.mojom",
     "quota/quota_types.mojom",
+    "service_worker/dispatch_fetch_event_params.mojom",
     "service_worker/navigation_preload_state.mojom",
     "service_worker/service_worker_client.mojom",
     "service_worker/service_worker_error_type.mojom",
