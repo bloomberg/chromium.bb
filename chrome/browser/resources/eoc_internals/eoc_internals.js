@@ -80,11 +80,11 @@ function addCachedSuggestionResultsToPage(results) {
     resultClone.querySelector('#suggestion-result-url').textContent =
         result.url;
     resultClone.querySelector('#peek-confidence').textContent =
-        result.peekConditions.confidence;
+        result.peekConditions.confidence.toFixed(2);
     resultClone.querySelector('#peek-page-scroll-percentage').textContent =
-        result.peekConditions.pageScrollPercentage;
+        result.peekConditions.pageScrollPercentage.toFixed(2);
     resultClone.querySelector('#peek-min-seconds-on-page').textContent =
-        result.peekConditions.minimumSecondsOnPage;
+        result.peekConditions.minimumSecondsOnPage.toFixed(2);
     resultClone.querySelector('#peek-max-peeks').textContent =
         result.peekConditions.maximumNumberOfPeeks;
 
