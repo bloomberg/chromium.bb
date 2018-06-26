@@ -148,12 +148,8 @@ void ChromeOSMetricsProvider::Init() {
 }
 
 void ChromeOSMetricsProvider::AsyncInit(const base::Closure& done_callback) {
-  bool need_hardware_class = !base::FeatureList::IsEnabled(kUmaShortHWClass);
-
-  base::RepeatingClosure barrier =
-      base::BarrierClosure(need_hardware_class ? 2 : 1, done_callback);
-  if (need_hardware_class)
-    InitTaskGetHardwareClass(barrier);
+  base::RepeatingClosure barrier = base::BarrierClosure(2, done_callback);
+  InitTaskGetFullHardwareClass(barrier);
   InitTaskGetBluetoothAdapter(barrier);
 }
 
@@ -166,7 +162,7 @@ void ChromeOSMetricsProvider::OnDidCreateMetricsLog() {
   }
 }
 
-void ChromeOSMetricsProvider::InitTaskGetHardwareClass(
+void ChromeOSMetricsProvider::InitTaskGetFullHardwareClass(
     const base::Closure& callback) {
   // Run the (potentially expensive) task in the background to avoid blocking
   // the UI thread.
