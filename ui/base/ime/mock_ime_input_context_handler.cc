@@ -38,6 +38,10 @@ void MockIMEInputContextHandler::DeleteSurroundingText(int32_t offset,
   last_delete_surrounding_text_arg_.length = length;
 }
 
+SurroundingTextInfo MockIMEInputContextHandler::GetSurroundingTextInfo() {
+  return SurroundingTextInfo();
+}
+
 void MockIMEInputContextHandler::Reset() {
   commit_text_call_count_ = 0;
   update_preedit_text_call_count_ = 0;

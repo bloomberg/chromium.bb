@@ -1321,6 +1321,7 @@ enum HistogramValue {
   VIRTUALKEYBOARDPRIVATE_SETOCCLUDEDBOUNDS = 1258,
   SYSTEM_POWER_SOURCE_GETPOWERSOURCEINFO = 1259,
   SYSTEM_POWER_SOURCE_REQUESTSTATUSUPDATE = 1260,
+  INPUTMETHODPRIVATE_GETSURROUNDINGTEXT = 1261,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

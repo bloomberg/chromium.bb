@@ -295,6 +295,39 @@
             ]
           }
         ]
+      }, {
+        "name": "getSurroundingText",
+        "type": "function",
+        "description": "Gets the surrounding text of the current selection",
+        "parameters": [
+          {
+            "name": "beforeLength",
+            "type": "integer",
+            "description": "The number of characters before the current selection."
+          },
+          {
+            "name": "afterLength",
+            "type": "integer",
+            "description": "The number of characters after the current selection."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Callback which is called to provide the result",
+            "parameters": [
+              {
+                "name": "surroundingInfo",
+                "type": "object",
+                "description": "The surrouding text info.",
+                "properties": {
+                  "before": {"type": "string"},
+                  "selected": {"type": "string"},
+                  "after": {"type": "string"}
+                }
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [
