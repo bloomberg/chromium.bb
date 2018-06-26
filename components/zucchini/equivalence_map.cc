@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "components/zucchini/encoded_view.h"
 #include "components/zucchini/patch_reader.h"
 #include "components/zucchini/suffix_array.h"
@@ -191,15 +192,25 @@ EquivalenceCandidate VisitEquivalenceSeed(
 
 /******** OffsetMapper ********/
 
-OffsetMapper::OffsetMapper(std::vector<Equivalence>&& equivalences)
-    : equivalences_(std::move(equivalences)) {
+OffsetMapper::OffsetMapper(std::vector<Equivalence>&& equivalences,
+                           size_t old_image_size,
+                           size_t new_image_size)
+    : equivalences_(std::move(equivalences)),
+      old_image_size_(old_image_size),
+      new_image_size_(new_image_size) {
+  DCHECK_GT(new_image_size_, 0U);
   DCHECK(std::is_sorted(equivalences_.begin(), equivalences_.end(),
                         [](const Equivalence& a, const Equivalence& b) {
                           return a.src_offset < b.src_offset;
                         }));
+  // This is for testing. Assume pruned.
 }
 
-OffsetMapper::OffsetMapper(EquivalenceSource&& equivalence_source) {
+OffsetMapper::OffsetMapper(EquivalenceSource&& equivalence_source,
+                           size_t old_image_size,
+                           size_t new_image_size)
+    : old_image_size_(old_image_size), new_image_size_(new_image_size) {
+  DCHECK_GT(new_image_size_, 0U);
   for (auto e = equivalence_source.GetNext(); e.has_value();
        e = equivalence_source.GetNext()) {
     equivalences_.push_back(*e);
@@ -207,8 +218,13 @@ OffsetMapper::OffsetMapper(EquivalenceSource&& equivalence_source) {
   PruneEquivalencesAndSortBySource(&equivalences_);
 }
 
-OffsetMapper::OffsetMapper(const EquivalenceMap& equivalence_map)
-    : equivalences_(equivalence_map.size()) {
+OffsetMapper::OffsetMapper(const EquivalenceMap& equivalence_map,
+                           size_t old_image_size,
+                           size_t new_image_size)
+    : equivalences_(equivalence_map.size()),
+      old_image_size_(old_image_size),
+      new_image_size_(new_image_size) {
+  DCHECK_GT(new_image_size_, 0U);
   std::transform(equivalence_map.begin(), equivalence_map.end(),
                  equivalences_.begin(),
                  [](const EquivalenceCandidate& c) { return c.eq; });
@@ -217,17 +233,40 @@ OffsetMapper::OffsetMapper(const EquivalenceMap& equivalence_map)
 
 OffsetMapper::~OffsetMapper() = default;
 
-offset_t OffsetMapper::ForwardProject(offset_t offset) const {
-  auto pos = std::upper_bound(
-      equivalences_.begin(), equivalences_.end(), offset,
-      [](offset_t a, const Equivalence& b) { return a < b.src_offset; });
-  if (pos != equivalences_.begin()) {
-    if (pos == equivalences_.end() || offset < pos[-1].src_end() ||
-        offset - pos[-1].src_end() < pos->src_offset - offset) {
+// Safely evaluates |offset - unit.src_offset + unit.dst_offset| with signed
+// arithmetic, then clips the result to |[0, new_image_size_)|.
+offset_t OffsetMapper::NaiveExtendedForwardProject(const Equivalence& unit,
+                                                   offset_t offset) const {
+  int64_t old_offset64 = offset;
+  int64_t src_offset64 = unit.src_offset;
+  int64_t dst_offset64 = unit.dst_offset;
+  uint64_t new_offset64 = std::min<uint64_t>(
+      std::max<int64_t>(0LL, old_offset64 - src_offset64 + dst_offset64),
+      new_image_size_ - 1);
+  return base::checked_cast<offset_t>(new_offset64);
+}
+
+offset_t OffsetMapper::ExtendedForwardProject(offset_t offset) const {
+  DCHECK(!equivalences_.empty());
+  if (offset < old_image_size_) {
+    // Finds the equivalence unit whose "old" block is nearest to |offset|,
+    // favoring the block with lower offset in case of a tie.
+    auto pos = std::upper_bound(
+        equivalences_.begin(), equivalences_.end(), offset,
+        [](offset_t a, const Equivalence& b) { return a < b.src_offset; });
+    // For tiebreaking: |offset - pos[-1].src_end()| is actually 1 less than
+    // |offset|'s distance to "old" block of |pos[-1]|. Therefore "<" is used.
+    if (pos != equivalences_.begin() &&
+        (pos == equivalences_.end() || offset < pos[-1].src_end() ||
+         offset - pos[-1].src_end() < pos->src_offset - offset)) {
       --pos;
     }
+    return NaiveExtendedForwardProject(*pos, offset);
   }
-  return offset - pos->src_offset + pos->dst_offset;
+  // Fake offsets.
+  offset_t delta = offset - old_image_size_;
+  return delta < kOffsetBound - new_image_size_ ? new_image_size_ + delta
+                                                : kOffsetBound - 1;
 }
 
 void OffsetMapper::ForwardProjectAll(std::vector<offset_t>* offsets) const {

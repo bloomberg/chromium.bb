@@ -112,7 +112,8 @@ bool ApplyReferencesCorrection(ExecutableType exe_type,
   for (const auto& ref_group : old_disasm->MakeReferenceGroups())
     pool_groups[ref_group.pool_tag()].push_back(ref_group);
 
-  OffsetMapper offset_mapper(patch.GetEquivalenceSource());
+  OffsetMapper offset_mapper(patch.GetEquivalenceSource(), old_image.size(),
+                             new_image.size());
 
   std::vector<ReferenceGroup> new_groups = new_disasm->MakeReferenceGroups();
   for (const auto& pool_and_sub_groups : pool_groups) {
@@ -149,7 +150,8 @@ bool ApplyReferencesCorrection(ExecutableType exe_type,
           DCHECK_GE(ref->location, equivalence->src_offset);
           DCHECK_LT(ref->location, equivalence->src_end());
 
-          offset_t projected_target = offset_mapper.ForwardProject(ref->target);
+          offset_t projected_target =
+              offset_mapper.ExtendedForwardProject(ref->target);
           offset_t expected_key = targets.KeyForNearestOffset(projected_target);
           auto delta = ref_delta_source.GetNext();
           if (!delta.has_value()) {
