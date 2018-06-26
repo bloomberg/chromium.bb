@@ -114,7 +114,7 @@ TEST_F(SQLMetaTableTest, VersionNumber) {
 }
 
 TEST_F(SQLMetaTableTest, StringValue) {
-  const char kKey[] = "String Key";
+  static const char kKey[] = "String Key";
   const std::string kFirstValue("First Value");
   const std::string kSecondValue("Second Value");
 
@@ -155,7 +155,7 @@ TEST_F(SQLMetaTableTest, StringValue) {
 }
 
 TEST_F(SQLMetaTableTest, IntValue) {
-  const char kKey[] = "Int Key";
+  static const char kKey[] = "Int Key";
   const int kFirstValue = 17;
   const int kSecondValue = 23;
 
@@ -196,7 +196,7 @@ TEST_F(SQLMetaTableTest, IntValue) {
 }
 
 TEST_F(SQLMetaTableTest, Int64Value) {
-  const char kKey[] = "Int Key";
+  static const char kKey[] = "Int Key";
   const int64_t kFirstValue = 5000000017LL;
   const int64_t kSecondValue = 5000000023LL;
 
@@ -237,7 +237,7 @@ TEST_F(SQLMetaTableTest, Int64Value) {
 }
 
 TEST_F(SQLMetaTableTest, DeleteKey) {
-  const char kKey[] = "String Key";
+  static const char kKey[] = "String Key";
   const std::string kValue("String Value");
 
   sql::MetaTable meta_table;

@@ -37,7 +37,7 @@ using sql::test::ExecuteWithResult;
 // to create the table or index.  For certain automatic SQLite
 // structures with no sql, the name is used.
 std::string GetSchema(sql::Connection* db) {
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT COALESCE(sql, name) FROM sqlite_master ORDER BY 1";
   return ExecuteWithResults(db, kSql, "|", "\n");
 }
@@ -47,9 +47,10 @@ using SQLRecoveryTest = sql::SQLTestBase;
 // Baseline sql::Recovery test covering the different ways to dispose of the
 // scoped pointer received from sql::Recovery::Begin().
 TEST_F(SQLRecoveryTest, RecoverBasic) {
-  const char kCreateSql[] = "CREATE TABLE x (t TEXT)";
-  const char kInsertSql[] = "INSERT INTO x VALUES ('This is a test')";
-  const char kAltInsertSql[] = "INSERT INTO x VALUES ('That was a test')";
+  static const char kCreateSql[] = "CREATE TABLE x (t TEXT)";
+  static const char kInsertSql[] = "INSERT INTO x VALUES ('This is a test')";
+  static const char kAltInsertSql[] =
+      "INSERT INTO x VALUES ('That was a test')";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_TRUE(db().Execute(kInsertSql));
   ASSERT_EQ("CREATE TABLE x (t TEXT)", GetSchema(&db()));
@@ -154,7 +155,7 @@ TEST_F(SQLRecoveryTest, RecoverBasic) {
 
 // Test operation of the virtual table used by sql::Recovery.
 TEST_F(SQLRecoveryTest, VirtualTable) {
-  const char kCreateSql[] = "CREATE TABLE x (t TEXT)";
+  static const char kCreateSql[] = "CREATE TABLE x (t TEXT)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_TRUE(db().Execute("INSERT INTO x VALUES ('This is a test')"));
   ASSERT_TRUE(db().Execute("INSERT INTO x VALUES ('That was a test')"));
@@ -165,7 +166,7 @@ TEST_F(SQLRecoveryTest, VirtualTable) {
         sql::Recovery::Begin(&db(), db_path());
 
     // Tables to recover original DB, now at [corrupt].
-    const char kRecoveryCreateSql[] =
+    static const char kRecoveryCreateSql[] =
         "CREATE VIRTUAL TABLE temp.recover_x using recover("
         "  corrupt.x,"
         "  t TEXT STRICT"
@@ -176,7 +177,7 @@ TEST_F(SQLRecoveryTest, VirtualTable) {
     ASSERT_TRUE(recovery->db()->Execute(kCreateSql));
 
     // Copy the data from the recovery tables to the new database.
-    const char kRecoveryCopySql[] =
+    static const char kRecoveryCopySql[] =
         "INSERT INTO x SELECT t FROM recover_x";
     ASSERT_TRUE(recovery->db()->Execute(kRecoveryCopySql));
 
@@ -189,7 +190,7 @@ TEST_F(SQLRecoveryTest, VirtualTable) {
   ASSERT_TRUE(Reopen());
   ASSERT_EQ("CREATE TABLE x (t TEXT)", GetSchema(&db()));
 
-  const char* kXSql = "SELECT * FROM x ORDER BY 1";
+  static const char* kXSql = "SELECT * FROM x ORDER BY 1";
   ASSERT_EQ("That was a test\nThis is a test",
             ExecuteWithResults(&db(), kXSql, "|", "\n"));
 }
@@ -217,8 +218,8 @@ void RecoveryCallback(sql::Connection* db, const base::FilePath& db_path,
 // Build a database, corrupt it by making an index reference to
 // deleted row, then recover when a query selects that row.
 TEST_F(SQLRecoveryTest, RecoverCorruptIndex) {
-  const char kCreateTable[] = "CREATE TABLE x (id INTEGER, v INTEGER)";
-  const char kCreateIndex[] = "CREATE UNIQUE INDEX x_id ON x (id)";
+  static const char kCreateTable[] = "CREATE TABLE x (id INTEGER, v INTEGER)";
+  static const char kCreateIndex[] = "CREATE UNIQUE INDEX x_id ON x (id)";
   ASSERT_TRUE(db().Execute(kCreateTable));
   ASSERT_TRUE(db().Execute(kCreateIndex));
 
@@ -226,7 +227,7 @@ TEST_F(SQLRecoveryTest, RecoverCorruptIndex) {
   {
     ASSERT_TRUE(db().BeginTransaction());
 
-    const char kInsertSql[] = "INSERT INTO x (id, v) VALUES (?, ?)";
+    static const char kInsertSql[] = "INSERT INTO x (id, v) VALUES (?, ?)";
     sql::Statement s(db().GetUniqueStatement(kInsertSql));
     for (int i = 0; i < 10; ++i) {
       s.Reset(true);
@@ -242,7 +243,7 @@ TEST_F(SQLRecoveryTest, RecoverCorruptIndex) {
 
   // Delete a row from the table, while leaving the index entry which
   // references it.
-  const char kDeleteSql[] = "DELETE FROM x WHERE id = 0";
+  static const char kDeleteSql[] = "DELETE FROM x WHERE id = 0";
   ASSERT_TRUE(sql::test::CorruptTableOrIndex(db_path(), "x_id", kDeleteSql));
 
   ASSERT_TRUE(Reopen());
@@ -252,11 +253,11 @@ TEST_F(SQLRecoveryTest, RecoverCorruptIndex) {
       &RecoveryCallback, &db(), db_path(), kCreateTable, kCreateIndex, &error));
 
   // This works before the callback is called.
-  const char kTrivialSql[] = "SELECT COUNT(*) FROM sqlite_master";
+  static const char kTrivialSql[] = "SELECT COUNT(*) FROM sqlite_master";
   EXPECT_TRUE(db().IsSQLValid(kTrivialSql));
 
   // TODO(shess): Could this be delete?  Anything which fails should work.
-  const char kSelectSql[] = "SELECT v FROM x WHERE id = 0";
+  static const char kSelectSql[] = "SELECT v FROM x WHERE id = 0";
   ASSERT_FALSE(db().Execute(kSelectSql));
   EXPECT_EQ(SQLITE_CORRUPT, error);
 
@@ -266,7 +267,7 @@ TEST_F(SQLRecoveryTest, RecoverCorruptIndex) {
   ASSERT_TRUE(Reopen());
 
   // The recovered table should reflect the deletion.
-  const char kSelectAllSql[] = "SELECT v FROM x ORDER BY id";
+  static const char kSelectAllSql[] = "SELECT v FROM x ORDER BY id";
   EXPECT_EQ("1,2,3,4,5,6,7,8,9",
             ExecuteWithResults(&db(), kSelectAllSql, "|", ","));
 
@@ -277,8 +278,8 @@ TEST_F(SQLRecoveryTest, RecoverCorruptIndex) {
 // Build a database, corrupt it by making a table contain a row not
 // referenced by the index, then recover the database.
 TEST_F(SQLRecoveryTest, RecoverCorruptTable) {
-  const char kCreateTable[] = "CREATE TABLE x (id INTEGER, v INTEGER)";
-  const char kCreateIndex[] = "CREATE UNIQUE INDEX x_id ON x (id)";
+  static const char kCreateTable[] = "CREATE TABLE x (id INTEGER, v INTEGER)";
+  static const char kCreateIndex[] = "CREATE UNIQUE INDEX x_id ON x (id)";
   ASSERT_TRUE(db().Execute(kCreateTable));
   ASSERT_TRUE(db().Execute(kCreateIndex));
 
@@ -286,7 +287,7 @@ TEST_F(SQLRecoveryTest, RecoverCorruptTable) {
   {
     ASSERT_TRUE(db().BeginTransaction());
 
-    const char kInsertSql[] = "INSERT INTO x (id, v) VALUES (?, ?)";
+    static const char kInsertSql[] = "INSERT INTO x (id, v) VALUES (?, ?)";
     sql::Statement s(db().GetUniqueStatement(kInsertSql));
     for (int i = 0; i < 10; ++i) {
       s.Reset(true);
@@ -301,7 +302,7 @@ TEST_F(SQLRecoveryTest, RecoverCorruptTable) {
   db().Close();
 
   // Delete a row from the index while leaving a table entry.
-  const char kDeleteSql[] = "DELETE FROM x WHERE id = 0";
+  static const char kDeleteSql[] = "DELETE FROM x WHERE id = 0";
   ASSERT_TRUE(sql::test::CorruptTableOrIndex(db_path(), "x", kDeleteSql));
 
   ASSERT_TRUE(Reopen());
@@ -311,17 +312,17 @@ TEST_F(SQLRecoveryTest, RecoverCorruptTable) {
       &RecoveryCallback, &db(), db_path(), kCreateTable, kCreateIndex, &error));
 
   // Index shows one less than originally inserted.
-  const char kCountSql[] = "SELECT COUNT (*) FROM x";
+  static const char kCountSql[] = "SELECT COUNT (*) FROM x";
   EXPECT_EQ("9", ExecuteWithResult(&db(), kCountSql));
 
   // A full table scan shows all of the original data.  Using column [v] to
   // force use of the table rather than the index.
-  const char kDistinctSql[] = "SELECT DISTINCT COUNT (v) FROM x";
+  static const char kDistinctSql[] = "SELECT DISTINCT COUNT (v) FROM x";
   EXPECT_EQ("10", ExecuteWithResult(&db(), kDistinctSql));
 
   // Insert id 0 again.  Since it is not in the index, the insert
   // succeeds, but results in a duplicate value in the table.
-  const char kInsertSql[] = "INSERT INTO x (id, v) VALUES (0, 100)";
+  static const char kInsertSql[] = "INSERT INTO x (id, v) VALUES (0, 100)";
   ASSERT_TRUE(db().Execute(kInsertSql));
 
   // Duplication is visible.
@@ -329,7 +330,7 @@ TEST_F(SQLRecoveryTest, RecoverCorruptTable) {
   EXPECT_EQ("11", ExecuteWithResult(&db(), kDistinctSql));
 
   // This works before the callback is called.
-  const char kTrivialSql[] = "SELECT COUNT(*) FROM sqlite_master";
+  static const char kTrivialSql[] = "SELECT COUNT(*) FROM sqlite_master";
   EXPECT_TRUE(db().IsSQLValid(kTrivialSql));
 
   // TODO(shess): Figure out a statement which causes SQLite to notice the
@@ -350,7 +351,7 @@ TEST_F(SQLRecoveryTest, RecoverCorruptTable) {
   EXPECT_EQ("10", ExecuteWithResult(&db(), kDistinctSql));
 
   // Only one of the values is retained.
-  const char kSelectSql[] = "SELECT v FROM x WHERE id = 0";
+  static const char kSelectSql[] = "SELECT v FROM x WHERE id = 0";
   const std::string results = ExecuteWithResult(&db(), kSelectSql);
   EXPECT_TRUE(results=="100" || results=="0") << "Actual results: " << results;
 }
@@ -407,14 +408,15 @@ TEST_F(SQLRecoveryTest, Meta) {
 // Baseline AutoRecoverTable() test.
 TEST_F(SQLRecoveryTest, AutoRecoverTable) {
   // BIGINT and VARCHAR to test type affinity.
-  const char kCreateSql[] = "CREATE TABLE x (id BIGINT, t TEXT, v VARCHAR)";
+  static const char kCreateSql[] =
+      "CREATE TABLE x (id BIGINT, t TEXT, v VARCHAR)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_TRUE(db().Execute("INSERT INTO x VALUES (11, 'This is', 'a test')"));
   ASSERT_TRUE(db().Execute("INSERT INTO x VALUES (5, 'That was', 'a test')"));
 
   // Save aside a copy of the original schema and data.
   const std::string orig_schema(GetSchema(&db()));
-  const char kXSql[] = "SELECT * FROM x ORDER BY 1";
+  static const char kXSql[] = "SELECT * FROM x ORDER BY 1";
   const std::string orig_data(ExecuteWithResults(&db(), kXSql, "|", "\n"));
 
   // Create a lame-duck table which will not be propagated by recovery to
@@ -428,7 +430,8 @@ TEST_F(SQLRecoveryTest, AutoRecoverTable) {
     ASSERT_TRUE(recovery->db()->Execute(kCreateSql));
 
     // Save a copy of the temp db's schema before recovering the table.
-    const char kTempSchemaSql[] = "SELECT name, sql FROM sqlite_temp_master";
+    static const char kTempSchemaSql[] =
+        "SELECT name, sql FROM sqlite_temp_master";
     const std::string temp_schema(
         ExecuteWithResults(recovery->db(), kTempSchemaSql, "|", "\n"));
 
@@ -484,7 +487,7 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableWithDefault) {
 
   // Save aside a copy of the original schema and data.
   const std::string orig_schema(GetSchema(&db()));
-  const char kXSql[] = "SELECT * FROM x ORDER BY 1";
+  static const char kXSql[] = "SELECT * FROM x ORDER BY 1";
   const std::string orig_data(ExecuteWithResults(&db(), kXSql, "|", "\n"));
 
   // Create a lame-duck table which will not be propagated by recovery to
@@ -533,8 +536,9 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableWithDefault) {
 // corruption, but here it is simulated by recovering a table which
 // allowed nulls into a table which does not.
 TEST_F(SQLRecoveryTest, AutoRecoverTableNullFilter) {
-  const char kOrigSchema[] = "CREATE TABLE x (id INTEGER, t TEXT)";
-  const char kFinalSchema[] = "CREATE TABLE x (id INTEGER, t TEXT NOT NULL)";
+  static const char kOrigSchema[] = "CREATE TABLE x (id INTEGER, t TEXT)";
+  static const char kFinalSchema[] =
+      "CREATE TABLE x (id INTEGER, t TEXT NOT NULL)";
 
   ASSERT_TRUE(db().Execute(kOrigSchema));
   ASSERT_TRUE(db().Execute("INSERT INTO x VALUES (5, null)"));
@@ -562,7 +566,7 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableNullFilter) {
   // have been recovered.
   ASSERT_TRUE(Reopen());
   ASSERT_EQ(kFinalSchema, GetSchema(&db()));
-  const char kXSql[] = "SELECT * FROM x ORDER BY 1";
+  static const char kXSql[] = "SELECT * FROM x ORDER BY 1";
   ASSERT_EQ("15|this is a test", ExecuteWithResults(&db(), kXSql, "|", "\n"));
 }
 
@@ -570,7 +574,7 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableNullFilter) {
 TEST_F(SQLRecoveryTest, AutoRecoverTableWithRowid) {
   // The rowid alias is almost always the first column, intentionally
   // put it later.
-  const char kCreateSql[] =
+  static const char kCreateSql[] =
       "CREATE TABLE x (t TEXT, id INTEGER PRIMARY KEY NOT NULL)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_TRUE(db().Execute("INSERT INTO x VALUES ('This is a test', null)"));
@@ -578,7 +582,7 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableWithRowid) {
 
   // Save aside a copy of the original schema and data.
   const std::string orig_schema(GetSchema(&db()));
-  const char kXSql[] = "SELECT * FROM x ORDER BY 1";
+  static const char kXSql[] = "SELECT * FROM x ORDER BY 1";
   const std::string orig_data(ExecuteWithResults(&db(), kXSql, "|", "\n"));
 
   // Create a lame-duck table which will not be propagated by recovery to
@@ -607,7 +611,7 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableWithRowid) {
 
 // Test that a compound primary key doesn't fire the ROWID code.
 TEST_F(SQLRecoveryTest, AutoRecoverTableWithCompoundKey) {
-  const char kCreateSql[] =
+  static const char kCreateSql[] =
       "CREATE TABLE x ("
       "id INTEGER NOT NULL,"
       "id2 TEXT NOT NULL,"
@@ -624,7 +628,7 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableWithCompoundKey) {
 
   // Save aside a copy of the original schema and data.
   const std::string orig_schema(GetSchema(&db()));
-  const char kXSql[] = "SELECT * FROM x ORDER BY 1";
+  static const char kXSql[] = "SELECT * FROM x ORDER BY 1";
   const std::string orig_data(ExecuteWithResults(&db(), kXSql, "|", "\n"));
 
   // Create a lame-duck table which will not be propagated by recovery to
@@ -653,8 +657,10 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableWithCompoundKey) {
 
 // Test recovering from a table with fewer columns than the target.
 TEST_F(SQLRecoveryTest, AutoRecoverTableMissingColumns) {
-  const char kCreateSql[] = "CREATE TABLE x (id INTEGER PRIMARY KEY, t0 TEXT)";
-  const char kAlterSql[] = "ALTER TABLE x ADD COLUMN t1 TEXT DEFAULT 't'";
+  static const char kCreateSql[] =
+      "CREATE TABLE x (id INTEGER PRIMARY KEY, t0 TEXT)";
+  static const char kAlterSql[] =
+      "ALTER TABLE x ADD COLUMN t1 TEXT DEFAULT 't'";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_TRUE(db().Execute("INSERT INTO x VALUES (1, 'This is')"));
   ASSERT_TRUE(db().Execute("INSERT INTO x VALUES (2, 'That was')"));
@@ -662,7 +668,7 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableMissingColumns) {
   // Generate the expected info by faking a table to match what recovery will
   // create.
   const std::string orig_schema(GetSchema(&db()));
-  const char kXSql[] = "SELECT * FROM x ORDER BY 1";
+  static const char kXSql[] = "SELECT * FROM x ORDER BY 1";
   std::string expected_schema;
   std::string expected_data;
   {
@@ -714,7 +720,7 @@ TEST_F(SQLRecoveryTest, Bug387868) {
     ASSERT_TRUE(recovery.get());
 
     // Create the new version of the table.
-    const char kCreateSql[] =
+    static const char kCreateSql[] =
         "CREATE TABLE x (id INTEGER PRIMARY KEY, t0 TEXT)";
     ASSERT_TRUE(recovery->db()->Execute(kCreateSql));
 
@@ -771,9 +777,9 @@ TEST_F(SQLRecoveryTest, RecoverDatabase) {
   const std::string orig_schema(GetSchema(&db()));
   ASSERT_EQ(6, std::count(orig_schema.begin(), orig_schema.end(), '\n'));
 
-  const char kXSql[] = "SELECT * FROM x ORDER BY 1";
-  const char kYSql[] = "SELECT * FROM y ORDER BY 1";
-  const char kVSql[] = "SELECT * FROM v ORDER BY 1";
+  static const char kXSql[] = "SELECT * FROM x ORDER BY 1";
+  static const char kYSql[] = "SELECT * FROM y ORDER BY 1";
+  static const char kVSql[] = "SELECT * FROM v ORDER BY 1";
   EXPECT_EQ("1|turtle\n2|truck\n3|trailer",
             ExecuteWithResults(&db(), kXSql, "|", "\n"));
   EXPECT_EQ("bob|truck\ndean|trailer\njim|telephone",
@@ -781,7 +787,7 @@ TEST_F(SQLRecoveryTest, RecoverDatabase) {
   EXPECT_EQ("trailer\ntruck", ExecuteWithResults(&db(), kVSql, "|", "\n"));
 
   // Database handle is valid before recovery, poisoned after.
-  const char kTrivialSql[] = "SELECT COUNT(*) FROM sqlite_master";
+  static const char kTrivialSql[] = "SELECT COUNT(*) FROM sqlite_master";
   EXPECT_TRUE(db().IsSQLValid(kTrivialSql));
   sql::Recovery::RecoverDatabase(&db(), db_path());
   EXPECT_FALSE(db().IsSQLValid(kTrivialSql));
@@ -845,16 +851,16 @@ TEST_F(SQLRecoveryTest, BeginRecoverDatabase) {
 
   // Inject corruption into the index.
   db().Close();
-  const char kDeleteSql[] = "DELETE FROM t WHERE id = 3";
+  static const char kDeleteSql[] = "DELETE FROM t WHERE id = 3";
   ASSERT_TRUE(sql::test::CorruptTableOrIndex(db_path(), "t_id", kDeleteSql));
   ASSERT_TRUE(Reopen());
 
   // id as read from index.
-  const char kSelectIndexIdSql[] = "SELECT id FROM t INDEXED BY t_id";
+  static const char kSelectIndexIdSql[] = "SELECT id FROM t INDEXED BY t_id";
   EXPECT_EQ("1,2,3", ExecuteWithResults(&db(), kSelectIndexIdSql, "|", ","));
 
   // id as read from table.
-  const char kSelectTableIdSql[] = "SELECT id FROM t NOT INDEXED";
+  static const char kSelectTableIdSql[] = "SELECT id FROM t NOT INDEXED";
   EXPECT_EQ("1,2", ExecuteWithResults(&db(), kSelectTableIdSql, "|", ","));
 
   // Run recovery code, then rollback.  Database remains the same.
@@ -891,9 +897,9 @@ TEST_F(SQLRecoveryTest, AttachFailure) {
   db().Close();
   WriteJunkToDatabase(SQLTestBase::TYPE_OVERWRITE);
 
-  const char kEventHistogramName[] = "Sqlite.RecoveryEvents";
+  static const char kEventHistogramName[] = "Sqlite.RecoveryEvents";
   const int kEventEnum = 5;  // RECOVERY_FAILED_ATTACH
-  const char kErrorHistogramName[] = "Sqlite.RecoveryAttachError";
+  static const char kErrorHistogramName[] = "Sqlite.RecoveryAttachError";
   base::HistogramTester tester;
 
   {
@@ -925,10 +931,10 @@ void TestPageSize(const base::FilePath& db_prefix,
                   const std::string& expected_initial_page_size,
                   int final_page_size,
                   const std::string& expected_final_page_size) {
-  const char kCreateSql[] = "CREATE TABLE x (t TEXT)";
-  const char kInsertSql1[] = "INSERT INTO x VALUES ('This is a test')";
-  const char kInsertSql2[] = "INSERT INTO x VALUES ('That was a test')";
-  const char kSelectSql[] = "SELECT * FROM x ORDER BY t";
+  static const char kCreateSql[] = "CREATE TABLE x (t TEXT)";
+  static const char kInsertSql1[] = "INSERT INTO x VALUES ('This is a test')";
+  static const char kInsertSql2[] = "INSERT INTO x VALUES ('That was a test')";
+  static const char kSelectSql[] = "SELECT * FROM x ORDER BY t";
 
   const base::FilePath db_path = db_prefix.InsertBeforeExtensionASCII(
       base::IntToString(initial_page_size));

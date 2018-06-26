@@ -521,9 +521,9 @@ void TestPageSize(const base::FilePath& db_prefix,
                   const std::string& expected_initial_page_size,
                   int final_page_size,
                   const std::string& expected_final_page_size) {
-  const char kCreateSql[] = "CREATE TABLE x (t TEXT)";
-  const char kInsertSql1[] = "INSERT INTO x VALUES ('This is a test')";
-  const char kInsertSql2[] = "INSERT INTO x VALUES ('That was a test')";
+  static const char kCreateSql[] = "CREATE TABLE x (t TEXT)";
+  static const char kInsertSql1[] = "INSERT INTO x VALUES ('This is a test')";
+  static const char kInsertSql2[] = "INSERT INTO x VALUES ('That was a test')";
 
   const base::FilePath db_path = db_prefix.InsertBeforeExtensionASCII(
       base::IntToString(initial_page_size));
@@ -1027,7 +1027,7 @@ TEST_F(SQLConnectionTest, AttachDatabase) {
   // Create a database to attach to.
   base::FilePath attach_path =
       db_path().DirName().AppendASCII("SQLConnectionAttach.db");
-  const char kAttachmentPoint[] = "other";
+  static const char kAttachmentPoint[] = "other";
   {
     sql::Connection other_db;
     ASSERT_TRUE(other_db.Open(attach_path));
@@ -1059,7 +1059,7 @@ TEST_F(SQLConnectionTest, AttachDatabaseWithOpenTransaction) {
   // Create a database to attach to.
   base::FilePath attach_path =
       db_path().DirName().AppendASCII("SQLConnectionAttach.db");
-  const char kAttachmentPoint[] = "other";
+  static const char kAttachmentPoint[] = "other";
   {
     sql::Connection other_db;
     ASSERT_TRUE(other_db.Open(attach_path));
@@ -1152,8 +1152,8 @@ TEST_F(SQLConnectionTest, EventsExecute) {
   // Open() uses Execute() extensively, don't track those calls.
   base::HistogramTester tester;
 
-  const char kHistogramName[] = "Sqlite.Stats.Test";
-  const char kGlobalHistogramName[] = "Sqlite.Stats";
+  static const char kHistogramName[] = "Sqlite.Stats.Test";
+  static const char kGlobalHistogramName[] = "Sqlite.Stats";
 
   ASSERT_TRUE(db().BeginTransaction());
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
@@ -1226,10 +1226,11 @@ TEST_F(SQLConnectionTest, EventsStatement) {
   db().set_histogram_tag("Test");
   ASSERT_TRUE(db().Open(db_path()));
 
-  const char kHistogramName[] = "Sqlite.Stats.Test";
-  const char kGlobalHistogramName[] = "Sqlite.Stats";
+  static const char kHistogramName[] = "Sqlite.Stats.Test";
+  static const char kGlobalHistogramName[] = "Sqlite.Stats";
 
-  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
+  static const char kCreateSql[] =
+      "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   EXPECT_TRUE(db().Execute(kCreateSql));
   EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (10, 'text')"));
   EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (11, 'text')"));

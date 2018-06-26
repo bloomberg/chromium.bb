@@ -1961,8 +1961,8 @@ bool Connection::IntegrityCheckHelper(
   // allows SQLite to process through certain cases of corruption.
   // Failing to set this pragma probably means that the database is
   // beyond recovery.
-  const char kWritableSchema[] = "PRAGMA writable_schema = ON";
-  if (!Execute(kWritableSchema))
+  static const char kWritableSchemaSql[] = "PRAGMA writable_schema = ON";
+  if (!Execute(kWritableSchemaSql))
     return false;
 
   bool ret = false;
@@ -1981,8 +1981,8 @@ bool Connection::IntegrityCheckHelper(
   }
 
   // Best effort to put things back as they were before.
-  const char kNoWritableSchema[] = "PRAGMA writable_schema = OFF";
-  ignore_result(Execute(kNoWritableSchema));
+  static const char kNoWritableSchemaSql[] = "PRAGMA writable_schema = OFF";
+  ignore_result(Execute(kNoWritableSchemaSql));
 
   return ret;
 }

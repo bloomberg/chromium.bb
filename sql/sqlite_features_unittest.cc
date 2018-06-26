@@ -98,7 +98,7 @@ TEST_F(SQLiteFeaturesTest, FTS3) {
 // prefix search, though the icu tokenizer would return it as two tokens {"foo",
 // "*"}.  Test that fts3 works correctly.
 TEST_F(SQLiteFeaturesTest, FTS3_Prefix) {
-  const char kCreateSql[] =
+  static const char kCreateSql[] =
       "CREATE VIRTUAL TABLE foo USING fts3(x, tokenize icu)";
   ASSERT_TRUE(db().Execute(kCreateSql));
 
@@ -131,28 +131,28 @@ TEST_F(SQLiteFeaturesTest, ForeignKeySupport) {
       "CREATE TABLE children ("
       "    id INTEGER PRIMARY KEY,"
       "    pid INTEGER NOT NULL REFERENCES parents(id) ON DELETE CASCADE)"));
-  const char kSelectParents[] = "SELECT * FROM parents ORDER BY id";
-  const char kSelectChildren[] = "SELECT * FROM children ORDER BY id";
+  static const char kSelectParentsSql[] = "SELECT * FROM parents ORDER BY id";
+  static const char kSelectChildrenSql[] = "SELECT * FROM children ORDER BY id";
 
   // Inserting without a matching parent should fail with constraint violation.
-  EXPECT_EQ("", ExecuteWithResult(&db(), kSelectParents));
+  EXPECT_EQ("", ExecuteWithResult(&db(), kSelectParentsSql));
   const int insert_error =
       db().ExecuteAndReturnErrorCode("INSERT INTO children VALUES (10, 1)");
   EXPECT_EQ(SQLITE_CONSTRAINT | SQLITE_CONSTRAINT_FOREIGNKEY, insert_error);
-  EXPECT_EQ("", ExecuteWithResult(&db(), kSelectChildren));
+  EXPECT_EQ("", ExecuteWithResult(&db(), kSelectChildrenSql));
 
   // Inserting with a matching parent should work.
   ASSERT_TRUE(db().Execute("INSERT INTO parents VALUES (1)"));
-  EXPECT_EQ("1", ExecuteWithResults(&db(), kSelectParents, "|", "\n"));
+  EXPECT_EQ("1", ExecuteWithResults(&db(), kSelectParentsSql, "|", "\n"));
   EXPECT_TRUE(db().Execute("INSERT INTO children VALUES (11, 1)"));
   EXPECT_TRUE(db().Execute("INSERT INTO children VALUES (12, 1)"));
   EXPECT_EQ("11|1\n12|1",
-            ExecuteWithResults(&db(), kSelectChildren, "|", "\n"));
+            ExecuteWithResults(&db(), kSelectChildrenSql, "|", "\n"));
 
   // Deleting the parent should cascade, deleting the children as well.
   ASSERT_TRUE(db().Execute("DELETE FROM parents"));
-  EXPECT_EQ("", ExecuteWithResult(&db(), kSelectParents));
-  EXPECT_EQ("", ExecuteWithResult(&db(), kSelectChildren));
+  EXPECT_EQ("", ExecuteWithResult(&db(), kSelectParentsSql));
+  EXPECT_EQ("", ExecuteWithResult(&db(), kSelectChildrenSql));
 }
 
 // Ensure that our SQLite version supports booleans.
@@ -289,7 +289,7 @@ TEST_F(SQLiteFeaturesTest, CachedRegexp) {
   ASSERT_TRUE(db().Execute("INSERT INTO r VALUES (3, 'this is a stickup')"));
   ASSERT_TRUE(db().Execute("INSERT INTO r VALUES (4, 'that sucks')"));
 
-  const char* kSimpleSql = "SELECT SUM(id) FROM r WHERE x REGEXP ?";
+  static const char kSimpleSql[] = "SELECT SUM(id) FROM r WHERE x REGEXP ?";
   sql::Statement s(db().GetCachedStatement(SQL_FROM_HERE, kSimpleSql));
 
   s.BindString(0, "this.*");
@@ -372,7 +372,7 @@ TEST_F(SQLiteFeaturesTest, SmartAutoVacuum) {
   ASSERT_TRUE(db().Execute("VACUUM"));
 
   // Code-coverage of the PRAGMA set/get implementation.
-  const char kPragmaSql[] = "PRAGMA auto_vacuum_slack_pages";
+  static const char kPragmaSql[] = "PRAGMA auto_vacuum_slack_pages";
   ASSERT_EQ("0", sql::test::ExecuteWithResult(&db(), kPragmaSql));
   ASSERT_TRUE(db().Execute("PRAGMA auto_vacuum_slack_pages = 4"));
   ASSERT_EQ("4", sql::test::ExecuteWithResult(&db(), kPragmaSql));
@@ -385,10 +385,13 @@ TEST_F(SQLiteFeaturesTest, SmartAutoVacuum) {
   // overflow page, plus a small header in a b-tree node.  An empty table takes
   // a single page, so for small row counts each insert will add one page, and
   // each delete will remove one page.
-  const char kCreateSql[] = "CREATE TABLE t (id INTEGER PRIMARY KEY, value)";
-  const char kInsertSql[] = "INSERT INTO t (value) VALUES (randomblob(980))";
+  static const char kCreateSql[] =
+      "CREATE TABLE t (id INTEGER PRIMARY KEY, value)";
+  static const char kInsertSql[] =
+      "INSERT INTO t (value) VALUES (randomblob(980))";
 #if !defined(OS_WIN)
-  const char kDeleteSql[] = "DELETE FROM t WHERE id = (SELECT MIN(id) FROM t)";
+  static const char kDeleteSql[] =
+      "DELETE FROM t WHERE id = (SELECT MIN(id) FROM t)";
 #endif
 
   // This database will be 34 overflow pages plus the table's root page plus the
