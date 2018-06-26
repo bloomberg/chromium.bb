@@ -54,7 +54,7 @@ suite('DownloadsHandler', function() {
   test('select downloads location', function() {
     const button = downloadsPage.$$('#changeDownloadsPath');
     assertTrue(!!button);
-    MockInteractions.tap(button);
+    button.click();
     button.fire('transitionend');
     return DownloadsBrowserProxy.whenCalled('selectDownloadLocation');
   });
@@ -68,7 +68,7 @@ suite('DownloadsHandler', function() {
     button = downloadsPage.$$('#resetAutoOpenFileTypes');
     assertTrue(!!button);
 
-    MockInteractions.tap(button);
+    button.click();
     return DownloadsBrowserProxy.whenCalled('resetAutoOpenFileTypes')
         .then(function() {
           cr.webUIListenerCallback('auto-open-downloads-changed', false);

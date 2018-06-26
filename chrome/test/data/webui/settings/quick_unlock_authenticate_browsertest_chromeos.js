@@ -102,8 +102,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         passwordElement.value = 'foo';
         Polymer.dom.flush();
 
-        MockInteractions.tap(
-            getFromElement('paper-button[class="action-button"]'));
+        getFromElement('paper-button[class="action-button"]').click();
         Polymer.dom.flush();
 
         assertEquals(0, passwordElement.inputElement.selectionStart);
@@ -124,8 +123,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         const confirmButton = getFromElement('#confirmButton');
         quickUnlockPrivateApi.accountPassword = 'bar';
         passwordElement.value = 'foo';
-        MockInteractions.tap(
-            getFromElement('paper-button[class="action-button"]'));
+        getFromElement('paper-button[class="action-button"]').click();
 
         assertTrue(passwordElement.hasAttribute('focused_'));
       });
@@ -307,12 +305,12 @@ cr.define('settings_people_page_quick_unlock', function() {
         let lockScreenEnabled = toggle.checked;
         quickUnlockPrivateApi.lockScreenEnabled = lockScreenEnabled;
 
-        MockInteractions.tap(toggle);
+        toggle.click();
         assertEquals(toggle.checked, !lockScreenEnabled);
         assertEquals(
             quickUnlockPrivateApi.lockScreenEnabled, !lockScreenEnabled);
 
-        MockInteractions.tap(toggle);
+        toggle.click();
         assertEquals(toggle.checked, lockScreenEnabled);
         assertEquals(
             quickUnlockPrivateApi.lockScreenEnabled, lockScreenEnabled);
@@ -325,7 +323,7 @@ cr.define('settings_people_page_quick_unlock', function() {
           assertRadioButtonChecked(passwordRadioButton);
 
           // Tap pin+password button.
-          MockInteractions.tap(pinPasswordRadioButton);
+          pinPasswordRadioButton.click();
           assertRadioButtonChecked(pinPasswordRadioButton);
           assertTrue(isSetupPinButtonVisible());
           assertDeepEquals([], quickUnlockPrivateApi.activeModes);
@@ -334,7 +332,7 @@ cr.define('settings_people_page_quick_unlock', function() {
           setActiveModes([QuickUnlockMode.PIN]);
 
           // Tap password button and verify quick unlock is disabled.
-          MockInteractions.tap(passwordRadioButton);
+          passwordRadioButton.click();
           assertRadioButtonChecked(passwordRadioButton);
           assertFalse(isSetupPinButtonVisible());
           assertDeepEquals([], quickUnlockPrivateApi.activeModes);
@@ -372,12 +370,12 @@ cr.define('settings_people_page_quick_unlock', function() {
                 LockScreenProgress.CHOOSE_PIN_OR_PASSWORD));
         assertRadioButtonChecked(passwordRadioButton);
 
-        MockInteractions.tap(pinPasswordRadioButton);
+        pinPasswordRadioButton.click();
         assertTrue(isSetupPinButtonVisible());
         assertRadioButtonChecked(pinPasswordRadioButton);
 
         Polymer.dom.flush();
-        MockInteractions.tap(getFromElement('#setupPinButton'));
+        getFromElement('#setupPinButton').click();
         Polymer.dom.flush();
         const setupPinDialog = getFromElement('#setupPin');
         assertTrue(setupPinDialog.$$('#dialog').open);
@@ -434,7 +432,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         const initialTitle = titleDiv.textContent;
 
         pinKeyboard.value = '1111';
-        MockInteractions.tap(continueButton);
+        continueButton.click();
 
         assertNotEquals(initialContinue, continueButton.textContent);
         assertNotEquals(initialTitle, titleDiv.textContent);
@@ -519,7 +517,7 @@ cr.define('settings_people_page_quick_unlock', function() {
       // initial PIN. The error disappears once the user edits the wrong PIN.
       test('WarningThenErrorShownForMismatchedPins', function() {
         pinKeyboard.value = '1118';
-        MockInteractions.tap(continueButton);
+        continueButton.click();
 
         // Entering a mismatched PIN shows a warning.
         pinKeyboard.value = '1119';
@@ -537,22 +535,22 @@ cr.define('settings_people_page_quick_unlock', function() {
 
       // Hitting cancel at the setup step dismisses the dialog.
       test('HittingBackButtonResetsState', function() {
-        MockInteractions.tap(backButton);
+        backButton.click();
         assertFalse(testElement.$$('#dialog').open);
       });
 
       // Hitting cancel at the confirm step dismisses the dialog.
       test('HittingBackButtonResetsState', function() {
         pinKeyboard.value = '1111';
-        MockInteractions.tap(continueButton);
-        MockInteractions.tap(backButton);
+        continueButton.click();
+        backButton.click();
         assertFalse(testElement.$$('#dialog').open);
       });
 
       // User has to re-enter PIN for confirm step.
       test('PinKeyboardIsResetForConfirmStep', function() {
         pinKeyboard.value = '1111';
-        MockInteractions.tap(continueButton);
+        continueButton.click();
         assertEquals('', pinKeyboard.value);
       });
 
@@ -566,12 +564,12 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertEquals(
             0, fakeUma.getHistogramValue(LockScreenProgress.CONFIRM_PIN));
         pinKeyboard.value = '1111';
-        MockInteractions.tap(continueButton);
+        continueButton.click();
         assertEquals(
             1, fakeUma.getHistogramValue(LockScreenProgress.ENTER_PIN));
 
         pinKeyboard.value = '1111';
-        MockInteractions.tap(continueButton);
+        continueButton.click();
 
         assertEquals(
             1, fakeUma.getHistogramValue(LockScreenProgress.CONFIRM_PIN));
@@ -581,7 +579,7 @@ cr.define('settings_people_page_quick_unlock', function() {
 
       test('TestContinueButtonState', function() {
         pinKeyboard.value = '1111';
-        MockInteractions.tap(continueButton);
+        continueButton.click();
 
         // Verify the button is disabled when we first enter the confirm step,
         // since the PIN value is empty.
@@ -593,7 +591,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertFalse(continueButton.disabled);
 
         // Verify the button is disabled after we try to submit a wrong PIN.
-        MockInteractions.tap(continueButton);
+        continueButton.click();
         assertTrue(continueButton.disabled);
 
         // Verify the button is enabled after we enter one digit again.

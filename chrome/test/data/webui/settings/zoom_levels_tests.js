@@ -92,7 +92,7 @@ suite('ZoomLevels', function() {
 
           const removeButton = getRemoveButton(testElement.$.listContainer, 0);
           assert(!!removeButton);
-          MockInteractions.tap(removeButton);
+          removeButton.click();
           return browserProxy.whenCalled('removeZoomLevel');
         })
         .then(function(args) {

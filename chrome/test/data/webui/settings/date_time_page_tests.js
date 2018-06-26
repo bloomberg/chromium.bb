@@ -147,18 +147,18 @@ function initializeDateTime(prefs, hasPolicy, opt_autoDetectPolicyValue) {
 function clickDisableAutoDetect(dateTime) {
   if (dateTime.prefs.cros.flags.fine_grained_time_zone_detection_enabled
           .value) {
-    MockInteractions.tap(dateTime.$$('#timeZoneAutoDetectOff'));
+    dateTime.$$('#timeZoneAutoDetectOff').click();
   } else {
-    MockInteractions.tap(dateTime.$$('#timeZoneAutoDetect'));
+    dateTime.$$('#timeZoneAutoDetect').click();
   }
 }
 
 function clickEnableAutoDetect(dateTime) {
   if (dateTime.prefs.cros.flags.fine_grained_time_zone_detection_enabled
           .value) {
-    MockInteractions.tap(dateTime.$$('#timeZoneAutoDetectOn'));
+    dateTime.$$('#timeZoneAutoDetectOn').click();
   } else {
-    MockInteractions.tap(dateTime.$$('#timeZoneAutoDetect'));
+    dateTime.$$('#timeZoneAutoDetect').click();
   }
 }
 
@@ -387,7 +387,7 @@ suite('settings-date-time-page', function() {
       assertGT(setDateTimeButton.offsetHeight, 0);
 
       assertFalse(showSetDateTimeUICalled);
-      MockInteractions.tap(setDateTimeButton);
+      setDateTimeButton.click();
     });
     setTimeout(function() {
       assertTrue(showSetDateTimeUICalled);

@@ -156,7 +156,7 @@ cr.define('settings_people_page_change_picture', function() {
             expectFalse(!!camera && camera.hidden);
 
             const cameraImage = crPictureList.$.cameraImage;
-            MockInteractions.tap(cameraImage);
+            cameraImage.click();
             Polymer.dom.flush();
             return new Promise(function(resolve) {
               changePicture.async(resolve);
@@ -188,7 +188,7 @@ cr.define('settings_people_page_change_picture', function() {
       assertTrue(!!profileImage);
 
       expectEquals(null, changePicture.selectedItem_);
-      MockInteractions.tap(profileImage);
+      profileImage.click();
 
       return browserProxy.whenCalled('selectProfileImage').then(function() {
         Polymer.dom.flush();
@@ -283,7 +283,7 @@ cr.define('settings_people_page_change_picture', function() {
       const firstDefaultImage = crPictureList.$$('img[data-type="default"]');
       assertTrue(!!firstDefaultImage);
 
-      MockInteractions.tap(firstDefaultImage);
+      firstDefaultImage.click();
 
       return browserProxy.whenCalled('selectDefaultImage')
           .then(function(args) {
@@ -313,7 +313,7 @@ cr.define('settings_people_page_change_picture', function() {
       const firstDefaultImage = crPictureList.$$('img[data-type="default"]');
       assertTrue(!!firstDefaultImage);
 
-      MockInteractions.tap(firstDefaultImage);
+      firstDefaultImage.click();
 
       return browserProxy.whenCalled('selectDefaultImage').then(function() {
         Polymer.dom.flush();
@@ -331,7 +331,7 @@ cr.define('settings_people_page_change_picture', function() {
 
         const discardButton = crPicturePane.$$('#discard button');
         assertTrue(!!discardButton);
-        MockInteractions.tap(discardButton);
+        discardButton.click();
 
         Polymer.dom.flush();
         const profileImage = crPictureList.$.profileImage;

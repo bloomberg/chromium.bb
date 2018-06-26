@@ -132,7 +132,7 @@ cr.define('settings_people_page', function() {
               assertTrue(!!disconnectButton);
               assertFalse(!!peoplePage.$$('#disconnectDialog'));
 
-              MockInteractions.tap(disconnectButton);
+              disconnectButton.click();
               Polymer.dom.flush();
             })
             .then(function() {
@@ -151,7 +151,7 @@ cr.define('settings_people_page', function() {
                 listenOnce(window, 'popstate', resolve);
               });
 
-              MockInteractions.tap(disconnectConfirm);
+              disconnectConfirm.click();
 
               return popstatePromise;
             })
@@ -167,7 +167,7 @@ cr.define('settings_people_page', function() {
               });
 
               assertFalse(!!peoplePage.$$('#disconnectDialog'));
-              MockInteractions.tap(disconnectButton);
+              disconnectButton.click();
               Polymer.dom.flush();
 
               return new Promise(function(resolve) {
@@ -189,7 +189,7 @@ cr.define('settings_people_page', function() {
                 listenOnce(window, 'popstate', resolve);
               });
 
-              MockInteractions.tap(disconnectManagedProfileConfirm);
+              disconnectManagedProfileConfirm.click();
 
               return popstatePromise;
             })
@@ -209,7 +209,7 @@ cr.define('settings_people_page', function() {
               // Open the disconnect dialog.
               disconnectButton = peoplePage.$$('#disconnectButton');
               assertTrue(!!disconnectButton);
-              MockInteractions.tap(disconnectButton);
+              disconnectButton.click();
 
               return profileInfoBrowserProxy.whenCalled('getProfileStatsCount');
             })
@@ -240,7 +240,7 @@ cr.define('settings_people_page', function() {
                   warningMessage.textContent.trim());
 
               // Close the disconnect dialog.
-              MockInteractions.tap(peoplePage.$$('#disconnectConfirm'));
+              peoplePage.$$('#disconnectConfirm').click();
               return new Promise(function(resolve) {
                 listenOnce(window, 'popstate', resolve);
               });
@@ -265,7 +265,7 @@ cr.define('settings_people_page', function() {
               new settings.ProfileInfoBrowserProxyImpl().getProfileStatsCount();
 
               // Close the disconnect dialog.
-              MockInteractions.tap(peoplePage.$$('#disconnectConfirm'));
+              peoplePage.$$('#disconnectConfirm').click();
             })
             .then(function() {
               return new Promise(function(resolve) {
@@ -493,7 +493,7 @@ cr.define('settings_people_page', function() {
         statusAction: settings.StatusAction.REAUTHENTICATE,
       });
 
-      MockInteractions.tap(peoplePage.$$('#sync-setup'));
+      peoplePage.$$('#sync-setup').click();
       Polymer.dom.flush();
 
       assertEquals(settings.getCurrentRoute(), settings.routes.SYNC);

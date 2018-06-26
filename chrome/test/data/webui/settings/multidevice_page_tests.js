@@ -46,7 +46,7 @@ suite('Multidevice', function() {
     setMode(settings.MultiDeviceSettingsMode.NO_HOST_SET);
     const button = multidevicePage.$$('paper-button');
     assertTrue(!!button);
-    MockInteractions.tap(button);
+    button.click();
     return browserProxy.whenCalled('showMultiDeviceSetupDialog');
   });
 });

@@ -40,7 +40,7 @@ suite('ChangePasswordHandler', function() {
   test('changePasswordButtonPressed', function() {
     let actionButton = changePasswordPage.$$('#changePassword');
     assertTrue(!!actionButton);
-    MockInteractions.tap(actionButton);
+    actionButton.click();
     return browserProxy.whenCalled('changePassword');
   });
 });

@@ -67,7 +67,9 @@ suite('focus-row-behavior', function() {
     testElement.$.control.addEventListener('focus', function() {
       focused = true;
     });
-    MockInteractions.tap(testElement);
+    MockInteractions.down(testElement);
+    MockInteractions.up(testElement);
+    testElement.click();
     // iron-list is responsible for firing 'focus' after taps, but is not used
     // in the test, so its necessary to manually fire 'focus' after tap.
     testElement.fire('focus');

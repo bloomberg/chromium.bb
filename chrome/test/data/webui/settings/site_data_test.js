@@ -29,7 +29,7 @@ suite('SiteDataTest', function() {
                   siteData.$$('.site-item').querySelector('.icon-delete-gray');
               assertTrue(!!button);
               assertEquals('PAPER-ICON-BUTTON-LIGHT', button.tagName);
-              MockInteractions.tap(button.querySelector('button'));
+              button.querySelector('button').click();
               return testBrowserProxy.whenCalled('removeItem');
             })
             .then(function(path) {

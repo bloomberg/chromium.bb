@@ -87,14 +87,14 @@ suite('CupsAddPrinterDialogTests', function() {
     assertTrue(!!dialog, 'Dialog is null for add');
     const addButton = dialog.$$('.action-button');
     assertTrue(!!addButton, 'Button is null');
-    MockInteractions.tap(addButton);
+    addButton.click();
   }
 
   function clickCancelButton(dialog) {
     assertTrue(!!dialog, 'Dialog is null for cancel');
     const cancelButton = dialog.$$('.cancel-button');
     assertTrue(!!cancelButton, 'Button is null');
-    MockInteractions.tap(cancelButton);
+    cancelButton.click();
   }
 
   let page = null;
@@ -208,7 +208,7 @@ suite('CupsAddPrinterDialogTests', function() {
     // Starts in discovery dialog, select add manually button.
     const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
     assertTrue(!!discoveryDialog);
-    MockInteractions.tap(discoveryDialog.$$('.secondary-button'));
+    discoveryDialog.$$('.secondary-button').click();
     Polymer.dom.flush();
 
     // Now we should be in the manually add dialog.
@@ -216,7 +216,7 @@ suite('CupsAddPrinterDialogTests', function() {
     assertTrue(!!addDialog);
     fillAddManuallyDialog(addDialog);
 
-    MockInteractions.tap(addDialog.$$('.action-button'));
+    addDialog.$$('.action-button').click();
     Polymer.dom.flush();
     // Configure is shown until getPrinterInfo is rejected.
     assertTrue(!!dialog.$$('add-printer-configuring-dialog'));
@@ -245,7 +245,7 @@ suite('CupsAddPrinterDialogTests', function() {
   test('NoBlankQueries', function() {
     const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
     assertTrue(!!discoveryDialog);
-    MockInteractions.tap(discoveryDialog.$$('.secondary-button'));
+    discoveryDialog.$$('.secondary-button').click();
     Polymer.dom.flush();
 
     const addDialog = dialog.$$('add-printer-manually-dialog');
@@ -261,7 +261,7 @@ suite('CupsAddPrinterDialogTests', function() {
 
     cupsPrintersBrowserProxy.manufacturers =
         ['ManufacturerA', 'ManufacturerB', 'Chromites'];
-    MockInteractions.tap(addDialog.$$('.action-button'));
+    addDialog.$$('.action-button').click();
     Polymer.dom.flush();
 
     return cupsPrintersBrowserProxy

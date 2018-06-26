@@ -64,7 +64,7 @@ suite('SiteEntry', function() {
     assertTrue(originList.classList.contains('iron-collapse-closed'));
     assertEquals('true', originList.getAttribute('aria-hidden'));
 
-    MockInteractions.tap(toggleButton);
+    toggleButton.click();
     assertEquals('true', toggleButton.getAttribute('aria-expanded'));
     assertTrue(originList.classList.contains('iron-collapse-opened'));
     assertEquals('false', originList.getAttribute('aria-hidden'));
@@ -78,7 +78,7 @@ suite('SiteEntry', function() {
     assertTrue(originList.classList.contains('iron-collapse-closed'));
     assertEquals('true', originList.getAttribute('aria-hidden'));
 
-    MockInteractions.tap(toggleButton);
+    toggleButton.click();
     assertEquals('false', toggleButton.getAttribute('aria-expanded'));
     assertTrue(originList.classList.contains('iron-collapse-closed'));
     assertEquals('true', originList.getAttribute('aria-hidden'));
@@ -98,7 +98,7 @@ suite('SiteEntry', function() {
 
     // Test clicking on one of these origins takes the user to Site Details,
     // with the correct origin.
-    MockInteractions.tap(originList[1]);
+    originList[1].click();
     assertEquals(
         settings.routes.SITE_SETTINGS_SITE_DETAILS.path,
         settings.getCurrentRoute().path);

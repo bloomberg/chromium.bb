@@ -105,13 +105,13 @@ cr.define('settings_people_page_manage_profile', function() {
             assertTrue(items[1].classList.contains('iron-selected'));
             assertFalse(items[2].classList.contains('iron-selected'));
 
-            MockInteractions.tap(items[1]);
+            items[1].click();
             return browserProxy.whenCalled('setProfileIconToDefaultAvatar');
           })
           .then(function(args) {
             assertEquals('fake-icon-2.png', args[0]);
 
-            MockInteractions.tap(items[2]);
+            items[2].click();
             return browserProxy.whenCalled('setProfileIconToGaiaAvatar');
           });
     });
@@ -205,7 +205,7 @@ cr.define('settings_people_page_manage_profile', function() {
             assertTrue(hasShortcutToggle.checked);
 
             // Simulate tapping the profile shortcut toggle.
-            MockInteractions.tap(hasShortcutToggle);
+            hasShortcutToggle.click();
             return browserProxy.whenCalled('removeProfileShortcut')
                 .then(function() {
                   Polymer.dom.flush();
@@ -214,7 +214,7 @@ cr.define('settings_people_page_manage_profile', function() {
                   assertFalse(hasShortcutToggle.checked);
 
                   // Simulate tapping the profile shortcut toggle.
-                  MockInteractions.tap(hasShortcutToggle);
+                  hasShortcutToggle.click();
                   return browserProxy.whenCalled('addProfileShortcut');
                 });
           });

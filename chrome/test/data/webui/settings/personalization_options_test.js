@@ -52,7 +52,7 @@ cr.define('settings_personalization_options', function() {
               assertEquals(false, !!control.pref.controlledBy);
 
               // Tapping on the box will check it again.
-              MockInteractions.tap(control);
+              control.click();
 
               return testBrowserProxy.whenCalled(
                   'setSafeBrowsingExtendedReportingEnabled');

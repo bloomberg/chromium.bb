@@ -66,7 +66,7 @@ suite('GoogleAssistantHandler', function() {
     assertFalse(button.checked);
 
     // Tap the enable toggle button and ensure the state becomes enabled.
-    MockInteractions.tap(button);
+    button.click();
     Polymer.dom.flush();
     assertTrue(button.checked);
     return browserProxy.whenCalled('setGoogleAssistantEnabled')
@@ -83,7 +83,7 @@ suite('GoogleAssistantHandler', function() {
     assertFalse(button.disabled);
     assertFalse(button.checked);
 
-    MockInteractions.tap(button);
+    button.click();
     Polymer.dom.flush();
     assertTrue(button.checked);
     return browserProxy.whenCalled('setGoogleAssistantContextEnabled')
@@ -98,7 +98,7 @@ suite('GoogleAssistantHandler', function() {
     button = page.$$('#googleAssistantSettings');
     assertTrue(!!button);
 
-    MockInteractions.tap(button);
+    button.click();
     Polymer.dom.flush();
     return browserProxy.whenCalled('showGoogleAssistantSettings');
   });

@@ -47,7 +47,7 @@ suite('AndroidAppsPageTests', function() {
       assertTrue(!!button);
       assertFalse(!!androidAppsPage.$$('.subpage-arrow'));
 
-      MockInteractions.tap(button);
+      button.click();
       Polymer.dom.flush();
       assertTrue(androidAppsPage.prefs.arc.enabled.value);
 
@@ -84,7 +84,7 @@ suite('AndroidAppsPageTests', function() {
       androidAppsPage.prefs = {arc: {enabled: {value: true}}};
       setAndroidAppsState(true, false);
       settings.navigateTo(settings.routes.ANDROID_APPS);
-      MockInteractions.tap(androidAppsPage.$$('#android-apps'));
+      androidAppsPage.$$('#android-apps').click();
       return flushAsync().then(() => {
         subpage = androidAppsPage.$$('settings-android-apps-subpage');
         assertTrue(!!subpage);
@@ -113,7 +113,6 @@ suite('AndroidAppsPageTests', function() {
       assertTrue(!!button);
       const promise =
           androidAppsBrowserProxy.whenCalled('showAndroidAppsSettings');
-      // MockInteractions.tap does not work here due style is not updated.
       button.click();
       Polymer.dom.flush();
       return promise;
@@ -157,7 +156,7 @@ suite('AndroidAppsPageTests', function() {
         }
       };
       setAndroidAppsState(true, true);
-      MockInteractions.tap(androidAppsPage.$$('#android-apps'));
+      androidAppsPage.$$('#android-apps').click();
       Polymer.dom.flush();
       subpage = androidAppsPage.$$('settings-android-apps-subpage');
       assertTrue(!!subpage);
@@ -191,7 +190,6 @@ suite('AndroidAppsPageTests', function() {
       assertTrue(!!button);
       const promise =
           androidAppsBrowserProxy.whenCalled('showAndroidAppsSettings');
-      // MockInteractions.tap does not work here due style is not updated.
       button.click();
       Polymer.dom.flush();
       return promise;

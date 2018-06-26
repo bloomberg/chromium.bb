@@ -12,8 +12,6 @@ Polymer({
 
   /** @private */
   changePassword_: function() {
-    listenOnce(this, 'transitionend', () => {
-      settings.ChangePasswordBrowserProxyImpl.getInstance().changePassword();
-    });
+    settings.ChangePasswordBrowserProxyImpl.getInstance().changePassword();
   },
 });

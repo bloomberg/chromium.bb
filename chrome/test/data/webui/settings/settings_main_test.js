@@ -276,7 +276,7 @@ cr.define('settings_main_page', function() {
             const advancedToggle =
                 getToggleContainer().querySelector('#advancedToggle');
             assertTrue(!!advancedToggle);
-            MockInteractions.tap(advancedToggle);
+            advancedToggle.click();
 
             return whenHidden;
           })

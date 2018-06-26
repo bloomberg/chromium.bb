@@ -37,7 +37,7 @@ suite('CrostiniPageTests', function() {
       assertTrue(!!button);
       assertFalse(!!crostiniPage.$$('.subpage-arrow'));
 
-      MockInteractions.tap(button);
+      button.click();
       Polymer.dom.flush();
       setCrostiniEnabledValue(
           crostiniBrowserProxy.prefs.crostini.enabled.value);
@@ -73,7 +73,7 @@ suite('CrostiniPageTests', function() {
     setup(function() {
       setCrostiniEnabledValue(true);
       settings.navigateTo(settings.routes.CROSTINI);
-      MockInteractions.tap(crostiniPage.$$('#crostini'));
+      crostiniPage.$$('#crostini').click();
       return flushAsync().then(() => {
         subpage = crostiniPage.$$('settings-crostini-subpage');
         assertTrue(!!subpage);
@@ -86,7 +86,7 @@ suite('CrostiniPageTests', function() {
 
     test('Remove', function() {
       assertTrue(!!subpage.$$('.subpage-arrow'));
-      MockInteractions.tap(subpage.$$('.subpage-arrow'));
+      subpage.$$('.subpage-arrow').click();
       setCrostiniEnabledValue(
           crostiniBrowserProxy.prefs.crostini.enabled.value);
       assertFalse(crostiniPage.prefs.crostini.enabled.value);
