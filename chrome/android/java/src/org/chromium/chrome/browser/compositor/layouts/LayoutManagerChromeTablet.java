@@ -89,8 +89,8 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
     }
 
     @Override
-    protected void tabCreated(int id, int sourceId, TabLaunchType launchType, boolean incognito,
-            boolean willBeSelected, float originX, float originY) {
+    protected void tabCreated(int id, int sourceId, @TabLaunchType int launchType,
+            boolean incognito, boolean willBeSelected, float originX, float originY) {
         if (getFullscreenManager() != null) {
             getFullscreenManager().getBrowserVisibilityDelegate().showControlsTransient();
         }
@@ -150,7 +150,7 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
     protected LayoutManagerTabModelObserver createTabModelObserver() {
         return new LayoutManagerTabModelObserver() {
             @Override
-            public void didAddTab(Tab tab, TabLaunchType launchType) {
+            public void didAddTab(Tab tab, @TabLaunchType int launchType) {
                 super.didAddTab(tab, launchType);
                 updateTitle(getTabById(tab.getId()));
             }

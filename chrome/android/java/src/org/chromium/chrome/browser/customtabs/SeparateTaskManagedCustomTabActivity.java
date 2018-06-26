@@ -62,7 +62,7 @@ public class SeparateTaskManagedCustomTabActivity extends SeparateTaskCustomTabA
 
             @Override
             public void processUrlViewIntent(String url, String referer, String headers,
-                    TabOpenType tabOpenType, String externalAppId, int tabIdToBringToFront,
+                    @TabOpenType int tabOpenType, String externalAppId, int tabIdToBringToFront,
                     boolean hasUserGesture, Intent intent) {
                 Tab currentTab = getTabCreator(false).launchUrlFromExternalApp(
                         url, referer, headers, externalAppId, true, intent, mIntentHandlingTimeMs);

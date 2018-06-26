@@ -156,7 +156,7 @@ public class BrowserActionActivityTest {
         mTestDelegate = new TestDelegate();
         mTestObserver = new EmptyTabModelObserver() {
             @Override
-            public void didAddTab(Tab tab, TabLaunchType type) {
+            public void didAddTab(Tab tab, @TabLaunchType int type) {
                 mDidAddTabCallback.notifyCalled();
             }
         };

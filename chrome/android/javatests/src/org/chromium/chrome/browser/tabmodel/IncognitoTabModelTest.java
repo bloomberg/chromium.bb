@@ -42,7 +42,7 @@ public class IncognitoTabModelTest {
 
     private class CloseAllDuringAddTabTabModelObserver extends EmptyTabModelObserver {
         @Override
-        public void willAddTab(Tab tab, TabLaunchType type) {
+        public void willAddTab(Tab tab, @TabLaunchType int type) {
             mTabModel.closeAllTabs();
         }
     }

@@ -32,7 +32,7 @@ public class ContentSettingException implements Serializable {
         /**
          * Number of handled exceptions used for calculating array sizes.
          */
-        int NUM_EXCEPTIONS = 7;
+        int NUM_ENTRIES = 7;
     }
 
     private final int mContentSettingType;

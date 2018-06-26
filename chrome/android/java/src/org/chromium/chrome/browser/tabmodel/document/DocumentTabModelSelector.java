@@ -152,8 +152,8 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
     }
 
     @Override
-    public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
-            boolean incognito) {
+    public Tab openNewTab(
+            LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent, boolean incognito) {
         TabDelegate delegate = getTabCreator(incognito);
         delegate.createNewTab(loadUrlParams, type, parent);
         return null;

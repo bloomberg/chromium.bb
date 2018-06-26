@@ -16,13 +16,13 @@ public class OverlayPanelManagerWrapper extends OverlayPanelManager {
     private int mPanelHideCount;
 
     @Override
-    public void requestPanelShow(OverlayPanel panel, StateChangeReason reason) {
+    public void requestPanelShow(OverlayPanel panel, @StateChangeReason int reason) {
         mRequestPanelShowCount++;
         super.requestPanelShow(panel, reason);
     }
 
     @Override
-    public void notifyPanelClosed(OverlayPanel panel, StateChangeReason reason) {
+    public void notifyPanelClosed(OverlayPanel panel, @StateChangeReason int reason) {
         mPanelHideCount++;
         super.notifyPanelClosed(panel, reason);
     }

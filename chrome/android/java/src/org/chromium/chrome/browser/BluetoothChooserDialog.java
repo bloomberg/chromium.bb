@@ -14,6 +14,7 @@ import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
+import android.support.annotation.IntDef;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
@@ -33,6 +34,9 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * A dialog for picking available Bluetooth devices. This dialog is shown when a website requests to
@@ -107,14 +111,18 @@ public class BluetoothChooserDialog
     };
 
     // The type of link that is shown within the dialog.
-    private enum LinkType {
-        EXPLAIN_BLUETOOTH,
-        ADAPTER_OFF,
-        ADAPTER_OFF_HELP,
-        REQUEST_LOCATION_PERMISSION,
-        REQUEST_LOCATION_SERVICES,
-        NEED_LOCATION_PERMISSION_HELP,
-        RESTART_SEARCH,
+    @IntDef({LinkType.EXPLAIN_BLUETOOTH, LinkType.ADAPTER_OFF, LinkType.ADAPTER_OFF_HELP,
+            LinkType.REQUEST_LOCATION_PERMISSION, LinkType.REQUEST_LOCATION_SERVICES,
+            LinkType.NEED_LOCATION_PERMISSION_HELP, LinkType.RESTART_SEARCH})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface LinkType {
+        int EXPLAIN_BLUETOOTH = 0;
+        int ADAPTER_OFF = 1;
+        int ADAPTER_OFF_HELP = 2;
+        int REQUEST_LOCATION_PERMISSION = 3;
+        int REQUEST_LOCATION_SERVICES = 4;
+        int NEED_LOCATION_PERMISSION_HELP = 5;
+        int RESTART_SEARCH = 6;
     }
 
     /**
@@ -295,23 +303,22 @@ public class BluetoothChooserDialog
         return false;
     }
 
-    private NoUnderlineClickableSpan createLinkSpan(LinkType linkType) {
+    private NoUnderlineClickableSpan createLinkSpan(@LinkType int linkType) {
         return new NoUnderlineClickableSpan((view) -> onBluetoothLinkClick(view, linkType));
     }
 
-    private void onBluetoothLinkClick(View view, LinkType linkType) {
+    private void onBluetoothLinkClick(View view, @LinkType int linkType) {
         if (mNativeBluetoothChooserDialogPtr == 0) {
             return;
         }
 
         switch (linkType) {
-            case EXPLAIN_BLUETOOTH: {
+            case LinkType.EXPLAIN_BLUETOOTH:
                 // No need to close the dialog here because
                 // ShowBluetoothOverviewLink will close it.
                 nativeShowBluetoothOverviewLink(mNativeBluetoothChooserDialogPtr);
                 break;
-            }
-            case ADAPTER_OFF: {
+            case LinkType.ADAPTER_OFF:
                 if (mAdapter != null && mAdapter.enable()) {
                     mItemChooserDialog.signalInitializingAdapter();
                 } else {
@@ -320,33 +327,27 @@ public class BluetoothChooserDialog
                     mItemChooserDialog.setErrorState(unableToTurnOnAdapter, mAdapterOffStatus);
                 }
                 break;
-            }
-            case ADAPTER_OFF_HELP: {
+            case LinkType.ADAPTER_OFF_HELP:
                 nativeShowBluetoothAdapterOffLink(mNativeBluetoothChooserDialogPtr);
                 break;
-            }
-            case REQUEST_LOCATION_PERMISSION: {
+            case LinkType.REQUEST_LOCATION_PERMISSION:
                 mItemChooserDialog.setIgnorePendingWindowFocusChangeForClose(true);
                 mWindowAndroid.requestPermissions(
                         new String[] {Manifest.permission.ACCESS_COARSE_LOCATION},
                         BluetoothChooserDialog.this);
                 break;
-            }
-            case REQUEST_LOCATION_SERVICES: {
+            case LinkType.REQUEST_LOCATION_SERVICES:
                 mItemChooserDialog.setIgnorePendingWindowFocusChangeForClose(true);
                 mActivity.startActivity(
                         LocationUtils.getInstance().getSystemLocationSettingsIntent());
                 break;
-            }
-            case NEED_LOCATION_PERMISSION_HELP: {
+            case LinkType.NEED_LOCATION_PERMISSION_HELP:
                 nativeShowNeedLocationPermissionLink(mNativeBluetoothChooserDialogPtr);
                 break;
-            }
-            case RESTART_SEARCH: {
+            case LinkType.RESTART_SEARCH:
                 mItemChooserDialog.clear();
                 nativeRestartSearch(mNativeBluetoothChooserDialogPtr);
                 break;
-            }
             default:
                 assert false;
         }

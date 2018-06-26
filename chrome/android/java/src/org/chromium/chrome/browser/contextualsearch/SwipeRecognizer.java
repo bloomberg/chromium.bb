@@ -62,7 +62,7 @@ public class SwipeRecognizer extends SimpleOnGestureListener {
      * Also consider renaming EdgeSwipeHandler to SwipeHandler or DirectionalSwipeHandler.
      * Finally, consider moving the ScrollDirection/SwipeDirection enum to this class.
      */
-    private ScrollDirection mSwipeDirection = ScrollDirection.UNKNOWN;
+    private @ScrollDirection int mSwipeDirection = ScrollDirection.UNKNOWN;
 
     /**
      * The point that originated the swipe gesture.
@@ -147,7 +147,8 @@ public class SwipeRecognizer extends SimpleOnGestureListener {
             float tx = (e2.getRawX() - e1.getRawX()) * mPxToDp;
             float ty = (e2.getRawY() - e1.getRawY()) * mPxToDp;
 
-            ScrollDirection direction = ScrollDirection.UNKNOWN;
+            @ScrollDirection
+            int direction = ScrollDirection.UNKNOWN;
 
             if (Math.abs(tx) > SWIPE_HORIZONTAL_DRAG_THRESHOLD_DP) {
                 direction = tx > 0.f ? ScrollDirection.RIGHT : ScrollDirection.LEFT;
