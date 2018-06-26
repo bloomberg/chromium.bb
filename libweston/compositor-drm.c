@@ -4341,16 +4341,16 @@ parse_modeline(const char *s, drmModeModeInfo *mode)
 		return -1;
 
 	mode->clock = fclock * 1000;
-	if (strcmp(hsync, "+hsync") == 0)
+	if (strcasecmp(hsync, "+hsync") == 0)
 		mode->flags |= DRM_MODE_FLAG_PHSYNC;
-	else if (strcmp(hsync, "-hsync") == 0)
+	else if (strcasecmp(hsync, "-hsync") == 0)
 		mode->flags |= DRM_MODE_FLAG_NHSYNC;
 	else
 		return -1;
 
-	if (strcmp(vsync, "+vsync") == 0)
+	if (strcasecmp(vsync, "+vsync") == 0)
 		mode->flags |= DRM_MODE_FLAG_PVSYNC;
-	else if (strcmp(vsync, "-vsync") == 0)
+	else if (strcasecmp(vsync, "-vsync") == 0)
 		mode->flags |= DRM_MODE_FLAG_NVSYNC;
 	else
 		return -1;
