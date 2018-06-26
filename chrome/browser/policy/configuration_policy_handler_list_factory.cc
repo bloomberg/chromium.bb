@@ -705,6 +705,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #endif  // OS_WIN
 
 #if !defined(OS_ANDROID)
+#if !defined(OS_CHROMEOS)
+  { key::kPromotionalTabsEnabled,
+    prefs::kPromotionalTabsEnabled,
+    base::Value::Type::BOOLEAN },
+#endif  // !OS_CHROMEOS
   { key::kSuppressUnsupportedOSWarning,
     prefs::kSuppressUnsupportedOSWarning,
     base::Value::Type::BOOLEAN },

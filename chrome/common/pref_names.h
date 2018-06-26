@@ -504,9 +504,12 @@ extern const char kShutdownNumProcessesSlow[];
 
 extern const char kRestartLastSessionOnShutdown[];
 #if !defined(OS_ANDROID)
+#if !defined(OS_CHROMEOS)
+extern const char kPromotionalTabsEnabled[];
+#endif
 extern const char kSuppressUnsupportedOSWarning[];
 extern const char kWasRestarted[];
-#endif
+#endif  // !defined(OS_ANDROID)
 
 extern const char kDisableExtensions[];
 

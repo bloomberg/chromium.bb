@@ -683,16 +683,31 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
         IncompatibleApplicationsUpdater::HasCachedApplications();
   }
 #endif
-  // Infer an intent to suppress promo pages if any value for the
-  // RestoreOnStartup policy is mandatory or recommended.
-  const bool are_startup_urls_managed =
-      SessionStartupPref::TypeIsManaged(profile_->GetPrefs()) ||
-      SessionStartupPref::TypeHasRecommendedValue(profile_->GetPrefs());
+
+  // Presentation of promotional and/or educational tabs may be controlled via
+  // administrative policy.
+  bool promotional_tabs_enabled = true;
+  const PrefService::Preference* enabled_pref = nullptr;
+#if !defined(OS_CHROMEOS)
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state)
+    enabled_pref = local_state->FindPreference(prefs::kPromotionalTabsEnabled);
+#endif  // !defined(OS_CHROMEOS)
+  if (enabled_pref && enabled_pref->IsManaged()) {
+    // Presentation is managed; obey the policy setting.
+    promotional_tabs_enabled = enabled_pref->GetValue()->GetBool();
+  } else {
+    // Presentation is not managed. Infer an intent to disable if any value for
+    // the RestoreOnStartup policy is mandatory or recommended.
+    promotional_tabs_enabled =
+        !SessionStartupPref::TypeIsManaged(profile_->GetPrefs()) &&
+        !SessionStartupPref::TypeHasRecommendedValue(profile_->GetPrefs());
+  }
 
   StartupTabs tabs = DetermineStartupTabs(
       StartupTabProviderImpl(), cmd_line_tabs, process_startup,
       is_incognito_or_guest, is_post_crash_launch,
-      has_incompatible_applications, are_startup_urls_managed);
+      has_incompatible_applications, promotional_tabs_enabled);
 
   // Return immediately if we start an async restore, since the remainder of
   // that process is self-contained.
@@ -743,7 +758,7 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
     bool is_incognito_or_guest,
     bool is_post_crash_launch,
     bool has_incompatible_applications,
-    bool are_startup_urls_managed) {
+    bool promotional_tabs_enabled) {
   // Only the New Tab Page or command line URLs may be shown in incognito mode.
   // A similar policy exists for crash recovery launches, to prevent getting the
   // user stuck in a crash loop.
@@ -780,8 +795,7 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
     return distribution_tabs;
 
   StartupTabs onboarding_tabs;
-  // Only do promos if the startup pref is not managed.
-  if (!are_startup_urls_managed) {
+  if (promotional_tabs_enabled) {
     // This is a launch from a prompt presented to an inactive user who chose to
     // open Chrome and is being brought to a specific URL for this one launch.
     // Launch the browser with the desired welcome back URL in the foreground
