@@ -266,10 +266,16 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
       // A float adds to its inline size to the current "line". The new max
       // inline contribution is just the sum of all the floats on that "line".
       LayoutUnit float_inline_size = child_sizes.max_size + margins.InlineSum();
-      if (child_style.Floating() == EFloat::kLeft)
-        float_left_inline_size += float_inline_size;
-      else
-        float_right_inline_size += float_inline_size;
+
+      // float_inline_size is negative when the float is completely outside of
+      // the content area, by e.g., negative margins. Such floats do not affect
+      // the content size.
+      if (float_inline_size > 0) {
+        if (child_style.Floating() == EFloat::kLeft)
+          float_left_inline_size += float_inline_size;
+        else
+          float_right_inline_size += float_inline_size;
+      }
 
       max_inline_contribution =
           float_left_inline_size + float_right_inline_size;
