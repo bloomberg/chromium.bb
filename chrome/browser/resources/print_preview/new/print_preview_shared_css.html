@@ -12,14 +12,12 @@
       /* Default state ********************************************************/
 
       button,
-      input[type='button'],
       select,
       input[type='checkbox'],
       input[type='radio'] {
         -webkit-appearance: none;
         -webkit-margin-end: 1px;
         -webkit-margin-start: 0;
-        background-image: linear-gradient(#ededed, #ededed 38%, #dedede);
         border: 1px solid rgba(0, 0, 0, 0.25);
         border-radius: 2px;
         box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08),
@@ -34,7 +32,12 @@
       }
 
       button,
-      input[type='button'],
+      input[type='checkbox'],
+      input[type='radio'] {
+        background-image: linear-gradient(#ededed, #ededed 38%, #dedede);
+      }
+
+      button,
       select {
         min-height: 2em;
         min-width: 4em;
@@ -90,7 +93,6 @@
 
       :disabled:-webkit-any(
           button,
-          input[type='button'],
           select) {
         background-image: linear-gradient(#f1f1f1, #f1f1f1 38%, #e6e6e6);
         border-color: rgba(80, 80, 80, 0.2);
@@ -115,8 +117,7 @@
           input[type='search'],
           input[type='text'],
           input:not([type]),
-          button,
-          input[type='button']) {
+            button) {
         /* We use border color because it follows the border radius (unlike
          * outline). This is particularly noticeable on mac. */
         border-color: rgb(77, 144, 254);
