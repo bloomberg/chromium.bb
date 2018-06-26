@@ -1496,7 +1496,11 @@ void RenderWidgetHostInputEventRouter::ForwardEmulatedGestureEvent(
     const blink::WebGestureEvent& event) {
   TRACE_EVENT0("input",
                "RenderWidgetHostInputEventRouter::ForwardEmulatedGestureEvent");
-  DCHECK(last_emulated_event_root_view_);
+  // It's possible that since |last_emulated_event_root_view_| was set by the
+  // outbound touch event that the view may have gone away. Before with dispatch
+  // the GestureEvent, confirm the view is still available.
+  if (!IsViewInMap(last_emulated_event_root_view_))
+    return;
   DispatchTouchscreenGestureEvent(last_emulated_event_root_view_, nullptr,
                                   event, ui::LatencyInfo(),
                                   event.PositionInWidget());
