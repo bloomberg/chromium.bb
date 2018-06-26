@@ -305,6 +305,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPasswordProtectionChangePasswordURL,
     prefs::kPasswordProtectionChangePasswordURL,
     base::Value::Type::STRING},
+  { key::kSafeSitesFilterBehavior,
+    prefs::kSafeSitesFilterBehavior,
+    base::Value::Type::INTEGER},
 #if defined(OS_POSIX)
   { key::kNtlmV2Enabled,
     prefs::kNtlmV2Enabled,

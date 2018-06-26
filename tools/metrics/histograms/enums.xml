@@ -13537,6 +13537,7 @@ Called by update_net_error_codes.py.-->
   <int value="452" label="ContextualSuggestionsEnabled"/>
   <int value="453" label="DeviceAutoUpdateTimeRestrictions"/>
   <int value="454" label="PromotionalTabsEnabled"/>
+  <int value="455" label="SafeSitesFilterBehavior"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

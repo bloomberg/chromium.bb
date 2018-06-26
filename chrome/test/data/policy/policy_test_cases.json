@@ -3799,5 +3799,12 @@
     "can_be_recommended": false,
     "test_policy": { "ArcGoogleLocationServicesEnabled": 1 },
     "note": "pref_mappings cannot be tested here because the policy has very unusual semantics, making a pref managed when unset."
+  },
+
+  "SafeSitesFilterBehavior": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "SafeSitesFilterBehavior": 0 },
+    "note": "pref_mappings cannot be tested here as the code where the pref will be registered is not yet ready."
   }
 }
