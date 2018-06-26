@@ -268,57 +268,29 @@ static cc::BrowserControlsState ConvertBrowserControlsState(
 
 }  // namespace
 
-// static
-std::unique_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
-    RenderWidgetCompositorDelegate* delegate,
-    CompositorDependencies* compositor_deps) {
-  std::unique_ptr<RenderWidgetCompositor> compositor(
-      new RenderWidgetCompositor(delegate, compositor_deps));
-  return compositor;
-}
-
 RenderWidgetCompositor::RenderWidgetCompositor(
     RenderWidgetCompositorDelegate* delegate,
     CompositorDependencies* compositor_deps)
     : delegate_(delegate),
       compositor_deps_(compositor_deps),
       threaded_(!!compositor_deps_->GetCompositorImplThreadTaskRunner()),
-      never_visible_(false),
-      is_for_oopif_(false),
+      animation_host_(cc::AnimationHost::CreateMainInstance()),
       weak_factory_(this) {}
-
-void RenderWidgetCompositor::Initialize(
-    std::unique_ptr<cc::LayerTreeHost> layer_tree_host,
-    std::unique_ptr<cc::AnimationHost> animation_host) {
-  DCHECK(layer_tree_host);
-  DCHECK(animation_host);
-  animation_host_ = std::move(animation_host);
-  layer_tree_host_ = std::move(layer_tree_host);
-}
 
 RenderWidgetCompositor::~RenderWidgetCompositor() = default;
 
-// static
-std::unique_ptr<cc::LayerTreeHost> RenderWidgetCompositor::CreateLayerTreeHost(
-    LayerTreeHostClient* client,
-    cc::LayerTreeHostSingleThreadClient* single_thread_client,
-    cc::MutatorHost* mutator_host,
-    CompositorDependencies* deps,
-    const ScreenInfo& screen_info) {
-  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  const bool is_threaded = !!deps->GetCompositorImplThreadTaskRunner();
-  cc::LayerTreeSettings settings = GenerateLayerTreeSettings(
-      *cmd, deps, client->IsForSubframe(), screen_info, is_threaded);
-
-  std::unique_ptr<cc::LayerTreeHost> layer_tree_host;
+void RenderWidgetCompositor::Initialize(const cc::LayerTreeSettings& settings) {
+  const bool is_threaded =
+      !!compositor_deps_->GetCompositorImplThreadTaskRunner();
 
   cc::LayerTreeHost::InitParams params;
-  params.client = client;
+  params.client = this;
   params.settings = &settings;
-  params.task_graph_runner = deps->GetTaskGraphRunner();
-  params.main_task_runner = deps->GetCompositorMainThreadTaskRunner();
-  params.mutator_host = mutator_host;
-  params.ukm_recorder_factory = deps->CreateUkmRecorderFactory();
+  params.task_graph_runner = compositor_deps_->GetTaskGraphRunner();
+  params.main_task_runner =
+      compositor_deps_->GetCompositorMainThreadTaskRunner();
+  params.mutator_host = animation_host_.get();
+  params.ukm_recorder_factory = compositor_deps_->CreateUkmRecorderFactory();
   if (base::TaskScheduler::GetInstance()) {
     // The image worker thread needs to allow waiting since it makes discardable
     // shared memory allocations which need to make synchronous calls to the
@@ -329,23 +301,22 @@ std::unique_ptr<cc::LayerTreeHost> RenderWidgetCompositor::CreateLayerTreeHost(
   }
   if (!is_threaded) {
     // Single-threaded layout tests.
-    layer_tree_host =
-        cc::LayerTreeHost::CreateSingleThreaded(single_thread_client, &params);
+    layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   } else {
-    layer_tree_host = cc::LayerTreeHost::CreateThreaded(
-        deps->GetCompositorImplThreadTaskRunner(), &params);
+    layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(
+        compositor_deps_->GetCompositorImplThreadTaskRunner(), &params);
   }
-
-  return layer_tree_host;
 }
 
 // static
 cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
-    const base::CommandLine& cmd,
     CompositorDependencies* compositor_deps,
     bool is_for_subframe,
-    const ScreenInfo& screen_info,
-    bool is_threaded) {
+    const ScreenInfo& screen_info) {
+  const bool is_threaded =
+      !!compositor_deps->GetCompositorImplThreadTaskRunner();
+
+  const base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
   cc::LayerTreeSettings settings;
 
   settings.resource_settings.use_r16_texture =
@@ -1260,10 +1231,6 @@ void RenderWidgetCompositor::DidCompletePageScaleAnimation() {
   delegate_->DidCompletePageScaleAnimation();
 }
 
-bool RenderWidgetCompositor::IsForSubframe() {
-  return is_for_oopif_;
-}
-
 void RenderWidgetCompositor::DidPresentCompositorFrame(
     uint32_t frame_token,
     const gfx::PresentationFeedback& feedback) {
@@ -1296,10 +1263,6 @@ void RenderWidgetCompositor::SetFrameSinkId(
 void RenderWidgetCompositor::SetRasterColorSpace(
     const gfx::ColorSpace& color_space) {
   layer_tree_host_->SetRasterColorSpace(color_space);
-}
-
-void RenderWidgetCompositor::SetIsForOopif(bool is_for_oopif) {
-  is_for_oopif_ = is_for_oopif;
 }
 
 void RenderWidgetCompositor::ClearCachesOnNextCommit() {

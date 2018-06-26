@@ -477,8 +477,6 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override {}
 
-  bool IsForSubframe() override { return false; }
-
  private:
   explicit LayerTreeHostClientForTesting(TestHooks* test_hooks)
       : test_hooks_(test_hooks) {}
