@@ -86,6 +86,23 @@ interface PublicKeyCredential : Credential
 interface AuthenticatorResponse
 interface AuthenticatorAttestationResponse : AuthenticatorResponse
 
+# Picture-in-Picture API is disabled in Android WebView, crbug.com/852449
+interface PictureInPictureWindow : EventTarget
+interface Document : Node
+    method exitPictureInPicture
+    getter pictureInPictureElement
+    getter pictureInPictureEnabled
+interface ShadowRoot : DocumentFragment
+    getter pictureInPictureElement
+interface HTMLVideoElement : HTMLMediaElement
+    getter disablePictureInPicture
+    setter disablePictureInPicture
+    method requestPictureInPicture
+    getter onenterpictureinpicture
+    setter onenterpictureinpicture
+    getter onleavepictureinpicture
+    setter onleavepictureinpicture
+
 [GLOBAL OBJECT]
     method openDatabase
     attribute eventSender                    # test only
