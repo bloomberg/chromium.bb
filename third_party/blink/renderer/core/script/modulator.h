@@ -65,6 +65,23 @@ class CORE_EXPORT ModuleTreeClient
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetching-scripts-is-top-level
 enum class ModuleGraphLevel { kTopLevelModuleFetch, kDependentModuleFetch };
 
+// spec: "custom peform the fetch hook"
+// https://html.spec.whatwg.org/multipage/webappapis.html#fetching-scripts-perform-fetch
+enum class ModuleScriptCustomFetchType {
+  // Fetch module scripts without invoking custom fetch steps.
+  kNone,
+
+  // Perform custom fetch steps for worker's constructor defined in the HTML
+  // spec:
+  // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
+  kWorkerConstructor,
+
+  // Perform custom fetch steps for Worklet's addModule() function defined in
+  // the Worklet spec:
+  // https://drafts.css-houdini.org/worklets/#fetch-a-worklet-script
+  kWorkletAddModule
+};
+
 // A Modulator is an interface for "environment settings object" concept for
 // module scripts.
 // https://html.spec.whatwg.org/multipage/webappapis.html#environment-settings-object
@@ -103,6 +120,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       const ScriptFetchOptions&,
+      ModuleScriptCustomFetchType,
       ModuleTreeClient*) = 0;
 
   // Asynchronously retrieve a module script from the module map, or fetch it
@@ -113,6 +131,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
       const ModuleScriptFetchRequest&,
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       ModuleGraphLevel,
+      ModuleScriptCustomFetchType,
       SingleModuleClient*) = 0;
 
   virtual void FetchDescendantsForInlineScript(
@@ -168,7 +187,8 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual ScriptValue ExecuteModule(const ModuleScript*,
                                     CaptureEvalErrorFlag) = 0;
 
-  virtual ModuleScriptFetcher* CreateModuleScriptFetcher() = 0;
+  virtual ModuleScriptFetcher* CreateModuleScriptFetcher(
+      ModuleScriptCustomFetchType) = 0;
 };
 
 }  // namespace blink

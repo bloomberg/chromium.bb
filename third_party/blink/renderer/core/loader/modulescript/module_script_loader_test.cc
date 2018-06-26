@@ -94,13 +94,17 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
     return requests_;
   }
 
-  ModuleScriptFetcher* CreateModuleScriptFetcher() override {
+  ModuleScriptFetcher* CreateModuleScriptFetcher(
+      ModuleScriptCustomFetchType custom_fetch_type) override {
     auto* execution_context = ExecutionContext::From(script_state_.get());
     if (execution_context->IsWorkletGlobalScope()) {
+      EXPECT_EQ(ModuleScriptCustomFetchType::kWorkletAddModule,
+                custom_fetch_type);
       auto* global_scope = ToWorkletGlobalScope(execution_context);
       return new WorkletModuleScriptFetcher(
           Fetcher(), global_scope->GetModuleResponsesMap());
     }
+    EXPECT_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);
     return new DocumentModuleScriptFetcher(Fetcher());
   }
 
@@ -132,10 +136,13 @@ class ModuleScriptLoaderTest : public PageTestBase {
   void InitializeForDocument();
   void InitializeForWorklet();
 
-  void TestFetchDataURL(TestModuleScriptLoaderClient*);
-  void TestInvalidSpecifier(TestModuleScriptLoaderClient*);
-  void TestFetchInvalidURL(TestModuleScriptLoaderClient*);
-  void TestFetchURL(TestModuleScriptLoaderClient*);
+  void TestFetchDataURL(ModuleScriptCustomFetchType,
+                        TestModuleScriptLoaderClient*);
+  void TestInvalidSpecifier(ModuleScriptCustomFetchType,
+                            TestModuleScriptLoaderClient*);
+  void TestFetchInvalidURL(ModuleScriptCustomFetchType,
+                           TestModuleScriptLoaderClient*);
+  void TestFetchURL(ModuleScriptCustomFetchType, TestModuleScriptLoaderClient*);
 
   ModuleScriptLoaderTestModulator* GetModulator() { return modulator_.Get(); }
 
@@ -191,20 +198,21 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
 }
 
 void ModuleScriptLoaderTest::TestFetchDataURL(
+    ModuleScriptCustomFetchType custom_fetch_type,
     TestModuleScriptLoaderClient* client) {
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url("data:text/javascript,export default 'grapes';");
   FetchClientSettingsObjectSnapshot fetch_client_settings_object(GetDocument());
-  ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
-                            fetch_client_settings_object,
-                            ModuleGraphLevel::kTopLevelModuleFetch,
-                            GetModulator(), registry, client);
+  ModuleScriptLoader::Fetch(
+      ModuleScriptFetchRequest::CreateForTest(url),
+      fetch_client_settings_object, ModuleGraphLevel::kTopLevelModuleFetch,
+      GetModulator(), custom_fetch_type, registry, client);
 }
 
 TEST_F(ModuleScriptLoaderTest, FetchDataURL) {
   InitializeForDocument();
   TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
-  TestFetchDataURL(client);
+  TestFetchDataURL(ModuleScriptCustomFetchType::kNone, client);
 
   EXPECT_TRUE(client->WasNotifyFinished())
       << "ModuleScriptLoader should finish synchronously.";
@@ -216,7 +224,7 @@ TEST_F(ModuleScriptLoaderTest, FetchDataURL) {
 TEST_F(ModuleScriptLoaderTest, FetchDataURL_OnWorklet) {
   InitializeForWorklet();
   TestModuleScriptLoaderClient* client1 = new TestModuleScriptLoaderClient;
-  TestFetchDataURL(client1);
+  TestFetchDataURL(ModuleScriptCustomFetchType::kWorkletAddModule, client1);
 
   EXPECT_FALSE(client1->WasNotifyFinished())
       << "ModuleScriptLoader should finish asynchronously.";
@@ -230,7 +238,7 @@ TEST_F(ModuleScriptLoaderTest, FetchDataURL_OnWorklet) {
   // Try to fetch the same URL again in order to verify the case where
   // WorkletModuleResponsesMap serves a cache.
   TestModuleScriptLoaderClient* client2 = new TestModuleScriptLoaderClient;
-  TestFetchDataURL(client2);
+  TestFetchDataURL(ModuleScriptCustomFetchType::kWorkletAddModule, client2);
 
   EXPECT_FALSE(client2->WasNotifyFinished())
       << "ModuleScriptLoader should finish asynchronously.";
@@ -243,21 +251,22 @@ TEST_F(ModuleScriptLoaderTest, FetchDataURL_OnWorklet) {
 }
 
 void ModuleScriptLoaderTest::TestInvalidSpecifier(
+    ModuleScriptCustomFetchType custom_fetch_type,
     TestModuleScriptLoaderClient* client) {
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url("data:text/javascript,import 'invalid';export default 'grapes';");
   FetchClientSettingsObjectSnapshot fetch_client_settings_object(GetDocument());
   GetModulator()->SetModuleRequests({"invalid"});
-  ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
-                            fetch_client_settings_object,
-                            ModuleGraphLevel::kTopLevelModuleFetch,
-                            GetModulator(), registry, client);
+  ModuleScriptLoader::Fetch(
+      ModuleScriptFetchRequest::CreateForTest(url),
+      fetch_client_settings_object, ModuleGraphLevel::kTopLevelModuleFetch,
+      GetModulator(), custom_fetch_type, registry, client);
 }
 
 TEST_F(ModuleScriptLoaderTest, InvalidSpecifier) {
   InitializeForDocument();
   TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
-  TestInvalidSpecifier(client);
+  TestInvalidSpecifier(ModuleScriptCustomFetchType::kNone, client);
 
   EXPECT_TRUE(client->WasNotifyFinished())
       << "ModuleScriptLoader should finish synchronously.";
@@ -269,7 +278,7 @@ TEST_F(ModuleScriptLoaderTest, InvalidSpecifier) {
 TEST_F(ModuleScriptLoaderTest, InvalidSpecifier_OnWorklet) {
   InitializeForWorklet();
   TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
-  TestInvalidSpecifier(client);
+  TestInvalidSpecifier(ModuleScriptCustomFetchType::kWorkletAddModule, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleScriptLoader should finish asynchronously.";
@@ -282,21 +291,22 @@ TEST_F(ModuleScriptLoaderTest, InvalidSpecifier_OnWorklet) {
 }
 
 void ModuleScriptLoaderTest::TestFetchInvalidURL(
+    ModuleScriptCustomFetchType custom_fetch_type,
     TestModuleScriptLoaderClient* client) {
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url;
   EXPECT_FALSE(url.IsValid());
   FetchClientSettingsObjectSnapshot fetch_client_settings_object(GetDocument());
-  ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
-                            fetch_client_settings_object,
-                            ModuleGraphLevel::kTopLevelModuleFetch,
-                            GetModulator(), registry, client);
+  ModuleScriptLoader::Fetch(
+      ModuleScriptFetchRequest::CreateForTest(url),
+      fetch_client_settings_object, ModuleGraphLevel::kTopLevelModuleFetch,
+      GetModulator(), custom_fetch_type, registry, client);
 }
 
 TEST_F(ModuleScriptLoaderTest, FetchInvalidURL) {
   InitializeForDocument();
   TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
-  TestFetchInvalidURL(client);
+  TestFetchInvalidURL(ModuleScriptCustomFetchType::kNone, client);
 
   EXPECT_TRUE(client->WasNotifyFinished())
       << "ModuleScriptLoader should finish synchronously.";
@@ -306,7 +316,7 @@ TEST_F(ModuleScriptLoaderTest, FetchInvalidURL) {
 TEST_F(ModuleScriptLoaderTest, FetchInvalidURL_OnWorklet) {
   InitializeForWorklet();
   TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
-  TestFetchInvalidURL(client);
+  TestFetchInvalidURL(ModuleScriptCustomFetchType::kWorkletAddModule, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleScriptLoader should finish asynchronously.";
@@ -317,6 +327,7 @@ TEST_F(ModuleScriptLoaderTest, FetchInvalidURL_OnWorklet) {
 }
 
 void ModuleScriptLoaderTest::TestFetchURL(
+    ModuleScriptCustomFetchType custom_fetch_type,
     TestModuleScriptLoaderClient* client) {
   KURL url("https://example.test/module.js");
   URLTestHelpers::RegisterMockedURLLoad(
@@ -324,16 +335,16 @@ void ModuleScriptLoaderTest::TestFetchURL(
   FetchClientSettingsObjectSnapshot fetch_client_settings_object(GetDocument());
 
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
-  ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
-                            fetch_client_settings_object,
-                            ModuleGraphLevel::kTopLevelModuleFetch,
-                            GetModulator(), registry, client);
+  ModuleScriptLoader::Fetch(
+      ModuleScriptFetchRequest::CreateForTest(url),
+      fetch_client_settings_object, ModuleGraphLevel::kTopLevelModuleFetch,
+      GetModulator(), custom_fetch_type, registry, client);
 }
 
 TEST_F(ModuleScriptLoaderTest, FetchURL) {
   InitializeForDocument();
   TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
-  TestFetchURL(client);
+  TestFetchURL(ModuleScriptCustomFetchType::kNone, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleScriptLoader unexpectedly finished synchronously.";
@@ -346,7 +357,7 @@ TEST_F(ModuleScriptLoaderTest, FetchURL) {
 TEST_F(ModuleScriptLoaderTest, FetchURL_OnWorklet) {
   InitializeForWorklet();
   TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
-  TestFetchURL(client);
+  TestFetchURL(ModuleScriptCustomFetchType::kWorkletAddModule, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleScriptLoader unexpectedly finished synchronously.";

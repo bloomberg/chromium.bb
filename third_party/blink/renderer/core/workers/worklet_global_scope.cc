@@ -104,7 +104,8 @@ void WorkletGlobalScope::FetchAndInvokeScript(
   WebURLRequest::RequestContext destination =
       WebURLRequest::kRequestContextScript;
   FetchModuleScript(module_url_record, outside_settings_object, destination,
-                    credentials_mode, client);
+                    credentials_mode,
+                    ModuleScriptCustomFetchType::kWorkletAddModule, client);
 }
 
 KURL WorkletGlobalScope::CompleteURL(const String& url) const {

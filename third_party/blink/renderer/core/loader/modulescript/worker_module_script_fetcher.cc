@@ -53,12 +53,6 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
     return;
   }
 
-  // TODO(nhiroki): This branch condition must be satisfied only for worker's
-  // top-level module script fetch, but actually this is also satisfied for
-  // dynamic import because it's also defined as top-level module script fetch
-  // in the HTML spec. This results in overriding the referrer policy of the
-  // global scope. We should fix this before enabling module workers by default.
-  // (https://crbug.com/842553)
   if (level_ == ModuleGraphLevel::kTopLevelModuleFetch) {
     // TODO(nhiroki, hiroshige): Access to WorkerGlobalScope in module loaders
     // is a layering violation. Also, updating WorkerGlobalScope ('module map

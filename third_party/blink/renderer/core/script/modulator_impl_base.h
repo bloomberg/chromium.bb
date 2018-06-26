@@ -54,6 +54,7 @@ class ModulatorImplBase : public Modulator {
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       const ScriptFetchOptions&,
+      ModuleScriptCustomFetchType,
       ModuleTreeClient*) override;
   void FetchDescendantsForInlineScript(
       ModuleScript*,
@@ -64,6 +65,7 @@ class ModulatorImplBase : public Modulator {
       const ModuleScriptFetchRequest&,
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       ModuleGraphLevel,
+      ModuleScriptCustomFetchType,
       SingleModuleClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   bool HasValidContext() override;

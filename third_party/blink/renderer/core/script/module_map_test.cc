@@ -130,7 +130,8 @@ class ModuleMapTestModulator final : public DummyModulator {
     Member<ModuleMapTestModulator> modulator_;
   };
 
-  ModuleScriptFetcher* CreateModuleScriptFetcher() override {
+  ModuleScriptFetcher* CreateModuleScriptFetcher(
+      ModuleScriptCustomFetchType) override {
     return new TestModuleScriptFetcher(this);
   }
 
@@ -211,9 +212,10 @@ TEST_F(ModuleMapTest, sequentialRequests) {
 
   // First request
   TestSingleModuleClient* client = new TestSingleModuleClient;
-  Map()->FetchSingleModuleScript(
-      ModuleScriptFetchRequest::CreateForTest(url), settings_object,
-      ModuleGraphLevel::kTopLevelModuleFetch, client);
+  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
+                                 settings_object,
+                                 ModuleGraphLevel::kTopLevelModuleFetch,
+                                 ModuleScriptCustomFetchType::kNone, client);
   Modulator()->ResolveFetches();
   EXPECT_FALSE(client->WasNotifyFinished())
       << "fetchSingleModuleScript shouldn't complete synchronously";
@@ -228,9 +230,10 @@ TEST_F(ModuleMapTest, sequentialRequests) {
 
   // Secondary request
   TestSingleModuleClient* client2 = new TestSingleModuleClient;
-  Map()->FetchSingleModuleScript(
-      ModuleScriptFetchRequest::CreateForTest(url), settings_object,
-      ModuleGraphLevel::kTopLevelModuleFetch, client2);
+  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
+                                 settings_object,
+                                 ModuleGraphLevel::kTopLevelModuleFetch,
+                                 ModuleScriptCustomFetchType::kNone, client2);
   Modulator()->ResolveFetches();
   EXPECT_FALSE(client2->WasNotifyFinished())
       << "fetchSingleModuleScript shouldn't complete synchronously";
@@ -255,15 +258,17 @@ TEST_F(ModuleMapTest, concurrentRequestsShouldJoin) {
 
   // First request
   TestSingleModuleClient* client = new TestSingleModuleClient;
-  Map()->FetchSingleModuleScript(
-      ModuleScriptFetchRequest::CreateForTest(url), settings_object,
-      ModuleGraphLevel::kTopLevelModuleFetch, client);
+  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
+                                 settings_object,
+                                 ModuleGraphLevel::kTopLevelModuleFetch,
+                                 ModuleScriptCustomFetchType::kNone, client);
 
   // Secondary request (which should join the first request)
   TestSingleModuleClient* client2 = new TestSingleModuleClient;
-  Map()->FetchSingleModuleScript(
-      ModuleScriptFetchRequest::CreateForTest(url), settings_object,
-      ModuleGraphLevel::kTopLevelModuleFetch, client2);
+  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
+                                 settings_object,
+                                 ModuleGraphLevel::kTopLevelModuleFetch,
+                                 ModuleScriptCustomFetchType::kNone, client2);
 
   Modulator()->ResolveFetches();
   EXPECT_FALSE(client->WasNotifyFinished())

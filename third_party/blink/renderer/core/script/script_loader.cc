@@ -719,7 +719,7 @@ void ScriptLoader::FetchModuleScriptTree(
   auto* module_tree_client = ModulePendingScriptTreeClient::Create();
   modulator->FetchTree(url, settings_object,
                        WebURLRequest::kRequestContextScript, options,
-                       module_tree_client);
+                       ModuleScriptCustomFetchType::kNone, module_tree_client);
   prepared_pending_script_ = ModulePendingScript::Create(
       element_, module_tree_client, is_external_script_);
 }

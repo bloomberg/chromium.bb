@@ -77,7 +77,9 @@ void DedicatedWorkerGlobalScope::ImportModuleScript(
   // settings, destination, the value of the credentials member of options, and
   // inside settings."
   FetchModuleScript(module_url_record, outside_settings_object, destination,
-                    credentials_mode, new WorkerModuleTreeClient(modulator));
+                    credentials_mode,
+                    ModuleScriptCustomFetchType::kWorkerConstructor,
+                    new WorkerModuleTreeClient(modulator));
 }
 
 void DedicatedWorkerGlobalScope::postMessage(

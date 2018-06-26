@@ -112,6 +112,7 @@ void ModuleMap::FetchSingleModuleScript(
     const ModuleScriptFetchRequest& request,
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     ModuleGraphLevel level,
+    ModuleScriptCustomFetchType custom_fetch_type,
     SingleModuleClient* client) {
   // <spec step="1">Let moduleMap be module map settings object's module
   // map.</spec>
@@ -129,7 +130,8 @@ void ModuleMap::FetchSingleModuleScript(
     // Steps 4-9 loads a new single module script.
     // Delegates to ModuleScriptLoader via Modulator.
     ModuleScriptLoader::Fetch(request, fetch_client_settings_object, level,
-                              modulator_, loader_registry_, entry);
+                              modulator_, custom_fetch_type, loader_registry_,
+                              entry);
   }
   DCHECK(entry);
 

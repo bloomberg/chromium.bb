@@ -470,6 +470,7 @@ class ModulePreloadTestModulator final : public DummyModulator {
       const ModuleScriptFetchRequest& request,
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       ModuleGraphLevel,
+      ModuleScriptCustomFetchType custom_fetch_type,
       SingleModuleClient*) override {
     fetched_ = true;
 
@@ -481,6 +482,7 @@ class ModulePreloadTestModulator final : public DummyModulator {
     EXPECT_EQ(Referrer::NoReferrer(), request.GetReferrer().referrer);
     EXPECT_EQ(params_->integrity,
               request.Options().GetIntegrityAttributeValue());
+    EXPECT_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);
   }
 
   bool fetched() const { return fetched_; }

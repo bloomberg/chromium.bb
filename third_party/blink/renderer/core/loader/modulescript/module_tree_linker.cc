@@ -24,10 +24,12 @@ void ModuleTreeLinker::Fetch(
     WebURLRequest::RequestContext destination,
     const ScriptFetchOptions& options,
     Modulator* modulator,
+    ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeLinkerRegistry* registry,
     ModuleTreeClient* client) {
-  ModuleTreeLinker* fetcher = new ModuleTreeLinker(
-      fetch_client_settings_object, destination, modulator, registry, client);
+  ModuleTreeLinker* fetcher =
+      new ModuleTreeLinker(fetch_client_settings_object, destination, modulator,
+                           custom_fetch_type, registry, client);
   registry->AddFetcher(fetcher);
   fetcher->FetchRoot(url, options);
   DCHECK(fetcher->IsFetching());
@@ -38,11 +40,13 @@ void ModuleTreeLinker::FetchDescendantsForInlineScript(
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     Modulator* modulator,
+    ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeLinkerRegistry* registry,
     ModuleTreeClient* client) {
   DCHECK(module_script);
-  ModuleTreeLinker* fetcher = new ModuleTreeLinker(
-      fetch_client_settings_object, destination, modulator, registry, client);
+  ModuleTreeLinker* fetcher =
+      new ModuleTreeLinker(fetch_client_settings_object, destination, modulator,
+                           custom_fetch_type, registry, client);
   registry->AddFetcher(fetcher);
   fetcher->FetchRootInline(module_script);
   DCHECK(fetcher->IsFetching());
@@ -52,11 +56,13 @@ ModuleTreeLinker::ModuleTreeLinker(
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     Modulator* modulator,
+    ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeLinkerRegistry* registry,
     ModuleTreeClient* client)
     : fetch_client_settings_object_(fetch_client_settings_object),
       destination_(destination),
       modulator_(modulator),
+      custom_fetch_type_(custom_fetch_type),
       registry_(registry),
       client_(client) {
   CHECK(modulator);
@@ -225,7 +231,8 @@ void ModuleTreeLinker::InitiateInternalModuleScriptGraphFetching(
   ++num_incomplete_fetches_;
 
   // [IMSGF] Step 2. Fetch a single module script given ...
-  modulator_->FetchSingle(request, fetch_client_settings_object_, level, this);
+  modulator_->FetchSingle(request, fetch_client_settings_object_, level,
+                          custom_fetch_type_, this);
 
   // [IMSGF] Step 3-- are executed when NotifyModuleLoadFinished() is called.
 }

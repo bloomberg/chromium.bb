@@ -14,7 +14,9 @@ ModulatorImplBase* DocumentModulatorImpl::Create(
   return new DocumentModulatorImpl(std::move(script_state), resource_fetcher);
 }
 
-ModuleScriptFetcher* DocumentModulatorImpl::CreateModuleScriptFetcher() {
+ModuleScriptFetcher* DocumentModulatorImpl::CreateModuleScriptFetcher(
+    ModuleScriptCustomFetchType custom_fetch_type) {
+  DCHECK_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);
   return new DocumentModuleScriptFetcher(fetcher_);
 }
 
