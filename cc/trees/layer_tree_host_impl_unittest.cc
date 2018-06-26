@@ -691,9 +691,9 @@ class LayerTreeHostImplTest : public testing::Test,
 
     SnapContainerData container_data(
         ScrollSnapType(false, SnapAxis::kBoth, SnapStrictness::kMandatory),
-        gfx::ScrollOffset(300, 300));
-    SnapAreaData area_data(SnapAxis::kBoth, gfx::ScrollOffset(50, 50),
-                           gfx::RectF(0, 0, 300, 300), false);
+        gfx::RectF(0, 0, 200, 200), gfx::ScrollOffset(300, 300));
+    SnapAreaData area_data(ScrollSnapAlign(SnapAlignment::kStart),
+                           gfx::RectF(50, 50, 100, 100), false);
     container_data.AddSnapAreaData(area_data);
     overflow->test_properties()->snap_container_data.emplace(container_data);
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
