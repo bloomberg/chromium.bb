@@ -18,6 +18,7 @@ bool StructTraits<viz::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs>::
   }
   out->source_id = data.source_id();
   out->sequence_number = data.sequence_number();
+  out->trace_id = data.trace_id();
   // TODO(eseckler): Use EnumTraits for |type|.
   out->type = static_cast<viz::BeginFrameArgs::BeginFrameArgsType>(data.type());
   out->on_critical_path = data.on_critical_path();
@@ -33,6 +34,7 @@ bool StructTraits<viz::mojom::BeginFrameAckDataView, viz::BeginFrameAck>::Read(
     return false;
   out->source_id = data.source_id();
   out->sequence_number = data.sequence_number();
+  out->trace_id = data.trace_id();
   out->has_damage = data.has_damage();
   return true;
 }

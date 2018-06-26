@@ -276,6 +276,11 @@ CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
     mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback callback) {
   TRACE_EVENT1("viz", "CompositorFrameSinkSupport::MaybeSubmitCompositorFrame",
                "FrameSinkId", frame_sink_id_.ToString());
+  TRACE_EVENT_WITH_FLOW1(
+      "viz,benchmark", "Graphics.Pipeline",
+      TRACE_ID_GLOBAL(frame.metadata.begin_frame_ack.trace_id),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "ReceiveCompositorFrame");
   DCHECK(local_surface_id.is_valid());
   DCHECK(!frame.render_pass_list.empty());
   DCHECK(!frame.size_in_pixels().IsEmpty());
@@ -500,8 +505,15 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
     HandleCallback();
   }
 
-  if (client_ && client_needs_begin_frame_)
-    client_->OnBeginFrame(args);
+  if (client_ && client_needs_begin_frame_) {
+    BeginFrameArgs copy_args = args;
+    copy_args.trace_id = ComputeTraceId();
+    TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+                           TRACE_ID_GLOBAL(copy_args.trace_id),
+                           TRACE_EVENT_FLAG_FLOW_OUT, "step",
+                           "IssueBeginFrame");
+    client_->OnBeginFrame(copy_args);
+  }
 }
 
 const BeginFrameArgs& CompositorFrameSinkSupport::LastUsedBeginFrameArgs()
@@ -632,6 +644,15 @@ void CompositorFrameSinkSupport::OnAggregatedDamage(
     client->OnFrameDamaged(frame_size_in_pixels, damage_rect,
                            expected_display_time, frame.metadata);
   }
+}
+
+int64_t CompositorFrameSinkSupport::ComputeTraceId() {
+  // This is losing some info, but should normally be sufficient to avoid
+  // collisions.
+  ++trace_sequence_;
+  uint64_t client = (frame_sink_id_.client_id() & 0xffff);
+  uint64_t sink = (frame_sink_id_.sink_id() & 0xffff);
+  return (client << 48) | (sink << 32) | trace_sequence_;
 }
 
 }  // namespace viz

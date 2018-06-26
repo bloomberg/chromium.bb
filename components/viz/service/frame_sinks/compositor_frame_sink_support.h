@@ -197,6 +197,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // BeginFrame and FrameAck are done.
   void HandleCallback();
 
+  int64_t ComputeTraceId();
+
   mojom::CompositorFrameSinkClient* const client_;
 
   FrameSinkManagerImpl* const frame_sink_manager_;
@@ -277,6 +279,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       compositor_frame_callback_;
   bool callback_received_begin_frame_ = true;
   bool callback_received_receive_ack_ = true;
+  uint32_t trace_sequence_ = 0;
 
   base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_;
 

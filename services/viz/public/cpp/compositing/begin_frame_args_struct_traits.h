@@ -32,6 +32,10 @@ struct StructTraits<viz::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs> {
     return args.source_id;
   }
 
+  static int64_t trace_id(const viz::BeginFrameArgs& args) {
+    return args.trace_id;
+  }
+
   static viz::mojom::BeginFrameArgsType type(const viz::BeginFrameArgs& args) {
     return static_cast<viz::mojom::BeginFrameArgsType>(args.type);
   }
@@ -56,6 +60,10 @@ struct StructTraits<viz::mojom::BeginFrameAckDataView, viz::BeginFrameAck> {
 
   static uint64_t source_id(const viz::BeginFrameAck& ack) {
     return ack.source_id;
+  }
+
+  static int64_t trace_id(const viz::BeginFrameAck& ack) {
+    return ack.trace_id;
   }
 
   static bool has_damage(const viz::BeginFrameAck& ack) {

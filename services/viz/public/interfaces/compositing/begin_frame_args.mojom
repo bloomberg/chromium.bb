@@ -20,6 +20,7 @@ struct BeginFrameArgs {
   mojo_base.mojom.TimeDelta interval;
   uint64 source_id;
   uint64 sequence_number;
+  int64 trace_id;
   BeginFrameArgsType type;
   bool on_critical_path;
   bool animate_only;
@@ -29,5 +30,6 @@ struct BeginFrameArgs {
 struct BeginFrameAck {
   uint64 source_id;
   uint64 sequence_number;
+  int64 trace_id;
   bool has_damage;
 };
