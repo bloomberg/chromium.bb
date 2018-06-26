@@ -42,8 +42,6 @@ class CORE_EXPORT EventQueue final
   USING_GARBAGE_COLLECTED_MIXIN(EventQueue);
 
  public:
-  // TODO(hajimehoshi): TaskType should be determined based on an event instead
-  // of specifying here.
   static EventQueue* Create(ExecutionContext*, TaskType);
   ~EventQueue();
 
