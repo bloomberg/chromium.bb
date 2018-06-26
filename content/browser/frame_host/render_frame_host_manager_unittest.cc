@@ -392,11 +392,10 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     bool current_is_view_source_mode = current_entry ?
         current_entry->IsViewSourceMode() : new_entry->IsViewSourceMode();
     return manager->ShouldSwapBrowsingInstancesForNavigation(
-        current_effective_url,
-        current_is_view_source_mode,
+        current_effective_url, current_is_view_source_mode,
         new_entry->site_instance(),
         SiteInstanceImpl::GetEffectiveURL(browser_context, new_entry->GetURL()),
-        new_entry->IsViewSourceMode());
+        new_entry->IsViewSourceMode(), false);
   }
 
   // Creates a test RenderViewHost that's swapped out.

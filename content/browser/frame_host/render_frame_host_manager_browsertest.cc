@@ -54,6 +54,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/test_content_browser_client.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -4347,6 +4348,106 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
   EXPECT_NE(
       GURL(kUnreachableWebDataURL),
       shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+}
+
+// A test ContentBrowserClient implementation which enforces
+// BrowsingInstance swap on every navigation. It is used to verify that
+// reloading of an error page to an URL that requires BrowsingInstance swap
+// works correctly.
+class BrowsingInstanceSwapContentBrowserClient
+    : public TestContentBrowserClient {
+ public:
+  BrowsingInstanceSwapContentBrowserClient() = default;
+
+  bool ShouldIsolateErrorPage(bool in_main_frame) override {
+    return in_main_frame;
+  }
+
+  bool ShouldSwapBrowsingInstancesForNavigation(
+      content::SiteInstance* site_instance,
+      const GURL& current_url,
+      const GURL& new_url) override {
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowsingInstanceSwapContentBrowserClient);
+};
+
+// Test to verify that reloading of an error page which resulted from a
+// navigation to an URL which requires a BrowsingInstance swap, correcly
+// reloads in the same SiteInstance for the error page.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ErrorPageNavigationReloadBrowsingInstanceSwap) {
+  StartEmbeddedServer();
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  GURL error_url(embedded_test_server()->GetURL("/empty.html"));
+  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+      SetupRequestFailForURL(error_url);
+  NavigationControllerImpl& nav_controller =
+      static_cast<NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  // Start with a successful navigation to a document and verify there is
+  // only one entry in session history.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  scoped_refptr<SiteInstance> success_site_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+  EXPECT_EQ(1, nav_controller.GetEntryCount());
+
+  BrowsingInstanceSwapContentBrowserClient content_browser_client;
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
+
+  // Navigate to an url resulting in an error page and ensure a new entry
+  // was added to session history.
+  EXPECT_FALSE(NavigateToURL(shell(), error_url));
+  EXPECT_EQ(2, nav_controller.GetEntryCount());
+
+  scoped_refptr<SiteInstance> initial_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+  EXPECT_EQ(GURL(kUnreachableWebDataURL), initial_instance->GetSiteURL());
+  EXPECT_TRUE(
+      success_site_instance->IsRelatedSiteInstance(initial_instance.get()));
+
+  // Reload of the error page that still results in an error should stay in
+  // the same SiteInstance. Ensure this works for both browser-initiated
+  // reloads and renderer-initiated ones.
+  {
+    TestNavigationObserver reload_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().Reload(ReloadType::NORMAL, false);
+    reload_observer.Wait();
+    EXPECT_FALSE(reload_observer.last_navigation_succeeded());
+    EXPECT_EQ(2, nav_controller.GetEntryCount());
+    EXPECT_EQ(initial_instance,
+              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+  }
+  {
+    TestNavigationObserver reload_observer(shell()->web_contents());
+    EXPECT_TRUE(ExecuteScript(shell(), "location.reload();"));
+    reload_observer.Wait();
+    EXPECT_FALSE(reload_observer.last_navigation_succeeded());
+    EXPECT_EQ(2, nav_controller.GetEntryCount());
+    EXPECT_EQ(initial_instance,
+              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+  }
+
+  // Allow the navigation to succeed and ensure it swapped to a non-related
+  // SiteInstance.
+  url_interceptor.reset();
+  {
+    TestNavigationObserver reload_observer(shell()->web_contents());
+    EXPECT_TRUE(ExecuteScript(shell(), "location.reload();"));
+    reload_observer.Wait();
+    EXPECT_TRUE(reload_observer.last_navigation_succeeded());
+    EXPECT_EQ(2, nav_controller.GetEntryCount());
+    EXPECT_FALSE(initial_instance->IsRelatedSiteInstance(
+        shell()->web_contents()->GetMainFrame()->GetSiteInstance()));
+    EXPECT_FALSE(success_site_instance->IsRelatedSiteInstance(
+        shell()->web_contents()->GetMainFrame()->GetSiteInstance()));
+  }
+
+  SetBrowserClientForTesting(old_client);
 }
 
 // Helper class to simplify testing of unload handlers.  It allows waiting for
