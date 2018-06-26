@@ -5,6 +5,7 @@
 #include "chrome/browser/plugins/flash_download_interception.h"
 
 #include "base/bind.h"
+#include "base/no_destructor.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -28,16 +29,27 @@ using content::NavigationThrottle;
 
 namespace {
 
-// Regexes matching
-const char kGetFlashURLCanonicalRegex[] = "(?i)get2?\\.adobe\\.com/.*flash.*";
-const char kGetFlashURLSecondaryGoRegex[] =
-    "(?i)(www\\.)?(adobe|macromedia)\\.com/go/"
-    "((?i).*get[-_]?flash|getfp10android|.*fl(ash)player|.*flashpl|"
-    ".*flash_player|flash_completion|flashpm|.*flashdownload|d65_flplayer|"
-    "fp_jp|runtimes_fp|[a-z_-]{3,6}h-m-a-?2|chrome|download_player|"
-    "gnav_fl|pdcredirect).*";
-const char kGetFlashURLSecondaryDownloadRegex[] =
-    "(?i)(www\\.)?(adobe|macromedia)\\.com/shockwave/download/download.cgi";
+const RE2& GetFlashURLCanonicalRegex() {
+  static const base::NoDestructor<RE2> re("(?i)get2?\\.adobe\\.com/.*flash.*");
+  return *re;
+}
+
+const RE2& GetFlashURLSecondaryGoRegex() {
+  static const base::NoDestructor<RE2> re(
+      "(?i)(www\\.)?(adobe|macromedia)\\.com/go/"
+      "((?i).*get[-_]?flash|getfp10android|.*fl(ash)player|.*flashpl|"
+      ".*flash_player|flash_completion|flashpm|.*flashdownload|d65_flplayer|"
+      "fp_jp|runtimes_fp|[a-z_-]{3,6}h-m-a-?2|chrome|download_player|"
+      "gnav_fl|pdcredirect).*");
+  return *re;
+}
+
+const RE2& GetFlashURLSecondaryDownloadRegex() {
+  static const base::NoDestructor<RE2> re(
+      "(?i)(www\\.)?(adobe|macromedia)\\.com/shockwave/download/download.cgi");
+  return *re;
+}
+
 const char kGetFlashURLSecondaryDownloadQuery[] =
     "P1_Prod_Version=ShockwaveFlash";
 
@@ -113,12 +125,12 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
       target_url_str.find("macromedia.com") == std::string::npos)
     return false;
 
-  if (RE2::PartialMatch(source_url_str, kGetFlashURLCanonicalRegex))
+  if (RE2::PartialMatch(source_url_str, GetFlashURLCanonicalRegex()))
     return false;
 
-  if (RE2::FullMatch(target_url_str, kGetFlashURLCanonicalRegex) ||
-      RE2::FullMatch(target_url_str, kGetFlashURLSecondaryGoRegex) ||
-      (RE2::FullMatch(target_url_str, kGetFlashURLSecondaryDownloadRegex) &&
+  if (RE2::FullMatch(target_url_str, GetFlashURLCanonicalRegex()) ||
+      RE2::FullMatch(target_url_str, GetFlashURLSecondaryGoRegex()) ||
+      (RE2::FullMatch(target_url_str, GetFlashURLSecondaryDownloadRegex()) &&
        target_url.query() == kGetFlashURLSecondaryDownloadQuery)) {
     ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
         host_content_settings_map, url::Origin::Create(source_url), source_url,
