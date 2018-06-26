@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.signin;
 
 import android.content.Context;
-import android.content.Intent;
-import android.provider.Settings;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.signin.AccountSigninActivity.AccessPoint;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
+import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
 
@@ -160,11 +159,8 @@ public class SyncPromoView extends LinearLayout implements AndroidSyncSettingsOb
         int descId = R.string.recent_tabs_sync_promo_enable_android_sync;
 
         ButtonState positiveButton = new ButtonPresent(R.string.open_settings_button, view -> {
-            // TODO(https://crbug.com/557784): Like AccountManagementFragment, this would also
-            // benefit from going directly to an account.
-            Intent intent = new Intent(Settings.ACTION_SYNC_SETTINGS);
-            intent.putExtra(Settings.EXTRA_ACCOUNT_TYPES, new String[] {"com.google"});
-            getContext().startActivity(intent);
+            SigninUtils.openAccountSettingsPage(
+                    getContext(), ChromeSigninController.get().getSignedInAccountName());
         });
 
         return new ViewState(descId, positiveButton);

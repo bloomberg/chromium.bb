@@ -20,7 +20,6 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
-import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.support.v4.app.FragmentActivity;
 import android.text.Spannable;
@@ -42,6 +41,7 @@ import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.SyncedAccountPreference;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.SigninUtils;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncAccountSwitcher;
@@ -681,14 +681,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
         }
 
         if (mCurrentSyncError == SYNC_ANDROID_SYNC_DISABLED) {
-            // TODO(crbug.com/557784): This needs to actually take the user to a specific account
-            // settings page. There doesn't seem to be an obvious way to do that at the moment, but
-            // should update this when we figure that out.
-            Intent intent = new Intent(Settings.ACTION_SYNC_SETTINGS);
-            intent.putExtra(Settings.EXTRA_ACCOUNT_TYPES, new String[] {"com.google"});
-            if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
-                getActivity().startActivity(intent);
-            }
+            SigninUtils.openAccountSettingsPage(
+                    getActivity(), ChromeSigninController.get().getSignedInAccountName());
             return;
         }
 
