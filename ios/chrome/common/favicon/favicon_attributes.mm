@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
+#import "ios/chrome/common/favicon/favicon_attributes.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/favicon/favicon_attributes+private.h"
+#import "ios/chrome/common/favicon/favicon_attributes+private.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

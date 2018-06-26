@@ -14,11 +14,11 @@
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #include "components/url_formatter/url_formatter.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
-#import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_accessibility_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
+#import "ios/chrome/common/favicon/favicon_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

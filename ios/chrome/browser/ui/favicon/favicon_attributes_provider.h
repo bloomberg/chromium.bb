@@ -6,7 +6,8 @@
 #define IOS_CHROME_BROWSER_UI_FAVICON_FAVICON_ATTRIBUTES_PROVIDER_H_
 
 #import <UIKit/UIKit.h>
-#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
+
+#import "ios/chrome/common/favicon/favicon_attributes.h"
 
 namespace favicon {
 class LargeIconService;
