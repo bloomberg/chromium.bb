@@ -35,10 +35,7 @@ using MojoJpegEncodeAcceleratorFactoryCB =
 class CAPTURE_EXPORT VideoCaptureDeviceFactory {
  public:
   static std::unique_ptr<VideoCaptureDeviceFactory> CreateFactory(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      gpu::GpuMemoryBufferManager* gpu_buffer_manager,
-      MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
-      MojoJpegEncodeAcceleratorFactoryCB jpeg_encoder_factory);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   VideoCaptureDeviceFactory();
   virtual ~VideoCaptureDeviceFactory();
@@ -77,10 +74,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactory {
 
  private:
   static VideoCaptureDeviceFactory* CreateVideoCaptureDeviceFactory(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      gpu::GpuMemoryBufferManager* gpu_buffer_manager,
-      MojoJpegDecodeAcceleratorFactoryCB jda_factory,
-      MojoJpegEncodeAcceleratorFactoryCB jea_factory);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceFactory);
 };

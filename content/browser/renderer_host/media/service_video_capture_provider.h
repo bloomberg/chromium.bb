@@ -27,8 +27,6 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
         video_capture::mojom::DeviceFactoryProviderPtr* provider) = 0;
   };
 
-  using CreateMemoryBufferFactoryCallback = base::RepeatingCallback<
-      std::unique_ptr<ui::mojom::GpuMemoryBufferFactory>()>;
   using CreateAcceleratorFactoryCallback = base::RepeatingCallback<
       std::unique_ptr<video_capture::mojom::AcceleratorFactory>()>;
 
@@ -42,7 +40,6 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
   // creating instances of ui::mojom::Gpu.
   ServiceVideoCaptureProvider(
       std::unique_ptr<ServiceConnector> service_connector,
-      CreateMemoryBufferFactoryCallback create_memory_buffer_factory_cb,
       CreateAcceleratorFactoryCallback create_accelerator_factory_cb,
       base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
   ~ServiceVideoCaptureProvider() override;
@@ -65,7 +62,6 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
   void UninitializeInternal(ReasonForUninitialize reason);
 
   std::unique_ptr<ServiceConnector> service_connector_;
-  CreateMemoryBufferFactoryCallback create_memory_buffer_factory_cb_;
   CreateAcceleratorFactoryCallback create_accelerator_factory_cb_;
   base::RepeatingCallback<void(const std::string&)> emit_log_message_cb_;
   // We must hold on to |device_factory_provider_| because it holds the

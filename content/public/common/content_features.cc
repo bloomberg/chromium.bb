@@ -5,6 +5,10 @@
 #include "content/public/common/content_features.h"
 #include "build/build_config.h"
 
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/public/cros_features.h"
+#endif
+
 namespace features {
 
 // All features in alphabetical order.
@@ -651,9 +655,14 @@ bool IsVideoCaptureServiceEnabledForOutOfProcess() {
 #if defined(OS_ANDROID)
   return false;
 #else
-  return base::FeatureList::IsEnabled(features::kMojoVideoCapture) &&
-         !base::FeatureList::IsEnabled(
-             features::kRunVideoCaptureServiceInBrowserProcess);
+  if (!base::FeatureList::IsEnabled(features::kMojoVideoCapture))
+    return false;
+#if defined(OS_CHROMEOS)
+  if (media::ShouldUseCrosCameraService())
+    return false;
+#endif
+  return !base::FeatureList::IsEnabled(
+      features::kRunVideoCaptureServiceInBrowserProcess);
 #endif
 }
 
@@ -661,9 +670,14 @@ bool IsVideoCaptureServiceEnabledForBrowserProcess() {
 #if defined(OS_ANDROID)
   return base::FeatureList::IsEnabled(features::kMojoVideoCapture);
 #else
-  return base::FeatureList::IsEnabled(features::kMojoVideoCapture) &&
-         base::FeatureList::IsEnabled(
-             features::kRunVideoCaptureServiceInBrowserProcess);
+  if (!base::FeatureList::IsEnabled(features::kMojoVideoCapture))
+    return false;
+#if defined(OS_CHROMEOS)
+  if (media::ShouldUseCrosCameraService())
+    return true;
+#endif
+  return base::FeatureList::IsEnabled(
+      features::kRunVideoCaptureServiceInBrowserProcess);
 #endif
 }
 

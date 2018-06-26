@@ -41,25 +41,10 @@ class DeviceFactoryProviderImpl::GpuDependenciesContext {
     return gpu_io_task_runner_;
   }
 
-  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() {
-    return gpu_memory_buffer_manager_.get();
-  }
-
   void InjectGpuDependencies(
-      ui::mojom::GpuMemoryBufferFactoryPtrInfo memory_buffer_factory_info,
       mojom::AcceleratorFactoryPtrInfo accelerator_factory_info) {
     DCHECK(gpu_io_task_runner_->RunsTasksInCurrentSequence());
     accelerator_factory_.Bind(std::move(accelerator_factory_info));
-
-// Since the instance of ui::ClientGpuMemoryBufferManager seems kind of
-// expensive, we only create it on platforms where it gets actually used.
-#if defined(OS_CHROMEOS)
-    ui::mojom::GpuMemoryBufferFactoryPtr memory_buffer_factory;
-    memory_buffer_factory.Bind(std::move(memory_buffer_factory_info));
-    gpu_memory_buffer_manager_ =
-        std::make_unique<ui::ClientGpuMemoryBufferManager>(
-            std::move(memory_buffer_factory));
-#endif
   }
 
   void CreateJpegDecodeAccelerator(
@@ -68,14 +53,6 @@ class DeviceFactoryProviderImpl::GpuDependenciesContext {
     if (!accelerator_factory_)
       return;
     accelerator_factory_->CreateJpegDecodeAccelerator(std::move(request));
-  }
-
-  void CreateJpegEncodeAccelerator(
-      media::mojom::JpegEncodeAcceleratorRequest request) {
-    DCHECK(gpu_io_task_runner_->RunsTasksInCurrentSequence());
-    if (!accelerator_factory_)
-      return;
-    accelerator_factory_->CreateJpegEncodeAccelerator(std::move(request));
   }
 
  private:
@@ -87,7 +64,6 @@ class DeviceFactoryProviderImpl::GpuDependenciesContext {
   // operated on.
   scoped_refptr<base::SequencedTaskRunner> gpu_io_task_runner_;
   mojom::AcceleratorFactoryPtr accelerator_factory_;
-  std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
   base::WeakPtrFactory<GpuDependenciesContext> weak_factory_for_gpu_io_thread_;
 };
 
@@ -105,13 +81,11 @@ DeviceFactoryProviderImpl::~DeviceFactoryProviderImpl() {
 }
 
 void DeviceFactoryProviderImpl::InjectGpuDependencies(
-    ui::mojom::GpuMemoryBufferFactoryPtr memory_buffer_factory,
     mojom::AcceleratorFactoryPtr accelerator_factory) {
   LazyInitializeGpuDependenciesContext();
   gpu_dependencies_context_->GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&GpuDependenciesContext::InjectGpuDependencies,
                                 gpu_dependencies_context_->GetWeakPtr(),
-                                memory_buffer_factory.PassInterface(),
                                 accelerator_factory.PassInterface()));
 }
 
@@ -138,14 +112,7 @@ void DeviceFactoryProviderImpl::LazyInitializeDeviceFactory() {
   // Chrome OS.
   std::unique_ptr<media::VideoCaptureDeviceFactory> media_device_factory =
       media::VideoCaptureDeviceFactory::CreateFactory(
-          base::ThreadTaskRunnerHandle::Get(),
-          gpu_dependencies_context_->GetGpuMemoryBufferManager(),
-          base::BindRepeating(
-              &GpuDependenciesContext::CreateJpegDecodeAccelerator,
-              gpu_dependencies_context_->GetWeakPtr()),
-          base::BindRepeating(
-              &GpuDependenciesContext::CreateJpegEncodeAccelerator,
-              gpu_dependencies_context_->GetWeakPtr()));
+          base::ThreadTaskRunnerHandle::Get());
   auto video_capture_system = std::make_unique<media::VideoCaptureSystemImpl>(
       std::move(media_device_factory));
 

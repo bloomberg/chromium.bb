@@ -17,10 +17,7 @@ namespace media {
 // static
 std::unique_ptr<VideoCaptureDeviceFactory>
 VideoCaptureDeviceFactory::CreateFactory(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    gpu::GpuMemoryBufferManager* gpu_buffer_manager,
-    MojoJpegDecodeAcceleratorFactoryCB jda_factory,
-    MojoJpegEncodeAcceleratorFactoryCB jea_factory) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   // Use a Fake or File Video Device Factory if the command line flags are
@@ -43,9 +40,7 @@ VideoCaptureDeviceFactory::CreateFactory(
     // |ui_task_runner| is needed for the Linux ChromeOS factory to retrieve
     // screen rotations.
     return std::unique_ptr<VideoCaptureDeviceFactory>(
-        CreateVideoCaptureDeviceFactory(ui_task_runner, gpu_buffer_manager,
-                                        std::move(jda_factory),
-                                        std::move(jea_factory)));
+        CreateVideoCaptureDeviceFactory(ui_task_runner));
   }
 }
 
@@ -60,10 +55,7 @@ VideoCaptureDeviceFactory::~VideoCaptureDeviceFactory() = default;
 // static
 VideoCaptureDeviceFactory*
 VideoCaptureDeviceFactory::CreateVideoCaptureDeviceFactory(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    gpu::GpuMemoryBufferManager* gpu_buffer_manager,
-    MojoJpegDecodeAcceleratorFactoryCB jda_factory,
-    MojoJpegEncodeAcceleratorFactoryCB jea_factory) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   NOTIMPLEMENTED();
   return NULL;
 }

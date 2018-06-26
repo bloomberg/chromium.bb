@@ -103,6 +103,10 @@ source_set("static_features") {
   ]
 
   public_configs = [ ":static_switches_defines" ]
+
+  if (is_chromeos) {
+    public_deps += [ "//media/capture/video/chromeos/public" ]
+  }
 }
 
 jumbo_source_set("common_sources") {
@@ -294,6 +298,10 @@ jumbo_source_set("common_sources") {
 
   if (is_linux) {
     deps += [ "//services/service_manager/zygote" ]
+  }
+
+  if (is_chromeos) {
+    public_deps += [ "//media/capture/video/chromeos/public" ]
   }
 
   # //content/common needs to include public headers.

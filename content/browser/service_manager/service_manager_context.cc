@@ -553,7 +553,9 @@ ServiceManagerContext::ServiceManagerContext(
 #else
         base::CreateSingleThreadTaskRunnerWithTraits(
 #endif
-            base::TaskTraits(base::MayBlock(), base::TaskPriority::BACKGROUND));
+            base::TaskTraits({base::MayBlock(), base::WithBaseSyncPrimitives(),
+                              base::TaskPriority::BACKGROUND}),
+            base::SingleThreadTaskRunnerThreadMode::DEDICATED);
     packaged_services_connection_->AddEmbeddedService(
         video_capture::mojom::kServiceName, video_capture_info);
   }

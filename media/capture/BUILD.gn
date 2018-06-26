@@ -251,6 +251,7 @@ component("capture_lib") {
       "video/chromeos/video_capture_device_factory_chromeos.cc",
       "video/chromeos/video_capture_device_factory_chromeos.h",
     ]
+    public_deps += [ "//media/capture/video/chromeos/public" ]
     deps += [
       "//chromeos:chromeos",
       "//media/capture/video/chromeos/mojo:cros_camera",
