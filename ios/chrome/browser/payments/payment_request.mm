@@ -47,11 +47,11 @@
 namespace payments {
 namespace {
 
-std::unique_ptr<::i18n::addressinput::Source> GetAddressInputSource(
-    net::URLRequestContextGetter* url_context_getter) {
+std::unique_ptr<::i18n::addressinput::Source> GetAddressInputSource() {
   return std::unique_ptr<::i18n::addressinput::Source>(
-      new autofill::ChromeMetadataSource(I18N_ADDRESS_VALIDATION_DATA_URL,
-                                         url_context_getter));
+      new autofill::ChromeMetadataSource(
+          I18N_ADDRESS_VALIDATION_DATA_URL,
+          GetApplicationContext()->GetSharedURLLoaderFactory()));
 }
 
 std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage() {
@@ -167,11 +167,9 @@ autofill::AddressNormalizer* PaymentRequest::GetAddressNormalizer() {
 }
 
 autofill::RegionDataLoader* PaymentRequest::GetRegionDataLoader() {
-  return new autofill::RegionDataLoaderImpl(
-      GetAddressInputSource(
-          GetApplicationContext()->GetSystemURLRequestContext())
-          .release(),
-      GetAddressInputStorage().release(), GetApplicationLocale());
+  return new autofill::RegionDataLoaderImpl(GetAddressInputSource().release(),
+                                            GetAddressInputStorage().release(),
+                                            GetApplicationLocale());
 }
 
 ukm::UkmRecorder* PaymentRequest::GetUkmRecorder() {

@@ -7,8 +7,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -19,25 +21,23 @@ static const char kFakeInsecureUrl[] = "http://example.com";
 class ChromeMetadataSourceTest : public testing::Test {
  public:
   ChromeMetadataSourceTest()
-      : fake_factory_(&factory_),
-        success_(false) {}
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)),
+        success_(false) {
+    mojo::edk::Init();
+  }
   virtual ~ChromeMetadataSourceTest() {}
 
  protected:
   // Sets the response for the download.
   void SetFakeResponse(const std::string& payload, net::HttpStatusCode code) {
-    fake_factory_.SetFakeResponse(url_,
-                                  payload,
-                                  code,
-                                  net::URLRequestStatus::SUCCESS);
+    test_url_loader_factory_.AddResponse(url_.spec(), payload, code);
   }
 
   // Kicks off the download.
   void Get() {
-    scoped_refptr<net::TestURLRequestContextGetter> getter(
-        new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get()));
-    ChromeMetadataSource impl(std::string(), getter.get());
+    ChromeMetadataSource impl(std::string(), test_shared_loader_factory_);
     std::unique_ptr<::i18n::addressinput::Source::Callback> callback(
         ::i18n::addressinput::BuildCallback(
             this, &ChromeMetadataSourceTest::OnDownloaded));
@@ -65,8 +65,8 @@ class ChromeMetadataSourceTest : public testing::Test {
   }
 
   base::MessageLoop loop_;
-  net::URLFetcherImplFactory factory_;
-  net::FakeURLFetcherFactory fake_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   GURL url_;
   std::unique_ptr<std::string> data_;
   bool success_;

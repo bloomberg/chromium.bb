@@ -20,6 +20,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -41,6 +42,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/PersonalDataManager_jni.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -315,7 +317,8 @@ PersonalDataManagerAndroid::PersonalDataManagerAndroid(JNIEnv* env, jobject obj)
           ProfileManager::GetActiveUserProfile())),
       subkey_requester_(std::make_unique<ChromeMetadataSource>(
                             I18N_ADDRESS_VALIDATION_DATA_URL,
-                            g_browser_process->system_request_context()),
+                            g_browser_process->system_network_context_manager()
+                                ->GetSharedURLLoaderFactory()),
                         ValidationRulesStorageFactory::CreateStorage()) {
   personal_data_manager_->AddObserver(this);
 }

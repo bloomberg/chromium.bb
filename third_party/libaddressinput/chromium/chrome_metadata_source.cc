@@ -15,50 +15,18 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_response_writer.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace autofill {
 
-namespace {
-
-// A URLFetcherResponseWriter that writes into a provided buffer.
-class UnownedStringWriter : public net::URLFetcherResponseWriter {
- public:
-  UnownedStringWriter(std::string* data) : data_(data) {}
-  virtual ~UnownedStringWriter() {}
-
-  virtual int Initialize(const net::CompletionCallback& callback) override {
-    data_->clear();
-    return net::OK;
-  }
-
-  virtual int Write(net::IOBuffer* buffer,
-                    int num_bytes,
-                    const net::CompletionCallback& callback) override {
-    data_->append(buffer->data(), num_bytes);
-    return num_bytes;
-  }
-
-  virtual int Finish(int net_error,
-                     const net::CompletionCallback& callback) override {
-    return net::OK;
-  }
-
- private:
-  std::string* data_;  // weak reference.
-
-  DISALLOW_COPY_AND_ASSIGN(UnownedStringWriter);
-};
-
-}  // namespace
-
 ChromeMetadataSource::ChromeMetadataSource(
     const std::string& validation_data_url,
-    net::URLRequestContextGetter* getter)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : validation_data_url_(validation_data_url),
-      getter_(getter) {}
+      url_loader_factory_(std::move(url_loader_factory)) {}
 
 ChromeMetadataSource::~ChromeMetadataSource() {}
 
@@ -67,23 +35,24 @@ void ChromeMetadataSource::Get(const std::string& key,
   const_cast<ChromeMetadataSource*>(this)->Download(key, downloaded);
 }
 
-void ChromeMetadataSource::OnURLFetchComplete(const net::URLFetcher* source) {
-  auto request = requests_.find(source);
-  DCHECK(request != requests_.end());
-
-  bool ok = source->GetResponseCode() == net::HTTP_OK;
+void ChromeMetadataSource::OnSimpleLoaderComplete(
+    RequestList::iterator it,
+    std::unique_ptr<std::string> response_body) {
+  const Callback& callback = it->get()->callback;
+  const std::string& key = it->get()->key;
   std::unique_ptr<std::string> data(new std::string());
+  bool ok = !!response_body;
   if (ok)
-    data->swap(request->second->data);
-  request->second->callback(ok, request->second->key, data.release());
-
-  requests_.erase(request);
+    data->swap(*response_body);
+  callback(ok, key, data.release());
+  requests_.erase(it);
 }
 
-ChromeMetadataSource::Request::Request(const std::string& key,
-                                       std::unique_ptr<net::URLFetcher> fetcher,
-                                       const Callback& callback)
-    : key(key), fetcher(std::move(fetcher)), callback(callback) {}
+ChromeMetadataSource::Request::Request(
+    const std::string& key,
+    std::unique_ptr<network::SimpleURLLoader> loader,
+    const Callback& callback)
+    : key(key), loader(std::move(loader)), callback(callback) {}
 
 void ChromeMetadataSource::Download(const std::string& key,
                                     const Callback& downloaded) {
@@ -92,7 +61,7 @@ void ChromeMetadataSource::Download(const std::string& key,
     downloaded(false, key, NULL);
     return;
   }
-
+  DCHECK(url_loader_factory_);
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("lib_address_input", R"(
         semantics {
@@ -118,18 +87,21 @@ void ChromeMetadataSource::Download(const std::string& key,
             "'Manage Autofill Settings' -> 'Addresses')."
           policy_exception_justification: "Not implemented."
         })");
-  std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
-      resource, net::URLFetcher::GET, this, traffic_annotation);
-  fetcher->SetLoadFlags(
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher->SetRequestContext(getter_);
-
-  Request* request = new Request(key, std::move(fetcher), downloaded);
-  request->fetcher->SaveResponseWithWriter(
-      std::unique_ptr<net::URLFetcherResponseWriter>(
-          new UnownedStringWriter(&request->data)));
-  requests_[request->fetcher.get()] = base::WrapUnique(request);
-  request->fetcher->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = resource;
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  std::unique_ptr<network::SimpleURLLoader> loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       traffic_annotation);
+  auto it = requests_.insert(
+      requests_.begin(),
+      std::make_unique<Request>(key, std::move(loader), downloaded));
+  network::SimpleURLLoader* raw_loader = it->get()->loader.get();
+  raw_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&ChromeMetadataSource::OnSimpleLoaderComplete,
+                     base::Unretained(this), std::move(it)));
 }
 
 }  // namespace autofill

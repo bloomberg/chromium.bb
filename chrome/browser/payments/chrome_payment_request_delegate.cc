@@ -11,6 +11,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/payments/payment_request_display_manager_factory.h"
 #include "chrome/browser/payments/ssl_validity_checker.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,6 +33,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
 
@@ -39,11 +41,12 @@ namespace payments {
 
 namespace {
 
-std::unique_ptr<::i18n::addressinput::Source> GetAddressInputSource(
-    net::URLRequestContextGetter* url_context_getter) {
+std::unique_ptr<::i18n::addressinput::Source> GetAddressInputSource() {
   return std::unique_ptr<::i18n::addressinput::Source>(
-      new autofill::ChromeMetadataSource(I18N_ADDRESS_VALIDATION_DATA_URL,
-                                         url_context_getter));
+      new autofill::ChromeMetadataSource(
+          I18N_ADDRESS_VALIDATION_DATA_URL,
+          g_browser_process->system_network_context_manager()
+              ->GetSharedURLLoaderFactory()));
 }
 
 std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage() {
@@ -123,10 +126,9 @@ void ChromePaymentRequestDelegate::DoFullCardRequest(
 
 autofill::RegionDataLoader*
 ChromePaymentRequestDelegate::GetRegionDataLoader() {
-  return new autofill::RegionDataLoaderImpl(
-      GetAddressInputSource(g_browser_process->system_request_context())
-          .release(),
-      GetAddressInputStorage().release(), GetApplicationLocale());
+  return new autofill::RegionDataLoaderImpl(GetAddressInputSource().release(),
+                                            GetAddressInputStorage().release(),
+                                            GetApplicationLocale());
 }
 
 autofill::AddressNormalizer*

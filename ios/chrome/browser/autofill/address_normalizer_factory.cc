@@ -6,6 +6,7 @@
 
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
@@ -13,11 +14,11 @@
 namespace autofill {
 namespace {
 
-std::unique_ptr<::i18n::addressinput::Source> GetAddressInputSource(
-    net::URLRequestContextGetter* url_context_getter) {
+std::unique_ptr<::i18n::addressinput::Source> GetAddressInputSource() {
   return std::unique_ptr<::i18n::addressinput::Source>(
-      new autofill::ChromeMetadataSource(I18N_ADDRESS_VALIDATION_DATA_URL,
-                                         url_context_getter));
+      new autofill::ChromeMetadataSource(
+          I18N_ADDRESS_VALIDATION_DATA_URL,
+          GetApplicationContext()->GetSharedURLLoaderFactory()));
 }
 
 std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage() {
@@ -34,11 +35,9 @@ AddressNormalizer* AddressNormalizerFactory::GetInstance() {
 }
 
 AddressNormalizerFactory::AddressNormalizerFactory()
-    : address_normalizer_(
-          GetAddressInputSource(
-              GetApplicationContext()->GetSystemURLRequestContext()),
-          GetAddressInputStorage(),
-          GetApplicationContext()->GetApplicationLocale()) {}
+    : address_normalizer_(GetAddressInputSource(),
+                          GetAddressInputStorage(),
+                          GetApplicationContext()->GetApplicationLocale()) {}
 
 AddressNormalizerFactory::~AddressNormalizerFactory() {}
 
