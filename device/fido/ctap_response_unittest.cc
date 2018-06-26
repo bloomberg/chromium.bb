@@ -505,4 +505,31 @@ TEST(CTAPResponseTest, TestReadGetInfoResponseWithIncorrectVersionFormat) {
       kTestAuthenticatorGetInfoResponseWithDuplicateVersion));
 }
 
+TEST(CTAPResponseTest, TestSerializeGetInfoResponse) {
+  constexpr uint8_t kTestDeviceAaguid[] = {0xF8, 0xA0, 0x11, 0xF3, 0x8C, 0x0A,
+                                           0x4D, 0x15, 0x80, 0x06, 0x17, 0x11,
+                                           0x1F, 0x9E, 0xDC, 0x7D};
+  AuthenticatorGetInfoResponse response(
+      {ProtocolVersion::kCtap, ProtocolVersion::kU2f},
+      fido_parsing_utils::Materialize(kTestDeviceAaguid));
+  response.SetExtensions({"uvm", "hmac-secret"});
+  AuthenticatorSupportedOptions options;
+  options.SetSupportsResidentKey(true);
+  options.SetIsPlatformDevice(true);
+  options.SetClientPinAvailability(
+      AuthenticatorSupportedOptions::ClientPinAvailability::
+          kSupportedButPinNotSet);
+  options.SetUserVerificationAvailability(
+      AuthenticatorSupportedOptions::UserVerificationAvailability::
+          kSupportedAndConfigured);
+  response.SetOptions(std::move(options));
+  response.SetMaxMsgSize(1200);
+  response.SetPinProtocols({1});
+
+  EXPECT_THAT(EncodeToCBOR(response),
+              ::testing::ElementsAreArray(
+                  base::make_span(test_data::kTestAuthenticatorGetInfoResponse)
+                      .subspan(1)));
+}
+
 }  // namespace device
