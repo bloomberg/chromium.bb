@@ -771,6 +771,8 @@ jumbo_split_static_library("browser") {
     "metrics/variations/chrome_variations_service_client.cc",
     "metrics/variations/chrome_variations_service_client.h",
     "native_window_notification_source.h",
+    "navigation_predictor/navigation_predictor.cc",
+    "navigation_predictor/navigation_predictor.h",
     "net/chrome_accept_language_settings.cc",
     "net/chrome_accept_language_settings.h",
     "net/chrome_cookie_notification_details.h",

@@ -58,6 +58,7 @@
 #include "chrome/browser/memory/chrome_memory_coordinator_delegate.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
@@ -4044,6 +4045,9 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 
   worker_interfaces_parameterized_->AddInterface(
       base::Bind(&BudgetServiceImpl::Create));
+
+  frame_interfaces_parameterized_->AddInterface(
+      base::BindRepeating(&NavigationPredictor::Create));
 }
 
 void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(

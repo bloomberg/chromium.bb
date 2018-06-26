@@ -7,6 +7,8 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -17,12 +19,18 @@ class IntRect;
 class LayoutObject;
 
 class CORE_EXPORT AnchorElementMetrics {
+  STACK_ALLOCATED();
+
  public:
   // Extract features of the anchor element.
-  static base::Optional<AnchorElementMetrics> From(const HTMLAnchorElement&);
+  static base::Optional<AnchorElementMetrics> CreateFrom(
+      const HTMLAnchorElement* anchor_element);
 
   // Upload anchor element features.
   void RecordMetrics() const;
+
+  // Send anchor element features to browser process.
+  void SendMetricsToBrowser() const;
 
   // Getters of anchor element features.
   float GetRatioArea() const { return ratio_area_; }
@@ -72,6 +80,9 @@ class CORE_EXPORT AnchorElementMetrics {
   // overflows.
   static IntRect AbsoluteElementBoundingBoxRect(const LayoutObject*);
 
+  // The anchor element that this class is associated with.
+  Member<const HTMLAnchorElement> anchor_element_;
+
   // The ratio of the absolute/visible clickable region area of an anchor
   // element, and the viewport area.
   const float ratio_area_;
@@ -105,7 +116,8 @@ class CORE_EXPORT AnchorElementMetrics {
   // and the number in target url equals the one in host url plus one.
   const bool is_url_incremented_by_one_;
 
-  inline AnchorElementMetrics(float ratio_area,
+  inline AnchorElementMetrics(const HTMLAnchorElement* anchor_element,
+                              float ratio_area,
                               float ratio_visible_area,
                               float ratio_distance_top_to_visible_top,
                               float ratio_distance_center_to_visible_top,
@@ -115,7 +127,8 @@ class CORE_EXPORT AnchorElementMetrics {
                               bool contains_image,
                               bool is_same_host,
                               bool is_url_incremented_by_one)
-      : ratio_area_(ratio_area),
+      : anchor_element_(anchor_element),
+        ratio_area_(ratio_area),
         ratio_visible_area_(ratio_visible_area),
         ratio_distance_top_to_visible_top_(ratio_distance_top_to_visible_top),
         ratio_distance_center_to_visible_top_(

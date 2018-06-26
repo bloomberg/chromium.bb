@@ -67,7 +67,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureImageLink) {
   Element* anchor = GetDocument().getElementById("anchor");
   HTMLAnchorElement* anchor_element = ToHTMLAnchorElement(anchor);
 
-  auto feature = AnchorElementMetrics::From(*anchor_element).value();
+  auto feature = AnchorElementMetrics::CreateFrom(anchor_element).value();
   EXPECT_FLOAT_EQ(0.25, feature.GetRatioArea());
   EXPECT_FLOAT_EQ(0.25, feature.GetRatioVisibleArea());
   EXPECT_FLOAT_EQ(0.5, feature.GetRatioDistanceTopToVisibleTop());
@@ -100,7 +100,11 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureExtract) {
   Element* anchor = GetDocument().getElementById("anchor");
   HTMLAnchorElement* anchor_element = ToHTMLAnchorElement(anchor);
 
-  auto feature = AnchorElementMetrics::From(*anchor_element).value();
+  auto feature = AnchorElementMetrics::CreateFrom(anchor_element).value();
+  EXPECT_GT(feature.GetRatioArea(), 0);
+  EXPECT_FLOAT_EQ(feature.GetRatioDistanceRootTop(), 2);
+  EXPECT_FLOAT_EQ(feature.GetRatioDistanceTopToVisibleTop(), 2);
+  EXPECT_EQ(feature.GetIsInIframe(), false);
 
   // Element not in the viewport.
   EXPECT_GT(feature.GetRatioArea(), 0);
@@ -118,7 +122,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureExtract) {
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kViewportHeight * 1.5), kProgrammaticScroll);
 
-  auto feature2 = AnchorElementMetrics::From(*anchor_element).value();
+  auto feature2 = AnchorElementMetrics::CreateFrom(anchor_element).value();
   EXPECT_LT(0, feature2.GetRatioVisibleArea());
   EXPECT_FLOAT_EQ(0.5, feature2.GetRatioDistanceTopToVisibleTop());
   EXPECT_LT(0.5, feature2.GetRatioDistanceCenterToVisibleTop());
@@ -165,7 +169,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   Element* anchor = subframe->GetDocument()->getElementById("anchor");
   HTMLAnchorElement* anchor_element = ToHTMLAnchorElement(anchor);
 
-  auto feature = AnchorElementMetrics::From(*anchor_element).value();
+  auto feature = AnchorElementMetrics::CreateFrom(anchor_element).value();
   EXPECT_LT(0, feature.GetRatioArea());
   EXPECT_FLOAT_EQ(0, feature.GetRatioVisibleArea());
   EXPECT_FLOAT_EQ(2.5, feature.GetRatioDistanceTopToVisibleTop());
@@ -180,7 +184,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kViewportHeight * 1.8), kProgrammaticScroll);
 
-  auto feature2 = AnchorElementMetrics::From(*anchor_element).value();
+  auto feature2 = AnchorElementMetrics::CreateFrom(anchor_element).value();
   EXPECT_LT(0, feature2.GetRatioVisibleArea());
   EXPECT_FLOAT_EQ(0.7, feature2.GetRatioDistanceTopToVisibleTop());
   EXPECT_FLOAT_EQ(2.5, feature2.GetRatioDistanceRootTop());
@@ -189,7 +193,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   subframe->View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kViewportHeight * 0.2), kProgrammaticScroll);
 
-  auto feature3 = AnchorElementMetrics::From(*anchor_element).value();
+  auto feature3 = AnchorElementMetrics::CreateFrom(anchor_element).value();
   EXPECT_LT(0, feature3.GetRatioVisibleArea());
   EXPECT_FLOAT_EQ(0.5, feature3.GetRatioDistanceTopToVisibleTop());
   EXPECT_FLOAT_EQ(2.5, feature3.GetRatioDistanceRootTop());
