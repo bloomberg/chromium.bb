@@ -142,7 +142,8 @@ size_t Archive::ReadHeader15()
 
   if (Decrypt)
   {
-#ifdef RAR_NOCRYPT // For rarext.dll and unrar_nocrypt.dll.
+#if defined(RAR_NOCRYPT) || \
+    defined(CHROMIUM_UNRAR)  // For rarext.dll and unrar_nocrypt.dll.
     return 0;
 #else
     RequestArcPassword();
@@ -582,7 +583,7 @@ size_t Archive::ReadHeader50()
 
   if (Decrypt)
   {
-#if defined(RAR_NOCRYPT)
+#if defined(RAR_NOCRYPT) || defined(CHROMIUM_UNRAR)
     return 0;
 #else
 
