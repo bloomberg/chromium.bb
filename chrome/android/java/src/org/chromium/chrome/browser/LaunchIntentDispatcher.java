@@ -180,7 +180,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
                 mActivity.getApplicationContext(), PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS);
 
         int tabId = IntentUtils.safeGetIntExtra(
-                mIntent, IntentHandler.TabOpenType.BRING_TAB_TO_FRONT_STRING, Tab.INVALID_TAB_ID);
+                mIntent, IntentHandler.TabOpenType.BRING_TAB_TO_FRONT.name(), Tab.INVALID_TAB_ID);
         boolean incognito =
                 mIntent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
 
@@ -273,8 +273,8 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
     @Override
     public void processUrlViewIntent(String url, String referer, String headers,
-            @IntentHandler.TabOpenType int tabOpenType, String externalAppId,
-            int tabIdToBringToFront, boolean hasUserGesture, Intent intent) {
+            IntentHandler.TabOpenType tabOpenType, String externalAppId, int tabIdToBringToFront,
+            boolean hasUserGesture, Intent intent) {
         assert false;
     }
 
@@ -456,8 +456,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      * Records metrics gleaned from the Intent.
      */
     private void recordIntentMetrics() {
-        @IntentHandler.ExternalAppId
-        int source = IntentHandler.determineExternalIntentSource(mIntent);
+        IntentHandler.ExternalAppId source = IntentHandler.determineExternalIntentSource(mIntent);
         if (mIntent.getPackage() == null && source != IntentHandler.ExternalAppId.CHROME) {
             int flagsOfInterest = Intent.FLAG_ACTIVITY_NEW_TASK;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

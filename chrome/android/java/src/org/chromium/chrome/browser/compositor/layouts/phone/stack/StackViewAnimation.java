@@ -50,12 +50,18 @@ public class StackViewAnimation {
      * @param focusIndex The index of the tab that is the focus of this animation.
      * @return           The resulting {@link Animator} that will animate the Android views.
      */
-    public Animator createAnimatorForType(@OverviewAnimationType int type, StackTab[] tabs,
+    public Animator createAnimatorForType(OverviewAnimationType type, StackTab[] tabs,
             ViewGroup container, TabList list, int focusIndex) {
         Animator animator = null;
 
-        if (list != null && type == OverviewAnimationType.NEW_TAB_OPENED) {
-            animator = createNewTabOpenedAnimator(tabs, container, list, focusIndex);
+        if (list != null) {
+            switch (type) {
+                case NEW_TAB_OPENED:
+                    animator = createNewTabOpenedAnimator(tabs, container, list, focusIndex);
+                    break;
+                default:
+                    break;
+            }
         }
 
         return animator;

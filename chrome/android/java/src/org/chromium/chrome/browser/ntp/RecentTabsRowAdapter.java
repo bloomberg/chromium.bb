@@ -10,7 +10,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.util.LruCache;
 import android.view.ContextMenu;
@@ -39,8 +38,6 @@ import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,51 +48,28 @@ import java.util.List;
 public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     private static final int MAX_NUM_FAVICONS_TO_CACHE = 256;
 
-    @IntDef({ChildType.NONE, ChildType.DEFAULT_CONTENT, ChildType.PERSONALIZED_SIGNIN_PROMO,
-            ChildType.SYNC_PROMO})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface ChildType {
-        // Values should be enumerated from 0 and can't have gaps.
-        int NONE = 0;
-        int DEFAULT_CONTENT = 1;
-        int PERSONALIZED_SIGNIN_PROMO = 2;
-        int SYNC_PROMO = 3;
-        /**
-         * Number of entries.
-         */
-        int NUM_ENTRIES = 4;
+    private enum ChildType {
+        NONE,
+        DEFAULT_CONTENT,
+        PERSONALIZED_SIGNIN_PROMO,
+        SYNC_PROMO
     }
 
-    @IntDef({GroupType.CONTENT, GroupType.VISIBLE_SEPARATOR, GroupType.INVISIBLE_SEPARATOR})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface GroupType {
-        // Values should be enumerated from 0 and can't have gaps.
-        int CONTENT = 0;
-        int VISIBLE_SEPARATOR = 1;
-        int INVISIBLE_SEPARATOR = 2;
-        /**
-         * Number of entries.
-         */
-        int NUM_ENTRIES = 3;
+    private enum GroupType {
+        CONTENT, VISIBLE_SEPARATOR, INVISIBLE_SEPARATOR
     }
 
     // Values from the OtherSessionsActions enum in histograms.xml; do not change these values or
     // histograms will be broken.
-    @IntDef({OtherSessionsActions.MENU_INITIALIZED, OtherSessionsActions.LINK_CLICKED,
-            OtherSessionsActions.COLLAPSE_SESSION, OtherSessionsActions.EXPAND_SESSION,
-            OtherSessionsActions.OPEN_ALL, OtherSessionsActions.HAS_FOREIGN_DATA,
-            OtherSessionsActions.HIDE_FOR_NOW})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface OtherSessionsActions {
-        int MENU_INITIALIZED = 0;
-        int LINK_CLICKED = 2;
-        int COLLAPSE_SESSION = 6;
-        int EXPAND_SESSION = 7;
-        int OPEN_ALL = 8;
-        int HAS_FOREIGN_DATA = 9;
-        int HIDE_FOR_NOW = 10;
-
-        int NUM_ENTRIES = 11;
+    private static class OtherSessionsActions {
+        static final int MENU_INITIALIZED = 0;
+        static final int LINK_CLICKED = 2;
+        static final int COLLAPSE_SESSION = 6;
+        static final int EXPAND_SESSION = 7;
+        static final int OPEN_ALL = 8;
+        static final int HAS_FOREIGN_DATA = 9;
+        static final int HIDE_FOR_NOW = 10;
+        static final int LIMIT = 11;
     }
 
     private final Activity mActivity;
@@ -118,7 +92,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         /**
          * @return The type of group: GroupType.CONTENT or GroupType.SEPARATOR.
          */
-        abstract @GroupType int getGroupType();
+        abstract GroupType getGroupType();
 
         /**
          * @return The number of children in this group.
@@ -128,7 +102,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         /**
          * @return The child type.
          */
-        abstract @ChildType int getChildType();
+        abstract ChildType getChildType();
 
         /**
          * @param childPosition The position for which to return the child.
@@ -257,7 +231,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         }
 
         @Override
-        public @GroupType int getGroupType() {
+        public GroupType getGroupType() {
             return GroupType.CONTENT;
         }
 
@@ -271,7 +245,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         }
 
         @Override
-        public @ChildType int getChildType() {
+        public ChildType getChildType() {
             return ChildType.DEFAULT_CONTENT;
         }
 
@@ -312,10 +286,10 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         public void setCollapsed(boolean isCollapsed) {
             if (isCollapsed) {
                 RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
-                        OtherSessionsActions.COLLAPSE_SESSION, OtherSessionsActions.NUM_ENTRIES);
+                        OtherSessionsActions.COLLAPSE_SESSION, OtherSessionsActions.LIMIT);
             } else {
                 RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
-                        OtherSessionsActions.EXPAND_SESSION, OtherSessionsActions.NUM_ENTRIES);
+                        OtherSessionsActions.EXPAND_SESSION, OtherSessionsActions.LIMIT);
             }
             mRecentTabsManager.setForeignSessionCollapsed(mForeignSession, isCollapsed);
         }
@@ -328,7 +302,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         @Override
         public boolean onChildClick(int childPosition) {
             RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
-                    OtherSessionsActions.LINK_CLICKED, OtherSessionsActions.NUM_ENTRIES);
+                    OtherSessionsActions.LINK_CLICKED, OtherSessionsActions.LIMIT);
             ForeignSessionTab foreignSessionTab = getChild(childPosition);
             mRecentTabsManager.openForeignSessionTab(mForeignSession, foreignSessionTab,
                     WindowOpenDisposition.CURRENT_TAB);
@@ -339,13 +313,13 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         public void onCreateContextMenuForGroup(ContextMenu menu, Activity activity) {
             menu.add(R.string.recent_tabs_open_all_menu_option).setOnMenuItemClickListener(item -> {
                 RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
-                        OtherSessionsActions.OPEN_ALL, OtherSessionsActions.NUM_ENTRIES);
+                        OtherSessionsActions.OPEN_ALL, OtherSessionsActions.LIMIT);
                 openAllTabs();
                 return true;
             });
             menu.add(R.string.recent_tabs_hide_menu_option).setOnMenuItemClickListener(item -> {
                 RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
-                        OtherSessionsActions.HIDE_FOR_NOW, OtherSessionsActions.NUM_ENTRIES);
+                        OtherSessionsActions.HIDE_FOR_NOW, OtherSessionsActions.LIMIT);
                 mRecentTabsManager.deleteForeignSession(mForeignSession);
                 return true;
             });
@@ -389,8 +363,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
      */
     private abstract class PromoGroup extends Group {
         @Override
-        @GroupType
-        int getGroupType() {
+        GroupType getGroupType() {
             return GroupType.CONTENT;
         }
 
@@ -420,8 +393,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
      */
     class PersonalizedSigninPromoGroup extends PromoGroup {
         @Override
-        @ChildType
-        int getChildType() {
+        ChildType getChildType() {
             return ChildType.PERSONALIZED_SIGNIN_PROMO;
         }
 
@@ -444,7 +416,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
      */
     class SyncPromoGroup extends PromoGroup {
         @Override
-        public @ChildType int getChildType() {
+        public ChildType getChildType() {
             return ChildType.SYNC_PROMO;
         }
 
@@ -467,7 +439,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         static final int ID_REMOVE_ALL = 2;
 
         @Override
-        public @GroupType int getGroupType() {
+        public GroupType getGroupType() {
             return GroupType.CONTENT;
         }
 
@@ -479,7 +451,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         }
 
         @Override
-        public @ChildType int getChildType() {
+        public ChildType getChildType() {
             return ChildType.DEFAULT_CONTENT;
         }
 
@@ -493,7 +465,9 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
 
         @Override
         public RecentlyClosedTab getChild(int childPosition) {
-            if (isHistoryLink(childPosition)) return null;
+            if (isHistoryLink(childPosition)) {
+                return null;
+            }
             return mRecentTabsManager.getRecentlyClosedTabs().get(childPosition);
         }
 
@@ -598,12 +572,12 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         }
 
         @Override
-        public @GroupType int getGroupType() {
+        public GroupType getGroupType() {
             return mIsVisible ? GroupType.VISIBLE_SEPARATOR : GroupType.INVISIBLE_SEPARATOR;
         }
 
         @Override
-        public @ChildType int getChildType() {
+        public ChildType getChildType() {
             return ChildType.NONE;
         }
 
@@ -685,7 +659,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                 FeatureUtilities.isChromeModernDesignEnabled());
 
         RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
-                OtherSessionsActions.MENU_INITIALIZED, OtherSessionsActions.NUM_ENTRIES);
+                OtherSessionsActions.MENU_INITIALIZED, OtherSessionsActions.LIMIT);
     }
 
     /**
@@ -813,12 +787,12 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
 
     @Override
     public int getGroupType(int groupPosition) {
-        return getGroup(groupPosition).getGroupType();
+        return getGroup(groupPosition).getGroupType().ordinal();
     }
 
     @Override
     public int getGroupTypeCount() {
-        return GroupType.NUM_ENTRIES;
+        return GroupType.values().length;
     }
 
     private void addGroup(Group group) {
@@ -840,7 +814,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         for (ForeignSession session : mRecentTabsManager.getForeignSessions()) {
             if (!mHasForeignDataRecorded) {
                 RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
-                        OtherSessionsActions.HAS_FOREIGN_DATA, OtherSessionsActions.NUM_ENTRIES);
+                        OtherSessionsActions.HAS_FOREIGN_DATA, OtherSessionsActions.LIMIT);
                 mHasForeignDataRecorded = true;
             }
             addGroup(new ForeignSessionGroup(session));
@@ -872,11 +846,11 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
 
     @Override
     public int getChildType(int groupPosition, int childPosition) {
-        return mGroups.get(groupPosition).getChildType();
+        return mGroups.get(groupPosition).getChildType().ordinal();
     }
 
     @Override
     public int getChildTypeCount() {
-        return ChildType.NUM_ENTRIES;
+        return ChildType.values().length;
     }
 }

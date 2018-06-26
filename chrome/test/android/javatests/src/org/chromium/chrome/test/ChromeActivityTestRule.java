@@ -342,7 +342,7 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
      * @param launchType The type of Tab Launch.
      */
     public Tab loadUrlInNewTab(final String url, final boolean incognito,
-            final @TabLaunchType int launchType) throws InterruptedException {
+            final TabLaunchType launchType) throws InterruptedException {
         Tab tab = null;
         try {
             tab = ThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
@@ -473,12 +473,12 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
         TabModel incognitoTabModel = getActivity().getTabModelSelector().getModel(true);
         TabModelObserver observer = new EmptyTabModelObserver() {
             @Override
-            public void didAddTab(Tab tab, @TabLaunchType int type) {
+            public void didAddTab(Tab tab, TabLaunchType type) {
                 createdCallback.notifyCalled();
             }
 
             @Override
-            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
+            public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
                 selectedCallback.notifyCalled();
             }
         };

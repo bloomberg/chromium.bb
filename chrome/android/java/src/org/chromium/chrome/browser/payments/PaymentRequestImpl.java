@@ -263,7 +263,7 @@ public class PaymentRequestImpl
     /** Monitors changes in the current TabModel. */
     private final TabModelObserver mTabModelObserver = new EmptyTabModelObserver() {
         @Override
-        public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
+        public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
             if (tab == null || tab.getId() != lastId) onDismiss();
         }
     };

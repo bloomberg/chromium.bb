@@ -101,7 +101,7 @@ public class TabPersistentStoreTest {
 
         @Override
         public Tab createNewTab(
-                LoadUrlParams loadUrlParams, @TabModel.TabLaunchType int type, Tab parent) {
+                LoadUrlParams loadUrlParams, TabModel.TabLaunchType type, Tab parent) {
             Tab tab = Tab.createTabForLazyLoad(
                     mIsIncognito, null, TabLaunchType.FROM_LINK, Tab.INVALID_TAB_ID, loadUrlParams);
             mSelector.getModel(mIsIncognito).addTab(tab, TabModel.INVALID_TAB_INDEX, type);
@@ -120,12 +120,12 @@ public class TabPersistentStoreTest {
 
         @Override
         public boolean createTabWithWebContents(Tab parent, WebContents webContents, int parentId,
-                @TabLaunchType int type, String url) {
+                TabLaunchType type, String url) {
             return false;
         }
 
         @Override
-        public Tab launchUrl(String url, @TabModel.TabLaunchType int type) {
+        public Tab launchUrl(String url, TabModel.TabLaunchType type) {
             return null;
         }
 
@@ -194,14 +194,15 @@ public class TabPersistentStoreTest {
         }
 
         @Override
-        public Tab openNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,
-                boolean incognito) {
+        public Tab openNewTab(
+                LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent, boolean incognito) {
             return mTabCreatorManager.getTabCreator(incognito).createNewTab(
                     loadUrlParams, type, parent);
         }
 
         @Override
-        public void requestToShowTab(Tab tab, @TabSelectionType int type) {}
+        public void requestToShowTab(Tab tab, TabSelectionType type) {
+        }
 
         @Override
         public boolean closeAllTabsRequest(boolean incognito) {

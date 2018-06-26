@@ -25,7 +25,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.os.Build;
 import android.os.SystemClock;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.MarginLayoutParamsCompat;
@@ -85,8 +84,6 @@ import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -295,20 +292,16 @@ public class ToolbarPhone extends ToolbarLayout
     /**
      * Used to specify the visual state of the toolbar.
      */
-    @IntDef({VisualState.TAB_SWITCHER_INCOGNITO, VisualState.TAB_SWITCHER_NORMAL,
-            VisualState.NORMAL, VisualState.INCOGNITO, VisualState.BRAND_COLOR,
-            VisualState.NEW_TAB_NORMAL})
-    @Retention(RetentionPolicy.SOURCE)
-    protected @interface VisualState {
-        int TAB_SWITCHER_INCOGNITO = 0;
-        int TAB_SWITCHER_NORMAL = 1;
-        int NORMAL = 2;
-        int INCOGNITO = 3;
-        int BRAND_COLOR = 4;
-        int NEW_TAB_NORMAL = 5;
+    protected enum VisualState {
+        TAB_SWITCHER_INCOGNITO,
+        TAB_SWITCHER_NORMAL,
+        NORMAL,
+        INCOGNITO,
+        BRAND_COLOR,
+        NEW_TAB_NORMAL
     }
 
-    protected @VisualState int mVisualState = VisualState.NORMAL;
+    protected VisualState mVisualState = VisualState.NORMAL;
     protected boolean mUseLightToolbarDrawables;
 
     private NewTabPage mVisibleNewTabPage;
@@ -795,7 +788,7 @@ public class ToolbarPhone extends ToolbarLayout
      * @return The left bounds of the location bar, accounting for any buttons on the left side
      *         of the toolbar.
      */
-    protected int getViewBoundsLeftOfLocationBar(@VisualState int visualState) {
+    protected int getViewBoundsLeftOfLocationBar(VisualState visualState) {
         // Uses getMeasuredWidth()s instead of getLeft() because this is called in onMeasure
         // and the layout values have not yet been set.
         if (visualState == VisualState.NEW_TAB_NORMAL) {
@@ -823,7 +816,7 @@ public class ToolbarPhone extends ToolbarLayout
      * @return The right bounds of the location bar, accounting for any buttons on the right side
      *         of the toolbar.
      */
-    protected int getViewBoundsRightOfLocationBar(@VisualState int visualState) {
+    protected int getViewBoundsRightOfLocationBar(VisualState visualState) {
         // Uses getMeasuredWidth()s instead of getRight() because this is called in onMeasure
         // and the layout values have not yet been set.
         if (visualState == VisualState.NEW_TAB_NORMAL) {
@@ -856,7 +849,7 @@ public class ToolbarPhone extends ToolbarLayout
         invalidate();
     }
 
-    protected void updateToolbarBackgroundFromState(@VisualState int visualState) {
+    protected void updateToolbarBackground(VisualState visualState) {
         updateToolbarBackground(getToolbarColorForVisualState(visualState));
     }
 
@@ -868,10 +861,10 @@ public class ToolbarPhone extends ToolbarLayout
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
     }
 
-    protected int getToolbarColorForVisualState(final @VisualState int visualState) {
+    protected int getToolbarColorForVisualState(final VisualState visualState) {
         Resources res = getResources();
         switch (visualState) {
-            case VisualState.NEW_TAB_NORMAL:
+            case NEW_TAB_NORMAL:
                 if (mLocationBar.useModernDesign() && mUrlExpansionPercent == 1.f) {
                     // When the location bar reaches the top of the screen, the background needs
                     // to change back to the default, solid color so that the NTP content is
@@ -880,16 +873,16 @@ public class ToolbarPhone extends ToolbarLayout
                             getResources(), mLocationBar.useModernDesign(), false);
                 }
                 return Color.TRANSPARENT;
-            case VisualState.NORMAL:
+            case NORMAL:
                 return ColorUtils.getDefaultThemeColor(
                         getResources(), mLocationBar.useModernDesign(), false);
-            case VisualState.INCOGNITO:
+            case INCOGNITO:
                 return ColorUtils.getDefaultThemeColor(
                         getResources(), mLocationBar.useModernDesign(), true);
-            case VisualState.BRAND_COLOR:
+            case BRAND_COLOR:
                 return getToolbarDataProvider().getPrimaryColor();
-            case VisualState.TAB_SWITCHER_NORMAL:
-            case VisualState.TAB_SWITCHER_INCOGNITO:
+            case TAB_SWITCHER_NORMAL:
+            case TAB_SWITCHER_INCOGNITO:
                 if (usingHorizontalTabSwitcher()) return Color.TRANSPARENT;
 
                 if (mLocationBar.useModernDesign()) {
@@ -972,7 +965,7 @@ public class ToolbarPhone extends ToolbarLayout
     /**
      * Calculate the bounds for the location bar background and set them to {@code out}.
      */
-    protected void updateLocationBarBackgroundBounds(Rect out, @VisualState int visualState) {
+    protected void updateLocationBarBackgroundBounds(Rect out, VisualState visualState) {
         // Calculate the visible boundaries of the left and right most child views of the
         // location bar.
         float expansion = getExpansionPercentForVisualState(visualState);
@@ -1009,7 +1002,7 @@ public class ToolbarPhone extends ToolbarLayout
      * @param visualState The current {@link VisualState} of the toolbar.
      * @return The left drawing position for the location bar background.
      */
-    protected int getLeftPositionOfLocationBarBackground(@VisualState int visualState) {
+    protected int getLeftPositionOfLocationBarBackground(VisualState visualState) {
         float expansion = getExpansionPercentForVisualState(visualState);
         int leftViewPosition =
                 (int) MathUtils.interpolate(getViewBoundsLeftOfLocationBar(visualState),
@@ -1030,7 +1023,7 @@ public class ToolbarPhone extends ToolbarLayout
      * @param visualState The current {@link VisualState} of the toolbar.
      * @return The right drawing position for the location bar background.
      */
-    protected int getRightPositionOfLocationBarBackground(@VisualState int visualState) {
+    protected int getRightPositionOfLocationBarBackground(VisualState visualState) {
         float expansion = getExpansionPercentForVisualState(visualState);
         int rightViewPosition =
                 (int) MathUtils.interpolate(getViewBoundsRightOfLocationBar(visualState),
@@ -1048,7 +1041,7 @@ public class ToolbarPhone extends ToolbarLayout
         return getWidth() + mLocationBarBackgroundCornerRadius;
     }
 
-    private float getExpansionPercentForVisualState(@VisualState int visualState) {
+    private float getExpansionPercentForVisualState(VisualState visualState) {
         return visualState == VisualState.NEW_TAB_NORMAL ? 1 : mUrlExpansionPercent;
     }
 
@@ -1299,7 +1292,7 @@ public class ToolbarPhone extends ToolbarLayout
             }
         }
 
-        updateToolbarBackgroundFromState(mVisualState);
+        updateToolbarBackground(mVisualState);
     }
 
     /**
@@ -2332,7 +2325,7 @@ public class ToolbarPhone extends ToolbarLayout
         }
     }
 
-    private static boolean isVisualStateValidForBrandColorTransition(@VisualState int state) {
+    private static boolean isVisualStateValidForBrandColorTransition(VisualState state) {
         return state == VisualState.NORMAL || state == VisualState.BRAND_COLOR;
     }
 
@@ -2497,7 +2490,7 @@ public class ToolbarPhone extends ToolbarLayout
                 && NewTabPage.isNTPUrl(getToolbarDataProvider().getCurrentUrl());
     }
 
-    private @VisualState int computeVisualState(boolean isInTabSwitcherMode) {
+    private VisualState computeVisualState(boolean isInTabSwitcherMode) {
         if (isInTabSwitcherMode && isIncognito()) return VisualState.TAB_SWITCHER_INCOGNITO;
         if (isInTabSwitcherMode && !isIncognito()) return VisualState.TAB_SWITCHER_NORMAL;
         if (isLocationBarShownInNTP()) return VisualState.NEW_TAB_NORMAL;
@@ -2522,8 +2515,7 @@ public class ToolbarPhone extends ToolbarLayout
                 || mTabSwitcherState == EXITING_TAB_SWITCHER;
         boolean inOrEnteringTabSwitcher = !inOrEnteringStaticTab;
 
-        @VisualState
-        int newVisualState = computeVisualState(inOrEnteringTabSwitcher);
+        VisualState newVisualState = computeVisualState(inOrEnteringTabSwitcher);
 
         // If we are navigating to or from a brand color, allow the transition animation
         // to run to completion as it will handle the triggering this path again and committing
@@ -2547,8 +2539,7 @@ public class ToolbarPhone extends ToolbarLayout
         // If The page is native force the use of the standard theme for the progress bar.
         if (getToolbarDataProvider() != null && getToolbarDataProvider().getTab() != null
                 && getToolbarDataProvider().getTab().isNativePage()) {
-            @VisualState
-            int visualState = isIncognito() ? VisualState.INCOGNITO : VisualState.NORMAL;
+            VisualState visualState = isIncognito() ? VisualState.INCOGNITO : VisualState.NORMAL;
             themeColorForProgressBar = getToolbarColorForVisualState(visualState);
         }
 
@@ -2562,7 +2553,7 @@ public class ToolbarPhone extends ToolbarLayout
                             != mUnfocusedLocationBarUsesTransparentBg) {
                 visualStateChanged = true;
             } else {
-                updateToolbarBackgroundFromState(VisualState.BRAND_COLOR);
+                updateToolbarBackground(VisualState.BRAND_COLOR);
                 getProgressBar().setThemeColor(themeColorForProgressBar, isIncognito());
             }
         }
@@ -2581,8 +2572,7 @@ public class ToolbarPhone extends ToolbarLayout
         // This exception is to prevent early change of theme color when exiting the tab switcher
         // since currently visual state does not map correctly to tab switcher state. See
         // https://crbug.com/832594 for more info.
-        if (mTabSwitcherState != EXITING_TAB_SWITCHER)
-            updateToolbarBackgroundFromState(mVisualState);
+        if (mTabSwitcherState != EXITING_TAB_SWITCHER) updateToolbarBackground(mVisualState);
 
         if (!visualStateChanged) {
             if (mVisualState == VisualState.NEW_TAB_NORMAL) {

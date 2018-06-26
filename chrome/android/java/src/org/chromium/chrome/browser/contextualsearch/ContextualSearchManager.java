@@ -217,7 +217,7 @@ public class ContextualSearchManager
 
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
-            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
+            public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
                 if ((!mIsPromotingToTab && tab.getId() != lastId)
                         || mActivity.getTabModelSelector().isIncognitoSelected()) {
                     hideContextualSearch(StateChangeReason.UNKNOWN);
@@ -226,7 +226,7 @@ public class ContextualSearchManager
             }
 
             @Override
-            public void didAddTab(Tab tab, @TabLaunchType int type) {
+            public void didAddTab(Tab tab, TabLaunchType type) {
                 // If we're in the process of promoting this tab, just return and don't mess with
                 // this state.
                 if (tab.getWebContents() == getSearchPanelWebContents()) return;
@@ -377,12 +377,12 @@ public class ContextualSearchManager
      * Hides the Contextual Search UX by changing into the IDLE state.
      * @param reason The {@link StateChangeReason} for hiding Contextual Search.
      */
-    public void hideContextualSearch(@StateChangeReason int reason) {
+    public void hideContextualSearch(StateChangeReason reason) {
         mInternalStateController.reset(reason);
     }
 
     @Override
-    public void onCloseContextualSearch(@StateChangeReason int reason) {
+    public void onCloseContextualSearch(StateChangeReason reason) {
         if (mSearchPanel == null) return;
 
         mSelectionController.onSearchEnded(reason);
@@ -430,7 +430,7 @@ public class ContextualSearchManager
      * Shows the Contextual Search UX.
      * @param stateChangeReason The reason explaining the change of state.
      */
-    private void showContextualSearch(@StateChangeReason int stateChangeReason) {
+    private void showContextualSearch(StateChangeReason stateChangeReason) {
         assert mSearchPanel != null;
         if (mFindToolbarManager != null) {
             mFindToolbarManager.hideToolbar(false);
@@ -1045,7 +1045,10 @@ public class ContextualSearchManager
                         INTERCEPT_NAVIGATION_PROMOTION_ANIMATION_DURATION_MS);
                 return false;
             }
-            return !navigationParams.isExternalProtocol;
+            if (navigationParams.isExternalProtocol) {
+                return false;
+            }
+            return true;
         }
     }
 
@@ -1481,7 +1484,7 @@ public class ContextualSearchManager
     ContextualSearchInternalStateHandler getContextualSearchInternalStateHandler() {
         return new ContextualSearchInternalStateHandler() {
             @Override
-            public void hideContextualSearchUi(@StateChangeReason int reason) {
+            public void hideContextualSearchUi(StateChangeReason reason) {
                 // Called when the IDLE state has been entered.
                 if (mContext != null) mContext.destroy();
                 mContext = null;

@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.tab.Tab;
  * Empty implementation of the tab model selector observer.
  */
 public class EmptyTabModelSelectorObserver implements TabModelSelectorObserver {
+
     @Override
     public void onChange() {
     }

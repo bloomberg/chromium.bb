@@ -49,9 +49,9 @@ public class Website implements Serializable {
     public Website(WebsiteAddress origin, WebsiteAddress embedder) {
         mOrigin = origin;
         mEmbedder = embedder;
-        mPermissionInfo = new PermissionInfo[PermissionInfo.Type.NUM_ENTRIES];
+        mPermissionInfo = new PermissionInfo[PermissionInfo.Type.NUM_PERMISSIONS];
         mContentSettingException =
-                new ContentSettingException[ContentSettingException.Type.NUM_ENTRIES];
+                new ContentSettingException[ContentSettingException.Type.NUM_EXCEPTIONS];
     }
 
     public WebsiteAddress getAddress() {

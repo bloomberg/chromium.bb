@@ -40,7 +40,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase {
     private PanelState mAnimatingState;
 
     /** The StateChangeReason for which the Panel is being animated. */
-    private @StateChangeReason int mAnimatingStateReason;
+    private StateChangeReason mAnimatingStateReason;
 
     /** The animator responsible for moving the sheet up and down. */
     private CompositorAnimator mHeightAnimator;
@@ -77,7 +77,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase {
      *
      * @param reason The reason for the change of panel state.
      */
-    protected void maximizePanel(@StateChangeReason int reason) {
+    protected void maximizePanel(StateChangeReason reason) {
         animatePanelToState(PanelState.MAXIMIZED, reason);
     }
 
@@ -86,7 +86,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase {
      *
      * @param reason The reason for the change of panel state.
      */
-    protected void expandPanel(@StateChangeReason int reason) {
+    protected void expandPanel(StateChangeReason reason) {
         animatePanelToState(PanelState.EXPANDED, reason);
     }
 
@@ -95,7 +95,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase {
      *
      * @param reason The reason for the change of panel state.
      */
-    protected void peekPanel(@StateChangeReason int reason) {
+    protected void peekPanel(StateChangeReason reason) {
         updateBasePageTargetY();
 
         // TODO(pedrosimonetti): Implement custom animation with the following values.
@@ -109,7 +109,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase {
     }
 
     @Override
-    protected void closePanel(@StateChangeReason int reason, boolean animate) {
+    protected void closePanel(StateChangeReason reason, boolean animate) {
         if (animate) {
             // Only animates the closing action if not doing that already.
             if (mAnimatingState != PanelState.CLOSED) {
@@ -177,7 +177,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase {
      * @param state The state to animate to.
      * @param reason The reason for the change of panel state.
      */
-    private void animatePanelToState(PanelState state, @StateChangeReason int reason) {
+    private void animatePanelToState(PanelState state, StateChangeReason reason) {
         animatePanelToState(state, reason, BASE_ANIMATION_DURATION_MS);
     }
 
@@ -188,8 +188,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase {
      * @param reason The reason for the change of panel state.
      * @param duration The animation duration in milliseconds.
      */
-    protected void animatePanelToState(
-            PanelState state, @StateChangeReason int reason, long duration) {
+    protected void animatePanelToState(PanelState state, StateChangeReason reason, long duration) {
         mAnimatingState = state;
         mAnimatingStateReason = reason;
 
@@ -203,7 +202,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase {
      * @param state The state to resize to.
      * @param reason The reason for the change of panel state.
      */
-    protected void resizePanelToState(PanelState state, @StateChangeReason int reason) {
+    protected void resizePanelToState(PanelState state, StateChangeReason reason) {
         cancelHeightAnimation();
 
         final float height = getPanelHeightFromState(state);

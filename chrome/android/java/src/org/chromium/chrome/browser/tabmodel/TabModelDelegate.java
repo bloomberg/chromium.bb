@@ -12,12 +12,13 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
  * methods that expose too much access to TabModel. http://crbug.com/263579
  */
 public interface TabModelDelegate {
+
     /**
      * Requests the specified to be shown.
      * @param tab The tab that is requested to be shown.
      * @param type The reason why this tab was requested to be shown.
      */
-    void requestToShowTab(Tab tab, @TabSelectionType int type);
+    void requestToShowTab(Tab tab, TabSelectionType type);
 
     /**
      * Delegate a request to close all tabs in a model.

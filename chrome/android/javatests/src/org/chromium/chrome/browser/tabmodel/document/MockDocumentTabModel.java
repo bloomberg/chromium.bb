@@ -83,7 +83,7 @@ public class MockDocumentTabModel implements DocumentTabModel {
     }
 
     @Override
-    public void setIndex(int i, @TabSelectionType int type) {
+    public void setIndex(int i, TabSelectionType type) {
         Assert.fail();
     }
 
@@ -98,7 +98,7 @@ public class MockDocumentTabModel implements DocumentTabModel {
     }
 
     @Override
-    public void addTab(Tab tab, int index, @TabLaunchType int type) {
+    public void addTab(Tab tab, int index, TabLaunchType type) {
         Assert.fail();
     }
 

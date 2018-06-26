@@ -22,7 +22,7 @@ public abstract class TabModelJniBridge implements TabModel {
     // TODO(dtrainor, simonb): Make these non-static so we don't break if we have multiple instances
     // of chrome running.  Also investigate how this affects document mode.
     private static long sTabSwitchStartTime;
-    private static @TabSelectionType int sTabSelectionType;
+    private static TabSelectionType sTabSelectionType;
     private static boolean sTabSwitchLatencyMetricRequired;
     private static boolean sPerceivedTabSwitchLatencyMetricLogged;
 
@@ -154,7 +154,7 @@ public abstract class TabModelJniBridge implements TabModel {
      * switch event.
      * @param type The type of action that triggered the tab selection.
      */
-    public static void startTabSwitchLatencyTiming(final @TabSelectionType int type) {
+    public static void startTabSwitchLatencyTiming(final TabSelectionType type) {
         sTabSwitchStartTime = SystemClock.uptimeMillis();
         sTabSelectionType = type;
         sTabSwitchLatencyMetricRequired = false;
@@ -198,16 +198,16 @@ public abstract class TabModelJniBridge implements TabModel {
         if (sTabSwitchStartTime <= 0) return;
         final long ms = SystemClock.uptimeMillis() - sTabSwitchStartTime;
         switch (sTabSelectionType) {
-            case TabSelectionType.FROM_CLOSE:
+            case FROM_CLOSE:
                 nativeLogFromCloseMetric(ms, perceived);
                 break;
-            case TabSelectionType.FROM_EXIT:
+            case FROM_EXIT:
                 nativeLogFromExitMetric(ms, perceived);
                 break;
-            case TabSelectionType.FROM_NEW:
+            case FROM_NEW:
                 nativeLogFromNewMetric(ms, perceived);
                 break;
-            case TabSelectionType.FROM_USER:
+            case FROM_USER:
                 nativeLogFromUserMetric(ms, perceived);
                 break;
         }

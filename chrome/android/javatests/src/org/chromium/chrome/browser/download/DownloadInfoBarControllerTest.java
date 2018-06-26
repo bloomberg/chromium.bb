@@ -78,8 +78,7 @@ public class DownloadInfoBarControllerTest {
         }
 
         @Override
-        protected void showInfoBar(
-                @DownloadInfoBarState int state, DownloadProgressInfoBarData info) {
+        protected void showInfoBar(DownloadInfoBarState state, DownloadProgressInfoBarData info) {
             mInfo = info;
             super.showInfoBar(state, info);
         }

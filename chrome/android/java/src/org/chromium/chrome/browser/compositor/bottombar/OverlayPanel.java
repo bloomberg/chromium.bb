@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.compositor.bottombar;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.RectF;
-import android.support.annotation.IntDef;
 import android.view.ViewGroup;
 
 import org.chromium.base.ActivityState;
@@ -34,8 +33,6 @@ import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 /**
@@ -60,38 +57,28 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     /**
      * The reason for a change in the Overlay Panel's state.
      */
-    @IntDef({StateChangeReason.UNKNOWN, StateChangeReason.RESET, StateChangeReason.BACK_PRESS,
-            StateChangeReason.TEXT_SELECT_TAP, StateChangeReason.TEXT_SELECT_LONG_PRESS,
-            StateChangeReason.INVALID_SELECTION, StateChangeReason.CLEARED_SELECTION,
-            StateChangeReason.BASE_PAGE_TAP, StateChangeReason.BASE_PAGE_SCROLL,
-            StateChangeReason.SEARCH_BAR_TAP, StateChangeReason.SERP_NAVIGATION,
-            StateChangeReason.TAB_PROMOTION, StateChangeReason.CLICK, StateChangeReason.SWIPE,
-            StateChangeReason.FLING, StateChangeReason.OPTIN, StateChangeReason.OPTOUT,
-            StateChangeReason.CLOSE_BUTTON, StateChangeReason.PANEL_SUPPRESS,
-            StateChangeReason.PANEL_UNSUPPRESS, StateChangeReason.TAP_SUPPRESS})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface StateChangeReason {
-        int UNKNOWN = 0;
-        int RESET = 1;
-        int BACK_PRESS = 2;
-        int TEXT_SELECT_TAP = 3;
-        int TEXT_SELECT_LONG_PRESS = 4;
-        int INVALID_SELECTION = 5;
-        int CLEARED_SELECTION = 6;
-        int BASE_PAGE_TAP = 7;
-        int BASE_PAGE_SCROLL = 8;
-        int SEARCH_BAR_TAP = 9;
-        int SERP_NAVIGATION = 10;
-        int TAB_PROMOTION = 11;
-        int CLICK = 12;
-        int SWIPE = 13;
-        int FLING = 14;
-        int OPTIN = 15;
-        int OPTOUT = 16;
-        int CLOSE_BUTTON = 17;
-        int PANEL_SUPPRESS = 18;
-        int PANEL_UNSUPPRESS = 19;
-        int TAP_SUPPRESS = 20;
+    public enum StateChangeReason {
+        UNKNOWN,
+        RESET,
+        BACK_PRESS,
+        TEXT_SELECT_TAP,
+        TEXT_SELECT_LONG_PRESS,
+        INVALID_SELECTION,
+        CLEARED_SELECTION,
+        BASE_PAGE_TAP,
+        BASE_PAGE_SCROLL,
+        SEARCH_BAR_TAP,
+        SERP_NAVIGATION,
+        TAB_PROMOTION,
+        CLICK,
+        SWIPE,
+        FLING,
+        OPTIN,
+        OPTOUT,
+        CLOSE_BUTTON,
+        PANEL_SUPPRESS,
+        PANEL_UNSUPPRESS,
+        TAP_SUPPRESS
     }
 
     /** The activity this panel is in. */
@@ -171,7 +158,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     }
 
     @Override
-    protected void onClosed(@StateChangeReason int reason) {
+    protected void onClosed(StateChangeReason reason) {
         mPanelShown = false;
         setBasePageTextControlsVisibility(true);
         destroyComponents();
@@ -197,7 +184,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     }
 
     @Override
-    public void closePanel(@StateChangeReason int reason, boolean animate) {
+    public void closePanel(StateChangeReason reason, boolean animate) {
         // If the panel hasn't peeked, then it shouldn't need to close.
         if (!mPanelShown) return;
 
@@ -208,7 +195,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      * Request that this panel be shown.
      * @param reason The reason the panel is being shown.
      */
-    public void requestPanelShow(@StateChangeReason int reason) {
+    public void requestPanelShow(StateChangeReason reason) {
         if (mPanelShown) return;
 
         if (mPanelManager != null) {
@@ -217,7 +204,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     }
 
     @Override
-    public void peekPanel(@StateChangeReason int reason) {
+    public void peekPanel(StateChangeReason reason) {
         // TODO(mdjones): This is making a protected API public and should be removed. Animation
         // should only be controlled by the OverlayPanelManager.
 
@@ -285,7 +272,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      * child classes.
      * @return The panel's display priority.
      */
-    public @PanelPriority int getPriority() {
+    public PanelPriority getPriority() {
         return PanelPriority.MEDIUM;
     }
 
@@ -743,7 +730,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     // EdgeSwipeHandler implementation.
 
     @Override
-    public void swipeStarted(@ScrollDirection int direction, float x, float y) {
+    public void swipeStarted(ScrollDirection direction, float x, float y) {
         if (onInterceptBarSwipe()) {
             mIgnoreSwipeEvents = true;
             return;
@@ -773,7 +760,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     }
 
     @Override
-    public boolean isSwipeEnabled(@ScrollDirection int direction) {
+    public boolean isSwipeEnabled(ScrollDirection direction) {
         return direction == ScrollDirection.UP && isShowing();
     }
 

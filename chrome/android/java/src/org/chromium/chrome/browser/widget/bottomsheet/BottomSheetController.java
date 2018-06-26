@@ -117,7 +117,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             private Tab mCurrentTab = tabModelSelector.getCurrentTab();
 
             @Override
-            public void didSelectTab(Tab tab, @TabModel.TabSelectionType int type, int lastId) {
+            public void didSelectTab(Tab tab, TabModel.TabSelectionType type, int lastId) {
                 if (tab == mCurrentTab) return;
                 mCurrentTab = tab;
                 clearRequestsAndHide();

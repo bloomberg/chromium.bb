@@ -37,12 +37,11 @@ public class DownloadForegroundServiceManager {
     private static class DownloadUpdate {
         int mNotificationId;
         Notification mNotification;
-        @DownloadNotificationService2.DownloadStatus
-        int mDownloadStatus;
+        DownloadNotificationService2.DownloadStatus mDownloadStatus;
         Context mContext;
 
         DownloadUpdate(int notificationId, Notification notification,
-                @DownloadNotificationService2.DownloadStatus int downloadStatus, Context context) {
+                DownloadNotificationService2.DownloadStatus downloadStatus, Context context) {
             mNotificationId = notificationId;
             mNotification = notification;
             mDownloadStatus = downloadStatus;
@@ -84,7 +83,7 @@ public class DownloadForegroundServiceManager {
     public DownloadForegroundServiceManager() {}
 
     public void updateDownloadStatus(Context context,
-            @DownloadNotificationService2.DownloadStatus int downloadStatus, int notificationId,
+            DownloadNotificationService2.DownloadStatus downloadStatus, int notificationId,
             Notification notification) {
         if (downloadStatus != DownloadNotificationService2.DownloadStatus.IN_PROGRESS) {
             Log.w(TAG,
@@ -183,7 +182,7 @@ public class DownloadForegroundServiceManager {
         return null;
     }
 
-    private boolean isActive(@DownloadNotificationService2.DownloadStatus int downloadStatus) {
+    private boolean isActive(DownloadNotificationService2.DownloadStatus downloadStatus) {
         return downloadStatus == DownloadNotificationService2.DownloadStatus.IN_PROGRESS;
     }
 
@@ -266,7 +265,7 @@ public class DownloadForegroundServiceManager {
     /** Helper code to stop and unbind service. */
 
     @VisibleForTesting
-    void stopAndUnbindService(@DownloadNotificationService2.DownloadStatus int downloadStatus) {
+    void stopAndUnbindService(DownloadNotificationService2.DownloadStatus downloadStatus) {
         Log.w(TAG, "stopAndUnbindService status: " + downloadStatus);
         Preconditions.checkNotNull(mBoundService);
         mIsServiceBound = false;

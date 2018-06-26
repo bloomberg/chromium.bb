@@ -27,10 +27,10 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 @Config(manifest = Config.NONE)
 public class NativePageFactoryTest {
     private static class MockNativePage implements NativePage {
-        public final @NativePageType int type;
+        public final NativePageType type;
         public int updateForUrlCalls;
 
-        public MockNativePage(@NativePageType int type) {
+        public MockNativePage(NativePageType type) {
             this.type = type;
         }
 
@@ -47,11 +47,11 @@ public class NativePageFactoryTest {
         @Override
         public String getHost() {
             switch (type) {
-                case NativePageType.NTP:
+                case NTP:
                     return UrlConstants.NTP_HOST;
-                case NativePageType.BOOKMARKS:
+                case BOOKMARKS:
                     return UrlConstants.BOOKMARKS_HOST;
-                case NativePageType.RECENT_TABS:
+                case RECENT_TABS:
                     return UrlConstants.RECENT_TABS_HOST;
                 default:
                     Assert.fail("Unexpected NativePageType: " + type);
@@ -108,9 +108,9 @@ public class NativePageFactoryTest {
 
     private static class UrlCombo {
         public String url;
-        public @NativePageType int expectedType;
+        public NativePageType expectedType;
 
-        public UrlCombo(String url, @NativePageType int expectedType) {
+        public UrlCombo(String url, NativePageType expectedType) {
             this.url = url;
             this.expectedType = expectedType;
         }
@@ -195,13 +195,12 @@ public class NativePageFactoryTest {
      */
     @Test
     public void testCreateNativePage() {
-        @NativePageType
-        int[] candidateTypes = new int[] {NativePageType.NONE, NativePageType.NTP,
-                NativePageType.BOOKMARKS, NativePageType.RECENT_TABS};
+        NativePageType[] candidateTypes = new NativePageType[] { NativePageType.NONE,
+            NativePageType.NTP, NativePageType.BOOKMARKS, NativePageType.RECENT_TABS };
         for (boolean isIncognito : new boolean[] {true, false}) {
             for (UrlCombo urlCombo : VALID_URLS) {
                 if (isIncognito && !isValidInIncognito(urlCombo)) continue;
-                for (@NativePageType int candidateType : candidateTypes) {
+                for (NativePageType candidateType : candidateTypes) {
                     MockNativePage candidate = candidateType == NativePageType.NONE ? null
                             : new MockNativePage(candidateType);
                     MockNativePage page = (MockNativePage) NativePageFactory.createNativePageForURL(

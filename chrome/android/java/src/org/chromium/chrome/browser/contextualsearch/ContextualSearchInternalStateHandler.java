@@ -15,7 +15,7 @@ public interface ContextualSearchInternalStateHandler {
      * Hides the Contextual Search user interface.
      * @see ContextualSearchInternalStateController.InternalState#IDLE
      */
-    void hideContextualSearchUi(@StateChangeReason int reason);
+    void hideContextualSearchUi(StateChangeReason reason);
 
     /**
      * Shows the Contextual Search user interface for a Tap.

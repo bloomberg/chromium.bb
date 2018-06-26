@@ -106,15 +106,16 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
 
         mHandler.postDelayed(mTimeoutRunnable, sTimeoutDurationMs);
 
-        mTabModelObserver = new TabModelSelectorTabModelObserver(mActivity.getTabModelSelector()) {
+        mTabModelObserver = new TabModelSelectorTabModelObserver(
+                mActivity.getTabModelSelector()) {
             @Override
-            public void didAddTab(Tab tab, @TabLaunchType int type) {
-                if (type == TabLaunchType.FROM_RESTORE) return;
+            public void didAddTab(Tab tab, TabLaunchType type) {
+                if (TabLaunchType.FROM_RESTORE.equals(type)) return;
                 if (NewTabPage.isNTPUrl(tab.getUrl())) recordUserBehavior(NTP_CREATED);
             }
 
             @Override
-            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
+            public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
                 recordUserBehavior(SWITCH_TABS);
             }
         };

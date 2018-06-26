@@ -14,6 +14,7 @@ import java.util.List;
  * An interface to be notified about changes to a TabModel.
  */
 public interface TabModelObserver {
+
     /**
      * Called when a tab is selected.
      *
@@ -22,7 +23,7 @@ public interface TabModelObserver {
      * @param lastId The ID of the last selected tab, or {@link Tab#INVALID_TAB_ID} if no tab was
      *               selected.
      */
-    void didSelectTab(Tab tab, @TabSelectionType int type, int lastId);
+    void didSelectTab(Tab tab, TabSelectionType type, int lastId);
 
     /**
      * Called when a tab starts closing.
@@ -46,7 +47,7 @@ public interface TabModelObserver {
      * @param tab The tab about to be added.
      * @param type The type of tab launch.
      */
-    void willAddTab(Tab tab, @TabLaunchType int type);
+    void willAddTab(Tab tab, TabLaunchType type);
 
     /**
      * Called after a tab has been added to the {@link TabModel}.
@@ -54,7 +55,7 @@ public interface TabModelObserver {
      * @param tab The newly added tab.
      * @param type The type of tab launch.
      */
-    void didAddTab(Tab tab, @TabLaunchType int type);
+    void didAddTab(Tab tab, TabLaunchType type);
 
     /**
      * Called after a tab has been moved from one position in the {@link TabModel} to another.

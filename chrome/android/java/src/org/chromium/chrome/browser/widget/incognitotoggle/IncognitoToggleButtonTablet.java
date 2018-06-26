@@ -63,7 +63,7 @@ public class IncognitoToggleButtonTablet extends IncognitoToggleButton {
 
             mTabModelObserver = new EmptyTabModelObserver() {
                 @Override
-                public void didAddTab(Tab tab, @TabLaunchType int type) {
+                public void didAddTab(Tab tab, TabLaunchType type) {
                     updateButtonVisibility();
                 }
 

@@ -596,8 +596,8 @@ public class ExternalNavigationHandler {
      * @return OVERRIDE_WITH_EXTERNAL_INTENT when we successfully started market activity,
      *         NO_OVERRIDE otherwise.
      */
-    private OverrideUrlLoadingResult sendIntentToMarket(
-            String packageName, String marketReferrer, ExternalNavigationParams params) {
+    private OverrideUrlLoadingResult sendIntentToMarket(String packageName, String marketReferrer,
+            ExternalNavigationParams params) {
         try {
             Uri marketUri = new Uri.Builder()
                     .scheme("market")

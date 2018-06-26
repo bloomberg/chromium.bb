@@ -65,7 +65,7 @@ public final class DownloadForegroundServiceManagerTest {
         void startAndBindServiceInternal(Context context) {}
 
         @Override
-        void stopAndUnbindService(@DownloadNotificationService2.DownloadStatus int downloadStatus) {
+        void stopAndUnbindService(DownloadNotificationService2.DownloadStatus downloadStatus) {
             mIsServiceBound = false;
             super.stopAndUnbindService(downloadStatus);
         }

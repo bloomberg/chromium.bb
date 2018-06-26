@@ -77,8 +77,7 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
         int MAX_NUMBER_MISSING = 4;
         int ROLLED_NON_ZERO_NUMBER = 5;
         int USER_SELECTED_FOR_SURVEY = 6;
-        // Number of entries
-        int NUM_ENTRIES = 7;
+        int ENUM_BOUNDARY = 7;
     }
 
     /**
@@ -93,8 +92,7 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
         int CLOSE_BUTTON = 1;
         int VISIBLE_INDIRECT = 2;
         int HIDDEN_INDIRECT = 3;
-        // Number of entries
-        int NUM_ENTRIES = 4;
+        int ENUM_BOUNDARY = 4;
     }
 
     private TabModelSelector mTabModelSelector;
@@ -445,12 +443,12 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
 
     private void recordSurveyFilteringResult(@FilteringResult int value) {
         RecordHistogram.recordEnumeratedHistogram(
-                "Android.Survey.SurveyFilteringResults", value, FilteringResult.NUM_ENTRIES);
+                "Android.Survey.SurveyFilteringResults", value, FilteringResult.ENUM_BOUNDARY);
     }
 
     private void recordInfoBarClosingState(@InfoBarClosingState int value) {
         RecordHistogram.recordEnumeratedHistogram(
-                "Android.Survey.InfoBarClosingState", value, InfoBarClosingState.NUM_ENTRIES);
+                "Android.Survey.InfoBarClosingState", value, InfoBarClosingState.ENUM_BOUNDARY);
     }
 
     static class StartDownloadIfEligibleTask extends AsyncTask<Void, Void, Boolean> {

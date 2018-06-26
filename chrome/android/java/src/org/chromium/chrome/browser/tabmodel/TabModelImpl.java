@@ -120,7 +120,7 @@ public class TabModelImpl extends TabModelJniBridge {
      * step notifications.
      */
     @Override
-    public void addTab(Tab tab, int index, @TabLaunchType int type) {
+    public void addTab(Tab tab, int index, TabLaunchType type) {
         try {
             TraceEvent.begin("TabModelImpl.addTab");
 
@@ -441,7 +441,7 @@ public class TabModelImpl extends TabModelJniBridge {
     }
 
     // TODO(aurimas): Move this method to TabModelSelector when notifications move there.
-    private int getLastId(@TabSelectionType int type) {
+    private int getLastId(TabSelectionType type) {
         if (type == TabSelectionType.FROM_CLOSE || type == TabSelectionType.FROM_EXIT) {
             return Tab.INVALID_TAB_ID;
         }
@@ -461,7 +461,7 @@ public class TabModelImpl extends TabModelJniBridge {
 
     // This function is complex and its behavior depends on persisted state, including mIndex.
     @Override
-    public void setIndex(int i, final @TabSelectionType int type) {
+    public void setIndex(int i, final TabSelectionType type) {
         try {
             TraceEvent.begin("TabModelImpl.setIndex");
             int lastId = getLastId(type);
@@ -517,8 +517,8 @@ public class TabModelImpl extends TabModelJniBridge {
 
         for (TabModelObserver obs : mObservers) obs.willCloseTab(tab, animate);
 
-        @TabSelectionType
-        int selectionType = uponExit ? TabSelectionType.FROM_EXIT : TabSelectionType.FROM_CLOSE;
+        TabSelectionType selectionType =
+                uponExit ? TabSelectionType.FROM_EXIT : TabSelectionType.FROM_CLOSE;
         boolean pauseMedia = canUndo;
         boolean updateRewoundList = !canUndo;
         removeTabAndSelectNext(tab, selectionType, pauseMedia, updateRewoundList);
@@ -527,8 +527,8 @@ public class TabModelImpl extends TabModelJniBridge {
     /**
      * Removes the given tab from the tab model and selects a new tab.
      */
-    private void removeTabAndSelectNext(Tab tab, @TabSelectionType int selectionType,
-            boolean pauseMedia, boolean updateRewoundList) {
+    private void removeTabAndSelectNext(Tab tab, TabSelectionType selectionType, boolean pauseMedia,
+            boolean updateRewoundList) {
         assert selectionType == TabSelectionType.FROM_CLOSE
                 || selectionType == TabSelectionType.FROM_EXIT;
 
@@ -750,7 +750,8 @@ public class TabModelImpl extends TabModelJniBridge {
         // First try to recover tab from rewound list, same as {@link UndoBarController}.
         if (mRewoundList.hasPendingClosures()) {
             Tab tab = mRewoundList.getNextRewindableTab();
-            if (tab != null) cancelTabClosure(tab.getId());
+            if (tab == null) return;
+            cancelTabClosure(tab.getId());
             return;
         }
 

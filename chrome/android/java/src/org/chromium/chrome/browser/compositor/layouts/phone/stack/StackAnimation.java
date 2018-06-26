@@ -10,7 +10,6 @@ import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTa
 import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab.Property.SCALE;
 import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab.Property.SCROLL_OFFSET;
 
-import android.support.annotation.IntDef;
 import android.view.animation.Interpolator;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -20,36 +19,26 @@ import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
 /**
  * A factory that builds animations for the tab stack.
  */
 public abstract class StackAnimation {
-    @IntDef({OverviewAnimationType.ENTER_STACK, OverviewAnimationType.NEW_TAB_OPENED,
-            OverviewAnimationType.TAB_FOCUSED, OverviewAnimationType.VIEW_MORE,
-            OverviewAnimationType.REACH_TOP, OverviewAnimationType.DISCARD,
-            OverviewAnimationType.DISCARD_ALL, OverviewAnimationType.UNDISCARD,
-            OverviewAnimationType.START_PINCH, OverviewAnimationType.FULL_ROLL,
-            OverviewAnimationType.NONE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface OverviewAnimationType {
-        int ENTER_STACK = 0;
-        int NEW_TAB_OPENED = 1;
-        int TAB_FOCUSED = 2;
-        int VIEW_MORE = 3;
-        int REACH_TOP = 4;
+    public enum OverviewAnimationType {
+        ENTER_STACK,
+        NEW_TAB_OPENED,
+        TAB_FOCUSED,
+        VIEW_MORE,
+        REACH_TOP,
         // Commit/uncommit tab discard animations
-        int DISCARD = 5;
-        int DISCARD_ALL = 6;
-        int UNDISCARD = 7;
+        DISCARD,
+        DISCARD_ALL,
+        UNDISCARD,
         // Start pinch animation un-tilt all the tabs.
-        int START_PINCH = 8;
+        START_PINCH,
         // Special animation
-        int FULL_ROLL = 9;
+        FULL_ROLL,
         // Used for when the current state of the system is not animating
-        int NONE = 10;
+        NONE,
     }
 
     protected static final int ENTER_STACK_TOOLBAR_ALPHA_DURATION = 100;
@@ -167,41 +156,41 @@ public abstract class StackAnimation {
      * @param discardRange  The range of the discard amount value.
      * @return              The resulting TabSwitcherAnimation that will animate the tabs.
      */
-    public ChromeAnimation<?> createAnimatorSetForType(@OverviewAnimationType int type, Stack stack,
+    public ChromeAnimation<?> createAnimatorSetForType(OverviewAnimationType type, Stack stack,
             StackTab[] tabs, int focusIndex, int sourceIndex, int spacing, float discardRange) {
         ChromeAnimation<?> set = null;
 
         if (tabs != null) {
             switch (type) {
-                case OverviewAnimationType.ENTER_STACK:
+                case ENTER_STACK:
                     set = createEnterStackAnimatorSet(tabs, focusIndex, spacing);
                     break;
-                case OverviewAnimationType.TAB_FOCUSED:
+                case TAB_FOCUSED:
                     set = createTabFocusedAnimatorSet(tabs, focusIndex, spacing);
                     break;
-                case OverviewAnimationType.VIEW_MORE:
+                case VIEW_MORE:
                     set = createViewMoreAnimatorSet(tabs, sourceIndex);
                     break;
-                case OverviewAnimationType.REACH_TOP:
+                case REACH_TOP:
                     set = createReachTopAnimatorSet(tabs);
                     break;
-                case OverviewAnimationType.DISCARD:
+                case DISCARD:
                 // Purposeful fall through
-                case OverviewAnimationType.DISCARD_ALL:
+                case DISCARD_ALL:
                 // Purposeful fall through
-                case OverviewAnimationType.UNDISCARD:
+                case UNDISCARD:
                     set = createUpdateDiscardAnimatorSet(stack, tabs, spacing, discardRange);
                     break;
-                case OverviewAnimationType.NEW_TAB_OPENED:
+                case NEW_TAB_OPENED:
                     set = createNewTabOpenedAnimatorSet(tabs, focusIndex, discardRange);
                     break;
-                case OverviewAnimationType.START_PINCH:
+                case START_PINCH:
                     set = createStartPinchAnimatorSet(tabs);
                     break;
-                case OverviewAnimationType.FULL_ROLL:
+                case FULL_ROLL:
                     set = createFullRollAnimatorSet(tabs);
                     break;
-                case OverviewAnimationType.NONE:
+                case NONE:
                     break;
             }
         }
