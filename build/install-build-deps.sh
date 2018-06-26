@@ -184,6 +184,7 @@ dev_list="\
   rpm
   ruby
   subversion
+  uuid-dev
   wdiff
   x11-utils
   xcompmgr
