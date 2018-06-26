@@ -28,10 +28,21 @@ enum class Weekday {
   kCount,
 };
 
+struct TimeWindowLimitBoundaries {
+  base::Time starts;
+  base::Time ends;
+};
+
 struct TimeWindowLimitEntry {
   TimeWindowLimitEntry();
 
+  // Whether the time window limit entry ends on the following day from its
+  // start.
   bool IsOvernight() const;
+
+  // Returns a pair containing the timestamps for the start and end of a time
+  // window limit. The input parameter is the UTC midnight on of the start day.
+  TimeWindowLimitBoundaries GetLimits(base::Time start_day_midnight);
 
   // Start time of time window limit. This is the distance from midnight.
   base::TimeDelta starts_at;
@@ -138,8 +149,12 @@ struct State {
   // The policy that will be active in the next state.
   ActivePolicies next_state_active_policy;
 
+  // This is the next time that the user's session will be unlocked. This is
+  // only set when is_locked=true;
+  base::Time next_unlock_time;
+
   // Last time the state changed.
-  base::Time last_state_changed = base::Time();
+  base::Time last_state_changed;
 };
 
 // Returns the current state of the user session with the given usage time limit
