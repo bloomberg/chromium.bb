@@ -170,6 +170,8 @@ void SurfaceManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
   for (auto& surface_id : temp_refs_to_clear)
     RemoveTemporaryReference(surface_id, RemovedReason::INVALIDATED);
 
+  dependency_tracker_.OnFrameSinkInvalidated(frame_sink_id);
+
   GarbageCollectSurfaces();
 }
 

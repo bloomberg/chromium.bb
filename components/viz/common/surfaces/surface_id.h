@@ -40,6 +40,10 @@ class VIZ_COMMON_EXPORT SurfaceId {
                       const LocalSurfaceId& local_surface_id)
       : frame_sink_id_(frame_sink_id), local_surface_id_(local_surface_id) {}
 
+  static constexpr SurfaceId MaxSequenceId(const FrameSinkId& frame_sink_id) {
+    return SurfaceId(frame_sink_id, LocalSurfaceId::MaxSequenceId());
+  }
+
   bool is_valid() const {
     return frame_sink_id_.is_valid() && local_surface_id_.is_valid();
   }

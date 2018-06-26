@@ -2496,5 +2496,30 @@ TEST_F(SurfaceSynchronizationTest, SetPreviousFrameSurfaceDoesntCrash) {
                                          MakeDefaultCompositorFrame());
 }
 
+// This test verifies that once a frame sink become invalidated, it should
+// immediately unblock all pending frames depending on that sink.
+TEST_F(SurfaceSynchronizationTest,
+       InvalidatedFrameSinkShouldNotBlockActivation) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+
+  // The parent submitted a frame that refers to a future child surface.
+  EXPECT_FALSE(parent_support().last_activated_surface_id().is_valid());
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(), MakeCompositorFrame({child_id1}, {}, {}));
+
+  // The frame is pending because the child frame hasn't be submitted yet.
+  EXPECT_FALSE(parent_surface()->HasActiveFrame());
+  EXPECT_TRUE(parent_surface()->HasPendingFrame());
+  EXPECT_FALSE(parent_support().last_activated_surface_id().is_valid());
+
+  // Killing the child sink should unblock the frame because it is known
+  // the dependency can never fulfill.
+  frame_sink_manager().InvalidateFrameSinkId(kChildFrameSink1);
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_FALSE(parent_surface()->HasPendingFrame());
+  EXPECT_EQ(parent_id, parent_support().last_activated_surface_id());
+}
+
 }  // namespace test
 }  // namespace viz

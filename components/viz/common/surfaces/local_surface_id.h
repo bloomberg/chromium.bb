@@ -28,6 +28,10 @@ constexpr uint32_t kInvalidParentSequenceNumber = 0;
 constexpr uint32_t kInvalidChildSequenceNumber = 0;
 constexpr uint32_t kInitialParentSequenceNumber = 1;
 constexpr uint32_t kInitialChildSequenceNumber = 1;
+constexpr uint32_t kMaxParentSequenceNumber =
+    std::numeric_limits<uint32_t>::max();
+constexpr uint32_t kMaxChildSequenceNumber =
+    std::numeric_limits<uint32_t>::max();
 
 // This struct is the part of SurfaceId that can be modified by the client.
 // LocalSurfaceId uniquely identifies a surface among the surfaces created by a
@@ -81,6 +85,11 @@ class VIZ_COMMON_EXPORT LocalSurfaceId {
       : parent_sequence_number_(parent_sequence_number),
         child_sequence_number_(child_sequence_number),
         embed_token_(embed_token) {}
+
+  static constexpr LocalSurfaceId MaxSequenceId() {
+    return LocalSurfaceId(kMaxParentSequenceNumber, kMaxChildSequenceNumber,
+                          base::UnguessableToken());
+  }
 
   constexpr bool is_valid() const {
     return parent_sequence_number_ != kInvalidParentSequenceNumber &&

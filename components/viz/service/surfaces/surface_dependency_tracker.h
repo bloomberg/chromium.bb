@@ -40,6 +40,7 @@ class VIZ_SERVICE_EXPORT SurfaceDependencyTracker {
       const base::flat_set<FrameSinkId>& added_dependencies,
       const base::flat_set<FrameSinkId>& removed_dependencies);
   void OnSurfaceDiscarded(Surface* surface);
+  void OnFrameSinkInvalidated(const FrameSinkId& frame_sink_id);
 
  private:
   // If |surface| has a dependent embedder frame, then it inherits the parent's
