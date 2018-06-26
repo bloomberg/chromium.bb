@@ -9,6 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
+#include "net/third_party/quic/platform/api/quic_interval.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
@@ -90,7 +91,7 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
   }
   if (bytes_received_.Empty() ||
       starting_offset >= bytes_received_.rbegin()->max() ||
-      bytes_received_.IsDisjoint(net::Interval<QuicStreamOffset>(
+      bytes_received_.IsDisjoint(QuicInterval<QuicStreamOffset>(
           starting_offset, starting_offset + size))) {
     // Optimization for the typical case, when all data is newly received.
     if (!bytes_received_.Empty() &&
@@ -98,7 +99,7 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
       // Extend the right edge of last interval.
       // TODO(fayang): Encapsulate this into a future version of QuicIntervalSet
       // if this is more efficient than Add.
-      const_cast<net::Interval<QuicPacketNumber>*>(&(*bytes_received_.rbegin()))
+      const_cast<QuicInterval<QuicPacketNumber>*>(&(*bytes_received_.rbegin()))
           ->SetMax(starting_offset + size);
     } else {
       bytes_received_.Add(starting_offset, starting_offset + size);

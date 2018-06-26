@@ -5,13 +5,13 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_FRAMES_QUIC_ACK_FRAME_H_
 #define NET_THIRD_PARTY_QUIC_CORE_FRAMES_QUIC_ACK_FRAME_H_
 
-#include <deque>
 #include <ostream>
 
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
+#include "net/third_party/quic/platform/api/quic_interval.h"
 
 namespace quic {
 
@@ -28,9 +28,9 @@ class QUIC_EXPORT_PRIVATE PacketNumberQueue {
   PacketNumberQueue& operator=(const PacketNumberQueue& other);
   PacketNumberQueue& operator=(PacketNumberQueue&& other);
 
-  typedef QuicDeque<net::Interval<QuicPacketNumber>>::const_iterator
+  typedef QuicDeque<QuicInterval<QuicPacketNumber>>::const_iterator
       const_iterator;
-  typedef QuicDeque<net::Interval<QuicPacketNumber>>::const_reverse_iterator
+  typedef QuicDeque<QuicInterval<QuicPacketNumber>>::const_reverse_iterator
       const_reverse_iterator;
 
   // Adds |packet_number| to the set of packets in the queue.
@@ -86,7 +86,7 @@ class QUIC_EXPORT_PRIVATE PacketNumberQueue {
       const PacketNumberQueue& q);
 
  private:
-  QuicDeque<net::Interval<QuicPacketNumber>> packet_number_deque_;
+  QuicDeque<QuicInterval<QuicPacketNumber>> packet_number_deque_;
 };
 
 struct QUIC_EXPORT_PRIVATE QuicAckFrame {
