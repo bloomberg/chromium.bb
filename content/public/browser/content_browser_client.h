@@ -1019,7 +1019,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   GetTaskSchedulerInitParams();
 
   // Allows the embedder to register one or more URLLoaderThrottles for a
-  // URL request. This is used only when --enable-network-service is in effect.
+  // navigation request.
+  // This is called both when the network service is enabled and disabled.
   // This is called on the IO thread.
   virtual std::vector<std::unique_ptr<URLLoaderThrottle>>
   CreateURLLoaderThrottles(
