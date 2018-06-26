@@ -20,6 +20,7 @@ namespace content {
 
 class BackgroundFetchDataManager;
 class CacheStorageManager;
+class ChromeBlobStorageContext;
 class ServiceWorkerContextWrapper;
 
 // Note that this also handles non-error cases where the NONE is NONE.
@@ -62,6 +63,8 @@ class DatabaseTask {
   CacheStorageManager* cache_manager();
 
   std::set<std::string>& ref_counted_unique_ids();
+
+  ChromeBlobStorageContext* blob_storage_context();
 
   BackgroundFetchDataManager* data_manager() { return data_manager_; }
 

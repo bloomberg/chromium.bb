@@ -5,15 +5,34 @@
 #include "content/browser/background_fetch/storage/mark_request_complete_task.h"
 
 #include "base/barrier_closure.h"
+#include "base/guid.h"
+#include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "services/network/public/cpp/cors/cors.h"
+#include "storage/browser/blob/blob_data_builder.h"
+#include "storage/browser/blob/blob_impl.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 namespace content {
 
 namespace background_fetch {
+
+namespace {
+
+// Returns whether the response contained in the Background Fetch |request| is
+// considered OK. See https://fetch.spec.whatwg.org/#ok-status aka a successful
+// 2xx status per https://tools.ietf.org/html/rfc7231#section-6.3.
+bool IsOK(const BackgroundFetchRequestInfo& request) {
+  int status = request.GetResponseCode();
+  return network::cors::IsOkStatus(status);
+}
+
+}  // namespace
 
 MarkRequestCompleteTask::MarkRequestCompleteTask(
     BackgroundFetchDataManager* data_manager,
@@ -24,8 +43,7 @@ MarkRequestCompleteTask::MarkRequestCompleteTask(
       registration_id_(registration_id),
       request_info_(std::move(request_info)),
       callback_(std::move(callback)),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 MarkRequestCompleteTask::~MarkRequestCompleteTask() = default;
 
@@ -40,9 +58,21 @@ void MarkRequestCompleteTask::Start() {
 
 void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
   auto response = std::make_unique<ServiceWorkerResponse>();
+  response->url_list = request_info_->GetURLChain();
+  // TODO(crbug.com/838837): fill error and cors_exposed_header_names in
+  // response.
+  response->response_type = network::mojom::FetchResponseType::kDefault;
+  response->response_time = request_info_->GetResponseTime();
 
-  is_response_successful_ = data_manager()->FillServiceWorkerResponse(
-      *request_info_, registration_id_.origin(), response.get());
+  BackgroundFetchCrossOriginFilter filter(registration_id_.origin(),
+                                          *request_info_);
+  if (filter.CanPopulateBody())
+    PopulateResponseBody(response.get());
+  else
+    is_response_successful_ = false;
+
+  if (!IsOK(*request_info_))
+    is_response_successful_ = false;
 
   // A valid non-empty url is needed if we want to write to the cache.
   if (!request_info_->fetch_request().url.is_valid()) {
@@ -56,6 +86,44 @@ void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
       base::BindOnce(&MarkRequestCompleteTask::DidOpenCache,
                      weak_factory_.GetWeakPtr(), std::move(response),
                      std::move(done_closure)));
+}
+
+void MarkRequestCompleteTask::PopulateResponseBody(
+    ServiceWorkerResponse* response) {
+  // Include the status code, status text and the response's body as a blob
+  // when this is allowed by the CORS protocol.
+  response->status_code = request_info_->GetResponseCode();
+  response->status_text = request_info_->GetResponseText();
+  response->headers.insert(request_info_->GetResponseHeaders().begin(),
+                           request_info_->GetResponseHeaders().end());
+
+  if (request_info_->GetFileSize() == 0 || request_info_->GetFilePath().empty())
+    return;
+
+  DCHECK(blob_storage_context());
+
+  auto blob_builder =
+      std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID());
+  blob_builder->AppendFile(request_info_->GetFilePath(), 0 /* offset */,
+                           request_info_->GetFileSize(),
+                           base::Time() /* expected_modification_time */);
+
+  auto blob_data_handle = GetBlobStorageContext(blob_storage_context())
+                              ->AddFinishedBlob(std::move(blob_builder));
+
+  // TODO(rayankans): Appropriately handle !blob_data_handle
+  if (!blob_data_handle)
+    return;
+
+  response->blob_uuid = blob_data_handle->uuid();
+  response->blob_size = blob_data_handle->size();
+  blink::mojom::BlobPtr blob_ptr;
+  storage::BlobImpl::Create(
+      std::make_unique<storage::BlobDataHandle>(*blob_data_handle),
+      MakeRequest(&blob_ptr));
+
+  response->blob =
+      base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
 }
 
 void MarkRequestCompleteTask::DidOpenCache(

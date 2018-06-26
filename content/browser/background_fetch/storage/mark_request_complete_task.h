@@ -37,6 +37,8 @@ class MarkRequestCompleteTask : public DatabaseTask {
  private:
   void StoreResponse(base::OnceClosure done_closure);
 
+  void PopulateResponseBody(ServiceWorkerResponse* response);
+
   void DidOpenCache(std::unique_ptr<ServiceWorkerResponse> response,
                     base::OnceClosure done_closure,
                     CacheStorageCacheHandle handle,
@@ -70,7 +72,7 @@ class MarkRequestCompleteTask : public DatabaseTask {
   MarkedCompleteCallback callback_;
 
   proto::BackgroundFetchCompletedRequest completed_request_;
-  bool is_response_successful_;
+  bool is_response_successful_ = true;
 
   base::WeakPtrFactory<MarkRequestCompleteTask> weak_factory_;  // Keep as last.
 

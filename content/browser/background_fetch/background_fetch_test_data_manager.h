@@ -18,7 +18,6 @@ class BrowserContext;
 class CacheStorageManager;
 class MockQuotaManager;
 class ServiceWorkerContextWrapper;
-struct ServiceWorkerResponse;
 class StoragePartition;
 
 // Test DataManager that sets up a CacheStorageManager suited for test
@@ -33,10 +32,6 @@ class BackgroundFetchTestDataManager : public BackgroundFetchDataManager {
       bool mock_fill_response = false);
 
   ~BackgroundFetchTestDataManager() override;
-
-  bool FillServiceWorkerResponse(const BackgroundFetchRequestInfo& request,
-                                 const url::Origin& origin,
-                                 ServiceWorkerResponse* response) override;
 
   void InitializeOnIOThread() override;
 
