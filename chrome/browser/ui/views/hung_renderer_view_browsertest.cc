@@ -10,11 +10,15 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/browser_test_utils.h"
 
 // Interactive UI tests for the hung renderer (aka page unresponsive) dialog.
@@ -63,4 +67,21 @@ IN_PROC_BROWSER_TEST_F(HungRendererDialogViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(HungRendererDialogViewBrowserTest,
                        DISABLED_InvokeUi_MultiplePages) {
   ShowAndVerifyUi();
+}
+
+// This is a regression test for https://crbug.com/855369.
+IN_PROC_BROWSER_TEST_F(HungRendererDialogViewBrowserTest, InactiveWindow) {
+  // Simulate creation of the dialog, without initializing or showing it yet.
+  // This is what happens when HungRendererDialogView::ShowForWebContents
+  // returns early if the frame or the dialog are not active.
+  HungRendererDialogView::Create(browser()->window()->GetNativeWindow());
+  EXPECT_TRUE(HungRendererDialogView::GetInstance());
+
+  // Simulate the renderer becoming responsive again.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::RenderWidgetHost* render_widget_host =
+      web_contents->GetRenderWidgetHostView()->GetRenderWidgetHost();
+  content::WebContentsDelegate* web_contents_delegate = browser();
+  web_contents_delegate->RendererResponsive(web_contents, render_widget_host);
 }
