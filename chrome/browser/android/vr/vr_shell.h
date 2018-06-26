@@ -295,6 +295,7 @@ class VrShell : device::GvrGamepadDataProvider,
       jint action_type,
       jfloat x,
       jfloat y);
+  gfx::AcceleratedWidget GetRenderSurface();
 
  private:
   ~VrShell() override;
@@ -376,6 +377,9 @@ class VrShell : device::GvrGamepadDataProvider,
 
   base::Timer waiting_for_assets_component_timer_;
   bool can_load_new_assets_ = false;
+
+  base::WaitableEvent gl_surface_created_event_;
+  gfx::AcceleratedWidget surface_window_ = nullptr;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 

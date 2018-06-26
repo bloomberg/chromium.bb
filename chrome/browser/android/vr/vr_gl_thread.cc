@@ -27,21 +27,25 @@ namespace vr {
 VrGLThread::VrGLThread(
     const base::WeakPtr<VrShell>& weak_vr_shell,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
+    base::WaitableEvent* gl_surface_created_event,
     gvr_context* gvr_api,
     const UiInitialState& ui_initial_state,
     bool reprojected_rendering,
     bool daydream_support,
     bool pause_content,
-    bool low_density)
+    bool low_density,
+    base::OnceCallback<gfx::AcceleratedWidget()> surface_callback)
     : base::android::JavaHandlerThread("VrShellGL"),
       weak_vr_shell_(weak_vr_shell),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
+      gl_surface_created_event_(gl_surface_created_event),
       gvr_api_(gvr_api),
       ui_initial_state_(ui_initial_state),
       reprojected_rendering_(reprojected_rendering),
       daydream_support_(daydream_support),
       pause_content_(pause_content),
-      low_density_(low_density) {}
+      low_density_(low_density),
+      surface_callback_(std::move(surface_callback)) {}
 
 VrGLThread::~VrGLThread() {
   Stop();
@@ -91,8 +95,11 @@ void VrGLThread::Init() {
       ui_initial_state_.in_web_vr, pause_content_, low_density_);
 
   weak_browser_ui_ = vr_shell_gl_->GetBrowserUiWeakPtr();
-
-  vr_shell_gl_->Initialize();
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VrShellGl::Initialize, vr_shell_gl_->GetWeakPtr(),
+                     base::Unretained(gl_surface_created_event_),
+                     base::Passed(std::move(surface_callback_))));
 }
 
 void VrGLThread::CleanUp() {

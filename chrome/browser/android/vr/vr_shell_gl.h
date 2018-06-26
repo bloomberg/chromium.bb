@@ -35,6 +35,10 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace base {
+class WaitableEvent;
+}
+
 namespace gl {
 class GLContext;
 class GLFence;
@@ -272,8 +276,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
             bool low_density);
   ~VrShellGl() override;
 
-  void Initialize();
-  void InitializeGl(gfx::AcceleratedWidget window);
+  void Initialize(base::WaitableEvent* gl_surface_created_event,
+                  base::OnceCallback<gfx::AcceleratedWidget()> callback);
+  void InitializeGl(gfx::AcceleratedWidget surface);
 
   void OnTriggerEvent(bool pressed);
   void OnPause();
