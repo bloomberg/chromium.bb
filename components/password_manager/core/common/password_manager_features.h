@@ -23,7 +23,7 @@ extern const base::Feature kHtmlBasedUsernameDetector;
 extern const base::Feature kManualFallbacksFilling;
 extern const base::Feature kManualFallbacksFillingStandalone;
 extern const base::Feature kManualFallbacksGeneration;
-extern const base::Feature kEnableManualPasswordGeneration;
+extern const base::Feature kManualPasswordGeneration;
 extern const base::Feature kPasswordGenerationRequirements;
 extern const base::Feature kPasswordGenerationRequirementsDomainOverrides;
 extern const base::Feature kPasswordForceSaving;
