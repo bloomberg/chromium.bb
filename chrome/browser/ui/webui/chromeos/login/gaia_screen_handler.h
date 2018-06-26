@@ -132,7 +132,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   void HandleAuthExtensionLoaded();
   void HandleUpdateGaiaDialogSize(int width, int height);
-  void HandleHideGaiaDialog();
+  void HandleUpdateGaiaDialogVisibility(bool visible);
   void HandleShowAddUser(const base::ListValue* args);
   void HandleGetIsSamlUserPasswordless(const std::string& callback_id,
                                        const std::string& typed_email,
