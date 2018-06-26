@@ -1932,8 +1932,7 @@ public abstract class Stack implements ChromeAnimation.Animatable<Stack.Property
         mAnimationFactory = StackAnimation.createAnimationFactory(this, mLayout.getWidth(),
                 mLayout.getHeight(), mLayout.getTopBrowserControlsHeight(), mBorderTopPadding,
                 opaqueTopPadding, mBorderLeftPadding, mCurrentMode);
-        float dpToPx = mLayout.getContext().getResources().getDisplayMetrics().density;
-        mViewAnimationFactory = new StackViewAnimation(dpToPx, mLayout.getWidth());
+        mViewAnimationFactory = new StackViewAnimation(mLayout.getContext().getResources());
         if (mStackTabs == null) return;
         float width = mLayout.getWidth();
         for (int i = 0; i < mStackTabs.length; i++) {
