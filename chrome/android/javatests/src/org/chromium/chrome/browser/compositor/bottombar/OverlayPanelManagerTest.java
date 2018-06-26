@@ -40,13 +40,13 @@ public class OverlayPanelManagerTest {
      * Mocks the ContextualSearchPanel, so it doesn't create ContentViewCore.
      */
     private static class MockOverlayPanel extends OverlayPanel {
-        private PanelPriority mPriority;
+        private @PanelPriority int mPriority;
         private boolean mCanBeSuppressed;
         private ViewGroup mContainerView;
         private DynamicResourceLoader mResourceLoader;
 
         public MockOverlayPanel(Context context, LayoutUpdateHost updateHost,
-                OverlayPanelManager panelManager, PanelPriority priority,
+                OverlayPanelManager panelManager, @PanelPriority int priority,
                 boolean canBeSuppressed) {
             super(context, updateHost, panelManager);
             mPriority = priority;
@@ -80,7 +80,7 @@ public class OverlayPanelManagerTest {
         }
 
         @Override
-        public PanelPriority getPriority() {
+        public @PanelPriority int getPriority() {
             return mPriority;
         }
 
@@ -95,7 +95,7 @@ public class OverlayPanelManagerTest {
         }
 
         @Override
-        public void closePanel(StateChangeReason reason, boolean animate) {
+        public void closePanel(@StateChangeReason int reason, boolean animate) {
             // Immediately call onClosed rather than wait for animation to finish.
             onClosed(reason);
         }

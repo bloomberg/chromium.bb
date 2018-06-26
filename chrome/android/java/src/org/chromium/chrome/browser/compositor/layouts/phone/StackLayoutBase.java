@@ -419,7 +419,7 @@ public abstract class StackLayoutBase
     }
 
     @Override
-    public ViewportMode getViewportMode() {
+    public @ViewportMode int getViewportMode() {
         return ViewportMode.ALWAYS_FULLSCREEN;
     }
 
@@ -804,7 +804,7 @@ public abstract class StackLayoutBase
     }
 
     @Override
-    public void swipeStarted(long time, ScrollDirection direction, float x, float y) {
+    public void swipeStarted(long time, @ScrollDirection int direction, float x, float y) {
         mStacks.get(getTabStackIndex()).swipeStarted(time, direction, x, y);
     }
 

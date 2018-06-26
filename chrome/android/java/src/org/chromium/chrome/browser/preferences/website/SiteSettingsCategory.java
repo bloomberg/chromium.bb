@@ -66,7 +66,7 @@ public class SiteSettingsCategory {
         /**
          * Number of handled exceptions used for calculating array sizes.
          */
-        int NUM_CATEGORIES = 17;
+        int NUM_ENTRIES = 17;
     }
 
     /**
@@ -133,8 +133,8 @@ public class SiteSettingsCategory {
      *        that this category represents (or blank, if Android does not expose that permission).
      */
     protected SiteSettingsCategory(@Type int category, String androidPermission) {
-        assert Type.NUM_CATEGORIES == PREFERENCE_KEYS.length;
-        assert Type.NUM_CATEGORIES == CONTENT_TYPES.length;
+        assert Type.NUM_ENTRIES == PREFERENCE_KEYS.length;
+        assert Type.NUM_ENTRIES == CONTENT_TYPES.length;
 
         mCategory = category;
         mAndroidPermission = androidPermission;
@@ -160,7 +160,7 @@ public class SiteSettingsCategory {
     public static SiteSettingsCategory createFromContentSettingsType(int contentSettingsType) {
         assert contentSettingsType != -1;
         assert Type.ALL_SITES == 0;
-        for (@Type int i = Type.ALL_SITES; i < Type.NUM_CATEGORIES; i++) {
+        for (@Type int i = Type.ALL_SITES; i < Type.NUM_ENTRIES; i++) {
             if (CONTENT_TYPES[i] == contentSettingsType) return createFromType(i);
         }
         return null;

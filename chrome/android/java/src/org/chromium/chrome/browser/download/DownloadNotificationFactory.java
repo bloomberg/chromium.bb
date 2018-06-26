@@ -55,7 +55,7 @@ public final class DownloadNotificationFactory {
      * @return Notification that is built based on these parameters.
      */
     public static Notification buildNotification(Context context,
-            DownloadNotificationService2.DownloadStatus downloadStatus,
+            @DownloadNotificationService2.DownloadStatus int downloadStatus,
             DownloadUpdate downloadUpdate) {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
@@ -69,7 +69,7 @@ public final class DownloadNotificationFactory {
         int iconId;
 
         switch (downloadStatus) {
-            case IN_PROGRESS:
+            case DownloadNotificationService2.DownloadStatus.IN_PROGRESS:
                 Preconditions.checkNotNull(downloadUpdate.getProgress());
                 Preconditions.checkNotNull(downloadUpdate.getContentId());
                 Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
@@ -146,7 +146,7 @@ public final class DownloadNotificationFactory {
                 }
 
                 break;
-            case PAUSED:
+            case DownloadNotificationService2.DownloadStatus.PAUSED:
                 Preconditions.checkNotNull(downloadUpdate.getContentId());
                 Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
 
@@ -180,8 +180,7 @@ public final class DownloadNotificationFactory {
                 }
 
                 break;
-
-            case COMPLETED:
+            case DownloadNotificationService2.DownloadStatus.COMPLETED:
                 Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
 
                 if (downloadUpdate.getTotalBytes() > 0) {
@@ -231,12 +230,10 @@ public final class DownloadNotificationFactory {
                                     intent, PendingIntent.FLAG_UPDATE_CURRENT));
                 }
                 break;
-
-            case FAILED:
+            case DownloadNotificationService2.DownloadStatus.FAILED:
                 iconId = android.R.drawable.stat_sys_download_done;
                 contentText = DownloadUtils.getFailStatusString(downloadUpdate.getFailState());
                 break;
-
             default:
                 iconId = -1;
                 contentText = "";

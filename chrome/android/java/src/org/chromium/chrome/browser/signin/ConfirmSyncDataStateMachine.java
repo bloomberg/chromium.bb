@@ -67,7 +67,7 @@ public class ConfirmSyncDataStateMachine
     private final boolean mCurrentlyManaged;
     private final FragmentManager mFragmentManager;
     private final Context mContext;
-    private final ImportSyncType mImportSyncType;
+    private final @ImportSyncType int mImportSyncType;
     private final ConfirmSyncDataStateMachineDelegate mDelegate;
     private final Handler mHandler = new Handler();
 
@@ -86,8 +86,8 @@ public class ConfirmSyncDataStateMachine
      * @param callback the listener to receive the result of this state machine
      */
     public ConfirmSyncDataStateMachine(Context context, FragmentManager fragmentManager,
-            ImportSyncType importSyncType, @Nullable String oldAccountName, String newAccountName,
-            ConfirmImportSyncDataDialog.Listener callback) {
+            @ImportSyncType int importSyncType, @Nullable String oldAccountName,
+            String newAccountName, ConfirmImportSyncDataDialog.Listener callback) {
         ThreadUtils.assertOnUiThread();
         // Includes implicit not-null assertion.
         assert !newAccountName.equals("") : "New account name must be provided.";

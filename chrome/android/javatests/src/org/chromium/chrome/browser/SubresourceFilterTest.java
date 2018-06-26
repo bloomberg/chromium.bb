@@ -143,7 +143,7 @@ public final class SubresourceFilterTest {
         TabModel tabModel = mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
         ThreadUtils.runOnUiThreadBlocking(() -> tabModel.addObserver(new EmptyTabModelObserver() {
             @Override
-            public void didAddTab(Tab tab, TabModel.TabLaunchType type) {
+            public void didAddTab(Tab tab, @TabModel.TabLaunchType int type) {
                 if (tab.getUrl().equals(LEARN_MORE_PAGE)) tabCreatedCallback.notifyCalled();
             }
         }));

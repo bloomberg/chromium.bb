@@ -209,13 +209,13 @@ public class ContextualSearchUma {
      */
     static class StateChangeKey {
         final PanelState mState;
-        final StateChangeReason mReason;
+        final @StateChangeReason int mReason;
         final int mHashCode;
 
-        StateChangeKey(PanelState state, StateChangeReason reason) {
+        StateChangeKey(PanelState state, @StateChangeReason int reason) {
             mState = state;
             mReason = reason;
-            mHashCode = 31 * state.hashCode() + reason.hashCode();
+            mHashCode = 31 * state.hashCode() + reason;
         }
 
         @Override
@@ -227,7 +227,7 @@ public class ContextualSearchUma {
                 return true;
             }
             StateChangeKey other = (StateChangeKey) obj;
-            return mState.equals(other.mState) && mReason.equals(other.mReason);
+            return mState.equals(other.mState) && mReason == other.mReason;
         }
 
         @Override
@@ -1016,8 +1016,8 @@ public class ContextualSearchUma {
      * @param toState The state to transition to.
      * @param reason The reason for the state transition.
      */
-    public static void logFirstStateEntry(PanelState fromState, PanelState toState,
-            StateChangeReason reason) {
+    public static void logFirstStateEntry(
+            PanelState fromState, PanelState toState, @StateChangeReason int reason) {
         int code;
         switch (toState) {
             case CLOSED:
@@ -1058,7 +1058,7 @@ public class ContextualSearchUma {
      * @param toState The state to transition to.
      * @param reason The reason for the state transition.
      */
-    public static void logPanelStateUserAction(PanelState toState, StateChangeReason reason) {
+    public static void logPanelStateUserAction(PanelState toState, @StateChangeReason int reason) {
         switch (toState) {
             case CLOSED:
                 if (reason == StateChangeReason.BACK_PRESS) {
@@ -1115,8 +1115,8 @@ public class ContextualSearchUma {
      * @param toState The state to transition to.
      * @param reason The reason for the state transition.
      */
-    public static void logFirstStateExit(PanelState fromState, PanelState toState,
-            StateChangeReason reason) {
+    public static void logFirstStateExit(
+            PanelState fromState, PanelState toState, @StateChangeReason int reason) {
         int code;
         switch (fromState) {
             case UNDEFINED:
@@ -1380,13 +1380,10 @@ public class ContextualSearchUma {
      * @param defaultCode The code to return if the given values are not found in the map.
      * @return The code to write into an enum histogram, based on the given map.
      */
-    private static int getStateChangeCode(PanelState state, StateChangeReason reason,
+    private static int getStateChangeCode(PanelState state, @StateChangeReason int reason,
             Map<StateChangeKey, Integer> stateChangeCodes, int defaultCode) {
         Integer code = stateChangeCodes.get(new StateChangeKey(state, reason));
-        if (code != null) {
-            return code;
-        }
-        return defaultCode;
+        return code != null ? code : defaultCode;
     }
 
     /**

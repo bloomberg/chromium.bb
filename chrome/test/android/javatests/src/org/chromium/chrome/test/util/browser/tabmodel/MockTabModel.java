@@ -47,7 +47,7 @@ public class MockTabModel extends EmptyTabModel {
     }
 
     @Override
-    public void addTab(Tab tab, int index, TabLaunchType type) {
+    public void addTab(Tab tab, int index, @TabLaunchType int type) {
         if (index == -1) {
             mTabs.add(tab);
         } else {
@@ -84,7 +84,7 @@ public class MockTabModel extends EmptyTabModel {
     }
 
     @Override
-    public void setIndex(int i, TabSelectionType type) {
+    public void setIndex(int i, @TabSelectionType int type) {
         mIndex = i;
     }
 }

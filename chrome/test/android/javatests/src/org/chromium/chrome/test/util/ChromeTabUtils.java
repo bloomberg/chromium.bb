@@ -338,14 +338,13 @@ public class ChromeTabUtils {
             ChromeTabbedActivity activity) throws InterruptedException {
         final TabModel normalTabModel = activity.getTabModelSelector().getModel(false);
         final CallbackHelper createdCallback = new CallbackHelper();
-        normalTabModel.addObserver(
-                new EmptyTabModelObserver() {
-                    @Override
-                    public void didAddTab(Tab tab, TabLaunchType type) {
-                        createdCallback.notifyCalled();
-                        normalTabModel.removeObserver(this);
-                    }
-                });
+        normalTabModel.addObserver(new EmptyTabModelObserver() {
+            @Override
+            public void didAddTab(Tab tab, @TabLaunchType int type) {
+                createdCallback.notifyCalled();
+                normalTabModel.removeObserver(this);
+            }
+        });
         // Tablet and phone have different new tab buttons; click the right one.
         if (activity.isTablet()) {
             StripLayoutHelper strip =
@@ -389,12 +388,12 @@ public class ChromeTabUtils {
         TabModel tabModel = activity.getTabModelSelector().getModel(incognito);
         TabModelObserver observer = new EmptyTabModelObserver() {
             @Override
-            public void didAddTab(Tab tab, TabLaunchType type) {
+            public void didAddTab(Tab tab, @TabLaunchType int type) {
                 createdCallback.notifyCalled();
             }
 
             @Override
-            public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
+            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
                 selectedCallback.notifyCalled();
             }
         };
@@ -605,7 +604,7 @@ public class ChromeTabUtils {
         final CallbackHelper selectCallback = new CallbackHelper();
         final TabModelObserver observer = new EmptyTabModelObserver() {
             @Override
-            public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
+            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
                 selectCallback.notifyCalled();
             }
         };
@@ -657,7 +656,7 @@ public class ChromeTabUtils {
                 testRule.getActivity().getTabModelSelector().getModel(expectIncognito);
         tabModel.addObserver(new EmptyTabModelObserver() {
             @Override
-            public void didAddTab(Tab tab, TabLaunchType type) {
+            public void didAddTab(Tab tab, @TabLaunchType int type) {
                 if (TextUtils.equals(expectedUrl, tab.getUrl())) {
                     createdCallback.notifyCalled();
                     tabModel.removeObserver(this);
@@ -706,7 +705,7 @@ public class ChromeTabUtils {
                 backgroundActivity.getTabModelSelector().getModel(expectIncognito);
         tabModel.addObserver(new EmptyTabModelObserver() {
             @Override
-            public void didAddTab(Tab tab, TabLaunchType type) {
+            public void didAddTab(Tab tab, @TabLaunchType int type) {
                 if (TextUtils.equals(expectedUrl, tab.getUrl())) {
                     createdCallback.notifyCalled();
                     tabModel.removeObserver(this);

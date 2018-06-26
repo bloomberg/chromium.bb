@@ -62,8 +62,8 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
      * @return The new tab.
      */
     @Override
-    public Tab createNewTab(LoadUrlParams loadUrlParams, TabModel.TabLaunchType type,
-            Tab parent) {
+    public Tab createNewTab(
+            LoadUrlParams loadUrlParams, @TabModel.TabLaunchType int type, Tab parent) {
         return createNewTab(loadUrlParams, type, parent, null);
     }
 
@@ -75,7 +75,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
      * @param intent the source of the url if it isn't null.
      * @return The new tab.
      */
-    public Tab createNewTab(LoadUrlParams loadUrlParams, TabModel.TabLaunchType type,
+    public Tab createNewTab(LoadUrlParams loadUrlParams, @TabModel.TabLaunchType int type,
             Tab parent, Intent intent) {
         // If parent is in the same tab model, place the new tab next to it.
         int position = TabModel.INVALID_TAB_INDEX;
@@ -94,7 +94,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
      * @param intent the source of the url if it isn't null.
      * @return The new tab.
      */
-    private Tab createNewTab(LoadUrlParams loadUrlParams, TabModel.TabLaunchType type,
+    private Tab createNewTab(LoadUrlParams loadUrlParams, @TabModel.TabLaunchType int type,
             Tab parent, int position, Intent intent) {
         try {
             TraceEvent.begin("ChromeTabCreator.createNewTab");
@@ -168,7 +168,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
 
     @Override
     public boolean createTabWithWebContents(Tab parent, WebContents webContents, int parentId,
-            TabLaunchType type, String url) {
+            @TabLaunchType int type, String url) {
         // The parent tab was already closed.  Do not open child tabs.
         if (mTabModel.isClosurePending(parentId)) return false;
 
@@ -204,7 +204,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
     }
 
     @Override
-    public Tab launchUrl(String url, TabModel.TabLaunchType type) {
+    public Tab launchUrl(String url, @TabModel.TabLaunchType int type) {
         return launchUrl(url, type, null, 0);
     }
 
@@ -219,8 +219,8 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
      * @param intentTimestamp the time the intent was received.
      * @return the created tab.
      */
-    public Tab launchUrl(String url, TabModel.TabLaunchType type, Intent intent,
-            long intentTimestamp) {
+    public Tab launchUrl(
+            String url, @TabModel.TabLaunchType int type, Intent intent, long intentTimestamp) {
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
         loadUrlParams.setIntentReceivedTimestamp(intentTimestamp);
         return createNewTab(loadUrlParams, type, null, intent);
@@ -311,23 +311,23 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
      * @param intent The intent causing the tab launch.
      * @return The page transition type constant.
      */
-    private int getTransitionType(TabLaunchType type, Intent intent) {
+    private int getTransitionType(@TabLaunchType int type, Intent intent) {
         int transition = PageTransition.LINK;
         switch (type) {
-            case FROM_RESTORE:
-            case FROM_LINK:
-            case FROM_EXTERNAL_APP:
-            case FROM_BROWSER_ACTIONS:
+            case TabLaunchType.FROM_RESTORE:
+            case TabLaunchType.FROM_LINK:
+            case TabLaunchType.FROM_EXTERNAL_APP:
+            case TabLaunchType.FROM_BROWSER_ACTIONS:
                 transition = PageTransition.LINK | PageTransition.FROM_API;
                 break;
-            case FROM_CHROME_UI:
-            case FROM_LAUNCHER_SHORTCUT:
+            case TabLaunchType.FROM_CHROME_UI:
+            case TabLaunchType.FROM_LAUNCHER_SHORTCUT:
                 transition = PageTransition.AUTO_TOPLEVEL;
                 break;
-            case FROM_LONGPRESS_FOREGROUND:
+            case TabLaunchType.FROM_LONGPRESS_FOREGROUND:
                 transition = PageTransition.LINK;
                 break;
-            case FROM_LONGPRESS_BACKGROUND:
+            case TabLaunchType.FROM_LONGPRESS_BACKGROUND:
                 // On low end devices tabs are backgrounded in a frozen state, so we set the
                 // transition type to RELOAD to avoid handling intents when the tab is foregrounded.
                 // (https://crbug.com/758027)

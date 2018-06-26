@@ -134,8 +134,8 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
     }
 
     @Override
-    protected void tabCreated(int id, int sourceId, TabLaunchType launchType, boolean isIncognito,
-            boolean willBeSelected, float originX, float originY) {
+    protected void tabCreated(int id, int sourceId, @TabLaunchType int launchType,
+            boolean isIncognito, boolean willBeSelected, float originX, float originY) {
         super.tabCreated(id, sourceId, launchType, isIncognito, willBeSelected, originX, originY);
 
         if (willBeSelected) {

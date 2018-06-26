@@ -66,7 +66,7 @@ public class TabModelSelectorTabModelObserverTest {
     public void testUninitializedSelector() throws InterruptedException, TimeoutException {
         mSelector = new TabModelSelectorBase() {
             @Override
-            public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
+            public Tab openNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,
                     boolean incognito) {
                 return null;
             }

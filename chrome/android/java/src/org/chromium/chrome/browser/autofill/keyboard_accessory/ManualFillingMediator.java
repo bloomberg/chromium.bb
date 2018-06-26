@@ -108,7 +108,7 @@ class ManualFillingMediator
         mActivity = activity;
         mTabModelObserver = new TabModelSelectorTabModelObserver(mActivity.getTabModelSelector()) {
             @Override
-            public void didSelectTab(Tab tab, TabModel.TabSelectionType type, int lastId) {
+            public void didSelectTab(Tab tab, @TabModel.TabSelectionType int type, int lastId) {
                 mActiveBrowserTab = tab;
                 restoreCachedState(tab);
             }

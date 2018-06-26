@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.signin;
 
 import android.os.AsyncTask;
+import android.support.annotation.IntDef;
 
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -14,6 +15,9 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
 * Android wrapper of AccountTrackerService which provides access from the java layer.
@@ -25,16 +29,21 @@ public class AccountTrackerService {
     private static final String TAG = "AccountService";
     private static AccountTrackerService sAccountTrackerService;
 
-    private SystemAccountsSeedingStatus mSystemAccountsSeedingStatus;
+    private @SystemAccountsSeedingStatus int mSystemAccountsSeedingStatus;
     private boolean mSystemAccountsChanged;
     private boolean mSyncForceRefreshedForTest;
     private AccountsChangeObserver mAccountsChangeObserver;
 
-    private enum SystemAccountsSeedingStatus {
-        SEEDING_NOT_STARTED,
-        SEEDING_IN_PROGRESS,
-        SEEDING_DONE,
-        SEEDING_VALIDATING
+    @IntDef({SystemAccountsSeedingStatus.SEEDING_NOT_STARTED,
+            SystemAccountsSeedingStatus.SEEDING_IN_PROGRESS,
+            SystemAccountsSeedingStatus.SEEDING_DONE,
+            SystemAccountsSeedingStatus.SEEDING_VALIDATING})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SystemAccountsSeedingStatus {
+        int SEEDING_NOT_STARTED = 0;
+        int SEEDING_IN_PROGRESS = 1;
+        int SEEDING_DONE = 2;
+        int SEEDING_VALIDATING = 3;
     }
 
     /**

@@ -239,7 +239,7 @@ public class ChromeTabbedActivity
     private static final EnumeratedHistogramSample sUndispatchedExplicitMainViewIntentSource =
             new EnumeratedHistogramSample(
                     "Android.MainActivity.UndispatchedExplicitMainViewIntentSource",
-                    IntentHandler.ExternalAppId.INDEX_BOUNDARY.ordinal());
+                    IntentHandler.ExternalAppId.NUM_ENTRIES);
 
     private final ActivityStopMetrics mActivityStopMetrics;
     private final MainIntentBehaviorMetrics mMainIntentMetrics;
@@ -431,9 +431,9 @@ public class ChromeTabbedActivity
             dispatchedHistogram.record(action != LaunchIntentDispatcher.Action.CONTINUE);
             if (action == LaunchIntentDispatcher.Action.CONTINUE) {
                 // Intent was not dispatched, record its source.
-                IntentHandler.ExternalAppId externalId =
-                        IntentHandler.determineExternalIntentSource(intent);
-                sUndispatchedExplicitMainViewIntentSource.record(externalId.ordinal());
+                @IntentHandler.ExternalAppId
+                int externalId = IntentHandler.determineExternalIntentSource(intent);
+                sUndispatchedExplicitMainViewIntentSource.record(externalId);
 
                 // Crash if intent came from us, but only in debug builds and only if we weren't
                 // explicitly told not to. Hopefully we'll get enough reports to find where
@@ -502,7 +502,7 @@ public class ChromeTabbedActivity
                 }
 
                 @Override
-                public void didAddTab(Tab tab, TabLaunchType type) {
+                public void didAddTab(Tab tab, @TabLaunchType int type) {
                     if (type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
                             && !DeviceClassManager.enableAnimations()) {
                         Toast.makeText(ChromeTabbedActivity.this,
@@ -1166,7 +1166,7 @@ public class ChromeTabbedActivity
          */
         @Override
         public void processUrlViewIntent(String url, String referer, String headers,
-                TabOpenType tabOpenType, String externalAppId, int tabIdToBringToFront,
+                @TabOpenType int tabOpenType, String externalAppId, int tabIdToBringToFront,
                 boolean hasUserGesture, Intent intent) {
             if (isFromChrome(intent, externalAppId)) {
                 RecordUserAction.record("MobileTabbedModeViewIntentFromChrome");
@@ -1179,7 +1179,7 @@ public class ChromeTabbedActivity
 
             TabModel tabModel = getCurrentTabModel();
             switch (tabOpenType) {
-                case REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB:
+                case TabOpenType.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB:
                     // Used by the bookmarks application.
                     if (tabModel.getCount() > 0 && mUIInitialized
                             && mLayoutManager.overviewVisible()) {
@@ -1199,7 +1199,7 @@ public class ChromeTabbedActivity
                             ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
                     LaunchMetrics.recordHomeScreenLaunchIntoTab(url, shortcutSource);
                     break;
-                case BRING_TAB_TO_FRONT:
+                case TabOpenType.BRING_TAB_TO_FRONT:
                     mTabModelSelectorImpl.tryToRestoreTabStateForId(tabIdToBringToFront);
 
                     int tabIndex = TabModelUtils.getTabIndexById(tabModel, tabIdToBringToFront);
@@ -1225,7 +1225,7 @@ public class ChromeTabbedActivity
 
                     logMobileReceivedExternalIntent(externalAppId, intent);
                     break;
-                case CLOBBER_CURRENT_TAB:
+                case TabOpenType.CLOBBER_CURRENT_TAB:
                     // The browser triggered the intent. This happens when clicking links which
                     // can be handled by other applications (e.g. www.youtube.com links).
                     Tab currentTab = getActivityTab();
@@ -1246,10 +1246,10 @@ public class ChromeTabbedActivity
                         launchIntent(url, referer, headers, externalAppId, true, intent);
                     }
                     break;
-                case REUSE_APP_ID_MATCHING_TAB_ELSE_NEW_TAB:
+                case TabOpenType.REUSE_APP_ID_MATCHING_TAB_ELSE_NEW_TAB:
                     openNewTab(url, referer, headers, externalAppId, intent, false);
                     break;
-                case OPEN_NEW_TAB:
+                case TabOpenType.OPEN_NEW_TAB:
                     if (fromLauncherShortcut) {
                         recordLauncherShortcutAction(false);
                         reportNewTabShortcutUsed(false);
@@ -1257,7 +1257,7 @@ public class ChromeTabbedActivity
 
                     openNewTab(url, referer, headers, externalAppId, intent, true);
                     break;
-                case OPEN_NEW_INCOGNITO_TAB:
+                case TabOpenType.OPEN_NEW_INCOGNITO_TAB:
                     if (!TextUtils.equals(externalAppId, getPackageName())) {
                         assert false : "Only Chrome is allowed to open incognito tabs";
                         Log.e(TAG, "Only Chrome is allowed to open incognito tabs");
@@ -1291,14 +1291,11 @@ public class ChromeTabbedActivity
                                     intent, mIntentHandlingTimeMs);
                         }
                     } else {
-                        TabLaunchType launchType = IntentHandler.getTabLaunchType(intent);
-                        if (launchType != null) {
-                            getTabCreator(true).launchUrl(
-                                    url, launchType, intent, mIntentHandlingTimeMs);
-                        } else {
-                            getTabCreator(true).launchUrl(
-                                    url, TabLaunchType.FROM_LINK, intent, mIntentHandlingTimeMs);
-                        }
+                        @TabLaunchType
+                        Integer launchType = IntentHandler.getTabLaunchType(intent);
+                        if (launchType == null) launchType = TabLaunchType.FROM_LINK;
+                        getTabCreator(true).launchUrl(
+                                url, launchType, intent, mIntentHandlingTimeMs);
                     }
                     break;
                 default:
@@ -1768,7 +1765,7 @@ public class ChromeTabbedActivity
         // If the current tab url is HELP_URL, then the back button should close the tab to
         // get back to the previous state. The reason for startsWith check is that the
         // actual redirected URL is a different system language based help url.
-        final TabLaunchType type = currentTab.getLaunchType();
+        final @TabLaunchType int type = currentTab.getLaunchType();
         final boolean helpUrl = currentTab.getUrl().startsWith(HELP_URL_PREFIX);
         if (type == TabLaunchType.FROM_CHROME_UI && helpUrl) {
             getCurrentTabModel().closeTab(currentTab);
@@ -1815,7 +1812,8 @@ public class ChromeTabbedActivity
      * @return Whether pressing the back button on the provided Tab should close the Tab.
      */
     public static boolean backShouldCloseTab(Tab tab) {
-        TabLaunchType type = tab.getLaunchType();
+        @TabLaunchType
+        int type = tab.getLaunchType();
 
         return type == TabLaunchType.FROM_LINK || type == TabLaunchType.FROM_EXTERNAL_APP
                 || type == TabLaunchType.FROM_LONGPRESS_FOREGROUND
