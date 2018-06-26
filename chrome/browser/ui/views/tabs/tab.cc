@@ -797,6 +797,7 @@ void Tab::OnMouseMoved(const ui::MouseEvent& event) {
 }
 
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
+  mouse_hovered_ = true;
   hover_controller_.Show(GlowHoverController::SUBTLE);
   if (MD::IsRefreshUi())
     RepaintSubsequentTab();
@@ -804,6 +805,7 @@ void Tab::OnMouseEntered(const ui::MouseEvent& event) {
 }
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
+  mouse_hovered_ = false;
   hover_controller_.Hide();
   if (MD::IsRefreshUi())
     RepaintSubsequentTab();
