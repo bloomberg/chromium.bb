@@ -6,12 +6,15 @@
 
 #import <LocalAuthentication/LocalAuthentication.h>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "device/base/features.h"
 #include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/mac/get_assertion_operation.h"
 #include "device/fido/mac/make_credential_operation.h"
 #include "device/fido/mac/util.h"
@@ -21,21 +24,23 @@ namespace fido {
 namespace mac {
 
 // static
-// NOTE(martinkr): This is currently only called from |CreateIfAvailable| but
-// will also be needed for the implementation of
-// IsUserVerifyingPlatformAuthenticatorAvailable() (see
-// https://www.w3.org/TR/webauthn/#isUserVerifyingPlatformAuthenticatorAvailable).
 bool TouchIdAuthenticator::IsAvailable() {
-  base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
-  return
-      [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-                           error:nil];
+  if (base::FeatureList::IsEnabled(device::kWebAuthTouchId)) {
+    if (__builtin_available(macOS 10.12.2, *)) {
+      base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
+      return [context
+          canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
+                      error:nil];
+    }
+  }
+  return false;
 }
 
 // static
 std::unique_ptr<TouchIdAuthenticator> TouchIdAuthenticator::CreateIfAvailable(
     std::string keychain_access_group,
     std::string metadata_secret) {
+  // N.B. IsAvailable also checks for the feature flag being set.
   return IsAvailable() ? base::WrapUnique(new TouchIdAuthenticator(
                              std::move(keychain_access_group),
                              std::move(metadata_secret)))
@@ -48,20 +53,28 @@ void TouchIdAuthenticator::MakeCredential(
     AuthenticatorSelectionCriteria authenticator_selection_criteria,
     CtapMakeCredentialRequest request,
     MakeCredentialCallback callback) {
-  DCHECK(!operation_);
-  operation_ = std::make_unique<MakeCredentialOperation>(
-      std::move(request), metadata_secret_, keychain_access_group_,
-      std::move(callback));
-  operation_->Run();
+  if (__builtin_available(macOS 10.12.2, *)) {
+    DCHECK(!operation_);
+    operation_ = std::make_unique<MakeCredentialOperation>(
+        std::move(request), metadata_secret_, keychain_access_group_,
+        std::move(callback));
+    operation_->Run();
+    return;
+  }
+  NOTREACHED();
 }
 
 void TouchIdAuthenticator::GetAssertion(CtapGetAssertionRequest request,
                                         GetAssertionCallback callback) {
-  DCHECK(!operation_);
-  operation_ = std::make_unique<GetAssertionOperation>(
-      std::move(request), metadata_secret_, keychain_access_group_,
-      std::move(callback));
-  operation_->Run();
+  if (__builtin_available(macOS 10.12.2, *)) {
+    DCHECK(!operation_);
+    operation_ = std::make_unique<GetAssertionOperation>(
+        std::move(request), metadata_secret_, keychain_access_group_,
+        std::move(callback));
+    operation_->Run();
+    return;
+  }
+  NOTREACHED();
 }
 
 void TouchIdAuthenticator::Cancel() {

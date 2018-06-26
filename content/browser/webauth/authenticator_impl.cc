@@ -595,7 +595,11 @@ void AuthenticatorImpl::GetAssertion(
 
 void AuthenticatorImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
     IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) {
-  std::move(callback).Run(false);
+  bool result = false;
+#if defined(OS_MACOSX)
+  result = device::fido::mac::TouchIdAuthenticator::IsAvailable();
+#endif
+  std::move(callback).Run(result);
 }
 
 void AuthenticatorImpl::DidFinishNavigation(
@@ -812,15 +816,12 @@ void AuthenticatorImpl::Cleanup() {
 std::unique_ptr<device::FidoAuthenticator>
 AuthenticatorImpl::MaybeCreatePlatformAuthenticator() {
 #if defined(OS_MACOSX)
-  if (base::FeatureList::IsEnabled(features::kWebAuthTouchId)) {
-    if (__builtin_available(macOS 10.12.2, *)) {
-      return device::fido::mac::TouchIdAuthenticator::CreateIfAvailable(
-          request_delegate_->TouchIdAuthenticatorKeychainAccessGroup(),
-          request_delegate_->TouchIdMetadataSecret());
-    }
-  }
-#endif
+  return device::fido::mac::TouchIdAuthenticator::CreateIfAvailable(
+      request_delegate_->TouchIdAuthenticatorKeychainAccessGroup(),
+      request_delegate_->TouchIdMetadataSecret());
+#else
   return nullptr;
+#endif
 }
 
 }  // namespace content

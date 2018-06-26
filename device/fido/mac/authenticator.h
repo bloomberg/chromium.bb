@@ -15,11 +15,10 @@ namespace device {
 namespace fido {
 namespace mac {
 
-class API_AVAILABLE(macosx(10.12.2))
-    COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
+class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
     : public FidoAuthenticator {
  public:
-  // IsAvailable returns true iff Touch ID is enabled and enrolled on the
+  // IsAvailable returns whether Touch ID is available and enrolled on the
   // current device.
   static bool IsAvailable();
 

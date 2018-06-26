@@ -34,14 +34,12 @@ bool AuthenticatorRequestClientDelegate::IsFocused() {
 #if defined(OS_MACOSX)
 std::string
 AuthenticatorRequestClientDelegate::TouchIdAuthenticatorKeychainAccessGroup() {
-  NOTREACHED();
   return std::string();
 }
 #endif
 
 #if defined(OS_MACOSX)
 std::string AuthenticatorRequestClientDelegate::TouchIdMetadataSecret() {
-  NOTREACHED();
   return std::string();
 }
 #endif
