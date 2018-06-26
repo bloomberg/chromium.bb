@@ -7,57 +7,125 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
+class Document;
 class HTMLAnchorElement;
-class IntSize;
+class IntRect;
+class LayoutObject;
 
 class CORE_EXPORT AnchorElementMetrics {
  public:
   // Extract features of the anchor element.
   static base::Optional<AnchorElementMetrics> From(const HTMLAnchorElement&);
 
-  // Get and upload anchor element features.
+  // Upload anchor element features.
   void RecordMetrics() const;
 
-  float GetRatioArea() const { return ratio_area; }
-  float GetRatioDistanceRootTop() const { return ratio_distance_root_top; }
-  float GetRatioDistanceVisibleTop() const {
-    return ratio_distance_visible_top;
+  // Getters of anchor element features.
+  float GetRatioArea() const { return ratio_area_; }
+  float GetRatioVisibleArea() const { return ratio_visible_area_; }
+  float GetRatioDistanceTopToVisibleTop() const {
+    return ratio_distance_top_to_visible_top_;
   }
-  bool GetIsInIframe() const { return is_in_iframe; }
+  float GetRatioDistanceCenterToVisibleTop() const {
+    return ratio_distance_center_to_visible_top_;
+  }
+  float GetRatioDistanceRootTop() const { return ratio_distance_root_top_; }
+  float GetRatioDistanceRootBottom() const {
+    return ratio_distance_root_bottom_;
+  }
+  bool GetIsInIframe() const { return is_in_iframe_; }
+  bool GetContainsImage() const { return contains_image_; }
+  bool GetIsSameHost() const { return is_same_host_; }
+  bool GetIsUrlIncrementedByOne() const { return is_url_incremented_by_one_; }
 
  private:
+  // Friend class for testing.
+  friend class AnchorElementMetricsTest;
+
   // Accumulated scroll offset of all frames up to the local root frame.
-  static IntSize AccumulatedScrollOffset(const HTMLAnchorElement&);
+  static int AccumulatedScrollOffset(const HTMLAnchorElement&);
 
   // Whether the element is inside an iframe.
   static bool IsInIFrame(const HTMLAnchorElement&);
 
-  // The ratio of the clickable region area of an anchor element, and the
-  // viewport area.
-  const float ratio_area;
+  // Whether the anchor element contains an image element.
+  static bool ContainsImage(const HTMLAnchorElement&);
+
+  // Whether the link target has the same host as the root document.
+  static bool IsSameHost(const HTMLAnchorElement&);
+
+  // Returns true if the two strings only differ by one number, and
+  // the second number equals the first number plus one. Examples:
+  // example.com/page9/cat5, example.com/page10/cat5 => true
+  // example.com/page9/cat5, example.com/page10/cat10 => false
+  static bool IsUrlIncrementedByOne(const HTMLAnchorElement&);
+  static bool IsStringIncrementedByOne(const String&, const String&);
+
+  // Helper function that returns the root document the anchor element is in.
+  static Document* GetRootDocument(const HTMLAnchorElement&);
+
+  // Returns the bounding box rect of a layout object, including visual
+  // overflows.
+  static IntRect AbsoluteElementBoundingBoxRect(const LayoutObject*);
+
+  // The ratio of the absolute/visible clickable region area of an anchor
+  // element, and the viewport area.
+  const float ratio_area_;
+  const float ratio_visible_area_;
+
+  // The distance between the top/center of the clickable region of an anchor
+  // element and the top edge of the visible region, divided by the viewport
+  // height.
+  const float ratio_distance_top_to_visible_top_;
+  const float ratio_distance_center_to_visible_top_;
 
   // The distance between the top of the clickable region of an anchor element
   // and the top edge of the root frame, divided by the viewport height.
-  const float ratio_distance_root_top;
+  const float ratio_distance_root_top_;
 
-  // The distance between the top of the clickable region of an anchor element
-  // and the top edge of the visible region, divided by the viewport height.
-  const float ratio_distance_visible_top;
+  // The distance between the bottom of the clickable region of an anchor
+  // element and the bottom edge of the root frame, divided by the viewport
+  // height.
+  const float ratio_distance_root_bottom_;
 
   // Whether the anchor element is within an iframe.
-  const bool is_in_iframe;
+  const bool is_in_iframe_;
+
+  // Whether the anchor element contains an image element.
+  const bool contains_image_;
+
+  // Whether the link target has the same host as the root document.
+  const bool is_same_host_;
+
+  // Whether the target url and the host url only differ by one number,
+  // and the number in target url equals the one in host url plus one.
+  const bool is_url_incremented_by_one_;
 
   inline AnchorElementMetrics(float ratio_area,
+                              float ratio_visible_area,
+                              float ratio_distance_top_to_visible_top,
+                              float ratio_distance_center_to_visible_top,
                               float ratio_distance_root_top,
-                              float ratio_distance_visible_top,
-                              bool is_in_iframe)
-      : ratio_area(ratio_area),
-        ratio_distance_root_top(ratio_distance_root_top),
-        ratio_distance_visible_top(ratio_distance_visible_top),
-        is_in_iframe(is_in_iframe) {}
+                              float ratio_distance_root_bottom,
+                              bool is_in_iframe,
+                              bool contains_image,
+                              bool is_same_host,
+                              bool is_url_incremented_by_one)
+      : ratio_area_(ratio_area),
+        ratio_visible_area_(ratio_visible_area),
+        ratio_distance_top_to_visible_top_(ratio_distance_top_to_visible_top),
+        ratio_distance_center_to_visible_top_(
+            ratio_distance_center_to_visible_top),
+        ratio_distance_root_top_(ratio_distance_root_top),
+        ratio_distance_root_bottom_(ratio_distance_root_bottom),
+        is_in_iframe_(is_in_iframe),
+        contains_image_(contains_image),
+        is_same_host_(is_same_host),
+        is_url_incremented_by_one_(is_url_incremented_by_one) {}
 };
 
 }  // namespace blink
