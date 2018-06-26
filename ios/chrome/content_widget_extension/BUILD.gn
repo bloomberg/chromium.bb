@@ -51,9 +51,9 @@ source_set("content_widget") {
     "//base",
     "//ios/chrome/browser/ui/favicon:favicon_ui",
     "//ios/chrome/browser/ui/ntp:ntp_tile",
-    "//ios/chrome/browser/ui/util:constraints_ui",
     "//ios/chrome/common:common_extension",
     "//ios/chrome/common/app_group",
+    "//ios/chrome/common/ui_util",
   ]
 
   libs = [

@@ -10,7 +10,7 @@
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "ios/chrome/browser/autofill/form_suggestion_label.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view_client.h"
-#include "ios/chrome/browser/ui/util/constraints_ui_util.h"
+#include "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

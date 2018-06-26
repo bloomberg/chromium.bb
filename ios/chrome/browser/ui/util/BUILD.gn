@@ -44,7 +44,6 @@ source_set("util") {
     "unicode_util.mm",
   ]
   deps = [
-    ":constraints_ui",
     "//base",
     "//base:i18n",
     "//ios/chrome/browser",
@@ -59,7 +58,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "CRUILabel+AttributeUtils_unittest.mm",
-    "constraints_ui_util_unittest.mm",
     "core_text_util_unittest.mm",
     "label_link_controller_unittest.mm",
     "label_observer_unittest.mm",
@@ -69,7 +67,6 @@ source_set("unit_tests") {
     "text_region_mapper_unittest.mm",
   ]
   deps = [
-    ":constraints_ui",
     ":util",
     "//base",
     "//ios/third_party/material_components_ios",
@@ -77,15 +74,4 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//url",
   ]
-}
-
-source_set("constraints_ui") {
-  sources = [
-    "constraints_ui_util.h",
-    "constraints_ui_util.mm",
-  ]
-  deps = [
-    "//base",
-  ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 }
