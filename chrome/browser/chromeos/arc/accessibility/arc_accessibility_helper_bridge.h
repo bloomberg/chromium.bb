@@ -115,7 +115,8 @@ class ArcAccessibilityHelperBridge
   void UpdateTreeIdOfNotificationSurface(const std::string& notification_key,
                                          uint32_t tree_id);
 
-  AXTreeSourceArc* GetOrCreateFromTaskId(int32_t task_id);
+  AXTreeSourceArc* GetFromTaskId(int32_t task_id);
+  AXTreeSourceArc* CreateFromTaskId(int32_t task_id);
   AXTreeSourceArc* GetFromNotificationKey(const std::string& notification_key);
   AXTreeSourceArc* CreateFromNotificationKey(
       const std::string& notification_key);
