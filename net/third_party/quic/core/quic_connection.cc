@@ -320,8 +320,8 @@ QuicConnection::QuicConnection(
           GetQuicFlag(FLAGS_quic_pace_time_into_future_ms))),
       deprecate_scheduler_(
           GetQuicReloadableFlag(quic_deprecate_scoped_scheduler2)),
-      no_send_alarm_in_process_packet_if_write_blocked_(GetQuicReloadableFlag(
-          quic_no_send_alarm_in_process_packet_if_write_blocked)) {
+      add_to_blocked_list_if_writer_blocked_(
+          GetQuicReloadableFlag(quic_add_to_blocked_list_if_writer_blocked)) {
   if (ack_mode_ == ACK_DECIMATION) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_ack_decimation);
   }
@@ -1455,20 +1455,38 @@ QuicPacketNumber QuicConnection::GetLeastUnacked() const {
   return sent_packet_manager_.GetLeastUnacked();
 }
 
+bool QuicConnection::HandleWriteBlocked() {
+  if (!writer_->IsWriteBlocked()) {
+    return false;
+  }
+
+  if (add_to_blocked_list_if_writer_blocked_) {
+    QUIC_FLAG_COUNT_N(
+        quic_reloadable_flag_quic_add_to_blocked_list_if_writer_blocked, 2, 2);
+    visitor_->OnWriteBlocked();
+  }
+
+  return true;
+}
+
 void QuicConnection::MaybeSendInResponseToPacket() {
   if (!connected_) {
     return;
   }
+
+  // If the writer is blocked, don't attempt to send packets now or in the send
+  // alarm. When the writer unblocks, OnCanWrite() will be called for this
+  // connection to send.
+  if (add_to_blocked_list_if_writer_blocked_ && HandleWriteBlocked()) {
+    QUIC_FLAG_COUNT_N(
+        quic_reloadable_flag_quic_add_to_blocked_list_if_writer_blocked, 1, 2);
+    return;
+  }
+
   // Now that we have received an ack, we might be able to send packets which
   // are queued locally, or drain streams which are blocked.
   if (defer_send_in_response_to_packets_) {
-    if (!no_send_alarm_in_process_packet_if_write_blocked_ ||
-        !writer_->IsWriteBlocked()) {
-      send_alarm_->Update(clock_->ApproximateNow(), QuicTime::Delta::Zero());
-    } else {
-      QUIC_FLAG_COUNT(
-          quic_reloadable_flag_quic_no_send_alarm_in_process_packet_if_write_blocked);  // NOLINT
-    }
+    send_alarm_->Update(clock_->ApproximateNow(), QuicTime::Delta::Zero());
   } else {
     WriteAndBundleAcksIfNotBlocked();
   }
@@ -1476,10 +1494,18 @@ void QuicConnection::MaybeSendInResponseToPacket() {
 
 void QuicConnection::SendVersionNegotiationPacket() {
   pending_version_negotiation_packet_ = true;
-  if (writer_->IsWriteBlocked()) {
-    visitor_->OnWriteBlocked();
-    return;
+
+  if (add_to_blocked_list_if_writer_blocked_) {
+    if (HandleWriteBlocked()) {
+      return;
+    }
+  } else {
+    if (writer_->IsWriteBlocked()) {
+      visitor_->OnWriteBlocked();
+      return;
+    }
   }
+
   QUIC_DLOG(INFO) << ENDPOINT << "Sending version negotiation packet: {"
                   << ParsedQuicVersionVectorToString(
                          framer_.supported_versions())
@@ -1731,13 +1757,13 @@ void QuicConnection::OnCanWrite() {
 }
 
 void QuicConnection::WriteIfNotBlocked() {
-  if (!writer_->IsWriteBlocked()) {
+  if (!HandleWriteBlocked()) {
     OnCanWrite();
   }
 }
 
 void QuicConnection::WriteAndBundleAcksIfNotBlocked() {
-  if (!writer_->IsWriteBlocked()) {
+  if (!HandleWriteBlocked()) {
     ScopedPacketFlusher flusher(this, SEND_ACK_IF_QUEUED);
     WriteIfNotBlocked();
   }
@@ -1960,9 +1986,15 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
     return true;
   }
 
-  if (writer_->IsWriteBlocked()) {
-    visitor_->OnWriteBlocked();
-    return false;
+  if (add_to_blocked_list_if_writer_blocked_) {
+    if (HandleWriteBlocked()) {
+      return false;
+    }
+  } else {
+    if (writer_->IsWriteBlocked()) {
+      visitor_->OnWriteBlocked();
+      return false;
+    }
   }
 
   // Allow acks to be sent immediately.
@@ -2014,7 +2046,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   }
   // Termination packets are encrypted and saved, so don't exit early.
   const bool is_termination_packet = IsTerminationPacket(*packet);
-  if (writer_->IsWriteBlocked() && !is_termination_packet) {
+  if (HandleWriteBlocked() && !is_termination_packet) {
     return false;
   }
 
@@ -2034,9 +2066,15 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
         new QuicEncryptedPacket(buffer_copy, encrypted_length, true));
     // This assures we won't try to write *forced* packets when blocked.
     // Return true to stop processing.
-    if (writer_->IsWriteBlocked()) {
-      visitor_->OnWriteBlocked();
-      return true;
+    if (add_to_blocked_list_if_writer_blocked_) {
+      if (HandleWriteBlocked()) {
+        return true;
+      }
+    } else {
+      if (writer_->IsWriteBlocked()) {
+        visitor_->OnWriteBlocked();
+        return true;
+      }
     }
   }
 
