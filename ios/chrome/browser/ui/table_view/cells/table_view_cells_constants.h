@@ -13,7 +13,7 @@ extern const CGFloat kTableViewHeaderFooterViewHeight;
 // The horizontal spacing between views and the container view of a cell.
 extern const CGFloat kTableViewHorizontalSpacing;
 
-// The vertical spacing between views and the container view of a cell
+// The vertical spacing between views and the container view of a cell.
 extern const CGFloat kTableViewVerticalSpacing;
 
 // The horizontal spacing between subviews within the container view.

@@ -13,6 +13,11 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Vertical spacing between label and the container view of a cell.
+const CGFloat kLabelCellVerticalSpacing = 11.0;
+}  // namespace
+
 #pragma mark - TableViewTextItem
 
 @implementation TableViewTextItem
@@ -78,10 +83,10 @@
           constraintEqualToAnchor:self.contentView.leadingAnchor
                          constant:kTableViewHorizontalSpacing],
       [_textLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor
-                                           constant:kTableViewVerticalSpacing],
+                                           constant:kLabelCellVerticalSpacing],
       [_textLabel.bottomAnchor
           constraintEqualToAnchor:self.contentView.bottomAnchor
-                         constant:-kTableViewVerticalSpacing],
+                         constant:-kLabelCellVerticalSpacing],
       [_textLabel.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
                          constant:-kTableViewHorizontalSpacing]
