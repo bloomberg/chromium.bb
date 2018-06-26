@@ -73,8 +73,8 @@ bool IsMash() {
 }
 
 bool IsV1AppBackButtonEnabled() {
-  return !IsMash() && base::CommandLine::ForCurrentProcess()->HasSwitch(
-                          ash::switches::kAshEnableV1AppBackButton);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ash::switches::kAshEnableV1AppBackButton);
 }
 
 // Returns true if |window| is currently snapped in split view mode.
@@ -145,6 +145,9 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
+  browser_view()->browser()->command_controller()->RemoveCommandObserver(
+      IDC_BACK, this);
+
   // As with Init(), some of this may need porting to Mash.
   if (IsMash())
     return;
@@ -161,10 +164,6 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
   if (TabletModeClient::Get())
     TabletModeClient::Get()->RemoveObserver(this);
   ash::Shell::Get()->RemoveShellObserver(this);
-  if (back_button_) {
-    browser_view()->browser()->command_controller()->RemoveCommandObserver(
-        this);
-  }
 }
 
 void BrowserNonClientFrameViewAsh::Init() {
@@ -183,29 +182,28 @@ void BrowserNonClientFrameViewAsh::Init() {
     window_icon_->Update();
   }
 
+  Browser* browser = browser_view()->browser();
+  if (browser->is_app() && IsV1AppBackButtonEnabled())
+    browser->command_controller()->AddCommandObserver(IDC_BACK, this);
+
+  frame()->GetNativeWindow()->SetProperty(
+      aura::client::kAppType,
+      static_cast<int>(browser->is_app() ? ash::AppType::CHROME_APP
+                                         : ash::AppType::BROWSER));
+
   // TODO(estade): how much of the rest of this needs porting to Mash?
   if (IsMash()) {
     OnThemeChanged();
     return;
   }
 
-  Browser* browser = browser_view()->browser();
   if (browser->is_app() && IsV1AppBackButtonEnabled()) {
     back_button_ = new ash::FrameBackButton();
     AddChildView(back_button_);
     // TODO(oshima): Add Tooltip, accessibility name.
-    browser->command_controller()->AddCommandObserver(IDC_BACK, this);
   }
 
   frame_header_ = CreateFrameHeader();
-
-  if (browser->is_app()) {
-    frame()->GetNativeWindow()->SetProperty(
-        aura::client::kAppType, static_cast<int>(ash::AppType::CHROME_APP));
-  } else {
-    frame()->GetNativeWindow()->SetProperty(
-        aura::client::kAppType, static_cast<int>(ash::AppType::BROWSER));
-  }
 
   // TabletModeClient may not be initialized during unit tests.
   if (TabletModeClient::Get())
@@ -753,8 +751,17 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
 
 void BrowserNonClientFrameViewAsh::EnabledStateChangedForCommand(int id,
                                                                  bool enabled) {
-  if (id == IDC_BACK && back_button_)
+  DCHECK_EQ(IDC_BACK, id);
+  DCHECK(browser_view()->browser()->is_app());
+
+  if (IsMash()) {
+    frame()->GetNativeWindow()->SetProperty(
+        ash::kFrameBackButtonStateKey,
+        enabled ? ash::FrameBackButtonState::kEnabled
+                : ash::FrameBackButtonState::kDisabled);
+  } else if (back_button_) {
     back_button_->SetEnabled(enabled);
+  }
 }
 
 void BrowserNonClientFrameViewAsh::OnSplitViewStateChanged(

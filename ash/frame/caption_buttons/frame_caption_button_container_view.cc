@@ -10,6 +10,7 @@
 #include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_size_button.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -132,8 +133,13 @@ class DefaultCaptionButtonModel : public CaptionButtonModel {
         return frame_->widget_delegate()->CanResize();
       case CAPTION_BUTTON_ICON_CLOSE:
         return true;
-      // No back or menu button by default.
+
       case CAPTION_BUTTON_ICON_BACK:
+        return frame_->GetNativeWindow()->GetProperty(
+                   ash::kFrameBackButtonStateKey) !=
+               ash::FrameBackButtonState::kNone;
+
+      // No menu button by default.
       case CAPTION_BUTTON_ICON_MENU:
       case CAPTION_BUTTON_ICON_ZOOM:
         return false;
@@ -145,7 +151,15 @@ class DefaultCaptionButtonModel : public CaptionButtonModel {
     NOTREACHED();
     return false;
   }
-  bool IsEnabled(CaptionButtonIcon type) const override { return true; }
+  bool IsEnabled(CaptionButtonIcon type) const override {
+    if (type == CAPTION_BUTTON_ICON_BACK) {
+      return frame_->GetNativeWindow()->GetProperty(
+                 ash::kFrameBackButtonStateKey) ==
+             ash::FrameBackButtonState::kEnabled;
+    }
+
+    return true;
+  }
   bool InZoomMode() const override { return false; }
 
  private:

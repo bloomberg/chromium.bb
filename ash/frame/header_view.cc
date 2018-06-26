@@ -133,6 +133,9 @@ HeaderView::HeaderView(views::Widget* target_widget,
         caption_button_container_);
     frame_header_ = std::move(frame_header);
   }
+
+  UpdateBackButton();
+
   aura::Window* window = target_widget->GetNativeWindow();
   frame_header_->SetFrameColors(window->GetProperty(kFrameActiveColorKey),
                                 window->GetProperty(kFrameInactiveColorKey));
@@ -195,21 +198,7 @@ void HeaderView::UpdateCaptionButtons() {
   caption_button_container_->ResetWindowControls();
   caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
 
-  bool has_back_button =
-      caption_button_container_->model()->IsVisible(CAPTION_BUTTON_ICON_BACK);
-  FrameCaptionButton* back_button = frame_header_->GetBackButton();
-  if (has_back_button) {
-    if (!back_button) {
-      back_button = new FrameBackButton();
-      AddChildView(back_button);
-      frame_header_->SetBackButton(back_button);
-    }
-    back_button->SetEnabled(caption_button_container_->model()->IsEnabled(
-        CAPTION_BUTTON_ICON_BACK));
-  } else {
-    delete back_button;
-    frame_header_->SetBackButton(nullptr);
-  }
+  UpdateBackButton();
 
   Layout();
 }
@@ -276,6 +265,8 @@ void HeaderView::OnWindowPropertyChanged(aura::Window* window,
   } else if (key == kFrameActiveColorKey || key == kFrameInactiveColorKey) {
     frame_header_->SetFrameColors(window->GetProperty(kFrameActiveColorKey),
                                   window->GetProperty(kFrameInactiveColorKey));
+  } else if (key == kFrameBackButtonStateKey) {
+    UpdateCaptionButtons();
   }
 }
 
@@ -362,6 +353,24 @@ void HeaderView::PaintHeaderContent(gfx::Canvas* canvas) {
   FrameHeader::Mode header_mode =
       paint_as_active ? FrameHeader::MODE_ACTIVE : FrameHeader::MODE_INACTIVE;
   frame_header_->PaintHeader(canvas, header_mode);
+}
+
+void HeaderView::UpdateBackButton() {
+  bool has_back_button =
+      caption_button_container_->model()->IsVisible(CAPTION_BUTTON_ICON_BACK);
+  FrameCaptionButton* back_button = frame_header_->GetBackButton();
+  if (has_back_button) {
+    if (!back_button) {
+      back_button = new FrameBackButton();
+      AddChildView(back_button);
+      frame_header_->SetBackButton(back_button);
+    }
+    back_button->SetEnabled(caption_button_container_->model()->IsEnabled(
+        CAPTION_BUTTON_ICON_BACK));
+  } else {
+    delete back_button;
+    frame_header_->SetBackButton(nullptr);
+  }
 }
 
 }  // namespace ash
