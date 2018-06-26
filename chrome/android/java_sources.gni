@@ -1705,6 +1705,8 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/customtabs/DetachedResourceRequestTest.java",
   "javatests/src/org/chromium/chrome/browser/customtabs/RequestThrottlerTest.java",
   "javatests/src/org/chromium/chrome/browser/customtabs/TrustedCdnPublisherUrlTest.java",
+  "javatests/src/org/chromium/chrome/browser/display_cutout/DisplayCutoutTest.java",
+  "javatests/src/org/chromium/chrome/browser/display_cutout/DisplayCutoutTestRule.java",
   "javatests/src/org/chromium/chrome/browser/document/LauncherActivityTest.java",
   "javatests/src/org/chromium/chrome/browser/dom_distiller/DistillabilityServiceTest.java",
   "javatests/src/org/chromium/chrome/browser/dom_distiller/DistilledPagePrefsTest.java",

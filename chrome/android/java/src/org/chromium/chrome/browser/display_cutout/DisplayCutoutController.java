@@ -7,19 +7,21 @@ package org.chromium.chrome.browser.display_cutout;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
-import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blink.mojom.ViewportFit;
 import org.chromium.chrome.browser.InsetObserverView;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 
 /**
  * Controls the display cutout state for the tab.
  */
+@JNINamespace("chrome")
 public class DisplayCutoutController implements InsetObserverView.WindowInsetObserver {
     /** These are the property names of the different cutout mode states. */
     private static final String VIEWPORT_FIT_AUTO = "LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT";
@@ -91,7 +93,7 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
         if (mInsetObserverView != null || mTab.getActivity() == null) return;
 
         mInsetObserverView = mTab.getActivity().getInsetObserverView();
-      
+
         if (mInsetObserverView == null) return;
         mInsetObserverView.addObserver(this);
     }
@@ -129,11 +131,33 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
     /** Implements {@link WindowInsetsObserver}. */
     @Override
     public void onSafeAreaChanged(Rect area) {
-        // TODO(beccahughes): Send this value to Blink.
+        WebContents webContents = mTab.getWebContents();
+        if (webContents == null) return;
+
+        float dipScale = getDipScale();
+        nativeSetSafeAreaOnWebContents(webContents, adjustInsetForScale(area.top, dipScale),
+                adjustInsetForScale(area.left, dipScale),
+                adjustInsetForScale(area.bottom, dipScale),
+                adjustInsetForScale(area.right, dipScale));
     }
 
     @Override
     public void onInsetChanged(int left, int top, int right, int bottom) {}
+
+    /**
+     * Adjusts a WindowInset inset to a CSS pixel value.
+     * @param inset The inset as an integer.
+     * @param dipScale The devices dip scale as an integer.
+     * @return The CSS pixel value adjusted for scale.
+     */
+    private int adjustInsetForScale(int inset, float dipScale) {
+        return (int) Math.ceil(inset / dipScale);
+    }
+
+    @VisibleForTesting
+    protected float getDipScale() {
+        return mTab.getWindowAndroid().getDisplay().getDipScale();
+    }
 
     /**
      * Converts a {@link ViewportFit} value into the Android P+ equivalent.
@@ -156,21 +180,40 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
         }
     }
 
+    @VisibleForTesting
+    protected Object getWindowAttributes() {
+        return mTab.getActivity().getWindow().getAttributes();
+    }
+
+    @VisibleForTesting
+    protected void setWindowAttributes(Object attributes) {
+        mTab.getActivity().getWindow().setAttributes((LayoutParams) attributes);
+    }
+
     /** Updates the layout based on internal state. */
     @VisibleForTesting
     protected void maybeUpdateLayout() {
         try {
-            Window window = mTab.getActivity().getWindow();
-            LayoutParams attributes = window.getAttributes();
+            Object attributes = getWindowAttributes();
 
-            LayoutParams.class.getDeclaredField("layoutInDisplayCutoutMode")
-                    .setInt(attributes,
-                            LayoutParams.class.getDeclaredField(getDisplayCutoutMode())
-                                    .getInt(null));
-            window.setAttributes(attributes);
+            int layoutValue =
+                    attributes.getClass().getDeclaredField(getDisplayCutoutMode()).getInt(null);
+
+            attributes.getClass()
+                    .getDeclaredField("layoutInDisplayCutoutMode")
+                    .setInt(attributes, layoutValue);
+
+            setWindowAttributes(attributes);
         } catch (Exception ex) {
             // API is not available.
             return;
         }
     }
+
+    // This is a breakglass that calls native code to send the safe area to the
+    // main frame of a WebContents.
+    // TODO(beccahughes): Remove when mojo associated interfaces are accessible
+    // from Java.
+    private static native void nativeSetSafeAreaOnWebContents(
+            WebContents contents, int top, int left, int bottom, int right);
 }

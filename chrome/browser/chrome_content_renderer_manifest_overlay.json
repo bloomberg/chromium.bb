@@ -16,6 +16,7 @@
           "autofill.mojom.AutofillAgent",
           "autofill.mojom.PasswordAutofillAgent",
           "autofill.mojom.PasswordGenerationAgent",
+	  "blink.mojom.DisplayCutoutClient",
           "blink.mojom.document_metadata.CopylessPaste",
           "blink.mojom.PauseSubresourceLoadingHandle",
           "chrome.mojom.ChromeRenderFrame",
