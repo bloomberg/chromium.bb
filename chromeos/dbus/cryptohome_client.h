@@ -20,6 +20,7 @@
 
 namespace cryptohome {
 
+class AccountIdentifier;
 class AddKeyRequest;
 class AuthorizationRequest;
 class BaseReply;
@@ -28,6 +29,7 @@ class FlushAndSignBootAttributesRequest;
 class GetBootAttributeRequest;
 class GetKeyDataRequest;
 class GetSupportedKeyPoliciesRequest;
+class MigrateKeyRequest;
 class MigrateToDircryptoRequest;
 class MountRequest;
 class RemoveFirmwareManagementParametersRequest;
@@ -147,12 +149,13 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // Calls Unmount method and returns true when the call succeeds.
   virtual void Unmount(DBusMethodCallback<bool> callback) = 0;
 
-  // Calls AsyncMigrateKey method.  |callback| is called after the method call
+  // Calls MigrateKeyEx method. |callback| is called after the method call
   // succeeds.
-  virtual void AsyncMigrateKey(const cryptohome::Identification& cryptohome_id,
-                               const std::string& from_key,
-                               const std::string& to_key,
-                               AsyncMethodCallback callback) = 0;
+  virtual void MigrateKeyEx(
+      const cryptohome::AccountIdentifier& account,
+      const cryptohome::AuthorizationRequest& auth_request,
+      const cryptohome::MigrateKeyRequest& migrate_request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Calls AsyncRemove method.  |callback| is called after the method call
   // succeeds.
