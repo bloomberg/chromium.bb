@@ -23,7 +23,8 @@ top-level `mojo` namespace.
 All types of Mojo handles in the C API are simply opaque, integral `MojoHandle`
 values. The C++ API has more strongly typed wrappers defined for different
 handle types: `MessagePipeHandle`, `SharedBufferHandle`,
-`DataPipeConsumerHandle`, `DataPipeProducerHandle`, and `WatcherHandle`.
+`DataPipeConsumerHandle`, `DataPipeProducerHandle`, `TrapHandle`, and
+`InvitationHandle`.
 
 Each of these also has a corresponding, move-only, scoped type for safer usage:
 `ScopedMessagePipeHandle`, `ScopedSharedBufferHandle`, and so on. When a scoped
@@ -160,15 +161,17 @@ for detailed C++ shared buffer API documentation.
 
 The C++ library provides several helpers for wrapping system handle types.
 These are specifically useful when working with a few `//base` types, namely
-`base::PlatformFile` and `base::SharedMemoryHandle`. See
+`base::PlatformFile`, `base::SharedMemoryHandle` (deprecated), and various
+strongly-typed shared memory region types like
+`base::ReadOnlySharedMemoryRegion`. See
 [platform_handle.h](https://cs.chromium.org/chromium/src/mojo/public/cpp/system/platform_handle.h)
 for detailed C++ platform handle API documentation.
 
-## Signals & Watchers
+## Signals & Traps
 
-For an introduction to the concepts of handle signals and watchers, check out
+For an introduction to the concepts of handle signals and traps, check out
 the C API's documentation on
-[Signals & Watchers](/mojo/public/c/system/README.md#Signals-Watchers).
+[Signals & Traps](/mojo/public/c/system/README.md#Signals-Traps).
 
 ### Querying Signals
 
@@ -206,7 +209,7 @@ if (message_pipe.handle0->QuerySignalsState().readable()) {
 
 The [`mojo::SimpleWatcher`](https://cs.chromium.org/chromium/src/mojo/public/cpp/system/simple_watcher.h)
 class serves as a convenient helper for using the
-[low-level watcher API](/mojo/public/c/system/README.md#Signals-Watchers)
+[low-level traps API](/mojo/public/c/system/README.md#Signals-Traps)
 to watch a handle for signaling state changes. A `SimpleWatcher` is bound to a
 single sequence and always dispatches its notifications on a
 `base::SequencedTaskRunner`.
@@ -218,7 +221,7 @@ time by the `mojo::SimpleWatcher::ArmingPolicy` enum:
   before any notifications will fire regarding the state of the watched handle.
   Every time the notification callback is run, the `SimpleWatcher` must be
   rearmed again before the next one can fire. See
-  [Arming a Watcher](/mojo/public/c/system/README.md#Arming-a-Watcher) and the
+  [Arming a Trap](/mojo/public/c/system/README.md#Arming-a-Trap) and the
   documentation in `SimpleWatcher`'s header.
 
 * `AUTOMATIC` mode ensures that the `SimpleWatcher` always either is armed or
@@ -274,7 +277,7 @@ WriteABunchOfStuff(pipe.handle1.get());
 The C++ System API defines some utilities to block a calling sequence while
 waiting for one or more handles to change signaling state in an interesting way.
 These threads combine usage of the
-[low-level Watcher API](/mojo/public/c/system/README.md#Signals-Watchers)
+[low-level traps API](/mojo/public/c/system/README.md#Signals-Traps)
 with common synchronization primitives (namely `base::WaitableEvent`.)
 
 While these API features should be used sparingly, they are sometimes necessary.
@@ -388,3 +391,150 @@ if (num_ready_handles > 0) {
   // signaling races with timeout, both things might be true.
 }
 ```
+
+## Invitations
+Invitations are the means by which two processes can have Mojo IPC bootstrapped
+between them. An invitation must be transmitted over some platform-specific IPC
+primitive (*e.g.* a Windows named pipe or UNIX domain socket), and the public
+[platform support library](/mojo/public/cpp/platform/README.md) provides some
+lightweight, cross-platform abstractions for those primitives.
+
+For any two processes looking to be connected, one must send an
+`OutgoingInvitation` and the other must accept an `IncomingInvitation`. The
+sender can attach named message pipe handles to the `OutgoingInvitation`, and
+the receiver can extract them from its `IncomingInvitation`.
+
+Basic usage might look something like this in the case where one process is
+responsible for launching the other.
+
+``` cpp
+#include "base/command_line.h"
+#include "base/process/launch.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
+#include "mojo/public/cpp/system/message_pipe.h"
+
+mojo::ScopedMessagePipeHandle LaunchAndConnectSomething() {
+  // Under the hood, this is essentially always an OS pipe (domain socket pair,
+  // Windows named pipe, Fuchsia channel, etc).
+  mojo::PlatformChannel channel;
+
+  mojo::OutgoingInvitation invitation;
+
+  // Attach a message pipe to be extracted by the receiver. The other end of the
+  // pipe is returned for us to use locally.
+  mojo::ScopedMessagePipeHandle pipe =
+      invitation->AttachMessagePipe("arbitrary pipe name");
+
+  base::LaunchOptions options;
+  base::CommandLine command_line("some_executable")
+  channel.PrepareToPassRemoteEndpoint(&options, &command_line);
+  base::Process child_process = base::LaunchProcess(command_line, options);
+  channel.RemoteProcessLaunchAttempted();
+
+  OutgoingInvitation::Send(std::move(invitation), child_process.Handle(),
+                           channel.TakeLocalEndpoint());
+  return pipe;
+}
+```
+
+The launched process can in turn accept an `IncomingInvitation`:
+
+``` cpp
+#include "base/command_line.h"
+#include "base/threading/thread.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
+#include "mojo/public/cpp/system/message_pipe.h"
+
+int main(int argc, char** argv) {
+  // Basic Mojo initialization for a new process.
+  mojo::edk::Init();
+  base::Thread ipc_thread("ipc!");
+  ipc_thread.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+  mojo::edk::ScopedIPCSupport ipc_support(
+      ipc_thread.task_runner(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+
+  // Accept an invitation.
+  mojo::IncomingInvitation invitation = mojo::IncomingInvitation::Accept(
+      mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
+          *base::CommandLine::ForCurrentProcess()));
+  mojo::ScopedMessagePipeHandle pipe =
+      invitation->ExtractMessagePipe("arbitrary pipe name");
+
+  // etc...
+  return GoListenForMessagesAndRunForever(std::move(pipe));
+}
+```
+
+Now we have IPC initialized between the two processes.
+
+Also keep in mind that bindings interfaces are just message pipes with some
+semantic and syntactic sugar wrapping them, so you can use these primordial
+message pipe handles as mojom interfaces. For example:
+
+``` cpp
+// Process A
+mojo::OutgoingInvitation invitation;
+auto pipe = invitation->AttachMessagePipe("x");
+mojo::Binding<foo::mojom::Bar> binding(
+    &bar_impl,
+    foo::mojom::BarRequest(std::move(pipe)));
+
+// Process B
+auto invitation = mojo::IncomingInvitation::Accept(...);
+auto pipe = invitation->ExtractMessagePipe("x");
+foo::mojom::BarPtr bar(foo::mojom::BarPtrInfo(std::move(pipe), 0));
+
+// Will asynchronously invoke bar_impl.DoSomething() in process A.
+bar->DoSomething();
+```
+
+And just to be sure, the usage here could be reversed: the invitation sender
+could just as well treat its pipe endpoint as a `BarPtr` while the receiver
+treats theirs as a `BarRequest` to be bound.
+
+### Process Networks
+Accepting an invitation admits the accepting process into the sender's connected
+network of processes. Once this is done, it's possible for the newly admitted
+process to establish communication with any other process in that network via
+normal message pipe passing.
+
+This does not mean that the invited process can proactively locate and connect
+to other processes without assistance; rather it means that Mojo handles created
+by the process can safely be transferred to any other process in the network
+over established message pipes, and similarly that Mojo handles created by any
+other process in the network can be safely passed to the newly admitted process.
+
+### Invitation Restrictions
+A process may only belong to a single network at a time.
+
+Additionally, once a process has joined a network, it cannot join another for
+the remainder of its lifetime even if it has lost the connection to its original
+network. This restriction will soon be lifted, but for now developers must be
+mindful of it when authoring any long-running daemon process that will accept an
+incoming invitation.
+
+### Isolated Invitations
+It is possible to have two independent networks of Mojo-connected processes; for
+example, a long-running system daemon which uses Mojo to talk to child processes
+of its own, as well as the Chrome browser process running with no common
+ancestor, talking to its own child processes.
+
+In this scenario it may be desirable to have a process in one network talk to a
+process in the other network. Normal invitations cannot be used here since both
+processes already belong to a network. In this case, an **isolated** invitation
+can be used. These work just like regular invitations, except the sender must
+call `OutgoingInvitation::SendIsolated` and the receiver must call
+`IncomingInvitation::AcceptIsolated`.
+
+Once a connection is established via isolated invitation, Mojo IPC can be used
+normally, with the exception that transitive process connections are not
+supported; that is, if process A sends a message pipe handle to process B via
+an isolated connection, process B cannot reliably send that pipe handle onward
+to another process in its own network. Isolated invitations therefore may only
+be used to facilitate direct 1:1 communication between two processes.

@@ -31,30 +31,46 @@ follows:
 ![Mojo Library Layering: EDK on bottom, different language bindings on top, public system support APIs in the middle](https://docs.google.com/drawings/d/1RwhzKblXUZw-zhy_KDVobAYprYSqxZzopXTUsbwzDPw/pub?w=570&h=324)
 
 ## Embedder Development Kit (EDK)
-Every process to be interconnected via Mojo IPC is called a **Mojo embedder**
-and needs to embed the
+Most processes to be interconnected via Mojo IPC are called **Mojo embedders**
+and need to statically link against the
 [**Embedder Development Kit (EDK)**](/mojo/edk/embedder/README.md) library. The
-EDK exposes the means for an embedder to physically connect one process to another
-using any supported native IPC primitive (*e.g.,* a UNIX domain socket or
-Windows named pipe) on the host platform.
+EDK exposes a few very basic APIs to initialize the Mojo system and setup basic
+IPC support.
 
 Details regarding where and how an application process actually embeds and
 configures the EDK are generaly hidden from the rest of the application code,
-and applications instead use the public System and Bindings APIs to get things
-done within processes that embed Mojo.
+and applications instead use the public System, Platform, and Bindings APIs to
+get things done.
+
+## Mojo Core Library
+On some platforms, it is also possible for applications to rely on a
+dynamically-linked `mojo_core` library in lieu of statically linking the EDK.
+This requires that the corresponding library (*e.g.*, `libmojo_core.so`) be
+present in the working directory or that the `MOJO_CORE_LIBRARY_PATH`
+environment variable point to the absolute path of such a library.
+
+When relying on `mojo_core`, an application may simply link against its own copy
+of Mojo's static public libraries, and call `MojoInitialize()` to enable general
+Mojo usage and IPC support. This is done *in exclusion* to direct EDK library
+initialization described in the previous section.
 
 ## C System API
-Once the EDK is initialized within a process, the public
+Once Mojo is initialized within a process, the public
 [**C System API**](/mojo/public/c/system/README.md) is usable on any thread for
 the remainder of the process's lifetime. This is a lightweight API with a
-relatively small (and eventually stable) ABI. Typically this API is not used
-directly, but it is the foundation upon which all remaining upper layers are
-built. It exposes the fundamental capabilities to create and interact with
-various types of Mojo handles including **message pipes**, **data pipes**, and
-**shared buffers**.
+relatively small, stable, forward-compatible ABI. Typically this API is not used
+directly, but it is the foundation upon which all higher-level public library
+APIs are built. It exposes the fundamental capabilities to create and interact
+with various types of Mojo handles including **message pipes**, **data pipes**,
+and **shared buffers**, as well as APIs to help bootstrap Mojo IPC between two
+processes.
+
+## Platform Support API
+Mojo provides a small collection of abstractions around platform-specific IPC
+primitives to facilitate bootstrapping Mojo IPC between two processes. See the
+[Platform API](/mojo/public/cpp/platform/README.md) documentation for details.
 
 ## High-Level System APIs
-
 There is a relatively small, higher-level system API for each supported
 language, built upon the low-level C API. Like the C API, direct usage of these
 system APIs is rare compared to the bindings APIs, but it is sometimes desirable

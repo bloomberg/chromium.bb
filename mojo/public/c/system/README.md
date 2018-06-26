@@ -4,15 +4,16 @@ This document is a subset of the [Mojo documentation](/mojo/README.md).
 [TOC]
 
 ## Overview
-The Mojo C System API is a lightweight API (with an eventually-stable ABI) upon
-which all higher layers of the Mojo system are built.
+The Mojo C System API is a lightweight API (with an stable, forward-compatible
+ABI) upon which all higher-level public Mojo APIs are built.
 
 This API exposes the fundamental capabilities to: create, read from, and write
 to **message pipes**; create, read from, and write to **data pipes**; create
 **shared buffers** and generate sharable handles to them; wrap platform-specific
 handle objects (such as **file descriptors**, **Windows handles**, and
 **Mach ports**) for seamless transit over message pipes; and efficiently watch
-handles for various types of state transitions.
+handles for various types of state transitions. Finally, there are also APIs to
+bootstrap Mojo IPC between two processes.
 
 This document provides a brief guide to API usage with example code snippets.
 For a detailed API references please consult the headers in
@@ -64,11 +65,14 @@ API calls, or by reading messages which contain attached handles.
 
 A `MojoHandle` can represent a message pipe endpoint, a data pipe consumer,
 a data pipe producer, a shared buffer reference, a wrapped native platform
-handle such as a POSIX file descriptor or a Windows system handle, or a watcher
-object (see [Signals & Watchers](#Signals-Watchers) below.)
+handle such as a POSIX file descriptor or a Windows system handle, a trap object
+(see [Signals & Traps](#Signals-Traps) below), or a process invitation (see
+[Invitations](#Invitations) below).
 
-All types of handles except for watchers (which are an inherently local concept)
-can be attached to messages and sent over message pipes.
+Message pipes, data pipes, shared buffers, and platform handles can all be
+attached to messages and sent over message pipes. Traps are an inherently
+process-local concept, and invitations are transmitted using special dedicated
+APIs.
 
 Any `MojoHandle` may be closed by calling `MojoClose`:
 
@@ -92,12 +96,11 @@ unstructured binary messages with zero or more `MojoHandle` attachments to be
 transferred from one end of a pipe to the other. Message pipes work seamlessly
 across process boundaries or within a single process.
 
-The [Embedder Development Kit (EDK)](/mojo/edk/embedder/README.md) provides the
-means to bootstrap one or more primordial cross-process message pipes, and it's
-up to Mojo embedders to expose this capability in some useful way. Once such a
-pipe is established, additional handles -- including other message pipe
-handles -- may be sent to a remote process using that pipe (or in turn, over
-other pipes sent over that pipe, or pipes sent over *that* pipe, and so on...)
+[Invitations](#Invitations) provide the means to bootstrap one or more
+primordial cross-process message pipes between two processes. Once such a pipe
+is established, additional handles -- including other message pipe handles --
+may be sent to a remote process using that pipe (or in turn, over other pipes
+sent over that pipe, or pipes sent over *that* pipe, and so on...)
 
 The public C System API exposes the ability to read and write messages on pipes
 and to create new message pipes.
@@ -124,7 +127,7 @@ written to `b` are eventually readable from `a`. If `a` is closed at any point,
 will become aware of that.
 
 The state of these conditions can be queried and watched asynchronously as
-described in the [Signals & Watchers](#Signals-Watchers) section below.
+described in the [Signals & Traps](#Signals-Traps) section below.
 
 ### Creating Messages
 
@@ -221,7 +224,7 @@ and not transferred.
 In this case since we know `b` is still open, we also know the message will
 eventually arrive at `b`. `b` can be queried or watched to become aware of when
 the message arrives, but we'll ignore that complexity for now. See
-[Signals & Watchers](#Signals-Watchers) below for more information.
+[Signals & Traps](#Signals-Traps) below for more information.
 
 *** aside
 **NOTE**: Although this is an implementation detail and not strictly guaranteed
@@ -528,7 +531,7 @@ over a message pipe first.
 
 Native platform handles to system objects can be wrapped as Mojo handles for
 seamless transit over message pipes. Mojo currently supports wrapping POSIX
-file descriptors, Windows handles, and Mach ports.
+file descriptors, Windows handles, Mach ports, and Fuchsia zx_handles.
 
 See [//mojo/public/c/system/platform_handle.h](https://cs.chromium.org/chromium/src/mojo/public/c/system/platform_handle.h)
 for detailed platform handle API documentation.
@@ -579,7 +582,7 @@ On OS X, the wrapped platform handle must be a memory-object send right.
 On all other POSIX systems, the wrapped platform handle must be a file
 descriptor for a shared memory object.
 
-## Signals & Watchers
+## Signals & Traps
 
 Message pipe and data pipe (producer and consumer) handles can change state in
 ways that may be interesting to a Mojo API user. For example, you may wish to
@@ -649,81 +652,72 @@ Finally if we read the last message from `a` its signaling state becomes:
 
 and we know definitively that `a` can never be read from again.
 
-### Watching Signals
+### Trapping Signals
 
 The ability to query a handle's signaling state can be useful, but it's not
-sufficient to support robust and efficient pipe usage. Mojo watchers empower
-users with the ability to **watch** a handle's signaling state for interesting
-changes and automatically invoke a notification handler in response.
+sufficient to support robust and efficient pipe usage. Mojo traps empower users
+with the ability to **trap** changes in a handle's signaling state and
+automatically invoke a notification handler in response.
 
-When a watcher is created it must be bound to a function pointer matching
+When a trap is created it must be bound to a function pointer matching
 the following signature, defined in
-[//mojo/public/c/system/watcher.h](https://cs.chromium.org/chromium/src/mojo/public/c/system/watcher.h):
+[//mojo/public/c/system/trap.h](https://cs.chromium.org/chromium/src/mojo/public/c/system/trap.h):
 
 ``` c
-typedef void (*MojoWatcherNotificationCallback)(
-    uintptr_t context,
-    MojoResult result,
-    MojoHandleSignalsState signals_state,
-    MojoWatcherNotificationFlags flags);
+typedef void (*MojoTrapEventHandler)(const struct MojoTrapEvent* event);
 ```
 
-The `context` argument corresponds to a specific handle being watched by the
-watcher (read more below), and the remaining arguments provide details regarding
-the specific reason for the notification. It's important to be aware that a
-watcher's registered handler may be called **at any time** and
-**on any thread**.
+The `event` parameter conveys details about why the event handler is being
+invoked. The handler may be called **at any time** and **from any thread**, so
+it is critical that handler implementations account for this.
 
 It's also helpful to understand a bit about the mechanism by which the handler
 can be invoked. Essentially, any Mojo C System API call may elicit a handle
 state change of some kind. If such a change is relevant to conditions watched by
-a watcher, and that watcher is in a state which allows it raise a corresponding
+a trap, and that trap is in a state which allows it raise a corresponding
 notification, its notification handler will be invoked synchronously some time
-before the outermost System API call on the current thread's stack returns.
+before the stack unwinds beyond the outermost System API call on the current
+thread.
 
 Handle state changes can also occur as a result of incoming IPC from an external
 process. If a pipe in the current process is connected to an endpoint in another
 process and the internal Mojo system receives an incoming message bound for the
-local endpoint, the arrival of that message will trigger a state change on the
-receiving handle and may thus invoke one or more watchers' notification handlers
-as a result.
+local endpoint, the arrival of that message may trigger a state change on the
+receiving handle and may therefore invoke one or more traps' notification
+handlers as a result.
 
-The `MOJO_WATCHER_NOTIFICATION_FLAG_FROM_SYSTEM` flag on the notification
-handler's `flags` argument is used to indicate whether the handler was invoked
-due to such an internal system IPC event (if the flag is set), or if it was
-invoked synchronously due to some local API call (if the flag is unset.)
-This distinction can be useful to make in certain cases to *e.g.* avoid
-accidental reentrancy in user code.
+The `MOJO_TRAP_EVENT_FLAG_WITHIN_API_CALL` flag on the `flags` field of `event`
+is used to indicate whether the handler was invoked due to such an internal
+system IPC event (if the flag is unset), or if it was invoked synchronously due
+to some local API call (if the flag is set.) This distinction can be useful to
+make in certain cases to *e.g.* avoid accidental reentrancy in user code.
 
-### Creating a Watcher
+### Creating a Trap
 
-Creating a watcher is simple:
+Creating a trap is simple:
 
 ``` c
 
-void OnNotification(uintptr_t context,
-                    MojoResult result,
-                    MojoHandleSignalsState signals_state,
-                    MojoWatcherNotificationFlags flags) {
+void OnNotification(const struct MojoTrapEvent* event) {
   // ...
 }
 
-MojoHandle w;
-MojoResult result = MojoCreateWatcher(&OnNotification, &w);
+MojoHandle t;
+MojoResult result = MojoCreateTrap(&OnNotification, NULL, &t);
 ```
 
-Like all other `MojoHandle` types, watchers may be destroyed by closing them
-with `MojoClose`. Unlike other `MojoHandle` types, watcher handles are **not**
+Like all other `MojoHandle` types, traps may be destroyed by closing them with
+`MojoClose`. Unlike most other `MojoHandle` types, trap handles are **not**
 transferrable across message pipes.
 
-In order for a watcher to be useful, it has to watch at least one handle.
+In order for a trap to be useful, it has have at least one **trigger** attached
+to it.
 
-### Adding a Handle to a Watcher
+### Adding a Trigger to a Trap
 
-Any given watcher can watch any given (message or data pipe) handle for some set
+Any given trap can watch any given (message or data pipe) handle for some set
 of signaling conditions. A handle may be watched simultaneously by multiple
-watchers, and a single watcher can watch multiple different handles
-simultaneously.
+traps, and a single trap can watch multiple different handles simultaneously.
 
 ``` c
 MojoHandle a, b;
@@ -731,25 +725,27 @@ MojoCreateMessagePipe(NULL, &a, &b);
 
 // Watch handle |a| for readability.
 const uintptr_t context = 1234;
-MojoResult result = MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE, context);
+MojoResult result = MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                                   MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                                   context, NULL);
 ```
 
-We've successfully instructed watcher `w` to begin watching pipe handle `a` for
-readability. However, our recently created watcher is still in a **disarmed**
-state, meaning that it will never fire a notification pertaining to this watched
-signaling condition. It must be **armed** before that can happen.
+We've successfully instructed trap `t` to begin watching pipe handle `a` for
+readability. However, our recently created trap is still in a **disarmed**
+state, meaning that it will never fire a notification pertaining to this
+trigger. It must be **armed** before that can happen.
 
-### Arming a Watcher
+### Arming a Trap
 
-In order for a watcher to invoke its notification handler in response to a
-relevant signaling state change on a watched handle, it must first be armed. A
-watcher may only be armed if none of its watched handles would elicit a
-notification immediately once armed.
+In order for a trap to invoke its notification handler in response to a relevant
+signaling state change on a watched handle, it must first be armed. A trap may
+only be armed if none of its attached triggers would elicit a notification
+immediately once armed.
 
 In this case `a` is clearly not yet readable, so arming should succeed:
 
 ``` c
-MojoResult result = MojoArmWatcher(w, NULL, NULL, NULL, NULL);
+MojoResult result = MojoArmTrap(t, NULL, NULL, NULL, NULL, NULL);
 ```
 
 Now we can write to `b` to make `a` readable:
@@ -762,56 +758,59 @@ MojoWriteMessage(b, m, nullptr);
 
 Eventually -- and in practice possibly before `MojoWriteMessage` even
 returns -- this will cause `OnNotification` to be invoked on the calling thread
-with the `context` value (*i.e.* 1234) that was given when the handle was added
-to the watcher.
+with the `context` value (*i.e.* 1234) that was given when the trigger was added
+to the trap.
 
-The `result` parameter will be `MOJO_RESULT_OK` to indicate that the watched
-signaling condition has been *satisfied*. If the watched condition had instead
-become permanently *unsatisfiable* (*e.g.*, if `b` were instead closed), `result`
-would instead indicate `MOJO_RESULT_FAILED_PRECONDITION`.
+The `result` field of the event will be `MOJO_RESULT_OK` to indicate that the
+trigger's condition has been met. If the handle's state had instead changed in
+such a way that the trigger's condition could never be met again (*e.g.* if `b`
+were instead closed), `result` would instead indicate
+`MOJO_RESULT_FAILED_PRECONDITION`.
 
-**NOTE:** Immediately before a watcher decides to invoke its notification
-handler, it automatically disarms itself to prevent another state change from
-eliciting another notification. Therefore a watcher must be repeatedly rearmed
-in order to continue dispatching signaling notifications.
+**NOTE:** Immediately before a trigger decides to invoke its event handler, it
+automatically disarms itself to prevent another state change from eliciting
+another notification. Therefore a trap must be repeatedly rearmed in order to
+continue dispatching events.
 
-As noted above, arming a watcher may fail if any of the watched conditions for
-a handle are already partially satisfied or fully unsatisfiable. In that case
-the caller may provide buffers for `MojoArmWatcher` to store information about
-a subset of the relevant watches which caused it to fail:
+As noted above, arming a watcher may fail if any of its triggers would be
+activated immediately.  In that case, the caller may provide buffers to
+`MojoArmTrap` to receive information about a subset of the triggers which caused
+it to fail:
 
 ``` c
-// Provide some storage for information about watches that are already ready.
-uint32_t num_ready_contexts = 4;
-uintptr_t ready_contexts[4];
+// Provide some storage for information about triggers that would have been
+// activated immediately.
+uint32_t num_ready_triggers = 4;
+uintptr_t reay_triggers[4];
 MojoResult ready_results[4];
 struct MojoHandleSignalsStates ready_states[4];
-MojoResult result = MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
-                                   ready_results, ready_states);
+MojoResult result = MojoArmTrap(t, NULL, &num_ready_triggers, ready_triggers,
+                                ready_results, ready_states);
 ```
 
-Because `a` is still readable this operation will fail with
-`MOJO_RESULT_FAILED_PRECONDITION`. The input value of `num_ready_contexts`
-informs `MojoArmWatcher` that it may store information regarding up to 4 watches
-which currently prevent arming. In this case of course there is only one active
-watch, so upon return we will see:
+Because `a` is still readable this operation will now fail with
+`MOJO_RESULT_FAILED_PRECONDITION`. The input value of `num_ready_triggers`
+informs `MojoArmTrap` that it may store information regarding up to 4 triggers
+which have prevented arming. In this case of course there is only one active
+trigger, so upon return we will see:
 
-* `num_ready_contexts` is `1`.
-* `ready_contexts[0]` is `1234`.
+* `num_ready_triggers` is `1`.
+* `ready_triggers[0]` is `1234`.
 * `ready_results[0]` is `MOJO_RESULT_OK`
 * `ready_states[0]` is the last known signaling state of handle `a`.
 
 In other words the stored information mirrors what would have been the
-notification handler's arguments if the watcher were allowed to arm and thus
-notify immediately.
+event handler's arguments if the trap were allowed to arm and thus notify
+immediately.
 
-### Cancelling a Watch
+### Removing a Trigger
 
-There are three ways a watch can be cancelled:
+There are three ways a trigger can be removed:
 
-* The watched handle is closed
-* The watcher handle is closed (in which case all of its watches are cancelled.)
-* `MojoCancelWatch` is explicitly called for a given `context`.
+* The handle being watched by the trigger is closed
+* The trap handle is closed, in which case all of its attached triggers are
+  implicitly removed.
+* `MojoRemoveTrigger` is called for a given `context`.
 
 In the above example this means any of the following operations will cancel the
 watch on `a`:
@@ -820,25 +819,24 @@ watch on `a`:
 // Close the watched handle...
 MojoClose(a);
 
-// OR close the watcher handle...
-MojoClose(w);
+// OR close the trap handle...
+MojoClose(t);
 
-// OR explicitly cancel.
-MojoResult result = MojoCancelWatch(w, 1234);
+// OR explicitly remove it.
+MojoResult result = MojoRemoveTrigger(t, 1234, NULL);
 ```
 
-In every case the watcher's notification handler is invoked for the cancelled
-watch(es) regardless of whether or not the watcher is or was armed at the time.
-The notification handler receives a `result` of `MOJO_RESULT_CANCELLED` for
-these notifications, and this is guaranteed to be the final notification for any
-given watch context.
+In every case the trap's event handler is invoked for the cancelled trigger(es)
+regardless of whether or not the trap was armed at the time. The event handler
+receives a `result` of `MOJO_RESULT_CANCELLED` for each of these invocations,
+and this is guaranteed to be the final event for any given trigger context.
 
-### Practical Watch Context Usage
+### Practical Trigger Context Usage
 
-It is common and probably wise to treat a watch's `context` value as an opaque
+It is common and probably wise to treat a trigger's `context` value as an opaque
 pointer to some thread-safe state associated in some way with the handle being
-watched. Here's a small example which uses a single watcher to watch both ends
-of a message pipe and accumulate a count of messages received at each end.
+watched. Here's a small example which uses a single trap to watch both ends of a
+message pipe and accumulate a count of messages received at each end.
 
 ``` c
 // NOTE: For the sake of simplicity this example code is not in fact
@@ -846,45 +844,43 @@ of a message pipe and accumulate a count of messages received at each end.
 // no external process connections, this is fine.
 
 struct WatchedHandleState {
-  MojoHandle watcher;
+  MojoHandle trap;
   MojoHandle handle;
   int message_count;
 };
 
-void OnNotification(uintptr_t context,
-                    MojoResult result,
-                    MojoHandleSignalsState signals_state,
-                    MojoWatcherNotificationFlags flags) {
-  struct WatchedHandleState* state = (struct WatchedHandleState*)(context);
+void OnNotification(const struct MojoTrapEvent* event) {
+  struct WatchedHandleState* state =
+      (struct WatchedHandleState*)(event->trigger_context);
   MojoResult rv;
 
-  if (result == MOJO_RESULT_CANCELLED) {
-    // Cancellation is always the last notification and is guaranteed to
-    // eventually happen for every context, assuming no handles are leaked. We
-    // treat this as an opportunity to free the WatchedHandleState.
+  if (event->result == MOJO_RESULT_CANCELLED) {
+    // Cancellation is always the last event and is guaranteed to happen for
+    // every context, assuming no handles are leaked. We treat this as an
+    // opportunity to free the WatchedHandleState.
     free(state);
     return;
   }
 
   if (result == MOJO_RESULT_FAILED_PRECONDITION) {
     // No longer readable, i.e. the other handle must have been closed. Better
-    // cancel. Note that we could also just call MojoClose(state->watcher) here
-    // since we know |context| is its only registered watch.
-    MojoCancelWatch(state->watcher, context);
+    // cancel. Note that we could also just call MojoClose(state->trap) here
+    // since we know there's only one attached trigger.
+    MojoRemoveTrigger(state->trap, event->trigger_context, NULL);
     return;
   }
 
-  // This is the only handle watched by the watcher, so as long as we can't arm
+  // This is the only handle watched by the trap, so as long as we can't arm
   // the watcher we know something's up with this handle. Try to read messages
   // until we can successfully arm again or something goes terribly wrong.
-  while (MojoArmWatcher(state->watcher, NULL, NULL, NULL, NULL) ==
+  while (MojoArmTrap(state->trap, NULL NULL, NULL, NULL, NULL) ==
          MOJO_RESULT_FAILED_PRECONDITION) {
     rv = MojoReadMessageNew(state->handle, NULL, NULL, NULL,
                             MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
     if (rv == MOJO_RESULT_OK) {
       state->message_count++;
     } else if (rv == MOJO_RESULT_FAILED_PRECONDITION) {
-      MojoCancelWatch(state->watcher, context);
+      MojoRemoveTrigger(state->trap, event->trigger_context, NULL);
       return;
     }
   }
@@ -893,25 +889,29 @@ void OnNotification(uintptr_t context,
 MojoHandle a, b;
 MojoCreateMessagePipe(NULL, &a, &b);
 
-MojoHandle a_watcher, b_watcher;
-MojoCreateWatcher(&OnNotification, &a_watcher);
-MojoCreateWatcher(&OnNotification, &b_watcher)
+MojoHandle a_trap, b_trap;
+MojoCreateTrap(&OnNotification, NULL, &a_trap);
+MojoCreateTrap(&OnNotification, NULL, &b_trap)
 
 struct WatchedHandleState* a_state = malloc(sizeof(struct WatchedHandleState));
-a_state->watcher = a_watcher;
+a_state->trap = a_trap;
 a_state->handle = a;
 a_state->message_count = 0;
 
 struct WatchedHandleState* b_state = malloc(sizeof(struct WatchedHandleState));
-b_state->watcher = b_watcher;
+b_state->trap = b_trap;
 b_state->handle = b;
 b_state->message_count = 0;
 
-MojoWatch(a_watcher, a, MOJO_HANDLE_SIGNAL_READABLE, (uintptr_t)a_state);
-MojoWatch(b_watcher, b, MOJO_HANDLE_SIGNAL_READABLE, (uintptr_t)b_state);
+MojoAddTrigger(a_trap, a, MOJO_HANDLE_SIGNAL_READABLE,
+               MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED, (uintptr_t)a_state,
+               NULL);
+MojoAddTrigger(b_trap, b, MOJO_HANDLE_SIGNAL_READABLE,
+               MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED, (uintptr_t)b_state,
+               NULL);
 
-MojoArmWatcher(a_watcher, NULL, NULL, NULL, NULL);
-MojoArmWatcher(b_watcher, NULL, NULL, NULL, NULL);
+MojoArmTrap(a_trap, NULL, NULL, NULL, NULL, NULL);
+MojoArmTrap(b_trap, NULL, NULL, NULL, NULL, NULL);
 ```
 
 Now any writes to `a` will increment `message_count` in `b_state`, and any
@@ -920,3 +920,12 @@ writes to `b` will increment `message_count` in `a_state`.
 If either `a` or `b` is closed, both watches will be cancelled - one because
 watch cancellation is implicit in handle closure, and the other because its
 watcher will eventually detect that the handle is no longer readable.
+
+## Invitations
+
+TODO.
+
+For now see the
+[C header](https://cs.chromium.org/src/mojo/public/c/system/invitation.h) and
+the documentation for the equivalent
+[C++ API](/mojo/public/cpp/system/README.md#Invitations).

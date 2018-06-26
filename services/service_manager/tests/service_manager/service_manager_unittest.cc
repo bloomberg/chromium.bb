@@ -265,16 +265,7 @@ class ServiceManagerTest : public test::ServiceTest,
     // on the command line.
     mojo::PlatformChannel channel;
     base::LaunchOptions options;
-#if defined(OS_WIN)
-    channel.PrepareToPassRemoteEndpoint(&options.handles_to_inherit,
-                                        &child_command_line);
-#elif defined(OS_FUCHSIA)
-    channel.PrepareToPassRemoteEndpoint(&options.handles_to_transfer,
-                                        &child_command_line);
-#else
-    channel.PrepareToPassRemoteEndpoint(&options.fds_to_remap,
-                                        &child_command_line);
-#endif
+    channel.PrepareToPassRemoteEndpoint(&options, &child_command_line);
 
     mojo::OutgoingInvitation invitation;
     service_manager::mojom::ServicePtr client =
