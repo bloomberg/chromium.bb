@@ -100,7 +100,8 @@ class MockAvailableLicensesObserver {
   MockAvailableLicensesObserver() {}
 
   MOCK_METHOD2(OnAvailableLicensesFetched,
-               void(bool, const CloudPolicyClient::LicenseMap&));
+               void(DeviceManagementStatus,
+                    const CloudPolicyClient::LicenseMap&));
 };
 
 class MockDeviceDMTokenCallbackObserver {
@@ -1201,7 +1202,8 @@ TEST_F(CloudPolicyClientTest, RequestGcmIdUpdate) {
 TEST_F(CloudPolicyClientTest, RequestAvailableLicenses) {
   ExpectCheckDeviceLicense(kOAuthToken, check_device_license_response_);
 
-  EXPECT_CALL(license_callback_observer_, OnAvailableLicensesFetched(true, _))
+  EXPECT_CALL(license_callback_observer_,
+              OnAvailableLicensesFetched(DM_STATUS_SUCCESS, _))
       .Times(1);
 
   CloudPolicyClient::LicenseRequestCallback callback =
@@ -1215,7 +1217,8 @@ TEST_F(CloudPolicyClientTest, RequestAvailableLicenses) {
 TEST_F(CloudPolicyClientTest, RequestAvailableLicensesBrokenResponse) {
   ExpectCheckDeviceLicense(kOAuthToken, check_device_license_broken_response_);
 
-  EXPECT_CALL(license_callback_observer_, OnAvailableLicensesFetched(false, _))
+  EXPECT_CALL(license_callback_observer_,
+              OnAvailableLicensesFetched(DM_STATUS_RESPONSE_DECODING_ERROR, _))
       .Times(1);
 
   CloudPolicyClient::LicenseRequestCallback callback =
