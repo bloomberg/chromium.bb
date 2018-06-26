@@ -67,8 +67,6 @@ const base::Feature kAutofillUpstreamAlwaysRequestCardholderName{
 const base::Feature kAutofillUpstreamEditableCardholderName{
     "AutofillUpstreamEditableCardholderName",
     base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillUpstreamSendDetectedValues{
-    "AutofillUpstreamSendDetectedValues", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamSendPanFirstSix{
     "AutofillUpstreamSendPanFirstSix", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamUpdatePromptExplanation{
@@ -196,10 +194,6 @@ bool IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled() {
 
 bool IsAutofillUpstreamEditableCardholderNameExperimentEnabled() {
   return base::FeatureList::IsEnabled(kAutofillUpstreamEditableCardholderName);
-}
-
-bool IsAutofillUpstreamSendDetectedValuesExperimentEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillUpstreamSendDetectedValues);
 }
 
 bool IsAutofillUpstreamSendPanFirstSixExperimentEnabled() {

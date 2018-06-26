@@ -72,7 +72,6 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
    public:
     virtual void OnOfferLocalSave() = 0;
     virtual void OnDecideToRequestUploadSave() = 0;
-    virtual void OnDecideToNotRequestUploadSave() = 0;
     virtual void OnReceivedGetUploadDetailsResponse() = 0;
     virtual void OnSentUploadCardRequest() = 0;
   };
