@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/arc/mojo_channel.h"
+#include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/views/message_view_factory.h"
 
 using arc::ConnectionHolder;
@@ -22,6 +23,8 @@ using arc::mojom::ArcNotificationData;
 using arc::mojom::ArcNotificationDataPtr;
 using arc::mojom::ArcNotificationEvent;
 using arc::mojom::ArcNotificationPriority;
+using arc::mojom::ArcDoNotDisturbStatus;
+using arc::mojom::ArcDoNotDisturbStatusPtr;
 using arc::mojom::NotificationsHost;
 using arc::mojom::NotificationsInstance;
 using arc::mojom::NotificationsInstancePtr;
@@ -39,6 +42,19 @@ std::unique_ptr<message_center::MessageView> CreateCustomMessageView(
       static_cast<ArcNotificationDelegate*>(notification.delegate());
   return arc_delegate->CreateCustomMessageView(notification);
 }
+
+class DoNotDisturbManager : public message_center::MessageCenterObserver {
+ public:
+  DoNotDisturbManager(ArcNotificationManager* manager) : manager_(manager) {}
+  void OnQuietModeChanged(bool in_quiet_mode) override {
+    manager_->SetDoNotDisturbStatusOnAndroid(in_quiet_mode);
+  }
+
+ private:
+  ArcNotificationManager* const manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(DoNotDisturbManager);
+};
 
 }  // namespace
 
@@ -87,14 +103,21 @@ ArcNotificationManager::ArcNotificationManager(
     : delegate_(std::move(delegate)),
       main_profile_id_(main_profile_id),
       message_center_(message_center),
+      do_not_disturb_manager_(new DoNotDisturbManager(this)),
       instance_owner_(std::make_unique<InstanceOwner>()) {
+  DCHECK(message_center_);
+
   instance_owner_->holder()->SetHost(this);
   instance_owner_->holder()->AddObserver(this);
   if (!message_center::MessageViewFactory::HasCustomNotificationViewFactory())
     SetCustomNotificationViewFactory();
+
+  message_center_->AddObserver(do_not_disturb_manager_.get());
 }
 
 ArcNotificationManager::~ArcNotificationManager() {
+  message_center_->RemoveObserver(do_not_disturb_manager_.get());
+
   instance_owner_->holder()->RemoveObserver(this);
   instance_owner_->holder()->SetHost(nullptr);
 
@@ -113,8 +136,12 @@ ArcNotificationManager::GetConnectionHolderForTest() {
 
 void ArcNotificationManager::OnConnectionReady() {
   DCHECK(!ready_);
+
   // TODO(hidehiko): Replace this by ConnectionHolder::IsConnected().
   ready_ = true;
+
+  // Sync the initial quiet mode state with Android.
+  SetDoNotDisturbStatusOnAndroid(message_center_->IsQuietMode());
 }
 
 void ArcNotificationManager::OnConnectionClosed() {
@@ -427,6 +454,36 @@ void ArcNotificationManager::OnGotAppId(ArcNotificationDataPtr data,
     return;
 
   it->second->OnUpdatedFromAndroid(std::move(data), app_id);
+}
+
+void ArcNotificationManager::OnDoNotDisturbStatusUpdated(
+    ArcDoNotDisturbStatusPtr status) {
+  // Remove the observer to prevent from sending the command to Android since
+  // this request came from Android.
+  message_center_->RemoveObserver(do_not_disturb_manager_.get());
+
+  if (message_center_->IsQuietMode() != status->enabled)
+    message_center_->SetQuietMode(status->enabled);
+
+  // Add back the observer.
+  message_center_->AddObserver(do_not_disturb_manager_.get());
+}
+
+void ArcNotificationManager::SetDoNotDisturbStatusOnAndroid(bool enabled) {
+  auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      instance_owner_->holder(), SetDoNotDisturbStatusOnAndroid);
+
+  // On shutdown, the ARC channel may quit earlier than notifications.
+  if (!notifications_instance) {
+    VLOG(2) << "Trying to send the Do Not Disturb status (" << enabled
+            << "), but the ARC channel has already gone.";
+    return;
+  }
+
+  ArcDoNotDisturbStatusPtr status = ArcDoNotDisturbStatus::New();
+  status->enabled = enabled;
+
+  notifications_instance->SetDoNotDisturbStatusOnAndroid(std::move(status));
 }
 
 }  // namespace ash

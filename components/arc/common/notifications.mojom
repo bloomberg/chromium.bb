@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 18
+// Next MinVersion: 19
 
 module arc.mojom;
 
@@ -156,8 +156,17 @@ struct ArcNotificationData {
   ArcNotificationFlags? flags;
 };
 
-// Next Method ID: 7
+[Extensible, MinVersion=18]
+struct ArcDoNotDisturbStatus {
+  bool enabled;
+};
+
+// Next Method ID: 8
 interface NotificationsHost {
+  // Set the Do-Not-Disturb status on Chrome side from Android side.
+  [MinVersion=18]
+  OnDoNotDisturbStatusUpdated@7(ArcDoNotDisturbStatus status);
+
   // Tells the Chrome that a notification is posted (created or updated) on
   // Android. If you know that the notification exists, please consider to use
   // OnNotificationUpdate instead.
@@ -177,7 +186,7 @@ interface NotificationsHost {
   OpenMessageCenter@6();
 };
 
-// Next Method ID: 7
+// Next Method ID: 8
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
 interface NotificationsInstance {
   // DEPRECATED: Please use Init@5 instead.
@@ -213,4 +222,8 @@ interface NotificationsInstance {
   // side.
   [MinVersion=17]
   OpenNotificationSnoozeSettings@6(string key);
+
+  // Set the Do-Not-Disturb status on Android side from Chrome side.
+  [MinVersion=18]
+  SetDoNotDisturbStatusOnAndroid@7(ArcDoNotDisturbStatus status);
 };

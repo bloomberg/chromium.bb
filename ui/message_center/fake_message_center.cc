@@ -15,9 +15,11 @@ FakeMessageCenter::~FakeMessageCenter() {
 }
 
 void FakeMessageCenter::AddObserver(MessageCenterObserver* observer) {
+  observer_list_.AddObserver(observer);
 }
 
 void FakeMessageCenter::RemoveObserver(MessageCenterObserver* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void FakeMessageCenter::AddNotificationBlocker(NotificationBlocker* blocker) {

@@ -30,12 +30,16 @@ class FakeNotificationsInstance : public mojom::NotificationsInstance {
   void CloseNotificationWindow(const std::string& key) override;
   void OpenNotificationSettings(const std::string& key) override;
   void OpenNotificationSnoozeSettings(const std::string& key) override;
+  void SetDoNotDisturbStatusOnAndroid(
+      mojom::ArcDoNotDisturbStatusPtr status) override;
 
   const std::vector<std::pair<std::string, mojom::ArcNotificationEvent>>&
   events() const;
+  const mojom::ArcDoNotDisturbStatusPtr& latest_do_not_disturb_status() const;
 
  private:
   std::vector<std::pair<std::string, mojom::ArcNotificationEvent>> events_;
+  mojom::ArcDoNotDisturbStatusPtr latest_do_not_disturb_status_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNotificationsInstance);
 };

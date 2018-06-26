@@ -51,6 +51,8 @@ class ArcNotificationManager
   void OnNotificationUpdated(arc::mojom::ArcNotificationDataPtr data) override;
   void OnNotificationRemoved(const std::string& key) override;
   void OpenMessageCenter() override;
+  void OnDoNotDisturbStatusUpdated(
+      arc::mojom::ArcDoNotDisturbStatusPtr status) override;
 
   // Methods called from ArcNotificationItem:
   void SendNotificationRemovedFromChrome(const std::string& key);
@@ -63,6 +65,7 @@ class ArcNotificationManager
   void OpenNotificationSnoozeSettings(const std::string& key);
   bool IsOpeningSettingsSupported() const;
   void SendNotificationToggleExpansionOnChrome(const std::string& key);
+  void SetDoNotDisturbStatusOnAndroid(bool enabled);
 
  private:
   // Helper class to own MojoChannel and ConnectionHolder.
@@ -77,6 +80,8 @@ class ArcNotificationManager
   std::unique_ptr<ArcNotificationManagerDelegate> delegate_;
   const AccountId main_profile_id_;
   message_center::MessageCenter* const message_center_;
+  const std::unique_ptr<message_center::MessageCenterObserver>
+      do_not_disturb_manager_;
 
   using ItemMap =
       std::unordered_map<std::string, std::unique_ptr<ArcNotificationItem>>;
