@@ -2423,7 +2423,7 @@
 
   "RelaunchNotification": {
     "os": ["win", "linux", "mac"],
-    "test_policy": { "RelaunchNotification": 1},
+    "test_policy": { "RelaunchNotification": 1 },
     "pref_mappings": [
       { "pref": "browser.relaunch_notification",
         "local_state": true
@@ -2433,9 +2433,19 @@
 
   "RelaunchNotificationPeriod": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "RelaunchNotificationPeriod": 86400000},
+    "test_policy": { "RelaunchNotificationPeriod": 86400000 },
     "pref_mappings": [
       { "pref": "browser.relaunch_notification_period",
+        "local_state": true
+      }
+    ]
+  },
+
+  "PromotionalTabsEnabled": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "PromotionalTabsEnabled": false },
+    "pref_mappings": [
+      { "pref": "browser.promotional_tabs_enabled",
         "local_state": true
       }
     ]

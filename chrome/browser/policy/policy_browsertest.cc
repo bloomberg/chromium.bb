@@ -250,7 +250,6 @@
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber_test_observer.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -282,6 +281,9 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #endif
 
 using content::BrowserThread;
@@ -3547,8 +3549,8 @@ class RestoreOnStartupPolicyTest
       public testing::WithParamInterface<
           void (RestoreOnStartupPolicyTest::*)(void)> {
  public:
-  RestoreOnStartupPolicyTest() {}
-  virtual ~RestoreOnStartupPolicyTest() {}
+  RestoreOnStartupPolicyTest() = default;
+  virtual ~RestoreOnStartupPolicyTest() = default;
 
 #if defined(OS_CHROMEOS)
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -5767,5 +5769,83 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbDefault) {
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(context->CanRequestObjectPermission(kTestUrl, kTestUrl));
 }
+
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+
+// The possibilities for a boolean policy.
+enum class BooleanPolicy {
+  kNotConfigured,
+  kFalse,
+  kTrue,
+};
+
+// Tests that the PromotionalTabsEnabled policy properly suppresses the welcome
+// page for browser first-runs.
+class PromotionalTabsEnabledPolicyTest
+    : public PolicyTest,
+      public testing::WithParamInterface<BooleanPolicy> {
+ protected:
+  PromotionalTabsEnabledPolicyTest() = default;
+  ~PromotionalTabsEnabledPolicyTest() = default;
+
+  void SetUp() override {
+    // Ordinarily, browser tests include chrome://blank on the command line to
+    // suppress any onboarding or promotional tabs. This test, on the other
+    // hand, must evaluate startup with nothing on the command line so that a
+    // default launch takes place.
+    set_open_about_blank_on_browser_launch(false);
+    PolicyTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kForceFirstRun);
+  }
+
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
+    if (GetParam() != BooleanPolicy::kNotConfigured) {
+      // Set the policy now before the browser starts up.
+      PolicyMap policies;
+      policies.Set(
+          key::kPromotionalTabsEnabled, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(GetParam() == BooleanPolicy::kTrue),
+          nullptr);
+      UpdateProviderPolicy(policies);
+    }
+    PolicyTest::CreatedBrowserMainParts(browser_main_parts);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PromotionalTabsEnabledPolicyTest);
+};
+
+IN_PROC_BROWSER_TEST_P(PromotionalTabsEnabledPolicyTest, RunTest) {
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  ASSERT_GE(tab_strip->count(), 1);
+  const auto& url = tab_strip->GetWebContentsAt(0)->GetURL();
+  switch (GetParam()) {
+    case BooleanPolicy::kFalse:
+      // Only the NTP should show.
+      EXPECT_EQ(tab_strip->count(), 1);
+      if (url.possibly_invalid_spec() != chrome::kChromeUINewTabURL)
+        EXPECT_TRUE(search::IsNTPURL(url, browser()->profile())) << url;
+      break;
+    case BooleanPolicy::kNotConfigured:
+    case BooleanPolicy::kTrue:
+      // One or more onboarding tabs should show.
+      EXPECT_NE(url.possibly_invalid_spec(), chrome::kChromeUINewTabURL);
+      EXPECT_FALSE(search::IsNTPURL(url, browser()->profile())) << url;
+      break;
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(,
+                        PromotionalTabsEnabledPolicyTest,
+                        ::testing::Values(BooleanPolicy::kNotConfigured,
+                                          BooleanPolicy::kFalse,
+                                          BooleanPolicy::kTrue));
+
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 }  // namespace policy

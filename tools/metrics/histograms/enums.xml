@@ -13536,6 +13536,7 @@ Called by update_net_error_codes.py.-->
   <int value="451" label="EnableSyncConsent"/>
   <int value="452" label="ContextualSuggestionsEnabled"/>
   <int value="453" label="DeviceAutoUpdateTimeRestrictions"/>
+  <int value="454" label="PromotionalTabsEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
