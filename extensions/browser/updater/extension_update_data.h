@@ -39,6 +39,7 @@ struct ExtensionUpdateCheckParams {
 
   ExtensionUpdateDataMap update_info;
   UpdateCheckPriority priority;
+  bool install_immediately;
 };
 
 }  // namespace extensions

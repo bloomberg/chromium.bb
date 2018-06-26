@@ -138,8 +138,8 @@ TEST_F(UpdateDataProviderTest, GetData_NoDataAdded) {
   scoped_refptr<UpdateDataProvider> data_provider =
       base::MakeRefCounted<UpdateDataProvider>(nullptr);
 
-  const auto data =
-      data_provider->GetData(ExtensionUpdateDataMap(), {kExtensionId1});
+  const auto data = data_provider->GetData(
+      false /*install_immediately*/, ExtensionUpdateDataMap(), {kExtensionId1});
   EXPECT_EQ(0UL, data.size());
 }
 
@@ -154,8 +154,8 @@ TEST_F(UpdateDataProviderTest, GetData_EnabledExtension) {
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
 
-  std::vector<std::string> ids({kExtensionId1});
-  const auto data = data_provider->GetData(update_data, ids);
+  const auto data = data_provider->GetData(false /*install_immediately*/,
+                                           update_data, {kExtensionId1});
 
   ASSERT_EQ(1UL, data.size());
   EXPECT_EQ(version, data[0]->version.GetString());
@@ -178,7 +178,8 @@ TEST_F(UpdateDataProviderTest, GetData_EnabledExtensionWithData) {
   info.is_corrupt_reinstall = true;
   info.install_source = "webstore";
 
-  const auto data = data_provider->GetData(update_data, {kExtensionId1});
+  const auto data = data_provider->GetData(true /*install_immediately*/,
+                                           update_data, {kExtensionId1});
 
   ASSERT_EQ(1UL, data.size());
   EXPECT_EQ("0.0.0.0", data[0]->version.GetString());
@@ -200,7 +201,8 @@ TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_WithNoReason) {
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
 
-  const auto data = data_provider->GetData(update_data, {kExtensionId1});
+  const auto data = data_provider->GetData(false /*install_immediately*/,
+                                           update_data, {kExtensionId1});
 
   ASSERT_EQ(1UL, data.size());
   EXPECT_EQ(version, data[0]->version.GetString());
@@ -223,7 +225,8 @@ TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_UnknownReason) {
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
 
-  const auto data = data_provider->GetData(update_data, {kExtensionId1});
+  const auto data = data_provider->GetData(true /*install_immediately*/,
+                                           update_data, {kExtensionId1});
 
   ASSERT_EQ(1UL, data.size());
   EXPECT_EQ(version, data[0]->version.GetString());
@@ -247,7 +250,8 @@ TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_WithReasons) {
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
 
-  const auto data = data_provider->GetData(update_data, {kExtensionId1});
+  const auto data = data_provider->GetData(false /*install_immediately*/,
+                                           update_data, {kExtensionId1});
 
   ASSERT_EQ(1UL, data.size());
   EXPECT_EQ(version, data[0]->version.GetString());
@@ -275,7 +279,8 @@ TEST_F(UpdateDataProviderTest,
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
 
-  const auto data = data_provider->GetData(update_data, {kExtensionId1});
+  const auto data = data_provider->GetData(true /*install_immediately*/,
+                                           update_data, {kExtensionId1});
 
   ASSERT_EQ(1UL, data.size());
   EXPECT_EQ(version, data[0]->version.GetString());
@@ -308,7 +313,8 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions) {
   update_data[kExtensionId2] = {};
 
   const auto data =
-      data_provider->GetData(update_data, {kExtensionId1, kExtensionId2});
+      data_provider->GetData(false /*install_immediately*/, update_data,
+                             {kExtensionId1, kExtensionId2});
 
   ASSERT_EQ(2UL, data.size());
   EXPECT_EQ(version1, data[0]->version.GetString());
@@ -340,7 +346,8 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_DisabledExtension) {
   update_data[kExtensionId2] = {};
 
   const auto data =
-      data_provider->GetData(update_data, {kExtensionId1, kExtensionId2});
+      data_provider->GetData(true /*install_immediately*/, update_data,
+                             {kExtensionId1, kExtensionId2});
 
   ASSERT_EQ(2UL, data.size());
   EXPECT_EQ(version1, data[0]->version.GetString());
@@ -372,7 +379,8 @@ TEST_F(UpdateDataProviderTest,
   update_data[kExtensionId2] = {};
 
   const auto data =
-      data_provider->GetData(update_data, {kExtensionId1, kExtensionId2});
+      data_provider->GetData(false /*install_immediately*/, update_data,
+                             {kExtensionId1, kExtensionId2});
 
   ASSERT_EQ(2UL, data.size());
   ASSERT_NE(nullptr, data[0]);
@@ -409,7 +417,8 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_CorruptExtension) {
   info2.install_source = "sideload";
 
   const auto data =
-      data_provider->GetData(update_data, {kExtensionId1, kExtensionId2});
+      data_provider->GetData(true /*install_immediately*/, update_data,
+                             {kExtensionId1, kExtensionId2});
 
   ASSERT_EQ(2UL, data.size());
   EXPECT_EQ(version1, data[0]->version.GetString());
@@ -422,6 +431,35 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_CorruptExtension) {
   EXPECT_EQ("policy", data[1]->install_location);
   EXPECT_NE(nullptr, data[1]->installer.get());
   EXPECT_EQ(0UL, data[1]->disabled_reasons.size());
+}
+
+TEST_F(UpdateDataProviderTest, GetData_InstallImmediately) {
+  // Verify that GetData propagtes install_immediately correctly to the crx
+  // installer.
+  AddExtension(kExtensionId1, "0.1.1.3", true,
+               disable_reason::DisableReason::DISABLE_NONE, Manifest::INTERNAL);
+
+  scoped_refptr<UpdateDataProvider> data_provider =
+      base::MakeRefCounted<UpdateDataProvider>(browser_context());
+
+  ExtensionUpdateDataMap update_data;
+  update_data[kExtensionId1] = {};
+
+  const auto data1 = data_provider->GetData(false /*install_immediately*/,
+                                            update_data, {kExtensionId1});
+  ASSERT_EQ(1UL, data1.size());
+  ASSERT_NE(nullptr, data1[0]->installer.get());
+  const ExtensionInstaller* installer1 =
+      static_cast<ExtensionInstaller*>(data1[0]->installer.get());
+  EXPECT_FALSE(installer1->install_immediately());
+
+  const auto data2 = data_provider->GetData(true /*install_immediately*/,
+                                            update_data, {kExtensionId1});
+  ASSERT_EQ(1UL, data2.size());
+  ASSERT_NE(nullptr, data2[0]->installer.get());
+  const ExtensionInstaller* installer2 =
+      static_cast<ExtensionInstaller*>(data2[0]->installer.get());
+  EXPECT_TRUE(installer2->install_immediately());
 }
 
 }  // namespace

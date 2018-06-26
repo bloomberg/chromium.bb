@@ -77,6 +77,7 @@ TEST_F(ExtensionInstallerTest, GetInstalledFile) {
   ASSERT_TRUE(base::PathExists(root_dir.GetPath()));
   scoped_refptr<ExtensionInstaller> installer =
       base::MakeRefCounted<ExtensionInstaller>(kExtensionId, root_dir.GetPath(),
+                                               false /*install_immediately*/,
                                                ExtensionInstallerCallback());
 
   base::FilePath installed_file;
@@ -118,14 +119,14 @@ TEST_F(ExtensionInstallerTest, Install_InvalidUnpackedDir) {
   ASSERT_TRUE(base::PathExists(root_dir.GetPath()));
   scoped_refptr<ExtensionInstaller> installer =
       base::MakeRefCounted<ExtensionInstaller>(
-          kExtensionId, root_dir.GetPath(),
-          base::BindOnce([](const std::string& extension_id,
-                            const std::string& public_key,
-                            const base::FilePath& unpacked_dir,
-                            UpdateClientCallback update_client_callback) {
-            // This function should never be executed.
-            EXPECT_TRUE(false);
-          }));
+          kExtensionId, root_dir.GetPath(), true /*install_immediately*/,
+          base::BindOnce(
+              [](const std::string& extension_id, const std::string& public_key,
+                 const base::FilePath& unpacked_dir, bool install_immediately,
+                 UpdateClientCallback update_client_callback) {
+                // This function should never be executed.
+                EXPECT_TRUE(false);
+              }));
 
   // Non-existing unpacked dir
   base::ScopedTempDir unpacked_dir;
@@ -150,11 +151,13 @@ TEST_F(ExtensionInstallerTest, Install_BasicInstallOperation_Error) {
   ASSERT_TRUE(base::PathExists(root_dir.GetPath()));
   scoped_refptr<ExtensionInstaller> installer =
       base::MakeRefCounted<ExtensionInstaller>(
-          kExtensionId, root_dir.GetPath(),
+          kExtensionId, root_dir.GetPath(), false /*install_immediately*/,
           base::BindOnce([](const std::string& extension_id,
                             const std::string& public_key,
                             const base::FilePath& unpacked_dir,
+                            bool install_immediately,
                             UpdateClientCallback update_client_callback) {
+            EXPECT_FALSE(install_immediately);
             std::move(update_client_callback)
                 .Run(Result(InstallError::GENERIC_ERROR));
           }));
@@ -180,11 +183,13 @@ TEST_F(ExtensionInstallerTest, Install_BasicInstallOperation_Success) {
   ASSERT_TRUE(base::PathExists(root_dir.GetPath()));
   scoped_refptr<ExtensionInstaller> installer =
       base::MakeRefCounted<ExtensionInstaller>(
-          kExtensionId, root_dir.GetPath(),
+          kExtensionId, root_dir.GetPath(), true /*install_immediately*/,
           base::BindOnce([](const std::string& extension_id,
                             const std::string& public_key,
                             const base::FilePath& unpacked_dir,
+                            bool install_immediately,
                             UpdateClientCallback update_client_callback) {
+            EXPECT_TRUE(install_immediately);
             std::move(update_client_callback).Run(Result(InstallError::NONE));
           }));
 

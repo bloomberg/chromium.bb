@@ -56,8 +56,9 @@ void ReportUpdateCheckResult(ExtensionUpdaterUpdateResult update_result,
 
 }  // namespace
 
-UpdateService::InProgressUpdate::InProgressUpdate(base::OnceClosure cb)
-    : callback(std::move(cb)) {}
+UpdateService::InProgressUpdate::InProgressUpdate(base::OnceClosure callback,
+                                                  bool install_immediately)
+    : callback(std::move(callback)), install_immediately(install_immediately) {}
 UpdateService::InProgressUpdate::~InProgressUpdate() = default;
 
 UpdateService::InProgressUpdate::InProgressUpdate(
@@ -125,6 +126,7 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
           << extension_id;
 
   bool complete_event = false;
+  bool finish_delayed_installation = false;
   switch (event) {
     case Events::COMPONENT_UPDATED:
       complete_event = true;
@@ -132,6 +134,7 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
       break;
     case Events::COMPONENT_UPDATE_ERROR:
       complete_event = true;
+      finish_delayed_installation = true;
       {
         update_client::CrxUpdateItem update_item;
         if (!update_client_->GetCrxUpdateState(extension_id, &update_item)) {
@@ -163,13 +166,8 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
       break;
     case Events::COMPONENT_NOT_UPDATED:
       complete_event = true;
+      finish_delayed_installation = true;
       ReportUpdateCheckResult(ExtensionUpdaterUpdateResult::NO_UPDATE, 0);
-      // When no update is found, a previous update check might have queued an
-      // update for this extension because it was in use at the time. We should
-      // ask for the install of the queued update now if it's ready.
-      ExtensionSystem::Get(browser_context_)
-          ->FinishDelayedInstallationIfReady(extension_id,
-                                             true /*install_immediately*/);
       break;
     case Events::COMPONENT_UPDATE_FOUND: {
       UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionUpdaterUpdateFoundCount",
@@ -201,8 +199,22 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
     // removed from all in-progress update checks.
     DCHECK(updating_extension_ids_.count(extension_id) > 0);
     updating_extension_ids_.erase(extension_id);
-    for (auto& update : in_progress_updates_)
+
+    bool install_immediately = false;
+    for (auto& update : in_progress_updates_) {
+      install_immediately |= update.install_immediately;
       update.pending_extension_ids.erase(extension_id);
+    }
+
+    // When no update is found or there's an update error, a previous update
+    // check might have queued an update for this extension because it was in
+    // use at the time. We should ask for the install of the queued update now
+    // if it's ready.
+    if (finish_delayed_installation && install_immediately) {
+      ExtensionSystem::Get(browser_context_)
+          ->FinishDelayedInstallationIfReady(extension_id,
+                                             true /*install_immediately*/);
+    }
   }
 }
 
@@ -240,7 +252,8 @@ void UpdateService::StartUpdateCheck(
     return;
   }
 
-  in_progress_updates_.push_back(InProgressUpdate(std::move(callback)));
+  in_progress_updates_.push_back(
+      InProgressUpdate(std::move(callback), update_params.install_immediately));
   InProgressUpdate& update = in_progress_updates_.back();
 
   // |update_data| only store update info of extensions that are not being
@@ -293,6 +306,7 @@ void UpdateService::StartUpdateCheck(
     update_client_->Update(
         batch_ids,
         base::BindOnce(&UpdateDataProvider::GetData, update_data_provider_,
+                       update_params.install_immediately,
                        std::move(batch_data)),
         update_params.priority == ExtensionUpdateCheckParams::FOREGROUND,
         base::BindOnce(&UpdateService::UpdateCheckComplete,
