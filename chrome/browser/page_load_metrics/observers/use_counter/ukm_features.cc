@@ -39,6 +39,8 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kElementAttachShadowOpen,
           WebFeature::kElementAttachShadowClosed,
           WebFeature::kCustomElementRegistryDefine,
+          WebFeature::kTextToSpeech_Speak,
+          WebFeature::kTextToSpeech_SpeakDisallowedByAutoplay,
       }));
   return opt_in_features.count(feature);
 }
