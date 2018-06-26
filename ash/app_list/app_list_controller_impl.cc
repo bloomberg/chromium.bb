@@ -494,12 +494,12 @@ void AppListControllerImpl::OnWallpaperColorsChanged() {
     presenter_.GetView()->OnWallpaperColorsChanged();
 }
 
-void AppListControllerImpl::OnKeyboardAvailabilityChanged(
-    const bool is_available) {
-  onscreen_keyboard_shown_ = is_available;
+void AppListControllerImpl::OnKeyboardVisibilityStateChanged(
+    const bool is_visible) {
+  onscreen_keyboard_shown_ = is_visible;
   app_list::AppListView* app_list_view = presenter_.GetView();
   if (app_list_view)
-    app_list_view->OnScreenKeyboardShown(is_available);
+    app_list_view->OnScreenKeyboardShown(is_visible);
 }
 
 void AppListControllerImpl::OnWallpaperPreviewStarted() {

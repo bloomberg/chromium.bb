@@ -445,19 +445,12 @@ void WebUILoginView::ClearLockScreenAppFocusCyclerDelegate() {
 ////////////////////////////////////////////////////////////////////////////////
 // keyboard::KeyboardControllerObserver:
 
-void WebUILoginView::OnKeyboardAvailabilityChanged(const bool is_available) {
+void WebUILoginView::OnKeyboardVisibilityStateChanged(const bool is_visible) {
   if (!GetOobeUI())
     return;
   CoreOobeView* view = GetOobeUI()->GetCoreOobeView();
-  if (!is_available) {
-    // Keyboard has been hidden.
-    view->ShowControlBar(true);
-    view->SetVirtualKeyboardShown(false);
-  } else {
-    // Keyboard has been shown.
-    view->ShowControlBar(false);
-    view->SetVirtualKeyboardShown(true);
-  }
+  view->ShowControlBar(!is_visible);
+  view->SetVirtualKeyboardShown(is_visible);
 }
 
 // WebUILoginView private: -----------------------------------------------------

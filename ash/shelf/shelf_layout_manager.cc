@@ -474,13 +474,13 @@ void ShelfLayoutManager::OnKeyboardAppearanceChanged(
   LayoutShelfAndUpdateBounds(change_work_area);
 }
 
-void ShelfLayoutManager::OnKeyboardAvailabilityChanged(
-    const bool is_available) {
+void ShelfLayoutManager::OnKeyboardVisibilityStateChanged(
+    const bool is_visible) {
   // On login screen if keyboard has been just hidden, update bounds just once
   // but ignore target_bounds.work_area_insets since shelf overlaps with login
   // window.
   if (Shell::Get()->session_controller()->IsUserSessionBlocked() &&
-      !is_available) {
+      !is_visible) {
     Shell::Get()->SetDisplayWorkAreaInsets(shelf_widget_->GetNativeWindow(),
                                            gfx::Insets());
   }

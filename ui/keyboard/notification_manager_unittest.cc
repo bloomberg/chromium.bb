@@ -19,11 +19,11 @@ class NotificationManagerTest : public testing::Test {
 TEST_F(NotificationManagerTest, DoesItConsolidate) {
   NotificationManager manager;
 
-  ASSERT_TRUE(manager.ShouldSendAvailabilityNotification(false));
-  ASSERT_FALSE(manager.ShouldSendAvailabilityNotification(false));
-  ASSERT_TRUE(manager.ShouldSendAvailabilityNotification(true));
-  ASSERT_TRUE(manager.ShouldSendAvailabilityNotification(false));
-  ASSERT_FALSE(manager.ShouldSendAvailabilityNotification(false));
+  ASSERT_TRUE(manager.ShouldSendVisibilityNotification(false));
+  ASSERT_FALSE(manager.ShouldSendVisibilityNotification(false));
+  ASSERT_TRUE(manager.ShouldSendVisibilityNotification(true));
+  ASSERT_TRUE(manager.ShouldSendVisibilityNotification(false));
+  ASSERT_FALSE(manager.ShouldSendVisibilityNotification(false));
 
   ASSERT_TRUE(
       manager.ShouldSendVisualBoundsNotification(gfx::Rect(10, 10, 10, 10)));

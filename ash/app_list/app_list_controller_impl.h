@@ -178,7 +178,7 @@ class ASH_EXPORT AppListControllerImpl
   void OnTabletModeEnded() override;
 
   // KeyboardControllerObserver:
-  void OnKeyboardAvailabilityChanged(const bool is_available) override;
+  void OnKeyboardVisibilityStateChanged(bool is_visible) override;
 
   // WallpaperControllerObserver:
   void OnWallpaperColorsChanged() override;

@@ -156,9 +156,9 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
   KeyboardControllerTest()
       : visible_bounds_number_of_calls_(0),
         occluding_bounds_number_of_calls_(0),
-        is_available_number_of_calls_(0),
-        is_available_(false),
-        keyboard_closed_(false) {}
+        is_visible_number_of_calls_(0),
+        is_visible_(false),
+        keyboard_disabled_(false) {}
   ~KeyboardControllerTest() override {}
 
   void SetUp() override {
@@ -212,12 +212,12 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
     occluding_bounds_ = new_bounds;
     occluding_bounds_number_of_calls_++;
   }
-  void OnKeyboardAvailabilityChanged(bool is_available) override {
-    is_available_ = is_available;
-    is_available_number_of_calls_++;
+  void OnKeyboardVisibilityStateChanged(bool is_visible) override {
+    is_visible_ = is_visible;
+    is_visible_number_of_calls_++;
   }
-  void OnKeyboardClosed() override { keyboard_closed_ = true; }
-  void ClearKeyboardClosed() { keyboard_closed_ = false; }
+  void OnKeyboardDisabled() override { keyboard_disabled_ = true; }
+  void ClearKeyboardDisabled() { keyboard_disabled_ = false; }
 
   int visible_bounds_number_of_calls() const {
     return visible_bounds_number_of_calls_;
@@ -225,15 +225,13 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
   int occluding_bounds_number_of_calls() const {
     return occluding_bounds_number_of_calls_;
   }
-  int is_available_number_of_calls() const {
-    return is_available_number_of_calls_;
-  }
+  int is_visible_number_of_calls() const { return is_visible_number_of_calls_; }
 
   const gfx::Rect& notified_visible_bounds() { return visible_bounds_; }
   const gfx::Rect& notified_occluding_bounds() { return occluding_bounds_; }
-  bool notified_is_available() { return is_available_; }
+  bool notified_is_visible() { return is_visible_; }
 
-  bool IsKeyboardClosed() { return keyboard_closed_; }
+  bool IsKeyboardDisabled() { return keyboard_disabled_; }
 
   void SetProgrammaticFocus(ui::TextInputClient* client) {
     controller_.OnTextInputStateChanged(client);
@@ -286,14 +284,14 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
   gfx::Rect visible_bounds_;
   int occluding_bounds_number_of_calls_;
   gfx::Rect occluding_bounds_;
-  int is_available_number_of_calls_;
-  bool is_available_;
+  int is_visible_number_of_calls_;
+  bool is_visible_;
 
   KeyboardController controller_;
 
   std::unique_ptr<KeyboardLayoutDelegate> layout_delegate_;
   std::unique_ptr<ui::TextInputClient> test_text_input_client_;
-  bool keyboard_closed_;
+  bool keyboard_disabled_;
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerTest);
 };
 
@@ -517,17 +515,17 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   EXPECT_FALSE(keyboard_window->IsVisible());
 }
 
-// Tests that deactivates keyboard will get closed event.
-TEST_F(KeyboardControllerTest, CloseKeyboard) {
+// Tests that disabling the keyboard will get a corresponding event.
+TEST_F(KeyboardControllerTest, DisableKeyboard) {
   controller().LoadKeyboardUiInBackground();
   aura::Window* keyboard_window = controller().GetContentsWindow();
 
   ShowKeyboard();
   EXPECT_TRUE(keyboard_window->IsVisible());
-  EXPECT_FALSE(IsKeyboardClosed());
+  EXPECT_FALSE(IsKeyboardDisabled());
 
   controller().DisableKeyboard();
-  EXPECT_TRUE(IsKeyboardClosed());
+  EXPECT_TRUE(IsKeyboardDisabled());
 }
 
 TEST_F(KeyboardControllerTest, SetOccludedBoundsChangesFullscreenBounds) {
@@ -602,7 +600,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   // flash of background being seen.
   EXPECT_EQ(gfx::Rect(), notified_visible_bounds());
   EXPECT_EQ(gfx::Rect(), notified_occluding_bounds());
-  EXPECT_FALSE(notified_is_available());
+  EXPECT_FALSE(notified_is_visible());
 
   RunAnimationForLayer(layer);
   EXPECT_TRUE(keyboard_window()->IsVisible());
@@ -613,7 +611,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   // observers after show animation finished.
   EXPECT_EQ(keyboard_window()->bounds(), notified_visible_bounds());
   EXPECT_EQ(keyboard_window()->bounds(), notified_occluding_bounds());
-  EXPECT_TRUE(notified_is_available());
+  EXPECT_TRUE(notified_is_visible());
 
   // Directly hide keyboard without delay.
   float hide_start_opacity = layer->opacity();
@@ -625,7 +623,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   // observers before hide animation starts.
   EXPECT_EQ(gfx::Rect(), notified_visible_bounds());
   EXPECT_EQ(gfx::Rect(), notified_occluding_bounds());
-  EXPECT_FALSE(notified_is_available());
+  EXPECT_FALSE(notified_is_visible());
 
   RunAnimationForLayer(layer);
   EXPECT_FALSE(keyboard_window()->IsVisible());
@@ -634,7 +632,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   EXPECT_GT(hide_start_opacity, hide_end_opacity);
   EXPECT_EQ(gfx::Rect(), notified_visible_bounds());
   EXPECT_EQ(gfx::Rect(), notified_occluding_bounds());
-  EXPECT_FALSE(notified_is_available());
+  EXPECT_FALSE(notified_is_visible());
 
   SetModeCallbackInvocationCounter invocation_counter;
   controller().SetContainerType(ContainerType::FLOATING, base::nullopt,
@@ -648,7 +646,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   // Visible bounds and occluding bounds are now different.
   EXPECT_EQ(keyboard_window()->bounds(), notified_visible_bounds());
   EXPECT_EQ(gfx::Rect(), notified_occluding_bounds());
-  EXPECT_TRUE(notified_is_available());
+  EXPECT_TRUE(notified_is_visible());
 
   // callback should do nothing when container mode is set to the current active
   // container type. An unnecessary call gets registered synchronously as a
@@ -734,15 +732,15 @@ TEST_F(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {
   ASSERT_NE(new_bounds, root_window()->bounds());
   EXPECT_EQ(1, visible_bounds_number_of_calls());
   EXPECT_EQ(1, occluding_bounds_number_of_calls());
-  EXPECT_EQ(1, is_available_number_of_calls());
+  EXPECT_EQ(1, is_visible_number_of_calls());
   root_window()->SetBounds(new_bounds);
   EXPECT_EQ(2, visible_bounds_number_of_calls());
   EXPECT_EQ(2, occluding_bounds_number_of_calls());
-  EXPECT_EQ(1, is_available_number_of_calls());
+  EXPECT_EQ(1, is_visible_number_of_calls());
   MockRotateScreen();
   EXPECT_EQ(3, visible_bounds_number_of_calls());
   EXPECT_EQ(3, occluding_bounds_number_of_calls());
-  EXPECT_EQ(1, is_available_number_of_calls());
+  EXPECT_EQ(1, is_visible_number_of_calls());
 }
 
 TEST_F(KeyboardControllerTest, TextInputMode) {
@@ -811,19 +809,19 @@ TEST_F(KeyboardControllerTest, DontClearObserverList) {
 
   ShowKeyboard();
   EXPECT_TRUE(keyboard_window->IsVisible());
-  EXPECT_FALSE(IsKeyboardClosed());
+  EXPECT_FALSE(IsKeyboardDisabled());
 
   controller().DisableKeyboard();
-  EXPECT_TRUE(IsKeyboardClosed());
+  EXPECT_TRUE(IsKeyboardDisabled());
 
   controller().EnableKeyboard(
       std::make_unique<TestKeyboardUI>(host()->GetInputMethod()),
       layout_delegate());
-  ClearKeyboardClosed();
-  EXPECT_FALSE(IsKeyboardClosed());
+  ClearKeyboardDisabled();
+  EXPECT_FALSE(IsKeyboardDisabled());
 
   controller().DisableKeyboard();
-  EXPECT_TRUE(IsKeyboardClosed());
+  EXPECT_TRUE(IsKeyboardDisabled());
 }
 
 }  // namespace keyboard
