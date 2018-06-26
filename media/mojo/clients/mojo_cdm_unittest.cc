@@ -161,7 +161,7 @@ class MojoCdmTest : public ::testing::Test {
                               ExpectedResult expected_result) {
     // Specify parameters needed to call CreateSessionAndGenerateRequest() in
     // order to verify that the data is passed properly.
-    const CdmSessionType session_type = CdmSessionType::TEMPORARY_SESSION;
+    const CdmSessionType session_type = CdmSessionType::kTemporary;
     const EmeInitDataType data_type = EmeInitDataType::WEBM;
     const std::vector<uint8_t> key_id(kKeyId, kKeyId + arraysize(kKeyId));
     std::string created_session_id;
@@ -198,8 +198,7 @@ class MojoCdmTest : public ::testing::Test {
 
   void LoadSessionAndExpect(const std::string& session_id,
                             ExpectedResult expected_result) {
-    const CdmSessionType session_type =
-        CdmSessionType::PERSISTENT_LICENSE_SESSION;
+    const CdmSessionType session_type = CdmSessionType::kPersistentLicense;
     std::string loaded_session_id;
 
     if (expected_result == CONNECTION_ERROR_BEFORE) {

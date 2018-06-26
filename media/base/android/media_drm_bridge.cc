@@ -105,9 +105,9 @@ std::string ConvertInitDataType(media::EmeInitDataType init_data_type) {
 // Convert CdmSessionType to KeyType supported by MediaDrm.
 KeyType ConvertCdmSessionType(CdmSessionType session_type) {
   switch (session_type) {
-    case CdmSessionType::TEMPORARY_SESSION:
+    case CdmSessionType::kTemporary:
       return KeyType::KEY_TYPE_STREAMING;
-    case CdmSessionType::PERSISTENT_LICENSE_SESSION:
+    case CdmSessionType::kPersistentLicense:
       return KeyType::KEY_TYPE_OFFLINE;
 
     default:
@@ -464,7 +464,7 @@ void MediaDrmBridge::LoadSession(
 
   DCHECK(IsPersistentLicenseTypeSupportedByMediaDrm());
 
-  if (session_type != CdmSessionType::PERSISTENT_LICENSE_SESSION) {
+  if (session_type != CdmSessionType::kPersistentLicense) {
     promise->reject(
         CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0,
         "LoadSession() is only supported for 'persistent-license'.");

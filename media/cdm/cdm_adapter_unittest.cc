@@ -229,7 +229,7 @@ class CdmAdapterTestWithClearKeyCdm : public CdmAdapterTestBase {
     }
 
     cdm_->CreateSessionAndGenerateRequest(
-        CdmSessionType::TEMPORARY_SESSION, data_type, key_id,
+        CdmSessionType::kTemporary, data_type, key_id,
         CreateSessionPromise(expected_result));
     RunUntilIdle();
   }
@@ -241,7 +241,7 @@ class CdmAdapterTestWithClearKeyCdm : public CdmAdapterTestBase {
     DCHECK(!session_id.empty());
     ASSERT_EQ(expected_result, FAILURE) << "LoadSession not supported.";
 
-    cdm_->LoadSession(CdmSessionType::TEMPORARY_SESSION, session_id,
+    cdm_->LoadSession(CdmSessionType::kTemporary, session_id,
                       CreateSessionPromise(expected_result));
     RunUntilIdle();
   }

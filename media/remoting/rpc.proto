@@ -320,9 +320,9 @@ enum CdmMessageType {
 // Proto version of media::CdmSessionType.
 // NEVER change these numbers or re-use old ones; only add new ones.
 enum CdmSessionType {
-  TEMPORARY_SESSION = 0;
-  PERSISTENT_LICENSE_SESSION = 1;
-  PERSISTENT_RELEASE_MESSAGE_SESSION = 2;
+  kTemporary = 0;
+  kPersistentLicense = 1;
+  kPersistentReleaseMessage = 2;
 };
 
 message RendererInitialize {

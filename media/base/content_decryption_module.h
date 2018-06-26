@@ -41,10 +41,10 @@ typedef std::vector<std::unique_ptr<CdmKeyInformation>> CdmKeysInfo;
 // Must be consistent with the values specified in the spec:
 // https://w3c.github.io/encrypted-media/#idl-def-MediaKeySessionType
 enum class CdmSessionType {
-  TEMPORARY_SESSION,
-  PERSISTENT_LICENSE_SESSION,
-  PERSISTENT_RELEASE_MESSAGE_SESSION,
-  SESSION_TYPE_MAX = PERSISTENT_RELEASE_MESSAGE_SESSION
+  kTemporary,
+  kPersistentLicense,
+  kPersistentReleaseMessage,
+  kMaxValue = kPersistentReleaseMessage
 };
 
 // Type of message being sent to the application.

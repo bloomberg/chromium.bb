@@ -71,14 +71,14 @@ class CdmRegistryImplTest : public testing::Test {
 
  protected:
   CdmInfo GetTestCdmInfo() {
-    return CdmInfo(kTestCdmName, kTestCdmGuid, base::Version(kVersion1),
-                   base::FilePath::FromUTF8Unsafe(kTestPath), kTestFileSystemId,
-                   CdmCapability({media::kCodecVP8, media::kCodecVP9},
-                                 {EncryptionMode::kCenc},
-                                 {CdmSessionType::TEMPORARY_SESSION,
-                                  CdmSessionType::PERSISTENT_LICENSE_SESSION},
-                                 {CdmProxy::Protocol::kIntel}),
-                   kTestKeySystem, /*supports_sub_key_systems=*/true);
+    return CdmInfo(
+        kTestCdmName, kTestCdmGuid, base::Version(kVersion1),
+        base::FilePath::FromUTF8Unsafe(kTestPath), kTestFileSystemId,
+        CdmCapability(
+            {media::kCodecVP8, media::kCodecVP9}, {EncryptionMode::kCenc},
+            {CdmSessionType::kTemporary, CdmSessionType::kPersistentLicense},
+            {CdmProxy::Protocol::kIntel}),
+        kTestKeySystem, /*supports_sub_key_systems=*/true);
   }
 
   void Register(CdmInfo cdm_info) {
@@ -118,8 +118,8 @@ TEST_F(CdmRegistryImplTest, Register) {
   EXPECT_EQ(kTestFileSystemId, cdm.file_system_id);
   EXPECT_VIDEO_CODECS(VideoCodec::kCodecVP8, VideoCodec::kCodecVP9);
   EXPECT_ENCRYPTION_SCHEMES(EncryptionMode::kCenc);
-  EXPECT_SESSION_TYPES(CdmSessionType::TEMPORARY_SESSION,
-                       CdmSessionType::PERSISTENT_LICENSE_SESSION);
+  EXPECT_SESSION_TYPES(CdmSessionType::kTemporary,
+                       CdmSessionType::kPersistentLicense);
   EXPECT_CDM_PROXY_PROTOCOLS(CdmProxy::Protocol::kIntel);
   EXPECT_EQ(kTestKeySystem, cdm.supported_key_system);
   EXPECT_TRUE(cdm.supports_sub_key_systems);

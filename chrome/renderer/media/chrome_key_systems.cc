@@ -272,15 +272,14 @@ static void AddWidevine(
 
   // Session types.
   bool cdm_supports_temporary_session = base::ContainsValue(
-      capability->session_types, media::CdmSessionType::TEMPORARY_SESSION);
+      capability->session_types, media::CdmSessionType::kTemporary);
   if (!cdm_supports_temporary_session) {
     DVLOG(1) << "Temporary session must be supported.";
     return;
   }
 
-  bool cdm_supports_persistent_license =
-      base::ContainsValue(capability->session_types,
-                          media::CdmSessionType::PERSISTENT_LICENSE_SESSION);
+  bool cdm_supports_persistent_license = base::ContainsValue(
+      capability->session_types, media::CdmSessionType::kPersistentLicense);
   auto persistent_license_support =
       GetPersistentLicenseSupport(cdm_supports_persistent_license);
   auto persistent_release_message_support =

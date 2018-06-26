@@ -84,11 +84,11 @@ cdm::HdcpVersion ToCdmHdcpVersion(HdcpVersion hdcp_version) {
 
 cdm::SessionType ToCdmSessionType(CdmSessionType session_type) {
   switch (session_type) {
-    case CdmSessionType::TEMPORARY_SESSION:
+    case CdmSessionType::kTemporary:
       return cdm::kTemporary;
-    case CdmSessionType::PERSISTENT_LICENSE_SESSION:
+    case CdmSessionType::kPersistentLicense:
       return cdm::kPersistentLicense;
-    case CdmSessionType::PERSISTENT_RELEASE_MESSAGE_SESSION:
+    case CdmSessionType::kPersistentReleaseMessage:
       return cdm::kPersistentKeyRelease;
   }
 
