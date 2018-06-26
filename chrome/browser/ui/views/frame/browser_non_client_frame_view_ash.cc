@@ -241,6 +241,10 @@ gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForTabStrip(
 }
 
 int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
+  // TODO(estade): why do callsites in this class hardcode false for |restored|?
+  if (IsMash())
+    restored = !frame()->IsMaximized() && !frame()->IsFullscreen();
+
   if (!ShouldPaint()) {
     // When immersive fullscreen unrevealed, tabstrip is offscreen with normal
     // tapstrip bounds, the top inset should reach this topmost edge.
@@ -263,6 +267,10 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
     }
   }
 
+  Browser* browser = browser_view()->browser();
+  if (IsMash() && UsePackagedAppHeaderStyle(browser))
+    return GetAshLayoutSize(ash::AshLayoutSize::kNonBrowserCaption).height();
+
   const int header_height =
       IsMash()
           ? GetAshLayoutSize(restored
@@ -277,7 +285,7 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
   if (IsMash())
     return header_height;
 
-  return UsePackagedAppHeaderStyle()
+  return UsePackagedAppHeaderStyle(browser)
              ? frame_header_->GetHeaderHeight()
              : caption_button_container_->bounds().bottom();
 }
@@ -813,6 +821,14 @@ BrowserNonClientFrameViewAsh::GetHostedAppButtonContainerForTesting() const {
   return hosted_app_button_container_;
 }
 
+// static
+bool BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle(
+    const Browser* browser) {
+  // Use for non tabbed trusted source windows, e.g. Settings, as well as apps.
+  return (!browser->is_type_tabbed() && browser->is_trusted_source()) ||
+         browser->is_app();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAsh, protected:
 
@@ -838,13 +854,6 @@ int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
     inset += kTabstripRightSpacing;
 
   return inset;
-}
-
-bool BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle() const {
-  // Use for non tabbed trusted source windows, e.g. Settings, as well as apps.
-  const Browser* const browser = browser_view()->browser();
-  return (!browser->is_type_tabbed() && browser->is_trusted_source()) ||
-         browser->is_app();
 }
 
 bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
@@ -890,7 +899,7 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
   std::unique_ptr<ash::FrameHeader> header;
 
   Browser* browser = browser_view()->browser();
-  if (!UsePackagedAppHeaderStyle()) {
+  if (!UsePackagedAppHeaderStyle(browser)) {
     header = std::make_unique<ash::CustomFrameHeader>(
         frame(), this, this, !browser_view()->IsRegularOrGuestSession(),
         caption_button_container_);
