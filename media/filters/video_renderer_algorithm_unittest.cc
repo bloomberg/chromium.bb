@@ -1122,22 +1122,15 @@ TEST_F(VideoRendererAlgorithmTest, BestFrameByFractionalCadence) {
     TickGenerator frame_tg(base::TimeTicks(), test_rate[0]);
     TickGenerator display_tg(tick_clock_->NowTicks(), test_rate[1]);
 
-    const size_t desired_drop_pattern = test_rate[0] / test_rate[1] - 1;
     scoped_refptr<VideoFrame> current_frame;
     RunFramePumpTest(
         true, &frame_tg, &display_tg,
-        [&current_frame, desired_drop_pattern, this](
-            const scoped_refptr<VideoFrame>& frame, size_t frames_dropped) {
+        [&current_frame, this](const scoped_refptr<VideoFrame>& frame,
+                               size_t frames_dropped) {
           ASSERT_TRUE(frame);
 
-          // The first frame should have zero dropped frames, but each Render()
-          // call after should drop the same number of frames based on the
-          // fractional cadence.
-          if (!current_frame)
-            ASSERT_EQ(0u, frames_dropped);
-          else
-            ASSERT_EQ(desired_drop_pattern, frames_dropped);
-
+          // We don't count frames dropped that cadence says we should skip.
+          ASSERT_EQ(0u, frames_dropped);
           ASSERT_NE(current_frame, frame);
           ASSERT_TRUE(is_using_cadence());
           current_frame = frame;
