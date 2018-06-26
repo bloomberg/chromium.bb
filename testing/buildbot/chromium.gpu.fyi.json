@@ -6544,7 +6544,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         },
         "test": "angle_end2end_tests"
       },
@@ -6563,7 +6563,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         },
         "test": "angle_unittests"
       },
@@ -6585,7 +6585,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         },
         "test": "browser_tests"
       },
@@ -6604,7 +6604,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         },
         "test": "gl_tests"
       },
@@ -6622,7 +6622,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         },
         "test": "gl_unittests"
       },
@@ -6640,7 +6640,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         },
         "test": "gles2_conform_test"
       },
@@ -6655,7 +6655,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         },
         "test": "gpu_unittests"
       },
@@ -6674,7 +6674,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         },
         "test": "services_unittests"
       }
@@ -6701,7 +6701,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         }
       },
       {
@@ -6725,7 +6725,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         }
       },
       {
@@ -6749,7 +6749,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         }
       },
       {
@@ -6773,7 +6773,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         }
       },
       {
@@ -6801,7 +6801,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         }
       },
       {
@@ -6832,7 +6832,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         }
       },
       {
@@ -6871,7 +6871,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         }
       },
       {
@@ -6896,7 +6896,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         }
       },
       {
@@ -6920,7 +6920,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800
+          "expiration": 21600
         }
       },
       {
@@ -6946,7 +6946,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800,
+          "expiration": 21600,
           "shards": 20
         }
       },
@@ -6971,7 +6971,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 10800,
+          "expiration": 21600,
           "shards": 2
         }
       }

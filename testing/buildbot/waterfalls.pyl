@@ -1533,8 +1533,8 @@
           # There's only one bot of this type in the Swarming pool right now, so
           # we have to increase the default expiration time of 1 hour (3600
           # seconds) to prevent webgl2_conformance_tests' shards from timing
-          # out.
-          'expiration': 10800,
+          # out. Definitely need over 3 hours, so choose 6.
+          'expiration': 21600,
         },
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
