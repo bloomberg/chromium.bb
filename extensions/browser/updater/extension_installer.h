@@ -30,6 +30,7 @@ class ExtensionInstaller : public update_client::CrxInstaller {
       base::OnceCallback<void(const std::string& extension_id,
                               const std::string& public_key,
                               const base::FilePath& unpacked_dir,
+                              bool install_immediately,
                               UpdateClientCallback update_client_callback)>;
 
   // This method takes the id and root directory for an extension we're doing
@@ -37,6 +38,7 @@ class ExtensionInstaller : public update_client::CrxInstaller {
   // of it to install.
   ExtensionInstaller(std::string extension_id,
                      const base::FilePath& extension_root,
+                     bool install_immediately,
                      ExtensionInstallerCallback extension_installer_callback);
 
   // update_client::CrxInstaller::
@@ -52,12 +54,16 @@ class ExtensionInstaller : public update_client::CrxInstaller {
                         base::FilePath* installed_file) override;
   bool Uninstall() override;
 
+  // For unit tests.
+  bool install_immediately() const { return install_immediately_; }
+
  private:
   friend class base::RefCountedThreadSafe<ExtensionInstaller>;
   ~ExtensionInstaller() override;
 
   std::string extension_id_;
   base::FilePath extension_root_;
+  bool install_immediately_;
   ExtensionInstallerCallback extension_installer_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstaller);

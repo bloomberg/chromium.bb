@@ -444,6 +444,7 @@ void ExtensionSystemImpl::InstallUpdate(
     const std::string& extension_id,
     const std::string& public_key,
     const base::FilePath& unpacked_dir,
+    bool install_immediately,
     InstallUpdateCallback install_update_callback) {
   DCHECK(!install_update_callback.is_null());
 
@@ -453,6 +454,7 @@ void ExtensionSystemImpl::InstallUpdate(
   scoped_refptr<CrxInstaller> installer = CrxInstaller::CreateSilent(service);
   installer->set_delete_source(true);
   installer->set_installer_callback(std::move(install_update_callback));
+  installer->set_install_immediately(install_immediately);
   installer->UpdateExtensionFromUnpackedCrx(extension_id, public_key,
                                             unpacked_dir);
 }

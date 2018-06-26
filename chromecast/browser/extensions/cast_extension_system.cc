@@ -277,6 +277,7 @@ void CastExtensionSystem::InstallUpdate(
     const std::string& extension_id,
     const std::string& public_key,
     const base::FilePath& unpacked_dir,
+    bool install_immediately,
     InstallUpdateCallback install_update_callback) {
   NOTREACHED();
 }

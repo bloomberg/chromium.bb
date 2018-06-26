@@ -159,6 +159,7 @@ void TestExtensionSystem::InstallUpdate(
     const std::string& extension_id,
     const std::string& public_key,
     const base::FilePath& temp_dir,
+    bool install_immediately,
     InstallUpdateCallback install_update_callback) {
   NOTREACHED();
 }

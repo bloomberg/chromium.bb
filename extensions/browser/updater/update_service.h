@@ -83,7 +83,7 @@ class UpdateService : public KeyedService,
   void UpdateCheckComplete(update_client::Error error);
 
   struct InProgressUpdate {
-    InProgressUpdate(base::OnceClosure cb);
+    InProgressUpdate(base::OnceClosure callback, bool install_immediately);
     ~InProgressUpdate();
 
     InProgressUpdate(const InProgressUpdate& other) = delete;
@@ -93,6 +93,7 @@ class UpdateService : public KeyedService,
     InProgressUpdate& operator=(InProgressUpdate&& other);
 
     base::OnceClosure callback;
+    bool install_immediately;
     std::set<std::string> pending_extension_ids;
   };
 

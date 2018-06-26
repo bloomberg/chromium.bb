@@ -14,7 +14,7 @@ ExtensionUpdateData::ExtensionUpdateData(const ExtensionUpdateData& other) =
 ExtensionUpdateData::~ExtensionUpdateData() {}
 
 ExtensionUpdateCheckParams::ExtensionUpdateCheckParams()
-    : priority(BACKGROUND) {}
+    : priority(BACKGROUND), install_immediately(false) {}
 
 ExtensionUpdateCheckParams::ExtensionUpdateCheckParams(
     const ExtensionUpdateCheckParams& other) = default;

@@ -213,8 +213,15 @@ class FakeExtensionSystem : public MockExtensionSystem {
   ~FakeExtensionSystem() override {}
 
   struct InstallUpdateRequest {
+    InstallUpdateRequest(const std::string& extension_id,
+                         const base::FilePath& temp_dir,
+                         bool install_immediately)
+        : extension_id(extension_id),
+          temp_dir(temp_dir),
+          install_immediately(install_immediately) {}
     std::string extension_id;
     base::FilePath temp_dir;
+    bool install_immediately;
   };
 
   std::vector<InstallUpdateRequest>* install_requests() {
@@ -229,12 +236,11 @@ class FakeExtensionSystem : public MockExtensionSystem {
   void InstallUpdate(const std::string& extension_id,
                      const std::string& public_key,
                      const base::FilePath& temp_dir,
+                     bool install_immediately,
                      InstallUpdateCallback install_update_callback) override {
     base::DeleteFile(temp_dir, true /*recursive*/);
-    InstallUpdateRequest request;
-    request.extension_id = extension_id;
-    request.temp_dir = temp_dir;
-    install_requests_.push_back(request);
+    install_requests_.push_back(
+        InstallUpdateRequest(extension_id, temp_dir, install_immediately));
     if (!next_install_callback_.is_null()) {
       std::move(next_install_callback_).Run();
     }
@@ -290,6 +296,97 @@ class UpdateServiceTest : public ExtensionsTest {
         fake_extension_system_factory_.GetForBrowserContext(browser_context()));
   }
 
+  void BasicUpdateOperations(bool install_immediately) {
+    // Create a temporary directory that a fake extension will live in and fill
+    // it with some test files.
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    base::FilePath foo_js(FILE_PATH_LITERAL("foo.js"));
+    base::FilePath bar_html(FILE_PATH_LITERAL("bar/bar.html"));
+    ASSERT_TRUE(AddFileToDirectory(temp_dir.GetPath(), foo_js, "hello"))
+        << "Failed to write " << temp_dir.GetPath().value() << "/"
+        << foo_js.value();
+    ASSERT_TRUE(AddFileToDirectory(temp_dir.GetPath(), bar_html, "world"));
+
+    scoped_refptr<Extension> extension1 =
+        ExtensionBuilder("Foo")
+            .SetManifestKey("version", "1.0")
+            .SetID(crx_file::id_util::GenerateId("foo_extension"))
+            .SetPath(temp_dir.GetPath())
+            .Build();
+
+    ExtensionRegistry::Get(browser_context())->AddEnabled(extension1);
+
+    ExtensionUpdateCheckParams update_check_params;
+    update_check_params.update_info[extension1->id()] = ExtensionUpdateData();
+    update_check_params.install_immediately = install_immediately;
+
+    // Start an update check and verify that the UpdateClient was sent the right
+    // data.
+    bool executed = false;
+    update_service()->StartUpdateCheck(
+        update_check_params,
+        base::BindOnce([](bool* executed) { *executed = true; }, &executed));
+    ASSERT_TRUE(executed);
+    const auto* data = update_client()->data();
+    ASSERT_NE(nullptr, data);
+    ASSERT_EQ(1u, data->size());
+
+    ASSERT_EQ(data->at(0)->version, extension1->version());
+    update_client::CrxInstaller* installer = data->at(0)->installer.get();
+    ASSERT_NE(installer, nullptr);
+
+    // The GetInstalledFile method is used when processing differential updates
+    // to get a path to an existing file in an extension. We want to test a
+    // number of scenarios to be user we handle invalid relative paths, don't
+    // accidentally return paths outside the extension's dir, etc.
+    base::FilePath tmp;
+    EXPECT_TRUE(installer->GetInstalledFile(foo_js.MaybeAsASCII(), &tmp));
+    EXPECT_EQ(temp_dir.GetPath().Append(foo_js), tmp) << tmp.value();
+
+    EXPECT_TRUE(installer->GetInstalledFile(bar_html.MaybeAsASCII(), &tmp));
+    EXPECT_EQ(temp_dir.GetPath().Append(bar_html), tmp) << tmp.value();
+
+    EXPECT_FALSE(installer->GetInstalledFile("does_not_exist", &tmp));
+    EXPECT_FALSE(installer->GetInstalledFile("does/not/exist", &tmp));
+    EXPECT_FALSE(installer->GetInstalledFile("/does/not/exist", &tmp));
+    EXPECT_FALSE(installer->GetInstalledFile("C:\\tmp", &tmp));
+
+    base::FilePath system_temp_dir;
+    ASSERT_TRUE(base::GetTempDir(&system_temp_dir));
+    EXPECT_FALSE(
+        installer->GetInstalledFile(system_temp_dir.MaybeAsASCII(), &tmp));
+
+    // Test the install callback.
+    base::ScopedTempDir new_version_dir;
+    ASSERT_TRUE(new_version_dir.CreateUniqueTempDir());
+
+    bool done = false;
+    installer->Install(
+        new_version_dir.GetPath(), std::string(),
+        base::BindOnce(
+            [](bool* done, const update_client::CrxInstaller::Result& result) {
+              *done = true;
+              EXPECT_EQ(0, result.error);
+              EXPECT_EQ(0, result.extended_error);
+            },
+            &done));
+
+    base::RunLoop run_loop;
+    extension_system()->set_install_callback(run_loop.QuitClosure());
+    run_loop.Run();
+
+    std::vector<FakeExtensionSystem::InstallUpdateRequest>* requests =
+        extension_system()->install_requests();
+    ASSERT_EQ(1u, requests->size());
+
+    const auto& request = requests->at(0);
+    EXPECT_EQ(request.extension_id, extension1->id());
+    EXPECT_EQ(request.temp_dir.value(), new_version_dir.GetPath().value());
+    EXPECT_EQ(install_immediately, request.install_immediately);
+    EXPECT_TRUE(done);
+  }
+
  private:
   UpdateService* update_service_ = nullptr;
   scoped_refptr<FakeUpdateClient> update_client_;
@@ -297,97 +394,12 @@ class UpdateServiceTest : public ExtensionsTest {
       fake_extension_system_factory_;
 };
 
-TEST_F(UpdateServiceTest, BasicUpdateOperations) {
-  // Create a temporary directory that a fake extension will live in and fill
-  // it with some test files.
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath foo_js(FILE_PATH_LITERAL("foo.js"));
-  base::FilePath bar_html(FILE_PATH_LITERAL("bar/bar.html"));
-  ASSERT_TRUE(AddFileToDirectory(temp_dir.GetPath(), foo_js, "hello"))
-      << "Failed to write " << temp_dir.GetPath().value() << "/"
-      << foo_js.value();
-  ASSERT_TRUE(AddFileToDirectory(temp_dir.GetPath(), bar_html, "world"));
+TEST_F(UpdateServiceTest, BasicUpdateOperations_InstallImmediately) {
+  BasicUpdateOperations(true);
+}
 
-  ExtensionBuilder builder;
-  builder.SetManifest(DictionaryBuilder()
-                          .Set("name", "Foo")
-                          .Set("version", "1.0")
-                          .Set("manifest_version", 2)
-                          .Build());
-  builder.SetID(crx_file::id_util::GenerateId("whatever"));
-  builder.SetPath(temp_dir.GetPath());
-
-  scoped_refptr<Extension> extension1(builder.Build());
-
-  ExtensionRegistry::Get(browser_context())->AddEnabled(extension1);
-
-  ExtensionUpdateCheckParams update_check_params;
-  update_check_params.update_info[extension1->id()] = ExtensionUpdateData();
-
-  // Start an update check and verify that the UpdateClient was sent the right
-  // data.
-  bool executed = false;
-  update_service()->StartUpdateCheck(
-      update_check_params,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed));
-  ASSERT_TRUE(executed);
-  const auto* data = update_client()->data();
-  ASSERT_NE(nullptr, data);
-  ASSERT_EQ(1u, data->size());
-
-  ASSERT_EQ(data->at(0)->version, extension1->version());
-  update_client::CrxInstaller* installer = data->at(0)->installer.get();
-  ASSERT_NE(installer, nullptr);
-
-  // The GetInstalledFile method is used when processing differential updates
-  // to get a path to an existing file in an extension. We want to test a
-  // number of scenarios to be user we handle invalid relative paths, don't
-  // accidentally return paths outside the extension's dir, etc.
-  base::FilePath tmp;
-  EXPECT_TRUE(installer->GetInstalledFile(foo_js.MaybeAsASCII(), &tmp));
-  EXPECT_EQ(temp_dir.GetPath().Append(foo_js), tmp) << tmp.value();
-
-  EXPECT_TRUE(installer->GetInstalledFile(bar_html.MaybeAsASCII(), &tmp));
-  EXPECT_EQ(temp_dir.GetPath().Append(bar_html), tmp) << tmp.value();
-
-  EXPECT_FALSE(installer->GetInstalledFile("does_not_exist", &tmp));
-  EXPECT_FALSE(installer->GetInstalledFile("does/not/exist", &tmp));
-  EXPECT_FALSE(installer->GetInstalledFile("/does/not/exist", &tmp));
-  EXPECT_FALSE(installer->GetInstalledFile("C:\\tmp", &tmp));
-
-  base::FilePath system_temp_dir;
-  ASSERT_TRUE(base::GetTempDir(&system_temp_dir));
-  EXPECT_FALSE(
-      installer->GetInstalledFile(system_temp_dir.MaybeAsASCII(), &tmp));
-
-  // Test the install callback.
-  base::ScopedTempDir new_version_dir;
-  ASSERT_TRUE(new_version_dir.CreateUniqueTempDir());
-
-  bool done = false;
-  installer->Install(
-      new_version_dir.GetPath(), std::string(),
-      base::BindOnce(
-          [](bool* done, const update_client::CrxInstaller::Result& result) {
-            *done = true;
-            EXPECT_EQ(0, result.error);
-            EXPECT_EQ(0, result.extended_error);
-          },
-          &done));
-
-  scoped_refptr<content::MessageLoopRunner> loop_runner =
-      base::MakeRefCounted<content::MessageLoopRunner>();
-  extension_system()->set_install_callback(loop_runner->QuitClosure());
-  loop_runner->Run();
-
-  std::vector<FakeExtensionSystem::InstallUpdateRequest>* requests =
-      extension_system()->install_requests();
-  ASSERT_EQ(1u, requests->size());
-  EXPECT_EQ(requests->at(0).extension_id, extension1->id());
-  EXPECT_EQ(requests->at(0).temp_dir.value(),
-            new_version_dir.GetPath().value());
-  EXPECT_TRUE(done);
+TEST_F(UpdateServiceTest, BasicUpdateOperations_NotInstallImmediately) {
+  BasicUpdateOperations(false);
 }
 
 TEST_F(UpdateServiceTest, UninstallPings) {

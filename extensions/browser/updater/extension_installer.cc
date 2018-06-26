@@ -27,9 +27,11 @@ using Result = update_client::CrxInstaller::Result;
 ExtensionInstaller::ExtensionInstaller(
     std::string extension_id,
     const base::FilePath& extension_root,
+    bool install_immediately,
     ExtensionInstallerCallback extension_installer_callback)
     : extension_id_(extension_id),
       extension_root_(extension_root),
+      install_immediately_(install_immediately),
       extension_installer_callback_(std::move(extension_installer_callback)) {}
 
 void ExtensionInstaller::OnUpdateError(int error) {
@@ -44,10 +46,11 @@ void ExtensionInstaller::Install(const base::FilePath& unpack_path,
   DCHECK(ui_thread);
   DCHECK(!extension_installer_callback_.is_null());
   if (base::PathExists(unpack_path)) {
-    ui_thread->PostTask(FROM_HERE,
-                        base::BindOnce(std::move(extension_installer_callback_),
-                                       extension_id_, public_key, unpack_path,
-                                       std::move(update_client_callback)));
+    ui_thread->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(extension_installer_callback_), extension_id_,
+                       public_key, unpack_path, install_immediately_,
+                       std::move(update_client_callback)));
     return;
   }
   ui_thread->PostTask(FROM_HERE,

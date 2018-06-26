@@ -134,12 +134,14 @@ class ExtensionSystem : public KeyedService {
       const Extension* extension) = 0;
 
   // Install an updated version of |extension_id| with the version given in
-  // |unpacked_dir|. Ownership of |unpacked_dir| in the filesystem is
-  // transferred and implementors of this function are responsible for cleaning
-  // it up on errors, etc.
+  // |unpacked_dir|. If |install_immediately| is true, the system will install
+  // the given extension immediately instead of waiting until idle. Ownership
+  // of |unpacked_dir| in the filesystem is transferred and implementors of
+  // this function are responsible for cleaning it up on errors, etc.
   virtual void InstallUpdate(const std::string& extension_id,
                              const std::string& public_key,
                              const base::FilePath& unpacked_dir,
+                             bool install_immediately,
                              InstallUpdateCallback install_update_callback) = 0;
 
   // Attempts finishing installation of an update for an extension with the

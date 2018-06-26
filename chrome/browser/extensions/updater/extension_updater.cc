@@ -431,6 +431,7 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
         params.fetch_priority == ManifestFetchData::FetchPriority::BACKGROUND
             ? ExtensionUpdateCheckParams::UpdateCheckPriority::BACKGROUND
             : ExtensionUpdateCheckParams::UpdateCheckPriority::FOREGROUND;
+    update_check_params.install_immediately = params.install_immediately;
     update_service_->StartUpdateCheck(
         update_check_params,
         base::BindOnce(&ExtensionUpdater::OnUpdateServiceFinished,
