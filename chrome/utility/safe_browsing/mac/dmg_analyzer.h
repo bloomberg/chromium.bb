@@ -13,7 +13,14 @@ struct ArchiveAnalyzerResults;
 
 namespace dmg {
 
+class DMGIterator;
+
+// Analyzes the given |dmg_file| for executable content and places the results
+// in |results|.
 void AnalyzeDMGFile(base::File dmg_file, ArchiveAnalyzerResults* results);
+
+// Helper function exposed for testing. Called by the above overload.
+void AnalyzeDMGFile(DMGIterator* iterator, ArchiveAnalyzerResults* results);
 
 }  // namespace dmg
 }  // namespace safe_browsing

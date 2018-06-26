@@ -126,37 +126,45 @@ constexpr uint8_t kDERPKCS7SignedData[] = {0x30, 0x80, 0x06, 0x09, 0x2a,
 }  // namespace
 
 void AnalyzeDMGFile(base::File dmg_file, ArchiveAnalyzerResults* results) {
-  MachOFeatureExtractor feature_extractor;
-  results->success = false;
-
   FileReadStream read_stream(dmg_file.GetPlatformFile());
   DMGIterator iterator(&read_stream);
-  if (!iterator.Open())
+  AnalyzeDMGFile(&iterator, results);
+}
+
+void AnalyzeDMGFile(DMGIterator* iterator, ArchiveAnalyzerResults* results) {
+  results->success = false;
+
+  if (!iterator->Open())
     return;
 
-  results->signature_blob = iterator.GetCodeSignature();
+  MachOFeatureExtractor feature_extractor;
 
-  while (iterator.Next()) {
-    std::unique_ptr<ReadStream> stream = iterator.GetReadStream();
+  results->signature_blob = iterator->GetCodeSignature();
+
+  while (iterator->Next()) {
+    std::unique_ptr<ReadStream> stream = iterator->GetReadStream();
     if (!stream)
       continue;
 
-    std::string path = base::UTF16ToUTF8(iterator.GetPath());
+    std::string path = base::UTF16ToUTF8(iterator->GetPath());
 
     bool is_detached_code_signature_file = base::EndsWith(
         path, "_CodeSignature/CodeSignature", base::CompareCase::SENSITIVE);
 
     if (is_detached_code_signature_file) {
+      results->has_executable = true;
+
       std::vector<uint8_t> signature_contents;
       if (!ReadEntireStream(stream.get(), &signature_contents))
+        continue;
+
+      if (signature_contents.size() < base::size(kDERPKCS7SignedData))
         continue;
 
       if (memcmp(kDERPKCS7SignedData, signature_contents.data(),
                  base::size(kDERPKCS7SignedData)) != 0) {
         continue;
       }
-
-      results->has_executable = true;
 
       ClientDownloadRequest_DetachedCodeSignature* detached_signature =
           results->detached_code_signatures.Add();
