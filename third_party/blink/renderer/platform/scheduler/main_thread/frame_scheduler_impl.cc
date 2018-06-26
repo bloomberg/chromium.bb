@@ -761,7 +761,7 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
   // loading control.
   return task_queue->queue_type() ==
                  MainThreadTaskQueue::QueueType::kFrameLoadingControl
-             ? TaskQueue::QueuePriority::kHighestPriority
+             ? TaskQueue::QueuePriority::kHighPriority
              : TaskQueue::QueuePriority::kNormalPriority;
 }
 
