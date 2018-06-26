@@ -643,7 +643,7 @@ TEST_F(TimerTest, DestructOnHeapTimer) {
   owner = nullptr;
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
+      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
   EXPECT_TRUE(record->OwnerIsDestructed());
 
   EXPECT_FALSE(record->TimerHasFired());
@@ -663,7 +663,7 @@ TEST_F(TimerTest, MarkOnHeapTimerAsUnreachable) {
   owner = nullptr;
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kLazySweeping, BlinkGC::kForcedGC);
+      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGC);
   EXPECT_FALSE(record->OwnerIsDestructed());
 
   {

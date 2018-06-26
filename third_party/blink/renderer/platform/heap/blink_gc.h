@@ -93,7 +93,7 @@ class PLATFORM_EXPORT BlinkGC final {
     kEagerSweeping,
   };
 
-  enum GCReason {
+  enum class GCReason {
     kIdleGC = 0,
     kPreciseGC = 1,
     kConservativeGC = 2,
@@ -104,7 +104,7 @@ class PLATFORM_EXPORT BlinkGC final {
     kTesting = 7,
     kIncrementalIdleGC = 8,
     kIncrementalV8FollowupGC = 9,
-    kLastGCReason = kIncrementalV8FollowupGC,
+    kMaxValue = kIncrementalV8FollowupGC,
   };
 
   enum ArenaIndices {

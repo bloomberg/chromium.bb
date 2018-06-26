@@ -264,7 +264,7 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
       // multiple V8's GC.
       current_thread_state->CollectGarbage(
           BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
-          BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
+          BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
 
       // Forces a precise GC at the end of the current event loop.
       current_thread_state->ScheduleFullGC();
@@ -277,7 +277,7 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
       // This single GC is not enough. See the above comment.
       current_thread_state->CollectGarbage(
           BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
-          BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
+          BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
 
       // The conservative GC might have left floating garbage. Schedule
       // precise GC to ensure that we collect all available garbage.

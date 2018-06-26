@@ -43,7 +43,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // CoreServices.framework/Frameworks/CarbonCore.framework/Headers/Threads.h.
   blink::ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
+      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
 
   return 0;
 }
