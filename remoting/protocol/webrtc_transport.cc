@@ -559,11 +559,12 @@ void WebrtcTransport::OnRemoteDescriptionSet(bool send_answer,
 
   // Create and send answer on the server.
   if (send_answer) {
+    const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
     peer_connection()->CreateAnswer(
         CreateSessionDescriptionObserver::Create(
             base::Bind(&WebrtcTransport::OnLocalSessionDescriptionCreated,
                        weak_factory_.GetWeakPtr())),
-        nullptr);
+        options);
   }
 
   AddPendingCandidatesIfPossible();
