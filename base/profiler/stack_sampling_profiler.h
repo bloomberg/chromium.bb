@@ -42,7 +42,7 @@ class NativeStackSamplerTestDelegate;
 //   base::StackSamplingProfiler profiler(base::PlatformThread::CurrentId()),
 //       params);
 //
-//   // Or, to process the profiles, use a custom completed callback:
+//   // To process the profiles, use a custom completed callback:
 //   base::StackStackSamplingProfiler::CompletedCallback
 //       thread_safe_callback = ...;
 //   auto profile_builder =
@@ -61,7 +61,7 @@ class NativeStackSamplerTestDelegate;
 //
 // When a call stack profile is complete, or the profiler is stopped,
 // SamplingProfileBuilder's OnProfileCompleted function is called from a thread
-// created by the profiler with the collected profile.
+// created by the profiler.
 class BASE_EXPORT StackSamplingProfiler {
  public:
   // Module represents the module (DLL or exe) corresponding to a stack frame.
@@ -262,7 +262,7 @@ class BASE_EXPORT StackSamplingProfiler {
   // builds a CallStackProfile.
   //
   // The results of the profile building -- a CallStackProfile, is passed to the
-  // completed callbacks. A CallStackProfile contains a set of Samples and
+  // completed callback. A CallStackProfile contains a set of Samples and
   // Modules, and other sampling information. One Sample corresponds to a single
   // recorded stack, and the Modules record those modules associated with the
   // recorded stack frames.
