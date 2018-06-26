@@ -15,6 +15,8 @@ class UnifiedConsentServiceClient {
   virtual void SetMetricsReportingEnabled(bool enabled) = 0;
   // Enables/disables search suggestions.
   virtual void SetSearchSuggestEnabled(bool enabled) = 0;
+  // Enables/disables safe browsing.
+  virtual void SetSafeBrowsingEnabled(bool enabled) = 0;
   // Enables/disables extended safe browsing.
   virtual void SetSafeBrowsingExtendedReportingEnabled(bool enabled) = 0;
   // Enables/disables prediction of network actions.

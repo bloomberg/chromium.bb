@@ -27,6 +27,11 @@ void ChromeUnifiedConsentServiceClient::SetSearchSuggestEnabled(bool enabled) {
   NOTIMPLEMENTED();
 }
 
+void ChromeUnifiedConsentServiceClient::SetSafeBrowsingEnabled(bool enabled) {
+  // TODO(http://crbug.com/800974): Implement this method.
+  NOTIMPLEMENTED();
+}
+
 void ChromeUnifiedConsentServiceClient::SetSafeBrowsingExtendedReportingEnabled(
     bool enabled) {
   // TODO(http://crbug.com/800974): Implement this method.
