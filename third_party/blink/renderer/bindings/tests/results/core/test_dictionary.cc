@@ -10,7 +10,6 @@
 // clang-format off
 #include "third_party/blink/renderer/bindings/tests/results/core/test_dictionary.h"
 
-#include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_garbage_collected.h"
 #include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_implementation.h"
 #include "third_party/blink/renderer/bindings/tests/idls/core/test_object.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -27,7 +26,6 @@ TestDictionary::TestDictionary() {
   setRestrictedDoubleMember(3.14);
   setStringOrNullMember("default string value");
   setStringSequenceMember(Vector<String>());
-  setTestInterfaceGarbageCollectedSequenceMember(HeapVector<Member<TestInterfaceGarbageCollected>>());
   setTestInterfaceSequenceMember(HeapVector<Member<TestInterfaceImplementation>>());
   setTreatNullAsStringSequenceMember(Vector<String>());
   setUnionMemberWithSequenceDefault(DoubleOrDoubleSequence::FromDoubleSequence(Vector<double>()));
@@ -152,11 +150,6 @@ void TestDictionary::setTestInterface2OrUint8ArrayMember(const TestInterface2OrU
   test_interface_2_or_uint8_array_member_ = value;
 }
 
-void TestDictionary::setTestInterfaceGarbageCollectedSequenceMember(const HeapVector<Member<TestInterfaceGarbageCollected>>& value) {
-  test_interface_garbage_collected_sequence_member_ = value;
-  has_test_interface_garbage_collected_sequence_member_ = true;
-}
-
 void TestDictionary::setTestInterfaceSequenceMember(const HeapVector<Member<TestInterfaceImplementation>>& value) {
   test_interface_sequence_member_ = value;
   has_test_interface_sequence_member_ = true;
@@ -210,9 +203,6 @@ void TestDictionary::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_enum_or_test_enum_or_null_sequence_member_);
   visitor->Trace(test_enum_or_test_enum_sequence_member_);
   visitor->Trace(test_interface_2_or_uint8_array_member_);
-  visitor->Trace(test_interface_garbage_collected_member_);
-  visitor->Trace(test_interface_garbage_collected_or_null_member_);
-  visitor->Trace(test_interface_garbage_collected_sequence_member_);
   visitor->Trace(test_interface_member_);
   visitor->Trace(test_interface_or_null_member_);
   visitor->Trace(test_interface_sequence_member_);
