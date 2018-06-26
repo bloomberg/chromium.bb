@@ -71,35 +71,28 @@ public class IncognitoNotificationService extends IntentService {
         // If we failed clearing all of the incognito tabs, then do not dismiss the notification.
         if (!clearedIncognito) return;
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                if (!TabWindowManager.getInstance().canDestroyIncognitoProfile()) {
-                    assert false : "Not all incognito tabs closed as expected";
-                    return;
-                }
-                IncognitoNotificationManager.dismissIncognitoNotification();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            if (!TabWindowManager.getInstance().canDestroyIncognitoProfile()) {
+                assert false : "Not all incognito tabs closed as expected";
+                return;
+            }
+            IncognitoNotificationManager.dismissIncognitoNotification();
 
-                if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
-                    if (Profile.getLastUsedProfile().hasOffTheRecordProfile()) {
-                        Profile.getLastUsedProfile().getOffTheRecordProfile()
-                                .destroyWhenAppropriate();
-                    }
+            if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                            .isStartupSuccessfullyCompleted()) {
+                if (Profile.getLastUsedProfile().hasOffTheRecordProfile()) {
+                    Profile.getLastUsedProfile().getOffTheRecordProfile().destroyWhenAppropriate();
                 }
             }
         });
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // Now ensure that the snapshots in recents are all cleared for Tabbed activities
-                // to remove any trace of incognito mode.
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                    focusChromeIfNecessary();
-                } else {
-                    removeNonVisibleChromeTabbedRecentEntries();
-                }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            // Now ensure that the snapshots in recents are all cleared for Tabbed activities
+            // to remove any trace of incognito mode.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                focusChromeIfNecessary();
+            } else {
+                removeNonVisibleChromeTabbedRecentEntries();
             }
         });
     }
@@ -180,22 +173,26 @@ public class IncognitoNotificationService extends IntentService {
      * @see TabWindowManager#getIndexForWindow(Activity)
      */
     private void closeIncognitoTabsInRunningTabbedActivities() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                List<WeakReference<Activity>> runningActivities =
-                        ApplicationStatus.getRunningActivities();
-                for (int i = 0; i < runningActivities.size(); i++) {
-                    Activity activity = runningActivities.get(i).get();
-                    if (activity == null) continue;
-                    if (!(activity instanceof ChromeTabbedActivity)) continue;
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            List<WeakReference<Activity>> runningActivities =
+                    ApplicationStatus.getRunningActivities();
+            for (int i = 0; i < runningActivities.size(); i++) {
+                Activity activity = runningActivities.get(i).get();
+                if (activity == null) continue;
+                if (!(activity instanceof ChromeTabbedActivity)) continue;
 
-                    ChromeTabbedActivity tabbedActivity = (ChromeTabbedActivity) activity;
-                    if (tabbedActivity.isActivityDestroyed()) continue;
+                ChromeTabbedActivity tabbedActivity = (ChromeTabbedActivity) activity;
+                if (tabbedActivity.isActivityDestroyed()) continue;
 
-                    tabbedActivity.getTabModelSelector().getModel(true).closeAllTabs(
-                            false, false);
+                // If the tabbed activity has not yet initialized, then finish the activity to avoid
+                // timing issues with clearing the incognito tab state in the background.
+                if (!tabbedActivity.areTabModelsInitialized()
+                        || !tabbedActivity.didFinishNativeInitialization()) {
+                    tabbedActivity.finish();
+                    continue;
                 }
+
+                tabbedActivity.getTabModelSelector().getModel(true).closeAllTabs(false, false);
             }
         });
     }
