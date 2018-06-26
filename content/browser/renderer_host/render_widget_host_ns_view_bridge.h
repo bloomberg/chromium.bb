@@ -31,7 +31,6 @@ enum class DomCode;
 
 namespace content {
 
-class RenderWidgetHostNSViewClient;
 class WebCursor;
 
 // The interface through which RenderWidgetHostViewMac is to manipulate its
@@ -40,9 +39,6 @@ class RenderWidgetHostNSViewBridge {
  public:
   RenderWidgetHostNSViewBridge() {}
   virtual ~RenderWidgetHostNSViewBridge() {}
-
-  static std::unique_ptr<RenderWidgetHostNSViewBridge> Create(
-      RenderWidgetHostNSViewClient* client);
 
   // TODO(ccameron): RenderWidgetHostViewMac and other functions currently use
   // this method to communicate directly with RenderWidgetHostViewCocoa. The
