@@ -19058,6 +19058,7 @@ Called by update_net_error_codes.py.-->
   <int value="2484" label="LegacySymantecCertMainFrameResource"/>
   <int value="2485" label="LegacySymantecCertInSubresource"/>
   <int value="2486" label="LegacySymantecCertInSubframeMainResource"/>
+  <int value="2487" label="EventTimingExplicitlyRequested"/>
 </enum>
 
 <enum name="FeedbackSource">

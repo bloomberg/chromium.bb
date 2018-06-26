@@ -1947,6 +1947,7 @@ enum WebFeature {
   kLegacySymantecCertMainFrameResource = 2484,
   kLegacySymantecCertInSubresource = 2485,
   kLegacySymantecCertInSubframeMainResource = 2486,
+  kEventTimingExplicitlyRequested = 2487,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
