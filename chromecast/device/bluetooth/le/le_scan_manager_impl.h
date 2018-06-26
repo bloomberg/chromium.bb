@@ -7,7 +7,6 @@
 
 #include <list>
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -34,25 +33,21 @@ class LeScanManagerImpl : public LeScanManager,
   // LeScanManager implementation:
   void AddObserver(Observer* o) override;
   void RemoveObserver(Observer* o) override;
-  void RequestScan(RequestScanCallback cb) override;
+  void SetScanEnable(bool enable, SetScanEnableCallback cb) override;
   void GetScanResults(
       GetScanResultsCallback cb,
       base::Optional<ScanFilter> service_uuid = base::nullopt) override;
   void ClearScanResults() override;
 
  private:
-  class ScanHandleImpl;
-
-  // bluetooth_v2_shlib::LeScanner::Delegate implementation:
-  void OnScanResult(const bluetooth_v2_shlib::LeScanner::ScanResult&
-                        scan_result_shlib) override;
-
   // Returns a list of all BLE scan results. The results are sorted by RSSI.
   // Must be called on |io_task_runner|.
   std::vector<LeScanResult> GetScanResultsInternal(
       base::Optional<ScanFilter> service_uuid);
 
-  void NotifyScanHandleDestroyed(int32_t id);
+  // bluetooth_v2_shlib::LeScanner::Delegate implementation:
+  void OnScanResult(const bluetooth_v2_shlib::LeScanner::ScanResult&
+                        scan_result_shlib) override;
 
   bluetooth_v2_shlib::LeScannerImpl* const le_scanner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
@@ -60,9 +55,6 @@ class LeScanManagerImpl : public LeScanManager,
   scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
   std::map<bluetooth_v2_shlib::Addr, std::list<LeScanResult>>
       addr_to_scan_results_;
-
-  int32_t next_scan_handle_id_ = 0;
-  std::set<int32_t> scan_handle_ids_;
 
   base::WeakPtrFactory<LeScanManagerImpl> weak_factory_;
 

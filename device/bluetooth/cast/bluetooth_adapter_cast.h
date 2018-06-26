@@ -159,9 +159,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
       scoped_refptr<chromecast::bluetooth::RemoteDevice> remote_device);
 
   // Called when the scanner has enabled scanning.
-  void OnScanEnabled(
-      std::unique_ptr<chromecast::bluetooth::LeScanManager::ScanHandle>
-          scan_handle);
+  void OnScanEnabled(bool success);
+  void OnScanDisabled(bool success);
   void OnGetDevice(scoped_refptr<chromecast::bluetooth::RemoteDevice> device);
   void OnGetScanResults(
       std::vector<chromecast::bluetooth::LeScanResult> results);
@@ -179,6 +178,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
   };
 
   std::queue<DiscoveryParams> pending_discovery_requests_;
+  base::Optional<DiscoveryParams> pending_disable_discovery_request_;
 
   int num_discovery_sessions_ = 0;
 
@@ -188,9 +188,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
 
   chromecast::bluetooth::GattClientManager* const gatt_client_manager_;
   chromecast::bluetooth::LeScanManager* const le_scan_manager_;
-
-  std::unique_ptr<chromecast::bluetooth::LeScanManager::ScanHandle>
-      scan_handle_;
 
   bool powered_ = true;
   bool initialized_ = false;
