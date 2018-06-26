@@ -62,7 +62,7 @@ class SerializeDeserializeTest : public ::testing::Test {
     int64_t event_time_ms = 0;
     // Insert frame and packet events with RTP timestamps 0, 90, 180, ...
     for (int i = 0; i < metadata_.num_frame_events(); i++) {
-      linked_ptr<AggregatedFrameEvent> frame_event(new AggregatedFrameEvent);
+      auto frame_event = std::make_unique<AggregatedFrameEvent>();
       frame_event->set_relative_rtp_timestamp(i * 90);
       for (uint32_t event_index = 0; event_index < arraysize(kVideoFrameEvents);
            ++event_index) {
@@ -82,7 +82,7 @@ class SerializeDeserializeTest : public ::testing::Test {
           kIdealizedBitratePercentUtilized[
               i % arraysize(kIdealizedBitratePercentUtilized)]);
 
-      frame_event_list_.push_back(frame_event);
+      frame_event_list_.push_back(std::move(frame_event));
     }
 
     event_time_ms = 0;

@@ -225,7 +225,7 @@ TEST_F(EncodingEventSubscriberTest, EventFiltering) {
   ASSERT_EQ(1u, frame_events_.size());
   FrameEventList::iterator it = frame_events_.begin();
 
-  linked_ptr<AggregatedFrameEvent> frame_event = *it;
+  const AggregatedFrameEvent* frame_event = it->get();
 
   ASSERT_EQ(1, frame_event->event_type_size());
   EXPECT_EQ(media::cast::proto::FRAME_DECODED,
@@ -254,7 +254,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEvent) {
 
   FrameEventList::iterator it = frame_events_.begin();
 
-  linked_ptr<AggregatedFrameEvent> event = *it;
+  const AggregatedFrameEvent* event = it->get();
 
   EXPECT_EQ((rtp_timestamp - first_rtp_timestamp_).lower_32_bits(),
             event->relative_rtp_timestamp());
@@ -291,7 +291,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEventDelay) {
 
   FrameEventList::iterator it = frame_events_.begin();
 
-  linked_ptr<AggregatedFrameEvent> event = *it;
+  const AggregatedFrameEvent* event = it->get();
 
   EXPECT_EQ((rtp_timestamp - first_rtp_timestamp_).lower_32_bits(),
             event->relative_rtp_timestamp());
@@ -334,7 +334,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEventSize) {
 
   FrameEventList::iterator it = frame_events_.begin();
 
-  linked_ptr<AggregatedFrameEvent> event = *it;
+  const AggregatedFrameEvent* event = it->get();
 
   EXPECT_EQ((rtp_timestamp - first_rtp_timestamp_).lower_32_bits(),
             event->relative_rtp_timestamp());
@@ -396,37 +396,41 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
 
   FrameEventList::iterator it = frame_events_.begin();
 
-  linked_ptr<AggregatedFrameEvent> event = *it;
+  {
+    const AggregatedFrameEvent* event = it->get();
 
-  EXPECT_EQ((rtp_timestamp1 - first_rtp_timestamp_).lower_32_bits(),
-            event->relative_rtp_timestamp());
+    EXPECT_EQ((rtp_timestamp1 - first_rtp_timestamp_).lower_32_bits(),
+              event->relative_rtp_timestamp());
 
-  ASSERT_EQ(2, event->event_type_size());
-  EXPECT_EQ(media::cast::proto::FRAME_PLAYOUT, event->event_type(0));
-  EXPECT_EQ(media::cast::proto::FRAME_DECODED, event->event_type(1));
+    ASSERT_EQ(2, event->event_type_size());
+    EXPECT_EQ(media::cast::proto::FRAME_PLAYOUT, event->event_type(0));
+    EXPECT_EQ(media::cast::proto::FRAME_DECODED, event->event_type(1));
 
-  ASSERT_EQ(2, event->event_timestamp_ms_size());
-  EXPECT_EQ(InMilliseconds(now1), event->event_timestamp_ms(0));
-  EXPECT_EQ(InMilliseconds(now3), event->event_timestamp_ms(1));
+    ASSERT_EQ(2, event->event_timestamp_ms_size());
+    EXPECT_EQ(InMilliseconds(now1), event->event_timestamp_ms(0));
+    EXPECT_EQ(InMilliseconds(now3), event->event_timestamp_ms(1));
 
-  EXPECT_FALSE(event->has_key_frame());
+    EXPECT_FALSE(event->has_key_frame());
+  }
 
   ++it;
 
-  event = *it;
+  {
+    const AggregatedFrameEvent* event = it->get();
 
-  EXPECT_EQ((rtp_timestamp2 - first_rtp_timestamp_).lower_32_bits(),
-            event->relative_rtp_timestamp());
+    EXPECT_EQ((rtp_timestamp2 - first_rtp_timestamp_).lower_32_bits(),
+              event->relative_rtp_timestamp());
 
-  ASSERT_EQ(1, event->event_type_size());
-  EXPECT_EQ(media::cast::proto::FRAME_ENCODED, event->event_type(0));
+    ASSERT_EQ(1, event->event_type_size());
+    EXPECT_EQ(media::cast::proto::FRAME_ENCODED, event->event_type(0));
 
-  ASSERT_EQ(1, event->event_timestamp_ms_size());
-  EXPECT_EQ(InMilliseconds(now2), event->event_timestamp_ms(0));
+    ASSERT_EQ(1, event->event_timestamp_ms_size());
+    EXPECT_EQ(InMilliseconds(now2), event->event_timestamp_ms(0));
 
-  EXPECT_FALSE(event->has_key_frame());
-  EXPECT_EQ(44, event->encoder_cpu_percent_utilized());
-  EXPECT_EQ(55, event->idealized_bitrate_percent_utilized());
+    EXPECT_FALSE(event->has_key_frame());
+    EXPECT_EQ(44, event->encoder_cpu_percent_utilized());
+    EXPECT_EQ(55, event->idealized_bitrate_percent_utilized());
+  }
 }
 
 TEST_F(EncodingEventSubscriberTest, PacketEvent) {
@@ -763,7 +767,7 @@ TEST_F(EncodingEventSubscriberTest, MaxEventsPerProto) {
   FrameEventList::iterator frame_it = frame_events_.begin();
   ASSERT_TRUE(frame_it != frame_events_.end());
 
-  linked_ptr<AggregatedFrameEvent> frame_event = *frame_it;
+  const AggregatedFrameEvent* frame_event = frame_it->get();
 
   EXPECT_EQ(kMaxEventsPerProto, frame_event->event_type_size());
 
