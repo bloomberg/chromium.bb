@@ -34161,6 +34161,11 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="OfflinePagesPublishArchiveMoveFileFailureReason">
+  <int value="0" label="Source missing"/>
+  <int value="1" label="Destination missing"/>
+</enum>
+
 <enum name="OfflinePagesRedirectResult">
   <obsolete>
     Deprecated 2016-08.
