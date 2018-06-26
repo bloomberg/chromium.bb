@@ -158,7 +158,7 @@ suite('SiteDetails', function() {
       loadTimeData.overrideValues(loadTimeDataOverride);
       testElement = createSiteDetails('https://foo.com:443');
       assertEquals(
-          numContentSettings + 1, testElement.getCategoryList_().length);
+          numContentSettings + 1, testElement.getCategoryList().length);
 
       // Check for setting = off at the end to ensure that the setting does
       // not carry over for the next iteration.
@@ -166,7 +166,7 @@ suite('SiteDetails', function() {
           [optionalSiteDetailsContentSettingsTypes[contentSetting]] = false;
       loadTimeData.overrideValues(loadTimeDataOverride);
       testElement = createSiteDetails('https://foo.com:443');
-      assertEquals(numContentSettings, testElement.getCategoryList_().length);
+      assertEquals(numContentSettings, testElement.getCategoryList().length);
     }
   });
 
@@ -319,7 +319,7 @@ suite('SiteDetails', function() {
     // Accepting the dialog will make a call to setOriginPermissions.
     return browserProxy.whenCalled('setOriginPermissions').then((args) => {
       assertEquals(testElement.origin, args[0]);
-      assertDeepEquals(testElement.getCategoryList_(), args[1]);
+      assertDeepEquals(testElement.getCategoryList(), args[1]);
       assertEquals(settings.ContentSetting.DEFAULT, args[2]);
     });
   });
