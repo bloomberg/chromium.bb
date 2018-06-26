@@ -369,7 +369,7 @@ void SearchResultTileItemView::OnGetContextMenuModel(
   gfx::Rect anchor_rect = gfx::Rect(point, gfx::Size());
 
   if (::features::IsTouchableAppContextMenuEnabled()) {
-    anchor_position = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT;
+    anchor_position = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT;
     run_types |= views::MenuRunner::USE_TOUCHABLE_LAYOUT |
                  views::MenuRunner::CONTEXT_MENU |
                  views::MenuRunner::FIXED_ANCHOR;
