@@ -598,13 +598,14 @@ LanguageSettingsPrivateAddInputMethodFunction::Run() {
     return RespondNow(NoArguments());
 
   std::string new_input_method_id = params->input_method_id;
-  bool is_extension_ime =
-      chromeos::extension_ime_util::IsExtensionIME(new_input_method_id);
+  bool is_component_extension_ime =
+      chromeos::extension_ime_util::IsComponentExtensionIME(
+          new_input_method_id);
 
   PrefService* prefs = chrome_details_.GetProfile()->GetPrefs();
-  const char* pref_name = is_extension_ime
-                              ? prefs::kLanguageEnabledExtensionImes
-                              : prefs::kLanguagePreloadEngines;
+  const char* pref_name = is_component_extension_ime
+                              ? prefs::kLanguagePreloadEngines
+                              : prefs::kLanguageEnabledExtensionImes;
 
   // Get the input methods we are adding to.
   std::unordered_set<std::string> input_method_set(
@@ -615,12 +616,12 @@ LanguageSettingsPrivateAddInputMethodFunction::Run() {
 
   // Sort the new input method list by preferred languages.
   std::vector<std::string> input_method_list;
-  if (is_extension_ime) {
-    input_method_list =
-        GetSortedExtensionIMEs(ime_state, input_method_set, prefs);
-  } else {
+  if (is_component_extension_ime) {
     input_method_list =
         GetSortedComponentIMEs(manager, ime_state, input_method_set, prefs);
+  } else {
+    input_method_list =
+        GetSortedExtensionIMEs(ime_state, input_method_set, prefs);
   }
 
   std::string input_methods = base::JoinString(input_method_list, ",");
@@ -652,13 +653,14 @@ LanguageSettingsPrivateRemoveInputMethodFunction::Run() {
     return RespondNow(NoArguments());
 
   std::string input_method_id = params->input_method_id;
+  bool is_component_extension_ime =
+      chromeos::extension_ime_util::IsComponentExtensionIME(input_method_id);
 
   // Use the pref for the corresponding input method type.
   PrefService* prefs = chrome_details_.GetProfile()->GetPrefs();
-  const char* pref_name =
-      chromeos::extension_ime_util::IsExtensionIME(input_method_id)
-          ? prefs::kLanguageEnabledExtensionImes
-          : prefs::kLanguagePreloadEngines;
+  const char* pref_name = is_component_extension_ime
+                              ? prefs::kLanguagePreloadEngines
+                              : prefs::kLanguageEnabledExtensionImes;
 
   std::string input_method_ids = prefs->GetString(pref_name);
   std::vector<std::string> input_method_list = base::SplitString(

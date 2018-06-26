@@ -2,15 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <vector>
+
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_api.h"
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_delegate.h"
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_delegate_factory.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_prefs.h"
+
+#if defined(OS_CHROMEOS)
+#include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "ui/base/ime/chromeos/fake_input_method_delegate.h"
+#include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/ime/chromeos/mock_input_method_manager.h"
+#endif
 
 namespace extensions {
 
@@ -130,5 +145,195 @@ TEST_F(LanguageSettingsPrivateApiTest, GetSpellcheckDictionaryStatusesTest) {
   expected.Append(std::move(expected_status));
   EXPECT_EQ(expected, *actual);
 }
+
+#if defined(OS_CHROMEOS)
+namespace {
+
+namespace input_method = chromeos::input_method;
+using input_method::InputMethodDescriptor;
+using input_method::InputMethodManager;
+
+std::string GetExtensionImeId() {
+  std::string kExtensionImeId = chromeos::extension_ime_util::GetInputMethodID(
+      crx_file::id_util::GenerateId("test.extension.ime"), "us");
+  return kExtensionImeId;
+}
+
+std::string GetComponentExtensionImeId() {
+  std::string kComponentExtensionImeId =
+      chromeos::extension_ime_util::GetComponentInputMethodID(
+          crx_file::id_util::GenerateId("test.component.extension.ime"), "us");
+  return kComponentExtensionImeId;
+}
+
+std::string GetArcImeId() {
+  std::string kArcImeId = chromeos::extension_ime_util::GetArcInputMethodID(
+      crx_file::id_util::GenerateId("test.arc.ime"), "us");
+  return kArcImeId;
+}
+
+class TestInputMethodManager : public input_method::MockInputMethodManager {
+ public:
+  class TestState : public input_method::MockInputMethodManager::State {
+   public:
+    TestState() {
+      // Set up three IMEs
+      std::vector<std::string> layouts({"us"});
+      std::vector<std::string> languages({"en-US"});
+      InputMethodDescriptor extension_ime(
+          GetExtensionImeId(), "", "", layouts, languages,
+          false /* is_login_keyboard */, GURL(), GURL());
+      InputMethodDescriptor component_extension_ime(
+          GetComponentExtensionImeId(), "", "", layouts, languages,
+          false /* is_login_keyboard */, GURL(), GURL());
+      InputMethodDescriptor arc_ime(GetArcImeId(), "", "", layouts, languages,
+                                    false /* is_login_keyboard */, GURL(),
+                                    GURL());
+      input_methods_ = {extension_ime, component_extension_ime, arc_ime};
+    }
+
+    void GetInputMethodExtensions(
+        input_method::InputMethodDescriptors* descriptors) override {
+      for (const auto& descriptor : input_methods_)
+        descriptors->push_back(descriptor);
+    }
+
+    input_method::InputMethodDescriptors input_methods_;
+
+   protected:
+    friend base::RefCounted<InputMethodManager::State>;
+    ~TestState() override = default;
+
+    DISALLOW_COPY_AND_ASSIGN(TestState);
+  };
+
+  TestInputMethodManager() : state_(new TestState), util_(&delegate_) {
+    util_.AppendInputMethods(state_->input_methods_);
+  }
+
+  scoped_refptr<InputMethodManager::State> GetActiveIMEState() override {
+    return state_;
+  }
+
+  input_method::InputMethodUtil* GetInputMethodUtil() override {
+    return &util_;
+  }
+
+ private:
+  scoped_refptr<TestState> state_;
+  input_method::FakeInputMethodDelegate delegate_;
+  input_method::InputMethodUtil util_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestInputMethodManager);
+};
+
+}  // namespace
+
+TEST_F(LanguageSettingsPrivateApiTest, AddInputMethodTest) {
+  TestInputMethodManager::Initialize(new TestInputMethodManager);
+
+  // Initialize relevant prefs.
+  profile()->GetPrefs()->SetString(prefs::kLanguagePreferredLanguages, "en-US");
+  StringPrefMember enabled_extension_imes;
+  enabled_extension_imes.Init(prefs::kLanguageEnabledExtensionImes,
+                              profile()->GetPrefs());
+  StringPrefMember preload_engines;
+  preload_engines.Init(prefs::kLanguagePreloadEngines, profile()->GetPrefs());
+  enabled_extension_imes.SetValue(std::string());
+  preload_engines.SetValue(std::string());
+
+  {
+    // Add an extension IME. kLanguageEnabledExtensionImes should be updated.
+    auto function =
+        base::MakeRefCounted<LanguageSettingsPrivateAddInputMethodFunction>();
+    api_test_utils::RunFunctionAndReturnSingleResult(
+        function.get(), "[\"" + GetExtensionImeId() + "\"]", profile());
+
+    EXPECT_EQ(GetExtensionImeId(), enabled_extension_imes.GetValue());
+    EXPECT_TRUE(preload_engines.GetValue().empty());
+  }
+
+  enabled_extension_imes.SetValue(std::string());
+  preload_engines.SetValue(std::string());
+  {
+    // Add a component extension IME. kLanguagePreloadEngines should be
+    // updated.
+    auto function =
+        base::MakeRefCounted<LanguageSettingsPrivateAddInputMethodFunction>();
+    api_test_utils::RunFunctionAndReturnSingleResult(
+        function.get(), "[\"" + GetComponentExtensionImeId() + "\"]",
+        profile());
+
+    EXPECT_TRUE(enabled_extension_imes.GetValue().empty());
+    EXPECT_EQ(GetComponentExtensionImeId(), preload_engines.GetValue());
+  }
+
+  enabled_extension_imes.SetValue(std::string());
+  preload_engines.SetValue(std::string());
+  {
+    // Add an ARC IME. kLanguageEnabledExtensionImes should be updated.
+    auto function =
+        base::MakeRefCounted<LanguageSettingsPrivateAddInputMethodFunction>();
+    api_test_utils::RunFunctionAndReturnSingleResult(
+        function.get(), "[\"" + GetArcImeId() + "\"]", profile());
+
+    EXPECT_EQ(GetArcImeId(), enabled_extension_imes.GetValue());
+    EXPECT_TRUE(preload_engines.GetValue().empty());
+  }
+
+  TestInputMethodManager::Shutdown();
+}
+
+TEST_F(LanguageSettingsPrivateApiTest, RemoveInputMethodTest) {
+  TestInputMethodManager::Initialize(new TestInputMethodManager);
+
+  // Initialize relevant prefs.
+  StringPrefMember enabled_extension_imes;
+  enabled_extension_imes.Init(prefs::kLanguageEnabledExtensionImes,
+                              profile()->GetPrefs());
+  StringPrefMember preload_engines;
+  preload_engines.Init(prefs::kLanguagePreloadEngines, profile()->GetPrefs());
+
+  enabled_extension_imes.SetValue(
+      base::JoinString({GetExtensionImeId(), GetArcImeId()}, ","));
+  preload_engines.SetValue(GetComponentExtensionImeId());
+  {
+    // Remove an extension IME.
+    auto function = base::MakeRefCounted<
+        LanguageSettingsPrivateRemoveInputMethodFunction>();
+    api_test_utils::RunFunctionAndReturnSingleResult(
+        function.get(), "[\"" + GetExtensionImeId() + "\"]", profile());
+
+    EXPECT_EQ(GetArcImeId(), enabled_extension_imes.GetValue());
+    EXPECT_EQ(GetComponentExtensionImeId(), preload_engines.GetValue());
+  }
+
+  {
+    // Remove a component extension IME.
+    auto function = base::MakeRefCounted<
+        LanguageSettingsPrivateRemoveInputMethodFunction>();
+    api_test_utils::RunFunctionAndReturnSingleResult(
+        function.get(), "[\"" + GetComponentExtensionImeId() + "\"]",
+        profile());
+
+    EXPECT_EQ(GetArcImeId(), enabled_extension_imes.GetValue());
+    EXPECT_TRUE(preload_engines.GetValue().empty());
+  }
+
+  {
+    // Remove an ARC IME.
+    auto function = base::MakeRefCounted<
+        LanguageSettingsPrivateRemoveInputMethodFunction>();
+    api_test_utils::RunFunctionAndReturnSingleResult(
+        function.get(), "[\"" + GetArcImeId() + "\"]", profile());
+
+    EXPECT_TRUE(enabled_extension_imes.GetValue().empty());
+    EXPECT_TRUE(preload_engines.GetValue().empty());
+  }
+
+  TestInputMethodManager::Shutdown();
+}
+
+#endif  // OS_CHROMEOS
 
 }  // namespace extensions
