@@ -165,7 +165,8 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
                       const std::vector<std::string>& scopes,
                       GetAccessTokenCallback callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    if (get_access_token_callback_) {
+    if (get_access_token_callback_ ||
+        !host_->delegate_->AreRefreshTokensReady()) {
       std::move(callback).Run(mojom::AccessTokenStatus::kTransientError, "");
       return;
     }
