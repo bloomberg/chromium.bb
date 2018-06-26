@@ -765,26 +765,28 @@ subtle::Atomic32 StackSamplingProfiler::process_milestones_ = 0;
 
 StackSamplingProfiler::StackSamplingProfiler(
     const SamplingParams& params,
-    const CompletedCallback& callback,
+    std::unique_ptr<SamplingProfileBuilder> profile_builder,
     NativeStackSamplerTestDelegate* test_delegate)
     : StackSamplingProfiler(PlatformThread::CurrentId(),
                             params,
-                            callback,
+                            std::move(profile_builder),
                             test_delegate) {}
 
 StackSamplingProfiler::StackSamplingProfiler(
     PlatformThreadId thread_id,
     const SamplingParams& params,
-    const CompletedCallback& callback,
+    std::unique_ptr<SamplingProfileBuilder> profile_builder,
     NativeStackSamplerTestDelegate* test_delegate)
     : thread_id_(thread_id),
       params_(params),
-      completed_callback_(callback),
+      profile_builder_(std::move(profile_builder)),
       // The event starts "signaled" so code knows it's safe to start thread
       // and "manual" so that it can be waited in multiple places.
       profiling_inactive_(kResetPolicy, WaitableEvent::InitialState::SIGNALED),
       profiler_id_(kNullProfilerId),
-      test_delegate_(test_delegate) {}
+      test_delegate_(test_delegate) {
+  DCHECK(profile_builder_);
+}
 
 StackSamplingProfiler::~StackSamplingProfiler() {
   // Stop returns immediately but the shutdown runs asynchronously. There is a
@@ -806,10 +808,10 @@ StackSamplingProfiler::~StackSamplingProfiler() {
 }
 
 void StackSamplingProfiler::Start() {
-  if (completed_callback_.is_null())
-    return;
-
-  profile_builder_.reset(new SamplingProfileBuilder(completed_callback_));
+  // Multiple calls to Start() for a single StackSamplingProfiler object is not
+  // allowed. If profile_builder_ is nullptr, then Start() has been called
+  // already.
+  DCHECK(profile_builder_);
 
   std::unique_ptr<NativeStackSampler> native_sampler =
       NativeStackSampler::Create(thread_id_, test_delegate_);

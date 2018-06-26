@@ -66,6 +66,7 @@ using Frames = std::vector<StackSamplingProfiler::Frame>;
 using Module = StackSamplingProfiler::Module;
 using Sample = StackSamplingProfiler::Sample;
 using CallStackProfile = StackSamplingProfiler::CallStackProfile;
+using SamplingProfileBuilder = StackSamplingProfiler::SamplingProfileBuilder;
 
 namespace {
 
@@ -370,9 +371,10 @@ struct TestProfilerInfo {
                   WaitableEvent::InitialState::NOT_SIGNALED),
         profiler(thread_id,
                  params,
-                 Bind(&SaveProfileAndSignalEvent,
-                      Unretained(&profile),
-                      Unretained(&completed)),
+                 std::make_unique<SamplingProfileBuilder>(
+                     Bind(&SaveProfileAndSignalEvent,
+                          Unretained(&profile),
+                          Unretained(&completed))),
                  delegate) {}
 
   // The order here is important to ensure objects being referenced don't get
@@ -546,8 +548,9 @@ void TestLibraryUnload(bool wait_until_unloaded) {
                                  WaitableEvent::InitialState::NOT_SIGNALED);
   StackCopiedSignaler test_delegate(&stack_copied, &start_stack_walk,
                                     wait_until_unloaded);
-  StackSamplingProfiler profiler(target_thread.id(), params, callback,
-                                 &test_delegate);
+  StackSamplingProfiler profiler(
+      target_thread.id(), params,
+      std::make_unique<SamplingProfileBuilder>(callback), &test_delegate);
 
   profiler.Start();
 
@@ -745,7 +748,9 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
         const StackSamplingProfiler::CompletedCallback callback =
             Bind(&SaveProfileAndSignalEvent, Unretained(&profile),
                  Unretained(&sampling_thread_completed));
-        StackSamplingProfiler profiler(target_thread_id, params, callback);
+        StackSamplingProfiler profiler(
+            target_thread_id, params,
+            std::make_unique<SamplingProfileBuilder>(callback));
         profiler.Start();
         sampling_thread_completed.Wait();
       },
@@ -795,7 +800,10 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopWithoutStarting) {
     const StackSamplingProfiler::CompletedCallback callback =
         Bind(&SaveProfileAndSignalEvent, Unretained(&profile),
              Unretained(&sampling_completed));
-    StackSamplingProfiler profiler(target_thread_id, params, callback);
+
+    StackSamplingProfiler profiler(
+        target_thread_id, params,
+        std::make_unique<SamplingProfileBuilder>(callback));
 
     profiler.Stop();  // Constructed but never started.
     EXPECT_FALSE(sampling_completed.IsSignaled());
@@ -937,44 +945,16 @@ PROFILER_TEST_F(StackSamplingProfilerTest, DestroyProfilerWhileProfiling) {
   CallStackProfile profile;
   WithTargetThread([&params, &profile](PlatformThreadId target_thread_id) {
     std::unique_ptr<StackSamplingProfiler> profiler;
-    profiler.reset(new StackSamplingProfiler(
-        target_thread_id, params, Bind(&SaveProfile, Unretained(&profile))));
+    auto profile_builder = std::make_unique<SamplingProfileBuilder>(
+        Bind(&SaveProfile, Unretained(&profile)));
+    profiler.reset(new StackSamplingProfiler(target_thread_id, params,
+                                             std::move(profile_builder)));
     profiler->Start();
     profiler.reset();
 
     // Wait longer than a sample interval to catch any use-after-free actions by
     // the profiler thread.
     PlatformThread::Sleep(TimeDelta::FromMilliseconds(50));
-  });
-}
-
-// Checks that the same profiler may be run multiple times.
-PROFILER_TEST_F(StackSamplingProfilerTest, CanRunMultipleTimes) {
-  WithTargetThread([](PlatformThreadId target_thread_id) {
-    SamplingParams params;
-    params.sampling_interval = TimeDelta::FromMilliseconds(0);
-    params.samples_per_profile = 1;
-
-    CallStackProfile profile;
-    WaitableEvent sampling_completed(WaitableEvent::ResetPolicy::MANUAL,
-                                     WaitableEvent::InitialState::NOT_SIGNALED);
-    const StackSamplingProfiler::CompletedCallback callback =
-        Bind(&SaveProfileAndSignalEvent, Unretained(&profile),
-             Unretained(&sampling_completed));
-    StackSamplingProfiler profiler(target_thread_id, params, callback);
-
-    // Just start and stop to execute code paths.
-    profiler.Start();
-    profiler.Stop();
-    sampling_completed.Wait();
-
-    // Ensure a second request will run and not block.
-    sampling_completed.Reset();
-    profile = CallStackProfile();
-    profiler.Start();
-    sampling_completed.Wait();
-    profiler.Stop();
-    ASSERT_EQ(1u, profile.samples.size());
   });
 }
 
@@ -1251,7 +1231,9 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
           const StackSamplingProfiler::CompletedCallback callback =
               Bind(&SaveProfileAndSignalEvent, Unretained(&profile),
                    Unretained(&sampling_thread_completed));
-          StackSamplingProfiler profiler(target_thread_id, params, callback);
+          StackSamplingProfiler profiler(
+              target_thread_id, params,
+              std::make_unique<SamplingProfileBuilder>(callback));
           profiler.Start();
           sampling_thread_completed.Wait();
         },
@@ -1355,7 +1337,9 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleSampledThreads) {
   const StackSamplingProfiler::CompletedCallback callback1 =
       Bind(&SaveProfileAndSignalEvent, Unretained(&profile1),
            Unretained(&sampling_thread_completed1));
-  StackSamplingProfiler profiler1(target_thread1.id(), params1, callback1);
+  StackSamplingProfiler profiler1(
+      target_thread1.id(), params1,
+      std::make_unique<SamplingProfileBuilder>(callback1));
 
   WaitableEvent sampling_thread_completed2(
       WaitableEvent::ResetPolicy::MANUAL,
@@ -1363,7 +1347,9 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleSampledThreads) {
   const StackSamplingProfiler::CompletedCallback callback2 =
       Bind(&SaveProfileAndSignalEvent, Unretained(&profile2),
            Unretained(&sampling_thread_completed2));
-  StackSamplingProfiler profiler2(target_thread2.id(), params2, callback2);
+  StackSamplingProfiler profiler2(
+      target_thread2.id(), params2,
+      std::make_unique<SamplingProfileBuilder>(callback2));
 
   // Finally the real work.
   profiler1.Start();
@@ -1392,9 +1378,10 @@ class ProfilerThread : public SimpleThread {
                    WaitableEvent::InitialState::NOT_SIGNALED),
         profiler_(thread_id,
                   params,
-                  Bind(&SaveProfileAndSignalEvent,
-                       Unretained(&profile_),
-                       Unretained(&completed_))) {}
+                  std::make_unique<SamplingProfileBuilder>(
+                      Bind(&SaveProfileAndSignalEvent,
+                           Unretained(&profile_),
+                           Unretained(&completed_)))) {}
 
   void Run() override {
     run_.Wait();
