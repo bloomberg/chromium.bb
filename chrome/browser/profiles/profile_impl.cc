@@ -292,22 +292,6 @@ std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
   return std::string();
 }
 
-// Syncs content settings to the network service for a profile.
-void SyncCookieSettingsToNetworkService(Profile* profile) {
-  ContentSettingsForOneType settings;
-  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
-  content::BrowserContext::ForEachStoragePartition(
-      profile,
-      base::BindRepeating(
-          [](const ContentSettingsForOneType& settings,
-             content::StoragePartition* partition) {
-            partition->GetCookieManagerForBrowserProcess()->SetContentSettings(
-                settings);
-          },
-          std::move(settings)));
-}
-
 }  // namespace
 
 // static
@@ -610,19 +594,6 @@ void ProfileImpl::DoFinalInit() {
       certificate_transparency::prefs::kCTExcludedLegacySPKIs,
       base::Bind(&ProfileImpl::ScheduleUpdateCTPolicy, base::Unretained(this)));
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    pref_change_registrar_.Add(
-        prefs::kBlockThirdPartyCookies,
-        base::Bind(&ProfileImpl::UpdateBlockThirdPartyCookies,
-                   base::Unretained(this)));
-    UpdateBlockThirdPartyCookies();
-
-    // Observe content settings so they can be synced to the network service.
-    HostContentSettingsMapFactory::GetForProfile(this)->AddObserver(this);
-    OnContentSettingChanged(ContentSettingsPattern(), ContentSettingsPattern(),
-                            CONTENT_SETTINGS_TYPE_COOKIES, std::string());
-  }
-
   media_device_id_salt_ = new MediaDeviceIDSalt(prefs_.get());
 
   // It would be nice to use PathService for fetching this directory, but
@@ -821,9 +792,6 @@ Profile* ProfileImpl::GetOffTheRecordProfile() {
   if (!off_the_record_profile_) {
     std::unique_ptr<Profile> p(CreateOffTheRecordProfile());
     off_the_record_profile_.swap(p);
-
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-      SyncCookieSettingsToNetworkService(off_the_record_profile_.get());
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_CREATED,
@@ -1439,34 +1407,6 @@ void ProfileImpl::UpdateCTPolicy() {
       TranslateStringArray(ct_required), TranslateStringArray(ct_excluded),
       TranslateStringArray(ct_excluded_spkis),
       TranslateStringArray(ct_excluded_legacy_spkis));
-}
-
-void ProfileImpl::UpdateBlockThirdPartyCookies() {
-  bool block_third_party_cookies =
-      GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies);
-  content::BrowserContext::ForEachStoragePartition(
-      this, base::Bind(
-                [](bool block_third_party_cookies,
-                   content::StoragePartition* partition) {
-                  partition->GetCookieManagerForBrowserProcess()
-                      ->BlockThirdPartyCookies(block_third_party_cookies);
-                },
-                block_third_party_cookies));
-}
-
-void ProfileImpl::OnContentSettingChanged(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier) {
-  if (content_type != CONTENT_SETTINGS_TYPE_COOKIES &&
-      content_type != CONTENT_SETTINGS_TYPE_DEFAULT) {
-    return;
-  }
-
-  SyncCookieSettingsToNetworkService(this);
-  if (off_the_record_profile_)
-    SyncCookieSettingsToNetworkService(off_the_record_profile_.get());
 }
 
 // Gets the media cache parameters from the command line. |cache_path| will be

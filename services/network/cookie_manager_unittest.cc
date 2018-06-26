@@ -243,7 +243,7 @@ class CookieManagerTest : public testing::Test {
     cookie_monster_ = std::make_unique<net::CookieMonster>(std::move(store));
     cookie_service_ = std::make_unique<CookieManager>(
         cookie_monster_.get(), std::move(cleanup_store),
-        std::move(channel_id_store));
+        std::move(channel_id_store), nullptr);
     cookie_service_->AddRequest(mojo::MakeRequest(&cookie_service_ptr_));
     service_wrapper_ =
         std::make_unique<SynchronousCookieManager>(cookie_service_ptr_.get());
