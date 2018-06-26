@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -341,8 +340,6 @@ content::WebUIDataSource* CreateKeyboardOverlayUIHTMLSource(Profile* profile) {
                      TopRowKeysAreFunctionKeys(profile));
   source->AddBoolean("voiceInteractionEnabled",
                      chromeos::switches::IsVoiceInteractionEnabled());
-  source->AddBoolean("displayMoveWindowAccelsEnabled",
-                     ash::features::IsDisplayMoveWindowAccelsEnabled());
   source->AddBoolean("keyboardOverlayUsesLayout2",
                      ui::DeviceUsesKeyboardLayout2());
   ash::Shell* shell = ash::Shell::Get();

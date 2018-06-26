@@ -290,15 +290,6 @@ function isVoiceInteractionEnabled() {
 }
 
 /**
- * Tests if accelerators for moving window between displays are enabled.
- * @return {boolean} True if accelerators for moving window between displays
- * feature is enabled.
- */
-function isDisplayMoveWindowAccelsEnabled() {
-  return loadTimeData.getBoolean('displayMoveWindowAccelsEnabled');
-}
-
-/**
  * Converts a single hex number to a character.
  * @param {string} hex Hexadecimal string.
  * @return {string} Unicode values of hexadecimal string.
@@ -614,14 +605,6 @@ function update(modifiers, normModifiers) {
     // Currently hidden behind experimental accessibility features flag.
     if (shortcutId == 'keyboardOverlayToggleDictation')
       continue;
-
-    if ((shortcutId == 'keyboardOverlayMoveWindowToBelowDisplay' ||
-         shortcutId == 'keyboardOverlayMoveWindowToLeftDisplay' ||
-         shortcutId == 'keyboardOverlayMoveWindowToRightDisplay' ||
-         shortcutId == 'keyboardOverlayMoveWindowToAboveDisplay') &&
-        !isDisplayMoveWindowAccelsEnabled()) {
-      continue;
-    }
 
     if (shortcutId) {
       classes.push('is-shortcut');

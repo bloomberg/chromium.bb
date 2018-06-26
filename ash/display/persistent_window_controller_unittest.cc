@@ -27,11 +27,9 @@ class PersistentWindowControllerTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    // Explicitly enable persistent window bounds and displays move window
-    // accels features for the tests.
-    scoped_feature_list_.InitWithFeatures(
-        {features::kPersistentWindowBounds, features::kDisplayMoveWindowAccels},
-        {});
+    // Explicitly enable persistent window bounds feature for the tests.
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kPersistentWindowBounds);
     AshTestBase::SetUp();
   }
 

@@ -9,7 +9,6 @@
 #include <array>
 
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
@@ -47,8 +46,6 @@ aura::Window* GetTargetWindow() {
 }  // namespace
 
 bool CanHandleMoveActiveWindowBetweenDisplays() {
-  if (!features::IsDisplayMoveWindowAccelsEnabled())
-    return false;
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   // Accelerators to move window between displays on unified desktop mode and
   // mirror mode is disabled.
