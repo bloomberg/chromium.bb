@@ -180,8 +180,7 @@ bool ManualPasswordGenerationEnabled(syncer::SyncService* sync_service) {
 
 bool ShowAllSavedPasswordsContextMenuEnabled() {
   if (!base::FeatureList::IsEnabled(
-          password_manager::features::
-              kEnableShowAllSavedPasswordsContextMenu)) {
+          password_manager::features::kShowAllSavedPasswordsContextMenu)) {
     return false;
   }
   LogContextOfShowAllSavedPasswordsShown(
