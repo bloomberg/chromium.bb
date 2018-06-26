@@ -65,6 +65,8 @@ void LogBubbleDismissalReason(BubbleDismissalReason reason) {
 // For example, tapping on a button both dismisses the bubble and triggers the
 // button's action.
 @property(nonatomic, strong) UITapGestureRecognizer* outsideBubbleTapRecognizer;
+// The swipe gesture recognizer to dismiss the bubble on swipes.
+@property(nonatomic, strong) UISwipeGestureRecognizer* swipeRecognizer;
 // The timer used to dismiss the bubble after a certain length of time. The
 // bubble is dismissed automatically if the user does not dismiss it manually.
 // If the user dismisses it manually, this timer is invalidated. The timer
@@ -94,6 +96,7 @@ void LogBubbleDismissalReason(BubbleDismissalReason reason) {
 @synthesize bubbleViewController = _bubbleViewController;
 @synthesize insideBubbleTapRecognizer = _insideBubbleTapRecognizer;
 @synthesize outsideBubbleTapRecognizer = _outsideBubbleTapRecognizer;
+@synthesize swipeRecognizer = _swipeRecognizer;
 @synthesize bubbleDismissalTimer = _bubbleDismissalTimer;
 @synthesize engagementTimer = _engagementTimer;
 @synthesize userEngaged = _userEngaged;
@@ -122,6 +125,11 @@ void LogBubbleDismissalReason(BubbleDismissalReason reason) {
                 action:@selector(tapInsideBubbleRecognized:)];
     _insideBubbleTapRecognizer.delegate = self;
     _insideBubbleTapRecognizer.cancelsTouchesInView = NO;
+    _swipeRecognizer = [[UISwipeGestureRecognizer alloc]
+        initWithTarget:self
+                action:@selector(tapOutsideBubbleRecognized:)];
+    _swipeRecognizer.direction = UISwipeGestureRecognizerDirectionUp;
+    _swipeRecognizer.delegate = self;
     _userEngaged = NO;
     _triggerFollowUpAction = NO;
     _arrowDirection = arrowDirection;
@@ -151,6 +159,7 @@ void LogBubbleDismissalReason(BubbleDismissalReason reason) {
   [self.bubbleViewController.view
       addGestureRecognizer:self.insideBubbleTapRecognizer];
   [parentView addGestureRecognizer:self.outsideBubbleTapRecognizer];
+  [parentView addGestureRecognizer:self.swipeRecognizer];
 
   CGFloat duration = IsUIRefreshPhase1Enabled()
                          ? kBubbleVisibilityDuration
@@ -187,6 +196,7 @@ void LogBubbleDismissalReason(BubbleDismissalReason reason) {
       removeGestureRecognizer:self.insideBubbleTapRecognizer];
   [self.outsideBubbleTapRecognizer.view
       removeGestureRecognizer:self.outsideBubbleTapRecognizer];
+  [self.swipeRecognizer.view removeGestureRecognizer:self.swipeRecognizer];
   [self.bubbleViewController dismissAnimated:animated];
   [self.bubbleViewController willMoveToParentViewController:nil];
   [self.bubbleViewController removeFromParentViewController];
@@ -205,6 +215,7 @@ void LogBubbleDismissalReason(BubbleDismissalReason reason) {
       removeGestureRecognizer:self.insideBubbleTapRecognizer];
   [self.outsideBubbleTapRecognizer.view
       removeGestureRecognizer:self.outsideBubbleTapRecognizer];
+  [self.swipeRecognizer.view removeGestureRecognizer:self.swipeRecognizer];
 }
 
 #pragma mark - UIGestureRecognizerDelegate
@@ -212,6 +223,10 @@ void LogBubbleDismissalReason(BubbleDismissalReason reason) {
 - (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
     shouldRecognizeSimultaneouslyWithGestureRecognizer:
         (UIGestureRecognizer*)otherGestureRecognizer {
+  // Allow the swipeRecognizer to be triggered at the same time as other gesture
+  // recognizers.
+  if (gestureRecognizer == self.swipeRecognizer)
+    return YES;
   // Because the outside tap recognizer is potentially in the responder chain,
   // this prevents both the inside and outside gesture recognizers from
   // triggering at once when tapping inside the bubble.
