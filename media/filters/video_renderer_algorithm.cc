@@ -165,12 +165,20 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
   }
 
   // Step 7: Drop frames which occur prior to the frame to be rendered. If any
-  // frame has a zero render count it should be reported as dropped.
+  // frame unexpectedly has a zero render count it should be reported as
+  // dropped. When using cadence some frames may be expected to be skipped and
+  // should not be counted as dropped.
   if (frame_to_render > 0) {
     if (frames_dropped) {
       for (int i = 0; i < frame_to_render; ++i) {
         const ReadyFrame& frame = frame_queue_[i];
+
+        // If a frame was ever rendered, don't count it as dropped.
         if (frame.render_count != frame.drop_count)
+          continue;
+
+        // If we expected to never render the frame, don't count it as dropped.
+        if (cadence_estimator_.has_cadence() && !frame.ideal_render_count)
           continue;
 
         // If frame dropping is disabled, ignore the results of the algorithm
