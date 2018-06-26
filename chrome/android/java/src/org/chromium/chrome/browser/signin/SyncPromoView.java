@@ -90,9 +90,9 @@ public class SyncPromoView extends LinearLayout implements AndroidSyncSettingsOb
 
     private void update() {
         ViewState viewState;
-        if (!AndroidSyncSettings.isMasterSyncEnabled(getContext())) {
+        if (!AndroidSyncSettings.isMasterSyncEnabled()) {
             viewState = getStateForEnableAndroidSync();
-        } else if (!AndroidSyncSettings.isChromeSyncEnabled(getContext())) {
+        } else if (!AndroidSyncSettings.isChromeSyncEnabled()) {
             viewState = getStateForEnableChromeSync();
         } else {
             viewState = getStateForStartUsing();
@@ -192,14 +192,14 @@ public class SyncPromoView extends LinearLayout implements AndroidSyncSettingsOb
         assert mInitialized : "init(...) must be called on SyncPromoView before use.";
 
         super.onAttachedToWindow();
-        AndroidSyncSettings.registerObserver(getContext(), this);
+        AndroidSyncSettings.registerObserver(this);
         update();
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        AndroidSyncSettings.unregisterObserver(getContext(), this);
+        AndroidSyncSettings.unregisterObserver(this);
     }
 
     // AndroidSyncStateObserver

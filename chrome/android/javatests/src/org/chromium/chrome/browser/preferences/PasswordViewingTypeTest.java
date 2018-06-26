@@ -59,9 +59,9 @@ public class PasswordViewingTypeTest {
                                    .getFragmentForTest();
         mPasswordsPref = (ChromeBasePreference) mMainPreferences.findPreference(
                 MainPreferences.PREF_SAVED_PASSWORDS);
-        AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolverDelegate, null);
-        mAuthority = AndroidSyncSettings.getContractAuthority(mContext);
-        AndroidSyncSettings.updateAccount(mContext, mAccount);
+        AndroidSyncSettings.overrideForTests(mSyncContentResolverDelegate, null);
+        mAuthority = AndroidSyncSettings.getContractAuthority();
+        AndroidSyncSettings.updateAccount(mAccount);
         mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
     }
 
@@ -139,7 +139,7 @@ public class PasswordViewingTypeTest {
     public void testUserRedirectSyncSettings() throws InterruptedException {
         setSyncability(true);
         overrideProfileSyncService(false);
-        Assert.assertTrue(AndroidSyncSettings.isSyncEnabled(mContext));
+        Assert.assertTrue(AndroidSyncSettings.isSyncEnabled());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

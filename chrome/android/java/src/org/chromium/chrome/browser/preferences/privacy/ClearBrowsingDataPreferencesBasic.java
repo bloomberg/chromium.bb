@@ -51,7 +51,7 @@ public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferen
     }
 
     private boolean isHistorySyncEnabled() {
-        boolean syncEnabled = AndroidSyncSettings.isSyncEnabled(getActivity());
+        boolean syncEnabled = AndroidSyncSettings.isSyncEnabled();
         ProfileSyncService syncService = ProfileSyncService.get();
         return syncEnabled && syncService != null
                 && syncService.getActiveDataTypes().contains(ModelType.HISTORY_DELETE_DIRECTIVES);

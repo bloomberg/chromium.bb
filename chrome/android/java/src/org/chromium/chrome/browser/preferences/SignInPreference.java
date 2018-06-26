@@ -71,7 +71,7 @@ public class SignInPreference
         SigninManager.get().addSignInAllowedObserver(this);
         mProfileDataCache.addObserver(this);
         FirstRunSignInProcessor.updateSigninManagerFirstRunCheckDone();
-        AndroidSyncSettings.registerObserver(getContext(), this);
+        AndroidSyncSettings.registerObserver(this);
         ProfileSyncService syncService = ProfileSyncService.get();
         if (syncService != null) {
             syncService.addSyncStateChangedListener(this);
@@ -88,7 +88,7 @@ public class SignInPreference
         AccountManagerFacade.get().removeObserver(this);
         SigninManager.get().removeSignInAllowedObserver(this);
         mProfileDataCache.removeObserver(this);
-        AndroidSyncSettings.unregisterObserver(getContext(), this);
+        AndroidSyncSettings.unregisterObserver(this);
         ProfileSyncService syncService = ProfileSyncService.get();
         if (syncService != null) {
             syncService.removeSyncStateChangedListener(this);

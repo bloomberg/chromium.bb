@@ -262,8 +262,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
         if (!getActivity().isChangingConfigurations()) {
             // Only save state if the switch and external state match. If a stop and clear comes
             // while the dialog is open, this will be false and settings won't be saved.
-            if (mSyncSwitchPreference.isChecked()
-                    && AndroidSyncSettings.isSyncEnabled(getActivity())) {
+            if (mSyncSwitchPreference.isChecked() && AndroidSyncSettings.isSyncEnabled()) {
                 // Save the new data type state.
                 configureSyncDataTypes();
                 // Inform sync that the user has finished setting up sync at least once.
@@ -285,7 +284,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
      * updateSyncStateFromSwitch, which uses that as its source of truth.
      */
     private void updateSyncState() {
-        boolean isSyncEnabled = AndroidSyncSettings.isSyncEnabled(getActivity());
+        boolean isSyncEnabled = AndroidSyncSettings.isSyncEnabled();
         mSyncSwitchPreference.setChecked(isSyncEnabled);
         mSyncSwitchPreference.setEnabled(canDisableSync());
         updateSyncStateFromSwitch();
@@ -593,7 +592,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
 
     @SyncError
     private int getSyncError() {
-        if (!AndroidSyncSettings.isMasterSyncEnabled(getActivity())) {
+        if (!AndroidSyncSettings.isMasterSyncEnabled()) {
             return SYNC_ANDROID_SYNC_DISABLED;
         }
 
