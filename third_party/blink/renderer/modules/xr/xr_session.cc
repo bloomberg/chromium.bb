@@ -380,22 +380,30 @@ void XRSession::ForceEnd() {
   DispatchEvent(XRSessionEvent::Create(EventTypeNames::end, this));
 }
 
-double XRSession::DefaultFramebufferScale() const {
-  if (exclusive_)
-    return device_->xrDisplayInfoPtr()->webxr_default_framebuffer_scale;
+double XRSession::NativeFramebufferScale() const {
+  if (exclusive_) {
+    double scale = device_->xrDisplayInfoPtr()->webxr_default_framebuffer_scale;
+    DCHECK(scale);
+
+    // Return the inverse of the default scale, since that's what we'll need to
+    // multiply the default size by to get back to the native size.
+    return 1.0 / scale;
+  }
   return 1.0;
 }
 
-DoubleSize XRSession::IdealFramebufferSize() const {
+DoubleSize XRSession::DefaultFramebufferSize() const {
   if (!exclusive_) {
     return OutputCanvasSize();
   }
 
-  double width = device_->xrDisplayInfoPtr()->leftEye->renderWidth +
-                 device_->xrDisplayInfoPtr()->rightEye->renderWidth;
+  double width = (device_->xrDisplayInfoPtr()->leftEye->renderWidth +
+                  device_->xrDisplayInfoPtr()->rightEye->renderWidth);
   double height = std::max(device_->xrDisplayInfoPtr()->leftEye->renderHeight,
                            device_->xrDisplayInfoPtr()->rightEye->renderHeight);
-  return DoubleSize(width, height);
+
+  double scale = device_->xrDisplayInfoPtr()->webxr_default_framebuffer_scale;
+  return DoubleSize(width * scale, height * scale);
 }
 
 DoubleSize XRSession::OutputCanvasSize() const {

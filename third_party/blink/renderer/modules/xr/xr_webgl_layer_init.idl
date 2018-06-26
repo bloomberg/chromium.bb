@@ -11,5 +11,5 @@
   boolean stencil = false;
   boolean alpha = true;
   boolean multiview = false;
-  double framebufferScaleFactor;
+  double framebufferScaleFactor = 1.0;
 };
