@@ -103,7 +103,7 @@ void ShelfTooltipManager::ShowTooltip(views::View* view) {
   const base::string16 text = shelf_view_->GetTitleForView(view);
   if (chromeos::switches::ShouldShowShelfHoverPreviews() &&
       open_windows.size() > 0) {
-    bubble_ = new ShelfTooltipPreviewBubble(view, arrow, open_windows);
+    bubble_ = new ShelfTooltipPreviewBubble(view, arrow, open_windows, this);
   } else {
     bubble_ = new ShelfTooltipBubble(view, arrow, text);
   }
@@ -127,14 +127,25 @@ void ShelfTooltipManager::OnPointerEventObserved(
     const ui::PointerEvent& event,
     const gfx::Point& location_in_screen,
     gfx::NativeView target) {
-  // Close on any press events inside or outside the tooltip.
-  if (event.type() == ui::ET_POINTER_DOWN)
+  if (event.type() != ui::ET_POINTER_DOWN || !bubble_)
+    return;
+
+  // If the click was outside the tooltip, always close it.
+  if (!bubble_->GetWidget()->GetWindowBoundsInScreen().Contains(
+          location_in_screen)) {
+    Close();
+    return;
+  }
+
+  // Close the bubble if appropriate.
+  if (bubble_->ShouldCloseOnPressDown())
     Close();
 }
 
 void ShelfTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_EXITED) {
-    Close();
+    if (bubble_ && bubble_->ShouldCloseOnMouseExit())
+      Close();
     return;
   }
 

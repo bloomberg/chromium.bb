@@ -20,6 +20,13 @@ class ASH_EXPORT ShelfTooltipBubbleBase
  public:
   ShelfTooltipBubbleBase(views::View* anchor, views::BubbleBorder::Arrow arrow);
 
+  // Returns true if we should let the tooltip manager close us.
+  virtual bool ShouldCloseOnPressDown() = 0;
+
+  // Returns true if this tooltip should disappear when the mouse leaves the
+  // corresponding shelf item.
+  virtual bool ShouldCloseOnMouseExit() = 0;
+
  private:
   // BubbleDialogDelegateView overrides:
   int GetDialogButtons() const override;

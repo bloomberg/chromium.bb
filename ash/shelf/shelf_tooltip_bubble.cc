@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/shelf/shelf_tooltip_bubble.h"
+
 #include "ash/system/tray/tray_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -76,6 +77,15 @@ gfx::Size ShelfTooltipBubble::CalculatePreferredSize() const {
   const int kTooltipMinHeight = kTooltipHeight - 2 * kTooltipTopBottomMargin;
   return gfx::Size(std::min(size.width(), kTooltipMaxWidth),
                    std::max(size.height(), kTooltipMinHeight));
+}
+
+bool ShelfTooltipBubble::ShouldCloseOnPressDown() {
+  // Let the manager close us.
+  return true;
+}
+
+bool ShelfTooltipBubble::ShouldCloseOnMouseExit() {
+  return true;
 }
 
 }  // namespace ash
