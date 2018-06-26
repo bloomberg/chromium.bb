@@ -84,26 +84,46 @@ class OffsetMapper {
  public:
   using const_iterator = std::vector<Equivalence>::const_iterator;
 
-  // Constructors for various data sources.
+  // Constructors for various data sources. "Old" and "new" image sizes are
+  // needed for bounds checks and to handle dangling targets.
   // - From a list of |equivalences|, already sorted (by |src_offset|) and
   //   pruned, useful for tests.
-  explicit OffsetMapper(std::vector<Equivalence>&& equivalences);
+  OffsetMapper(std::vector<Equivalence>&& equivalences,
+               size_t old_image_size,
+               size_t new_image_size);
   // - From a generator, useful for Zucchini-apply.
-  explicit OffsetMapper(EquivalenceSource&& equivalence_source);
+  OffsetMapper(EquivalenceSource&& equivalence_source,
+               size_t old_image_size,
+               size_t new_image_size);
   // - From an EquivalenceMap that needs to be processed, useful for
   //   Zucchini-gen.
-  explicit OffsetMapper(const EquivalenceMap& equivalence_map);
+  OffsetMapper(const EquivalenceMap& equivalence_map,
+               size_t old_image_size,
+               size_t new_image_size);
   ~OffsetMapper();
 
   size_t size() const { return equivalences_.size(); }
   const_iterator begin() const { return equivalences_.begin(); }
   const_iterator end() const { return equivalences_.end(); }
 
+  // Returns naive extended forward-projection of "old" |offset| that follows
+  // |eq|'s delta. |eq| needs not cover |offset|.
+  // - Averts underflow / overflow by clamping to |[0, new_image_size_)|.
+  // - However, |offset| is *not* restricted to |[0, old_image_size_)|; the
+  //   caller must to make the check (hence "naive").
+  offset_t NaiveExtendedForwardProject(const Equivalence& unit,
+                                       offset_t offset) const;
+
   // Returns an offset in |new_image| corresponding to |offset| in |old_image|.
-  // If |offset| is not part of an equivalence, the equivalence nearest to
-  // |offset| is used as if it contained |offset|. This assumes |equivalences_|
-  // is not empty.
-  offset_t ForwardProject(offset_t offset) const;
+  // Assumes |equivalences_| to be non-empty. Cases:
+  // - If |offset| is covered (i.e., in an "old" block), then use the delta of
+  //   the (unique) equivalence unit that covers |offset|.
+  // - If |offset| is non-covered, but in |[0, old_image_size_)|, then find the
+  //   nearest "old" block, use its delta, and avert underflow / overflow by
+  //   clamping the result to |[0, new_image_size_)|.
+  // - If |offset| is >= |new_image_size_| (a "fake offset"), then use
+  //   |new_image_size_ - old_image_size_| as the delta.
+  offset_t ExtendedForwardProject(offset_t offset) const;
 
   // Given sorted |offsets|, applies a projection in-place of all offsets that
   // are part of a pruned equivalence from |old_image| to |new_image|. Other
@@ -123,7 +143,11 @@ class OffsetMapper {
       std::vector<Equivalence>* equivalences);
 
  private:
-  std::vector<Equivalence> equivalences_;
+  // |equivalences_| is pruned, i.e., no "old" blocks overlap (and no "new"
+  // block overlaps). Also, it is sorted by "old" offsets.
+  std::vector<Equivalence> equivalences_;  // P
+  const size_t old_image_size_;
+  const size_t new_image_size_;
 };
 
 // Container of equivalences between |old_image_index| and |new_image_index|,

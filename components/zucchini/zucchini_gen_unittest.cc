@@ -33,6 +33,11 @@ std::vector<int32_t> GenerateReferencesDeltaTest(
     std::vector<offset_t>&& exp_old_targets,
     std::vector<offset_t>&& exp_projected_old_targets,
     EquivalenceMap&& equivalence_map) {
+  // OffsetMapper needs image sizes for forward-projection overflow check. These
+  // are tested elsewhere, so just use arbitrary large value.
+  constexpr size_t kOldImageSize = 1000000;
+  constexpr size_t kNewImageSize = 1001000;
+
   ReferenceDeltaSink reference_delta_sink;
 
   TargetPool old_targets;
@@ -46,7 +51,7 @@ std::vector<int32_t> GenerateReferencesDeltaTest(
   ReferenceSet new_refs({1, TypeTag(0), PoolTag(0)}, new_targets);
   new_refs.InitReferences(new_references);
 
-  OffsetMapper offset_mapper(equivalence_map);
+  OffsetMapper offset_mapper(equivalence_map, kOldImageSize, kNewImageSize);
   TargetPool projected_old_targets = old_targets;
   projected_old_targets.FilterAndProject(offset_mapper);
 

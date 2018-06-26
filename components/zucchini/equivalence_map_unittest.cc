@@ -5,6 +5,9 @@
 #include "components/zucchini/equivalence_map.h"
 
 #include <cstring>
+#include <deque>
+#include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -296,7 +299,209 @@ TEST(EquivalenceMapTest, PruneEquivalencesAndSortBySource) {
             }()));
 }
 
-TEST(EquivalenceMapTest, ForwardProject) {
+TEST(EquivalenceMapTest, NaiveExtendedForwardProject) {
+  constexpr size_t kOldImageSize = 1000U;
+  constexpr size_t kNewImageSize = 1000U;
+  OffsetMapper offset_mapper(std::vector<Equivalence>(), kOldImageSize,
+                             kNewImageSize);
+
+  // Convenience function to declutter.
+  auto project = [&offset_mapper](const Equivalence& eq, offset_t offset) {
+    return offset_mapper.NaiveExtendedForwardProject(eq, offset);
+  };
+
+  // Equivalence with delta = 0.
+  Equivalence eq_stay = {10, 10, +5};  // [10,15) -> [10,15).
+  for (offset_t offset = 0U; offset < 1000U; ++offset) {
+    EXPECT_EQ(offset, project(eq_stay, offset));
+  }
+  // Saturate since result would overflow "new".
+  EXPECT_EQ(999U, project(eq_stay, 1000U));
+  EXPECT_EQ(999U, project(eq_stay, 2000U));
+  EXPECT_EQ(999U, project(eq_stay, kOffsetBound - 1));
+
+  // Equivalence with delta = -10.
+  Equivalence eq_dec = {20, 10, +12};  // [20,32) --> [10,22).
+  // Offsets in "old" block.
+  EXPECT_EQ(10U, project(eq_dec, 20U));
+  EXPECT_EQ(11U, project(eq_dec, 21U));
+  EXPECT_EQ(21U, project(eq_dec, 31U));
+  // Offsets before "old" block, no underflow
+  EXPECT_EQ(9U, project(eq_dec, 19U));
+  EXPECT_EQ(1U, project(eq_dec, 11U));
+  EXPECT_EQ(0U, project(eq_dec, 10U));
+  // Offsets before "old" block, underflow (possible since delta < 0).
+  EXPECT_EQ(0U, project(eq_dec, 9U));
+  EXPECT_EQ(0U, project(eq_dec, 5U));
+  EXPECT_EQ(0U, project(eq_dec, 0U));
+  // Offsets after "old" block, no overflow.
+  EXPECT_EQ(20U, project(eq_dec, 30U));
+  EXPECT_EQ(64U, project(eq_dec, 74U));
+  EXPECT_EQ(90U, project(eq_dec, 100U));
+  EXPECT_EQ(490U, project(eq_dec, 500U));
+  EXPECT_EQ(999U, project(eq_dec, 1009U));
+  // Offsets after "old" block, overflow.
+  EXPECT_EQ(999U, project(eq_dec, 1010U));
+  EXPECT_EQ(999U, project(eq_dec, 2000U));
+  EXPECT_EQ(999U, project(eq_dec, kOffsetBound - 1));
+
+  // Equivalence with delta = +10.
+  Equivalence eq_inc = {7, 17, +80};  // [7,87) --> [17,97).
+  // Offsets in "old" block.
+  EXPECT_EQ(17U, project(eq_inc, 7U));
+  EXPECT_EQ(60U, project(eq_inc, 50U));
+  EXPECT_EQ(96U, project(eq_inc, 86U));
+  // Offsets before "old" block, underflow impossible since delta >= 0.
+  EXPECT_EQ(16U, project(eq_inc, 6U));
+  EXPECT_EQ(10U, project(eq_inc, 0U));
+  // Offsets after "old" block, no overflow.
+  EXPECT_EQ(97U, project(eq_inc, 87U));
+  EXPECT_EQ(510U, project(eq_inc, 500U));
+  EXPECT_EQ(999U, project(eq_inc, 989U));
+  // Offsets after "old" block, overflow.
+  EXPECT_EQ(999U, project(eq_inc, 990U));
+  EXPECT_EQ(999U, project(eq_inc, 2000U));
+  EXPECT_EQ(999U, project(eq_inc, kOffsetBound - 1));
+}
+
+TEST(EquivalenceMapTest, ExtendedForwardProject) {
+  // EquivalenceMaps provided must be sorted by "old" offset, and pruned.
+  // [0,2) --> [10,12), [2,3) --> [13,14), [4,6) --> [16,18).
+  OffsetMapper offset_mapper1({{0, 10, +2}, {2, 13, +1}, {4, 16, +2}}, 20U,
+                              25U);
+  EXPECT_EQ(10U, offset_mapper1.ExtendedForwardProject(0U));
+  EXPECT_EQ(11U, offset_mapper1.ExtendedForwardProject(1U));
+  EXPECT_EQ(13U, offset_mapper1.ExtendedForwardProject(2U));
+  EXPECT_EQ(14U, offset_mapper1.ExtendedForwardProject(3U));  // Previous equiv.
+  EXPECT_EQ(16U, offset_mapper1.ExtendedForwardProject(4U));
+  EXPECT_EQ(17U, offset_mapper1.ExtendedForwardProject(5U));
+  EXPECT_EQ(18U, offset_mapper1.ExtendedForwardProject(6U));  // Previous equiv.
+  // Fake offsets.
+  EXPECT_EQ(25U, offset_mapper1.ExtendedForwardProject(20U));
+  EXPECT_EQ(26U, offset_mapper1.ExtendedForwardProject(21U));
+  EXPECT_EQ(1005U, offset_mapper1.ExtendedForwardProject(1000U));
+  EXPECT_EQ(kOffsetBound - 1,
+            offset_mapper1.ExtendedForwardProject(kOffsetBound - 1));
+
+  // [0,2) --> [10,12), [13,14) --> [2,3), [16,18) --> [4,6).
+  OffsetMapper offset_mapper2({{0, 10, +2}, {13, 2, +1}, {16, 4, +2}}, 25U,
+                              20U);
+  EXPECT_EQ(10U, offset_mapper2.ExtendedForwardProject(0U));
+  EXPECT_EQ(11U, offset_mapper2.ExtendedForwardProject(1U));
+  EXPECT_EQ(2U, offset_mapper2.ExtendedForwardProject(13U));
+  EXPECT_EQ(3U, offset_mapper2.ExtendedForwardProject(14U));  // Previous equiv.
+  EXPECT_EQ(4U, offset_mapper2.ExtendedForwardProject(16U));
+  EXPECT_EQ(5U, offset_mapper2.ExtendedForwardProject(17U));
+  EXPECT_EQ(6U, offset_mapper2.ExtendedForwardProject(18U));  // Previous equiv.
+  // Fake offsets.
+  EXPECT_EQ(20U, offset_mapper2.ExtendedForwardProject(25U));
+  EXPECT_EQ(21U, offset_mapper2.ExtendedForwardProject(26U));
+  EXPECT_EQ(995U, offset_mapper2.ExtendedForwardProject(1000U));
+  EXPECT_EQ(kOffsetBound - 1 - 5,
+            offset_mapper2.ExtendedForwardProject(kOffsetBound - 1));
+}
+
+TEST(EquivalenceMapTest, ExtendedForwardProjectEncoding) {
+  // Tests OffsetMapper::ExtendedForwardProject(), which maps every "old" offset
+  // to a "new" offset, with possible overlap (even though blocks don't
+  // overlap). Not testing real offsets only (no fake offsets).
+  // |old_spec| is a string like "<<aaAAaabbBBbcCCc>>":
+  // - Upper case letters are covered "old" offsets.
+  // - Lower case letters are non-covered offsets that are properly mapped using
+  //   nearest "old" block.
+  // - '<' denotes underflow (clamped to 0).
+  // - '>' denotes overflow (clampled to "new" size - 1).
+  // |new_spec| is a string like "aaAA(ab)(ab)BBb..cCCc":
+  // - Upper and lower case letters are mapped "new" targets, occurring in the
+  //   order that they appear in |old_spec|.
+  // - '.' are "new" offsets that appear as output.
+  // - '(' and ')' surround a single "new" location that are repeated as output.
+  int case_no = 0;
+  auto run_test = [&case_no](std::vector<Equivalence>&& equivalences,
+                             const std::string& old_spec,
+                             const std::string& new_spec) {
+    const size_t old_size = old_spec.length();
+    // Build expected "new" offsets, queue up for each letter.
+    std::map<char, std::deque<offset_t>> expected;
+    offset_t cur_new_offset = 0;
+    char state = ')';  // ')' = increase offset, '(' = stay.
+    for (char ch : new_spec) {
+      if (ch == '(' || ch == ')')
+        state = ch;
+      else
+        expected[ch].push_back(cur_new_offset);
+      cur_new_offset += (state == ')') ? 1 : 0;
+    }
+    const size_t new_size = cur_new_offset;
+    // Forward-project for each "old" index, pull from queue from matching
+    // letter, and compare.
+    OffsetMapper offset_mapper(std::move(equivalences), old_size, new_size);
+    for (offset_t old_offset = 0; old_offset < old_size; ++old_offset) {
+      offset_t new_offset = offset_mapper.ExtendedForwardProject(old_offset);
+      char ch = old_spec[old_offset];
+      if (ch == '<') {  // Special case: Underflow.
+        EXPECT_EQ(0U, new_offset) << "in case " << case_no;
+      } else if (ch == '>') {  // Special case: Overflow.
+        EXPECT_EQ(static_cast<offset_t>(new_size - 1), new_offset)
+            << "in case " << case_no;
+      } else {
+        std::deque<offset_t>& q = expected[ch];
+        ASSERT_FALSE(q.empty());
+        EXPECT_EQ(q.front(), new_offset) << "in case " << case_no;
+        q.pop_front();
+        if (q.empty())
+          expected.erase(ch);
+      }
+    }
+    // Clear useless '.', and ensure everything is consumed.
+    expected.erase('.');
+    EXPECT_TRUE(expected.empty()) << "in case " << case_no;
+    ++case_no;
+  };
+
+  // Trivial: [5,9) --> [5,9).
+  run_test({{5, 5, +4}}, "aaaaaAAAAaaaaa", "aaaaaAAAAaaaaa");
+  // Swap: [0,4) --> [6,10), [4,10) --> [0,6).
+  run_test({{0, 6, +4}, {4, 0, +6}}, "AAAABBBBBB", "BBBBBBAAAA");
+  // Overlap: [0,4) --> [2,6), [4,10) --> [3,9).
+  run_test({{0, 2, +4}, {4, 3, +6}}, "AAAABBBBBB", "..A(AB)(AB)(AB)BBB.");
+  // Converge: [1,3) --> [2,4), [7,8) --> [6,7).
+  run_test({{1, 2, +2}, {7, 6, +1}}, "aAAaabbBbb", ".aAA(ab)(ab)Bbb.");
+  // Converge with tie-breaker: [1,3) --> [2,4), [8,9) --> [7,8).
+  run_test({{1, 2, +2}, {8, 7, +1}}, "aAAaaabbBb", ".aAAa(ab)(ab)Bb.");
+  // Shift left: [6,8) --> [2,4): Underflow occurs.
+  run_test({{6, 2, +2}}, "<<<<aaAAaa", "aaAAaa....");
+  // Shift right: [2,5) --> [6,9): Overflow occurs.
+  run_test({{2, 6, +3}}, "aaAAAa>>>>", "....aaAAAa");
+  // Diverge: [3,5) --> [1,3], [7,9) --> [9,11).
+  run_test({{3, 1, +2}, {7, 9, +2}}, "<<aAAabBBb>>", "aAAa....bBBb");
+  // Pile-up: [0,2) --> [7,9), [9,11) --> [9,11), [18,20) --> [11,13).
+  run_test({{0, 7, +2}, {9, 9, +2}, {18, 11, +2}}, "AAaaaabbbBBbbbbcccCC",
+           "......b(Ab)(Abc)(Bac)(Bac)(Cab)(Cab)bb.....");
+  // Inverse pile-up: [7,9) --> [0,2), [9,11) --> [9,11), [13,15) --> [18,20).
+  run_test({{7, 0, +2}, {9, 9, +2}, {11, 18, +2}}, "<<<<<<<AABBCC>>>>>>>",
+           "AA.......BB.......CC");
+  // Sparse rotate: [3,4) -> [10,11), [10,11) --> [17,18), [17,18) --> [3,4).
+  run_test({{3, 10, +1}, {10, 17, +1}, {17, 3, +1}}, "aaaAaaabbbBbbbcccCccc",
+           "cccCcccaaaAaaabbbBbbb");
+  // Messy swap: [2,4) --> [10,12), [12,16) --> [3,7).
+  run_test({{2, 10, +2}, {12, 3, +4}}, "aaAAaa>><bbbBBBBbb",
+           "bbbBBBBb(ab)aAAaa");
+  // Messy expand: [6,8) --> [3,5), [10,11) -> [11,12), [14,17) --> [16,19).
+  run_test({{6, 3, +2}, {10, 11, +1}, {14, 16, +3}}, "<<<aaaAAabBbbcCCCc>>>>>",
+           "aaaAAa....bBbb.cCCCc");
+  // Interleave: [1,2) --> [0,1), [5,6) --> [10,11), [6,8) --> [3,5),
+  //             [11,13) --> [12,14), [14,16) --> [6,8), [17,18) --> [17,18).
+  run_test({{1, 0, +1},
+            {5, 10, +1},
+            {6, 3, +2},
+            {11, 12, +2},
+            {14, 6, +2},
+            {17, 17, +1}},
+           "<AaabBCCccdDDdEEeFf>", "AaaCCc(Ec)EebBdDDd..Ff");
+}
+
+TEST(EquivalenceMapTest, ForwardProjectAll) {
   auto ForwardProjectAllTest = [](const OffsetMapper& offset_mapper,
                                   std::initializer_list<offset_t> offsets) {
     OffsetVector offsets_vec(offsets);
@@ -304,7 +509,9 @@ TEST(EquivalenceMapTest, ForwardProject) {
     return offsets_vec;
   };
 
-  OffsetMapper offset_mapper1({{0, 10, 2}, {2, 13, 1}, {4, 16, 2}});
+  // [0,2) --> [10,12), [2,3) --> [13,14), [4,6) --> [16,18).
+  OffsetMapper offset_mapper1({{0, 10, +2}, {2, 13, +1}, {4, 16, +2}}, 100U,
+                              100U);
   EXPECT_EQ(OffsetVector({10}), ForwardProjectAllTest(offset_mapper1, {0}));
   EXPECT_EQ(OffsetVector({13}), ForwardProjectAllTest(offset_mapper1, {2}));
   EXPECT_EQ(OffsetVector({}), ForwardProjectAllTest(offset_mapper1, {3}));
@@ -317,7 +524,9 @@ TEST(EquivalenceMapTest, ForwardProject) {
   EXPECT_EQ(OffsetVector({10, 11, 13, 16, 17}),
             ForwardProjectAllTest(offset_mapper1, {0, 1, 2, 3, 4, 5, 6}));
 
-  OffsetMapper offset_mapper2({{0, 10, 2}, {13, 2, 1}, {16, 4, 2}});
+  // [0,2) --> [10,12), [13,14) --> [2,3), [16,18) --> [4,6).
+  OffsetMapper offset_mapper2({{0, 10, +2}, {13, 2, +1}, {16, 4, +2}}, 100U,
+                              100U);
   EXPECT_EQ(OffsetVector({2}), ForwardProjectAllTest(offset_mapper2, {13}));
   EXPECT_EQ(OffsetVector({10, 2}),
             ForwardProjectAllTest(offset_mapper2, {0, 13}));
@@ -327,26 +536,6 @@ TEST(EquivalenceMapTest, ForwardProject) {
             ForwardProjectAllTest(offset_mapper2, {1, 14, 17}));
   EXPECT_EQ(OffsetVector({10, 11, 2, 4, 5}),
             ForwardProjectAllTest(offset_mapper2, {0, 1, 13, 14, 16, 17, 18}));
-}
-
-TEST(EquivalenceMapTest, ProjectOffset) {
-  OffsetMapper offset_mapper1({{0, 10, 2}, {2, 13, 1}, {4, 16, 2}});
-  EXPECT_EQ(10U, offset_mapper1.ForwardProject(0));
-  EXPECT_EQ(11U, offset_mapper1.ForwardProject(1));
-  EXPECT_EQ(13U, offset_mapper1.ForwardProject(2));
-  EXPECT_EQ(14U, offset_mapper1.ForwardProject(3));  // Previous equivalence.
-  EXPECT_EQ(16U, offset_mapper1.ForwardProject(4));
-  EXPECT_EQ(17U, offset_mapper1.ForwardProject(5));
-  EXPECT_EQ(18U, offset_mapper1.ForwardProject(6));  // Previous equivalence.
-
-  OffsetMapper offset_mapper2({{0, 10, 2}, {13, 2, 1}, {16, 4, 2}});
-  EXPECT_EQ(10U, offset_mapper2.ForwardProject(0));
-  EXPECT_EQ(11U, offset_mapper2.ForwardProject(1));
-  EXPECT_EQ(2U, offset_mapper2.ForwardProject(13));
-  EXPECT_EQ(3U, offset_mapper2.ForwardProject(14));  // Previous equivalence.
-  EXPECT_EQ(4U, offset_mapper2.ForwardProject(16));
-  EXPECT_EQ(5U, offset_mapper2.ForwardProject(17));
-  EXPECT_EQ(6U, offset_mapper2.ForwardProject(18));  // Previous equivalence.
 }
 
 TEST(EquivalenceMapTest, Build) {
