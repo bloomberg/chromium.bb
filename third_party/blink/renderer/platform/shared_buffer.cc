@@ -54,13 +54,12 @@ SharedBuffer::SharedBuffer() : size_(0) {}
 
 SharedBuffer::SharedBuffer(size_t size) : size_(size), buffer_(size) {}
 
-SharedBuffer::SharedBuffer(const char* data, size_t size) : size_(0) {
-  AppendInternal(data, size);
+SharedBuffer::SharedBuffer(const char* data, size_t size) : size_(size) {
+  buffer_.Append(data, size);
 }
 
-SharedBuffer::SharedBuffer(const unsigned char* data, size_t size) : size_(0) {
-  AppendInternal(reinterpret_cast<const char*>(data), size);
-}
+SharedBuffer::SharedBuffer(const unsigned char* data, size_t size)
+    : SharedBuffer(reinterpret_cast<const char*>(data), size) {}
 
 SharedBuffer::~SharedBuffer() {
   Clear();

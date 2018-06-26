@@ -153,6 +153,28 @@ TEST(SharedBufferTest, constructorWithSizeOnly) {
   ASSERT_EQ(length, shared_buffer->GetSomeData(data, static_cast<size_t>(0u)));
 }
 
+TEST(SharedBufferTest, constructorWithFlatData) {
+  Vector<char> data;
+
+  while (data.size() < 10000ul) {
+    data.Append("FooBarBaz", 9ul);
+    auto shared_buffer = SharedBuffer::Create(data.begin(), data.size());
+
+    Vector<Vector<char>> segments;
+    shared_buffer->ForEachSegment(
+        [&segments](const char* segment, size_t segment_size, size_t) -> bool {
+          segments.emplace_back();
+          segments.back().Append(segment, segment_size);
+          return true;
+        });
+
+    // Shared buffers constructed from flat data should stay flat.
+    ASSERT_EQ(segments.size(), 1ul);
+    ASSERT_EQ(segments.front().size(), data.size());
+    EXPECT_EQ(memcmp(segments.front().begin(), data.begin(), data.size()), 0);
+  }
+}
+
 TEST(SharedBufferTest, FlatData) {
   auto check_flat_data = [](scoped_refptr<const SharedBuffer> shared_buffer) {
     const SharedBuffer::DeprecatedFlatData flat_buffer(shared_buffer);
