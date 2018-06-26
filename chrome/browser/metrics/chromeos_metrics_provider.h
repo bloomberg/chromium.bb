@@ -48,7 +48,7 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
 
   // Loads hardware class information. When this task is complete, |callback|
   // is run.
-  void InitTaskGetHardwareClass(const base::Closure& callback);
+  void InitTaskGetFullHardwareClass(const base::Closure& callback);
 
   // Creates the Bluetooth adapter. When this task is complete, |callback| is
   // run.
