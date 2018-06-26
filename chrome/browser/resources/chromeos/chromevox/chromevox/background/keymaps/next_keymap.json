@@ -940,6 +940,16 @@
           "keyCode": [65, 221]
         }
       }
+    },
+    {
+      "command": "forceClickOnCurrentItem",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [32]
+        },
+        "doubleTap": true
+      }
     }
   ]
 }
