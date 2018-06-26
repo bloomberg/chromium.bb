@@ -26,6 +26,7 @@
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/passthrough_abstract_texture_impl.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -42,6 +43,7 @@ namespace gles2 {
 
 class ContextGroup;
 class GPUTracer;
+class PassthroughAbstractTextureImpl;
 
 struct MappedBuffer {
   GLsizeiptr size;
@@ -58,6 +60,14 @@ struct PassthroughResources {
 
   // api is null if we don't have a context (e.g. lost).
   void Destroy(gl::GLApi* api);
+
+  // Resources stores a shared list of textures pending deletion.
+  // If we have don't context when this function is called, we can mark
+  // these textures as lost context and drop all references to them.
+  void DestroyPendingTextures(bool has_context);
+
+  // If there are any textures pending destruction.
+  bool HasTexturesPendingDestruction() const;
 
   // Mappings from client side IDs to service side IDs.
   ClientServiceMap<GLuint, GLuint> texture_id_map;
@@ -76,6 +86,11 @@ struct PassthroughResources {
   // using the mailbox are deleted
   ClientServiceMap<GLuint, scoped_refptr<TexturePassthrough>>
       texture_object_map;
+
+  // A set of yet-to-be-deleted TexturePassthrough, which should be tossed
+  // whenever a context switch happens or the resources is destroyed.
+  base::flat_set<scoped_refptr<TexturePassthrough>>
+      textures_pending_destruction;
 
   // Mapping of client buffer IDs that are mapped to the shared memory used to
   // back the mapping so that it can be flushed when the buffer is unmapped
@@ -335,6 +350,9 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
       CopyTextureCHROMIUMResourceManager* copy_texture_resource_manager)
       override;
 
+  void OnAbstractTextureDestroyed(PassthroughAbstractTextureImpl*,
+                                  scoped_refptr<TexturePassthrough>);
+
  private:
   // Allow unittests to inspect internal state tracking
   friend class GLES2DecoderPassthroughTestBase;
@@ -457,6 +475,10 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   }
 
   DecoderClient* client_;
+
+  // A set of raw pointers to currently living PassthroughAbstractTextures
+  // which allow us to properly signal to them when we are destroyed.
+  base::flat_set<PassthroughAbstractTextureImpl*> abstract_textures_;
 
   int commands_to_process_;
 

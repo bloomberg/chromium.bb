@@ -173,6 +173,8 @@ target(link_target_type, "gles2_sources") {
     "mailbox_manager_sync.h",
     "memory_program_cache.cc",
     "memory_program_cache.h",
+    "passthrough_abstract_texture_impl.cc",
+    "passthrough_abstract_texture_impl.h",
     "passthrough_program_cache.cc",
     "passthrough_program_cache.h",
     "path_manager.cc",
