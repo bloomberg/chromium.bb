@@ -951,8 +951,7 @@ void NavigationHandleImpl::DidCommitNavigation(
   subframe_entry_committed_ = navigation_entry_committed;
 
   // For successful navigations, ensure the frame owner element is no longer
-  // collapsed as a result of a prior navigation having been blocked with
-  // BLOCK_REQUEST_AND_COLLAPSE.
+  // collapsed as a result of a prior navigation.
   if (!IsErrorPage() && !frame_tree_node()->IsMainFrame()) {
     // The last committed load in collapsed frames will be an error page with
     // |kUnreachableWebDataURL|. Same-document navigation should not be
@@ -1023,8 +1022,6 @@ NavigationHandleImpl::CheckWillStartRequest() {
         continue;
 
       case NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE:
-        frame_tree_node_->SetCollapsed(true);
-        FALLTHROUGH;
       case NavigationThrottle::BLOCK_REQUEST:
       case NavigationThrottle::CANCEL:
       case NavigationThrottle::CANCEL_AND_IGNORE:
@@ -1071,8 +1068,6 @@ NavigationHandleImpl::CheckWillRedirectRequest() {
         continue;
 
       case NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE:
-        frame_tree_node_->SetCollapsed(true);
-        FALLTHROUGH;
       case NavigationThrottle::BLOCK_REQUEST:
       case NavigationThrottle::CANCEL:
       case NavigationThrottle::CANCEL_AND_IGNORE:
@@ -1250,9 +1245,6 @@ void NavigationHandleImpl::CancelDeferredNavigationInternal(
          result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
   DCHECK(result.action() != NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE ||
          state_ == DEFERRING_START || state_ == DEFERRING_REDIRECT);
-
-  if (result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE)
-    frame_tree_node_->SetCollapsed(true);
 
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "CancelDeferredNavigation");

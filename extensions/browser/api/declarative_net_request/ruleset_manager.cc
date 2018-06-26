@@ -232,8 +232,9 @@ bool IsRequestPageAllowed(const WebRequestInfo& request,
 
 bool ShouldCollapseResourceType(flat_rule::ElementType type) {
   // TODO(crbug.com/848842): Add support for other element types like
-  // SUBDOCUMENT, OBJECT.
-  return type == flat_rule::ElementType_IMAGE;
+  // OBJECT.
+  return type == flat_rule::ElementType_IMAGE ||
+         type == flat_rule::ElementType_SUBDOCUMENT;
 }
 
 }  // namespace
