@@ -19,13 +19,11 @@ Possible commands are:
 
 import collections
 import json
+import optparse
 import os
 import shutil
 import sys
 import tempfile
-
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
-from pylib.utils import command_option_parser
 
 from util import build_utils
 
@@ -40,7 +38,6 @@ def _AddCommonOptions(option_parser):
                            help=('Path to output final file(s) to. Either the '
                                  'final classes directory, or the directory in '
                                  'which to place the instrumented/copied jar.'))
-  option_parser.add_option('--stamp', help='Path to touch when done.')
   option_parser.add_option('--coverage-file',
                            help='File to create with coverage metadata.')
   option_parser.add_option('--sources-list-file',
@@ -95,9 +92,6 @@ def _RunCopyCommand(_command, options, _, option_parser):
     os.remove(options.sources_list_file)
 
   shutil.copy(options.input_path, options.output_path)
-
-  if options.stamp:
-    build_utils.Touch(options.stamp)
 
   if options.depfile:
     build_utils.WriteDepfile(options.depfile, options.output_path)
@@ -229,10 +223,58 @@ VALID_COMMANDS = {
 }
 
 
+class CommandOptionParser(optparse.OptionParser):
+  """Wrapper class for OptionParser to help with listing commands."""
+
+  def __init__(self, *args, **kwargs):
+    """Creates a CommandOptionParser.
+
+    Args:
+      commands_dict: A dictionary mapping command strings to an object defining
+          - add_options_func: Adds options to the option parser
+          - run_command_func: Runs the command itself.
+      example: An example command.
+      everything else: Passed to optparse.OptionParser contructor.
+    """
+    self.commands_dict = kwargs.pop('commands_dict', {})
+    self.example = kwargs.pop('example', '')
+    if not 'usage' in kwargs:
+      kwargs['usage'] = 'Usage: %prog <command> [options]'
+    optparse.OptionParser.__init__(self, *args, **kwargs)
+
+  #override
+  def get_usage(self):
+    normal_usage = optparse.OptionParser.get_usage(self)
+    command_list = self.get_command_list()
+    example = self.get_example()
+    return self.expand_prog_name(normal_usage + example + command_list)
+
+  #override
+  def get_command_list(self):
+    if self.commands_dict.keys():
+      return '\nCommands:\n  %s\n' % '\n  '.join(
+          sorted(self.commands_dict.keys()))
+    return ''
+
+  def get_example(self):
+    if self.example:
+      return '\nExample:\n  %s\n' % self.example
+    return ''
+
+
 def main():
-  option_parser = command_option_parser.CommandOptionParser(
-      commands_dict=VALID_COMMANDS)
-  command_option_parser.ParseAndExecute(option_parser)
+  option_parser = CommandOptionParser(commands_dict=VALID_COMMANDS)
+  argv = sys.argv
+
+  if len(argv) < 2 or argv[1] not in option_parser.commands_dict:
+    # Parse args first, if this is '--help', optparse will print help and exit
+    option_parser.parse_args(argv)
+    option_parser.error('Invalid command.')
+
+  cmd = option_parser.commands_dict[argv[1]]
+  cmd.add_options_func(option_parser)
+  options, args = option_parser.parse_args(argv)
+  return cmd.run_command_func(argv[1], options, args, option_parser)
 
 
 if __name__ == '__main__':

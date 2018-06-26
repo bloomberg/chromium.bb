@@ -17,8 +17,6 @@ from xml.dom import minidom
 from util import build_utils
 
 _LINT_MD_URL = 'https://chromium.googlesource.com/chromium/src/+/master/build/android/docs/lint.md' # pylint: disable=line-too-long
-_SRC_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                         '..', '..', '..'))
 
 
 def _OnStaleMd5(lint_path, config_path, processed_config_path,
@@ -32,7 +30,7 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
     Args:
       path: A path relative to cwd.
     """
-    ret = os.path.relpath(os.path.abspath(path), _SRC_ROOT)
+    ret = os.path.relpath(os.path.abspath(path), build_utils.DIR_SOURCE_ROOT)
     # If it's outside of src/, just use abspath.
     if ret.startswith('..'):
       ret = os.path.abspath(path)
@@ -175,7 +173,8 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
     # are to be included).
     if not manifest_path:
       manifest_path = os.path.join(
-          _SRC_ROOT, 'build', 'android', 'AndroidManifest.xml')
+          build_utils.DIR_SOURCE_ROOT, 'build', 'android',
+          'AndroidManifest.xml')
     os.symlink(os.path.abspath(manifest_path),
                os.path.join(project_dir, 'AndroidManifest.xml'))
     cmd.append(project_dir)
@@ -202,8 +201,9 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
       return False
 
     try:
-      build_utils.CheckOutput(cmd, cwd=_SRC_ROOT, env=env or None,
-                              stderr_filter=stderr_filter, fail_func=fail_func)
+      build_utils.CheckOutput(cmd, cwd=build_utils.DIR_SOURCE_ROOT,
+                              env=env or None, stderr_filter=stderr_filter,
+                              fail_func=fail_func)
     except build_utils.CalledProcessError:
       # There is a problem with lint usage
       if not os.path.exists(result_path):
@@ -256,6 +256,13 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
         print >> sys.stderr, msg
       if can_fail_build:
         raise Exception('Lint failed.')
+
+
+def _FindInDirectories(directories, filename_filter):
+  all_files = []
+  for directory in directories:
+    all_files.extend(build_utils.FindInDirectory(directory, filename_filter))
+  return all_files
 
 
 def main():
@@ -319,7 +326,7 @@ def main():
   sources = []
   if args.src_dirs:
     src_dirs = build_utils.ParseGnList(args.src_dirs)
-    sources = build_utils.FindInDirectories(src_dirs, '*.java')
+    sources = _FindInDirectories(src_dirs, '*.java')
   elif args.java_sources_file:
     sources.extend(build_utils.ReadSourcesList(args.java_sources_file))
 

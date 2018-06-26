@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import ast
+"""Contains common helpers for GN action()s."""
+
 import collections
 import contextlib
 import filecmp
@@ -11,7 +12,6 @@ import json
 import os
 import pipes
 import re
-import shlex
 import shutil
 import stat
 import subprocess
@@ -22,24 +22,16 @@ import zipfile
 # Some clients do not add //build/android/gyp to PYTHONPATH.
 import md5_check  # pylint: disable=relative-import
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
-from pylib import constants
-from pylib.constants import host_paths
-
 sys.path.append(os.path.join(os.path.dirname(__file__),
                              os.pardir, os.pardir, os.pardir))
 import gn_helpers
 
-COLORAMA_ROOT = os.path.join(host_paths.DIR_SOURCE_ROOT,
-                             'third_party', 'colorama', 'src')
-AAPT_IGNORE_PATTERN = ':'.join([
-    'OWNERS',  # Allow OWNERS files within res/
-    '*.py',  # PRESUBMIT.py sometimes exist.
-    '*.pyc',
-    '*~',  # Some editors create these as temp files.
-    '.*',  # Never makes sense to include dot(files/dirs).
-    '*.d.stamp', # Ignore stamp files
-    ])
+# Definition copied from pylib/constants/__init__.py to avoid adding
+# a dependency on pylib.
+DIR_SOURCE_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
+    os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                 os.pardir, os.pardir, os.pardir, os.pardir)))
+
 HERMETIC_TIMESTAMP = (2001, 1, 1, 0, 0, 0)
 _HERMETIC_FILE_ATTR = (0644 << 16L)
 
@@ -51,12 +43,6 @@ def TempDir():
     yield dirname
   finally:
     shutil.rmtree(dirname)
-
-
-def IterFiles(root_dir):
-  for root, _, files in os.walk(root_dir):
-    for f in files:
-      yield os.path.join(root, f)
 
 
 def MakeDirectory(dir_path):
@@ -88,18 +74,9 @@ def FindInDirectory(directory, filename_filter):
   return files
 
 
-def FindInDirectories(directories, filename_filter):
-  all_files = []
-  for directory in directories:
-    all_files.extend(FindInDirectory(directory, filename_filter))
-  return all_files
-
-
-def ReadBuildVars(build_vars_path=None):
-  if not build_vars_path:
-    build_vars_path = os.path.join(constants.GetOutDirectory(),
-                                   "build_vars.txt")
-  with open(build_vars_path) as f:
+def ReadBuildVars(path):
+  """Parses a build_vars.txt into a dict."""
+  with open(path) as f:
     return dict(l.rstrip().split('=', 1) for l in f)
 
 
@@ -172,11 +149,6 @@ def AtomicOutput(path, only_if_changed=True):
       f.delete = False
 
 
-def ReadJson(path):
-  with open(path, 'r') as jsonfile:
-    return json.load(jsonfile)
-
-
 class CalledProcessError(Exception):
   """This exception is raised when the process run by CheckOutput
   exits with a non-zero exit code."""
@@ -244,19 +216,14 @@ def IsTimeStale(output, inputs):
   return False
 
 
-def IsDeviceReady():
-  device_state = CheckOutput(['adb', 'get-state'])
-  return device_state.strip() == 'device'
-
-
-def CheckZipPath(name):
+def _CheckZipPath(name):
   if os.path.normpath(name) != name:
     raise Exception('Non-canonical zip path: %s' % name)
   if os.path.isabs(name):
     raise Exception('Absolute zip path: %s' % name)
 
 
-def IsSymlink(zip_file, name):
+def _IsSymlink(zip_file, name):
   zi = zip_file.getinfo(name)
 
   # The two high-order bytes of ZipInfo.external_attr represent
@@ -284,14 +251,14 @@ def ExtractAll(zip_path, path=None, no_clobber=True, pattern=None,
           continue
       if predicate and not predicate(name):
         continue
-      CheckZipPath(name)
+      _CheckZipPath(name)
       if no_clobber:
         output_path = os.path.join(path, name)
         if os.path.exists(output_path):
           raise Exception(
               'Path already exists from zip: %s %s %s'
               % (zip_path, name, output_path))
-      if IsSymlink(z, name):
+      if _IsSymlink(z, name):
         dest = os.path.join(path, name)
         MakeDirectory(os.path.dirname(dest))
         os.symlink(z.read(name), dest)
@@ -317,7 +284,7 @@ def AddToZipHermetic(zip_file, zip_path, src_path=None, data=None,
   """
   assert (src_path is None) != (data is None), (
       '|src_path| and |data| are mutually exclusive.')
-  CheckZipPath(zip_path)
+  _CheckZipPath(zip_path)
   zipinfo = zipfile.ZipInfo(filename=zip_path, date_time=HERMETIC_TIMESTAMP)
   zipinfo.external_attr = _HERMETIC_FILE_ATTR
 
@@ -423,16 +390,6 @@ def MergeZips(output, input_zips, path_transform=None):
       out_zip.close()
 
 
-def PrintWarning(message):
-  print 'WARNING: ' + message
-
-
-def PrintBigWarning(message):
-  print '*****     ' * 8
-  PrintWarning(message)
-  print '*****     ' * 8
-
-
 def GetSortedTransitiveDependencies(top, deps_func):
   """Gets the list of all transitive dependencies in sorted order.
 
@@ -460,19 +417,20 @@ def GetSortedTransitiveDependencies(top, deps_func):
   return deps_map.keys()
 
 
-def GetPythonDependencies():
+def _ComputePythonDependencies():
   """Gets the paths of imported non-system python modules.
 
   A path is assumed to be a "system" import if it is outside of chromium's
   src/. The paths will be relative to the current directory.
   """
-  module_paths = GetModulePaths()
-
+  _ForceLazyModulesToLoad()
+  module_paths = (m.__file__ for m in sys.modules.itervalues()
+                  if m is not None and hasattr(m, '__file__'))
   abs_module_paths = map(os.path.abspath, module_paths)
 
-  assert os.path.isabs(host_paths.DIR_SOURCE_ROOT)
+  assert os.path.isabs(DIR_SOURCE_ROOT)
   non_system_module_paths = [
-      p for p in abs_module_paths if p.startswith(host_paths.DIR_SOURCE_ROOT)]
+      p for p in abs_module_paths if p.startswith(DIR_SOURCE_ROOT)]
   def ConvertPycToPy(s):
     if s.endswith('.pyc'):
       return s[:-1]
@@ -483,14 +441,7 @@ def GetPythonDependencies():
   return sorted(set(non_system_module_paths))
 
 
-def GetModulePaths():
-  """Returns the paths to all of the modules in sys.modules."""
-  ForceLazyModulesToLoad()
-  return (m.__file__ for m in sys.modules.itervalues()
-          if m is not None and hasattr(m, '__file__'))
-
-
-def ForceLazyModulesToLoad():
+def _ForceLazyModulesToLoad():
   """Forces any lazily imported modules to fully load themselves.
 
   Inspecting the modules' __file__ attribute causes lazily imported modules
@@ -521,7 +472,7 @@ def WriteDepfile(depfile_path, first_gn_output, inputs=None, add_pydeps=True):
   assert depfile_path != first_gn_output  # http://crbug.com/646165
   inputs = inputs or []
   if add_pydeps:
-    inputs = GetPythonDependencies() + inputs
+    inputs = _ComputePythonDependencies() + inputs
   MakeDirectory(os.path.dirname(depfile_path))
   # Ninja does not support multiple outputs in depfiles.
   with open(depfile_path, 'w') as depfile:
@@ -559,7 +510,8 @@ def ExpandFileArgs(args):
     lookup_path = match.group(1).split(':')
     file_path = lookup_path[0]
     if not file_path in file_jsons:
-      file_jsons[file_path] = ReadJson(file_path)
+      with open(file_path) as f:
+        file_jsons[file_path] = json.load(f)
 
     expansion = file_jsons[file_path]
     for k in lookup_path[1:]:
@@ -608,7 +560,7 @@ def CallAndWriteDepfileIfStale(function, options, record_path=None,
 
   python_deps = None
   if hasattr(options, 'depfile') and options.depfile:
-    python_deps = GetPythonDependencies()
+    python_deps = _ComputePythonDependencies()
     input_paths += python_deps
     output_paths += [options.depfile]
 

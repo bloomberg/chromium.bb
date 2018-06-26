@@ -9,9 +9,6 @@ import os
 import subprocess
 import sys
 
-sys.path.append(os.path.join(
-    os.path.dirname(__file__), '..', '..', 'build', 'android', 'gyp'))
-
 from util import build_utils
 
 
